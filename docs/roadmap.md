@@ -71,6 +71,14 @@ Within this section: ascending stars (★★ → ★★★ → ★★★★). Br
   - **Depends on:** shipped preset carousel + category routing.
   - **Not in scope:** model-generated dynamic chips; treating each string batch as a versioned feature ship.
 
+- ★★ **Reply micro-actions** (follow-up chips)
+
+  - **Goal:** Per-reply secondary actions beyond **Retry same prompt** / thumbs: e.g. **Shorter**, **Step-by-step**, **What first?** — each submits a **small follow-up turn** with prior answer as context (not a full regenerate).
+  - **Primary work:** Micro-prompt templates; new turn in unified Ask orchestration; compact chip row on `BonsaiChatReplyActions`; Input transparency labels derivative turns.
+  - **Files:** `useBonsaiAskOrchestration.ts`, `BonsaiChatReplyActions.tsx`, `game_ai_request.py`, `ollama_prompts.py`.
+  - **Depends on:** Shipped accordion turns + **Retry same prompt**; settings persistence.
+  - **Not in scope:** Global **Reply verbosity inject** (separate planned row); replacing **named chat slots**; TDP apply from micro-actions without existing hardware gates.
+
 - ★★★ **Multi-language replies** (Steam locale + optional override)
 
   - **Goal:** Respond in user/Steam language with optional override.
@@ -110,13 +118,21 @@ Within this section: ascending stars (★★ → ★★★ → ★★★★). Br
   - **Depends on:** unified search indexing and response-state handling.
   - **Not in scope:** changing ranking semantics for unrelated search domains.
 
-- ★★★ **Support diagnostics block** (About / transparency, L)
+- ★★★★ **Llama.cpp provider spike** (compat evaluation)
 
-  - **Goal:** One-copy block: plugin version, Decky/Steam fingerprint when safe.
-  - **Primary work:** compose string from safe APIs + clipboard/copy affordance.
-  - **Files:** `MainTab` / `AboutTab` / transparency utils, `main.py`.
-  - **Depends on:** optional Input transparency surfaces.
-  - **Not in scope:** telemetry upload.
+  - **Goal:** Evaluate first-class llama.cpp runtime/provider support.
+  - **Primary work:** API formats, streaming, model management, tokenizer/context, Deck constraints.
+  - **Expected output:** go/no-go, phased path, risk matrix.
+  - **Files:** `main.py`, runtime/provider abstraction docs, troubleshooting docs.
+  - **Not in scope:** shipping full production support in the spike.
+
+- ★★★★ **Proton experiment journal** (per-game timeline)
+
+  - **Goal:** Per **AppID**, structured log of user-tagged Proton attempts (version, launch options, outcome worse/same/better) injected into troubleshooting Asks so the model avoids re-suggesting dead ends. Distinct from planned **user stash** (freeform notes).
+  - **Primary work:** JSON schema + size caps in `~/.bonsai/`; quick-add chips after replies or from Settings; inject via `early_context_suffix` / dedicated block in [`build_system_prompt`](../py_modules/backend/services/ollama_prompts.py); clear on **Clear all plugin data**; optional Input transparency slice.
+  - **Files:** `proton_experiment_journal_service.py`, `settings_service.py`, `game_ai_request.py`, Settings or Main UI.
+  - **Depends on:** Shipped Proton log attach ([`proton_troubleshooting_logs.py`](../py_modules/backend/services/proton_troubleshooting_logs.py)); **Input handling transparency**.
+  - **Not in scope:** Auto-install Proton; scraping ProtonDB; auto-writing launch options.
 
 - ★★★★ **Session context and user stash** (deck-first context; C)
 
@@ -125,14 +141,6 @@ Within this section: ascending stars (★★ → ★★★ → ★★★★). Br
   - **Files:** `py_modules/backend/services/ollama_prompts.py`, `game_ai_request.py`, `settings_service.py`, `main.py`; `src/utils/settingsAndResponse.ts`, Settings UI, `MainTab.tsx` / input transparency utils.
   - **Depends on:** shipped **Input handling transparency**; **Capability Permission Center** (media, filesystem/log reads); [`build_system_prompt`](../py_modules/backend/services/ollama_prompts.py) layer order.
   - **Not in scope:** embeddings, vector DBs, Chroma, outbound corpus ingest, multi-MB stash, cloud sync, auto web fetch (see **RAG Deck query**). Clipboard-only “append to Ask field” without system inject remains optional polish, not a separate ship line.
-
-- ★★★★ **Llama.cpp provider spike** (compat evaluation)
-
-  - **Goal:** Evaluate first-class llama.cpp runtime/provider support.
-  - **Primary work:** API formats, streaming, model management, tokenizer/context, Deck constraints.
-  - **Expected output:** go/no-go, phased path, risk matrix.
-  - **Files:** `main.py`, runtime/provider abstraction docs, troubleshooting docs.
-  - **Not in scope:** shipping full production support in the spike.
 
 - ★★★★ **SteamOS Share path** (capture → attach, A)
 
@@ -177,6 +185,17 @@ Within this section: ascending stars (★★★★ → ★★★★★ → ★�
   - **Files:** `main.py`, `src/index.tsx`.
   - **Depends on:** bundled VDF parser support.
   - **Not in scope:** editing/writing controller configs.
+
+- ★★★★★ **Deck health snapshot** (full diagnostics + Ollama)
+
+  - **GitHub (tracking placeholder):** [bonsAI Issues](https://github.com/cantcurecancer/bonsAI/issues) — dedicated issue TBD.
+  - **Goal:** **Read-only** full diagnostics: device/DMI (incl. BIOS where readable), SteamOS/kernel/Steam client versions, plugin/Decky fingerprint, battery snapshot + health estimate, Ollama connection quality (extend [`test_ollama_connection`](../main.py)), running game, storage free space, TDP cap read-only ([`read_current_tdp_watts`](../py_modules/backend/services/tdp_service.py)), **line excerpts** from Proton/Steam/system journals and prior-boot kernel panic markers — bounded like [`proton_troubleshooting_logs.py`](../py_modules/backend/services/proton_troubleshooting_logs.py). Save markdown/JSON to `~/Desktop/bonsAI_logs/` when **Save files to Desktop** is on. **Supersedes** former **Support diagnostics block** (version/fingerprint copy).
+  - **Permission:** **No new capability.** Log-bearing collectors require existing **`steam_logs_read`** (Permissions → game & screenshot context / Proton logs). No `hardware_control` writes.
+  - **Ollama routing (v1):** **Magic Ask only:** `bonsai:diagnostics` (exact phrase pattern, same family as `bonsai:vac-check`) runs collectors → writes saved file with excerpts → submits a fixed Ask with report summary in system context. **Natural-language intent** (“run diagnostics”, “health check”, “kernel panic logs”) detected on ordinary Asks → **confirm modal** before running (no silent full scan).
+  - **Primary work:** `deck_diagnostics_service.py` with isolated timeout-bounded collectors; RPC `run_deck_diagnostics`; redaction for paths/serials in copy paths; preset chip + troubleshooting cross-link; intent heuristic + confirm UI.
+  - **Files:** `main.py`, `py_modules/backend/services/deck_diagnostics_service.py`, reuse/extend `proton_troubleshooting_logs.py`, `game_ai_request.py`, `src/data/presets.ts`, local-only command module (e.g. `diagnostics_commands.py`), About tab one-liner pointing to magic phrase.
+  - **Depends on:** **`steam_logs_read`**; shipped connection test; optional **`filesystem_write`** for Desktop save only.
+  - **Not in scope:** New permission tier; telemetry upload; auto background scans; privileged repair commands (`sudo` fixes); replacing **Session context and user stash**; passive **Deck health sentinel** (future brainstorm).
 
 - ★★★★★ **Couch 10-foot UI profile** (docked Deck / Steam Machine, F)
 
@@ -363,6 +382,9 @@ Dependency graph and implementation notes that are not feature checklist items.
 - **Offline intent pack exchange** → offline-first search quality.
 - **Session context and user stash** → deck-first Ask quality; complements shipped game/vision/Proton/TDP injects; **alternative to RAG Deck query** for deck-only and minimal-infra users.
 - **User stash (Phase 1)** → **Input handling transparency** (show injected stash bytes and sources).
+- **Reply micro-actions** → shipped accordion + **Retry same prompt**; distinct from **Reply verbosity inject**.
+- **Proton experiment journal** → complements Proton log attach; optional inject into troubleshooting Asks alongside log excerpts; distinct from **Session context and user stash** (structured timeline vs freeform notes).
+- **Deck health snapshot** → **`steam_logs_read`** + [`proton_troubleshooting_logs.py`](../py_modules/backend/services/proton_troubleshooting_logs.py) + connection test; **supersedes** removed **Support diagnostics block**; Desktop save needs **`filesystem_write`**.
 - **Settings persistence** → mode profiles, language override, background completion metadata; **Debug tab opt-in (Settings)** (shipped — see **Completed** → Tabs).
 - **Brainstorm letters (ecosystem E–H, companion J–N, chat R–V)** are indexed in [roadmap_feature_ideas plan](../.cursor/plans/roadmap_feature_ideas_f5560e15.plan.md); **Planned** above is canonical for horizon ordering.
 
@@ -386,6 +408,7 @@ flowchart TD
   modelPolicyTiers --> tierOpenWeight[OpenSourcePlusOpenWeight]
   modelPolicyTiers --> tierNonFoss[NonFossUnlock]
   kidsLock[RestrictedKidsAccountMasterLock] --> capabilityPermission
+  steamLogsRead[steam_logs_read capability] --> deckHealth[DeckHealthSnapshot]
   llamaEval[LlamaCppCompatibilityEvaluation] -.-> deckLanAdvance[LanVsDeckProviderLayerFuture]
   localRuntimeBanner[LocalRuntimeDefaultsBetaShipped] --> modelRouting[ModelProviderRoutingLayer]
   tierOpenSource --> modelRouting
