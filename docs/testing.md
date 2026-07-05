@@ -41,6 +41,9 @@ Use the **Touched area** column to extend §1; prefer the narrowest tests first.
 | Touched area | Extra automated focus | Manual / runbook tier |
 |--------------|----------------------|------------------------|
 | `backend/services/settings_service.py`, `settingsAndResponse.ts`, Settings UI | `tests/test_settings_service.py`, `src/utils/settingsAndResponse.test.ts` | Tier 0 **SMOKE-A** + setting persist spot-check |
+| `main.py` background Ask / abort / settings save locks | `tests/test_background_abort_busy.py`, `tests/test_settings_save_lock.py`, `tests/test_intent_pack_store_lock.py`, `tests/test_strategy_checklist_store_lock.py` | Tier 1 **SMOKE-H** Stop then new Ask |
+| `backend/services/intent_pack_service.py` | `tests/test_intent_pack_service.py` (corrupt/oversized preserve) | Tier 0 Settings → intent packs |
+| `backend/services/voice_transcription_service.py` | `tests/test_voice_transcription_service.py` (`test_pcm_buffer_survives_concurrent_append_and_window`) | Tier 2 voice STT |
 | `backend/services/ollama_service.py`, `refactor_helpers.py` | `tests/test_ollama_service.py`, `tests/test_refactor_helpers.py` | Tier 1 one Ask per changed mode ([testing.md](testing.md#shipped-feature-coverage)) |
 | `backend/services/desktop_note_service.py` | `tests/test_desktop_note_service.py` | Tier 2 desktop notes block |
 | `backend/services/ai_character_service.py`, character UI | `tests/test_ai_character_service.py`, `tests/test_pyro_asshole_safety.py`, catalog/accent tests under `src/data/` | Tier 2 character / Pyro ([testing.md](testing.md#shipped-feature-coverage) PYRO-EGG) |
