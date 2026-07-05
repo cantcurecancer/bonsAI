@@ -33,21 +33,13 @@ import {
 import { buildBonsaiScopeAccentInlineStyle, resolveUiAccentFromCharacterSettings } from "./data/characterUiAccent";
 import { appendAppDesktopLogWithPrefs } from "./utils/appDesktopLog";
 import {
-  captureBonsaiSessionForModal,
   clearBonsaiSessionSurvival,
   consumeBonsaiSessionAfterRemount,
   finalizeSessionRestoreAfterRemount,
   peekBonsaiSessionPendingRestore,
+  type BonsaiSessionSurvivalSnapshot,
 } from "./utils/bonsaiSessionSurvival";
-import { bonsaiDebugLog, bumpContentMountCount } from "./utils/bonsaiDebugIngest";
-import {
-  captureSettingsTabLocalSnapshot,
-  clearSettingsTabLocalSurvival,
-} from "./utils/settingsTabLocalSurvival";
-import {
-  captureOllamaTabLocalSnapshot,
-  clearOllamaTabLocalSurvival,
-} from "./utils/ollamaTabLocalSurvival";
+import { bonsaiDebugLog } from "./utils/bonsaiDebugIngest";
 import { persistOllamaIpIfRoutingToLan as persistOllamaIpIfRoutingToLanUtil } from "./utils/persistOllamaIp";
 import { shouldClearUnifiedInputForPersistenceMode } from "./utils/unifiedInputPersistenceMode";
 import { getRandomPresets } from "./data/presets";
@@ -61,7 +53,6 @@ import {
   OllamaTabIcon,
 } from "./components/icons";
 import { MODEL_POLICY_README_URL, type ModelPolicyTierId } from "./data/modelPolicy";
-import { SETTINGS_DATABASE } from "./data/settingsDatabase";
 import {
   ASK_LABEL_COLOR_50,
   BONSAI_FOREST_GREEN,
@@ -77,26 +68,30 @@ import { normalizeUiScaleProfileId, type UiScaleProfileId } from "./data/uiScale
 import { formatDeckyRpcError } from "./utils/deckyCall";
 import { usePluginSettings } from "./hooks/usePluginSettings";
 import { useIntentPacks } from "./hooks/useIntentPacks";
-import { searchSettingsWithIntentPacks } from "./utils/intentPackSearch";
+import { useScreenshotBrowser } from "./hooks/useScreenshotBrowser";
+import { useSteamSettingsSearch } from "./hooks/useSteamSettingsSearch";
+import { useBonsaiPluginShell } from "./hooks/useBonsaiPluginShell";
 import { useVoiceTranscription } from "./hooks/useVoiceTranscription";
 import { useBonsaiAskOrchestration } from "./hooks/useBonsaiAskOrchestration";
 import { useDisclaimerAndLocalRuntimeGates } from "./hooks/useDisclaimerAndLocalRuntimeGates";
 import { useCapturedFrontendErrors } from "./hooks/useCapturedFrontendErrors";
 import { AUTO_SAVED_RESPONSE_IDS_KEY } from "./utils/desktopChatAutosave";
-import { getQamTab, getSteamSettingsUrl, isQamSetting } from "./data/steamSettingsNavigation";
+import { getSteamSettingsUrl, isQamSetting } from "./data/steamSettingsNavigation";
 import { registerPreviewTestHooks, isDeckyPreviewRuntime } from "./preview/previewTestHooks";
-import type { AskAttachment, ScreenshotItem } from "./types/bonsaiUi";
-
-/**
- * If Decky unmounts plugin `Content` when `showModal` closes, React state resets to defaults; this
- * outlives the component so `useLayoutEffect` can restore the tab on the next mount. Used for any
- * fullscreen modal (character picker, model policy, permissions confirm, clear session, etc.).
- */
-let __bonsaiTabRestoreAfterModal: string | null = null;
+import {
+  DISCLAIMER_STORAGE_KEY,
+  GITHUB_ISSUES_URL,
+  IP_DEFAULT,
+  IP_STORAGE_KEY,
+  LOCAL_RUNTIME_BETA_DISMISSED_STORAGE_KEY,
+  OLLAMA_UPSTREAM_REPO_URL,
+  PLUGIN_HELP_DISMISSED_STORAGE_KEY,
+  UNIFIED_INPUT_STORAGE_KEY,
+} from "./data/storageKeys";
 
 /**
  * Preserves “plugin help chip dismissed” across Decky remounting `Content` when `showModal`
- * opens/closes (same lifecycle issue as {@link __bonsaiTabRestoreAfterModal}).
+ * opens/closes (same lifecycle issue as tab restore in `useBonsaiPluginShell`).
  */
 let __bonsaiPluginHelpDismissed = false;
 
@@ -138,14 +133,6 @@ type SteamUrlApi = {
   ExecuteSteamURL(url: string): void;
 };
 
-const UNIFIED_INPUT_STORAGE_KEY = "bonsai:last-query";
-
-type RecentScreenshotsResponse = {
-  success: boolean;
-  items: ScreenshotItem[];
-  error?: string;
-};
-
 type AppendDesktopNoteResult = {
   success: boolean;
   path?: string;
@@ -174,9 +161,6 @@ function persistSearchQuery(unifiedInputText: string): void {
   } catch {}
 }
 
-const IP_STORAGE_KEY = "bonsai:pc-ip";
-const IP_DEFAULT = "192.168.1.";
-
 // Load saved Ollama host/IP for convenience between plugin sessions.
 function loadSavedIp(): string {
   if (typeof window === "undefined") return IP_DEFAULT;
@@ -191,40 +175,7 @@ function saveIp(ip: string): void {
   try { window.localStorage.setItem(IP_STORAGE_KEY, ip); } catch {}
 }
 
-// De-duplicate screenshot rows: prefer Steam folder entries over plugin capture mirrors.
-function dedupeScreenshotItems(items: ScreenshotItem[]): ScreenshotItem[] {
-  const captureTimestampKey = (item: ScreenshotItem): string => {
-    const fromName = /(\d{8}-\d{6})/.exec(item.name)?.[1];
-    if (fromName) return fromName;
-    const fromPath = /(\d{8}-\d{6})/.exec(item.path)?.[1];
-    return fromPath ?? `${item.path}|${item.mtime}|${item.size_bytes ?? 0}`;
-  };
-  const byKey = new Map<string, ScreenshotItem>();
-  const order: string[] = [];
-  for (const item of items) {
-    const key = captureTimestampKey(item);
-    const existing = byKey.get(key);
-    if (!existing) {
-      byKey.set(key, item);
-      order.push(key);
-      continue;
-    }
-    const preferNew =
-      (existing.source !== "steam_recent" && item.source === "steam_recent") ||
-      (existing.name.startsWith("bonsai-game-") && !item.name.startsWith("bonsai-game-"));
-    if (preferNew) {
-      byKey.set(key, item);
-    }
-  }
-  return order.map((key) => byKey.get(key)!);
-}
-
-const DISCLAIMER_STORAGE_KEY = "bonsai:disclaimer-accepted";
-const PLUGIN_HELP_DISMISSED_STORAGE_KEY = "bonsai:plugin-help-dismissed";
-const LOCAL_RUNTIME_BETA_DISMISSED_STORAGE_KEY = "bonsai:local-runtime-beta-dismissed-v1";
-const GITHUB_ISSUES_URL = "https://github.com/cantcurecancer/bonsAI/issues";
 const GITHUB_REPO_URL = GITHUB_ISSUES_URL.replace(/\/issues$/, "");
-const OLLAMA_UPSTREAM_REPO_URL = "https://github.com/ollama/ollama";
 
 function pluginHelpDismissedFromStorage(): boolean {
   try {
@@ -277,48 +228,61 @@ const DECKY_TAB_TITLES = {
   about: bonsaiTabIconTitle("about", <AboutTabTitleIcon size={TAB_TITLE_ICON_PX} />),
 } as const;
 
-function resolveInitialTab(): string {
-  const snap = peekBonsaiSessionPendingRestore();
-  if (snap?.currentTab) return snap.currentTab;
-  if (__bonsaiTabRestoreAfterModal != null) return __bonsaiTabRestoreAfterModal;
-  return "main";
-}
-
 /**
  * Primary plugin shell: tabs plus Ask/settings wiring. Heavy logic lives in hooks under `src/hooks/`
  * (`usePluginSettings`, `useBackgroundGameAi`, `useDisclaimerAndLocalRuntimeGates`, `useBonsaiAskOrchestration`,
  * `useCapturedFrontendErrors`) and feature modules under `src/features/` so this file stays a composer.
  */
 const Content: React.FC = () => {
-  useLayoutEffect(() => {
-    const mount = bumpContentMountCount();
-    bonsaiDebugLog("index.tsx:Content", "content mounted", "H1", {
-      mount,
-      pendingPeek: !!peekBonsaiSessionPendingRestore(),
-      tab: resolveInitialTab(),
-    });
-  }, []);
+  const sessionSnapshotRef = useRef<() => BonsaiSessionSurvivalSnapshot>(() => {
+    return {
+      currentTab: "main",
+      unifiedInput: "",
+      selectedIndex: -1,
+      navigationMessage: "",
+      selectedAttachment: null,
+      isScreenshotBrowserOpen: false,
+      mediaError: "",
+      recentScreenshots: [],
+      isLoadingRecentScreenshots: false,
+      pluginHelpDismissed: false,
+      ollamaIp: IP_DEFAULT,
+      settingsSnapshot: {},
+      ollamaResponse: "",
+      ollamaContext: { app_context: "inactive", app_id: "" },
+      lastExchange: null,
+      askThreadCollapsed: [],
+      askThreadDisplayQuestion: "",
+      expandedTurnKey: "live",
+      suggestedPrompts: [],
+      lastTransparency: null,
+      modelPolicyDisclosure: null,
+      strategyGuideBranches: null,
+      strategyChecklist: null,
+      elapsedSeconds: null,
+      lastApplied: null,
+      shortcutSetupVariant: null,
+      presetCarouselInject: null,
+      showSlowWarning: false,
+      lastRequestId: null,
+      thinkingSummary: null,
+    } as unknown as BonsaiSessionSurvivalSnapshot;
+  });
 
-  const [currentTab, setCurrentTab] = useState(resolveInitialTab);
-  const [lastConnectionStatus, setLastConnectionStatus] = useState<DeveloperConnectionStatus | null>(null);
-  /** Remember tab when opening character picker so we restore after `showModal` closes. */
-  const characterPickerReturnTabRef = useRef<string>("main");
-  /**
-   * After closing the character picker from a non-main tab, Decky sometimes fires `onShowTab("main")`
-   * when focus returns. While this ref is within `until`, treat that as spurious and keep `tab` instead.
-   */
-  const postPickerTabLockRef = useRef<{ until: number; tab: string } | null>(null);
-  /** Assigned after `finalizeShowModalAndRestoreActiveTab` is created (disclaimer hook runs earlier). */
-  const finalizeModalCloseRef = useRef<(close: () => void) => void>((close) => close());
+  const {
+    currentTab,
+    setCurrentTab,
+    characterPickerReturnTabRef,
+    finalizeShowModalAndRestoreActiveTab,
+    onCompleteDeckyModalClose,
+    captureSessionBeforeModal,
+    onTabsShowTab,
+  } = useBonsaiPluginShell({
+    getSessionSnapshot: () => sessionSnapshotRef.current(),
+  });
+
   const pendingSessionRestoreFinalizeRef = useRef(false);
-
-  useLayoutEffect(() => {
-    const pending = __bonsaiTabRestoreAfterModal;
-    if (pending != null) {
-      __bonsaiTabRestoreAfterModal = null;
-      setCurrentTab(pending);
-    }
-  }, []);
+  const [lastConnectionStatus, setLastConnectionStatus] = useState<DeveloperConnectionStatus | null>(null);
 
   // --- Unified input/search state ---
   const [unifiedInput, setUnifiedInput] = useState(() => {
@@ -361,23 +325,7 @@ const Content: React.FC = () => {
   useEffect(() => {
     __bonsaiPluginHelpDismissed = pluginHelpDismissed;
   }, [pluginHelpDismissed]);
-  const [isScreenshotBrowserOpen, setIsScreenshotBrowserOpen] = useState(
-    () => peekBonsaiSessionPendingRestore()?.isScreenshotBrowserOpen ?? false
-  );
-  const [mediaError, setMediaError] = useState(
-    () => peekBonsaiSessionPendingRestore()?.mediaError ?? ""
-  );
-  const [recentScreenshots, setRecentScreenshots] = useState<ScreenshotItem[]>(
-    () => peekBonsaiSessionPendingRestore()?.recentScreenshots ?? []
-  );
-  const [isLoadingRecentScreenshots, setIsLoadingRecentScreenshots] = useState(
-    () => peekBonsaiSessionPendingRestore()?.isLoadingRecentScreenshots ?? false
-  );
-  const [isCapturingScreenshot, setIsCapturingScreenshot] = useState(false);
-  const [selectedAttachment, setSelectedAttachment] = useState<AskAttachment | null>(
-    () => peekBonsaiSessionPendingRestore()?.selectedAttachment ?? null
-  );
-  const screenshotBrowserHostRef = useRef<HTMLDivElement>(null);
+
   const attachActionHostRef = useRef<HTMLDivElement>(null);
 
   const {
@@ -461,6 +409,28 @@ const Content: React.FC = () => {
     syncSettingsFromDisk,
   } = usePluginSettings();
 
+  const isAskingRef = useRef(false);
+  const {
+    screenshotBrowserHostRef,
+    isScreenshotBrowserOpen,
+    mediaError,
+    recentScreenshots,
+    isLoadingRecentScreenshots,
+    isCapturingScreenshot,
+    selectedAttachment,
+    setSelectedAttachment,
+    loadRecentScreenshots,
+    onTakeScreenshot,
+    onOpenScreenshotBrowser,
+    onCloseScreenshotBrowser,
+    onSelectRecentScreenshot,
+    restoreScreenshotBrowserSnapshot,
+  } = useScreenshotBrowser({
+    getIsAsking: () => isAskingRef.current,
+    mediaLibraryAccess: capabilities.media_library_access,
+    filesystemWrite: capabilities.filesystem_write,
+  });
+
   const [uiScaleApplyToken, setUiScaleApplyToken] = useState(0);
   const uiScale = useUiScaleProfile({
     scopeRef: bonsaiScopeRef,
@@ -472,6 +442,13 @@ const Content: React.FC = () => {
   });
 
   const intentPacks = useIntentPacks();
+
+  const { filteredSettings, onSettingClick } = useSteamSettingsSearch({
+    unifiedInput,
+    intentPackIndex: intentPacks.index,
+    setSelectedIndex,
+    setNavigationMessage,
+  });
 
   const [voiceRecording, setVoiceRecording] = useState(false);
 
@@ -585,6 +562,8 @@ const Content: React.FC = () => {
     },
   });
 
+  isAskingRef.current = isAsking;
+
   useLayoutEffect(() => {
     const survived = consumeBonsaiSessionAfterRemount();
     bonsaiDebugLog("index.tsx:consume", survived ? "restored snapshot" : "no snapshot", "H1", {
@@ -597,11 +576,13 @@ const Content: React.FC = () => {
     setUnifiedInput(survived.unifiedInput);
     setSelectedIndex(survived.selectedIndex);
     setNavigationMessage(survived.navigationMessage);
-    setSelectedAttachment(survived.selectedAttachment);
-    setIsScreenshotBrowserOpen(survived.isScreenshotBrowserOpen);
-    setMediaError(survived.mediaError);
-    setRecentScreenshots(survived.recentScreenshots);
-    setIsLoadingRecentScreenshots(survived.isLoadingRecentScreenshots);
+    restoreScreenshotBrowserSnapshot({
+      selectedAttachment: survived.selectedAttachment,
+      isScreenshotBrowserOpen: survived.isScreenshotBrowserOpen,
+      mediaError: survived.mediaError,
+      recentScreenshots: survived.recentScreenshots,
+      isLoadingRecentScreenshots: survived.isLoadingRecentScreenshots,
+    });
     setPluginHelpDismissed(survived.pluginHelpDismissed);
     __bonsaiPluginHelpDismissed = survived.pluginHelpDismissed;
     setOllamaIp(survived.ollamaIp);
@@ -775,50 +756,7 @@ const Content: React.FC = () => {
     [settingsSnapshotForSave]
   );
 
-  const captureSessionBeforeModal = useCallback(() => {
-    characterPickerReturnTabRef.current = currentTab;
-    const settingsLocal = captureSettingsTabLocalSnapshot();
-    const ollamaLocal = captureOllamaTabLocalSnapshot();
-    captureBonsaiSessionForModal({
-      currentTab,
-      unifiedInput,
-      selectedIndex,
-      navigationMessage,
-      selectedAttachment,
-      isScreenshotBrowserOpen,
-      mediaError,
-      recentScreenshots,
-      isLoadingRecentScreenshots,
-      pluginHelpDismissed,
-      ollamaIp,
-      settingsSnapshot: settingsSnapshotForSave,
-      ollamaResponse,
-      ollamaContext,
-      lastExchange,
-      askThreadCollapsed,
-      askThreadDisplayQuestion,
-      expandedTurnKey,
-      suggestedPrompts,
-      lastTransparency,
-      modelPolicyDisclosure,
-      strategyGuideBranches,
-      strategyChecklist,
-      elapsedSeconds,
-      lastApplied,
-      shortcutSetupVariant,
-      presetCarouselInject,
-      showSlowWarning,
-      lastRequestId,
-      thinkingSummary,
-    });
-    bonsaiDebugLog("index.tsx:captureSessionBeforeModal", "captured", "H4", {
-      tab: currentTab,
-      inputLen: unifiedInput.length,
-      hasExchange: !!lastExchange,
-      settingsLocal: !!settingsLocal,
-      ollamaLocal: !!ollamaLocal,
-    });
-  }, [
+  sessionSnapshotRef.current = () => ({
     currentTab,
     unifiedInput,
     selectedIndex,
@@ -830,7 +768,7 @@ const Content: React.FC = () => {
     isLoadingRecentScreenshots,
     pluginHelpDismissed,
     ollamaIp,
-    settingsSnapshotForSave,
+    settingsSnapshot: settingsSnapshotForSave,
     ollamaResponse,
     ollamaContext,
     lastExchange,
@@ -849,7 +787,7 @@ const Content: React.FC = () => {
     showSlowWarning,
     lastRequestId,
     thinkingSummary,
-  ]);
+  });
 
   const {
     showDisclaimerModalAgain,
@@ -857,7 +795,7 @@ const Content: React.FC = () => {
     localRuntimeBetaPromptIssuedRef,
   } = useDisclaimerAndLocalRuntimeGates(settingsLoaded, ollamaLocalOnDeck, {
     onBeforeDeckyModal: captureSessionBeforeModal,
-    onCompleteDeckyModalClose: (close) => finalizeModalCloseRef.current(close),
+    onCompleteDeckyModalClose,
   });
 
   useEffect(() => {
@@ -974,10 +912,6 @@ const Content: React.FC = () => {
     return () => clearTimeout(timer);
   }, [isAsking, isStreamingPreview, effectiveLatencyWarningSeconds]);
 
-  const filteredSettings = useMemo(() => {
-    return searchSettingsWithIntentPacks(unifiedInput, SETTINGS_DATABASE, intentPacks.index);
-  }, [unifiedInput, intentPacks.index]);
-
   useEffect(() => {
     if (unifiedInputPersistenceMode === "persist_all") {
       persistSearchQuery(unifiedInput);
@@ -1003,29 +937,6 @@ const Content: React.FC = () => {
     }
   }, [unifiedInputPersistenceMode]);
 
-
-  const onSettingClick = (settingPath: string, index?: number) => {
-    if (index !== undefined) setSelectedIndex(index);
-    try {
-      if (isQamSetting(settingPath)) {
-        const qamTab = getQamTab(settingPath);
-        Navigation.OpenQuickAccessMenu(qamTab);
-        toaster.toast({ title: "Opening QAM", body: settingPath, duration: 2000 });
-        setNavigationMessage(`Opened QAM: ${settingPath}`);
-        return;
-      }
-
-      const steamUrlApi = SteamClient.URL as unknown as SteamUrlApi;
-      const steamUrl = getSteamSettingsUrl(settingPath);
-      steamUrlApi.ExecuteSteamURL(steamUrl);
-      toaster.toast({ title: "Opening settings", body: settingPath, duration: 2000 });
-      setNavigationMessage(`Opened: ${settingPath}`);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      toaster.toast({ title: "Navigation failed", body: message, duration: 3000 });
-      setNavigationMessage(`Navigation failed: ${message}`);
-    }
-  };
 
   const resetPluginSession = useCallback(() => {
     resetAskSessionSlice();
@@ -1126,144 +1037,7 @@ const Content: React.FC = () => {
     unifiedInput,
   ]);
 
-  const loadRecentScreenshots = async (limit: number = 24) => {
-    const runningApp = Router.MainRunningApp;
-    const appId = runningApp?.appid?.toString() ?? "";
-    setIsLoadingRecentScreenshots(true);
-    setMediaError("");
-    try {
-      const response = await call<[string, number], RecentScreenshotsResponse>(
-        "list_recent_screenshots",
-        appId,
-        limit
-      );
-      if (response.success) {
-        const rawItems = response.items ?? [];
-        const dedupedItems = dedupeScreenshotItems(rawItems);
-        setRecentScreenshots(dedupedItems);
-      } else {
-        setRecentScreenshots([]);
-        setMediaError(response.error ?? "Failed to list recent screenshots.");
-      }
-    } catch (e: unknown) {
-      setRecentScreenshots([]);
-      setMediaError(formatDeckyRpcError(e));
-    } finally {
-      setIsLoadingRecentScreenshots(false);
-    }
-  };
-
-  const onTakeScreenshot = async () => {
-    if (isAsking || isCapturingScreenshot) return;
-    setMediaError("");
-    if (!capabilities.media_library_access && !capabilities.filesystem_write) {
-      const permissionMsg =
-        "Enable Read game & screenshot context in Permissions to save game screenshots.";
-      setMediaError(permissionMsg);
-      toaster.toast({ title: "Screenshot not saved", body: permissionMsg, duration: 4500 });
-      return;
-    }
-    const runningApp = Router.MainRunningApp;
-    const appId = runningApp?.appid?.toString() ?? "";
-    setIsCapturingScreenshot(true);
-    try {
-      // Dispatch RPC before closing QAM so the backend request survives menu teardown.
-      const rpcPromise = call<
-        [string],
-        { success?: boolean; item?: ScreenshotItem; error?: string }
-      >("take_steam_screenshot", appId);
-      Navigation.CloseSideMenus();
-      const response = await rpcPromise;
-      if (!response?.success || !response.item?.path) {
-        const failMsg = response?.error ?? "Could not save a game screenshot.";
-        setMediaError(failMsg);
-        toaster.toast({
-          title: "Screenshot not saved",
-          body: failMsg,
-          duration: 5500,
-        });
-        return;
-      }
-      setMediaError("");
-      toaster.toast({
-        title: "Screenshot saved",
-        body: "Find it under Attach → Attach recent screenshot.",
-        duration: 3200,
-      });
-      await loadRecentScreenshots(24);
-    } catch (e: unknown) {
-      const errMsg = formatDeckyRpcError(e);
-      setMediaError(errMsg);
-      toaster.toast({
-        title: "Screenshot not saved",
-        body: errMsg,
-        duration: 5500,
-      });
-    } finally {
-      setIsCapturingScreenshot(false);
-    }
-  };
-
-  const onOpenScreenshotBrowser = async () => {
-    if (isAsking) return;
-    setIsScreenshotBrowserOpen(true);
-    setMediaError("");
-    if (!capabilities.media_library_access) {
-      setMediaError("Enable Media library access in Permissions to attach screenshots.");
-      return;
-    }
-    await loadRecentScreenshots(24);
-  };
-
-  const onCloseScreenshotBrowser = () => {
-    setIsScreenshotBrowserOpen(false);
-    setMediaError("");
-  };
-
-  const onSelectRecentScreenshot = (item: ScreenshotItem) => {
-    setSelectedAttachment({
-      path: item.path,
-      name: item.name,
-      source: "recent",
-      preview_data_uri: item.preview_data_uri,
-      size_bytes: item.size_bytes,
-      app_id: item.app_id,
-    });
-    setIsScreenshotBrowserOpen(false);
-    setMediaError("");
-    toaster.toast({ title: "Screenshot attached", body: "Recent screenshot ready for your next Ask.", duration: 2800 });
-  };
-
   const showSearchClearButton = Boolean(unifiedInput.trim());
-
-  const armPostPickerTabLock = useCallback((back: string) => {
-    if (back === "main") {
-      postPickerTabLockRef.current = null;
-      return;
-    }
-    postPickerTabLockRef.current = { until: Date.now() + 750, tab: back };
-  }, []);
-
-  /** Call after any `showModal` closes so the active tab is restored (Decky can reset to main on dismiss). */
-  const finalizeShowModalAndRestoreActiveTab = useCallback(
-    (close: () => void) => {
-      const back = characterPickerReturnTabRef.current;
-      bonsaiDebugLog("index.tsx:finalizeModal", "modal close", "H4", { backTab: back });
-      __bonsaiTabRestoreAfterModal = back;
-      armPostPickerTabLock(back);
-      setCurrentTab(back);
-      close();
-      window.setTimeout(() => {
-        setCurrentTab(back);
-        __bonsaiTabRestoreAfterModal = null;
-      }, 80);
-    },
-    [armPostPickerTabLock]
-  );
-
-  useEffect(() => {
-    finalizeModalCloseRef.current = finalizeShowModalAndRestoreActiveTab;
-  }, [finalizeShowModalAndRestoreActiveTab]);
 
   const openPluginHelpModal = useCallback(() => {
     captureSessionBeforeModal();
@@ -1324,28 +1098,6 @@ const Content: React.FC = () => {
       />
     );
   }, [lastExchange, capabilities.filesystem_write, goToPermissionsTab, currentTab, finalizeShowModalAndRestoreActiveTab]);
-
-  const onTabsShowTab = useCallback((tabID: string) => {
-    bonsaiDebugLog("index.tsx:onTabsShowTab", "bumper tab", "H3", { from: currentTab, to: tabID });
-    const lock = postPickerTabLockRef.current;
-    const now = Date.now();
-    if (lock && now < lock.until && tabID === "main" && lock.tab !== "main") {
-      setCurrentTab(lock.tab);
-      return;
-    }
-    if (lock && now < lock.until) {
-      if (tabID === lock.tab) {
-        postPickerTabLockRef.current = null;
-      } else if (tabID !== "main") {
-        // User chose another tab (e.g. debug); do not keep rewriting toward the old return tab.
-        postPickerTabLockRef.current = null;
-      }
-    }
-    if (lock && now >= lock.until) {
-      postPickerTabLockRef.current = null;
-    }
-    setCurrentTab(tabID);
-  }, [currentTab]);
 
   const openCharacterPickerModal = useCallback(() => {
     captureSessionBeforeModal();

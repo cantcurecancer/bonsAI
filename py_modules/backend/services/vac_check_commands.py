@@ -7,7 +7,8 @@ from __future__ import annotations
 
 from typing import Any, Optional
 
-from backend.services.shortcut_setup_commands import normalize_command_input_with_slash
+from backend.constants import DEVELOPER_TAB_INTEGRATIONS
+from backend.services.ask_local_commands import strip_optional_leading_slash
 from backend.services.steam_vac_service import (
     extract_steamid64_from_token,
     format_vac_report_markdown,
@@ -23,9 +24,7 @@ def parse_vac_check_command(text: str) -> Optional[str]:
     If ``text`` is a VAC check command, return the argument string after the command
     (may be empty). Otherwise return ``None``.
     """
-    raw = (text or "").strip()
-    if raw.startswith("/"):
-        raw = raw[1:].lstrip()
+    raw = strip_optional_leading_slash(text)
     low = raw.casefold()
     prefix = COMMAND_VAC_CHECK.casefold()
     if low == prefix:
@@ -51,7 +50,7 @@ def response_for_vac_check(
     if not capability_ok:
         return (
             "**Steam Web API is off for bonsAI.**\n\n"
-            "Enable **Permissions → Steam Web API**, add your Web API key under **Settings → Connection**, "
+            f"Enable **Permissions → Steam Web API**, add your Web API key under **{DEVELOPER_TAB_INTEGRATIONS}**, "
             "then run:\n\n"
             "`bonsai:vac-check 7656119…`\n\n"
             "This command skips the AI and queries Valve **GetPlayerBans** for **account-level** ban flags only."
@@ -61,7 +60,7 @@ def response_for_vac_check(
     if not key:
         return (
             "**No Steam Web API key saved.**\n\n"
-            "Register a key at Steam Web API (see README), paste it under **Settings → Connection → "
+            f"Register a key at Steam Web API (see README), paste it under **{DEVELOPER_TAB_INTEGRATIONS} → "
             "Steam Web API key**, save, then try again:\n\n"
             "`bonsai:vac-check 7656119…`"
         )

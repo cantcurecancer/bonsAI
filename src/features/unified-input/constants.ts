@@ -83,3 +83,14 @@ export const TAB_TITLE_DEBUG_TAB_ICON_PX = 36;
 export const TAB_TITLE_DEBUG_TAB_CELL_PX = TAB_TITLE_TAB_CELL_PX;
 /** Horizontal margin on each tab title button (space between LB/RB strip icons). */
 export const TAB_TITLE_TAB_GAP_PX = -6;
+
+/** Deck inline menu popovers (ask mode, attach, accent intensity). */
+export const DECK_MENU_GAP_PX = 6;
+export const DECK_MENU_ROW_PAD_X_PX = 10;
+export const DECK_MENU_ROW_PAD_Y_PX = 8;
+export const DECK_MENU_PANEL_MIN_WIDTH_PX = 88;
+export const DECK_MENU_PANEL_BG = "rgb(28, 36, 44)";
+export const DECK_MENU_ROW_SELECTED_BG = "rgb(40, 50, 62)";
+export const DECK_MENU_FONT_PX = 13;
+/** Bright cyan highlight for sliders, links, and active controls on dark QAM panels. */
+export const DECK_HIGHLIGHT_CYAN = "#9ce7ff";

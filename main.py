@@ -7,16 +7,8 @@ handler so the UI polling loop can observe ``completed`` immediately without a w
 
 import asyncio
 import base64
-import fcntl
-import functools
-import ipaddress
 import json
 import os
-import random
-import re
-import socket
-import struct
-import subprocess
 import sys
 import threading
 import time
@@ -30,21 +22,10 @@ PLUGIN_ROOT = os.path.dirname(os.path.abspath(__file__))
 if PLUGIN_ROOT not in sys.path:
     sys.path.insert(0, PLUGIN_ROOT)
 
-from backend.services.ai_character_service import (
-    PYRO_ASSHOLE_TIP_LINES,
-    PYRO_MANAGER_TIP_LINES,
-    PYRO_MANAGER_TIP_PROBABILITY,
-    PYRO_PRESET_ID,
-    apply_roleplay_to_system_content,
-    build_roleplay_system_suffix_meta,
-    pyro_asshole_mode_active,
-    pyro_manager_carousel_tip_addon,
-)
 from backend.services.ollama_service import (
     append_deck_tdp_sysfs_grounding,
     best_effort_abort_ollama_inference,
     build_system_prompt,
-    post_ollama_chat,
 )
 from backend.services.plugin_data_reset import reset_plugin_disk_and_defaults
 from backend.services.strategy_checklist_session_service import (
@@ -75,17 +56,11 @@ from backend.services.settings_service import (
     clamp_int,
     load_settings as load_settings_from_disk,
     sanitize_ask_mode,
-    sanitize_ollama_keep_alive,
     sanitize_settings,
     sanitize_unified_input_persistence_mode,
     save_settings as save_settings_to_disk,
 )
 from backend.services.capabilities import capability_enabled
-from backend.services.model_policy import (
-    disclosure_for_model,
-    empty_filter_user_message,
-    filter_model_list,
-)
 from backend.services.desktop_note_service import (
     append_app_log_sync,
     append_desktop_ask_transparency_sync,
@@ -97,6 +72,7 @@ from backend.services.input_sanitizer_service import (
     classify_sanitizer_command,
     confirmation_message_for_command,
 )
+from backend.services.ask_local_commands import detect_local_ask_commands
 from backend.services.shortcut_setup_commands import (
     classify_shortcut_setup_command,
     response_message_for_shortcut,
@@ -110,7 +86,6 @@ from backend.services.screenshot_media import (
     extract_app_id_from_screenshot_path,
     lookup_screenshot_vdf_metadata,
     lookup_steam_app_name,
-    prepare_attachment_images,
     resolve_recent_screenshot_paths,
     resolve_plugin_capture_paths,
     merge_recent_screenshot_paths,
@@ -118,12 +93,23 @@ from backend.services.screenshot_media import (
     try_gamescope_screenshot_capture,
 )
 from backend.services.game_ai_request import run_game_ai_request
-from backend.services.tdp_service import clean_env, find_amdgpu_hwmon, write_sysfs, STEAMOS_PRIV_WRITE
+from backend.services.async_background_job import (
+    make_local_ollama_setup_hooks,
+    make_state_updating_on_stage,
+    new_asyncio_cancel_event,
+    new_threading_cancel_event,
+)
+from backend.services.network_service import get_deck_ip_async
+from backend.services.ollama_ask_service import run_ask_ollama
+from backend.services.transparency_service import (
+    build_immediate_command_snapshot,
+    build_sanitizer_block_snapshot,
+    build_voice_transcribe_snapshot,
+)
+from backend.services.tdp_service import clean_env
 from backend.services.local_ollama_setup_service import (
     is_loopback_ollama_host,
-    list_installed_ollama_tags,
     new_local_ollama_setup_state,
-    probe_ollama_http_ok,
     recover_loopback_ollama_listening,
     run_local_setup,
     run_ollama_rm_async,
@@ -148,13 +134,8 @@ from backend.services.voice_transcription_service import (
 )
 from refactor_helpers import (
     build_ollama_chat_url,
-    build_effective_models_to_try,
-    filter_models_to_installed,
     is_valid_setup_pull_profile,
     normalize_ollama_base,
-    is_ollama_model_missing_error,
-    no_installed_routing_models_message,
-    select_ollama_models,
 )
 
 logger = decky.logger
@@ -926,16 +907,6 @@ class Plugin:
         }
 
     @staticmethod
-    def _find_amdgpu_hwmon() -> Optional[str]:
-        """Proxy hwmon discovery through the service layer for compatibility and reuse."""
-        return find_amdgpu_hwmon()
-
-    @staticmethod
-    def _write_sysfs(path: str, value: str) -> None:
-        """Write sysfs values via service-managed privilege fallbacks."""
-        write_sysfs(path, value, STEAMOS_PRIV_WRITE, logger)
-
-    @staticmethod
     def _clean_env() -> dict:
         """Proxy sanitized subprocess environment generation through the service layer."""
         return clean_env()
@@ -947,124 +918,7 @@ class Plugin:
 
     async def get_deck_ip(self):
         """Return the Steam Deck's LAN IP address."""
-        try:
-            def _resolve_ip() -> str:
-
-                def _valid_ipv4(candidate: str) -> bool:
-                    try:
-                        parsed = ipaddress.ip_address(candidate)
-                    except Exception:
-                        return False
-                    if parsed.version != 4:
-                        return False
-                    return not (parsed.is_loopback or parsed.is_unspecified or parsed.is_link_local)
-
-                def _interface_ipv4_candidates() -> list:
-                    results: list = []
-                    try:
-                        iface_names = [name for name in os.listdir("/sys/class/net") if name and name != "lo"]
-                    except Exception:
-                        return results
-
-                    sock: Optional[socket.socket] = None
-                    try:
-                        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-                        for iface in iface_names:
-                            if iface.startswith(("docker", "veth", "br-", "virbr", "zt", "tailscale", "tun", "tap")):
-                                continue
-                            try:
-                                request = struct.pack("256s", iface[:15].encode("utf-8"))
-                                response = fcntl.ioctl(sock.fileno(), 0x8915, request)
-                                ip = socket.inet_ntoa(response[20:24]).strip()
-                                results.append({"iface": iface, "ip": ip})
-                            except Exception:
-                                continue
-                    except Exception:
-                        return results
-                    finally:
-                        if sock is not None:
-                            try:
-                                sock.close()
-                            except Exception:
-                                pass
-                    return results
-
-                s: Optional[socket.socket] = None
-                try:
-                    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-                    s.settimeout(2.0)
-                    s.connect(("1.1.1.1", 80))
-                    ip = str(s.getsockname()[0] or "").strip()
-                    if _valid_ipv4(ip):
-                        return ip
-                except Exception:
-                    pass
-                finally:
-                    if s is not None:
-                        try:
-                            s.close()
-                        except Exception:
-                            pass
-
-                try:
-                    iface_candidates = _interface_ipv4_candidates()
-                    valid_iface = next(
-                        (
-                            candidate
-                            for candidate in iface_candidates
-                            if _valid_ipv4(str(candidate.get("ip", "")))
-                        ),
-                        None,
-                    )
-                    if valid_iface:
-                        return str(valid_iface.get("ip", ""))
-                except Exception:
-                    pass
-
-                try:
-                    route = subprocess.run(
-                        ["ip", "-4", "route", "get", "1.1.1.1"],
-                        stdout=subprocess.PIPE,
-                        stderr=subprocess.PIPE,
-                        timeout=1.5,
-                        text=True,
-                    )
-                    route_text = (route.stdout or "").strip()
-                    match = re.search(r"\bsrc\s+(\d+\.\d+\.\d+\.\d+)\b", route_text)
-                    ip = match.group(1).strip() if match else ""
-                    if _valid_ipv4(ip):
-                        return ip
-                except Exception:
-                    pass
-
-                try:
-                    host_ip = str(socket.gethostbyname(socket.gethostname()) or "").strip()
-                    if _valid_ipv4(host_ip):
-                        return host_ip
-                except Exception:
-                    pass
-
-                try:
-                    host_i = subprocess.run(
-                        ["hostname", "-I"],
-                        stdout=subprocess.PIPE,
-                        stderr=subprocess.PIPE,
-                        timeout=1.5,
-                        text=True,
-                    )
-                    host_tokens = [token.strip() for token in (host_i.stdout or "").split() if token.strip()]
-                    ip = next((token for token in host_tokens if _valid_ipv4(token)), "")
-                    if _valid_ipv4(ip):
-                        return ip
-                except Exception:
-                    pass
-
-                return "unknown"
-
-            ip = await asyncio.wait_for(asyncio.to_thread(_resolve_ip), timeout=4.0)
-            return ip
-        except Exception:
-            return "unknown"
+        return await get_deck_ip_async()
 
     async def test_ollama_connection(self, pc_ip: str = "", timeout_seconds: int = 10):
         """Ping Ollama's /api/version and /api/tags to verify reachability."""
@@ -1278,7 +1132,7 @@ class Plugin:
         if not settings.get("ollama_local_on_deck"):
             out = {
                 "accepted": False,
-                "reason": "Enable «Ollama on this Deck» in Settings → Connection first.",
+                "reason": "Enable «Ollama on this Deck» in Ollama → Where AI runs first.",
             }
             await plugin._maybe_app_log(
                 "local_setup.start",
@@ -1309,8 +1163,7 @@ class Plugin:
                 )
                 return out
 
-            plugin._local_ollama_cancel_event = asyncio.Event()
-            plugin._local_ollama_cancel_event.clear()
+            plugin._local_ollama_cancel_event = new_asyncio_cancel_event()
             new_st = new_local_ollama_setup_state()
             new_st.update(
                 {
@@ -1324,30 +1177,7 @@ class Plugin:
             plugin._local_ollama_setup_state = new_st
 
             setup_loop = asyncio.get_running_loop()
-            last_logged_stage = {"value": ""}
-
-            async def on_stage(stage: str, fields: dict[str, Any]) -> None:
-                st = (stage or "").strip()
-                if not st or st == last_logged_stage["value"]:
-                    return
-                last_logged_stage["value"] = st
-                await plugin._maybe_app_log(
-                    "local_setup.stage",
-                    f"stage={st}",
-                    fields=fields,
-                )
-
-            def on_verbose_line(line: str) -> None:
-                msg = (line or "").strip()
-                if not msg:
-                    return
-
-                def _schedule() -> None:
-                    asyncio.create_task(
-                        plugin._maybe_app_log("local_setup.line", msg[:500], level="verbose")
-                    )
-
-                setup_loop.call_soon_threadsafe(_schedule)
+            on_stage, on_verbose_line = make_local_ollama_setup_hooks(plugin, setup_loop)
 
             async def runner() -> None:
                 assert plugin._local_ollama_cancel_event is not None
@@ -1389,7 +1219,7 @@ class Plugin:
             return False, {
                 "accepted": False,
                 "ok": False,
-                "reason": "Enable «Ollama on this Deck» in Settings → Connection first.",
+                "reason": "Enable «Ollama on this Deck» in Ollama → Where AI runs first.",
                 "error": "local_off",
             }
         return True, None
@@ -1431,8 +1261,7 @@ class Plugin:
             if existing is not None and not existing.done():
                 return {"accepted": False, "reason": "Setup already running.", "error": "busy"}
 
-            plugin._local_ollama_cancel_event = asyncio.Event()
-            plugin._local_ollama_cancel_event.clear()
+            plugin._local_ollama_cancel_event = new_asyncio_cancel_event()
             new_st = new_local_ollama_setup_state()
             new_st.update(
                 {
@@ -1448,30 +1277,7 @@ class Plugin:
             plugin._local_ollama_setup_state = new_st
 
             setup_loop = asyncio.get_running_loop()
-            last_logged_stage = {"value": ""}
-
-            async def on_stage(stage: str, fields: dict[str, Any]) -> None:
-                st = (stage or "").strip()
-                if not st or st == last_logged_stage["value"]:
-                    return
-                last_logged_stage["value"] = st
-                await plugin._maybe_app_log(
-                    "local_setup.stage",
-                    f"stage={st}",
-                    fields=fields,
-                )
-
-            def on_verbose_line(line: str) -> None:
-                msg = (line or "").strip()
-                if not msg:
-                    return
-
-                def _schedule() -> None:
-                    asyncio.create_task(
-                        plugin._maybe_app_log("local_setup.line", msg[:500], level="verbose")
-                    )
-
-                setup_loop.call_soon_threadsafe(_schedule)
+            on_stage, on_verbose_line = make_local_ollama_setup_hooks(plugin, setup_loop)
 
             async def runner() -> None:
                 assert plugin._local_ollama_cancel_event is not None
@@ -1754,29 +1560,16 @@ class Plugin:
         pc_ip: str,
     ) -> dict:
         """Shared transparency row for sanitizer/shortcut/VAC paths that finish inside ``start_background_game_ai``."""
-        return {
-            "route": route,
-            "raw_question": parsed_question,
-            "sanitizer_action": sanitizer_action,
-            "sanitizer_reason_codes": list(sanitizer_reason_codes),
-            "text_after_sanitizer": parsed_question,
-            "ollama_model": None,
-            "system_prompt": None,
-            "user_text_for_model": None,
-            "user_image_count": 0,
-            "attachment_paths": [],
-            "assistant_raw": None,
-            "assistant_after_attachment_format": None,
-            "final_response": resp,
-            "applied": None,
-            "success": True,
-            "app_id": app_id,
-            "app_name": app_name,
-            "pc_ip": pc_ip,
-            "error_message": "",
-            "elapsed_seconds": 0.0,
-            "model_policy_disclosure": None,
-        }
+        return build_immediate_command_snapshot(
+            route=route,
+            parsed_question=parsed_question,
+            resp=resp,
+            sanitizer_action=sanitizer_action,
+            sanitizer_reason_codes=sanitizer_reason_codes,
+            app_id=app_id,
+            app_name=app_name,
+            pc_ip=pc_ip,
+        )
 
     async def _finalize_immediate_background_local_command(
         self,
@@ -2012,13 +1805,15 @@ class Plugin:
             handled = await self._try_handle_sanitizer_keyword_command(parsed_question, app_id)
             if handled is not None:
                 return handled
-        if classify_shortcut_setup_command(parsed_question) is not None:
+        local_kinds = detect_local_ask_commands(parsed_question)
+        if local_kinds.shortcut:
             sc = await self._try_handle_shortcut_setup_command(parsed_question, app_id)
             if sc is not None:
                 return sc
-        vac = await self._try_handle_vac_check_command(parsed_question, app_id)
-        if vac is not None:
-            return vac
+        if local_kinds.vac:
+            vac = await self._try_handle_vac_check_command(parsed_question, app_id)
+            if vac is not None:
+                return vac
         if not pc_ip:
             logger.info("ask_game_ai: rejected (empty pc_ip)")
             return Plugin._reject_ask_request("PC IP Address is required.", app_id=app_id)
@@ -2125,47 +1920,33 @@ class Plugin:
                 "status": "invalid",
                 **Plugin._reject_ask_request("Question is required.", app_id=app_id),
             }
-        is_sanitizer_command = classify_sanitizer_command(parsed_question) is not None
-        is_shortcut_command = classify_shortcut_setup_command(parsed_question) is not None
-        is_vac_command = parse_vac_check_command(parsed_question) is not None
-        is_local_ask_command = is_sanitizer_command or is_shortcut_command or is_vac_command
-        if not pc_ip and not is_local_ask_command:
+        local_kinds = detect_local_ask_commands(parsed_question)
+        has_local_command = local_kinds.any
+        if not pc_ip and not has_local_command:
             return {
                 "accepted": False,
                 "status": "invalid",
                 **Plugin._reject_ask_request("PC IP Address is required.", app_id=app_id),
             }
 
-        if not is_local_ask_command:
+        if not has_local_command:
             pre_settings = await plugin.load_settings()
             if not bool(pre_settings.get("input_sanitizer_user_disabled")):
                 pre_lane = apply_input_sanitizer_lane(parsed_question, False)
                 if pre_lane.action == "block":
                     um = str(pre_lane.user_message or "")
                     await plugin._persist_input_transparency(
-                        {
-                            "route": "sanitizer_block",
-                            "raw_question": parsed_question,
-                            "sanitizer_action": str(pre_lane.action),
-                            "sanitizer_reason_codes": list(pre_lane.reason_codes),
-                            "text_after_sanitizer": str(pre_lane.text or ""),
-                            "ollama_model": None,
-                            "system_prompt": None,
-                            "user_text_for_model": None,
-                            "user_image_count": 0,
-                            "attachment_paths": [],
-                            "assistant_raw": None,
-                            "assistant_after_attachment_format": None,
-                            "final_response": um,
-                            "applied": None,
-                            "success": False,
-                            "app_id": app_id,
-                            "app_name": app_name,
-                            "pc_ip": pc_ip,
-                            "error_message": "",
-                            "elapsed_seconds": 0.0,
-                            "model_policy_disclosure": None,
-                        }
+                        build_sanitizer_block_snapshot(
+                            raw_question=parsed_question,
+                            sanitizer_action=str(pre_lane.action),
+                            sanitizer_reason_codes=list(pre_lane.reason_codes),
+                            text_after_sanitizer=str(pre_lane.text or ""),
+                            final_response=um,
+                            app_id=app_id,
+                            app_name=app_name,
+                            pc_ip=pc_ip,
+                            elapsed_seconds=0.0,
+                        )
                     )
                     return {
                         "accepted": False,
@@ -2190,7 +1971,7 @@ class Plugin:
                     "response": "A request is already in progress.",
                 }
 
-            if is_sanitizer_command:
+            if local_kinds.sanitizer:
                 handled = await plugin._try_handle_sanitizer_keyword_command(parsed_question, app_id)
                 if handled is not None:
                     resp = str(handled.get("response", ""))
@@ -2208,7 +1989,7 @@ class Plugin:
                         meta="sanitizer_keyword",
                     )
 
-            if is_shortcut_command:
+            if local_kinds.shortcut:
                 handled = await plugin._try_handle_shortcut_setup_command(parsed_question, app_id)
                 if handled is not None:
                     resp = str(handled.get("response", ""))
@@ -2229,7 +2010,7 @@ class Plugin:
                         shortcut_setup_for_response=variant,
                     )
 
-            if is_vac_command:
+            if local_kinds.vac:
                 handled_v = await plugin._try_handle_vac_check_command(parsed_question, app_id)
                 if handled_v is not None:
                     resp = str(handled_v.get("response", ""))
@@ -2461,327 +2242,24 @@ class Plugin:
         strategy_checklist_state: Optional[dict] = None,
     ):
         """Orchestrate attachment prep, prompt assembly, and model fallback request execution."""
-        plugin_inst = Plugin._coerce_instance(self)
-        plugin_inst._ensure_background_state()
-        active_request_id = plugin_inst._active_request_id()
-
-        url = self._build_ollama_chat_url(PcIp)
-        settings = await self.load_settings()
-        normalized_attachments = Plugin._sanitize_attachments(attachments or [])
-        attachment_paths = [
-            str(a.get("path", "") or "").strip()
-            for a in normalized_attachments
-            if isinstance(a, dict) and str(a.get("path", "") or "").strip()
-        ]
-        if normalized_attachments and isinstance(active_request_id, int):
-            rp_meta_prep = build_roleplay_system_suffix_meta(settings, ask_mode)
-            plugin_inst._publish_thinking_phase_key(
-                active_request_id,
-                "screenshot_prep",
-                app_name=app_name,
-                attachment_count=len(normalized_attachments),
-                ask_mode=ask_mode,
-                question=question,
-                character_enabled=bool(settings.get("ai_character_enabled")),
-                character_preset_id=rp_meta_prep.resolved_preset_id,
-            )
-        keep_alive = sanitize_ollama_keep_alive(settings.get("ollama_keep_alive"))
-        apreset = str(settings.get("screenshot_attachment_preset") or "low")
-        if apreset not in ("low", "mid", "max"):
-            apreset = "low"
-        prepared_images, attachment_warnings, attachment_errors = prepare_attachment_images(
-            normalized_attachments,
-            apreset,
-        )
-        system_content = self._build_system_prompt(
+        return await run_ask_ollama(
+            Plugin._coerce_instance(self),
             question,
+            PcIp,
             app_id,
             app_name,
-            normalized_attachments,
-            prepared_images,
+            request_timeout_seconds=request_timeout_seconds,
+            attachments=attachments,
             ask_mode=ask_mode,
             read_tdp=read_tdp,
             tdp_grounding_requested=tdp_grounding_requested,
             tdp_cap_w=tdp_cap_w,
             proton_log_attachment=proton_log_attachment,
+            proton_log_transparency=proton_log_transparency,
             strategy_spoiler_consent=strategy_spoiler_consent,
-            character_roleplay_on=bool(settings.get("ai_character_enabled")),
+            token_stream_request_id=token_stream_request_id,
             strategy_checklist_state=strategy_checklist_state,
         )
-        rp_meta = build_roleplay_system_suffix_meta(settings, ask_mode)
-        roleplay = rp_meta.suffix
-        pyro_asshole = pyro_asshole_mode_active(settings, rp_meta.resolved_preset_id)
-        preset_carousel_inject = None
-        if rp_meta.resolved_preset_id == PYRO_PRESET_ID and roleplay:
-            if random.random() < PYRO_MANAGER_TIP_PROBABILITY:
-                if pyro_asshole:
-                    tip = random.choice(PYRO_ASSHOLE_TIP_LINES)
-                    roleplay = roleplay + pyro_manager_carousel_tip_addon(tip, asshole=True)
-                else:
-                    tip = random.choice(PYRO_MANAGER_TIP_LINES)
-                    roleplay = roleplay + pyro_manager_carousel_tip_addon(tip)
-                preset_carousel_inject = {"text": tip}
-        if roleplay:
-            # Append after the bonsAI preamble so recency favors character voice over neutral identity lines.
-            system_content = apply_roleplay_to_system_content(system_content, roleplay)
-        user_message: dict = {"role": "user", "content": question}
-        if prepared_images:
-            user_message["images"] = [image["image_b64"] for image in prepared_images]
-        messages = [{"role": "system", "content": system_content}, user_message]
-
-        if os.environ.get("BONSAI_LLAMACPP_ASK") == "1":
-            from backend.services.llama_cpp_provider import llama_cpp_base_from_env, post_llama_cpp_chat_poc
-
-            llama_base = llama_cpp_base_from_env()
-            if llama_base:
-                loop = asyncio.get_running_loop()
-                llama_model = (os.environ.get("BONSAI_LLAMACPP_MODEL") or "default").strip()
-                result = await loop.run_in_executor(
-                    None,
-                    functools.partial(
-                        post_llama_cpp_chat_poc,
-                        llama_base,
-                        llama_model,
-                        messages,
-                        request_timeout_seconds,
-                        logger,
-                    ),
-                )
-                return {
-                    **result,
-                    "system_prompt": system_content,
-                    "user_text_for_model": question,
-                    "user_image_count": len(prepared_images),
-                    "attachment_paths": attachment_paths,
-                    "ask_diagnostics": {"provider": "llama_cpp_poc", "model": llama_model},
-                }
-
-        proton_snap = proton_log_transparency if isinstance(proton_log_transparency, dict) else {}
-        proton_excerpt = proton_snap.get("proton_log_excerpt_attached") is True
-        proton_sources = proton_snap.get("proton_log_sources") if isinstance(proton_snap.get("proton_log_sources"), list) else []
-        proton_notes = str(proton_snap.get("proton_log_notes") or "")
-
-        ollama_extras = {
-            "system_prompt": system_content,
-            "user_text_for_model": question,
-            "user_image_count": len(prepared_images),
-            "attachment_paths": attachment_paths,
-            "proton_log_excerpt_attached": proton_excerpt,
-            "proton_log_sources": proton_sources,
-            "proton_log_notes": proton_notes,
-            "strategy_spoiler_consent_effective": bool(strategy_spoiler_consent) if ask_mode == "strategy" else False,
-            "resolved_character_preset_id": rp_meta.resolved_preset_id,
-            "pyro_asshole_mode": pyro_asshole,
-        }
-
-        logger.info(
-            "ask_ollama: url=%s game=%r appid=%s attachments=%d question_len=%d",
-            url,
-            app_name,
-            app_id,
-            len(prepared_images),
-            len(question),
-        )
-
-        requires_vision = len(prepared_images) > 0
-        high_vram = settings.get("model_allow_high_vram_fallbacks") is True
-        models_before_policy = select_ollama_models(requires_vision, ask_mode, high_vram)
-        policy_tier = str(settings.get("model_policy_tier") or "open_source_only")
-        non_foss_unlocked = settings.get("model_policy_non_foss_unlocked") is True
-        models_to_try = filter_model_list(models_before_policy, policy_tier, non_foss_unlocked)
-        ask_started = time.time()
-        ollama_host, _, ollama_base = normalize_ollama_base(PcIp)
-        if is_loopback_ollama_host(ollama_host) and not probe_ollama_http_ok(ollama_base):
-            recover_loopback_ollama_listening(logger.info)
-        installed_tags = list_installed_ollama_tags(ollama_base)
-        models_after_policy = list(models_to_try)
-        models_to_try, routing_strategy = build_effective_models_to_try(models_to_try, installed_tags)
-        _, models_skipped_not_installed = filter_models_to_installed(models_after_policy, installed_tags)
-        ask_diagnostics: dict = {
-            "models_before_policy": list(models_before_policy),
-            "models_after_policy": models_after_policy,
-            "installed_tags": list(installed_tags),
-            "routing_strategy": routing_strategy,
-            "routing_skipped_not_installed": list(models_skipped_not_installed),
-            "policy_tier": policy_tier,
-            "policy_dropped_count": max(0, len(models_before_policy) - len(models_after_policy)),
-            "requires_vision": requires_vision,
-            "attachment_count": len(prepared_images),
-            "attachment_warnings": list(attachment_warnings),
-            "attachment_errors": list(attachment_errors),
-            "models_attempted": [],
-            "model_succeeded": None,
-            "elapsed_seconds": None,
-        }
-        ollama_extras["ask_diagnostics"] = ask_diagnostics
-        if not models_after_policy and not installed_tags:
-            return {
-                "success": False,
-                "response": empty_filter_user_message(policy_tier, non_foss_unlocked, requires_vision),
-                "model_policy_disclosure": None,
-                **ollama_extras,
-            }
-        if not models_to_try:
-            ask_diagnostics["elapsed_seconds"] = round(time.time() - ask_started, 2)
-            return {
-                "success": False,
-                "response": no_installed_routing_models_message(installed_tags, requires_vision),
-                "model_policy_disclosure": None,
-                **ollama_extras,
-            }
-        ask_diagnostics["models_after_installed_filter"] = list(models_to_try)
-
-        # Only background `_run_background_request` passes token_stream_request_id. Foreground
-        # `ask_game_ai` must not attach `on_delta` while `_background_state` still shows a pending
-        # id — another RPC can await inside `ask_ollama` and corrupt the same partial snapshot.
-        token_streaming = settings.get("bonsai_token_streaming_enabled") is True
-        on_delta_cb = None
-        if isinstance(token_stream_request_id, int):
-            stream_rid = token_stream_request_id
-
-            def _on_delta(text: str, done: bool, thinking_summary: Optional[str] = None) -> None:
-                plugin_inst._update_partial_response(
-                    stream_rid,
-                    text,
-                    done,
-                    thinking_summary,
-                    update_partial=token_streaming,
-                )
-
-            on_delta_cb = _on_delta
-
-        def _on_http_response_opened(resp: Any) -> None:
-            plugin_inst._active_ollama_chat_http_response = resp
-            ev = getattr(plugin_inst, "_chat_resp_ready_evt", None)
-            if isinstance(ev, threading.Event):
-                ev.set()
-
-        def _on_http_response_done() -> None:
-            plugin_inst._active_ollama_chat_http_response = None
-
-        _abort_ev = getattr(plugin_inst, "_abort_current_ollama_chat", None)
-        if isinstance(_abort_ev, threading.Event):
-            _abort_ev.clear()
-
-        def _strip_ollama_http_body(payload: dict) -> dict:
-            """Remove raw HTTP bodies from payloads returned to the UI / transparency (security)."""
-            out = dict(payload)
-            out.pop("body", None)
-            return out
-
-        try:
-            loop = asyncio.get_running_loop()
-            last_failure = {"success": False, "response": "No model attempts executed.", **ollama_extras}
-
-            for model_idx, model_name in enumerate(models_to_try):
-                if isinstance(active_request_id, int) and model_idx > 0:
-                    plugin_inst._publish_thinking_phase_key(
-                        active_request_id,
-                        "model_retry",
-                        app_name=app_name,
-                        ask_mode=ask_mode,
-                        question=question,
-                        character_enabled=bool(settings.get("ai_character_enabled")),
-                        character_preset_id=rp_meta.resolved_preset_id,
-                    )
-                ask_diagnostics["models_attempted"].append(model_name)
-                plugin_inst._chat_resp_ready_evt = threading.Event()
-                plugin_inst._active_ollama_chat_pc_ip = str(PcIp or "").strip()
-                plugin_inst._active_ollama_chat_model = str(model_name)
-                try:
-                    result = await loop.run_in_executor(
-                        None,
-                        functools.partial(
-                            post_ollama_chat,
-                            url,
-                            model_name,
-                            messages,
-                            request_timeout_seconds,
-                            normalized_attachments,
-                            prepared_images,
-                            attachment_warnings,
-                            attachment_errors,
-                            logger,
-                            ask_mode,
-                            keep_alive,
-                            plugin_inst._abort_ollama_chat_check,
-                            on_http_response_opened=_on_http_response_opened,
-                            on_http_response_done=_on_http_response_done,
-                            on_delta=on_delta_cb,
-                        ),
-                    )
-                finally:
-                    plugin_inst._active_ollama_chat_pc_ip = None
-                    plugin_inst._active_ollama_chat_model = None
-                merged = {**ollama_extras, **result}
-                if not result.get("success"):
-                    await plugin_inst._maybe_app_log(
-                        "ask.model",
-                        "ollama model attempt failed",
-                        level="verbose",
-                        fields={
-                            "model": model_name,
-                            "status": result.get("status"),
-                            "cancelled": bool(result.get("cancelled")),
-                        },
-                    )
-                if result.get("cancelled"):
-                    return {**_strip_ollama_http_body(merged), "model_policy_disclosure": None, "cancelled": True}
-                if result.get("success"):
-                    ask_diagnostics["model_succeeded"] = str(result.get("model") or model_name)
-                    ask_diagnostics["elapsed_seconds"] = round(time.time() - ask_started, 2)
-                    disc = disclosure_for_model(str(result.get("model") or model_name))
-                    out = {**_strip_ollama_http_body(merged), "model_policy_disclosure": disc}
-                    if preset_carousel_inject is not None:
-                        out["preset_carousel_inject"] = preset_carousel_inject
-                    return out
-
-                last_failure = _strip_ollama_http_body(merged)
-                body = result.get("body") or ""
-                if result.get("timed_out") and model_name != models_to_try[-1]:
-                    logger.warning(
-                        "ask_ollama: timeout model=%s — trying next installed fallback",
-                        model_name,
-                    )
-                    continue
-                # Missing local Ollama tags: try the next fallback instead of failing the whole Ask.
-                if is_ollama_model_missing_error(result.get("status"), body):
-                    continue
-
-                status = result.get("status")
-                body_lower = body.lower()
-                oomish = any(
-                    s in body_lower
-                    for s in (
-                        "out of memory",
-                        "failed to allocate",
-                        "resource exhausted",
-                        "cuda error",
-                        "vulkan",
-                    )
-                )
-                # Vision + large multimodal models often return HTTP 500 on OOM or internal runner errors; try next tag.
-                if requires_vision and (
-                    (isinstance(status, int) and status in (413, 500, 502, 503, 504)) or oomish
-                ):
-                    logger.warning(
-                        "ask_ollama: vision attempt failed status=%s model=%s — trying next fallback",
-                        status,
-                        model_name,
-                    )
-                    continue
-
-                return _strip_ollama_http_body(merged)
-
-            ask_diagnostics["elapsed_seconds"] = round(time.time() - ask_started, 2)
-            return last_failure
-        except Exception:
-            logger.exception("Ollama request failed")
-            return {
-                "success": False,
-                "response": "Ollama request failed. Check connection, model names, and the Deck plugin log.",
-                **ollama_extras,
-            }
 
     async def _stop_voice_transcription_internal(self) -> None:
         plugin = Plugin._coerce_instance(self)
@@ -2825,18 +2303,13 @@ class Plugin:
             if existing is not None and not existing.done():
                 return {"accepted": False, "reason": "Voice engine install already running.", "error": "busy"}
 
-            plugin._voice_install_cancel = threading.Event()
-            plugin._voice_install_cancel.clear()
+            plugin._voice_install_cancel = new_threading_cancel_event()
             plugin._voice_install_state = new_voice_install_state()
             plugin._voice_install_state.update(
                 {"phase": "running", "done": False, "accepted": True, "model_id": mid}
             )
 
-            def on_stage(stage: str, fields: dict[str, Any]) -> None:
-                st = plugin._voice_install_state
-                st["stage"] = stage
-                if fields.get("progress_pct") is not None:
-                    st["progress_pct"] = fields["progress_pct"]
+            on_stage = make_state_updating_on_stage(plugin._voice_install_state)
 
             async def runner() -> None:
                 try:
@@ -2918,26 +2391,7 @@ class Plugin:
                 plugin._voice_session = None
 
         if out.get("accepted"):
-            await plugin._persist_input_transparency(
-                {
-                    "route": "voice.transcribe",
-                    "raw_question": None,
-                    "sanitizer_action": None,
-                    "sanitizer_reason_codes": [],
-                    "text_after_sanitizer": None,
-                    "ollama_model": None,
-                    "system_prompt": None,
-                    "user_text_for_model": None,
-                    "user_image_count": 0,
-                    "attachment_paths": [],
-                    "assistant_raw": None,
-                    "assistant_after_attachment_format": None,
-                    "final_response": None,
-                    "voice_local_only": True,
-                    "voice_model_id": model_id,
-                    "voice_audio_persisted": False,
-                }
-            )
+            await plugin._persist_input_transparency(build_voice_transcribe_snapshot(model_id=model_id))
             await plugin._maybe_app_log(
                 "voice.start",
                 "voice transcription started",

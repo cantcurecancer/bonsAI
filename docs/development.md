@@ -202,12 +202,12 @@ flowchart LR
 | Path | Role |
 | ---- | ---- |
 | [`index.tsx`](../src/index.tsx) | Decky plugin shell, tab routing, `.bonsai-scope` glass styles |
-| [`components/`](../src/components/) | Tabs: `MainTab`, `SettingsTab`, `PermissionsTab`, `AboutTab`, `DebugTab`, `DeveloperTab`, modals |
-| [`hooks/`](../src/hooks/) | `usePluginSettings`, `useBonsaiAskOrchestration`, disclaimer/runtime gates |
-| [`data/`](../src/data/) | Presets, character catalog, model policy, settings keys, ask modes |
-| [`utils/`](../src/utils/) | `deckyCall`, `settingsAndResponse`, focus navigation, chunk splitting |
+| [`components/`](../src/components/) | Tabs: `MainTab`, `OllamaTab`, `SettingsTab`, `PermissionsTab`, `DeveloperTab`, `AboutTab`, modals; region components (`MainTabUnifiedAskBar`, etc.) |
+| [`hooks/`](../src/hooks/) | `usePluginSettings`, `useBonsaiAskOrchestration`, `useScreenshotBrowser`, `useBonsaiPluginShell`, disclaimer/runtime gates |
+| [`data/`](../src/data/) | Presets, character catalog, model policy, settings schema/normalizers, intent packs, storage keys |
+| [`utils/`](../src/utils/) | `deckyCall`, settings payload, focus navigation, chunk splitting |
 | [`features/unified-input/`](../src/features/unified-input/) | Ask bar measurement and layout constants |
-| [`styles/bonsaiScopeStylesheet.ts`](../src/styles/bonsaiScopeStylesheet.ts) | Durable scoped CSS for Decky focus/layout |
+| [`styles/bonsaiScopeStylesheet.ts`](../src/styles/bonsaiScopeStylesheet.ts) | Composes scoped CSS from `styles/sections/*.ts` |
 
 Build output: [`dist/index.js`](../dist/index.js) (referenced by [`plugin.json`](../plugin.json)).
 
@@ -215,12 +215,16 @@ Build output: [`dist/index.js`](../dist/index.js) (referenced by [`plugin.json`]
 
 | Module | Role |
 | ------ | ---- |
-| [`main.py`](../main.py) | Decky RPC entrypoint; wires UI calls to services |
-| [`refactor_helpers.py`](../refactor_helpers.py) | Ollama URL normalization, model fallback chains, TDP parse helpers |
+| [`main.py`](../main.py) | Decky RPC entrypoint; thin wrappers to services |
+| [`refactor_helpers.py`](../refactor_helpers.py) | Re-export shim → `py_modules/backend/ollama_routing.py`, `ollama_urls.py`, `tdp_intent.py` |
 | `input_sanitizer_service.py` | Ask sanitization lane and magic-phrase commands |
 | `settings_service.py` | Load/save/normalize `settings.json` |
 | `ollama_service.py` + `ollama_prompts.py` | Prompt assembly and Ollama HTTP transport |
+| `ollama_ask_service.py` | Ask orchestration (model fallback, streaming callbacks) |
 | `game_ai_request.py` | Orchestrates Ask pipeline (sanitizer → Ollama → response) |
+| `async_background_job.py` | Shared local-Ollama/voice install job scaffold |
+| `intent_pack_service.py` | Offline intent pack CRUD + bundled packs |
+| `voice_transcription_service.py` | Whisper STT install, capture, merge |
 | `model_policy.py` | Tier classification for model routing |
 | `ai_character_service.py` | Roleplay system-prompt suffix |
 | `screenshot_media.py` | Vision attachment capture and encoding |
@@ -276,7 +280,7 @@ Still supported when Ollama runs on a PC and the Deck is the deploy target:
 1. In `.env`: `DECK_IP=<deck-lan-ip>`, `PC_IP=<pc-lan-ip>`.
 2. On the PC: install Ollama, set `OLLAMA_HOST=0.0.0.0`, open firewall **TCP 11434**. See [troubleshooting.md](troubleshooting.md#2-network--communication-the-bridge).
 3. Run `./scripts/setup-dev.sh` (or `setup-dev.ps1` on Windows) once, then `./scripts/build.sh` (default `dev` — remote deploy).
-4. In bonsAI Settings, point Ollama URL at `http://<PC-IP>:11434`.
+4. In bonsAI **Ollama → Where AI runs**, point Ollama URL at `http://<PC-IP>:11434`.
 
 Ollama helpers: [`scripts/setup-ollama.sh`](../scripts/setup-ollama.sh) (Linux), [`scripts/setup_ollama.ps1`](../scripts/setup_ollama.ps1) (Windows).
 
@@ -308,21 +312,19 @@ Prioritize refactors and reviews by **change risk** — large surfaces, branchin
 
 **How to use:** Before a non-trivial edit, find the row for the file you touch; run the listed tests plus `pnpm test`, `pnpm run test:py`, and `pnpm run build` (and `scripts/build.ps1` / `scripts/build.sh` when Deck UI or RPC changes). Full standing gate + Deck smoke: [testing.md](testing.md#regression-gates). After **Settings** is acceptably calm (see **Completed** in [roadmap.md](roadmap.md)), pull the **next extraction** items from the bottom queue — one slice per PR.
 
-### Line counts (approximate, 2026-04-21)
+### Line counts (approximate, 2026-07-05)
 
 | Lines | Path | Role |
 |------:|------|------|
-| ~3425 | [`src/index.tsx`](../src/index.tsx) | Plugin root: tabs, scoped CSS, Decky RPC wiring, much of **Settings** as inline `settingsTab`, globals |
-| ~1660 | [`src/components/MainTab.tsx`](../src/components/MainTab.tsx) | Unified ask/search surface, chunks, suggestion UI |
-| ~1508 | [`main.py`](../main.py) | Decky RPC entrypoints, orchestration, many `call` handlers |
-| ~761 | [`src/components/CharacterPickerModal.tsx`](../src/components/CharacterPickerModal.tsx) | Character picker UX + async suggestions |
-| ~449 | [`src/components/ConnectionTimeoutSlider.tsx`](../src/components/ConnectionTimeoutSlider.tsx) | Connection timeout / warning slider |
-| ~300 | [`backend/services/ollama_service.py`](../py_modules/backend/services/ollama_service.py) | Prompt build, Ollama HTTP, streaming paths |
-| ~249 | [`backend/services/desktop_note_service.py`](../py_modules/backend/services/desktop_note_service.py) | Desktop notes / chat append, paths |
-| ~239 | [`backend/services/settings_service.py`](../py_modules/backend/services/settings_service.py) | Load/save/merge `settings.json` |
-| ~228 | [`refactor_helpers.py`](../refactor_helpers.py) | Model selection, TDP parse helpers, URLs |
-| ~207 | [`backend/services/ai_character_service.py`](../py_modules/backend/services/ai_character_service.py) | Roleplay suffix, accent intensity |
-| ≤170 | Other `backend/services/*.py` | See repo; smaller blast radius per file |
+| ~2450 | [`main.py`](../main.py) | Decky RPC entrypoints; orchestration delegates to services |
+| ~1800 | [`src/index.tsx`](../src/index.tsx) | Plugin root: tabs, hooks, modal/survival wiring |
+| ~170 | [`src/components/MainTab.tsx`](../src/components/MainTab.tsx) | Main tab orchestrator (regions in `MainTab*.tsx`) |
+| ~35 | [`src/styles/bonsaiScopeStylesheet.ts`](../src/styles/bonsaiScopeStylesheet.ts) | Composes section CSS from `styles/sections/` |
+| ~450 | [`src/components/SettingsTabConnectionTimeoutSlider.tsx`](../src/components/SettingsTabConnectionTimeoutSlider.tsx) | Connection timeout / warning slider (Ollama tab) |
+| ~360 | [`py_modules/backend/services/ollama_ask_service.py`](../py_modules/backend/services/ollama_ask_service.py) | Ask model routing + streaming |
+| ~576 | [`py_modules/backend/services/ollama_service.py`](../py_modules/backend/services/ollama_service.py) | Ollama HTTP transport |
+| ~406 | [`backend/services/settings_service.py`](../py_modules/backend/services/settings_service.py) | Load/save/merge `settings.json` |
+| ~360 | [`refactor_helpers.py`](../refactor_helpers.py) | Re-export shim for model selection helpers |
 
 ### Prioritized hotspots (edit order vs risk)
 

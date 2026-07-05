@@ -1,6 +1,13 @@
 import React, { useLayoutEffect, useRef, useState } from "react";
 import { Button } from "@decky/ui";
-import { ASK_LABEL_COLOR } from "../features/unified-input/constants";
+import {
+  ASK_LABEL_COLOR,
+  DECK_MENU_FONT_PX,
+  DECK_MENU_GAP_PX,
+  DECK_MENU_PANEL_BG,
+  DECK_MENU_ROW_PAD_X_PX,
+  DECK_MENU_ROW_PAD_Y_PX,
+} from "../features/unified-input/constants";
 
 export type AttachMenuActionId = "take_screenshot" | "browse_recent";
 
@@ -21,13 +28,8 @@ const ATTACH_MENU_ITEMS: { id: AttachMenuActionId; label: string }[] = [
   { id: "browse_recent", label: "Attach recent screenshot" },
 ];
 
-const MENU_GAP_PX = 6;
-const MENU_ROW_PAD_X_PX = 10;
-const MENU_ROW_PAD_Y_PX = 8;
-const MENU_PANEL_MIN_WIDTH_PX = 168;
-
-const MENU_PANEL_BG = "rgb(28, 36, 44)";
-const MENU_FONT_PX = 13;
+/** Wider than default ask-mode menu — attach action labels need more room. */
+const ATTACH_MENU_PANEL_MIN_WIDTH_PX = 168;
 
 type MenuPosition = {
   left: number;
@@ -70,12 +72,12 @@ export function MainTabAttachMenuPopover(props: MainTabAttachMenuPopoverProps) {
       if (!anchor || !host) return;
       const a = anchor.getBoundingClientRect();
       const h = host.getBoundingClientRect();
-      const menuW = Math.max(MENU_PANEL_MIN_WIDTH_PX, a.width, surface?.offsetWidth ?? 0);
+      const menuW = Math.max(ATTACH_MENU_PANEL_MIN_WIDTH_PX, a.width, surface?.offsetWidth ?? 0);
       const menuH = surface?.offsetHeight ?? 0;
       if (menuH === 0) return;
       const nextPos: MenuPosition = {
         left: Math.max(0, a.left - h.left),
-        top: a.bottom - h.top + MENU_GAP_PX,
+        top: a.bottom - h.top + DECK_MENU_GAP_PX,
         minWidth: menuW,
       };
       setMenuPos(nextPos);
@@ -113,7 +115,7 @@ export function MainTabAttachMenuPopover(props: MainTabAttachMenuPopoverProps) {
         left: menuPos?.left ?? 0,
         top: menuPos?.top ?? 0,
         right: "auto",
-        minWidth: menuPos?.minWidth ?? MENU_PANEL_MIN_WIDTH_PX,
+        minWidth: menuPos?.minWidth ?? ATTACH_MENU_PANEL_MIN_WIDTH_PX,
         width: "max-content",
         zIndex: 200,
         pointerEvents: "auto",
@@ -126,7 +128,7 @@ export function MainTabAttachMenuPopover(props: MainTabAttachMenuPopoverProps) {
         ref={surfaceRef}
         className="bonsai-attach-menu-surface"
         style={{
-          backgroundColor: MENU_PANEL_BG,
+          backgroundColor: DECK_MENU_PANEL_BG,
           border: "1px solid rgba(255, 255, 255, 0.08)",
           borderRadius: 6,
           boxShadow: "0 8px 22px rgba(0,0,0,0.55)",
@@ -143,7 +145,7 @@ export function MainTabAttachMenuPopover(props: MainTabAttachMenuPopoverProps) {
             width: "100%",
             margin: 0,
             padding: 0,
-            backgroundColor: MENU_PANEL_BG,
+            backgroundColor: DECK_MENU_PANEL_BG,
             display: "flex",
             flexDirection: "column",
             gap: 0,
@@ -202,13 +204,13 @@ export function MainTabAttachMenuPopover(props: MainTabAttachMenuPopoverProps) {
                   width: "100%",
                   minHeight: 0,
                   margin: 0,
-                  padding: `${MENU_ROW_PAD_Y_PX}px ${MENU_ROW_PAD_X_PX}px`,
-                  fontSize: MENU_FONT_PX,
+                  padding: `${DECK_MENU_ROW_PAD_Y_PX}px ${DECK_MENU_ROW_PAD_X_PX}px`,
+                  fontSize: DECK_MENU_FONT_PX,
                   fontWeight: 500,
                   lineHeight: 1.5,
                   borderRadius: 0,
                   border: "none",
-                  backgroundColor: MENU_PANEL_BG,
+                  backgroundColor: DECK_MENU_PANEL_BG,
                   color: ASK_LABEL_COLOR,
                   cursor: disabled ? "default" : "pointer",
                   boxSizing: "border-box",

@@ -1,35 +1,31 @@
+import { createTabLocalSurvival } from "./createTabLocalSurvival";
+
 export type SettingsTabLocalSnapshot = {
   accentIntensityMenuOpen: boolean;
 };
 
-let getter: (() => SettingsTabLocalSnapshot) | null = null;
-let pendingLocal: SettingsTabLocalSnapshot | null = null;
+const survival = createTabLocalSurvival<SettingsTabLocalSnapshot>();
 
 export function registerSettingsTabLocalGetter(fn: () => SettingsTabLocalSnapshot): void {
-  getter = fn;
+  survival.registerGetter(fn);
 }
 
 export function unregisterSettingsTabLocalGetter(): void {
-  getter = null;
+  survival.unregisterGetter();
 }
 
 export function captureSettingsTabLocalSnapshot(): SettingsTabLocalSnapshot | null {
-  const snap = getter?.() ?? null;
-  if (snap) pendingLocal = snap;
-  return snap;
+  return survival.captureSnapshot();
 }
 
 export function peekSettingsTabLocalPending(): SettingsTabLocalSnapshot | null {
-  return pendingLocal;
+  return survival.peekPending();
 }
 
 export function consumeSettingsTabLocalPending(): SettingsTabLocalSnapshot | null {
-  const snap = pendingLocal;
-  pendingLocal = null;
-  return snap;
+  return survival.consumePending();
 }
 
 export function clearSettingsTabLocalSurvival(): void {
-  pendingLocal = null;
-  getter = null;
+  survival.clear();
 }

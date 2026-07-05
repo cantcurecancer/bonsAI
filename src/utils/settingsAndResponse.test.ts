@@ -382,4 +382,65 @@ describe("settingsAndResponse", () => {
       formatAppliedTuningBannerText({ tdp_watts: null, gpu_clock_mhz: null, errors: ["x"] })
     ).toBeNull();
   });
+
+  it("golden round-trip: normalizeSettings → toBonsaiSettingsPayload preserves RPC keys", () => {
+    const raw = {
+      latency_warning_seconds: 25,
+      request_timeout_seconds: 120,
+      unified_input_persistence_mode: "persist_all",
+      screenshot_attachment_preset: "max",
+      ai_character_enabled: true,
+      ai_character_preset_id: "tf2_scout",
+      ask_mode: "strategy",
+      ollama_keep_alive: "5m",
+      model_policy_tier: "open_weight",
+      ollama_local_on_deck: true,
+      show_developer_tab: true,
+    };
+    const normalized = normalizeSettings(raw);
+    const payload = toBonsaiSettingsPayload({
+      latencyWarningSeconds: normalized.latency_warning_seconds,
+      requestTimeoutSeconds: normalized.request_timeout_seconds,
+      latencyTimeoutsCustomEnabled: normalized.latency_timeouts_custom_enabled,
+      unifiedInputPersistenceMode: normalized.unified_input_persistence_mode,
+      screenshotAttachmentPreset: normalized.screenshot_attachment_preset,
+      desktopDebugNoteAutoSave: normalized.desktop_debug_note_auto_save,
+      desktopAskVerboseLogging: normalized.desktop_ask_verbose_logging,
+      desktopAppLogLevel: normalized.desktop_app_log_level,
+      attachProtonLogsWhenTroubleshooting: normalized.attach_proton_logs_when_troubleshooting,
+      thinkingStatusTinyModelEnabled: normalized.thinking_status_tiny_model_enabled,
+      presetChipFadeAnimationEnabled: normalized.preset_chip_fade_animation_enabled,
+      presetChipAnimation: normalized.preset_chip_animation,
+      inputSanitizerUserDisabled: normalized.input_sanitizer_user_disabled,
+      capabilities: normalized.capabilities,
+      aiCharacterEnabled: normalized.ai_character_enabled,
+      aiCharacterRandom: normalized.ai_character_random,
+      aiCharacterPresetId: normalized.ai_character_preset_id,
+      aiCharacterCustomText: normalized.ai_character_custom_text,
+      aiCharacterAccentIntensity: normalized.ai_character_accent_intensity,
+      askMode: normalized.ask_mode,
+      ollamaKeepAlive: normalized.ollama_keep_alive,
+      showDeveloperTab: normalized.show_developer_tab,
+      modelPolicyTier: normalized.model_policy_tier,
+      modelPolicyNonFossUnlocked: normalized.model_policy_non_foss_unlocked,
+      modelAllowHighVramFallbacks: normalized.model_allow_high_vram_fallbacks,
+      ollamaLocalOnDeck: normalized.ollama_local_on_deck,
+      strategySpoilerMaskingEnabled: normalized.strategy_spoiler_masking_enabled,
+      steamWebApiKey: normalized.steam_web_api_key,
+      bonsaiTokenStreamingEnabled: normalized.bonsai_token_streaming_enabled,
+      showOnscreenDebugHud: normalized.show_onscreen_debug_hud,
+      responseVerifyEnabled: normalized.response_verify_enabled,
+      responseVerifySecondPass: normalized.response_verify_second_pass,
+      responseVerifyModel: normalized.response_verify_model,
+      namedOllamaHosts: normalized.named_ollama_hosts,
+      voiceSttModel: normalized.voice_stt_model,
+      uiScaleAutoEnabled: normalized.ui_scale_auto_enabled,
+      uiScaleManualProfile: normalized.ui_scale_manual_profile,
+    });
+    expect(payload.ask_mode).toBe("strategy");
+    expect(payload.ai_character_preset_id).toBe("tf2_scout");
+    expect(payload.ollama_local_on_deck).toBe(true);
+    expect(payload.screenshot_attachment_preset).toBe("max");
+    expect(payload.latency_warning_seconds).toBeLessThan(payload.request_timeout_seconds);
+  });
 });

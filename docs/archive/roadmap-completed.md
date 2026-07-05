@@ -29,6 +29,7 @@ Headings group related work. Star counts match the historical list.
 
 ### Connection, routing, diagnostics, and timeouts
 
+- ★★★ **Offline intent packs (2026-06):** Bundled `deck-basics.json`, Settings **Search intent packs** section (`SettingsTabIntentPacksSection.tsx`, `useIntentPacks.ts`), RPC import/export/remove/enable; search merge via `intent_pack_service.py`. QA: [testing.md](../testing.md) **INTENT-PACKS** row.
 - ★★★ **Ollama tab + unified AI models hub (2026-06-11):** New **Ollama** LB/RB tab (outline llama icon) between Main and Settings consolidates **Where AI runs**, response verification, connection timeouts/keep-alive, and **Models & routing** → **Open AI models…** fullscreen hub with **Policy**, **Browse & pull**, and **Advanced** chips (tier selection, pull table, Tier 3 unlock / high-VRAM fallbacks). Removed scattered controls from Permissions (model policy), Settings (connection block), and Developer (verify + tuning + routing). Implemented in `src/components/OllamaTab.tsx`, `OllamaWhereAiRunsSection.tsx`, `OllamaModelsHubModal.tsx`, `ModelPolicyTierPanel.tsx`, `ModelRoutingAdvancedPanel.tsx`; tab wiring in `src/index.tsx`.
 - ★★★★ **UI scale profiles (Handheld / Desktop / Couch):** Settings **UI scale** — **Adjust UI automatically** (default) classifies from QAM viewport width + internal/external display heuristics; manual snap slider (Handheld · Desktop · Couch) behind toggle; **Apply UI scale** soft-reloads panels. Scoped `--bonsai-ui-scale` on `.bonsai-scope` + modal bridge; merges former **10-foot readability slider** and **Couch 10-foot UI profile** roadmap items. `src/data/uiScaleProfile.ts`, `src/hooks/useUiScaleProfile.ts`, `SettingsTabUiScaleSection.tsx`, `bonsaiScopeStylesheet.ts`, `settings_service.py`.
 - ★★ **Ollama Network Routing Fix:** Route frontend requests through Decky backend (`call("ask_game_ai", ...)`) to resolve cross-origin failures.
@@ -191,6 +192,11 @@ Headings group related work. Star counts match the historical list.
 #### Global screenshots and vision (implemented V1)
 
 ★★★★★
+
+### Frontend structure (maintainer)
+
+- ★★ **Phase 4d–4f frontend split (2026-07-05):** `MainTab.tsx` orchestrates `MainTabPresetRow`, `MainTabUnifiedAskBar`, `MainTabScreenshotBrowser`, and `MainTabChatTranscript`; `index.tsx` delegates to `useScreenshotBrowser`, `useSteamSettingsSearch`, and `useBonsaiPluginShell`; `bonsaiScopeStylesheet.ts` composes `src/styles/sections/*.ts`. Shared `DeckFocusSlider`, `deckSliderMath`, `createTabLocalSurvival`, settings schema split. No user-visible behavior change; `pnpm test` + `pnpm run build` pass.
+- ★★★ **Phase 3 backend extraction (2026-07-05):** `ollama_ask_service.py`, `async_background_job.py`, `network_service.py`, `transparency_service.py`, `ask_local_commands.py`; `main.py` −509 LOC. Removed llama.cpp POC module; centralized Ollama constants in `py_modules/backend/constants.py` + `ollama_connectivity.py`. Report: [refactor-specialist-sweep-2026.md](refactor/refactor-specialist-sweep-2026.md).
 
 **Shipped** — see **Completed** / baseline index.
 

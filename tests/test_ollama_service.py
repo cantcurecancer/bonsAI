@@ -477,7 +477,7 @@ class OllamaServiceTests(unittest.TestCase):
             ask_mode="speed",
         )
         self.assertIn("OLLAMA / bonsAI (host & inference)", prompt)
-        self.assertIn("Settings → Connection", prompt)
+        self.assertIn("Ollama → Where AI runs", prompt)
         self.assertIn("Hardware appendix (Deck TDP/GPU JSON): **Skipped for this topic**", prompt)
         self.assertNotIn("DECK TROUBLESHOOTING (game in focus)", prompt)
         self.assertNotIn("IMPORTANT: When you recommend or apply a TDP or GPU clock change", prompt)

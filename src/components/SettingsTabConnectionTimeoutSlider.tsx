@@ -1,5 +1,4 @@
 import React, { useCallback, useMemo, useRef, useState } from "react";
-import { Focusable } from "@decky/ui";
 import {
   LATENCY_WARNING_STEP_SECONDS,
   MAX_REQUEST_TIMEOUT_SECONDS,
@@ -10,7 +9,14 @@ import {
   reconcileLatencyWarningAndTimeout,
   REQUEST_TIMEOUT_STEP_SECONDS,
 } from "../utils/settingsAndResponse";
-import { isLeftNavigationKey, isRightNavigationKey } from "../utils/focusNavigation";
+import { DeckFocusSliderThumb } from "./deck/DeckFocusSlider";
+import {
+  clamp,
+  clientXToPct,
+  pctToValue,
+  pickNearestThumbIndex,
+  valueToPct,
+} from "../utils/deckSliderMath";
 
 export type SettingsTabConnectionTimeoutSliderProps = {
   warningSec: number;
@@ -25,48 +31,6 @@ export type SettingsTabConnectionTimeoutSliderProps = {
 };
 
 type ThumbKind = "warning" | "timeout";
-
-/** Deck focus-graph passes moves via these callbacks, not always as keyboard events. */
-type DeckThumbNavProps = {
-  onMoveLeft?: () => boolean | void;
-  onMoveRight?: () => boolean | void;
-  onMoveUp?: () => boolean | void;
-  onMoveDown?: () => boolean | void;
-  onButtonDown?: (button: unknown) => boolean | void;
-};
-
-function clamp(value: number, min: number, max: number): number {
-  return Math.max(min, Math.min(max, value));
-}
-
-function valueToPct(value: number): number {
-  const span = MAX_REQUEST_TIMEOUT_SECONDS - MIN_LATENCY_WARNING_SECONDS;
-  if (span <= 0) return 0;
-  return ((value - MIN_LATENCY_WARNING_SECONDS) / span) * 100;
-}
-
-function pctToRawValue(pct: number): number {
-  const span = MAX_REQUEST_TIMEOUT_SECONDS - MIN_LATENCY_WARNING_SECONDS;
-  return MIN_LATENCY_WARNING_SECONDS + (span * clamp(pct, 0, 100)) / 100;
-}
-
-function isLeftDeckButton(key: string): boolean {
-  const lower = key.toLowerCase();
-  return (
-    isLeftNavigationKey(key) ||
-    key === "GamepadLeftStickLeft" ||
-    lower.includes("left")
-  );
-}
-
-function isRightDeckButton(key: string): boolean {
-  const lower = key.toLowerCase();
-  return (
-    isRightNavigationKey(key) ||
-    key === "GamepadLeftStickRight" ||
-    lower.includes("right")
-  );
-}
 
 /**
  * One combined track with two adjustable points:
@@ -84,26 +48,20 @@ export function SettingsTabConnectionTimeoutSlider(props: SettingsTabConnectionT
   const warningWrapRef = useRef<HTMLDivElement | null>(null);
   const timeoutWrapRef = useRef<HTMLDivElement | null>(null);
 
-  const warningPct = useMemo(() => valueToPct(warningSec), [warningSec]);
-  const timeoutPct = useMemo(() => valueToPct(timeoutSec), [timeoutSec]);
+  const warningPct = useMemo(
+    () => valueToPct(warningSec, MIN_LATENCY_WARNING_SECONDS, MAX_REQUEST_TIMEOUT_SECONDS),
+    [warningSec],
+  );
+  const timeoutPct = useMemo(
+    () => valueToPct(timeoutSec, MIN_LATENCY_WARNING_SECONDS, MAX_REQUEST_TIMEOUT_SECONDS),
+    [timeoutSec],
+  );
 
   const focusThumb = useCallback((thumb: ThumbKind) => {
     const host = thumb === "warning" ? warningWrapRef.current : timeoutWrapRef.current;
     const target = host?.querySelector("[tabindex],button") as HTMLElement | null;
     target?.focus();
   }, []);
-
-  const setWarningWrapEl = useCallback(
-    (el: HTMLDivElement | null) => {
-      warningWrapRef.current = el;
-      const ext = warningThumbHostRef;
-      if (typeof ext === "function") ext(el);
-      else if (ext && typeof ext === "object" && "current" in ext) {
-        (ext as React.MutableRefObject<HTMLDivElement | null>).current = el;
-      }
-    },
-    [warningThumbHostRef]
-  );
 
   const applyWarning = useCallback(
     (rawValue: number) => {
@@ -113,48 +71,43 @@ export function SettingsTabConnectionTimeoutSlider(props: SettingsTabConnectionT
       const pair = reconcileLatencyWarningAndTimeout(nextWarning, timeoutSec);
       onChange(pair.latency_warning_seconds, pair.request_timeout_seconds);
     },
-    [onChange, timeoutSec, warningSec]
+    [onChange, timeoutSec, warningSec],
   );
 
   const applyTimeout = useCallback(
     (rawValue: number) => {
       const minAllowedTimeout = Math.max(
         MIN_REQUEST_TIMEOUT_SECONDS,
-        warningSec + LATENCY_WARNING_STEP_SECONDS
+        warningSec + LATENCY_WARNING_STEP_SECONDS,
       );
       const clamped = clamp(rawValue, minAllowedTimeout, MAX_REQUEST_TIMEOUT_SECONDS);
       const nextTimeout = normalizeRequestTimeoutSeconds(clamped, timeoutSec);
       const pair = reconcileLatencyWarningAndTimeout(warningSec, nextTimeout);
       onChange(pair.latency_warning_seconds, pair.request_timeout_seconds);
     },
-    [onChange, timeoutSec, warningSec]
+    [onChange, timeoutSec, warningSec],
   );
 
   const thumbFromClientX = useCallback(
     (clientX: number): ThumbKind => {
       const el = trackRef.current;
       if (!el) return "warning";
-      const rect = el.getBoundingClientRect();
-      const pct = clamp(((clientX - rect.left) / rect.width) * 100, 0, 100);
-      return Math.abs(pct - warningPct) <= Math.abs(pct - timeoutPct) ? "warning" : "timeout";
+      const pct = clientXToPct(clientX, el.getBoundingClientRect());
+      return pickNearestThumbIndex(pct, [warningPct, timeoutPct]) === 0 ? "warning" : "timeout";
     },
-    [timeoutPct, warningPct]
+    [timeoutPct, warningPct],
   );
 
   const applyFromClientX = useCallback(
     (clientX: number, thumb: ThumbKind) => {
       const el = trackRef.current;
       if (!el) return;
-      const rect = el.getBoundingClientRect();
-      const pct = clamp(((clientX - rect.left) / rect.width) * 100, 0, 100);
-      const rawValue = pctToRawValue(pct);
-      if (thumb === "warning") {
-        applyWarning(rawValue);
-      } else {
-        applyTimeout(rawValue);
-      }
+      const pct = clientXToPct(clientX, el.getBoundingClientRect());
+      const rawValue = pctToValue(pct, MIN_LATENCY_WARNING_SECONDS, MAX_REQUEST_TIMEOUT_SECONDS);
+      if (thumb === "warning") applyWarning(rawValue);
+      else applyTimeout(rawValue);
     },
-    [applyTimeout, applyWarning]
+    [applyTimeout, applyWarning],
   );
 
   const onTrackPointerDown = useCallback(
@@ -164,7 +117,7 @@ export function SettingsTabConnectionTimeoutSlider(props: SettingsTabConnectionT
       ev.currentTarget.setPointerCapture(ev.pointerId);
       applyFromClientX(ev.clientX, thumb);
     },
-    [applyFromClientX, thumbFromClientX]
+    [applyFromClientX, thumbFromClientX],
   );
 
   const onTrackPointerMove = useCallback(
@@ -172,7 +125,7 @@ export function SettingsTabConnectionTimeoutSlider(props: SettingsTabConnectionT
       if (!draggingThumb) return;
       applyFromClientX(ev.clientX, draggingThumb);
     },
-    [applyFromClientX, draggingThumb]
+    [applyFromClientX, draggingThumb],
   );
 
   const onTrackPointerUp = useCallback(
@@ -183,15 +136,12 @@ export function SettingsTabConnectionTimeoutSlider(props: SettingsTabConnectionT
       }
       setDraggingThumb(null);
     },
-    [draggingThumb]
+    [draggingThumb],
   );
 
   const onThumbBlur = useCallback((ev: React.FocusEvent) => {
     const rt = ev.relatedTarget as Node | null;
-    if (rt && (warningWrapRef.current?.contains(rt) || timeoutWrapRef.current?.contains(rt))) {
-      return;
-    }
-    // Deck sometimes emits blur with null relatedTarget while still interacting with this control.
+    if (rt && (warningWrapRef.current?.contains(rt) || timeoutWrapRef.current?.contains(rt))) return;
     if (!rt) return;
     setFocusedThumb(null);
     setEditingThumb(null);
@@ -204,14 +154,10 @@ export function SettingsTabConnectionTimeoutSlider(props: SettingsTabConnectionT
           thumb === "warning"
             ? LATENCY_WARNING_STEP_SECONDS * (dir === "right" ? 1 : -1)
             : REQUEST_TIMEOUT_STEP_SECONDS * (dir === "right" ? 1 : -1);
-        if (thumb === "warning") {
-          applyWarning(warningSec + delta);
-        } else {
-          applyTimeout(timeoutSec + delta);
-        }
+        if (thumb === "warning") applyWarning(warningSec + delta);
+        else applyTimeout(timeoutSec + delta);
         return true;
       }
-
       if (thumb === "warning" && dir === "right") {
         focusThumb("timeout");
         return true;
@@ -220,62 +166,48 @@ export function SettingsTabConnectionTimeoutSlider(props: SettingsTabConnectionT
         focusThumb("warning");
         return true;
       }
-
-      // Keep horizontal nav inside the control instead of escaping to QAM while a thumb is focused.
       return true;
     },
-    [applyTimeout, applyWarning, editingThumb, focusThumb, timeoutSec, warningSec]
+    [applyTimeout, applyWarning, editingThumb, focusThumb, timeoutSec, warningSec],
   );
 
-  const buildThumbNavHandlers = useCallback(
-    (thumb: ThumbKind): DeckThumbNavProps => ({
-      onMoveLeft: () => handleThumbDirection(thumb, "left"),
-      onMoveRight: () => handleThumbDirection(thumb, "right"),
-      onMoveUp: () => (thumb === "timeout" ? onMoveUpFromTimeoutThumb?.() ?? false : false),
-      onMoveDown: () => onMoveDownFromThumb?.() ?? false,
-      onButtonDown: (button: unknown) => {
-        const buttonKey = String(button ?? "unknown");
-        if (isLeftDeckButton(buttonKey)) return handleThumbDirection(thumb, "left");
-        if (isRightDeckButton(buttonKey)) return handleThumbDirection(thumb, "right");
-        return false;
-      },
+  const warningDotStyle = useCallback(
+    ({ focused, editing }: { focused: boolean; editing: boolean; dragging: boolean }) => ({
+      border:
+        focused && editing
+          ? "2px solid #7af3b0"
+          : focused
+            ? "2px solid #ffd299"
+            : "2px solid #c4a06e",
+      background: "#2a1f0f",
+      boxShadow:
+        focused && editing
+          ? "0 0 0 2px rgba(122,243,176,0.28)"
+          : focused
+            ? "0 0 0 2px rgba(255,199,124,0.25)"
+            : "none",
     }),
-    [handleThumbDirection, onMoveDownFromThumb, onMoveUpFromTimeoutThumb]
+    [],
   );
 
-  const buildThumbPointerHandlers = useCallback(
-    (thumb: ThumbKind) => ({
-      onPointerDown: (ev: React.PointerEvent<HTMLDivElement>) => {
-        setFocusedThumb(thumb);
-        setDraggingThumb(thumb);
-        ev.currentTarget.setPointerCapture(ev.pointerId);
-        ev.stopPropagation();
-        applyFromClientX(ev.clientX, thumb);
-      },
-      onPointerMove: (ev: React.PointerEvent<HTMLDivElement>) => {
-        if (!ev.currentTarget.hasPointerCapture(ev.pointerId)) return;
-        applyFromClientX(ev.clientX, thumb);
-      },
-      onPointerUp: (ev: React.PointerEvent<HTMLDivElement>) => {
-        if (ev.currentTarget.hasPointerCapture(ev.pointerId)) {
-          ev.currentTarget.releasePointerCapture(ev.pointerId);
-        }
-        setDraggingThumb(null);
-      },
-      onPointerCancel: (ev: React.PointerEvent<HTMLDivElement>) => {
-        if (ev.currentTarget.hasPointerCapture(ev.pointerId)) {
-          ev.currentTarget.releasePointerCapture(ev.pointerId);
-        }
-        setDraggingThumb(null);
-      },
+  const timeoutDotStyle = useCallback(
+    ({ focused, editing }: { focused: boolean; editing: boolean; dragging: boolean }) => ({
+      border:
+        focused && editing
+          ? "2px solid #7af3b0"
+          : focused
+            ? "2px solid #9ce7ff"
+            : "2px solid #5a8aaa",
+      background: "#0f2434",
+      boxShadow:
+        focused && editing
+          ? "0 0 0 2px rgba(122,243,176,0.28)"
+          : focused
+            ? "0 0 0 2px rgba(124,214,255,0.25)"
+            : "none",
     }),
-    [applyFromClientX]
+    [],
   );
-
-  const warningPointer = useMemo(() => buildThumbPointerHandlers("warning"), [buildThumbPointerHandlers]);
-  const timeoutPointer = useMemo(() => buildThumbPointerHandlers("timeout"), [buildThumbPointerHandlers]);
-  const warningNavHandlers = useMemo(() => buildThumbNavHandlers("warning"), [buildThumbNavHandlers]);
-  const timeoutNavHandlers = useMemo(() => buildThumbNavHandlers("timeout"), [buildThumbNavHandlers]);
 
   return (
     <div
@@ -356,120 +288,40 @@ export function SettingsTabConnectionTimeoutSlider(props: SettingsTabConnectionT
               background: "linear-gradient(90deg, rgba(255, 210, 150, 0.45) 0%, rgba(124, 214, 255, 0.5) 100%)",
             }}
           />
-          <div
-            ref={setWarningWrapEl}
-            style={{
-              position: "absolute",
-              left: `calc(${warningPct}% - 21px)`,
-              top: 0,
-              width: 42,
-              height: 40,
-              zIndex: 2,
+          <DeckFocusSliderThumb
+            pct={warningPct}
+            focused={focusedThumb === "warning"}
+            editing={editingThumb === "warning"}
+            onFocus={() => setFocusedThumb("warning")}
+            onBlur={onThumbBlur}
+            onActivate={() => setEditingThumb((prev) => (prev === "warning" ? null : "warning"))}
+            nav={{
+              onMoveLeft: () => handleThumbDirection("warning", "left"),
+              onMoveRight: () => handleThumbDirection("warning", "right"),
+              onMoveDown: () => onMoveDownFromThumb?.() ?? false,
             }}
-          >
-            <Focusable
-              flow-children="vertical"
-              {...(warningNavHandlers as Record<string, unknown>)}
-              onActivate={() => {
-                setEditingThumb((prev) => (prev === "warning" ? null : "warning"));
-              }}
-              onFocus={() => {
-                setFocusedThumb("warning");
-              }}
-              onBlur={onThumbBlur}
-              style={{
-                width: "100%",
-                height: "100%",
-                display: "flex",
-                alignItems: "flex-start",
-                justifyContent: "center",
-                paddingTop: 4,
-                boxSizing: "border-box",
-              }}
-            >
-              <div
-                {...warningPointer}
-                style={{
-                  width: 18,
-                  height: 18,
-                  marginTop: 2,
-                  borderRadius: 999,
-                  border:
-                    focusedThumb === "warning"
-                      ? editingThumb === "warning"
-                        ? "2px solid #7af3b0"
-                        : "2px solid #ffd299"
-                      : "2px solid #c4a06e",
-                  background: "#2a1f0f",
-                  boxShadow:
-                    focusedThumb === "warning"
-                      ? editingThumb === "warning"
-                        ? "0 0 0 2px rgba(122,243,176,0.28)"
-                        : "0 0 0 2px rgba(255,199,124,0.25)"
-                      : "none",
-                  flexShrink: 0,
-                  touchAction: "none",
-                }}
-              />
-            </Focusable>
-          </div>
-          <div
-            ref={timeoutWrapRef}
-            style={{
-              position: "absolute",
-              left: `calc(${timeoutPct}% - 21px)`,
-              top: 0,
-              width: 42,
-              height: 40,
-              zIndex: 2,
+            onPointerSelect={(clientX) => applyFromClientX(clientX, "warning")}
+            getDotStyle={warningDotStyle}
+            hostRef={warningThumbHostRef}
+            wrapRef={warningWrapRef}
+          />
+          <DeckFocusSliderThumb
+            pct={timeoutPct}
+            focused={focusedThumb === "timeout"}
+            editing={editingThumb === "timeout"}
+            onFocus={() => setFocusedThumb("timeout")}
+            onBlur={onThumbBlur}
+            onActivate={() => setEditingThumb((prev) => (prev === "timeout" ? null : "timeout"))}
+            nav={{
+              onMoveLeft: () => handleThumbDirection("timeout", "left"),
+              onMoveRight: () => handleThumbDirection("timeout", "right"),
+              onMoveUp: () => onMoveUpFromTimeoutThumb?.() ?? false,
+              onMoveDown: () => onMoveDownFromThumb?.() ?? false,
             }}
-          >
-            <Focusable
-              flow-children="vertical"
-              {...(timeoutNavHandlers as Record<string, unknown>)}
-              onActivate={() => {
-                setEditingThumb((prev) => (prev === "timeout" ? null : "timeout"));
-              }}
-              onFocus={() => {
-                setFocusedThumb("timeout");
-              }}
-              onBlur={onThumbBlur}
-              style={{
-                width: "100%",
-                height: "100%",
-                display: "flex",
-                alignItems: "flex-start",
-                justifyContent: "center",
-                paddingTop: 4,
-                boxSizing: "border-box",
-              }}
-            >
-              <div
-                {...timeoutPointer}
-                style={{
-                  width: 18,
-                  height: 18,
-                  marginTop: 2,
-                  borderRadius: 999,
-                  border:
-                    focusedThumb === "timeout"
-                      ? editingThumb === "timeout"
-                        ? "2px solid #7af3b0"
-                        : "2px solid #9ce7ff"
-                      : "2px solid #5a8aaa",
-                  background: "#0f2434",
-                  boxShadow:
-                    focusedThumb === "timeout"
-                      ? editingThumb === "timeout"
-                        ? "0 0 0 2px rgba(122,243,176,0.28)"
-                        : "0 0 0 2px rgba(124,214,255,0.25)"
-                      : "none",
-                  flexShrink: 0,
-                  touchAction: "none",
-                }}
-              />
-            </Focusable>
-          </div>
+            onPointerSelect={(clientX) => applyFromClientX(clientX, "timeout")}
+            getDotStyle={timeoutDotStyle}
+            wrapRef={timeoutWrapRef}
+          />
         </div>
       </div>
     </div>

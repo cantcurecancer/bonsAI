@@ -1,4 +1,5 @@
 import type { DeveloperConnectionStatus } from "../components/DeveloperTab";
+import { createTabLocalSurvival } from "./createTabLocalSurvival";
 
 export type OllamaTabLocalSnapshot = {
   connectionStatus: DeveloperConnectionStatus | null;
@@ -7,34 +8,28 @@ export type OllamaTabLocalSnapshot = {
   localInstallMenuOpen: boolean;
 };
 
-let getter: (() => OllamaTabLocalSnapshot) | null = null;
-let pendingLocal: OllamaTabLocalSnapshot | null = null;
+const survival = createTabLocalSurvival<OllamaTabLocalSnapshot>();
 
 export function registerOllamaTabLocalGetter(fn: () => OllamaTabLocalSnapshot): void {
-  getter = fn;
+  survival.registerGetter(fn);
 }
 
 export function unregisterOllamaTabLocalGetter(): void {
-  getter = null;
+  survival.unregisterGetter();
 }
 
 export function captureOllamaTabLocalSnapshot(): OllamaTabLocalSnapshot | null {
-  const snap = getter?.() ?? null;
-  if (snap) pendingLocal = snap;
-  return snap;
+  return survival.captureSnapshot();
 }
 
 export function peekOllamaTabLocalPending(): OllamaTabLocalSnapshot | null {
-  return pendingLocal;
+  return survival.peekPending();
 }
 
 export function consumeOllamaTabLocalPending(): OllamaTabLocalSnapshot | null {
-  const snap = pendingLocal;
-  pendingLocal = null;
-  return snap;
+  return survival.consumePending();
 }
 
 export function clearOllamaTabLocalSurvival(): void {
-  pendingLocal = null;
-  getter = null;
+  survival.clear();
 }

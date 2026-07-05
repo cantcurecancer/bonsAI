@@ -1,0 +1,156 @@
+import {
+  ASK_LABEL_COLOR,
+  ASK_LABEL_READY_COLOR,
+  ASK_READY_STATE_TRANSITION_MS,
+  BONSAI_PLUGIN_SIDE_PAD_PX,
+  BONSAI_CHAT_INPUT_TO_TRANSCRIPT_GAP_PX,
+  BONSAI_CHAT_RESPONSE_STACK_MARGIN_TOP_PX,
+  TAB_TITLE_DEBUG_TAB_ICON_PX,
+  TAB_TITLE_ICON_PX,
+  TAB_TITLE_MAIN_ICON_SHIFT_X_PX,
+  TAB_TITLE_MAIN_TAB_ICON_PX,
+  TAB_TITLE_TAB_CELL_PX,
+  TAB_TITLE_TAB_GAP_PX,
+  TAB_STRIP_BODY_GAP_PX,
+  UNIFIED_INPUT_ICON_STRIP_PAD_X_PX,
+  UNIFIED_TEXT_FONT_PX,
+  UNIFIED_TEXT_INSET_BOTTOM_PX,
+  UNIFIED_TEXT_INSET_LEFT_PX,
+  UNIFIED_TEXT_INSET_RIGHT_PX,
+  UNIFIED_TEXT_INSET_TOP_PX,
+  UNIFIED_TEXT_LINE_HEIGHT,
+} from "../../features/unified-input/constants";
+
+/** Multiply base px tokens by `--bonsai-ui-scale` on `.bonsai-scope`. */
+export function uiScalePx(px: number): string {
+  return `calc(${px}px * var(--bonsai-ui-scale, 1))`;
+}
+
+export function buildSection7Section(): string {
+  return `
+/* ==========================================================================
+           7. TRANSPARENCY FLATTENING (DECKY FIXES)
+           Decky components heavily stack backgrounds/shadows. This flattens them
+           so our custom backgrounds show through properly.
+           ========================================================================== */
+        .bonsai-scope .bonsai-preset-glass > div,
+        .bonsai-scope .bonsai-unified-input-host div:not(.bonsai-unified-input-text-overlay),
+        .bonsai-scope .bonsai-unified-input-host input,
+        .bonsai-scope .bonsai-unified-input-host .Panel.Focusable,
+        .bonsai-scope .bonsai-unified-input-host .Panel.Focusable > div,
+        .bonsai-scope .bonsai-askbar-target,
+        .bonsai-scope .bonsai-askbar-target > div,
+        .bonsai-scope .bonsai-askbar-target > span,
+        .bonsai-scope .bonsai-askbar-merged .DialogButton {
+          background: transparent !important;
+          background-color: transparent !important;
+          background-image: none !important;
+          box-shadow: none !important;
+        }
+
+        /*
+         * Ask-mode menu lives inside .bonsai-unified-input-host. Section 7 above uses
+         * .bonsai-unified-input-host div and .Panel.Focusable with higher
+         * specificity than .bonsai-ask-mode-menu-surface alone, so every menu
+         * row/stack was forced transparent; ASK/glass bleeds through as a vertical fade.
+         * Undo only under .bonsai-ask-mode-menu-floater (must beat section 7).
+         */
+        .bonsai-scope .bonsai-unified-input-host .bonsai-ask-mode-menu-floater,
+        .bonsai-scope .bonsai-unified-input-host .bonsai-ask-mode-menu-floater div,
+        .bonsai-scope .bonsai-unified-input-host .bonsai-ask-mode-menu-floater .Panel.Focusable,
+        .bonsai-scope .bonsai-unified-input-host .bonsai-ask-mode-menu-floater .Panel.Focusable > div {
+          background-image: none !important;
+          /* Section 7 sets background-color transparent on .Panel.Focusable > div — must override or ASK bleeds through inner wrappers. */
+          background-color: rgb(28, 36, 44) !important;
+          box-shadow: none !important;
+          opacity: 1 !important;
+          filter: none !important;
+          -webkit-backdrop-filter: none !important;
+          backdrop-filter: none !important;
+        }
+        .bonsai-scope .bonsai-unified-input-host .bonsai-ask-mode-menu-floater .bonsai-ask-mode-menu-item--selected.Panel.Focusable > div {
+          background-color: rgb(40, 50, 62) !important;
+        }
+        .bonsai-scope .bonsai-unified-input-host .bonsai-ask-mode-menu-floater .bonsai-ask-mode-menu-surface div {
+          background-color: rgb(28, 36, 44) !important;
+        }
+        .bonsai-scope .bonsai-unified-input-host .bonsai-ask-mode-menu-floater .bonsai-ask-mode-menu-item--selected div {
+          background-color: rgb(40, 50, 62) !important;
+        }
+        .bonsai-scope .bonsai-unified-input-host .bonsai-ask-mode-menu-floater .bonsai-ask-mode-menu-surface,
+        .bonsai-scope .bonsai-unified-input-host .bonsai-ask-mode-menu-floater .bonsai-ask-mode-menu-surface > .Panel.Focusable {
+          background-color: rgb(28, 36, 44) !important;
+        }
+        .bonsai-scope .bonsai-unified-input-host .bonsai-ask-mode-menu-floater .bonsai-ask-mode-menu-item {
+          background-color: rgb(28, 36, 44) !important;
+        }
+        .bonsai-scope .bonsai-unified-input-host .bonsai-ask-mode-menu-floater .bonsai-ask-mode-menu-item--selected {
+          background-color: rgb(40, 50, 62) !important;
+        }
+        .bonsai-scope .bonsai-unified-input-host .bonsai-ask-mode-menu-floater .bonsai-ask-mode-menu-item,
+        .bonsai-scope .bonsai-unified-input-host .bonsai-ask-mode-menu-floater .bonsai-ask-mode-menu-item.Panel.Focusable {
+          border-top: none !important;
+          border-bottom: none !important;
+        }
+        .bonsai-scope .bonsai-unified-input-host .bonsai-ask-mode-menu-floater button.bonsai-ask-mode-menu-item-btn,
+        .bonsai-scope .bonsai-unified-input-host .bonsai-ask-mode-menu-floater button.bonsai-ask-mode-menu-item-btn.DialogButton,
+        .bonsai-scope .bonsai-unified-input-host .bonsai-ask-mode-menu-floater button.bonsai-ask-mode-menu-item-btn > div,
+        .bonsai-scope .bonsai-unified-input-host .bonsai-ask-mode-menu-floater button.bonsai-ask-mode-menu-item-btn > span {
+          background-color: rgb(28, 36, 44) !important;
+          background-image: none !important;
+          box-shadow: none !important;
+          opacity: 1 !important;
+          mix-blend-mode: normal !important;
+          width: 100% !important;
+          max-width: 100% !important;
+          box-sizing: border-box !important;
+        }
+        .bonsai-scope .bonsai-unified-input-host .bonsai-ask-mode-menu-floater button.bonsai-ask-mode-menu-item-btn.bonsai-ask-mode-menu-item--selected,
+        .bonsai-scope .bonsai-unified-input-host .bonsai-ask-mode-menu-floater button.bonsai-ask-mode-menu-item-btn.bonsai-ask-mode-menu-item--selected > div {
+          background-color: rgb(40, 50, 62) !important;
+        }
+
+        /* Attach menu: same solid-stack paint model as ask-mode (opens downward below paperclip). */
+        .bonsai-scope .bonsai-unified-input-host .bonsai-attach-menu-floater,
+        .bonsai-scope .bonsai-unified-input-host .bonsai-attach-menu-floater div,
+        .bonsai-scope .bonsai-unified-input-host .bonsai-attach-menu-floater .Panel.Focusable,
+        .bonsai-scope .bonsai-unified-input-host .bonsai-attach-menu-floater .Panel.Focusable > div {
+          background-image: none !important;
+          background-color: rgb(28, 36, 44) !important;
+          box-shadow: none !important;
+          opacity: 1 !important;
+          filter: none !important;
+          -webkit-backdrop-filter: none !important;
+          backdrop-filter: none !important;
+        }
+        .bonsai-scope .bonsai-unified-input-host .bonsai-attach-menu-floater .bonsai-attach-menu-surface div {
+          background-color: rgb(28, 36, 44) !important;
+        }
+        .bonsai-scope .bonsai-unified-input-host .bonsai-attach-menu-floater .bonsai-attach-menu-surface,
+        .bonsai-scope .bonsai-unified-input-host .bonsai-attach-menu-floater .bonsai-attach-menu-surface > .Panel.Focusable {
+          background-color: rgb(28, 36, 44) !important;
+        }
+        .bonsai-scope .bonsai-unified-input-host .bonsai-attach-menu-floater .bonsai-attach-menu-item {
+          background-color: rgb(28, 36, 44) !important;
+        }
+        .bonsai-scope .bonsai-unified-input-host .bonsai-attach-menu-floater .bonsai-attach-menu-item,
+        .bonsai-scope .bonsai-unified-input-host .bonsai-attach-menu-floater .bonsai-attach-menu-item.Panel.Focusable {
+          border-top: none !important;
+          border-bottom: none !important;
+        }
+        .bonsai-scope .bonsai-unified-input-host .bonsai-attach-menu-floater button.bonsai-attach-menu-item-btn,
+        .bonsai-scope .bonsai-unified-input-host .bonsai-attach-menu-floater button.bonsai-attach-menu-item-btn.DialogButton,
+        .bonsai-scope .bonsai-unified-input-host .bonsai-attach-menu-floater button.bonsai-attach-menu-item-btn > div,
+        .bonsai-scope .bonsai-unified-input-host .bonsai-attach-menu-floater button.bonsai-attach-menu-item-btn > span {
+          background-color: rgb(28, 36, 44) !important;
+          background-image: none !important;
+          box-shadow: none !important;
+          opacity: 1 !important;
+          mix-blend-mode: normal !important;
+          width: 100% !important;
+          max-width: 100% !important;
+          box-sizing: border-box !important;
+        }
+
+        `;
+}

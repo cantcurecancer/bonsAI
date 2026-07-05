@@ -25,6 +25,14 @@ from backend.services.ollama_service import (
     user_wants_power_or_performance_topic,
 )
 from backend.services.proton_troubleshooting_logs import collect_proton_troubleshooting_logs
+from backend.services.transparency_service import (
+    build_capability_denied_snapshot,
+    build_error_route_snapshot,
+    build_ollama_route_snapshot,
+    build_proton_log_transparency,
+    build_sanitizer_block_snapshot,
+    build_sanitizer_command_snapshot,
+)
 from backend.services.response_verify import (
     maybe_append_verifier_notice,
     run_verifier_second_pass,
@@ -84,32 +92,14 @@ async def run_game_ai_request(
             out = {**keyword_result, "elapsed_seconds": elapsed}
             logger.info("run_game_ai_request: sanitizer keyword command handled (elapsed=%.1fs)", elapsed)
             await plugin._persist_input_transparency(
-                {
-                    "route": "sanitizer_command",
-                    "raw_question": question,
-                    "sanitizer_action": "command",
-                    "sanitizer_reason_codes": [],
-                    "text_after_sanitizer": question,
-                    "ollama_model": None,
-                    "system_prompt": None,
-                    "user_text_for_model": None,
-                    "user_image_count": 0,
-                    "attachment_paths": [],
-                    "assistant_raw": None,
-                    "assistant_after_attachment_format": None,
-                    "final_response": str(out.get("response", "") or ""),
-                    "applied": None,
-                    "success": True,
-                    "app_id": app_id,
-                    "app_name": app_name,
-                    "pc_ip": pc_ip,
-                    "error_message": "",
-                    "elapsed_seconds": elapsed,
-                    "model_policy_disclosure": None,
-                    "proton_log_excerpt_attached": False,
-                    "proton_log_sources": [],
-                    "proton_log_notes": "",
-                }
+                build_sanitizer_command_snapshot(
+                    raw_question=question,
+                    final_response=str(out.get("response", "") or ""),
+                    app_id=app_id,
+                    app_name=app_name,
+                    pc_ip=pc_ip,
+                    elapsed_seconds=elapsed,
+                )
             )
             return {**out, "model_policy_disclosure": None, "strategy_guide_branches": None, "strategy_checklist": None, "strategy_spoiler_consent_effective": False}
 
@@ -121,32 +111,15 @@ async def run_game_ai_request(
                 "Enable it in the Permissions tab, then try again."
             )
             await plugin._persist_input_transparency(
-                {
-                    "route": "capability_denied",
-                    "raw_question": question,
-                    "sanitizer_action": "n/a",
-                    "sanitizer_reason_codes": [],
-                    "text_after_sanitizer": question,
-                    "ollama_model": None,
-                    "system_prompt": None,
-                    "user_text_for_model": None,
-                    "user_image_count": 0,
-                    "attachment_paths": [str(a.get("path", "") or "") for a in atts if isinstance(a, dict)],
-                    "assistant_raw": None,
-                    "assistant_after_attachment_format": None,
-                    "final_response": msg,
-                    "applied": None,
-                    "success": False,
-                    "app_id": app_id,
-                    "app_name": app_name,
-                    "pc_ip": pc_ip,
-                    "error_message": "media_library_access",
-                    "elapsed_seconds": elapsed,
-                    "model_policy_disclosure": None,
-                    "proton_log_excerpt_attached": False,
-                    "proton_log_sources": [],
-                    "proton_log_notes": "",
-                }
+                build_capability_denied_snapshot(
+                    raw_question=question,
+                    attachment_paths=[str(a.get("path", "") or "") for a in atts if isinstance(a, dict)],
+                    final_response=msg,
+                    app_id=app_id,
+                    app_name=app_name,
+                    pc_ip=pc_ip,
+                    elapsed_seconds=elapsed,
+                )
             )
             return {
                 "success": False,
@@ -168,32 +141,17 @@ async def run_game_ai_request(
             logger.info("run_game_ai_request: input blocked by sanitizer (%s)", lane.reason_codes)
             um = str(lane.user_message or "")
             await plugin._persist_input_transparency(
-                {
-                    "route": "sanitizer_block",
-                    "raw_question": question,
-                    "sanitizer_action": str(lane.action),
-                    "sanitizer_reason_codes": list(lane.reason_codes),
-                    "text_after_sanitizer": str(lane.text or ""),
-                    "ollama_model": None,
-                    "system_prompt": None,
-                    "user_text_for_model": None,
-                    "user_image_count": 0,
-                    "attachment_paths": [],
-                    "assistant_raw": None,
-                    "assistant_after_attachment_format": None,
-                    "final_response": um,
-                    "applied": None,
-                    "success": False,
-                    "app_id": app_id,
-                    "app_name": app_name,
-                    "pc_ip": pc_ip,
-                    "error_message": "",
-                    "elapsed_seconds": elapsed,
-                    "model_policy_disclosure": None,
-                    "proton_log_excerpt_attached": False,
-                    "proton_log_sources": [],
-                    "proton_log_notes": "",
-                }
+                build_sanitizer_block_snapshot(
+                    raw_question=question,
+                    sanitizer_action=str(lane.action),
+                    sanitizer_reason_codes=list(lane.reason_codes),
+                    text_after_sanitizer=str(lane.text or ""),
+                    final_response=um,
+                    app_id=app_id,
+                    app_name=app_name,
+                    pc_ip=pc_ip,
+                    elapsed_seconds=elapsed,
+                )
             )
             return {
                 "success": False,
@@ -267,11 +225,11 @@ async def run_game_ai_request(
                     if isinstance(w, str) and w.strip():
                         proton_notes_parts.append(w.strip())
 
-        proton_log_transparency = {
-            "proton_log_excerpt_attached": bool(proton_attachment_text.strip()),
-            "proton_log_sources": proton_sources,
-            "proton_log_notes": "; ".join(proton_notes_parts),
-        }
+        proton_log_transparency = build_proton_log_transparency(
+            excerpt_attached=bool(proton_attachment_text.strip()),
+            sources=proton_sources,
+            notes="; ".join(proton_notes_parts),
+        )
 
         read_tdp = is_current_tdp_read_intent(question_for_model)
         wants_grounding = user_wants_power_or_performance_topic(question_for_model)
@@ -414,34 +372,22 @@ async def run_game_ai_request(
             err_tail = base_response_text[:8000]
 
         await plugin._persist_input_transparency(
-            {
-                "route": "ollama",
-                "raw_question": question,
-                "sanitizer_action": str(lane.action),
-                "sanitizer_reason_codes": list(lane.reason_codes),
-                "text_after_sanitizer": question_for_model,
-                "ollama_model": ollama_result.get("model"),
-                "system_prompt": ollama_result.get("system_prompt"),
-                "user_text_for_model": ollama_result.get("user_text_for_model"),
-                "user_image_count": int(ollama_result.get("user_image_count") or 0),
-                "attachment_paths": ollama_result.get("attachment_paths") or [],
-                "assistant_raw": ollama_result.get("assistant_raw"),
-                "assistant_after_attachment_format": base_response_text,
-                "final_response": response_text,
-                "applied": applied,
-                "success": bool(ollama_result.get("success", False)),
-                "app_id": app_id,
-                "app_name": app_name,
-                "pc_ip": pc_ip,
-                "error_message": err_tail,
-                "elapsed_seconds": elapsed,
-                "model_policy_disclosure": ollama_result.get("model_policy_disclosure"),
-                "proton_log_excerpt_attached": bool(ollama_result.get("proton_log_excerpt_attached")),
-                "proton_log_sources": ollama_result.get("proton_log_sources") or [],
-                "proton_log_notes": str(ollama_result.get("proton_log_notes") or ""),
-                "ask_diagnostics": ollama_result.get("ask_diagnostics"),
-                "response_verify": verify_result,
-            }
+            build_ollama_route_snapshot(
+                raw_question=question,
+                sanitizer_action=str(lane.action),
+                sanitizer_reason_codes=list(lane.reason_codes),
+                text_after_sanitizer=question_for_model,
+                ollama_result=ollama_result,
+                base_response_text=base_response_text,
+                response_text=response_text,
+                applied=applied,
+                app_id=app_id,
+                app_name=app_name,
+                pc_ip=pc_ip,
+                err_tail=err_tail,
+                elapsed_seconds=elapsed,
+                verify_result=verify_result,
+            )
         )
 
         logger.info("run_game_ai_request: completed in %.1fs", elapsed)
@@ -465,35 +411,17 @@ async def run_game_ai_request(
         elapsed = round(time.time() - start, 1)
         logger.exception("run_game_ai_request failed (%.1fs)", elapsed)
         await plugin._persist_input_transparency(
-            {
-                "route": "error",
-                "raw_question": question,
-                "sanitizer_action": "error",
-                "sanitizer_reason_codes": [],
-                "text_after_sanitizer": question,
-                "ollama_model": None,
-                "system_prompt": None,
-                "user_text_for_model": None,
-                "user_image_count": 0,
-                "attachment_paths": [],
-                "assistant_raw": None,
-                "assistant_after_attachment_format": None,
-                "final_response": (
+            build_error_route_snapshot(
+                raw_question=question,
+                final_response=(
                     "Something went wrong while processing your Ask. "
                     "If this repeats, check the plugin log on the Deck."
                 ),
-                "applied": None,
-                "success": False,
-                "app_id": app_id,
-                "app_name": app_name,
-                "pc_ip": pc_ip,
-                "error_message": "Internal error (details logged on device).",
-                "elapsed_seconds": elapsed,
-                "model_policy_disclosure": None,
-                "proton_log_excerpt_attached": False,
-                "proton_log_sources": [],
-                "proton_log_notes": "",
-            }
+                app_id=app_id,
+                app_name=app_name,
+                pc_ip=pc_ip,
+                elapsed_seconds=elapsed,
+            )
         )
         return {
             "success": False,

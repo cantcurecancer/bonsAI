@@ -13,10 +13,9 @@ TROUBLESHOOTING_S5 = "docs/troubleshooting.md — **§5. bonsai shortcut setup**
 
 def normalize_command_input_with_slash(text: str) -> str:
     """Trim, casefold, and strip a single leading slash for paste-friendly matching."""
-    s = (text or "").strip().casefold()
-    if s.startswith("/"):
-        s = s[1:].lstrip()
-    return s
+    from backend.services.ask_local_commands import normalize_ask_command_input
+
+    return normalize_ask_command_input(text, allow_leading_slash=True)
 
 
 def classify_shortcut_setup_command(text: str) -> Optional[Literal["deck", "stadia"]]:

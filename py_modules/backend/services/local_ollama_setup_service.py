@@ -253,16 +253,12 @@ def list_installed_ollama_tags(base_http: str, timeout_seconds: float = 5.0) -> 
         return []
 
 
+from backend.ollama_connectivity import is_loopback_ollama_host as _is_loopback_ollama_host
+
+
 def is_loopback_ollama_host(host: str) -> bool:
     """True when ``host`` identifies the local Ollama machine (loopback or ``localhost`` hostname)."""
-    h = (host or "").strip()
-    if not h:
-        return False
-    try:
-        return bool(ipaddress.ip_address(h).is_loopback)
-    except ValueError:
-        pass
-    return h.casefold() == "localhost"
+    return _is_loopback_ollama_host(host)
 
 
 def resolve_tier2_multimodal_pull_tags() -> list[str]:

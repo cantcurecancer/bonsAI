@@ -16,7 +16,13 @@ import urllib.request
 from typing import Any, Callable, Optional
 from urllib.parse import urlparse
 
-from refactor_helpers import normalize_ollama_base
+from backend.constants import OLLAMA_TAB_WHERE_AI_RUNS
+from backend.ollama_connectivity import (
+    guess_ollama_cli_paths,
+    is_loopback_ollama_base,
+    ollama_http_base_from_pc_ip_field,
+)
+from backend.ollama_urls import normalize_ollama_base
 
 from backend.services.bonsai_stream_tags import extract_bonsai_status
 from backend.services.strategy_guide_parse import extract_strategy_guide_branches, extract_strategy_checklist
@@ -33,46 +39,17 @@ from backend.services.ollama_prompts import (
 # Smaller than 64KiB so Stop re-checks ``cancel_requested`` more often while ``read()`` blocks on slow streams.
 OLLAMA_CHAT_READ_CHUNK = 4096
 
+
 def _ollama_http_base_from_pc_ip_field(pc_ip: str) -> str:
-    """Resolve ``http://host:port`` used for Ollama API calls (same as chat URL base)."""
-    raw = (pc_ip or "").strip() or "127.0.0.1:11434"
-    _, _, base = normalize_ollama_base(raw)
-    return base
+    return ollama_http_base_from_pc_ip_field(pc_ip)
 
 
 def _is_loopback_ollama_base(base_http: str) -> bool:
-    try:
-        h = urlparse(base_http).hostname or ""
-        return h in ("127.0.0.1", "localhost", "::1", "[::1]")
-    except Exception:
-        return False
+    return is_loopback_ollama_base(base_http)
 
 
 def _guess_ollama_cli_paths() -> list[str]:
-    """PATH + typical install paths — Decky's Python PATH often misses ``~/.local/bin``."""
-    out: list[str] = []
-    seen: set[str] = set()
-
-    def _add(candidate: Optional[str]) -> None:
-        if not candidate:
-            return
-        p = os.path.abspath(os.path.expanduser(candidate))
-        if not os.path.isfile(p) or not os.access(p, os.X_OK):
-            return
-        if p in seen:
-            return
-        seen.add(p)
-        out.append(p)
-
-    _add(shutil.which("ollama"))
-    _add(os.path.expanduser("~/.local/bin/ollama"))
-    for fixed in (
-        "/home/deck/.local/bin/ollama",
-        "/usr/local/bin/ollama",
-        "/usr/bin/ollama",
-    ):
-        _add(fixed)
-    return out
+    return guess_ollama_cli_paths()
 
 
 def request_ollama_stop_model_via_api(
@@ -592,7 +569,7 @@ def post_ollama_chat(
             "response": (
                 f"Ollama did not finish within {request_timeout_seconds} seconds for model '{model_name}'. "
                 "On Steam Deck this usually means inference is on CPU — configure Ollama to use the GPU, "
-                "or pull a smaller model in Settings → Connection (e.g. qwen2.5:1.5b for Speed mode)."
+                f"or pull a smaller model in {OLLAMA_TAB_WHERE_AI_RUNS} (e.g. qwen2.5:1.5b for Speed mode)."
             ),
         }
     except Exception as e:

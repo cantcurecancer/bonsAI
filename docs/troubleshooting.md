@@ -107,7 +107,7 @@ If Windows still falls back to CPU after FIX A:
 
 **Default Tier 1 pull:** `qwen2.5vl:3b` — one FOSS multimodal model for chat, screenshots, OCR, and Strategy mode. In bonsAI → **Ollama** → **Install Tier 1 essentials** (or `ollama pull qwen2.5vl:3b`).
 
-**Optional Tier 2 one-model multimodal:** `gemma4:e2b-it-qat` (falls back to `gemma4:e2b` if the QAT tag is unavailable on the registry). Use **Install Tier 2 one-model multimodal** under Connection; bonsAI switches Model policy to Tier 2 (open-weight) and shows license disclosure before pull.
+**Optional Tier 2 one-model multimodal:** `gemma4:e2b-it-qat` (falls back to `gemma4:e2b` if the QAT tag is unavailable on the registry). Use **Install Tier 2 one-model multimodal** under **Ollama → Where AI runs**; bonsAI switches Model policy to Tier 2 (open-weight) and shows license disclosure before pull.
 
 **Browse models** defaults to **Essentials only** (two preset rows). Turn the filter off to see more models; stretch/specialist rows are for power users.
 
@@ -197,7 +197,7 @@ If Windows still falls back to CPU after FIX A:
 
 **Defaults (when “Custom timeouts” is off):** slow-reply warning at **30s**, hard abort at **45s** (2026-05-19; previously 360s). Enable **Developer → Custom timeouts** for your own warning/timeout pair.
 
-**Where:** Settings tab, under **Connection**, **Latency warning and backend timeout**.
+**Where:** **Ollama** tab, under **Where AI runs**, **Latency warning and backend timeout**.
 
 **Behavior:** One Steam slider controls **Hard timeout (backend)** (10s steps, max 300s). The **Soft warning (latency)** value remains visible directly below it; the plugin keeps warning **strictly below** timeout so the slow hint can appear before a hard cancel.
 
@@ -250,7 +250,7 @@ All Desktop writes now land in **`~/Desktop/bonsAI_logs/`** (was `BonsAI_notes`)
 
 ### Find Ollama on LAN (mDNS — optional)
 
-bonsAI can browse for **`_ollama._tcp`** services on your LAN (**Settings → Connection → Find LAN**). This uses **mDNS only** (Bonjour / Avahi) — it does **not** scan IP subnets or arbitrary ports.
+bonsAI can browse for **`_ollama._tcp`** services on your LAN (**Ollama → Where AI runs → Find LAN**). This uses **mDNS only** (Bonjour / Avahi) — it does **not** scan IP subnets or arbitrary ports.
 
 Stock Ollama on Linux/Windows often **does not advertise** mDNS until you publish it. Example on a Fedora/Bazzite PC (adjust paths):
 
@@ -271,7 +271,7 @@ Then `sudo systemctl restart avahi-daemon` and ensure `OLLAMA_HOST=0.0.0.0` and 
 
 ### On-device Ollama (localhost — **Test** vs cold boot)
 
-**Symptom:** Right after a full reboot, Connection **Test** fails for **127.0.0.1:11434** even though pulls succeeded earlier.
+**Symptom:** Right after a full reboot, **Ollama → Where AI runs → Test** fails for **127.0.0.1:11434** even though pulls succeeded earlier.
 
 **Why:** Full boot can leave the **`ollama`** user service idle until first use — nothing is listening on **11434** until the daemon (`ollama serve` / systemd unit) accepts traffic.
 

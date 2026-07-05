@@ -1,6 +1,13 @@
 import React, { useLayoutEffect, useRef } from "react";
 import { Focusable } from "@decky/ui";
-import { ASK_LABEL_COLOR } from "../features/unified-input/constants";
+import {
+  ASK_LABEL_COLOR,
+  DECK_MENU_FONT_PX,
+  DECK_MENU_GAP_PX,
+  DECK_MENU_PANEL_BG,
+  DECK_MENU_ROW_PAD_Y_PX,
+  DECK_MENU_ROW_SELECTED_BG,
+} from "../features/unified-input/constants";
 import {
   AI_CHARACTER_ACCENT_INTENSITY_OPTIONS,
   type AiCharacterAccentIntensityId,
@@ -15,14 +22,10 @@ export type SettingsTabAccentIntensityMenuPopoverProps = {
   onFocusTrigger: () => boolean;
 };
 
-const MENU_GAP_PX = 6;
-const MENU_ROW_PAD_X_PX = 6;
-const MENU_ROW_PAD_Y_PX = 8;
-const MENU_PANEL_MIN_WIDTH_PX = 14;
-const MENU_ROW_GAP_PX = 0;
-const MENU_PANEL_BG = "rgb(28, 36, 44)";
-const MENU_ROW_SELECTED_BG = "rgb(40, 50, 62)";
-const MENU_FONT_PX = 13;
+/** Narrower row padding than default deck menus — fits inline trigger width. */
+const ACCENT_MENU_ROW_PAD_X_PX = 6;
+const ACCENT_MENU_PANEL_MIN_WIDTH_PX = 14;
+const ACCENT_MENU_ROW_GAP_PX = 0;
 
 /** Settings-tab inline menu; mirrors MainTabAskModeMenuPopover paint model for Steam compositing. */
 export function SettingsTabAccentIntensityMenuPopover(props: SettingsTabAccentIntensityMenuPopoverProps) {
@@ -59,8 +62,8 @@ export function SettingsTabAccentIntensityMenuPopover(props: SettingsTabAccentIn
         position: "absolute",
         top: "100%",
         left: 0,
-        marginTop: MENU_GAP_PX,
-        minWidth: `max(100%, ${MENU_PANEL_MIN_WIDTH_PX}px)`,
+        marginTop: DECK_MENU_GAP_PX,
+        minWidth: `max(100%, ${ACCENT_MENU_PANEL_MIN_WIDTH_PX}px)`,
         width: "max-content",
         zIndex: 100,
         pointerEvents: "auto",
@@ -71,16 +74,16 @@ export function SettingsTabAccentIntensityMenuPopover(props: SettingsTabAccentIn
       <div
         className="bonsai-accent-intensity-menu-surface"
         style={{
-          backgroundColor: MENU_PANEL_BG,
+          backgroundColor: DECK_MENU_PANEL_BG,
           border: "1px solid rgba(255, 255, 255, 0.08)",
           borderRadius: 6,
           boxShadow: "0 8px 22px rgba(0,0,0,0.55)",
           boxSizing: "border-box",
           overflow: "hidden",
           mixBlendMode: "normal",
-          ["--bonsai-accent-intensity-menu-pad-x" as string]: `${MENU_ROW_PAD_X_PX}px`,
-          ["--bonsai-accent-intensity-menu-pad-y" as string]: `${MENU_ROW_PAD_Y_PX}px`,
-          ["--bonsai-accent-intensity-menu-list-pad-y" as string]: `${MENU_ROW_GAP_PX}px`,
+          ["--bonsai-accent-intensity-menu-pad-x" as string]: `${ACCENT_MENU_ROW_PAD_X_PX}px`,
+          ["--bonsai-accent-intensity-menu-pad-y" as string]: `${DECK_MENU_ROW_PAD_Y_PX}px`,
+          ["--bonsai-accent-intensity-menu-list-pad-y" as string]: `${ACCENT_MENU_ROW_GAP_PX}px`,
         }}
       >
         <Focusable
@@ -92,8 +95,8 @@ export function SettingsTabAccentIntensityMenuPopover(props: SettingsTabAccentIn
           style={{
             width: "100%",
             margin: 0,
-            padding: `${MENU_ROW_GAP_PX}px 0`,
-            backgroundColor: MENU_PANEL_BG,
+            padding: `${ACCENT_MENU_ROW_GAP_PX}px 0`,
+            backgroundColor: DECK_MENU_PANEL_BG,
             display: "flex",
             flexDirection: "column",
             gap: 0,
@@ -151,8 +154,8 @@ export function SettingsTabAccentIntensityMenuPopover(props: SettingsTabAccentIn
                   justifyContent: "center",
                   width: "100%",
                   minHeight: 0,
-                  padding: `${MENU_ROW_PAD_Y_PX}px ${MENU_ROW_PAD_X_PX}px`,
-                  fontSize: MENU_FONT_PX,
+                  padding: `${DECK_MENU_ROW_PAD_Y_PX}px ${ACCENT_MENU_ROW_PAD_X_PX}px`,
+                  fontSize: DECK_MENU_FONT_PX,
                   fontWeight: isSelected ? 700 : 500,
                   fontVariant: "small-caps",
                   textTransform: "lowercase",
@@ -160,7 +163,7 @@ export function SettingsTabAccentIntensityMenuPopover(props: SettingsTabAccentIn
                   lineHeight: 1.4,
                   borderRadius: 0,
                   borderTop: "none",
-                  backgroundColor: isSelected ? MENU_ROW_SELECTED_BG : MENU_PANEL_BG,
+                  backgroundColor: isSelected ? DECK_MENU_ROW_SELECTED_BG : DECK_MENU_PANEL_BG,
                   color: ASK_LABEL_COLOR,
                   cursor: "pointer",
                   boxSizing: "border-box",

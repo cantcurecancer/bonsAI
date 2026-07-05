@@ -159,8 +159,8 @@ Run in BPM (Desktop → Big Picture → QAM → bonsAI). Ollama reachable; defau
 ### SMOKE-A — Golden path (P0)
 
 - [ ] Open plugin from QAM; no crash on first paint.
-- [ ] LB/RB cycles **Main → Settings → Permissions → (Debug if enabled) → About**.
-- [ ] **Settings → Connection → Test** — success or stable unreachable message (no traceback).
+- [ ] LB/RB cycles **Main → Ollama → Settings → Permissions → (Developer if enabled) → About**.
+- [ ] **Ollama → Where AI runs → Test** — success or stable unreachable message (no traceback).
 - [ ] Main tab: type a short question; **Ask**; reply appears in focusable chunks.
 - [ ] D-pad down through chunks; last chunk readable.
 - [ ] Expand **Input handling (last Ask)** — raw input, model name, system/user snapshot present.
@@ -367,6 +367,7 @@ Maps [roadmap.md](roadmap.md) **Completed** summary and [archive/roadmap-complet
 | Feature ID | Shipped feature | Test ID(s) | Status | Evidence |
 |------------|-----------------|------------|--------|----------|
 | CORE-UI | Iconography, tabs, unified input | SMOKE-A | Partial | [SMOKE-A](test-evidence/tier0/2026-05-26-9e20a82/SMOKE-A-golden-path/manifest.json); [preview 2026-05-26](test-evidence/tier0/2026-05-26-9e20a82/SMOKE-A-golden-path/manifest.json) |
+| REFACTOR-4DEF | Phase 4d–4f MainTab/index/styles split | SMOKE-A | Open | Unit/build gates pass; on-Deck regression via golden path |
 | PERSIST-QA | Persist last Q&A on reopen | Tier 1 extra | Open | |
 | UNIFIED-INPUT | Unified search + ask | SMOKE-A | Open | |
 | PRESET-FADE-OPT | Preset chip fade opt-out | — | Open | Tier 3 cosmetic |
@@ -377,7 +378,8 @@ Maps [roadmap.md](roadmap.md) **Completed** summary and [archive/roadmap-complet
 | STRATEGY-CORE | Strategy Guide prompt path | SMOKE-E | Open | |
 | STRATEGY-SPOILER | Strategy spoiler policy + consent | SMOKE-E, STRAT-01…05 | Partial | Unit green 2026-04-30; [preview 2026-05-26](test-evidence/tier1Core/2026-05-26-9e20a82/SMOKE-E-strategy-mode/manifest.json) |
 | STRATEGY-CHECKLIST | Strategy checklist (follow-up, persisted per game) | Tier 2 § Strategy depth | Open | Unit + preview; on-Deck: check/uncheck, QAM reopen |
-| DEBUG-TAB | Debug tab opt-in | SMOKE-A | Open | Tab strip when enabled |
+| DEBUG-TAB | Developer tab opt-in | SMOKE-A | Open | Tab strip when enabled |
+| INTENT-PACKS | Offline intent packs (import/export) | SMOKE-A | Open | Settings → Search intent packs |
 | SETTINGS-TRIM | Settings tab trim | SMOKE-A | Open | |
 | UI-SCALE | UI scale profiles (auto + manual snap) | UI-SCALE-01…04 | Open | Settings → Apply; on-Deck display matrix |
 | RESET-SESSION | Reset session cache | — | Open | Tier 2 |

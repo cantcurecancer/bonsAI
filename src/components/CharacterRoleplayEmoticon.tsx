@@ -1,5 +1,5 @@
 import React from "react";
-import { EMOTICON_PALETTE, resolvePlaceholderCharacterEmoticonGrid } from "./characterPlaceholderEmoticonGrids";
+import { EMOTICON_PALETTE, resolvePlaceholderCharacterEmoticonGrid } from "../data/characterPlaceholderEmoticonGrids";
 
 export type CharacterRoleplayEmoticonProps = {
   /** Preset catalog id, or `__random__` / `__custom__` for synthetic avatars. */

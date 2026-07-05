@@ -162,14 +162,6 @@ Within this section: ascending stars (★★★★ → ★★★★★ → ★�
   - **Depends on:** unified Ask state machine.
   - **Not in scope:** cross-device merge or server-backed sync.
 
-- ★★★★ **Offline intent packs** (local JSON import/export)
-
-  - **Goal:** Import/export user-created offline search intent packs (aliases, synonyms, expansions) without cloud dependence.
-  - **Primary work:** local JSON schema, add/edit/export/import, merge conflict rules.
-  - **Files:** `src/index.tsx`, `main.py`, docs/usage references.
-  - **Depends on:** stable search indexing and local storage schema versioning.
-  - **Not in scope:** remote-hosted catalogs or mandatory online sync.
-
 - ★★★★ **Steam Input layout parse** (VDF → AI context)
 
   - **Goal:** Parse controller VDF configs and feed actionable control context to AI.

@@ -161,6 +161,18 @@ class RefactorHelperTests(unittest.TestCase):
         self.assertEqual(strategy, "full_chain")
         self.assertEqual(models, chain)
 
+    def test_ask_model_fallback_chain_skips_missing_models(self):
+        """Simulate ask_ollama retry: filter chain to installed, advance on model-not-found."""
+        chain = select_ollama_models(False, "speed")
+        installed = ["qwen2.5:3b"]
+        matched, skipped = filter_models_to_installed(chain, installed)
+        self.assertEqual(matched, ["qwen2.5:3b"])
+        self.assertIn("qwen2.5vl:3b", skipped)
+        self.assertTrue(is_ollama_model_missing_error(404, '{"error":"model not found"}'))
+        models, strategy = build_effective_models_to_try(chain, installed)
+        self.assertEqual(strategy, "installed_in_policy_chain")
+        self.assertEqual(models, ["qwen2.5:3b"])
+
 
 if __name__ == "__main__":
     unittest.main()

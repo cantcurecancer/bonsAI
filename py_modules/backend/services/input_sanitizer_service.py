@@ -20,7 +20,9 @@ MAX_USER_QUESTION_CHARS = 16_000
 
 def normalize_command_input(text: str) -> str:
     """Normalize text for sanitizer command comparison (trim + casefold)."""
-    return (text or "").strip().casefold()
+    from backend.services.ask_local_commands import normalize_ask_command_input
+
+    return normalize_ask_command_input(text, allow_leading_slash=False)
 
 
 def classify_sanitizer_command(text: str) -> Optional[Literal["disable", "enable"]]:

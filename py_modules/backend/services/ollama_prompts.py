@@ -6,6 +6,7 @@ Transport (`post_ollama_chat`, streaming) stays in ``ollama_service``; this modu
 import re
 from typing import Callable, Optional
 
+from backend.constants import DEFAULT_OLLAMA_BASE_URL, OLLAMA_TAB_WHERE_AI_RUNS
 from backend.services.strategy_guide_parse import (
     STRATEGY_FOLLOWUP_PREFIX,
     format_strategy_checklist_state_block,
@@ -309,7 +310,7 @@ def question_matches_troubleshooting_log_context(question: str) -> bool:
 OLLAMA_BONSAI_SETUP_LINE = (
     "\n\nOLLAMA / bonsAI (host & inference): The user is asking about **slow or failing Ollama responses** and/or **how Ollama is set up for bonsAI**. "
     "Answer as **LLM/host/network** guidance — **not** Steam **Performance / TDP / FPS / QAM game sliders** unless they explicitly tie slowness to those.\n"
-    "Cover, in plain steps: **bonsAI Settings → Connection** — base URL / host (Deck-local `http://127.0.0.1:11434` vs Ollama on a **PC** on the LAN), **hard timeout** and warning threshold, **Ollama keep-alive** (how long models stay loaded vs VRAM).\n"
+    f"Cover, in plain steps: **bonsAI {OLLAMA_TAB_WHERE_AI_RUNS}** — base URL / host (Deck-local `{DEFAULT_OLLAMA_BASE_URL}` vs Ollama on a **PC** on the LAN), **hard timeout** and warning threshold, **Ollama keep-alive** (how long models stay loaded vs VRAM).\n"
     "Cover **host reachability**: on the PC running Ollama, `OLLAMA_HOST` / bind address, OS firewall allowing **11434**, same subnet as the Deck, and correcting typos in the URL.\n"
     "Cover **model load**: large or heavy tags are slower on Deck; suggest smaller or better-quantized models; **Ask mode** (Speed / Strategy / Expert) changes fallback chains; **model policy tier** can limit which tags run.\n"
     "Cover **telling network vs compute delay**: first-token wait vs steady tokens/s; if the host is remote, mention Wi‑Fi vs Ethernet and distance to the PC.\n"
