@@ -50,6 +50,9 @@ import {
   type ScreenshotAttachmentPreset,
   type UnifiedInputPersistenceMode,
   type VoiceSttModelId,
+  type UiScaleProfileId,
+  DEFAULT_UI_SCALE_AUTO_ENABLED,
+  DEFAULT_UI_SCALE_MANUAL_PROFILE,
 } from "../utils/settingsAndResponse";
 
 function snapshotFromBonsaiSettings(normalized: BonsaiSettings): BonsaiSettingsSnapshotInput {
@@ -89,6 +92,8 @@ function snapshotFromBonsaiSettings(normalized: BonsaiSettings): BonsaiSettingsS
     responseVerifyModel: normalized.response_verify_model,
     namedOllamaHosts: normalized.named_ollama_hosts,
     voiceSttModel: normalized.voice_stt_model,
+    uiScaleAutoEnabled: normalized.ui_scale_auto_enabled,
+    uiScaleManualProfile: normalized.ui_scale_manual_profile,
   };
 }
 
@@ -168,6 +173,10 @@ export function usePluginSettings() {
   const [responseVerifyModel, setResponseVerifyModel] = useState<string>(DEFAULT_RESPONSE_VERIFY_MODEL);
   const [namedOllamaHosts, setNamedOllamaHosts] = useState<NamedOllamaHost[]>([]);
   const [voiceSttModel, setVoiceSttModel] = useState<VoiceSttModelId>(DEFAULT_VOICE_STT_MODEL);
+  const [uiScaleAutoEnabled, setUiScaleAutoEnabled] = useState<boolean>(DEFAULT_UI_SCALE_AUTO_ENABLED);
+  const [uiScaleManualProfile, setUiScaleManualProfile] = useState<UiScaleProfileId>(
+    DEFAULT_UI_SCALE_MANUAL_PROFILE
+  );
   const [settingsLoaded, setSettingsLoaded] = useState(false);
   /** When false, debounced ``save_settings`` is skipped so a failed initial load cannot wipe disk with UI defaults. */
   const [settingsPersistEnabled, setSettingsPersistEnabled] = useState(false);
@@ -212,6 +221,8 @@ export function usePluginSettings() {
     responseVerifyModel,
     namedOllamaHosts,
     voiceSttModel,
+    uiScaleAutoEnabled,
+    uiScaleManualProfile,
   };
 
   const hydrateFromSettings = useCallback((saved: BonsaiSettings) => {
@@ -251,6 +262,8 @@ export function usePluginSettings() {
     setResponseVerifyModel(normalized.response_verify_model);
     setNamedOllamaHosts(normalized.named_ollama_hosts);
     setVoiceSttModel(normalized.voice_stt_model);
+    setUiScaleAutoEnabled(normalized.ui_scale_auto_enabled);
+    setUiScaleManualProfile(normalized.ui_scale_manual_profile);
     settingsSnapshotForDebouncedSaveRef.current = snapshotFromBonsaiSettings(normalized);
     setSettingsPersistEnabled(true);
   }, []);
@@ -335,6 +348,8 @@ export function usePluginSettings() {
         setResponseVerifyModel(DEFAULT_RESPONSE_VERIFY_MODEL);
         setNamedOllamaHosts([]);
         setVoiceSttModel(DEFAULT_VOICE_STT_MODEL);
+        setUiScaleAutoEnabled(DEFAULT_UI_SCALE_AUTO_ENABLED);
+        setUiScaleManualProfile(DEFAULT_UI_SCALE_MANUAL_PROFILE);
       })
       .finally(() => {
         if (!cancelled) setSettingsLoaded(true);
@@ -398,6 +413,8 @@ export function usePluginSettings() {
     responseVerifyModel,
     namedOllamaHosts,
     voiceSttModel,
+    uiScaleAutoEnabled,
+    uiScaleManualProfile,
     settingsPersistEnabled,
   ]);
 
@@ -461,6 +478,10 @@ export function usePluginSettings() {
     setNamedOllamaHosts,
     voiceSttModel,
     setVoiceSttModel,
+    uiScaleAutoEnabled,
+    setUiScaleAutoEnabled,
+    uiScaleManualProfile,
+    setUiScaleManualProfile,
     settingsLoaded,
     setLatencyWarningSeconds,
     setRequestTimeoutSeconds,

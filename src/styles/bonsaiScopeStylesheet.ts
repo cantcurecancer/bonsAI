@@ -21,6 +21,11 @@ import {
   UNIFIED_TEXT_LINE_HEIGHT,
 } from "../features/unified-input/constants";
 
+/** Multiply base px tokens by `--bonsai-ui-scale` on `.bonsai-scope`. */
+function uiScalePx(px: number): string {
+  return `calc(${px}px * var(--bonsai-ui-scale, 1))`;
+}
+
 /** Scoped Deck/QAM CSS injected once under `.bonsai-scope`. */
 export function buildBonsaiScopeStylesheet(): string {
   return `
@@ -59,10 +64,10 @@ export function buildBonsaiScopeStylesheet(): string {
           box-sizing: border-box;
           width: 100%;
           max-width: 100%;
-          margin-left: -${BONSAI_PLUGIN_SIDE_PAD_PX}px;
-          margin-right: -${BONSAI_PLUGIN_SIDE_PAD_PX}px;
-          padding-left: ${BONSAI_PLUGIN_SIDE_PAD_PX}px;
-          padding-right: ${BONSAI_PLUGIN_SIDE_PAD_PX}px;
+          margin-left: calc(-1 * (${uiScalePx(BONSAI_PLUGIN_SIDE_PAD_PX)}));
+          margin-right: calc(-1 * (${uiScalePx(BONSAI_PLUGIN_SIDE_PAD_PX)}));
+          padding-left: ${uiScalePx(BONSAI_PLUGIN_SIDE_PAD_PX)};
+          padding-right: ${uiScalePx(BONSAI_PLUGIN_SIDE_PAD_PX)};
         }
 
         .bonsai-scope .bonsai-settings-section-stack {
@@ -91,6 +96,8 @@ export function buildBonsaiScopeStylesheet(): string {
           overflow-wrap: anywhere !important;
           word-wrap: break-word !important;
           word-break: break-word !important;
+          font-size: ${uiScalePx(12)} !important;
+          line-height: 1.4 !important;
         }
 
         /* ==========================================================================
@@ -348,12 +355,12 @@ export function buildBonsaiScopeStylesheet(): string {
         /* After the global TabContentsScroll reset: gap under LB/RB strip + kill stray horizontal inset
            (Deck screenshots: SETTINGS body looked right-shifted vs panel edge). */
         .bonsai-scope .bonsai-decky-tabs-root [class*="TabContentsScroll"] {
-          margin-top: ${TAB_STRIP_BODY_GAP_PX}px !important;
+          margin-top: ${uiScalePx(TAB_STRIP_BODY_GAP_PX)} !important;
           padding-top: 6px !important;
           margin-left: 0 !important;
           margin-right: 0 !important;
-          padding-left: ${BONSAI_PLUGIN_SIDE_PAD_PX}px !important;
-          padding-right: ${BONSAI_PLUGIN_SIDE_PAD_PX}px !important;
+          padding-left: ${uiScalePx(BONSAI_PLUGIN_SIDE_PAD_PX)} !important;
+          padding-right: ${uiScalePx(BONSAI_PLUGIN_SIDE_PAD_PX)} !important;
           box-sizing: border-box !important;
         }
 
@@ -477,7 +484,7 @@ export function buildBonsaiScopeStylesheet(): string {
         }
 
         .bonsai-scope .bonsai-chat-response-stack {
-          margin-top: ${BONSAI_CHAT_RESPONSE_STACK_MARGIN_TOP_PX}px !important;
+          margin-top: ${uiScalePx(BONSAI_CHAT_RESPONSE_STACK_MARGIN_TOP_PX)} !important;
         }
 
         .bonsai-scope .bonsai-preset-carousel-focus-root {
@@ -560,17 +567,17 @@ export function buildBonsaiScopeStylesheet(): string {
           color: transparent !important;
           -webkit-text-fill-color: transparent !important;
           margin: 0 !important;
-          padding: ${UNIFIED_TEXT_INSET_TOP_PX}px ${UNIFIED_TEXT_INSET_RIGHT_PX}px ${UNIFIED_TEXT_INSET_BOTTOM_PX}px ${UNIFIED_TEXT_INSET_LEFT_PX}px !important;
+          padding: ${uiScalePx(UNIFIED_TEXT_INSET_TOP_PX)} ${uiScalePx(UNIFIED_TEXT_INSET_RIGHT_PX)} ${uiScalePx(UNIFIED_TEXT_INSET_BOTTOM_PX)} ${uiScalePx(UNIFIED_TEXT_INSET_LEFT_PX)} !important;
           text-indent: 0 !important;
           box-sizing: border-box !important;
-          font-size: ${UNIFIED_TEXT_FONT_PX}px !important;
+          font-size: ${uiScalePx(UNIFIED_TEXT_FONT_PX)} !important;
           line-height: ${UNIFIED_TEXT_LINE_HEIGHT} !important;
           vertical-align: top !important;
         }
 
         .bonsai-scope .bonsai-unified-input-host .bonsai-unified-input-measure,
         .bonsai-scope .bonsai-unified-input-host .bonsai-unified-input-text-overlay {
-          padding: ${UNIFIED_TEXT_INSET_TOP_PX}px ${UNIFIED_TEXT_INSET_RIGHT_PX}px ${UNIFIED_TEXT_INSET_BOTTOM_PX}px ${UNIFIED_TEXT_INSET_LEFT_PX}px !important;
+          padding: ${uiScalePx(UNIFIED_TEXT_INSET_TOP_PX)} ${uiScalePx(UNIFIED_TEXT_INSET_RIGHT_PX)} ${uiScalePx(UNIFIED_TEXT_INSET_BOTTOM_PX)} ${uiScalePx(UNIFIED_TEXT_INSET_LEFT_PX)} !important;
           box-sizing: border-box !important;
         }
 
@@ -600,7 +607,7 @@ export function buildBonsaiScopeStylesheet(): string {
 
         .bonsai-scope .bonsai-unified-input-host input::placeholder,
         .bonsai-scope .bonsai-unified-input-host textarea::placeholder {
-          font-size: ${UNIFIED_TEXT_FONT_PX}px !important;
+          font-size: ${uiScalePx(UNIFIED_TEXT_FONT_PX)} !important;
         }
 
         /* Hide standard field labels to allow custom overlays */
@@ -795,7 +802,7 @@ export function buildBonsaiScopeStylesheet(): string {
           max-width: 100% !important;
           min-width: 0 !important;
           box-sizing: border-box !important;
-          margin-top: ${BONSAI_CHAT_INPUT_TO_TRANSCRIPT_GAP_PX}px !important;
+          margin-top: ${uiScalePx(BONSAI_CHAT_INPUT_TO_TRANSCRIPT_GAP_PX)} !important;
         }
         .bonsai-scope .bonsai-chat-status-line {
           margin-top: 8px !important;

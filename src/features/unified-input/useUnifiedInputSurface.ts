@@ -3,13 +3,14 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react
 import {
   ASK_BAR_LAYOUT_SHIFT_RIGHT_PX,
   ASK_BAR_ROW_WIDTH_EXTRA_PX,
-  UNIFIED_INPUT_EXPAND_AHEAD_PX,
   UNIFIED_INPUT_HEIGHT_PAD_PX,
   UNIFIED_TEXT_BODY_MAX_PX,
   UNIFIED_TEXT_BODY_MIN_PX,
+  UNIFIED_TEXT_FONT_PX,
   UNIFIED_TEXT_INSET_LEFT_PX,
   UNIFIED_TEXT_INSET_TOP_PX,
 } from "./constants";
+import { readUiScaleFromElement } from "../../data/uiScaleProfile";
 
 export type UnifiedInputSurfaceRefs = {
   bonsaiScopeRef: React.RefObject<HTMLDivElement>;
@@ -61,9 +62,14 @@ export function useUnifiedInputSurface(currentTab: string, unifiedInput: string)
     layerEl.style.setProperty("--bonsai-unified-field-top", `${Math.round(overlayTop * 100) / 100}px`);
     layerEl.style.setProperty("--bonsai-unified-field-width", `${Math.round(textWidth * 100) / 100}px`);
     const sh = measure.scrollHeight;
+    const uiScale = readUiScaleFromElement(bonsaiScopeRef.current);
+    const bodyMinPx = UNIFIED_TEXT_BODY_MIN_PX * uiScale;
+    const bodyMaxPx = UNIFIED_TEXT_BODY_MAX_PX * uiScale;
+    const expandAheadPx = Math.ceil(UNIFIED_TEXT_FONT_PX * uiScale * 1.2);
+    const heightPadPx = UNIFIED_INPUT_HEIGHT_PAD_PX * uiScale;
     const nextPx = Math.min(
-      UNIFIED_TEXT_BODY_MAX_PX,
-      Math.max(UNIFIED_TEXT_BODY_MIN_PX, sh + UNIFIED_INPUT_HEIGHT_PAD_PX + UNIFIED_INPUT_EXPAND_AHEAD_PX),
+      bodyMaxPx,
+      Math.max(bodyMinPx, sh + heightPadPx + expandAheadPx),
     );
     setUnifiedInputSurfacePx(nextPx);
     const hostWRounded = Math.round(hostW * 100) / 100;

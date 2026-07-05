@@ -54,14 +54,6 @@ Within this section: ascending stars (★★ → ★★★ → ★★★★). Br
   - **Depends on:** shipped Ask routing + vision fallback behavior (reference implementation).
   - **Not in scope:** distinct embedding-tier routing unrelated to tag chains.
 
-- ★★★ **10-foot readability slider** (handheld vs couch, J)
-
-  - **Goal:** Single **font/size/step spacing** control for markdown chunks and chrome — narrow carve-out from ecosystem **F** (see Medium-term).
-  - **Primary work:** Settings slider + scoped CSS vars (`MainTab`, markdown chunks).
-  - **Files:** `src/index.tsx`, scoped stylesheet tokens.
-  - **Depends on:** stable markdown chunk layout.
-  - **Not in scope:** Per-monitor EDID detection.
-
 - ★★ **Preset chip expansion** (streaming / LAN / Steam Input — incremental, N)
 
   - **Baseline shipped:** `PRESET_PROMPTS` in [`src/data/presets.ts`](../src/data/presets.ts) drives the main-tab carousel (advice-first strings, strategy mode switches, honest `beta: true` previews). See **Completed** → First-run and prompts — not a separate ship milestone.
@@ -196,15 +188,6 @@ Within this section: ascending stars (★★★★ → ★★★★★ → ★�
   - **Files:** `main.py`, `py_modules/backend/services/deck_diagnostics_service.py`, reuse/extend `proton_troubleshooting_logs.py`, `game_ai_request.py`, `src/data/presets.ts`, local-only command module (e.g. `diagnostics_commands.py`), About tab one-liner pointing to magic phrase.
   - **Depends on:** **`steam_logs_read`**; shipped connection test; optional **`filesystem_write`** for Desktop save only.
   - **Not in scope:** New permission tier; telemetry upload; auto background scans; privileged repair commands (`sudo` fixes); replacing **Session context and user stash**; passive **Deck health sentinel** (future brainstorm).
-
-- ★★★★★ **Couch 10-foot UI profile** (docked Deck / Steam Machine, F)
-
-  - **GitHub (tracking placeholder):** [bonsAI Issues](https://github.com/cantcurecancer/bonsAI/issues) — dedicated issue TBD.
-  - **Goal:** Usable at **couch distance** when Deck is **docked** or on **Steam Machine**–class surfaces — larger minimum type, chunk spacing, focus visibility (without breaking handheld default).
-  - **Primary work:** Settings toggle or automatic heuristic (e.g. external display signal where available); scoped tokens in plugin UI.
-  - **Files:** `src/index.tsx`, tab components, scoped CSS.
-  - **Depends on:** optional overlap with **10-foot readability slider** (Near-term J).
-  - **Not in scope:** full Big Picture DOM integration.
 
 - ★★★★★ **Global quick-launch macro** (Steam Input doc spike)
 

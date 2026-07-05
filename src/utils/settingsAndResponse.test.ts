@@ -18,6 +18,18 @@ import {
 
 /** Regression tests for normalization bounds and response formatting behavior. */
 describe("settingsAndResponse", () => {
+  it("normalizeSettings: ui scale defaults and manual profile", () => {
+    const defaults = normalizeSettings({});
+    expect(defaults.ui_scale_auto_enabled).toBe(true);
+    expect(defaults.ui_scale_manual_profile).toBe("handheld");
+    const manual = normalizeSettings({
+      ui_scale_auto_enabled: false,
+      ui_scale_manual_profile: "couch",
+    });
+    expect(manual.ui_scale_auto_enabled).toBe(false);
+    expect(manual.ui_scale_manual_profile).toBe("couch");
+  });
+
   it("normalizes latency warning to configured bounds and step", () => {
     expect(normalizeLatencyWarningSeconds(2)).toBe(5);
     expect(normalizeLatencyWarningSeconds(299)).toBe(300);
@@ -228,6 +240,8 @@ describe("settingsAndResponse", () => {
       responseVerifyModel: "",
       namedOllamaHosts: [],
       voiceSttModel: "tiny.en",
+      uiScaleAutoEnabled: true,
+      uiScaleManualProfile: "handheld",
     });
     expect(p.latency_warning_seconds).toBe(20);
     expect(p.request_timeout_seconds).toBe(150);
@@ -283,6 +297,8 @@ describe("settingsAndResponse", () => {
       responseVerifyModel: "",
       namedOllamaHosts: [],
       voiceSttModel: "tiny.en" as const,
+      uiScaleAutoEnabled: true,
+      uiScaleManualProfile: "handheld" as const,
     };
     const p = toBonsaiSettingsPayload(base, {
       ai_character_random: false,

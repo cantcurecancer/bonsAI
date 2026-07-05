@@ -28,6 +28,8 @@ import {
 } from "../utils/settingsTabLocalSurvival";
 import { VoiceInputSettingsSection } from "./VoiceInputSettingsSection";
 import { SettingsTabIntentPacksSection } from "./SettingsTabIntentPacksSection";
+import { SettingsTabUiScaleSection } from "./SettingsTabUiScaleSection";
+import type { UiScaleProfileId } from "../data/uiScaleProfile";
 import type { IntentPackSummary } from "../hooks/useIntentPacks";
 import type { VoiceSttModelId } from "../utils/settingsAndResponse";
 
@@ -89,6 +91,11 @@ export type SettingsTabProps = {
   setVoiceSttModel: (v: VoiceSttModelId) => void;
   microphoneAccessEnabled: boolean;
 
+  uiScaleAutoEnabled: boolean;
+  uiScaleManualProfile: UiScaleProfileId;
+  appliedUiScaleProfileId: UiScaleProfileId;
+  onApplyUiScale: (autoEnabled: boolean, manualProfile: UiScaleProfileId) => void | Promise<void>;
+
   onOpenCharacterPicker: () => void;
   onBeforeDeckyModal: () => void;
   onCompleteDeckyModalClose: (close: () => void) => void;
@@ -132,6 +139,10 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
   voiceSttModel,
   setVoiceSttModel,
   microphoneAccessEnabled,
+  uiScaleAutoEnabled,
+  uiScaleManualProfile,
+  appliedUiScaleProfileId,
+  onApplyUiScale,
   onOpenCharacterPicker,
   onBeforeDeckyModal,
   onCompleteDeckyModalClose,
@@ -184,6 +195,12 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
 
   return (
     <div className="bonsai-tab-panel-shell bonsai-tab-panel-shell--tight bonsai-settings-section-stack">
+      <SettingsTabUiScaleSection
+        uiScaleAutoEnabled={uiScaleAutoEnabled}
+        uiScaleManualProfile={uiScaleManualProfile}
+        appliedProfileId={appliedUiScaleProfileId}
+        onApply={onApplyUiScale}
+      />
       <PanelSection title="Screenshot quality">
         <PanelSectionRow>
           <div

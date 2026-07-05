@@ -20,6 +20,23 @@ from backend.services.capabilities import legacy_grandfather_capabilities, sanit
 from backend.services.model_policy import reconcile_model_policy_tier
 from backend.services.voice_transcription_service import sanitize_voice_stt_model
 
+UI_SCALE_PROFILE_IDS = frozenset({"handheld", "desktop", "couch", "immersive"})
+DEFAULT_UI_SCALE_AUTO_ENABLED = True
+DEFAULT_UI_SCALE_MANUAL_PROFILE = "handheld"
+
+
+def sanitize_ui_scale_auto_enabled(value: Any) -> bool:
+    """Default on — only explicit ``false`` disables automatic UI scale."""
+    return value is not False
+
+
+def sanitize_ui_scale_manual_profile(value: Any) -> str:
+    if isinstance(value, str):
+        t = value.strip().lower()
+        if t in UI_SCALE_PROFILE_IDS:
+            return t
+    return DEFAULT_UI_SCALE_MANUAL_PROFILE
+
 
 def clamp_int(value: Any, default: int, minimum: int, maximum: int) -> int:
     """Coerce an arbitrary value to int and clamp it to an inclusive range."""
@@ -419,6 +436,8 @@ def sanitize_settings(
         ),
         "steam_web_api_key": sanitize_steam_web_api_key(raw.get("steam_web_api_key")),
         "voice_stt_model": sanitize_voice_stt_model(raw.get("voice_stt_model")),
+        "ui_scale_auto_enabled": sanitize_ui_scale_auto_enabled(raw.get("ui_scale_auto_enabled")),
+        "ui_scale_manual_profile": sanitize_ui_scale_manual_profile(raw.get("ui_scale_manual_profile")),
     }
 
 

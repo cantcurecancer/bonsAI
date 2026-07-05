@@ -20,6 +20,9 @@ import {
   normalizeModelPolicyTier,
   type ModelPolicyTierId,
 } from "../data/modelPolicy";
+import { normalizeUiScaleProfileId, type UiScaleProfileId } from "../data/uiScaleProfile";
+
+export type { UiScaleProfileId };
 
 /** Tier ``non_foss`` without explicit unlock collapses to ``open_weight`` so we never persist an illegal pair. */
 function reconcileModelPolicySettings(
@@ -132,6 +135,10 @@ export type BonsaiSettings = {
   named_ollama_hosts: NamedOllamaHost[];
   /** Local whisper.cpp model for voice Ask (tiny.en default for Deck real-time). */
   voice_stt_model: VoiceSttModelId;
+  /** When true, UI scale profile is chosen automatically from QAM viewport + display heuristics. */
+  ui_scale_auto_enabled: boolean;
+  /** Manual snap profile when ``ui_scale_auto_enabled`` is false. */
+  ui_scale_manual_profile: UiScaleProfileId;
 };
 
 /** Fields mirrored from React state / hook before `save_settings` RPC. */
@@ -171,6 +178,8 @@ export type BonsaiSettingsSnapshotInput = {
   responseVerifyModel: string;
   namedOllamaHosts: NamedOllamaHost[];
   voiceSttModel: VoiceSttModelId;
+  uiScaleAutoEnabled: boolean;
+  uiScaleManualProfile: UiScaleProfileId;
 };
 
 /** Build the backend `BonsaiSettings` object; optional `patch` for immediate saves (character picker, permissions). */
@@ -215,6 +224,8 @@ export function toBonsaiSettingsPayload(
     response_verify_model: input.responseVerifyModel.trim().slice(0, 64),
     named_ollama_hosts: input.namedOllamaHosts,
     voice_stt_model: input.voiceSttModel,
+    ui_scale_auto_enabled: input.uiScaleAutoEnabled,
+    ui_scale_manual_profile: input.uiScaleManualProfile,
   };
   return patch ? { ...base, ...patch } : base;
 }
@@ -283,6 +294,8 @@ export const DEFAULT_CAPABILITIES: BonsaiCapabilities = {
 
 export const DEFAULT_VOICE_STT_MODEL: VoiceSttModelId = "tiny.en";
 export const VOICE_STT_MODEL_OPTIONS: VoiceSttModelId[] = ["tiny.en", "base.en"];
+export const DEFAULT_UI_SCALE_AUTO_ENABLED = true;
+export const DEFAULT_UI_SCALE_MANUAL_PROFILE: UiScaleProfileId = "handheld";
 
 export const DEFAULT_AI_CHARACTER_ENABLED = false;
 export const DEFAULT_AI_CHARACTER_RANDOM = true;
@@ -649,7 +662,13 @@ export function normalizeSettings(data: unknown): BonsaiSettings {
     response_verify_model: normalizeResponseVerifyModel(raw.response_verify_model),
     named_ollama_hosts: normalizeNamedOllamaHosts(raw.named_ollama_hosts),
     voice_stt_model: normalizeVoiceSttModel(raw.voice_stt_model),
+    ui_scale_auto_enabled: normalizeUiScaleAutoEnabled(raw.ui_scale_auto_enabled),
+    ui_scale_manual_profile: normalizeUiScaleProfileId(raw.ui_scale_manual_profile),
   };
+}
+
+export function normalizeUiScaleAutoEnabled(value: unknown): boolean {
+  return value !== false;
 }
 
 /** QAM Performance verification line — sysfs is source of truth; QAM can lag. */

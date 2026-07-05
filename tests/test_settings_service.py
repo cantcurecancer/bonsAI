@@ -460,6 +460,35 @@ class SettingsServiceTests(unittest.TestCase):
             self.assertIn("capabilities", loaded)
             self.assertFalse(settings_path.with_suffix(".json.tmp").exists())
 
+    def test_ui_scale_settings_defaults_and_sanitize(self):
+        logger = _Logger()
+
+        def sanitize_fn(data):
+            return sanitize_settings(
+                data=data,
+                default_latency_warning_seconds=15,
+                default_request_timeout_seconds=120,
+                min_latency_warning_seconds=5,
+                max_latency_warning_seconds=300,
+                min_request_timeout_seconds=10,
+                max_request_timeout_seconds=300,
+                valid_persistence_modes={"persist_all", "persist_search_only", "no_persist"},
+                default_persistence_mode="persist_all",
+                valid_ask_modes={"speed", "strategy", "expert"},
+                default_ask_mode="speed",
+            )
+
+        baseline = sanitize_fn({})
+        self.assertTrue(baseline["ui_scale_auto_enabled"])
+        self.assertEqual(baseline["ui_scale_manual_profile"], "handheld")
+
+        manual = sanitize_fn(
+            {"ui_scale_auto_enabled": False, "ui_scale_manual_profile": "couch", "bogus": 1}
+        )
+        self.assertFalse(manual["ui_scale_auto_enabled"])
+        self.assertEqual(manual["ui_scale_manual_profile"], "couch")
+        self.assertEqual(sanitize_fn({"ui_scale_manual_profile": "invalid"})["ui_scale_manual_profile"], "handheld")
+
     def test_save_settings_uses_atomic_replace(self):
         """Writes go through a temp file so a crash mid-write cannot truncate settings.json."""
         logger = _Logger()

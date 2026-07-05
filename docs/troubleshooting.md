@@ -332,6 +332,34 @@ Then `sudo systemctl restart avahi-daemon` and ensure `OLLAMA_HOST=0.0.0.0` and 
 
 ---
 
+## 3b. UI scale / QAM layout
+
+**Settings → UI scale** adapts bonsAI to handheld, desk monitor, or TV viewing distance.
+
+### Automatic mode (default)
+
+- **Adjust UI automatically** uses QAM viewport width and internal vs external display heuristics.
+- Docked **TV** outputs with a wide QAM column classify as **Couch**; narrower external outputs classify as **Desktop**.
+
+### Manual override
+
+- Turn off **Adjust UI automatically** to reveal the snap slider (**Handheld · Desktop · Couch**).
+- Tap **Apply UI scale** — changes are not live while dragging.
+- **Reset to automatic** re-enables auto classification.
+
+### Steam global UI Scale
+
+bonsAI does not read Steam's **Settings → Accessibility → UI Scale** programmatically. If text looks too large or small, check **both** Steam UI Scale and bonsAI's profile. Changing Steam's setting may shift QAM geometry; close and reopen QAM or tap **Apply** after adjusting.
+
+### Horizontal spill or clipped ask bar
+
+1. Confirm **Apply UI scale** was tapped after manual changes.
+2. Try **Reset to automatic** on the output you use most.
+3. If docked to TV but classified as Desktop (or vice versa), use manual **Couch** / **Desktop** snap + Apply.
+4. Capture a screenshot to `screenshots/` for maintainer calibration of `EXTERNAL_COUCH_VIEWPORT_MIN_PX` in `src/data/uiScaleProfile.ts`.
+
+---
+
 ## 4. QAM / QAMP Reflection Strategy
 
 ### What is guaranteed today (safe default)

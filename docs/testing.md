@@ -379,6 +379,7 @@ Maps [roadmap.md](roadmap.md) **Completed** summary and [archive/roadmap-complet
 | STRATEGY-CHECKLIST | Strategy checklist (follow-up, persisted per game) | Tier 2 § Strategy depth | Open | Unit + preview; on-Deck: check/uncheck, QAM reopen |
 | DEBUG-TAB | Debug tab opt-in | SMOKE-A | Open | Tab strip when enabled |
 | SETTINGS-TRIM | Settings tab trim | SMOKE-A | Open | |
+| UI-SCALE | UI scale profiles (auto + manual snap) | UI-SCALE-01…04 | Open | Settings → Apply; on-Deck display matrix |
 | RESET-SESSION | Reset session cache | — | Open | Tier 2 |
 | RETRY-PROMPT | Retry same prompt (regenerate) | FEEDBACK-01 | Open | `BonsaiChatReplyActions.tsx`; on-Deck |
 | ASK-FEEDBACK | Per-turn local feedback (thumbs) | FEEDBACK-01 | Open | `save_ask_feedback` RPC; on-Deck |
@@ -600,6 +601,17 @@ Requires **Settings → Data → Show Developer tab** → **Token streaming (exp
 - [ ] **QAMP-DECK-03** Close/reopen QAM Performance: cap reflects write
 - [ ] **QAMP-DECK-04** After Steam restart: OS default (not plugin regression)
 - [ ] **QAMP-DECK-05** After full reboot: same
+
+---
+
+## Tier 2 — UI scale profiles
+
+Deck-only (multi-output: handheld, docked monitor, TV). Unit: `src/data/uiScaleProfile.test.ts`.
+
+- [ ] **UI-SCALE-01** Handheld (internal): auto profile Handheld; no horizontal QAM spill on ask bar / chips
+- [ ] **UI-SCALE-02** Docked desk monitor (24″–27″): auto Desktop; layout matches handheld recipe
+- [ ] **UI-SCALE-03** Docked TV (~65″ @ couch distance): auto Couch; larger type/spacing; no spill
+- [ ] **UI-SCALE-04** Manual snap + **Apply UI scale** persists across QAM close; Pull Models modal matches scale
 
 ---
 

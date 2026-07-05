@@ -70,6 +70,10 @@ import {
   TAB_TITLE_MAIN_TAB_ICON_PX,
 } from "./features/unified-input/constants";
 import { useUnifiedInputSurface } from "./features/unified-input/useUnifiedInputSurface";
+import { useUiScaleProfile } from "./hooks/useUiScaleProfile";
+import { UiScaleProvider } from "./context/UiScaleContext";
+import { publishUiScaleScopeStyle } from "./utils/uiScaleScopeBridge";
+import { normalizeUiScaleProfileId, type UiScaleProfileId } from "./data/uiScaleProfile";
 import { formatDeckyRpcError } from "./utils/deckyCall";
 import { usePluginSettings } from "./hooks/usePluginSettings";
 import { useIntentPacks } from "./hooks/useIntentPacks";
@@ -335,6 +339,7 @@ const Content: React.FC = () => {
     askBarHostRef,
     unifiedInputSurfacePx,
     usesNativeMultilineField,
+    remeasureUnifiedInputSurface,
   } = useUnifiedInputSurface(currentTab, unifiedInput);
 
   // --- Connection / misc shell state (Ask + poll state: ``useBonsaiAskOrchestration``) ---
@@ -445,12 +450,26 @@ const Content: React.FC = () => {
     setNamedOllamaHosts,
     voiceSttModel,
     setVoiceSttModel,
+    uiScaleAutoEnabled,
+    setUiScaleAutoEnabled,
+    uiScaleManualProfile,
+    setUiScaleManualProfile,
     settingsLoaded,
     hydrateFromSettings,
     pauseDebouncedSettingsSave,
     flushSettingsSnapshotNow,
     syncSettingsFromDisk,
   } = usePluginSettings();
+
+  const [uiScaleApplyToken, setUiScaleApplyToken] = useState(0);
+  const uiScale = useUiScaleProfile({
+    scopeRef: bonsaiScopeRef,
+    autoEnabled: uiScaleAutoEnabled,
+    manualProfile: uiScaleManualProfile,
+    settingsLoaded,
+    applyToken: uiScaleApplyToken,
+    onRemeasure: remeasureUnifiedInputSurface,
+  });
 
   const intentPacks = useIntentPacks();
 
@@ -614,6 +633,14 @@ const Content: React.FC = () => {
     [aiCharacterEnabled, aiCharacterRandom, aiCharacterPresetId, aiCharacterCustomText]
   );
   const bonsaiScopeAccentStyle = useMemo(() => buildBonsaiScopeAccentInlineStyle(uiAccent), [uiAccent]);
+  const bonsaiScopeStyle = useMemo(
+    () => ({ ...bonsaiScopeAccentStyle, ...uiScale.scopeStyle }),
+    [bonsaiScopeAccentStyle, uiScale.scopeStyle],
+  );
+
+  useEffect(() => {
+    publishUiScaleScopeStyle(bonsaiScopeStyle);
+  }, [bonsaiScopeStyle]);
 
   useEffect(() => {
     if (!showDeveloperTab && currentTab === "developer") {
@@ -673,6 +700,8 @@ const Content: React.FC = () => {
       responseVerifyModel,
       namedOllamaHosts,
       voiceSttModel,
+      uiScaleAutoEnabled,
+      uiScaleManualProfile,
     }),
     [
       latencyWarningSeconds,
@@ -710,7 +739,35 @@ const Content: React.FC = () => {
       responseVerifyModel,
       namedOllamaHosts,
       voiceSttModel,
+      uiScaleAutoEnabled,
+      uiScaleManualProfile,
     ]
+  );
+
+  const onApplyUiScale = useCallback(
+    async (autoEnabled: boolean, manualProfile: UiScaleProfileId) => {
+      const normalized = normalizeUiScaleProfileId(manualProfile);
+      setUiScaleAutoEnabled(autoEnabled);
+      setUiScaleManualProfile(normalized);
+      await pauseDebouncedSettingsSave();
+      const saved = await call<[BonsaiSettings], BonsaiSettings>(
+        "save_settings",
+        toBonsaiSettingsPayload(settingsSnapshotForSave, {
+          ui_scale_auto_enabled: autoEnabled,
+          ui_scale_manual_profile: normalized,
+        }),
+      );
+      hydrateFromSettings(saved);
+      setUiScaleApplyToken((t) => t + 1);
+      toaster.toast({ title: "UI scale applied", body: "Plugin layout updated.", duration: 2800 });
+    },
+    [
+      hydrateFromSettings,
+      pauseDebouncedSettingsSave,
+      settingsSnapshotForSave,
+      setUiScaleAutoEnabled,
+      setUiScaleManualProfile,
+    ],
   );
 
   const buildSettingsPayload = useCallback(
@@ -1638,6 +1695,10 @@ const Content: React.FC = () => {
       voiceSttModel={voiceSttModel}
       setVoiceSttModel={setVoiceSttModel}
       microphoneAccessEnabled={capabilities.microphone_access}
+      uiScaleAutoEnabled={uiScaleAutoEnabled}
+      uiScaleManualProfile={uiScaleManualProfile}
+      appliedUiScaleProfileId={uiScale.appliedProfileId}
+      onApplyUiScale={onApplyUiScale}
       onOpenCharacterPicker={openCharacterPickerModal}
       onBeforeDeckyModal={captureSessionBeforeModal}
       onCompleteDeckyModalClose={finalizeShowModalAndRestoreActiveTab}
@@ -1663,6 +1724,10 @@ const Content: React.FC = () => {
       showDeveloperTab,
       strategySpoilerMaskingEnabled,
       voiceSttModel,
+      uiScaleAutoEnabled,
+      uiScaleManualProfile,
+      uiScale.appliedProfileId,
+      onApplyUiScale,
       capabilities.microphone_access,
       intentPacks.summaries,
       intentPacks.loading,
@@ -1903,16 +1968,25 @@ const Content: React.FC = () => {
   );
 
   return (
-    <BonsaiPluginShell scopeRef={bonsaiScopeRef} scopeStyle={bonsaiScopeAccentStyle}>
-      <BonsaiDebugOverlay enabled={showOnscreenDebugHud} />
-      <div className="bonsai-decky-tabs-root">
-        <Tabs
-          activeTab={currentTab}
-          onShowTab={onTabsShowTab}
-          tabs={deckyTabs}
-          {...({ autoFocusContents: false } as Record<string, unknown>)}
-        />
-      </div>
+    <BonsaiPluginShell scopeRef={bonsaiScopeRef} scopeStyle={bonsaiScopeStyle}>
+      <UiScaleProvider
+        value={{
+          profileId: uiScale.appliedProfileId,
+          scopeStyle: uiScale.scopeStyle,
+          generation: uiScale.generation,
+          requestApply: () => setUiScaleApplyToken((t) => t + 1),
+        }}
+      >
+        <BonsaiDebugOverlay enabled={showOnscreenDebugHud} />
+        <div key={`bonsai-tabs-gen-${uiScale.generation}`} className="bonsai-decky-tabs-root">
+          <Tabs
+            activeTab={currentTab}
+            onShowTab={onTabsShowTab}
+            tabs={deckyTabs}
+            {...({ autoFocusContents: false } as Record<string, unknown>)}
+          />
+        </div>
+      </UiScaleProvider>
     </BonsaiPluginShell>
   );
 };

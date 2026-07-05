@@ -59,6 +59,8 @@ function minimalSnapshot(overrides: Partial<BonsaiSessionSurvivalSnapshot> = {})
       responseVerifyModel: "",
       namedOllamaHosts: [],
       voiceSttModel: "tiny.en",
+      uiScaleAutoEnabled: true,
+      uiScaleManualProfile: "handheld",
     },
     ollamaResponse: "reply text",
     ollamaContext: null,
