@@ -97,7 +97,8 @@ class BackgroundPartialStateTests(unittest.TestCase):
         }
         self.plugin._reset_partial_stream_snapshot(8)
         merged = self.plugin._merge_partial_into_background_status(self.plugin._background_state)
-        self.assertEqual(merged.get("thinking_summary"), "Still working…")
+        summary = merged.get("thinking_summary") or ""
+        self.assertIn("still thinking", summary.lower())
 
     def test_publish_thinking_phase_key(self) -> None:
         self.plugin._reset_partial_stream_snapshot(11)
@@ -135,11 +136,15 @@ class BackgroundPartialStateTests(unittest.TestCase):
         self.plugin._reset_partial_stream_snapshot(12)
         self.plugin._publish_thinking_phase_key(12, "building_context", app_name="Zelda")
         merged_early = self.plugin._merge_partial_into_background_status(self.plugin._background_state)
-        self.assertEqual(merged_early.get("thinking_summary"), "Building context for Zelda…")
+        early_summary = merged_early.get("thinking_summary") or ""
+        self.assertIn("zelda", early_summary.lower())
         with self.plugin._partial_response_lock:
             self.plugin._partial_stream_snapshot["thinking_summary"] = None
         merged_late = self.plugin._merge_partial_into_background_status(self.plugin._background_state)
-        self.assertEqual(merged_late.get("thinking_summary"), "Generating…")
+        late_summary = merged_late.get("thinking_summary") or ""
+        self.assertTrue(
+            "hard" in late_summary.lower() or "passable" in late_summary.lower(),
+        )
 
     def test_merge_omits_partial_when_not_pending(self) -> None:
         self.plugin._background_state = {"status": "completed", "request_id": 7}

@@ -1,7 +1,3 @@
-import {
-  ASK_READY_STATE_TRANSITION_MS,
-} from "../../features/unified-input/constants";
-
 export function buildGamepadFocusRingStylesheet(): string {
   const ring = `
           outline: 2px solid var(--bonsai-ui-tab-focus-1, rgba(255, 255, 255, 0.9)) !important;

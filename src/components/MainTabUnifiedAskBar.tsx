@@ -149,7 +149,6 @@ export function MainTabUnifiedAskBar(props: MainTabUnifiedAskBarProps) {
     focusUnifiedTextField,
     focusAttachPaperclip,
     focusAiCharacterAvatar,
-    focusAskPrimary,
     focusMicOrStop,
     focusAskModeButton,
     unifiedInputDeckNavHandlers,

@@ -10,6 +10,8 @@ description: One-page focus, CSS, and build parity summary
 
 D-pad navigation uses Decky `Focusable` callbacks (`onMoveLeft`, `onMoveRight`, `onMoveUp`, `onMoveDown`, `onOKButton`, `onCancelButton`, `onButtonDown`) — not DOM `keydown`.
 
+**New UI controls:** design the graph at the **section parent** level; use a document-flow **focus bridge** for sliders and other non-flow children. Full patterns and file references: `bonsai://architecture/focus-graph-patterns`. Policy: `bonsai://policy/decky-ui-focus` § **New controls & settings rows**.
+
 ## Durable layout
 
 NEVER apply durable layout corrections via ref-set inline styles on React-managed nodes. Route dynamic geometry through CSS custom properties on `bonsaiScopeRef` consumed by `!important` rules, or the JSX `style` prop.

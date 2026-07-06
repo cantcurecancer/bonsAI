@@ -365,7 +365,8 @@ GENERAL_PURPOSE_ASSISTANT_CLAUSE = (
 BONSAI_STATUS_STREAM_INSTRUCTION = (
     "STATUS LINE (required): As the very first characters of your assistant reply, emit exactly one line "
     "<bonsai-status>short plain-English status for the user</bonsai-status> "
-    "(under ~120 characters; no markdown inside the tag). Then continue with your normal answer on the following lines. "
+    "(under ~120 characters; no markdown inside the tag; lightly sarcastic or playful is fine). "
+    "Then continue with your normal answer on the following lines. "
     "The status tag is stripped before the user sees the final reply.\n\n"
 )
 
@@ -411,7 +412,7 @@ def build_bonsai_status_stream_instruction(
         )
     else:
         tone_hint = (
-            " Keep the line lightly playful and plain — weave the user's topic words; no sarcasm.\n"
+            " Keep the line lightly sarcastic or playful — weave the user's topic words; stay helpful.\n"
         )
     strategy_hint = ""
     if ask_mode == "strategy":

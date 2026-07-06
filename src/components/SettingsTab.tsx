@@ -163,6 +163,23 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
   const accentIntensityMenuFirstItemRef = useRef<HTMLDivElement>(null);
   const accentIntensityMenuToggleOnceRef = useRef(false);
   const screenshotDimensionNavRef = useRef<HTMLDivElement>(null);
+  const uiScaleApplyButtonRef = useRef<HTMLButtonElement>(null);
+
+  const focusScreenshotQualityRow = useCallback((): boolean => {
+    const host = screenshotDimensionNavRef.current;
+    if (!host) return false;
+    const target = host.querySelector<HTMLElement>("button:not([disabled])");
+    if (!target) return false;
+    target.focus();
+    return true;
+  }, []);
+
+  const focusUiScaleApplyButton = useCallback((): boolean => {
+    const btn = uiScaleApplyButtonRef.current;
+    if (!btn || btn.disabled) return false;
+    btn.focus();
+    return true;
+  }, []);
 
   useLayoutEffect(() => {
     const local = consumeSettingsTabLocalPending();
@@ -200,6 +217,8 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
         uiScaleManualProfile={uiScaleManualProfile}
         appliedProfileId={appliedUiScaleProfileId}
         onApply={onApplyUiScale}
+        applyButtonRef={uiScaleApplyButtonRef}
+        onMoveDownFromApply={focusScreenshotQualityRow}
       />
       <PanelSection title="Screenshot quality">
         <PanelSectionRow>
@@ -226,6 +245,9 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
             <Focusable
               flow-children="horizontal"
               style={{ display: "flex", gap: 6, width: "100%", minWidth: 0, maxWidth: "100%", alignItems: "stretch" }}
+              {...({
+                onMoveUp: () => focusUiScaleApplyButton(),
+              } as unknown as Record<string, unknown>)}
             >
               {SCREENSHOT_ATTACHMENT_PRESET_OPTIONS.map((option) => {
                 const active = option === screenshotAttachmentPreset;

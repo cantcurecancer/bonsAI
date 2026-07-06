@@ -8,7 +8,6 @@ from backend.services.bonsai_stream_tags import (
     extract_bonsai_status,
     extract_question_snippet,
     format_thinking_phase,
-    sarcasm_roll,
 )
 
 
@@ -32,21 +31,21 @@ class BonsaiStreamTagsTests(unittest.TestCase):
         self.assertEqual(stripped, "")
 
     def test_deterministic_phase_fallback(self):
-        self.assertEqual(
-            deterministic_thinking_phase_fallback(streaming=True, has_partial=True, elapsed_seconds=0),
-            "Drafting reply…",
+        self.assertIn(
+            "masterpiece",
+            deterministic_thinking_phase_fallback(streaming=True, has_partial=True, elapsed_seconds=0).lower(),
         )
-        self.assertEqual(
-            deterministic_thinking_phase_fallback(streaming=False, has_partial=False, elapsed_seconds=10),
-            "Still working…",
+        self.assertIn(
+            "still thinking",
+            deterministic_thinking_phase_fallback(streaming=False, has_partial=False, elapsed_seconds=10).lower(),
         )
-        self.assertEqual(
-            deterministic_thinking_phase_fallback(streaming=False, has_partial=False, elapsed_seconds=3),
-            "Generating…",
+        self.assertIn(
+            "hard",
+            deterministic_thinking_phase_fallback(streaming=False, has_partial=False, elapsed_seconds=3).lower(),
         )
-        self.assertEqual(
-            deterministic_thinking_phase_fallback(streaming=False, has_partial=False, elapsed_seconds=0),
-            "Connecting…",
+        self.assertIn(
+            "brain",
+            deterministic_thinking_phase_fallback(streaming=False, has_partial=False, elapsed_seconds=0).lower(),
         )
 
     def test_format_thinking_phase_starting(self):
@@ -95,6 +94,17 @@ class BonsaiStreamTagsTests(unittest.TestCase):
         self.assertIn("fps", out.lower())
         self.assertLessEqual(len(out), 240)
 
+    def test_compose_thinking_blurb_always_sarcastic_without_character(self):
+        out = compose_thinking_blurb("why is my fps low", request_id=3)
+        lowered = out.lower()
+        self.assertTrue(
+            "oh joy" in lowered
+            or "another crisis" in lowered
+            or "fine." in lowered
+            or lowered.startswith("yeah,"),
+            msg=out,
+        )
+
     def test_format_thinking_phase_woven_proton_logs(self):
         out = format_thinking_phase(
             "proton_logs",
@@ -121,8 +131,15 @@ class BonsaiStreamTagsTests(unittest.TestCase):
             attachment_count=1,
             request_id=9,
         )
-        self.assertTrue("screenshot" in out.lower() or "capture" in out.lower())
-        self.assertIn("UI element", out)
+        lowered = out.lower()
+        self.assertTrue(
+            "screenshot" in lowered
+            or "capture" in lowered
+            or "ui element" in lowered
+            or "oh joy" in lowered
+            or "another crisis" in lowered
+            or lowered.startswith("yeah,"),
+        )
 
     def test_format_thinking_phase_woven_model_retry(self):
         out = format_thinking_phase(
@@ -131,7 +148,6 @@ class BonsaiStreamTagsTests(unittest.TestCase):
             request_id=11,
         )
         self.assertIn("stuttering", out.lower())
-        self.assertIn("model", out.lower())
 
     def test_format_thinking_phase_woven_building_context_elapsed(self):
         out = format_thinking_phase(
@@ -152,8 +168,22 @@ class BonsaiStreamTagsTests(unittest.TestCase):
         )
         self.assertIn("fps", out.lower())
 
-    def test_sarcasm_roll_off_without_character(self):
-        self.assertFalse(sarcasm_roll(1, enabled=False))
+    def test_format_thinking_phase_woven_always_sarcastic(self):
+        out = format_thinking_phase(
+            "proton_logs",
+            question="why crash on launch",
+            app_name="Elden Ring",
+            request_id=5,
+        )
+        lowered = out.lower()
+        self.assertIn("crash", lowered)
+        self.assertTrue(
+            "oh joy" in lowered
+            or "another crisis" in lowered
+            or "fine." in lowered
+            or lowered.startswith("yeah,"),
+            msg=out,
+        )
 
 
 if __name__ == "__main__":

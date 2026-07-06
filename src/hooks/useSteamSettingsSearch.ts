@@ -1,5 +1,6 @@
 import { useCallback, useMemo, type Dispatch, type SetStateAction } from "react";
-import { Navigation, toaster } from "@decky/ui";
+import { toaster } from "@decky/api";
+import { Navigation } from "@decky/ui";
 import { SETTINGS_DATABASE } from "../data/settingsDatabase";
 import { getQamTab, getSteamSettingsUrl, isQamSetting } from "../data/steamSettingsNavigation";
 import { searchSettingsWithIntentPacks } from "../utils/intentPackSearch";

@@ -2,6 +2,13 @@ import React, { useCallback, useMemo, useRef, useState } from "react";
 import { Focusable } from "@decky/ui";
 import { isLeftDeckButton, isRightDeckButton } from "../../utils/deckSliderMath";
 
+/**
+ * Deck slider with one focusable thumb. D-pad contract: the thumb is absolutely positioned and
+ * is NOT a reliable vertical focus peer — parent sections MUST wire a document-flow Focusable
+ * bridge (see SettingsTabUiScaleSection) or explicit parent refs (see OllamaTab).
+ * Policy: bonsai://policy/decky-ui-focus · bonsai://architecture/focus-graph-patterns
+ */
+
 export type DeckSliderThumbVisualState = {
   focused: boolean;
   editing: boolean;
@@ -55,7 +62,7 @@ export type DeckFocusSliderThumbProps = {
   onPointerSelect: (clientX: number) => void;
   getDotStyle: (state: DeckSliderThumbVisualState) => React.CSSProperties;
   hostRef?: React.Ref<HTMLDivElement>;
-  hostProps?: React.HTMLAttributes<HTMLDivElement>;
+  hostProps?: React.HTMLAttributes<HTMLDivElement> & Record<string, unknown>;
   wrapRef: React.MutableRefObject<HTMLDivElement | null>;
 };
 
@@ -173,13 +180,16 @@ export type DeckFocusSliderProps = {
   tickPcts?: number[];
   trackRef?: React.MutableRefObject<HTMLDivElement | null>;
   thumbHostRef?: React.Ref<HTMLDivElement>;
-  thumbHostProps?: React.HTMLAttributes<HTMLDivElement>;
+  thumbHostProps?: React.HTMLAttributes<HTMLDivElement> & Record<string, unknown>;
   onSelectClientX: (clientX: number) => void;
   onStepLeft: () => void;
   onStepRight: () => void;
   onMoveUp?: () => boolean;
   onMoveDown?: () => boolean;
   editToggle?: boolean;
+  /** When a parent focus bridge owns D-pad, keep thumb visuals in sync. */
+  thumbFocusedExternal?: boolean;
+  thumbEditingExternal?: boolean;
   getThumbDotStyle: (state: DeckSliderThumbVisualState) => React.CSSProperties;
   belowTrack?: React.ReactNode;
   description?: React.ReactNode;
@@ -230,6 +240,8 @@ export function DeckFocusSlider(props: DeckFocusSliderProps) {
     onMoveUp,
     onMoveDown,
     editToggle = false,
+    thumbFocusedExternal = false,
+    thumbEditingExternal = false,
     getThumbDotStyle,
     belowTrack,
     description,
@@ -248,6 +260,8 @@ export function DeckFocusSlider(props: DeckFocusSliderProps) {
   const [dragging, setDragging] = useState(false);
   const [focused, setFocused] = useState(false);
   const [editing, setEditing] = useState(false);
+  const thumbFocused = focused || thumbFocusedExternal;
+  const thumbEditing = editing || thumbEditingExternal;
 
   const onTrackPointerDown = useCallback(
     (ev: React.PointerEvent<HTMLDivElement>) => {
@@ -370,8 +384,8 @@ export function DeckFocusSlider(props: DeckFocusSliderProps) {
           />
           <DeckFocusSliderThumb
             pct={thumbPct}
-            focused={focused}
-            editing={editing}
+            focused={thumbFocused}
+            editing={thumbEditing}
             onFocus={() => setFocused(true)}
             onBlur={onThumbBlur}
             onActivate={

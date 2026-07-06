@@ -41,6 +41,8 @@ import {
 } from "./utils/bonsaiSessionSurvival";
 import { bonsaiDebugLog } from "./utils/bonsaiDebugIngest";
 import { persistOllamaIpIfRoutingToLan as persistOllamaIpIfRoutingToLanUtil } from "./utils/persistOllamaIp";
+import { clearOllamaTabLocalSurvival } from "./utils/ollamaTabLocalSurvival";
+import { clearSettingsTabLocalSurvival } from "./utils/settingsTabLocalSurvival";
 import { shouldClearUnifiedInputForPersistenceMode } from "./utils/unifiedInputPersistenceMode";
 import { getRandomPresets } from "./data/presets";
 import {
@@ -560,6 +562,8 @@ const Content: React.FC = () => {
         ...detail,
       });
     },
+    aiCharacterEnabled,
+    aiCharacterPresetId,
   });
 
   isAskingRef.current = isAsking;

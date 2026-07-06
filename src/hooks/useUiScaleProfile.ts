@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   buildBonsaiUiScaleInlineStyle,
   classifyUiScaleProfile,
   normalizeUiScaleProfileId,
+  profileScaleMultiplier,
   type UiScaleProfileId,
 } from "../data/uiScaleProfile";
 
@@ -94,10 +95,18 @@ export function useUiScaleProfile(options: UseUiScaleProfileOptions): UseUiScale
 
   useEffect(() => {
     if (applyToken === 0) return;
-    setAppliedProfileId(activeProfileId);
+    const profile = autoEnabled ? activeProfileId : normalizeUiScaleProfileId(manualProfile);
+    setAppliedProfileId(profile);
     setGeneration((g) => g + 1);
     requestAnimationFrame(() => onRemeasureRef.current?.());
-  }, [applyToken, activeProfileId]);
+  }, [applyToken, autoEnabled, manualProfile, activeProfileId]);
+
+  useLayoutEffect(() => {
+    const el = scopeRef.current;
+    if (!el) return;
+    const scale = profileScaleMultiplier(appliedProfileId);
+    el.style.setProperty("--bonsai-ui-scale", String(scale));
+  }, [appliedProfileId, scopeRef]);
 
   const scopeStyle = useMemo(
     () => buildBonsaiUiScaleInlineStyle(appliedProfileId),

@@ -28,7 +28,7 @@ In-repo server: [`packages/bonsai-mcp/`](packages/bonsai-mcp/). Setup: [docs/mcp
 | `bonsai/triage/focus-bug` | Short focus triage |
 | `bonsai/triage/empty-ai-reply` | AI envelope debugging |
 
-Resources: `bonsai://policy/{id}`, `bonsai://workflow/{id}`, `bonsai://persona/{id}`, `bonsai://architecture/{name}`, `bonsai://index`.
+Resources: `bonsai://policy/{id}`, `bonsai://workflow/{id}`, `bonsai://persona/{id}`, `bonsai://architecture/{name}` (include **`focus-graph-patterns`** for new UI controls), `bonsai://index`.
 
 **Archived:** Red/Blue ship counsel → [docs/archive/red-blue-counsel/](docs/archive/red-blue-counsel/README.md).
 

@@ -29,7 +29,7 @@ def _fetch_tiny_thinking_blurb(
     game = (app_name or "").strip()[:40]
     game_bit = f" (game: {game})" if game else ""
     prompt = (
-        "Write one short playful pending-status line (under 100 chars, plain text, no markdown) "
+        "Write one short lightly sarcastic or playful pending-status line (under 100 chars, plain text, no markdown) "
         f"for someone waiting on an AI answer about: {snippet!r}{game_bit}. "
         "Reply with only that line."
     )

@@ -25,3 +25,15 @@ description: Focus-graph-first D-pad navigation and durable CSS rules
 - ALWAYS debug controller-navigation and AI-context issues at the architecture level first: verify focus-graph/event ownership and metadata pipeline integrity before making UX or prompt tweaks.
 - ALWAYS treat Decky/QAM UI as a platform with strict focus and keyboard contracts: keep native primitives (TextField, Focusable, ButtonItem) intact and make the smallest possible style-only changes first.
 - NEVER mix architectural swaps (e.g., TextField ↔ textarea, overlay hacks, broad container CSS overrides) with visual tweaks in the same iteration, because that repeatedly caused regressions in focus, wrapping, and visibility.
+
+## New controls & settings rows (focus graph — mandatory)
+
+Decky D-pad is **not** DOM sibling order. It is an **explicit graph of focus owners**. Nested or absolutely positioned `Focusable` nodes (e.g. `DeckFocusSlider` thumbs) are often **excluded** from the vertical graph unless a section parent wires them.
+
+- ALWAYS design every new Settings/QAM row as an **explicit Decky focus graph at the section (parent) level** before shipping: enumerate each focus stop in order (e.g. toggle → slider bridge → action buttons → next section), wire `onMoveUp` / `onMoveDown` / `onMoveLeft` / `onMoveRight` / `onButtonDown` on the **element that actually holds focus on Deck** (verify with on-device QA — not merely which child looks highlighted), and connect rows across components via parent refs and `focusInHost` / button refs. Canonical references: `src/components/SettingsTabUiScaleSection.tsx`, `src/components/OllamaTab.tsx`, `src/components/PullModelsModal.tsx`, `src/components/SettingsTab.tsx` (screenshot row ↔ UI scale Apply).
+
+- NEVER assume DOM order, `tabindex`, or a child `Focusable` will participate in vertical navigation automatically. If a control is not a document-flow Decky focus peer (sliders, custom tracks, portaled modals), ALWAYS add a **document-flow `Focusable` bridge** in the parent that owns **vertical entry and horizontal actions** (`onMoveLeft` / `onMoveRight` / `onButtonDown` stepping state on the bridge). See `bonsai://architecture/focus-graph-patterns` Pattern B.
+
+- NEVER ship D-pad support by only adding move callbacks on leaf components (`DeckFocusSlider` props, nested thumb) or by spreading `onMoveDown` on `ToggleField`/`Button` without on-Deck proof the callback fires and the intended node owns input. When vertical nav **skips** a control, fix the **graph owner** (bridge or sibling wiring), not another layer of programmatic `.focus()` redirects to a child thumb.
+
+- ALWAYS add or extend a D-pad scenario row in `docs/testing.md` (shipped coverage + checkbox) for each new focusable control before marking Deck-facing UI work done. Use `UI-SCALE-05` as the template for Settings rows with sliders.

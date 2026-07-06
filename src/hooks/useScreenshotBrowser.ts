@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from "react";
-import { call } from "@decky/api";
-import { Navigation, Router, toaster } from "@decky/ui";
+import { call, toaster } from "@decky/api";
+import { Navigation, Router } from "@decky/ui";
 import type { AskAttachment, ScreenshotItem } from "../types/bonsaiUi";
 import { formatDeckyRpcError } from "../utils/deckyCall";
 import { peekBonsaiSessionPendingRestore } from "../utils/bonsaiSessionSurvival";

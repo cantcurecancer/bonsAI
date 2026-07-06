@@ -19,11 +19,14 @@ export type SettingsTabUiScaleSliderProps = {
   thumbHostRef?: React.Ref<HTMLDivElement>;
   onMoveUp?: () => boolean;
   onMoveDown?: () => boolean;
+  thumbFocusedExternal?: boolean;
+  thumbEditingExternal?: boolean;
 };
 
 /** Three-stop snap slider: Handheld · Desktop · Couch. */
 export function SettingsTabUiScaleSlider(props: SettingsTabUiScaleSliderProps) {
-  const { value, onChange, thumbHostRef, onMoveUp, onMoveDown } = props;
+  const { value, onChange, thumbHostRef, onMoveUp, onMoveDown, thumbFocusedExternal, thumbEditingExternal } =
+    props;
   const maxIdx = UI_SCALE_MANUAL_PROFILE_IDS.length - 1;
   const index = indexOfManualUiScaleProfile(value);
   const thumbPct = useMemo(() => indexToPct(index, maxIdx), [index, maxIdx]);
@@ -75,11 +78,15 @@ export function SettingsTabUiScaleSlider(props: SettingsTabUiScaleSliderProps) {
       tickPcts={tickPcts}
       trackRef={trackRef}
       thumbHostRef={thumbHostRef}
+      thumbHostProps={{ "data-bonsai-ui-scale-thumb": "1" }}
       onSelectClientX={selectClientX}
       onStepLeft={() => setIndex(index - 1)}
       onStepRight={() => setIndex(index + 1)}
       onMoveUp={onMoveUp}
       onMoveDown={onMoveDown}
+      editToggle
+      thumbFocusedExternal={thumbFocusedExternal}
+      thumbEditingExternal={thumbEditingExternal}
       getThumbDotStyle={getThumbDotStyle}
       belowTrack={
         <div

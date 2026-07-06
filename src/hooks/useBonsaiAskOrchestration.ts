@@ -52,7 +52,8 @@ import { hasResponseAutosaved, markResponseAutosaved } from "../utils/desktopCha
 import { questionBypassesOllamaPcIpRequirement } from "../utils/localOnlyAskCommands";
 import { normalizePresetCarouselInject } from "../utils/presetCarouselInject";
 import type { InputTransparencyRpcResult, TransparencySnapshot } from "../utils/inputTransparency";
-import { ASK_THINKING_STARTING_DISPLAY, isPendingPlaceholderResponse } from "../utils/askThinkingPhases";
+import { composeThinkingBlurb } from "../utils/composeThinkingBlurb";
+import { isPendingPlaceholderResponse } from "../utils/askThinkingPhases";
 import { useSmoothStreamReveal } from "./useSmoothStreamReveal";
 import {
   peekBonsaiSessionPendingRestore,
@@ -96,6 +97,8 @@ export type UseBonsaiAskOrchestrationArgs = {
   persistSearchQuery: (unifiedInputText: string) => void;
   /** When app log level is verbose, copy external/RPC failures into Desktop bonsAI_logs. */
   onExternalFailure?: (source: string, message: string, detail?: Record<string, unknown>) => void;
+  aiCharacterEnabled?: boolean;
+  aiCharacterPresetId?: string | null;
 };
 
 export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
@@ -245,10 +248,21 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
       if (status.status === "pending") {
         setOllamaContext({ app_id: appId, app_context: appContext });
         setIsAsking(true);
+        const pendingQuestion = (status.question || fallbackQuestion || "").trim();
+        const runningName = Router.MainRunningApp?.display_name ?? "";
         const thinking =
           typeof status.thinking_summary === "string" && status.thinking_summary.trim()
             ? status.thinking_summary.trim()
-            : ASK_THINKING_STARTING_DISPLAY;
+            : pendingQuestion
+              ? composeThinkingBlurb(pendingQuestion, {
+                  appName: runningName,
+                  attachmentCount: a.selectedAttachment ? 1 : 0,
+                  askMode: a.askMode,
+                  requestId: typeof status.request_id === "number" ? status.request_id : 0,
+                  characterEnabled: a.aiCharacterEnabled === true,
+                  characterPresetId: a.aiCharacterPresetId ?? null,
+                })
+              : composeThinkingBlurb("your question", { requestId: status.request_id ?? 0 });
         setThinkingSummary(thinking);
         const partial =
           status.streaming === true &&
@@ -545,7 +559,16 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
       }
 
       setIsAsking(true);
-      setThinkingSummary(ASK_THINKING_STARTING_DISPLAY);
+      setThinkingSummary(
+        composeThinkingBlurb(q, {
+          appName,
+          attachmentCount: attachments.length,
+          askMode: a.askMode,
+          requestId: seq,
+          characterEnabled: a.aiCharacterEnabled === true,
+          characterPresetId: a.aiCharacterPresetId ?? null,
+        }),
+      );
       setPresetCarouselInject(null);
       setStrategyGuideBranches(null);
       setModelPolicyDisclosure(null);

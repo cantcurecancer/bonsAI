@@ -27,7 +27,6 @@ _PHASE_MAX_LEN = 240
 _APP_NAME_MAX_LEN = 40
 _SNIPPET_MAX_LEN = 56
 _BUILDING_CONTEXT_MAX_SECONDS = 1.0
-_SARCASM_RATE = 0.30
 
 _THINKING_TONE = Literal["neutral", "witty", "deadpan"]
 
@@ -92,11 +91,36 @@ def _stable_bucket(request_id: int, elapsed_seconds: float = 0.0, period: float 
     return (rid * 2654435761 + bucket * 97) & 0x7FFFFFFF
 
 
-def sarcasm_roll(request_id: int, *, enabled: bool) -> bool:
-    """~30% sarcasm when character roleplay is on."""
-    if not enabled:
-        return False
-    return (_stable_bucket(request_id) % 100) < int(_SARCASM_RATE * 100)
+def _resolve_thinking_tone(
+    character_enabled: bool,
+    character_preset_id: Optional[str],
+) -> _THINKING_TONE:
+    """Default witty sarcasm; deadpan when a deadpan character preset is active."""
+    if not character_enabled:
+        return "witty"
+    from backend.services.ai_character_service import thinking_status_tone_for_preset
+
+    tone = thinking_status_tone_for_preset(character_preset_id)
+    return tone if tone in ("witty", "deadpan") else "witty"
+
+
+def _apply_sarcastic_pool_variants(
+    pool: list[str],
+    *,
+    quote: str,
+    game_bit: str,
+    tone: _THINKING_TONE,
+) -> list[str]:
+    """Always merge witty/deadpan extensions into the template pool."""
+    if tone == "deadpan":
+        return [f"Fine. {t}" for t in pool] + [f"Sure. {quote}. Working{game_bit}."]
+    witty_pool = [
+        f"Oh joy — {quote}{game_bit}. One sec.",
+        f"Another crisis: {quote}. Give me a moment{game_bit}.",
+    ]
+    for t in pool:
+        witty_pool.append(f"Yeah, {t}")
+    return witty_pool
 
 
 def _pick_template(templates: list[str], request_id: int, elapsed_seconds: float = 0.0) -> str:
@@ -118,19 +142,12 @@ def compose_thinking_blurb(
     elapsed_seconds: float = 0.0,
 ) -> str:
     """Instant, question-woven pending status (Tier A composer — no extra model call)."""
-    from backend.services.ai_character_service import thinking_status_tone_for_preset
-
     snippet = extract_question_snippet(question)
     game = _sanitize_app_name(app_name)
     quote = f'"{snippet}"' if snippet else "your question"
     game_bit = f" in {game}" if game else ""
     has_shot = int(attachment_count or 0) > 0
-
-    tone: _THINKING_TONE = "neutral"
-    sarcastic = False
-    if character_enabled:
-        tone = thinking_status_tone_for_preset(character_preset_id)
-        sarcastic = sarcasm_roll(request_id, enabled=True)
+    tone = _resolve_thinking_tone(character_enabled, character_preset_id)
 
     if question_matches_troubleshooting_log_context(question) or user_asks_ollama_bonsai_host_or_latency(question):
         pool = [
@@ -164,14 +181,7 @@ def compose_thinking_blurb(
             f"On it — {quote}{game_bit}…",
         ]
 
-    if character_enabled and sarcastic and tone in ("witty", "deadpan"):
-        if tone == "deadpan":
-            pool = [f"Fine. {t}" for t in pool] + [f"Sure. {quote}. Working{game_bit}."]
-        else:
-            pool = pool + [
-                f"Oh joy — {quote}{game_bit}. One sec.",
-                f"Another crisis: {quote}. Give me a moment{game_bit}.",
-            ]
+    pool = _apply_sarcastic_pool_variants(pool, quote=quote, game_bit=game_bit, tone=tone)
 
     text = _pick_template(pool, request_id, elapsed_seconds)
     return text[:_PHASE_MAX_LEN]
@@ -197,22 +207,9 @@ def _apply_character_phase_variants(
     character_preset_id: Optional[str],
     elapsed_seconds: float,
 ) -> str:
-    """Pick a template and optionally append witty/deadpan variants."""
-    from backend.services.ai_character_service import thinking_status_tone_for_preset
-
-    tone: _THINKING_TONE = "neutral"
-    sarcastic = False
-    if character_enabled:
-        tone = thinking_status_tone_for_preset(character_preset_id)
-        sarcastic = sarcasm_roll(request_id, enabled=True)
-    if character_enabled and sarcastic and tone in ("witty", "deadpan"):
-        if tone == "deadpan":
-            pool = [f"Fine. {t}" for t in pool] + [f"Sure. {quote}. Working{game_bit}."]
-        else:
-            pool = pool + [
-                f"Oh joy — {quote}{game_bit}. One sec.",
-                f"Another crisis: {quote}. Give me a moment{game_bit}.",
-            ]
+    """Pick a template with always-on witty/deadpan variants."""
+    tone = _resolve_thinking_tone(character_enabled, character_preset_id)
+    pool = _apply_sarcastic_pool_variants(pool, quote=quote, game_bit=game_bit, tone=tone)
     return _pick_template(pool, request_id, elapsed_seconds)
 
 
@@ -338,10 +335,14 @@ def deterministic_thinking_phase_fallback(
     elapsed_seconds: float,
 ) -> str:
     """Phase label when the model did not emit ``<bonsai-status>``."""
+    bucket = int(max(0.0, elapsed_seconds) // 4.0)
     if streaming and has_partial:
-        return "Drafting reply…"
-    if elapsed_seconds >= 8:
-        return "Still working…"
-    if elapsed_seconds >= 2:
-        return "Generating…"
-    return "Connecting…"
+        pool = ["Drafting your masterpiece…", "Typing with confidence…"]
+    elif elapsed_seconds >= 8:
+        pool = ["Still here. Still thinking…", "This one's a thinker…"]
+    elif elapsed_seconds >= 2:
+        pool = ["Pretending this is hard…", "Generating something passable…"]
+    else:
+        pool = ["Warming up the brain cells…", "Connecting — try not to blink…"]
+    idx = bucket % len(pool)
+    return pool[idx]

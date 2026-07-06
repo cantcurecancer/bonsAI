@@ -266,7 +266,7 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
               isStreaming: isStreamingPreview,
               onActivate: () => onTurnActivate?.("live"),
             })}
-            {expandedTurnKey === "live" && isAsking && thinkingSummary && !isStreamingPreview ? (
+            {expandedTurnKey === "live" && isAsking && thinkingSummary ? (
               <div
                 className="bonsai-chat-status-line bonsai-chat-thinking-line"
                 style={{

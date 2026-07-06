@@ -55,6 +55,17 @@ Track B: Return to Gaming Mode → QAM → bonsAI.
 
 Scenario detail and coverage: [testing.md](../../docs/testing.md). PR gates: [testing.md](../../docs/testing.md#regression-gates) §1 + §3.
 
+## New focusable controls (D-pad)
+
+When adding Settings/QAM toggles, buttons, sliders, or chip rows:
+
+1. Design the **section-level focus graph** before coding UI polish — see `bonsai://architecture/focus-graph-patterns`.
+2. For `DeckFocusSlider`: add a parent **Focusable bridge** (or Ollama-style parent refs); never rely on thumb-only props.
+3. On-Deck QA: [testing.md](../../docs/testing.md) **FOCUS-GRAPH-01…05** + feature-specific row (e.g. UI-SCALE-05).
+4. Policy gate: `bonsai://policy/decky-ui-focus` § **New controls & settings rows**.
+
+Preview mocks do **not** validate Deck focus graphs — deploy + on-Deck pass required.
+
 ## Automated gates (before handoff)
 
 From repo root:

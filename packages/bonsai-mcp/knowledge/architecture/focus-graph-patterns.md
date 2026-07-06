@@ -1,0 +1,70 @@
+---
+id: focus-graph-patterns
+title: Decky focus graph patterns (reference)
+description: Section-level D-pad wiring, slider bridges, and canonical implementations
+---
+
+# Decky focus graph patterns
+
+Decky D-pad navigation is **not** DOM tab order. It is an **explicit graph of focus owners** wired with Decky move/button callbacks on the control that **actually holds focus on Deck**.
+
+## When to use this doc
+
+- Adding a new Settings row, toggle, button row, slider, or modal footer control
+- Debugging “D-pad skips my control” or “Left/Right does nothing”
+- Reviewing PRs that touch `src/components/*Tab*.tsx` or `DeckFocusSlider`
+
+Policy (always applied): `bonsai://policy/decky-ui-focus` — especially **New controls & settings rows**.
+
+## Pattern A — Section-level vertical chain
+
+**Parent component** owns the graph. List every stop in order, then wire `onMoveUp` / `onMoveDown` between stops (spread on `ToggleField`, `Button`, or `Focusable` as `Record<string, unknown>`).
+
+| Reference | What it demonstrates |
+|-----------|----------------------|
+| `src/components/SettingsTabUiScaleSection.tsx` | Toggle → slider bridge → Reset → Apply; cross-section hooks to screenshot row |
+| `src/components/SettingsTab.tsx` | `focusScreenshotQualityRow`, `focusUiScaleApplyButton`, `applyButtonRef` |
+| `src/components/OllamaTab.tsx` | `focusOllamaKeepAliveThumb`, `focusLatencyWarningThumb`, `onMoveDownFromThumb` |
+| `src/components/PullModelsModal.tsx` | Horizontal chip row + vertical exits via `Button` `onMove*` spreads |
+| `src/components/CharacterPickerModal.tsx` | `ToggleField` `onMoveDown` / `onMoveRight` to list and footer |
+
+**Helpers:** `focusInHost(host)` — query `[tabindex], button` inside a wrapper ref; `getFocusableWithin` in `src/utils/focusNavigation.ts`.
+
+## Pattern B — Slider / composite widget (document-flow bridge)
+
+`DeckFocusSlider` thumb is **absolutely positioned** inside the track. It is **not** a reliable Decky vertical focus peer. Do **not** assume `thumbHostRef` + `onMoveUp`/`onMoveDown` on the thumb alone will work.
+
+**Required:** wrap the slider in a **document-flow `Focusable` bridge** in the **section parent** that:
+
+1. Sits between adjacent controls in JSX order (toggle above, buttons below)
+2. Handles **vertical** nav: `onMoveUp` / `onMoveDown` to siblings
+3. Handles **horizontal** nav on the **bridge** (same focus owner): `onMoveLeft`, `onMoveRight`, `onButtonDown` → step state
+4. Drives thumb **visuals** via `thumbFocusedExternal` / `thumbEditingExternal` on `DeckFocusSlider`
+
+Canonical: `SettingsTabUiScaleSection.tsx` (`bonsai-ui-scale-slider-focus-bridge`).
+
+**Alternative (no bridge):** parent-only refs + programmatic focus to thumb when the thumb is a proven focus peer (e.g. `OllamaTab` → `focusOllamaKeepAliveThumb` from connection timeout `onMoveDownFromThumb`). Still wire the **section** graph explicitly.
+
+## Pattern C — Horizontal button groups
+
+Wrap chips/buttons in `Focusable flow-children="horizontal"` and spread `onMoveLeft` / `onMoveRight` / `onMoveDown` on each `Button`. See screenshot quality row in `SettingsTab.tsx`.
+
+## Anti-patterns (caused multi-prompt regressions)
+
+| Mistake | Symptom |
+|---------|---------|
+| Only pass `onMoveUp`/`onMoveDown` into `DeckFocusSlider` | Vertical nav skips slider entirely |
+| Spread `onMoveDown` on `ToggleField` without bridge | Decky native graph jumps to next `Button` |
+| Bridge `Focusable` without `onMoveLeft`/`onMoveRight`/`onButtonDown` | Vertical works; Left/Right dead |
+| Programmatic `.focus()` to thumb while bridge owns focus | Highlight on thumb; D-pad still on bridge |
+
+## Ship checklist
+
+Before marking UI work done:
+
+1. On-Deck: trace full vertical chain for the new row
+2. On-Deck: Left/Right (or `onButtonDown`) on any slider or horizontal group
+3. Add a row to `docs/testing.md` (**Shipped feature coverage** + scenario checkbox)
+4. Run Tier 0 **SMOKE-A** if the change touches Settings or tab shell
+
+Workflow: `bonsai://workflow/deck-dev-loop` § **New focusable controls**.

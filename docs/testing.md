@@ -132,6 +132,20 @@ Record **build id / git SHA** and **SteamOS** in [testing.md](testing.md#shipped
 
 ---
 
+## New focusable controls (mandatory before ship)
+
+Any new Settings/QAM toggle, button, slider, chip row, or modal footer control **must** pass this on-Deck checklist and add a coverage row below. Policy: MCP `bonsai://policy/decky-ui-focus` § **New controls & settings rows**. Patterns: `bonsai://architecture/focus-graph-patterns`.
+
+- [ ] **FOCUS-GRAPH-01** Listed every focus stop in the section parent (order documented in PR or `focus-graph-patterns.md`)
+- [ ] **FOCUS-GRAPH-02** D-pad **Up/Down** reaches each stop; no skips (e.g. toggle must not jump over slider to Reset)
+- [ ] **FOCUS-GRAPH-03** Sliders / horizontal groups: **Left/Right** (or A + edit mode) changes value on the **focus owner** (bridge `Focusable` if using `DeckFocusSlider`)
+- [ ] **FOCUS-GRAPH-04** Cross-section links wired (parent refs + `onMoveDown`/`onMoveUp` to adjacent `PanelSection` rows)
+- [ ] **FOCUS-GRAPH-05** Row added to **Shipped feature coverage** + scenario checkbox (template: **UI-SCALE-05**)
+
+Reference implementations: `SettingsTabUiScaleSection.tsx`, `OllamaTab.tsx`, `SettingsTab.tsx`, `PullModelsModal.tsx`.
+
+---
+
 ## Cross-cutting smokes
 
 One smoke run can check off many coverage rows. After each smoke, update [testing.md](testing.md#shipped-feature-coverage) **Shipped feature coverage** and linked scenario checkboxes.
@@ -381,7 +395,7 @@ Maps [roadmap.md](roadmap.md) **Completed** summary and [archive/roadmap-complet
 | DEBUG-TAB | Developer tab opt-in | SMOKE-A | Open | Tab strip when enabled |
 | INTENT-PACKS | Offline intent packs (import/export) | SMOKE-A | Open | Settings → Search intent packs |
 | SETTINGS-TRIM | Settings tab trim | SMOKE-A | Open | |
-| UI-SCALE | UI scale profiles (auto + manual snap) | UI-SCALE-01…04 | Open | Settings → Apply; on-Deck display matrix |
+| UI-SCALE | UI scale profiles (auto + manual snap) | UI-SCALE-01…05 | Open | Settings → Apply; on-Deck display matrix |
 | RESET-SESSION | Reset session cache | — | Open | Tier 2 |
 | RETRY-PROMPT | Retry same prompt (regenerate) | FEEDBACK-01 | Open | `BonsaiChatReplyActions.tsx`; on-Deck |
 | ASK-FEEDBACK | Per-turn local feedback (thumbs) | FEEDBACK-01 | Open | `save_ask_feedback` RPC; on-Deck |
@@ -396,6 +410,7 @@ Maps [roadmap.md](roadmap.md) **Completed** summary and [archive/roadmap-complet
 | D-PAD-CHUNKS | D-pad response scrolling | SMOKE-A | Partial | [SMOKE-A focus path](test-evidence/tier0/2026-05-26-9e20a82/SMOKE-A-golden-path/manifest.json); [preview 2026-05-26](test-evidence/tier0/2026-05-26-9e20a82/SMOKE-A-golden-path/manifest.json) |
 | BG-ASK-V1 | Background prompt completion V1 | SMOKE-H, BG-* | Partial | SMOKE-H Tier 1; full matrix Tier 4; [preview 2026-05-26](test-evidence/tier1Core/2026-05-26-9e20a82/BG-ASK-reopen-status/manifest.json) |
 | THINKING-PHASE | Thinking phase copy polish (mid-Ask woven status) | THINKING-01, THINKING-02 | Open | `tests/test_bonsai_stream_tags.py`; on-Deck proton/TDP/screenshot paths |
+| THINKING-SARCASM | Always-sarcastic thinking blurb + visible during stream | THINKING-01, THINKING-03 | Open | `tests/test_bonsai_stream_tags.py`, `src/utils/composeThinkingBlurb.test.ts`; on-Deck streaming QA |
 | SYS-PROMPT-LAYERS | System prompt layer order | SMOKE-A transparency | Partial | `tests/test_ollama_service.py` only |
 
 ### Steam Input
@@ -530,8 +545,9 @@ Requires **Settings → Data → Show Developer tab** → **Token streaming (exp
 - [x] **STREAM-04** Stop mid-stream: cancelled copy; no stale overwrite
 - [x] **STREAM-05** Transparency populates only after terminal
 - [ ] **STREAM-06** Smooth reveal: pending stream polls without text regression (preview RPC)
-- [ ] **THINKING-01** Pending: `thinking_summary` line visible; no placeholder AI bubble before partial; opener woven via `compose_thinking_blurb`
+- [ ] **THINKING-01** Pending: `thinking_summary` line visible (sarcastic/playful copy even without Character Voice); no placeholder AI bubble before partial; opener woven via `compose_thinking_blurb`
 - [ ] **THINKING-02** Mid-Ask prep phases (Proton logs, TDP read, screenshot prep, model retry): `thinking_summary` keeps question snippet + game — no generic downgrade to e.g. **Building context…** alone
+- [ ] **THINKING-03** During token streaming: italic thinking line stays visible above preview bubble; updates from `<bonsai-status>` or elapsed fallback (not hidden when `streaming=true`)
 - [ ] **FEEDBACK-01** Reply-action chrome: `.bonsai-chat-secondary-btn` on feedback/retry/details
 
 ---
@@ -614,6 +630,7 @@ Deck-only (multi-output: handheld, docked monitor, TV). Unit: `src/data/uiScaleP
 - [ ] **UI-SCALE-02** Docked desk monitor (24″–27″): auto Desktop; layout matches handheld recipe
 - [ ] **UI-SCALE-03** Docked TV (~65″ @ couch distance): auto Couch; larger type/spacing; no spill
 - [ ] **UI-SCALE-04** Manual snap + **Apply UI scale** persists across QAM close; Pull Models modal matches scale
+- [ ] **UI-SCALE-05** D-pad: auto toggle ↕ manual slider ↕ Reset ↕ Apply ↕ screenshot quality row; slider left/right snaps Handheld · Desktop · Couch
 
 ---
 
