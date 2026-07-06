@@ -4,7 +4,7 @@
 
 > **Beta software!** AI answers can be wrong or incomplete and features may break with Steam/Decky/plugin updates. Verify anything important yourself. Review **Permissions** before enabling. **Strategy** spoiler hiding and **VAC** results are best-effort but not foolproof. **Ollama on this Deck** can tax the system during games. **Power tips:** TDP apply is optional (**Permissions → Adjust power limits (beta)**). GPU clock suggestions are not written to hardware. Check **QAM → Performance** before you change settings.
 
-
+![bonsAI v0.4.5 on Steam Deck — Main tab with preset chips and unified Ask bar](assets/readme-hero.png)
 
 ## Quick start
 
@@ -12,7 +12,7 @@
 2. Install **bonsAI** from the **[latest GitHub Release](https://github.com/cantcurecancer/bonsAI/releases)** — open **Decky** from QAM → Settings → Developer → install plugin from URL: [https://github.com/qd313/bonsAI/releases/latest/download/bonsAI.zip](https://github.com/qd313/bonsAI/releases/latest/download/bonsAI.zip)
 3. **Install Ollama and a model**
   - **Deck**: **bonsAI → Ollama** → enable **Ollama on this Deck** → **Install Tier 1 essentials** `qwen2.5vl:3b` for chat + screenshots). Optional: **Install Tier 2 one-model multimodal** `gemma4:e2b-it-qat`)
-  - **LAN PC:** Install **[Ollama]([https://ollama.com/download)** ([https://ollama.com/download](https://ollama.com/download)), then `ollama pull qwen2.5vl:3b` (optional: `ollama pull gemma4:e2b-it-qat`)
+  - **LAN PC:** Install **[Ollama](https://ollama.com/download)**, then `ollama pull qwen2.5vl:3b` (optional: `ollama pull gemma4:e2b-it-qat`)
 4. Open **bonsAI** → **Ollama** → set **Where AI runs** to `http://127.0.0.1:11434` (same device) or `http://<PC-IP>:11434` (PC on your LAN) → **Main** → send a test message
 
 Unfamiliar with **QAM**, **LAN**, or **Ollama**? See [Glossary](#glossary-quick) below. Network, vision, and permission setup: [docs/troubleshooting.md](docs/troubleshooting.md)
@@ -153,4 +153,6 @@ More docs: [development.md](docs/development.md) · [testing.md](docs/testing.md
 
 ## Buy me a beer
 
-Donate
+Support my Steam Sale habit — scan or tap:
+
+[![Donate via PayPal](assets/qrcode.png)](https://paypal.me/quentind313)
