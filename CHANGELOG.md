@@ -4,6 +4,13 @@ All notable changes to this project are documented in this file.
 
 ## [Unreleased]
 
+## [0.4.6] - 2026-07-06
+
+### Fixed
+- **Clear all data — settings and permissions wipe:** In-app **Clear all data** no longer restores pre-clear settings after the beta disclaimer modal re-captured stale session survival. Backend wipe clears the full Decky settings directory (voice STT assets, feedback log), always removes `~/.bonsai/cache`, and stops voice install tasks. Uninstall vs clear documented in `docs/troubleshooting.md` §1b; manual wipe script `scripts/wipe-bonsai-data.sh`.
+
+### Changed
+- **Docs:** README uninstall note; `DATA-CLEAR-01` regression row in `docs/testing.md`.
 ## [0.4.5] - 2026-07-06
 
 ### Added
