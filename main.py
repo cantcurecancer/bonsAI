@@ -758,6 +758,22 @@ class Plugin:
             plugin._local_ollama_cancel_event = None
             plugin._local_ollama_setup_state = new_local_ollama_setup_state()
 
+        await plugin._stop_voice_transcription_internal()
+
+        vit = getattr(plugin, "_voice_install_task", None)
+        if vit is not None and not vit.done():
+            ce_voice = getattr(plugin, "_voice_install_cancel", None)
+            if isinstance(ce_voice, threading.Event):
+                ce_voice.set()
+            vit.cancel()
+            try:
+                await vit
+            except asyncio.CancelledError:
+                pass
+            plugin._voice_install_task = None
+            plugin._voice_install_cancel = None
+            plugin._voice_install_state = new_voice_install_state()
+
         current = await plugin.load_settings()
         local_on_deck = isinstance(current, dict) and current.get("ollama_local_on_deck") is True
         if local_on_deck:
@@ -773,7 +789,11 @@ class Plugin:
                 },
             )
 
-        defaults = reset_plugin_disk_and_defaults(
+        from backend.services.plugin_data_reset import wipe_bonsai_cache_dir
+
+        cache_cleared = await asyncio.to_thread(wipe_bonsai_cache_dir, logger)
+
+        defaults, settings_removed = reset_plugin_disk_and_defaults(
             settings_path=Plugin._settings_path(),
             settings_dir=decky.DECKY_PLUGIN_SETTINGS_DIR,
             runtime_dir=decky.DECKY_PLUGIN_RUNTIME_DIR,
@@ -792,6 +812,15 @@ class Plugin:
             Plugin._strategy_checklist_session_path(),
             decky.DECKY_PLUGIN_SETTINGS_DIR,
             logger=logger,
+        )
+        await plugin._maybe_app_log(
+            "plugin.data_clear",
+            "plugin data cleared",
+            fields={
+                "settings_entries_removed": settings_removed,
+                "bonsai_cache_cleared": cache_cleared,
+                "local_ollama_teardown": local_on_deck,
+            },
         )
         return defaults
 

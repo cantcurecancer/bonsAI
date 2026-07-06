@@ -15,6 +15,8 @@
   - **LAN PC:** Install **[Ollama](https://ollama.com/download)**, then `ollama pull qwen2.5vl:3b` (optional: `ollama pull gemma4:e2b-it-qat`)
 4. Open **bonsAI** → **Ollama** → set **Where AI runs** to `http://127.0.0.1:11434` (same device) or `http://<PC-IP>:11434` (PC on your LAN) → **Main** → send a test message
 
+**Uninstall note:** Removing bonsAI from Decky does **not** erase saved settings or permissions. Run **Settings → Advanced → Clear all data…** before uninstalling for a fresh install, or see [troubleshooting § Uninstall vs Clear all data](docs/troubleshooting.md#1b-uninstall-vs-clear-all-data-settings).
+
 Unfamiliar with **QAM**, **LAN**, or **Ollama**? See [Glossary](#glossary-quick) below. Network, vision, and permission setup: [docs/troubleshooting.md](docs/troubleshooting.md)
 
 ## Glossary (quick)

@@ -4,11 +4,54 @@ from __future__ import annotations
 
 import os
 import shutil
+import sys
+from pathlib import Path
 from typing import Any, Callable
 
 LoadSettingsFn = Callable[[str, Any, Any], dict]
 SaveSettingsFn = Callable[..., dict]
 SanitizeFn = Callable[[Any], dict]
+
+
+def _path_within_home(path: Path, home: Path) -> bool:
+    try:
+        path.resolve().relative_to(home.resolve())
+        return True
+    except ValueError:
+        return False
+
+
+def wipe_settings_dir_contents(settings_dir: str, logger: Any) -> int:
+    """Remove every file and subdirectory under settings_dir; recreate empty dir."""
+    removed = 0
+    if os.path.isdir(settings_dir):
+        for name in os.listdir(settings_dir):
+            fp = os.path.join(settings_dir, name)
+            try:
+                if os.path.isdir(fp):
+                    shutil.rmtree(fp)
+                else:
+                    os.remove(fp)
+                removed += 1
+            except OSError:
+                logger.warning("wipe_settings_dir: could not remove %s", fp)
+    os.makedirs(settings_dir, exist_ok=True)
+    return removed
+
+
+def wipe_bonsai_cache_dir(logger: Any) -> bool:
+    """Remove ~/.bonsai/cache when it lives under the user home directory."""
+    if sys.platform.startswith("win"):
+        return False
+    try:
+        home = Path.home()
+        cache_dir = home / ".bonsai" / "cache"
+        if cache_dir.exists() and _path_within_home(cache_dir, home):
+            shutil.rmtree(cache_dir, ignore_errors=True)
+            return True
+    except OSError as exc:
+        logger.warning("wipe_bonsai_cache_dir: %s", exc)
+    return False
 
 
 def reset_plugin_disk_and_defaults(
@@ -21,16 +64,15 @@ def reset_plugin_disk_and_defaults(
     load_settings: LoadSettingsFn,
     save_settings: SaveSettingsFn,
     logger: Any,
-) -> dict:
-    """Remove settings.json, clear runtime and log files, then write fresh defaults.
+) -> tuple[dict, int]:
+    """Wipe settings/runtime/log dirs and write fresh defaults.
 
     Does not touch Desktop notes or other paths outside Decky's plugin dirs. RPC callers should reload
     sanitized settings into memory after this returns so UI and backend state match disk.
+
+    Returns (defaults, settings_dir_removed_count).
     """
-    try:
-        os.remove(settings_path)
-    except FileNotFoundError:
-        pass
+    settings_removed = wipe_settings_dir_contents(settings_dir, logger)
 
     if os.path.isdir(runtime_dir):
         shutil.rmtree(runtime_dir)
@@ -46,7 +88,7 @@ def reset_plugin_disk_and_defaults(
                 logger.warning("reset_plugin_disk: could not remove %s", fp)
 
     defaults = load_settings(settings_path, sanitize_func, logger)
-    return save_settings(
+    saved = save_settings(
         path=settings_path,
         settings_dir=settings_dir,
         incoming={},
@@ -54,3 +96,4 @@ def reset_plugin_disk_and_defaults(
         sanitize_func=sanitize_func,
         logger=logger,
     )
+    return saved, settings_removed

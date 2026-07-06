@@ -50,7 +50,7 @@ class PluginDataResetTests(unittest.TestCase):
             )
             (Path(log_dir) / "plugin.log").write_text("x", encoding="utf-8")
 
-            out = reset_plugin_disk_and_defaults(
+            out, settings_removed = reset_plugin_disk_and_defaults(
                 settings_path=settings_path,
                 settings_dir=str(settings_dir),
                 runtime_dir=runtime_dir,
@@ -61,6 +61,7 @@ class PluginDataResetTests(unittest.TestCase):
                 logger=logger,
             )
 
+            self.assertGreaterEqual(settings_removed, 1)
             self.assertEqual(out["latency_warning_seconds"], 60)
             reloaded = load_settings(settings_path, _sanitize, logger)
             self.assertEqual(reloaded["latency_warning_seconds"], 60)
@@ -68,6 +69,45 @@ class PluginDataResetTests(unittest.TestCase):
             self.assertTrue(Path(runtime_dir).is_dir())
             self.assertFalse((Path(runtime_dir) / "captures").exists())
             self.assertFalse((Path(log_dir) / "plugin.log").exists())
+
+    def test_reset_wipes_voice_assets_and_feedback(self):
+        logger = _Logger()
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            settings_dir = root / "settings"
+            settings_dir.mkdir()
+            settings_path = str(settings_dir / "settings.json")
+            runtime_dir = str(root / "runtime")
+            log_dir = str(root / "logs")
+            Path(runtime_dir).mkdir()
+            Path(log_dir).mkdir()
+            (settings_dir / "voice_models").mkdir()
+            (settings_dir / "voice_models" / "ggml-tiny.en.bin").write_bytes(b"x")
+            (settings_dir / "voice_bin").mkdir()
+            (settings_dir / "voice_bin" / "whisper-cli").write_bytes(b"x")
+            (settings_dir / "bonsai_feedback.jsonl").write_text('{"rating":"up"}\n', encoding="utf-8")
+            Path(settings_path).write_text(
+                '{"capabilities": {"filesystem_write": true}}',
+                encoding="utf-8",
+            )
+
+            out, settings_removed = reset_plugin_disk_and_defaults(
+                settings_path=settings_path,
+                settings_dir=str(settings_dir),
+                runtime_dir=runtime_dir,
+                log_dir=log_dir,
+                sanitize_func=_sanitize,
+                load_settings=lambda p, s, lg: load_settings(p, s, lg),
+                save_settings=save_settings,
+                logger=logger,
+            )
+
+            self.assertGreaterEqual(settings_removed, 4)
+            self.assertFalse((settings_dir / "voice_models").exists())
+            self.assertFalse((settings_dir / "voice_bin").exists())
+            self.assertFalse((settings_dir / "bonsai_feedback.jsonl").exists())
+            self.assertTrue(Path(settings_path).is_file())
+            self.assertFalse(out["capabilities"]["filesystem_write"])
 
 
 if __name__ == "__main__":

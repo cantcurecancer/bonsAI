@@ -105,8 +105,10 @@ export function useDisclaimerAndLocalRuntimeGates(
   }, []);
 
   const openDisclaimerModal = useCallback(
-    (onAck: () => void) => {
-      modalHooksRef.current?.onBeforeDeckyModal();
+    (onAck: () => void, options?: { skipSessionCapture?: boolean }) => {
+      if (!options?.skipSessionCapture) {
+        modalHooksRef.current?.onBeforeDeckyModal();
+      }
       const handle = showModal(
         <ConfirmModal
           strTitle="bonsAI - Beta Notice"
@@ -124,7 +126,7 @@ export function useDisclaimerAndLocalRuntimeGates(
   );
 
   const showDisclaimerModalAgain = useCallback(() => {
-    openDisclaimerModal(acknowledgeDisclaimer);
+    openDisclaimerModal(acknowledgeDisclaimer, { skipSessionCapture: true });
   }, [acknowledgeDisclaimer, openDisclaimerModal]);
 
   useEffect(() => {

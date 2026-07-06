@@ -33,12 +33,17 @@ import {
 import { buildBonsaiScopeAccentInlineStyle, resolveUiAccentFromCharacterSettings } from "./data/characterUiAccent";
 import { appendAppDesktopLogWithPrefs } from "./utils/appDesktopLog";
 import {
+  acknowledgePluginDataClearHandled,
   clearBonsaiSessionSurvival,
   consumeBonsaiSessionAfterRemount,
   finalizeSessionRestoreAfterRemount,
+  getPluginDataClearedGeneration,
+  markPluginDataCleared,
   peekBonsaiSessionPendingRestore,
+  shouldIgnoreRestoredSettingsSnapshot,
   type BonsaiSessionSurvivalSnapshot,
 } from "./utils/bonsaiSessionSurvival";
+import { clearBonsaiBrowserStorage } from "./utils/clearBonsaiBrowserStorage";
 import { bonsaiDebugLog } from "./utils/bonsaiDebugIngest";
 import { persistOllamaIpIfRoutingToLan as persistOllamaIpIfRoutingToLanUtil } from "./utils/persistOllamaIp";
 import { clearOllamaTabLocalSurvival } from "./utils/ollamaTabLocalSurvival";
@@ -77,15 +82,12 @@ import { useVoiceTranscription } from "./hooks/useVoiceTranscription";
 import { useBonsaiAskOrchestration } from "./hooks/useBonsaiAskOrchestration";
 import { useDisclaimerAndLocalRuntimeGates } from "./hooks/useDisclaimerAndLocalRuntimeGates";
 import { useCapturedFrontendErrors } from "./hooks/useCapturedFrontendErrors";
-import { AUTO_SAVED_RESPONSE_IDS_KEY } from "./utils/desktopChatAutosave";
 import { getSteamSettingsUrl, isQamSetting } from "./data/steamSettingsNavigation";
 import { registerPreviewTestHooks, isDeckyPreviewRuntime } from "./preview/previewTestHooks";
 import {
-  DISCLAIMER_STORAGE_KEY,
   GITHUB_ISSUES_URL,
   IP_DEFAULT,
   IP_STORAGE_KEY,
-  LOCAL_RUNTIME_BETA_DISMISSED_STORAGE_KEY,
   OLLAMA_UPSTREAM_REPO_URL,
   PLUGIN_HELP_DISMISSED_STORAGE_KEY,
   UNIFIED_INPUT_STORAGE_KEY,
@@ -284,6 +286,7 @@ const Content: React.FC = () => {
   });
 
   const pendingSessionRestoreFinalizeRef = useRef(false);
+  const pluginDataClearSeenRef = useRef(getPluginDataClearedGeneration());
   const [lastConnectionStatus, setLastConnectionStatus] = useState<DeveloperConnectionStatus | null>(null);
 
   // --- Unified input/search state ---
@@ -407,7 +410,6 @@ const Content: React.FC = () => {
     settingsLoaded,
     hydrateFromSettings,
     pauseDebouncedSettingsSave,
-    flushSettingsSnapshotNow,
     syncSettingsFromDisk,
   } = usePluginSettings();
 
@@ -569,6 +571,10 @@ const Content: React.FC = () => {
   isAskingRef.current = isAsking;
 
   useLayoutEffect(() => {
+    if (shouldIgnoreRestoredSettingsSnapshot(pluginDataClearSeenRef.current)) {
+      clearBonsaiSessionSurvival();
+      return;
+    }
     const survived = consumeBonsaiSessionAfterRemount();
     bonsaiDebugLog("index.tsx:consume", survived ? "restored snapshot" : "no snapshot", "H1", {
       tab: survived?.currentTab,
@@ -959,29 +965,20 @@ const Content: React.FC = () => {
 
   const onClearAllPluginData = useCallback(async () => {
     try {
+      markPluginDataCleared();
+      clearSettingsTabLocalSurvival();
+      clearOllamaTabLocalSurvival();
       await pauseDebouncedSettingsSave();
-      const defaults = await call<[], BonsaiSettings>("clear_plugin_data");
-      hydrateFromSettings(defaults);
-      await flushSettingsSnapshotNow();
-      try {
-        window.localStorage.removeItem(IP_STORAGE_KEY);
-        window.localStorage.removeItem(DISCLAIMER_STORAGE_KEY);
-        window.localStorage.removeItem(PLUGIN_HELP_DISMISSED_STORAGE_KEY);
-        window.localStorage.removeItem(LOCAL_RUNTIME_BETA_DISMISSED_STORAGE_KEY);
-        window.localStorage.removeItem(UNIFIED_INPUT_STORAGE_KEY);
-        window.sessionStorage.removeItem(AUTO_SAVED_RESPONSE_IDS_KEY);
-      } catch {
-        /* ignore */
-      }
+      await call<[], BonsaiSettings>("clear_plugin_data");
+      clearBonsaiBrowserStorage();
+      await syncSettingsFromDisk();
+      acknowledgePluginDataClearHandled();
       setOllamaIp(IP_DEFAULT);
       __bonsaiPluginHelpDismissed = false;
       localRuntimeBetaPromptIssuedRef.current = false;
       ollamaLocalOnDeckPrevRef.current = null;
       setPluginHelpDismissed(false);
       setSuggestedPrompts(getRandomPresets(3));
-      clearBonsaiSessionSurvival();
-      clearSettingsTabLocalSurvival();
-      clearOllamaTabLocalSurvival();
       resetPluginSession();
       await intentPacks.refresh();
       showDisclaimerModalAgain();
@@ -998,8 +995,7 @@ const Content: React.FC = () => {
       });
     }
   }, [
-    flushSettingsSnapshotNow,
-    hydrateFromSettings,
+    syncSettingsFromDisk,
     pauseDebouncedSettingsSave,
     resetPluginSession,
     showDisclaimerModalAgain,

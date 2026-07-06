@@ -60,6 +60,12 @@ const survival = createTabLocalSurvival<BonsaiSessionSurvivalSnapshot>({ consume
 
 let restoredSettingsSnapshot: BonsaiSettingsSnapshotInput | null = null;
 
+/** Bumped on Clear all data so remount + load_settings ignore stale modal survival. */
+let pluginDataClearedGeneration = 0;
+
+/** Stays true from clear until disk defaults are hydrated; blocks modal survival restore. */
+let blockSessionSettingsRestore = false;
+
 /** Peek without consuming — used for synchronous `useState` initializers on remount. */
 export function peekBonsaiSessionPendingRestore(): BonsaiSessionSurvivalSnapshot | null {
   return survival.peekPending();
@@ -94,4 +100,26 @@ export function takeRestoredSettingsSnapshot(): BonsaiSettingsSnapshotInput | nu
 export function clearBonsaiSessionSurvival(): void {
   survival.clear();
   restoredSettingsSnapshot = null;
+}
+
+/** Mark a full plugin data clear; clears survival and returns the new generation. */
+export function markPluginDataCleared(): number {
+  pluginDataClearedGeneration += 1;
+  blockSessionSettingsRestore = true;
+  clearBonsaiSessionSurvival();
+  return pluginDataClearedGeneration;
+}
+
+/** Call after disk defaults are hydrated so modal survival may resume. */
+export function acknowledgePluginDataClearHandled(): void {
+  blockSessionSettingsRestore = false;
+}
+
+export function getPluginDataClearedGeneration(): number {
+  return pluginDataClearedGeneration;
+}
+
+/** True while a clear-data reset is in flight — blocks stale modal survival. */
+export function shouldIgnoreRestoredSettingsSnapshot(_seenAtMount?: number): boolean {
+  return blockSessionSettingsRestore;
 }

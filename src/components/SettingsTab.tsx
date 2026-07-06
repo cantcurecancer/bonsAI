@@ -527,7 +527,6 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
         </Button>
         <Button
           onClick={() => {
-            onBeforeDeckyModal();
             const handle = showModal(
               <ConfirmModal
                 strTitle="Clear all plugin data?"

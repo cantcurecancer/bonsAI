@@ -2,7 +2,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { call } from "@decky/api";
 import { type AiCharacterAccentIntensityId } from "../data/aiCharacterAccentIntensity";
 import { type ModelPolicyTierId } from "../data/modelPolicy";
-import { takeRestoredSettingsSnapshot } from "../utils/bonsaiSessionSurvival";
+import {
+  acknowledgePluginDataClearHandled,
+  getPluginDataClearedGeneration,
+  shouldIgnoreRestoredSettingsSnapshot,
+  takeRestoredSettingsSnapshot,
+} from "../utils/bonsaiSessionSurvival";
 import {
   DEFAULT_AI_CHARACTER_ACCENT_INTENSITY,
   DEFAULT_AI_CHARACTER_CUSTOM_TEXT,
@@ -184,6 +189,7 @@ export function usePluginSettings() {
   const settingsSnapshotForDebouncedSaveRef = useRef<BonsaiSettingsSnapshotInput>(defaultSettingsSnapshot());
   const settingsPersistEpochRef = useRef(0);
   const settingsSaveInFlightRef = useRef(0);
+  const pluginDataClearSeenAtMountRef = useRef(getPluginDataClearedGeneration());
 
   settingsSnapshotForDebouncedSaveRef.current = {
     latencyWarningSeconds,
@@ -303,11 +309,15 @@ export function usePluginSettings() {
     call<[], BonsaiSettings>("load_settings")
       .then((saved) => {
         if (cancelled) return;
-        const restored = takeRestoredSettingsSnapshot();
+        const ignoreRestored = shouldIgnoreRestoredSettingsSnapshot(pluginDataClearSeenAtMountRef.current);
+        const restored = ignoreRestored ? null : takeRestoredSettingsSnapshot();
         if (restored) {
           hydrateFromSettings(normalizeSettings(toBonsaiSettingsPayload(restored)));
         } else {
           hydrateFromSettings(saved);
+          if (ignoreRestored) {
+            acknowledgePluginDataClearHandled();
+          }
         }
       })
       .catch(() => {

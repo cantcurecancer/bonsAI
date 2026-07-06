@@ -4,7 +4,10 @@ import {
   clearBonsaiSessionSurvival,
   consumeBonsaiSessionAfterRemount,
   finalizeSessionRestoreAfterRemount,
+  acknowledgePluginDataClearHandled,
+  markPluginDataCleared,
   peekBonsaiSessionPendingRestore,
+  shouldIgnoreRestoredSettingsSnapshot,
   takeRestoredSettingsSnapshot,
   type BonsaiSessionSurvivalSnapshot,
 } from "./bonsaiSessionSurvival";
@@ -104,5 +107,23 @@ describe("bonsaiSessionSurvival", () => {
     clearBonsaiSessionSurvival();
     expect(peekBonsaiSessionPendingRestore()).toBeNull();
     expect(consumeBonsaiSessionAfterRemount()).toBeNull();
+  });
+
+  it("markPluginDataCleared blocks restored settings after clear", () => {
+    clearBonsaiSessionSurvival();
+    acknowledgePluginDataClearHandled();
+    captureBonsaiSessionForModal(
+      minimalSnapshot({
+        settingsSnapshot: {
+          ...minimalSnapshot().settingsSnapshot,
+          capabilities: { ...DEFAULT_CAPABILITIES, filesystem_write: true },
+        },
+      })
+    );
+    markPluginDataCleared();
+    expect(shouldIgnoreRestoredSettingsSnapshot(0)).toBe(true);
+    expect(peekBonsaiSessionPendingRestore()).toBeNull();
+    expect(consumeBonsaiSessionAfterRemount()).toBeNull();
+    expect(takeRestoredSettingsSnapshot()).toBeNull();
   });
 });

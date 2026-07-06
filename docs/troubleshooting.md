@@ -111,7 +111,7 @@ If Windows still falls back to CPU after FIX A:
 
 **Browse models** defaults to **Essentials only** (two preset rows). Turn the filter off to see more models; stretch/specialist rows are for power users.
 
-**Clear all data:** When **Ollama on this Deck** was enabled, **Settings → Clear all data** also removes local model blobs (`~/.ollama`), the user-prefix Ollama binary under `~/.local`, and `~/.bonsai/cache`. LAN-hosted Ollama on another PC is not touched.
+**Clear all data:** **Settings → Advanced → Clear all data** wipes settings (including permissions), voice STT assets, feedback log, runtime cache, all `bonsai:*` browser keys, and `~/.bonsai/cache`. When **Ollama on this Deck** was enabled, it also removes local model blobs (`~/.ollama`) and the user-prefix Ollama binary under `~/.local`. LAN-hosted Ollama on another PC is not touched.
 
 ### Ollama HTTP 404 with Gemma / open-weight models (Tier 2)
 
@@ -147,11 +147,38 @@ If Windows still falls back to CPU after FIX A:
 
 ## 1b. Uninstall vs “Clear all data” (Settings)
 
-**Uninstalling** the plugin from Decky removes the plugin bundle under `~/homebrew/plugins/` but often **leaves** Decky’s per-plugin **settings**, **runtime**, and **logs** directories. Reinstalling the same plugin can therefore look like nothing was reset.
+**Uninstalling** the plugin from Decky removes only the plugin bundle under `~/homebrew/plugins/bonsAI/`. Decky **intentionally keeps** per-plugin data directories ([decky-loader#382](https://github.com/SteamDeckHomebrew/decky-loader/issues/382)). Reinstalling from a release `.zip` without clearing first will restore your previous settings and permissions.
+
+| Path | Contents |
+|------|----------|
+| `~/homebrew/settings/bonsAI/` | `settings.json` (permissions, Ollama routing, keys), intent packs, voice STT assets, feedback log |
+| `~/homebrew/data/bonsAI/` | Runtime cache (e.g. screenshot captures) |
+| `~/homebrew/logs/bonsAI/` | Plugin log files |
+| Browser `bonsai:*` keys | Ollama host draft, disclaimer dismissals, unified-input persistence (CEF localStorage) |
+| `~/Desktop/bonsAI_logs/` | Optional Desktop notes (not removed by Clear all data) |
+| `~/.bonsai/cache/` | Pull-model catalog overlay |
 
 **Settings → Advanced** (bottom of the tab): **Clear cache…** only clears the **current session** in RAM (Ask thread, attachments, etc.) and does **not** touch `settings.json`.
 
-**Clear all data…** resets bonsAI to a **new-install** state on the device: it removes saved settings (including permissions), clears plugin runtime cache and log files under Decky’s homebrew layout, clears the Ollama host / disclaimer / unified-input keys stored in the plugin’s browser storage (and related `bonsai:*` flags such as the **How to use bonsAI** quick-start chip and **Local runtime (beta)** notice dismissals), and shows the beta notices again. It does **not** delete markdown or log files under `~/Desktop/bonsAI_logs/`.
+**Clear all data…** resets bonsAI to a **new-install** state on the device:
+
+- Wipes the full `~/homebrew/settings/bonsAI/` directory (settings, permissions, voice models/bin, feedback log, intent packs, checklist session) and rewrites defaults
+- Clears `~/homebrew/data/bonsAI/` and log files under `~/homebrew/logs/bonsAI/`
+- Clears all `bonsai:*` browser storage keys
+- Removes `~/.bonsai/cache/` (catalog overlay)
+- When **Ollama on this Deck** was enabled: also removes local model blobs (`~/.ollama`), user-prefix Ollama under `~/.local`
+- Shows beta disclaimer and permission prompts again
+
+It does **not** delete markdown or log files under `~/Desktop/bonsAI_logs/`.
+
+**Full removal checklist** (uninstall + no leftover data):
+
+1. In bonsAI: **Settings → Advanced → Clear all data…** (or skip if you will delete folders manually)
+2. Decky → uninstall bonsAI
+3. Optionally delete: `~/homebrew/settings/bonsAI`, `~/homebrew/data/bonsAI`, `~/homebrew/logs/bonsAI`
+4. Desktop Mode: `scripts/wipe-bonsai-data.sh` documents the same paths for a one-shot wipe
+
+**If Clear all data still leaves old settings:** ensure you used the in-plugin button (not Decky Loader plugin reload). After the fix shipped 2026-07-06, reopen QAM and confirm permissions are off; check `settings.json` capabilities are all `false`.
 
 ---
 

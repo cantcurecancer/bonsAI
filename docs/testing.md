@@ -402,6 +402,7 @@ Maps [roadmap.md](roadmap.md) **Completed** summary and [archive/roadmap-complet
 | SETTINGS-TRIM | Settings tab trim | SMOKE-A | Open | |
 | UI-SCALE | UI scale profiles (auto + manual snap) | UI-SCALE-01…05 | Open | Settings → Apply; on-Deck display matrix |
 | RESET-SESSION | Reset session cache | — | Open | Tier 2 |
+| DATA-CLEAR | Clear all plugin data (settings + permissions wipe) | DATA-CLEAR-01 | Open | Regression: modal survival must not restore old settings |
 | RETRY-PROMPT | Retry same prompt (regenerate) | FEEDBACK-01 | Open | `BonsaiChatReplyActions.tsx`; on-Deck |
 | ASK-FEEDBACK | Per-turn local feedback (thumbs) | FEEDBACK-01 | Open | `save_ask_feedback` RPC; on-Deck |
 
@@ -647,6 +648,14 @@ Deck-only (mic + PipeWire capture). Preview harness stubs RPCs but cannot valida
 - [ ] **VOICE-02** Permissions on + model downloaded → interim text streams into Ask field while speaking
 - [ ] **VOICE-03** Stop mic (red stop) finalizes transcript; Ask can be submitted normally
 - [ ] **VOICE-04** Revoke microphone permission mid-recording → capture stops immediately
+
+---
+
+## Tier 2 — Clear all plugin data
+
+Regression for settings/permissions surviving in-app clear (fixed 2026-07-06: modal survival + stale `save_settings` after reset).
+
+- [ ] **DATA-CLEAR-01** Enable 3+ permissions, set Ollama LAN host, dismiss disclaimer → **Settings → Advanced → Clear all data…** → success toast → close/reopen QAM → all permissions off, disclaimer returns, Ollama host default; `~/homebrew/settings/bonsAI/settings.json` has `capabilities` all `false`
 
 ## Tier 2 — Strategy depth
 
