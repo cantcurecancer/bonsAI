@@ -140,24 +140,39 @@ class ScreenshotMediaTests(unittest.TestCase):
 
     def test_try_gamescope_atom_screenshot_copies_gamescope_png(self) -> None:
         with mock.patch(
-            "backend.services.screenshot_media._discover_x11_sessions",
-            return_value=[(":1", "")],
+            "backend.services.screenshot_media.shutil.which",
+            return_value="/usr/bin/xprop",
         ):
             with mock.patch(
-                "backend.services.screenshot_media.subprocess.run",
-                return_value=mock.Mock(returncode=0, stderr=b""),
+                "backend.services.screenshot_media._discover_x11_sessions",
+                return_value=[(":1", "")],
             ):
                 with mock.patch(
-                    "backend.services.screenshot_media.os.path.isfile",
-                    side_effect=lambda path: path in {"/tmp/gamescope.png", "/tmp/out.png"},
+                    "backend.services.screenshot_media.subprocess.run",
+                    return_value=mock.Mock(returncode=0, stderr=b""),
                 ):
-                    with mock.patch("backend.services.screenshot_media.os.path.getsize", return_value=128):
-                        with mock.patch("backend.services.screenshot_media.shutil.copy2") as copy_mock:
+                    with mock.patch(
+                        "backend.services.screenshot_media.os.path.isfile",
+                        side_effect=lambda path: path in {"/tmp/gamescope.png", "/tmp/out.png"},
+                    ):
+                        with mock.patch(
+                            "backend.services.screenshot_media.os.path.getsize",
+                            return_value=60_000,
+                        ):
                             with mock.patch(
-                                "backend.services.screenshot_media.os.path.getmtime",
-                                return_value=1.0,
-                            ):
-                                out = try_gamescope_atom_screenshot("/tmp/out.png", False, {})
+                                "backend.services.screenshot_media.shutil.copy2"
+                            ) as copy_mock:
+                                with mock.patch(
+                                    "backend.services.screenshot_media.time.time",
+                                    return_value=100.0,
+                                ):
+                                    with mock.patch(
+                                        "backend.services.screenshot_media.os.path.getmtime",
+                                        return_value=100.0,
+                                    ):
+                                        out = try_gamescope_atom_screenshot(
+                                            "/tmp/out.png", False, {}
+                                        )
         self.assertTrue(out.get("success"))
         copy_mock.assert_called_once_with("/tmp/gamescope.png", "/tmp/out.png")
 
