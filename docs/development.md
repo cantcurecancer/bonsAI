@@ -298,6 +298,8 @@ Then edit CHANGELOG bullets and commit to **`main`**. CI builds the zip and publ
 
 **CI:** [`.github/workflows/build-plugin-zip.yml`](../.github/workflows/build-plugin-zip.yml) — triggers on **`main`** pushes that change **`plugin.json`**, **`v*` tags**, and **workflow_dispatch**. Artifact: `bonsai-plugin-*`; verified by [`scripts/verify-decky-plugin-zip.sh`](../scripts/verify-decky-plugin-zip.sh).
 
+**Cursor / Bugbot branch hygiene:** Repo rules cannot block the Cursor GitHub App from pushing `cursor/*` branches. After merging investigation fixes locally, turn off **Autofix** and delete or disable the daily critical-bug **Automation** in the [Bugbot dashboard](https://cursor.com/dashboard/bugbot) (see [.cursor/BUGBOT.md](../.cursor/BUGBOT.md)). Close duplicate draft PRs and delete stale `cursor/*` remote branches.
+
 **Local release:**
 
 ```bash
