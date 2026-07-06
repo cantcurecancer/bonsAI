@@ -4,6 +4,22 @@ All notable changes to this project are documented in this file.
 
 ## [Unreleased]
 
+## [0.4.5] - 2026-07-06
+
+### Added
+- **UI scale slider (Deck focus graph):** Settings **UI scale** manual snap uses shared `DeckFocusSlider` with explicit D-pad focus bridge (`SettingsTabUiScaleSection.tsx`, `deckSliderMath.ts`, `focus-graph-patterns.md` policy).
+- **MainTab modularization:** `MainTabPresetRow`, `MainTabUnifiedAskBar`, `MainTabScreenshotBrowser`, `MainTabChatTranscript`; `index.tsx` shell hooks (`useBonsaiPluginShell`, `useScreenshotBrowser`, `useSteamSettingsSearch`).
+- **Backend service extraction (Phase 3):** `ollama_ask_service.py`, `async_background_job.py`, `network_service.py`, `transparency_service.py`, `ask_local_commands.py`; Ollama routing moved to `ollama_routing.py` / `ollama_connectivity.py`; `main.py` slimmed ~500 LOC.
+
+### Changed
+- **Thinking blurbs:** Always-sarcastic witty/deadpan copy via `composeThinkingBlurb.ts`; stream tag and tiny-model prompt alignment (`bonsai_stream_tags.py`, `thinking_tiny_model_service.py`).
+- **Stylesheet split:** `bonsaiScopeStylesheet.ts` composes `src/styles/sections/*.ts` for maintainability.
+- **Settings schema:** `bonsaiSettingsSchema.ts` + `bonsaiSettingsNormalizers.ts` + `settingsPayload.ts` centralize persistence shape.
+
+### Fixed
+- **Seven critical regressions (post-refactor):** Settings save RMW lock; abort busy gate (Stop releases Ask); voice PCM buffer lock; intent pack corrupt-file preservation; Pillow decode containment; strategy checklist stale-ref + game-switch hydration; intent-pack and strategy-checklist store write locks. Regression tests: `test_background_abort_busy`, `test_settings_save_lock`, `test_intent_pack_store_lock`, `test_strategy_checklist_store_lock`.
+- **Connection / Ollama keep-alive sliders:** Migrated to `DeckFocusSlider` with parent focus-graph wiring.
+
 ## [0.4.4] - 2026-06-27
 
 ### Added
