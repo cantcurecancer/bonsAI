@@ -4,6 +4,22 @@ All notable changes to this project are documented in this file.
 
 ## [Unreleased]
 
+## [0.4.8] - 2026-07-07
+
+### Added
+- **Voice STT Tier 1 latency tuning:** Shorter decode interval, rolling window, poll cadence, and 4-thread whisper decode for faster interim text on Deck.
+- **Voice maintainer guide:** `docs/voice-input-follow-up.md` (SIGILL triage, pinned podman digest, Tier 2 daemon backlog).
+
+### Fixed
+- **Voice STT on Deck:** CPU-safe whisper-cli compile (`GGML_NATIVE=OFF`) when prebuilt binary SIGILLs on Zen 2; inference smoke test on install.
+- **Voice STT capture:** Gaming Mode mic RMS gate lowered; filler hallucinations still rejected at high RMS.
+- **Voice transcript junk:** Strip `>>`, `[INAUDIBLE]`, and related whisper noise tags from decoded text.
+- **Voice stop UX:** Skip final whisper pass on user stop; mic icon clears immediately instead of waiting on RPC.
+
+### Changed
+- **Pinned whisper.cpp image** to digest `sha256:c0b535ad…` (no floating `:main` prebuilt copy).
+- **Docs:** `docs/testing.md` VOICE-06 latency row; `docs/troubleshooting.md` voice input updates; roadmap STT daemon follow-up.
+
 ## [0.4.7] - 2026-07-07
 
 ### Added
