@@ -4,7 +4,7 @@
 
 > **Beta software!** AI answers can be wrong or incomplete and features may break with Steam/Decky/plugin updates. Verify anything important yourself. Review **Permissions** before enabling. **Strategy** spoiler hiding and **VAC** results are best-effort but not foolproof. **Ollama on this Deck** can tax the system during games. **Power tips:** TDP apply is optional (**Permissions → Adjust power limits (beta)**). GPU clock suggestions are not written to hardware. Check **QAM → Performance** before you change settings.
 
-![bonsAI v0.4.6 on Steam Deck — Main tab with preset chips and unified Ask bar](assets/readme-hero.png)
+![bonsAI v0.4.7 on Steam Deck — Main tab with preset chips and unified Ask bar](assets/readme-hero.png)
 
 ## Quick start
 

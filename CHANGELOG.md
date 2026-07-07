@@ -4,6 +4,24 @@ All notable changes to this project are documented in this file.
 
 ## [Unreleased]
 
+## [0.4.7] - 2026-07-07
+
+### Added
+- **Ollama first-install UX:** **Install Ollama** above **Browse models**; ~5 minute first-install hint; **Install Ollama** label when loopback is not set up (vs **Update AI & models**).
+- **Tier 2 pull confirm:** Browse & pull prompts to enable **Tier 2 (open-weight)** when queueing open-weight tags on Tier 1 policy.
+- **Tiny-model thinking blurbs:** Pull confirm for `qwen2.5:1.5b` returns to **Ollama** tab after accept.
+
+### Fixed
+- **Voice engine install:** Copy whisper.cpp libs from `/app/build/bin/` (not `src/`) in podman image layout.
+- **Clear all data + Ollama:** Teardown when `~/.ollama` or user-prefix install exists; stop stale listeners; gate loopback connection test on `~/.ollama/id_ed25519`; force fresh `ollama serve` when keys missing after clear.
+- **Tier 2 policy survival:** Modal session snapshot patched after Tier 2 RPC save so remount does not revert policy label on Ollama tab.
+- **Thinking blurbs navigation:** Post-modal survival restores **Ollama** tab; developer-tab guard waits for `settingsLoaded` (no spurious **Developer tab hidden** toast).
+- **Settings focus rings:** Tighter outline on Install voice engine / Install Ollama action buttons.
+
+### Changed
+- **Preset chips:** Tighter fade-animation gap; more space before Ask text area.
+- **Docs:** `docs/testing.md`, `docs/troubleshooting.md` rows for Ollama install, Tier 2 pull, clear-data, thinking blurbs.
+
 ## [0.4.6] - 2026-07-06
 
 ### Fixed
