@@ -1017,7 +1017,8 @@ const Content: React.FC = () => {
   const onMicInput = useCallback(() => {
     if (isAsking) return;
     if (voiceRecording) {
-      void stopVoiceTranscription().finally(() => setVoiceRecording(false));
+      setVoiceRecording(false);
+      void stopVoiceTranscription();
       return;
     }
     if (!capabilities.microphone_access) {

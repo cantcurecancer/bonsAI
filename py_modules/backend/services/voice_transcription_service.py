@@ -25,18 +25,55 @@ CHANNELS = 1
 SAMPLE_WIDTH = 2
 BYTES_PER_SECOND = SAMPLE_RATE * CHANNELS * SAMPLE_WIDTH
 ROLLING_BUFFER_MAX_SECONDS = 30
-TRANSCRIBE_INTERVAL_S = 0.7
-WINDOW_SECONDS = 5
-SILENCE_RMS_THRESHOLD = 350.0
+# Tier 1 latency tuning (2026-07-07): see docs/voice-input-follow-up.md for tradeoffs and Tier 2 options.
+TRANSCRIBE_INTERVAL_S = 0.4
+WINDOW_SECONDS = 3
+WHISPER_MIN_DECODE_PCM_BYTES = BYTES_PER_SECOND // 4  # 0.25 s before first decode pass
+WHISPER_THREADS = 4
+# Deck internal mic in Gaming Mode often peaks ~150–250 RMS; 350 blocked all whisper passes.
+VOICE_RMS_THRESHOLD = 120.0
+# Keep high bar for whisper filler hallucinations on noise (was SILENCE_RMS_THRESHOLD * 2.5).
+FILLER_MIN_RMS = 875.0
 SILENCE_HOLD_SECONDS = 2.0
 # Whisper tiny/base often hallucinate these on quiet/noise windows.
 WHISPER_FILLER_WORDS = frozenset(
     {"you", "yes", "no", "ok", "okay", "uh", "um", "hmm", "yeah", "oh", "test"}
 )
-FILLER_MIN_RMS_MULTIPLIER = 2.5
+# Bracket tags whisper.cpp may emit on noise/uncertainty (not user speech).
+WHISPER_NON_SPEECH_TAGS = frozenset(
+    {"BLANK_AUDIO", "INAUDIBLE", "MUSIC", "APPLAUSE", "SILENCE", "NOISE"}
+)
+
+
+def _is_whisper_non_speech_tag(text: str) -> bool:
+    inner = (text or "").strip().strip("[]").upper()
+    if not inner:
+        return True
+    if inner in WHISPER_NON_SPEECH_TAGS:
+        return True
+    return inner.startswith("BLANK")
+
+
+def _sanitize_whisper_transcript(text: str) -> str:
+    """Drop subtitle-style junk (>>, [INAUDIBLE]) from whisper-cli stdout."""
+    if not (text or "").strip():
+        return ""
+    out = text.strip()
+    out = re.sub(r"^>+\s*", "", out)
+    out = re.sub(r"\[(?:INAUDIBLE|BLANK_AUDIO|MUSIC|APPLAUSE|SILENCE|NOISE)[^\]]*\]", "", out, flags=re.IGNORECASE)
+    out = re.sub(r"\s+", " ", out).strip()
+    return out
+
 
 VALID_VOICE_STT_MODELS = frozenset({"tiny.en", "base.en"})
 DEFAULT_VOICE_STT_MODEL = "tiny.en"
+
+
+def sanitize_voice_stt_model(value: Any) -> str:
+    if isinstance(value, str) and value.strip() in VALID_VOICE_STT_MODELS:
+        return value.strip()
+    return DEFAULT_VOICE_STT_MODEL
+
 
 VOICE_STT_MODEL_SPECS: dict[str, dict[str, str]] = {
     "tiny.en": {
@@ -49,7 +86,12 @@ VOICE_STT_MODEL_SPECS: dict[str, dict[str, str]] = {
     },
 }
 
-WHISPER_CPP_IMAGE = "ghcr.io/ggml-org/whisper.cpp:main"
+WHISPER_CPP_IMAGE = (
+    "ghcr.io/ggml-org/whisper.cpp"
+    "@sha256:c0b535add76d7ff7613c70f32a7a4c794985f94238501e1b5b3b7f0eb56e9685"
+)
+# Do not float on :main — upstream image churn caused SIGILL on Deck when copying prebuilt binaries.
+# Bump digest only after podman pull + CPU-safe compile + inference smoke on hardware. See docs/voice-input-follow-up.md.
 WHISPER_CLI_IN_IMAGE = "/app/build/bin/whisper-cli"
 # CMake sets CMAKE_LIBRARY_OUTPUT_DIRECTORY to ${CMAKE_BINARY_DIR}/bin (whisper.cpp 1.9+).
 # Older images may still place .so files under build/src or build/ggml/src — try all.
@@ -200,6 +242,97 @@ def whisper_binary_usable(plugin_root: str, settings_dir: str) -> Optional[str]:
     return path
 
 
+WHISPER_CLI_INFERENCE_ARGS = ("-ng", "-nfa")
+VOICE_BIN_CPU_SAFE_MARKER = ".bonsai_cpu_safe"
+
+
+def _write_silence_wav(path: str, seconds: float = 0.5) -> None:
+    frames = int(SAMPLE_RATE * seconds)
+    pcm = struct.pack(f"<{frames}h", *([0] * frames))
+    with wave.open(path, "wb") as wf:
+        wf.setnchannels(CHANNELS)
+        wf.setsampwidth(SAMPLE_WIDTH)
+        wf.setframerate(SAMPLE_RATE)
+        wf.writeframes(pcm)
+
+
+def _whisper_inference_ok(whisper_bin: str, env: dict[str, str], model_path: str) -> bool:
+    """True when whisper-cli can finish one decode pass (catches SIGILL / broken ggml builds)."""
+    if not whisper_bin or not os.path.isfile(model_path):
+        return False
+    try:
+        with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
+            wav_path = tmp.name
+        try:
+            _write_silence_wav(wav_path)
+            proc = subprocess.run(
+                [
+                    whisper_bin,
+                    "-m",
+                    model_path,
+                    "-f",
+                    wav_path,
+                    "-l",
+                    "en",
+                    "-t",
+                    str(WHISPER_THREADS),
+                    "-nt",
+                    *WHISPER_CLI_INFERENCE_ARGS,
+                ],
+                capture_output=True,
+                text=True,
+                timeout=60,
+                env=env,
+            )
+            return proc.returncode == 0
+        finally:
+            try:
+                os.remove(wav_path)
+            except OSError:
+                pass
+    except Exception:
+        return False
+
+
+def _voice_bin_cpu_safe_marker(bin_dir: str) -> str:
+    return os.path.join(bin_dir, VOICE_BIN_CPU_SAFE_MARKER)
+
+
+def _voice_bin_mark_cpu_safe(bin_dir: str) -> None:
+    try:
+        with open(_voice_bin_cpu_safe_marker(bin_dir), "w", encoding="utf-8") as f:
+            f.write("1\n")
+    except OSError:
+        pass
+
+
+def _voice_bin_is_cpu_safe(plugin_root: str, settings_dir: str) -> bool:
+    bin_dir = voice_bin_dir(plugin_root, settings_dir)
+    return os.path.isfile(_voice_bin_cpu_safe_marker(bin_dir))
+
+
+def _voice_binary_ready_for_inference(
+    plugin_root: str,
+    settings_dir: str,
+    model_path: str = "",
+) -> Optional[str]:
+    path = whisper_binary_usable(plugin_root, settings_dir)
+    if not path:
+        return None
+    bin_dir = voice_bin_dir(plugin_root, settings_dir)
+    if model_path and os.path.isfile(model_path):
+        if _voice_bin_is_cpu_safe(plugin_root, settings_dir):
+            return path
+        env = voice_whisper_runtime_env(plugin_root, settings_dir)
+        if not _whisper_inference_ok(path, env, model_path):
+            return None
+        _voice_bin_mark_cpu_safe(bin_dir)
+        return path
+    if _voice_bin_is_cpu_safe(plugin_root, settings_dir):
+        return path
+    return None
+
+
 def _pcm_rms(chunk: bytes) -> float:
     if len(chunk) < SAMPLE_WIDTH:
         return 0.0
@@ -228,7 +361,7 @@ def _whisper_decode_usable(text: str, window_rms: float) -> bool:
     if not (text or "").strip():
         return False
     if _is_whisper_filler_only(text):
-        return window_rms >= SILENCE_RMS_THRESHOLD * FILLER_MIN_RMS_MULTIPLIER
+        return window_rms >= FILLER_MIN_RMS
     return True
 
 
@@ -422,10 +555,10 @@ def _parse_whisper_stdout(stdout: str) -> str:
             text = line.split("]", 1)[1].strip()
         else:
             text = line
-        if not text or text == "[BLANK_AUDIO]" or text.startswith("[BLANK"):
+        if not text or _is_whisper_non_speech_tag(text) or text.startswith("[BLANK"):
             continue
         parts.append(text)
-    return " ".join(parts).strip()
+    return _sanitize_whisper_transcript(" ".join(parts).strip())
 
 
 def _run_whisper_transcribe(
@@ -450,8 +583,9 @@ def _run_whisper_transcribe(
                 "-l",
                 "en",
                 "-t",
-                "2",
+                str(WHISPER_THREADS),
                 "-nt",
+                *WHISPER_CLI_INFERENCE_ARGS,
             ],
             capture_output=True,
             text=True,
@@ -723,6 +857,75 @@ def _copy_whisper_libs_from_container(
         )
 
 
+def _build_whisper_cli_in_container(
+    podman: str,
+    env: dict[str, str],
+    plugin_root: str,
+    settings_dir: str,
+) -> str:
+    """Compile whisper-cli inside the podman image with AVX2-only ggml (Steam Deck safe)."""
+    dest = voice_whisper_cli_path(plugin_root, settings_dir)
+    bin_dir = voice_bin_dir(plugin_root, settings_dir)
+    os.makedirs(bin_dir, exist_ok=True)
+
+    build_script = r"""
+set -e
+export DEBIAN_FRONTEND=noninteractive
+apt-get update -qq
+apt-get install -y -qq g++ make
+cmake -S /app -B /tmp/bonsai-whisper-build -DCMAKE_BUILD_TYPE=Release \
+  -DGGML_NATIVE=OFF \
+  -DGGML_AVX512=OFF -DGGML_AVX512_VBMI=OFF -DGGML_AVX512_VNNI=OFF -DGGML_AVX512_BF16=OFF \
+  -DGGML_AVX2=ON -DGGML_AVX=ON -DGGML_FMA=ON -DGGML_F16C=ON \
+  -DWHISPER_BUILD_TESTS=OFF -DBUILD_SHARED_LIBS=ON
+cmake --build /tmp/bonsai-whisper-build --target whisper-cli -j4
+cp /tmp/bonsai-whisper-build/bin/whisper-cli /out/
+cp -a /tmp/bonsai-whisper-build/bin/lib*.so* /out/ 2>/dev/null || true
+cp -a /tmp/bonsai-whisper-build/src/libwhisper.so* /out/ 2>/dev/null || true
+cp -a /tmp/bonsai-whisper-build/ggml/src/libggml*.so* /out/ 2>/dev/null || true
+"""
+
+    run = subprocess.run(
+        [
+            podman,
+            "run",
+            "--rm",
+            "--entrypoint",
+            "bash",
+            "-v",
+            f"{bin_dir}:/out:Z",
+            WHISPER_CPP_IMAGE,
+            "-lc",
+            build_script,
+        ],
+        capture_output=True,
+        text=True,
+        timeout=1800,
+        env=env,
+    )
+    if run.returncode != 0:
+        err = (run.stderr or run.stdout or "podman whisper build failed")[:500]
+        raise RuntimeError(err)
+
+    if not os.path.isfile(dest):
+        raise RuntimeError("whisper-cli build finished but binary is missing from voice_bin.")
+
+    _link_versioned_sonames(bin_dir)
+    _prune_voice_bin_non_libs(bin_dir, dest)
+    for name in os.listdir(bin_dir):
+        path = os.path.join(bin_dir, name)
+        if os.path.isfile(path):
+            os.chmod(path, 0o755)
+
+    if not whisper_binary_usable(plugin_root, settings_dir):
+        raise RuntimeError(
+            "whisper-cli was built but failed to run (missing libraries). "
+            "Try Install voice engine again."
+        )
+    _voice_bin_mark_cpu_safe(bin_dir)
+    return dest
+
+
 def _extract_whisper_from_container(
     podman: str,
     env: dict[str, str],
@@ -785,8 +988,11 @@ def install_whisper_cli(
             on_stage(name, fields)
 
     if whisper_binary_usable(plugin_root, settings_dir):
-        stage("binary_ready", path=dest)
-        return
+        model_path = voice_model_path(plugin_root, settings_dir, DEFAULT_VOICE_STT_MODEL)
+        ready_path = _voice_binary_ready_for_inference(plugin_root, settings_dir, model_path)
+        if ready_path:
+            stage("binary_ready", path=ready_path)
+            return
 
     podman = shutil.which("podman")
     if not podman:
@@ -809,17 +1015,37 @@ def install_whisper_cli(
     if cancel_event.is_set():
         raise RuntimeError("Binary install cancelled.")
 
-    stage("binary_extract_start")
-    dest = _extract_whisper_from_container(podman, env, plugin_root, settings_dir)
+    model_path = voice_model_path(plugin_root, settings_dir, DEFAULT_VOICE_STT_MODEL)
+    ready_path = _voice_binary_ready_for_inference(plugin_root, settings_dir, model_path)
+    if ready_path:
+        stage("binary_ready", path=ready_path)
+        return
+
+    stage("binary_build_start")
+    dest = _build_whisper_cli_in_container(podman, env, plugin_root, settings_dir)
+
+    model_path = voice_model_path(plugin_root, settings_dir, DEFAULT_VOICE_STT_MODEL)
+    if os.path.isfile(model_path):
+        env_rt = voice_whisper_runtime_env(plugin_root, settings_dir)
+        if not _whisper_inference_ok(dest, env_rt, model_path):
+            raise RuntimeError(
+                "whisper-cli was built but failed an inference smoke test on this CPU. "
+                "Try Install voice engine again after a plugin restart."
+            )
+        _voice_bin_mark_cpu_safe(voice_bin_dir(plugin_root, settings_dir))
 
     stage("binary_ready", path=dest)
 
 
 def engine_readiness(plugin_root: str, settings_dir: str, model_id: str) -> dict[str, Any]:
     model_id = sanitize_voice_stt_model(model_id)
-    whisper_bin = whisper_binary_usable(plugin_root, settings_dir)
     model_path = voice_model_path(plugin_root, settings_dir, model_id)
     model_ready = os.path.isfile(model_path) and os.path.getsize(model_path) > 1024
+    whisper_bin = _voice_binary_ready_for_inference(
+        plugin_root,
+        settings_dir,
+        model_path if model_ready else "",
+    )
     return {
         "model_id": model_id,
         "binary_ready": whisper_bin is not None,
@@ -872,7 +1098,7 @@ class VoiceTranscriptionSession:
             return
         with self._lock:
             rms = _pcm_rms(chunk)
-            if rms >= SILENCE_RMS_THRESHOLD:
+            if rms >= VOICE_RMS_THRESHOLD:
                 self._last_voice_monotonic = time.monotonic()
             self._pcm_buffer.append(chunk)
             self._buffer_bytes += len(chunk)
@@ -941,7 +1167,7 @@ class VoiceTranscriptionSession:
             self._capture_proc = subprocess.Popen(
                 cmd,
                 stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
+                stderr=subprocess.DEVNULL,
                 env=capture_env,
             )
         except Exception as exc:
@@ -1022,11 +1248,11 @@ class VoiceTranscriptionSession:
             last_pass = now
 
             pcm = self._window_pcm(WINDOW_SECONDS)
-            if len(pcm) < BYTES_PER_SECOND // 2:
+            if len(pcm) < WHISPER_MIN_DECODE_PCM_BYTES:
                 continue
 
             window_rms = _pcm_rms(pcm)
-            if window_rms < SILENCE_RMS_THRESHOLD:
+            if window_rms < VOICE_RMS_THRESHOLD:
                 continue
 
             try:
@@ -1069,6 +1295,22 @@ class VoiceTranscriptionSession:
         self._flush_final(whisper_bin, model_path, env)
 
     def _flush_final(self, whisper_bin: str, model_path: str, env: dict[str, str]) -> None:
+        with self._lock:
+            if self._last_partial:
+                self._finalized = _join_transcript_parts(self._finalized, self._last_partial)
+                self._last_partial = ""
+
+        if self._stop_event.is_set():
+            self._set_state(
+                status="stopped",
+                recording=False,
+                streaming=False,
+                partial_transcript="",
+                finalized_transcript=self._finalized,
+                stopped_at=time.time(),
+            )
+            return
+
         pcm = self._window_pcm(WINDOW_SECONDS)
         if pcm and len(pcm) >= BYTES_PER_SECOND // 4:
             window_rms = _pcm_rms(pcm)
@@ -1102,6 +1344,7 @@ class VoiceTranscriptionSession:
 
     def stop(self) -> dict[str, Any]:
         self._stop_event.set()
+        self._set_state(recording=False, streaming=False)
         proc = self._capture_proc
         if proc is not None and proc.poll() is None:
             try:

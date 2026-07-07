@@ -15,6 +15,7 @@ from backend.services.voice_transcription_service import (
     _pcm_rms,
     _pcm_to_wav_bytes,
     _runtime_dir_usable,
+    _sanitize_whisper_transcript,
     _whisper_decode_usable,
     merge_sliding_window_transcript,
     resolve_whisper_cli,
@@ -71,6 +72,24 @@ class VoiceTranscriptionServiceTests(unittest.TestCase):
                 f.write(b"\x7fELF")
             os.chmod(dest, 0o755)
             self.assertIsNone(whisper_binary_usable(plugin_root, settings_dir))
+
+    def test_voice_binary_ready_requires_cpu_safe_marker_without_model(self):
+        with tempfile.TemporaryDirectory() as plugin_root, tempfile.TemporaryDirectory() as settings_dir:
+            from backend.services.voice_transcription_service import (
+                _voice_bin_mark_cpu_safe,
+                _voice_binary_ready_for_inference,
+                voice_bin_dir,
+            )
+
+            dest = voice_whisper_cli_path(plugin_root, settings_dir)
+            os.makedirs(os.path.dirname(dest), exist_ok=True)
+            with patch(
+                "backend.services.voice_transcription_service.whisper_binary_usable",
+                return_value=dest,
+            ):
+                self.assertIsNone(_voice_binary_ready_for_inference(plugin_root, settings_dir))
+                _voice_bin_mark_cpu_safe(voice_bin_dir(plugin_root, settings_dir))
+                self.assertEqual(_voice_binary_ready_for_inference(plugin_root, settings_dir), dest)
 
     @unittest.skipIf(os.name == "nt", "symlinks require elevated privileges on Windows")
     def test_copy_whisper_libs_from_container_uses_build_bin(self):
@@ -142,6 +161,18 @@ class VoiceTranscriptionServiceTests(unittest.TestCase):
 
     def test_parse_whisper_stdout_plain_text_passthrough(self):
         self.assertEqual(_parse_whisper_stdout("hello world"), "hello world")
+
+    def test_parse_whisper_stdout_strips_inaudible_prefix(self):
+        raw = "[00:00:00.000 --> 00:00:01.000]   >> [INAUDIBLE]"
+        self.assertEqual(_parse_whisper_stdout(raw), "")
+
+    def test_parse_whisper_stdout_keeps_speech_after_inaudible_tag(self):
+        raw = "[00:00:00.000 --> 00:00:02.000]   >> [INAUDIBLE] hello there"
+        self.assertEqual(_parse_whisper_stdout(raw), "hello there")
+
+    def test_sanitize_whisper_transcript_strips_chevron_and_tags(self):
+        self.assertEqual(_sanitize_whisper_transcript(">> [INAUDIBLE]"), "")
+        self.assertEqual(_sanitize_whisper_transcript(">> [BLANK_AUDIO] test"), "test")
 
     def test_whisper_decode_usable_rejects_quiet_filler(self):
         self.assertFalse(_whisper_decode_usable("you", 400.0))

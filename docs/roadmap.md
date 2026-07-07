@@ -46,6 +46,12 @@ Maintainers may move items between horizons after discussion; if you want differ
 
 Within this section: ascending stars (★★ → ★★★ → ★★★★). Brainstorm letters **B**, **J–N**, **S**, **V**: [roadmap_feature_ideas plan](../.cursor/plans/roadmap_feature_ideas_f5560e15.plan.md).
 
+- ★★ **Voice STT session daemon** (latency Tier 2)
+  - **Goal:** Keep one CPU-safe `whisper-cli` alive per mic session so model load + process spawn are not paid on every decode pass (~0.5–1.5 s faster interim text).
+  - **Primary work:** Session lifecycle in `voice_transcription_service.py`; crash recovery; plugin unload while recording; **VOICE-06** on-Deck QA.
+  - **Depends on:** shipped CPU-safe install + Tier 1 constants (2026-07-07).
+  - **Not in scope:** GPU whisper; cloud STT; floating `:main` prebuilt copy.
+  - **Maintainer guide:** [voice-input-follow-up.md](voice-input-follow-up.md) (triage, digest bump, Tier 2 options).
 - ★★ **Prompt testing pass** (beyond shipped MVP)
   - **Goal:** Broader systematic validation and tuning beyond the shipped doc MVP (see **Completed** → Prompt-testing MVP; working matrices in [testing.md](testing.md)).
 - ★★ **Text model chains** (user-configurable text fallbacks)

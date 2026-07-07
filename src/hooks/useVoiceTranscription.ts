@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef } from "react";
 import { call } from "@decky/api";
 
 /** Poll interval while voice transcription is active (interim streaming). */
-export const VOICE_TRANSCRIPTION_POLL_MS = 300;
+export const VOICE_TRANSCRIPTION_POLL_MS = 150;
 
 export type VoiceTranscriptionStatus = {
   status: string;

@@ -2490,8 +2490,14 @@ class Plugin:
                 st = plugin._voice_session.status()
                 if st.get("recording"):
                     return {"accepted": True, "status": st}
+                old = plugin._voice_session
                 plugin._voice_session = None
+            else:
+                old = None
+        if old is not None:
+            await asyncio.to_thread(old.force_stop)
 
+        async with plugin._voice_lock:
             session = VoiceTranscriptionSession(
                 PLUGIN_ROOT,
                 decky.DECKY_PLUGIN_SETTINGS_DIR,

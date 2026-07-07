@@ -393,7 +393,7 @@ Maps [roadmap.md](roadmap.md) **Completed** summary and [archive/roadmap-complet
 | CAROUSEL-SLIDE | Carousel slide + history (2026-05-20) | — | Open | Tier 3 cosmetic |
 | GEMMA-PULL | Gemma pull models + routing | GEMMA-PULL-01 | Open | Tier 2 pull confirm when policy is Tier 1 |
 | MODE-SELECTOR | Speed / Strategy / Expert | SMOKE-E, Tier 1 | Open | Persisted id `expert` |
-| VOICE-STT | Whisper voice Ask (local STT) | VOICE-01…05 | Open | Permissions + Settings model download; on-Deck mic required |
+| VOICE-STT | Whisper voice Ask (local STT) | VOICE-01…06 | Open | Permissions + Settings model download; on-Deck mic required |
 | STRATEGY-CORE | Strategy Guide prompt path | SMOKE-E | Open | |
 | STRATEGY-SPOILER | Strategy spoiler policy + consent | SMOKE-E, STRAT-01…05 | Partial | Unit green 2026-04-30; [preview 2026-05-26](test-evidence/tier1Core/2026-05-26-9e20a82/SMOKE-E-strategy-mode/manifest.json) |
 | STRATEGY-CHECKLIST | Strategy checklist (follow-up, persisted per game) | Tier 2 § Strategy depth | Open | Unit + preview; on-Deck: check/uncheck, QAM reopen |
@@ -648,7 +648,10 @@ Deck-only (mic + PipeWire capture). Preview harness stubs RPCs but cannot valida
 - [ ] **VOICE-02** Permissions on + model downloaded → interim text streams into Ask field while speaking
 - [ ] **VOICE-03** Stop mic (red stop) finalizes transcript; Ask can be submitted normally
 - [ ] **VOICE-04** Revoke microphone permission mid-recording → capture stops immediately
-- [ ] **VOICE-05** Install voice engine on SteamOS (podman) succeeds — no `libwhisper.so.1` / `build/src` copy error; engine + model show ready
+- [ ] **VOICE-05** Install voice engine on SteamOS (podman) succeeds — compiles CPU-safe whisper-cli (pinned digest, no SIGILL on Deck); engine + model show ready
+- [ ] **VOICE-06** Tier 1 latency — interim text appears within ~2 s of speaking in Gaming Mode QAM (Tier 1 constants 2026-07-07); no extra CPU stutter vs prior build
+
+Maintainer: digest bump + Tier 2 options — [voice-input-follow-up.md](voice-input-follow-up.md).
 
 ## Tier 2 — Open-weight pull (Tier 1 policy)
 

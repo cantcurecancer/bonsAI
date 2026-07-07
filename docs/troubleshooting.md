@@ -97,9 +97,19 @@ If Windows still falls back to CPU after FIX A:
 
 **Fix:** On SteamOS, install PipeWire/Pulse capture utilities (`pw-record` or `parecord`). Gaming Mode usually has PipeWire; desktop BPM may need `wf-recorder`’s audio stack intact.
 
+**Symptom:** Mic records (red stop icon) but no text appears in the Ask field.
+
+**Cause (fixed 2026-07-07):** Prebuilt `whisper-cli` copied from the upstream podman image can hit **illegal instruction (SIGILL)** on Steam Deck Zen 2 during decode. Capture succeeds; whisper never returns text. **Fix:** compile CPU-safe whisper on install; re-run **Install voice engine**.
+
+**Cause (fixed 2026-07-07):** Voice RMS gate was too high for Gaming Mode mic levels (~150–250 RMS vs 350 threshold), so whisper never ran despite successful capture. Threshold lowered; filler hallucination filter unchanged.
+
 **Symptom:** Interim text is slow or stalls.
 
 **Fix:** Use **tiny.en**; **base.en** needs more CPU on the Deck APU. Close heavy games while transcribing. Audio is processed in RAM only — nothing is uploaded or saved to disk.
+
+**Latency (2026-07-07):** Tier 1 tuning (shorter decode interval/window, faster UI poll, 4 threads) — see [voice-input-follow-up.md](voice-input-follow-up.md). If still too slow, planned **session daemon** (roadmap).
+
+**Maintainers — podman image:** Install pins `WHISPER_CPP_IMAGE` by **digest** (not `:main`). Bump procedure: [voice-input-follow-up.md](voice-input-follow-up.md#bumping-the-digest-maintainers).
 
 ---
 
