@@ -391,9 +391,9 @@ Maps [roadmap.md](roadmap.md) **Completed** summary and [archive/roadmap-complet
 | UNIFIED-INPUT | Unified search + ask | SMOKE-A | Open | |
 | PRESET-FADE-OPT | Preset chip fade opt-out | — | Open | Tier 3 cosmetic |
 | CAROUSEL-SLIDE | Carousel slide + history (2026-05-20) | — | Open | Tier 3 cosmetic |
-| GEMMA-PULL | Gemma pull models + routing | — | Partial | Unit tests |
+| GEMMA-PULL | Gemma pull models + routing | GEMMA-PULL-01 | Open | Tier 2 pull confirm when policy is Tier 1 |
 | MODE-SELECTOR | Speed / Strategy / Expert | SMOKE-E, Tier 1 | Open | Persisted id `expert` |
-| VOICE-STT | Whisper voice Ask (local STT) | VOICE-01…04 | Open | Permissions + Settings model download; on-Deck mic required |
+| VOICE-STT | Whisper voice Ask (local STT) | VOICE-01…05 | Open | Permissions + Settings model download; on-Deck mic required |
 | STRATEGY-CORE | Strategy Guide prompt path | SMOKE-E | Open | |
 | STRATEGY-SPOILER | Strategy spoiler policy + consent | SMOKE-E, STRAT-01…05 | Partial | Unit green 2026-04-30; [preview 2026-05-26](test-evidence/tier1Core/2026-05-26-9e20a82/SMOKE-E-strategy-mode/manifest.json) |
 | STRATEGY-CHECKLIST | Strategy checklist (follow-up, persisted per game) | Tier 2 § Strategy depth | Open | Unit + preview; on-Deck: check/uncheck, QAM reopen |
@@ -648,6 +648,11 @@ Deck-only (mic + PipeWire capture). Preview harness stubs RPCs but cannot valida
 - [ ] **VOICE-02** Permissions on + model downloaded → interim text streams into Ask field while speaking
 - [ ] **VOICE-03** Stop mic (red stop) finalizes transcript; Ask can be submitted normally
 - [ ] **VOICE-04** Revoke microphone permission mid-recording → capture stops immediately
+- [ ] **VOICE-05** Install voice engine on SteamOS (podman) succeeds — no `libwhisper.so.1` / `build/src` copy error; engine + model show ready
+
+## Tier 2 — Open-weight pull (Tier 1 policy)
+
+- [ ] **GEMMA-PULL-01** Model policy **Tier 1** → Ollama → **Open AI models…** → **Browse & pull** → queue an open-weight tag (e.g. `gemma4:e2b-it-qat`) → confirm **Enable Tier 2** modal → policy bumps to Tier 2 and pull proceeds
 
 ---
 

@@ -23,6 +23,7 @@ export type OllamaModelsHubModalProps = {
     modelAllowHighVramFallbacks: boolean;
   }) => void | Promise<void>;
   onReadModelPolicy: () => void;
+  onApplyTier2MultimodalPolicy?: () => void | Promise<void>;
   onBeforeNestedDeckyModal?: () => void;
   onCompleteNestedDeckyModalClose?: (close: () => void) => void;
   onClose: () => void;
@@ -46,6 +47,7 @@ export function OllamaModelsHubModal(props: OllamaModelsHubModalProps) {
     modelAllowHighVramFallbacks,
     onCommitOllamaModelsHub,
     onReadModelPolicy,
+    onApplyTier2MultimodalPolicy,
     onBeforeNestedDeckyModal,
     onCompleteNestedDeckyModalClose,
     onClose,
@@ -180,6 +182,11 @@ export function OllamaModelsHubModal(props: OllamaModelsHubModalProps) {
             <PullModelsModal
               embedded
               activeRoutingTag={activeRoutingTag}
+              modelPolicyTier={draftTier}
+              onApplyTier2Policy={async () => {
+                setDraft("open_weight");
+                await onApplyTier2MultimodalPolicy?.();
+              }}
               onBeforeNestedDeckyModal={onBeforeNestedDeckyModal}
               onCompleteNestedDeckyModalClose={onCompleteNestedDeckyModalClose}
               onCancel={() => handleHubClose("browseCancel")}

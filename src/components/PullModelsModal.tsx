@@ -21,6 +21,8 @@ import {
 import { isDeprioritizedOllamaTag } from "../data/deprioritizedModels";
 import { OLLAMA_LOCAL_ON_DECK_DEFAULT_PCIP } from "../utils/settingsAndResponse";
 import { callDeckyWithTimeout, DECKY_RPC_TIMEOUT_MS, formatDeckyRpcError } from "../utils/deckyCall";
+import type { ModelPolicyTierId } from "../data/modelPolicy";
+import { disclosureSummaryForSourceClass } from "../data/modelPolicy";
 import { BonsaiModalScope } from "./BonsaiModalScope";
 import { recommendPullModelsForGaps } from "../utils/pullModelRecommendations";
 import { usePullModelCatalog } from "../hooks/usePullModelCatalog";
@@ -64,6 +66,8 @@ export type PullModelsFooterState = {
 
 export type PullModelsModalProps = {
   activeRoutingTag: string | null;
+  modelPolicyTier?: ModelPolicyTierId;
+  onApplyTier2Policy?: () => void | Promise<void>;
   onBeforeNestedDeckyModal?: () => void;
   onCompleteNestedDeckyModalClose?: (close: () => void) => void;
   onCancel: () => void;
@@ -117,6 +121,8 @@ function entryMatchesFilter(entry: PullModelEntry, filter: PullModelFilterId): b
 export function PullModelsModal(props: PullModelsModalProps) {
   const {
     activeRoutingTag,
+    modelPolicyTier = "open_source_only",
+    onApplyTier2Policy,
     onBeforeNestedDeckyModal,
     onCompleteNestedDeckyModalClose,
     onCancel,
@@ -139,6 +145,7 @@ export function PullModelsModal(props: PullModelsModalProps) {
   const [pullBusy, setPullBusy] = useState(false);
   const [deleteBusyTag, setDeleteBusyTag] = useState<string | null>(null);
   const stretchConfirmedRef = useRef<Set<string>>(new Set());
+  const openWeightTierConfirmedRef = useRef<Set<string>>(new Set());
   const shellRef = useRef<HTMLDivElement | null>(null);
   const filterChipRefs = useRef<(HTMLElement | null)[]>([]);
   const installedOnlyRef = useRef<HTMLElement | null>(null);
@@ -437,6 +444,50 @@ export function PullModelsModal(props: PullModelsModalProps) {
     [onCompleteNestedDeckyModalClose]
   );
 
+  const confirmOpenWeightTierIfNeeded = useCallback(
+    (entry: PullModelEntry, onConfirmed: () => void) => {
+      if (
+        modelPolicyTier !== "open_source_only" ||
+        entry.licenseClass !== "open_weight" ||
+        openWeightTierConfirmedRef.current.has(entry.tag)
+      ) {
+        onConfirmed();
+        return;
+      }
+      onBeforeNestedDeckyModal?.();
+      const tier2Note = disclosureSummaryForSourceClass("open_weight");
+      const handle = showModal(
+        <ConfirmModal
+          strTitle="Enable Tier 2 for this model?"
+          strDescription={
+            <div className="bonsai-prose" style={{ fontSize: 12, color: "#9fb7d5", lineHeight: 1.45 }}>
+              <div style={{ marginBottom: 8 }}>
+                <span style={{ color: "#9ce7ff" }}>{entry.tag}</span> is an open-weight model. With{" "}
+                <strong>Tier 1 (open-source only)</strong>, bonsAI will not route Ask to it after download.
+              </div>
+              <div style={{ marginBottom: 8, color: "#c5d4e3" }}>
+                Enable <strong>Tier 2 (open-weight)</strong> so this tag is eligible for Ask fallbacks. {tier2Note}
+              </div>
+              <div>You can change this later under Ollama → Open AI models → Policy.</div>
+            </div>
+          }
+          strOKButtonText="Enable Tier 2 and queue"
+          strCancelButtonText="Cancel"
+          onOK={() => {
+            openWeightTierConfirmedRef.current.add(entry.tag);
+            void (async () => {
+              await onApplyTier2Policy?.();
+              onConfirmed();
+              completeNestedModalClose(() => handle.Close());
+            })();
+          }}
+          onCancel={() => completeNestedModalClose(() => handle.Close())}
+        />
+      );
+    },
+    [modelPolicyTier, onApplyTier2Policy, completeNestedModalClose, onBeforeNestedDeckyModal]
+  );
+
   const toggleSelected = useCallback(
     (entry: PullModelEntry, ev?: { stopPropagation?: () => void }) => {
       ev?.stopPropagation?.();
@@ -448,6 +499,27 @@ export function PullModelsModal(props: PullModelsModalProps) {
         });
         return;
       }
+      const queueSelection = () => {
+        setSelectedTags((prev) => {
+          const next = new Set(prev);
+          if (next.has(entry.tag)) {
+            next.delete(entry.tag);
+            toaster.toast({
+              title: "Removed from pull queue",
+              body: entry.tag,
+              duration: 2200,
+            });
+          } else {
+            next.add(entry.tag);
+            toaster.toast({
+              title: "Queued to pull",
+              body: entry.tag,
+              duration: 2200,
+            });
+          }
+          return next;
+        });
+      };
       if (entry.group === "stretch" && !stretchConfirmedRef.current.has(entry.tag)) {
         onBeforeNestedDeckyModal?.();
         const handle = showModal(
@@ -463,39 +535,23 @@ export function PullModelsModal(props: PullModelsModalProps) {
             strCancelButtonText="Cancel"
             onOK={() => {
               stretchConfirmedRef.current.add(entry.tag);
-              setSelectedTags((prev) => {
-                const next = new Set(prev);
-                next.add(entry.tag);
-                return next;
-              });
               completeNestedModalClose(() => handle.Close());
+              confirmOpenWeightTierIfNeeded(entry, queueSelection);
             }}
             onCancel={() => completeNestedModalClose(() => handle.Close())}
           />
         );
         return;
       }
-      setSelectedTags((prev) => {
-        const next = new Set(prev);
-        if (next.has(entry.tag)) {
-          next.delete(entry.tag);
-          toaster.toast({
-            title: "Removed from pull queue",
-            body: entry.tag,
-            duration: 2200,
-          });
-        } else {
-          next.add(entry.tag);
-          toaster.toast({
-            title: "Queued to pull",
-            body: entry.tag,
-            duration: 2200,
-          });
-        }
-        return next;
-      });
+      confirmOpenWeightTierIfNeeded(entry, queueSelection);
     },
-    [installedTags, liveSizeGbByTag, completeNestedModalClose, onBeforeNestedDeckyModal]
+    [
+      installedTags,
+      liveSizeGbByTag,
+      completeNestedModalClose,
+      onBeforeNestedDeckyModal,
+      confirmOpenWeightTierIfNeeded,
+    ]
   );
 
   const confirmDelete = useCallback(
@@ -573,34 +629,93 @@ export function PullModelsModal(props: PullModelsModalProps) {
 
   const onPullSelected = useCallback(async () => {
     if (selectedTags.size === 0) return;
-    setPullBusy(true);
-    try {
-      const tags = [...selectedTags];
-      const res = await callDeckyWithTimeout<[string[]], { accepted?: boolean; reason?: string }>(
-        "pull_ollama_models",
-        [tags],
-        DECKY_RPC_TIMEOUT_MS
-      );
-      if (res.accepted) {
-        toaster.toast({
-          title: "Pull started",
-          body: `${tags.length} model(s) — watch progress in Settings.`,
-          duration: 5000,
-        });
-        onPullAccepted();
-      } else {
-        toaster.toast({
-          title: "Pull not started",
-          body: res.reason || "Setup busy or local Ollama is off.",
-          duration: 5000,
-        });
+
+    const runPull = async () => {
+      setPullBusy(true);
+      try {
+        const tags = [...selectedTags];
+        const res = await callDeckyWithTimeout<[string[]], { accepted?: boolean; reason?: string }>(
+          "pull_ollama_models",
+          [tags],
+          DECKY_RPC_TIMEOUT_MS
+        );
+        if (res.accepted) {
+          toaster.toast({
+            title: "Pull started",
+            body: `${tags.length} model(s) — watch progress in Settings.`,
+            duration: 5000,
+          });
+          onPullAccepted();
+        } else {
+          toaster.toast({
+            title: "Pull not started",
+            body: res.reason || "Setup busy or local Ollama is off.",
+            duration: 5000,
+          });
+        }
+      } catch (e) {
+        toaster.toast({ title: "Pull failed", body: formatDeckyRpcError(e), duration: 5000 });
+      } finally {
+        setPullBusy(false);
       }
-    } catch (e) {
-      toaster.toast({ title: "Pull failed", body: formatDeckyRpcError(e), duration: 5000 });
-    } finally {
-      setPullBusy(false);
+    };
+
+    if (modelPolicyTier === "open_source_only") {
+      const openWeightTags = [...selectedTags].filter((tag) => {
+        const entry = mergedCatalog.find((e) => e.tag === tag);
+        return entry?.licenseClass === "open_weight";
+      });
+      if (
+        openWeightTags.length > 0 &&
+        openWeightTags.some((tag) => !openWeightTierConfirmedRef.current.has(tag))
+      ) {
+        const tagList = openWeightTags.join(", ");
+        const tier2Note = disclosureSummaryForSourceClass("open_weight");
+        onBeforeNestedDeckyModal?.();
+        const handle = showModal(
+          <ConfirmModal
+            strTitle="Enable Tier 2 before pulling?"
+            strDescription={
+              <div className="bonsai-prose" style={{ fontSize: 12, color: "#9fb7d5", lineHeight: 1.45 }}>
+                <div style={{ marginBottom: 8 }}>
+                  Your queue includes open-weight model(s):{" "}
+                  <span style={{ color: "#9ce7ff" }}>{tagList}</span>. Tier 1 limits Ask routing to FOSS-friendly
+                  tags only.
+                </div>
+                <div style={{ marginBottom: 8, color: "#c5d4e3" }}>
+                  Enable <strong>Tier 2 (open-weight)</strong> before pulling so these models can be used. {tier2Note}
+                </div>
+              </div>
+            }
+            strOKButtonText="Enable Tier 2 and pull"
+            strCancelButtonText="Cancel"
+            onOK={() => {
+              for (const tag of openWeightTags) {
+                openWeightTierConfirmedRef.current.add(tag);
+              }
+              completeNestedModalClose(() => handle.Close());
+              void (async () => {
+                await onApplyTier2Policy?.();
+                await runPull();
+              })();
+            }}
+            onCancel={() => completeNestedModalClose(() => handle.Close())}
+          />
+        );
+        return;
+      }
     }
-  }, [onPullAccepted, selectedTags]);
+
+    await runPull();
+  }, [
+    onPullAccepted,
+    selectedTags,
+    modelPolicyTier,
+    mergedCatalog,
+    onApplyTier2Policy,
+    completeNestedModalClose,
+    onBeforeNestedDeckyModal,
+  ]);
 
   const bindSelectRef =
     (rowIndex: number): RefCallback<HTMLElement> =>

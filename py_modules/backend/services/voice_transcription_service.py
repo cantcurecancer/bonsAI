@@ -51,7 +51,18 @@ VOICE_STT_MODEL_SPECS: dict[str, dict[str, str]] = {
 
 WHISPER_CPP_IMAGE = "ghcr.io/ggml-org/whisper.cpp:main"
 WHISPER_CLI_IN_IMAGE = "/app/build/bin/whisper-cli"
+# CMake sets CMAKE_LIBRARY_OUTPUT_DIRECTORY to ${CMAKE_BINARY_DIR}/bin (whisper.cpp 1.9+).
+# Older images may still place .so files under build/src or build/ggml/src — try all.
+WHISPER_LIB_DIRS_IN_IMAGE = (
+    "/app/build/bin",
+    "/app/build/src",
+    "/app/build/ggml/src",
+)
 WHISPER_LIBS_IN_IMAGE = (
+    "/app/build/bin/libwhisper.so.1",
+    "/app/build/bin/libggml.so.0",
+    "/app/build/bin/libggml-base.so.0",
+    "/app/build/bin/libggml-cpu.so.0",
     "/app/build/src/libwhisper.so.1",
     "/app/build/ggml/src/libggml.so.0",
     "/app/build/ggml/src/libggml-base.so.0",
@@ -647,6 +658,71 @@ def download_voice_model(
         raise
 
 
+def _prune_voice_bin_non_libs(bin_dir: str, whisper_cli_path: str) -> None:
+    """Drop non-.so artifacts after bulk podman cp from image build dirs."""
+    for name in os.listdir(bin_dir):
+        path = os.path.join(bin_dir, name)
+        if path == whisper_cli_path or ".so" in name:
+            continue
+        try:
+            if os.path.isfile(path):
+                os.remove(path)
+        except OSError:
+            pass
+
+
+def _missing_required_sonames(bin_dir: str) -> list[str]:
+    missing: list[str] = []
+    for lib in WHISPER_REQUIRED_SONAMES:
+        lib_path = os.path.join(bin_dir, lib)
+        if not os.path.isfile(lib_path) and not os.path.islink(lib_path):
+            missing.append(lib)
+    return missing
+
+
+def _copy_whisper_libs_from_container(
+    podman: str,
+    cid: str,
+    bin_dir: str,
+    env: dict[str, str],
+) -> None:
+    """Copy required whisper.cpp shared objects from the image (build/bin first)."""
+    for lib_dir in WHISPER_LIB_DIRS_IN_IMAGE:
+        subprocess.run(
+            [podman, "cp", f"{cid}:{lib_dir}/.", bin_dir],
+            capture_output=True,
+            text=True,
+            timeout=120,
+            env=env,
+        )
+        _link_versioned_sonames(bin_dir)
+        if not _missing_required_sonames(bin_dir):
+            return
+
+    for lib_src in WHISPER_LIBS_IN_IMAGE:
+        lib_name = os.path.basename(lib_src)
+        lib_dest = os.path.join(bin_dir, lib_name)
+        if os.path.isfile(lib_dest) or os.path.islink(lib_dest):
+            continue
+        cp_lib = subprocess.run(
+            [podman, "cp", f"{cid}:{lib_src}", lib_dest],
+            capture_output=True,
+            text=True,
+            timeout=120,
+            env=env,
+        )
+        if cp_lib.returncode == 0:
+            os.chmod(lib_dest, 0o755)
+
+    _link_versioned_sonames(bin_dir)
+    missing = _missing_required_sonames(bin_dir)
+    if missing:
+        raise RuntimeError(
+            f"podman cp whisper shared libraries failed (missing: {', '.join(missing)}). "
+            f"Tried {', '.join(WHISPER_LIB_DIRS_IN_IMAGE)}."
+        )
+
+
 def _extract_whisper_from_container(
     podman: str,
     env: dict[str, str],
@@ -679,21 +755,8 @@ def _extract_whisper_from_container(
         if cp_bin.returncode != 0:
             raise RuntimeError((cp_bin.stderr or cp_bin.stdout or "podman cp whisper-cli failed")[:500])
         os.chmod(dest, 0o755)
-        for lib_src in WHISPER_LIBS_IN_IMAGE:
-            lib_name = os.path.basename(lib_src)
-            lib_dest = os.path.join(bin_dir, lib_name)
-            cp_lib = subprocess.run(
-                [podman, "cp", f"{cid}:{lib_src}", lib_dest],
-                capture_output=True,
-                text=True,
-                timeout=120,
-                env=env,
-            )
-            if cp_lib.returncode != 0:
-                raise RuntimeError(
-                    (cp_lib.stderr or cp_lib.stdout or f"podman cp {lib_name} failed")[:500]
-                )
-            os.chmod(lib_dest, 0o755)
+        _copy_whisper_libs_from_container(podman, cid, bin_dir, env)
+        _prune_voice_bin_non_libs(bin_dir, dest)
         _link_versioned_sonames(bin_dir)
     finally:
         subprocess.run([podman, "rm", cid], capture_output=True, text=True, timeout=60, env=env)

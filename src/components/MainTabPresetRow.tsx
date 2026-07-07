@@ -49,8 +49,13 @@ export function MainTabPresetRow({
   return (
     <div
       ref={presetCarouselHostRef}
-      className="bonsai-full-bleed-row bonsai-preset-row-host"
-      style={{ display: "grid", gap: 8, minWidth: 0, width: "100%", boxSizing: "border-box" }}
+      className={
+        "bonsai-full-bleed-row bonsai-preset-row-host" +
+        (presetChipAnimation === "fade" && presetChipFadeAnimationEnabled
+          ? " bonsai-preset-row-host--fade-anim"
+          : "")
+      }
+      style={{ display: "grid", minWidth: 0, width: "100%", boxSizing: "border-box" }}
     >
       {showPluginHelpChip && (
         <Button

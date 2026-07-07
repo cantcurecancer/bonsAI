@@ -1205,6 +1205,15 @@ const Content: React.FC = () => {
     [buildSettingsPayload, hydrateFromSettings, setModelPolicyTier, setModelPolicyNonFossUnlocked, setModelAllowHighVramFallbacks, goToOllamaTab]
   );
 
+  const onApplyTier2MultimodalPolicy = useCallback(async () => {
+    setModelPolicyTier("open_weight");
+    const saved = await call<[BonsaiSettings], BonsaiSettings>(
+      "save_settings",
+      buildSettingsPayload({ model_policy_tier: "open_weight" })
+    );
+    hydrateFromSettings(saved);
+  }, [buildSettingsPayload, hydrateFromSettings, setModelPolicyTier]);
+
   const openOllamaModelsHub = useCallback(
     (opts?: { initialSection?: OllamaModelsHubSection }) => {
       captureSessionBeforeModal();
@@ -1217,6 +1226,7 @@ const Content: React.FC = () => {
           modelAllowHighVramFallbacks={modelAllowHighVramFallbacks}
           onCommitOllamaModelsHub={onCommitOllamaModelsHub}
           onReadModelPolicy={openModelPolicyReadme}
+          onApplyTier2MultimodalPolicy={onApplyTier2MultimodalPolicy}
           onBeforeNestedDeckyModal={captureSessionBeforeModal}
           onCompleteNestedDeckyModalClose={finalizeShowModalAndRestoreActiveTab}
           onClose={() => {
@@ -1234,6 +1244,7 @@ const Content: React.FC = () => {
       modelAllowHighVramFallbacks,
       onCommitOllamaModelsHub,
       openModelPolicyReadme,
+      onApplyTier2MultimodalPolicy,
     ]
   );
 
@@ -1490,15 +1501,6 @@ const Content: React.FC = () => {
       intentPacks.removePack,
     ]
   );
-
-  const onApplyTier2MultimodalPolicy = useCallback(async () => {
-    setModelPolicyTier("open_weight");
-    const saved = await call<[BonsaiSettings], BonsaiSettings>(
-      "save_settings",
-      buildSettingsPayload({ model_policy_tier: "open_weight" })
-    );
-    hydrateFromSettings(saved);
-  }, [buildSettingsPayload, hydrateFromSettings, setModelPolicyTier]);
 
   const ollamaTab = useMemo(
     () => (

@@ -41,6 +41,13 @@ export function buildSection4Section(): string {
         .bonsai-scope .bonsai-preset-row-host {
           min-width: 0 !important;
           overflow: hidden !important;
+          display: grid !important;
+          gap: 8px !important;
+        }
+
+        .bonsai-scope .bonsai-preset-row-host--fade-anim {
+          gap: 3px !important;
+          margin-bottom: 12px !important;
         }
 
         .bonsai-scope button.bonsai-preset-glass {

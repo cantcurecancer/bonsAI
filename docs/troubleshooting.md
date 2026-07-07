@@ -87,6 +87,12 @@ If Windows still falls back to CPU after FIX A:
 2. **Settings → Voice input** → choose **tiny.en** (fastest on Deck) or **base.en** → **Install voice engine** (pulls whisper-cli via podman on SteamOS, then downloads the GGUF model).
 3. If install fails, ensure **podman** is available (`which podman`) or place **`bin/whisper-cli`** in the plugin manually. See [`bin/README.md`](../bin/README.md).
 
+**Symptom:** Install fails with `libwhisper.so.1` / `podman cp` “no such file or directory” under `/app/build/src/…`.
+
+**Cause (fixed 2026-07-06):** Upstream `whisper.cpp` Docker images now place shared libraries in **`/app/build/bin/`**, not `build/src/`. Older plugin builds copied only the legacy paths.
+
+**Fix:** Update to a build that bulk-copies `build/bin` (with fallbacks). Retry **Install voice engine**; if a partial `voice_bin` remains, clear plugin data or delete `~/homebrew/settings/bonsAI/voice_bin/` and install again.
+
 **Symptom:** “No audio capture tool found”.
 
 **Fix:** On SteamOS, install PipeWire/Pulse capture utilities (`pw-record` or `parecord`). Gaming Mode usually has PipeWire; desktop BPM may need `wf-recorder`’s audio stack intact.
