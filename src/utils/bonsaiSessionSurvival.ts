@@ -75,6 +75,28 @@ export function captureBonsaiSessionForModal(snapshot: BonsaiSessionSurvivalSnap
   survival.captureDirect(snapshot);
 }
 
+/** Keep modal survival settings in sync when RPC saves run while a modal is open. */
+export function patchPendingSessionSettingsSnapshot(
+  patch: Partial<BonsaiSettingsSnapshotInput>
+): void {
+  const pending = survival.peekPending();
+  if (!pending?.settingsSnapshot) return;
+  const nextSettings = { ...pending.settingsSnapshot, ...patch };
+  survival.captureDirect({ ...pending, settingsSnapshot: nextSettings });
+  if (restoredSettingsSnapshot) {
+    restoredSettingsSnapshot = { ...restoredSettingsSnapshot, ...patch };
+  }
+}
+
+/** Patch top-level session fields (e.g. post-modal return tab) before Decky remount restore. */
+export function patchPendingSessionSurvival(
+  patch: Partial<Pick<BonsaiSessionSurvivalSnapshot, "currentTab">>
+): void {
+  const pending = survival.peekPending();
+  if (!pending) return;
+  survival.captureDirect({ ...pending, ...patch });
+}
+
 export function consumeBonsaiSessionAfterRemount(): BonsaiSessionSurvivalSnapshot | null {
   const snap = survival.consumePending();
   if (!snap) return null;

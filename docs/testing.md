@@ -652,7 +652,7 @@ Deck-only (mic + PipeWire capture). Preview harness stubs RPCs but cannot valida
 
 ## Tier 2 — Open-weight pull (Tier 1 policy)
 
-- [ ] **GEMMA-PULL-01** Model policy **Tier 1** → Ollama → **Open AI models…** → **Browse & pull** → queue an open-weight tag (e.g. `gemma4:e2b-it-qat`) → confirm **Enable Tier 2** modal → policy bumps to Tier 2 and pull proceeds
+- [ ] **GEMMA-PULL-01** Model policy **Tier 1** → Ollama → **Open AI models…** → **Browse & pull** → queue an open-weight tag (e.g. `gemma4:e2b-it-qat`) → confirm **Enable Tier 2** modal → pull proceeds → bottom **Open AI models…** row shows **Also try open-weight models** (Tier 2), not Tier 1
 
 ---
 
@@ -661,6 +661,11 @@ Deck-only (mic + PipeWire capture). Preview harness stubs RPCs but cannot valida
 Regression for settings/permissions surviving in-app clear (fixed 2026-07-06: modal survival + stale `save_settings` after reset).
 
 - [ ] **DATA-CLEAR-01** Enable 3+ permissions, set Ollama LAN host, dismiss disclaimer → **Settings → Advanced → Clear all data…** → success toast → close/reopen QAM → all permissions off, disclaimer returns, Ollama host default; `~/homebrew/settings/bonsAI/settings.json` has `capabilities` all `false`
+- [ ] **DATA-CLEAR-02** After local Ollama + models installed → **Clear all data** → `~/.ollama` removed; Ollama tab shows **Install Ollama** until reinstalled; first install may take up to ~5 minutes (hint text under button)
+
+## Tier 2 — Tiny-model thinking blurbs
+
+- [ ] **THINK-TINY-01** Developer → enable **Tiny-model thinking blurbs** without `qwen2.5:1.5b` → confirm pull modal → no spurious **Developer tab hidden** toast → lands on **Ollama** tab (not Main) with pull toast
 
 ## Tier 2 — Strategy depth
 

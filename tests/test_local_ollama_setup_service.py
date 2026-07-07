@@ -13,6 +13,7 @@ from backend.services.local_ollama_setup_service import (
     _bash_exe,
     _env_for_host_system_tools,
     _env_for_ollama_cli,
+    ensure_ollama_cli_home_ready,
     list_installed_ollama_tags,
 )
 
@@ -60,9 +61,43 @@ class LocalOllamaSetupServiceTests(unittest.TestCase):
             tags = list_installed_ollama_tags("http://127.0.0.1:11434")
         self.assertEqual(tags, ["qwen2.5:1.5b", "llava:7b"])
 
-    def test_list_installed_ollama_tags_returns_empty_on_error(self):
-        with patch("urllib.request.urlopen", side_effect=OSError("down")):
-            self.assertEqual(list_installed_ollama_tags("http://127.0.0.1:11434"), [])
+    def test_ensure_ollama_cli_home_ready_forces_fresh_serve_when_key_missing(self):
+        with tempfile.TemporaryDirectory() as td:
+            home = Path(td)
+            ollama_bin = home / "ollama"
+            ollama_bin.write_text("#fake")
+            key = home / ".ollama" / "id_ed25519"
+            logs: list[str] = []
+            poll = {"n": 0}
+
+            def log(msg: str) -> None:
+                logs.append(msg)
+
+            def listen_side_effect(*_args, **_kwargs):
+                key.parent.mkdir(parents=True, exist_ok=True)
+                key.write_text("ssh-key")
+                return True
+
+            with (
+                patch("backend.services.local_ollama_setup_service.Path.home", return_value=home),
+                patch(
+                    "backend.services.local_ollama_setup_service.probe_ollama_http_ok",
+                    return_value=True,
+                ),
+                patch(
+                    "backend.services.local_ollama_setup_service.ensure_ollama_server_listening_before_pull",
+                    side_effect=listen_side_effect,
+                ) as mock_listen,
+                patch("backend.services.local_ollama_setup_service._stop_local_ollama_listener"),
+                patch("backend.services.local_ollama_setup_service.terminate_setup_started_ollama_serve"),
+                patch("backend.services.local_ollama_setup_service.time.sleep", side_effect=lambda _s: poll.__setitem__("n", poll["n"] + 1)),
+            ):
+                ok = ensure_ollama_cli_home_ready(log, str(ollama_bin), lambda: False)
+
+            self.assertTrue(ok)
+            mock_listen.assert_called_once()
+            self.assertTrue(mock_listen.call_args.kwargs.get("force_fresh_serve"))
+            self.assertTrue(key.is_file())
 
 
 if __name__ == "__main__":

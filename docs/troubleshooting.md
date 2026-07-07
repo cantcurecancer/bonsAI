@@ -103,11 +103,13 @@ If Windows still falls back to CPU after FIX A:
 
 ---
 
-**Symptom:** On the **Ollama** tab, **Open AI models…** does not switch policy tiers (e.g. Tier 1 → Tier 2) with the controller, or the choice reverts after **Done**.
+**Symptom:** On the **Ollama** tab, **Open AI models…** does not switch policy tiers (e.g. Tier 1 → Tier 2) with the controller, the choice reverts after **Done**, or **Browse & pull** showed **Enable Tier 2** but the bottom row still says Tier 1.
 
 **Cause (fixed 2026-05-19):** Tier buttons only handled mouse `onClick`, not Steam **A/OK** (`onOKButton`). Immediate save on each highlight also raced Decky remount + debounced settings save.
 
-**Fix:** Update to a build that uses draft selection inside the **AI models** hub (Policy / Browse & pull / Advanced), `onOKButton` on tier rows, **awaits `save_settings` before closing** (avoids remount loading stale tier), and persist on **Done** with `hydrateFromSettings`. If tier still reverts, open the hub again and confirm the row label; enable Tier 3 unlock under **Advanced** when choosing Any installed model.
+**Cause (fixed 2026-07-07):** Confirming **Enable Tier 2** during **Browse & pull** saved to disk, but Decky modal survival restored the pre-modal settings snapshot on remount and reverted the tier label.
+
+**Fix:** Update to a build that uses draft selection inside the **AI models** hub (Policy / Browse & pull / Advanced), `onOKButton` on tier rows, **awaits `save_settings` before closing** (avoids remount loading stale tier), patches modal survival after Tier 2 RPC saves, and persist on **Done** with `hydrateFromSettings`. If tier still reverts, open the hub again and confirm the row label; enable Tier 3 unlock under **Advanced** when choosing Any installed model.
 
 ### Deck essentials models (Tier 1 / Tier 2)
 
@@ -117,7 +119,7 @@ If Windows still falls back to CPU after FIX A:
 
 **Browse models** defaults to **Essentials only** (two preset rows). Turn the filter off to see more models; stretch/specialist rows are for power users.
 
-**Clear all data:** **Settings → Advanced → Clear all data** wipes settings (including permissions), voice STT assets, feedback log, runtime cache, all `bonsai:*` browser keys, and `~/.bonsai/cache`. When **Ollama on this Deck** was enabled, it also removes local model blobs (`~/.ollama`) and the user-prefix Ollama binary under `~/.local`. LAN-hosted Ollama on another PC is not touched.
+**Clear all data:** **Settings → Advanced → Clear all data** wipes settings (including permissions), voice STT assets, feedback log, runtime cache, all `bonsai:*` browser keys, and `~/.bonsai/cache`. When **Ollama on this Deck** was enabled **or** a local Ollama home (`~/.ollama`) / user-prefix install exists, it also removes local model blobs and the user-prefix Ollama binary under `~/.local`. LAN-hosted Ollama on another PC is not touched.
 
 ### Ollama HTTP 404 with Gemma / open-weight models (Tier 2)
 
@@ -310,7 +312,11 @@ Then `sudo systemctl restart avahi-daemon` and ensure `OLLAMA_HOST=0.0.0.0` and 
 
 **What bonsAI does (v0.3.0+):** With **Test** targeting loopback (**Ollama on this Deck on**, or **`127.0.0.1` / localhost** typed as the host), an initial failed probe triggers a best‑effort **wake** (**`systemctl --user try-restart` / start `ollama`**, then **`ollama serve`** if needed — same primitives as Starter setup under `py_modules/backend/services/local_ollama_setup_service.py`) and **retests once**. Prefer waiting a minute after boot before assuming Ollama is broken.
 
-**Keeping Ollama and models current:** With **Ollama on this Deck** enabled, **Ollama → Update AI & models** re-runs the official installer (binary refresh), then **`ollama pull`** each tag already installed locally — downloads only when upstream weights changed. That flow also refreshes the **Pull Models living catalog** (bonsAI-recommended overlay from GitHub; cached under `~/.bonsai/cache`). In **Browse models…**, tap **↻** to refresh installed tags, catalog recommendations, and live sizes.
+**Keeping Ollama and models current:** With **Ollama on this Deck** enabled, **Ollama → Update AI & models** (or **Install Ollama** when not connected yet) re-runs the official installer (binary refresh), then **`ollama pull`** each tag already installed locally — downloads only when upstream weights changed. That flow also refreshes the **Pull Models living catalog** (bonsAI-recommended overlay from GitHub; cached under `~/.bonsai/cache`). In **Browse models…**, tap **↻** to refresh installed tags, catalog recommendations, and live sizes.
+
+**Symptom:** `ollama pull` fails with `open /home/deck/.ollama/id_ed25519: no such file or directory` (often after **Clear all data**).
+
+**Fix:** Tap **Install Ollama** on the Ollama tab (reinitializes `~/.ollama`), or run `ollama serve` once in Konsole before pulling again.
 
 **Network (user-initiated only):** Catalog refresh may contact `raw.githubusercontent.com` (overlay JSON) and `registry.ollama.ai` (manifest sizes), same trust class as existing size lookup — no background sync.
 

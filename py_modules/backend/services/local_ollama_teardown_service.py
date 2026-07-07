@@ -4,10 +4,35 @@ from __future__ import annotations
 
 import os
 import shutil
-import subprocess
 import sys
 from pathlib import Path
 from typing import Any
+
+from backend.services.local_ollama_setup_service import (
+    DEFAULT_BASE,
+    _env_for_host_system_tools,
+    _stop_local_ollama_listener,
+    list_installed_ollama_tags,
+    resolve_ollama_executable,
+    run_ollama_rm,
+    terminate_setup_started_ollama_serve,
+)
+
+
+def should_teardown_local_ollama_on_clear(settings: dict[str, Any] | None) -> bool:
+    """True when clear-plugin-data should purge local Ollama state on this Deck."""
+    if isinstance(settings, dict) and settings.get("ollama_local_on_deck") is True:
+        return True
+    if sys.platform.startswith("win"):
+        return False
+    home = Path.home()
+    if (home / ".ollama").exists():
+        return True
+    if (home / ".local" / "bin" / "ollama").is_file():
+        return True
+    if (home / ".local" / "lib" / "ollama").is_dir():
+        return True
+    return False
 
 
 def _path_within_home(path: Path, home: Path) -> bool:
@@ -30,29 +55,10 @@ def teardown_local_ollama_for_plugin_reset(logger: Any) -> dict[str, Any]:
     if sys.platform.startswith("win"):
         return summary
 
-    from backend.services.local_ollama_setup_service import (
-        DEFAULT_BASE,
-        _env_for_host_system_tools,
-        list_installed_ollama_tags,
-        resolve_ollama_executable,
-        run_ollama_rm,
-        terminate_setup_started_ollama_serve,
-    )
-
     terminate_setup_started_ollama_serve()
 
     env = _env_for_host_system_tools()
-    try:
-        subprocess.run(
-            ["systemctl", "--user", "stop", "ollama"],
-            capture_output=True,
-            text=True,
-            timeout=30,
-            check=False,
-            env=env,
-        )
-    except Exception as exc:
-        summary["errors"].append(f"systemctl stop: {exc}")
+    _stop_local_ollama_listener(env)
 
     ollama_bin = resolve_ollama_executable()
     tags = list_installed_ollama_tags(DEFAULT_BASE)
@@ -96,5 +102,7 @@ def teardown_local_ollama_for_plugin_reset(logger: Any) -> dict[str, Any]:
     if cache_dir.exists() and _path_within_home(cache_dir, home):
         shutil.rmtree(cache_dir, ignore_errors=True)
         summary["cleared_bonsai_cache"] = True
+
+    _stop_local_ollama_listener(env)
 
     return summary

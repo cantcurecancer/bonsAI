@@ -6,6 +6,8 @@ import {
   finalizeSessionRestoreAfterRemount,
   acknowledgePluginDataClearHandled,
   markPluginDataCleared,
+  patchPendingSessionSettingsSnapshot,
+  patchPendingSessionSurvival,
   peekBonsaiSessionPendingRestore,
   shouldIgnoreRestoredSettingsSnapshot,
   takeRestoredSettingsSnapshot,
@@ -100,6 +102,22 @@ describe("bonsaiSessionSurvival", () => {
     expect(peekBonsaiSessionPendingRestore()).toBeNull();
     expect(takeRestoredSettingsSnapshot()?.aiCharacterPresetId).toBe("coach");
     expect(takeRestoredSettingsSnapshot()).toBeNull();
+  });
+
+  it("patchPendingSessionSurvival updates captured tab before remount restore", () => {
+    captureBonsaiSessionForModal(minimalSnapshot({ currentTab: "developer" }));
+    patchPendingSessionSurvival({ currentTab: "ollama" });
+    expect(peekBonsaiSessionPendingRestore()?.currentTab).toBe("ollama");
+    const consumed = consumeBonsaiSessionAfterRemount();
+    expect(consumed?.currentTab).toBe("ollama");
+  });
+
+  it("patchPendingSessionSettingsSnapshot updates captured settings before remount restore", () => {
+    captureBonsaiSessionForModal(minimalSnapshot());
+    patchPendingSessionSettingsSnapshot({ modelPolicyTier: "open_weight" });
+    const consumed = consumeBonsaiSessionAfterRemount();
+    expect(consumed?.settingsSnapshot.modelPolicyTier).toBe("open_weight");
+    expect(takeRestoredSettingsSnapshot()?.modelPolicyTier).toBe("open_weight");
   });
 
   it("clear wipes pending restore", () => {

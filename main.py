@@ -39,7 +39,10 @@ from backend.services.strategy_checklist_session_service import (
     session_path,
     upsert_session_entry,
 )
-from backend.services.local_ollama_teardown_service import teardown_local_ollama_for_plugin_reset
+from backend.services.local_ollama_teardown_service import (
+    should_teardown_local_ollama_on_clear,
+    teardown_local_ollama_for_plugin_reset,
+)
 from backend.services.intent_pack_service import (
     export_pack,
     intent_packs_path,
@@ -109,6 +112,7 @@ from backend.services.transparency_service import (
 from backend.services.tdp_service import clean_env
 from backend.services.local_ollama_setup_service import (
     is_loopback_ollama_host,
+    local_ollama_cli_home_ready,
     new_local_ollama_setup_state,
     recover_loopback_ollama_listening,
     run_local_setup,
@@ -775,7 +779,9 @@ class Plugin:
             plugin._voice_install_state = new_voice_install_state()
 
         current = await plugin.load_settings()
-        local_on_deck = isinstance(current, dict) and current.get("ollama_local_on_deck") is True
+        local_on_deck = should_teardown_local_ollama_on_clear(
+            current if isinstance(current, dict) else None
+        )
         if local_on_deck:
             teardown_summary = await asyncio.to_thread(
                 teardown_local_ollama_for_plugin_reset, logger
@@ -1001,6 +1007,16 @@ class Plugin:
         if not raw:
             return await _finish({"reachable": False, "error": "No PC IP provided."})
         host, _port, base = normalize_ollama_base(raw)
+        loopback = is_loopback_ollama_host(host)
+
+        def _loopback_not_installed_out(extra: dict[str, Any] | None = None) -> dict[str, Any]:
+            out: dict[str, Any] = {
+                "reachable": False,
+                "error": "Ollama is not set up on this Deck yet. Tap Install Ollama.",
+            }
+            if extra:
+                out.update(extra)
+            return out
 
         def _test_connection_sync() -> dict:
             deadline = started_at + safe_timeout_seconds
@@ -1053,7 +1069,7 @@ class Plugin:
                 timeout=float(safe_timeout_seconds) + 1.0,
             )
         except Exception:
-            if not is_loopback_ollama_host(host):
+            if not loopback:
                 logger.exception("test_ollama_connection failed (non-loopback)")
                 return await _finish(
                     {
@@ -1061,6 +1077,9 @@ class Plugin:
                         "error": "Could not reach Ollama. Check PC IP, firewall, and that Ollama is running on the host.",
                     }
                 )
+
+            if not local_ollama_cli_home_ready():
+                return await _finish(_loopback_not_installed_out())
 
             recovery_attempted = True
 
@@ -1116,6 +1135,16 @@ class Plugin:
         version = str(tested.get("version", "unknown"))
         models = list(tested.get("models", []))
         ps_loaded = list(tested.get("ps_loaded", []))
+
+        if loopback and not local_ollama_cli_home_ready():
+            return await _finish(
+                _loopback_not_installed_out(
+                    {
+                        "recovery_attempted": recovery_attempted,
+                        "recovery_succeeded_before_retry": recovery_succeeded_before_retry,
+                    }
+                )
+            )
 
         base_out: dict[str, Any] = {
             "reachable": True,

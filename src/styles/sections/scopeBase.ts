@@ -77,5 +77,30 @@ export function buildScopebaseSection(): string {
           line-height: 1.4 !important;
         }
 
+        /* Settings action buttons: shrink Focusable host so gpfocus ring hugs the button. */
+        .bonsai-scope .bonsai-settings-focus-btn-host {
+          width: 100%;
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+        }
+        .bonsai-scope .bonsai-settings-focus-btn-host > .Panel.Focusable,
+        .bonsai-scope .bonsai-settings-focus-btn-host > .Focusable {
+          width: auto !important;
+          max-width: 100% !important;
+          flex: 0 0 auto !important;
+        }
+        .bonsai-scope button.bonsai-settings-focus-btn.gpfocus,
+        .bonsai-scope button.bonsai-settings-focus-btn:focus-visible {
+          outline: 2px solid rgba(255, 255, 255, 0.88) !important;
+          outline-offset: 2px !important;
+          box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.45) !important;
+        }
+        .bonsai-scope .bonsai-settings-focus-btn-host > .Panel.Focusable.gpfocus,
+        .bonsai-scope .bonsai-settings-focus-btn-host > .Panel.Focusable:focus-visible {
+          outline: none !important;
+          box-shadow: none !important;
+        }
+
         `;
 }

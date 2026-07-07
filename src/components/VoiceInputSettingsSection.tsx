@@ -192,9 +192,11 @@ export const VoiceInputSettingsSection: React.FC<Props> = ({
         </div>
       </PanelSectionRow>
       <PanelSectionRow>
-        <Focusable onOKButton={() => void onDownloadModel()}>
-          <Button
-            onClick={() => void onDownloadModel()}
+        <div className="bonsai-settings-focus-btn-host">
+          <Focusable onOKButton={() => void onDownloadModel()}>
+            <Button
+              className="bonsai-settings-focus-btn"
+              onClick={() => void onDownloadModel()}
             disabled={installBusy || ready}
             style={{
               minHeight: 38,
@@ -210,6 +212,7 @@ export const VoiceInputSettingsSection: React.FC<Props> = ({
             {ready ? "Voice engine ready" : installBusy ? "Installing…" : "Install voice engine"}
           </Button>
         </Focusable>
+        </div>
       </PanelSectionRow>
     </PanelSection>
   );

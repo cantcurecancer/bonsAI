@@ -8,6 +8,7 @@ from unittest.mock import MagicMock, patch
 
 from backend.services.local_ollama_teardown_service import (
     _path_within_home,
+    should_teardown_local_ollama_on_clear,
     teardown_local_ollama_for_plugin_reset,
 )
 
@@ -20,6 +21,33 @@ class PathWithinHomeTests(unittest.TestCase):
     def test_rejects_outside_home(self):
         home = Path("/home/deck")
         self.assertFalse(_path_within_home(Path("/var/ollama"), home))
+
+
+class ShouldTeardownLocalOllamaTests(unittest.TestCase):
+    def test_true_when_local_on_deck(self):
+        self.assertTrue(should_teardown_local_ollama_on_clear({"ollama_local_on_deck": True}))
+
+    def test_false_on_windows(self):
+        with patch("backend.services.local_ollama_teardown_service.sys.platform", "win32"):
+            self.assertFalse(should_teardown_local_ollama_on_clear({"ollama_local_on_deck": False}))
+
+    def test_true_when_ollama_home_exists(self):
+        fake_home = Path("/home/deck")
+
+        def fake_home_fn():
+            return fake_home
+
+        real_exists = Path.exists
+
+        def exists(self: Path) -> bool:
+            if self == fake_home / ".ollama":
+                return True
+            return real_exists(self)
+
+        with patch("backend.services.local_ollama_teardown_service.sys.platform", "linux"):
+            with patch.object(Path, "home", staticmethod(fake_home_fn)):
+                with patch.object(Path, "exists", exists):
+                    self.assertTrue(should_teardown_local_ollama_on_clear({"ollama_local_on_deck": False}))
 
 
 class TeardownLocalOllamaTests(unittest.TestCase):

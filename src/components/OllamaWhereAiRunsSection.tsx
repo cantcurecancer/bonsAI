@@ -208,6 +208,7 @@ export const OllamaWhereAiRunsSection: React.FC<OllamaWhereAiRunsSectionProps> =
   onTestConnectionRef.current = onTestConnection;
 
   const localSetupBusy = localSetupStatus?.phase === "running";
+  const ollamaEngineReady = Boolean(connectionStatus?.reachable);
 
   const runMdnsDiscovery = useCallback(async () => {
     setMdnsDiscovering(true);
@@ -533,6 +534,49 @@ export const OllamaWhereAiRunsSection: React.FC<OllamaWhereAiRunsSectionProps> =
               </div>
               <Focusable flow-children="horizontal" style={{ display: "flex", flexDirection: "row", flexWrap: "wrap", gap: 8, width: "100%" }}>
                 <Button
+                  className="bonsai-settings-focus-btn"
+                  disabled={localSetupBusy}
+                  onClick={() => openLocalSetupConfirm(LOCAL_OLLAMA_SETUP_PROFILE_UPDATE_INSTALLED)}
+                  style={{
+                    flex: "1 1 100%",
+                    minHeight: 36,
+                    minWidth: 0,
+                    padding: "6px 8px",
+                    fontSize: 11,
+                    fontWeight: 600,
+                    borderRadius: 4,
+                    border: "1px solid rgba(56,189,248,0.55)",
+                    background: localSetupBusy
+                      ? "rgba(14,32,48,0.5)"
+                      : "linear-gradient(180deg, rgba(56,189,248,0.22) 0%, rgba(14,116,144,0.35) 100%)",
+                    color: "#e0f2fe",
+                  }}
+                  aria-label={
+                    ollamaEngineReady
+                      ? "Update AI engine and installed models"
+                      : "Install Ollama on this Deck"
+                  }
+                >
+                  {ollamaEngineReady ? "Update AI & models" : "Install Ollama"}
+                </Button>
+              </Focusable>
+              {!ollamaEngineReady || localSetupBusy ? (
+                <div
+                  className="bonsai-prose"
+                  style={{
+                    fontSize: 10,
+                    color: "#9fb7d5",
+                    lineHeight: 1.4,
+                    userSelect: "none",
+                  }}
+                >
+                  {localSetupBusy
+                    ? "Install in progress — first-time setup can take up to 5 minutes. Keep Wi‑Fi on and avoid sleep or reboot until it finishes."
+                    : "First-time Install Ollama can take up to 5 minutes (download and setup). Use stable Wi‑Fi and AC power where possible."}
+                </div>
+              ) : null}
+              <Focusable flow-children="horizontal" style={{ display: "flex", flexDirection: "row", flexWrap: "wrap", gap: 8, width: "100%" }}>
+                <Button
                   disabled={localSetupBusy}
                   onClick={() => {
                     onBeforeDeckyModal();
@@ -579,27 +623,6 @@ export const OllamaWhereAiRunsSection: React.FC<OllamaWhereAiRunsSectionProps> =
                   aria-label="Install model bundles"
                 >
                   Install options…
-                </Button>
-                <Button
-                  disabled={localSetupBusy}
-                  onClick={() => openLocalSetupConfirm(LOCAL_OLLAMA_SETUP_PROFILE_UPDATE_INSTALLED)}
-                  style={{
-                    flex: "1 1 160px",
-                    minHeight: 36,
-                    minWidth: 0,
-                    padding: "6px 8px",
-                    fontSize: 11,
-                    fontWeight: 600,
-                    borderRadius: 4,
-                    border: "1px solid rgba(56,189,248,0.55)",
-                    background: localSetupBusy
-                      ? "rgba(14,32,48,0.5)"
-                      : "linear-gradient(180deg, rgba(56,189,248,0.22) 0%, rgba(14,116,144,0.35) 100%)",
-                    color: "#e0f2fe",
-                  }}
-                  aria-label="Update AI engine and installed models"
-                >
-                  Update AI & models
                 </Button>
                 {localInstallMenuOpen ? (
                   <Focusable

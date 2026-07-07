@@ -6,6 +6,7 @@ import asyncio
 import ipaddress
 import json
 import os
+import re
 import shutil
 import signal
 import subprocess
@@ -25,6 +26,12 @@ from refactor_helpers import (
 OLLAMA_OFFICIAL_INSTALL_SH = "https://ollama.com/install.sh"
 DEFAULT_BASE = normalize_ollama_base("127.0.0.1:11434")[2]
 MAX_LOG_TAIL_LINES = 120
+_ANSI_ESCAPE_RE = re.compile(r"\x1b\[[0-9;?]*[A-Za-z]|\x1b\].*?\x07")
+
+
+def strip_ansi_escape_sequences(text: str) -> str:
+    return _ANSI_ESCAPE_RE.sub("", text or "")
+
 
 _LD_STRIP_KEYS = frozenset(
     (
@@ -129,14 +136,27 @@ def ensure_ollama_server_listening_before_pull(
     cancelled: Callable[[], bool],
     *,
     max_listen_probe_iterations: int = 90,
+    force_fresh_serve: bool = False,
 ) -> bool:
     """
     ``ollama pull`` requires the HTTP API. User-prefix tarball installs do not register systemd;
     start ``ollama serve`` in the background when port 11434 is down.
+
+    When ``force_fresh_serve`` is True, stop any existing listener and spawn a new user ``serve``
+    (needed after Clear all data when the API still answers but ``~/.ollama/id_ed25519`` is gone).
     """
     global _OLLAMA_SERVE_PROC, _OLLAMA_SERVE_STARTED_BY_SETUP
-    if probe_ollama_http_ok(DEFAULT_BASE, timeout_seconds=2.5):
+    if not force_fresh_serve and probe_ollama_http_ok(DEFAULT_BASE, timeout_seconds=2.5):
         return True
+
+    if force_fresh_serve:
+        shell_log(
+            "[bonsAI] Forcing a fresh user ``ollama serve`` so ~/.ollama keys can be created …"
+        )
+        env = _env_for_host_system_tools()
+        _stop_local_ollama_listener(env)
+        terminate_setup_started_ollama_serve()
+        time.sleep(0.5)
 
     shell_log("[bonsAI] No Ollama server on localhost:11434 — starting ``ollama serve`` (needed for pulls) …")
     env = _env_for_ollama_cli(ollama_bin)
@@ -173,6 +193,100 @@ def ensure_ollama_server_listening_before_pull(
     return False
 
 
+def _ollama_state_home_dir() -> Path:
+    return Path.home() / ".ollama"
+
+
+def local_ollama_cli_home_ready() -> bool:
+    """True when ``~/.ollama/id_ed25519`` exists (CLI pulls and local setup are viable)."""
+    return (_ollama_state_home_dir() / "id_ed25519").is_file()
+
+
+def _stop_local_ollama_listener(env: dict[str, str]) -> None:
+    """Stop user systemd unit and any setup-spawned ``ollama serve`` (best-effort)."""
+    terminate_setup_started_ollama_serve()
+    try:
+        subprocess.run(
+            ["systemctl", "--user", "stop", "ollama"],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+            env=env,
+        )
+    except Exception:
+        pass
+    try:
+        subprocess.run(
+            ["pkill", "-x", "ollama"],
+            capture_output=True,
+            text=True,
+            timeout=15,
+            check=False,
+            env=env,
+        )
+    except Exception:
+        pass
+
+
+def ensure_ollama_cli_home_ready(
+    shell_log: Callable[[str], None],
+    ollama_bin: str,
+    cancelled: Callable[[], bool],
+) -> bool:
+    """
+    ``ollama pull`` needs ``~/.ollama/id_ed25519``. After a plugin data clear the API may still
+    respond while the home dir was removed — restart serve so keys are recreated.
+    """
+    key = _ollama_state_home_dir() / "id_ed25519"
+    if key.is_file():
+        return True
+    if cancelled():
+        return False
+
+    shell_log("[bonsAI] Ollama config home is missing keys — reinitializing ~/.ollama …")
+    env = _env_for_host_system_tools()
+    _stop_local_ollama_listener(env)
+    terminate_setup_started_ollama_serve()
+    _ollama_state_home_dir().mkdir(parents=True, exist_ok=True)
+
+    if not ensure_ollama_server_listening_before_pull(
+        shell_log,
+        ollama_bin,
+        cancelled,
+        force_fresh_serve=True,
+    ):
+        return False
+
+    for _ in range(40):
+        if cancelled():
+            return False
+        if key.is_file():
+            shell_log("[bonsAI] Ollama home reinitialized.")
+            return True
+        time.sleep(0.5)
+
+    if not key.is_file():
+        try:
+            subprocess.run(
+                [ollama_bin, "list"],
+                capture_output=True,
+                text=True,
+                timeout=60,
+                check=False,
+                env=_env_for_ollama_cli(ollama_bin),
+            )
+        except Exception as exc:
+            shell_log(f"[bonsAI] ollama list warm-up note: {exc}")
+
+    if key.is_file():
+        shell_log("[bonsAI] Ollama home reinitialized.")
+        return True
+
+    shell_log("[bonsAI] Could not create Ollama keys under ~/.ollama — try ``ollama serve`` in Konsole.")
+    return False
+
+
 def recover_loopback_ollama_listening(
     shell_log: Callable[[str], None],
     *,
@@ -182,7 +296,15 @@ def recover_loopback_ollama_listening(
     Best-effort start of localhost Ollama (systemd user unit, then ``ollama serve``) before a probe retry.
 
     Intended for Connection Test failures on **127.0.0.1** / localhost only — not LAN hosts.
+  Skips auto-start when ``~/.ollama`` was removed (e.g. after Clear all data) so Test connection
+  does not resurrect a half-installed daemon.
     """
+    if not local_ollama_cli_home_ready():
+        shell_log(
+            "[bonsAI] Ollama home is not initialized (~/.ollama/id_ed25519 missing) — "
+            "skipping auto-start. Tap Install Ollama first."
+        )
+        return False
     if probe_ollama_http_ok(DEFAULT_BASE, timeout_seconds=2.5):
         return True
     try_restart_ollama_user_service(shell_log)
@@ -466,13 +588,18 @@ def try_restart_ollama_user_service(shell_log: Callable[[str], None]) -> None:
 
 def _format_ollama_pull_failure(tag: str, code: int, tail_lines: list[str]) -> str:
     """Human-readable pull failure with stderr tail and registry-tag hints."""
-    tail_text = "\n".join(tail_lines).strip()
+    tail_text = strip_ansi_escape_sequences("\n".join(tail_lines).strip())
     tail_snip = tail_text[-480:] if tail_text else ""
     msg = f"ollama pull {tag} failed with exit code {code}"
     if tail_snip:
         msg += f". Last output: {tail_snip}"
     low = tail_text.casefold()
-    if "manifest" in low and ("not exist" in low or "does not exist" in low):
+    if "id_ed25519" in low and "no such file" in low:
+        msg += (
+            " Ollama’s ~/.ollama folder is missing keys (often after Clear all data). "
+            "Tap Install Ollama on the Ollama tab, or run ``ollama serve`` once in Konsole."
+        )
+    elif "manifest" in low and ("not exist" in low or "does not exist" in low):
         msg += (
             f" Tag «{tag}» is not on the Ollama library — try qwen2.5vl:3b or gemma4:e2b-it-qat."
         )
@@ -489,6 +616,11 @@ def run_ollama_pull(
     shell_log(f"[bonsAI] ollama pull {tag}")
     if cancelled():
         return False, "Cancelled."
+    if not ensure_ollama_cli_home_ready(shell_log, ollama_bin, cancelled):
+        return (
+            False,
+            "Ollama home is missing (~/.ollama/id_ed25519). Tap Install Ollama on the Ollama tab.",
+        )
     tail_lines: list[str] = []
     try:
         proc = subprocess.Popen(
@@ -664,6 +796,13 @@ async def run_local_setup(
             raise RuntimeError(
                 "Ollama server is not running on localhost:11434 — ``ollama pull`` needs the API. "
                 "Opening Desktop Konsole and running ``ollama serve`` once fixes this."
+            )
+
+        ok_home = await asyncio.to_thread(lambda: ensure_ollama_cli_home_ready(log, ollama_bin, cancelled))
+        if not ok_home:
+            raise RuntimeError(
+                "Ollama home directory could not be initialized (~/.ollama/id_ed25519 missing). "
+                "Tap Install Ollama on the Ollama tab or run ``ollama serve`` once in Konsole."
             )
 
         if is_update_installed:

@@ -39,6 +39,8 @@ import {
   finalizeSessionRestoreAfterRemount,
   getPluginDataClearedGeneration,
   markPluginDataCleared,
+  patchPendingSessionSettingsSnapshot,
+  patchPendingSessionSurvival,
   peekBonsaiSessionPendingRestore,
   shouldIgnoreRestoredSettingsSnapshot,
   type BonsaiSessionSurvivalSnapshot,
@@ -288,6 +290,7 @@ const Content: React.FC = () => {
   const pendingSessionRestoreFinalizeRef = useRef(false);
   const pluginDataClearSeenRef = useRef(getPluginDataClearedGeneration());
   const [lastConnectionStatus, setLastConnectionStatus] = useState<DeveloperConnectionStatus | null>(null);
+  const [ollamaTabResetKey, setOllamaTabResetKey] = useState(0);
 
   // --- Unified input/search state ---
   const [unifiedInput, setUnifiedInput] = useState(() => {
@@ -634,11 +637,12 @@ const Content: React.FC = () => {
   }, [bonsaiScopeStyle]);
 
   useEffect(() => {
+    if (!settingsLoaded) return;
     if (!showDeveloperTab && currentTab === "developer") {
       setCurrentTab("main");
       toaster.toast({ title: "Developer tab hidden", body: "Switched to Main.", duration: 2800 });
     }
-  }, [showDeveloperTab, currentTab]);
+  }, [showDeveloperTab, currentTab, settingsLoaded]);
 
   useEffect(() => {
     if (askMode !== "strategy") {
@@ -653,6 +657,12 @@ const Content: React.FC = () => {
   const goToOllamaTab = useCallback(() => {
     setCurrentTab("ollama");
   }, []);
+
+  const captureThinkingPullModalSession = useCallback(() => {
+    captureSessionBeforeModal();
+    characterPickerReturnTabRef.current = "ollama";
+    patchPendingSessionSurvival({ currentTab: "ollama" });
+  }, [captureSessionBeforeModal, characterPickerReturnTabRef]);
 
   const settingsSnapshotForSave = useMemo(
     () => ({
@@ -968,6 +978,8 @@ const Content: React.FC = () => {
       markPluginDataCleared();
       clearSettingsTabLocalSurvival();
       clearOllamaTabLocalSurvival();
+      setLastConnectionStatus(null);
+      setOllamaTabResetKey((k) => k + 1);
       await pauseDebouncedSettingsSave();
       await call<[], BonsaiSettings>("clear_plugin_data");
       clearBonsaiBrowserStorage();
@@ -1192,6 +1204,7 @@ const Content: React.FC = () => {
       setModelPolicyTier(patch.modelPolicyTier);
       setModelPolicyNonFossUnlocked(patch.modelPolicyNonFossUnlocked);
       setModelAllowHighVramFallbacks(patch.modelAllowHighVramFallbacks);
+      await pauseDebouncedSettingsSave();
       const saved = await call<[BonsaiSettings], BonsaiSettings>(
         "save_settings",
         buildSettingsPayload({
@@ -1201,18 +1214,25 @@ const Content: React.FC = () => {
         })
       );
       hydrateFromSettings(saved);
+      patchPendingSessionSettingsSnapshot({
+        modelPolicyTier: patch.modelPolicyTier,
+        modelPolicyNonFossUnlocked: patch.modelPolicyNonFossUnlocked,
+        modelAllowHighVramFallbacks: patch.modelAllowHighVramFallbacks,
+      });
     },
-    [buildSettingsPayload, hydrateFromSettings, setModelPolicyTier, setModelPolicyNonFossUnlocked, setModelAllowHighVramFallbacks, goToOllamaTab]
+    [buildSettingsPayload, hydrateFromSettings, setModelPolicyTier, setModelPolicyNonFossUnlocked, setModelAllowHighVramFallbacks, goToOllamaTab, pauseDebouncedSettingsSave]
   );
 
   const onApplyTier2MultimodalPolicy = useCallback(async () => {
+    await pauseDebouncedSettingsSave();
     setModelPolicyTier("open_weight");
     const saved = await call<[BonsaiSettings], BonsaiSettings>(
       "save_settings",
       buildSettingsPayload({ model_policy_tier: "open_weight" })
     );
     hydrateFromSettings(saved);
-  }, [buildSettingsPayload, hydrateFromSettings, setModelPolicyTier]);
+    patchPendingSessionSettingsSnapshot({ modelPolicyTier: "open_weight" });
+  }, [buildSettingsPayload, hydrateFromSettings, setModelPolicyTier, pauseDebouncedSettingsSave]);
 
   const openOllamaModelsHub = useCallback(
     (opts?: { initialSection?: OllamaModelsHubSection }) => {
@@ -1505,6 +1525,7 @@ const Content: React.FC = () => {
   const ollamaTab = useMemo(
     () => (
       <OllamaTab
+        key={`ollama-tab-${ollamaTabResetKey}`}
         ollamaIp={ollamaIp}
         onOllamaIpChange={setOllamaIp}
         onPersistOllamaIp={saveIp}
@@ -1538,6 +1559,7 @@ const Content: React.FC = () => {
     [
       ollamaIp,
       ollamaLocalOnDeck,
+      ollamaTabResetKey,
       lastConnectionStatus,
       namedOllamaHosts,
       responseVerifyEnabled,
@@ -1642,6 +1664,9 @@ const Content: React.FC = () => {
       setThinkingStatusTinyModelEnabled={setThinkingStatusTinyModelEnabled}
       showOnscreenDebugHud={showOnscreenDebugHud}
       setShowOnscreenDebugHud={setShowOnscreenDebugHud}
+      ollamaLocalOnDeck={ollamaLocalOnDeck}
+      onCompleteDeckyModalClose={finalizeShowModalAndRestoreActiveTab}
+      onBeforeThinkingPullModal={captureThinkingPullModalSession}
       />
     ),
     [
@@ -1658,8 +1683,10 @@ const Content: React.FC = () => {
       presetChipAnimation,
       steamWebApiKey,
       bonsaiTokenStreamingEnabled,
-      thinkingStatusTinyModelEnabled,
       showOnscreenDebugHud,
+      ollamaLocalOnDeck,
+      captureThinkingPullModalSession,
+      finalizeShowModalAndRestoreActiveTab,
     ]
   );
 
