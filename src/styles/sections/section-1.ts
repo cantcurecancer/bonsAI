@@ -13,8 +13,8 @@ export function buildSection1Section(): string {
            1. DECKY TAB HOST (do not kill transitions — Steam's tab carousel uses them to slide).
            ========================================================================== */
 
-        /* Tab host: width only — do not make this a flex column with flex-grow (Deck logs showed
-           tab strip ancestors blowing past hostW ~300 with negative left; content vanished). */
+        /* Tab host: column flex so tab body grows below the strip (Bazzite gamescope kept host ≈80px).
+           Do not flex-grow the carousel strip row itself — only TabContentsScroll (section 3). */
         .bonsai-scope .bonsai-decky-tabs-root {
           width: 100% !important;
           max-width: 100% !important;
@@ -22,6 +22,23 @@ export function buildSection1Section(): string {
           min-height: 0 !important;
           box-sizing: border-box !important;
           overflow-x: clip !important;
+          display: flex !important;
+          flex-direction: column !important;
+          flex: 1 1 auto !important;
+          align-self: stretch !important;
+        }
+
+        .bonsai-scope .bonsai-decky-tabs-root [class*="TabContentsScroll"] {
+          position: relative !important;
+          z-index: 1 !important;
+          flex: 1 1 auto !important;
+          min-height: 0 !important;
+        }
+
+        /* Chip margin only — do not fix DialogButton width (stacks carousel vertically on Bazzite mount). */
+        .bonsai-scope.bonsai-qam-strip-stable .bonsai-decky-tabs-root .bonsai-tab-title-leaf {
+          margin-left: 0 !important;
+          margin-right: 0 !important;
         }
 
         /* Uniform tab glyph box. Icon components use an inner IconShell <span>; logo uses <img>. */

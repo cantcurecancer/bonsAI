@@ -21,13 +21,18 @@ export function buildSection3Section(): string {
         /* After the global TabContentsScroll reset: gap under LB/RB strip + kill stray horizontal inset
            (Deck screenshots: SETTINGS body looked right-shifted vs panel edge). */
         .bonsai-scope .bonsai-decky-tabs-root [class*="TabContentsScroll"] {
-          margin-top: ${uiScalePx(TAB_STRIP_BODY_GAP_PX)} !important;
+          margin-top: var(--bonsai-tab-strip-reserve, calc(52px + ${uiScalePx(TAB_STRIP_BODY_GAP_PX)})) !important;
           padding-top: 6px !important;
+          position: relative !important;
+          top: auto !important;
           margin-left: 0 !important;
           margin-right: 0 !important;
           padding-left: ${uiScalePx(BONSAI_PLUGIN_SIDE_PAD_PX)} !important;
           padding-right: ${uiScalePx(BONSAI_PLUGIN_SIDE_PAD_PX)} !important;
           box-sizing: border-box !important;
+          flex: 1 1 auto !important;
+          min-height: 0 !important;
+          align-self: stretch !important;
         }
 
         .bonsai-scope .bonsai-decky-tabs-root [class*="TabContentsScroll"] > div {

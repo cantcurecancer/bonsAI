@@ -71,6 +71,8 @@ import {
 } from "./features/unified-input/constants";
 import { useUnifiedInputSurface } from "./features/unified-input/useUnifiedInputSurface";
 import { useUiScaleProfile } from "./hooks/useUiScaleProfile";
+import { useQamPanelHeightGuard } from "./hooks/useQamPanelHeightGuard";
+import { useTabStripBodyOffset } from "./hooks/useTabStripBodyOffset";
 import { UiScaleProvider } from "./context/UiScaleContext";
 import { publishUiScaleScopeStyle } from "./utils/uiScaleScopeBridge";
 import { normalizeUiScaleProfileId, type UiScaleProfileId } from "./data/uiScaleProfile";
@@ -447,6 +449,9 @@ const Content: React.FC = () => {
     applyToken: uiScaleApplyToken,
     onRemeasure: remeasureUnifiedInputSurface,
   });
+
+  useQamPanelHeightGuard(bonsaiScopeRef);
+  useTabStripBodyOffset(bonsaiScopeRef);
 
   const intentPacks = useIntentPacks();
 

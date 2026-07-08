@@ -15,6 +15,27 @@ export function buildScopebaseSection(): string {
           max-width: 100%;
           min-width: 0;
           box-sizing: border-box;
+          /* Fill QAM column height so Decky Tabs body is not crushed into the ~80px strip row. */
+          display: flex;
+          flex-direction: column;
+          flex: 1 1 auto;
+          min-height: 0;
+          align-self: stretch;
+          overflow: hidden;
+        }
+
+        /*
+          Decky wraps plugin content in .decky-qam-scope. On Bazzite gamescope, pointer entry can
+          collapse that host to tab-strip height (~80px); stretch it with the plugin column.
+        */
+        .decky-qam-scope:has(> .bonsai-scope) {
+          display: flex !important;
+          flex-direction: column !important;
+          flex: 1 1 auto !important;
+          min-height: 0 !important;
+          align-self: stretch !important;
+          width: 100% !important;
+          box-sizing: border-box !important;
         }
         .bonsai-scope .bonsai-settings-connection-row {
           min-width: 0;
