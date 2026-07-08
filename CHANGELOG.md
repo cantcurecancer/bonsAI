@@ -4,6 +4,14 @@ All notable changes to this project are documented in this file.
 
 ## [Unreleased]
 
+## [0.4.9] - 2026-07-08
+
+### Fixed
+- **Bazzite / gamescope QAM layout:** Tab strip crush, tab body overlapping LB/RB icons, and thin left strip on first open when scope collapsed to ~80px. `useQamPanelHeightGuard` locks scope to Steam QAM tab host height; `useTabStripBodyOffset` reserves strip space via `--bonsai-tab-strip-reserve` after carousel settles.
+
+### Changed
+- **Docs:** QAM Bazzite fix archived in `docs/archive/roadmap-completed.md`; **QAM-BAZZITE-01** regression row in `docs/testing.md`.
+
 ## [0.4.8] - 2026-07-07
 
 ### Added
