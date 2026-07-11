@@ -563,3 +563,15 @@ Phase 1 is the **completed** scope for this feature; full search + catalog (Phas
 3. **Import from clipboard** on the Deck → review summary → confirm.
 4. On the **Main** tab, type `wifi` — unified search should list Wi-Fi settings even if the literal path text does not contain `wifi`.
 
+---
+
+## Decky Plugin Studio (dev tooling)
+
+bonsAI uses [Decky Plugin Studio](https://github.com/qd313/decky-plugin-studio) for in-IDE preview, deploy, tunnel, and capture. That project is the **source of truth** — see [mcp-setup.md § Decky Plugin Studio](mcp-setup.md#decky-plugin-studio-source-of-truth).
+
+**When something is wrong with DPS** (broken MCP tool, bad capture, pack/skill drift, missing feature):
+
+1. Note it in the **DPS findings log** in [mcp-setup.md](mcp-setup.md) (and here if it is a recurring troubleshooting tip).
+2. Open or update an issue/PR on [qd313/decky-plugin-studio](https://github.com/qd313/decky-plugin-studio).
+3. Do not permanently patch DPS behavior only inside bonsAI; sync the real fix upstream, then bump the VSIX / `mcp.json` pin.
+

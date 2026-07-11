@@ -3,6 +3,7 @@
 - Configure MCP server `bonsai` (see [docs/mcp-setup.md](docs/mcp-setup.md)).
 - At session start or before non-trivial work: call **`bonsai.session.bootstrap`**.
 - For Deck UI/RPC edits: call **`bonsai.workflow.get`** with `id=deck-dev-loop`; use **decky-plugin-studio** for deploy/preview.
+- DPS bugs/gaps/changes: document in bonsAI **and** sync to [qd313/decky-plugin-studio](https://github.com/qd313/decky-plugin-studio) (policy `decky-plugin-studio`).
 - Specialist reviews: MCP prompt **`bonsai/persona/{name}`** (`security-auditor`, `master-debugger`, `foss-advocate`, `refactor-specialist`).
 - Full policies, workflows, and personas live in **`packages/bonsai-mcp/knowledge/`** — do not duplicate here.
 - New Settings/QAM controls: policy **`decky-ui-focus`** + architecture **`focus-graph-patterns`** (also `.cursor/rules/decky-focus-graph.mdc`).

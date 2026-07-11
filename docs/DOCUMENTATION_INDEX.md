@@ -4,7 +4,7 @@ Short guide to markdown under `docs/`. Repo root **[README.md](../README.md)** s
 
 | Doc | Audience | What it is |
 |-----|----------|------------|
-| [mcp-setup.md](mcp-setup.md) | Contributors / agents | **MCP servers** — bonsai knowledge + Decky Plugin Studio ops |
+| [mcp-setup.md](mcp-setup.md) | Contributors / agents | **MCP servers** — bonsai knowledge + Decky Plugin Studio ops; DPS upstream sync + findings log |
 | [development.md](development.md) | Contributors | Deck-first setup, build/deploy, BPM test loop, architecture, change-risk hotspots |
 | [troubleshooting.md](troubleshooting.md) | Power users | GPU, network, vision, permissions, QAM, deploy edge cases |
 | [roadmap.md](roadmap.md) | Planning / contributors | In progress, planned backlog, and completed shipped work |

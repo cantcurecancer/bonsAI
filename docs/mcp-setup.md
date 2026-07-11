@@ -5,7 +5,29 @@ bonsAI uses **two complementary MCP servers**:
 | Server | Package | Role |
 |--------|---------|------|
 | **bonsai** | In-repo [`packages/bonsai-mcp/`](../packages/bonsai-mcp/) | Policies, workflows, personas, architecture index, doc search |
-| **decky-plugin-studio** | [Decky Plugin Studio](https://github.com/SteamDeckHomebrew/decky-plugin-studio) extension | Build, deploy, preview, tunnel, screenshots |
+| **decky-plugin-studio** | [Decky Plugin Studio](https://github.com/qd313/decky-plugin-studio) extension | Build, deploy, preview, tunnel, screenshots |
+
+## Decky Plugin Studio (source of truth)
+
+[Decky Plugin Studio](https://github.com/qd313/decky-plugin-studio) (DPS) is a **separate project**. That repo is the source of truth for the extension, MCP `deck.*` / `preview.*` / `plugin.*` tools, capture/record helpers, and Init Pack templates. bonsAI only **consumes** the published VSIX (see [upstream consumer sync](https://github.com/qd313/decky-plugin-studio/blob/main/docs/MCP_CONSUMER_SYNC.md)).
+
+| Situation | What to do |
+|-----------|------------|
+| Bug, gap, or confusing DPS behavior while working in bonsAI | Document it here (this file and/or [troubleshooting.md](troubleshooting.md) § Decky Plugin Studio) **and** open or update an issue/PR on [qd313/decky-plugin-studio](https://github.com/qd313/decky-plugin-studio) |
+| Need to add / delete / change DPS tooling, MCP surface, pack skills, or capture scripts | Change **upstream first** (or in the same effort), then bump the consumer VSIX / `mcp.json` pin in bonsAI |
+| Temporary workaround only in bonsAI | Still document the workaround **and** the intended upstream fix so it is not forgotten |
+
+Do **not** permanently fork DPS behavior into bonsAI. Product-specific MCP (`bonsai`) and app code stay here; studio ops stay in DPS.
+
+**Installed version:** pin `mcp.json` / `.cursor/mcp.json` to the installed VSIX path under `~/.cursor/extensions/decky-plugin-studio.decky-plugin-studio-extension-<version>/`. After upgrading the VSIX, update those paths and **Developer: Reload Window**.
+
+### DPS findings log (bonsAI)
+
+Record consumer-facing notes below so maintainers can sync upstream. Newest first.
+
+| Date | Finding | Documented in bonsAI | Upstream (issue/PR) | Status |
+|------|---------|----------------------|---------------------|--------|
+| — | *(none yet)* | — | — | — |
 
 ## Prerequisites
 

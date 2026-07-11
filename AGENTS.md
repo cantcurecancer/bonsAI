@@ -34,7 +34,9 @@ Resources: `bonsai://policy/{id}`, `bonsai://workflow/{id}`, `bonsai://persona/{
 
 ## 2. Decky Plugin Studio (`decky-plugin-studio`)
 
-Operational Deck preview and deploy. Requires the [Decky Plugin Studio](https://github.com/SteamDeckHomebrew/decky-plugin-studio) VSIX.
+Operational Deck preview and deploy. Requires the [Decky Plugin Studio](https://github.com/qd313/decky-plugin-studio) VSIX.
+
+**Source of truth:** [qd313/decky-plugin-studio](https://github.com/qd313/decky-plugin-studio) — not this repo. bonsAI consumes the VSIX/MCP server. Document DPS bugs, gaps, and needed adds/deletes/changes in [docs/mcp-setup.md](docs/mcp-setup.md) (findings log) **and** mirror them upstream (issue/PR). Do not permanently fix or fork DPS tooling only in bonsAI. Policy: `bonsai://policy/decky-plugin-studio`.
 
 | Tool | Purpose |
 |------|---------|
