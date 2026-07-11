@@ -84,8 +84,11 @@ gst-inspect-1.0 vah264enc
 
 **Optional deps** (script may install via pacman when `BONSAI_ALLOW_STEAMOS_RW` is not `0`):
 
-- `gstreamer` `gst-plugin-pipewire` `gst-plugins-good`
+- `gstreamer` `gst-plugin-pipewire` `gst-plugins-good` (includes `jpegenc` / `vp8enc` soft fallbacks)
+- `gst-plugins-ugly` (x264enc) and/or `gst-plugin-va` (vah264enc) — preferred when pacman keyring allows
 - `wf-recorder` (desktop path)
+
+**Quality:** default `--quality compressed` / `-Quality compressed` uses VP8 (~2.5 Mbps). Pass `--quality full` / `-FullQuality` for MJPEG (much larger; ~30 Mbps in practice).
 
 ---
 
