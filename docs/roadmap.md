@@ -91,6 +91,12 @@ Within this section: ascending stars (★★ → ★★★ → ★★★★). Br
   - Verify behavior after closing and reopening the QAM Performance tab.
   - Verify behavior after Steam restart and full reboot.
   - Verify behavior when prompt includes GPU clock recommendations.
+- ★★★ **Reply ready toast** (QAM-closed Asks)
+  - **Goal:** When any Ask completes (typed, mic-button STT, or future wake-word) and QAM is not already showing the reply, show a short Decky toast **Reply ready**; tap opens QAM to the answer. Skip toast if QAM is already open on the reply. Ask failure → error toast. Phase toasts replace/dismiss the prior bonsAI phase toast (no stack).
+  - **Primary work:** Hook Ask orchestration completion/error paths; QAM-visibility check; `toaster.toast` with `onClick` → open plugin/QAM (on-Deck spike for Steam click reliability); ensure background Ask completion survives QAM close.
+  - **Files (expected):** `useBonsaiAskOrchestration.ts`, `src/index.tsx`, toast helpers.
+  - **Depends on:** Unified Ask pipeline (shipped); Decky `toaster` (`ToastData.onClick` in `@decky/api`).
+  - **Not in scope:** Full or truncated answer text in toast; TTS read-aloud (see **Local reply TTS**); wake-word listening itself.
 - ★★★ **Reply verbosity inject** (short vs rich paragraphs, V)
   - **Goal:** User preference “short bullets vs paragraphs” as system inject — complements Speed/Strategy/Expert routing without replacing it.
   - **Primary work:** persisted setting + `build_system_prompt` inject branch.
@@ -172,7 +178,7 @@ Within this section: ascending stars (★★★★ → ★★★★★ → ★�
   - **Not in scope:** evdev sniffing, WebSockets, React DOM hacks.
 - ★★★★★ **Local reply TTS** (Phase 1–2 character voice; R)
   - **GitHub (tracking placeholder):** [bonsAI Issues](https://github.com/cantcurecancer/bonsAI/issues) — dedicated issue TBD.
-  - **Dedup:** distinct from **[Whisper voice Ask](#medium-term)** (speech-to-text) below — this item is **text-to-speech** playback only.
+  - **Dedup:** distinct from **Whisper voice Ask** (shipped — see **Completed** / [archive/roadmap-completed.md](archive/roadmap-completed.md)) and from planned **Wake-word listening** (always-on STT) — this item is **text-to-speech** playback only.
   - **Phase 1 — Baseline:** Offline/local engine on loopback or LAN (e.g. Piper / Kokoro-class); **per-reply** play/stop; no cloud TTS; no always-on listening.
   - **Phase 2 — Character-aligned read-aloud:** When **Character Voice Roleplay Mode** is on, map resolved catalog preset id (e.g. `gta5_michael`, `gta5_trevor` per `[src/data/characterCatalog.ts](../src/data/characterCatalog.ts)`) to TTS voice/profile/parameters so playback matches the same expressive intent as the text path; Settings toggle **Match read-aloud to AI character** (concept); fallback to neutral when roleplay off or mapping missing. **Random / Custom** behavior: mirror roleplay resolution rules (see brainstorm [roadmap_feature_ideas plan](../.cursor/plans/roadmap_feature_ideas_f5560e15.plan.md) § R).
   - **Legal (before Phase 2 ship):** research spike on voice likeness/publicity, false endorsement, publisher/performer rights, TTS asset licenses and ToS, regional variance; outcome defines disclosures and ship/no-ship boundaries (see § R in same brainstorm doc).
@@ -207,6 +213,18 @@ Within this section: ascending stars (★★★★ → ★★★★★ → ★�
   - **Files:** `[src/data/steam-input-lexicon.ts](../src/data/steam-input-lexicon.ts)`, `steamInputJump`, `ollama_service.py`, docs.
   - **Depends on:** Permissions for Steam navigation where relevant.
   - **Not in scope:** Writing controller configs (see **Steam Input layout parse**).
+- ★★★★★ **Wake-word listening** (beta; Deck first)
+  - **GitHub (tracking placeholder):** [bonsAI Issues](https://github.com/cantcurecancer/bonsAI/issues) — dedicated issue TBD.
+  - **Goal:** Opt-in always-on local wake on fixed keyword **bonsAI** (Deck beta first; Steam Frame later). After wake → speech gate → **Listening…** toast → user-configurable silence timeout (default ~2 s, range 1–5 s; max utterance ~30 s) → strip wake word from prompt text → quiet Ask (no auto-open QAM) via normal Ollama routing and last-used Ask mode. English-only post-wake STT in v1. Idle wake-only target **&lt;15% CPU** (lightweight keyword spotter, not always-on Whisper); battery impact measured post-v1.
+  - **Permissions / beta:** New capability **Wake-word listening (beta)** **plus** existing `microphone_access` (both required). **ConfirmModal** with **I understand** on every enable. Block enable until mic permission and separate **Install wake listener** are ready (modal with install CTA). Honest disclosure: audio is not uploaded or retained as recordings; transcript text is treated like typed Ask text.
+  - **Toast phases (replace prior):** Listening… → Thinking… → **Reply ready** (see **Reply ready toast**) / failure / Didn't catch that (+ spam guard). Toast tap = Stop (abort listen or cancel in-flight Ask). Cancel + Developer toggle: **A** keep draft in Ask (default; closed-QAM toast **Cancelled — open bonsAI to edit**) vs **B** discard transcript.
+  - **Other v1 behavior:** Ignore new wakes while an Ask is in flight; suspend wake during mic-button STT Ask; stop on Deck sleep and resume on wake; hard-stop on plugin unload (no orphan wake/whisper processes); auto-pause when Steam voice or Discord is detectable, else document shared-mic risk; same Ollama path as normal Asks. Mid-session engine loss → disable listening + toast once.
+  - **Primary work:** Keyword spotter install + daemon; integrate with `[voice_transcription_service.py](../py_modules/backend/services/voice_transcription_service.py)` / new wake service; capabilities + Permissions UI; ConfirmModal; Settings silence timeout; Developer A/B cancel toggle; toast phase machine; sleep/unload lifecycle; on-Deck CPU/battery QA.
+  - **Files (expected):** `voice_transcription_service.py`, `main.py`, `capabilities.py`, `settings_service.py`, `settingsAndResponse.ts`, `PermissionsTab.tsx`, `DeveloperTab.tsx`, `src/index.tsx`, [voice-input-follow-up.md](voice-input-follow-up.md), [troubleshooting.md](troubleshooting.md).
+  - **Depends on:** Shipped Whisper voice Ask + `microphone_access`; **Reply ready toast**; ideally **Voice STT session daemon** (near-term) for post-wake STT cost.
+  - **Related (after v1):** Optional brevity inject for wake Asks; non-English wake/STT; Steam Frame companion path; **Local reply TTS** for hands-free read path; optional Speed-for-wake setting.
+  - **Not in scope (v1):** Custom wake phrases; always-on full Whisper; cloud STT; Frame VR overlay; auto-open QAM on wake; reading answers via TTS.
+  - **Dedup:** Distinct from push-to-talk Whisper Ask (shipped) and **Local reply TTS** (playback only).
 - ★★★★★★ **Remote Play diagnostics layer** (streaming host/client, E)
   - **GitHub (tracking placeholder):** [bonsAI Issues](https://github.com/cantcurecancer/bonsAI/issues) — dedicated issue TBD.
   - **Goal:** When gameplay is **streamed**, answers weight **encode latency**, input path, and “fixes first on **host** vs **client**” — reducing wrong TDP/sysfs advice applied on the wrong silicon.
@@ -300,6 +318,10 @@ Dependency graph and implementation notes that are not feature checklist items.
 - **Character voice roleplay** + avatar mapping → **Higher-resolution character avatars (GTA-style art pass)**.
 - **Character voice roleplay (shipped)** → **Character-derived UI accent theme (preset-selected)** (shipped — see **Completed**); **Random character “?” avatar** (shipped — see **Completed**); **Running-game character suggestions (AI picker)** (shipped — see **Completed**).
 - **Character voice roleplay (shipped)** → **Local reply TTS** (Phase 2 — preset→voice mapping; legal research gate before ship).
+- **Whisper voice Ask (shipped)** + `microphone_access` → **Wake-word listening** (additional beta capability + separate wake-engine install).
+- **Reply ready toast** → completion UX for all Asks; required for hands-free wake loop when QAM is closed.
+- **Wake-word listening** → later **Local reply TTS** for hands-free read path; optional wake brevity inject / Speed-for-wake after v1.
+- **Voice STT session daemon** → reduces post-wake STT cost for wake-word listening.
 - **Character voice roleplay (shipped)** → **Playful thinking status lines (shipped)** — persona tone in `compose_thinking_blurb`; **Thinking phase copy polish (shipped)** keeps mid-Ask `format_thinking_phase` lines prompt-woven; **Always-sarcastic thinking blurb (shipped)** — witty/deadpan always on, visible during stream.
 - **Unified Ask pipeline and input transparency (shipped)** → **Text model chains** (user-configurable text fallbacks); **Retry same prompt** (shipped — see **Completed** → Tabs).
 - **Input sanitizer (shipped)** + **Input handling transparency (shipped)** → future sanitizer extensions should keep user-visible auditability.
