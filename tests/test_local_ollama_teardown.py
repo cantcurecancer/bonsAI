@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -53,11 +54,11 @@ class ShouldTeardownLocalOllamaTests(unittest.TestCase):
 class TeardownLocalOllamaTests(unittest.TestCase):
     @patch("backend.services.local_ollama_teardown_service.sys.platform", "linux")
     @patch("backend.services.local_ollama_teardown_service.shutil.rmtree")
-    @patch("backend.services.local_ollama_teardown_service.subprocess.run")
-    @patch("backend.services.local_ollama_setup_service.run_ollama_rm")
-    @patch("backend.services.local_ollama_setup_service.resolve_ollama_executable")
-    @patch("backend.services.local_ollama_setup_service.list_installed_ollama_tags")
-    @patch("backend.services.local_ollama_setup_service.terminate_setup_started_ollama_serve")
+    @patch("backend.services.local_ollama_setup_service.subprocess.run")
+    @patch("backend.services.local_ollama_teardown_service.run_ollama_rm")
+    @patch("backend.services.local_ollama_teardown_service.resolve_ollama_executable")
+    @patch("backend.services.local_ollama_teardown_service.list_installed_ollama_tags")
+    @patch("backend.services.local_ollama_teardown_service.terminate_setup_started_ollama_serve")
     def test_removes_tags_and_home_paths(
         self,
         _terminate,
@@ -68,10 +69,9 @@ class TeardownLocalOllamaTests(unittest.TestCase):
         rmtree,
     ):
         list_tags.return_value = ["qwen2.5vl:3b"]
-        resolve_bin.return_value = "/home/deck/.local/bin/ollama"
+        fake_home = Path(tempfile.mkdtemp(prefix="bonsai-teardown-"))
+        resolve_bin.return_value = str(fake_home / ".local" / "bin" / "ollama")
         run_rm.return_value = (True, "")
-
-        fake_home = Path("/home/deck")
 
         def fake_home_fn():
             return fake_home

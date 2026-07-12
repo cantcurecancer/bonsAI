@@ -103,6 +103,8 @@ If Windows still falls back to CPU after FIX A:
 
 **Cause (fixed 2026-07-07):** Voice RMS gate was too high for Gaming Mode mic levels (~150–250 RMS vs 350 threshold), so whisper never ran despite successful capture. Threshold lowered; filler hallucination filter unchanged.
 
+**Cause (fixed 2026-07-12):** Rapid double-tap on the mic button before the first `start_voice_transcription` RPC returned could spawn **two** PipeWire capture sessions (orphaned mic leak). Backend now uses a start-generation gate so only one session wins.
+
 **Symptom:** Interim text is slow or stalls.
 
 **Fix:** Use **tiny.en**; **base.en** needs more CPU on the Deck APU. Close heavy games while transcribing. Audio is processed in RAM only — nothing is uploaded or saved to disk.

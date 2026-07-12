@@ -42,6 +42,7 @@ Use the **Touched area** column to extend §1; prefer the narrowest tests first.
 |--------------|----------------------|------------------------|
 | `backend/services/settings_service.py`, `settingsAndResponse.ts`, Settings UI | `tests/test_settings_service.py`, `src/utils/settingsAndResponse.test.ts` | Tier 0 **SMOKE-A** + setting persist spot-check |
 | `main.py` background Ask / abort / settings save locks | `tests/test_background_abort_busy.py`, `tests/test_settings_save_lock.py`, `tests/test_intent_pack_store_lock.py`, `tests/test_strategy_checklist_store_lock.py` | Tier 1 **SMOKE-H** Stop then new Ask |
+| `main.py` voice start/stop RPC | `tests/test_voice_start_superseded.py` | Tier 2 **VOICE-02** rapid mic double-tap |
 | `backend/services/intent_pack_service.py` | `tests/test_intent_pack_service.py` (corrupt/oversized preserve) | Tier 0 Settings → intent packs |
 | `backend/services/voice_transcription_service.py` | `tests/test_voice_transcription_service.py` (`test_pcm_buffer_survives_concurrent_append_and_window`) | Tier 2 voice STT |
 | `backend/services/ollama_service.py`, `refactor_helpers.py` | `tests/test_ollama_service.py`, `tests/test_refactor_helpers.py` | Tier 1 one Ask per changed mode ([testing.md](testing.md#shipped-feature-coverage)) |
