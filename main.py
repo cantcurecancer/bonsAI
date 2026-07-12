@@ -205,6 +205,7 @@ class Plugin:
         }
         self._voice_lock = asyncio.Lock()
         self._voice_session: Optional[VoiceTranscriptionSession] = None
+        self._voice_start_generation = 0
         self._voice_install_lock = asyncio.Lock()
         self._voice_install_task: Optional[asyncio.Task] = None
         self._voice_install_cancel = threading.Event()
@@ -2378,6 +2379,7 @@ class Plugin:
     async def _stop_voice_transcription_internal(self) -> None:
         plugin = Plugin._coerce_instance(self)
         async with plugin._voice_lock:
+            plugin._voice_start_generation += 1
             session = plugin._voice_session
             plugin._voice_session = None
         if session is not None:
@@ -2494,10 +2496,18 @@ class Plugin:
                 plugin._voice_session = None
             else:
                 old = None
+            plugin._voice_start_generation += 1
+            start_generation = plugin._voice_start_generation
         if old is not None:
             await asyncio.to_thread(old.force_stop)
 
         async with plugin._voice_lock:
+            if plugin._voice_start_generation != start_generation:
+                return {
+                    "accepted": False,
+                    "error": "busy",
+                    "reason": "Voice transcription start superseded.",
+                }
             session = VoiceTranscriptionSession(
                 PLUGIN_ROOT,
                 decky.DECKY_PLUGIN_SETTINGS_DIR,
