@@ -58,6 +58,9 @@ import {
   type UiScaleProfileId,
   DEFAULT_UI_SCALE_AUTO_ENABLED,
   DEFAULT_UI_SCALE_MANUAL_PROFILE,
+  DEFAULT_USE_LOCAL_KNOWLEDGE_BASE,
+  DEFAULT_RAG_CORPUS_PATH,
+  DEFAULT_RAG_CORPUS_VERSION,
 } from "../utils/settingsAndResponse";
 
 function snapshotFromBonsaiSettings(normalized: BonsaiSettings): BonsaiSettingsSnapshotInput {
@@ -99,6 +102,9 @@ function snapshotFromBonsaiSettings(normalized: BonsaiSettings): BonsaiSettingsS
     voiceSttModel: normalized.voice_stt_model,
     uiScaleAutoEnabled: normalized.ui_scale_auto_enabled,
     uiScaleManualProfile: normalized.ui_scale_manual_profile,
+    useLocalKnowledgeBase: normalized.use_local_knowledge_base,
+    ragCorpusPath: normalized.rag_corpus_path,
+    ragCorpusVersion: normalized.rag_corpus_version,
   };
 }
 
@@ -182,6 +188,11 @@ export function usePluginSettings() {
   const [uiScaleManualProfile, setUiScaleManualProfile] = useState<UiScaleProfileId>(
     DEFAULT_UI_SCALE_MANUAL_PROFILE
   );
+  const [useLocalKnowledgeBase, setUseLocalKnowledgeBase] = useState<boolean>(
+    DEFAULT_USE_LOCAL_KNOWLEDGE_BASE
+  );
+  const [ragCorpusPath, setRagCorpusPath] = useState<string>(DEFAULT_RAG_CORPUS_PATH);
+  const [ragCorpusVersion, setRagCorpusVersion] = useState<string>(DEFAULT_RAG_CORPUS_VERSION);
   const [settingsLoaded, setSettingsLoaded] = useState(false);
   /** When false, debounced ``save_settings`` is skipped so a failed initial load cannot wipe disk with UI defaults. */
   const [settingsPersistEnabled, setSettingsPersistEnabled] = useState(false);
@@ -229,6 +240,9 @@ export function usePluginSettings() {
     voiceSttModel,
     uiScaleAutoEnabled,
     uiScaleManualProfile,
+    useLocalKnowledgeBase,
+    ragCorpusPath,
+    ragCorpusVersion,
   };
 
   const hydrateFromSettings = useCallback((saved: BonsaiSettings) => {
@@ -270,6 +284,9 @@ export function usePluginSettings() {
     setVoiceSttModel(normalized.voice_stt_model);
     setUiScaleAutoEnabled(normalized.ui_scale_auto_enabled);
     setUiScaleManualProfile(normalized.ui_scale_manual_profile);
+    setUseLocalKnowledgeBase(normalized.use_local_knowledge_base);
+    setRagCorpusPath(normalized.rag_corpus_path);
+    setRagCorpusVersion(normalized.rag_corpus_version);
     settingsSnapshotForDebouncedSaveRef.current = snapshotFromBonsaiSettings(normalized);
     setSettingsPersistEnabled(true);
   }, []);
@@ -360,6 +377,9 @@ export function usePluginSettings() {
         setVoiceSttModel(DEFAULT_VOICE_STT_MODEL);
         setUiScaleAutoEnabled(DEFAULT_UI_SCALE_AUTO_ENABLED);
         setUiScaleManualProfile(DEFAULT_UI_SCALE_MANUAL_PROFILE);
+        setUseLocalKnowledgeBase(DEFAULT_USE_LOCAL_KNOWLEDGE_BASE);
+        setRagCorpusPath(DEFAULT_RAG_CORPUS_PATH);
+        setRagCorpusVersion(DEFAULT_RAG_CORPUS_VERSION);
       })
       .finally(() => {
         if (!cancelled) setSettingsLoaded(true);
@@ -425,6 +445,9 @@ export function usePluginSettings() {
     voiceSttModel,
     uiScaleAutoEnabled,
     uiScaleManualProfile,
+    useLocalKnowledgeBase,
+    ragCorpusPath,
+    ragCorpusVersion,
     settingsPersistEnabled,
   ]);
 
@@ -492,6 +515,12 @@ export function usePluginSettings() {
     setUiScaleAutoEnabled,
     uiScaleManualProfile,
     setUiScaleManualProfile,
+    useLocalKnowledgeBase,
+    setUseLocalKnowledgeBase,
+    ragCorpusPath,
+    setRagCorpusPath,
+    ragCorpusVersion,
+    setRagCorpusVersion,
     settingsLoaded,
     setLatencyWarningSeconds,
     setRequestTimeoutSeconds,

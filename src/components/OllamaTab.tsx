@@ -9,6 +9,7 @@ import {
 import { MODEL_POLICY_TIER_LABELS_PLAIN, type ModelPolicyTierId } from "../data/modelPolicy";
 import type { DeveloperConnectionStatus } from "./DeveloperTab";
 import { OllamaWhereAiRunsSection } from "./OllamaWhereAiRunsSection";
+import { KnowledgeBaseSection } from "./KnowledgeBaseSection";
 import { SettingsTabConnectionTimeoutSlider } from "./SettingsTabConnectionTimeoutSlider";
 import { SettingsTabOllamaKeepAliveSlider } from "./SettingsTabOllamaKeepAliveSlider";
 import type { NamedOllamaHost } from "../utils/settingsAndResponse";
@@ -45,6 +46,10 @@ export type OllamaTabProps = {
 
   modelPolicyTier: ModelPolicyTierId;
   onApplyTier2MultimodalPolicy?: () => void | Promise<void>;
+
+  useLocalKnowledgeBase: boolean;
+  setUseLocalKnowledgeBase: (v: boolean) => void;
+  ragCorpusVersion: string;
 };
 
 export const OllamaTab: React.FC<OllamaTabProps> = ({
@@ -76,9 +81,15 @@ export const OllamaTab: React.FC<OllamaTabProps> = ({
   setOllamaKeepAlive,
   modelPolicyTier,
   onApplyTier2MultimodalPolicy,
+  useLocalKnowledgeBase,
+  setUseLocalKnowledgeBase,
+  ragCorpusVersion,
 }) => {
   const latencyWarningThumbHostRef = useRef<HTMLDivElement>(null);
   const ollamaKeepAliveThumbHostRef = useRef<HTMLDivElement>(null);
+  const kbToggleHostRef = useRef<HTMLDivElement>(null);
+  const kbDownloadBtnRef = useRef<HTMLButtonElement>(null);
+  const responseVerifyToggleHostRef = useRef<HTMLDivElement>(null);
 
   const focusOllamaKeepAliveThumb = useCallback((): boolean => {
     const host = ollamaKeepAliveThumbHostRef.current;
@@ -93,6 +104,24 @@ export const OllamaTab: React.FC<OllamaTabProps> = ({
     const host = latencyWarningThumbHostRef.current;
     if (!host) return false;
     const target = host.querySelector<HTMLElement>("[tabindex], button");
+    if (!target) return false;
+    target.focus();
+    return true;
+  }, []);
+
+  const focusKbToggle = useCallback((): boolean => {
+    const host = kbToggleHostRef.current;
+    if (!host) return false;
+    const target = host.querySelector<HTMLElement>("[tabindex], button, input");
+    if (!target) return false;
+    target.focus();
+    return true;
+  }, []);
+
+  const focusResponseVerifyToggle = useCallback((): boolean => {
+    const host = responseVerifyToggleHostRef.current;
+    if (!host) return false;
+    const target = host.querySelector<HTMLElement>("[tabindex], button, input");
     if (!target) return false;
     target.focus();
     return true;
@@ -118,11 +147,23 @@ export const OllamaTab: React.FC<OllamaTabProps> = ({
         onCompleteDeckyModalClose={onCompleteDeckyModalClose}
         onOpenOllamaModelsHub={onOpenOllamaModelsHub}
         onApplyTier2MultimodalPolicy={onApplyTier2MultimodalPolicy}
+        onMoveDownFromConnectionRow={focusKbToggle}
+      />
+
+      <KnowledgeBaseSection
+        useLocalKnowledgeBase={useLocalKnowledgeBase}
+        setUseLocalKnowledgeBase={setUseLocalKnowledgeBase}
+        ragCorpusVersion={ragCorpusVersion}
+        onBeforeDeckyModal={onBeforeDeckyModal}
+        onCompleteDeckyModalClose={onCompleteDeckyModalClose}
+        toggleHostRef={kbToggleHostRef}
+        downloadBtnRef={kbDownloadBtnRef}
+        onMoveDownFromRemove={focusResponseVerifyToggle}
       />
 
       <PanelSection title="Response verification">
         <PanelSectionRow>
-          <div className="bonsai-settings-bleed" style={{ width: "100%" }}>
+          <div ref={responseVerifyToggleHostRef} className="bonsai-settings-bleed" style={{ width: "100%" }}>
             <ToggleField
               label="Response verify (rules)"
               description="After Ollama, run lightweight rules (e.g. invented AppID without game context). May append a short caution line; logs avoid raw user text."

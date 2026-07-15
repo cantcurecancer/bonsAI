@@ -568,6 +568,13 @@ def build_system_prompt(
     )
     early_stripped = (early_context_suffix or "").strip()
     early_block = f"\n\n{early_stripped}" if early_stripped else ""
+    if early_stripped and "Local knowledge base" in early_stripped:
+        early_block += (
+            "\n\nKNOWLEDGE BASE (offline corpus): Ground answers in the attached strategy/compat "
+            "cards when relevant. Wrap source-backed claims in ```bonsai-cite ... ``` fences with "
+            "trust tier (wiki_verified / wiki_no_patch / fallback_no_source). "
+            "Put spoilery walkthrough detail inside ```bonsai-spoiler``` when the user has not opted in.\n"
+        )
 
     hardware_tdp_appendix = (
         "Hardware appendix (apply only when relevant): The Steam Deck APU supports a TDP range of 3-15 watts and "

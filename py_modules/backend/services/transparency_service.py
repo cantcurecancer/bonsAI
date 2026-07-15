@@ -140,6 +140,25 @@ def build_sanitizer_command_snapshot(
     }
 
 
+def build_knowledge_base_transparency(
+    *,
+    attached: bool,
+    trust_tier: str,
+    sources: list,
+    notes: str,
+    timing_ms: dict,
+    unavailable_reason: str = "",
+) -> dict[str, Any]:
+    return {
+        "kb_attached": attached,
+        "kb_trust_tier": trust_tier,
+        "kb_sources": list(sources or []),
+        "kb_notes": notes or "",
+        "kb_timing_ms": dict(timing_ms or {}),
+        "kb_unavailable_reason": unavailable_reason or "",
+    }
+
+
 def build_proton_log_transparency(
     *,
     excerpt_attached: bool,
@@ -195,6 +214,12 @@ def build_ollama_route_snapshot(
         "proton_log_excerpt_attached": bool(ollama_result.get("proton_log_excerpt_attached")),
         "proton_log_sources": ollama_result.get("proton_log_sources") or [],
         "proton_log_notes": str(ollama_result.get("proton_log_notes") or ""),
+        "kb_attached": bool(ollama_result.get("kb_attached")),
+        "kb_trust_tier": str(ollama_result.get("kb_trust_tier") or ""),
+        "kb_sources": ollama_result.get("kb_sources") or [],
+        "kb_notes": str(ollama_result.get("kb_notes") or ""),
+        "kb_timing_ms": ollama_result.get("kb_timing_ms") or {},
+        "kb_unavailable_reason": str(ollama_result.get("kb_unavailable_reason") or ""),
         "ask_diagnostics": ollama_result.get("ask_diagnostics"),
         "response_verify": verify_result,
     }

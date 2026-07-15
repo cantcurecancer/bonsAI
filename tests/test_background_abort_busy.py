@@ -97,6 +97,36 @@ class AbortBusyGateTests(unittest.IsolatedAsyncioTestCase):
                 except asyncio.CancelledError:
                     pass
 
+    async def test_abort_preserves_partial_in_cancelled_response(self) -> None:
+        request_id = 42
+        self.plugin._background_state = {
+            "status": "pending",
+            "request_id": request_id,
+            "question": "slow",
+            "app_id": "",
+            "app_context": "none",
+            "success": None,
+            "response": "Thinking...",
+            "applied": None,
+            "elapsed_seconds": 0,
+            "error": None,
+            "started_at": 0.0,
+            "completed_at": None,
+            "strategy_guide_branches": None,
+            "model_policy_disclosure": None,
+            "preset_carousel_inject": None,
+            "partial_response": None,
+            "streaming": True,
+            "thinking_summary": None,
+        }
+        self.plugin._reset_partial_stream_snapshot(request_id)
+        self.plugin._update_partial_response(request_id, "Partial answer so far", False)
+
+        await self.plugin.abort_background_game_ai()
+
+        self.assertEqual(self.plugin._background_state.get("status"), "cancelled")
+        self.assertEqual(self.plugin._background_state.get("response"), "Partial answer so far")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -77,6 +77,22 @@ If Windows still falls back to CPU after FIX A:
 
 **Note:** If you upgraded from an older `settings.json` that had no `capabilities` block, the plugin enables most scopes until you save settings from the Permissions tab (grandfather behavior). **Voice input (microphone)** and **Steam ban lookup** stay **off** until you enable them explicitly.
 
+### Knowledge base (offline strategy cards)
+
+Optional on-Deck corpus for Strategy and troubleshooting Asks. Full architecture: [knowledge-base.md](knowledge-base.md).
+
+1. **Ollama** tab → **Knowledge base (offline)** → **Download knowledge base** (confirm modal — ~5 GB internal storage; no Ask text uploaded).
+2. Wait for download to finish (stay on Wi‑Fi). **Installed** indicator shows version and path.
+3. Enable **Use local knowledge base** (default on after successful install).
+4. **Update knowledge** checks manifest and re-downloads when a newer version exists.
+5. **Remove knowledge base** deletes the corpus directory and turns the toggle off.
+
+**SD card:** v1 defaults to `~/.bonsai/rag` on internal storage. Advanced path override may be added in a follow-up; for QA use `install_rag_corpus_local` RPC with a custom path.
+
+**Clear all plugin data** (Settings) also removes the installed corpus when `rag_corpus_path` is set.
+
+**Unavailable:** If the toggle is on but no corpus is installed, you get a once-per-session toast; retrieval is skipped gracefully.
+
 ### Voice input (speech-to-text)
 
 **Symptom:** Mic button shows “Permission required” or voice does not start.
@@ -496,6 +512,31 @@ Run with a build that also satisfies [testing.md](testing.md#regression-gates) �
 - [ ] Re-run after SteamOS or Steam **Big Picture** updates if macro behavior regresses.
 
 **Last verified (optional):** *Record SteamOS / Steam client build when a maintainer runs the checklist on hardware; update after major client updates.*
+
+---
+
+## Token streaming — live markdown (experimental, Developer tab)
+
+Enable **Settings → Data → Show Developer tab** → **Token streaming (experimental)**.
+
+While an Ask is pending, the Main tab can show **progressive markdown** in one live bubble (not plain text). This is **opt-in** and defaults **off**.
+
+**Behavior (v1):**
+
+- **Strategy spoilers:** Incomplete `bonsai-spoiler` fences show a **masked placeholder** only — spoiler body never appears until the fence closes.
+- **Code fences:** Open `` ``` `` blocks show a **pulse + spinner** (2s period) until the closing fence arrives; body then reveals faster than normal prose (~3× smooth reveal).
+- **Stop:** Partial text is **kept** on screen (including wait chip if a fence was still open).
+- **Done:** Reply snaps to full text in the stream bubble, then switches to the normal chunked terminal layout (handoff policy may change in a future release).
+
+**Symptom:** Stream looks like plain text or never shows formatting.
+
+**Checks:**
+
+1. Confirm **Token streaming (experimental)** is on in **Developer** (not only Show Developer tab).
+2. Rebuild/deploy after code changes — stream UI is frontend-only (`buildAnswerBubbleElement.tsx`, `streamMarkdownPrepare.ts`).
+3. For Strategy asks, expect spoiler **mask** mid-stream — that is intentional (no leak), not a missing stream.
+
+**QA:** [testing.md](testing.md) § Token streaming (STREAM-01…10).
 
 ---
 

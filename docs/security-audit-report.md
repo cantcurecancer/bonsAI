@@ -1,6 +1,6 @@
 # Security audit report
 
-**Last reviewed:** 2026-04-30 (full pass). **Purpose:** confirmed privacy and information-disclosure hazards in RPC responses, logs, browser consoles, and sensitive-action gates—not hypothetical CVE-style speculation.
+**Last reviewed:** 2026-07-12 (RAG corpus download path + 2026-04-30 full pass). **Purpose:** confirmed privacy and information-disclosure hazards in RPC responses, logs, browser consoles, and sensitive-action gates—not hypothetical CVE-style speculation.
 
 **Legend:** **Open** = behavior present and actionable. **Mitigated** = verified safe behavior or fixed in tree. **Partial** = reduced risk; optional hardening noted.
 
@@ -11,6 +11,34 @@
 ## Open findings
 
 No confirmed open findings after this review and the mitigation below.
+
+---
+
+## Mitigated (RAG corpus v1 — 2026-07-12)
+
+Finding: `remove_corpus_at_path` used unsafe `startswith(home)` prefix guard  
+File: rag_corpus_download_service.py  
+Severity: ★★★★  
+Fix: Use `_path_within_home` (`relative_to`) from plugin_data_reset.  
+Status: **Mitigated**.
+
+Finding: Unconstrained `install_path` on download RPC  
+File: main.py, knowledge_base_schema.py  
+Severity: ★★★★  
+Fix: `sanitize_corpus_install_dir` requires path under user home.  
+Status: **Mitigated**.
+
+Finding: Manifest chunk `filename` could traverse directories  
+File: rag_corpus_download_service.py  
+Severity: ★★★  
+Fix: `os.path.basename` + reject if not equal to raw filename.  
+Status: **Mitigated**.
+
+Finding: `install_rag_corpus_local` exposed without dev gate  
+File: main.py  
+Severity: ★★★  
+Fix: Requires `show_developer_tab` in settings.  
+Status: **Mitigated**.
 
 ---
 

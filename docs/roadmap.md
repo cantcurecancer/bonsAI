@@ -66,7 +66,16 @@ Within this section: ascending stars (★★ → ★★★ → ★★★★). Br
   - **Primary work:** New/edited `PRESET_PROMPTS` entries + category alignment; no new carousel mechanics.
   - **Files:** `src/data/presets.ts`, optional docs cross-links.
   - **Depends on:** shipped preset carousel + category routing.
-  - **Not in scope:** model-generated dynamic chips; treating each string batch as a versioned feature ship.
+  - **Not in scope:** treating each string batch as a versioned feature ship. **AppID/session RAG dynamic chips** → **Session RAG preset chips** (separate Planned row).
+- ★★ **Thinking blurb copy refresh** (phase-keyed pools; no tiny model)
+  - **Problem:** Global witty wrapper prefixes most lines with `Yeah,` (~60% of generic pool); shared openers make intent pools feel identical.
+  - **Goal:** Ship **disgruntled** + **deadpan** pools that are **mostly unique per pipeline phase/intent**; **no** lazy prefixes (`Yeah,`, `Fine.`, `Sure.`); emoji-only lines allowed as full blurbs (`🙄`, `😮‍💨`, `🫠`, `🌳`); update the italic status line **only when a real Ask phase changes** (plus model `<bonsai-status>`). Client mirror stays in parity with backend. **Design rule:** no global wrapper that pads every pool; each phase/intent owns a mostly unique 4–6 line set (shared emoji-only / `On it` OK sparingly).
+  - **Locked witty copy:** `🔥🔥Another crisis 🔥🔥: ${quote}. Give me a moment${gameBit}.`; `On it — ${quote}${gameBit}…`; `"Fascinating" request: ${quote}. Processing anyway.`; `Great. ${quote}. Just what I needed${gameBit}.`; `Copy that. Wrestling with ${quote}${gameBit}…`; `Noted. ${quote}. I’ll pretend this is exciting.`; `Standing by while I dig into ${quote}${gameBit}…`; `Ticket received: ${quote}. Filing it under “urgent to you.”`; `Alright, alright — ${quote}${gameBit}…`; screenshot `Staring at your screenshot for ${quote}…`. **Dropped:** `Yeah,` wrappers, `Oh joy —`, `Right.`, `Of course it’s`, `🙄🔥`. **Game-title witty** (omit when no running game): `Still struggling with ${gameTitle}?`; `Back to wrestling with ${gameTitle}…`; `${gameTitle} again? Alright…`; `Having a moment with ${gameTitle}, I see.`
+  - **Locked deadpan copy:** `${quote}. Acknowledged${gameBit}.`; `Processing ${quote}${gameBit}. No enthusiasm detected.`; `Working on ${quote}. Try not to interrupt.`; `${quote}${gameBit}. Inevitably.`; `Examining ${quote}. Results pending.`; `Request logged: ${quote}. Continuing.`; game-only `${gameTitle}. Again.` / `Still ${gameTitle}. Noted.` / `Resuming ${gameTitle}. Proceeding.`; screenshot `Screenshot received for ${quote}. Analyzing.` / `Visual input noted. Relating to ${quote}.`. Same emoji-only set; fiery crisis line stays witty-only.
+  - **Primary work:** Rewrite pools in `[src/utils/composeThinkingBlurb.ts](../src/utils/composeThinkingBlurb.ts)` + `[bonsai_stream_tags.py](../py_modules/backend/services/bonsai_stream_tags.py)`; remove `applySarcasticPoolVariants` / `_apply_sarcastic_pool_variants` prefix farm; phase-keyed selection without fake elapsed cycling; unit tests (pool uniqueness, no-game drop for title lines); testing scenarios when implementing; optional `<bonsai-status>` prompt alignment in `ollama_prompts.py`.
+  - **Files:** `composeThinkingBlurb.ts`, `bonsai_stream_tags.py`, `composeThinkingBlurb.test.ts`, `tests/test_bonsai_stream_tags.py`.
+  - **Depends on:** shipped **Always-sarcastic thinking blurb** + phase publisher.
+  - **Not in scope:** tiny/status model (`thinking_tiny_model_service`); fake 0.5–1.5s rotation; persistent blurb memory.
 - ★★ **Reply micro-actions** (follow-up chips)
   - **Goal:** Per-reply secondary actions beyond **Retry same prompt** / thumbs: e.g. **Shorter**, **Step-by-step**, **What first?** — each submits a **small follow-up turn** with prior answer as context (not a full regenerate).
   - **Primary work:** Micro-prompt templates; new turn in unified Ask orchestration; compact chip row on `BonsaiChatReplyActions`; Input transparency labels derivative turns.
@@ -108,6 +117,12 @@ Within this section: ascending stars (★★ → ★★★ → ★★★★). Br
   - **Files:** `src/index.tsx`, prompt/search UX test notes.
   - **Depends on:** unified search indexing and response-state handling.
   - **Not in scope:** changing ranking semantics for unrelated search domains.
+- ★★★ **Session RAG preset chips** (AppID-aware carousel)
+  - **Goal:** Rebuild the three-chip seed on **AppID change / after Ask / QAM open**. Target mix ~**1 RAG + 2 static**; each chip independently ~**30%** RAG (streaks of 2–3 RAG allowed but uncommon). RAG prompts = **mix** of compat/Proton/Deck issues and strategy “top stuck” for the running AppID via offline KB. **Plain** chips (no special mark). AppID/KB miss or `use_local_knowledge_base` off / corpus missing → **static-only**, including setup chip: **Enable local knowledge base for better game tips**. Session-scoped generation only (no durable preference learning in v1).
+  - **Primary work:** Weighted chip composer; AppID → curtailed prompt strings from `[knowledge_base_service.py](../py_modules/backend/services/knowledge_base_service.py)` (compat + strategy cards); wire refresh into carousel re-seed (`[carouselState.ts](../src/features/preset-carousel/carouselState.ts)` / MainTab); respect corpus install status; unit tests; D-pad/testing row only if focus graph changes.
+  - **Files:** new composer util + `[presets.ts](../src/data/presets.ts)`, carousel/MainTab wiring, KB read path or light RPC if needed, settings awareness.
+  - **Depends on:** shipped preset carousel + offline KB v1 ([knowledge-base.md](knowledge-base.md)).
+  - **Not in scope:** persistent per-user preference learning (**Phase 2 — foss-advocate review before design**); replacing all static `PRESET_PROMPTS` (static batches stay under **Preset chip expansion**); cloud personalization; tiny model for chip text.
 - ★★★★ **Llama.cpp provider spike** (compat evaluation)
   - **Goal:** Evaluate first-class llama.cpp runtime/provider support.
   - **Primary work:** API formats, streaming, model management, tokenizer/context, Deck constraints.
@@ -186,18 +201,10 @@ Within this section: ascending stars (★★★★ → ★★★★★ → ★�
   - **Files (expected):** `main.py`, `src/index.tsx`, install/troubleshooting docs; Phase 2 ties into `[py_modules/backend/services/ai_character_service.py](../py_modules/backend/services/ai_character_service.py)` / settings surfaces.
   - **Depends on:** Phase 1 transport before Phase 2; shipped character catalog ids for mapping.
   - **Not in scope:** Cloud celebrity voice cloning; wake-word or ambient mic; claiming official/licensed voices in UI.
-- ★★★★★ **RAG Deck query** (PC-hosted ingest + Chroma)
-  - **GitHub (tracking placeholder):** [bonsAI Issues](https://github.com/cantcurecancer/bonsAI/issues) — dedicated issue TBD.
-  - **Status:** Planned — see [archive/research/rag-sources-research.md](archive/research/rag-sources-research.md). Deck parity for retrieval without a PC companion is covered by **Session context and user stash** (Near-term), not v1 RAG.
-  - **Goal:** RAG with ChromaDB + `nomic-embed-text` (Ollama `/api/embed`) over a curated corpus; heavy work on user's PC beside Ollama; Deck queries over LAN.
-  - **Architecture:** Ollama does not run ingestion — small PC companion (e.g. `bonsai-rag`), Chroma under `~/.bonsai/rag/chroma`, endpoints `POST /v1/refresh`, `POST /v1/query`; inject context **before** hardware + JSON tail in system prompt.
-  - **Developer tooling:** e.g. `scripts/build_rag_db.py` on dev PC; same embedding contract as runtime.
-  - **Settings:** plain-language disclosure; **Update knowledge on PC** after confirm; requires `**network_web_access`** when added.
-  - **Files (expected):** `ollama_service.py`, `main.py`, `capabilities.py`, `settings_service.py`, `settingsAndResponse.ts`, `PermissionsTab`, `pc/` or `scripts/`, `docs/development.md`, [archive/research/rag-sources-research.md](archive/research/rag-sources-research.md).
-  - **Depends on:** Ollama on PC; `nomic-embed-text` pulled on host; optional Reddit API on PC only.
-  - **Related:** **Session context and user stash** — deck-first, no vector DB; preferred path for deck-only users and for personalized notes RAG cannot replace.
-  - **Legal:** respect ToS, robots, rate limits; no scraped corpora in git.
-  - **Not in scope (v1):** Deck-side scrapers, multi-GB DBs in-repo, automatic refresh without user action; replacing user stash or live session slices; deck-only users should not require RAG for basic compat guidance.
+- ★★★★★ **RAG Deck query — hybrid vectors (Phase 2)**
+  - **Status:** Follow-up — v1 on-Deck offline FTS5 shipped; see [knowledge-base.md](knowledge-base.md).
+  - **Goal:** Enable baked corpus vectors via Ollama `/api/embed` (`nomic-embed-text`) for hybrid retrieval; FTS5 remains fallback.
+  - **Not in scope:** PC-hosted Chroma companion (superseded by on-Deck v1 architecture).
 - ★★★★★ **Kids master lock** (Steam parental restricted)
   - **GitHub (tracking placeholder):** [bonsAI Issues](https://github.com/cantcurecancer/bonsAI/issues) — dedicated issue TBD.
   - **Goal:** Disable plugin capabilities when Steam reports a restricted kids account; restore when full account returns.
@@ -215,7 +222,7 @@ Within this section: ascending stars (★★★★ → ★★★★★ → ★�
   - **Not in scope:** Writing controller configs (see **Steam Input layout parse**).
 - ★★★★★ **Wake-word listening** (beta; Deck first)
   - **GitHub (tracking placeholder):** [bonsAI Issues](https://github.com/cantcurecancer/bonsAI/issues) — dedicated issue TBD.
-  - **Goal:** Opt-in always-on local wake on fixed keyword **bonsAI** (Deck beta first; Steam Frame later). After wake → speech gate → **Listening…** toast → user-configurable silence timeout (default ~2 s, range 1–5 s; max utterance ~30 s) → strip wake word from prompt text → quiet Ask (no auto-open QAM) via normal Ollama routing and last-used Ask mode. English-only post-wake STT in v1. Idle wake-only target **&lt;15% CPU** (lightweight keyword spotter, not always-on Whisper); battery impact measured post-v1.
+  - **Goal:** Opt-in always-on local wake on fixed keyword **bonsAI** (Deck beta first; Steam Frame later). After wake → speech gate → **Listening…** toast → user-configurable silence timeout (default ~2 s, range 1–5 s; max utterance ~30 s) → strip wake word from prompt text → quiet Ask (no auto-open QAM) via normal Ollama routing and last-used Ask mode. English-only post-wake STT in v1. Idle wake-only target **<15% CPU** (lightweight keyword spotter, not always-on Whisper); battery impact measured post-v1.
   - **Permissions / beta:** New capability **Wake-word listening (beta)** **plus** existing `microphone_access` (both required). **ConfirmModal** with **I understand** on every enable. Block enable until mic permission and separate **Install wake listener** are ready (modal with install CTA). Honest disclosure: audio is not uploaded or retained as recordings; transcript text is treated like typed Ask text.
   - **Toast phases (replace prior):** Listening… → Thinking… → **Reply ready** (see **Reply ready toast**) / failure / Didn't catch that (+ spam guard). Toast tap = Stop (abort listen or cancel in-flight Ask). Cancel + Developer toggle: **A** keep draft in Ask (default; closed-QAM toast **Cancelled — open bonsAI to edit**) vs **B** discard transcript.
   - **Other v1 behavior:** Ignore new wakes while an Ask is in flight; suspend wake during mic-button STT Ask; stop on Deck sleep and resume on wake; hard-stop on plugin unload (no orphan wake/whisper processes); auto-pause when Steam voice or Discord is detectable, else document shared-mic risk; same Ollama path as normal Asks. Mid-session engine loss → disable listening + toast once.
@@ -244,7 +251,7 @@ Within this section: ascending stars (★★★★ → ★★★★★ → ★�
 
 ### Long-term
 
-Within this section: ★★★★★ items first (ascending stars), then ★★★★★★ items (ascending stars). Brainstorm **U** (token / chunk streaming) is listed below as **heavy chat UX** — see [roadmap_feature_ideas plan](../.cursor/plans/roadmap_feature_ideas_f5560e15.plan.md).
+Within this section: ★★★★★ items first (ascending stars), then ★★★★★★ items (ascending stars).
 
 - ★★★★★ **QAMP Phase 2 profiles** (experimental Steam opt-in)
   - **GitHub (tracking placeholder):** [bonsAI Issues](https://github.com/cantcurecancer/bonsAI/issues) — dedicated issue TBD.
@@ -281,14 +288,6 @@ Within this section: ★★★★★ items first (ascending stars), then ★★�
     3. **Standalone or companion host:** What a non-Decky BonsAI surface would cost (separate surface, Decky-only APIs, TDP/sysfs paths, distribution) — long-range path if (1–2) are unavailable.
   - **Related:** **Global quick-launch macro** (Medium-term); when a native entry exists, refresh the macro sequence in [troubleshooting.md](troubleshooting.md).
   - **Not in scope:** Shipping a forked Steam client or undocumented UI injection as the default approach.
-- ★★★★★★ **Token stream replies** (live markdown; U)
-  - **Goal:** Stream **markdown-formatted** reply chunks during generation (not only a plain-text preview). **Baseline shipped (experimental):** Developer tab **Token streaming** toggle, `partial_response` on background poll, `useSmoothStreamReveal` RAF smoothing — see [Completed](archive/roadmap-completed.md) → Tabs and [CHANGELOG.md](../CHANGELOG.md) **0.4.0**.
-  - **Primary work:** Progressive markdown chunk layout during stream; parity with terminal D-pad chunk split and strategy/TDP branches.
-  - **Files:** `useBonsaiAskOrchestration.ts`, `MainTab.tsx`, `ollama_service.py`, `main.py`.
-  - **Depends on:** shipped experimental token preview path.
-  - **Not in scope:** exposing raw model “thinking” channel text.
-
-
 
 ### Reference — vision model fallback order
 
@@ -322,7 +321,7 @@ Dependency graph and implementation notes that are not feature checklist items.
 - **Reply ready toast** → completion UX for all Asks; required for hands-free wake loop when QAM is closed.
 - **Wake-word listening** → later **Local reply TTS** for hands-free read path; optional wake brevity inject / Speed-for-wake after v1.
 - **Voice STT session daemon** → reduces post-wake STT cost for wake-word listening.
-- **Character voice roleplay (shipped)** → **Playful thinking status lines (shipped)** — persona tone in `compose_thinking_blurb`; **Thinking phase copy polish (shipped)** keeps mid-Ask `format_thinking_phase` lines prompt-woven; **Always-sarcastic thinking blurb (shipped)** — witty/deadpan always on, visible during stream.
+- **Character voice roleplay (shipped)** → **Playful thinking status lines (shipped)** — persona tone in `compose_thinking_blurb`; **Thinking phase copy polish (shipped)** keeps mid-Ask `format_thinking_phase` lines prompt-woven; **Always-sarcastic thinking blurb (shipped)** — witty/deadpan always on, visible during stream → **Thinking blurb copy refresh** (phase-unique witty/deadpan pools; no tiny model).
 - **Unified Ask pipeline and input transparency (shipped)** → **Text model chains** (user-configurable text fallbacks); **Retry same prompt** (shipped — see **Completed** → Tabs).
 - **Input sanitizer (shipped)** + **Input handling transparency (shipped)** → future sanitizer extensions should keep user-visible auditability.
 - **Strategy Ask mode (**`strategy`**; Strategy Guide in prompts)** (shipped) → **Strategy Guide safety and spoilers** (shipped — on-device QA: [testing.md](testing.md) § Spoiler Policy and Consent), **Strategy checklist** (shipped — per-game persistence; on-device QA: [testing.md](testing.md) § Strategy depth / `STRATEGY-CHECKLIST`).
@@ -335,12 +334,13 @@ Dependency graph and implementation notes that are not feature checklist items.
 - **Built on Ollama link** → shipped in About.
 - **SteamOS Media screenshot share button** → possible fast path into **Global screenshots and vision** if APIs allow.
 - **Reset session cache (shipped)** → in-memory unified-input / reply state only; see **Completed** → Tabs.
-- **Preset carousel (Phase 1 shipped)** → extends presentation without changing category routing; `PRESET_PROMPTS` **baseline (shipped)** → incremental preset string expansion (streaming / LAN / Steam Input themes) as features land — content tuning, not a distinct ship line; **Pyro talent-manager easter egg (shipped)** adds a separate inject chip outside the trio’s `PRESET_CAROUSEL_ACTIVE_MS` window.
+- **Preset carousel (Phase 1 shipped)** → extends presentation without changing category routing; `PRESET_PROMPTS` **baseline (shipped)** → incremental **Preset chip expansion** (streaming / LAN / Steam Input themes) as features land — content tuning, not a distinct ship line; **Session RAG preset chips** (AppID-aware ~30% RAG mix; depends on offline KB v1) for dynamic session seeds; **Pyro talent-manager easter egg (shipped)** adds a separate inject chip outside the trio’s `PRESET_CAROUSEL_ACTIVE_MS` window.
+- **RAG Deck query / offline KB v1** ([knowledge-base.md](knowledge-base.md)) → **Session RAG preset chips** (compat + strategy curtail for running AppID); Ask-path splice remains separate.
 - **Global quick-launch macro** ↔ **Native QAM shortcut tile** (shorter macro once a direct QAM tile exists).
 - **Bundled VDF parsing** → **Steam Input layout parse** (and optional deeper parsing).
 - **Steam Input settings search + jump** → Phase 1 shipped; broader catalog deferred.
 - **Offline intent pack exchange** → offline-first search quality.
-- **Session context and user stash** → deck-first Ask quality; complements shipped game/vision/Proton/TDP injects; **alternative to RAG Deck query** for deck-only and minimal-infra users.
+- **Session context and user stash** → deck-first Ask quality; complements shipped game/vision/Proton/TDP injects and **RAG Deck query (on-Deck offline v1)**.
 - **User stash (Phase 1)** → **Input handling transparency** (show injected stash bytes and sources).
 - **Reply micro-actions** → shipped accordion + **Retry same prompt**; distinct from **Reply verbosity inject**.
 - **Proton experiment journal** → complements Proton log attach; optional inject into troubleshooting Asks alongside log excerpts; distinct from **Session context and user stash** (structured timeline vs freeform notes).

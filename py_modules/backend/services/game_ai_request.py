@@ -25,9 +25,16 @@ from backend.services.ollama_service import (
     user_wants_power_or_performance_topic,
 )
 from backend.services.proton_troubleshooting_logs import collect_proton_troubleshooting_logs
+from backend.services.knowledge_base_service import (
+    retrieve_knowledge_context,
+    should_retrieve_knowledge,
+    stack_context_blocks,
+)
+from backend.services.screenshot_media import lookup_screenshot_vdf_metadata
 from backend.services.transparency_service import (
     build_capability_denied_snapshot,
     build_error_route_snapshot,
+    build_knowledge_base_transparency,
     build_ollama_route_snapshot,
     build_proton_log_transparency,
     build_sanitizer_block_snapshot,
@@ -231,6 +238,71 @@ async def run_game_ai_request(
             notes="; ".join(proton_notes_parts),
         )
 
+        shortcut_name = ""
+        for attachment in atts:
+            if isinstance(attachment, dict):
+                hint = lookup_screenshot_vdf_metadata(str(attachment.get("path", "") or ""))
+                sn = str(hint.get("shortcut_name", "") or "").strip()
+                if sn:
+                    shortcut_name = sn
+                    break
+
+        kb_transparency = build_knowledge_base_transparency(
+            attached=False,
+            trust_tier="",
+            sources=[],
+            notes="",
+            timing_ms={},
+        )
+        kb_text = ""
+        should_kb, kb_domain = should_retrieve_knowledge(
+            use_local_knowledge_base=settings.get("use_local_knowledge_base") is True,
+            ask_mode=ask_mode,
+            question=question_for_model,
+            app_id=app_id,
+            app_name=app_name,
+        )
+        if should_kb:
+            if isinstance(active_rid, int) and hasattr(plugin, "_publish_thinking_phase_key"):
+                plugin._publish_thinking_phase_key(
+                    active_rid,
+                    "searching_kb",
+                    app_name=app_name,
+                    ask_mode=ask_mode,
+                    question=question_for_model,
+                    character_enabled=bool(settings.get("ai_character_enabled")),
+                    character_preset_id=rp_meta.resolved_preset_id,
+                )
+
+            def _retrieve_kb():
+                return retrieve_knowledge_context(
+                    settings,
+                    ask_mode=ask_mode,
+                    question=question_for_model,
+                    app_id=app_id,
+                    app_name=app_name,
+                    shortcut_name=shortcut_name,
+                    domain=kb_domain,
+                )
+
+            _loop_kb = asyncio.get_running_loop()
+            kb_result = await _loop_kb.run_in_executor(None, _retrieve_kb)
+            kb_transparency = build_knowledge_base_transparency(
+                attached=kb_result.attached,
+                trust_tier=kb_result.trust_tier,
+                sources=kb_result.sources,
+                notes=kb_result.notes,
+                timing_ms=kb_result.timing_ms,
+                unavailable_reason=kb_result.unavailable_reason,
+            )
+            if kb_result.attached:
+                kb_text = kb_result.text_block
+
+        early_context_combined = stack_context_blocks(
+            proton_text=proton_attachment_text,
+            knowledge_text=kb_text,
+        )
+
         read_tdp = is_current_tdp_read_intent(question_for_model)
         wants_grounding = user_wants_power_or_performance_topic(question_for_model)
         ollama_host_topic = user_asks_ollama_bonsai_host_or_latency(question_for_model)
@@ -271,7 +343,7 @@ async def run_game_ai_request(
             read_tdp=read_tdp,
             tdp_grounding_requested=tdp_grounding_requested,
             tdp_cap_w=pre_cap,
-            proton_log_attachment=proton_attachment_text or None,
+            proton_log_attachment=early_context_combined or None,
             proton_log_transparency=proton_log_transparency,
             strategy_spoiler_consent=strategy_spoiler_consent_effective,
             token_stream_request_id=token_stream_request_id,
@@ -377,7 +449,7 @@ async def run_game_ai_request(
                 sanitizer_action=str(lane.action),
                 sanitizer_reason_codes=list(lane.reason_codes),
                 text_after_sanitizer=question_for_model,
-                ollama_result=ollama_result,
+                ollama_result={**ollama_result, **kb_transparency},
                 base_response_text=base_response_text,
                 response_text=response_text,
                 applied=applied,

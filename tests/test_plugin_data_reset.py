@@ -70,7 +70,37 @@ class PluginDataResetTests(unittest.TestCase):
             self.assertFalse((Path(runtime_dir) / "captures").exists())
             self.assertFalse((Path(log_dir) / "plugin.log").exists())
 
-    def test_reset_wipes_voice_assets_and_feedback(self):
+    def test_reset_wipes_rag_corpus_dir(self):
+        logger = _Logger()
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            settings_dir = root / "settings"
+            settings_dir.mkdir()
+            settings_path = str(settings_dir / "settings.json")
+            runtime_dir = str(root / "runtime")
+            log_dir = str(root / "logs")
+            corpus_dir = root / "rag"
+            corpus_dir.mkdir()
+            (corpus_dir / "corpus.db").write_bytes(b"sqlite")
+            (corpus_dir / "manifest.json").write_text("{}", encoding="utf-8")
+            Path(runtime_dir).mkdir()
+            Path(log_dir).mkdir()
+            Path(settings_path).write_text("{}", encoding="utf-8")
+
+            reset_plugin_disk_and_defaults(
+                settings_path=settings_path,
+                settings_dir=str(settings_dir),
+                runtime_dir=runtime_dir,
+                log_dir=log_dir,
+                sanitize_func=_sanitize,
+                load_settings=lambda p, s, lg: load_settings(p, s, lg),
+                save_settings=save_settings,
+                logger=logger,
+                rag_corpus_path=str(corpus_dir),
+            )
+
+            self.assertFalse(corpus_dir.exists())
+
         logger = _Logger()
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

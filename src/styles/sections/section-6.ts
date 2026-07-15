@@ -385,7 +385,10 @@ export function buildSection6Section(): string {
         }
         .bonsai-scope .bonsai-chat-ai-bubble--stream-preview.bonsai-glass-panel {
           border-color: var(--bonsai-stream-preview-border, rgba(56, 189, 248, 0.55)) !important;
-          animation: bonsai-stream-preview-pulse 1.2s ease-in-out infinite;
+          animation: bonsai-stream-preview-pulse var(--bonsai-stream-pulse-ms, 2000ms) ease-in-out infinite;
+        }
+        .bonsai-scope .bonsai-chat-ai-bubble--fence-wait.bonsai-glass-panel {
+          border-color: var(--bonsai-stream-preview-border, rgba(56, 189, 248, 0.55)) !important;
         }
         @keyframes bonsai-stream-preview-pulse {
           0%, 100% {
@@ -393,6 +396,45 @@ export function buildSection6Section(): string {
           }
           50% {
             box-shadow: 0 0 8px 1px rgba(56, 189, 248, 0.32);
+          }
+        }
+        .bonsai-scope .bonsai-stream-fence-wait {
+          display: inline-flex !important;
+          align-items: center !important;
+          gap: 8px !important;
+          margin: 8px 0 !important;
+          padding: 8px 10px !important;
+          border-radius: 8px !important;
+          border: 1px dashed rgba(56, 189, 248, 0.55) !important;
+          color: #38bdf8 !important;
+          font-size: 12px !important;
+          line-height: 1.35 !important;
+        }
+        .bonsai-scope .bonsai-stream-fence-wait--code {
+          animation: bonsai-stream-fence-wait-pulse var(--bonsai-stream-pulse-ms, 2000ms) ease-in-out infinite;
+        }
+        .bonsai-scope .bonsai-stream-fence-wait--spoiler {
+          border-color: rgba(150, 187, 223, 0.45) !important;
+          color: rgba(190, 205, 220, 0.9) !important;
+          background: rgba(24, 40, 58, 0.45) !important;
+        }
+        @keyframes bonsai-stream-fence-wait-pulse {
+          50% {
+            opacity: 0.55;
+          }
+        }
+        .bonsai-scope .bonsai-stream-fence-wait-spin {
+          width: 12px !important;
+          height: 12px !important;
+          border: 2px solid rgba(56, 189, 248, 0.25) !important;
+          border-top-color: #38bdf8 !important;
+          border-radius: 50% !important;
+          flex: 0 0 auto !important;
+          animation: bonsai-stream-fence-wait-spin var(--bonsai-stream-spin-ms, 2000ms) linear infinite;
+        }
+        @keyframes bonsai-stream-fence-wait-spin {
+          to {
+            transform: rotate(360deg);
           }
         }
         .bonsai-scope [data-bonsai-stream-preview="true"] .bonsai-ai-response-chunk::after {

@@ -49,6 +49,9 @@ export function toBonsaiSettingsPayload(
     voice_stt_model: input.voiceSttModel,
     ui_scale_auto_enabled: input.uiScaleAutoEnabled,
     ui_scale_manual_profile: input.uiScaleManualProfile,
+    use_local_knowledge_base: input.useLocalKnowledgeBase,
+    rag_corpus_path: input.ragCorpusPath,
+    rag_corpus_version: input.ragCorpusVersion,
   };
   return patch ? { ...base, ...patch } : base;
 }

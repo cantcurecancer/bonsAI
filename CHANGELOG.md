@@ -4,6 +4,11 @@ All notable changes to this project are documented in this file.
 
 ## [Unreleased]
 
+### Added
+- **Token streaming — live markdown (experimental):** Developer **Token streaming** toggle now renders progressive markdown in one live bubble (R2 closed/tail split), spoiler-safe incomplete fences, code-fence wait chip (2s pulse/spinner), ~3× fence reveal burst, T3 settle→terminal handoff. Stop keeps partial reply.
+
+### Changed
+- **Strategy streaming:** Strategy asks with spoiler masking now stream with masked open spoilers (S1) instead of suppressing the preview entirely.
 ## [0.4.9] - 2026-07-08
 
 ### Fixed

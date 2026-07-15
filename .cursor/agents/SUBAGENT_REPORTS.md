@@ -173,6 +173,18 @@ Red-team / blue-team: N/A.
 
 **security-auditor** — Deferred; removed client `spoiler_consent` toggle only; phrase-based backend consent unchanged.
 
+### 2026-07-15 - Token stream replies live markdown v1 (plan accountability)
+
+**security-auditor** — Triaged. `prepareStreamMarkdown` S1 masks open `bonsai-spoiler` fences (no body in render model); unit test asserts no leak in JSON snapshot. No new RPC fields or secrets; partial text same sensitivity class as terminal reply.
+
+**master-debugger** — Deferred to on-Deck QA ([testing.md](../docs/testing.md) § Token streaming STREAM-08/09): T3 preview→terminal focus handoff and D-pad stream bubble.
+
+**refactor-specialist** — Triaged. Stream partition logic in `streamMarkdownPrepare.ts`; bubble wiring in `buildAnswerBubbleElement.tsx` only.
+
+**foss-advocate** — N/A (UI render path; no new provider).
+
+Tests: `streamMarkdownPrepare.test.ts`, `useSmoothStreamReveal.test.ts`; `test_background_abort_busy` partial on abort; `pnpm run build` OK.
+
 ### 2026-05-19 - Token stream replies Phase 1 (plan accountability)
 
 **refactor-specialist** — Triaged. Separate `threading.Lock` for `_partial_stream_snapshot` vs `asyncio.Lock` on `_background_state` keeps executor-thread NDJSON callbacks off the event-loop lock; `on_delta(text, done)` is minimal and does not leak HTTP bodies. No further refactor required before ship.

@@ -9,6 +9,7 @@ import asyncio
 import base64
 import json
 import os
+import shutil
 import sys
 import threading
 import time
@@ -136,6 +137,20 @@ from backend.services.voice_transcription_service import (
     new_voice_transcription_state,
     sanitize_voice_stt_model,
 )
+from backend.services.rag_corpus_download_service import (
+    fetch_remote_manifest,
+    install_corpus_from_manifest,
+    new_rag_corpus_download_state,
+    remove_corpus_at_path,
+    run_rag_corpus_download,
+)
+from backend.services.knowledge_base_schema import (
+    CORPUS_MANIFEST_FILENAME,
+    default_corpus_dir_internal,
+    load_manifest_from_path,
+    resolve_corpus_db_path,
+    sanitize_corpus_install_dir,
+)
 from refactor_helpers import (
     build_ollama_chat_url,
     is_valid_setup_pull_profile,
@@ -212,6 +227,10 @@ class Plugin:
         self._settings_save_lock = asyncio.Lock()
         self._intent_pack_store_lock = asyncio.Lock()
         self._strategy_checklist_store_lock = asyncio.Lock()
+        self._rag_corpus_download_lock = asyncio.Lock()
+        self._rag_corpus_download_task: Optional[asyncio.Task] = None
+        self._rag_corpus_cancel_event: Optional[asyncio.Event] = None
+        self._rag_corpus_download_state: dict = new_rag_corpus_download_state()
 
     def _abort_ollama_chat_check(self) -> bool:
         """True when frontend requested Stop mid-generation (closes HTTP quickly; executor thread exits)."""
@@ -779,6 +798,7 @@ class Plugin:
             plugin._voice_install_state = new_voice_install_state()
 
         current = await plugin.load_settings()
+        rag_path = str((current or {}).get("rag_corpus_path") or "").strip()
         local_on_deck = should_teardown_local_ollama_on_clear(
             current if isinstance(current, dict) else None
         )
@@ -808,6 +828,7 @@ class Plugin:
             load_settings=load_settings_from_disk,
             save_settings=save_settings_to_disk,
             logger=logger,
+            rag_corpus_path=rag_path,
         )
         reset_intent_packs_file(
             Plugin._intent_packs_path(),
@@ -1292,6 +1313,184 @@ class Plugin:
         if isinstance(ce, asyncio.Event):
             ce.set()
         return {"cancel_requested": True}
+
+    async def get_rag_corpus_status(self):
+        """Return knowledge-base download state and whether a corpus is installed."""
+        plugin = Plugin._coerce_instance(self)
+        settings = await plugin.load_settings()
+        db_path = resolve_corpus_db_path(settings)
+        return {
+            **dict(plugin._rag_corpus_download_state),
+            "installed": bool(db_path),
+            "corpus_path": str(settings.get("rag_corpus_path") or ""),
+            "corpus_version": str(settings.get("rag_corpus_version") or ""),
+            "use_local_knowledge_base": settings.get("use_local_knowledge_base") is True,
+        }
+
+    async def start_rag_corpus_download(self, data: Any = None):
+        """Download and install the knowledge base corpus (user-initiated; Model A consent)."""
+        plugin = Plugin._coerce_instance(self)
+        install_dir = default_corpus_dir_internal()
+        storage = "internal"
+        if isinstance(data, dict):
+            custom = str(data.get("install_path") or data.get("path") or "").strip()
+            if custom:
+                install_dir = custom
+            storage = str(data.get("storage") or storage).strip().lower()
+        install_dir = os.path.expanduser(install_dir)
+        try:
+            install_dir = sanitize_corpus_install_dir(install_dir)
+        except ValueError as exc:
+            return {"accepted": False, "reason": str(exc)}
+
+        async with plugin._rag_corpus_download_lock:
+            existing = plugin._rag_corpus_download_task
+            if existing is not None and not existing.done():
+                return {"accepted": False, "reason": "Knowledge base download already running."}
+
+            plugin._rag_corpus_cancel_event = new_asyncio_cancel_event()
+            plugin._rag_corpus_download_state = new_rag_corpus_download_state()
+            plugin._rag_corpus_download_state.update(
+                {
+                    "phase": "running",
+                    "done": False,
+                    "accepted": True,
+                    "install_path": install_dir,
+                    "stage": "queued",
+                }
+            )
+
+            async def runner() -> None:
+                assert plugin._rag_corpus_cancel_event is not None
+                await run_rag_corpus_download(
+                    install_dir=install_dir,
+                    state=plugin._rag_corpus_download_state,
+                    logger=logger,
+                    cancel_event=plugin._rag_corpus_cancel_event,
+                )
+                if plugin._rag_corpus_download_state.get("phase") == "done":
+                    version = str(plugin._rag_corpus_download_state.get("manifest_version") or "")
+                    root = str(plugin._rag_corpus_download_state.get("install_path") or install_dir)
+                    await plugin.save_settings(
+                        {
+                            "rag_corpus_path": root,
+                            "rag_corpus_version": version,
+                            "use_local_knowledge_base": True,
+                        }
+                    )
+
+            plugin._rag_corpus_download_task = asyncio.create_task(runner())
+
+        await plugin._maybe_app_log(
+            "rag_corpus.start",
+            "knowledge base download accepted",
+            fields={"install_path": install_dir, "storage": storage},
+        )
+        return {"accepted": True, "install_path": install_dir}
+
+    async def cancel_rag_corpus_download(self):
+        plugin = Plugin._coerce_instance(self)
+        ce = getattr(plugin, "_rag_corpus_cancel_event", None)
+        if isinstance(ce, asyncio.Event):
+            ce.set()
+        st = dict(plugin._rag_corpus_download_state)
+        st["cancel_requested"] = True
+        plugin._rag_corpus_download_state = st
+        return {"cancel_requested": True}
+
+    async def update_rag_corpus(self):
+        """Check remote manifest and re-download when version differs."""
+        plugin = Plugin._coerce_instance(self)
+        settings = await plugin.load_settings()
+        try:
+            manifest = await asyncio.to_thread(fetch_remote_manifest)
+        except Exception as exc:
+            return {"ok": False, "error": str(exc)}
+        remote_ver = str(manifest.get("version") or "")
+        local_ver = str(settings.get("rag_corpus_version") or "")
+        if remote_ver and remote_ver == local_ver and resolve_corpus_db_path(settings):
+            return {"ok": True, "updated": False, "version": local_ver}
+        out = await plugin.start_rag_corpus_download(
+            {"install_path": settings.get("rag_corpus_path") or default_corpus_dir_internal()}
+        )
+        return {"ok": bool(out.get("accepted")), "updated": True, "version": remote_ver, **out}
+
+    async def remove_rag_corpus(self):
+        """Remove installed corpus files and clear path settings."""
+        plugin = Plugin._coerce_instance(self)
+        settings = await plugin.load_settings()
+        path = str(settings.get("rag_corpus_path") or "").strip()
+        removed = False
+        if path:
+            removed = await asyncio.to_thread(remove_corpus_at_path, path, logger)
+        await plugin.save_settings(
+            {
+                "rag_corpus_path": "",
+                "rag_corpus_version": "",
+                "use_local_knowledge_base": False,
+            }
+        )
+        return {"ok": True, "removed": removed}
+
+    async def install_rag_corpus_local(self, data: Any = None):
+        """Dev/QA: install corpus from a local manifest directory (no network)."""
+        plugin = Plugin._coerce_instance(self)
+        settings = await plugin.load_settings()
+        if not settings.get("show_developer_tab"):
+            return {"ok": False, "error": "Developer tab must be enabled for local corpus install."}
+        src_dir = ""
+        if isinstance(data, dict):
+            src_dir = str(data.get("source_dir") or data.get("path") or "").strip()
+        if not src_dir:
+            return {"ok": False, "error": "source_dir required"}
+        manifest_path = os.path.join(src_dir, CORPUS_MANIFEST_FILENAME)
+        if not os.path.isfile(manifest_path):
+            return {"ok": False, "error": f"Missing {CORPUS_MANIFEST_FILENAME}"}
+        install_dir = default_corpus_dir_internal()
+        if isinstance(data, dict) and str(data.get("install_path") or "").strip():
+            install_dir = str(data.get("install_path")).strip()
+        try:
+            install_dir = sanitize_corpus_install_dir(os.path.expanduser(install_dir))
+        except ValueError as exc:
+            return {"ok": False, "error": str(exc)}
+
+        def _install() -> str:
+            manifest = load_manifest_from_path(manifest_path)
+            cancel = threading.Event()
+            logs: list[str] = []
+
+            def log(msg: str) -> None:
+                logs.append(msg)
+
+            # Copy compressed chunk from source_dir if present
+            chunks = manifest.get("chunks") or []
+            if chunks and isinstance(chunks[0], dict):
+                fname = str(chunks[0].get("filename") or "")
+                src_chunk = os.path.join(src_dir, fname)
+                if os.path.isfile(src_chunk):
+                    os.makedirs(install_dir, exist_ok=True)
+                    shutil.copy2(src_chunk, os.path.join(install_dir, fname))
+            return install_corpus_from_manifest(
+                manifest,
+                install_dir,
+                cancel_event=cancel,
+                log=log,
+            )
+
+        try:
+            root = await asyncio.to_thread(_install)
+            manifest = load_manifest_from_path(os.path.join(root, CORPUS_MANIFEST_FILENAME))
+            version = str(manifest.get("version") or "")
+            await plugin.save_settings(
+                {
+                    "rag_corpus_path": root,
+                    "rag_corpus_version": version,
+                    "use_local_knowledge_base": True,
+                }
+            )
+            return {"ok": True, "install_path": root, "version": version}
+        except Exception as exc:
+            return {"ok": False, "error": str(exc)}
 
     async def _require_local_ollama_on_deck(self) -> tuple[bool, dict[str, Any] | None]:
         plugin = Plugin._coerce_instance(self)
@@ -2283,11 +2482,19 @@ class Plugin:
             plugin._background_task = None
             rid = plugin._background_state.get("request_id")
             if rid is not None and plugin._background_state.get("status") == "pending":
+                partial_text = None
+                with plugin._partial_response_lock:
+                    snap = plugin._partial_stream_snapshot
+                    if snap.get("request_id") == rid:
+                        partial = snap.get("partial_response")
+                        if isinstance(partial, str) and partial.strip():
+                            partial_text = partial.strip()
+                cancel_response = partial_text if partial_text else "Request cancelled."
                 plugin._background_state = {
                     **plugin._background_state,
                     "status": "cancelled",
                     "success": False,
-                    "response": "Request cancelled.",
+                    "response": cancel_response,
                     "cancelled": True,
                     "completed_at": time.time(),
                     "partial_response": None,

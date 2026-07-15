@@ -18,6 +18,7 @@ AskThinkingPhase = Literal[
     "proton_logs",
     "tdp_read",
     "screenshot_prep",
+    "searching_kb",
     "building_context",
     "connecting_model",
     "model_retry",
@@ -262,6 +263,11 @@ def format_thinking_phase(
                 f"Pulling power context for {quote}…",
                 f"Checking TDP for {quote}{game_bit}…",
             ]
+        elif phase == "searching_kb":
+            pool = [
+                f"Searching knowledge base for {quote}{game_bit}…",
+                f"Looking up strategy notes for {quote}…",
+            ]
         elif phase == "screenshot_prep":
             n = max(0, int(attachment_count or 0))
             if n <= 1:
@@ -310,6 +316,8 @@ def format_thinking_phase(
         text = f"Reading Proton logs{game_clause}…" if game else "Reading Proton logs…"
     elif phase == "tdp_read":
         text = "Checking current power limits…"
+    elif phase == "searching_kb":
+        text = f"Searching knowledge base{game_clause}…" if game else "Searching knowledge base…"
     elif phase == "screenshot_prep":
         n = max(0, int(attachment_count or 0))
         if n <= 1:

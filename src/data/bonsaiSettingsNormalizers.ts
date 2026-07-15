@@ -427,5 +427,9 @@ export function normalizeSettings(data: unknown): BonsaiSettings {
     voice_stt_model: normalizeVoiceSttModel(raw.voice_stt_model),
     ui_scale_auto_enabled: normalizeUiScaleAutoEnabled(raw.ui_scale_auto_enabled),
     ui_scale_manual_profile: normalizeUiScaleProfileId(raw.ui_scale_manual_profile),
+    use_local_knowledge_base: raw.use_local_knowledge_base === true,
+    rag_corpus_path: typeof raw.rag_corpus_path === "string" ? raw.rag_corpus_path.trim().slice(0, 512) : "",
+    rag_corpus_version:
+      typeof raw.rag_corpus_version === "string" ? raw.rag_corpus_version.trim().slice(0, 64) : "",
   };
 }

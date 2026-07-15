@@ -1,6 +1,22 @@
 # FOSS advocate report
 
-**Uncommitted changes** — preset chip refresh, `ask_mode` `deep`→`expert` migration, docs (2026-06-26)
+**Uncommitted changes** — offline RAG v1 knowledge base (2026-07-12)
+
+Finding: ATTRIBUTIONS.md not installed on Deck from remote manifest (fixed in-tree)
+File: scripts/build_rag_db.py, rag_corpus_download_service.py
+Severity: ★★★ (was blocking)
+Reason: Build wrote ATTRIBUTIONS.md locally but download path only installed corpus.db. Manifest now embeds `attributions_markdown`; installer writes ATTRIBUTIONS.md on Deck.
+Status: **Mitigated** in this change set.
+
+Finding: CC BY-SA share-alike obligations for production corpus
+File: scripts/build_rag_db.py (maintainer batch)
+Severity: ★★★
+Reason: Seed build uses CC-BY-SA-3.0 markers; full ~5 GB corpus needs maintainer legal review, complete ATTRIBUTIONS per source, and HF/GitHub release NOTICE before public distribution.
+Fix: Complete maintainer crawl pipeline + FOSS review before publishing manifest URLs to production.
+
+---
+
+**Prior report** — preset chip refresh, `ask_mode` `deep`→`expert` migration, docs (2026-06-26)
 
 Finding: Ollama setup system prompt still cites removed Settings → Connection UI
 File: py_modules/backend/services/ollama_prompts.py:311

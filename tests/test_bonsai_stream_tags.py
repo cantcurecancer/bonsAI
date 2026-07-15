@@ -168,6 +168,13 @@ class BonsaiStreamTagsTests(unittest.TestCase):
         )
         self.assertIn("fps", out.lower())
 
+    def test_format_thinking_phase_searching_kb(self):
+        self.assertEqual(format_thinking_phase("searching_kb"), "Searching knowledge base…")
+        self.assertEqual(
+            format_thinking_phase("searching_kb", app_name="Elden Ring"),
+            "Searching knowledge base for Elden Ring…",
+        )
+
     def test_format_thinking_phase_woven_always_sarcastic(self):
         out = format_thinking_phase(
             "proton_logs",

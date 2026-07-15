@@ -1,6 +1,7 @@
 import React from "react";
 import { Focusable } from "@decky/ui";
 import { MainTabBonsaiAiMarkdownChunk } from "../components/MainTabBonsaiAiMarkdownChunk";
+import { StreamFenceWaitChip } from "../components/StreamFenceWaitChip";
 import { registerAnswerBubbleNav } from "./answerBubbleNavRegistry";
 import {
   registerAnswerBubbleEl,
@@ -14,6 +15,7 @@ import {
   isDownDeckButtonEvent,
   isUpDeckButtonEvent,
 } from "./focusNavigation";
+import { prepareStreamMarkdown } from "./streamMarkdownPrepare";
 import { splitResponseIntoChunks } from "./splitResponseIntoChunks";
 
 export type BuildAnswerBubbleElementArgs = {
@@ -32,6 +34,60 @@ function captureBubble(answerKey: string): HTMLElement | null {
   return bubble;
 }
 
+function renderStreamMarkdownStack(
+  body: string,
+  spoilerMaskingEnabled: boolean,
+  answerKey: string
+): React.ReactNode {
+  const prepared = prepareStreamMarkdown(body);
+  const nodes: React.ReactNode[] = [];
+
+  prepared.closedBlocks.forEach((block, i) => {
+    nodes.push(
+      <div
+        key={`${answerKey}-closed-${i}`}
+        className="bonsai-ai-response-chunk bonsai-ai-response-chunk--in-bubble bonsai-ai-response-chunk--stream-closed"
+        data-bonsai-chunk-index={String(i)}
+      >
+        <MainTabBonsaiAiMarkdownChunk
+          source={block}
+          spoilerMaskingEnabled={spoilerMaskingEnabled}
+        />
+      </div>
+    );
+  });
+
+  if (prepared.waitChip) {
+    nodes.push(
+      <div
+        key={`${answerKey}-wait`}
+        className="bonsai-ai-response-chunk bonsai-ai-response-chunk--in-bubble bonsai-ai-response-chunk--stream-wait"
+      >
+        <StreamFenceWaitChip label={prepared.waitChip.label} kind={prepared.waitChip.kind} />
+      </div>
+    );
+  }
+
+  if (prepared.liveTail) {
+    const tailIndex = prepared.closedBlocks.length + (prepared.waitChip ? 1 : 0);
+    nodes.push(
+      <div
+        key={`${answerKey}-tail`}
+        className="bonsai-ai-response-chunk bonsai-ai-response-chunk--in-bubble"
+        data-bonsai-chunk-index={String(tailIndex)}
+        data-bonsai-stream-preview="true"
+      >
+        <MainTabBonsaiAiMarkdownChunk
+          source={prepared.liveTail}
+          spoilerMaskingEnabled={spoilerMaskingEnabled}
+        />
+      </div>
+    );
+  }
+
+  return nodes;
+}
+
 /**
  * One Focusable answer bubble per turn (display chunks are non-focusable divs inside).
  * Parent turn-slot Focusable uses flow-children="vertical" for header → answer → reply.
@@ -42,8 +98,10 @@ export function buildAnswerBubbleElement(
   const { body, streaming, spoilerMaskingEnabled, maxWidthCss, answerKey } = args;
   if (!body.trim()) return null;
 
-  const displayChunks = splitResponseIntoChunks(body);
-  const chunkTotal = displayChunks.length;
+  const prepared = streaming ? prepareStreamMarkdown(body) : null;
+  const displayChunks = streaming ? [] : splitResponseIntoChunks(body);
+  const chunkTotal = streaming ? 1 : displayChunks.length;
+  const fenceWaitActive = prepared?.waitChip?.kind === "fence";
 
   const moveDown = () => {
     const bubble = captureBubble(answerKey);
@@ -80,7 +138,7 @@ export function buildAnswerBubbleElement(
       key={`answer-bubble-${answerKey}`}
       className={`bonsai-chat-ai-bubble bonsai-glass-panel${
         streaming ? " bonsai-chat-ai-bubble--stream-preview" : ""
-      }`}
+      }${fenceWaitActive ? " bonsai-chat-ai-bubble--fence-wait" : ""}`}
       {...navHandlers}
       style={{
         width: maxWidthCss,
@@ -88,6 +146,12 @@ export function buildAnswerBubbleElement(
         alignSelf: "flex-start",
         marginBottom: 8,
         boxSizing: "border-box",
+        ...(streaming
+          ? {
+              ["--bonsai-stream-pulse-ms" as string]: "2000ms",
+              ["--bonsai-stream-spin-ms" as string]: "2000ms",
+            }
+          : {}),
       }}
     >
       <div
@@ -96,26 +160,20 @@ export function buildAnswerBubbleElement(
         data-bonsai-answer-key={answerKey}
       >
         <div className="bonsai-ai-response-stack bonsai-ai-response-stack--in-bubble">
-          {displayChunks.map((chunk, i) => {
-            const isLiveTail = streaming && i === displayChunks.length - 1;
-            return (
-              <div
-                key={`${answerKey}-chunk-${i}`}
-                className="bonsai-ai-response-chunk bonsai-ai-response-chunk--in-bubble"
-                data-bonsai-chunk-index={String(i)}
-                {...(isLiveTail ? { "data-bonsai-stream-preview": "true" } : {})}
-              >
-                {streaming ? (
-                  <div className="bonsai-ai-response-plain-stream">{chunk}</div>
-                ) : (
+          {streaming
+            ? renderStreamMarkdownStack(body, spoilerMaskingEnabled, answerKey)
+            : displayChunks.map((chunk, i) => (
+                <div
+                  key={`${answerKey}-chunk-${i}`}
+                  className="bonsai-ai-response-chunk bonsai-ai-response-chunk--in-bubble"
+                  data-bonsai-chunk-index={String(i)}
+                >
                   <MainTabBonsaiAiMarkdownChunk
                     source={chunk}
                     spoilerMaskingEnabled={spoilerMaskingEnabled}
                   />
-                )}
-              </div>
-            );
-          })}
+                </div>
+              ))}
         </div>
       </div>
     </Focusable>

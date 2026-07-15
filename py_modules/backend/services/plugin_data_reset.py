@@ -54,6 +54,16 @@ def wipe_bonsai_cache_dir(logger: Any) -> bool:
     return False
 
 
+def wipe_rag_corpus_dir(corpus_path: str, logger: Any) -> bool:
+    """Remove installed knowledge base directory when under user home."""
+    from backend.services.rag_corpus_download_service import remove_corpus_at_path
+
+    path = str(corpus_path or "").strip()
+    if not path:
+        return False
+    return remove_corpus_at_path(path, logger)
+
+
 def reset_plugin_disk_and_defaults(
     *,
     settings_path: str,
@@ -64,6 +74,7 @@ def reset_plugin_disk_and_defaults(
     load_settings: LoadSettingsFn,
     save_settings: SaveSettingsFn,
     logger: Any,
+    rag_corpus_path: str = "",
 ) -> tuple[dict, int]:
     """Wipe settings/runtime/log dirs and write fresh defaults.
 
@@ -72,6 +83,9 @@ def reset_plugin_disk_and_defaults(
 
     Returns (defaults, settings_dir_removed_count).
     """
+    if rag_corpus_path:
+        wipe_rag_corpus_dir(rag_corpus_path, logger)
+
     settings_removed = wipe_settings_dir_contents(settings_dir, logger)
 
     if os.path.isdir(runtime_dir):

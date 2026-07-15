@@ -209,11 +209,28 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
     () => survivalPeek?.lastRequestId ?? null
   );
   const [isStreamingPreview, setIsStreamingPreview] = useState(false);
+  const [isStreamSettling, setIsStreamSettling] = useState(false);
+
+  const streamRevealActive = isStreamingPreview || isStreamSettling;
+  const streamPreviewActiveRef = useRef(false);
+  useEffect(() => {
+    streamPreviewActiveRef.current = streamRevealActive;
+  }, [streamRevealActive]);
+
+  useEffect(() => {
+    if (!isStreamSettling) return;
+    const id = requestAnimationFrame(() => {
+      setIsStreamSettling(false);
+      setIsStreamingPreview(false);
+      setThinkingSummary(null);
+    });
+    return () => cancelAnimationFrame(id);
+  }, [isStreamSettling]);
 
   const streamDisplayText = useSmoothStreamReveal({
     targetText: ollamaResponse,
-    enabled: isStreamingPreview,
-    done: !isAsking,
+    enabled: streamRevealActive,
+    done: !isAsking && !isStreamSettling,
   });
 
   const desktopAutoSavePrefsRef = useRef({
@@ -281,10 +298,10 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
           status.partial_response.trim()
             ? status.partial_response
             : "";
-        const suppressStreamPreview = a.askMode === "strategy" && a.strategySpoilerMaskingEnabled;
-        if (partial && !suppressStreamPreview) {
+        if (partial) {
           setOllamaResponse(partial);
           setIsStreamingPreview(true);
+          setIsStreamSettling(false);
         } else {
           const raw = status.response?.trim() ? status.response : "";
           setOllamaResponse(isPendingPlaceholderResponse(raw) ? "" : raw);
@@ -300,11 +317,22 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
 
       if (status.status === "cancelled") {
         setThinkingSummary(null);
+        const partialKeep =
+          typeof status.partial_response === "string" && status.partial_response.trim()
+            ? status.partial_response.trim()
+            : "";
+        const cancelledBody =
+          partialKeep && !isPendingPlaceholderResponse(partialKeep)
+            ? partialKeep
+            : status.response?.trim()
+              ? status.response.trim()
+              : "Stopped.";
+        setIsStreamSettling(false);
         setIsStreamingPreview(false);
         setOllamaContext({ app_id: appId, app_context: appContext });
         setIsAsking(false);
         setShortcutSetupVariant(null);
-        setOllamaResponse(status.response?.trim() ? status.response.trim() : "Stopped.");
+        setOllamaResponse(cancelledBody);
         setLastApplied(null);
         setElapsedSeconds(Number.isFinite(status.elapsed_seconds) ? status.elapsed_seconds : null);
         setLastExchange(null);
@@ -318,17 +346,25 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
       }
 
       if (status.status === "completed" || status.status === "failed") {
-        setThinkingSummary(null);
-        setIsStreamingPreview(false);
         const applied = status.applied ?? null;
+        const terminalText = buildResponseText(status.response ?? "No response text.", applied);
         setOllamaContext({ app_id: appId, app_context: appContext });
         setIsAsking(false);
         setShortcutSetupVariant(
           status.status === "completed" && status.success ? status.shortcut_setup ?? null : null,
         );
-        setOllamaResponse(buildResponseText(status.response ?? "No response text.", applied));
+        setOllamaResponse(terminalText);
         setLastApplied(applied);
         setElapsedSeconds(Number.isFinite(status.elapsed_seconds) ? status.elapsed_seconds : null);
+
+        if (streamPreviewActiveRef.current) {
+          // T3: snap smooth reveal to full text in stream bubble, then swap to terminal layout (may change later).
+          setIsStreamSettling(true);
+        } else {
+          setThinkingSummary(null);
+          setIsStreamingPreview(false);
+          setIsStreamSettling(false);
+        }
 
         setLastRequestId(typeof status.request_id === "number" ? status.request_id : null);
         if (status.status === "completed" && status.success) {
@@ -418,6 +454,7 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
     setIsAsking(false);
     setThinkingSummary(null);
     setIsStreamingPreview(false);
+    setIsStreamSettling(false);
     setOllamaResponse(`Error: ${msg}`);
     setLastApplied(null);
     setOllamaContext(null);
@@ -586,8 +623,9 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
       setModelPolicyDisclosure(null);
       setShortcutSetupVariant(null);
       setLastTransparency(null);
-      setIsStreamingPreview(false);
-      setOllamaResponse("");
+    setIsStreamingPreview(false);
+    setIsStreamSettling(false);
+    setOllamaResponse("");
       setLastApplied(null);
       setElapsedSeconds(null);
       setOllamaContext({
@@ -847,6 +885,9 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
       invalidateRequests();
       setIsAsking(false);
     }
+    setIsStreamingPreview(false);
+    setIsStreamSettling(false);
+    setThinkingSummary(null);
     const appId = Router.MainRunningApp?.appid?.toString() ?? "";
     setOllamaResponse("");
     setOllamaContext(null);
@@ -895,6 +936,7 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
     setAskThreadDisplayQuestion,
     isAsking,
     isStreamingPreview,
+    isStreamSettling,
     streamDisplayText,
     lastApplied,
     refreshInputTransparency,

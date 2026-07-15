@@ -489,6 +489,37 @@ class SettingsServiceTests(unittest.TestCase):
         self.assertEqual(manual["ui_scale_manual_profile"], "couch")
         self.assertEqual(sanitize_fn({"ui_scale_manual_profile": "invalid"})["ui_scale_manual_profile"], "handheld")
 
+    def test_knowledge_base_settings_defaults(self):
+        def sanitize_fn(data):
+            return sanitize_settings(
+                data=data,
+                default_latency_warning_seconds=60,
+                default_request_timeout_seconds=180,
+                min_latency_warning_seconds=5,
+                max_latency_warning_seconds=300,
+                min_request_timeout_seconds=10,
+                max_request_timeout_seconds=600,
+                valid_persistence_modes={"persist_all", "persist_search_only", "no_persist"},
+                default_persistence_mode="no_persist",
+                valid_ask_modes={"speed", "strategy", "expert"},
+                default_ask_mode="speed",
+            )
+
+        baseline = sanitize_fn({})
+        self.assertFalse(baseline["use_local_knowledge_base"])
+        self.assertEqual(baseline["rag_corpus_path"], "")
+        self.assertEqual(baseline["rag_corpus_version"], "")
+        enabled = sanitize_fn(
+            {
+                "use_local_knowledge_base": True,
+                "rag_corpus_path": "/home/deck/.bonsai/rag",
+                "rag_corpus_version": "2026.07.12",
+            }
+        )
+        self.assertTrue(enabled["use_local_knowledge_base"])
+        self.assertEqual(enabled["rag_corpus_path"], "/home/deck/.bonsai/rag")
+        self.assertEqual(enabled["rag_corpus_version"], "2026.07.12")
+
     def test_save_settings_uses_atomic_replace(self):
         """Writes go through a temp file so a crash mid-write cannot truncate settings.json."""
         logger = _Logger()

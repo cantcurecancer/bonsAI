@@ -100,6 +100,8 @@ export type OllamaWhereAiRunsSectionProps = {
   onOpenOllamaModelsHub: (opts?: { initialSection?: "policy" | "browse" | "advanced" }) => void;
   /** When user confirms Tier 2 one-model multimodal setup — bump policy tier before pull. */
   onApplyTier2MultimodalPolicy?: () => void | Promise<void>;
+  /** Focus graph: move from connection row into Knowledge base section. */
+  onMoveDownFromConnectionRow?: () => void;
 };
 
 type ConnectionStatus = DeveloperConnectionStatus;
@@ -117,6 +119,7 @@ export const OllamaWhereAiRunsSection: React.FC<OllamaWhereAiRunsSectionProps> =
   onCompleteDeckyModalClose,
   onOpenOllamaModelsHub,
   onApplyTier2MultimodalPolicy,
+  onMoveDownFromConnectionRow,
 }) => {
   const [deckIp, setDeckIp] = useState<string>("...");
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus | null>(
@@ -858,6 +861,9 @@ export const OllamaWhereAiRunsSection: React.FC<OllamaWhereAiRunsSectionProps> =
               <Button
                 onClick={onTestConnection}
                 disabled={connectionTesting || localSetupBusy || (!ollamaLocalOnDeck && !ollamaIp.trim())}
+                {...({
+                  onMoveDown: onMoveDownFromConnectionRow,
+                } as unknown as Record<string, unknown>)}
                 style={{
                   flex: ollamaLocalOnDeck ? "1 1 100%" : "0 0 auto",
                   alignSelf: "flex-end",

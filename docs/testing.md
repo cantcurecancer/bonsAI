@@ -264,7 +264,7 @@ Run when touching related code or before a release candidate.
 |-------|-------|------------|----------------------------|
 | **VAC full matrix** | Steam Web API key + permission | P2 | VAC-01 … VAC-06 |
 | **Proton log attach** | `PROTON_LOG=1`, game, log read permission | P2 | PROTON-LOG-01 … 03 |
-| **Token streaming** | Developer tab + flag | P2 | STREAM-01 … 05 |
+| **Token streaming** | Developer tab + flag | P2 | STREAM-01 … 10 |
 | **Strategy depth** | Strategy mode + screenshots optional | P1 | Strategy spoiler, checklist, cheat gating, regression subset |
 | **Character voice** | AI character on, one preset Ask | P2 | CHAR-VOICE |
 | **Pyro easter egg** | Pyro or Random → Pyro; Balanced + Nightmare spot | P3 | PYRO-EGG |
@@ -378,6 +378,10 @@ Maps [roadmap.md](roadmap.md) **Completed** summary and [archive/roadmap-complet
 | NAMED-HOSTS | Named Ollama hosts (quick switch) | — | Open | Ollama tab; up to 4 labeled LAN URLs |
 | MAINT-HARNESS | Vitest Deck harness, watch-deploy | N/A (unit-only) | N/A | CI; [preGate](test-evidence/preGate/2026-05-26-9e20a82/batch-summary.json); [preview 2026-05-26](test-evidence/preGate/2026-05-26-9e20a82/UNIT-A-vitest-gates/manifest.json) |
 | OLLAMA-UPDATE | Update Ollama & Models on Deck | — | Open | Tier 2 |
+| KB-DOWNLOAD | Knowledge base download + verify | KB-SMOKE-01 | Open | Unit: `test_knowledge_base_service.py`; on-Deck download |
+| KB-RETRIEVE | Strategy/troubleshooting retrieval + splice | KB-SMOKE-02 | Open | Unit + Strategy Ask transparency |
+| KB-UNAVAIL | KB unavailable graceful path | KB-SMOKE-03 | Open | Toggle on, corpus missing → once/session toast |
+| KB-FOCUS-01 | Ollama tab KB section D-pad chain | — | Open | Connection row → toggle → download → update → remove → Response verify |
 
 ### Tabs, icons, unified ask
 
@@ -418,6 +422,7 @@ Maps [roadmap.md](roadmap.md) **Completed** summary and [archive/roadmap-complet
 | BG-ASK-V1 | Background prompt completion V1 | SMOKE-H, BG-* | Partial | SMOKE-H Tier 1; full matrix Tier 4; [preview 2026-05-26](test-evidence/tier1Core/2026-05-26-9e20a82/BG-ASK-reopen-status/manifest.json) |
 | THINKING-PHASE | Thinking phase copy polish (mid-Ask woven status) | THINKING-01, THINKING-02 | Open | `tests/test_bonsai_stream_tags.py`; on-Deck proton/TDP/screenshot paths |
 | THINKING-SARCASM | Always-sarcastic thinking blurb + visible during stream | THINKING-01, THINKING-03 | Open | `tests/test_bonsai_stream_tags.py`, `src/utils/composeThinkingBlurb.test.ts`; on-Deck streaming QA |
+| TOKEN-STREAM-MD | Token stream live markdown (experimental) | STREAM-01…10 | Open | `src/utils/streamMarkdownPrepare.test.ts`, `src/hooks/useSmoothStreamReveal.test.ts`; on-Deck Tier 2 |
 | SYS-PROMPT-LAYERS | System prompt layer order | SMOKE-A transparency | Partial | `tests/test_ollama_service.py` only |
 
 ### Steam Input
@@ -547,11 +552,15 @@ Linked from [testing.md](testing.md#device-qa-runbook) **Tier 0**. Prefer smokes
 Requires **Settings → Data → Show Developer tab** → **Token streaming (experimental)**.
 
 - [x] **STREAM-01** Flag off: **Thinking…** until full reply; normal chunks after
-- [x] **STREAM-02** Flag on, Speed/Expert: single preview bubble; terminal split + banners
-- [x] **STREAM-03** Flag on, Strategy + spoiler masking, no Spoilers OK: no unmasked mid-stream flash
-- [x] **STREAM-04** Stop mid-stream: cancelled copy; no stale overwrite
+- [x] **STREAM-02** Flag on, Speed/Expert: single preview bubble with live markdown; terminal split + banners
+- [ ] **STREAM-03** Flag on, Strategy + spoiler masking: open `bonsai-spoiler` shows mask only — no body flash mid-stream
+- [ ] **STREAM-04** Stop mid-stream: partial reply kept (including wait chip if fence still open); no stale overwrite
 - [x] **STREAM-05** Transparency populates only after terminal
-- [ ] **STREAM-06** Smooth reveal: pending stream polls without text regression (preview RPC)
+- [ ] **STREAM-06** Smooth reveal: pending stream polls without text regression (unit: `useSmoothStreamReveal.test.ts`)
+- [ ] **STREAM-07** Open code fence: pulse + spinner (2s) until close; body appears after close
+- [ ] **STREAM-08** T3 handoff: full markdown snap in stream bubble, then terminal chunk layout (may change later)
+- [ ] **STREAM-09** D-pad: one Focusable stream bubble; after terminal, normal chunk chain
+- [ ] **STREAM-10** Incomplete inline `**bold` renders as bold until closer arrives
 - [ ] **THINKING-01** Pending: `thinking_summary` line visible (sarcastic/playful copy even without Character Voice); no placeholder AI bubble before partial; opener woven via `compose_thinking_blurb`
 - [ ] **THINKING-02** Mid-Ask prep phases (Proton logs, TDP read, screenshot prep, model retry): `thinking_summary` keeps question snippet + game — no generic downgrade to e.g. **Building context…** alone
 - [ ] **THINKING-03** During token streaming: italic thinking line stays visible above preview bubble; updates from `<bonsai-status>` or elapsed fallback (not hidden when `streaming=true`)
@@ -646,6 +655,7 @@ Deck-only (multi-output: handheld, docked monitor, TV). Unit: `src/data/uiScaleP
 - [ ] **UI-SCALE-03** Docked TV (~65″ @ couch distance): auto Couch; larger type/spacing; no spill
 - [ ] **UI-SCALE-04** Manual snap + **Apply UI scale** persists across QAM close; Pull Models modal matches scale
 - [ ] **UI-SCALE-05** D-pad: auto toggle ↕ manual slider ↕ Reset ↕ Apply ↕ screenshot quality row; slider left/right snaps Handheld · Desktop · Couch
+- [ ] **KB-FOCUS-01** D-pad (Ollama tab): connection row ↓ KB toggle ↓ download ↓ update ↓ remove ↓ Response verify toggle
 
 ---
 

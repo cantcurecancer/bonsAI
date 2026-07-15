@@ -115,6 +115,12 @@ export type BonsaiSettings = {
   ui_scale_auto_enabled: boolean;
   /** Manual snap profile when ``ui_scale_auto_enabled`` is false. */
   ui_scale_manual_profile: UiScaleProfileId;
+  /** When true, inject retrieved offline strategy/compat cards into Strategy/troubleshooting Asks. */
+  use_local_knowledge_base: boolean;
+  /** Absolute path to installed corpus directory (contains corpus.db). */
+  rag_corpus_path: string;
+  /** Installed corpus manifest version string. */
+  rag_corpus_version: string;
 };
 
 /** Fields mirrored from React state / hook before `save_settings` RPC. */
@@ -156,6 +162,9 @@ export type BonsaiSettingsSnapshotInput = {
   voiceSttModel: VoiceSttModelId;
   uiScaleAutoEnabled: boolean;
   uiScaleManualProfile: UiScaleProfileId;
+  useLocalKnowledgeBase: boolean;
+  ragCorpusPath: string;
+  ragCorpusVersion: string;
 };
 
 export type AppliedResultLike = {
@@ -221,6 +230,9 @@ export const DEFAULT_VOICE_STT_MODEL: VoiceSttModelId = "tiny.en";
 export const VOICE_STT_MODEL_OPTIONS: VoiceSttModelId[] = ["tiny.en", "base.en"];
 export const DEFAULT_UI_SCALE_AUTO_ENABLED = true;
 export const DEFAULT_UI_SCALE_MANUAL_PROFILE: UiScaleProfileId = "handheld";
+export const DEFAULT_USE_LOCAL_KNOWLEDGE_BASE = false;
+export const DEFAULT_RAG_CORPUS_PATH = "";
+export const DEFAULT_RAG_CORPUS_VERSION = "";
 
 export const DEFAULT_AI_CHARACTER_ENABLED = false;
 export const DEFAULT_AI_CHARACTER_RANDOM = true;

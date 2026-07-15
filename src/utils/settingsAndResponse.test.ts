@@ -242,6 +242,9 @@ describe("settingsAndResponse", () => {
       voiceSttModel: "tiny.en",
       uiScaleAutoEnabled: true,
       uiScaleManualProfile: "handheld",
+      useLocalKnowledgeBase: false,
+      ragCorpusPath: "",
+      ragCorpusVersion: "",
     });
     expect(p.latency_warning_seconds).toBe(20);
     expect(p.request_timeout_seconds).toBe(150);
@@ -299,6 +302,9 @@ describe("settingsAndResponse", () => {
       voiceSttModel: "tiny.en" as const,
       uiScaleAutoEnabled: true,
       uiScaleManualProfile: "handheld" as const,
+      useLocalKnowledgeBase: false,
+      ragCorpusPath: "",
+      ragCorpusVersion: "",
     };
     const p = toBonsaiSettingsPayload(base, {
       ai_character_random: false,
@@ -436,6 +442,9 @@ describe("settingsAndResponse", () => {
       voiceSttModel: normalized.voice_stt_model,
       uiScaleAutoEnabled: normalized.ui_scale_auto_enabled,
       uiScaleManualProfile: normalized.ui_scale_manual_profile,
+      useLocalKnowledgeBase: normalized.use_local_knowledge_base,
+      ragCorpusPath: normalized.rag_corpus_path,
+      ragCorpusVersion: normalized.rag_corpus_version,
     });
     expect(payload.ask_mode).toBe("strategy");
     expect(payload.ai_character_preset_id).toBe("tf2_scout");

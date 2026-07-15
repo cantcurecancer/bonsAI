@@ -1,25 +1,37 @@
-> **Archived** — see [archive README](README.md). Active doc: [roadmap.md](../roadmap.md) or [development.md](../development.md)
+> **Archived** — see [archive README](README.md). Active runtime doc: [knowledge-base.md](../../knowledge-base.md).
 
 # RAG knowledge sources (research)
 
-This note supports the roadmap item **RAG knowledge base (PC-hosted ingest + Deck query)**. It is **planning only** until the ingest service and Deck integration are implemented.
+> **Superseded for runtime architecture** by [knowledge-base.md](../../knowledge-base.md) (on-Deck offline v1, shipped 2026-07-12). This note retains source research and licensing context for the maintainer corpus pipeline.
 
-## Design constraints
+v1 uses **on-Deck SQLite + FTS5** (not PC-hosted Chroma). Ingest runs on the **maintainer PC** via `scripts/build_rag_db.py`.
 
-- **Ingest runs on the user’s PC** (alongside Ollama), not inside the Decky plugin bundle.
-- **Embeddings:** Ollama **`nomic-embed-text`** via HTTP `/api/embed`; same model at index and query time.
-- **Vector store:** ChromaDB persistence on disk (path documented in PC service README when shipped).
-- **Permission:** Deck outbound calls require a future **`network_web_access`** capability plus explicit confirm for “Update knowledge on PC.”
+## Design constraints (v1 shipped)
+
+- **Corpus runs on the user's Deck** after one-time download (Hugging Face primary, GitHub Releases mirror).
+- **Embeddings:** `nomic-embed-text` baked into DB; **unused at runtime until Phase 2** hybrid retrieval.
+- **Vector store:** SQLite FTS5 over distilled strategy cards; no Chroma in v1.
+- **Permission:** Model A — download button + ConfirmModal; no new capability (local read only). No user Ask text uploaded.
+
+## Permissible compat sources (v1)
+
+Redistribute **only** from clearly permissible surfaces:
+
+- **GamingOnLinux** — public articles; attribute and link.
+- **Valve / Steam KB** — official FAQ and support pages.
+- **Maintainer-authored compat patterns** — distilled notes, not bulk ProtonDB/Reddit redistribution.
+
+**Not in v1 corpus:** ProtonDB bulk scrape, Reddit bulk redistribution, undocumented APIs.
 
 ## Tier 1 candidates (high value for Steam Deck / Proton)
 
-- **ProtonDB** — Prefer bulk/export or documented API; avoid aggressive HTML scrape. Respect site terms and rate limits. **Risk:** medium (layout/API drift).
-- **Reddit** (e.g. r/SteamDeck, r/linux_gaming) — **Reddit API** with user-owned app credentials on the PC only. **Risk:** medium (auth, quotas); follow Reddit API Terms.
-- **Steam / Valve public KB** — Official FAQ and support pages only. **Risk:** low–medium; stay on clearly public surfaces.
+- **ProtonDB** — Reference only for maintainer research; **do not bulk-redistribute** in the downloadable corpus. **Risk:** medium (layout/API drift).
+- **Reddit** — User-owned API on maintainer PC for research only; **not** bulk-redistributed. **Risk:** medium (auth, quotas).
+- **Steam / Valve public KB** — Official FAQ and support pages; **permitted** when distilled with attribution. **Risk:** low–medium.
 
 ## Tier 2 candidates
 
-- **GamingOnLinux** — RSS or public article URLs; attribute and link.
+- **GamingOnLinux** — RSS or public article URLs; attribute and link (**permitted** for compat patterns).
 - **Lutris / WineHQ wiki** — Public wiki export or selective fetch; rate limit; attribution.
 - **Are We Anti-Cheat Yet?** — Public site or API if available; game-level compatibility signal.
 - **GitHub** (issue titles for Proton-adjacent repos) — GitHub REST API; mind quotas; store minimal text.
@@ -31,5 +43,5 @@ This note supports the roadmap item **RAG knowledge base (PC-hosted ingest + Dec
 
 ## Maintenance
 
-- Add or re-rank sources as APIs change; use the same star effort/risk language as [roadmap.md](roadmap.md) when promoting items into formal Candidate Features.
-- When implementation lands, link the PC service README and `scripts/build_rag_db.py` (or successor) from [development.md](development.md).
+- Add or re-rank sources as APIs change; use the same star effort/risk language as [roadmap.md](../../roadmap.md) when promoting items into formal Candidate Features.
+- Runtime architecture and manifest layout: [knowledge-base.md](../../knowledge-base.md). Maintainer build: `scripts/build_rag_db.py`.

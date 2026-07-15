@@ -322,6 +322,25 @@ def resolve_screenshot_attachment_preset(data: Any, default_preset: str) -> str:
     return "low"
 
 
+def sanitize_use_local_knowledge_base(value: Any) -> bool:
+    """Only explicit true enables knowledge-base retrieval."""
+    return value is True
+
+
+def sanitize_rag_corpus_path(value: Any) -> str:
+    raw = str(value or "").strip()
+    if not raw:
+        return ""
+    # Reject obvious traversal; install flow sets absolute paths under home/SD.
+    if ".." in raw.replace("\\", "/"):
+        return ""
+    return raw[:512]
+
+
+def sanitize_rag_corpus_version(value: Any) -> str:
+    return str(value or "").strip()[:64]
+
+
 def sanitize_settings(
     data: Any,
     default_latency_warning_seconds: int,
@@ -438,6 +457,9 @@ def sanitize_settings(
         "voice_stt_model": sanitize_voice_stt_model(raw.get("voice_stt_model")),
         "ui_scale_auto_enabled": sanitize_ui_scale_auto_enabled(raw.get("ui_scale_auto_enabled")),
         "ui_scale_manual_profile": sanitize_ui_scale_manual_profile(raw.get("ui_scale_manual_profile")),
+        "use_local_knowledge_base": sanitize_use_local_knowledge_base(raw.get("use_local_knowledge_base")),
+        "rag_corpus_path": sanitize_rag_corpus_path(raw.get("rag_corpus_path")),
+        "rag_corpus_version": sanitize_rag_corpus_version(raw.get("rag_corpus_version")),
     }
 
 

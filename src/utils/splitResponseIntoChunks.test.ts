@@ -1,6 +1,6 @@
 /**
- * Chunk splitter contract for terminal replies. Token streaming preview bypasses this helper
- * and renders a single growing chunk until the Ask completes (see MainTab + useBonsaiAskOrchestration).
+ * Chunk splitter contract for terminal replies. Mid-stream live markdown uses
+ * prepareStreamMarkdown (R2) until T3 handoff; see buildAnswerBubbleElement.tsx.
  */
 import { describe, expect, it } from "vitest";
 import { splitResponseIntoChunks } from "./splitResponseIntoChunks";

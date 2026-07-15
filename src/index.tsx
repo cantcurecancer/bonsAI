@@ -412,6 +412,10 @@ const Content: React.FC = () => {
     setUiScaleAutoEnabled,
     uiScaleManualProfile,
     setUiScaleManualProfile,
+    useLocalKnowledgeBase,
+    setUseLocalKnowledgeBase,
+    ragCorpusPath,
+    ragCorpusVersion,
     settingsLoaded,
     hydrateFromSettings,
     pauseDebouncedSettingsSave,
@@ -536,6 +540,7 @@ const Content: React.FC = () => {
     askThreadDisplayQuestion,
     isAsking,
     isStreamingPreview,
+    isStreamSettling,
     streamDisplayText,
     lastApplied,
     clearUnifiedInput,
@@ -708,6 +713,9 @@ const Content: React.FC = () => {
       voiceSttModel,
       uiScaleAutoEnabled,
       uiScaleManualProfile,
+      useLocalKnowledgeBase,
+      ragCorpusPath,
+      ragCorpusVersion,
     }),
     [
       latencyWarningSeconds,
@@ -747,6 +755,9 @@ const Content: React.FC = () => {
       voiceSttModel,
       uiScaleAutoEnabled,
       uiScaleManualProfile,
+      useLocalKnowledgeBase,
+      ragCorpusPath,
+      ragCorpusVersion,
     ]
   );
 
@@ -1402,7 +1413,7 @@ const Content: React.FC = () => {
       onOpenControllerSettings={onOpenControllerSettingsForShortcut}
       strategySpoilerMaskingEnabled={strategySpoilerMaskingEnabled}
       presetCarouselInject={presetCarouselInject}
-      isStreamingPreview={isStreamingPreview}
+      isStreamingPreview={isStreamingPreview || isStreamSettling}
       streamDisplayText={streamDisplayText}
       thinkingSummary={thinkingSummary}
       desktopAskVerboseLogging={desktopAskVerboseLogging}
@@ -1560,6 +1571,9 @@ const Content: React.FC = () => {
         setOllamaKeepAlive={setOllamaKeepAlive}
         modelPolicyTier={modelPolicyTier}
         onApplyTier2MultimodalPolicy={onApplyTier2MultimodalPolicy}
+        useLocalKnowledgeBase={useLocalKnowledgeBase}
+        setUseLocalKnowledgeBase={setUseLocalKnowledgeBase}
+        ragCorpusVersion={ragCorpusVersion}
       />
     ),
     [
@@ -1577,6 +1591,8 @@ const Content: React.FC = () => {
       ollamaKeepAlive,
       modelPolicyTier,
       onApplyTier2MultimodalPolicy,
+      useLocalKnowledgeBase,
+      ragCorpusVersion,
       captureSessionBeforeModal,
       finalizeShowModalAndRestoreActiveTab,
       openOllamaModelsHub,
