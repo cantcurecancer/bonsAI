@@ -17,7 +17,15 @@ const DEADPAN_PRESET_IDS = new Set([
   "portal_glados",
 ]);
 
+const EMOJI_ONLY_LINES = ["🙄", "😮‍💨", "🫠", "🌳"];
+
 type ThinkingTone = "witty" | "deadpan";
+
+type WeaveBits = {
+  quote: string;
+  gameBit: string;
+  gameTitle: string;
+};
 
 export type ComposeThinkingBlurbOptions = {
   appName?: string;
@@ -29,15 +37,14 @@ export type ComposeThinkingBlurbOptions = {
   characterPresetId?: string | null;
 };
 
-function stableBucket(requestId: number, elapsedSeconds = 0, period = 4): number {
+function stableBucket(requestId: number): number {
   const rid = Math.max(0, requestId | 0);
-  const bucket = Math.floor(Math.max(0, elapsedSeconds) / Math.max(1, period));
-  return (rid * 2654435761 + bucket * 97) & 0x7fffffff;
+  return (rid * 2654435761) & 0x7fffffff;
 }
 
-function pickTemplate(templates: string[], requestId: number, elapsedSeconds = 0): string {
+function pickTemplate(templates: string[], requestId: number): string {
   if (templates.length === 0) return "Working on your question…";
-  const idx = stableBucket(requestId, elapsedSeconds) % templates.length;
+  const idx = stableBucket(requestId) % templates.length;
   return templates[idx]!;
 }
 
@@ -76,23 +83,178 @@ function resolveThinkingTone(
   return "witty";
 }
 
-function applySarcasticPoolVariants(
-  pool: string[],
-  quote: string,
-  gameBit: string,
-  tone: ThinkingTone,
-): string[] {
-  if (tone === "deadpan") {
-    return [...pool.map((t) => `Fine. ${t}`), `Sure. ${quote}. Working${gameBit}.`];
-  }
-  const wittyPool = [
-    `Oh joy — ${quote}${gameBit}. One sec.`,
-    `Another crisis: ${quote}. Give me a moment${gameBit}.`,
+function weaveBits(question: string, appName: string): WeaveBits {
+  const snippet = extractQuestionSnippet(question);
+  const gameTitle = sanitizeAppName(appName);
+  return {
+    quote: snippet ? `"${snippet}"` : "your question",
+    gameBit: gameTitle ? ` in ${gameTitle}` : "",
+    gameTitle,
+  };
+}
+
+function wittyGenericPool({ quote, gameBit, gameTitle }: WeaveBits): string[] {
+  const pool = [
+    `🔥🔥Another crisis 🔥🔥: ${quote}. Give me a moment${gameBit}.`,
+    `On it — ${quote}${gameBit}…`,
+    `"Fascinating" request: ${quote}. Processing anyway.`,
+    `Great. ${quote}. Just what I needed${gameBit}.`,
+    `Copy that. Wrestling with ${quote}${gameBit}…`,
+    `Noted. ${quote}. I'll pretend this is exciting.`,
+    `Standing by while I dig into ${quote}${gameBit}…`,
+    `Ticket received: ${quote}. Filing it under "urgent to you."`,
+    `Alright, alright — ${quote}${gameBit}…`,
+    ...EMOJI_ONLY_LINES,
   ];
-  for (const t of pool) {
-    wittyPool.push(`Yeah, ${t}`);
+  if (gameTitle) {
+    pool.push(
+      `Still struggling with ${gameTitle}?`,
+      `Back to wrestling with ${gameTitle}…`,
+      `${gameTitle} again? Alright…`,
+      `Having a moment with ${gameTitle}, I see.`,
+    );
   }
-  return wittyPool;
+  return pool;
+}
+
+function deadpanGenericPool({ quote, gameBit, gameTitle }: WeaveBits): string[] {
+  const pool = [
+    `${quote}. Acknowledged${gameBit}.`,
+    `Processing ${quote}${gameBit}. No enthusiasm detected.`,
+    `Working on ${quote}. Try not to interrupt.`,
+    `${quote}${gameBit}. Inevitably.`,
+    `Examining ${quote}. Results pending.`,
+    `Request logged: ${quote}. Continuing.`,
+    ...EMOJI_ONLY_LINES,
+  ];
+  if (gameTitle) {
+    pool.push(
+      `${gameTitle}. Again.`,
+      `Still ${gameTitle}. Noted.`,
+      `Resuming ${gameTitle}. Proceeding.`,
+    );
+  }
+  return pool;
+}
+
+function wittyScreenshotPool(bits: WeaveBits): string[] {
+  const { quote, gameBit } = bits;
+  return [
+    `Staring at your screenshot for ${quote}…`,
+    `Squinting at pixels for ${quote}${gameBit}…`,
+    `Let me decode this screenshot about ${quote}…`,
+    `Your screenshot and ${quote} — delightful${gameBit}.`,
+    `Comparing the capture to ${quote}${gameBit}…`,
+    "🫠",
+  ];
+}
+
+function deadpanScreenshotPool(bits: WeaveBits): string[] {
+  const { quote, gameBit } = bits;
+  return [
+    `Screenshot received for ${quote}. Analyzing.`,
+    `Visual input noted. Relating to ${quote}.`,
+    `Image attached. Context: ${quote}${gameBit}.`,
+    `Processing visual data for ${quote}.`,
+    `Screenshot queued for ${quote}${gameBit}.`,
+    "🌳",
+  ];
+}
+
+function wittyTroubleshootingPool(bits: WeaveBits): string[] {
+  const { quote, gameBit } = bits;
+  return [
+    `Log-diving for ${quote}${gameBit}. Try not to enjoy this.`,
+    `Proton archaeology on ${quote} — my favorite hobby${gameBit}.`,
+    `Cross-referencing crash vibes with ${quote}${gameBit}…`,
+    `Someone said ${quote}? Time to read logs${gameBit}.`,
+    `Tracing ${quote} through the wreckage${gameBit}…`,
+    "😮‍💨",
+  ];
+}
+
+function deadpanTroubleshootingPool(bits: WeaveBits): string[] {
+  const { quote, gameBit } = bits;
+  return [
+    `Reading logs for ${quote}${gameBit}. Standard procedure.`,
+    `Proton log scan: ${quote}. Proceeding.`,
+    `Crash context for ${quote}${gameBit}. No commentary.`,
+    `Host/latency check on ${quote}. As requested.`,
+    `Diagnostic pass for ${quote}${gameBit}.`,
+    "🙄",
+  ];
+}
+
+function wittyPowerPool(bits: WeaveBits): string[] {
+  const { quote, gameBit } = bits;
+  return [
+    `Watts, frames, regrets — ${quote}${gameBit}…`,
+    `TDP theater for ${quote}. Curtain up${gameBit}.`,
+    `Benchmarking my patience with ${quote}${gameBit}…`,
+    `Power math on ${quote}. Hold the applause${gameBit}.`,
+    `Thermal feelings about ${quote}${gameBit}…`,
+    "🙄",
+  ];
+}
+
+function deadpanPowerPool(bits: WeaveBits): string[] {
+  const { quote, gameBit } = bits;
+  return [
+    `TDP read for ${quote}${gameBit}. Expect numbers.`,
+    `Power context: ${quote}. Collecting.`,
+    `Performance data for ${quote}${gameBit}.`,
+    `Wattage inquiry noted: ${quote}.`,
+    `Sysfs peek for ${quote}${gameBit}.`,
+    "🌳",
+  ];
+}
+
+function wittyResolutionPool(bits: WeaveBits): string[] {
+  const { quote, gameBit } = bits;
+  return [
+    `Resolution roulette for ${quote}${gameBit}…`,
+    `FPS fantasies vs ${quote} — let's see${gameBit}.`,
+    `Graphics settings guilt trip: ${quote}${gameBit}.`,
+    `Balancing pixels and battery on ${quote}…`,
+    `FSR prayer circle for ${quote}${gameBit}.`,
+    "🫠",
+  ];
+}
+
+function deadpanResolutionPool(bits: WeaveBits): string[] {
+  const { quote, gameBit } = bits;
+  return [
+    `Graphics settings review: ${quote}${gameBit}.`,
+    `FPS/resolution analysis for ${quote}.`,
+    `Display tradeoffs on ${quote}${gameBit}.`,
+    `Settings pass: ${quote}.`,
+    `Frame pacing review: ${quote}${gameBit}.`,
+    "😮‍💨",
+  ];
+}
+
+function wittyStrategyPool(bits: WeaveBits): string[] {
+  const { quote, gameBit } = bits;
+  return [
+    `Strategy mode: ${quote}${gameBit} — spoilers locked.`,
+    `Scouting ${quote} without ruining the surprise${gameBit}…`,
+    `Puzzle patrol on ${quote}. Minimal hints${gameBit}.`,
+    `Map in my head for ${quote}${gameBit}…`,
+    `Boss? What boss? Just ${quote}${gameBit}.`,
+    "🌳",
+  ];
+}
+
+function deadpanStrategyPool(bits: WeaveBits): string[] {
+  const { quote, gameBit } = bits;
+  return [
+    `Strategy notes for ${quote}${gameBit}. Spoiler-safe.`,
+    `Guide lookup: ${quote}. No plot leaks.`,
+    `Tactical review of ${quote}${gameBit}.`,
+    `Puzzle context: ${quote}. Restricted detail.`,
+    `Spoiler-free pass on ${quote}${gameBit}.`,
+    "🙄",
+  ];
 }
 
 function questionMatchesTroubleshootingLogContext(question: string): boolean {
@@ -159,53 +321,84 @@ function userAsksResolutionRelevantPerformance(question: string): boolean {
   return false;
 }
 
+type ComposeIntent =
+  | "troubleshooting"
+  | "power"
+  | "resolution"
+  | "strategy"
+  | "screenshot"
+  | "generic";
+
+function resolveComposeIntent(
+  question: string,
+  askMode: AskModeId,
+  hasShot: boolean,
+): ComposeIntent {
+  if (questionMatchesTroubleshootingLogContext(question) || userAsksOllamaBonsaiHostOrLatency(question)) {
+    return "troubleshooting";
+  }
+  if (isCurrentTdpReadIntent(question) || userWantsPowerOrPerformanceTopic(question)) {
+    return "power";
+  }
+  if (userAsksResolutionRelevantPerformance(question)) {
+    return "resolution";
+  }
+  if (askMode === "strategy") {
+    return "strategy";
+  }
+  if (hasShot) {
+    return "screenshot";
+  }
+  return "generic";
+}
+
+function intentPool(intent: ComposeIntent, tone: ThinkingTone, bits: WeaveBits): string[] {
+  if (tone === "deadpan") {
+    switch (intent) {
+      case "troubleshooting":
+        return deadpanTroubleshootingPool(bits);
+      case "power":
+        return deadpanPowerPool(bits);
+      case "resolution":
+        return deadpanResolutionPool(bits);
+      case "strategy":
+        return deadpanStrategyPool(bits);
+      case "screenshot":
+        return deadpanScreenshotPool(bits);
+      default:
+        return deadpanGenericPool(bits);
+    }
+  }
+  switch (intent) {
+    case "troubleshooting":
+      return wittyTroubleshootingPool(bits);
+    case "power":
+      return wittyPowerPool(bits);
+    case "resolution":
+      return wittyResolutionPool(bits);
+    case "strategy":
+      return wittyStrategyPool(bits);
+    case "screenshot":
+      return wittyScreenshotPool(bits);
+    default:
+      return wittyGenericPool(bits);
+  }
+}
+
 export function composeThinkingBlurb(question: string, opts: ComposeThinkingBlurbOptions = {}): string {
   const {
     appName = "",
     attachmentCount = 0,
     askMode = "speed",
     requestId = 0,
-    elapsedSeconds = 0,
     characterEnabled = false,
     characterPresetId = null,
   } = opts;
 
-  const snippet = extractQuestionSnippet(question);
-  const game = sanitizeAppName(appName);
-  const quote = snippet ? `"${snippet}"` : "your question";
-  const gameBit = game ? ` in ${game}` : "";
+  const bits = weaveBits(question, appName);
   const hasShot = Math.max(0, attachmentCount | 0) > 0;
   const tone = resolveThinkingTone(characterEnabled, characterPresetId);
-
-  let pool: string[];
-
-  if (questionMatchesTroubleshootingLogContext(question) || userAsksOllamaBonsaiHostOrLatency(question)) {
-    pool = [`Digging into ${quote}${gameBit}…`, `Checking logs and context for ${quote}…`];
-  } else if (isCurrentTdpReadIntent(question) || userWantsPowerOrPerformanceTopic(question)) {
-    pool = [`Pulling power context for ${quote}…`, `Checking TDP and performance angles on ${quote}…`];
-  } else if (userAsksResolutionRelevantPerformance(question)) {
-    pool = [
-      `Thinking about resolution and FPS for ${quote}…`,
-      `Sizing up graphics settings around ${quote}…`,
-    ];
-  } else if (askMode === "strategy") {
-    pool = [
-      `Mapping a strategy take on ${quote}${gameBit}…`,
-      `Scouting the puzzle without spoiling ${quote}…`,
-    ];
-  } else if (hasShot) {
-    pool = [
-      `Reviewing your screenshot alongside ${quote}…`,
-      `Pairing the capture with ${quote}${gameBit}…`,
-    ];
-  } else {
-    pool = [
-      `Looking at ${quote}${gameBit}…`,
-      `Getting context for ${quote}…`,
-      `On it — ${quote}${gameBit}…`,
-    ];
-  }
-
-  pool = applySarcasticPoolVariants(pool, quote, gameBit, tone);
-  return pickTemplate(pool, requestId, elapsedSeconds).slice(0, PHASE_MAX_LEN);
+  const intent = resolveComposeIntent(question, askMode, hasShot);
+  const pool = intentPool(intent, tone, bits);
+  return pickTemplate(pool, requestId).slice(0, PHASE_MAX_LEN);
 }

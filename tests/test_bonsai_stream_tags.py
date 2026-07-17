@@ -10,6 +10,16 @@ from backend.services.bonsai_stream_tags import (
     format_thinking_phase,
 )
 
+_BANNED_PREFIXES = ("yeah,", "fine.", "sure.", "oh joy", "right.")
+_EMOJI_ONLY_LINES = ("🙄", "😮‍💨", "🫠", "🌳")
+
+
+def _assert_no_banned_prefixes(text: str) -> None:
+    lowered = text.lower()
+    for prefix in _BANNED_PREFIXES:
+        assert not lowered.startswith(prefix), f"unexpected prefix in {text!r}"
+    assert "🙄🔥" not in text
+
 
 class BonsaiStreamTagsTests(unittest.TestCase):
     def test_extract_and_strip(self):
@@ -47,6 +57,11 @@ class BonsaiStreamTagsTests(unittest.TestCase):
             "brain",
             deterministic_thinking_phase_fallback(streaming=False, has_partial=False, elapsed_seconds=0).lower(),
         )
+
+    def test_deterministic_phase_fallback_stable_within_tier(self):
+        early = deterministic_thinking_phase_fallback(streaming=False, has_partial=False, elapsed_seconds=2)
+        later = deterministic_thinking_phase_fallback(streaming=False, has_partial=False, elapsed_seconds=6)
+        self.assertEqual(early, later)
 
     def test_format_thinking_phase_starting(self):
         self.assertEqual(format_thinking_phase("starting"), "Starting…")
@@ -93,27 +108,84 @@ class BonsaiStreamTagsTests(unittest.TestCase):
         out = compose_thinking_blurb("why is my fps low in elden ring", app_name="Elden Ring", request_id=7)
         self.assertIn("fps", out.lower())
         self.assertLessEqual(len(out), 240)
+        _assert_no_banned_prefixes(out)
 
-    def test_compose_thinking_blurb_always_sarcastic_without_character(self):
-        out = compose_thinking_blurb("why is my fps low", request_id=3)
-        lowered = out.lower()
+    def test_compose_thinking_blurb_witty_without_character(self):
+        samples = [
+            compose_thinking_blurb("why is my fps low", request_id=i)
+            for i in range(12)
+        ]
+        for out in samples:
+            _assert_no_banned_prefixes(out)
         self.assertTrue(
-            "oh joy" in lowered
-            or "another crisis" in lowered
-            or "fine." in lowered
-            or lowered.startswith("yeah,"),
-            msg=out,
+            any(
+                "crisis" in out.lower()
+                or "on it" in out.lower()
+                or "fascinating" in out.lower()
+                or "watts" in out.lower()
+                or "tdp" in out.lower()
+                or out in _EMOJI_ONLY_LINES
+                for out in samples
+            ),
+            msg=samples,
         )
+
+    def test_compose_thinking_blurb_deadpan_character(self):
+        samples = [
+            compose_thinking_blurb(
+                "how do I beat this shrine puzzle",
+                request_id=i,
+                character_enabled=True,
+                character_preset_id="portal_glados",
+            )
+            for i in range(12)
+        ]
+        for out in samples:
+            _assert_no_banned_prefixes(out)
+        lowered = [out.lower() for out in samples]
+        self.assertTrue(
+            any(
+                "acknowledged" in s
+                or "no enthusiasm" in s
+                or "inevitably" in s
+                or "results pending" in s
+                or "logged" in s
+                for s in lowered
+            )
+            or any(out in _EMOJI_ONLY_LINES for out in samples),
+            msg=samples,
+        )
+
+    def test_compose_thinking_blurb_omits_game_title_without_app(self):
+        out = compose_thinking_blurb("generic question", request_id=1)
+        self.assertNotIn("again? Alright", out)
+        self.assertNotIn("Still struggling with", out)
+
+    def test_compose_thinking_blurb_stable_without_elapsed(self):
+        a = compose_thinking_blurb("help with stuttering", request_id=11, elapsed_seconds=0.0)
+        b = compose_thinking_blurb("help with stuttering", request_id=11, elapsed_seconds=12.0)
+        self.assertEqual(a, b)
 
     def test_format_thinking_phase_woven_proton_logs(self):
-        out = format_thinking_phase(
-            "proton_logs",
-            question="why crash on launch",
-            app_name="Elden Ring",
-            request_id=3,
+        samples = [
+            format_thinking_phase(
+                "proton_logs",
+                question="why crash on launch",
+                app_name="Elden Ring",
+                request_id=i,
+            )
+            for i in range(12)
+        ]
+        for out in samples:
+            _assert_no_banned_prefixes(out)
+        self.assertTrue(
+            any("crash" in out.lower() for out in samples)
+            or any(out in _EMOJI_ONLY_LINES for out in samples),
+            msg=samples,
         )
-        self.assertIn("crash", out.lower())
-        self.assertIn("Elden Ring", out)
+        non_emoji = [out for out in samples if out not in _EMOJI_ONLY_LINES]
+        if non_emoji:
+            self.assertTrue(any("Elden Ring" in out for out in non_emoji))
 
     def test_format_thinking_phase_woven_tdp_read(self):
         out = format_thinking_phase(
@@ -122,6 +194,7 @@ class BonsaiStreamTagsTests(unittest.TestCase):
             request_id=5,
         )
         self.assertIn("tdp", out.lower())
+        _assert_no_banned_prefixes(out)
 
     def test_format_thinking_phase_woven_screenshot_prep(self):
         out = format_thinking_phase(
@@ -134,12 +207,13 @@ class BonsaiStreamTagsTests(unittest.TestCase):
         lowered = out.lower()
         self.assertTrue(
             "screenshot" in lowered
+            or "pixels" in lowered
             or "capture" in lowered
             or "ui element" in lowered
-            or "oh joy" in lowered
-            or "another crisis" in lowered
-            or lowered.startswith("yeah,"),
+            or "proof" in lowered,
+            msg=out,
         )
+        _assert_no_banned_prefixes(out)
 
     def test_format_thinking_phase_woven_model_retry(self):
         out = format_thinking_phase(
@@ -148,6 +222,7 @@ class BonsaiStreamTagsTests(unittest.TestCase):
             request_id=11,
         )
         self.assertIn("stuttering", out.lower())
+        _assert_no_banned_prefixes(out)
 
     def test_format_thinking_phase_woven_building_context_elapsed(self):
         out = format_thinking_phase(
@@ -158,15 +233,25 @@ class BonsaiStreamTagsTests(unittest.TestCase):
             request_id=13,
         )
         self.assertIn("optimize", out.lower())
+        _assert_no_banned_prefixes(out)
 
     def test_format_thinking_phase_starting_delegates_to_blurb(self):
-        out = format_thinking_phase(
-            "starting",
-            question="why is my fps low",
-            app_name="Elden Ring",
-            request_id=17,
+        samples = [
+            format_thinking_phase(
+                "starting",
+                question="why is my fps low",
+                app_name="Elden Ring",
+                request_id=i,
+            )
+            for i in range(12)
+        ]
+        for out in samples:
+            _assert_no_banned_prefixes(out)
+        self.assertTrue(
+            any("fps" in out.lower() for out in samples)
+            or any(out in _EMOJI_ONLY_LINES for out in samples),
+            msg=samples,
         )
-        self.assertIn("fps", out.lower())
 
     def test_format_thinking_phase_searching_kb(self):
         self.assertEqual(format_thinking_phase("searching_kb"), "Searching knowledge base…")
@@ -175,21 +260,22 @@ class BonsaiStreamTagsTests(unittest.TestCase):
             "Searching knowledge base for Elden Ring…",
         )
 
-    def test_format_thinking_phase_woven_always_sarcastic(self):
-        out = format_thinking_phase(
-            "proton_logs",
-            question="why crash on launch",
-            app_name="Elden Ring",
-            request_id=5,
-        )
-        lowered = out.lower()
-        self.assertIn("crash", lowered)
+    def test_format_thinking_phase_woven_no_lazy_prefixes(self):
+        samples = [
+            format_thinking_phase(
+                "proton_logs",
+                question="why crash on launch",
+                app_name="Elden Ring",
+                request_id=i,
+            )
+            for i in range(12)
+        ]
+        for out in samples:
+            _assert_no_banned_prefixes(out)
         self.assertTrue(
-            "oh joy" in lowered
-            or "another crisis" in lowered
-            or "fine." in lowered
-            or lowered.startswith("yeah,"),
-            msg=out,
+            any("crash" in out.lower() for out in samples)
+            or any(out in _EMOJI_ONLY_LINES for out in samples),
+            msg=samples,
         )
 
 

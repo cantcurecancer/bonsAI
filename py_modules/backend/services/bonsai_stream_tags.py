@@ -32,6 +32,8 @@ _BUILDING_CONTEXT_MAX_SECONDS = 1.0
 
 _THINKING_TONE = Literal["neutral", "witty", "deadpan"]
 
+_EMOJI_ONLY_LINES = ("🙄", "😮‍💨", "🫠", "🌳")
+
 _BONSAI_STATUS_RE = re.compile(
     r"<bonsai-status>\s*(.*?)\s*</bonsai-status>",
     re.IGNORECASE | re.DOTALL,
@@ -87,10 +89,9 @@ def extract_question_snippet(question: str, max_len: int = _SNIPPET_MAX_LEN) -> 
     return raw
 
 
-def _stable_bucket(request_id: int, elapsed_seconds: float = 0.0, period: float = 4.0) -> int:
+def _stable_bucket(request_id: int) -> int:
     rid = max(0, int(request_id or 0))
-    bucket = int(max(0.0, elapsed_seconds) // max(1.0, period))
-    return (rid * 2654435761 + bucket * 97) & 0x7FFFFFFF
+    return (rid * 2654435761) & 0x7FFFFFFF
 
 
 def _resolve_thinking_tone(
@@ -106,30 +107,402 @@ def _resolve_thinking_tone(
     return tone if tone in ("witty", "deadpan") else "witty"
 
 
-def _apply_sarcastic_pool_variants(
-    pool: list[str],
+def _pick_template(templates: list[str], request_id: int) -> str:
+    if not templates:
+        return "Working on your question…"
+    idx = _stable_bucket(request_id) % len(templates)
+    return templates[idx]
+
+
+def _thinking_weave_bits(question: str, app_name: str) -> tuple[str, str, str]:
+    """Return (quote, game_bit, game_title) for woven status lines."""
+    snippet = extract_question_snippet(question)
+    game_title = _sanitize_app_name(app_name)
+    quote = f'"{snippet}"' if snippet else "your question"
+    game_bit = f" in {game_title}" if game_title else ""
+    return quote, game_bit, game_title
+
+
+def _witty_generic_pool(quote: str, game_bit: str, game_title: str) -> list[str]:
+    pool = [
+        f"🔥🔥Another crisis 🔥🔥: {quote}. Give me a moment{game_bit}.",
+        f"On it — {quote}{game_bit}…",
+        f'"Fascinating" request: {quote}. Processing anyway.',
+        f"Great. {quote}. Just what I needed{game_bit}.",
+        f"Copy that. Wrestling with {quote}{game_bit}…",
+        f"Noted. {quote}. I'll pretend this is exciting.",
+        f"Standing by while I dig into {quote}{game_bit}…",
+        f'Ticket received: {quote}. Filing it under "urgent to you."',
+        f"Alright, alright — {quote}{game_bit}…",
+        *_EMOJI_ONLY_LINES,
+    ]
+    if game_title:
+        pool.extend(
+            [
+                f"Still struggling with {game_title}?",
+                f"Back to wrestling with {game_title}…",
+                f"{game_title} again? Alright…",
+                f"Having a moment with {game_title}, I see.",
+            ]
+        )
+    return pool
+
+
+def _deadpan_generic_pool(quote: str, game_bit: str, game_title: str) -> list[str]:
+    pool = [
+        f"{quote}. Acknowledged{game_bit}.",
+        f"Processing {quote}{game_bit}. No enthusiasm detected.",
+        f"Working on {quote}. Try not to interrupt.",
+        f"{quote}{game_bit}. Inevitably.",
+        f"Examining {quote}. Results pending.",
+        f"Request logged: {quote}. Continuing.",
+        *_EMOJI_ONLY_LINES,
+    ]
+    if game_title:
+        pool.extend(
+            [
+                f"{game_title}. Again.",
+                f"Still {game_title}. Noted.",
+                f"Resuming {game_title}. Proceeding.",
+            ]
+        )
+    return pool
+
+
+def _witty_screenshot_pool(quote: str, game_bit: str) -> list[str]:
+    return [
+        f"Staring at your screenshot for {quote}…",
+        f"Squinting at pixels for {quote}{game_bit}…",
+        f"Let me decode this screenshot about {quote}…",
+        f"Your screenshot and {quote} — delightful{game_bit}.",
+        f"Comparing the capture to {quote}{game_bit}…",
+        "🫠",
+    ]
+
+
+def _deadpan_screenshot_pool(quote: str, game_bit: str) -> list[str]:
+    return [
+        f"Screenshot received for {quote}. Analyzing.",
+        f"Visual input noted. Relating to {quote}.",
+        f"Image attached. Context: {quote}{game_bit}.",
+        f"Processing visual data for {quote}.",
+        f"Screenshot queued for {quote}{game_bit}.",
+        "🌳",
+    ]
+
+
+def _witty_troubleshooting_pool(quote: str, game_bit: str) -> list[str]:
+    return [
+        f"Log-diving for {quote}{game_bit}. Try not to enjoy this.",
+        f"Proton archaeology on {quote} — my favorite hobby{game_bit}.",
+        f"Cross-referencing crash vibes with {quote}{game_bit}…",
+        f"Someone said {quote}? Time to read logs{game_bit}.",
+        f"Tracing {quote} through the wreckage{game_bit}…",
+        "😮‍💨",
+    ]
+
+
+def _deadpan_troubleshooting_pool(quote: str, game_bit: str) -> list[str]:
+    return [
+        f"Reading logs for {quote}{game_bit}. Standard procedure.",
+        f"Proton log scan: {quote}. Proceeding.",
+        f"Crash context for {quote}{game_bit}. No commentary.",
+        f"Host/latency check on {quote}. As requested.",
+        f"Diagnostic pass for {quote}{game_bit}.",
+        "🙄",
+    ]
+
+
+def _witty_power_pool(quote: str, game_bit: str) -> list[str]:
+    return [
+        f"Watts, frames, regrets — {quote}{game_bit}…",
+        f"TDP theater for {quote}. Curtain up{game_bit}.",
+        f"Benchmarking my patience with {quote}{game_bit}…",
+        f"Power math on {quote}. Hold the applause{game_bit}.",
+        f"Thermal feelings about {quote}{game_bit}…",
+        "🙄",
+    ]
+
+
+def _deadpan_power_pool(quote: str, game_bit: str) -> list[str]:
+    return [
+        f"TDP read for {quote}{game_bit}. Expect numbers.",
+        f"Power context: {quote}. Collecting.",
+        f"Performance data for {quote}{game_bit}.",
+        f"Wattage inquiry noted: {quote}.",
+        f"Sysfs peek for {quote}{game_bit}.",
+        "🌳",
+    ]
+
+
+def _witty_resolution_pool(quote: str, game_bit: str) -> list[str]:
+    return [
+        f"Resolution roulette for {quote}{game_bit}…",
+        f"FPS fantasies vs {quote} — let's see{game_bit}.",
+        f"Graphics settings guilt trip: {quote}{game_bit}.",
+        f"Balancing pixels and battery on {quote}…",
+        f"FSR prayer circle for {quote}{game_bit}.",
+        "🫠",
+    ]
+
+
+def _deadpan_resolution_pool(quote: str, game_bit: str) -> list[str]:
+    return [
+        f"Graphics settings review: {quote}{game_bit}.",
+        f"FPS/resolution analysis for {quote}.",
+        f"Display tradeoffs on {quote}{game_bit}.",
+        f"Settings pass: {quote}.",
+        f"Frame pacing review: {quote}{game_bit}.",
+        "😮‍💨",
+    ]
+
+
+def _witty_strategy_pool(quote: str, game_bit: str) -> list[str]:
+    return [
+        f"Strategy mode: {quote}{game_bit} — spoilers locked.",
+        f"Scouting {quote} without ruining the surprise{game_bit}…",
+        f"Puzzle patrol on {quote}. Minimal hints{game_bit}.",
+        f"Map in my head for {quote}{game_bit}…",
+        f"Boss? What boss? Just {quote}{game_bit}.",
+        "🌳",
+    ]
+
+
+def _deadpan_strategy_pool(quote: str, game_bit: str) -> list[str]:
+    return [
+        f"Strategy notes for {quote}{game_bit}. Spoiler-safe.",
+        f"Guide lookup: {quote}. No plot leaks.",
+        f"Tactical review of {quote}{game_bit}.",
+        f"Puzzle context: {quote}. Restricted detail.",
+        f"Spoiler-free pass on {quote}{game_bit}.",
+        "🙄",
+    ]
+
+
+def _resolve_compose_intent(question: str, ask_mode: str, has_shot: bool) -> str:
+    if question_matches_troubleshooting_log_context(question) or user_asks_ollama_bonsai_host_or_latency(
+        question
+    ):
+        return "troubleshooting"
+    if is_current_tdp_read_intent(question) or user_wants_power_or_performance_topic(question):
+        return "power"
+    if _user_asks_resolution_relevant_performance(question):
+        return "resolution"
+    if ask_mode == "strategy":
+        return "strategy"
+    if has_shot:
+        return "screenshot"
+    return "generic"
+
+
+def _compose_intent_pool(intent: str, tone: _THINKING_TONE, quote: str, game_bit: str, game_title: str) -> list[str]:
+    if tone == "deadpan":
+        if intent == "troubleshooting":
+            return _deadpan_troubleshooting_pool(quote, game_bit)
+        if intent == "power":
+            return _deadpan_power_pool(quote, game_bit)
+        if intent == "resolution":
+            return _deadpan_resolution_pool(quote, game_bit)
+        if intent == "strategy":
+            return _deadpan_strategy_pool(quote, game_bit)
+        if intent == "screenshot":
+            return _deadpan_screenshot_pool(quote, game_bit)
+        return _deadpan_generic_pool(quote, game_bit, game_title)
+    if intent == "troubleshooting":
+        return _witty_troubleshooting_pool(quote, game_bit)
+    if intent == "power":
+        return _witty_power_pool(quote, game_bit)
+    if intent == "resolution":
+        return _witty_resolution_pool(quote, game_bit)
+    if intent == "strategy":
+        return _witty_strategy_pool(quote, game_bit)
+    if intent == "screenshot":
+        return _witty_screenshot_pool(quote, game_bit)
+    return _witty_generic_pool(quote, game_bit, game_title)
+
+
+def _phase_pool(
+    phase: AskThinkingPhase,
+    tone: _THINKING_TONE,
     *,
     quote: str,
     game_bit: str,
-    tone: _THINKING_TONE,
+    attachment_count: int = 0,
+    still_building: bool = False,
 ) -> list[str]:
-    """Always merge witty/deadpan extensions into the template pool."""
+    if still_building:
+        if tone == "deadpan":
+            return [
+                f"Still preparing {quote}{game_bit}.",
+                f"Context load: {quote}. Ongoing.",
+                f"Assembly continues: {quote}.",
+                f"Still working on {quote}{game_bit}.",
+                "🌳",
+            ]
+        return [
+            f"Still wrestling {quote}{game_bit}. Almost…",
+            f"Context isn't instant: {quote}…",
+            f"Bear with me on {quote}{game_bit}.",
+            f"Still loading the drama around {quote}…",
+            "🫠",
+        ]
+
+    if phase == "proton_logs":
+        if tone == "deadpan":
+            return [
+                f"Proton logs: {quote}{game_bit}. Reading.",
+                f"Log excerpt search for {quote}.",
+                f"Crash log correlation: {quote}{game_bit}.",
+                f"Log scan in progress: {quote}.",
+                "🙄",
+            ]
+        return [
+            f"Log spelunking for {quote}{game_bit}. Glamorous.",
+            f"Proton logs vs {quote} — fight!{game_bit}",
+            f"Reading crash tea leaves in {quote}{game_bit}…",
+            f"Journal of pain: {quote}{game_bit}.",
+            "😮‍💨",
+        ]
+
+    if phase == "experiment_journal":
+        if tone == "deadpan":
+            return [
+                f"Proton journal: {quote}{game_bit}. Loading.",
+                f"Experiment log for {quote}. Retrieved.",
+                f"Historical Proton data: {quote}{game_bit}.",
+                f"Prior experiments for {quote}.",
+                "🌳",
+            ]
+        return [
+            f"Your Proton diary and {quote}{game_bit} — page turner.",
+            f"Experiment history meet {quote}{game_bit}…",
+            f"Prior Proton swings at {quote}{game_bit}.",
+            f"Flashback montage for {quote}…",
+            "🙄",
+        ]
+
+    if phase == "tdp_read":
+        if tone == "deadpan":
+            return [
+                f"Current TDP for {quote}{game_bit}. Querying.",
+                f"Power limits: {quote}. Reading.",
+                f"Wattage snapshot for {quote}{game_bit}.",
+                f"TDP inquiry: {quote}.",
+                "🌳",
+            ]
+        return [
+            f"How many watts is {quote} worth{game_bit}?",
+            f"TDP peek for {quote}. Brace{game_bit}.",
+            f"Power meter on {quote}{game_bit}…",
+            f"Thermal interrogation: {quote}{game_bit}.",
+            "🫠",
+        ]
+
+    if phase == "searching_kb":
+        if tone == "deadpan":
+            return [
+                f"Knowledge base: {quote}{game_bit}. Searching.",
+                f"Local KB lookup: {quote}.",
+                f"Offline notes for {quote}{game_bit}.",
+                f"KB query: {quote}.",
+                "🙄",
+            ]
+        return [
+            f"KB treasure hunt: {quote}{game_bit}.",
+            f"Offline wisdom for {quote} — rare{game_bit}.",
+            f"Flipping strategy cards on {quote}…",
+            f"Dusty tomes about {quote}{game_bit}.",
+            "🌳",
+        ]
+
+    if phase == "screenshot_prep":
+        n = max(0, int(attachment_count or 0))
+        if n > 1:
+            if tone == "deadpan":
+                return [
+                    f"Preparing {n} screenshots for {quote}.",
+                    f"{n} images queued for {quote}{game_bit}.",
+                    f"Batch visual prep: {quote}.",
+                    f"{n} captures for {quote}{game_bit}.",
+                    "🌳",
+                ]
+            return [
+                f"Sorting {n} screenshots for {quote}{game_bit}.",
+                f"{n} images, one question: {quote}.",
+                f"Gallery night for {quote}{game_bit}.",
+                f"Stacking {n} proofs of {quote}…",
+                "🫠",
+            ]
+        if tone == "deadpan":
+            return [
+                f"Screenshot prep for {quote}{game_bit}.",
+                f"Visual attach: {quote}. Processing.",
+                f"Image pipeline for {quote}{game_bit}.",
+                f"Capture queued: {quote}.",
+                "🙄",
+            ]
+        return [
+            f"Polishing pixels for {quote}{game_bit}.",
+            f"Screenshot runway for {quote} — cleared{game_bit}.",
+            f"Loading your proof of {quote}…",
+            f"Attaching evidence of {quote}{game_bit}.",
+            "😮‍💨",
+        ]
+
+    if phase == "building_context":
+        if tone == "deadpan":
+            return [
+                f"Building context for {quote}{game_bit}.",
+                f"Context assembly: {quote}.",
+                f"Gathering facts for {quote}{game_bit}.",
+                f"Context pass on {quote}.",
+                "🌳",
+            ]
+        return [
+            f"Gathering intel on {quote}{game_bit}…",
+            f"Context assembly for {quote} — riveting{game_bit}.",
+            f"Collecting breadcrumbs for {quote}…",
+            f"Background work on {quote}{game_bit}.",
+            "🙄",
+        ]
+
+    if phase == "connecting_model":
+        if tone == "deadpan":
+            return [
+                f"Connecting for {quote}{game_bit}.",
+                f"Model connection: {quote}.",
+                f"Handshake for {quote}{game_bit}.",
+                f"Linking model to {quote}.",
+                "🌳",
+            ]
+        return [
+            f"Dialing the model about {quote}{game_bit}…",
+            f"Handshake time for {quote}. Deep breath{game_bit}.",
+            f"Waking the neurons for {quote}…",
+            f"Pinging brains for {quote}{game_bit}.",
+            "🫠",
+        ]
+
+    if phase == "model_retry":
+        if tone == "deadpan":
+            return [
+                f"Retrying models for {quote}{game_bit}.",
+                f"Alternate model for {quote}.",
+                f"Fallback chain: {quote}{game_bit}.",
+                f"Second attempt on {quote}.",
+                "🙄",
+            ]
+        return [
+            f"Plan B for {quote}{game_bit}. Typical.",
+            f"Another model, same {quote}. Joy{game_bit}.",
+            f"Fallback round on {quote}…",
+            f"Round two for {quote}{game_bit}.",
+            "😮‍💨",
+        ]
+
     if tone == "deadpan":
-        return [f"Fine. {t}" for t in pool] + [f"Sure. {quote}. Working{game_bit}."]
-    witty_pool = [
-        f"Oh joy — {quote}{game_bit}. One sec.",
-        f"Another crisis: {quote}. Give me a moment{game_bit}.",
-    ]
-    for t in pool:
-        witty_pool.append(f"Yeah, {t}")
-    return witty_pool
-
-
-def _pick_template(templates: list[str], request_id: int, elapsed_seconds: float = 0.0) -> str:
-    if not templates:
-        return "Working on your question…"
-    idx = _stable_bucket(request_id, elapsed_seconds) % len(templates)
-    return templates[idx]
+        return [f"Working on {quote}{game_bit}.", f"Processing {quote}.", "🌳"]
+    return [f"Working on {quote}{game_bit}…", f"On it — {quote}{game_bit}…", "🙄"]
 
 
 def compose_thinking_blurb(
@@ -144,75 +517,14 @@ def compose_thinking_blurb(
     elapsed_seconds: float = 0.0,
 ) -> str:
     """Instant, question-woven pending status (Tier A composer — no extra model call)."""
-    snippet = extract_question_snippet(question)
-    game = _sanitize_app_name(app_name)
-    quote = f'"{snippet}"' if snippet else "your question"
-    game_bit = f" in {game}" if game else ""
+    del elapsed_seconds  # kept for API parity; selection is request_id-only
+    quote, game_bit, game_title = _thinking_weave_bits(question, app_name)
     has_shot = int(attachment_count or 0) > 0
     tone = _resolve_thinking_tone(character_enabled, character_preset_id)
-
-    if question_matches_troubleshooting_log_context(question) or user_asks_ollama_bonsai_host_or_latency(question):
-        pool = [
-            f"Digging into {quote}{game_bit}…",
-            f"Checking logs and context for {quote}…",
-        ]
-    elif is_current_tdp_read_intent(question) or user_wants_power_or_performance_topic(question):
-        pool = [
-            f"Pulling power context for {quote}…",
-            f"Checking TDP and performance angles on {quote}…",
-        ]
-    elif _user_asks_resolution_relevant_performance(question):
-        pool = [
-            f"Thinking about resolution and FPS for {quote}…",
-            f"Sizing up graphics settings around {quote}…",
-        ]
-    elif ask_mode == "strategy":
-        pool = [
-            f"Mapping a strategy take on {quote}{game_bit}…",
-            f"Scouting the puzzle without spoiling {quote}…",
-        ]
-    elif has_shot:
-        pool = [
-            f"Reviewing your screenshot alongside {quote}…",
-            f"Pairing the capture with {quote}{game_bit}…",
-        ]
-    else:
-        pool = [
-            f"Looking at {quote}{game_bit}…",
-            f"Getting context for {quote}…",
-            f"On it — {quote}{game_bit}…",
-        ]
-
-    pool = _apply_sarcastic_pool_variants(pool, quote=quote, game_bit=game_bit, tone=tone)
-
-    text = _pick_template(pool, request_id, elapsed_seconds)
+    intent = _resolve_compose_intent(question, ask_mode, has_shot)
+    pool = _compose_intent_pool(intent, tone, quote, game_bit, game_title)
+    text = _pick_template(pool, request_id)
     return text[:_PHASE_MAX_LEN]
-
-
-def _thinking_weave_bits(question: str, app_name: str) -> tuple[str, str, str]:
-    """Return (quote, game_bit, game_clause) for woven status lines."""
-    snippet = extract_question_snippet(question)
-    game = _sanitize_app_name(app_name)
-    quote = f'"{snippet}"' if snippet else "your question"
-    game_bit = f" in {game}" if game else ""
-    game_clause = f" for {game}" if game else ""
-    return quote, game_bit, game_clause
-
-
-def _apply_character_phase_variants(
-    pool: list[str],
-    *,
-    quote: str,
-    game_bit: str,
-    request_id: int,
-    character_enabled: bool,
-    character_preset_id: Optional[str],
-    elapsed_seconds: float,
-) -> str:
-    """Pick a template with always-on witty/deadpan variants."""
-    tone = _resolve_thinking_tone(character_enabled, character_preset_id)
-    pool = _apply_sarcastic_pool_variants(pool, quote=quote, game_bit=game_bit, tone=tone)
-    return _pick_template(pool, request_id, elapsed_seconds)
 
 
 def format_thinking_phase(
@@ -241,74 +553,18 @@ def format_thinking_phase(
                 character_preset_id=character_preset_id,
                 elapsed_seconds=elapsed_seconds,
             )
-        quote, game_bit, game_clause = _thinking_weave_bits(woven_q, app_name)
-        if phase == "building_context" and elapsed_seconds > _BUILDING_CONTEXT_MAX_SECONDS:
-            pool = [f"Still working on {quote}{game_bit}…", f"Still preparing {quote}…"]
-            text = _apply_character_phase_variants(
-                pool,
-                quote=quote,
-                game_bit=game_bit,
-                request_id=request_id,
-                character_enabled=character_enabled,
-                character_preset_id=character_preset_id,
-                elapsed_seconds=elapsed_seconds,
-            )
-            return text[:_PHASE_MAX_LEN]
-        if phase == "proton_logs":
-            pool = [
-                f"Checking logs for {quote}{game_bit}…",
-                f"Reading Proton logs for {quote}{game_bit}…",
-            ]
-        elif phase == "experiment_journal":
-            pool = [
-                f"Loading Proton experiments for {quote}{game_bit}…",
-                f"Reading your Proton journal for {quote}…",
-            ]
-        elif phase == "tdp_read":
-            pool = [
-                f"Pulling power context for {quote}…",
-                f"Checking TDP for {quote}{game_bit}…",
-            ]
-        elif phase == "searching_kb":
-            pool = [
-                f"Searching knowledge base for {quote}{game_bit}…",
-                f"Looking up strategy notes for {quote}…",
-            ]
-        elif phase == "screenshot_prep":
-            n = max(0, int(attachment_count or 0))
-            if n <= 1:
-                pool = [
-                    f"Preparing screenshot for {quote}{game_bit}…",
-                    f"Pairing the capture with {quote}{game_bit}…",
-                ]
-            else:
-                pool = [
-                    f"Preparing {n} screenshots for {quote}…",
-                    f"Pairing {n} captures with {quote}{game_bit}…",
-                ]
-        elif phase == "building_context":
-            pool = [
-                f"Getting context for {quote}{game_bit}…",
-                f"Building context for {quote}…",
-            ]
-        elif phase == "connecting_model":
-            pool = [f"Connecting for {quote}{game_bit}…", f"Connecting to model for {quote}…"]
-        elif phase == "model_retry":
-            pool = [
-                f"Trying another model for {quote}…",
-                f"Switching models for {quote}{game_bit}…",
-            ]
-        else:
-            pool = [f"Working on {quote}{game_bit}…"]
-        text = _apply_character_phase_variants(
-            pool,
+        quote, game_bit, _game_title = _thinking_weave_bits(woven_q, app_name)
+        tone = _resolve_thinking_tone(character_enabled, character_preset_id)
+        still_building = phase == "building_context" and elapsed_seconds > _BUILDING_CONTEXT_MAX_SECONDS
+        pool = _phase_pool(
+            phase,
+            tone,
             quote=quote,
             game_bit=game_bit,
-            request_id=request_id,
-            character_enabled=character_enabled,
-            character_preset_id=character_preset_id,
-            elapsed_seconds=elapsed_seconds,
+            attachment_count=attachment_count,
+            still_building=still_building,
         )
+        text = _pick_template(pool, request_id)
         return text[:_PHASE_MAX_LEN]
 
     if phase == "building_context" and elapsed_seconds > _BUILDING_CONTEXT_MAX_SECONDS:
@@ -351,14 +607,10 @@ def deterministic_thinking_phase_fallback(
     elapsed_seconds: float,
 ) -> str:
     """Phase label when the model did not emit ``<bonsai-status>``."""
-    bucket = int(max(0.0, elapsed_seconds) // 4.0)
     if streaming and has_partial:
-        pool = ["Drafting your masterpiece…", "Typing with confidence…"]
-    elif elapsed_seconds >= 8:
-        pool = ["Still here. Still thinking…", "This one's a thinker…"]
-    elif elapsed_seconds >= 2:
-        pool = ["Pretending this is hard…", "Generating something passable…"]
-    else:
-        pool = ["Warming up the brain cells…", "Connecting — try not to blink…"]
-    idx = bucket % len(pool)
-    return pool[idx]
+        return "Drafting your masterpiece…"
+    if elapsed_seconds >= 8:
+        return "Still here. Still thinking…"
+    if elapsed_seconds >= 2:
+        return "Pretending this is hard…"
+    return "Warming up the brain cells…"

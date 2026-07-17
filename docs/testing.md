@@ -430,6 +430,7 @@ Maps [roadmap.md](roadmap.md) **Completed** summary and [archive/roadmap-complet
 | BG-ASK-V1 | Background prompt completion V1 | SMOKE-H, BG-* | Partial | SMOKE-H Tier 1; full matrix Tier 4; [preview 2026-05-26](test-evidence/tier1Core/2026-05-26-9e20a82/BG-ASK-reopen-status/manifest.json) |
 | THINKING-PHASE | Thinking phase copy polish (mid-Ask woven status) | THINKING-01, THINKING-02 | Open | `tests/test_bonsai_stream_tags.py`; on-Deck proton/TDP/screenshot paths |
 | THINKING-SARCASM | Always-sarcastic thinking blurb + visible during stream | THINKING-01, THINKING-03 | Open | `tests/test_bonsai_stream_tags.py`, `src/utils/composeThinkingBlurb.test.ts`; on-Deck streaming QA |
+| THINKING-COPY | Thinking blurb copy refresh (phase pools, no prefix farm) | THINKING-01…03, THINKING-COPY-01 | Open | `composeThinkingBlurb.test.ts`, `tests/test_bonsai_stream_tags.py`; on-Deck phase-change QA |
 | TOKEN-STREAM-MD | Token stream live markdown (experimental) | STREAM-01…10 | Open | `src/utils/streamMarkdownPrepare.test.ts`, `src/hooks/useSmoothStreamReveal.test.ts`; on-Deck Tier 2 |
 | SYS-PROMPT-LAYERS | System prompt layer order | SMOKE-A transparency | Partial | `tests/test_ollama_service.py` only |
 
@@ -569,9 +570,10 @@ Requires **Settings → Data → Show Developer tab** → **Token streaming (exp
 - [ ] **STREAM-08** T3 handoff: full markdown snap in stream bubble, then terminal chunk layout (may change later)
 - [ ] **STREAM-09** D-pad: one Focusable stream bubble; after terminal, normal chunk chain
 - [ ] **STREAM-10** Incomplete inline `**bold` renders as bold until closer arrives
-- [ ] **THINKING-01** Pending: `thinking_summary` line visible (sarcastic/playful copy even without Character Voice); no placeholder AI bubble before partial; opener woven via `compose_thinking_blurb`
-- [ ] **THINKING-02** Mid-Ask prep phases (Proton logs, TDP read, screenshot prep, model retry): `thinking_summary` keeps question snippet + game — no generic downgrade to e.g. **Building context…** alone
-- [ ] **THINKING-03** During token streaming: italic thinking line stays visible above preview bubble; updates from `<bonsai-status>` or elapsed fallback (not hidden when `streaming=true`)
+- [ ] **THINKING-01** Pending: `thinking_summary` line visible (disgruntled/deadpan copy even without Character Voice); no lazy `Yeah,` / `Fine.` / `Oh joy` openers; no placeholder AI bubble before partial; opener woven via `compose_thinking_blurb`
+- [ ] **THINKING-02** Mid-Ask prep phases (Proton logs, TDP read, screenshot prep, model retry): `thinking_summary` keeps question snippet + game with phase-specific witty/deadpan copy — no generic downgrade to e.g. **Building context…** alone
+- [ ] **THINKING-03** During token streaming: italic thinking line stays visible above preview bubble; updates from `<bonsai-status>` or stable elapsed fallback (not hidden when `streaming=true`)
+- [ ] **THINKING-COPY-01** Same Ask: italic line changes only when backend phase key changes or model emits `<bonsai-status>` — not on elapsed-time rotation alone
 - [ ] **FEEDBACK-01** Reply-action chrome: `.bonsai-chat-secondary-btn` on feedback/retry/details; neutral toasts on thumbs
 
 ### Model routing pickers (2026-07-17)
