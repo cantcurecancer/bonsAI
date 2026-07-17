@@ -40,7 +40,7 @@ from refactor_helpers import (
     is_ollama_model_missing_error,
     no_installed_routing_models_message,
     normalize_ollama_base,
-    select_ollama_models,
+    resolve_routing_order,
 )
 
 logger = decky.logger
@@ -64,6 +64,7 @@ async def run_ask_ollama(
     strategy_spoiler_consent: bool = False,
     token_stream_request_id: Optional[int] = None,
     strategy_checklist_state: Optional[dict] = None,
+    preferred_model: Optional[str] = None,
 ) -> dict[str, Any]:
     """Orchestrate attachment prep, prompt assembly, and model fallback request execution."""
     plugin_inst = plugin
@@ -167,18 +168,26 @@ async def run_ask_ollama(
     )
 
     requires_vision = len(prepared_images) > 0
-    high_vram = settings.get("model_allow_high_vram_fallbacks") is True
-    models_before_policy = select_ollama_models(requires_vision, ask_mode, high_vram)
-    policy_tier = str(settings.get("model_policy_tier") or "open_source_only")
-    non_foss_unlocked = settings.get("model_policy_non_foss_unlocked") is True
-    models_to_try = filter_model_list(models_before_policy, policy_tier, non_foss_unlocked)
     ask_started = time.time()
     ollama_host, _, ollama_base = normalize_ollama_base(pc_ip)
     if is_loopback_ollama_host(ollama_host) and not probe_ollama_http_ok(ollama_base):
         recover_loopback_ollama_listening(logger.info)
     installed_tags = list_installed_ollama_tags(ollama_base)
+    models_before_policy = resolve_routing_order(requires_vision, settings, installed_tags)
+    pin = str(preferred_model or "").strip()
+    if pin and pin in installed_tags:
+        models_before_policy = [pin] + [m for m in models_before_policy if m != pin]
+    policy_tier = str(settings.get("model_policy_tier") or "open_source_only")
+    non_foss_unlocked = settings.get("model_policy_non_foss_unlocked") is True
+    models_to_try = filter_model_list(models_before_policy, policy_tier, non_foss_unlocked)
     models_after_policy = list(models_to_try)
-    models_to_try, routing_strategy = build_effective_models_to_try(models_to_try, installed_tags)
+    models_to_try, routing_strategy = build_effective_models_to_try(
+        models_to_try,
+        installed_tags,
+        user_chain_before_policy=models_before_policy,
+    )
+    if routing_strategy == "installed_host_fallback":
+        models_to_try = filter_model_list(models_to_try, policy_tier, non_foss_unlocked)
     _, models_skipped_not_installed = filter_models_to_installed(models_after_policy, installed_tags)
     ask_diagnostics: dict = {
         "models_before_policy": list(models_before_policy),

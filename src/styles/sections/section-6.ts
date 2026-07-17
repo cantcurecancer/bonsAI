@@ -603,6 +603,10 @@ export function buildSection6Section(): string {
           gap: 8px !important;
           width: 100% !important;
         }
+        .bonsai-scope .bonsai-chat-reply-actions-row--chips {
+          flex-wrap: wrap;
+          gap: 8px;
+        }
         .bonsai-scope .bonsai-chat-reply-actions-row--utility {
           flex-wrap: nowrap !important;
         }

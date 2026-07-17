@@ -257,6 +257,8 @@ describe("settingsAndResponse", () => {
       ragCorpusVersion: "",
       chatIdleTimeoutMinutes: 15 as const,
       devBundleThreadTitleInReply: false,
+      textModelRoutingOrder: [],
+      visionModelRoutingOrder: [],
     });
     expect(p.latency_warning_seconds).toBe(20);
     expect(p.request_timeout_seconds).toBe(150);
@@ -322,6 +324,8 @@ describe("settingsAndResponse", () => {
       ragCorpusVersion: "",
       chatIdleTimeoutMinutes: 15 as const,
       devBundleThreadTitleInReply: false,
+      textModelRoutingOrder: [],
+      visionModelRoutingOrder: [],
     };
     const p = toBonsaiSettingsPayload(base, {
       ai_character_random: false,
@@ -467,6 +471,8 @@ describe("settingsAndResponse", () => {
       ragCorpusVersion: normalized.rag_corpus_version,
       chatIdleTimeoutMinutes: normalized.chat_idle_timeout_minutes,
       devBundleThreadTitleInReply: normalized.dev_bundle_thread_title_in_reply,
+      textModelRoutingOrder: normalized.text_model_routing_order ?? [],
+      visionModelRoutingOrder: normalized.vision_model_routing_order ?? [],
     });
     expect(payload.ask_mode).toBe("strategy");
     expect(payload.ai_character_preset_id).toBe("tf2_scout");

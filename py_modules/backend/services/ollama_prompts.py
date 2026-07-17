@@ -4,7 +4,7 @@ Transport (`post_ollama_chat`, streaming) stays in ``ollama_service``; this modu
 """
 
 import re
-from typing import Callable, Optional
+from typing import Callable, Optional, Any
 
 from backend.constants import DEFAULT_OLLAMA_BASE_URL, OLLAMA_TAB_WHERE_AI_RUNS
 from backend.services.strategy_guide_parse import (
@@ -819,4 +819,47 @@ def format_ai_response(
     if attachment_errors:
         response_text += "\n\n[Attachment errors: " + "; ".join(attachment_errors) + "]"
     return response_text
+
+
+_REPLY_FOLLOWUP_CHIP_LABELS = {
+    "bad_information": "Bad information",
+    "too_long": "Too long",
+    "too_short": "Too short",
+    "misidentified_game": "Misidentified game/problem",
+}
+
+
+def sanitize_reply_followup(raw: Any) -> Optional[dict]:
+    """Normalize optional reply-follow-up payload from the Ask RPC dict."""
+    if not isinstance(raw, dict):
+        return None
+    chip_id = str(raw.get("chip_id", "") or "").strip().lower()
+    if chip_id not in _REPLY_FOLLOWUP_CHIP_LABELS:
+        return None
+    parent_question = str(raw.get("parent_question", "") or "").strip()
+    parent_answer = str(raw.get("parent_answer", "") or "").strip()
+    if not parent_question or not parent_answer:
+        return None
+    preferred_model = str(raw.get("preferred_model", "") or "").strip() or None
+    return {
+        "chip_id": chip_id,
+        "parent_question": parent_question,
+        "parent_answer": parent_answer,
+        "preferred_model": preferred_model,
+    }
+
+
+def build_reply_followup_context_block(chip_id: str, parent_question: str, parent_answer: str) -> str:
+    """Inject prior turn Q+A before the user's refinement message."""
+    label = _REPLY_FOLLOWUP_CHIP_LABELS.get(chip_id, "Follow-up")
+    pq = (parent_question or "").strip()
+    pa = (parent_answer or "").strip()
+    return (
+        "REPLY FOLLOW-UP CONTEXT\n"
+        f"The user is refining their previous Ask ({label}).\n"
+        f"Previous question:\n{pq}\n\n"
+        f"Previous answer:\n{pa}\n\n"
+        "Address the refinement request in the user's new message below.\n"
+        "---\n"
+    )
 

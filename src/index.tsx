@@ -20,6 +20,8 @@ import { DeveloperTab, type DeveloperConnectionStatus } from "./components/Devel
 import { MainTab } from "./components/MainTab";
 import { PluginHelpModal } from "./components/PluginHelpModal";
 import { OllamaModelsHubModal, type OllamaModelsHubSection } from "./components/OllamaModelsHubModal";
+import { ModelRoutingOrderModal, type ModelRoutingOrderKind } from "./components/ModelRoutingOrderModal";
+import { PULL_MODEL_CATALOG } from "./data/pullModelCatalog";
 import { OllamaTab } from "./components/OllamaTab";
 import { PermissionsTab } from "./components/PermissionsTab";
 import { SettingsTab } from "./components/SettingsTab";
@@ -399,6 +401,10 @@ const Content: React.FC = () => {
     setModelPolicyNonFossUnlocked,
     modelAllowHighVramFallbacks,
     setModelAllowHighVramFallbacks,
+    textModelRoutingOrder,
+    setTextModelRoutingOrder,
+    visionModelRoutingOrder,
+    setVisionModelRoutingOrder,
     ollamaLocalOnDeck,
     setOllamaLocalOnDeck,
     strategySpoilerMaskingEnabled,
@@ -629,6 +635,11 @@ const Content: React.FC = () => {
     onCancelAsk,
     onAskOllama,
     onRetryLastResponse,
+    onReplyFeedback,
+    onReplyMicroAction,
+    liveReplyFeedbackRating,
+    liveReplyChipUsed,
+    liveReplyChipError,
     onStrategyBranchPick,
     onStrategyChecklistToggle,
     resetAskSessionSlice,
@@ -809,6 +820,8 @@ const Content: React.FC = () => {
       modelPolicyTier,
       modelPolicyNonFossUnlocked,
       modelAllowHighVramFallbacks,
+      textModelRoutingOrder,
+      visionModelRoutingOrder,
       ollamaLocalOnDeck,
       strategySpoilerMaskingEnabled,
       steamWebApiKey,
@@ -853,6 +866,8 @@ const Content: React.FC = () => {
       modelPolicyTier,
       modelPolicyNonFossUnlocked,
       modelAllowHighVramFallbacks,
+      textModelRoutingOrder,
+      visionModelRoutingOrder,
       ollamaLocalOnDeck,
       strategySpoilerMaskingEnabled,
       steamWebApiKey,
@@ -1402,6 +1417,77 @@ const Content: React.FC = () => {
     ]
   );
 
+  const catalogByTag = useMemo(() => {
+    const m = new Map<string, (typeof PULL_MODEL_CATALOG)[number]>();
+    for (const e of PULL_MODEL_CATALOG) m.set(e.tag, e);
+    return m;
+  }, []);
+
+  const openRoutingOrderModal = useCallback(
+    (kind: ModelRoutingOrderKind) => {
+      const installed = lastConnectionStatus?.reachable
+        ? (lastConnectionStatus.models ?? []).filter(Boolean)
+        : [];
+      if (installed.length === 0) {
+        toaster.toast({
+          title: "No installed models",
+          body: "Run a connection test on the Ollama tab first.",
+          duration: 5000,
+        });
+        return;
+      }
+      captureSessionBeforeModal();
+      const savedOrder = kind === "vision" ? visionModelRoutingOrder : textModelRoutingOrder;
+      const handle = showModal(
+        <ModelRoutingOrderModal
+          kind={kind}
+          installedTags={installed}
+          catalogByTag={catalogByTag}
+          modelPolicyTier={modelPolicyTier}
+          modelPolicyNonFossUnlocked={modelPolicyNonFossUnlocked}
+          modelAllowHighVramFallbacks={modelAllowHighVramFallbacks}
+          savedOrder={savedOrder}
+          onSave={async (order) => {
+            if (kind === "vision") {
+              setVisionModelRoutingOrder(order);
+            } else {
+              setTextModelRoutingOrder(order);
+            }
+            await pauseDebouncedSettingsSave();
+            const patch =
+              kind === "vision"
+                ? { vision_model_routing_order: order }
+                : { text_model_routing_order: order };
+            const saved = await call<[BonsaiSettings], BonsaiSettings>(
+              "save_settings",
+              buildSettingsPayload(patch)
+            );
+            hydrateFromSettings(saved);
+          }}
+          onClose={() => {
+            finalizeShowModalAndRestoreActiveTab(() => handle.Close());
+          }}
+        />
+      );
+    },
+    [
+      lastConnectionStatus,
+      visionModelRoutingOrder,
+      textModelRoutingOrder,
+      catalogByTag,
+      modelPolicyTier,
+      modelPolicyNonFossUnlocked,
+      modelAllowHighVramFallbacks,
+      captureSessionBeforeModal,
+      finalizeShowModalAndRestoreActiveTab,
+      setVisionModelRoutingOrder,
+      setTextModelRoutingOrder,
+      pauseDebouncedSettingsSave,
+      buildSettingsPayload,
+      hydrateFromSettings,
+    ]
+  );
+
   const fullBleedRowStyle = FULL_BLEED_ROW_STYLE;
   const presetButtonSurface = PRESET_BUTTON_SURFACE;
   const mainTabAiCharacterPad = aiCharacterEnabled;
@@ -1453,6 +1539,11 @@ const Content: React.FC = () => {
       presetChipFadeAnimationEnabled={presetChipFadeAnimationEnabled}
       presetChipAnimation={presetChipAnimation}
       onRetryLastResponse={onRetryLastResponse}
+      liveReplyFeedbackRating={liveReplyFeedbackRating}
+      onReplyFeedback={onReplyFeedback}
+      onReplyMicroAction={onReplyMicroAction}
+      liveReplyChipUsed={liveReplyChipUsed}
+      liveReplyChipError={liveReplyChipError}
       setUnifiedInput={setUnifiedInput}
       unifiedInputHostRef={unifiedInputHostRef as React.Ref<HTMLDivElement>}
       unifiedInputFieldLayerRef={unifiedInputFieldLayerRef as React.Ref<HTMLDivElement>}
@@ -1641,6 +1732,11 @@ const Content: React.FC = () => {
       strategySpoilerMaskingEnabled,
       presetCarouselInject,
       onRetryLastResponse,
+      onReplyFeedback,
+      onReplyMicroAction,
+      liveReplyFeedbackRating,
+      liveReplyChipUsed,
+      liveReplyChipError,
       voiceRecording,
       onMicInput,
       onOpenScreenshotBrowser,
@@ -1750,6 +1846,7 @@ const Content: React.FC = () => {
         onBeforeDeckyModal={captureSessionBeforeModal}
         onCompleteDeckyModalClose={finalizeShowModalAndRestoreActiveTab}
         onOpenOllamaModelsHub={openOllamaModelsHub}
+        onOpenRoutingOrderModal={openRoutingOrderModal}
         responseVerifyEnabled={responseVerifyEnabled}
         setResponseVerifyEnabled={setResponseVerifyEnabled}
         responseVerifySecondPass={responseVerifySecondPass}

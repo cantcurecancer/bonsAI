@@ -39,6 +39,8 @@ export function toBonsaiSettingsPayload(
     model_policy_tier: input.modelPolicyTier,
     model_policy_non_foss_unlocked: input.modelPolicyNonFossUnlocked,
     model_allow_high_vram_fallbacks: input.modelAllowHighVramFallbacks,
+    text_model_routing_order: input.textModelRoutingOrder,
+    vision_model_routing_order: input.visionModelRoutingOrder,
     ollama_local_on_deck: input.ollamaLocalOnDeck,
     strategy_spoiler_masking_enabled: input.strategySpoilerMaskingEnabled,
     strategy_spoiler_auto_reveal_after_consent: false,

@@ -73,6 +73,8 @@ function minimalSnapshot(overrides: Partial<BonsaiSessionSurvivalSnapshot> = {})
       ragCorpusVersion: "",
       chatIdleTimeoutMinutes: 15,
       devBundleThreadTitleInReply: false,
+      textModelRoutingOrder: [],
+      visionModelRoutingOrder: [],
     },
     ollamaResponse: "reply text",
     ollamaContext: null,

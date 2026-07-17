@@ -29,6 +29,7 @@ export type OllamaTabProps = {
   onBeforeDeckyModal: () => void;
   onCompleteDeckyModalClose: (close: () => void) => void;
   onOpenOllamaModelsHub: (opts?: { initialSection?: "policy" | "browse" | "advanced" }) => void;
+  onOpenRoutingOrderModal: (kind: "text" | "vision") => void;
 
   responseVerifyEnabled: boolean;
   setResponseVerifyEnabled: (v: boolean) => void;
@@ -70,6 +71,7 @@ export const OllamaTab: React.FC<OllamaTabProps> = ({
   onBeforeDeckyModal,
   onCompleteDeckyModalClose,
   onOpenOllamaModelsHub,
+  onOpenRoutingOrderModal,
   responseVerifyEnabled,
   setResponseVerifyEnabled,
   responseVerifySecondPass,
@@ -339,10 +341,38 @@ export const OllamaTab: React.FC<OllamaTabProps> = ({
                 fontSize: 12,
                 fontWeight: 600,
                 textAlign: "left",
+                marginBottom: 8,
               }}
               aria-label="Open AI models hub"
             >
               Open AI models… — {MODEL_POLICY_TIER_LABELS_PLAIN[modelPolicyTier]}
+            </Button>
+            <Button
+              onClick={() => onOpenRoutingOrderModal("text")}
+              style={{
+                width: "100%",
+                minHeight: 36,
+                fontSize: 12,
+                fontWeight: 600,
+                textAlign: "left",
+                marginBottom: 8,
+              }}
+              aria-label="Set text model try order"
+            >
+              Set text model try order…
+            </Button>
+            <Button
+              onClick={() => onOpenRoutingOrderModal("vision")}
+              style={{
+                width: "100%",
+                minHeight: 36,
+                fontSize: 12,
+                fontWeight: 600,
+                textAlign: "left",
+              }}
+              aria-label="Set vision model try order"
+            >
+              Set vision model try order…
             </Button>
           </div>
         </PanelSectionRow>

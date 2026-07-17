@@ -186,7 +186,10 @@ from backend.services.knowledge_base_schema import (
 from refactor_helpers import (
     build_ollama_chat_url,
     is_valid_setup_pull_profile,
+    is_vision_capable_tag,
+    merge_pulled_tag,
     normalize_ollama_base,
+    remove_tag_from_routing_orders,
 )
 
 logger = decky.logger
@@ -720,7 +723,7 @@ class Plugin:
     @staticmethod
     def _parse_ask_payload(
         question: Any, PcIp: str
-    ) -> Tuple[str, str, str, str, list, str, bool, Optional[dict]]:
+    ) -> Tuple[str, str, str, str, list, str, bool, Optional[dict], Optional[dict]]:
         """Normalize ask payload variants into canonical question/ip/context values."""
         app_id = ""
         app_name = ""
@@ -728,6 +731,7 @@ class Plugin:
         ask_mode_raw: Any = None
         spoiler_consent_raw: Any = None
         checklist_state_raw: Any = None
+        reply_followup_raw: Any = None
         if isinstance(question, dict):
             payload = question
             question = payload.get("question", "")
@@ -740,11 +744,15 @@ class Plugin:
             checklist_state_raw = payload.get(
                 "strategy_checklist_state", payload.get("strategyChecklistState", checklist_state_raw)
             )
+            reply_followup_raw = payload.get("reply_followup", payload.get("replyFollowup", reply_followup_raw))
         normalized_question = str(question or "").strip()
         normalized_pc_ip = str(PcIp or "").strip()
         ask_mode = sanitize_ask_mode(ask_mode_raw, Plugin.VALID_ASK_MODES, Plugin.DEFAULT_ASK_MODE)
         spoiler_consent = Plugin._coerce_payload_bool(spoiler_consent_raw)
         strategy_checklist_state = normalize_ask_checklist_state(checklist_state_raw)
+        from backend.services.ollama_prompts import sanitize_reply_followup
+
+        reply_followup = sanitize_reply_followup(reply_followup_raw)
         return (
             normalized_question,
             normalized_pc_ip,
@@ -754,6 +762,7 @@ class Plugin:
             ask_mode,
             spoiler_consent,
             strategy_checklist_state,
+            reply_followup,
         )
 
     @staticmethod
@@ -2014,7 +2023,40 @@ class Plugin:
             "ollama rm succeeded",
             fields={"ok": True},
         )
+        settings = await plugin.load_settings()
+        updated = remove_tag_from_routing_orders(settings, t)
+        await plugin.save_settings(
+            {
+                "text_model_routing_order": updated.get("text_model_routing_order"),
+                "vision_model_routing_order": updated.get("vision_model_routing_order"),
+            }
+        )
         return {"ok": True, "removed": t, "error": ""}
+
+    async def merge_pulled_tags_into_routing_orders(self, tags: Any = None, size_gb_by_tag: Any = None):
+        """Merge newly pulled tags into text/vision routing orders (bottom or high-VRAM top)."""
+        plugin = Plugin._coerce_instance(self)
+        tag_list = normalize_ollama_pull_tags(tags)
+        if not tag_list:
+            return {"ok": False, "error": "no_tags"}
+        settings = await plugin.load_settings()
+        high_vram = settings.get("model_allow_high_vram_fallbacks") is True
+        text = list(settings.get("text_model_routing_order") or [])
+        vision = list(settings.get("vision_model_routing_order") or [])
+        sizes = size_gb_by_tag if isinstance(size_gb_by_tag, dict) else {}
+        for tag in tag_list:
+            raw_gb = sizes.get(tag)
+            gb = float(raw_gb) if isinstance(raw_gb, (int, float)) else None
+            text = merge_pulled_tag(text, tag, high_vram, size_gb=gb)
+            if is_vision_capable_tag(tag):
+                vision = merge_pulled_tag(vision, tag, high_vram, size_gb=gb)
+        saved = await plugin.save_settings(
+            {
+                "text_model_routing_order": text,
+                "vision_model_routing_order": vision,
+            }
+        )
+        return {"ok": True, "settings": saved}
 
     async def fetch_ollama_catalog_metadata(self, tags: Any = None):
         """Live sizes from registry.ollama.ai with offline fallback metadata."""
@@ -2357,7 +2399,14 @@ class Plugin:
             out["sysfs_writes"] = read_sandbox_sysfs_writes()
         return out
 
-    async def save_ask_feedback(self, rating: str, request_id: int = 0, question_len: int = 0, success: bool = False):
+    async def save_ask_feedback(
+        self,
+        rating: str,
+        request_id: int = 0,
+        question_len: int = 0,
+        success: bool = False,
+        chip_id: str = "",
+    ):
         """Persist thumbs up/down locally (JSONL under plugin settings); no network."""
         from backend.services.feedback_service import append_ask_feedback
 
@@ -2369,6 +2418,7 @@ class Plugin:
             rating=str(rating or ""),
             question_len=int(question_len or 0),
             success=success is True,
+            chip_id=str(chip_id or ""),
         )
 
     async def read_host_clipboard_text(self):
@@ -2473,6 +2523,7 @@ class Plugin:
         spoiler_consent: bool = False,
         token_stream_request_id: Optional[int] = None,
         strategy_checklist_state: Optional[dict] = None,
+        reply_followup: Optional[dict] = None,
     ) -> dict:
         """Run one full ask lifecycle, including Ollama call timing and optional TDP application."""
         plugin = Plugin._coerce_instance(self)
@@ -2487,12 +2538,13 @@ class Plugin:
             spoiler_consent=spoiler_consent,
             token_stream_request_id=token_stream_request_id,
             strategy_checklist_state=strategy_checklist_state,
+            reply_followup=reply_followup,
         )
 
     async def ask_game_ai(self, question: Any = "", PcIp: str = ""):
         """Handle foreground ask RPCs and validate required inputs before execution."""
         logger.info("ask_game_ai: RPC entry (arg type=%s)", type(question).__name__)
-        parsed_question, pc_ip, app_id, app_name, attachments, ask_mode, spoiler_consent, strategy_checklist_state = (
+        parsed_question, pc_ip, app_id, app_name, attachments, ask_mode, spoiler_consent, strategy_checklist_state, reply_followup = (
             Plugin._parse_ask_payload(question, PcIp)
         )
         if not parsed_question:
@@ -2523,6 +2575,7 @@ class Plugin:
             ask_mode=ask_mode,
             spoiler_consent=spoiler_consent,
             strategy_checklist_state=strategy_checklist_state,
+            reply_followup=reply_followup,
         )
 
     async def _run_background_request(
@@ -2536,6 +2589,7 @@ class Plugin:
         ask_mode: str = "speed",
         spoiler_consent: bool = False,
         strategy_checklist_state: Optional[dict] = None,
+        reply_followup: Optional[dict] = None,
     ) -> None:
         """Execute a queued background request and publish terminal status for polling clients."""
         try:
@@ -2549,6 +2603,7 @@ class Plugin:
                 spoiler_consent=spoiler_consent,
                 token_stream_request_id=request_id,
                 strategy_checklist_state=strategy_checklist_state,
+                reply_followup=reply_followup,
             )
         except asyncio.CancelledError:
             return
@@ -2618,7 +2673,7 @@ class Plugin:
         plugin._ensure_background_state()
 
         logger.info("start_background_game_ai: RPC entry (arg type=%s)", type(question).__name__)
-        parsed_question, pc_ip, app_id, app_name, attachments, ask_mode, spoiler_consent, strategy_checklist_state = (
+        parsed_question, pc_ip, app_id, app_name, attachments, ask_mode, spoiler_consent, strategy_checklist_state, reply_followup = (
             Plugin._parse_ask_payload(question, PcIp)
         )
         chat_thread_id = Plugin._parse_chat_thread_id(question)
@@ -2784,6 +2839,7 @@ class Plugin:
                     ask_mode=ask_mode,
                     spoiler_consent=spoiler_consent,
                     strategy_checklist_state=strategy_checklist_state,
+                    reply_followup=reply_followup,
                 )
             )
             if chat_thread_id:
@@ -2999,6 +3055,7 @@ class Plugin:
         strategy_spoiler_consent: bool = False,
         token_stream_request_id: Optional[int] = None,
         strategy_checklist_state: Optional[dict] = None,
+        preferred_model: Optional[str] = None,
     ):
         """Orchestrate attachment prep, prompt assembly, and model fallback request execution."""
         return await run_ask_ollama(
@@ -3018,6 +3075,7 @@ class Plugin:
             strategy_spoiler_consent=strategy_spoiler_consent,
             token_stream_request_id=token_stream_request_id,
             strategy_checklist_state=strategy_checklist_state,
+            preferred_model=preferred_model,
         )
 
     async def _stop_voice_transcription_internal(self) -> None:

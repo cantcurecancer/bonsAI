@@ -1,5 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import { toaster } from "@decky/api";
+import React, { useEffect, useRef, useState } from "react";
 import { PanelSectionRow, Button, Focusable } from "@decky/ui";
 import {
   BONSAI_CHAT_AI_BUBBLE_MAX_FRAC,
@@ -21,7 +20,6 @@ import { BonsaiChatSecondaryButton } from "./BonsaiChatSecondaryButton";
 import { buildReplyActionsElement } from "../utils/buildReplyActionsElement";
 import { buildAnswerBubbleElement } from "../utils/buildAnswerBubbleElement";
 import { buildUserBubbleElement } from "../utils/buildUserBubbleElement";
-import { buildCollapsedTurnTitle } from "../utils/chatTurnTitle";
 import { ContextChipLadder } from "./ContextChipLadder";
 import { SessionContextStrip } from "./SessionContextStrip";
 import { chipsFromSnapshot } from "../utils/contextChipsFromSnapshot";
@@ -35,9 +33,10 @@ import type {
 } from "../types/bonsaiUi";
 import { ThinkingSpinnerIcon } from "./icons";
 import type { TransparencySnapshot } from "../utils/inputTransparency";
-import { callDeckyWithTimeout, DECKY_RPC_TIMEOUT_MS, formatDeckyRpcError } from "../utils/deckyCall";
 import { useStreamScrollPin } from "../hooks/useStreamScrollPin";
 import type { AskModeId } from "../data/askMode";
+import type { LastExchangeSnapshot } from "../types/backgroundAsk";
+import type { ReplyMicroActionId } from "../data/replyMicroActions";
 
 const BONSAI_CHAT_AI_MAX_WIDTH_CSS = `min(${Math.round(BONSAI_CHAT_AI_BUBBLE_MAX_FRAC * 100)}%, 100%)`;
 
@@ -75,8 +74,13 @@ export type MainTabChatTranscriptProps = {
   thinkingSummary?: string | null;
   desktopAskVerboseLogging?: boolean;
   lastRequestId?: number | null;
-  lastExchange?: { question: string; answer: string } | null;
+  lastExchange?: LastExchangeSnapshot | null;
   onRetryLastResponse?: () => void;
+  liveReplyFeedbackRating?: "up" | "down" | null;
+  onReplyFeedback?: (rating: "up" | "down") => void;
+  onReplyMicroAction?: (chipId: ReplyMicroActionId) => void;
+  liveReplyChipUsed?: boolean;
+  liveReplyChipError?: string | null;
   askMode: AskModeId;
   transcriptFocusRef?: React.RefObject<HTMLDivElement | null>;
 };
@@ -115,39 +119,35 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
     lastRequestId = null,
     lastExchange = null,
     onRetryLastResponse,
+    liveReplyFeedbackRating = null,
+    onReplyFeedback,
+    onReplyMicroAction,
+    liveReplyChipUsed = false,
+    liveReplyChipError = null,
     askMode,
     transcriptFocusRef,
   } = props;
 
   const [diagnosticsOpen, setDiagnosticsOpen] = useState(false);
-  const [feedbackRating, setFeedbackRating] = useState<"up" | "down" | null>(null);
   const [sessionHighlightTurnId, setSessionHighlightTurnId] = useState<string | null>(null);
+  const [transparencyDetailsOpen, setTransparencyDetailsOpen] = useState(false);
 
   useEffect(() => {
     setDiagnosticsOpen(false);
-    setFeedbackRating(null);
     setSessionHighlightTurnId(null);
+    setTransparencyDetailsOpen(false);
   }, [transparencySnapshot?.raw_question, transparencySnapshot?.final_response]);
 
   const noActiveGameContext =
     ollamaContext?.app_context !== "active" || !ollamaContext?.app_id?.trim();
 
-  const onSendFeedback = useCallback(
-    async (rating: "up" | "down") => {
-      setFeedbackRating(rating);
-      try {
-        await callDeckyWithTimeout<[string, number, number, boolean], { ok?: boolean }>(
-          "save_ask_feedback",
-          [rating, lastRequestId ?? 0, lastExchange?.question?.length ?? 0, true],
-          DECKY_RPC_TIMEOUT_MS
-        );
-        toaster.toast({ title: "Feedback saved locally", body: "", duration: 2500 });
-      } catch (e: unknown) {
-        toaster.toast({ title: "Feedback not saved", body: formatDeckyRpcError(e), duration: 4000 });
-      }
-    },
-    [lastExchange?.question, lastRequestId]
-  );
+  const onToggleTransparencyDetails = () => {
+    setTransparencyDetailsOpen((open) => {
+      const next = !open;
+      setSessionHighlightTurnId(next ? "live" : null);
+      return next;
+    });
+  };
 
   const liveQuestion = askThreadDisplayQuestion.trim();
   const liveResponseBody = isStreamingPreview ? streamDisplayText : ollamaResponse;
@@ -285,10 +285,22 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
             (lastExchange?.answer?.trim() || onRetryLastResponse)
               ? buildReplyActionsElement({
                   replyKey: "live",
-                  rating: feedbackRating,
-                  onRate: (rating) => void onSendFeedback(rating),
+                  rating: liveReplyFeedbackRating,
+                  onRate: (rating) => {
+                    onReplyFeedback?.(rating);
+                  },
                   showFeedback: Boolean(lastExchange?.answer?.trim()),
                   onRetry: onRetryLastResponse ?? undefined,
+                  transparencyOpen: transparencyDetailsOpen,
+                  onToggleTransparency:
+                    transparencySnapshot && chipsFromSnapshot(transparencySnapshot).length > 0
+                      ? onToggleTransparencyDetails
+                      : undefined,
+                  chipsDisabled: false,
+                  chipUsed: liveReplyChipUsed,
+                  chipError: liveReplyChipError,
+                  onChip: onReplyMicroAction,
+                  askInFlight: isAsking,
                 })
               : null}
             {expandedTurnKey === "live" &&
@@ -483,7 +495,7 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
         : null
     }
     archivedTurns={askThreadCollapsed}
-    highlightTurnId={sessionHighlightTurnId}
+    highlightTurnId={sessionHighlightTurnId ?? (transparencyDetailsOpen ? "live" : null)}
     onHighlightClear={() => setSessionHighlightTurnId(null)}
   />
 </PanelSectionRow>

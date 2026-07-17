@@ -400,6 +400,22 @@ export function normalizeDevBundleThreadTitleInReply(value: unknown): boolean {
   return value === true;
 }
 
+export function normalizeModelRoutingOrder(raw: unknown): string[] {
+  if (!Array.isArray(raw)) return [];
+  const out: string[] = [];
+  const seen = new Set<string>();
+  for (const item of raw) {
+    if (typeof item !== "string") continue;
+    const t = item.trim();
+    if (!t || t.length > 96 || seen.has(t)) continue;
+    if (!/^[a-z0-9][a-z0-9._-]{0,63}(:[a-z0-9._-]{1,32})?$/i.test(t)) continue;
+    seen.add(t);
+    out.push(t);
+    if (out.length >= 16) break;
+  }
+  return out;
+}
+
 export function normalizeSettings(data: unknown): BonsaiSettings {
   const raw = typeof data === "object" && data !== null ? (data as Partial<BonsaiSettings>) : {};
   const latencyTimeout = reconcileLatencyWarningAndTimeout(
@@ -448,6 +464,8 @@ export function normalizeSettings(data: unknown): BonsaiSettings {
     model_policy_tier: modelPolicy.model_policy_tier,
     model_policy_non_foss_unlocked: modelPolicy.model_policy_non_foss_unlocked,
     model_allow_high_vram_fallbacks: normalizeModelAllowHighVramFallbacks(raw.model_allow_high_vram_fallbacks),
+    text_model_routing_order: normalizeModelRoutingOrder(raw.text_model_routing_order),
+    vision_model_routing_order: normalizeModelRoutingOrder(raw.vision_model_routing_order),
     ollama_local_on_deck: normalizeOllamaLocalOnDeck(raw.ollama_local_on_deck),
     strategy_spoiler_masking_enabled: normalizeStrategySpoilerMaskingEnabled(raw.strategy_spoiler_masking_enabled),
     strategy_spoiler_auto_reveal_after_consent: normalizeStrategySpoilerAutoRevealAfterConsent(

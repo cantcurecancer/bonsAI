@@ -159,6 +159,16 @@ Optional on-Deck corpus for Strategy and troubleshooting Asks. Full architecture
 
 **Clear all data:** **Settings → Advanced → Clear all data** wipes settings (including permissions), voice STT assets, feedback log, runtime cache, all `bonsai:*` browser keys, `~/.bonsai/cache`, and **`~/.bonsai/proton_experiment_journal.json`**. When **Ollama on this Deck** was enabled **or** a local Ollama home (`~/.ollama`) / user-prefix install exists, it also removes local model blobs and the user-prefix Ollama binary under `~/.local`. LAN-hosted Ollama on another PC is not touched.
 
+### Model try-order pickers (text + vision)
+
+**Feature:** **Ollama** tab → **Models & routing** → **Set text model try order…** / **Set vision model try order…** opens a fullscreen picker. Order is user-owned (max 16 tags); empty saved lists fall back to shipped essentials ∩ installed.
+
+**High-VRAM:** **Allow high-VRAM models in routing** (AI models hub → **Advanced**) controls whether large tags are *tried* at Ask time. When off, heavy models stay in the list but appear grayed and are skipped (positions preserved). When on, newly pulled large models are inserted at the **top**; already-installed heavy models keep their saved position.
+
+**Pull/delete:** Successful model pulls append the tag to both lists (bottom, or top when high-VRAM rules apply). Deleting a model in bonsAI removes the tag from saved orders.
+
+**Host fallback:** After your ordered tries fail, bonsAI may append up to five tier-filtered installed tags (deprioritized tail).
+
 ### Ollama HTTP 404 with Gemma / open-weight models (Tier 2)
 
 **Symptom:** Ask fails with **HTTP 404** for a Gemma tag you thought you installed.

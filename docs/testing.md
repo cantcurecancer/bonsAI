@@ -414,8 +414,10 @@ Maps [roadmap.md](roadmap.md) **Completed** summary and [archive/roadmap-complet
 | RESET-SESSION | Reset session cache | RESET-SESSION-THREADS | Open | Clear cache keeps private threads; picker still lists saved chats |
 | CHAT-SLOTS | Named chat slots (threads, bubbles, picker) | CHAT-SLOTS-01…08, SMOKE-H | Open | `test_chat_threads_service.py`; on-Deck D-pad mini-list + picker |
 | DATA-CLEAR | Clear all plugin data (settings + permissions wipe) | DATA-CLEAR-01, DESKTOP-AUTOSAVE-THREAD | Open | Regression: modal survival must not restore old settings; optional Desktop chats second confirm |
-| RETRY-PROMPT | Retry same prompt (regenerate) | FEEDBACK-01 | Open | `BonsaiChatReplyActions.tsx`; on-Deck |
+| RETRY-PROMPT | Retry same prompt (regenerate) | FEEDBACK-01 | Open | `buildReplyActionsElement.tsx`; on-Deck |
 | ASK-FEEDBACK | Per-turn local feedback (thumbs) | FEEDBACK-01 | Open | `save_ask_feedback` RPC; on-Deck |
+| MODEL-ROUTING | User-owned text/vision try-order pickers | ROUTING-01…04 | Open | `ModelRoutingOrderModal.tsx`, `tests/test_model_routing_order.py`; on-Deck D-pad |
+| REPLY-MICRO | Reply micro-action chips + follow-up send | MICRO-01…04 | Open | `replyMicroActions.ts`, `tests/test_reply_followup.py`; on-Deck |
 
 ### AI-assisted power and UX
 
@@ -570,7 +572,21 @@ Requires **Settings → Data → Show Developer tab** → **Token streaming (exp
 - [ ] **THINKING-01** Pending: `thinking_summary` line visible (sarcastic/playful copy even without Character Voice); no placeholder AI bubble before partial; opener woven via `compose_thinking_blurb`
 - [ ] **THINKING-02** Mid-Ask prep phases (Proton logs, TDP read, screenshot prep, model retry): `thinking_summary` keeps question snippet + game — no generic downgrade to e.g. **Building context…** alone
 - [ ] **THINKING-03** During token streaming: italic thinking line stays visible above preview bubble; updates from `<bonsai-status>` or elapsed fallback (not hidden when `streaming=true`)
-- [ ] **FEEDBACK-01** Reply-action chrome: `.bonsai-chat-secondary-btn` on feedback/retry/details
+- [ ] **FEEDBACK-01** Reply-action chrome: `.bonsai-chat-secondary-btn` on feedback/retry/details; neutral toasts on thumbs
+
+### Model routing pickers (2026-07-17)
+
+- [ ] **ROUTING-01** Ollama tab → **Set text model try order…** opens fullscreen picker; installed tags listed (defaults on top)
+- [ ] **ROUTING-02** Move up/down reorders; **Reset to defaults**; **Done** persists `text_model_routing_order`
+- [ ] **ROUTING-03** High-VRAM toggle off: heavy tags grayed in list and skipped at Ask; on: new large pulls insert at top
+- [ ] **ROUTING-04** D-pad: Ollama routing buttons → picker rows (move up/down) → footer Reset/Done
+
+### Reply micro-actions (2026-07-17)
+
+- [ ] **MICRO-01** After live reply: thumbs row + two chip rows + Retry/Show details; all disabled while Ask in flight
+- [ ] **MICRO-02** Chip tap autofills Ask field + toast; one chip per reply; chip-tap RPC error inline under chips only
+- [ ] **MICRO-03** Send after chip arms follow-up (parent model pin, parent Q+A in backend); transparency route `reply_followup:*`
+- [ ] **MICRO-04** D-pad: answer bubble ↑ → thumbs → chip rows → utility row → context strip
 
 ### Proton experiment journal (2026-07-17)
 

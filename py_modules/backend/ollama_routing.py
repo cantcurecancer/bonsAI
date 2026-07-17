@@ -228,21 +228,10 @@ def select_ollama_models(
     ask_mode: str = "speed",
     high_vram_fallbacks: bool = False,
 ) -> list[str]:
-    """Return ordered Ollama model fallbacks. FOSS-first safe chains (~16GB); optional large-model tail.
-
-    The Decky backend tries each name in order; if the host returns a missing-model style error,
-    it continues to the next tag (see ``ask_ollama`` in ``main.py``). For screenshot asks, HTTP 500 / OOM-style
-    responses also advance to the next vision tag so smaller FOSS models (e.g. ``llava:7b``) run before heavier VL tags.
-    """
+    """Return shipped essentials chain (legacy/tests). User order uses ``resolve_routing_order``."""
+    del high_vram_fallbacks  # High-VRAM gating lives in user routing order + settings toggle.
     mode = ask_mode if ask_mode in _VALID_ASK_MODES else "speed"
-    if requires_vision:
-        base = _vision_safe_chain(mode)
-        if high_vram_fallbacks:
-            base = _dedupe_preserve_order(base + _vision_high_vram_tail(mode))
-    else:
-        base = _text_safe_chain(mode)
-        if high_vram_fallbacks:
-            base = _dedupe_preserve_order(base + _text_high_vram_tail(mode))
+    base = _vision_safe_chain(mode) if requires_vision else _text_safe_chain(mode)
     return sort_models_deprioritized_last(base)
 
 
@@ -270,16 +259,170 @@ def filter_models_to_installed(
     return matched, skipped
 
 
+HIGH_VRAM_SIZE_GB_THRESHOLD = 15.0
+MAX_MODEL_ROUTING_ORDER_LEN = 16
+HOST_FALLBACK_TAIL_CAP = 5
+
+# Vision-capable hints for backend routing (UI uses pull catalog ``vision`` tag).
+_VISION_TAG_SUBSTRINGS = ("llava", "vision", "vl", "internvl", "moondream", "bakllava")
+_VISION_KNOWN_TAGS = frozenset(
+    {
+        "qwen2.5vl:3b",
+        "qwen2.5vl",
+        "qwen2.5vl:latest",
+        "qwen3.5:4b",
+        "llava:7b",
+        "llava",
+        "llava:latest",
+        "gemma4:e2b-it-qat",
+        "gemma4:e2b",
+        "gemma3:4b",
+        "qwen3-vl",
+        "qwen3-vl:30b-a3b",
+    }
+)
+
+
+def _all_known_high_vram_tags() -> frozenset[str]:
+    tags: set[str] = set()
+    for lst in (
+        _TEXT_HIGH_VRAM_SPEED,
+        _TEXT_HIGH_VRAM_STRATEGY,
+        _TEXT_HIGH_VRAM_DEEP,
+        _VISION_HIGH_VRAM_SPEED,
+        _VISION_HIGH_VRAM_STRATEGY,
+        _VISION_HIGH_VRAM_DEEP,
+    ):
+        tags.update(lst)
+    return frozenset(tags)
+
+
+_KNOWN_HIGH_VRAM_TAGS = _all_known_high_vram_tags()
+
+
+def default_text_routing_seed() -> list[str]:
+    """Shipped essentials order for text-only asks (mode-independent)."""
+    return _text_safe_chain("speed")
+
+
+def default_vision_routing_seed() -> list[str]:
+    """Shipped essentials order for vision asks (mode-independent)."""
+    return _vision_safe_chain("speed")
+
+
+def is_high_vram_tag(tag: str, size_gb: float | None = None) -> bool:
+    """True when tag is in maintainer heavy set or catalog size meets threshold."""
+    t = (tag or "").strip()
+    if not t:
+        return False
+    if t in _KNOWN_HIGH_VRAM_TAGS:
+        return True
+    if size_gb is not None and size_gb >= HIGH_VRAM_SIZE_GB_THRESHOLD:
+        return True
+    return False
+
+
+def is_vision_capable_tag(tag: str) -> bool:
+    """Best-effort vision membership for routing lists (unknown tags allowed with UI warn)."""
+    t = (tag or "").strip().lower()
+    if not t:
+        return False
+    if t in _VISION_KNOWN_TAGS:
+        return True
+    base = t.split(":", 1)[0]
+    if base in _VISION_KNOWN_TAGS:
+        return True
+    return any(hint in t for hint in _VISION_TAG_SUBSTRINGS)
+
+
+def build_initial_routing_order(requires_vision: bool, installed: list[str]) -> list[str]:
+    """Defaults intersect installed on top, remaining installed appended (picker rule A)."""
+    seed = default_vision_routing_seed() if requires_vision else default_text_routing_seed()
+    inst = [t for t in installed if (t or "").strip()]
+    inst_set = set(inst)
+    head = [t for t in seed if t in inst_set]
+    tail = [t for t in inst if t not in head]
+    if requires_vision:
+        tail = [t for t in tail if is_vision_capable_tag(t)]
+    return _dedupe_preserve_order(head + tail)[:MAX_MODEL_ROUTING_ORDER_LEN]
+
+
+def resolve_routing_order(
+    requires_vision: bool,
+    settings: dict[str, Any],
+    installed: list[str],
+    *,
+    size_gb_by_tag: dict[str, float] | None = None,
+) -> list[str]:
+    """User-owned try order before model-policy filter; skips inactive high-VRAM when toggle off."""
+    high_vram = settings.get("model_allow_high_vram_fallbacks") is True
+    key = "vision_model_routing_order" if requires_vision else "text_model_routing_order"
+    saved = settings.get(key)
+    if isinstance(saved, list) and saved:
+        order = [str(t).strip() for t in saved if str(t).strip()]
+    else:
+        order = build_initial_routing_order(requires_vision, installed)
+
+    sizes = size_gb_by_tag or {}
+    tryable: list[str] = []
+    for tag in order:
+        gb = sizes.get(tag)
+        if not high_vram and is_high_vram_tag(tag, gb):
+            continue
+        tryable.append(tag)
+    return _dedupe_preserve_order(tryable)[:MAX_MODEL_ROUTING_ORDER_LEN]
+
+
+def merge_pulled_tag(
+    order: list[str],
+    tag: str,
+    high_vram_enabled: bool,
+    *,
+    size_gb: float | None = None,
+) -> list[str]:
+    """Append pulled tag to bottom, or top when high-VRAM + toggle on."""
+    t = (tag or "").strip()
+    if not t:
+        return list(order)
+    base = [x for x in order if x != t]
+    if high_vram_enabled and is_high_vram_tag(t, size_gb):
+        merged = [t] + base
+    else:
+        merged = base + [t]
+    return _dedupe_preserve_order(merged)[:MAX_MODEL_ROUTING_ORDER_LEN]
+
+
+def remove_tag_from_routing_orders(settings: dict[str, Any], tag: str) -> dict[str, Any]:
+    """Remove one tag from both text and vision routing lists."""
+    t = (tag or "").strip()
+    if not t:
+        return settings
+    out = dict(settings)
+    for key in ("text_model_routing_order", "vision_model_routing_order"):
+        cur = out.get(key)
+        if isinstance(cur, list):
+            out[key] = [x for x in cur if str(x).strip() != t]
+    return out
+
+
+def build_host_fallback_tail(user_chain: list[str], installed: list[str]) -> list[str]:
+    """Remaining installed tags not in user chain, deprioritized, capped."""
+    chain_set = set(user_chain)
+    remaining = [t for t in installed if t not in chain_set]
+    return sort_models_deprioritized_last(remaining)[:HOST_FALLBACK_TAIL_CAP]
+
+
 def build_effective_models_to_try(
     models_after_policy: list[str],
     installed: list[str],
+    *,
+    user_chain_before_policy: list[str] | None = None,
 ) -> tuple[list[str], str]:
     """
     Prefer what is actually installed on the Ollama host.
 
     When ``/api/tags`` is known, never walk the full curated chain through missing tags —
-    use installed chain matches first, then any other installed tag as a host fallback
-    (e.g. only ``gemma4:latest`` on Deck in Speed mode).
+    use installed chain matches first, then deprioritized host fallback tail (cap 5).
     """
     if not installed:
         return list(models_after_policy), "full_chain"
@@ -289,7 +432,10 @@ def build_effective_models_to_try(
     if in_chain:
         return in_chain, "installed_in_policy_chain"
 
-    return list(installed), "installed_host_fallback"
+    chain_for_tail = (
+        user_chain_before_policy if user_chain_before_policy is not None else models_after_policy
+    )
+    return build_host_fallback_tail(chain_for_tail, installed), "installed_host_fallback"
 
 
 def no_installed_routing_models_message(installed: list[str], requires_vision: bool) -> str:

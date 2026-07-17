@@ -408,9 +408,15 @@ def build_ollama_route_snapshot(
     err_tail: str,
     elapsed_seconds: float,
     verify_result: Optional[dict] = None,
+    reply_followup: Optional[dict] = None,
 ) -> dict[str, Any]:
+    route = "ollama"
+    if isinstance(reply_followup, dict):
+        chip_id = str(reply_followup.get("chip_id") or "").strip()
+        if chip_id:
+            route = f"reply_followup:{chip_id}"
     base: dict[str, Any] = {
-        "route": "ollama",
+        "route": route,
         "raw_question": raw_question,
         "sanitizer_action": sanitizer_action,
         "sanitizer_reason_codes": list(sanitizer_reason_codes),

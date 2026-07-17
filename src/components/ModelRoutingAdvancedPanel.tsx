@@ -39,8 +39,8 @@ export function ModelRoutingAdvancedPanel({
         }}
       />
       <ToggleField
-        label="Allow high-VRAM model fallbacks"
-        description="Adds large-model tags after the ~16GB-friendly chain. Can OOM or load slowly."
+        label="Allow high-VRAM models in routing"
+        description="When on, newly pulled large models are added to the top of your try-order lists. When off, they stay visible but grayed and are skipped at Ask time."
         checked={modelAllowHighVramFallbacks}
         onChange={onModelAllowHighVramFallbacksChange}
       />

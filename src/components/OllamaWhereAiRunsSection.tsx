@@ -538,6 +538,14 @@ export const OllamaWhereAiRunsSection: React.FC<OllamaWhereAiRunsSectionProps> =
           DECKY_RPC_TIMEOUT_MS
         ).catch(() => {});
       }
+      const pulled = localSetupStatus.pull_tags?.filter(Boolean) ?? [];
+      if (localSetupStatus.profile === "custom" && pulled.length > 0) {
+        void callDeckyWithTimeout<[string[]], { ok?: boolean }>(
+          "merge_pulled_tags_into_routing_orders",
+          [pulled],
+          DECKY_RPC_TIMEOUT_MS
+        ).catch(() => {});
+      }
       toaster.toast({
         title: "Local Ollama setup complete",
         body: wasUpdateInstalled ? "Running connection test and refreshing model catalog." : "Running connection test.",

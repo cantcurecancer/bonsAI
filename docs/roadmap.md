@@ -49,12 +49,6 @@ Within this section: ascending stars (★★ → ★★★ → ★★★★). Br
 
 - ★★ **Prompt testing pass** (beyond shipped MVP)
   - **Goal:** Broader systematic validation and tuning beyond the shipped doc MVP (see **Completed** → Prompt-testing MVP; working matrices in [testing.md](testing.md)).
-- ★★ **Text model chains** (user-configurable text fallbacks)
-  - **Goal:** Vision Ask paths already use ordered fallback lists per mode via `[refactor_helpers.py](../refactor_helpers.py)` (`select_ollama_models(..., requires_vision=True)`). **Text-only** paths still use fixed lists today. Add Settings (or import/export JSON) so users define **ordered text model tags per mode** (Speed / Strategy / Expert), with validation, sane defaults matching shipped lists, and try-next-on-`model not found` parity with vision.
-  - **Primary work:** settings schema, wiring into model selection for non-vision asks.
-  - **Files:** `refactor_helpers.py`, `main.py`, `settings_service.py`, `settingsAndResponse.ts`, Settings UI as needed.
-  - **Depends on:** shipped Ask routing + vision fallback behavior (reference implementation).
-  - **Not in scope:** distinct embedding-tier routing unrelated to tag chains.
 - ★★ **Preset chip expansion** (streaming / LAN / Steam Input — incremental, N)
   - **Baseline shipped:** `PRESET_PROMPTS` in `[src/data/presets.ts](../src/data/presets.ts)` drives the main-tab carousel (advice-first strings, strategy mode switches, honest `beta: true` previews). See **Completed** → First-run and prompts — not a separate ship milestone.
   - **Goal:** Add or refresh preset strings as related features land (streaming perf, LAN/Ollama, Steam Input troubleshooting) — content tuning only.
@@ -71,12 +65,6 @@ Within this section: ascending stars (★★ → ★★★ → ★★★★). Br
   - **Files:** `composeThinkingBlurb.ts`, `bonsai_stream_tags.py`, `composeThinkingBlurb.test.ts`, `tests/test_bonsai_stream_tags.py`.
   - **Depends on:** shipped **Always-sarcastic thinking blurb** + phase publisher.
   - **Not in scope:** tiny/status model (`thinking_tiny_model_service`); fake 0.5–1.5s rotation; persistent blurb memory.
-- ★★ **Reply micro-actions** (follow-up chips)
-  - **Goal:** Per-reply secondary actions beyond **Retry same prompt** / thumbs: e.g. **Shorter**, **Step-by-step**, **What first?** — each submits a **small follow-up turn** with prior answer as context (not a full regenerate).
-  - **Primary work:** Micro-prompt templates; new turn in unified Ask orchestration; compact chip row on `BonsaiChatReplyActions`; Input transparency labels derivative turns.
-  - **Files:** `useBonsaiAskOrchestration.ts`, `BonsaiChatReplyActions.tsx`, `game_ai_request.py`, `ollama_prompts.py`.
-  - **Depends on:** Shipped accordion turns + **Retry same prompt**; settings persistence.
-  - **Not in scope:** Global **Reply style** slider (shipped — see **Completed**); **named chat slots** (shipped — see **Completed**); TDP apply from micro-actions without existing hardware gates.
 - ★★★ **Multi-language replies** (Steam locale + optional override)
   - **Goal:** Respond in user/Steam language with optional override.
   - **Primary work:** language detection, prompt localization instruction, optional override persistence.
@@ -300,7 +288,7 @@ Dependency graph and implementation notes that are not feature checklist items.
 - **Wake-word listening** → later **Local reply TTS** for hands-free read path; optional wake brevity inject / Speed-for-wake after v1.
 - **Voice STT session daemon** (shipped) → reduces post-wake STT cost for wake-word listening.
 - **Character voice roleplay (shipped)** → **Playful thinking status lines (shipped)** — persona tone in `compose_thinking_blurb`; **Thinking phase copy polish (shipped)** keeps mid-Ask `format_thinking_phase` lines prompt-woven; **Always-sarcastic thinking blurb (shipped)** — witty/deadpan always on, visible during stream → **Thinking blurb copy refresh** (phase-unique witty/deadpan pools; no tiny model).
-- **Unified Ask pipeline and input transparency (shipped)** → **Text model chains** (user-configurable text fallbacks); **Retry same prompt** (shipped — see **Completed** → Tabs).
+- **Unified Ask pipeline and input transparency (shipped)** → **User-owned text/vision routing pickers** (shipped — see **Completed**); **Retry same prompt** (shipped — see **Completed** → Tabs).
 - **Input sanitizer (shipped)** + **Input handling transparency (shipped)** → future sanitizer extensions should keep user-visible auditability.
 - **Strategy Ask mode (**`strategy`**; Strategy Guide in prompts)** (shipped) → **Strategy Guide safety and spoilers** (shipped — on-device QA: [testing.md](testing.md) § Spoiler Policy and Consent), **Strategy checklist** (shipped — per-game persistence; on-device QA: [testing.md](testing.md) § Strategy depth / `STRATEGY-CHECKLIST`).
 - **Global screenshots and vision** → richer strategy + screenshot context.
@@ -320,7 +308,7 @@ Dependency graph and implementation notes that are not feature checklist items.
 - **Offline intent pack exchange** → offline-first search quality.
 - **Session context and user stash** → deck-first Ask quality; complements shipped game/vision/Proton/TDP injects and **RAG Deck query (on-Deck offline v1)**.
 - **User stash (Phase 1)** → **Input handling transparency** (show injected stash bytes and sources).
-- **Reply micro-actions** → shipped accordion + **Retry same prompt**; distinct from shipped **Reply style** (global verbosity slider).
+- **Reply micro-actions** (shipped — see **Completed** → Tabs); distinct from shipped **Reply style** (global verbosity slider).
 - **Proton experiment journal (shipped 2026-07-17)** → complements Proton log attach; optional inject into troubleshooting Asks; **context chip ladder** shows journal slice in Main tab. Distinct from **Session context and user stash** (structured timeline vs freeform notes).
 - **Deck health snapshot** → `steam_logs_read` + `[proton_troubleshooting_logs.py](../py_modules/backend/services/proton_troubleshooting_logs.py)` + connection test; **supersedes** removed **Support diagnostics block**; Desktop save needs `filesystem_write`.
 - **Settings persistence** → mode profiles, language override, background completion metadata; **Debug tab opt-in (Settings)** (shipped — see **Completed** → Tabs).

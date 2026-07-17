@@ -97,6 +97,10 @@ export type BonsaiSettings = {
   model_policy_non_foss_unlocked: boolean;
   /** When true, append large-model tags to fallback chains (may exceed ~16GB VRAM). */
   model_allow_high_vram_fallbacks: boolean;
+  /** User-ordered text model try order (empty = shipped defaults intersect installed). */
+  text_model_routing_order: string[];
+  /** User-ordered vision model try order (empty = shipped defaults intersect installed). */
+  vision_model_routing_order: string[];
   /** When true, route Ollama to this device only (fixed 127.0.0.1:11434); LAN PC IP field ignored for Ask/Test. */
   ollama_local_on_deck: boolean;
   /** When false, Strategy ```bonsai-spoiler``` blocks render as visible text (no tap-to-reveal). Default on. */
@@ -164,6 +168,8 @@ export type BonsaiSettingsSnapshotInput = {
   modelPolicyTier: ModelPolicyTierId;
   modelPolicyNonFossUnlocked: boolean;
   modelAllowHighVramFallbacks: boolean;
+  textModelRoutingOrder: string[];
+  visionModelRoutingOrder: string[];
   ollamaLocalOnDeck: boolean;
   strategySpoilerMaskingEnabled: boolean;
   steamWebApiKey: string;

@@ -56,9 +56,32 @@ export type PresetCarouselInjectPayload = {
   text: string;
 };
 
+export type AskAttachmentSnapshot = {
+  path: string;
+  name: string;
+  source: string;
+  app_id: string;
+};
+
 export type LastExchangeSnapshot = {
   question: string;
   answer: string;
+  /** Raw question sent to the backend (may differ from display thread title). */
+  originalQuestion?: string;
+  model?: string | null;
+  attachments?: AskAttachmentSnapshot[];
+  spoilerConsentEffective?: boolean;
+  askMode?: import("../data/askMode").AskModeId;
+};
+
+export type ReplyFollowUpPending = {
+  chipId: import("../data/replyMicroActions").ReplyMicroActionId;
+  parentQuestion: string;
+  parentAnswer: string;
+  preferredModel: string | null;
+  attachments: AskAttachmentSnapshot[];
+  spoilerConsentEffective: boolean;
+  askMode: import("../data/askMode").AskModeId;
 };
 
 export type AppendDesktopChatEventPayload = {

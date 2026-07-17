@@ -179,6 +179,14 @@ def sanitize_ollama_local_on_deck(value: Any) -> bool:
     return value is True
 
 
+def sanitize_model_routing_order(value: Any) -> list[str]:
+    """Dedupe Ollama tags for text/vision try-order lists (max 16)."""
+    from backend.ollama_routing import MAX_MODEL_ROUTING_ORDER_LEN
+    from backend.services.ollama_catalog_service import normalize_ollama_pull_tags
+
+    return normalize_ollama_pull_tags(value)[:MAX_MODEL_ROUTING_ORDER_LEN]
+
+
 def sanitize_model_allow_high_vram_fallbacks(value: Any) -> bool:
     """Only explicit ``true`` appends large-model tails to Ollama fallback chains."""
     return value is True
@@ -477,6 +485,8 @@ def sanitize_settings(
         "model_allow_high_vram_fallbacks": sanitize_model_allow_high_vram_fallbacks(
             raw.get("model_allow_high_vram_fallbacks")
         ),
+        "text_model_routing_order": sanitize_model_routing_order(raw.get("text_model_routing_order")),
+        "vision_model_routing_order": sanitize_model_routing_order(raw.get("vision_model_routing_order")),
         "response_verify_enabled": sanitize_response_verify_enabled(raw.get("response_verify_enabled")),
         "response_verify_second_pass": sanitize_response_verify_second_pass(
             raw.get("response_verify_second_pass")

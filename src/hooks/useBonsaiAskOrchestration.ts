@@ -34,10 +34,12 @@ import { useBackgroundGameAi } from "./useBackgroundGameAi";
 import type {
   AppendDesktopChatEventPayload,
   AppendDesktopNoteResult,
+  AskAttachmentSnapshot,
   BackgroundRequestStatus,
   BackgroundStartResponse,
   LastExchangeSnapshot,
   PresetCarouselInjectPayload,
+  ReplyFollowUpPending,
 } from "../types/backgroundAsk";
 import type { ModelPolicyDisclosurePayload } from "../data/modelPolicy";
 import type {
@@ -59,6 +61,11 @@ import {
   peekBonsaiSessionPendingRestore,
   type BonsaiSessionSurvivalSnapshot,
 } from "../utils/bonsaiSessionSurvival";
+import {
+  composeChipAutofillPrefix,
+  replyMicroActionById,
+  type ReplyMicroActionId,
+} from "../data/replyMicroActions";
 
 export type ChatThreadsBridge = {
   getActiveThreadId: () => string | null;
@@ -153,6 +160,22 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
   > | null>(() => survivalPeek?.shortcutSetupVariant ?? null);
   const lastStrategyAskQuestionRef = useRef<string>("");
   const runningAppIdRef = useRef<string>("");
+  const pendingReplyFollowUpRef = useRef<ReplyFollowUpPending | null>(null);
+  const lastAskContextRef = useRef<{
+    attachments: AskAttachmentSnapshot[];
+    askMode: AskModeId;
+    rawQuestion: string;
+  }>({ attachments: [], askMode: "speed", rawQuestion: "" });
+
+  const [liveReplyFeedbackRating, setLiveReplyFeedbackRating] = useState<"up" | "down" | null>(null);
+  const [liveReplyChipUsed, setLiveReplyChipUsed] = useState(false);
+  const [liveReplyChipError, setLiveReplyChipError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setLiveReplyFeedbackRating(null);
+    setLiveReplyChipUsed(false);
+    setLiveReplyChipError(null);
+  }, [lastExchange?.question, lastExchange?.answer]);
 
   const hydrateStrategyChecklistFromDisk = useCallback(async (appId: string) => {
     if (chatThreadsRef.current?.getActiveThreadId()) return;
@@ -426,7 +449,18 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
             }
             const displayQ = (pendingThreadQuestionDisplayRef.current?.trim() || q).trim();
             pendingThreadQuestionDisplayRef.current = null;
-            setLastExchange({ question: displayQ, answer });
+            setLastExchange({
+              question: displayQ,
+              answer,
+              originalQuestion: q,
+              model:
+                disc && typeof disc === "object" && typeof (disc as ModelPolicyDisclosurePayload).model === "string"
+                  ? (disc as ModelPolicyDisclosurePayload).model
+                  : null,
+              attachments: lastAskContextRef.current.attachments,
+              spoilerConsentEffective: status.strategy_spoiler_consent_effective ?? false,
+              askMode: lastAskContextRef.current.askMode,
+            });
             lastStrategyAskQuestionRef.current = q;
             setStrategyGuideBranches(normalizeStrategyGuideBranches(status.strategy_guide_branches));
             const checklistPayload = normalizeStrategyChecklist(status.strategy_checklist);
@@ -568,6 +602,8 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
     setPresetCarouselInject(null);
     setShortcutSetupVariant(null);
     a.setSelectedAttachment(null);
+    pendingReplyFollowUpRef.current = null;
+    setLiveReplyChipError(null);
     setElapsedSeconds(null);
     setShowSlowWarning(false);
     setIsStreamingPreview(false);
@@ -600,6 +636,11 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
       }
       await new Promise((r) => setTimeout(r, 50));
 
+      if (overrideQuestion !== undefined) {
+        pendingReplyFollowUpRef.current = null;
+      }
+
+      const followUpPending = pendingReplyFollowUpRef.current;
       const q = (overrideQuestion ?? a.unifiedInput).trim();
       const ip = a.effectiveOllamaPcIp;
       if (!q) {
@@ -633,16 +674,31 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
       pendingThreadQuestionDisplayRef.current = opts?.threadQuestionDisplay?.trim() || null;
       setAskThreadDisplayQuestion(pendingThreadQuestionDisplayRef.current ?? q);
 
-      const attachments = a.selectedAttachment
-        ? [
-            {
-              path: a.selectedAttachment.path,
-              name: a.selectedAttachment.name,
-              source: a.selectedAttachment.source,
-              app_id: a.selectedAttachment.app_id,
-            },
-          ]
-        : [];
+      const attachments: AskAttachmentSnapshot[] = followUpPending?.attachments?.length
+        ? followUpPending.attachments
+        : a.selectedAttachment
+          ? [
+              {
+                path: a.selectedAttachment.path,
+                name: a.selectedAttachment.name,
+                source: a.selectedAttachment.source,
+                app_id: a.selectedAttachment.app_id ?? "",
+              },
+            ]
+          : [];
+
+      const askModeForRequest = followUpPending?.askMode ?? a.askMode;
+      const spoilerConsentForRequest = followUpPending?.spoilerConsentEffective ?? false;
+
+      lastAskContextRef.current = {
+        attachments: [...attachments],
+        askMode: askModeForRequest,
+        rawQuestion: q,
+      };
+
+      if (followUpPending) {
+        pendingReplyFollowUpRef.current = null;
+      }
 
       const seq = startNextRequest();
 
@@ -654,7 +710,7 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
       const threadId = (await chatThreadsRef.current?.ensureThreadForAsk(q)) ?? null;
 
       const isStrategyFirstTurn =
-        a.askMode === "strategy" && !q.trim().startsWith(STRATEGY_FOLLOWUP_PREFIX);
+        askModeForRequest === "strategy" && !q.trim().startsWith(STRATEGY_FOLLOWUP_PREFIX);
       if (isStrategyFirstTurn && !chatThreadsRef.current?.getActiveThreadId()) {
         setStrategyChecklist(null);
         strategyChecklistRef.current = null;
@@ -666,7 +722,7 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
         composeThinkingBlurb(q, {
           appName,
           attachmentCount: attachments.length,
-          askMode: a.askMode,
+          askMode: askModeForRequest,
           requestId: seq,
           characterEnabled: a.aiCharacterEnabled === true,
           characterPresetId: a.aiCharacterPresetId ?? null,
@@ -698,6 +754,12 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
               ask_mode: AskModeId;
               spoiler_consent: boolean;
               strategy_checklist_state?: ReturnType<typeof strategyChecklistToAskPayload>;
+              reply_followup?: {
+                chip_id: ReplyMicroActionId;
+                parent_question: string;
+                parent_answer: string;
+                preferred_model: string | null;
+              };
             },
           ],
           BackgroundStartResponse
@@ -706,11 +768,21 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
           PcIp: ip,
           appId,
           appName,
-          attachments,
-          ask_mode: a.askMode,
-          spoiler_consent: false,
+          attachments: attachments as AskAttachment[],
+          ask_mode: askModeForRequest,
+          spoiler_consent: spoilerConsentForRequest,
+          ...(followUpPending
+            ? {
+                reply_followup: {
+                  chip_id: followUpPending.chipId,
+                  parent_question: followUpPending.parentQuestion,
+                  parent_answer: followUpPending.parentAnswer,
+                  preferred_model: followUpPending.preferredModel,
+                },
+              }
+            : {}),
           ...(threadId ? { chat_thread_id: threadId } : {}),
-          ...(a.askMode === "strategy" && !isStrategyFirstTurn && strategyChecklistRef.current
+          ...(askModeForRequest === "strategy" && !isStrategyFirstTurn && strategyChecklistRef.current
             ? { strategy_checklist_state: strategyChecklistToAskPayload(strategyChecklistRef.current) }
             : {}),
         });
@@ -911,6 +983,8 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
   }, []);
 
   const onRetryLastResponse = useCallback(() => {
+    pendingReplyFollowUpRef.current = null;
+    setLiveReplyChipError(null);
     const q = (lastExchange?.question || a.unifiedInput || askThreadDisplayQuestion).trim();
     if (!q) {
       toaster.toast({
@@ -922,6 +996,69 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
     }
     void onAskOllama(q, { threadQuestionDisplay: q });
   }, [lastExchange?.question, a.unifiedInput, askThreadDisplayQuestion, onAskOllama]);
+
+  const onReplyFeedback = useCallback(
+    async (rating: "up" | "down") => {
+      setLiveReplyFeedbackRating(rating);
+      setLiveReplyChipError(null);
+      try {
+        await callDeckyWithTimeout<[string, number, number, boolean, string], { ok?: boolean }>(
+          "save_ask_feedback",
+          [rating, lastRequestId ?? 0, lastExchange?.question?.length ?? 0, true, ""],
+          DECKY_RPC_TIMEOUT_MS
+        );
+        toaster.toast({
+          title:
+            rating === "up"
+              ? "Feedback saved on this Deck"
+              : "Feedback saved — use a chip to refine and resend",
+          body: "",
+          duration: 3000,
+        });
+      } catch (e: unknown) {
+        toaster.toast({ title: "Feedback not saved", body: formatDeckyRpcError(e), duration: 4000 });
+      }
+    },
+    [lastExchange?.question, lastRequestId]
+  );
+
+  const onReplyMicroAction = useCallback(
+    async (chipId: ReplyMicroActionId) => {
+      const action = replyMicroActionById(chipId);
+      if (!action || !lastExchange?.answer?.trim()) return;
+      const originalQ = (lastExchange.originalQuestion || lastExchange.question).trim();
+      if (!originalQ) return;
+
+      pendingReplyFollowUpRef.current = {
+        chipId,
+        parentQuestion: originalQ,
+        parentAnswer: lastExchange.answer,
+        preferredModel: lastExchange.model ?? null,
+        attachments: lastExchange.attachments ?? [],
+        spoilerConsentEffective: lastExchange.spoilerConsentEffective ?? false,
+        askMode: lastExchange.askMode ?? a.askMode,
+      };
+      setLiveReplyChipUsed(true);
+      setLiveReplyChipError(null);
+      a.setUnifiedInput(composeChipAutofillPrefix(action, originalQ));
+
+      try {
+        await callDeckyWithTimeout<[string, number, number, boolean, string], { ok?: boolean }>(
+          "save_ask_feedback",
+          ["down", lastRequestId ?? 0, originalQ.length, true, chipId],
+          DECKY_RPC_TIMEOUT_MS
+        );
+        toaster.toast({
+          title: "Prompt updated — edit and send when ready",
+          body: "",
+          duration: 3500,
+        });
+      } catch (e: unknown) {
+        setLiveReplyChipError(formatDeckyRpcError(e));
+      }
+    },
+    [a, lastExchange, lastRequestId]
+  );
 
   const restoreSessionSnapshot = useCallback((snap: BonsaiSessionSurvivalSnapshot) => {
     setOllamaResponse(snap.ollamaResponse);
@@ -969,7 +1106,11 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
     setShortcutSetupVariant(null);
     pendingArchiveTurnRef.current = null;
     pendingThreadQuestionDisplayRef.current = null;
+    pendingReplyFollowUpRef.current = null;
     lastFlushedExchangeQuestionRef.current = "";
+    setLiveReplyFeedbackRating(null);
+    setLiveReplyChipUsed(false);
+    setLiveReplyChipError(null);
     chatThreadsRef.current?.clearActiveUiOnly();
   }, [invalidateRequests, isAsking]);
 
@@ -999,7 +1140,6 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
     setExpandedTurnKey,
     onTurnActivate,
     askThreadDisplayQuestion,
-    setAskThreadDisplayQuestion,
     isAsking,
     isStreamingPreview,
     isStreamSettling,
@@ -1012,6 +1152,11 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
     onCancelAsk,
     onAskOllama,
     onRetryLastResponse,
+    onReplyFeedback,
+    onReplyMicroAction,
+    liveReplyFeedbackRating,
+    liveReplyChipUsed,
+    liveReplyChipError,
     onStrategyBranchPick,
     onStrategyChecklistToggle,
     hydrateStrategyChecklistFromDisk,

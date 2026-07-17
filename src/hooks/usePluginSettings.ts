@@ -99,6 +99,8 @@ function snapshotFromBonsaiSettings(normalized: BonsaiSettings): BonsaiSettingsS
     modelPolicyTier: normalized.model_policy_tier,
     modelPolicyNonFossUnlocked: normalized.model_policy_non_foss_unlocked,
     modelAllowHighVramFallbacks: normalized.model_allow_high_vram_fallbacks,
+    textModelRoutingOrder: normalized.text_model_routing_order,
+    visionModelRoutingOrder: normalized.vision_model_routing_order,
     ollamaLocalOnDeck: normalized.ollama_local_on_deck,
     strategySpoilerMaskingEnabled: normalized.strategy_spoiler_masking_enabled,
     steamWebApiKey: normalized.steam_web_api_key,
@@ -184,6 +186,8 @@ export function usePluginSettings() {
   const [modelAllowHighVramFallbacks, setModelAllowHighVramFallbacks] = useState<boolean>(
     DEFAULT_MODEL_ALLOW_HIGH_VRAM_FALLBACKS
   );
+  const [textModelRoutingOrder, setTextModelRoutingOrder] = useState<string[]>([]);
+  const [visionModelRoutingOrder, setVisionModelRoutingOrder] = useState<string[]>([]);
   const [ollamaLocalOnDeck, setOllamaLocalOnDeck] = useState<boolean>(DEFAULT_OLLAMA_LOCAL_ON_DECK);
   const [strategySpoilerMaskingEnabled, setStrategySpoilerMaskingEnabled] = useState<boolean>(
     DEFAULT_STRATEGY_SPOILER_MASKING_ENABLED
@@ -252,6 +256,8 @@ export function usePluginSettings() {
     modelPolicyTier,
     modelPolicyNonFossUnlocked,
     modelAllowHighVramFallbacks,
+    textModelRoutingOrder,
+    visionModelRoutingOrder,
     ollamaLocalOnDeck,
     strategySpoilerMaskingEnabled,
     steamWebApiKey,
@@ -302,6 +308,8 @@ export function usePluginSettings() {
     setModelPolicyTier(normalized.model_policy_tier);
     setModelPolicyNonFossUnlocked(normalized.model_policy_non_foss_unlocked);
     setModelAllowHighVramFallbacks(normalized.model_allow_high_vram_fallbacks);
+    setTextModelRoutingOrder(normalized.text_model_routing_order);
+    setVisionModelRoutingOrder(normalized.vision_model_routing_order);
     setOllamaLocalOnDeck(normalized.ollama_local_on_deck);
     setStrategySpoilerMaskingEnabled(normalized.strategy_spoiler_masking_enabled);
     setSteamWebApiKey(normalized.steam_web_api_key);
@@ -473,6 +481,8 @@ export function usePluginSettings() {
     modelPolicyTier,
     modelPolicyNonFossUnlocked,
     modelAllowHighVramFallbacks,
+    textModelRoutingOrder,
+    visionModelRoutingOrder,
     ollamaLocalOnDeck,
     strategySpoilerMaskingEnabled,
     steamWebApiKey,
@@ -535,7 +545,11 @@ export function usePluginSettings() {
     modelPolicyNonFossUnlocked,
     setModelPolicyNonFossUnlocked,
     modelAllowHighVramFallbacks,
+    textModelRoutingOrder,
+    visionModelRoutingOrder,
     setModelAllowHighVramFallbacks,
+    setTextModelRoutingOrder,
+    setVisionModelRoutingOrder,
     ollamaLocalOnDeck,
     setOllamaLocalOnDeck,
     strategySpoilerMaskingEnabled,

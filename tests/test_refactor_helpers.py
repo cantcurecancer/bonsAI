@@ -85,13 +85,11 @@ class RefactorHelperTests(unittest.TestCase):
 
         safe_speed = select_ollama_models(False, "speed", False)
         hi_speed = select_ollama_models(False, "speed", True)
-        self.assertLess(len(safe_speed), len(hi_speed))
-        self.assertIn("qwen2.5:32b", hi_speed)
+        self.assertEqual(safe_speed, hi_speed)
 
         safe_vis = select_ollama_models(True, "expert", False)
         hi_vis = select_ollama_models(True, "expert", True)
-        self.assertLess(len(safe_vis), len(hi_vis))
-        self.assertIn("internvl3.5:38b", hi_vis)
+        self.assertEqual(safe_vis, hi_vis)
 
     def test_parse_tdp_recommendation_fenced_json(self):
         """Verify fenced JSON recommendations are parsed and clamped to safe hardware bounds."""

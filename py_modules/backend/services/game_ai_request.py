@@ -18,11 +18,14 @@ from backend.services.bonsai_stream_tags import compose_thinking_blurb
 from backend.services.thinking_tiny_model_service import spawn_tiny_thinking_blurb
 from backend.services.ai_character_service import build_roleplay_system_suffix_meta
 from backend.services.input_sanitizer_service import apply_input_sanitizer_lane
+from backend.services.ollama_prompts import (
+    build_reply_followup_context_block,
+    user_consents_strategy_spoilers,
+    user_wants_power_or_performance_topic,
+)
 from backend.services.ollama_service import (
     question_matches_troubleshooting_log_context,
     user_asks_ollama_bonsai_host_or_latency,
-    user_consents_strategy_spoilers,
-    user_wants_power_or_performance_topic,
 )
 from backend.services.proton_troubleshooting_logs import collect_proton_troubleshooting_logs
 from backend.services.knowledge_base_service import (
@@ -77,6 +80,7 @@ async def run_game_ai_request(
     spoiler_consent: bool = False,
     token_stream_request_id: Optional[int] = None,
     strategy_checklist_state: Optional[dict] = None,
+    reply_followup: Optional[dict] = None,
 ) -> dict:
     """Run one full ask lifecycle, including Ollama call timing and optional TDP application."""
     start = time.time()
@@ -179,6 +183,20 @@ async def run_game_ai_request(
                 "strategy_spoiler_consent_effective": False,
             }
         question_for_model = lane.text
+
+        if reply_followup:
+            followup_block = build_reply_followup_context_block(
+                str(reply_followup.get("chip_id") or ""),
+                str(reply_followup.get("parent_question") or ""),
+                str(reply_followup.get("parent_answer") or ""),
+            )
+            question_for_model = f"{followup_block}\n{question_for_model}"
+
+        preferred_model = (
+            str(reply_followup.get("preferred_model") or "").strip() or None
+            if isinstance(reply_followup, dict)
+            else None
+        )
 
         active_rid = plugin._active_request_id() if hasattr(plugin, "_active_request_id") else None
         rp_meta = build_roleplay_system_suffix_meta(settings, ask_mode)
@@ -386,6 +404,7 @@ async def run_game_ai_request(
             strategy_spoiler_consent=strategy_spoiler_consent_effective,
             token_stream_request_id=token_stream_request_id,
             strategy_checklist_state=strategy_checklist_state,
+            preferred_model=preferred_model,
         )
         elapsed = round(time.time() - start, 1)
         base_response_text = str(ollama_result.get("response", "") or "No response text.")
@@ -502,6 +521,7 @@ async def run_game_ai_request(
                 err_tail=err_tail,
                 elapsed_seconds=elapsed,
                 verify_result=verify_result,
+                reply_followup=reply_followup,
             )
         )
 
