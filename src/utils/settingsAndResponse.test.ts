@@ -255,6 +255,8 @@ describe("settingsAndResponse", () => {
       useLocalKnowledgeBase: false,
       ragCorpusPath: "",
       ragCorpusVersion: "",
+      chatIdleTimeoutMinutes: 15 as const,
+      devBundleThreadTitleInReply: false,
     });
     expect(p.latency_warning_seconds).toBe(20);
     expect(p.request_timeout_seconds).toBe(150);
@@ -318,6 +320,8 @@ describe("settingsAndResponse", () => {
       useLocalKnowledgeBase: false,
       ragCorpusPath: "",
       ragCorpusVersion: "",
+      chatIdleTimeoutMinutes: 15 as const,
+      devBundleThreadTitleInReply: false,
     };
     const p = toBonsaiSettingsPayload(base, {
       ai_character_random: false,
@@ -461,6 +465,8 @@ describe("settingsAndResponse", () => {
       useLocalKnowledgeBase: normalized.use_local_knowledge_base,
       ragCorpusPath: normalized.rag_corpus_path,
       ragCorpusVersion: normalized.rag_corpus_version,
+      chatIdleTimeoutMinutes: normalized.chat_idle_timeout_minutes,
+      devBundleThreadTitleInReply: normalized.dev_bundle_thread_title_in_reply,
     });
     expect(payload.ask_mode).toBe("strategy");
     expect(payload.ai_character_preset_id).toBe("tf2_scout");

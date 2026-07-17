@@ -362,6 +362,80 @@ export function buildSection6Section(): string {
           -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 52%, transparent 100%) !important;
           mask-image: linear-gradient(to bottom, #000 0%, #000 52%, transparent 100%) !important;
         }
+        .bonsai-scope .bonsai-chat-threads-mini-list {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 6px;
+          align-items: center;
+        }
+        .bonsai-scope .bonsai-chat-threads-mini-chip {
+          font-size: 11px;
+          padding: 4px 8px;
+          border-radius: 6px;
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          background: rgba(255, 255, 255, 0.06);
+          color: #c8d6e5;
+        }
+        .bonsai-scope .bonsai-chat-threads-mini-chip--active {
+          border-color: rgba(100, 160, 220, 0.5);
+          color: #fff;
+        }
+        .bonsai-scope .bonsai-chat-threads-picker-btn {
+          font-size: 11px;
+          padding: 4px 8px;
+          border-radius: 6px;
+          border: 1px dashed rgba(255, 255, 255, 0.2);
+          background: transparent;
+          color: #9fb7d5;
+        }
+        .bonsai-scope .bonsai-chat-appid-banner-text {
+          font-size: 12px;
+          color: #f0c674;
+          margin-bottom: 6px;
+        }
+        .bonsai-scope .bonsai-chat-appid-banner-actions {
+          display: flex;
+          gap: 8px;
+        }
+        .bonsai-scope .bonsai-chat-threads-modal-inner {
+          padding: 12px;
+        }
+        .bonsai-scope .bonsai-chat-threads-modal-row {
+          display: flex;
+          gap: 6px;
+          align-items: stretch;
+          margin-bottom: 6px;
+        }
+        .bonsai-scope .bonsai-chat-threads-modal-row-select {
+          flex: 1;
+          min-width: 0;
+        }
+        .bonsai-scope .bonsai-chat-threads-modal-row-btn--active {
+          border-color: rgba(100, 160, 220, 0.55);
+        }
+        .bonsai-scope .bonsai-chat-threads-modal-row-meta {
+          display: block;
+          font-size: 10px;
+          color: #9fb7d5;
+          margin-top: 2px;
+        }
+        .bonsai-scope .bonsai-chat-threads-modal-row-btn {
+          width: 100%;
+          text-align: left;
+          padding: 8px;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 6px;
+          background: rgba(0, 0, 0, 0.2);
+          color: #e8eef5;
+        }
+        .bonsai-scope .bonsai-chat-threads-modal-delete-btn {
+          color: #f87171;
+          font-size: 18px;
+          padding: 4px 10px;
+        }
+        .bonsai-scope .bonsai-chat-turn-slot--bubbles {
+          margin-bottom: 10px;
+        }
         .bonsai-scope .bonsai-chat-ai-bubble.bonsai-glass-panel {
           border-radius: 10px !important;
           border: 1px solid var(--bonsai-chat-ai-bubble-border, rgba(46, 135, 83, 0.48)) !important;

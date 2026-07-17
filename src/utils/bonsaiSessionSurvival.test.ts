@@ -71,6 +71,8 @@ function minimalSnapshot(overrides: Partial<BonsaiSessionSurvivalSnapshot> = {})
       useLocalKnowledgeBase: false,
       ragCorpusPath: "",
       ragCorpusVersion: "",
+      chatIdleTimeoutMinutes: 15,
+      devBundleThreadTitleInReply: false,
     },
     ollamaResponse: "reply text",
     ollamaContext: null,

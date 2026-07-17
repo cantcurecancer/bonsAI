@@ -6,6 +6,7 @@ import json
 import logging
 import os
 import re
+import time
 import unicodedata
 from datetime import datetime, timezone
 from typing import Any, Optional
@@ -405,27 +406,180 @@ def append_desktop_ask_transparency_sync(home: str, snapshot: dict[str, Any]) ->
         parts.append(_fence_block("Final UI text (after TDP / hardware notices)", final))
         if applied_s:
             parts.append(_fence_block("Applied (JSON)", applied_s))
-        meta = (
-            f"**Metadata:** success={success!r}, elapsed_seconds={elapsed!r}, "
-            f"app_id={app_id!r}, app_name={app_name!r}, pc_ip={pc_ip!r}"
-        )
-        if err:
-            meta += f", error_message={err!r}"
-        parts.append(meta + "\n\n---\n")
-        block = "".join(parts)
+        with open(target_path, "a", encoding="utf-8") as f:
+            f.write(block)
 
-        os.makedirs(notes_dir, exist_ok=True)
-        notes_real = os.path.realpath(notes_dir)
-        target_path = os.path.normpath(os.path.join(notes_real, f"{stem}.md"))
-        if not _is_path_under(notes_real, target_path):
-            raise ValueError("Resolved path escapes the notes directory.")
+        return {"ok": True, "path": target_path}
+    except (OSError, ValueError) as exc:
+        return _desktop_write_failure_result(exc)
+
+
+def resolve_bonsai_chats_dir(home: str) -> str:
+    """Return ``<home>/Desktop/bonsAI_chats`` for per-thread chat exports."""
+    base = (home or "").strip()
+    if not base:
+        raise ValueError("Home directory is not available.")
+    return os.path.normpath(os.path.join(base, "Desktop", "bonsAI_chats"))
+
+
+def _sanitize_thread_folder_id(thread_id: str) -> str:
+    tid = str(thread_id or "").strip()
+    if not tid or "/" in tid or "\\" in tid or "\x00" in tid:
+        raise ValueError("Invalid thread id.")
+    return tid
+
+
+def _thread_desktop_dir(home: str, thread_id: str) -> str:
+    chats_dir = resolve_bonsai_chats_dir(home)
+    tid = _sanitize_thread_folder_id(thread_id)
+    target = os.path.normpath(os.path.join(chats_dir, tid))
+    chats_real = os.path.realpath(chats_dir)
+    os.makedirs(chats_dir, exist_ok=True)
+    chats_real = os.path.realpath(chats_dir)
+    if not _is_path_under(chats_real, target):
+        raise ValueError("Resolved path escapes the chats directory.")
+    return target
+
+
+def folder_size_bytes(path: str) -> int:
+    """Bounded recursive size for a directory (best-effort)."""
+    total = 0
+    if not os.path.isdir(path):
+        return 0
+    for root, _dirs, files in os.walk(path):
+        for name in files[:500]:
+            fp = os.path.join(root, name)
+            try:
+                total += os.path.getsize(fp)
+            except OSError:
+                continue
+        if total > 50_000_000:
+            break
+    return total
+
+
+def format_folder_size_label(size_bytes: int) -> str:
+    if size_bytes <= 0:
+        return "—"
+    if size_bytes < 1024:
+        return f"{size_bytes} B"
+    if size_bytes < 1024 * 1024:
+        return f"{size_bytes / 1024:.1f} KB"
+    return f"{size_bytes / (1024 * 1024):.1f} MB"
+
+
+def append_thread_chat_event_sync(
+    home: str,
+    thread_id: str,
+    event: str,
+    *,
+    question: str = "",
+    response_text: str = "",
+    screenshot_paths: Optional[list[str]] = None,
+) -> dict[str, Any]:
+    """Append Ask/response to ``bonsAI_chats/<thread-id>/thread.md``; copy screenshots into ``attachments/``."""
+    ev = (event or "").strip().lower()
+    if ev not in ("ask", "response"):
+        return {"ok": False, "error": "Invalid event type."}
+    q = (question or "").strip()
+    r = (response_text or "").strip()
+    paths = _sanitize_screenshot_paths(screenshot_paths or [])
+
+    try:
+        thread_dir = _thread_desktop_dir(home, thread_id)
+        os.makedirs(thread_dir, exist_ok=True)
+        attachments_dir = os.path.join(thread_dir, "attachments")
+        os.makedirs(attachments_dir, exist_ok=True)
+        thread_real = os.path.realpath(thread_dir)
+        attach_real = os.path.realpath(attachments_dir)
+        if not _is_path_under(thread_real, attach_real):
+            raise ValueError("Attachments path escapes thread directory.")
+
+        copied_paths: list[str] = []
+        for src in paths[:8]:
+            if not os.path.isfile(src):
+                copied_paths.append(src)
+                continue
+            base_name = os.path.basename(src)
+            dest = os.path.join(attachments_dir, base_name)
+            if os.path.exists(dest):
+                stem, ext = os.path.splitext(base_name)
+                dest = os.path.join(attachments_dir, f"{stem}_{int(time.time())}{ext}")
+            dest_real = os.path.realpath(dest)
+            if not _is_path_under(attach_real, dest_real):
+                continue
+            try:
+                import shutil
+
+                shutil.copy2(src, dest)
+                copied_paths.append(dest)
+            except OSError:
+                copied_paths.append(src)
+
+        target_path = os.path.join(thread_dir, "thread.md")
         target_real = os.path.realpath(target_path)
-        if not _is_path_under(notes_real, target_real):
-            raise ValueError("Resolved path escapes the notes directory.")
+        if not _is_path_under(thread_real, target_real):
+            raise ValueError("Resolved path escapes the thread directory.")
+        ts = _utc_ts_z()
+
+        if ev == "ask":
+            if not q:
+                raise ValueError("Question text is required.")
+            lines = [f"\n### Ask — {ts}\n\n", f"{q}\n\n"]
+            refs = copied_paths or paths
+            if refs:
+                lines.append("**Attached screenshots:**\n\n")
+                for p in refs:
+                    lines.append(f"- `{p}`\n")
+                lines.append("\n")
+            lines.append("---\n")
+            block = "".join(lines)
+        else:
+            if not r:
+                raise ValueError("Response text is required.")
+            block = f"\n### AI response — {ts}\n\n{r}\n\n---\n"
 
         with open(target_path, "a", encoding="utf-8") as f:
             f.write(block)
 
         return {"ok": True, "path": target_path}
+    except (OSError, ValueError) as exc:
+        return _desktop_write_failure_result(exc)
+
+
+def delete_thread_desktop_folder(home: str, thread_id: str) -> dict[str, Any]:
+    try:
+        thread_dir = _thread_desktop_dir(home, thread_id)
+        if os.path.isdir(thread_dir):
+            import shutil
+
+            shutil.rmtree(thread_dir)
+        return {"ok": True}
+    except (OSError, ValueError) as exc:
+        return _desktop_write_failure_result(exc)
+
+
+def wipe_desktop_chat_exports(home: str, *, include_legacy_daily: bool = True) -> dict[str, Any]:
+    """Remove ``bonsAI_chats/`` and optional legacy daily chat markdown under ``bonsAI_logs/``."""
+    removed: list[str] = []
+    try:
+        chats_dir = resolve_bonsai_chats_dir(home)
+        if os.path.isdir(chats_dir):
+            import shutil
+
+            shutil.rmtree(chats_dir)
+            removed.append(chats_dir)
+        if include_legacy_daily:
+            logs_dir = resolve_bonsai_logs_dir(home)
+            if os.path.isdir(logs_dir):
+                for name in os.listdir(logs_dir):
+                    if name.startswith("bonsai-chat-") and name.endswith(".md"):
+                        fp = os.path.join(logs_dir, name)
+                        try:
+                            os.remove(fp)
+                            removed.append(fp)
+                        except OSError:
+                            pass
+        return {"ok": True, "removed": removed}
     except (OSError, ValueError) as exc:
         return _desktop_write_failure_result(exc)

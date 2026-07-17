@@ -541,6 +541,8 @@ class SettingsServiceTests(unittest.TestCase):
         self.assertFalse(baseline["use_local_knowledge_base"])
         self.assertEqual(baseline["rag_corpus_path"], "")
         self.assertEqual(baseline["rag_corpus_version"], "")
+        self.assertEqual(baseline["chat_idle_timeout_minutes"], 15)
+        self.assertFalse(baseline["dev_bundle_thread_title_in_reply"])
         enabled = sanitize_fn(
             {
                 "use_local_knowledge_base": True,

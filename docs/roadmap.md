@@ -14,6 +14,7 @@ Active features, maintainer tasks, and **known defects**. *QAMP Phase 1 (safe de
 
 - ★ **Question Overlay Alignment Drift:** The 3-line question overlay has minor horizontal spacing mismatch vs native `TextField` internals.
 - ★★ **D-pad Scroll Bottom Cutoff:** Controller navigation can stop before the final response chunk is fully visible even when touch scroll can reach it.
+- ★★★ **Fullscreen picker D-pad edge-escape (audit):** Named chat picker ships edge escape (left from row → New chat; right from delete → Close). Audit **Pull Models**, **Character picker**, **Ollama models hub**, and other `showModal` pickers for the same below-list / above-list escape pattern.
 
 
 
@@ -75,7 +76,7 @@ Within this section: ascending stars (★★ → ★★★ → ★★★★). Br
   - **Primary work:** Micro-prompt templates; new turn in unified Ask orchestration; compact chip row on `BonsaiChatReplyActions`; Input transparency labels derivative turns.
   - **Files:** `useBonsaiAskOrchestration.ts`, `BonsaiChatReplyActions.tsx`, `game_ai_request.py`, `ollama_prompts.py`.
   - **Depends on:** Shipped accordion turns + **Retry same prompt**; settings persistence.
-  - **Not in scope:** Global **Reply style** slider (shipped — see **Completed**); replacing **named chat slots**; TDP apply from micro-actions without existing hardware gates.
+  - **Not in scope:** Global **Reply style** slider (shipped — see **Completed**); **named chat slots** (shipped — see **Completed**); TDP apply from micro-actions without existing hardware gates.
 - ★★★ **Multi-language replies** (Steam locale + optional override)
   - **Goal:** Respond in user/Steam language with optional override.
   - **Primary work:** language detection, prompt localization instruction, optional override persistence.
@@ -142,12 +143,6 @@ Within this section: ascending stars (★★ → ★★★ → ★★★★). Br
 
 Within this section: ascending stars (★★★★ → ★★★★★ → ★★★★★★). ★★★★★ entries share one band (alphabetical by title). Brainstorm **T**, **E–H**: [roadmap_feature_ideas plan](../.cursor/plans/roadmap_feature_ideas_f5560e15.plan.md). **E** does not depend on deferred **D** or **I**.
 
-- ★★★★ **Named chat slots** (labeled threads, T)
-  - **Goal:** Multiple labeled threads (e.g. “Elden Ring build”, “Network debug”) beyond single persisted QA — reduces overwrite friction without full cloud sync.
-  - **Primary work:** thread id + label storage; UI to switch thread; Ask/reply scoped per slot.
-  - **Files:** `main.py`, `src/index.tsx`, `settings_service.py`, persistence layer.
-  - **Depends on:** unified Ask state machine.
-  - **Not in scope:** cross-device merge or server-backed sync.
 - ★★★★ **Steam Input layout parse** (VDF → AI context)
   - **Goal:** Parse controller VDF configs and feed actionable control context to AI.
   - **Primary work:** config discovery, VDF parsing, normalization to human-readable actions.
@@ -300,7 +295,8 @@ Dependency graph and implementation notes that are not feature checklist items.
 - **Character voice roleplay (shipped)** → **Character-derived UI accent theme (preset-selected)** (shipped — see **Completed**); **Random character “?” avatar** (shipped — see **Completed**); **Running-game character suggestions (AI picker)** (shipped — see **Completed**).
 - **Character voice roleplay (shipped)** → **Local reply TTS** (Phase 2 — preset→voice mapping; legal research gate before ship).
 - **Whisper voice Ask (shipped)** + `microphone_access` → **Wake-word listening** (additional beta capability + separate wake-engine install).
-- **Reply ready toast** → completion UX for all Asks; required for hands-free wake loop when QAM is closed.
+- **Reply ready toast** → completion UX for all Asks; required for hands-free wake loop when QAM is closed (named chat slots restore Q+A on reopen without toast).
+- **Named chat slots (shipped)** → private thread store + bubble transcript + picker; **Reply ready toast** still adds tap-to-open notify when QAM is closed.
 - **Wake-word listening** → later **Local reply TTS** for hands-free read path; optional wake brevity inject / Speed-for-wake after v1.
 - **Voice STT session daemon** (shipped) → reduces post-wake STT cost for wake-word listening.
 - **Character voice roleplay (shipped)** → **Playful thinking status lines (shipped)** — persona tone in `compose_thinking_blurb`; **Thinking phase copy polish (shipped)** keeps mid-Ask `format_thinking_phase` lines prompt-woven; **Always-sarcastic thinking blurb (shipped)** — witty/deadpan always on, visible during stream → **Thinking blurb copy refresh** (phase-unique witty/deadpan pools; no tiny model).

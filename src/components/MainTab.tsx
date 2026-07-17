@@ -106,6 +106,9 @@ export type MainTabProps = {
   desktopAskVerboseLogging?: boolean;
   lastRequestId?: number | null;
   lastExchange?: { question: string; answer: string } | null;
+  chatThreadsMiniList?: React.ReactNode;
+  chatAppIdBanner?: React.ReactNode;
+  transcriptFocusRef?: React.RefObject<HTMLDivElement | null>;
 };
 
 export function MainTab(props: MainTabProps) {
@@ -163,7 +166,15 @@ export function MainTab(props: MainTabProps) {
           </PanelSectionRow>
         )}
 
-        <MainTabChatTranscript {...props} />
+        {props.chatThreadsMiniList ? (
+          <PanelSectionRow>{props.chatThreadsMiniList}</PanelSectionRow>
+        ) : null}
+
+        {props.chatAppIdBanner ? (
+          <PanelSectionRow>{props.chatAppIdBanner}</PanelSectionRow>
+        ) : null}
+
+        <MainTabChatTranscript {...props} transcriptFocusRef={props.transcriptFocusRef} />
       </PanelSection>
     </>
   );

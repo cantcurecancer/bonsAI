@@ -80,6 +80,8 @@ export type DeveloperTabProps = {
 
   bonsaiTokenStreamingEnabled: boolean;
   setBonsaiTokenStreamingEnabled: (v: boolean) => void;
+  devBundleThreadTitleInReply: boolean;
+  setDevBundleThreadTitleInReply: (v: boolean) => void;
   showOnscreenDebugHud: boolean;
   setShowOnscreenDebugHud: (v: boolean) => void;
   ollamaLocalOnDeck?: boolean;
@@ -110,6 +112,8 @@ export const DeveloperTab: React.FC<DeveloperTabProps> = ({
   setSteamWebApiKey,
   bonsaiTokenStreamingEnabled,
   setBonsaiTokenStreamingEnabled,
+  devBundleThreadTitleInReply,
+  setDevBundleThreadTitleInReply,
   thinkingStatusTinyModelEnabled,
   setThinkingStatusTinyModelEnabled,
   showOnscreenDebugHud,
@@ -257,7 +261,7 @@ export const DeveloperTab: React.FC<DeveloperTabProps> = ({
           <div className="bonsai-settings-bleed" style={{ width: "100%" }}>
             <ToggleField
               label="Auto-save chat to Desktop notes"
-              description="Append Q+A to Desktop/bonsAI_logs/bonsai-chat-YYYY-MM-DD.md (UTC). Needs Save files to Desktop."
+              description="Append Q+A per chat thread under Desktop/bonsAI_chats/<thread-id>/thread.md (with attachments/). Needs Save files to Desktop and this toggle on."
               checked={desktopDebugNoteAutoSave}
               onChange={(checked) => setDesktopDebugNoteAutoSave(checked)}
             />
@@ -393,6 +397,16 @@ export const DeveloperTab: React.FC<DeveloperTabProps> = ({
               description="Render Ollama replies as they stream. TDP banners, strategy branches, model-policy disclosure, and spoilers still apply at the end of the reply."
               checked={bonsaiTokenStreamingEnabled}
               onChange={(checked) => setBonsaiTokenStreamingEnabled(checked)}
+            />
+          </div>
+        </PanelSectionRow>
+        <PanelSectionRow>
+          <div className="bonsai-settings-bleed" style={{ width: "100%" }}>
+            <ToggleField
+              label="Bundle thread title in first reply"
+              description="When on, the first model reply may include a <bonsai-thread-title>…</bonsai-thread-title> tag to name the chat thread (Developer experiment)."
+              checked={devBundleThreadTitleInReply}
+              onChange={(checked) => setDevBundleThreadTitleInReply(checked)}
             />
           </div>
         </PanelSectionRow>
