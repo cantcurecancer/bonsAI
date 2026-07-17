@@ -21,12 +21,12 @@ from backend.services.knowledge_base_schema import (
     DEFAULT_MANIFEST_GITHUB_URL,
     DEFAULT_MANIFEST_HF_URL,
     corpus_install_root,
+    is_allowed_corpus_install_path,
     load_manifest_from_path,
     parse_manifest_json,
     sanitize_corpus_install_dir,
     write_manifest,
 )
-from backend.services.plugin_data_reset import _path_within_home
 from backend.services.knowledge_base_service import close_connection
 
 MAX_LOG_TAIL_LINES = 80
@@ -82,7 +82,10 @@ def fetch_remote_manifest(
             return _fetch_json_url(url)
         except Exception:
             continue
-    raise RuntimeError("Could not fetch corpus manifest from HF or GitHub mirror.")
+    raise RuntimeError(
+        "Could not fetch the knowledge base manifest (Hugging Face and GitHub mirror unreachable). "
+        "The offline corpus may not be published yet — see docs/troubleshooting.md § Knowledge base."
+    )
 
 
 def _download_file(
@@ -238,10 +241,9 @@ def remove_corpus_at_path(install_path: str, logger: Any) -> bool:
     if not root or not os.path.isdir(root):
         return False
     try:
-        home = Path.home().resolve()
         target = Path(root).resolve()
-        if not _path_within_home(target, home):
-            logger.warning("remove_corpus: refusing path outside home: %s", root)
+        if not is_allowed_corpus_install_path(target):
+            logger.warning("remove_corpus: refusing disallowed path: %s", root)
             return False
         db = str(target / CORPUS_DB_FILENAME)
         close_connection(db)

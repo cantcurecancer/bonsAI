@@ -121,17 +121,100 @@ def default_corpus_dir_internal() -> str:
     return str(Path.home() / ".bonsai" / "rag")
 
 
+def _free_bytes_at_path(path: str) -> int:
+    try:
+        if hasattr(os, "statvfs"):
+            st = os.statvfs(path)
+            return int(st.f_bavail * st.f_frsize)
+        import shutil
+
+        return int(shutil.disk_usage(path).free)
+    except OSError:
+        return 0
+
+
+def discover_sd_card_mount_base() -> Optional[str]:
+    """First writable volume under /run/media/<user>/ (SteamOS microSD)."""
+    media_root = Path(f"/run/media/{Path.home().name}")
+    if not media_root.is_dir():
+        return None
+    try:
+        candidates = sorted(
+            (p for p in media_root.iterdir() if p.is_dir() and not p.name.startswith(".")),
+            key=lambda p: p.name.lower(),
+        )
+    except OSError:
+        return None
+    for candidate in candidates:
+        try:
+            resolved = candidate.resolve()
+            if os.access(resolved, os.W_OK | os.X_OK):
+                return str(resolved)
+        except OSError:
+            continue
+    return None
+
+
+def default_corpus_dir_sd(sd_mount: Optional[str] = None) -> str:
+    mount = str(sd_mount or discover_sd_card_mount_base() or "").strip()
+    if not mount:
+        raise ValueError("No SD card mount detected.")
+    return str(Path(mount) / ".bonsai" / "rag")
+
+
+def is_allowed_corpus_install_path(target: Path) -> bool:
+    """Allow install roots under home or SteamOS SD mounts (/run/media/<user>/…)."""
+    resolved = target.resolve()
+    home = Path.home().resolve()
+    try:
+        resolved.relative_to(home)
+        return True
+    except ValueError:
+        pass
+    media_base = Path(f"/run/media/{home.name}").resolve()
+    try:
+        resolved.relative_to(media_base)
+        return True
+    except ValueError:
+        return False
+
+
+def list_rag_storage_options() -> dict[str, Any]:
+    """Return internal + optional SD install targets for the download picker."""
+    internal_path = default_corpus_dir_internal()
+    internal_parent = str(Path(internal_path).parent)
+    options: dict[str, Any] = {
+        "internal": {
+            "id": "internal",
+            "label": "Internal storage",
+            "install_path": internal_path,
+            "free_bytes": _free_bytes_at_path(internal_parent),
+        },
+        "sd_card": None,
+    }
+    sd_mount = discover_sd_card_mount_base()
+    if sd_mount:
+        sd_path = default_corpus_dir_sd(sd_mount)
+        options["sd_card"] = {
+            "id": "sd_card",
+            "label": "SD card",
+            "install_path": sd_path,
+            "mount": sd_mount,
+            "free_bytes": _free_bytes_at_path(sd_mount),
+        }
+    return options
+
+
 def sanitize_corpus_install_dir(install_dir: str) -> str:
-    """Resolve install dir and refuse paths outside the user home."""
+    """Resolve install dir and refuse paths outside home or SteamOS SD mounts."""
     expanded = os.path.expanduser(str(install_dir or "").strip())
     if not expanded:
         raise ValueError("Install path is required.")
     target = Path(expanded).resolve()
-    home = Path.home().resolve()
-    try:
-        target.relative_to(home)
-    except ValueError as exc:
-        raise ValueError("Knowledge base install path must be under your home directory.") from exc
+    if not is_allowed_corpus_install_path(target):
+        raise ValueError(
+            "Knowledge base install path must be under your home directory or SD card (/run/media/…)."
+        )
     return str(target)
 
 

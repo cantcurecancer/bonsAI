@@ -81,13 +81,15 @@ If Windows still falls back to CPU after FIX A:
 
 Optional on-Deck corpus for Strategy and troubleshooting Asks. Full architecture: [knowledge-base.md](knowledge-base.md).
 
-1. **Ollama** tab → **Knowledge base (offline)** → **Download knowledge base** (confirm modal — ~5 GB internal storage; no Ask text uploaded).
+1. **Ollama** tab → **Knowledge base (offline)** → **Download knowledge base** — choose **Internal storage** or **SD card** when a microSD is inserted (~5 GB; no Ask text uploaded).
 2. Wait for download to finish (stay on Wi‑Fi). **Installed** indicator shows version and path.
 3. Enable **Use local knowledge base** (default on after successful install).
 4. **Update knowledge** checks manifest and re-downloads when a newer version exists.
 5. **Remove knowledge base** deletes the corpus directory and turns the toggle off.
 
-**SD card:** v1 defaults to `~/.bonsai/rag` on internal storage. Advanced path override may be added in a follow-up; for QA use `install_rag_corpus_local` RPC with a custom path.
+**SD card:** When a microSD is mounted under `/run/media/deck/…`, the download picker offers **Download to SD card** (install path `{mount}/.bonsai/rag`). Internal default remains `~/.bonsai/rag`.
+
+**Download fails / manifest error:** The plugin fetches `corpus-manifest.json` from Hugging Face (primary) and a GitHub Releases mirror. If both are unreachable (401/404), download stops with a manifest error — the maintainer must publish the corpus and manifest first (`scripts/build_rag_db.py`). For local QA without network, use Developer tab + `install_rag_corpus_local` RPC with a built `dist/knowledge-base` folder.
 
 **Clear all plugin data** (Settings) also removes the installed corpus when `rag_corpus_path` is set.
 

@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
-import { Button, ButtonItem, ConfirmModal, PanelSection, PanelSectionRow, ToggleField, showModal } from "@decky/ui";
+import { Button, ButtonItem, ConfirmModal, Focusable, PanelSection, PanelSectionRow, ToggleField, showModal } from "@decky/ui";
+import { SETTINGS_GLASS_BTN } from "../styles/settingsGlassButton";
 import { toaster } from "@decky/api";
 import { readClipboardText } from "../utils/clipboardStash";
 import type { IntentPackSummary } from "../hooks/useIntentPacks";
@@ -177,16 +178,21 @@ export function SettingsTabIntentPacksSection(props: SettingsTabIntentPacksSecti
                   void onEnabledChange(pack.id, checked);
                 }}
               />
-              <div style={{ display: "flex", gap: 6, marginTop: 6, flexWrap: "wrap" }}>
-                <Button
-                  onClick={() => {
-                    void copyExportJson(pack.id);
-                  }}
-                  disabled={busy}
-                  style={{ minHeight: 32, fontSize: 11 }}
-                >
-                  Export
-                </Button>
+              <div style={{ display: "flex", gap: 8, marginTop: 6, flexWrap: "wrap", width: "100%" }}>
+                <div className="bonsai-settings-focus-btn-host" style={{ flex: "1 1 140px", minWidth: 0 }}>
+                  <Focusable onOKButton={() => void copyExportJson(pack.id)}>
+                    <Button
+                      className="bonsai-settings-focus-btn"
+                      onClick={() => {
+                        void copyExportJson(pack.id);
+                      }}
+                      disabled={busy}
+                      style={{ ...SETTINGS_GLASS_BTN, width: "100%" }}
+                    >
+                      Export
+                    </Button>
+                  </Focusable>
+                </div>
                 {pack.source !== "bundled" ? (
                   <Button
                     onClick={() => confirmRemove(pack)}

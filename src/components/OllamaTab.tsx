@@ -89,6 +89,7 @@ export const OllamaTab: React.FC<OllamaTabProps> = ({
   const ollamaKeepAliveThumbHostRef = useRef<HTMLDivElement>(null);
   const kbToggleHostRef = useRef<HTMLDivElement>(null);
   const kbDownloadBtnRef = useRef<HTMLButtonElement>(null);
+  const connectionTestBtnRef = useRef<HTMLButtonElement>(null);
   const responseVerifyToggleHostRef = useRef<HTMLDivElement>(null);
 
   const focusOllamaKeepAliveThumb = useCallback((): boolean => {
@@ -127,6 +128,11 @@ export const OllamaTab: React.FC<OllamaTabProps> = ({
     return true;
   }, []);
 
+  const focusConnectionTestBtn = useCallback((): boolean => {
+    connectionTestBtnRef.current?.focus();
+    return Boolean(connectionTestBtnRef.current);
+  }, []);
+
   const installedCount =
     lastConnectionStatus?.reachable && Array.isArray(lastConnectionStatus.models)
       ? lastConnectionStatus.models.length
@@ -148,6 +154,7 @@ export const OllamaTab: React.FC<OllamaTabProps> = ({
         onOpenOllamaModelsHub={onOpenOllamaModelsHub}
         onApplyTier2MultimodalPolicy={onApplyTier2MultimodalPolicy}
         onMoveDownFromConnectionRow={focusKbToggle}
+        connectionTestBtnRef={connectionTestBtnRef}
       />
 
       <KnowledgeBaseSection
@@ -158,6 +165,7 @@ export const OllamaTab: React.FC<OllamaTabProps> = ({
         onCompleteDeckyModalClose={onCompleteDeckyModalClose}
         toggleHostRef={kbToggleHostRef}
         downloadBtnRef={kbDownloadBtnRef}
+        onMoveUpToConnection={focusConnectionTestBtn}
         onMoveDownFromRemove={focusResponseVerifyToggle}
       />
 

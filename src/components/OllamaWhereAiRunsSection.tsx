@@ -28,6 +28,7 @@ import {
   TIER1_ESSENTIALS_TAG,
   TIER2_MULTIMODAL_TAG,
 } from "../data/deckEssentialsTags";
+import { tryMoveUpWithPanelScroll } from "../utils/settingsPanelScroll";
 import { disclosureSummaryForSourceClass } from "../data/modelPolicy";
 
 const TEST_CONNECTION_TIMEOUT_SECONDS = 10;
@@ -35,6 +36,23 @@ const TEST_CONNECTION_TIMEOUT_SECONDS = 10;
 const LOCAL_LOOPBACK_CONNECTION_TEST_RPC_EXTRA_MS = 42000;
 const MDNS_DISCOVERY_TIMEOUT_SECONDS = 10;
 const MDNS_DISCOVERY_RPC_MS = 18_000;
+
+// #region agent log
+const debugOllamaNavLog = (location: string, message: string, data: Record<string, unknown>, hypothesisId: string) => {
+  fetch("http://127.0.0.1:7548/ingest/455d5c32-fa64-45d1-b31c-f17b50f3371a", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "bb3082" },
+    body: JSON.stringify({
+      sessionId: "bb3082",
+      location,
+      message,
+      data,
+      hypothesisId,
+      timestamp: Date.now(),
+    }),
+  }).catch(() => {});
+};
+// #endregion
 
 type MdnsOllamaHost = {
   label: string;
@@ -102,6 +120,8 @@ export type OllamaWhereAiRunsSectionProps = {
   onApplyTier2MultimodalPolicy?: () => void | Promise<void>;
   /** Focus graph: move from connection row into Knowledge base section. */
   onMoveDownFromConnectionRow?: () => void;
+  /** Focus graph: ref for Test connection button (KB toggle onMoveUp target). */
+  connectionTestBtnRef?: React.RefObject<HTMLButtonElement | null>;
 };
 
 type ConnectionStatus = DeveloperConnectionStatus;
@@ -120,6 +140,7 @@ export const OllamaWhereAiRunsSection: React.FC<OllamaWhereAiRunsSectionProps> =
   onOpenOllamaModelsHub,
   onApplyTier2MultimodalPolicy,
   onMoveDownFromConnectionRow,
+  connectionTestBtnRef,
 }) => {
   const [deckIp, setDeckIp] = useState<string>("...");
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus | null>(
@@ -140,6 +161,49 @@ export const OllamaWhereAiRunsSection: React.FC<OllamaWhereAiRunsSectionProps> =
 
   const ollamaIpConnectionNavRef = useRef<HTMLDivElement>(null);
   const ollamaLocalToggleNavRef = useRef<HTMLDivElement>(null);
+
+  const focusLocalToggle = useCallback((): boolean => {
+    const host = ollamaLocalToggleNavRef.current;
+    const target = host?.querySelector<HTMLElement>("[tabindex], button, input");
+    if (!target) return false;
+    target.focus();
+    return true;
+  }, []);
+
+  const handleMoveUpFromConnection = useCallback((): boolean => {
+    const scrolled = tryMoveUpWithPanelScroll(ollamaIpConnectionNavRef.current, focusLocalToggle);
+    // #region agent log
+    debugOllamaNavLog(
+      "OllamaWhereAiRunsSection.tsx:connection:onMoveUp",
+      "Connection row move up",
+      {
+        scrolled,
+        scrollTop:
+          ollamaIpConnectionNavRef.current?.closest('[class*="TabContentsScroll"]')?.scrollTop ?? null,
+      },
+      "A",
+    );
+    // #endregion
+    return scrolled;
+  }, [focusLocalToggle]);
+
+  const handleMoveUpFromLocalToggle = useCallback((): boolean => {
+    const scrolled = tryMoveUpWithPanelScroll(ollamaLocalToggleNavRef.current);
+    // #region agent log
+    debugOllamaNavLog(
+      "OllamaWhereAiRunsSection.tsx:localToggle:onMoveUp",
+      "Local toggle move up (scroll to tab bar)",
+      {
+        scrolled,
+        scrollTop:
+          ollamaLocalToggleNavRef.current?.closest('[class*="TabContentsScroll"]')?.scrollTop ?? null,
+      },
+      "D",
+    );
+    // #endregion
+    return scrolled;
+  }, []);
+
   const [localInstallMenuOpen, setLocalInstallMenuOpen] = useState(
     () => peekOllamaTabLocalPending()?.localInstallMenuOpen ?? false
   );
@@ -495,6 +559,9 @@ export const OllamaWhereAiRunsSection: React.FC<OllamaWhereAiRunsSectionProps> =
               label="Run AI on this Deck"
               checked={ollamaLocalOnDeck}
               onChange={(c) => setOllamaLocalOnDeck(c)}
+              {...({
+                onMoveUp: () => handleMoveUpFromLocalToggle(),
+              } as unknown as Record<string, unknown>)}
             />
             <div
               className="bonsai-prose"
@@ -859,9 +926,13 @@ export const OllamaWhereAiRunsSection: React.FC<OllamaWhereAiRunsSectionProps> =
                 </div>
               )}
               <Button
+                ref={(el) => {
+                  if (connectionTestBtnRef) connectionTestBtnRef.current = el as HTMLButtonElement | null;
+                }}
                 onClick={onTestConnection}
                 disabled={connectionTesting || localSetupBusy || (!ollamaLocalOnDeck && !ollamaIp.trim())}
                 {...({
+                  onMoveUp: () => handleMoveUpFromConnection(),
                   onMoveDown: onMoveDownFromConnectionRow,
                 } as unknown as Record<string, unknown>)}
                 style={{

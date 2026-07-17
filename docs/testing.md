@@ -381,7 +381,8 @@ Maps [roadmap.md](roadmap.md) **Completed** summary and [archive/roadmap-complet
 | KB-DOWNLOAD | Knowledge base download + verify | KB-SMOKE-01 | Open | Unit: `test_knowledge_base_service.py`; on-Deck download |
 | KB-RETRIEVE | Strategy/troubleshooting retrieval + splice | KB-SMOKE-02 | Open | Unit + Strategy Ask transparency |
 | KB-UNAVAIL | KB unavailable graceful path | KB-SMOKE-03 | Open | Toggle on, corpus missing → once/session toast |
-| KB-FOCUS-01 | Ollama tab KB section D-pad chain | — | Open | Connection row → toggle → download → update → remove → Response verify |
+| KB-FOCUS-01 | Ollama tab KB section D-pad chain + scroll-up | — | Open | Connection row ↔ KB toggle ↔ buttons ↔ Response verify; D-pad up from top scrolls to tab strip |
+| KB-DOWNLOAD-SD | KB download storage picker (SD card) | KB-SMOKE-01 | Open | Modal shows internal + SD when microSD mounted |
 
 ### Tabs, icons, unified ask
 
@@ -655,7 +656,8 @@ Deck-only (multi-output: handheld, docked monitor, TV). Unit: `src/data/uiScaleP
 - [ ] **UI-SCALE-03** Docked TV (~65″ @ couch distance): auto Couch; larger type/spacing; no spill
 - [ ] **UI-SCALE-04** Manual snap + **Apply UI scale** persists across QAM close; Pull Models modal matches scale
 - [ ] **UI-SCALE-05** D-pad: auto toggle ↕ manual slider ↕ Reset ↕ Apply ↕ screenshot quality row; slider left/right snaps Handheld · Desktop · Couch
-- [ ] **KB-FOCUS-01** D-pad (Ollama tab): connection row ↓ KB toggle ↓ download ↓ update ↓ remove ↓ Response verify toggle
+- [ ] **KB-FOCUS-01** D-pad (Ollama tab): connection row ↓ KB toggle ↓ download ↓ update ↓ remove ↓ Response verify toggle; D-pad up from KB toggle reaches connection row; D-pad up from **Run AI on this Deck** scrolls panel to tab strip
+- [ ] **KB-DOWNLOAD-SD** Download modal: internal + SD card buttons match bonsAI button style; SD option when card inserted
 
 ---
 

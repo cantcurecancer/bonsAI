@@ -147,6 +147,7 @@ from backend.services.rag_corpus_download_service import (
 from backend.services.knowledge_base_schema import (
     CORPUS_MANIFEST_FILENAME,
     default_corpus_dir_internal,
+    list_rag_storage_options,
     load_manifest_from_path,
     resolve_corpus_db_path,
     sanitize_corpus_install_dir,
@@ -1319,12 +1320,30 @@ class Plugin:
         plugin = Plugin._coerce_instance(self)
         settings = await plugin.load_settings()
         db_path = resolve_corpus_db_path(settings)
+        storage_options: dict[str, Any] = {}
+        try:
+            storage_options = list_rag_storage_options()
+        except Exception as exc:
+            try:
+                logger.warning("get_rag_corpus_status: storage_options failed: %s", exc)
+            except Exception:
+                pass
+            storage_options = {
+                "internal": {
+                    "id": "internal",
+                    "label": "Internal storage",
+                    "install_path": default_corpus_dir_internal(),
+                    "free_bytes": 0,
+                },
+                "sd_card": None,
+            }
         return {
             **dict(plugin._rag_corpus_download_state),
             "installed": bool(db_path),
             "corpus_path": str(settings.get("rag_corpus_path") or ""),
             "corpus_version": str(settings.get("rag_corpus_version") or ""),
             "use_local_knowledge_base": settings.get("use_local_knowledge_base") is True,
+            "storage_options": storage_options,
         }
 
     async def start_rag_corpus_download(self, data: Any = None):
@@ -1342,6 +1361,11 @@ class Plugin:
             install_dir = sanitize_corpus_install_dir(install_dir)
         except ValueError as exc:
             return {"accepted": False, "reason": str(exc)}
+
+        try:
+            os.makedirs(os.path.dirname(os.path.expanduser(install_dir)) or ".", exist_ok=True)
+        except OSError as exc:
+            return {"accepted": False, "reason": f"Could not create install folder: {exc}"}
 
         async with plugin._rag_corpus_download_lock:
             existing = plugin._rag_corpus_download_task

@@ -1,7 +1,17 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Button, ConfirmModal, PanelSection, PanelSectionRow, ToggleField, showModal } from "@decky/ui";
+import { Button, ConfirmModal, Focusable, PanelSection, PanelSectionRow, ToggleField, showModal } from "@decky/ui";
 import { toaster } from "@decky/api";
 import { callDeckyWithTimeout, DECKY_RPC_TIMEOUT_MS, formatDeckyRpcError } from "../utils/deckyCall";
+import { tryMoveUpWithPanelScroll } from "../utils/settingsPanelScroll";
+import { SETTINGS_GLASS_BTN, SETTINGS_GLASS_BTN_DANGER } from "../styles/settingsGlassButton";
+
+export type RagStorageOption = {
+  id?: string;
+  label?: string;
+  install_path?: string;
+  mount?: string;
+  free_bytes?: number;
+};
 
 export type RagCorpusStatus = {
   phase?: string;
@@ -16,6 +26,10 @@ export type RagCorpusStatus = {
   corpus_version?: string;
   use_local_knowledge_base?: boolean;
   log_tail?: string[];
+  storage_options?: {
+    internal?: RagStorageOption;
+    sd_card?: RagStorageOption | null;
+  };
 };
 
 type Props = {
@@ -31,8 +45,89 @@ type Props = {
 };
 
 const KB_UNAVAILABLE_SESSION_KEY = "bonsai_kb_unavailable_warned";
+
 const deckNav = (handlers: Record<string, () => boolean | void>) =>
   handlers as unknown as Record<string, unknown>;
+
+const formatFreeGb = (bytes?: number): string => {
+  if (!bytes || bytes <= 0) return "unknown free space";
+  return `~${Math.round(bytes / (1024 * 1024 * 1024))} GB free`;
+};
+
+// #region agent log
+const debugKbLog = (location: string, message: string, data: Record<string, unknown>, hypothesisId: string) => {
+  fetch("http://127.0.0.1:7548/ingest/455d5c32-fa64-45d1-b31c-f17b50f3371a", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "bb3082" },
+    body: JSON.stringify({
+      sessionId: "bb3082",
+      location,
+      message,
+      data,
+      hypothesisId,
+      timestamp: Date.now(),
+    }),
+  }).catch(() => {});
+};
+// #endregion
+
+type StoragePickerModalProps = {
+  internal: RagStorageOption;
+  sdCard: RagStorageOption | null | undefined;
+  onPick: (installPath: string, storage: string) => void;
+  onClose: () => void;
+};
+
+const RagCorpusStoragePickerModal: React.FC<StoragePickerModalProps> = ({
+  internal,
+  sdCard,
+  onPick,
+  onClose,
+}) => (
+  <ConfirmModal
+    strTitle="Choose download location"
+    strDescription={
+      <div className="bonsai-prose" style={{ fontSize: 12, lineHeight: 1.45, color: "#cdd9e6", textAlign: "left" }}>
+        <div style={{ marginBottom: 10 }}>
+          Wiki-derived strategy cards and compat notes (~5 GB). No Ask text is uploaded.
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          <div className="bonsai-settings-focus-btn-host" style={{ width: "100%" }}>
+            <Focusable onOKButton={() => onPick(internal.install_path ?? "~/.bonsai/rag", "internal")}>
+              <Button
+                className="bonsai-settings-focus-btn"
+                onClick={() => onPick(internal.install_path ?? "~/.bonsai/rag", "internal")}
+                style={{ ...SETTINGS_GLASS_BTN, width: "100%" }}
+              >
+                Internal storage ({formatFreeGb(internal.free_bytes)})
+              </Button>
+            </Focusable>
+          </div>
+          {sdCard?.install_path ? (
+            <div className="bonsai-settings-focus-btn-host" style={{ width: "100%" }}>
+              <Focusable onOKButton={() => onPick(sdCard.install_path!, "sd_card")}>
+                <Button
+                  className="bonsai-settings-focus-btn"
+                  onClick={() => onPick(sdCard.install_path!, "sd_card")}
+                  style={{ ...SETTINGS_GLASS_BTN, width: "100%" }}
+                >
+                  SD card ({formatFreeGb(sdCard.free_bytes)})
+                </Button>
+              </Focusable>
+            </div>
+          ) : (
+            <div style={{ fontSize: 11, color: "#9fb7d5", lineHeight: 1.35 }}>
+              No SD card detected. Insert a microSD formatted for Steam Deck storage, then try again.
+            </div>
+          )}
+        </div>
+      </div>
+    }
+    strOKButtonText="Cancel"
+    onOK={onClose}
+    onCancel={onClose}
+  />
+);
 
 export const KnowledgeBaseSection: React.FC<Props> = ({
   useLocalKnowledgeBase,
@@ -47,17 +142,45 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
 }) => {
   const [status, setStatus] = useState<RagCorpusStatus | null>(null);
   const [downloadBusy, setDownloadBusy] = useState(false);
-  const downloadBtnRefLocal = useRef<HTMLButtonElement | null>(null);
-  const updateBtnRef = useRef<HTMLButtonElement | null>(null);
+  const primaryBtnRefLocal = useRef<HTMLButtonElement | null>(null);
   const removeBtnRef = useRef<HTMLButtonElement | null>(null);
   const toggleHostRefLocal = useRef<HTMLDivElement | null>(null);
   const toggleHost = toggleHostRef ?? toggleHostRefLocal;
 
-  const focusDownloadBtn = useCallback(() => {
+  const focusPrimaryBtn = useCallback(() => {
     downloadBtnRefProp?.current?.focus();
-    downloadBtnRefLocal.current?.focus();
+    primaryBtnRefLocal.current?.focus();
     return true;
   }, [downloadBtnRefProp]);
+
+  const focusKbToggle = useCallback((): boolean => {
+    const host = toggleHost.current;
+    const target = host?.querySelector<HTMLElement>("[tabindex], button, input");
+    if (!target) return false;
+    target.focus();
+    return true;
+  }, [toggleHost]);
+
+  const focusRemoveBtn = useCallback((): boolean => {
+    removeBtnRef.current?.focus();
+    return Boolean(removeBtnRef.current);
+  }, []);
+
+  const handleMoveUpFromToggle = useCallback((): boolean => {
+    const scrolled = tryMoveUpWithPanelScroll(toggleHost.current, () => onMoveUpToConnection?.() ?? false);
+    // #region agent log
+    debugKbLog(
+      "KnowledgeBaseSection.tsx:toggle:onMoveUp",
+      "KB toggle move up result",
+      {
+        scrolled,
+        scrollTop: toggleHost.current?.closest('[class*="TabContentsScroll"]')?.scrollTop ?? null,
+      },
+      "A",
+    );
+    // #endregion
+    return scrolled;
+  }, [onMoveUpToConnection, toggleHost]);
 
   const refreshStatus = useCallback(async () => {
     try {
@@ -81,7 +204,15 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
         });
       }
       return st;
-    } catch {
+    } catch (e: unknown) {
+      // #region agent log
+      debugKbLog(
+        "KnowledgeBaseSection.tsx:refreshStatus",
+        "get_rag_corpus_status failed",
+        { error: formatDeckyRpcError(e) },
+        "H",
+      );
+      // #endregion
       setStatus(null);
       return null;
     }
@@ -107,20 +238,27 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
     return () => window.clearInterval(id);
   }, [downloadBusy, refreshStatus]);
 
-  const startDownload = async (installPath: string) => {
+  const startDownload = async (installPath: string, storage: string) => {
     setDownloadBusy(true);
     try {
-      const out = await callDeckyWithTimeout<[{ install_path: string }], { accepted?: boolean; reason?: string }>(
-        "start_rag_corpus_download",
-        [{ install_path: installPath }],
-        15000,
+      const out = await callDeckyWithTimeout<
+        [{ install_path: string; storage: string }],
+        { accepted?: boolean; reason?: string }
+      >("start_rag_corpus_download", [{ install_path: installPath, storage }], 15000);
+      // #region agent log
+      debugKbLog(
+        "KnowledgeBaseSection.tsx:startDownload",
+        "start_rag_corpus_download response",
+        { installPath, storage, out },
+        "H",
       );
+      // #endregion
       if (!out?.accepted) {
         setDownloadBusy(false);
         toaster.toast({
           title: "Download not started",
           body: out?.reason ?? "Could not start knowledge base download.",
-          duration: 6000,
+          duration: 8000,
         });
         return;
       }
@@ -131,30 +269,72 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
       });
     } catch (e: unknown) {
       setDownloadBusy(false);
-      toaster.toast({
-        title: "Download failed",
-        body: formatDeckyRpcError(e),
-        duration: 6000,
-      });
+      const msg = formatDeckyRpcError(e);
+      // #region agent log
+      debugKbLog("KnowledgeBaseSection.tsx:startDownload", "RPC exception", { msg }, "H");
+      // #endregion
+      toaster.toast({ title: "Download failed", body: msg, duration: 8000 });
     }
   };
 
-  const onDownloadClick = () => {
+  const openStoragePicker = () => {
+    onBeforeDeckyModal();
+    const internal = status?.storage_options?.internal ?? { install_path: "~/.bonsai/rag" };
+    const sdCard = status?.storage_options?.sd_card;
+    const handle = showModal(
+      <RagCorpusStoragePickerModal
+        internal={internal}
+        sdCard={sdCard}
+        onPick={(installPath, storage) => {
+          onCompleteDeckyModalClose(() => handle.Close());
+          void startDownload(installPath, storage);
+        }}
+        onClose={() => onCompleteDeckyModalClose(() => handle.Close())}
+      />,
+    );
+  };
+
+  const runUpdate = () => {
+    void callDeckyWithTimeout<[], { ok?: boolean; error?: string }>("update_rag_corpus", [], DECKY_RPC_TIMEOUT_MS)
+      .then((out) => {
+        if (out?.ok) {
+          toaster.toast({
+            title: "Update check",
+            body: "Download started or already current.",
+            duration: 4000,
+          });
+          setDownloadBusy(true);
+        } else {
+          toaster.toast({ title: "Update failed", body: out?.error ?? "Unknown error", duration: 8000 });
+        }
+      })
+      .catch((e) => toaster.toast({ title: "Update failed", body: formatDeckyRpcError(e), duration: 8000 }));
+  };
+
+  const confirmRemove = () => {
     onBeforeDeckyModal();
     const handle = showModal(
       <ConfirmModal
-        strTitle="Download strategy knowledge base?"
+        strTitle="Remove knowledge base?"
         strDescription={
           <div className="bonsai-prose" style={{ fontSize: 12, lineHeight: 1.45, color: "#cdd9e6", textAlign: "left" }}>
-            Downloads wiki-derived strategy cards and compat notes from Hugging Face (GitHub mirror fallback).
-            No Ask text is uploaded. Requires ~5 GB free space on internal storage.
+            Deletes the offline corpus from disk and turns off <strong>Use local knowledge base</strong>. Strategy
+            cards will stop grounding until you download again.
           </div>
         }
-        strOKButtonText="Download to internal storage"
+        strOKButtonText="Remove"
         strCancelButtonText="Cancel"
         onOK={() => {
           onCompleteDeckyModalClose(() => handle.Close());
-          void startDownload("~/.bonsai/rag");
+          void callDeckyWithTimeout<[], { ok?: boolean }>("remove_rag_corpus", [], DECKY_RPC_TIMEOUT_MS)
+            .then(() => {
+              setUseLocalKnowledgeBase(false);
+              void refreshStatus();
+              toaster.toast({ title: "Knowledge base removed", body: "Corpus deleted from disk.", duration: 3000 });
+            })
+            .catch((e) =>
+              toaster.toast({ title: "Remove failed", body: formatDeckyRpcError(e), duration: 5000 }),
+            );
         }}
         onCancel={() => onCompleteDeckyModalClose(() => handle.Close())}
       />,
@@ -169,6 +349,8 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
         )} MB)`
       : null;
 
+  const onPrimaryClick = installed ? runUpdate : openStoragePicker;
+
   return (
     <PanelSection title="Knowledge base (offline)">
       <PanelSectionRow>
@@ -179,8 +361,8 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
             checked={useLocalKnowledgeBase}
             onChange={(checked) => setUseLocalKnowledgeBase(checked)}
             {...deckNav({
-              onMoveUp: () => onMoveUpToConnection?.() ?? false,
-              onMoveDown: () => focusDownloadBtn(),
+              onMoveUp: () => handleMoveUpFromToggle(),
+              onMoveDown: () => focusPrimaryBtn(),
             })}
           />
         </div>
@@ -205,102 +387,60 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
         </div>
       </PanelSectionRow>
       <PanelSectionRow>
-        <Button
-          ref={(el) => {
-            const btn = el as HTMLButtonElement | null;
-            if (downloadBtnRefProp) downloadBtnRefProp.current = btn;
-            downloadBtnRefLocal.current = btn;
-          }}
-          onClick={onDownloadClick}
-          disabled={downloadBusy}
-          style={{ width: "100%", minHeight: 36 }}
-          {...deckNav({
-            onMoveUp: () => {
-              const host = toggleHost.current;
-              const target = host?.querySelector<HTMLElement>("[tabindex], button, input");
-              if (target) {
-                target.focus();
-                return true;
-              }
-              return false;
-            },
-            onMoveDown: () => {
-              updateBtnRef.current?.focus();
-              return true;
-            },
-          })}
+        <Focusable
+          flow-children="horizontal"
+          className="bonsai-settings-bleed"
+          style={{ display: "flex", flexDirection: "row", alignItems: "stretch", gap: 8, width: "100%" }}
         >
-          {installed ? "Re-download knowledge base" : "Download knowledge base"}
-        </Button>
-      </PanelSectionRow>
-      <PanelSectionRow>
-        <Button
-          ref={(el) => {
-            updateBtnRef.current = el as HTMLButtonElement | null;
-          }}
-          onClick={() => {
-            void callDeckyWithTimeout<[], { ok?: boolean; error?: string }>(
-              "update_rag_corpus",
-              [],
-              DECKY_RPC_TIMEOUT_MS,
-            )
-              .then((out) => {
-                if (out?.ok) {
-                  toaster.toast({ title: "Update check", body: "Download started or already current.", duration: 4000 });
-                  setDownloadBusy(true);
-                } else {
-                  toaster.toast({ title: "Update failed", body: out?.error ?? "Unknown error", duration: 5000 });
-                }
-              })
-              .catch((e) =>
-                toaster.toast({ title: "Update failed", body: formatDeckyRpcError(e), duration: 5000 }),
-              );
-          }}
-          disabled={downloadBusy || !installed}
-          style={{ width: "100%", minHeight: 36 }}
-          {...deckNav({
-            onMoveUp: () => {
-              downloadBtnRefProp?.current?.focus();
-              downloadBtnRefLocal.current?.focus();
-              return true;
-            },
-            onMoveDown: () => {
-              removeBtnRef.current?.focus();
-              return true;
-            },
-          })}
-        >
-          Update knowledge
-        </Button>
-      </PanelSectionRow>
-      <PanelSectionRow>
-        <Button
-          ref={(el) => {
-            removeBtnRef.current = el as HTMLButtonElement | null;
-          }}
-          onClick={() => {
-            void callDeckyWithTimeout<[], { ok?: boolean }>("remove_rag_corpus", [], DECKY_RPC_TIMEOUT_MS)
-              .then(() => {
-                setUseLocalKnowledgeBase(false);
-                void refreshStatus();
-                toaster.toast({ title: "Knowledge base removed", body: "Corpus deleted from disk.", duration: 3000 });
-              })
-              .catch((e) =>
-                toaster.toast({ title: "Remove failed", body: formatDeckyRpcError(e), duration: 5000 }),
-              );
-          }}
-          disabled={downloadBusy || !installed}
-          style={{ width: "100%", minHeight: 36 }}
-          {...deckNav({
-            onMoveUp: () => {
-              updateBtnRef.current?.focus();
-              return true;
-            },
-            onMoveDown: () => onMoveDownFromRemove?.() ?? false,
-          })}
-        >
-          Remove knowledge base
-        </Button>
+          <div className="bonsai-settings-focus-btn-host" style={{ flex: "1 1 auto", minWidth: 0 }}>
+            <Focusable onOKButton={onPrimaryClick}>
+              <Button
+                ref={(el) => {
+                  const btn = el as HTMLButtonElement | null;
+                  if (downloadBtnRefProp) downloadBtnRefProp.current = btn;
+                  primaryBtnRefLocal.current = btn;
+                }}
+                className="bonsai-settings-focus-btn"
+                onClick={onPrimaryClick}
+                disabled={downloadBusy}
+                style={{ ...SETTINGS_GLASS_BTN, width: "100%" }}
+                {...deckNav({
+                  onMoveUp: () => focusKbToggle(),
+                  onMoveDown: () => (installed ? focusRemoveBtn() : onMoveDownFromRemove?.() ?? false),
+                  onMoveRight: () => (installed ? focusRemoveBtn() : false),
+                })}
+              >
+                {downloadBusy
+                  ? "Downloading…"
+                  : installed
+                    ? "Update knowledge base"
+                    : "Download knowledge base"}
+              </Button>
+            </Focusable>
+          </div>
+          {installed ? (
+            <div className="bonsai-settings-focus-btn-host">
+              <Focusable onOKButton={confirmRemove}>
+                <Button
+                  ref={(el) => {
+                    removeBtnRef.current = el as HTMLButtonElement | null;
+                  }}
+                  className="bonsai-settings-focus-btn"
+                  onClick={confirmRemove}
+                  disabled={downloadBusy}
+                  style={SETTINGS_GLASS_BTN_DANGER}
+                  {...deckNav({
+                    onMoveUp: () => focusPrimaryBtn(),
+                    onMoveLeft: () => focusPrimaryBtn(),
+                    onMoveDown: () => onMoveDownFromRemove?.() ?? false,
+                  })}
+                >
+                  Remove
+                </Button>
+              </Focusable>
+            </div>
+          ) : null}
+        </Focusable>
       </PanelSectionRow>
     </PanelSection>
   );
