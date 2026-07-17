@@ -20,6 +20,7 @@ import {
   DEFAULT_DESKTOP_DEBUG_NOTE_AUTO_SAVE,
   DEFAULT_DESKTOP_APP_LOG_LEVEL,
   DEFAULT_ATTACH_PROTON_LOGS_WHEN_TROUBLESHOOTING,
+  DEFAULT_INCLUDE_PROTON_EXPERIMENT_JOURNAL_WHEN_TROUBLESHOOTING,
   DEFAULT_THINKING_STATUS_TINY_MODEL_ENABLED,
   DEFAULT_INPUT_SANITIZER_USER_DISABLED,
   DEFAULT_LATENCY_WARNING_SECONDS,
@@ -76,6 +77,8 @@ function snapshotFromBonsaiSettings(normalized: BonsaiSettings): BonsaiSettingsS
     desktopAskVerboseLogging: normalized.desktop_ask_verbose_logging,
     desktopAppLogLevel: normalized.desktop_app_log_level,
     attachProtonLogsWhenTroubleshooting: normalized.attach_proton_logs_when_troubleshooting,
+    includeProtonExperimentJournalWhenTroubleshooting:
+      normalized.include_proton_experiment_journal_when_troubleshooting,
     thinkingStatusTinyModelEnabled: normalized.thinking_status_tiny_model_enabled,
     presetChipFadeAnimationEnabled: normalized.preset_chip_fade_animation_enabled,
     presetChipAnimation: normalized.preset_chip_animation,
@@ -145,6 +148,10 @@ export function usePluginSettings() {
   const [attachProtonLogsWhenTroubleshooting, setAttachProtonLogsWhenTroubleshooting] = useState<boolean>(
     DEFAULT_ATTACH_PROTON_LOGS_WHEN_TROUBLESHOOTING
   );
+  const [
+    includeProtonExperimentJournalWhenTroubleshooting,
+    setIncludeProtonExperimentJournalWhenTroubleshooting,
+  ] = useState<boolean>(DEFAULT_INCLUDE_PROTON_EXPERIMENT_JOURNAL_WHEN_TROUBLESHOOTING);
   const [thinkingStatusTinyModelEnabled, setThinkingStatusTinyModelEnabled] = useState<boolean>(
     DEFAULT_THINKING_STATUS_TINY_MODEL_ENABLED
   );
@@ -216,6 +223,7 @@ export function usePluginSettings() {
     desktopAskVerboseLogging,
     desktopAppLogLevel,
     attachProtonLogsWhenTroubleshooting,
+    includeProtonExperimentJournalWhenTroubleshooting,
     thinkingStatusTinyModelEnabled,
     presetChipFadeAnimationEnabled,
     presetChipAnimation,
@@ -261,6 +269,9 @@ export function usePluginSettings() {
     setDesktopAskVerboseLogging(normalized.desktop_ask_verbose_logging);
     setDesktopAppLogLevel(normalized.desktop_app_log_level);
     setAttachProtonLogsWhenTroubleshooting(normalized.attach_proton_logs_when_troubleshooting);
+    setIncludeProtonExperimentJournalWhenTroubleshooting(
+      normalized.include_proton_experiment_journal_when_troubleshooting,
+    );
     setThinkingStatusTinyModelEnabled(normalized.thinking_status_tiny_model_enabled);
     setPresetChipAnimation(normalized.preset_chip_animation);
     setPresetChipFadeAnimationEnabled(normalized.preset_chip_fade_animation_enabled);
@@ -355,6 +366,9 @@ export function usePluginSettings() {
         setDesktopAskVerboseLogging(DEFAULT_DESKTOP_ASK_VERBOSE_LOGGING);
         setDesktopAppLogLevel(DEFAULT_DESKTOP_APP_LOG_LEVEL);
         setAttachProtonLogsWhenTroubleshooting(DEFAULT_ATTACH_PROTON_LOGS_WHEN_TROUBLESHOOTING);
+        setIncludeProtonExperimentJournalWhenTroubleshooting(
+          DEFAULT_INCLUDE_PROTON_EXPERIMENT_JOURNAL_WHEN_TROUBLESHOOTING,
+        );
         setThinkingStatusTinyModelEnabled(DEFAULT_THINKING_STATUS_TINY_MODEL_ENABLED);
         setPresetChipAnimation(DEFAULT_PRESET_CHIP_ANIMATION);
         setPresetChipFadeAnimationEnabled(DEFAULT_PRESET_CHIP_FADE_ANIMATION_ENABLED);
@@ -424,6 +438,7 @@ export function usePluginSettings() {
     desktopAskVerboseLogging,
     desktopAppLogLevel,
     attachProtonLogsWhenTroubleshooting,
+    includeProtonExperimentJournalWhenTroubleshooting,
     thinkingStatusTinyModelEnabled,
     presetChipFadeAnimationEnabled,
     presetChipAnimation,
@@ -469,6 +484,7 @@ export function usePluginSettings() {
     desktopAskVerboseLogging,
     desktopAppLogLevel,
     attachProtonLogsWhenTroubleshooting,
+    includeProtonExperimentJournalWhenTroubleshooting,
     thinkingStatusTinyModelEnabled,
     presetChipFadeAnimationEnabled,
     setPresetChipFadeAnimationEnabled,
@@ -539,6 +555,7 @@ export function usePluginSettings() {
     setDesktopAskVerboseLogging,
     setDesktopAppLogLevel,
     setAttachProtonLogsWhenTroubleshooting,
+    setIncludeProtonExperimentJournalWhenTroubleshooting,
     setThinkingStatusTinyModelEnabled,
     setInputSanitizerUserDisabled,
     setLatencyTimeoutsCustomEnabled,

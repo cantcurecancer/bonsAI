@@ -1,3 +1,5 @@
+import type { TransparencySnapshot } from "../utils/inputTransparency";
+
 export type AppliedResult = {
   tdp_watts: number | null;
   gpu_clock_mhz: number | null;
@@ -49,6 +51,7 @@ export type AskThreadCollapsedTurn = {
   id: string;
   question: string;
   answer: string;
+  transparency?: TransparencySnapshot | null;
 };
 
 /** Accordion key for the Ask transcript: archived turn id, live turn, or all collapsed. */

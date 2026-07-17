@@ -54,6 +54,13 @@ def wipe_bonsai_cache_dir(logger: Any) -> bool:
     return False
 
 
+def wipe_proton_experiment_journal(logger: Any) -> bool:
+    """Remove ~/.bonsai/proton_experiment_journal.json when under user home."""
+    from backend.services.proton_experiment_journal_service import wipe_journal_file
+
+    return wipe_journal_file(logger=logger)
+
+
 def wipe_rag_corpus_dir(corpus_path: str, logger: Any) -> bool:
     """Remove installed knowledge base directory when under user home."""
     from backend.services.rag_corpus_download_service import remove_corpus_at_path

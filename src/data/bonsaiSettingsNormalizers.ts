@@ -240,6 +240,10 @@ export function normalizeAttachProtonLogsWhenTroubleshooting(value: unknown): bo
   return value === true;
 }
 
+export function normalizeIncludeProtonExperimentJournalWhenTroubleshooting(value: unknown): boolean {
+  return value === true;
+}
+
 export function normalizeThinkingStatusTinyModelEnabled(value: unknown): boolean {
   return value === true;
 }
@@ -402,6 +406,10 @@ export function normalizeSettings(data: unknown): BonsaiSettings {
     attach_proton_logs_when_troubleshooting: normalizeAttachProtonLogsWhenTroubleshooting(
       raw.attach_proton_logs_when_troubleshooting,
     ),
+    include_proton_experiment_journal_when_troubleshooting:
+      normalizeIncludeProtonExperimentJournalWhenTroubleshooting(
+        raw.include_proton_experiment_journal_when_troubleshooting,
+      ),
     thinking_status_tiny_model_enabled: normalizeThinkingStatusTinyModelEnabled(
       raw.thinking_status_tiny_model_enabled,
     ),

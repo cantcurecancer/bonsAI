@@ -29,6 +29,7 @@ import {
 import { VoiceInputSettingsSection } from "./VoiceInputSettingsSection";
 import { SettingsTabIntentPacksSection } from "./SettingsTabIntentPacksSection";
 import { SettingsTabUiScaleSection } from "./SettingsTabUiScaleSection";
+import { ProtonExperimentJournalSection } from "./ProtonExperimentJournalSection";
 import type { UiScaleProfileId } from "../data/uiScaleProfile";
 import type { IntentPackSummary } from "../hooks/useIntentPacks";
 import type { VoiceSttModelId } from "../utils/settingsAndResponse";
@@ -118,6 +119,12 @@ export type SettingsTabProps = {
     pack?: { id?: string; label?: string };
   }>;
   onIntentPackRemove?: (packId: string) => Promise<boolean>;
+
+  attachProtonLogsWhenTroubleshooting: boolean;
+  setAttachProtonLogsWhenTroubleshooting: (v: boolean) => void;
+  includeProtonExperimentJournalWhenTroubleshooting: boolean;
+  setIncludeProtonExperimentJournalWhenTroubleshooting: (v: boolean) => void;
+  steamLogsReadEnabled: boolean;
 };
 
 export const SettingsTab: React.FC<SettingsTabProps> = ({
@@ -155,6 +162,11 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
   onIntentPackExport,
   onIntentPackImport,
   onIntentPackRemove,
+  attachProtonLogsWhenTroubleshooting,
+  setAttachProtonLogsWhenTroubleshooting,
+  includeProtonExperimentJournalWhenTroubleshooting,
+  setIncludeProtonExperimentJournalWhenTroubleshooting,
+  steamLogsReadEnabled,
 }) => {
   const [accentIntensityMenuOpen, setAccentIntensityMenuOpen] = useState(
     () => peekSettingsTabLocalPending()?.accentIntensityMenuOpen ?? false
@@ -454,6 +466,14 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
           </div>
         </PanelSectionRow>
       </PanelSection>
+      <ProtonExperimentJournalSection
+        attachProtonLogsWhenTroubleshooting={attachProtonLogsWhenTroubleshooting}
+        setAttachProtonLogsWhenTroubleshooting={setAttachProtonLogsWhenTroubleshooting}
+        includeProtonExperimentJournalWhenTroubleshooting={includeProtonExperimentJournalWhenTroubleshooting}
+        setIncludeProtonExperimentJournalWhenTroubleshooting={setIncludeProtonExperimentJournalWhenTroubleshooting}
+        steamLogsReadEnabled={steamLogsReadEnabled}
+        onBeforeDeckyModal={onBeforeDeckyModal}
+      />
       <PanelSection title="Data">
         <PanelSectionRow>
           <div className="bonsai-settings-bleed" style={{ width: "100%" }}>

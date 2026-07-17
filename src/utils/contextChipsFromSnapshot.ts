@@ -1,0 +1,46 @@
+import type { TransparencySnapshot, ContextChip, ContextChipBody } from "./inputTransparency";
+
+export const CONTEXT_CHIP_WINDOW = 2;
+
+export function chipsFromSnapshot(snapshot: TransparencySnapshot | null | undefined): ContextChip[] {
+  if (!snapshot?.context_chips?.length) return [];
+  return [...snapshot.context_chips].sort((a, b) => a.rank - b.rank);
+}
+
+export function windowRange(activeIndex: number, total: number, window = CONTEXT_CHIP_WINDOW) {
+  const start = Math.max(0, activeIndex - window);
+  const end = Math.min(total - 1, activeIndex + window);
+  return { start, end };
+}
+
+export function chipBodyTitle(chip: ContextChip): string {
+  return chip.body?.title || chip.label;
+}
+
+export function chipBodyBullets(chip: ContextChip): string[] {
+  return chip.body?.bullets ?? [];
+}
+
+export function chipBodyPaths(chip: ContextChip): string[] {
+  return chip.body?.paths ?? [];
+}
+
+export function chipDevJson(chip: ContextChip): unknown {
+  return chip.body?.dev_json;
+}
+
+export function tierBorderColor(tierClass: string): string {
+  if (tierClass === "foss") return "rgba(74, 222, 128, 0.9)";
+  if (tierClass === "open_weight") return "rgba(251, 146, 60, 0.92)";
+  if (tierClass === "non_foss") return "rgba(248, 113, 113, 0.92)";
+  return "rgba(58, 76, 96, 0.85)";
+}
+
+export function tierBackground(tierClass: string): string {
+  if (tierClass === "foss") return "rgba(18, 48, 32, 0.92)";
+  if (tierClass === "open_weight") return "rgba(52, 32, 14, 0.92)";
+  if (tierClass === "non_foss") return "rgba(48, 20, 24, 0.92)";
+  return "rgba(26, 34, 44, 0.88)";
+}
+
+export type ContextChipBodyView = ContextChipBody;

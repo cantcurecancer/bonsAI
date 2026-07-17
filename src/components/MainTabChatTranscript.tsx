@@ -14,17 +14,17 @@ import {
   isUpNavigationEvent,
 } from "../utils/focusNavigation";
 import { formatAppliedTuningBannerText } from "../utils/settingsAndResponse";
-import {
-  disclosureSummaryForSourceClass,
-  type ModelPolicyDisclosurePayload,
-} from "../data/modelPolicy";
+import type { ModelPolicyDisclosurePayload } from "../data/modelPolicy";
 import { StrategyChecklistPanel } from "./StrategyChecklistPanel";
 import { isPendingPlaceholderResponse } from "../utils/askThinkingPhases";
-import { REPLY_VERBOSITY_LABELS, type ReplyVerbosityId } from "../data/replyVerbosity";
 import { BonsaiChatSecondaryButton } from "./BonsaiChatSecondaryButton";
+import { buildReplyActionsElement } from "../utils/buildReplyActionsElement";
 import { buildAnswerBubbleElement } from "../utils/buildAnswerBubbleElement";
 import { buildTurnHeaderElement } from "../utils/buildTurnHeaderElement";
 import { buildCollapsedTurnTitle } from "../utils/chatTurnTitle";
+import { ContextChipLadder } from "./ContextChipLadder";
+import { SessionContextStrip } from "./SessionContextStrip";
+import { chipsFromSnapshot } from "../utils/contextChipsFromSnapshot";
 import type {
   AppliedResult,
   AskThreadCollapsedTurn,
@@ -96,7 +96,6 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
     onOpenDesktopNoteSave,
     desktopNoteSaveEnabled = true,
     transparencySnapshot = null,
-    onRunOriginalAsk,
     strategyGuideBranches = null,
     onStrategyBranchPick,
     strategyChecklist = null,
@@ -105,8 +104,6 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
     askThreadDisplayQuestion = "",
     expandedTurnKey = "live",
     onTurnActivate,
-    modelPolicyDisclosure = null,
-    onOpenModelPolicyReadme,
     shortcutSetupVariant = null,
     onOpenControllerSettings,
     strategySpoilerMaskingEnabled = true,
@@ -120,14 +117,14 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
     askMode,
   } = props;
 
-  const [transparencyOpen, setTransparencyOpen] = useState(false);
   const [diagnosticsOpen, setDiagnosticsOpen] = useState(false);
   const [feedbackRating, setFeedbackRating] = useState<"up" | "down" | null>(null);
+  const [sessionHighlightTurnId, setSessionHighlightTurnId] = useState<string | null>(null);
 
   useEffect(() => {
-    setTransparencyOpen(false);
     setDiagnosticsOpen(false);
     setFeedbackRating(null);
+    setSessionHighlightTurnId(null);
   }, [transparencySnapshot?.raw_question, transparencySnapshot?.final_response]);
 
   const noActiveGameContext =
@@ -252,7 +249,38 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
               onActivate: () => onTurnActivate?.(turn.id),
             })}
             {expandedTurnKey === turn.id
-              ? renderAnswerBubble(turn.answer, false, turn.id)
+              ? (
+                <>
+                  {renderAnswerBubble(turn.answer, false, turn.id)}
+                  {turn.transparency && chipsFromSnapshot(turn.transparency).length > 0 ? (
+                    <Focusable
+                      style={{ maxWidth: BONSAI_CHAT_AI_MAX_WIDTH_CSS, marginTop: 8 }}
+                      onActivate={() => setSessionHighlightTurnId(turn.id)}
+                      onButtonDown={() => {
+                        setSessionHighlightTurnId(turn.id);
+                        return true;
+                      }}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => setSessionHighlightTurnId(turn.id)}
+                        style={{
+                          background: "none",
+                          border: "none",
+                          padding: 0,
+                          color: "#7dd3fc",
+                          fontSize: 11,
+                          textDecoration: "underline",
+                          cursor: "pointer",
+                          font: "inherit",
+                        }}
+                      >
+                        Context used · view in session context ↓
+                      </button>
+                    </Focusable>
+                  ) : null}
+                </>
+              )
               : null}
           </Focusable>
         ))}
@@ -296,12 +324,16 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
                   onRate: (rating) => void onSendFeedback(rating),
                   showFeedback: Boolean(lastExchange?.answer?.trim()),
                   onRetry: onRetryLastResponse ?? undefined,
-                  transparencyOpen,
-                  onToggleTransparency: transparencySnapshot
-                    ? () => setTransparencyOpen((o) => !o)
-                    : undefined,
                 })
               : null}
+            {expandedTurnKey === "live" &&
+            !isAsking &&
+            transparencySnapshot &&
+            chipsFromSnapshot(transparencySnapshot).length > 0 ? (
+              <div style={{ maxWidth: BONSAI_CHAT_AI_MAX_WIDTH_CSS }}>
+                <ContextChipLadder snapshot={transparencySnapshot} collapsedHint />
+              </div>
+            ) : null}
             {expandedTurnKey === "live" && shortcutSetupVariant && onOpenControllerSettings ? (
               <div
                 style={{
@@ -322,51 +354,6 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
                     ? "Then: Guide Button Chord Layout → your chord. Full macro steps: docs (§5 bonsai shortcut setup)."
                     : "Pick a spare button on your Stadia layout, then Guide Button Chord. Full steps: docs (§5)."}
                 </div>
-              </div>
-            ) : null}
-            {expandedTurnKey === "live" && modelPolicyDisclosure ? (
-              <div
-                style={{
-                  marginTop: 10,
-                  padding: "8px 10px",
-                  borderRadius: 8,
-                  border: "1px solid rgba(100, 140, 180, 0.35)",
-                  background: "rgba(20, 32, 44, 0.5)",
-                  fontSize: 11,
-                  color: "#b8cce0",
-                  lineHeight: 1.45,
-                  maxWidth: BONSAI_CHAT_AI_MAX_WIDTH_CSS,
-                  boxSizing: "border-box",
-                }}
-              >
-                <div style={{ fontWeight: 700, marginBottom: 4, color: "#dce8f4" }}>
-                  Model source disclosure
-                </div>
-                <div>
-                  <strong>Model:</strong> {modelPolicyDisclosure.model}
-                </div>
-                <div style={{ marginTop: 4 }}>
-                  {disclosureSummaryForSourceClass(modelPolicyDisclosure.source_class)}
-                </div>
-                {onOpenModelPolicyReadme ? (
-                  <div style={{ marginTop: 6 }}>
-                    <button
-                      type="button"
-                      onClick={onOpenModelPolicyReadme}
-                      style={{
-                        color: "#7dd3fc",
-                        textDecoration: "underline",
-                        cursor: "pointer",
-                        background: "none",
-                        border: "none",
-                        padding: 0,
-                        font: "inherit",
-                      }}
-                    >
-                      Read more
-                    </button>
-                  </div>
-                ) : null}
               </div>
             ) : null}
           </Focusable>
@@ -519,104 +506,22 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
     </Focusable>
   </PanelSectionRow>
 ) : null}
-{transparencySnapshot && (
-  <PanelSectionRow>
-    <Focusable style={{ width: "100%", maxWidth: "100%", minWidth: 0, boxSizing: "border-box" }}>
-      <div style={{ fontSize: 12, fontWeight: 700, color: "#b8c9dc", marginBottom: 6 }}>
-        Input handling (last Ask)
-      </div>
-      <div style={{ fontSize: 11, color: "#8fa6bd", marginBottom: 8, lineHeight: 1.35 }}>
-        Route: {transparencySnapshot.route}
-        {transparencySnapshot.ollama_model ? ` · Model: ${transparencySnapshot.ollama_model}` : ""}
-        {transparencySnapshot.success ? " · ok" : " · failed"}
-      </div>
-      <div style={{ fontSize: 11, color: "#8fa6bd", marginBottom: 8, lineHeight: 1.35 }}>
-        Reply verbosity:{" "}
-        {REPLY_VERBOSITY_LABELS[
-          (transparencySnapshot.reply_verbosity ?? "balanced") as ReplyVerbosityId
-        ] ?? transparencySnapshot.reply_verbosity ?? "balanced"}
-      </div>
-      {(Boolean(transparencySnapshot.proton_log_excerpt_attached) ||
-        Boolean(transparencySnapshot.proton_log_notes?.trim())) && (
-        <div style={{ fontSize: 10, color: "#7a93ad", marginBottom: 8, lineHeight: 1.35 }}>
-          Proton/Steam logs:{" "}
-          {transparencySnapshot.proton_log_excerpt_attached ? "excerpt in system prompt" : "no excerpt attached"}
-          {transparencySnapshot.proton_log_notes?.trim()
-            ? ` — ${transparencySnapshot.proton_log_notes}`
-            : ""}
-        </div>
-      )}
-      {transparencyOpen && (
-        <>
-          <div
-            style={{
-              maxHeight: 280,
-              overflow: "auto",
-              fontSize: 11,
-              color: "#dce8f4",
-              lineHeight: 1.35,
-              marginBottom: 10,
-              padding: "8px 10px",
-              borderRadius: 4,
-              background: "rgba(0,0,0,0.22)",
-              border: "1px solid rgba(255,255,255,0.08)",
-            }}
-          >
-            <div style={{ fontWeight: 700, marginBottom: 4 }}>User input (raw)</div>
-            <pre style={{ margin: "0 0 12px", whiteSpace: "pre-wrap", wordBreak: "break-word", fontFamily: "inherit" }}>
-              {transparencySnapshot.raw_question || "—"}
-            </pre>
-            <div style={{ fontWeight: 700, marginBottom: 4 }}>After sanitizer</div>
-            <pre style={{ margin: "0 0 12px", whiteSpace: "pre-wrap", wordBreak: "break-word", fontFamily: "inherit" }}>
-              {transparencySnapshot.text_after_sanitizer || "—"}
-            </pre>
-            <div style={{ fontWeight: 700, marginBottom: 4 }}>System prompt (exact)</div>
-            <pre style={{ margin: "0 0 12px", whiteSpace: "pre-wrap", wordBreak: "break-word", fontFamily: "inherit" }}>
-              {transparencySnapshot.system_prompt ?? "—"}
-            </pre>
-            <div style={{ fontWeight: 700, marginBottom: 4 }}>User message to model (exact)</div>
-            <pre style={{ margin: "0 0 12px", whiteSpace: "pre-wrap", wordBreak: "break-word", fontFamily: "inherit" }}>
-              {transparencySnapshot.user_text_for_model ?? "—"}
-            </pre>
-            <div style={{ marginBottom: 8, color: "#9fb7d5" }}>
-              Vision: {transparencySnapshot.user_image_count} image(s) (base64 omitted here)
-            </div>
-            <div style={{ fontWeight: 700, marginBottom: 4 }}>Model output (raw)</div>
-            <pre style={{ margin: "0 0 12px", whiteSpace: "pre-wrap", wordBreak: "break-word", fontFamily: "inherit" }}>
-              {transparencySnapshot.assistant_raw ?? "—"}
-            </pre>
-            <div style={{ fontWeight: 700, marginBottom: 4 }}>Shown in bonsAI (final)</div>
-            <pre style={{ margin: 0, whiteSpace: "pre-wrap", wordBreak: "break-word", fontFamily: "inherit" }}>
-              {transparencySnapshot.final_response || "—"}
-            </pre>
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            <BonsaiChatSecondaryButton
-              onClick={() => onRunOriginalAsk?.(transparencySnapshot.raw_question)}
-              disabled={!onRunOriginalAsk}
-              style={{ width: "100%" }}
-            >
-              Run original in Ask
-            </BonsaiChatSecondaryButton>
-            <BonsaiChatSecondaryButton
-              onClick={() => {
-                try {
-                  void navigator.clipboard.writeText(JSON.stringify(transparencySnapshot, null, 2));
-                  toaster.toast({ title: "Copied", body: "Transparency JSON copied.", duration: 2500 });
-                } catch {
-                  toaster.toast({ title: "Copy failed", body: "Clipboard unavailable.", duration: 3000 });
-                }
-              }}
-              style={{ width: "100%" }}
-            >
-              Copy JSON
-            </BonsaiChatSecondaryButton>
-          </div>
-        </>
-      )}
-    </Focusable>
-  </PanelSectionRow>
-)}
+<PanelSectionRow>
+  <SessionContextStrip
+    liveTurn={
+      transparencySnapshot && chipsFromSnapshot(transparencySnapshot).length > 0
+        ? {
+            id: "live",
+            label: (askThreadDisplayQuestion || lastExchange?.question || "Latest Ask").trim().slice(0, 48),
+            snapshot: transparencySnapshot,
+          }
+        : null
+    }
+    archivedTurns={askThreadCollapsed}
+    highlightTurnId={sessionHighlightTurnId}
+    onHighlightClear={() => setSessionHighlightTurnId(null)}
+  />
+</PanelSectionRow>
 {ollamaContext && (
   <PanelSectionRow>
     <div

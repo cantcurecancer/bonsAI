@@ -106,6 +106,11 @@ def sanitize_attach_proton_logs_when_troubleshooting(value: Any) -> bool:
     return value is True
 
 
+def sanitize_include_proton_experiment_journal_when_troubleshooting(value: Any) -> bool:
+    """Only explicit true injects the per-game Proton experiment journal on troubleshooting Asks."""
+    return value is True
+
+
 def sanitize_thinking_status_tiny_model_enabled(value: Any) -> bool:
     """Optional tiny-model thinking blurbs (Developer); off unless explicitly enabled."""
     return value is True
@@ -414,6 +419,9 @@ def sanitize_settings(
         "desktop_app_log_level": sanitize_desktop_app_log_level(raw.get("desktop_app_log_level")),
         "attach_proton_logs_when_troubleshooting": sanitize_attach_proton_logs_when_troubleshooting(
             raw.get("attach_proton_logs_when_troubleshooting")
+        ),
+        "include_proton_experiment_journal_when_troubleshooting": sanitize_include_proton_experiment_journal_when_troubleshooting(
+            raw.get("include_proton_experiment_journal_when_troubleshooting")
         ),
         "thinking_status_tiny_model_enabled": sanitize_thinking_status_tiny_model_enabled(
             raw.get("thinking_status_tiny_model_enabled")

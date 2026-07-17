@@ -157,7 +157,7 @@ Optional on-Deck corpus for Strategy and troubleshooting Asks. Full architecture
 
 **Browse models** defaults to **Essentials only** (two preset rows). Turn the filter off to see more models; stretch/specialist rows are for power users.
 
-**Clear all data:** **Settings → Advanced → Clear all data** wipes settings (including permissions), voice STT assets, feedback log, runtime cache, all `bonsai:*` browser keys, and `~/.bonsai/cache`. When **Ollama on this Deck** was enabled **or** a local Ollama home (`~/.ollama`) / user-prefix install exists, it also removes local model blobs and the user-prefix Ollama binary under `~/.local`. LAN-hosted Ollama on another PC is not touched.
+**Clear all data:** **Settings → Advanced → Clear all data** wipes settings (including permissions), voice STT assets, feedback log, runtime cache, all `bonsai:*` browser keys, `~/.bonsai/cache`, and **`~/.bonsai/proton_experiment_journal.json`**. When **Ollama on this Deck** was enabled **or** a local Ollama home (`~/.ollama`) / user-prefix install exists, it also removes local model blobs and the user-prefix Ollama binary under `~/.local`. LAN-hosted Ollama on another PC is not touched.
 
 ### Ollama HTTP 404 with Gemma / open-weight models (Tier 2)
 
@@ -203,6 +203,7 @@ Optional on-Deck corpus for Strategy and troubleshooting Asks. Full architecture
 | Browser `bonsai:*` keys | Ollama host draft, disclaimer dismissals, unified-input persistence (CEF localStorage) |
 | `~/Desktop/bonsAI_logs/` | Optional Desktop notes (not removed by Clear all data) |
 | `~/.bonsai/cache/` | Pull-model catalog overlay |
+| `~/.bonsai/proton_experiment_journal.json` | Per-AppID Proton experiment timeline (Settings editor) |
 
 **Settings → Advanced** (bottom of the tab): **Clear cache…** only clears the **current session** in RAM (Ask thread, attachments, etc.) and does **not** touch `settings.json`.
 
@@ -212,6 +213,7 @@ Optional on-Deck corpus for Strategy and troubleshooting Asks. Full architecture
 - Clears `~/homebrew/data/bonsAI/` and log files under `~/homebrew/logs/bonsAI/`
 - Clears all `bonsai:*` browser storage keys
 - Removes `~/.bonsai/cache/` (catalog overlay)
+- Removes `~/.bonsai/proton_experiment_journal.json` (Proton experiment timeline)
 - When **Ollama on this Deck** was enabled: also removes local model blobs (`~/.ollama`), user-prefix Ollama under `~/.local`
 - Shows beta disclaimer and permission prompts again
 
@@ -365,6 +367,15 @@ Then `sudo systemctl restart avahi-daemon` and ensure `OLLAMA_HOST=0.0.0.0` and 
 **Fix:** Tap **Install Ollama** on the Ollama tab (reinitializes `~/.ollama`), or run `ollama serve` once in Konsole before pulling again.
 
 **Network (user-initiated only):** Catalog refresh may contact `raw.githubusercontent.com` (overlay JSON) and `registry.ollama.ai` (manifest sizes), same trust class as existing size lookup — no background sync.
+
+### Proton experiment journal
+
+- **Settings → Proton troubleshooting:** log per-AppID Proton attempts (version, launch options, worse/same/better outcome). Stored in `~/.bonsai/proton_experiment_journal.json`.
+- **Attach Proton logs on troubleshooting Asks** — bounded `steam-<appid>.log` / compatdata excerpts (requires **Permissions → Steam/Proton log read**).
+- **Inject experiment journal on troubleshooting Asks** — adds your timeline to the system prompt when the question matches troubleshooting heuristics and a numeric AppID is present.
+- **Suggest from log** — best-effort parse of the active Proton build from `~/steam-<appid>.log` tail (hint only; does not auto-save).
+- **Main tab context chips** — after an Ask, **Context used · tap for details** opens the chip ladder; older turns link to the **Session context** strip at the bottom. Full RPC snapshot lives in the **Developer details** chip.
+- **Clear all data** removes the journal file along with other `~/.bonsai/` artifacts.
 
 **Local toggle and saved LAN IP:** While **Ollama on this Deck** is **on**, Ask uses `127.0.0.1:11434` but does **not** overwrite the saved **OLLAMA IP ADDRESS** field in browser storage. Toggling local **off** should restore your LAN PC host instead of leaving `127.0.0.1:11434` in the field after local-mode Asks.
 

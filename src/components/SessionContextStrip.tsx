@@ -1,0 +1,122 @@
+import { useState } from "react";
+import { Focusable } from "@decky/ui";
+import type { AskThreadCollapsedTurn } from "../types/bonsaiUi";
+import type { TransparencySnapshot } from "../utils/inputTransparency";
+import { ContextChipLadder } from "./ContextChipLadder";
+import { chipsFromSnapshot } from "../utils/contextChipsFromSnapshot";
+
+export type SessionContextTurn = {
+  id: string;
+  label: string;
+  snapshot: TransparencySnapshot | null;
+};
+
+export type SessionContextStripProps = {
+  liveTurn?: SessionContextTurn | null;
+  archivedTurns?: AskThreadCollapsedTurn[];
+  highlightTurnId?: string | null;
+  onHighlightClear?: () => void;
+};
+
+export function SessionContextStrip({
+  liveTurn = null,
+  archivedTurns = [],
+  highlightTurnId = null,
+  onHighlightClear,
+}: SessionContextStripProps) {
+  const [open, setOpen] = useState(false);
+  const [activeId, setActiveId] = useState<string>("live");
+
+  const rows: SessionContextTurn[] = [
+    ...archivedTurns
+      .filter((t) => t.transparency && chipsFromSnapshot(t.transparency).length > 0)
+      .map((t) => ({
+        id: t.id,
+        label: t.question.trim().slice(0, 48) || t.id,
+        snapshot: t.transparency ?? null,
+      })),
+    ...(liveTurn && chipsFromSnapshot(liveTurn.snapshot).length > 0 ? [liveTurn] : []),
+  ];
+
+  if (!rows.length) return null;
+
+  const effectiveActive = highlightTurnId && rows.some((r) => r.id === highlightTurnId)
+    ? highlightTurnId
+    : activeId;
+  const activeRow = rows.find((r) => r.id === effectiveActive) ?? rows[rows.length - 1];
+
+  return (
+    <Focusable
+      className="bonsai-session-context-strip"
+      style={{
+        marginTop: 12,
+        padding: "10px 12px",
+        borderRadius: 8,
+        border: "1px solid rgba(100, 140, 180, 0.35)",
+        background: "rgba(12, 18, 28, 0.65)",
+        width: "100%",
+        boxSizing: "border-box",
+      }}
+      onButtonDown={(e) => {
+        if (e.detail.button === 2 || e.detail.button === 3) {
+          setOpen((o) => !o);
+          return true;
+        }
+        return false;
+      }}
+    >
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        style={{
+          width: "100%",
+          textAlign: "left",
+          background: "none",
+          border: "none",
+          color: "#b8cce0",
+          fontSize: 12,
+          fontWeight: 700,
+          padding: 0,
+          cursor: "pointer",
+          font: "inherit",
+        }}
+      >
+        Session context ({rows.length} turn{rows.length === 1 ? "" : "s"}) {open ? "▾" : "▸"}
+      </button>
+      {open ? (
+        <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 6 }}>
+          {rows.map((row) => (
+            <Focusable
+              key={row.id}
+              onActivate={() => {
+                setActiveId(row.id);
+                onHighlightClear?.();
+              }}
+              onButtonDown={() => {
+                setActiveId(row.id);
+                onHighlightClear?.();
+                return true;
+              }}
+              style={{
+                padding: "6px 8px",
+                borderRadius: 6,
+                border:
+                  row.id === effectiveActive
+                    ? "1px solid rgba(125, 211, 252, 0.55)"
+                    : "1px solid rgba(255,255,255,0.08)",
+                background: row.id === effectiveActive ? "rgba(56,189,248,0.12)" : "transparent",
+                fontSize: 11,
+                color: "#dce8f4",
+              }}
+            >
+              {row.label}
+            </Focusable>
+          ))}
+          {activeRow?.snapshot ? (
+            <ContextChipLadder snapshot={activeRow.snapshot} collapsedHint={false} />
+          ) : null}
+        </div>
+      ) : null}
+    </Focusable>
+  );
+}

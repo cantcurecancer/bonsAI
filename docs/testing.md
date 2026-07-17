@@ -364,7 +364,9 @@ Maps [roadmap.md](roadmap.md) **Completed** summary and [archive/roadmap-complet
 | PRESETS-CAROUSEL | Suggested AI prompts + carousel | SMOKE-A, SMOKE-D | Partial | `PRESET_PROMPTS` baseline shipped; troubleshooting triple verified; string expansion incremental |
 | PROMPT-TEST-MVP | Prompt-testing MVP (this doc) | — | Partial | Matrices shipped; Tier 0–1 open |
 | SANITIZER | Input sanitizer lane | SMOKE-F | Partial | [SMOKE-F-disable-sanitize](test-evidence/tier0/2026-05-26-9e20a82/SMOKE-F-disable-sanitize/manifest.json); [preview 2026-05-26](test-evidence/tier0/2026-05-26-9e20a82/SMOKE-F-disable-sanitize/manifest.json) |
-| TRANSPARENCY | Input handling transparency panel | SMOKE-A | Partial | Expand panel in golden path (on-Deck); [preview 2026-05-26](test-evidence/tier0/2026-05-26-9e20a82/SMOKE-A-golden-path/manifest.json) |
+| TRANSPARENCY | Input handling transparency panel | SMOKE-A | Partial | Superseded by context chip ladder (**CONTEXT-LADDER-01**); legacy panel removed 2026-07-17 |
+| PROTON-JOURNAL | Proton experiment journal (Settings CRUD + inject) | PROTON-JOURNAL-01…04 | Open | Settings → Proton troubleshooting; `~/.bonsai/proton_experiment_journal.json`; clear-all wipes file |
+| CONTEXT-LADDER | Context chip ladder + session strip (F11 Option C) | CONTEXT-LADDER-01…03 | Open | Live turn inline ladder; archived turns → session strip; D-pad **CONTEXT-LADDER-03** |
 
 ### Connection, routing, diagnostics
 
@@ -567,6 +569,19 @@ Requires **Settings → Data → Show Developer tab** → **Token streaming (exp
 - [ ] **THINKING-02** Mid-Ask prep phases (Proton logs, TDP read, screenshot prep, model retry): `thinking_summary` keeps question snippet + game — no generic downgrade to e.g. **Building context…** alone
 - [ ] **THINKING-03** During token streaming: italic thinking line stays visible above preview bubble; updates from `<bonsai-status>` or elapsed fallback (not hidden when `streaming=true`)
 - [ ] **FEEDBACK-01** Reply-action chrome: `.bonsai-chat-secondary-btn` on feedback/retry/details
+
+### Proton experiment journal (2026-07-17)
+
+- [ ] **PROTON-JOURNAL-01** Settings → **Proton troubleshooting**: add entry (version, launch options, outcome); list shows newest first
+- [ ] **PROTON-JOURNAL-02** Enable **Inject experiment journal** + troubleshooting Ask with numeric AppID → journal block in system prompt (developer chip)
+- [ ] **PROTON-JOURNAL-03** **Suggest from log** prefills version when `steam_logs_read` on and `steam-<appid>.log` exists
+- [ ] **PROTON-JOURNAL-04** **Clear all data** removes `~/.bonsai/proton_experiment_journal.json`
+
+### Context chip ladder (F11 Option C)
+
+- [ ] **CONTEXT-LADDER-01** Live turn: **Context used · tap for details** expands inline chip ladder after Ask completes
+- [ ] **CONTEXT-LADDER-02** Older turn hint jumps to **Session context** strip row; ladder shows frozen snapshot
+- [ ] **CONTEXT-LADDER-03** D-pad: reply actions → context hint → ladder chip ↑/↓ → session strip (on-Deck)
 
 ---
 

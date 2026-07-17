@@ -1,5 +1,21 @@
 import type { ModelPolicyDisclosurePayload } from "../data/modelPolicy";
 
+export type ContextChipBody = {
+  title: string;
+  paths: string[];
+  bullets: string[];
+  dev_json?: unknown;
+};
+
+export type ContextChip = {
+  id: string;
+  rank: number;
+  label: string;
+  attached: boolean;
+  tier_class: string;
+  body: ContextChipBody;
+};
+
 /**
  * Last Ask transparency snapshot from backend `get_input_transparency` (matches main.py keys).
  */
@@ -29,6 +45,17 @@ export type TransparencySnapshot = {
   proton_log_excerpt_attached?: boolean;
   proton_log_sources?: { path: string; bytes_read: number }[];
   proton_log_notes?: string;
+  proton_journal_attached?: boolean;
+  proton_journal_entry_count?: number;
+  proton_journal_notes?: string;
+  kb_attached?: boolean;
+  kb_trust_tier?: string;
+  kb_sources?: string[];
+  kb_notes?: string;
+  kb_unavailable_reason?: string;
+  tdp_cap_watts?: number | null;
+  context_chips?: ContextChip[];
+  overflow_skips?: string[];
   ask_diagnostics?: AskDiagnosticsSnapshot | null;
   response_verify?: {
     passed?: boolean;

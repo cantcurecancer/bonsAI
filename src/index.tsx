@@ -347,6 +347,7 @@ const Content: React.FC = () => {
     desktopDebugNoteAutoSave,
     desktopAskVerboseLogging,
     attachProtonLogsWhenTroubleshooting,
+    includeProtonExperimentJournalWhenTroubleshooting,
     thinkingStatusTinyModelEnabled,
     inputSanitizerUserDisabled,
     capabilities,
@@ -371,6 +372,7 @@ const Content: React.FC = () => {
     desktopAppLogLevel,
     setDesktopAppLogLevel,
     setAttachProtonLogsWhenTroubleshooting,
+    setIncludeProtonExperimentJournalWhenTroubleshooting,
     setThinkingStatusTinyModelEnabled,
     presetChipFadeAnimationEnabled,
     presetChipAnimation,
@@ -687,6 +689,7 @@ const Content: React.FC = () => {
       desktopAskVerboseLogging,
       desktopAppLogLevel,
       attachProtonLogsWhenTroubleshooting,
+      includeProtonExperimentJournalWhenTroubleshooting,
       thinkingStatusTinyModelEnabled,
       presetChipFadeAnimationEnabled,
       presetChipAnimation,
@@ -730,6 +733,7 @@ const Content: React.FC = () => {
       desktopAskVerboseLogging,
       desktopAppLogLevel,
       attachProtonLogsWhenTroubleshooting,
+      includeProtonExperimentJournalWhenTroubleshooting,
       thinkingStatusTinyModelEnabled,
       presetChipFadeAnimationEnabled,
       presetChipAnimation,
@@ -1515,6 +1519,11 @@ const Content: React.FC = () => {
       onIntentPackExport={intentPacks.exportPack}
       onIntentPackImport={intentPacks.importPack}
       onIntentPackRemove={intentPacks.removePack}
+      attachProtonLogsWhenTroubleshooting={attachProtonLogsWhenTroubleshooting}
+      setAttachProtonLogsWhenTroubleshooting={setAttachProtonLogsWhenTroubleshooting}
+      includeProtonExperimentJournalWhenTroubleshooting={includeProtonExperimentJournalWhenTroubleshooting}
+      setIncludeProtonExperimentJournalWhenTroubleshooting={setIncludeProtonExperimentJournalWhenTroubleshooting}
+      steamLogsReadEnabled={capabilities.steam_logs_read === true}
     />
   ),
     [
@@ -1540,6 +1549,9 @@ const Content: React.FC = () => {
       intentPacks.exportPack,
       intentPacks.importPack,
       intentPacks.removePack,
+      attachProtonLogsWhenTroubleshooting,
+      includeProtonExperimentJournalWhenTroubleshooting,
+      capabilities.steam_logs_read,
     ]
   );
 
@@ -1707,6 +1719,7 @@ const Content: React.FC = () => {
       desktopAppLogLevel,
       capabilities.filesystem_write,
       attachProtonLogsWhenTroubleshooting,
+      includeProtonExperimentJournalWhenTroubleshooting,
       thinkingStatusTinyModelEnabled,
       presetChipFadeAnimationEnabled,
       presetChipAnimation,

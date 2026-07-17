@@ -20,6 +20,8 @@ export function toBonsaiSettingsPayload(
     desktop_ask_verbose_logging: input.desktopAskVerboseLogging,
     desktop_app_log_level: input.desktopAppLogLevel,
     attach_proton_logs_when_troubleshooting: input.attachProtonLogsWhenTroubleshooting,
+    include_proton_experiment_journal_when_troubleshooting:
+      input.includeProtonExperimentJournalWhenTroubleshooting,
     thinking_status_tiny_model_enabled: input.thinkingStatusTinyModelEnabled,
     preset_chip_fade_animation_enabled: input.presetChipAnimation === "fade",
     preset_chip_animation: input.presetChipAnimation,

@@ -63,6 +63,8 @@ export type BonsaiSettings = {
   desktop_app_log_level: DesktopAppLogLevel;
   /** When true (with Permissions → Steam/Proton log read), troubleshooting-style Asks attach bounded local log excerpts. */
   attach_proton_logs_when_troubleshooting: boolean;
+  /** When true, troubleshooting Asks inject the per-game Proton experiment journal block. */
+  include_proton_experiment_journal_when_troubleshooting: boolean;
   /** When true, fire-and-forget tiny-model thinking blurbs (Developer opt-in; default off). */
   thinking_status_tiny_model_enabled: boolean;
   /** @deprecated Prefer `preset_chip_animation`; kept for migration from older settings.json. */
@@ -139,6 +141,7 @@ export type BonsaiSettingsSnapshotInput = {
   desktopAskVerboseLogging: boolean;
   desktopAppLogLevel: DesktopAppLogLevel;
   attachProtonLogsWhenTroubleshooting: boolean;
+  includeProtonExperimentJournalWhenTroubleshooting: boolean;
   thinkingStatusTinyModelEnabled: boolean;
   presetChipFadeAnimationEnabled: boolean;
   presetChipAnimation: PresetChipAnimation;
@@ -204,6 +207,7 @@ export const MAX_NAMED_OLLAMA_HOSTS = 4;
 export const DEFAULT_DESKTOP_APP_LOG_LEVEL: DesktopAppLogLevel = "off";
 export const DESKTOP_APP_LOG_LEVEL_OPTIONS: DesktopAppLogLevel[] = ["off", "default", "verbose"];
 export const DEFAULT_ATTACH_PROTON_LOGS_WHEN_TROUBLESHOOTING = false;
+export const DEFAULT_INCLUDE_PROTON_EXPERIMENT_JOURNAL_WHEN_TROUBLESHOOTING = false;
 export const DEFAULT_THINKING_STATUS_TINY_MODEL_ENABLED = false;
 export const DEFAULT_PRESET_CHIP_FADE_ANIMATION_ENABLED = true;
 export const DEFAULT_PRESET_CHIP_ANIMATION: PresetChipAnimation = "fade";

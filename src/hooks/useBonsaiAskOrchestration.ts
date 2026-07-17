@@ -170,7 +170,11 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
       void clearStrategyChecklistSession(appId).catch(() => {});
     }
   }, [a.askMode]);
-  const pendingArchiveTurnRef = useRef<{ question: string; answer: string } | null>(null);
+  const pendingArchiveTurnRef = useRef<{
+    question: string;
+    answer: string;
+    transparency?: TransparencySnapshot | null;
+  } | null>(null);
   const pendingThreadQuestionDisplayRef = useRef<string | null>(null);
   /** Last request_id whose completion already re-seeded suggested prompts (reseed is randomized). */
   const promptsReseededForRequestRef = useRef<number | null>(null);
@@ -260,6 +264,12 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
       );
       if (r.available && "snapshot" in r) {
         setLastTransparency(r.snapshot);
+        if (pendingArchiveTurnRef.current) {
+          pendingArchiveTurnRef.current = {
+            ...pendingArchiveTurnRef.current,
+            transparency: r.snapshot,
+          };
+        }
       } else {
         setLastTransparency(null);
       }
@@ -573,7 +583,12 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
       if (arch && arch.question.trim() && arch.answer.trim()) {
         setAskThreadCollapsed((prev) => [
           ...prev,
-          { id: `turn-${Date.now()}-${prev.length}`, question: arch.question, answer: arch.answer },
+          {
+            id: `turn-${Date.now()}-${prev.length}`,
+            question: arch.question,
+            answer: arch.answer,
+            transparency: arch.transparency ?? null,
+          },
         ]);
         lastFlushedExchangeQuestionRef.current = arch.question.trim();
       }
