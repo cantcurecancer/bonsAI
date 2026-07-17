@@ -1,4 +1,5 @@
 import React from "react";
+import { vi } from "vitest";
 
 type StubProps = Record<string, unknown> & { children?: React.ReactNode };
 
@@ -18,7 +19,13 @@ export const TextField = stub("TextField");
 export const ToggleField = stub("ToggleField");
 export const Button = stub("Button");
 export const Focusable = stub("Focusable");
-export const Navigation = stub("Navigation");
+export const Navigation = {
+  OpenQuickAccessMenu: vi.fn(),
+};
+
+export const QuickAccessTab = {
+  Decky: 999,
+};
 export const Tabs = stub("Tabs");
 export const SliderField = stub("SliderField");
 export const Dropdown = stub("Dropdown");

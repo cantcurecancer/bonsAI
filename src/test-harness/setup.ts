@@ -4,8 +4,12 @@ import { dispatchFakeRpc, resetFakeDeckyRpc } from "./fakeDeckyRpc";
 vi.mock("@decky/api", () => ({
   call: vi.fn((method: string, ...args: unknown[]) => dispatchFakeRpc(method, args)),
   definePlugin: (fn: () => unknown) => fn(),
+  useQuickAccessVisible: vi.fn(() => false),
   toaster: {
-    toast: vi.fn(),
+    toast: vi.fn((data: unknown) => ({
+      data,
+      dismiss: vi.fn(),
+    })),
   },
 }));
 

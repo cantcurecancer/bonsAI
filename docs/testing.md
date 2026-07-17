@@ -403,6 +403,7 @@ Maps [roadmap.md](roadmap.md) **Completed** summary and [archive/roadmap-complet
 | GEMMA-PULL | Gemma pull models + routing | GEMMA-PULL-01 | Open | Tier 2 pull confirm when policy is Tier 1 |
 | MODE-SELECTOR | Speed / Strategy / Expert | SMOKE-E, Tier 1 | Open | Persisted id `expert` |
 | VOICE-STT | Whisper voice Ask (local STT) | VOICE-01…07 | Open | Permissions + Settings model download; on-Deck mic required |
+| REPLY-READY | Reply ready toast (QAM-closed Asks) | REPLY-READY-01…05 | Open | Unit: `bonsaiPhaseToast.test.ts`, `bonsaiReplyReadyToast.test.ts`, `bonsaiAskCompletionWatch.test.ts`; on-Deck toast tap |
 | STRATEGY-CORE | Strategy Guide prompt path | SMOKE-E | Open | |
 | STRATEGY-SPOILER | Strategy spoiler policy + consent | SMOKE-E, STRAT-01…05 | Partial | Unit green 2026-04-30; [preview 2026-05-26](test-evidence/tier1Core/2026-05-26-9e20a82/SMOKE-E-strategy-mode/manifest.json) |
 | STRATEGY-CHECKLIST | Strategy checklist (follow-up, persisted per game) | Tier 2 § Strategy depth | Open | Unit + preview; on-Deck: check/uncheck, QAM reopen |
@@ -655,6 +656,12 @@ Requires **Settings → Data → Show Developer tab** → **Token streaming (exp
 **System prompt layers:** spot-check via SMOKE-A transparency; unit tests in `tests/test_ollama_service.py`.
 
 ### Named chat slots (Tier 1)
+
+- [ ] **REPLY-READY-01** Ask with QAM closed → **Reply ready** toast when answer completes → tap opens Decky/bonsAI Main with answer visible
+- [ ] **REPLY-READY-02** Ask with QAM open on Main → no toast
+- [ ] **REPLY-READY-03** Ask fails with QAM closed → error toast (no success toast)
+- [ ] **REPLY-READY-04** Stop/cancel Ask → no toast
+- [ ] **REPLY-READY-05** Second Ask while first toast visible → prior toast replaced (no stack)
 
 - [ ] **CHAT-SLOTS-01** Submit Ask → close QAM → reopen within idle TTL → bubble transcript shows Q then A (not answer-only)
 - [ ] **CHAT-SLOTS-02** Switch active thread mid-Ask → completion appends to thread that owned the request

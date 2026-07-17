@@ -1,5 +1,5 @@
 import React, { useCallback, useState, useMemo, useEffect, useLayoutEffect, useRef } from "react";
-import { definePlugin, toaster, call } from "@decky/api";
+import { definePlugin, toaster, call, useQuickAccessVisible } from "@decky/api";
 import { Navigation, Router, showModal, Tabs } from "@decky/ui";
 
 import { PLUGIN_VERSION } from "./pluginVersion";
@@ -47,6 +47,7 @@ import {
   shouldIgnoreRestoredSettingsSnapshot,
   type BonsaiSessionSurvivalSnapshot,
 } from "./utils/bonsaiSessionSurvival";
+import { consumePendingFocusMainTab, setReplySurfaceVisible } from "./utils/bonsaiReplySurface";
 import { clearBonsaiBrowserStorage } from "./utils/clearBonsaiBrowserStorage";
 import { bonsaiDebugLog } from "./utils/bonsaiDebugIngest";
 import { persistOllamaIpIfRoutingToLan as persistOllamaIpIfRoutingToLanUtil } from "./utils/persistOllamaIp";
@@ -296,6 +297,18 @@ const Content: React.FC = () => {
   } = useBonsaiPluginShell({
     getSessionSnapshot: () => sessionSnapshotRef.current(),
   });
+
+  const quickAccessVisible = useQuickAccessVisible();
+
+  useLayoutEffect(() => {
+    setReplySurfaceVisible(quickAccessVisible && currentTab === "main");
+  }, [quickAccessVisible, currentTab]);
+
+  useLayoutEffect(() => {
+    if (consumePendingFocusMainTab()) {
+      setCurrentTab("main");
+    }
+  }, [setCurrentTab]);
 
   const pendingSessionRestoreFinalizeRef = useRef(false);
   const pluginDataClearSeenRef = useRef(getPluginDataClearedGeneration());
@@ -712,7 +725,11 @@ const Content: React.FC = () => {
       hasExchange: !!survived?.lastExchange,
     });
     if (!survived) return;
-    if (survived.currentTab) setCurrentTab(survived.currentTab);
+    if (consumePendingFocusMainTab()) {
+      setCurrentTab("main");
+    } else if (survived.currentTab) {
+      setCurrentTab(survived.currentTab);
+    }
     setUnifiedInput(survived.unifiedInput);
     setSelectedIndex(survived.selectedIndex);
     setNavigationMessage(survived.navigationMessage);

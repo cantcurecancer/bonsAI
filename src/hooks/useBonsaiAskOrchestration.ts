@@ -66,6 +66,7 @@ import {
   replyMicroActionById,
   type ReplyMicroActionId,
 } from "../data/replyMicroActions";
+import { startAskCompletionWatch, stopAskCompletionWatch } from "../utils/bonsaiAskCompletionWatch";
 
 export type ChatThreadsBridge = {
   getActiveThreadId: () => string | null;
@@ -573,6 +574,7 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
         f.applyBackgroundStatusToUi(status);
         if (status.status === "pending") {
           f.startBackgroundStatusPolling(seq, status.question ?? "");
+          startAskCompletionWatch();
         }
       })
       .catch(() => {
@@ -588,6 +590,7 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
         /* best-effort RPC */
       });
       invalidateRequests();
+      stopAskCompletionWatch();
       setIsAsking(false);
     }
     a.setUnifiedInput("");
@@ -615,6 +618,7 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
       /* best-effort RPC */
     });
     invalidateRequests();
+    stopAskCompletionWatch();
     setIsAsking(false);
     setThinkingSummary(null);
     setIsStreamingPreview(false);
@@ -817,6 +821,8 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
           });
           return;
         }
+
+        startAskCompletionWatch();
 
         a.setUnifiedInput("");
         a.setSelectedAttachment(null);
@@ -1084,6 +1090,7 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
   const resetAskSessionSlice = useCallback(() => {
     if (isAsking) {
       invalidateRequests();
+      stopAskCompletionWatch();
       setIsAsking(false);
     }
     setIsStreamingPreview(false);
