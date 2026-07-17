@@ -4,6 +4,12 @@ All notable changes to this project are documented in this file.
 
 ## [Unreleased]
 
+### Added
+- **Voice STT session daemon:** Session-scoped `whisper-server` on `127.0.0.1:18765` for faster interim mic transcription; CLI fallback when server unavailable; incremental server install for existing CPU-safe `voice_bin`. `voice_whisper_daemon.py`, `voice_transcription_service.py`, `main.py`; tests `test_voice_whisper_daemon.py`.
+
+### Changed
+- **Install voice engine:** Podman build compiles `whisper-cli` + `whisper-server` in one pass; **VOICE-05**–**VOICE-07** QA rows in `docs/testing.md`.
+
 ## [0.5.0] - 2026-07-15
 
 ### Added

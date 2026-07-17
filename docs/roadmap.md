@@ -46,12 +46,6 @@ Maintainers may move items between horizons after discussion; if you want differ
 
 Within this section: ascending stars (★★ → ★★★ → ★★★★). Brainstorm letters **B**, **J–N**, **S**, **V**: [roadmap_feature_ideas plan](../.cursor/plans/roadmap_feature_ideas_f5560e15.plan.md).
 
-- ★★ **Voice STT session daemon** (latency Tier 2)
-  - **Goal:** Keep one CPU-safe `whisper-cli` alive per mic session so model load + process spawn are not paid on every decode pass (~0.5–1.5 s faster interim text).
-  - **Primary work:** Session lifecycle in `voice_transcription_service.py`; crash recovery; plugin unload while recording; **VOICE-06** on-Deck QA.
-  - **Depends on:** shipped CPU-safe install + Tier 1 constants (2026-07-07).
-  - **Not in scope:** GPU whisper; cloud STT; floating `:main` prebuilt copy.
-  - **Maintainer guide:** [voice-input-follow-up.md](voice-input-follow-up.md) (triage, digest bump, Tier 2 options).
 - ★★ **Prompt testing pass** (beyond shipped MVP)
   - **Goal:** Broader systematic validation and tuning beyond the shipped doc MVP (see **Completed** → Prompt-testing MVP; working matrices in [testing.md](testing.md)).
 - ★★ **Text model chains** (user-configurable text fallbacks)
@@ -228,7 +222,7 @@ Within this section: ascending stars (★★★★ → ★★★★★ → ★�
   - **Other v1 behavior:** Ignore new wakes while an Ask is in flight; suspend wake during mic-button STT Ask; stop on Deck sleep and resume on wake; hard-stop on plugin unload (no orphan wake/whisper processes); auto-pause when Steam voice or Discord is detectable, else document shared-mic risk; same Ollama path as normal Asks. Mid-session engine loss → disable listening + toast once.
   - **Primary work:** Keyword spotter install + daemon; integrate with `[voice_transcription_service.py](../py_modules/backend/services/voice_transcription_service.py)` / new wake service; capabilities + Permissions UI; ConfirmModal; Settings silence timeout; Developer A/B cancel toggle; toast phase machine; sleep/unload lifecycle; on-Deck CPU/battery QA.
   - **Files (expected):** `voice_transcription_service.py`, `main.py`, `capabilities.py`, `settings_service.py`, `settingsAndResponse.ts`, `PermissionsTab.tsx`, `DeveloperTab.tsx`, `src/index.tsx`, [voice-input-follow-up.md](voice-input-follow-up.md), [troubleshooting.md](troubleshooting.md).
-  - **Depends on:** Shipped Whisper voice Ask + `microphone_access`; **Reply ready toast**; ideally **Voice STT session daemon** (near-term) for post-wake STT cost.
+  - **Depends on:** Shipped Whisper voice Ask + `microphone_access`; **Reply ready toast**; shipped **Voice STT session daemon** for post-wake STT cost.
   - **Related (after v1):** Optional brevity inject for wake Asks; non-English wake/STT; Steam Frame companion path; **Local reply TTS** for hands-free read path; optional Speed-for-wake setting.
   - **Not in scope (v1):** Custom wake phrases; always-on full Whisper; cloud STT; Frame VR overlay; auto-open QAM on wake; reading answers via TTS.
   - **Dedup:** Distinct from push-to-talk Whisper Ask (shipped) and **Local reply TTS** (playback only).
@@ -320,7 +314,7 @@ Dependency graph and implementation notes that are not feature checklist items.
 - **Whisper voice Ask (shipped)** + `microphone_access` → **Wake-word listening** (additional beta capability + separate wake-engine install).
 - **Reply ready toast** → completion UX for all Asks; required for hands-free wake loop when QAM is closed.
 - **Wake-word listening** → later **Local reply TTS** for hands-free read path; optional wake brevity inject / Speed-for-wake after v1.
-- **Voice STT session daemon** → reduces post-wake STT cost for wake-word listening.
+- **Voice STT session daemon** (shipped) → reduces post-wake STT cost for wake-word listening.
 - **Character voice roleplay (shipped)** → **Playful thinking status lines (shipped)** — persona tone in `compose_thinking_blurb`; **Thinking phase copy polish (shipped)** keeps mid-Ask `format_thinking_phase` lines prompt-woven; **Always-sarcastic thinking blurb (shipped)** — witty/deadpan always on, visible during stream → **Thinking blurb copy refresh** (phase-unique witty/deadpan pools; no tiny model).
 - **Unified Ask pipeline and input transparency (shipped)** → **Text model chains** (user-configurable text fallbacks); **Retry same prompt** (shipped — see **Completed** → Tabs).
 - **Input sanitizer (shipped)** + **Input handling transparency (shipped)** → future sanitizer extensions should keep user-visible auditability.

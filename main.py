@@ -2613,6 +2613,9 @@ class Plugin:
             plugin._voice_session = None
         if session is not None:
             await asyncio.to_thread(session.force_stop)
+        from backend.services.voice_whisper_daemon import force_whisper_engine_stop
+
+        await asyncio.to_thread(force_whisper_engine_stop)
 
     async def _require_microphone_access(self) -> tuple[bool, dict[str, Any]]:
         plugin = Plugin._coerce_instance(self)

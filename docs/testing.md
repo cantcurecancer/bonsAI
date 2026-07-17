@@ -399,7 +399,7 @@ Maps [roadmap.md](roadmap.md) **Completed** summary and [archive/roadmap-complet
 | CAROUSEL-SLIDE | Carousel slide + history (2026-05-20) | — | Open | Tier 3 cosmetic |
 | GEMMA-PULL | Gemma pull models + routing | GEMMA-PULL-01 | Open | Tier 2 pull confirm when policy is Tier 1 |
 | MODE-SELECTOR | Speed / Strategy / Expert | SMOKE-E, Tier 1 | Open | Persisted id `expert` |
-| VOICE-STT | Whisper voice Ask (local STT) | VOICE-01…06 | Open | Permissions + Settings model download; on-Deck mic required |
+| VOICE-STT | Whisper voice Ask (local STT) | VOICE-01…07 | Open | Permissions + Settings model download; on-Deck mic required |
 | STRATEGY-CORE | Strategy Guide prompt path | SMOKE-E | Open | |
 | STRATEGY-SPOILER | Strategy spoiler policy + consent | SMOKE-E, STRAT-01…05 | Partial | Unit green 2026-04-30; [preview 2026-05-26](test-evidence/tier1Core/2026-05-26-9e20a82/SMOKE-E-strategy-mode/manifest.json) |
 | STRATEGY-CHECKLIST | Strategy checklist (follow-up, persisted per game) | Tier 2 § Strategy depth | Open | Unit + preview; on-Deck: check/uncheck, QAM reopen |
@@ -669,8 +669,9 @@ Deck-only (mic + PipeWire capture). Preview harness stubs RPCs but cannot valida
 - [ ] **VOICE-02** Permissions on + model downloaded → interim text streams into Ask field while speaking
 - [ ] **VOICE-03** Stop mic (red stop) finalizes transcript; Ask can be submitted normally
 - [ ] **VOICE-04** Revoke microphone permission mid-recording → capture stops immediately
-- [ ] **VOICE-05** Install voice engine on SteamOS (podman) succeeds — compiles CPU-safe whisper-cli (pinned digest, no SIGILL on Deck); engine + model show ready
-- [ ] **VOICE-06** Tier 1 latency — interim text appears within ~2 s of speaking in Gaming Mode QAM (Tier 1 constants 2026-07-07); no extra CPU stutter vs prior build
+- [ ] **VOICE-05** Install voice engine on SteamOS (podman) succeeds — compiles CPU-safe `whisper-cli` + `whisper-server` (pinned digest, no SIGILL on Deck); engine + model show ready; existing CPU-safe installs upgrade with server-only build
+- [ ] **VOICE-06** Session daemon latency — interim text appears faster than Tier 1 cold `whisper-cli` spawn (~0.5–1.5 s win per pass after first decode); no extra CPU stutter vs prior build in Gaming Mode QAM
+- [ ] **VOICE-07** Stop mic, revoke microphone permission, plugin unload, or **Clear all data** while recording — no orphan `whisper-server` on `127.0.0.1:18765` (`pgrep whisper-server` / PID file cleared)
 
 Maintainer: digest bump + Tier 2 options — [voice-input-follow-up.md](voice-input-follow-up.md).
 

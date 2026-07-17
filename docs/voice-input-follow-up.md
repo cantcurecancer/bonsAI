@@ -61,19 +61,19 @@ Architecture hotspot: [`voice_transcription_service.py`](../py_modules/backend/s
 
 ---
 
-## Tier 2 — lower latency (planned; higher effort)
+## Tier 2 — session daemon (shipped 2026-07-17)
 
-Pick up here if Tier 1 tuning is not enough. Stars = roadmap GTA scale.
-
-### ★★ Session-scoped whisper daemon (recommended next)
+### ★★ Session-scoped whisper-server (shipped)
 
 | | |
 |--|--|
-| **Goal** | Keep one `whisper-cli` (or thin wrapper) alive per mic session; model loads once. |
+| **Goal** | Keep one CPU-safe `whisper-server` alive per mic session; model loads once. |
 | **Latency win** | ~0.5–1.5 s per update (no per-pass process spawn + model load). |
-| **Maintenance** | Medium — lifecycle, crash recovery, plugin unload while recording. |
-| **Break risk** | Medium — subprocess/protocol bugs; needs **VOICE-06** on-Deck QA. |
-| **Files** | `voice_transcription_service.py`, `main.py`, possibly new `voice_whisper_daemon.py`. |
+| **IPC** | `127.0.0.1:18765` — `GET /health`, `POST /inference` (multipart WAV). |
+| **Fallback** | Missing server or failed health → one-shot `whisper-cli` (voice still works). |
+| **Upgrade** | **Install voice engine** builds both binaries; existing CPU-safe `voice_bin` gets incremental `whisper-server` only. |
+| **Files** | `voice_whisper_daemon.py`, `voice_transcription_service.py`, `main.py`. |
+| **QA** | **VOICE-06** (latency), **VOICE-07** (no orphan server on stop/unload). |
 
 ### ★ Pin digest + CI prebuild (stability, not speed)
 
@@ -96,15 +96,15 @@ Build CPU-safe `voice_bin` in CI on x86_64; ship in release zip or lazy download
 ```text
 pw-record → PCM ring buffer
   → every TRANSCRIBE_INTERVAL_S, if RMS ≥ VOICE_RMS_THRESHOLD:
-       subprocess whisper-cli on WINDOW_SECONDS of audio  # Tier 2: reuse one process
+       WhisperEngine → whisper-server POST /inference (or whisper-cli fallback)
   → poll get_voice_transcription_status every VOICE_TRANSCRIPTION_POLL_MS
   → unified Ask input
 ```
 
-Decode still runs on **CPU** with `tiny.en` by default; ~1–2 s encode per pass on Deck is normal after Tier 1.
+Decode still runs on **CPU** with `tiny.en` by default; session daemon removes per-pass model load after the first decode in a recording.
 
 ---
 
 ## Roadmap
 
-Tracked as **Planned** → [Voice STT session daemon](roadmap.md) (near-term). After Tier 2 ships: move summary to [archive/roadmap-completed.md](archive/roadmap-completed.md).
+Shipped — see [archive/roadmap-completed.md](archive/roadmap-completed.md) → **Voice STT session daemon (2026-07-17)**.

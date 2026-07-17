@@ -168,6 +168,33 @@ def voice_whisper_cli_path(plugin_root: str, settings_dir: str) -> str:
     return os.path.join(voice_bin_dir(plugin_root, settings_dir), "whisper-cli")
 
 
+def voice_whisper_server_path(plugin_root: str, settings_dir: str) -> str:
+    return os.path.join(voice_bin_dir(plugin_root, settings_dir), "whisper-server")
+
+
+def whisper_server_binary_usable(plugin_root: str, settings_dir: str) -> Optional[str]:
+    path = voice_whisper_server_path(plugin_root, settings_dir)
+    if not os.path.isfile(path) or not os.access(path, os.X_OK):
+        return None
+    if not whisper_binary_usable(plugin_root, settings_dir):
+        return None
+    env = voice_whisper_runtime_env(plugin_root, settings_dir)
+    try:
+        proc = subprocess.run(
+            [path, "-h"],
+            capture_output=True,
+            text=True,
+            timeout=15,
+            env=env,
+        )
+        out = (proc.stdout or "") + (proc.stderr or "")
+        if proc.returncode != 0 and "usage:" not in out:
+            return None
+    except Exception:
+        return None
+    return path
+
+
 def voice_model_path(plugin_root: str, settings_dir: str, model_id: str) -> str:
     spec = VOICE_STT_MODEL_SPECS.get(model_id, VOICE_STT_MODEL_SPECS[DEFAULT_VOICE_STT_MODEL])
     return os.path.join(voice_models_dir(plugin_root, settings_dir), spec["filename"])
@@ -792,11 +819,24 @@ def download_voice_model(
         raise
 
 
-def _prune_voice_bin_non_libs(bin_dir: str, whisper_cli_path: str) -> None:
+def _voice_bin_keep_names() -> frozenset[str]:
+    return frozenset(
+        {
+            "whisper-cli",
+            "whisper-server",
+            VOICE_BIN_CPU_SAFE_MARKER,
+            "whisper-server.pid",
+        }
+    )
+
+
+def _prune_voice_bin_non_libs(bin_dir: str, keep_paths: Optional[set[str]] = None) -> None:
     """Drop non-.so artifacts after bulk podman cp from image build dirs."""
+    keep = set(keep_paths or ())
+    keep_names = _voice_bin_keep_names()
     for name in os.listdir(bin_dir):
         path = os.path.join(bin_dir, name)
-        if path == whisper_cli_path or ".so" in name:
+        if path in keep or name in keep_names or ".so" in name:
             continue
         try:
             if os.path.isfile(path):
@@ -857,34 +897,21 @@ def _copy_whisper_libs_from_container(
         )
 
 
-def _build_whisper_cli_in_container(
-    podman: str,
-    env: dict[str, str],
-    plugin_root: str,
-    settings_dir: str,
-) -> str:
-    """Compile whisper-cli inside the podman image with AVX2-only ggml (Steam Deck safe)."""
-    dest = voice_whisper_cli_path(plugin_root, settings_dir)
-    bin_dir = voice_bin_dir(plugin_root, settings_dir)
-    os.makedirs(bin_dir, exist_ok=True)
-
-    build_script = r"""
-set -e
-export DEBIAN_FRONTEND=noninteractive
-apt-get update -qq
-apt-get install -y -qq g++ make
+_WHISPER_CONTAINER_CMAKE = r"""
 cmake -S /app -B /tmp/bonsai-whisper-build -DCMAKE_BUILD_TYPE=Release \
   -DGGML_NATIVE=OFF \
   -DGGML_AVX512=OFF -DGGML_AVX512_VBMI=OFF -DGGML_AVX512_VNNI=OFF -DGGML_AVX512_BF16=OFF \
   -DGGML_AVX2=ON -DGGML_AVX=ON -DGGML_FMA=ON -DGGML_F16C=ON \
   -DWHISPER_BUILD_TESTS=OFF -DBUILD_SHARED_LIBS=ON
-cmake --build /tmp/bonsai-whisper-build --target whisper-cli -j4
-cp /tmp/bonsai-whisper-build/bin/whisper-cli /out/
-cp -a /tmp/bonsai-whisper-build/bin/lib*.so* /out/ 2>/dev/null || true
-cp -a /tmp/bonsai-whisper-build/src/libwhisper.so* /out/ 2>/dev/null || true
-cp -a /tmp/bonsai-whisper-build/ggml/src/libggml*.so* /out/ 2>/dev/null || true
 """
 
+
+def _run_whisper_container_build(
+    podman: str,
+    env: dict[str, str],
+    bin_dir: str,
+    build_script: str,
+) -> None:
     run = subprocess.run(
         [
             podman,
@@ -907,15 +934,57 @@ cp -a /tmp/bonsai-whisper-build/ggml/src/libggml*.so* /out/ 2>/dev/null || true
         err = (run.stderr or run.stdout or "podman whisper build failed")[:500]
         raise RuntimeError(err)
 
-    if not os.path.isfile(dest):
-        raise RuntimeError("whisper-cli build finished but binary is missing from voice_bin.")
 
+def _finalize_voice_bin(plugin_root: str, settings_dir: str) -> None:
+    bin_dir = voice_bin_dir(plugin_root, settings_dir)
+    cli_path = voice_whisper_cli_path(plugin_root, settings_dir)
+    server_path = voice_whisper_server_path(plugin_root, settings_dir)
     _link_versioned_sonames(bin_dir)
-    _prune_voice_bin_non_libs(bin_dir, dest)
+    _prune_voice_bin_non_libs(bin_dir, {cli_path, server_path})
     for name in os.listdir(bin_dir):
         path = os.path.join(bin_dir, name)
         if os.path.isfile(path):
             os.chmod(path, 0o755)
+
+
+def _build_whisper_cli_in_container(
+    podman: str,
+    env: dict[str, str],
+    plugin_root: str,
+    settings_dir: str,
+) -> str:
+    """Compile whisper-cli + whisper-server inside the podman image (AVX2-only ggml)."""
+    dest = voice_whisper_cli_path(plugin_root, settings_dir)
+    server_dest = voice_whisper_server_path(plugin_root, settings_dir)
+    bin_dir = voice_bin_dir(plugin_root, settings_dir)
+    os.makedirs(bin_dir, exist_ok=True)
+
+    build_script = (
+        r"""
+set -e
+export DEBIAN_FRONTEND=noninteractive
+apt-get update -qq
+apt-get install -y -qq g++ make
+"""
+        + _WHISPER_CONTAINER_CMAKE
+        + r"""
+cmake --build /tmp/bonsai-whisper-build --target whisper-cli whisper-server -j4
+cp /tmp/bonsai-whisper-build/bin/whisper-cli /out/
+cp /tmp/bonsai-whisper-build/bin/whisper-server /out/
+cp -a /tmp/bonsai-whisper-build/bin/lib*.so* /out/ 2>/dev/null || true
+cp -a /tmp/bonsai-whisper-build/src/libwhisper.so* /out/ 2>/dev/null || true
+cp -a /tmp/bonsai-whisper-build/ggml/src/libggml*.so* /out/ 2>/dev/null || true
+"""
+    )
+
+    _run_whisper_container_build(podman, env, bin_dir, build_script)
+
+    if not os.path.isfile(dest):
+        raise RuntimeError("whisper-cli build finished but binary is missing from voice_bin.")
+    if not os.path.isfile(server_dest):
+        raise RuntimeError("whisper-server build finished but binary is missing from voice_bin.")
+
+    _finalize_voice_bin(plugin_root, settings_dir)
 
     if not whisper_binary_usable(plugin_root, settings_dir):
         raise RuntimeError(
@@ -924,6 +993,40 @@ cp -a /tmp/bonsai-whisper-build/ggml/src/libggml*.so* /out/ 2>/dev/null || true
         )
     _voice_bin_mark_cpu_safe(bin_dir)
     return dest
+
+
+def _build_whisper_server_in_container(
+    podman: str,
+    env: dict[str, str],
+    plugin_root: str,
+    settings_dir: str,
+) -> str:
+    """Compile whisper-server only when whisper-cli is already CPU-safe in voice_bin."""
+    server_dest = voice_whisper_server_path(plugin_root, settings_dir)
+    bin_dir = voice_bin_dir(plugin_root, settings_dir)
+    os.makedirs(bin_dir, exist_ok=True)
+
+    build_script = (
+        r"""
+set -e
+export DEBIAN_FRONTEND=noninteractive
+apt-get update -qq
+apt-get install -y -qq g++ make
+"""
+        + _WHISPER_CONTAINER_CMAKE
+        + r"""
+cmake --build /tmp/bonsai-whisper-build --target whisper-server -j4
+cp /tmp/bonsai-whisper-build/bin/whisper-server /out/
+"""
+    )
+
+    _run_whisper_container_build(podman, env, bin_dir, build_script)
+
+    if not os.path.isfile(server_dest):
+        raise RuntimeError("whisper-server build finished but binary is missing from voice_bin.")
+
+    _finalize_voice_bin(plugin_root, settings_dir)
+    return server_dest
 
 
 def _extract_whisper_from_container(
@@ -959,7 +1062,7 @@ def _extract_whisper_from_container(
             raise RuntimeError((cp_bin.stderr or cp_bin.stdout or "podman cp whisper-cli failed")[:500])
         os.chmod(dest, 0o755)
         _copy_whisper_libs_from_container(podman, cid, bin_dir, env)
-        _prune_voice_bin_non_libs(bin_dir, dest)
+        _prune_voice_bin_non_libs(bin_dir, {dest})
         _link_versioned_sonames(bin_dir)
     finally:
         subprocess.run([podman, "rm", cid], capture_output=True, text=True, timeout=60, env=env)
@@ -987,12 +1090,13 @@ def install_whisper_cli(
         if on_stage:
             on_stage(name, fields)
 
-    if whisper_binary_usable(plugin_root, settings_dir):
-        model_path = voice_model_path(plugin_root, settings_dir, DEFAULT_VOICE_STT_MODEL)
-        ready_path = _voice_binary_ready_for_inference(plugin_root, settings_dir, model_path)
-        if ready_path:
-            stage("binary_ready", path=ready_path)
-            return
+    cli_ready = whisper_binary_usable(plugin_root, settings_dir)
+    model_path = voice_model_path(plugin_root, settings_dir, DEFAULT_VOICE_STT_MODEL)
+    ready_path = _voice_binary_ready_for_inference(plugin_root, settings_dir, model_path) if cli_ready else None
+    server_ready = whisper_server_binary_usable(plugin_root, settings_dir) if cli_ready else None
+    if ready_path and server_ready:
+        stage("binary_ready", path=ready_path)
+        return
 
     podman = shutil.which("podman")
     if not podman:
@@ -1015,9 +1119,14 @@ def install_whisper_cli(
     if cancel_event.is_set():
         raise RuntimeError("Binary install cancelled.")
 
-    model_path = voice_model_path(plugin_root, settings_dir, DEFAULT_VOICE_STT_MODEL)
+    if ready_path and not server_ready:
+        stage("binary_build_start", target="whisper-server")
+        _build_whisper_server_in_container(podman, env, plugin_root, settings_dir)
+        stage("binary_ready", path=ready_path)
+        return
+
     ready_path = _voice_binary_ready_for_inference(plugin_root, settings_dir, model_path)
-    if ready_path:
+    if ready_path and whisper_server_binary_usable(plugin_root, settings_dir):
         stage("binary_ready", path=ready_path)
         return
 
@@ -1084,8 +1193,22 @@ class VoiceTranscriptionSession:
         self._last_partial = ""
         self._finalized = ""
         self._capture_backend = ""
+        self._use_daemon = False
 
-    def status(self) -> dict[str, Any]:
+    def _transcribe_pcm(
+        self,
+        whisper_bin: str,
+        model_path: str,
+        env: dict[str, str],
+        pcm: bytes,
+    ) -> str:
+        if self._use_daemon:
+            from backend.services.voice_whisper_daemon import get_whisper_engine
+
+            text = get_whisper_engine().transcribe(pcm)
+            if text:
+                return text
+        return _run_whisper_transcribe(whisper_bin, model_path, pcm, env)
         with self._lock:
             return dict(self._state)
 
@@ -1161,6 +1284,13 @@ class VoiceTranscriptionSession:
         self._finalized = ""
         self._last_voice_monotonic = time.monotonic()
 
+        model_path = voice_model_path(self.plugin_root, self.settings_dir, self.model_id)
+        from backend.services.voice_whisper_daemon import get_whisper_engine
+
+        engine = get_whisper_engine()
+        engine.acquire("mic", model_path, self.plugin_root, self.settings_dir)
+        self._use_daemon = engine.daemon_available()
+
         try:
             cmd, backend, capture_env = _resolve_capture_command()
             self._capture_backend = backend
@@ -1173,6 +1303,7 @@ class VoiceTranscriptionSession:
         except Exception as exc:
             err = str(exc)[:500]
             self._set_state(status="error", recording=False, streaming=False, error=err)
+            get_whisper_engine().release("mic")
             return {"accepted": False, "error": err}
 
         self._set_state(
@@ -1256,7 +1387,7 @@ class VoiceTranscriptionSession:
                 continue
 
             try:
-                text = _run_whisper_transcribe(whisper_bin, model_path, pcm, env)
+                text = self._transcribe_pcm(whisper_bin, model_path, env, pcm)
             except Exception as exc:
                 self.logger.warning("voice whisper pass failed: %s", exc)
                 continue
@@ -1315,7 +1446,7 @@ class VoiceTranscriptionSession:
         if pcm and len(pcm) >= BYTES_PER_SECOND // 4:
             window_rms = _pcm_rms(pcm)
             try:
-                tail = _run_whisper_transcribe(whisper_bin, model_path, pcm, env).strip()
+                tail = self._transcribe_pcm(whisper_bin, model_path, env, pcm).strip()
                 if tail and _whisper_decode_usable(tail, window_rms):
                     finalized, partial = merge_sliding_window_transcript(
                         self._finalized,
@@ -1358,6 +1489,9 @@ class VoiceTranscriptionSession:
         for thread in (self._reader_thread, self._worker_thread):
             if thread is not None and thread.is_alive():
                 thread.join(timeout=3.0)
+        from backend.services.voice_whisper_daemon import get_whisper_engine
+
+        get_whisper_engine().release("mic")
         st = self.status()
         return {
             "stopped": True,

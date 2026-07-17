@@ -125,7 +125,17 @@ Optional on-Deck corpus for Strategy and troubleshooting Asks. Full architecture
 
 **Fix:** Use **tiny.en**; **base.en** needs more CPU on the Deck APU. Close heavy games while transcribing. Audio is processed in RAM only — nothing is uploaded or saved to disk.
 
-**Latency (2026-07-07):** Tier 1 tuning (shorter decode interval/window, faster UI poll, 4 threads) — see [voice-input-follow-up.md](voice-input-follow-up.md). If still too slow, planned **session daemon** (roadmap).
+**Latency (2026-07-07):** Tier 1 tuning (shorter decode interval/window, faster UI poll, 4 threads) — see [voice-input-follow-up.md](voice-input-follow-up.md).
+
+**Session daemon (2026-07-17):** Mic sessions prefer a local `whisper-server` (`127.0.0.1:18765`) so the model loads once per recording. Re-run **Install voice engine** if you upgraded from an older build (incremental server install when CLI is already CPU-safe). If the server fails health checks, voice falls back to one-shot `whisper-cli` automatically.
+
+**Symptom:** Interim text still slow after update.
+
+**Fix:** Confirm `~/homebrew/settings/bonsAI/voice_bin/whisper-server` exists (reinstall voice engine). Use **tiny.en**; close heavy games while transcribing.
+
+**Symptom:** Orphan `whisper-server` after crash (rare).
+
+**Fix:** Stop/restart the plugin, or delete `voice_bin/whisper-server.pid` and kill the stale PID. **Clear all data** or revoking the mic permission also force-stops the server.
 
 **Maintainers — podman image:** Install pins `WHISPER_CPP_IMAGE` by **digest** (not `:main`). Bump procedure: [voice-input-follow-up.md](voice-input-follow-up.md#bumping-the-digest-maintainers).
 
