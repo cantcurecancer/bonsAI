@@ -12,6 +12,10 @@ from backend.services.ollama_service import (
     user_consents_strategy_spoilers,
     user_wants_power_or_performance_topic,
 )
+from backend.services.ollama_prompts import (
+    build_reply_verbosity_block,
+    user_asks_for_detail_depth,
+)
 
 
 class OllamaServiceTests(unittest.TestCase):
@@ -611,6 +615,104 @@ class OllamaServiceTests(unittest.TestCase):
         self.assertTrue(user_consents_strategy_spoilers("full spoilers please"))
         self.assertTrue(user_consents_strategy_spoilers("Spoilers are okay"))
         self.assertFalse(user_consents_strategy_spoilers("no spoilers please"))
+
+    def _verbosity_lookup_helpers(self):
+        def lookup_app_name(_app_id: str) -> str:
+            return ""
+
+        def lookup_vdf(_path: str) -> dict:
+            return {}
+
+        return lookup_app_name, lookup_vdf
+
+    def test_build_system_prompt_balanced_omits_reply_verbosity_block(self):
+        lookup_app_name, lookup_vdf = self._verbosity_lookup_helpers()
+        prompt = build_system_prompt(
+            question="How do I fix stutter?",
+            app_id="",
+            app_name="",
+            normalized_attachments=[],
+            prepared_images=[],
+            lookup_app_name=lookup_app_name,
+            lookup_screenshot_vdf_metadata=lookup_vdf,
+            reply_verbosity="balanced",
+        )
+        self.assertNotIn("REPLY VERBOSITY", prompt)
+
+    def test_build_system_prompt_short_includes_reply_verbosity_block(self):
+        lookup_app_name, lookup_vdf = self._verbosity_lookup_helpers()
+        prompt = build_system_prompt(
+            question="Quick tip?",
+            app_id="",
+            app_name="",
+            normalized_attachments=[],
+            prepared_images=[],
+            lookup_app_name=lookup_app_name,
+            lookup_screenshot_vdf_metadata=lookup_vdf,
+            reply_verbosity="short",
+        )
+        self.assertIn("REPLY VERBOSITY", prompt)
+        self.assertIn("SHORT REPLY STYLE", prompt)
+        self.assertNotIn("overrides", prompt.lower())
+
+    def test_build_system_prompt_detailed_includes_override_clause(self):
+        lookup_app_name, lookup_vdf = self._verbosity_lookup_helpers()
+        prompt = build_system_prompt(
+            question="Explain Proton",
+            app_id="",
+            app_name="",
+            normalized_attachments=[],
+            prepared_images=[],
+            lookup_app_name=lookup_app_name,
+            lookup_screenshot_vdf_metadata=lookup_vdf,
+            reply_verbosity="detailed",
+        )
+        self.assertIn("DETAILED REPLY STYLE", prompt)
+        self.assertIn("this block overrides", prompt.lower())
+
+    def test_build_system_prompt_strategy_detailed_keeps_branch_fence(self):
+        lookup_app_name, lookup_vdf = self._verbosity_lookup_helpers()
+        prompt = build_system_prompt(
+            question="Stuck in dungeon",
+            app_id="",
+            app_name="Zelda",
+            normalized_attachments=[],
+            prepared_images=[],
+            lookup_app_name=lookup_app_name,
+            lookup_screenshot_vdf_metadata=lookup_vdf,
+            ask_mode="strategy",
+            reply_verbosity="detailed",
+        )
+        self.assertIn("bonsai-strategy-branches", prompt)
+        self.assertIn("DETAILED REPLY STYLE", prompt)
+
+    def test_build_system_prompt_short_fps_still_has_triple_resolution(self):
+        lookup_app_name, lookup_vdf = self._verbosity_lookup_helpers()
+        prompt = build_system_prompt(
+            question="What are the best settings for 60fps?",
+            app_id="",
+            app_name="",
+            normalized_attachments=[],
+            prepared_images=[],
+            lookup_app_name=lookup_app_name,
+            lookup_screenshot_vdf_metadata=lookup_vdf,
+            ask_mode="speed",
+            reply_verbosity="short",
+        )
+        self.assertIn("DISPLAY TARGETS (Speed mode)", prompt)
+        self.assertIn("SHORT REPLY STYLE", prompt)
+
+    def test_user_asks_for_detail_depth_and_short_relax_clause(self):
+        self.assertTrue(user_asks_for_detail_depth("Give me a step by step walkthrough"))
+        block = build_reply_verbosity_block(
+            "short",
+            question="step by step please",
+            ask_mode="speed",
+        )
+        self.assertIn("one short extra section", block)
+
+    def test_user_asks_for_detail_depth_false_for_short_question(self):
+        self.assertFalse(user_asks_for_detail_depth("quick fps tip?"))
 
 
 if __name__ == "__main__":

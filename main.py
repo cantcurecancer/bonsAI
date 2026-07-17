@@ -2543,6 +2543,7 @@ class Plugin:
         strategy_spoiler_consent: bool = False,
         character_roleplay_on: bool = False,
         strategy_checklist_state: Optional[dict] = None,
+        reply_verbosity: str = "balanced",
     ) -> str:
         """Build the system prompt using plugin-local metadata lookups and attachment context."""
         proton = (proton_log_attachment or "").strip()
@@ -2559,6 +2560,7 @@ class Plugin:
             strategy_spoiler_consent=strategy_spoiler_consent,
             character_roleplay_on=character_roleplay_on,
             strategy_checklist_state=strategy_checklist_state,
+            reply_verbosity=reply_verbosity,
         )
         return append_deck_tdp_sysfs_grounding(
             base,

@@ -26,6 +26,7 @@ import {
   DEFAULT_MODEL_ALLOW_HIGH_VRAM_FALLBACKS,
   DEFAULT_MODEL_POLICY_TIER,
   DEFAULT_OLLAMA_KEEP_ALIVE,
+  DEFAULT_REPLY_VERBOSITY,
   DEFAULT_OLLAMA_LOCAL_ON_DECK,
   DEFAULT_PRESET_CHIP_ANIMATION,
   DEFAULT_PRESET_CHIP_FADE_ANIMATION_ENABLED,
@@ -51,6 +52,7 @@ import {
   type BonsaiSettingsSnapshotInput,
   type DesktopAppLogLevel,
   type OllamaKeepAliveDuration,
+  type ReplyVerbosityId,
   type PresetChipAnimation,
   type ScreenshotAttachmentPreset,
   type UnifiedInputPersistenceMode,
@@ -86,6 +88,7 @@ function snapshotFromBonsaiSettings(normalized: BonsaiSettings): BonsaiSettingsS
     aiCharacterAccentIntensity: normalized.ai_character_accent_intensity,
     askMode: normalized.ask_mode,
     ollamaKeepAlive: normalized.ollama_keep_alive,
+    replyVerbosity: normalized.reply_verbosity,
     showDeveloperTab: normalized.show_developer_tab,
     modelPolicyTier: normalized.model_policy_tier,
     modelPolicyNonFossUnlocked: normalized.model_policy_non_foss_unlocked,
@@ -162,6 +165,7 @@ export function usePluginSettings() {
   );
   const [askMode, setAskMode] = useState<AskModeId>(DEFAULT_ASK_MODE);
   const [ollamaKeepAlive, setOllamaKeepAlive] = useState<OllamaKeepAliveDuration>(DEFAULT_OLLAMA_KEEP_ALIVE);
+  const [replyVerbosity, setReplyVerbosity] = useState<ReplyVerbosityId>(DEFAULT_REPLY_VERBOSITY);
   const [showDeveloperTab, setShowDeveloperTab] = useState<boolean>(DEFAULT_SHOW_DEVELOPER_TAB);
   const [modelPolicyTier, setModelPolicyTier] = useState<ModelPolicyTierId>(DEFAULT_MODEL_POLICY_TIER);
   const [modelPolicyNonFossUnlocked, setModelPolicyNonFossUnlocked] = useState<boolean>(false);
@@ -224,6 +228,7 @@ export function usePluginSettings() {
     aiCharacterAccentIntensity,
     askMode,
     ollamaKeepAlive,
+    replyVerbosity,
     showDeveloperTab,
     modelPolicyTier,
     modelPolicyNonFossUnlocked,
@@ -268,6 +273,7 @@ export function usePluginSettings() {
     setAiCharacterAccentIntensity(normalized.ai_character_accent_intensity);
     setAskMode(normalized.ask_mode);
     setOllamaKeepAlive(normalized.ollama_keep_alive);
+    setReplyVerbosity(normalized.reply_verbosity);
     setShowDeveloperTab(normalized.show_developer_tab);
     setModelPolicyTier(normalized.model_policy_tier);
     setModelPolicyNonFossUnlocked(normalized.model_policy_non_foss_unlocked);
@@ -361,6 +367,7 @@ export function usePluginSettings() {
         setAiCharacterAccentIntensity(DEFAULT_AI_CHARACTER_ACCENT_INTENSITY);
         setAskMode(DEFAULT_ASK_MODE);
         setOllamaKeepAlive(DEFAULT_OLLAMA_KEEP_ALIVE);
+        setReplyVerbosity(DEFAULT_REPLY_VERBOSITY);
         setShowDeveloperTab(DEFAULT_SHOW_DEVELOPER_TAB);
         setModelPolicyTier(DEFAULT_MODEL_POLICY_TIER);
         setModelPolicyNonFossUnlocked(false);
@@ -429,6 +436,7 @@ export function usePluginSettings() {
     aiCharacterAccentIntensity,
     askMode,
     ollamaKeepAlive,
+    replyVerbosity,
     showDeveloperTab,
     modelPolicyTier,
     modelPolicyNonFossUnlocked,
@@ -483,6 +491,8 @@ export function usePluginSettings() {
     setAskMode,
     ollamaKeepAlive,
     setOllamaKeepAlive,
+    replyVerbosity,
+    setReplyVerbosity,
     showDeveloperTab,
     setShowDeveloperTab,
     modelPolicyTier,

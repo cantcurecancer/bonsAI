@@ -20,7 +20,7 @@ import {
 } from "../data/modelPolicy";
 import { StrategyChecklistPanel } from "./StrategyChecklistPanel";
 import { isPendingPlaceholderResponse } from "../utils/askThinkingPhases";
-import { buildReplyActionsElement } from "../utils/buildReplyActionsElement";
+import { REPLY_VERBOSITY_LABELS, type ReplyVerbosityId } from "../data/replyVerbosity";
 import { BonsaiChatSecondaryButton } from "./BonsaiChatSecondaryButton";
 import { buildAnswerBubbleElement } from "../utils/buildAnswerBubbleElement";
 import { buildTurnHeaderElement } from "../utils/buildTurnHeaderElement";
@@ -529,6 +529,12 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
         Route: {transparencySnapshot.route}
         {transparencySnapshot.ollama_model ? ` · Model: ${transparencySnapshot.ollama_model}` : ""}
         {transparencySnapshot.success ? " · ok" : " · failed"}
+      </div>
+      <div style={{ fontSize: 11, color: "#8fa6bd", marginBottom: 8, lineHeight: 1.35 }}>
+        Reply verbosity:{" "}
+        {REPLY_VERBOSITY_LABELS[
+          (transparencySnapshot.reply_verbosity ?? "balanced") as ReplyVerbosityId
+        ] ?? transparencySnapshot.reply_verbosity ?? "balanced"}
       </div>
       {(Boolean(transparencySnapshot.proton_log_excerpt_attached) ||
         Boolean(transparencySnapshot.proton_log_notes?.trim())) && (

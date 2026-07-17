@@ -251,6 +251,16 @@ OLLAMA_KEEP_ALIVE_OPTIONS = frozenset(
 )
 DEFAULT_OLLAMA_KEEP_ALIVE = "5m"
 
+REPLY_VERBOSITY_OPTIONS = frozenset({"short", "balanced", "detailed"})
+DEFAULT_REPLY_VERBOSITY = "balanced"
+
+
+def sanitize_reply_verbosity(value: Any) -> str:
+    """Validate global reply prose style; balanced = no verbosity inject."""
+    if isinstance(value, str) and value in REPLY_VERBOSITY_OPTIONS:
+        return value
+    return DEFAULT_REPLY_VERBOSITY
+
 
 def sanitize_ollama_keep_alive(value: Any) -> str:
     """Validate Ollama keep_alive duration tokens and fall back to the plugin default."""
@@ -432,6 +442,7 @@ def sanitize_settings(
             default_ask_mode,
         ),
         "ollama_keep_alive": sanitize_ollama_keep_alive(raw.get("ollama_keep_alive")),
+        "reply_verbosity": sanitize_reply_verbosity(raw.get("reply_verbosity")),
         "ollama_local_on_deck": sanitize_ollama_local_on_deck(raw.get("ollama_local_on_deck")),
         "show_developer_tab": sanitize_show_developer_tab(
             raw.get("show_developer_tab"), raw.get("show_debug_tab")

@@ -35,6 +35,8 @@ export type TransparencySnapshot = {
     warnings?: string[];
     second_pass?: { ran?: boolean; passed?: boolean; model?: string; verdict?: string };
   } | null;
+  /** Global reply prose style active for this Ask (short / balanced / detailed). */
+  reply_verbosity?: string;
 };
 
 export type AskDiagnosticsSnapshot = {

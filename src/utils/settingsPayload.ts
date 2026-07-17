@@ -32,6 +32,7 @@ export function toBonsaiSettingsPayload(
     ai_character_accent_intensity: input.aiCharacterAccentIntensity,
     ask_mode: input.askMode,
     ollama_keep_alive: input.ollamaKeepAlive,
+    reply_verbosity: input.replyVerbosity,
     show_developer_tab: input.showDeveloperTab,
     model_policy_tier: input.modelPolicyTier,
     model_policy_non_foss_unlocked: input.modelPolicyNonFossUnlocked,

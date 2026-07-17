@@ -278,6 +278,14 @@ It does **not** delete markdown or log files under `~/Desktop/bonsAI_logs/`.
 
 ---
 
+## 1d. Reply style (Short / Balanced / Detailed)
+
+**Feature:** **Ollama** tab → **Reply style** — three-stop slider for global Ask prose coaching. **Balanced** (default) matches pre-ship behavior (no extra system-prompt block). **Short** prefers bullets; **Detailed** prefers paragraphs with rationale (~500-word soft cap on visible prose). Does not change Ask mode (Speed / Strategy / Expert) or model routing. Shown in **Input handling (last Ask)** as `Reply verbosity: …`.
+
+**Note:** The required `<bonsai-status>` opening line keeps its own short length rules; verbosity applies to the visible answer body after that tag.
+
+---
+
 ## 1b. Desktop logs (`bonsAI_logs`)
 
 ### Folder rename (existing users)

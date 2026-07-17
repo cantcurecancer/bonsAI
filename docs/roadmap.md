@@ -75,7 +75,7 @@ Within this section: ascending stars (★★ → ★★★ → ★★★★). Br
   - **Primary work:** Micro-prompt templates; new turn in unified Ask orchestration; compact chip row on `BonsaiChatReplyActions`; Input transparency labels derivative turns.
   - **Files:** `useBonsaiAskOrchestration.ts`, `BonsaiChatReplyActions.tsx`, `game_ai_request.py`, `ollama_prompts.py`.
   - **Depends on:** Shipped accordion turns + **Retry same prompt**; settings persistence.
-  - **Not in scope:** Global **Reply verbosity inject** (separate planned row); replacing **named chat slots**; TDP apply from micro-actions without existing hardware gates.
+  - **Not in scope:** Global **Reply style** slider (shipped — see **Completed**); replacing **named chat slots**; TDP apply from micro-actions without existing hardware gates.
 - ★★★ **Multi-language replies** (Steam locale + optional override)
   - **Goal:** Respond in user/Steam language with optional override.
   - **Primary work:** language detection, prompt localization instruction, optional override persistence.
@@ -100,12 +100,6 @@ Within this section: ascending stars (★★ → ★★★ → ★★★★). Br
   - **Files (expected):** `useBonsaiAskOrchestration.ts`, `src/index.tsx`, toast helpers.
   - **Depends on:** Unified Ask pipeline (shipped); Decky `toaster` (`ToastData.onClick` in `@decky/api`).
   - **Not in scope:** Full or truncated answer text in toast; TTS read-aloud (see **Local reply TTS**); wake-word listening itself.
-- ★★★ **Reply verbosity inject** (short vs rich paragraphs, V)
-  - **Goal:** User preference “short bullets vs paragraphs” as system inject — complements Speed/Strategy/Expert routing without replacing it.
-  - **Primary work:** persisted setting + `build_system_prompt` inject branch.
-  - **Files:** `settings_service.py`, `settingsAndResponse.ts`, `ollama_service.py` / prompt assembly.
-  - **Depends on:** settings persistence.
-  - **Not in scope:** replacing Ask mode model fallback chains.
 - ★★★ **Search density UX** (match emphasis + tighter rows)
   - **Goal:** Tighter, more scannable results: spacing, wider lines, incremental filtering, highlighted match tokens.
   - **Files:** `src/index.tsx`, prompt/search UX test notes.
@@ -336,7 +330,7 @@ Dependency graph and implementation notes that are not feature checklist items.
 - **Offline intent pack exchange** → offline-first search quality.
 - **Session context and user stash** → deck-first Ask quality; complements shipped game/vision/Proton/TDP injects and **RAG Deck query (on-Deck offline v1)**.
 - **User stash (Phase 1)** → **Input handling transparency** (show injected stash bytes and sources).
-- **Reply micro-actions** → shipped accordion + **Retry same prompt**; distinct from **Reply verbosity inject**.
+- **Reply micro-actions** → shipped accordion + **Retry same prompt**; distinct from shipped **Reply style** (global verbosity slider).
 - **Proton experiment journal** → complements Proton log attach; optional inject into troubleshooting Asks alongside log excerpts; distinct from **Session context and user stash** (structured timeline vs freeform notes).
 - **Deck health snapshot** → `steam_logs_read` + `[proton_troubleshooting_logs.py](../py_modules/backend/services/proton_troubleshooting_logs.py)` + connection test; **supersedes** removed **Support diagnostics block**; Desktop save needs `filesystem_write`.
 - **Settings persistence** → mode profiles, language override, background completion metadata; **Debug tab opt-in (Settings)** (shipped — see **Completed** → Tabs).

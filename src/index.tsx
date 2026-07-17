@@ -380,6 +380,8 @@ const Content: React.FC = () => {
     setAskMode,
     ollamaKeepAlive,
     setOllamaKeepAlive,
+    replyVerbosity,
+    setReplyVerbosity,
     showDeveloperTab,
     setShowDeveloperTab,
     modelPolicyTier,
@@ -697,6 +699,7 @@ const Content: React.FC = () => {
       aiCharacterAccentIntensity,
       askMode,
       ollamaKeepAlive,
+      replyVerbosity,
       showDeveloperTab,
       modelPolicyTier,
       modelPolicyNonFossUnlocked,
@@ -739,6 +742,7 @@ const Content: React.FC = () => {
       aiCharacterAccentIntensity,
       askMode,
       ollamaKeepAlive,
+      replyVerbosity,
       showDeveloperTab,
       modelPolicyTier,
       modelPolicyNonFossUnlocked,
@@ -1569,6 +1573,8 @@ const Content: React.FC = () => {
         setRequestTimeoutSeconds={setRequestTimeoutSeconds}
         ollamaKeepAlive={ollamaKeepAlive}
         setOllamaKeepAlive={setOllamaKeepAlive}
+        replyVerbosity={replyVerbosity}
+        setReplyVerbosity={setReplyVerbosity}
         modelPolicyTier={modelPolicyTier}
         onApplyTier2MultimodalPolicy={onApplyTier2MultimodalPolicy}
         useLocalKnowledgeBase={useLocalKnowledgeBase}
@@ -1589,6 +1595,7 @@ const Content: React.FC = () => {
       requestTimeoutSeconds,
       latencyTimeoutsCustomEnabled,
       ollamaKeepAlive,
+      replyVerbosity,
       modelPolicyTier,
       onApplyTier2MultimodalPolicy,
       useLocalKnowledgeBase,

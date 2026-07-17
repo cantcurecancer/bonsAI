@@ -448,6 +448,82 @@ THIN_CONTEXT_HONESTY_CLAUSE = (
     "attached excerpts.\n\n"
 )
 
+_REPLY_VERBOSITY_SHARED = (
+    "REPLY VERBOSITY: This block shapes visible coaching prose only (the answer body after the required "
+    "<bonsai-status> line — not the status tag itself). Structural topic/mode injects and mandatory fences "
+    "(```bonsai-strategy-branches```, ```bonsai-strategy-checklist```, ```json``` TDP blocks, ```bonsai-cite```, "
+    "checklists) take priority. Word caps apply to visible prose only, not fence JSON.\n"
+)
+
+
+def user_asks_for_detail_depth(question: str) -> bool:
+    """Phrase heuristics: user wants more depth despite Short verbosity."""
+    q = (question or "").lower()
+    needles = (
+        "step by step",
+        "step-by-step",
+        "walkthrough",
+        "explain why",
+        "in detail",
+        "full guide",
+        "detailed guide",
+        "break it down",
+        "tutorial",
+        "comprehensive",
+    )
+    return any(n in q for n in needles)
+
+
+def build_reply_verbosity_block(
+    reply_verbosity: str,
+    *,
+    question: str,
+    ask_mode: str,
+    character_roleplay_on: bool = False,
+) -> str:
+    """Inject Short/Detailed prose coaching; balanced returns empty (shipped behavior)."""
+    v = (reply_verbosity or "balanced").strip().lower()
+    if v == "balanced" or v not in ("short", "detailed"):
+        return ""
+
+    shared = _REPLY_VERBOSITY_SHARED
+    _ = ask_mode  # reserved for per-mode overrides later
+
+    if v == "short":
+        relax = ""
+        if user_asks_for_detail_depth(question):
+            relax = (
+                "The user asked for depth: you may add one short extra section after the direct answer, "
+                "still bullet-first.\n"
+            )
+        roleplay_note = ""
+        if character_roleplay_on:
+            roleplay_note = (
+                "When character voice conflicts with brevity, keep bullets short but stay in character; "
+                "this verbosity setting wins over character length habits for the main answer body.\n"
+            )
+        return (
+            f"\n\n{shared}"
+            "SHORT REPLY STYLE: Prefer tight bullets or one-liners. Stop when the direct answer is complete. "
+            "Reinforce answering concisely (identity clause above).\n"
+            f"{relax}"
+            f"{roleplay_note}"
+        )
+
+    roleplay_note = ""
+    if character_roleplay_on:
+        roleplay_note = (
+            "When character brevity conflicts with this verbosity setting, prioritize paragraph depth "
+            "for the main answer body.\n"
+        )
+    return (
+        f"\n\n{shared}"
+        "DETAILED REPLY STYLE: Use paragraphs with rationale and context; soft cap ~500 words on visible prose "
+        "unless the user explicitly asks for more. If the identity clause says 'concisely', this block overrides "
+        "for main answer prose. If running out of generation budget, finish the direct answer first, then trim rationale.\n"
+        f"{roleplay_note}"
+    )
+
 
 def build_system_prompt(
     question: str,
@@ -462,6 +538,7 @@ def build_system_prompt(
     strategy_spoiler_consent: bool = False,
     character_roleplay_on: bool = False,
     strategy_checklist_state: Optional[dict] = None,
+    reply_verbosity: str = "balanced",
 ) -> str:
     """Build the system message used for Ollama requests from game and attachment context.
 
@@ -606,7 +683,13 @@ def build_system_prompt(
             + (DECK_TROUBLESHOOT_GAME_SETTINGS_LINE if troubleshoot else "")
         )
         tail = HARDWARE_APPENDIX_SKIPPED_FOR_OLLAMA_TOPIC if ollama_q else hardware_tdp_appendix
-        return dynamic_block + general_block + early_block + middle + tail
+        verbosity_block = build_reply_verbosity_block(
+            reply_verbosity,
+            question=question,
+            ask_mode=ask_mode,
+            character_roleplay_on=character_roleplay_on,
+        )
+        return dynamic_block + general_block + early_block + middle + verbosity_block + tail
 
     ollama_q = user_asks_ollama_bonsai_host_or_latency(question)
     model_policy_q = _user_asks_model_policy_tiers_explainer(question)
@@ -709,7 +792,13 @@ def build_system_prompt(
         )
         tail += hardware_tdp_appendix
 
-    return dynamic_block + general_block + early_block + middle + tail
+    verbosity_block = build_reply_verbosity_block(
+        reply_verbosity,
+        question=question,
+        ask_mode=ask_mode,
+        character_roleplay_on=character_roleplay_on,
+    )
+    return dynamic_block + general_block + early_block + middle + verbosity_block + tail
 
 
 def format_ai_response(

@@ -222,6 +222,7 @@ def build_ollama_route_snapshot(
         "kb_unavailable_reason": str(ollama_result.get("kb_unavailable_reason") or ""),
         "ask_diagnostics": ollama_result.get("ask_diagnostics"),
         "response_verify": verify_result,
+        "reply_verbosity": str(ollama_result.get("reply_verbosity") or "balanced"),
     }
 
 

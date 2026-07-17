@@ -12,6 +12,8 @@ import { OllamaWhereAiRunsSection } from "./OllamaWhereAiRunsSection";
 import { KnowledgeBaseSection } from "./KnowledgeBaseSection";
 import { SettingsTabConnectionTimeoutSlider } from "./SettingsTabConnectionTimeoutSlider";
 import { SettingsTabOllamaKeepAliveSlider } from "./SettingsTabOllamaKeepAliveSlider";
+import { OllamaReplyVerbositySlider } from "./OllamaReplyVerbositySlider";
+import type { ReplyVerbosityId } from "../data/replyVerbosity";
 import type { NamedOllamaHost } from "../utils/settingsAndResponse";
 
 export type OllamaTabProps = {
@@ -50,6 +52,9 @@ export type OllamaTabProps = {
   useLocalKnowledgeBase: boolean;
   setUseLocalKnowledgeBase: (v: boolean) => void;
   ragCorpusVersion: string;
+
+  replyVerbosity: ReplyVerbosityId;
+  setReplyVerbosity: (v: ReplyVerbosityId) => void;
 };
 
 export const OllamaTab: React.FC<OllamaTabProps> = ({
@@ -84,13 +89,20 @@ export const OllamaTab: React.FC<OllamaTabProps> = ({
   useLocalKnowledgeBase,
   setUseLocalKnowledgeBase,
   ragCorpusVersion,
+  replyVerbosity,
+  setReplyVerbosity,
 }) => {
   const latencyWarningThumbHostRef = useRef<HTMLDivElement>(null);
   const ollamaKeepAliveThumbHostRef = useRef<HTMLDivElement>(null);
   const kbToggleHostRef = useRef<HTMLDivElement>(null);
   const kbDownloadBtnRef = useRef<HTMLButtonElement>(null);
+  const kbRemoveBtnRef = useRef<HTMLButtonElement>(null);
   const connectionTestBtnRef = useRef<HTMLButtonElement>(null);
+  const replyVerbosityThumbHostRef = useRef<HTMLDivElement>(null);
   const responseVerifyToggleHostRef = useRef<HTMLDivElement>(null);
+
+  const deckNav = (handlers: Record<string, () => boolean | void>) =>
+    handlers as unknown as Record<string, unknown>;
 
   const focusOllamaKeepAliveThumb = useCallback((): boolean => {
     const host = ollamaKeepAliveThumbHostRef.current;
@@ -127,6 +139,27 @@ export const OllamaTab: React.FC<OllamaTabProps> = ({
     target.focus();
     return true;
   }, []);
+
+  const focusReplyVerbosityThumb = useCallback((): boolean => {
+    const host = replyVerbosityThumbHostRef.current;
+    if (!host) return false;
+    const target = host.querySelector<HTMLElement>("[tabindex], button");
+    if (!target) return false;
+    target.focus();
+    return true;
+  }, []);
+
+  const focusKbUpFromReplyVerbosity = useCallback((): boolean => {
+    if (kbRemoveBtnRef.current) {
+      kbRemoveBtnRef.current.focus();
+      return true;
+    }
+    if (kbDownloadBtnRef.current) {
+      kbDownloadBtnRef.current.focus();
+      return true;
+    }
+    return focusKbToggle();
+  }, [focusKbToggle]);
 
   const focusConnectionTestBtn = useCallback((): boolean => {
     connectionTestBtnRef.current?.focus();
@@ -165,9 +198,32 @@ export const OllamaTab: React.FC<OllamaTabProps> = ({
         onCompleteDeckyModalClose={onCompleteDeckyModalClose}
         toggleHostRef={kbToggleHostRef}
         downloadBtnRef={kbDownloadBtnRef}
+        removeBtnRef={kbRemoveBtnRef}
         onMoveUpToConnection={focusConnectionTestBtn}
-        onMoveDownFromRemove={focusResponseVerifyToggle}
+        onMoveDownFromRemove={focusReplyVerbosityThumb}
       />
+
+      <PanelSection title="Reply style">
+        <PanelSectionRow>
+          <div className="bonsai-prose bonsai-settings-bleed" style={{ fontSize: 11, color: "#9fb7d5", lineHeight: 1.4, marginBottom: 8 }}>
+            Bullet-first vs paragraph depth. Ask mode and model routing unchanged.
+          </div>
+        </PanelSectionRow>
+        <PanelSectionRow>
+          <div
+            className="bonsai-prose-host bonsai-settings-bleed"
+            style={{ width: "100%", maxWidth: "100%", minWidth: 0 }}
+          >
+            <OllamaReplyVerbositySlider
+              value={replyVerbosity}
+              onChange={setReplyVerbosity}
+              thumbHostRef={replyVerbosityThumbHostRef}
+              onMoveUp={focusKbUpFromReplyVerbosity}
+              onMoveDown={focusResponseVerifyToggle}
+            />
+          </div>
+        </PanelSectionRow>
+      </PanelSection>
 
       <PanelSection title="Response verification">
         <PanelSectionRow>
@@ -177,6 +233,9 @@ export const OllamaTab: React.FC<OllamaTabProps> = ({
               description="After Ollama, run lightweight rules (e.g. invented AppID without game context). May append a short caution line; logs avoid raw user text."
               checked={responseVerifyEnabled}
               onChange={(checked) => setResponseVerifyEnabled(checked)}
+              {...deckNav({
+                onMoveUp: () => focusReplyVerbosityThumb(),
+              })}
             />
             <ToggleField
               label="Response verify second pass (model)"

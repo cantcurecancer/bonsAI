@@ -5,6 +5,11 @@ import {
 } from "./aiCharacterAccentIntensity";
 import { ASK_MODE_IDS, type AskModeId } from "./askMode";
 import {
+  DEFAULT_REPLY_VERBOSITY,
+  isReplyVerbosityId,
+  type ReplyVerbosityId,
+} from "./replyVerbosity";
+import {
   DEFAULT_OLLAMA_KEEP_ALIVE,
   isOllamaKeepAliveDuration,
   type OllamaKeepAliveDuration,
@@ -310,6 +315,13 @@ export function normalizeOllamaKeepAlive(value: unknown): OllamaKeepAliveDuratio
   return DEFAULT_OLLAMA_KEEP_ALIVE;
 }
 
+export function normalizeReplyVerbosity(value: unknown): ReplyVerbosityId {
+  if (typeof value === "string" && isReplyVerbosityId(value)) {
+    return value;
+  }
+  return DEFAULT_REPLY_VERBOSITY;
+}
+
 export function normalizeAiCharacterEnabled(value: unknown): boolean {
   return value === true;
 }
@@ -408,6 +420,7 @@ export function normalizeSettings(data: unknown): BonsaiSettings {
     ai_character_accent_intensity: normalizeAiCharacterAccentIntensity(raw.ai_character_accent_intensity),
     ask_mode: normalizeAskMode(raw.ask_mode),
     ollama_keep_alive: normalizeOllamaKeepAlive(raw.ollama_keep_alive),
+    reply_verbosity: normalizeReplyVerbosity(raw.reply_verbosity),
     show_developer_tab: normalizeShowDeveloperTab(raw.show_developer_tab, rawRecord?.show_debug_tab),
     model_policy_tier: modelPolicy.model_policy_tier,
     model_policy_non_foss_unlocked: modelPolicy.model_policy_non_foss_unlocked,

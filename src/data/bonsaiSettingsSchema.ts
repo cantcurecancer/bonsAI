@@ -4,6 +4,7 @@ import {
 } from "./aiCharacterAccentIntensity";
 import type { AskModeId } from "./askMode";
 import { DEFAULT_OLLAMA_KEEP_ALIVE, type OllamaKeepAliveDuration } from "./ollamaKeepAlive";
+import { DEFAULT_REPLY_VERBOSITY, type ReplyVerbosityId } from "./replyVerbosity";
 import {
   DEFAULT_MODEL_POLICY_TIER,
   type ModelPolicyTierId,
@@ -13,8 +14,10 @@ import { type UiScaleProfileId } from "./uiScaleProfile";
 export type { UiScaleProfileId };
 export type { AskModeId };
 export type { OllamaKeepAliveDuration };
+export type { ReplyVerbosityId };
 export type { ModelPolicyTierId };
 export { DEFAULT_OLLAMA_KEEP_ALIVE };
+export { DEFAULT_REPLY_VERBOSITY };
 export { DEFAULT_MODEL_POLICY_TIER };
 
 export type UnifiedInputPersistenceMode = "persist_all" | "persist_search_only" | "no_persist";
@@ -81,6 +84,8 @@ export type BonsaiSettings = {
   ask_mode: AskModeId;
   /** Ollama `keep_alive` for each Ask (how long the model stays in VRAM on the host after the request). */
   ollama_keep_alive: OllamaKeepAliveDuration;
+  /** Global reply prose style (Short / Balanced / Detailed); Balanced = no verbosity inject. */
+  reply_verbosity: ReplyVerbosityId;
   /** When true, show the Developer tab in the LB/RB strip (default off for typical users). */
   show_developer_tab: boolean;
   /** Which Ollama model families the backend may try (see README model policy). */
@@ -146,6 +151,7 @@ export type BonsaiSettingsSnapshotInput = {
   aiCharacterAccentIntensity: AiCharacterAccentIntensityId;
   askMode: AskModeId;
   ollamaKeepAlive: OllamaKeepAliveDuration;
+  replyVerbosity: ReplyVerbosityId;
   showDeveloperTab: boolean;
   modelPolicyTier: ModelPolicyTierId;
   modelPolicyNonFossUnlocked: boolean;

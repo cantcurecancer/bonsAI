@@ -67,6 +67,7 @@ class SettingsServiceTests(unittest.TestCase):
         self.assertFalse(sanitized["input_sanitizer_user_disabled"])
         self.assertEqual(sanitized["ask_mode"], "speed")
         self.assertEqual(sanitized["ollama_keep_alive"], "5m")
+        self.assertEqual(sanitized["reply_verbosity"], "balanced")
         self.assertFalse(sanitized["show_developer_tab"])
         self.assertEqual(sanitized["model_policy_tier"], "open_source_only")
         self.assertFalse(sanitized["model_policy_non_foss_unlocked"])
@@ -168,6 +169,36 @@ class SettingsServiceTests(unittest.TestCase):
             default_ask_mode="speed",
         )
         self.assertEqual(bad["ollama_keep_alive"], "5m")
+
+    def test_sanitize_reply_verbosity_accepts_known_levels(self):
+        good = sanitize_settings(
+            data={"reply_verbosity": "detailed"},
+            default_latency_warning_seconds=15,
+            default_request_timeout_seconds=120,
+            min_latency_warning_seconds=5,
+            max_latency_warning_seconds=300,
+            min_request_timeout_seconds=10,
+            max_request_timeout_seconds=300,
+            valid_persistence_modes={"persist_all", "persist_search_only", "no_persist"},
+            default_persistence_mode="persist_all",
+            valid_ask_modes={"speed", "strategy", "expert"},
+            default_ask_mode="speed",
+        )
+        self.assertEqual(good["reply_verbosity"], "detailed")
+        bad = sanitize_settings(
+            data={"reply_verbosity": "verbose"},
+            default_latency_warning_seconds=15,
+            default_request_timeout_seconds=120,
+            min_latency_warning_seconds=5,
+            max_latency_warning_seconds=300,
+            min_request_timeout_seconds=10,
+            max_request_timeout_seconds=300,
+            valid_persistence_modes={"persist_all", "persist_search_only", "no_persist"},
+            default_persistence_mode="persist_all",
+            valid_ask_modes={"speed", "strategy", "expert"},
+            default_ask_mode="speed",
+        )
+        self.assertEqual(bad["reply_verbosity"], "balanced")
 
     def test_sanitize_ask_mode_accepts_speed_strategy_expert(self):
         """Ask mode persists only the three known inference modes."""

@@ -33,7 +33,7 @@ from backend.services.model_policy import (
     filter_model_list,
 )
 from backend.services.ollama_service import post_ollama_chat
-from backend.services.settings_service import sanitize_ollama_keep_alive
+from backend.services.settings_service import sanitize_ollama_keep_alive, sanitize_reply_verbosity
 from refactor_helpers import (
     build_effective_models_to_try,
     filter_models_to_installed,
@@ -92,6 +92,7 @@ async def run_ask_ollama(
             character_preset_id=rp_meta_prep.resolved_preset_id,
         )
     keep_alive = sanitize_ollama_keep_alive(settings.get("ollama_keep_alive"))
+    reply_verbosity = sanitize_reply_verbosity(settings.get("reply_verbosity"))
     apreset = str(settings.get("screenshot_attachment_preset") or "low")
     if apreset not in ("low", "mid", "max"):
         apreset = "low"
@@ -115,6 +116,7 @@ async def run_ask_ollama(
         strategy_spoiler_consent=strategy_spoiler_consent,
         character_roleplay_on=bool(settings.get("ai_character_enabled")),
         strategy_checklist_state=strategy_checklist_state,
+        reply_verbosity=reply_verbosity,
     )
     rp_meta = build_roleplay_system_suffix_meta(settings, ask_mode)
     roleplay = rp_meta.suffix
@@ -152,6 +154,7 @@ async def run_ask_ollama(
         "strategy_spoiler_consent_effective": bool(strategy_spoiler_consent) if ask_mode == "strategy" else False,
         "resolved_character_preset_id": rp_meta.resolved_preset_id,
         "pyro_asshole_mode": pyro_asshole,
+        "reply_verbosity": reply_verbosity,
     }
 
     logger.info(

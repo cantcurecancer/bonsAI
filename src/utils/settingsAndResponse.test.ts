@@ -6,6 +6,7 @@ import {
   DEFAULT_ASK_MODE,
   DEFAULT_CAPABILITIES,
   DEFAULT_OLLAMA_KEEP_ALIVE,
+  DEFAULT_REPLY_VERBOSITY,
   DEFAULT_SCREENSHOT_ATTACHMENT_PRESET,
   DEFAULT_STRATEGY_SPOILER_MASKING_ENABLED,
   type DesktopAppLogLevel,
@@ -123,6 +124,13 @@ describe("settingsAndResponse", () => {
     expect(normalizeSettings({ ollama_keep_alive: "bogus" }).ollama_keep_alive).toBe(DEFAULT_OLLAMA_KEEP_ALIVE);
   });
 
+  it("normalizes reply_verbosity to short, balanced, or detailed", () => {
+    expect(normalizeSettings({ reply_verbosity: "short" }).reply_verbosity).toBe("short");
+    expect(normalizeSettings({ reply_verbosity: "detailed" }).reply_verbosity).toBe("detailed");
+    expect(normalizeSettings({ reply_verbosity: "bogus" }).reply_verbosity).toBe(DEFAULT_REPLY_VERBOSITY);
+    expect(normalizeSettings({}).reply_verbosity).toBe(DEFAULT_REPLY_VERBOSITY);
+  });
+
   it("normalizes ask_mode to allowed ids", () => {
     expect(normalizeSettings({ ask_mode: "expert" }).ask_mode).toBe("expert");
     expect(normalizeSettings({ ask_mode: "deep" }).ask_mode).toBe("expert");
@@ -226,6 +234,7 @@ describe("settingsAndResponse", () => {
       aiCharacterAccentIntensity: "balanced",
       askMode: "expert",
       ollamaKeepAlive: "30s",
+      replyVerbosity: "detailed",
       showDeveloperTab: true,
       modelPolicyTier: "open_weight",
       modelPolicyNonFossUnlocked: false,
@@ -253,6 +262,7 @@ describe("settingsAndResponse", () => {
     expect(p.ai_character_preset_id).toBe("preset-a");
     expect(p.ask_mode).toBe("expert");
     expect(p.ollama_keep_alive).toBe("30s");
+    expect(p.reply_verbosity).toBe("detailed");
     expect(p.model_allow_high_vram_fallbacks).toBe(true);
     expect(p.ollama_local_on_deck).toBe(true);
     expect(p.attach_proton_logs_when_troubleshooting).toBe(true);
@@ -286,6 +296,7 @@ describe("settingsAndResponse", () => {
       aiCharacterAccentIntensity: DEFAULT_AI_CHARACTER_ACCENT_INTENSITY,
       askMode: DEFAULT_ASK_MODE,
       ollamaKeepAlive: DEFAULT_OLLAMA_KEEP_ALIVE,
+      replyVerbosity: DEFAULT_REPLY_VERBOSITY,
       showDeveloperTab: false,
       modelPolicyTier: "open_source_only" as const,
       modelPolicyNonFossUnlocked: false,
@@ -426,6 +437,7 @@ describe("settingsAndResponse", () => {
       aiCharacterAccentIntensity: normalized.ai_character_accent_intensity,
       askMode: normalized.ask_mode,
       ollamaKeepAlive: normalized.ollama_keep_alive,
+      replyVerbosity: normalized.reply_verbosity,
       showDeveloperTab: normalized.show_developer_tab,
       modelPolicyTier: normalized.model_policy_tier,
       modelPolicyNonFossUnlocked: normalized.model_policy_non_foss_unlocked,

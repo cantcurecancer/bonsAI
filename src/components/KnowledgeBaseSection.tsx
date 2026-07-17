@@ -40,6 +40,7 @@ type Props = {
   onCompleteDeckyModalClose: (close: () => void) => void;
   toggleHostRef?: React.RefObject<HTMLDivElement | null>;
   downloadBtnRef?: React.RefObject<HTMLButtonElement | null>;
+  removeBtnRef?: React.RefObject<HTMLButtonElement | null>;
   onMoveUpToConnection?: () => boolean;
   onMoveDownFromRemove?: () => boolean;
 };
@@ -137,6 +138,7 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
   onCompleteDeckyModalClose,
   toggleHostRef,
   downloadBtnRef: downloadBtnRefProp,
+  removeBtnRef: removeBtnRefProp,
   onMoveUpToConnection,
   onMoveDownFromRemove,
 }) => {
@@ -423,7 +425,11 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
               <Focusable onOKButton={confirmRemove}>
                 <Button
                   ref={(el) => {
-                    removeBtnRef.current = el as HTMLButtonElement | null;
+                    const btn = el as HTMLButtonElement | null;
+                    removeBtnRef.current = btn;
+                    if (removeBtnRefProp) {
+                      removeBtnRefProp.current = btn;
+                    }
                   }}
                   className="bonsai-settings-focus-btn"
                   onClick={confirmRemove}
