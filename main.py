@@ -75,32 +75,11 @@ from backend.services.settings_service import (
     save_settings as save_settings_to_disk,
 )
 from backend.services.capabilities import capability_enabled
-from backend.services.chat_threads_service import (
-    append_turn as chat_append_turn,
-    create_thread as chat_create_thread,
-    delete_thread as chat_delete_thread,
-    ensure_thread as chat_ensure_thread,
-    find_thread_by_pending_request,
-    heuristic_thread_label,
-    list_thread_summaries,
-    load_thread as chat_load_thread,
-    parse_bundled_thread_title,
-    thread_to_rpc_payload,
-    update_thread_label,
-    update_thread_strategy_checklist,
-    wipe_all_threads,
-)
 from backend.services.desktop_note_service import (
     append_app_log_sync,
     append_desktop_ask_transparency_sync,
     append_desktop_chat_event_sync,
     append_desktop_debug_note_sync,
-    append_thread_chat_event_sync,
-    delete_thread_desktop_folder,
-    folder_size_bytes,
-    format_folder_size_label,
-    resolve_bonsai_chats_dir,
-    wipe_desktop_chat_exports,
 )
 from backend.services.input_sanitizer_service import (
     apply_input_sanitizer_lane,
@@ -175,10 +154,6 @@ from backend.services.rag_corpus_download_service import (
     remove_corpus_at_path,
     run_rag_corpus_download,
 )
-from backend.services.knowledge_base_service import (
-    session_rag_chip_candidates_to_rpc,
-    suggest_chip_candidates,
-)
 from backend.services.knowledge_base_schema import (
     CORPUS_MANIFEST_FILENAME,
     default_corpus_dir_internal,
@@ -190,10 +165,7 @@ from backend.services.knowledge_base_schema import (
 from refactor_helpers import (
     build_ollama_chat_url,
     is_valid_setup_pull_profile,
-    is_vision_capable_tag,
-    merge_pulled_tag,
     normalize_ollama_base,
-    remove_tag_from_routing_orders,
 )
 
 logger = decky.logger
@@ -266,7 +238,6 @@ class Plugin:
         self._settings_save_lock = asyncio.Lock()
         self._intent_pack_store_lock = asyncio.Lock()
         self._strategy_checklist_store_lock = asyncio.Lock()
-        self._chat_threads_store_lock = asyncio.Lock()
         self._rag_corpus_download_lock = asyncio.Lock()
         self._rag_corpus_download_task: Optional[asyncio.Task] = None
         self._rag_corpus_cancel_event: Optional[asyncio.Event] = None
@@ -446,9 +417,7 @@ class Plugin:
 
     def _publish_thinking_phase(self, request_id: int, summary: str) -> None:
         """Publish a deterministic prep-phase label without partial reply text."""
-        from backend.services.bonsai_stream_tags import sanitize_thinking_summary
-
-        text = sanitize_thinking_summary(summary or "")
+        text = (summary or "").strip()
         if not text:
             return
         self._update_partial_response(request_id, "", False, text[:240], update_partial=False)
@@ -626,110 +595,9 @@ class Plugin:
         return load_session_store(Plugin._strategy_checklist_session_path(), logger)
 
     @staticmethod
-    def _chat_threads_settings_dir() -> str:
-        return decky.DECKY_PLUGIN_SETTINGS_DIR
-
-    @staticmethod
-    def _parse_chat_thread_id(question: Any) -> str:
-        if isinstance(question, dict):
-            return str(question.get("chat_thread_id") or question.get("chatThreadId") or "").strip()
-        return ""
-
-    async def _chat_threads_record_user_turn(
-        self,
-        *,
-        thread_id: str,
-        question: str,
-        request_id: int,
-        attachments: list,
-        app_id: str,
-        app_name: str,
-    ) -> None:
-        tid = str(thread_id or "").strip()
-        if not tid or not str(question or "").strip():
-            return
-        plugin = Plugin._coerce_instance(self)
-        settings_dir = Plugin._chat_threads_settings_dir()
-        refs = [
-            {
-                "path": str(a.get("path", "") or ""),
-                "name": str(a.get("name", "") or ""),
-                "source": str(a.get("source", "unknown") or "unknown"),
-            }
-            for a in (attachments or [])
-            if isinstance(a, dict) and str(a.get("path", "") or "").strip()
-        ]
-
-        def _run() -> None:
-            chat_ensure_thread(
-                settings_dir,
-                tid,
-                origin_app_id=app_id,
-                first_question=question,
-                app_name=app_name,
-                logger=logger,
-            )
-            chat_append_turn(
-                settings_dir,
-                tid,
-                role="user",
-                text=question,
-                request_id=request_id,
-                attachment_refs=refs,
-                logger=logger,
-            )
-
-        async with plugin._chat_threads_store_lock:
-            await asyncio.to_thread(_run)
-
-    async def _chat_threads_record_assistant_turn(
-        self,
-        *,
-        request_id: int,
-        response_text: str,
-        label: str | None = None,
-    ) -> None:
-        if request_id is None:
-            return
-        plugin = Plugin._coerce_instance(self)
-        settings_dir = Plugin._chat_threads_settings_dir()
-        body = str(response_text or "").strip()
-        if not body:
-            return
-        settings = await plugin.load_settings()
-
-        def _run() -> None:
-            thread = find_thread_by_pending_request(settings_dir, int(request_id), logger)
-            if thread is None:
-                return
-            resolved_label = label
-            if resolved_label is None:
-                turns = thread.get("turns") or []
-                assistant_count = sum(
-                    1 for t in turns if isinstance(t, dict) and t.get("role") == "assistant"
-                )
-                if assistant_count == 0:
-                    if settings.get("dev_bundle_thread_title_in_reply"):
-                        bundled = parse_bundled_thread_title(body)
-                        if bundled:
-                            resolved_label = bundled
-            chat_append_turn(
-                settings_dir,
-                thread["id"],
-                role="assistant",
-                text=body,
-                request_id=int(request_id),
-                label=resolved_label,
-                logger=logger,
-            )
-
-        async with plugin._chat_threads_store_lock:
-            await asyncio.to_thread(_run)
-
-    @staticmethod
     def _parse_ask_payload(
         question: Any, PcIp: str
-    ) -> Tuple[str, str, str, str, list, str, bool, Optional[dict], Optional[dict]]:
+    ) -> Tuple[str, str, str, str, list, str, bool, Optional[dict]]:
         """Normalize ask payload variants into canonical question/ip/context values."""
         app_id = ""
         app_name = ""
@@ -737,7 +605,6 @@ class Plugin:
         ask_mode_raw: Any = None
         spoiler_consent_raw: Any = None
         checklist_state_raw: Any = None
-        reply_followup_raw: Any = None
         if isinstance(question, dict):
             payload = question
             question = payload.get("question", "")
@@ -750,15 +617,11 @@ class Plugin:
             checklist_state_raw = payload.get(
                 "strategy_checklist_state", payload.get("strategyChecklistState", checklist_state_raw)
             )
-            reply_followup_raw = payload.get("reply_followup", payload.get("replyFollowup", reply_followup_raw))
         normalized_question = str(question or "").strip()
         normalized_pc_ip = str(PcIp or "").strip()
         ask_mode = sanitize_ask_mode(ask_mode_raw, Plugin.VALID_ASK_MODES, Plugin.DEFAULT_ASK_MODE)
         spoiler_consent = Plugin._coerce_payload_bool(spoiler_consent_raw)
         strategy_checklist_state = normalize_ask_checklist_state(checklist_state_raw)
-        from backend.services.ollama_prompts import sanitize_reply_followup
-
-        reply_followup = sanitize_reply_followup(reply_followup_raw)
         return (
             normalized_question,
             normalized_pc_ip,
@@ -768,7 +631,6 @@ class Plugin:
             ask_mode,
             spoiler_consent,
             strategy_checklist_state,
-            reply_followup,
         )
 
     @staticmethod
@@ -899,13 +761,8 @@ class Plugin:
                 await plugin._stop_voice_transcription_internal()
             return saved
 
-    async def clear_plugin_data(self, payload: Any = None):
+    async def clear_plugin_data(self):
         """Remove persisted settings/runtime/logs and return fresh defaults (new-install behavior)."""
-        also_clear_desktop = False
-        if isinstance(payload, dict):
-            also_clear_desktop = payload.get("also_clear_desktop_chats") is True or payload.get(
-                "alsoClearDesktopChats"
-            ) is True
         plugin = Plugin._coerce_instance(self)
         plugin._ensure_background_state()
         async with plugin._background_lock:
@@ -973,10 +830,6 @@ class Plugin:
 
         cache_cleared = await asyncio.to_thread(wipe_bonsai_cache_dir, logger)
         journal_cleared = await asyncio.to_thread(wipe_proton_experiment_journal, logger)
-
-        if also_clear_desktop:
-            home = getattr(decky, "DECKY_USER_HOME", None) or decky.HOME
-            await asyncio.to_thread(wipe_desktop_chat_exports, home, include_legacy_daily=True)
 
         defaults, settings_removed = reset_plugin_disk_and_defaults(
             settings_path=Plugin._settings_path(),
@@ -1070,155 +923,6 @@ class Plugin:
                 merged = clear_session_entry(store, None)
             save_session_store(path, merged, settings_dir=decky.DECKY_PLUGIN_SETTINGS_DIR, logger=logger)
             return {"ok": True}
-
-    async def list_chat_threads(self):
-        """Return recent chat thread summaries (newest first)."""
-        settings_dir = Plugin._chat_threads_settings_dir()
-
-        def _run() -> list:
-            return list_thread_summaries(settings_dir, logger)
-
-        plugin = Plugin._coerce_instance(self)
-        async with plugin._chat_threads_store_lock:
-            rows = await asyncio.to_thread(_run)
-        return {"threads": rows}
-
-    async def get_chat_thread(self, thread_id: str = ""):
-        """Load one chat thread with full turn history."""
-        tid = str(thread_id or "").strip()
-        if not tid:
-            return {"ok": False, "error": "thread_id required"}
-        settings_dir = Plugin._chat_threads_settings_dir()
-
-        def _run():
-            thread = chat_load_thread(settings_dir, tid, logger)
-            if thread is None:
-                return None
-            return thread_to_rpc_payload(thread)
-
-        plugin = Plugin._coerce_instance(self)
-        async with plugin._chat_threads_store_lock:
-            thread = await asyncio.to_thread(_run)
-        if thread is None:
-            return {"ok": False, "error": "Thread not found"}
-        return {"ok": True, "thread": thread}
-
-    async def create_chat_thread(self, payload: Any = None):
-        """Create a new empty chat thread."""
-        body = payload if isinstance(payload, dict) else {}
-        settings_dir = Plugin._chat_threads_settings_dir()
-        origin_app_id = str(body.get("origin_app_id") or body.get("originAppId") or "").strip()
-        first_question = str(body.get("first_question") or body.get("firstQuestion") or "").strip()
-        app_name = str(body.get("app_name") or body.get("appName") or "").strip()
-        label = str(body.get("label") or "").strip()
-
-        def _run():
-            return chat_create_thread(
-                settings_dir,
-                label=label,
-                origin_app_id=origin_app_id,
-                first_question=first_question,
-                app_name=app_name,
-                logger=logger,
-            )
-
-        plugin = Plugin._coerce_instance(self)
-        async with plugin._chat_threads_store_lock:
-            thread = await asyncio.to_thread(_run)
-        return {"ok": True, "thread": thread_to_rpc_payload(thread)}
-
-    async def delete_chat_thread(self, thread_id: str = "", payload: Any = None):
-        """Delete a chat thread from private store and optional Desktop folder."""
-        tid = str(thread_id or "").strip()
-        if not tid and isinstance(payload, dict):
-            tid = str(payload.get("thread_id") or payload.get("threadId") or "").strip()
-        if not tid:
-            return {"ok": False, "error": "thread_id required"}
-        settings_dir = Plugin._chat_threads_settings_dir()
-        plugin = Plugin._coerce_instance(self)
-        settings = await plugin.load_settings()
-        delete_desktop = True
-        if isinstance(payload, dict) and payload.get("delete_desktop") is False:
-            delete_desktop = False
-
-        async with plugin._chat_threads_store_lock:
-            removed = await asyncio.to_thread(chat_delete_thread, settings_dir, tid, logger)
-
-        desktop_result = {"ok": True}
-        if removed and delete_desktop and capability_enabled(settings, "filesystem_write"):
-            home = getattr(decky, "DECKY_USER_HOME", None) or decky.HOME
-            desktop_result = await asyncio.to_thread(delete_thread_desktop_folder, home, tid)
-
-        return {"ok": bool(removed), "desktop": desktop_result}
-
-    async def save_chat_thread_strategy_checklist(self, payload: Any = None):
-        """Persist strategy checklist on the active chat thread."""
-        if not isinstance(payload, dict):
-            return {"ok": False, "error": "Invalid payload"}
-        tid = str(payload.get("thread_id") or payload.get("threadId") or "").strip()
-        if not tid:
-            return {"ok": False, "error": "thread_id required"}
-        settings_dir = Plugin._chat_threads_settings_dir()
-        checklist = payload.get("checklist") if "checklist" in payload else payload
-
-        def _run():
-            return update_thread_strategy_checklist(settings_dir, tid, checklist, logger)
-
-        plugin = Plugin._coerce_instance(self)
-        async with plugin._chat_threads_store_lock:
-            saved = await asyncio.to_thread(_run)
-        if saved is None:
-            return {"ok": False, "error": "Thread not found"}
-        return {"ok": True, "thread": thread_to_rpc_payload(saved)}
-
-    async def get_chat_threads_desktop_sizes(self):
-        """Return per-thread Desktop folder sizes and total for the chat picker."""
-        plugin = Plugin._coerce_instance(self)
-        settings = await plugin.load_settings()
-        if not capability_enabled(settings, "filesystem_write"):
-            return {"ok": True, "threads": [], "total_bytes": 0, "total_label": "—"}
-        home = getattr(decky, "DECKY_USER_HOME", None) or decky.HOME
-        settings_dir = Plugin._chat_threads_settings_dir()
-
-        def _run() -> dict:
-            summaries = list_thread_summaries(settings_dir, logger)
-            rows: list[dict] = []
-            total = 0
-            chats_root = resolve_bonsai_chats_dir(home)
-            for summary in summaries:
-                tid = str(summary.get("id", "") or "")
-                size = 0
-                if tid:
-                    try:
-                        folder = os.path.join(chats_root, tid)
-                        size = folder_size_bytes(folder)
-                    except (OSError, ValueError):
-                        size = 0
-                total += size
-                rows.append(
-                    {
-                        "id": tid,
-                        "size_bytes": size,
-                        "size_label": format_folder_size_label(size),
-                    }
-                )
-            return {
-                "threads": rows,
-                "total_bytes": total,
-                "total_label": format_folder_size_label(total),
-            }
-
-        result = await asyncio.to_thread(_run)
-        return {"ok": True, **result}
-
-    async def wipe_desktop_chat_exports_rpc(self):
-        """Remove Desktop chat export folders (second confirm after Clear all data)."""
-        plugin = Plugin._coerce_instance(self)
-        settings = await plugin.load_settings()
-        if not capability_enabled(settings, "filesystem_write"):
-            return {"ok": False, "error": "Filesystem writes are disabled."}
-        home = getattr(decky, "DECKY_USER_HOME", None) or decky.HOME
-        return await asyncio.to_thread(wipe_desktop_chat_exports, home, include_legacy_daily=True)
 
     @staticmethod
     def _proton_journal_path() -> str:
@@ -1732,23 +1436,6 @@ class Plugin:
             "storage_options": storage_options,
         }
 
-    async def get_session_rag_chip_candidates(
-        self,
-        app_id: str = "",
-        app_name: str = "",
-        shortcut_name: str = "",
-    ):
-        """Return curtailed KB-backed preset chip candidates for the running game (read-only)."""
-        plugin = Plugin._coerce_instance(self)
-        settings = await plugin.load_settings()
-        result = suggest_chip_candidates(
-            settings,
-            app_id=str(app_id or ""),
-            app_name=str(app_name or ""),
-            shortcut_name=str(shortcut_name or ""),
-        )
-        return session_rag_chip_candidates_to_rpc(result)
-
     async def start_rag_corpus_download(self, data: Any = None):
         """Download and install the knowledge base corpus (user-initiated; Model A consent)."""
         plugin = Plugin._coerce_instance(self)
@@ -2046,40 +1733,7 @@ class Plugin:
             "ollama rm succeeded",
             fields={"ok": True},
         )
-        settings = await plugin.load_settings()
-        updated = remove_tag_from_routing_orders(settings, t)
-        await plugin.save_settings(
-            {
-                "text_model_routing_order": updated.get("text_model_routing_order"),
-                "vision_model_routing_order": updated.get("vision_model_routing_order"),
-            }
-        )
         return {"ok": True, "removed": t, "error": ""}
-
-    async def merge_pulled_tags_into_routing_orders(self, tags: Any = None, size_gb_by_tag: Any = None):
-        """Merge newly pulled tags into text/vision routing orders (bottom or high-VRAM top)."""
-        plugin = Plugin._coerce_instance(self)
-        tag_list = normalize_ollama_pull_tags(tags)
-        if not tag_list:
-            return {"ok": False, "error": "no_tags"}
-        settings = await plugin.load_settings()
-        high_vram = settings.get("model_allow_high_vram_fallbacks") is True
-        text = list(settings.get("text_model_routing_order") or [])
-        vision = list(settings.get("vision_model_routing_order") or [])
-        sizes = size_gb_by_tag if isinstance(size_gb_by_tag, dict) else {}
-        for tag in tag_list:
-            raw_gb = sizes.get(tag)
-            gb = float(raw_gb) if isinstance(raw_gb, (int, float)) else None
-            text = merge_pulled_tag(text, tag, high_vram, size_gb=gb)
-            if is_vision_capable_tag(tag):
-                vision = merge_pulled_tag(vision, tag, high_vram, size_gb=gb)
-        saved = await plugin.save_settings(
-            {
-                "text_model_routing_order": text,
-                "vision_model_routing_order": vision,
-            }
-        )
-        return {"ok": True, "settings": saved}
 
     async def fetch_ollama_catalog_metadata(self, tags: Any = None):
         """Live sizes from registry.ollama.ai with offline fallback metadata."""
@@ -2201,7 +1855,7 @@ class Plugin:
         return {"success": False, "error": str(result.get("error", "Write failed."))}
 
     async def append_desktop_chat_event(self, payload: Any = None):
-        """Append Ask or AI response to per-thread Desktop folder (``bonsAI_chats/<id>/``)."""
+        """Append Ask or AI response lines to daily UTC chat file under ~/Desktop/bonsAI_logs/."""
         plugin = Plugin._coerce_instance(self)
         settings = await plugin.load_settings()
         if not capability_enabled(settings, "filesystem_write"):
@@ -2211,24 +1865,18 @@ class Plugin:
                 level="verbose",
             )
             return {"success": False, "error": "Filesystem writes are disabled. Enable them in the Permissions tab."}
-        if not settings.get("desktop_debug_note_auto_save"):
-            return {"success": False, "error": "Auto-save chat is disabled in Settings."}
         if not isinstance(payload, dict):
             return {"success": False, "error": "Invalid request."}
         event = str(payload.get("event", "") or "").strip().lower()
         question = str(payload.get("question", "") or "").strip()
         response_text = str(payload.get("response_text", "") or "").strip()
         screenshot_paths = payload.get("screenshot_paths")
-        thread_id = str(payload.get("thread_id") or payload.get("threadId") or "").strip()
-        if not thread_id:
-            return {"success": False, "error": "thread_id is required for chat autosave."}
         home = getattr(decky, "DECKY_USER_HOME", None) or decky.HOME
         loop = asyncio.get_running_loop()
 
         def _run() -> dict:
-            return append_thread_chat_event_sync(
+            return append_desktop_chat_event_sync(
                 home,
-                thread_id,
                 event,
                 question=question,
                 response_text=response_text,
@@ -2333,7 +1981,6 @@ class Plugin:
         meta: str,
         shortcut_setup_for_state: Any = _OMIT_SHORTCUT_SETUP_FIELD,
         shortcut_setup_for_response: Any = _OMIT_SHORTCUT_SETUP_FIELD,
-        chat_thread_id: str = "",
     ) -> dict:
         """Persist transparency, publish ``completed`` background state, and return the RPC body.
 
@@ -2391,21 +2038,6 @@ class Plugin:
         }
         if shortcut_setup_for_response is not _OMIT_SHORTCUT_SETUP_FIELD:
             out["shortcut_setup"] = shortcut_setup_for_response
-        tid = str(chat_thread_id or "").strip()
-        if tid:
-            q_for_thread = str(state_question or parsed_question or "").strip()
-            await plugin._chat_threads_record_user_turn(
-                thread_id=tid,
-                question=q_for_thread,
-                request_id=request_id,
-                attachments=[],
-                app_id=app_id,
-                app_name=app_name,
-            )
-            await plugin._chat_threads_record_assistant_turn(
-                request_id=request_id,
-                response_text=resp,
-            )
         return out
 
     async def get_input_transparency(self):
@@ -2422,14 +2054,7 @@ class Plugin:
             out["sysfs_writes"] = read_sandbox_sysfs_writes()
         return out
 
-    async def save_ask_feedback(
-        self,
-        rating: str,
-        request_id: int = 0,
-        question_len: int = 0,
-        success: bool = False,
-        chip_id: str = "",
-    ):
+    async def save_ask_feedback(self, rating: str, request_id: int = 0, question_len: int = 0, success: bool = False):
         """Persist thumbs up/down locally (JSONL under plugin settings); no network."""
         from backend.services.feedback_service import append_ask_feedback
 
@@ -2441,7 +2066,6 @@ class Plugin:
             rating=str(rating or ""),
             question_len=int(question_len or 0),
             success=success is True,
-            chip_id=str(chip_id or ""),
         )
 
     async def read_host_clipboard_text(self):
@@ -2546,7 +2170,6 @@ class Plugin:
         spoiler_consent: bool = False,
         token_stream_request_id: Optional[int] = None,
         strategy_checklist_state: Optional[dict] = None,
-        reply_followup: Optional[dict] = None,
     ) -> dict:
         """Run one full ask lifecycle, including Ollama call timing and optional TDP application."""
         plugin = Plugin._coerce_instance(self)
@@ -2561,13 +2184,12 @@ class Plugin:
             spoiler_consent=spoiler_consent,
             token_stream_request_id=token_stream_request_id,
             strategy_checklist_state=strategy_checklist_state,
-            reply_followup=reply_followup,
         )
 
     async def ask_game_ai(self, question: Any = "", PcIp: str = ""):
         """Handle foreground ask RPCs and validate required inputs before execution."""
         logger.info("ask_game_ai: RPC entry (arg type=%s)", type(question).__name__)
-        parsed_question, pc_ip, app_id, app_name, attachments, ask_mode, spoiler_consent, strategy_checklist_state, reply_followup = (
+        parsed_question, pc_ip, app_id, app_name, attachments, ask_mode, spoiler_consent, strategy_checklist_state = (
             Plugin._parse_ask_payload(question, PcIp)
         )
         if not parsed_question:
@@ -2598,7 +2220,6 @@ class Plugin:
             ask_mode=ask_mode,
             spoiler_consent=spoiler_consent,
             strategy_checklist_state=strategy_checklist_state,
-            reply_followup=reply_followup,
         )
 
     async def _run_background_request(
@@ -2612,7 +2233,6 @@ class Plugin:
         ask_mode: str = "speed",
         spoiler_consent: bool = False,
         strategy_checklist_state: Optional[dict] = None,
-        reply_followup: Optional[dict] = None,
     ) -> None:
         """Execute a queued background request and publish terminal status for polling clients."""
         try:
@@ -2626,7 +2246,6 @@ class Plugin:
                 spoiler_consent=spoiler_consent,
                 token_stream_request_id=request_id,
                 strategy_checklist_state=strategy_checklist_state,
-                reply_followup=reply_followup,
             )
         except asyncio.CancelledError:
             return
@@ -2670,12 +2289,6 @@ class Plugin:
                 "streaming": False,
             }
             self._clear_partial_stream_snapshot()
-        plugin_bg = Plugin._coerce_instance(self)
-        if terminal == "completed" and success:
-            await plugin_bg._chat_threads_record_assistant_turn(
-                request_id=request_id,
-                response_text=response_text,
-            )
         await self._maybe_app_log(
             "ask.background",
             f"background ask {terminal}",
@@ -2696,10 +2309,9 @@ class Plugin:
         plugin._ensure_background_state()
 
         logger.info("start_background_game_ai: RPC entry (arg type=%s)", type(question).__name__)
-        parsed_question, pc_ip, app_id, app_name, attachments, ask_mode, spoiler_consent, strategy_checklist_state, reply_followup = (
+        parsed_question, pc_ip, app_id, app_name, attachments, ask_mode, spoiler_consent, strategy_checklist_state = (
             Plugin._parse_ask_payload(question, PcIp)
         )
-        chat_thread_id = Plugin._parse_chat_thread_id(question)
         app_context = "active" if app_id else "none"
         if not parsed_question:
             return {
@@ -2783,7 +2395,6 @@ class Plugin:
                         sanitizer_reason_codes=[],
                         state_question="",
                         meta="sanitizer_keyword",
-                        chat_thread_id=chat_thread_id,
                     )
 
             if local_kinds.shortcut:
@@ -2805,7 +2416,6 @@ class Plugin:
                         meta="shortcut_setup",
                         shortcut_setup_for_state=variant,
                         shortcut_setup_for_response=variant,
-                        chat_thread_id=chat_thread_id,
                     )
 
             if local_kinds.vac:
@@ -2825,7 +2435,6 @@ class Plugin:
                         state_question=parsed_question,
                         meta="vac_check",
                         shortcut_setup_for_state=None,
-                        chat_thread_id=chat_thread_id,
                     )
 
             plugin._background_request_seq += 1
@@ -2862,18 +2471,8 @@ class Plugin:
                     ask_mode=ask_mode,
                     spoiler_consent=spoiler_consent,
                     strategy_checklist_state=strategy_checklist_state,
-                    reply_followup=reply_followup,
                 )
             )
-            if chat_thread_id:
-                await plugin._chat_threads_record_user_turn(
-                    thread_id=chat_thread_id,
-                    question=parsed_question,
-                    request_id=request_id,
-                    attachments=attachments,
-                    app_id=app_id,
-                    app_name=app_name,
-                )
             await plugin._maybe_app_log(
                 "ask.start",
                 "background ask pending",
@@ -3078,7 +2677,6 @@ class Plugin:
         strategy_spoiler_consent: bool = False,
         token_stream_request_id: Optional[int] = None,
         strategy_checklist_state: Optional[dict] = None,
-        preferred_model: Optional[str] = None,
     ):
         """Orchestrate attachment prep, prompt assembly, and model fallback request execution."""
         return await run_ask_ollama(
@@ -3098,7 +2696,6 @@ class Plugin:
             strategy_spoiler_consent=strategy_spoiler_consent,
             token_stream_request_id=token_stream_request_id,
             strategy_checklist_state=strategy_checklist_state,
-            preferred_model=preferred_model,
         )
 
     async def _stop_voice_transcription_internal(self) -> None:
