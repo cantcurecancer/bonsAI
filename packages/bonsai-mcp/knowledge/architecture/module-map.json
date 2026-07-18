@@ -2,12 +2,12 @@
   "hotspots": [
     {
       "path": "main.py",
-      "lines": 3298,
+      "lines": 2910,
       "role": "Decky RPC entrypoints and orchestration"
     },
     {
       "path": "src/index.tsx",
-      "lines": 2163,
+      "lines": 1982,
       "role": "Plugin root: tabs, scoped CSS, RPC wiring, Settings"
     },
     {
@@ -17,7 +17,7 @@
     },
     {
       "path": "src/hooks/useBonsaiAskOrchestration.ts",
-      "lines": 1266,
+      "lines": 1217,
       "role": ""
     },
     {
@@ -61,23 +61,13 @@
       "role": ""
     },
     {
-      "path": "src/components/SettingsTab.tsx",
-      "lines": 645,
-      "role": ""
-    },
-    {
       "path": "py_modules/backend/services/bonsai_stream_tags.py",
       "lines": 642,
       "role": ""
     },
     {
-      "path": "src/styles/sections/section-6.ts",
-      "lines": 641,
-      "role": ""
-    },
-    {
-      "path": "src/hooks/usePluginSettings.ts",
-      "lines": 606,
+      "path": "src/components/SettingsTab.tsx",
+      "lines": 590,
       "role": ""
     },
     {
@@ -86,8 +76,8 @@
       "role": "Prompt build, Ollama HTTP, streaming"
     },
     {
-      "path": "py_modules/backend/services/desktop_note_service.py",
-      "lines": 586,
+      "path": "src/hooks/usePluginSettings.ts",
+      "lines": 583,
       "role": ""
     },
     {
@@ -106,14 +96,14 @@
       "role": ""
     },
     {
-      "path": "py_modules/backend/services/settings_service.py",
-      "lines": 563,
-      "role": "Load/save/merge settings.json"
+      "path": "src/components/MainTabChatTranscript.tsx",
+      "lines": 555,
+      "role": ""
     },
     {
-      "path": "src/components/MainTabChatTranscript.tsx",
-      "lines": 522,
-      "role": ""
+      "path": "py_modules/backend/services/settings_service.py",
+      "lines": 542,
+      "role": "Load/save/merge settings.json"
     },
     {
       "path": "py_modules/backend/services/transparency_service.py",
@@ -121,18 +111,18 @@
       "role": ""
     },
     {
-      "path": "py_modules/backend/services/chat_threads_service.py",
-      "lines": 495,
-      "role": ""
-    },
-    {
-      "path": "src/data/bonsaiSettingsNormalizers.ts",
-      "lines": 494,
+      "path": "src/styles/sections/section-6.ts",
+      "lines": 498,
       "role": ""
     },
     {
       "path": "src/utils/settingsAndResponse.test.ts",
-      "lines": 484,
+      "lines": 478,
+      "role": ""
+    },
+    {
+      "path": "src/data/bonsaiSettingsNormalizers.ts",
+      "lines": 475,
       "role": ""
     },
     {
@@ -146,8 +136,13 @@
       "role": ""
     },
     {
+      "path": "py_modules/backend/services/desktop_note_service.py",
+      "lines": 432,
+      "role": ""
+    },
+    {
       "path": "src/components/DeveloperTab.tsx",
-      "lines": 436,
+      "lines": 422,
       "role": ""
     },
     {
@@ -198,6 +193,11 @@
     {
       "path": "py_modules/backend/services/rag_corpus_download_service.py",
       "lines": 342,
+      "role": ""
+    },
+    {
+      "path": "src/components/icons.tsx",
+      "lines": 331,
       "role": ""
     }
   ]

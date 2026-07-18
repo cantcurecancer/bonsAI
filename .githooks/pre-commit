@@ -1,0 +1,6 @@
+#!/usr/bin/env sh
+# Auto-regenerate + stage bonsai-mcp architecture JSON on every commit.
+# Enable once per clone: pnpm run mcp:install-hooks
+set -e
+cd "$(dirname "$0")/.."
+node packages/bonsai-mcp/scripts/sync-architecture-for-commit.mjs

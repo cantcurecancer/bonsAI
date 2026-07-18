@@ -671,5 +671,11 @@ pnpm run mcp:validate
 git add packages/bonsai-mcp/knowledge/architecture/
 ```
 
-Commit those JSON files with the code that changed them, then push. Optional local pre-push: `pnpm run mcp:install-hooks` (see [mcp-setup.md](mcp-setup.md)).
+Commit those JSON files with the code that changed them, then push. Prefer enabling local hooks so this is automatic:
+
+```bash
+pnpm run mcp:install-hooks
+```
+
+(`pre-commit` regenerates and stages architecture JSON; `pre-push` blocks stale pushes. See [mcp-setup.md](mcp-setup.md).)
 

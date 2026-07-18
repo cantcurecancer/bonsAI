@@ -132,11 +132,14 @@ Commit any changes under `packages/bonsai-mcp/knowledge/architecture/` in the **
 
 ### Prevent stale CI failures locally
 
-1. **Cursor** (repo hooks): editing `main.py` / `src/` / preview suite / `.env.example` auto-runs `mcp:generate`; `git push` is denied while snapshots are stale.
-2. **Git pre-push** (optional, once per clone):
+1. **Git hooks (recommended):** `pnpm run mcp:install-hooks` (also runs via `pnpm install` / `prepare`).  
+   - **pre-commit** regenerates and stages `packages/bonsai-mcp/knowledge/architecture/*.json` automatically.  
+   - **pre-push** runs `mcp:validate` and blocks the push if snapshots are still stale.
+2. **Cursor:** editing `main.py` / `src/` / preview suite / `.env.example` auto-runs `mcp:generate`; `git push` is denied while snapshots are stale.
+
+Manual check:
 
 ```bash
-pnpm run mcp:install-hooks
+pnpm run mcp:generate
+pnpm run mcp:validate
 ```
-
-That sets `core.hooksPath` to `.githooks` so `pre-push` runs `pnpm`-equivalent `mcp:validate` before every push.

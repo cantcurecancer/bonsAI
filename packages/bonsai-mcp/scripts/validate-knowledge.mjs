@@ -90,7 +90,9 @@ if (checkGenerated) {
       const stale = [];
       for (const name of requiredJson) {
         const rel = `packages/bonsai-mcp/knowledge/architecture/${name}`;
-        const diff = execSync(`git diff --name-only -- "${rel}"`, {
+        // Compare to HEAD (not the index): staged-but-uncommitted snapshots must still fail,
+        // matching what CI checks after a clean checkout.
+        const diff = execSync(`git diff HEAD --name-only -- "${rel}"`, {
           cwd: REPO_ROOT,
           encoding: "utf8",
         }).trim();
