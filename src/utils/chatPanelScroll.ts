@@ -3,10 +3,11 @@ export function findTabContentsScroll(anchor: HTMLElement | null): HTMLElement |
   return anchor?.closest('[class*="TabContentsScroll"]') as HTMLElement | null;
 }
 
-/** Prefer TabContentsScroll; fall back to first scrollable ancestor. */
+/** Prefer TabContentsScroll when it has scroll range; else nearest overflow ancestor. */
 export function findScrollablePanel(anchor: HTMLElement | null): HTMLElement | null {
   const tab = findTabContentsScroll(anchor);
-  if (tab) return tab;
+  if (tab && panelScrollMax(tab) > 0) return tab;
+
   let el: HTMLElement | null = anchor;
   while (el) {
     if (el.scrollHeight > el.clientHeight + 1) {
@@ -15,7 +16,32 @@ export function findScrollablePanel(anchor: HTMLElement | null): HTMLElement | n
     }
     el = el.parentElement;
   }
-  return null;
+  return tab;
+}
+
+/** Nudge scroll when TabContentsScroll grew with content (max=0) but content is clipped. */
+export function tryGeometryPanelScroll(
+  anchor: HTMLElement,
+  direction: "up" | "down",
+  stepPx = 120
+): boolean {
+  const scroll = findTabContentsScroll(anchor) ?? findScrollablePanel(anchor);
+  if (!scroll) return false;
+
+  const before = scroll.scrollTop;
+  if (panelScrollMax(scroll) > 0) {
+    return scrollTabContentsByStep(anchor, direction, stepPx);
+  }
+
+  const target =
+    direction === "down"
+      ? (anchor.closest(".bonsai-chat-ai-bubble") as HTMLElement | null) ?? anchor
+      : (scroll.firstElementChild as HTMLElement | null) ?? anchor;
+  target.scrollIntoView({
+    block: direction === "down" ? "end" : "start",
+    behavior: "auto",
+  });
+  return scroll.scrollTop !== before || panelScrollMax(scroll) > 0;
 }
 
 /** Max scroll offset for a scroll container. */
@@ -33,7 +59,9 @@ export function tryScrollPanelFromAnchor(
   const scroll = findScrollablePanel(anchor);
   if (!scroll) return false;
   const max = panelScrollMax(scroll);
-  if (max <= 0) return false;
+  if (max <= 0) {
+    return tryGeometryPanelScroll(anchor, direction, stepPx);
+  }
   if (direction === "down" && scroll.scrollTop >= max - 1) return false;
   if (direction === "up" && scroll.scrollTop <= 0) return false;
   const step = stepPx ?? Math.max(80, Math.floor(scroll.clientHeight * 0.35));

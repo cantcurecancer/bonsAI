@@ -1,5 +1,6 @@
 import { useLayoutEffect } from "react";
 import { TAB_STRIP_BODY_GAP_PX } from "../features/unified-input/constants";
+import { syncTabBodyViewportHeight } from "../utils/tabBodyViewport";
 
 const CRUSHED_SCOPE_MAX_PX = 160;
 const STRIP_BOTTOM_STABLE_MIN_PX = 48;
@@ -9,6 +10,7 @@ const SETTLE_MAX_ATTEMPTS = 16;
 /**
  * Decky Tabs on Bazzite gamescope can paint TabContentsScroll into the LB/RB strip.
  * Measure tab leaf bottoms vs tabs root and reserve space via `--bonsai-tab-strip-reserve`.
+ * When the strip row already occupies document flow, do not reserve strip height again.
  */
 export function useTabStripBodyOffset(scopeRef: React.RefObject<HTMLDivElement | null>): void {
   useLayoutEffect(() => {
@@ -40,13 +42,22 @@ export function useTabStripBodyOffset(scopeRef: React.RefObject<HTMLDivElement |
         return false;
       }
 
-      const reservePx = Math.ceil(stripBottomRel + TAB_STRIP_BODY_GAP_PX);
+      // Measure natural layout without our reserve so we do not double-count an in-flow strip row.
+      tabsRoot.style.setProperty("--bonsai-tab-strip-reserve", "0px");
+      void tabContents.offsetHeight;
+
+      const naturalContentTopRel = tabContents.getBoundingClientRect().top - tabsRootRect.top;
+      const overlapsStrip = naturalContentTopRel < stripBottomRel - 2;
+      const reservePx = overlapsStrip
+        ? Math.ceil(stripBottomRel + TAB_STRIP_BODY_GAP_PX)
+        : Math.max(0, TAB_STRIP_BODY_GAP_PX);
       tabsRoot.style.setProperty("--bonsai-tab-strip-reserve", `${reservePx}px`);
 
       if (stripStable) {
         scope.classList.add("bonsai-qam-strip-stable");
       }
 
+      syncTabBodyViewportHeight(scope);
       return true;
     };
 

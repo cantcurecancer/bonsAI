@@ -1,7 +1,10 @@
 import {
+  chunkHasContentAboveViewport,
+  chunkHasContentBelowViewport,
   findScrollablePanel,
   panelScrollMax,
   scrollTabContentsByStep,
+  tryGeometryPanelScroll,
 } from "./chatPanelScroll";
 import { resetAnswerBubbleChunkIndex } from "./answerBubbleNavRegistry";
 import {
@@ -97,6 +100,9 @@ export function panelStepDown(bubbleEl: HTMLElement): boolean {
     return scroll.scrollTop > before;
   }
   const max = panelScrollMax(scroll);
+  if (max <= 0 && chunkHasContentBelowViewport(bubbleEl, scroll)) {
+    return tryGeometryPanelScroll(bubbleEl, "down");
+  }
   if (before >= max - 2) return false;
   const step = Math.max(80, Math.floor(scroll.clientHeight * 0.35));
   scroll.scrollTop = Math.min(max, before + step);
@@ -106,8 +112,15 @@ export function panelStepDown(bubbleEl: HTMLElement): boolean {
 /** Scroll QAM panel up; true only when scrollTop decreases. */
 export function panelStepUp(bubbleEl: HTMLElement): boolean {
   const scroll = findScrollablePanel(bubbleEl);
-  if (!scroll || scroll.scrollTop <= 0) return false;
+  if (!scroll) return false;
   const before = scroll.scrollTop;
+  const max = panelScrollMax(scroll);
+  if (scroll.scrollTop <= 0) {
+    if (max <= 0 && chunkHasContentAboveViewport(bubbleEl, scroll)) {
+      return tryGeometryPanelScroll(bubbleEl, "up");
+    }
+    return false;
+  }
   if (scrollTabContentsByStep(bubbleEl, "up")) {
     return scroll.scrollTop < before;
   }
@@ -135,7 +148,9 @@ export function handleAnswerBubbleMoveDown(
   if (before < max - 2 && panelStepDown(bubble)) {
     return true;
   }
-
+  if (max <= 0 && chunkHasContentBelowViewport(bubble, scroll)) {
+    return tryGeometryPanelScroll(bubble, "down");
+  }
   return false;
 }
 
@@ -151,9 +166,5 @@ export function handleAnswerBubbleMoveUp(
   const scroll = findScrollablePanel(bubble);
   if (!scroll || scroll.scrollTop <= 0) return false;
 
-  if (panelStepUp(bubble)) {
-    return true;
-  }
-
-  return false;
+  return panelStepUp(bubble);
 }

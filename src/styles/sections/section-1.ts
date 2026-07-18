@@ -22,17 +22,32 @@ export function buildSection1Section(): string {
           min-height: 0 !important;
           box-sizing: border-box !important;
           overflow-x: clip !important;
+          overflow-y: hidden !important;
           display: flex !important;
           flex-direction: column !important;
-          flex: 1 1 auto !important;
+          flex: 1 1 0% !important;
+          align-self: stretch !important;
+        }
+
+        /* Decky Tabs host between strip and TabContentsScroll must shrink, not grow with content. */
+        .bonsai-scope .bonsai-decky-tabs-root > .Panel,
+        .bonsai-scope .bonsai-decky-tabs-root > div {
+          flex: 1 1 0% !important;
+          min-height: 0 !important;
+          min-width: 0 !important;
+          display: flex !important;
+          flex-direction: column !important;
+          overflow: hidden !important;
           align-self: stretch !important;
         }
 
         .bonsai-scope .bonsai-decky-tabs-root [class*="TabContentsScroll"] {
           position: relative !important;
           z-index: 1 !important;
-          flex: 1 1 auto !important;
+          flex: 1 1 0% !important;
           min-height: 0 !important;
+          max-height: 100% !important;
+          overflow-y: auto !important;
         }
 
         /* Chip margin only — do not fix DialogButton width (stacks carousel vertically on Bazzite mount). */

@@ -43,11 +43,14 @@ export function buildSection4Section(): string {
           overflow: hidden !important;
           display: grid !important;
           gap: 8px !important;
+          margin-top: 0 !important;
+          padding-top: 0 !important;
         }
 
         .bonsai-scope .bonsai-preset-row-host--fade-anim {
           gap: 3px !important;
           margin-bottom: 12px !important;
+          margin-top: 0 !important;
         }
 
         .bonsai-scope button.bonsai-preset-glass {

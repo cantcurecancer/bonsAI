@@ -55,23 +55,6 @@ const formatFreeGb = (bytes?: number): string => {
   return `~${Math.round(bytes / (1024 * 1024 * 1024))} GB free`;
 };
 
-// #region agent log
-const debugKbLog = (location: string, message: string, data: Record<string, unknown>, hypothesisId: string) => {
-  fetch("http://127.0.0.1:7548/ingest/455d5c32-fa64-45d1-b31c-f17b50f3371a", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "bb3082" },
-    body: JSON.stringify({
-      sessionId: "bb3082",
-      location,
-      message,
-      data,
-      hypothesisId,
-      timestamp: Date.now(),
-    }),
-  }).catch(() => {});
-};
-// #endregion
-
 type StoragePickerModalProps = {
   internal: RagStorageOption;
   sdCard: RagStorageOption | null | undefined;
@@ -169,19 +152,7 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
   }, []);
 
   const handleMoveUpFromToggle = useCallback((): boolean => {
-    const scrolled = tryMoveUpWithPanelScroll(toggleHost.current, () => onMoveUpToConnection?.() ?? false);
-    // #region agent log
-    debugKbLog(
-      "KnowledgeBaseSection.tsx:toggle:onMoveUp",
-      "KB toggle move up result",
-      {
-        scrolled,
-        scrollTop: toggleHost.current?.closest('[class*="TabContentsScroll"]')?.scrollTop ?? null,
-      },
-      "A",
-    );
-    // #endregion
-    return scrolled;
+    return tryMoveUpWithPanelScroll(toggleHost.current, () => onMoveUpToConnection?.() ?? false);
   }, [onMoveUpToConnection, toggleHost]);
 
   const refreshStatus = useCallback(async () => {
@@ -206,15 +177,7 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
         });
       }
       return st;
-    } catch (e: unknown) {
-      // #region agent log
-      debugKbLog(
-        "KnowledgeBaseSection.tsx:refreshStatus",
-        "get_rag_corpus_status failed",
-        { error: formatDeckyRpcError(e) },
-        "H",
-      );
-      // #endregion
+    } catch {
       setStatus(null);
       return null;
     }
@@ -247,14 +210,6 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
         [{ install_path: string; storage: string }],
         { accepted?: boolean; reason?: string }
       >("start_rag_corpus_download", [{ install_path: installPath, storage }], 15000);
-      // #region agent log
-      debugKbLog(
-        "KnowledgeBaseSection.tsx:startDownload",
-        "start_rag_corpus_download response",
-        { installPath, storage, out },
-        "H",
-      );
-      // #endregion
       if (!out?.accepted) {
         setDownloadBusy(false);
         toaster.toast({
@@ -272,9 +227,6 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
     } catch (e: unknown) {
       setDownloadBusy(false);
       const msg = formatDeckyRpcError(e);
-      // #region agent log
-      debugKbLog("KnowledgeBaseSection.tsx:startDownload", "RPC exception", { msg }, "H");
-      // #endregion
       toaster.toast({ title: "Download failed", body: msg, duration: 8000 });
     }
   };

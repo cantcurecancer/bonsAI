@@ -427,7 +427,7 @@ Maps [roadmap.md](roadmap.md) **Completed** summary and [archive/roadmap-complet
 | TDP-APPLY | TDP automation via AI JSON | SMOKE-B, Test #3–4, 6 | Verified | On-Deck PASS rows; [UNIT-B](test-evidence/preGate/2026-05-26-9e20a82/UNIT-B-pytest-sandbox-tdp/manifest.json); [preview 2026-05-26](test-evidence/preGate/2026-05-26-9e20a82/UNIT-B-pytest-sandbox-tdp/manifest.json) |
 | QAMP-BANNER | QAMP Phase 1 banner (safe default) | SMOKE-B, QAMP-CODE | Verified | Vitest 2026-04-26; on-Deck → Tier 3; [preview 2026-05-26](test-evidence/tier1Core/2026-05-26-9e20a82/SMOKE-B-tdp-8w-sandbox/manifest.json) |
 | QAMP-ONDECK | QAMP manual (profile/reboot) | QAMP-DECK-01…05 | Open | Tier 3 |
-| D-PAD-CHUNKS | D-pad response scrolling | SMOKE-A | Partial | [SMOKE-A focus path](test-evidence/tier0/2026-05-26-9e20a82/SMOKE-A-golden-path/manifest.json); [preview 2026-05-26](test-evidence/tier0/2026-05-26-9e20a82/SMOKE-A-golden-path/manifest.json) |
+| D-PAD-CHUNKS | D-pad response scrolling | SMOKE-A, D-PAD-SCROLL-01 | Partial | Viewport fix 2026-07-17 (`tabBodyViewport.ts`); on-Deck pass pending formal row; [SMOKE-A focus path](test-evidence/tier0/2026-05-26-9e20a82/SMOKE-A-golden-path/manifest.json) |
 | BG-ASK-V1 | Background prompt completion V1 | SMOKE-H, BG-* | Partial | SMOKE-H Tier 1; full matrix Tier 4; [preview 2026-05-26](test-evidence/tier1Core/2026-05-26-9e20a82/BG-ASK-reopen-status/manifest.json) |
 | THINKING-PHASE | Thinking phase copy polish (mid-Ask woven status) | THINKING-01, THINKING-02 | Open | `tests/test_bonsai_stream_tags.py`; on-Deck proton/TDP/screenshot paths |
 | THINKING-SARCASM | Always-sarcastic thinking blurb + visible during stream | THINKING-01, THINKING-03 | Open | `tests/test_bonsai_stream_tags.py`, `src/utils/composeThinkingBlurb.test.ts`; on-Deck streaming QA |
@@ -701,6 +701,10 @@ Requires **Settings → Data → Show Developer tab** → **Token streaming (exp
 Bazzite Game Mode only (gamescope session). Steam Deck regression: **SMOKE-A** tab strip still horizontal on open.
 
 - [x] **QAM-BAZZITE-01** Open bonsAI from QAM on first paint — full-width panel (not thin left strip); LB/RB icons horizontal; tab body below strip without overlap; pointer hover does not crush layout
+
+### D-pad tab scroll viewport (2026-07-17)
+
+- [x] **D-PAD-SCROLL-01** Main + Settings/Ollama: D-pad reaches bottom of long content and scrolls back up to LB/RB tab icons (regression for `TabContentsScroll` viewport fix)
 
 ---
 

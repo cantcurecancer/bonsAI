@@ -1,4 +1,4 @@
-import { BONSAI_PLUGIN_SIDE_PAD_PX, TAB_STRIP_BODY_GAP_PX } from "../../features/unified-input/constants";
+import { BONSAI_PLUGIN_SIDE_PAD_PX } from "../../features/unified-input/constants";
 import { uiScalePx } from "./uiScalePx";
 
 export function buildSection3Section(): string {
@@ -20,9 +20,16 @@ export function buildSection3Section(): string {
 
         /* After the global TabContentsScroll reset: gap under LB/RB strip + kill stray horizontal inset
            (Deck screenshots: SETTINGS body looked right-shifted vs panel edge). */
+        .bonsai-scope.bonsai-qam-height-locked .bonsai-decky-tabs-root [class*="TabContentsScroll"] {
+          height: var(--bonsai-tab-body-height, auto) !important;
+          max-height: var(--bonsai-tab-body-height, 100%) !important;
+          flex: 0 0 auto !important;
+          overflow-y: auto !important;
+        }
+
         .bonsai-scope .bonsai-decky-tabs-root [class*="TabContentsScroll"] {
-          margin-top: var(--bonsai-tab-strip-reserve, calc(52px + ${uiScalePx(TAB_STRIP_BODY_GAP_PX)})) !important;
-          padding-top: 6px !important;
+          margin-top: var(--bonsai-tab-strip-reserve, 0px) !important;
+          padding-top: 0 !important;
           position: relative !important;
           top: auto !important;
           margin-left: 0 !important;
@@ -30,8 +37,10 @@ export function buildSection3Section(): string {
           padding-left: ${uiScalePx(BONSAI_PLUGIN_SIDE_PAD_PX)} !important;
           padding-right: ${uiScalePx(BONSAI_PLUGIN_SIDE_PAD_PX)} !important;
           box-sizing: border-box !important;
-          flex: 1 1 auto !important;
+          flex: 1 1 0% !important;
           min-height: 0 !important;
+          max-height: 100% !important;
+          overflow-y: auto !important;
           align-self: stretch !important;
         }
 

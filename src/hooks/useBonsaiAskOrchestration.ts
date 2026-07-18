@@ -54,7 +54,7 @@ import { hasResponseAutosaved, markResponseAutosaved } from "../utils/desktopCha
 import { questionBypassesOllamaPcIpRequirement } from "../utils/localOnlyAskCommands";
 import { normalizePresetCarouselInject } from "../utils/presetCarouselInject";
 import type { InputTransparencyRpcResult, TransparencySnapshot } from "../utils/inputTransparency";
-import { composeThinkingBlurb } from "../utils/composeThinkingBlurb";
+import { composeThinkingBlurb, sanitizeThinkingSummary } from "../utils/composeThinkingBlurb";
 import { isPendingPlaceholderResponse } from "../utils/askThinkingPhases";
 import { useSmoothStreamReveal } from "./useSmoothStreamReveal";
 import {
@@ -337,7 +337,7 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
         setIsAsking(true);
         const pendingQuestion = (status.question || fallbackQuestion || "").trim();
         const runningName = Router.MainRunningApp?.display_name ?? "";
-        const thinking =
+        const rawThinking =
           typeof status.thinking_summary === "string" && status.thinking_summary.trim()
             ? status.thinking_summary.trim()
             : pendingQuestion
@@ -350,6 +350,7 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
                   characterPresetId: a.aiCharacterPresetId ?? null,
                 })
               : composeThinkingBlurb("your question", { requestId: status.request_id ?? 0 });
+        const thinking = sanitizeThinkingSummary(rawThinking);
         setThinkingSummary(thinking);
         const partial =
           status.streaming === true &&

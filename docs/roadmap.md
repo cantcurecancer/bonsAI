@@ -13,7 +13,6 @@ Active features, maintainer tasks, and **known defects**. *QAMP Phase 1 (safe de
 ### Bugs
 
 - ★ **Question Overlay Alignment Drift:** The 3-line question overlay has minor horizontal spacing mismatch vs native `TextField` internals.
-- ★★ **D-pad Scroll Bottom Cutoff:** Controller navigation can stop before the final response chunk is fully visible even when touch scroll can reach it.
 - ★★★ **Fullscreen picker D-pad edge-escape (audit):** Named chat picker ships edge escape (left from row → New chat; right from delete → Close). Audit **Pull Models**, **Character picker**, **Ollama models hub**, and other `showModal` pickers for the same below-list / above-list escape pattern.
 
 

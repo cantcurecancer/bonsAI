@@ -10,6 +10,7 @@ from typing import Any, Optional
 
 import decky
 
+from backend.services.bonsai_stream_tags import sanitize_thinking_summary
 from refactor_helpers import normalize_ollama_base
 
 logger = decky.logger
@@ -31,6 +32,7 @@ def _fetch_tiny_thinking_blurb(
     prompt = (
         "Write one short lightly sarcastic or playful pending-status line (under 100 chars, plain text, no markdown) "
         f"for someone waiting on an AI answer about: {snippet!r}{game_bit}. "
+        "Do not start with Yeah, Fine, Sure, Oh joy, or Right. "
         "Reply with only that line."
     )
     url = f"{base_http.rstrip('/')}/api/generate"
@@ -61,7 +63,7 @@ def _fetch_tiny_thinking_blurb(
     text = str(parsed.get("response") or "").strip().split("\n", 1)[0].strip()
     if not text:
         return None
-    return text[:_TINY_MAX_CHARS]
+    return sanitize_thinking_summary(text)[:_TINY_MAX_CHARS]
 
 
 def spawn_tiny_thinking_blurb(

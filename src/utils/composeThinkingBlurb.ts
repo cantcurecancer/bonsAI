@@ -19,6 +19,9 @@ const DEADPAN_PRESET_IDS = new Set([
 
 const EMOJI_ONLY_LINES = ["🙄", "😮‍💨", "🫠", "🌳"];
 
+const LAZY_THINKING_OPENER_RE =
+  /^\s*(?:yeah\b[,!?.\s—–-]*|fine\b[.\s—–-]*|sure\b[.\s—–-]*|oh joy\b[,!\s—–-]*|right\b[.\s—–-]*)/i;
+
 type ThinkingTone = "witty" | "deadpan";
 
 type WeaveBits = {
@@ -385,6 +388,17 @@ function intentPool(intent: ComposeIntent, tone: ThinkingTone, bits: WeaveBits):
   }
 }
 
+export function sanitizeThinkingSummary(text: string): string {
+  let raw = (text || "").trim();
+  if (!raw) return raw;
+  for (let i = 0; i < 3; i += 1) {
+    const next = raw.replace(LAZY_THINKING_OPENER_RE, "").trim();
+    if (next === raw) break;
+    raw = next;
+  }
+  return raw;
+}
+
 export function composeThinkingBlurb(question: string, opts: ComposeThinkingBlurbOptions = {}): string {
   const {
     appName = "",
@@ -400,5 +414,5 @@ export function composeThinkingBlurb(question: string, opts: ComposeThinkingBlur
   const tone = resolveThinkingTone(characterEnabled, characterPresetId);
   const intent = resolveComposeIntent(question, askMode, hasShot);
   const pool = intentPool(intent, tone, bits);
-  return pickTemplate(pool, requestId).slice(0, PHASE_MAX_LEN);
+  return sanitizeThinkingSummary(pickTemplate(pool, requestId).slice(0, PHASE_MAX_LEN));
 }

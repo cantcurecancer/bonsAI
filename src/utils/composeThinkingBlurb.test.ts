@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { composeThinkingBlurb, extractQuestionSnippet } from "./composeThinkingBlurb";
+import { composeThinkingBlurb, extractQuestionSnippet, sanitizeThinkingSummary } from "./composeThinkingBlurb";
 
-const BANNED_PREFIXES = [/^yeah,/i, /^fine\./i, /^sure\./i, /^oh joy/i, /^right\./i];
+const BANNED_PREFIXES = [/^yeah\b/i, /^fine\./i, /^sure\./i, /^oh joy/i, /^right\./i];
 
 function assertNoBannedPrefixes(text: string) {
   for (const re of BANNED_PREFIXES) {
@@ -94,5 +94,11 @@ describe("composeThinkingBlurb", () => {
     const hasTroubleshootLine = samples.some((s) => /log|proton|crash|wreckage/i.test(s));
     const hasEmojiOnly = samples.some((s) => ["🙄", "😮‍💨", "🫠", "🌳"].includes(s));
     expect(hasTroubleshootLine || hasEmojiOnly).toBe(true);
+  });
+
+  it("sanitizeThinkingSummary strips Yeah openers", () => {
+    expect(sanitizeThinkingSummary("Yeah, checking GPU")).toBe("checking GPU");
+    expect(sanitizeThinkingSummary("Yeah — another crisis")).toBe("another crisis");
+    expect(sanitizeThinkingSummary("Fine. Sure. Working")).toBe("Working");
   });
 });

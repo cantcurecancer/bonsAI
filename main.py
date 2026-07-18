@@ -442,7 +442,9 @@ class Plugin:
 
     def _publish_thinking_phase(self, request_id: int, summary: str) -> None:
         """Publish a deterministic prep-phase label without partial reply text."""
-        text = (summary or "").strip()
+        from backend.services.bonsai_stream_tags import sanitize_thinking_summary
+
+        text = sanitize_thinking_summary(summary or "")
         if not text:
             return
         self._update_partial_response(request_id, "", False, text[:240], update_partial=False)

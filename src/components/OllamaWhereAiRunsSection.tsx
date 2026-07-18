@@ -37,23 +37,6 @@ const LOCAL_LOOPBACK_CONNECTION_TEST_RPC_EXTRA_MS = 42000;
 const MDNS_DISCOVERY_TIMEOUT_SECONDS = 10;
 const MDNS_DISCOVERY_RPC_MS = 18_000;
 
-// #region agent log
-const debugOllamaNavLog = (location: string, message: string, data: Record<string, unknown>, hypothesisId: string) => {
-  fetch("http://127.0.0.1:7548/ingest/455d5c32-fa64-45d1-b31c-f17b50f3371a", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "bb3082" },
-    body: JSON.stringify({
-      sessionId: "bb3082",
-      location,
-      message,
-      data,
-      hypothesisId,
-      timestamp: Date.now(),
-    }),
-  }).catch(() => {});
-};
-// #endregion
-
 type MdnsOllamaHost = {
   label: string;
   host: string;
@@ -171,37 +154,11 @@ export const OllamaWhereAiRunsSection: React.FC<OllamaWhereAiRunsSectionProps> =
   }, []);
 
   const handleMoveUpFromConnection = useCallback((): boolean => {
-    const scrolled = tryMoveUpWithPanelScroll(ollamaIpConnectionNavRef.current, focusLocalToggle);
-    // #region agent log
-    debugOllamaNavLog(
-      "OllamaWhereAiRunsSection.tsx:connection:onMoveUp",
-      "Connection row move up",
-      {
-        scrolled,
-        scrollTop:
-          ollamaIpConnectionNavRef.current?.closest('[class*="TabContentsScroll"]')?.scrollTop ?? null,
-      },
-      "A",
-    );
-    // #endregion
-    return scrolled;
+    return tryMoveUpWithPanelScroll(ollamaIpConnectionNavRef.current, focusLocalToggle);
   }, [focusLocalToggle]);
 
   const handleMoveUpFromLocalToggle = useCallback((): boolean => {
-    const scrolled = tryMoveUpWithPanelScroll(ollamaLocalToggleNavRef.current);
-    // #region agent log
-    debugOllamaNavLog(
-      "OllamaWhereAiRunsSection.tsx:localToggle:onMoveUp",
-      "Local toggle move up (scroll to tab bar)",
-      {
-        scrolled,
-        scrollTop:
-          ollamaLocalToggleNavRef.current?.closest('[class*="TabContentsScroll"]')?.scrollTop ?? null,
-      },
-      "D",
-    );
-    // #endregion
-    return scrolled;
+    return tryMoveUpWithPanelScroll(ollamaLocalToggleNavRef.current);
   }, []);
 
   const [localInstallMenuOpen, setLocalInstallMenuOpen] = useState(

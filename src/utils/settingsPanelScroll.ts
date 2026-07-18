@@ -25,8 +25,12 @@ export function tryMoveUpWithPanelScroll(
   anchor: HTMLElement | null,
   focusPrev?: () => boolean,
 ): boolean {
-  if (focusPrev?.()) return true;
+  const scroll = findScrollablePanel(anchor);
+  const before = scroll?.scrollTop ?? 0;
+  if (scroll && before > 0 && tryScrollPanelFromAnchor(anchor, "up", 120)) {
+    return true;
+  }
   if (tryScrollPanelToTop(anchor)) return true;
-  if (tryScrollPanelFromAnchor(anchor, "up", 120)) return true;
+  if (focusPrev?.()) return true;
   return tryFocusActiveTabStrip(anchor);
 }

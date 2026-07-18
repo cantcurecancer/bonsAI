@@ -1,5 +1,6 @@
 """Tests for ``<bonsai-status>`` stream tag extraction."""
 
+import re
 import unittest
 
 from backend.services.bonsai_stream_tags import (
@@ -8,16 +9,20 @@ from backend.services.bonsai_stream_tags import (
     extract_bonsai_status,
     extract_question_snippet,
     format_thinking_phase,
+    sanitize_thinking_summary,
 )
 
-_BANNED_PREFIXES = ("yeah,", "fine.", "sure.", "oh joy", "right.")
+_BANNED_PREFIXES = ("yeah", "fine.", "sure.", "oh joy", "right.")
 _EMOJI_ONLY_LINES = ("🙄", "😮‍💨", "🫠", "🌳")
 
 
 def _assert_no_banned_prefixes(text: str) -> None:
     lowered = text.lower()
     for prefix in _BANNED_PREFIXES:
-        assert not lowered.startswith(prefix), f"unexpected prefix in {text!r}"
+        if prefix == "yeah":
+            assert not re.match(r"^\s*yeah\b", lowered), f"unexpected Yeah opener in {text!r}"
+        else:
+            assert not lowered.startswith(prefix), f"unexpected prefix in {text!r}"
     assert "🙄🔥" not in text
 
 
@@ -27,6 +32,17 @@ class BonsaiStreamTagsTests(unittest.TestCase):
         summary, stripped = extract_bonsai_status(raw)
         self.assertEqual(summary, "Checking GPU")
         self.assertEqual(stripped, "Hello there.")
+
+    def test_extract_strips_lazy_yeah_opener(self):
+        raw = "<bonsai-status>Yeah, checking GPU</bonsai-status>\n\nHello."
+        summary, stripped = extract_bonsai_status(raw)
+        self.assertEqual(summary, "checking GPU")
+        self.assertEqual(stripped, "Hello.")
+
+    def test_sanitize_thinking_summary_strips_yeah_variants(self):
+        self.assertEqual(sanitize_thinking_summary("Yeah, on it"), "on it")
+        self.assertEqual(sanitize_thinking_summary("Yeah — another crisis"), "another crisis")
+        self.assertEqual(sanitize_thinking_summary("Fine. Sure. Working"), "Working")
 
     def test_no_tag_passthrough(self):
         raw = "Plain answer."

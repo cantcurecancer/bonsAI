@@ -1,4 +1,5 @@
 import { useLayoutEffect, useRef } from "react";
+import { syncTabBodyViewportHeight } from "../utils/tabBodyViewport";
 
 const QAM_HOST_MIN_PX = 320;
 const QAM_HOST_MAX_PX = 1200;
@@ -43,7 +44,8 @@ function pinFlexColumn(el: HTMLElement, px: string): void {
 }
 
 function pinScopeChain(scope: HTMLElement, host: HTMLElement | null, px: string): void {
-  pinFlexColumn(scope, px);
+  scope.style.setProperty("--bonsai-qam-lock-height", px);
+  scope.classList.add("bonsai-qam-height-locked");
 
   const qamHost = scope.parentElement;
   if (qamHost?.classList.contains("decky-qam-scope")) {
@@ -97,6 +99,7 @@ export function useQamPanelHeightGuard(scopeRef: React.RefObject<HTMLDivElement 
       if (lockPx >= QAM_HOST_MIN_PX && (needsLock || layoutStable)) {
         pinScopeChain(scope, host, `${lockPx}px`);
       }
+      syncTabBodyViewportHeight(scope);
     };
 
     let raf = 0;
@@ -112,6 +115,13 @@ export function useQamPanelHeightGuard(scopeRef: React.RefObject<HTMLDivElement 
     applyLock();
     scheduleSettle();
 
+    const ro = new ResizeObserver(() => {
+      syncTabBodyViewportHeight(scope);
+    });
+    ro.observe(scope);
+    const tabContents = scope.querySelector('[class*="TabContentsScroll"]');
+    if (tabContents) ro.observe(tabContents);
+
     const onPointer = () => {
       cancelAnimationFrame(raf);
       raf = requestAnimationFrame(() => applyLock());
@@ -122,6 +132,7 @@ export function useQamPanelHeightGuard(scopeRef: React.RefObject<HTMLDivElement 
     return () => {
       cancelAnimationFrame(raf);
       cancelAnimationFrame(settleRaf);
+      ro.disconnect();
       scope.removeEventListener("pointerenter", onPointer);
       scope.removeEventListener("pointermove", onPointer);
     };

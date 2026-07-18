@@ -57,7 +57,7 @@ export const TAB_TITLE_ICON_PX = 26;
 /** Square shell around each tab icon; hit target / highlight alignment (slightly larger than icon). */
 export const TAB_TITLE_TAB_CELL_PX = 32;
 /** Space between the LB/RB tab strip and the scrollable tab panel below (QAM). */
-export const TAB_STRIP_BODY_GAP_PX = 14;
+export const TAB_STRIP_BODY_GAP_PX = 4;
 /** Horizontal inset (px) for tab body content inside the QAM plugin panel. */
 export const BONSAI_PLUGIN_SIDE_PAD_PX = 4;
 

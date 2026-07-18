@@ -41,6 +41,31 @@ _BONSAI_STATUS_RE = re.compile(
 _BONSAI_STATUS_OPEN = "<bonsai-status>"
 _BONSAI_STATUS_CLOSE = "</bonsai-status>"
 
+_LAZY_THINKING_OPENER_RE = re.compile(
+    r"^\s*(?:"
+    r"yeah\b[,!?.\s—–-]*"
+    r"|fine\b[.\s—–-]*"
+    r"|sure\b[.\s—–-]*"
+    r"|oh joy\b[,!\s—–-]*"
+    r"|right\b[.\s—–-]*"
+    r")",
+    re.IGNORECASE,
+)
+
+
+def sanitize_thinking_summary(text: str) -> str:
+    """Strip lazy sarcastic openers (Yeah/Fine/Sure/…) from any thinking blurb source."""
+    raw = (text or "").strip()
+    if not raw:
+        return raw
+    cleaned = raw
+    for _ in range(3):
+        next_text = _LAZY_THINKING_OPENER_RE.sub("", cleaned, count=1).strip()
+        if next_text == cleaned:
+            break
+        cleaned = next_text
+    return cleaned if cleaned else raw
+
 
 def _strip_incomplete_bonsai_status_open(raw: str) -> str:
     """Hide a still-streaming status tag from visible assistant text."""
@@ -59,7 +84,7 @@ def extract_bonsai_status(text: str) -> Tuple[Optional[str], str]:
     match = _BONSAI_STATUS_RE.search(raw)
     if not match:
         return None, _strip_incomplete_bonsai_status_open(raw)
-    summary = (match.group(1) or "").strip()
+    summary = sanitize_thinking_summary((match.group(1) or "").strip())
     stripped = _BONSAI_STATUS_RE.sub("", raw, count=1).lstrip()
     return (summary[:240] if summary else None), stripped
 

@@ -24,6 +24,17 @@ export function buildScopebaseSection(): string {
           overflow: hidden;
         }
 
+        /* Durable QAM height lock (inline height on scope is wiped by React/Decky re-renders). */
+        .bonsai-scope.bonsai-qam-height-locked {
+          height: var(--bonsai-qam-lock-height) !important;
+          min-height: var(--bonsai-qam-lock-height) !important;
+          max-height: var(--bonsai-qam-lock-height) !important;
+          display: flex !important;
+          flex-direction: column !important;
+          overflow: hidden !important;
+          box-sizing: border-box !important;
+        }
+
         /*
           Decky wraps plugin content in .decky-qam-scope. On Bazzite gamescope, pointer entry can
           collapse that host to tab-strip height (~80px); stretch it with the plugin column.
