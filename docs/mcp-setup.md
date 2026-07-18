@@ -121,8 +121,22 @@ Edit `claude_desktop_config.json`:
 
 All knowledge files are plain markdown under `packages/bonsai-mcp/knowledge/` and remain readable in git without MCP.
 
-Regenerate architecture JSON after RPC or structure changes:
+Regenerate architecture JSON after RPC or structure changes (`main.py`, `src/`, `tests/preview-suite/`, `.env.example`):
 
 ```bash
 pnpm run mcp:generate
+pnpm run mcp:validate
 ```
+
+Commit any changes under `packages/bonsai-mcp/knowledge/architecture/` in the **same** change set. CI workflow `validate-mcp.yml` fails the push/PR when those snapshots are stale.
+
+### Prevent stale CI failures locally
+
+1. **Cursor** (repo hooks): editing `main.py` / `src/` / preview suite / `.env.example` auto-runs `mcp:generate`; `git push` is denied while snapshots are stale.
+2. **Git pre-push** (optional, once per clone):
+
+```bash
+pnpm run mcp:install-hooks
+```
+
+That sets `core.hooksPath` to `.githooks` so `pre-push` runs `pnpm`-equivalent `mcp:validate` before every push.

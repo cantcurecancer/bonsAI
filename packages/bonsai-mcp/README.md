@@ -44,9 +44,11 @@ BONSAI_REPO_ROOT=/path/to/bonsAI node dist/index.js
 
 ```bash
 npm run generate   # regenerate knowledge/architecture/*.json
-npm run validate   # check frontmatter + required generated files
+npm run validate   # frontmatter + freshness (same gate as CI validate-mcp)
 ```
 
 From repo root: `pnpm run mcp:generate`, `pnpm run mcp:validate`, `pnpm run mcp:build`.
+
+After changing `main.py` / `src/` / preview suite / `.env.example`, regenerate and commit architecture JSON in the same change set (see [docs/mcp-setup.md](../../docs/mcp-setup.md)).
 
 See [docs/mcp-setup.md](../../docs/mcp-setup.md) for IDE configuration.

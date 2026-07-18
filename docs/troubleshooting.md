@@ -672,3 +672,15 @@ bonsAI uses [Decky Plugin Studio](https://github.com/qd313/decky-plugin-studio) 
 2. Open or update an issue/PR on [qd313/decky-plugin-studio](https://github.com/qd313/decky-plugin-studio).
 3. Do not permanently patch DPS behavior only inside bonsAI; sync the real fix upstream, then bump the VSIX / `mcp.json` pin.
 
+## GitHub Actions: `validate-mcp` fails on push
+
+Workflow [`.github/workflows/validate-mcp.yml`](../.github/workflows/validate-mcp.yml) regenerates `packages/bonsai-mcp/knowledge/architecture/*.json` and fails when the committed snapshots are stale (common after `main.py` / `src/` RPC or layout changes).
+
+```bash
+pnpm run mcp:generate
+pnpm run mcp:validate
+git add packages/bonsai-mcp/knowledge/architecture/
+```
+
+Commit those JSON files with the code that changed them, then push. Optional local pre-push: `pnpm run mcp:install-hooks` (see [mcp-setup.md](mcp-setup.md)).
+

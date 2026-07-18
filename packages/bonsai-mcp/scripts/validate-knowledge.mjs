@@ -1,6 +1,12 @@
 #!/usr/bin/env node
 /**
- * Validate knowledge/ frontmatter and optional generated-file freshness.
+ * Validate knowledge/ frontmatter and generated-file freshness.
+ *
+ * Freshness check runs when:
+ *   - `--check-generated` is passed (default for `pnpm run mcp:validate`), or
+ *   - `CI=true` (GitHub Actions / other CI)
+ *
+ * Skip with `--skip-generated-check` when you only need frontmatter validation.
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -10,7 +16,10 @@ import { execSync } from "node:child_process";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, "..", "..", "..");
 const KNOWLEDGE = path.join(__dirname, "..", "knowledge");
-const checkGenerated = process.argv.includes("--check-generated");
+const skipGenerated = process.argv.includes("--skip-generated-check");
+const checkGenerated =
+  !skipGenerated &&
+  (process.argv.includes("--check-generated") || process.env.CI === "true");
 
 let errors = 0;
 
@@ -51,7 +60,13 @@ for (const sub of ["policies", "workflows", "personas"]) {
 }
 
 const archDir = path.join(KNOWLEDGE, "architecture");
-const requiredJson = ["rpc-map.json", "module-map.json", "test-inventory.json", "preview-tiers.json", "env-vars.json"];
+const requiredJson = [
+  "rpc-map.json",
+  "module-map.json",
+  "test-inventory.json",
+  "preview-tiers.json",
+  "env-vars.json",
+];
 for (const name of requiredJson) {
   const p = path.join(archDir, name);
   if (!fs.existsSync(p)) {
@@ -65,17 +80,36 @@ if (checkGenerated) {
       cwd: path.join(REPO_ROOT, "packages", "bonsai-mcp"),
       stdio: "pipe",
     });
-    for (const name of requiredJson) {
-      const diff = execSync(`git diff --name-only -- "${path.join("packages/bonsai-mcp/knowledge/architecture", name)}"`, {
-        cwd: REPO_ROOT,
-        encoding: "utf8",
-      }).trim();
-      if (diff) {
-        fail(`Stale ${name} — run pnpm run mcp:generate and commit`);
+  } catch (e) {
+    const detail = e instanceof Error ? e.message : String(e);
+    fail(`Failed to regenerate architecture snapshots: ${detail}`);
+  }
+
+  if (errors === 0) {
+    try {
+      const stale = [];
+      for (const name of requiredJson) {
+        const rel = `packages/bonsai-mcp/knowledge/architecture/${name}`;
+        const diff = execSync(`git diff --name-only -- "${rel}"`, {
+          cwd: REPO_ROOT,
+          encoding: "utf8",
+        }).trim();
+        if (diff) stale.push(name);
+      }
+      if (stale.length) {
+        fail(
+          `Stale architecture JSON (${stale.join(", ")}) — run: pnpm run mcp:generate && git add packages/bonsai-mcp/knowledge/architecture/`,
+        );
+      }
+    } catch (e) {
+      const detail = e instanceof Error ? e.message : String(e);
+      // Outside a git work tree (e.g. some CI unpack paths), skip freshness.
+      if (/not a git repository/i.test(detail)) {
+        console.warn("validate-knowledge: skip freshness check (not a git repository)");
+      } else {
+        fail(`Architecture freshness check failed: ${detail}`);
       }
     }
-  } catch (e) {
-    // git may not be available or not a git repo — skip stale check
   }
 }
 

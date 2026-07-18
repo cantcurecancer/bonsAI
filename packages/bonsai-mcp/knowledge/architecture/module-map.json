@@ -2,22 +2,32 @@
   "hotspots": [
     {
       "path": "main.py",
-      "lines": 2563,
+      "lines": 3298,
       "role": "Decky RPC entrypoints and orchestration"
     },
     {
       "path": "src/index.tsx",
-      "lines": 1827,
+      "lines": 2163,
       "role": "Plugin root: tabs, scoped CSS, RPC wiring, Settings"
     },
     {
       "path": "py_modules/backend/services/voice_transcription_service.py",
-      "lines": 1129,
+      "lines": 1506,
+      "role": ""
+    },
+    {
+      "path": "src/hooks/useBonsaiAskOrchestration.ts",
+      "lines": 1266,
       "role": ""
     },
     {
       "path": "src/components/PullModelsModal.tsx",
       "lines": 1097,
+      "role": ""
+    },
+    {
+      "path": "src/components/OllamaWhereAiRunsSection.tsx",
+      "lines": 1051,
       "role": ""
     },
     {
@@ -31,18 +41,8 @@
       "role": ""
     },
     {
-      "path": "src/components/OllamaWhereAiRunsSection.tsx",
-      "lines": 1009,
-      "role": ""
-    },
-    {
       "path": "src/components/MainTabUnifiedAskBar.tsx",
       "lines": 1007,
-      "role": ""
-    },
-    {
-      "path": "src/hooks/useBonsaiAskOrchestration.ts",
-      "lines": 916,
       "role": ""
     },
     {
@@ -52,7 +52,7 @@
     },
     {
       "path": "py_modules/backend/services/ollama_prompts.py",
-      "lines": 727,
+      "lines": 868,
       "role": ""
     },
     {
@@ -61,8 +61,23 @@
       "role": ""
     },
     {
-      "path": "src/components/MainTabChatTranscript.tsx",
-      "lines": 634,
+      "path": "src/components/SettingsTab.tsx",
+      "lines": 645,
+      "role": ""
+    },
+    {
+      "path": "py_modules/backend/services/bonsai_stream_tags.py",
+      "lines": 642,
+      "role": ""
+    },
+    {
+      "path": "src/styles/sections/section-6.ts",
+      "lines": 641,
+      "role": ""
+    },
+    {
+      "path": "src/hooks/usePluginSettings.ts",
+      "lines": 606,
       "role": ""
     },
     {
@@ -71,38 +86,58 @@
       "role": "Prompt build, Ollama HTTP, streaming"
     },
     {
+      "path": "py_modules/backend/services/desktop_note_service.py",
+      "lines": 586,
+      "role": ""
+    },
+    {
+      "path": "py_modules/backend/services/game_ai_request.py",
+      "lines": 576,
+      "role": ""
+    },
+    {
       "path": "py_modules/backend/services/intent_pack_service.py",
       "lines": 575,
       "role": ""
     },
     {
-      "path": "src/components/SettingsTab.tsx",
-      "lines": 570,
-      "role": ""
-    },
-    {
-      "path": "src/styles/sections/section-6.ts",
-      "lines": 521,
-      "role": ""
-    },
-    {
-      "path": "src/hooks/usePluginSettings.ts",
-      "lines": 513,
+      "path": "py_modules/backend/services/knowledge_base_service.py",
+      "lines": 574,
       "role": ""
     },
     {
       "path": "py_modules/backend/services/settings_service.py",
-      "lines": 491,
+      "lines": 563,
       "role": "Load/save/merge settings.json"
     },
     {
-      "path": "src/styles/sections/gamepadAndPullModels.ts",
-      "lines": 448,
+      "path": "src/components/MainTabChatTranscript.tsx",
+      "lines": 522,
+      "role": ""
+    },
+    {
+      "path": "py_modules/backend/services/transparency_service.py",
+      "lines": 509,
+      "role": ""
+    },
+    {
+      "path": "py_modules/backend/services/chat_threads_service.py",
+      "lines": 495,
+      "role": ""
+    },
+    {
+      "path": "src/data/bonsaiSettingsNormalizers.ts",
+      "lines": 494,
       "role": ""
     },
     {
       "path": "src/utils/settingsAndResponse.test.ts",
-      "lines": 447,
+      "lines": 484,
+      "role": ""
+    },
+    {
+      "path": "src/styles/sections/gamepadAndPullModels.ts",
+      "lines": 448,
       "role": ""
     },
     {
@@ -111,23 +146,8 @@
       "role": ""
     },
     {
-      "path": "py_modules/backend/services/game_ai_request.py",
-      "lines": 441,
-      "role": ""
-    },
-    {
-      "path": "py_modules/backend/services/desktop_note_service.py",
-      "lines": 432,
-      "role": ""
-    },
-    {
-      "path": "src/data/bonsaiSettingsNormalizers.ts",
-      "lines": 432,
-      "role": ""
-    },
-    {
       "path": "src/components/DeveloperTab.tsx",
-      "lines": 422,
+      "lines": 436,
       "role": ""
     },
     {
@@ -136,8 +156,23 @@
       "role": ""
     },
     {
+      "path": "src/utils/composeThinkingBlurb.ts",
+      "lines": 419,
+      "role": ""
+    },
+    {
       "path": "src/components/deck/DeckFocusSlider.tsx",
       "lines": 416,
+      "role": ""
+    },
+    {
+      "path": "src/components/KnowledgeBaseSection.tsx",
+      "lines": 406,
+      "role": ""
+    },
+    {
+      "path": "src/components/OllamaTab.tsx",
+      "lines": 383,
       "role": ""
     },
     {
@@ -146,58 +181,23 @@
       "role": ""
     },
     {
+      "path": "py_modules/backend/services/ollama_ask_service.py",
+      "lines": 371,
+      "role": ""
+    },
+    {
       "path": "src/data/pullModelCatalog.ts",
       "lines": 370,
       "role": ""
     },
     {
-      "path": "py_modules/backend/services/ollama_ask_service.py",
-      "lines": 359,
+      "path": "py_modules/backend/services/voice_whisper_daemon.py",
+      "lines": 361,
       "role": ""
     },
     {
-      "path": "py_modules/backend/services/bonsai_stream_tags.py",
-      "lines": 349,
-      "role": ""
-    },
-    {
-      "path": "src/components/icons.tsx",
-      "lines": 331,
-      "role": ""
-    },
-    {
-      "path": "src/components/SettingsTabConnectionTimeoutSlider.tsx",
-      "lines": 330,
-      "role": ""
-    },
-    {
-      "path": "py_modules/backend/services/strategy_guide_parse.py",
-      "lines": 303,
-      "role": ""
-    },
-    {
-      "path": "src/data/settingsDatabase.ts",
-      "lines": 254,
-      "role": ""
-    },
-    {
-      "path": "src/test-harness/fakeDeckyRpc.ts",
-      "lines": 248,
-      "role": ""
-    },
-    {
-      "path": "py_modules/backend/services/transparency_service.py",
-      "lines": 246,
-      "role": ""
-    },
-    {
-      "path": "py_modules/backend/services/steam_vac_service.py",
-      "lines": 245,
-      "role": ""
-    },
-    {
-      "path": "src/components/OllamaTab.tsx",
-      "lines": 245,
+      "path": "py_modules/backend/services/rag_corpus_download_service.py",
+      "lines": 342,
       "role": ""
     }
   ]

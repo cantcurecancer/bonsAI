@@ -1,0 +1,6 @@
+#!/usr/bin/env sh
+# Block push when bonsai-mcp architecture snapshots are stale vs main.py / src / etc.
+# Enable once per clone: git config core.hooksPath .githooks
+set -e
+cd "$(dirname "$0")/.."
+node packages/bonsai-mcp/scripts/validate-knowledge.mjs --check-generated

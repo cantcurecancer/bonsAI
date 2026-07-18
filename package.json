@@ -20,7 +20,8 @@
     "mcp:install": "npm install --prefix packages/bonsai-mcp",
     "mcp:generate": "node packages/bonsai-mcp/scripts/generate-architecture.mjs",
     "mcp:build": "npm run build --prefix packages/bonsai-mcp",
-    "mcp:validate": "node packages/bonsai-mcp/scripts/validate-knowledge.mjs"
+    "mcp:validate": "node packages/bonsai-mcp/scripts/validate-knowledge.mjs --check-generated",
+    "mcp:install-hooks": "git config core.hooksPath .githooks"
   },
   "repository": {
     "type": "git",
