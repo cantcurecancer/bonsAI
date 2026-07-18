@@ -267,23 +267,6 @@ DEFAULT_OLLAMA_KEEP_ALIVE = "5m"
 REPLY_VERBOSITY_OPTIONS = frozenset({"short", "balanced", "detailed"})
 DEFAULT_REPLY_VERBOSITY = "balanced"
 
-CHAT_IDLE_TIMEOUT_OPTIONS = frozenset({5, 15, 30, 60})
-DEFAULT_CHAT_IDLE_TIMEOUT_MINUTES = 15
-
-
-def sanitize_chat_idle_timeout_minutes(value: Any) -> int:
-    try:
-        parsed = int(value)
-    except (TypeError, ValueError):
-        return DEFAULT_CHAT_IDLE_TIMEOUT_MINUTES
-    if parsed in CHAT_IDLE_TIMEOUT_OPTIONS:
-        return parsed
-    return DEFAULT_CHAT_IDLE_TIMEOUT_MINUTES
-
-
-def sanitize_dev_bundle_thread_title_in_reply(value: Any) -> bool:
-    return value is True
-
 
 def sanitize_reply_verbosity(value: Any) -> str:
     """Validate global reply prose style; balanced = no verbosity inject."""
@@ -506,10 +489,6 @@ def sanitize_settings(
         "use_local_knowledge_base": sanitize_use_local_knowledge_base(raw.get("use_local_knowledge_base")),
         "rag_corpus_path": sanitize_rag_corpus_path(raw.get("rag_corpus_path")),
         "rag_corpus_version": sanitize_rag_corpus_version(raw.get("rag_corpus_version")),
-        "chat_idle_timeout_minutes": sanitize_chat_idle_timeout_minutes(raw.get("chat_idle_timeout_minutes")),
-        "dev_bundle_thread_title_in_reply": sanitize_dev_bundle_thread_title_in_reply(
-            raw.get("dev_bundle_thread_title_in_reply")
-        ),
     }
 
 

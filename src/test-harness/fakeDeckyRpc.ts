@@ -44,13 +44,6 @@ export const FRONTEND_RPC_METHODS = [
   "get_strategy_checklist_session",
   "save_strategy_checklist_session",
   "clear_strategy_checklist_session",
-  "list_chat_threads",
-  "get_chat_thread",
-  "create_chat_thread",
-  "delete_chat_thread",
-  "save_chat_thread_strategy_checklist",
-  "get_chat_threads_desktop_sizes",
-  "wipe_desktop_chat_exports_rpc",
 ] as const;
 
 export type FrontendRpcMethod = (typeof FRONTEND_RPC_METHODS)[number];
@@ -214,28 +207,6 @@ function defaultHandlers(): Record<string, RpcHandler> {
     get_strategy_checklist_session: () => null,
     save_strategy_checklist_session: () => ({ ok: true }),
     clear_strategy_checklist_session: () => ({ ok: true }),
-    list_chat_threads: () => ({ threads: [] }),
-    get_chat_thread: () => ({ ok: false, error: "not found" }),
-    create_chat_thread: () => ({
-      ok: true,
-      thread: {
-        id: "preview-thread",
-        label: "Preview chat",
-        created_at: 0,
-        updated_at: 0,
-        origin_app_id: "",
-        turns: [],
-      },
-    }),
-    delete_chat_thread: () => ({ ok: true }),
-    save_chat_thread_strategy_checklist: () => ({ ok: true }),
-    get_chat_threads_desktop_sizes: () => ({
-      ok: true,
-      threads: [],
-      total_bytes: 0,
-      total_label: "—",
-    }),
-    wipe_desktop_chat_exports_rpc: () => ({ ok: true }),
   };
 }
 

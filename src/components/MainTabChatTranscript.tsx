@@ -19,7 +19,8 @@ import { isPendingPlaceholderResponse } from "../utils/askThinkingPhases";
 import { BonsaiChatSecondaryButton } from "./BonsaiChatSecondaryButton";
 import { buildReplyActionsElement } from "../utils/buildReplyActionsElement";
 import { buildAnswerBubbleElement } from "../utils/buildAnswerBubbleElement";
-import { buildUserBubbleElement } from "../utils/buildUserBubbleElement";
+import { buildTurnHeaderElement } from "../utils/buildTurnHeaderElement";
+import { buildCollapsedTurnTitle } from "../utils/chatTurnTitle";
 import { ContextChipLadder } from "./ContextChipLadder";
 import { SessionContextStrip } from "./SessionContextStrip";
 import { chipsFromSnapshot } from "../utils/contextChipsFromSnapshot";
@@ -82,7 +83,6 @@ export type MainTabChatTranscriptProps = {
   liveReplyChipUsed?: boolean;
   liveReplyChipError?: string | null;
   askMode: AskModeId;
-  transcriptFocusRef?: React.RefObject<HTMLDivElement | null>;
 };
 
 export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
@@ -116,7 +116,6 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
     streamDisplayText = "",
     thinkingSummary = null,
     desktopAskVerboseLogging = false,
-    lastRequestId = null,
     lastExchange = null,
     onRetryLastResponse,
     liveReplyFeedbackRating = null,
@@ -125,7 +124,6 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
     liveReplyChipUsed = false,
     liveReplyChipError = null,
     askMode,
-    transcriptFocusRef,
   } = props;
 
   const [diagnosticsOpen, setDiagnosticsOpen] = useState(false);
@@ -226,10 +224,7 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
 {(askThreadCollapsed.length > 0 || showLiveTurn) && (
   <PanelSectionRow>
     <div
-      ref={(el) => {
-        chatMainColumnRef.current = el;
-        if (transcriptFocusRef) transcriptFocusRef.current = el;
-      }}
+      ref={chatMainColumnRef}
       className="bonsai-chat-main-column"
       style={{
         width: "100%",
@@ -245,24 +240,59 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
           <Focusable
             key={turn.id}
             flow-children="vertical"
-            className="bonsai-chat-turn-slot bonsai-chat-turn-slot--bubbles"
+            className="bonsai-chat-turn-slot"
           >
-            {buildUserBubbleElement({
-              question: turn.question,
-              turnKey: turn.id,
-              variant: "history",
+            {buildTurnHeaderElement({
+              turnId: turn.id,
+              title: buildCollapsedTurnTitle(turn.question),
+              expanded: expandedTurnKey === turn.id,
+              onActivate: () => onTurnActivate?.(turn.id),
             })}
-            {renderAnswerBubble(turn.answer, false, turn.id)}
+            {expandedTurnKey === turn.id ? (
+              <>
+                {renderAnswerBubble(turn.answer, false, turn.id)}
+                {turn.transparency && chipsFromSnapshot(turn.transparency).length > 0 ? (
+                  <Focusable
+                    style={{ maxWidth: BONSAI_CHAT_AI_MAX_WIDTH_CSS, marginTop: 8 }}
+                    onActivate={() => setSessionHighlightTurnId(turn.id)}
+                    onButtonDown={() => {
+                      setSessionHighlightTurnId(turn.id);
+                      return true;
+                    }}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setSessionHighlightTurnId(turn.id)}
+                      style={{
+                        background: "none",
+                        border: "none",
+                        padding: 0,
+                        color: "#7dd3fc",
+                        fontSize: 11,
+                        textDecoration: "underline",
+                        cursor: "pointer",
+                        font: "inherit",
+                      }}
+                    >
+                      Context used · view in session context ↓
+                    </button>
+                  </Focusable>
+                ) : null}
+              </>
+            ) : null}
           </Focusable>
         ))}
         {showLiveTurn ? (
-          <Focusable key="live" flow-children="vertical" className="bonsai-chat-turn-slot bonsai-chat-turn-slot--bubbles">
-            {buildUserBubbleElement({
-              question: liveQuestion || "…",
-              turnKey: "live-q",
-              variant: "latest",
+          <Focusable key="live" flow-children="vertical" className="bonsai-chat-turn-slot">
+            {buildTurnHeaderElement({
+              turnId: "live",
+              variant: "live",
+              title: buildCollapsedTurnTitle(liveQuestion) || "…",
+              expanded: expandedTurnKey === "live",
+              isStreaming: isStreamingPreview,
+              onActivate: () => onTurnActivate?.("live"),
             })}
-            {isAsking && thinkingSummary ? (
+            {expandedTurnKey === "live" && isAsking && thinkingSummary ? (
               <div
                 className="bonsai-chat-status-line bonsai-chat-thinking-line"
                 style={{
@@ -280,8 +310,11 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
                 {thinkingSummary}
               </div>
             ) : null}
-            {showLiveResponse ? renderAnswerBubble(liveResponseBody, isStreamingPreview, "live") : null}
-            {!isAsking &&
+            {expandedTurnKey === "live" && showLiveResponse
+              ? renderAnswerBubble(liveResponseBody, isStreamingPreview, "live")
+              : null}
+            {expandedTurnKey === "live" &&
+            !isAsking &&
             (lastExchange?.answer?.trim() || onRetryLastResponse)
               ? buildReplyActionsElement({
                   replyKey: "live",

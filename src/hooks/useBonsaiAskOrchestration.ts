@@ -71,21 +71,6 @@ import {
 import { startAskCompletionWatch, stopAskCompletionWatch } from "../utils/bonsaiAskCompletionWatch";
 import { fetchSessionRagChipCandidates } from "../utils/sessionRagChipCandidates";
 
-export type ChatThreadsBridge = {
-  getActiveThreadId: () => string | null;
-  ensureThreadForAsk: (question: string) => Promise<string | null>;
-  bindRequestToThread: (requestId: number, threadId: string) => void;
-  resolveThreadForRequest: (requestId: number) => string | null;
-  touchActivity: () => void;
-  reloadActiveThread: () => Promise<void>;
-  saveChecklistToThread: (state: StrategyChecklistState) => Promise<void>;
-  clearActiveUiOnly: () => void;
-  hydrateThreadTranscript: (thread: {
-    pairs: { id: string; question: string; answer: string }[];
-    checklist: StrategyChecklistState | null;
-  }) => void;
-};
-
 export type { AskThreadExpandedTurnKey } from "../types/bonsaiUi";
 
 function initialExpandedTurnKeyFromSurvival(): AskThreadExpandedTurnKey {
@@ -126,7 +111,6 @@ export type UseBonsaiAskOrchestrationArgs = {
   aiCharacterEnabled?: boolean;
   aiCharacterPresetId?: string | null;
   useLocalKnowledgeBase?: boolean;
-  chatThreads?: ChatThreadsBridge;
 };
 
 export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
@@ -148,11 +132,6 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
   useEffect(() => {
     strategyChecklistRef.current = strategyChecklist;
   }, [strategyChecklist]);
-
-  const chatThreadsRef = useRef(a.chatThreads);
-  useEffect(() => {
-    chatThreadsRef.current = a.chatThreads;
-  }, [a.chatThreads]);
 
   const [modelPolicyDisclosure, setModelPolicyDisclosure] = useState<ModelPolicyDisclosurePayload | null>(
     () => survivalPeek?.modelPolicyDisclosure ?? null
@@ -183,7 +162,6 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
   }, [lastExchange?.question, lastExchange?.answer]);
 
   const hydrateStrategyChecklistFromDisk = useCallback(async (appId: string) => {
-    if (chatThreadsRef.current?.getActiveThreadId()) return;
     runningAppIdRef.current = appId;
     try {
       const loaded = await loadStrategyChecklistSession(appId);
@@ -216,11 +194,9 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
     const prev = prevAskModeRef.current;
     prevAskModeRef.current = a.askMode;
     if (prev === "strategy" && a.askMode !== "strategy") {
+      const appId = Router.MainRunningApp?.appid?.toString() ?? "";
       setStrategyChecklist(null);
-      if (!chatThreadsRef.current?.getActiveThreadId()) {
-        const appId = Router.MainRunningApp?.appid?.toString() ?? "";
-        void clearStrategyChecklistSession(appId).catch(() => {});
-      }
+      void clearStrategyChecklistSession(appId).catch(() => {});
     }
   }, [a.askMode]);
   const pendingArchiveTurnRef = useRef<{
@@ -561,33 +537,22 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
                 appName: Router.MainRunningApp?.display_name ?? "",
               });
               setStrategyChecklist(merged);
-              const ct = chatThreadsRef.current;
-              if (ct?.getActiveThreadId()) {
-                void ct.saveChecklistToThread(merged).catch(() => {});
-              } else {
-                scheduleStrategyChecklistSessionSave(merged);
-              }
+              scheduleStrategyChecklistSessionSave(merged);
             }
 
             const { autoSave, fsWrite } = desktopAutoSavePrefsRef.current;
             const rid = status.request_id;
             if (autoSave && fsWrite && rid != null && typeof rid === "number" && !hasResponseAutosaved(rid)) {
-              const autosaveThreadId =
-                chatThreadsRef.current?.resolveThreadForRequest(rid) ??
-                chatThreadsRef.current?.getActiveThreadId();
-              if (autosaveThreadId) {
-                void callDeckyWithTimeout<[AppendDesktopChatEventPayload], AppendDesktopNoteResult>(
-                  "append_desktop_chat_event",
-                  [{ event: "response", response_text: answer, question: q, thread_id: autosaveThreadId }],
-                  DECKY_RPC_TIMEOUT_MS,
-                )
-                  .then((result) => {
-                    if (result.success) markResponseAutosaved(rid);
-                  })
-                  .catch(() => {});
-              }
+              void callDeckyWithTimeout<[AppendDesktopChatEventPayload], AppendDesktopNoteResult>(
+                "append_desktop_chat_event",
+                [{ event: "response", response_text: answer, question: q }],
+                DECKY_RPC_TIMEOUT_MS,
+              )
+                .then((result) => {
+                  if (result.success) markResponseAutosaved(rid);
+                })
+                .catch(() => {});
             }
-            void chatThreadsRef.current?.reloadActiveThread().catch(() => {});
           } else {
             setLastExchange(null);
             setStrategyGuideBranches(null);
@@ -799,12 +764,9 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
       const appId = runningApp?.appid?.toString() ?? "";
       const appName = runningApp?.display_name ?? "";
 
-      chatThreadsRef.current?.touchActivity();
-      const threadId = (await chatThreadsRef.current?.ensureThreadForAsk(q)) ?? null;
-
       const isStrategyFirstTurn =
         askModeForRequest === "strategy" && !q.trim().startsWith(STRATEGY_FOLLOWUP_PREFIX);
-      if (isStrategyFirstTurn && !chatThreadsRef.current?.getActiveThreadId()) {
+      if (isStrategyFirstTurn) {
         setStrategyChecklist(null);
         strategyChecklistRef.current = null;
         void clearStrategyChecklistSession(appId).catch(() => {});
@@ -874,17 +836,12 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
                 },
               }
             : {}),
-          ...(threadId ? { chat_thread_id: threadId } : {}),
           ...(askModeForRequest === "strategy" && !isStrategyFirstTurn && strategyChecklistRef.current
             ? { strategy_checklist_state: strategyChecklistToAskPayload(strategyChecklistRef.current) }
             : {}),
         });
 
         if (!isRequestActive(seq)) return;
-
-        if (threadId && typeof data.request_id === "number") {
-          chatThreadsRef.current?.bindRequestToThread(data.request_id, threadId);
-        }
 
         if (data.status === "invalid") {
           setIsAsking(false);
@@ -976,11 +933,11 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
           setOllamaResponse(data.response ?? "A request is already in progress.");
         }
 
-        if (data.status === "pending" && a.desktopDebugNoteAutoSave && a.filesystemWrite && threadId) {
+        if (data.status === "pending" && a.desktopDebugNoteAutoSave && a.filesystemWrite) {
           const screenshotPaths = attachments.map((at) => at.path).filter((p) => p.trim().length > 0);
           void callDeckyWithTimeout<[AppendDesktopChatEventPayload], AppendDesktopNoteResult>(
             "append_desktop_chat_event",
-            [{ event: "ask", question: q, screenshot_paths: screenshotPaths, thread_id: threadId }],
+            [{ event: "ask", question: q, screenshot_paths: screenshotPaths }],
             DECKY_RPC_TIMEOUT_MS,
           ).catch(() => {});
         }
@@ -1067,12 +1024,7 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
       if (checked) set.add(itemId);
       else set.delete(itemId);
       const next: StrategyChecklistState = { ...prev, checkedIds: [...set] };
-      const tid = chatThreadsRef.current?.getActiveThreadId();
-      if (tid) {
-        void chatThreadsRef.current?.saveChecklistToThread(next).catch(() => {});
-      } else {
-        scheduleStrategyChecklistSessionSave(next);
-      }
+      scheduleStrategyChecklistSessionSave(next);
       return next;
     });
   }, []);
@@ -1207,7 +1159,6 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
     setLiveReplyFeedbackRating(null);
     setLiveReplyChipUsed(false);
     setLiveReplyChipError(null);
-    chatThreadsRef.current?.clearActiveUiOnly();
   }, [invalidateRequests, isAsking]);
 
   return {

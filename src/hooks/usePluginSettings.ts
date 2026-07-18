@@ -64,10 +64,7 @@ import {
   DEFAULT_USE_LOCAL_KNOWLEDGE_BASE,
   DEFAULT_RAG_CORPUS_PATH,
   DEFAULT_RAG_CORPUS_VERSION,
-  DEFAULT_CHAT_IDLE_TIMEOUT_MINUTES,
-  DEFAULT_DEV_BUNDLE_THREAD_TITLE_IN_REPLY,
 } from "../utils/settingsAndResponse";
-import type { ChatIdleTimeoutMinutes } from "../types/chatThreads";
 
 function snapshotFromBonsaiSettings(normalized: BonsaiSettings): BonsaiSettingsSnapshotInput {
   return {
@@ -116,8 +113,6 @@ function snapshotFromBonsaiSettings(normalized: BonsaiSettings): BonsaiSettingsS
     useLocalKnowledgeBase: normalized.use_local_knowledge_base,
     ragCorpusPath: normalized.rag_corpus_path,
     ragCorpusVersion: normalized.rag_corpus_version,
-    chatIdleTimeoutMinutes: normalized.chat_idle_timeout_minutes,
-    devBundleThreadTitleInReply: normalized.dev_bundle_thread_title_in_reply,
   };
 }
 
@@ -213,12 +208,6 @@ export function usePluginSettings() {
   );
   const [ragCorpusPath, setRagCorpusPath] = useState<string>(DEFAULT_RAG_CORPUS_PATH);
   const [ragCorpusVersion, setRagCorpusVersion] = useState<string>(DEFAULT_RAG_CORPUS_VERSION);
-  const [chatIdleTimeoutMinutes, setChatIdleTimeoutMinutes] = useState<ChatIdleTimeoutMinutes>(
-    DEFAULT_CHAT_IDLE_TIMEOUT_MINUTES,
-  );
-  const [devBundleThreadTitleInReply, setDevBundleThreadTitleInReply] = useState<boolean>(
-    DEFAULT_DEV_BUNDLE_THREAD_TITLE_IN_REPLY,
-  );
   const [settingsLoaded, setSettingsLoaded] = useState(false);
   /** When false, debounced ``save_settings`` is skipped so a failed initial load cannot wipe disk with UI defaults. */
   const [settingsPersistEnabled, setSettingsPersistEnabled] = useState(false);
@@ -273,8 +262,6 @@ export function usePluginSettings() {
     useLocalKnowledgeBase,
     ragCorpusPath,
     ragCorpusVersion,
-    chatIdleTimeoutMinutes,
-    devBundleThreadTitleInReply,
   };
 
   const hydrateFromSettings = useCallback((saved: BonsaiSettings) => {
@@ -325,8 +312,6 @@ export function usePluginSettings() {
     setUseLocalKnowledgeBase(normalized.use_local_knowledge_base);
     setRagCorpusPath(normalized.rag_corpus_path);
     setRagCorpusVersion(normalized.rag_corpus_version);
-    setChatIdleTimeoutMinutes(normalized.chat_idle_timeout_minutes);
-    setDevBundleThreadTitleInReply(normalized.dev_bundle_thread_title_in_reply);
     settingsSnapshotForDebouncedSaveRef.current = snapshotFromBonsaiSettings(normalized);
     setSettingsPersistEnabled(true);
   }, []);
@@ -424,8 +409,6 @@ export function usePluginSettings() {
         setUseLocalKnowledgeBase(DEFAULT_USE_LOCAL_KNOWLEDGE_BASE);
         setRagCorpusPath(DEFAULT_RAG_CORPUS_PATH);
         setRagCorpusVersion(DEFAULT_RAG_CORPUS_VERSION);
-        setChatIdleTimeoutMinutes(DEFAULT_CHAT_IDLE_TIMEOUT_MINUTES);
-        setDevBundleThreadTitleInReply(DEFAULT_DEV_BUNDLE_THREAD_TITLE_IN_REPLY);
       })
       .finally(() => {
         if (!cancelled) setSettingsLoaded(true);
@@ -498,8 +481,6 @@ export function usePluginSettings() {
     useLocalKnowledgeBase,
     ragCorpusPath,
     ragCorpusVersion,
-    chatIdleTimeoutMinutes,
-    devBundleThreadTitleInReply,
     settingsPersistEnabled,
   ]);
 
@@ -580,10 +561,6 @@ export function usePluginSettings() {
     setRagCorpusPath,
     ragCorpusVersion,
     setRagCorpusVersion,
-    chatIdleTimeoutMinutes,
-    setChatIdleTimeoutMinutes,
-    devBundleThreadTitleInReply,
-    setDevBundleThreadTitleInReply,
     settingsLoaded,
     setLatencyWarningSeconds,
     setRequestTimeoutSeconds,

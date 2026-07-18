@@ -22,9 +22,6 @@ import {
 } from "./modelPolicy";
 import { normalizeUiScaleProfileId } from "./uiScaleProfile";
 import {
-  DEFAULT_CHAT_IDLE_TIMEOUT_MINUTES,
-  CHAT_IDLE_TIMEOUT_MINUTE_OPTIONS,
-  DEFAULT_DEV_BUNDLE_THREAD_TITLE_IN_REPLY,
   DEFAULT_AI_CHARACTER_CUSTOM_TEXT,
   DEFAULT_AI_CHARACTER_PRESET_ID,
   DEFAULT_AI_CHARACTER_RANDOM,
@@ -388,18 +385,6 @@ export function normalizeUiScaleAutoEnabled(value: unknown): boolean {
   return value !== false;
 }
 
-export function normalizeChatIdleTimeoutMinutes(value: unknown): (typeof CHAT_IDLE_TIMEOUT_MINUTE_OPTIONS)[number] {
-  const n = Number(value);
-  if (CHAT_IDLE_TIMEOUT_MINUTE_OPTIONS.includes(n as (typeof CHAT_IDLE_TIMEOUT_MINUTE_OPTIONS)[number])) {
-    return n as (typeof CHAT_IDLE_TIMEOUT_MINUTE_OPTIONS)[number];
-  }
-  return DEFAULT_CHAT_IDLE_TIMEOUT_MINUTES;
-}
-
-export function normalizeDevBundleThreadTitleInReply(value: unknown): boolean {
-  return value === true;
-}
-
 export function normalizeModelRoutingOrder(raw: unknown): string[] {
   if (!Array.isArray(raw)) return [];
   const out: string[] = [];
@@ -485,9 +470,5 @@ export function normalizeSettings(data: unknown): BonsaiSettings {
     rag_corpus_path: typeof raw.rag_corpus_path === "string" ? raw.rag_corpus_path.trim().slice(0, 512) : "",
     rag_corpus_version:
       typeof raw.rag_corpus_version === "string" ? raw.rag_corpus_version.trim().slice(0, 64) : "",
-    chat_idle_timeout_minutes: normalizeChatIdleTimeoutMinutes(raw.chat_idle_timeout_minutes),
-    dev_bundle_thread_title_in_reply: normalizeDevBundleThreadTitleInReply(
-      raw.dev_bundle_thread_title_in_reply,
-    ),
   };
 }

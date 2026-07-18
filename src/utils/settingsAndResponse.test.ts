@@ -255,8 +255,6 @@ describe("settingsAndResponse", () => {
       useLocalKnowledgeBase: false,
       ragCorpusPath: "",
       ragCorpusVersion: "",
-      chatIdleTimeoutMinutes: 15 as const,
-      devBundleThreadTitleInReply: false,
       textModelRoutingOrder: [],
       visionModelRoutingOrder: [],
     });
@@ -322,8 +320,6 @@ describe("settingsAndResponse", () => {
       useLocalKnowledgeBase: false,
       ragCorpusPath: "",
       ragCorpusVersion: "",
-      chatIdleTimeoutMinutes: 15 as const,
-      devBundleThreadTitleInReply: false,
       textModelRoutingOrder: [],
       visionModelRoutingOrder: [],
     };
@@ -469,8 +465,6 @@ describe("settingsAndResponse", () => {
       useLocalKnowledgeBase: normalized.use_local_knowledge_base,
       ragCorpusPath: normalized.rag_corpus_path,
       ragCorpusVersion: normalized.rag_corpus_version,
-      chatIdleTimeoutMinutes: normalized.chat_idle_timeout_minutes,
-      devBundleThreadTitleInReply: normalized.dev_bundle_thread_title_in_reply,
       textModelRoutingOrder: normalized.text_model_routing_order ?? [],
       visionModelRoutingOrder: normalized.vision_model_routing_order ?? [],
     });

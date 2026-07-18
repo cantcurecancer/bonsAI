@@ -27,7 +27,6 @@ import {
   unregisterSettingsTabLocalGetter,
 } from "../utils/settingsTabLocalSurvival";
 import { VoiceInputSettingsSection } from "./VoiceInputSettingsSection";
-import { CHAT_IDLE_TIMEOUT_MINUTE_OPTIONS } from "../types/chatThreads";
 import { SettingsTabUiScaleSection } from "./SettingsTabUiScaleSection";
 import { ProtonExperimentJournalSection } from "./ProtonExperimentJournalSection";
 import type { UiScaleProfileId } from "../data/uiScaleProfile";
@@ -102,11 +101,7 @@ export type SettingsTabProps = {
   onBeforeDeckyModal: () => void;
   onCompleteDeckyModalClose: (close: () => void) => void;
   onResetSession: () => void;
-  onClearAllPluginData: (alsoClearDesktopChats?: boolean) => void | Promise<void>;
-  onWipeDesktopChatExports?: () => void | Promise<void>;
-
-  chatIdleTimeoutMinutes: import("../types/chatThreads").ChatIdleTimeoutMinutes;
-  setChatIdleTimeoutMinutes: (v: import("../types/chatThreads").ChatIdleTimeoutMinutes) => void;
+  onClearAllPluginData: () => void | Promise<void>;
 
   intentPackSummaries?: IntentPackSummary[];
   intentPacksLoading?: boolean;
@@ -160,9 +155,6 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
   onCompleteDeckyModalClose,
   onResetSession,
   onClearAllPluginData,
-  onWipeDesktopChatExports,
-  chatIdleTimeoutMinutes,
-  setChatIdleTimeoutMinutes,
   intentPackSummaries = [],
   intentPacksLoading = false,
   intentPacksError = null,
@@ -507,30 +499,6 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
           onCompleteDeckyModalClose={onCompleteDeckyModalClose}
         />
       ) : null}
-      <PanelSectionRow>
-        <div style={{ width: "100%" }}>
-          <div style={{ color: "#d9d9d9", fontWeight: 600, fontSize: 13, marginBottom: 6 }}>
-            Chat session idle timeout
-          </div>
-          <div style={{ fontSize: 11, color: "#9fb7d5", marginBottom: 8 }}>
-            After this idle period, reopening bonsAI starts a clean Main tab (saved chats remain in All chats…).
-          </div>
-          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-            {CHAT_IDLE_TIMEOUT_MINUTE_OPTIONS.map((mins) => (
-              <Button
-                key={mins}
-                onClick={() => setChatIdleTimeoutMinutes(mins)}
-                style={{
-                  opacity: chatIdleTimeoutMinutes === mins ? 1 : 0.65,
-                  fontWeight: chatIdleTimeoutMinutes === mins ? 700 : 500,
-                }}
-              >
-                {mins}m
-              </Button>
-            ))}
-          </div>
-        </div>
-      </PanelSectionRow>
       <Focusable
         className="bonsai-settings-cache-row"
         flow-children="horizontal"
@@ -551,7 +519,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
             const handle = showModal(
               <ConfirmModal
                 strTitle="Clear session cache?"
-                strDescription="Clears this session from RAM: input, reply, and in-memory transcript. Saved chat threads on disk are kept — open All chats… to continue."
+                strDescription="Clears this session from RAM: input, reply, thread, transparency, branches, attachments, timers. Does not change settings.json, Ollama, or image files on disk."
                 strOKButtonText="Clear"
                 onOK={() => {
                   onResetSession();
@@ -592,31 +560,8 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                 }
                 strOKButtonText="Clear all data"
                 onOK={() => {
-                  void Promise.resolve(onClearAllPluginData(false)).finally(() => {
-                    const desktopHandle = showModal(
-                      <ConfirmModal
-                        strTitle="Also clear Desktop chats?"
-                        strDescription={
-                          "Remove ~/Desktop/bonsAI_chats/ and legacy bonsai-chat-*.md files under bonsAI_logs?\n\n" +
-                          "Other Desktop logs (app activity, verbose traces) are not removed."
-                        }
-                        strOKButtonText="Clear Desktop chats"
-                        onOK={() => {
-                          void Promise.resolve(onWipeDesktopChatExports?.()).finally(() => {
-                            onCompleteDeckyModalClose(() => {
-                              desktopHandle.Close();
-                              handle.Close();
-                            });
-                          });
-                        }}
-                        onCancel={() =>
-                          onCompleteDeckyModalClose(() => {
-                            desktopHandle.Close();
-                            handle.Close();
-                          })
-                        }
-                      />,
-                    );
+                  void Promise.resolve(onClearAllPluginData()).finally(() => {
+                    onCompleteDeckyModalClose(() => handle.Close());
                   });
                 }}
                 onCancel={() => onCompleteDeckyModalClose(() => handle.Close())}

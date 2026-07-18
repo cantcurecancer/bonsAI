@@ -13,7 +13,7 @@ Active features, maintainer tasks, and **known defects**. *QAMP Phase 1 (safe de
 ### Bugs
 
 - ★ **Question Overlay Alignment Drift:** The 3-line question overlay has minor horizontal spacing mismatch vs native `TextField` internals.
-- ★★★ **Fullscreen picker D-pad edge-escape (audit):** Named chat picker ships edge escape (left from row → New chat; right from delete → Close). Audit **Pull Models**, **Character picker**, **Ollama models hub**, and other `showModal` pickers for the same below-list / above-list escape pattern.
+- ★★★ **Fullscreen picker D-pad edge-escape (audit):** Audit **Pull Models**, **Character picker**, **Ollama models hub**, and other `showModal` pickers for below-list / above-list escape (left from row → primary action; right from trailing control → Close).
 
 
 
@@ -116,6 +116,12 @@ Within this section: ascending stars (★★ → ★★★ → ★★★★). Br
 
 Within this section: ascending stars (★★★★ → ★★★★★ → ★★★★★★). ★★★★★ entries share one band (alphabetical by title). Brainstorm **T**, **E–H**: [roadmap_feature_ideas plan](../.cursor/plans/roadmap_feature_ideas_f5560e15.plan.md). **E** does not depend on deferred **D** or **I**.
 
+- ★★★★ **Named chat slots** (labeled threads, T — redesign)
+  - **Goal:** Multiple labeled threads (e.g. “Elden Ring build”, “Network debug”) beyond single persisted QA — reduces overwrite friction without full cloud sync.
+  - **Primary work:** thread id + label storage; UI to switch thread; Ask/reply scoped per slot. Prior mini-list / fullscreen picker pass deferred — redesign picker UX before re-ship.
+  - **Files:** `main.py`, `src/index.tsx`, `settings_service.py`, persistence layer.
+  - **Depends on:** unified Ask state machine.
+  - **Not in scope:** cross-device merge or server-backed sync.
 - ★★★★ **LAN custom model pull** (remote host — decision review)
   - **Goal:** When Ask uses a **LAN Ollama host**, let users add/pull models not in the bonsAI catalog without requiring Deck-local `ollama pull` — **blocked until mechanism is chosen**.
   - **Decision points (resolve before implementation):** **R1 — Instructions only:** Deck UI captures tag + shows copy/pull instructions for the PC host (no remote execution). **R2 — Pull on Deck while Ask uses LAN:** run `ollama pull` on Deck even when routing targets LAN (usually wrong topology; likely reject). **R3 — Remote execution:** new RPC/agent runs `ollama pull` on the LAN host (secure remote path; highest lift). **R4 — Pin/routing only:** custom add sets **Use for Ask** for tags already on the LAN host; pull remains out-of-band (Konsole/PC).
@@ -275,8 +281,7 @@ Dependency graph and implementation notes that are not feature checklist items.
 - **Character voice roleplay (shipped)** → **Character-derived UI accent theme (preset-selected)** (shipped — see **Completed**); **Random character “?” avatar** (shipped — see **Completed**); **Running-game character suggestions (AI picker)** (shipped — see **Completed**).
 - **Character voice roleplay (shipped)** → **Local reply TTS** (Phase 2 — preset→voice mapping; legal research gate before ship).
 - **Whisper voice Ask (shipped)** + `microphone_access` → **Wake-word listening** (additional beta capability + separate wake-engine install).
-- **Reply ready toast (shipped)** → completion UX for all Asks; required for hands-free wake loop when QAM is closed (named chat slots restore Q+A on reopen without toast).
-- **Named chat slots (shipped)** → private thread store + bubble transcript + picker; **Reply ready toast (shipped)** adds tap-to-open notify when QAM is closed.
+- **Reply ready toast (shipped)** → completion UX for all Asks; required for hands-free wake loop when QAM is closed.
 - **Wake-word listening** → later **Local reply TTS** for hands-free read path; optional wake brevity inject / Speed-for-wake after v1.
 - **Voice STT session daemon** (shipped) → reduces post-wake STT cost for wake-word listening.
 - **Character voice roleplay (shipped)** → **Playful thinking status lines (shipped)** — persona tone in `compose_thinking_blurb`; **Thinking phase copy polish (shipped)** keeps mid-Ask `format_thinking_phase` lines prompt-woven; **Always-sarcastic thinking blurb (shipped)** — witty/deadpan always on, visible during stream; **Thinking blurb copy refresh (shipped)** — phase/intent-native witty/deadpan pools, no Yeah/Fine prefix farm, request-id-only selection.

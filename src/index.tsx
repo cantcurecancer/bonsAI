@@ -85,13 +85,7 @@ import { useScreenshotBrowser } from "./hooks/useScreenshotBrowser";
 import { useSteamSettingsSearch } from "./hooks/useSteamSettingsSearch";
 import { useBonsaiPluginShell } from "./hooks/useBonsaiPluginShell";
 import { useVoiceTranscription } from "./hooks/useVoiceTranscription";
-import { useBonsaiAskOrchestration, type ChatThreadsBridge } from "./hooks/useBonsaiAskOrchestration";
-import { useChatThreads } from "./hooks/useChatThreads";
-import { ChatThreadsMiniList } from "./components/ChatThreadsMiniList";
-import { ChatThreadsModal } from "./components/ChatThreadsModal";
-import { ChatThreadAppIdBanner } from "./components/ChatThreadAppIdBanner";
-import type { AskThreadCollapsedTurn } from "./types/bonsaiUi";
-import type { LastExchangeSnapshot } from "./types/backgroundAsk";
+import { useBonsaiAskOrchestration } from "./hooks/useBonsaiAskOrchestration";
 import { useDisclaimerAndLocalRuntimeGates } from "./hooks/useDisclaimerAndLocalRuntimeGates";
 import { useCapturedFrontendErrors } from "./hooks/useCapturedFrontendErrors";
 import { getSteamSettingsUrl, isQamSetting } from "./data/steamSettingsNavigation";
@@ -335,7 +329,6 @@ const Content: React.FC = () => {
     usesNativeMultilineField,
     remeasureUnifiedInputSurface,
   } = useUnifiedInputSurface(currentTab, unifiedInput);
-  const transcriptFocusRef = useRef<HTMLDivElement | null>(null);
 
   // --- Connection / misc shell state (Ask + poll state: ``useBonsaiAskOrchestration``) ---
   const [ollamaIp, setOllamaIp] = useState(
@@ -445,10 +438,6 @@ const Content: React.FC = () => {
     setUseLocalKnowledgeBase,
     ragCorpusPath,
     ragCorpusVersion,
-    chatIdleTimeoutMinutes,
-    setChatIdleTimeoutMinutes,
-    devBundleThreadTitleInReply,
-    setDevBundleThreadTitleInReply,
     settingsLoaded,
     hydrateFromSettings,
     pauseDebouncedSettingsSave,
@@ -544,73 +533,6 @@ const Content: React.FC = () => {
     [ollamaLocalOnDeck, ollamaIp]
   );
 
-  const askUiMutatorsRef = useRef<{
-    setAskThreadCollapsed: React.Dispatch<React.SetStateAction<AskThreadCollapsedTurn[]>>;
-    setAskThreadDisplayQuestion: React.Dispatch<React.SetStateAction<string>>;
-    setStrategyChecklist: React.Dispatch<React.SetStateAction<import("./types/bonsaiUi").StrategyChecklistState | null>>;
-    setLastExchange: React.Dispatch<React.SetStateAction<LastExchangeSnapshot | null>>;
-    setOllamaResponse: React.Dispatch<React.SetStateAction<string>>;
-  } | null>(null);
-
-  const chatThreadsState = useChatThreads({ chatIdleTimeoutMinutes });
-  const chatThreadsStateRef = useRef(chatThreadsState);
-  chatThreadsStateRef.current = chatThreadsState;
-
-  const chatThreadsBridge = useMemo<ChatThreadsBridge>(
-    () => ({
-      getActiveThreadId: () => chatThreadsStateRef.current.activeThreadId,
-      ensureThreadForAsk: (q) => chatThreadsStateRef.current.ensureActiveThreadForAsk(q),
-      bindRequestToThread: (rid, tid) => chatThreadsStateRef.current.bindRequestToThread(rid, tid),
-      resolveThreadForRequest: (rid) => chatThreadsStateRef.current.resolveThreadForRequest(rid),
-      touchActivity: () => chatThreadsStateRef.current.touchActivity(),
-      clearActiveUiOnly: () => chatThreadsStateRef.current.clearActiveUiOnly(),
-      saveChecklistToThread: (s) => chatThreadsStateRef.current.saveThreadChecklist(s),
-      reloadActiveThread: async () => {
-        const ct = chatThreadsStateRef.current;
-        const tid = ct.activeThreadId;
-        if (!tid) return;
-        const thread = await ct.selectThread(tid);
-        if (!thread || !askUiMutatorsRef.current) return;
-        const { pairs, checklist } = ct.applyThreadToTranscript(thread);
-        askUiMutatorsRef.current.setAskThreadCollapsed(
-          pairs.map((p) => ({ id: p.id, question: p.question, answer: p.answer })),
-        );
-        askUiMutatorsRef.current.setStrategyChecklist(checklist);
-        const last = pairs[pairs.length - 1];
-        askUiMutatorsRef.current.setLastExchange(
-          last ? { question: last.question, answer: last.answer } : null,
-        );
-        askUiMutatorsRef.current.setAskThreadDisplayQuestion("");
-        askUiMutatorsRef.current.setOllamaResponse(last?.answer ?? "");
-      },
-      hydrateThreadTranscript: ({ pairs, checklist }) => {
-        if (!askUiMutatorsRef.current) return;
-        askUiMutatorsRef.current.setAskThreadCollapsed(
-          pairs.map((p) => ({ id: p.id, question: p.question, answer: p.answer })),
-        );
-        askUiMutatorsRef.current.setStrategyChecklist(checklist);
-        const last = pairs[pairs.length - 1];
-        askUiMutatorsRef.current.setLastExchange(
-          last ? { question: last.question, answer: last.answer } : null,
-        );
-        askUiMutatorsRef.current.setAskThreadDisplayQuestion("");
-        askUiMutatorsRef.current.setOllamaResponse(last?.answer ?? "");
-      },
-    }),
-    [],
-  );
-
-  const handleSelectChatThread = useCallback(
-    async (threadId: string) => {
-      chatThreadsStateRef.current.touchActivity();
-      const thread = await chatThreadsStateRef.current.selectThread(threadId);
-      if (!thread) return;
-      const { pairs, checklist } = chatThreadsStateRef.current.applyThreadToTranscript(thread);
-      chatThreadsBridge.hydrateThreadTranscript({ pairs, checklist });
-    },
-    [chatThreadsBridge],
-  );
-
   const persistOllamaIpIfRoutingToLan = useCallback(
     (ip: string) => {
       persistOllamaIpIfRoutingToLanUtil(ollamaLocalOnDeck, saveIp, ip);
@@ -658,11 +580,6 @@ const Content: React.FC = () => {
     setStrategyGuideBranches,
     reseedSuggestedPrompts,
     restoreSessionSnapshot,
-    setAskThreadCollapsed,
-    setAskThreadDisplayQuestion,
-    setStrategyChecklist,
-    setOllamaResponse,
-    setLastExchange,
   } = useBonsaiAskOrchestration({
     desktopDebugNoteAutoSave,
     filesystemWrite: capabilities.filesystem_write,
@@ -690,26 +607,7 @@ const Content: React.FC = () => {
     aiCharacterEnabled,
     aiCharacterPresetId,
     useLocalKnowledgeBase,
-    chatThreads: chatThreadsBridge,
   });
-
-  askUiMutatorsRef.current = {
-    setAskThreadCollapsed,
-    setAskThreadDisplayQuestion,
-    setStrategyChecklist,
-    setLastExchange,
-    setOllamaResponse,
-  };
-
-  useLayoutEffect(() => {
-    if (!settingsLoaded) return;
-    if (chatThreadsState.evaluateIdleCleanSlate()) return;
-    const survived = peekBonsaiSessionPendingRestore();
-    const tid = survived?.activeThreadId ?? chatThreadsState.activeThreadId;
-    if (tid) {
-      void handleSelectChatThread(tid);
-    }
-  }, [settingsLoaded]);
 
   isAskingRef.current = isAsking;
 
@@ -965,7 +863,6 @@ const Content: React.FC = () => {
     showSlowWarning,
     lastRequestId,
     thinkingSummary,
-    activeThreadId: chatThreadsState.activeThreadId,
   });
 
   const {
@@ -1127,16 +1024,12 @@ const Content: React.FC = () => {
     void reseedSuggestedPrompts("random", undefined, true);
     toaster.toast({
       title: "Session cleared",
-      body: "Main tab cleared. Saved chats remain in All chats…",
+      body: "Main tab cleared.",
       duration: 3800,
     });
   }, [resetAskSessionSlice, reseedSuggestedPrompts]);
 
-  const onWipeDesktopChatExports = useCallback(async () => {
-    await call("wipe_desktop_chat_exports_rpc", []);
-  }, []);
-
-  const onClearAllPluginData = useCallback(async (alsoClearDesktopChats = false) => {
+  const onClearAllPluginData = useCallback(async () => {
     try {
       markPluginDataCleared();
       clearSettingsTabLocalSurvival();
@@ -1144,9 +1037,7 @@ const Content: React.FC = () => {
       setLastConnectionStatus(null);
       setOllamaTabResetKey((k) => k + 1);
       await pauseDebouncedSettingsSave();
-      await call<[{ also_clear_desktop_chats?: boolean }], BonsaiSettings>("clear_plugin_data", {
-        also_clear_desktop_chats: alsoClearDesktopChats,
-      });
+      await call("clear_plugin_data");
       clearBonsaiBrowserStorage();
       await syncSettingsFromDisk();
       acknowledgePluginDataClearHandled();
@@ -1643,63 +1534,6 @@ const Content: React.FC = () => {
       desktopAskVerboseLogging={desktopAskVerboseLogging}
       lastRequestId={lastRequestId}
       lastExchange={lastExchange}
-      transcriptFocusRef={transcriptFocusRef}
-      chatThreadsMiniList={
-        <ChatThreadsMiniList
-          summaries={chatThreadsState.summaries}
-          activeThreadId={chatThreadsState.activeThreadId}
-          focusUpRef={unifiedInputFieldLayerRef as React.RefObject<HTMLElement | null>}
-          focusDownRef={transcriptFocusRef as React.RefObject<HTMLElement | null>}
-          onSelectThread={(id) => {
-            void handleSelectChatThread(id);
-          }}
-          onOpenPicker={() => {
-            chatThreadsState.touchActivity();
-            captureSessionBeforeModal();
-            characterPickerReturnTabRef.current = currentTab;
-            const handle = showModal(
-              <ChatThreadsModal
-                summaries={chatThreadsState.summaries}
-                activeThreadId={chatThreadsState.activeThreadId}
-                onSelectThread={(id) => {
-                  void handleSelectChatThread(id);
-                }}
-                onNewChat={() => {
-                  void chatThreadsState.createThread().then(() => {
-                    setAskThreadCollapsed([]);
-                    setAskThreadDisplayQuestion("");
-                    setLastExchange(null);
-                    setOllamaResponse("");
-                  });
-                }}
-                onDeleteThread={async (id) => {
-                  await chatThreadsState.deleteThread(id);
-                }}
-                onClose={() => finalizeShowModalAndRestoreActiveTab(() => handle.Close())}
-                onBeforeNestedDeckyModal={captureSessionBeforeModal}
-                onCompleteNestedDeckyModalClose={finalizeShowModalAndRestoreActiveTab}
-              />,
-            );
-          }}
-        />
-      }
-      chatAppIdBanner={
-        chatThreadsState.showAppIdBanner ? (
-          <ChatThreadAppIdBanner
-            originAppId={chatThreadsState.activeThread?.origin_app_id ?? ""}
-            currentAppId={chatThreadsState.currentAppId}
-            onContinue={() => chatThreadsState.setAppIdBannerDismissed(true)}
-            onNewThread={() => {
-              void chatThreadsState.createThread().then(() => {
-                setAskThreadCollapsed([]);
-                setAskThreadDisplayQuestion("");
-                setLastExchange(null);
-                setOllamaResponse("");
-              });
-            }}
-          />
-        ) : null
-      }
     />
   ),
     [
@@ -1757,16 +1591,6 @@ const Content: React.FC = () => {
       onMicInput,
       onOpenScreenshotBrowser,
       onTakeScreenshot,
-      chatThreadsState,
-      handleSelectChatThread,
-      currentTab,
-      captureSessionBeforeModal,
-      finalizeShowModalAndRestoreActiveTab,
-      characterPickerReturnTabRef,
-      setAskThreadCollapsed,
-      setAskThreadDisplayQuestion,
-      setLastExchange,
-      setOllamaResponse,
     ]
   );
 
@@ -1800,9 +1624,6 @@ const Content: React.FC = () => {
       onCompleteDeckyModalClose={finalizeShowModalAndRestoreActiveTab}
       onResetSession={resetPluginSession}
       onClearAllPluginData={onClearAllPluginData}
-      onWipeDesktopChatExports={onWipeDesktopChatExports}
-      chatIdleTimeoutMinutes={chatIdleTimeoutMinutes}
-      setChatIdleTimeoutMinutes={setChatIdleTimeoutMinutes}
       intentPackSummaries={intentPacks.summaries}
       intentPacksLoading={intentPacks.loading}
       intentPacksError={intentPacks.error}
@@ -1993,8 +1814,6 @@ const Content: React.FC = () => {
       setSteamWebApiKey={setSteamWebApiKey}
       bonsaiTokenStreamingEnabled={bonsaiTokenStreamingEnabled}
       setBonsaiTokenStreamingEnabled={setBonsaiTokenStreamingEnabled}
-      devBundleThreadTitleInReply={devBundleThreadTitleInReply}
-      setDevBundleThreadTitleInReply={setDevBundleThreadTitleInReply}
       thinkingStatusTinyModelEnabled={thinkingStatusTinyModelEnabled}
       setThinkingStatusTinyModelEnabled={setThinkingStatusTinyModelEnabled}
       showOnscreenDebugHud={showOnscreenDebugHud}

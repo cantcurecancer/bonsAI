@@ -89,7 +89,6 @@ export type AppendDesktopChatEventPayload = {
   question?: string;
   response_text?: string;
   screenshot_paths?: string[];
-  thread_id?: string;
 };
 
 export type AppendDesktopNoteResult = {

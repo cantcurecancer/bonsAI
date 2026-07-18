@@ -10,7 +10,6 @@ import {
   type ModelPolicyTierId,
 } from "./modelPolicy";
 import { type UiScaleProfileId } from "./uiScaleProfile";
-import type { ChatIdleTimeoutMinutes } from "../types/chatThreads";
 
 export type { UiScaleProfileId };
 export type { AskModeId };
@@ -133,10 +132,6 @@ export type BonsaiSettings = {
   rag_corpus_path: string;
   /** Installed corpus manifest version string. */
   rag_corpus_version: string;
-  /** Minutes of inactivity before Main tab clean slate on reopen (5/15/30/60). */
-  chat_idle_timeout_minutes: ChatIdleTimeoutMinutes;
-  /** Developer: parse bundled thread title from first model reply. */
-  dev_bundle_thread_title_in_reply: boolean;
 };
 
 /** Fields mirrored from React state / hook before `save_settings` RPC. */
@@ -185,8 +180,6 @@ export type BonsaiSettingsSnapshotInput = {
   useLocalKnowledgeBase: boolean;
   ragCorpusPath: string;
   ragCorpusVersion: string;
-  chatIdleTimeoutMinutes: ChatIdleTimeoutMinutes;
-  devBundleThreadTitleInReply: boolean;
 };
 
 export type AppliedResultLike = {
@@ -256,9 +249,6 @@ export const DEFAULT_UI_SCALE_MANUAL_PROFILE: UiScaleProfileId = "handheld";
 export const DEFAULT_USE_LOCAL_KNOWLEDGE_BASE = false;
 export const DEFAULT_RAG_CORPUS_PATH = "";
 export const DEFAULT_RAG_CORPUS_VERSION = "";
-export const DEFAULT_CHAT_IDLE_TIMEOUT_MINUTES: ChatIdleTimeoutMinutes = 15;
-export const CHAT_IDLE_TIMEOUT_MINUTE_OPTIONS: ChatIdleTimeoutMinutes[] = [5, 15, 30, 60];
-export const DEFAULT_DEV_BUNDLE_THREAD_TITLE_IN_REPLY = false;
 
 export const DEFAULT_AI_CHARACTER_ENABLED = false;
 export const DEFAULT_AI_CHARACTER_RANDOM = true;

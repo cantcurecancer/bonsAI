@@ -408,14 +408,12 @@ Maps [roadmap.md](roadmap.md) **Completed** summary and [archive/roadmap-complet
 | STRATEGY-CORE | Strategy Guide prompt path | SMOKE-E | Open | |
 | STRATEGY-SPOILER | Strategy spoiler policy + consent | SMOKE-E, STRAT-01…05 | Partial | Unit green 2026-04-30; [preview 2026-05-26](test-evidence/tier1Core/2026-05-26-9e20a82/SMOKE-E-strategy-mode/manifest.json) |
 | STRATEGY-CHECKLIST | Strategy checklist (follow-up, persisted per game) | Tier 2 § Strategy depth | Open | Unit + preview; on-Deck: check/uncheck, QAM reopen |
-| STRATEGY-CHECKLIST-THREAD | Strategy checklist scoped per chat thread | STRATEGY-CHECKLIST-THREAD | Open | Two threads same game keep independent checklists |
 | DEBUG-TAB | Developer tab opt-in | SMOKE-A | Open | Tab strip when enabled |
 | INTENT-PACKS | Offline intent packs (import/export) | SMOKE-A | Open | Settings → Search intent packs |
 | SETTINGS-TRIM | Settings tab trim | SMOKE-A | Open | |
 | UI-SCALE | UI scale profiles (auto + manual snap) | UI-SCALE-01…05 | Open | Settings → Apply; on-Deck display matrix |
-| RESET-SESSION | Reset session cache | RESET-SESSION-THREADS | Open | Clear cache keeps private threads; picker still lists saved chats |
-| CHAT-SLOTS | Named chat slots (threads, bubbles, picker) | CHAT-SLOTS-01…08, SMOKE-H | Open | `test_chat_threads_service.py`; on-Deck D-pad mini-list + picker |
-| DATA-CLEAR | Clear all plugin data (settings + permissions wipe) | DATA-CLEAR-01, DESKTOP-AUTOSAVE-THREAD | Open | Regression: modal survival must not restore old settings; optional Desktop chats second confirm |
+| RESET-SESSION | Reset session cache | SMOKE-A | Open | Clear cache clears in-memory Main state only |
+| DATA-CLEAR | Clear all plugin data (settings + permissions wipe) | DATA-CLEAR-01 | Open | Regression: modal survival must not restore old settings |
 | RETRY-PROMPT | Retry same prompt (regenerate) | FEEDBACK-01 | Open | `buildReplyActionsElement.tsx`; on-Deck |
 | ASK-FEEDBACK | Per-turn local feedback (thumbs) | FEEDBACK-01 | Open | `save_ask_feedback` RPC; on-Deck |
 | MODEL-ROUTING | User-owned text/vision try-order pickers | ROUTING-01…04 | Open | `ModelRoutingOrderModal.tsx`, `tests/test_model_routing_order.py`; on-Deck D-pad |
@@ -656,25 +654,13 @@ Requires **Settings → Data → Show Developer tab** → **Token streaming (exp
 
 **System prompt layers:** spot-check via SMOKE-A transparency; unit tests in `tests/test_ollama_service.py`.
 
-### Named chat slots (Tier 1)
+### Reply ready toast (Tier 1)
 
 - [ ] **REPLY-READY-01** Ask with QAM closed → **Reply ready** toast when answer completes → tap opens Decky/bonsAI Main with answer visible
 - [ ] **REPLY-READY-02** Ask with QAM open on Main → no toast
 - [ ] **REPLY-READY-03** Ask fails with QAM closed → error toast (no success toast)
 - [ ] **REPLY-READY-04** Stop/cancel Ask → no toast
 - [ ] **REPLY-READY-05** Second Ask while first toast visible → prior toast replaced (no stack)
-
-- [ ] **CHAT-SLOTS-01** Submit Ask → close QAM → reopen within idle TTL → bubble transcript shows Q then A (not answer-only)
-- [ ] **CHAT-SLOTS-02** Switch active thread mid-Ask → completion appends to thread that owned the request
-- [ ] **CHAT-SLOTS-03** Idle past Settings timeout → reopen → clean Main draft; **All chats…** still lists saved threads
-- [ ] **CHAT-SLOTS-04** AppID mismatch banner → **Continue** dismisses; **New thread** creates fresh slot; history unchanged
-- [ ] **CHAT-SLOTS-05** Picker delete → ConfirmModal → private thread + `~/Desktop/bonsAI_chats/<id>/` removed when present
-- [ ] **CHAT-SLOTS-06** Create 51st thread → oldest private thread pruned; Desktop orphan folder may remain until delete or Clear Desktop confirm
-- [ ] **CHAT-SLOTS-07** D-pad: mini-list ↔ Ask field ↔ transcript; picker edge escape (row left → New chat; delete right → Close)
-- [ ] **CHAT-SLOTS-08** Picker row shows Desktop size or `—` when autosave off / folder missing
-- [ ] **RESET-SESSION-THREADS** Settings → Clear cache… → Main cleared; **All chats…** still lists threads; next Ask creates thread when none selected
-- [ ] **DESKTOP-AUTOSAVE-THREAD** Auto-save chat + Filesystem writes → `bonsAI_chats/<id>/thread.md` only (no new `bonsai-chat-*.md` daily append)
-- [ ] **STRATEGY-CHECKLIST-THREAD** Two threads in same game → independent strategy checklists persist per thread
 
 ---
 

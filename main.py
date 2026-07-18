@@ -154,6 +154,10 @@ from backend.services.rag_corpus_download_service import (
     remove_corpus_at_path,
     run_rag_corpus_download,
 )
+from backend.services.knowledge_base_service import (
+    session_rag_chip_candidates_to_rpc,
+    suggest_chip_candidates,
+)
 from backend.services.knowledge_base_schema import (
     CORPUS_MANIFEST_FILENAME,
     default_corpus_dir_internal,
@@ -165,7 +169,10 @@ from backend.services.knowledge_base_schema import (
 from refactor_helpers import (
     build_ollama_chat_url,
     is_valid_setup_pull_profile,
+    is_vision_capable_tag,
+    merge_pulled_tag,
     normalize_ollama_base,
+    remove_tag_from_routing_orders,
 )
 
 logger = decky.logger
@@ -417,7 +424,9 @@ class Plugin:
 
     def _publish_thinking_phase(self, request_id: int, summary: str) -> None:
         """Publish a deterministic prep-phase label without partial reply text."""
-        text = (summary or "").strip()
+        from backend.services.bonsai_stream_tags import sanitize_thinking_summary
+
+        text = sanitize_thinking_summary(summary or "")
         if not text:
             return
         self._update_partial_response(request_id, "", False, text[:240], update_partial=False)
@@ -597,7 +606,7 @@ class Plugin:
     @staticmethod
     def _parse_ask_payload(
         question: Any, PcIp: str
-    ) -> Tuple[str, str, str, str, list, str, bool, Optional[dict]]:
+    ) -> Tuple[str, str, str, str, list, str, bool, Optional[dict], Optional[dict]]:
         """Normalize ask payload variants into canonical question/ip/context values."""
         app_id = ""
         app_name = ""
@@ -605,6 +614,7 @@ class Plugin:
         ask_mode_raw: Any = None
         spoiler_consent_raw: Any = None
         checklist_state_raw: Any = None
+        reply_followup_raw: Any = None
         if isinstance(question, dict):
             payload = question
             question = payload.get("question", "")
@@ -617,11 +627,15 @@ class Plugin:
             checklist_state_raw = payload.get(
                 "strategy_checklist_state", payload.get("strategyChecklistState", checklist_state_raw)
             )
+            reply_followup_raw = payload.get("reply_followup", payload.get("replyFollowup", reply_followup_raw))
         normalized_question = str(question or "").strip()
         normalized_pc_ip = str(PcIp or "").strip()
         ask_mode = sanitize_ask_mode(ask_mode_raw, Plugin.VALID_ASK_MODES, Plugin.DEFAULT_ASK_MODE)
         spoiler_consent = Plugin._coerce_payload_bool(spoiler_consent_raw)
         strategy_checklist_state = normalize_ask_checklist_state(checklist_state_raw)
+        from backend.services.ollama_prompts import sanitize_reply_followup
+
+        reply_followup = sanitize_reply_followup(reply_followup_raw)
         return (
             normalized_question,
             normalized_pc_ip,
@@ -631,6 +645,7 @@ class Plugin:
             ask_mode,
             spoiler_consent,
             strategy_checklist_state,
+            reply_followup,
         )
 
     @staticmethod

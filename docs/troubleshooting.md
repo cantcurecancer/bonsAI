@@ -209,20 +209,19 @@ When the knowledge base is enabled and installed, Main-tab preset chips may occa
 
 | Path | Contents |
 |------|----------|
-| `~/homebrew/settings/bonsAI/` | `settings.json` (permissions, Ollama routing, keys), intent packs, voice STT assets, feedback log, **`chat_threads/`** (named chat slots) |
+| `~/homebrew/settings/bonsAI/` | `settings.json` (permissions, Ollama routing, keys), intent packs, voice STT assets, feedback log |
 | `~/homebrew/data/bonsAI/` | Runtime cache (e.g. screenshot captures) |
 | `~/homebrew/logs/bonsAI/` | Plugin log files |
 | Browser `bonsai:*` keys | Ollama host draft, disclaimer dismissals, unified-input persistence (CEF localStorage) |
-| `~/Desktop/bonsAI_logs/` | Optional Desktop notes, app activity, verbose Ask traces (not removed by Clear all data unless you confirm Desktop chats) |
-| `~/Desktop/bonsAI_chats/` | Per-thread autosave folders (`<thread-id>/thread.md` + `attachments/`) when **Auto-save chat** is on |
+| `~/Desktop/bonsAI_logs/` | Optional Desktop notes, app activity, verbose Ask traces (not removed by Clear all data) |
 | `~/.bonsai/cache/` | Pull-model catalog overlay |
 | `~/.bonsai/proton_experiment_journal.json` | Per-AppID Proton experiment timeline (Settings editor) |
 
-**Settings → Advanced** (bottom of the tab): **Clear cache…** only clears the **current session** in RAM (Main transcript, active thread selection, attachments, etc.) and does **not** delete saved chat threads on disk. Open **All chats…** on Main to continue a saved thread.
+**Settings → Advanced** (bottom of the tab): **Clear cache…** only clears the **current session** in RAM (Main transcript, attachments, etc.) and does **not** delete `settings.json` or on-disk logs.
 
 **Clear all data…** resets bonsAI to a **new-install** state on the device:
 
-- Wipes the full `~/homebrew/settings/bonsAI/` directory (settings, permissions, voice models/bin, feedback log, intent packs, checklist session, **chat_threads/**) and rewrites defaults
+- Wipes the full `~/homebrew/settings/bonsAI/` directory (settings, permissions, voice models/bin, feedback log, intent packs, checklist session) and rewrites defaults
 - Clears `~/homebrew/data/bonsAI/` and log files under `~/homebrew/logs/bonsAI/`
 - Clears all `bonsai:*` browser storage keys
 - Removes `~/.bonsai/cache/` (catalog overlay)
@@ -230,7 +229,9 @@ When the knowledge base is enabled and installed, Main-tab preset chips may occa
 - When **Ollama on this Deck** was enabled: also removes local model blobs (`~/.ollama`), user-prefix Ollama under `~/.local`
 - Shows beta disclaimer and permission prompts again
 
-It does **not** delete markdown or log files under `~/Desktop/bonsAI_logs/` unless you confirm the follow-up **Also clear Desktop chats?** prompt (removes `~/Desktop/bonsAI_chats/` and legacy `bonsai-chat-*.md` under `bonsAI_logs`; other `bonsAI_logs` files such as app activity and verbose traces are kept).
+It does **not** delete markdown or log files under `~/Desktop/bonsAI_logs/`.
+
+**Leftover named-chat folders (harmless):** If you used an older build with named chat slots, `~/homebrew/settings/bonsAI/chat_threads/` and `~/Desktop/bonsAI_chats/` may still exist on disk. Current builds ignore them; delete manually if you want the space back.
 
 **Full removal checklist** (uninstall + no leftover data):
 
@@ -309,9 +310,7 @@ All Desktop writes now land in **`~/Desktop/bonsAI_logs/`** (was `BonsAI_notes`)
 ### Saving from Game Mode
 **Feature:** After a successful **Ask**, use **Save to Desktop note…** on the main tab. You choose the file name (without `.md`); the plugin appends an entry under `~/Desktop/bonsAI_logs/` on the **Steam Deck user** (not the remote Ollama PC). Each run adds a new timestamped **Question** / **Response** block; existing files are not replaced.
 
-**Optional — per-thread chat autosave:** In **Developer** (Settings → show Developer tab), enable **Auto-save chat to Desktop notes** (default off). With **Filesystem writes** enabled in **Permissions**, each **Ask** and **AI reply** for a named chat thread append to `~/Desktop/bonsAI_chats/<thread-id>/thread.md` (screenshots copied under `attachments/` when attached). This **replaces** the older daily `bonsai-chat-YYYY-MM-DD.md` path for new Asks — existing daily files are left on disk. Rows in **All chats…** show per-thread Desktop folder size or `—` when autosave is off or the folder is absent.
-
-**Legacy daily chat log:** Older builds appended to `~/Desktop/bonsAI_logs/bonsai-chat-YYYY-MM-DD.md`. That path is no longer used for new thread-based Asks. Use **Clear all data…** → confirm **Also clear Desktop chats?** to remove legacy daily chat files and `bonsAI_chats/` folders.
+**Optional — daily chat log:** In **Developer** (Settings → show Developer tab), enable **Auto-save chat to Desktop notes** (default off). With **Filesystem writes** enabled in **Permissions**, each **Ask** and each **AI reply** append to `~/Desktop/bonsAI_logs/bonsai-chat-YYYY-MM-DD.md` (UTC calendar day). Ask lines include paths for any screenshot you attached for that prompt.
 
 **Optional — app activity log:** Settings → Advanced → **App activity logging to Desktop** (`desktop_app_log_level`, default **Off**). With **Filesystem writes** on:
 - **Default** — one-line summary events (plugin load/unload, connection test, Ask start/complete, settings key changes without secret values) in `~/Desktop/bonsAI_logs/bonsai-app-YYYY-MM-DD.log`.
@@ -324,16 +323,6 @@ All Desktop writes now land in **`~/Desktop/bonsAI_logs/`** (was `BonsAI_notes`)
 1. Switch to **Desktop Mode** at least once so the Desktop folder exists (SteamOS creates `~/Desktop` when needed).
 2. Ensure the Deck user home volume is not full and is writable.
 3. If you use unusual home layouts or symlinks, verify `~/Desktop/bonsAI_logs` resolves under your Deck user home.
-
-### Named chat slots (private store vs Desktop mirror)
-
-**Private store (always):** Saved threads live under `~/homebrew/settings/bonsAI/chat_threads/` (`index.json` + per-thread JSON). This is the source of truth for Main tab bubbles and the **All chats…** picker. **Clear cache…** clears only the active UI selection — threads remain on disk. **Clear all data…** wipes private threads with the rest of plugin settings.
-
-**Idle timeout:** Settings → **Chat session idle timeout** (5 / 15 / 30 / 60 min, default 15). After idle expires, reopening bonsAI shows a clean Main draft; saved threads stay in **All chats…**. Activity resets on Ask submit, thread select, or opening the picker.
-
-**Desktop mirror (optional):** When **Filesystem writes** and Developer **Auto-save chat** are both on, Q+A mirror to `~/Desktop/bonsAI_chats/<thread-id>/`. Picker delete removes the private thread and its Desktop folder. Creating thread #51 prunes the **oldest private** thread only — Desktop folders for pruned threads may remain until picker delete or **Also clear Desktop chats?** on Clear all data.
-
-**AppID mismatch:** When the active thread’s origin game differs from the running game, Main shows **Continue** (new Asks use current context; history unchanged) or **New thread**.
 
 ---
 

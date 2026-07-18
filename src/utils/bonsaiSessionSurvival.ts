@@ -54,7 +54,6 @@ export type BonsaiSessionSurvivalSnapshot = {
   showSlowWarning: boolean;
   lastRequestId: number | null;
   thinkingSummary: string | null;
-  activeThreadId?: string | null;
 };
 
 const survival = createTabLocalSurvival<BonsaiSessionSurvivalSnapshot>({ consumeClears: false });

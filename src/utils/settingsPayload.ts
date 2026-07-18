@@ -57,8 +57,6 @@ export function toBonsaiSettingsPayload(
     use_local_knowledge_base: input.useLocalKnowledgeBase,
     rag_corpus_path: input.ragCorpusPath,
     rag_corpus_version: input.ragCorpusVersion,
-    chat_idle_timeout_minutes: input.chatIdleTimeoutMinutes,
-    dev_bundle_thread_title_in_reply: input.devBundleThreadTitleInReply,
   };
   return patch ? { ...base, ...patch } : base;
 }
