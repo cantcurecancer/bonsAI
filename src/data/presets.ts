@@ -60,6 +60,7 @@ const PRESET_PROMPTS: PresetPrompt[] = [
   { text: "What do the model policy tiers mean?", category: "general" },
   { text: "Which Ollama model fits my Deck setup?", category: "general" },
   { text: "Which Ollama essentials should I pull for this Deck?", category: "general" },
+  { text: "Enable local knowledge base for better game tips", category: "general" },
   { text: "When should I use Expert mode instead of Speed?", category: "general", preferAskMode: "expert" },
   { text: "How do I set up voice input on the Deck?", category: "general" },
   { text: "How do I get past this part?", category: "strategy", preferAskMode: "strategy" },

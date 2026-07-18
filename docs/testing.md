@@ -362,6 +362,7 @@ Maps [roadmap.md](roadmap.md) **Completed** summary and [archive/roadmap-complet
 |------------|-----------------|------------|--------|----------|
 | BETA-MODAL | Beta disclaimer modal | SMOKE-A | Open | First paint |
 | PRESETS-CAROUSEL | Suggested AI prompts + carousel | SMOKE-A, SMOKE-D | Partial | `PRESET_PROMPTS` baseline shipped; troubleshooting triple verified; string expansion incremental |
+| SESSION-RAG-CHIPS | AppID-aware KB preset mix (~30% RAG) | SESSION-RAG-CHIPS-01 | Open | Unit: `sessionRagComposer.test.ts`, `test_knowledge_base_service.py`; on-Deck with KB + known AppID |
 | PROMPT-TEST-MVP | Prompt-testing MVP (this doc) | — | Partial | Matrices shipped; Tier 0–1 open |
 | SANITIZER | Input sanitizer lane | SMOKE-F | Partial | [SMOKE-F-disable-sanitize](test-evidence/tier0/2026-05-26-9e20a82/SMOKE-F-disable-sanitize/manifest.json); [preview 2026-05-26](test-evidence/tier0/2026-05-26-9e20a82/SMOKE-F-disable-sanitize/manifest.json) |
 | TRANSPARENCY | Input handling transparency panel | SMOKE-A | Partial | Superseded by context chip ladder (**CONTEXT-LADDER-01**); legacy panel removed 2026-07-17 |
@@ -833,6 +834,7 @@ Spot-check only if attach/RPC changes. **SMOKE-G**.
 - [ ] Carousel mode: slide, D-pad history, post-Ask re-seed
 - [ ] Preset tap appends " for [game]" when game running
 - [ ] Follow-up category detection (battery / performance / troubleshooting / controls)
+- [ ] **SESSION-RAG-CHIPS-01:** KB on + corpus installed + game with seed AppID (e.g. ELDEN RING `1245620`) — occasional game-specific chip in trio; KB off or corpus missing → static-only; setup tip may appear from pool when sampled
 
 ### Beta preset behavior
 

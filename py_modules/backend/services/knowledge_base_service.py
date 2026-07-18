@@ -368,6 +368,181 @@ def retrieve_knowledge_context(
         )
 
 
+_CHIP_TEXT_MAX_LEN = 80
+
+# Section types surfaced first for session preset chips (boss / stuck-style).
+_CHIP_SECTION_TYPE_ORDER = ("boss", "dungeon", "encounter", "area", "quest")
+
+_COMPAT_CHIP_TEMPLATES: dict[str, str] = {
+    "proton": "Any known Proton issues for this game?",
+    "deck": "How well does this game run on Deck?",
+    "controller": "Any Steam Input issues for this game?",
+}
+
+
+@dataclass
+class SessionRagChipCandidate:
+    text: str
+    category: str
+    prefer_ask_mode: Optional[str] = None
+    domain: str = ""
+
+
+@dataclass
+class SessionRagChipCandidatesResult:
+    ok: bool
+    reason: str = ""
+    candidates: list[SessionRagChipCandidate] = field(default_factory=list)
+
+
+def _truncate_chip_text(text: str, max_len: int = _CHIP_TEXT_MAX_LEN) -> str:
+    t = " ".join((text or "").split())
+    if len(t) <= max_len:
+        return t
+    cut = t[: max_len - 1].rsplit(" ", 1)[0]
+    return (cut or t[: max_len - 1]).rstrip("?., ") + "?"
+
+
+def _curtail_section_to_chip(section_type: str, name: str) -> str:
+    st = (section_type or "").strip().lower()
+    n = (name or "").strip()
+    if not n:
+        return ""
+    if st == "boss":
+        return _truncate_chip_text(f"How do I beat {n}?")
+    if st == "dungeon":
+        return _truncate_chip_text(f"How do I get through {n}?")
+    if st in ("encounter", "area", "quest"):
+        return _truncate_chip_text(f"Tips for {n} in this game?")
+    return _truncate_chip_text(f"What should I know about {n}?")
+
+
+def _curtail_compat_topic_to_chip(topic: str) -> str:
+    key = (topic or "").strip().lower()
+    template = _COMPAT_CHIP_TEMPLATES.get(key)
+    if template:
+        return _truncate_chip_text(template)
+    if key:
+        return _truncate_chip_text(f"Any known {key} issues for this game?")
+    return ""
+
+
+def _list_game_sections_for_chips(
+    conn: sqlite3.Connection,
+    game_id: int,
+    *,
+    limit: int = 6,
+) -> list[tuple[str, str]]:
+    order_cases = " ".join(
+        f"WHEN lower(section_type) = '{st}' THEN {i}"
+        for i, st in enumerate(_CHIP_SECTION_TYPE_ORDER)
+    )
+    sql = (
+        "SELECT section_type, name FROM sections WHERE game_id = ? "
+        f"ORDER BY CASE {order_cases} ELSE 99 END, section_id LIMIT ?"
+    )
+    rows = conn.execute(sql, (game_id, limit)).fetchall()
+    return [(str(r["section_type"] or ""), str(r["name"] or "")) for r in rows]
+
+
+def _compat_chip_candidates(conn: sqlite3.Connection) -> list[SessionRagChipCandidate]:
+    out: list[SessionRagChipCandidate] = []
+    seen: set[str] = set()
+    rows = conn.execute(
+        "SELECT topic FROM compat_patterns ORDER BY pattern_id"
+    ).fetchall()
+    for row in rows:
+        topic = str(row["topic"] or "")
+        text = _curtail_compat_topic_to_chip(topic)
+        if not text or text in seen:
+            continue
+        seen.add(text)
+        out.append(
+            SessionRagChipCandidate(
+                text=text,
+                category="troubleshooting",
+                domain="compat",
+            )
+        )
+    return out
+
+
+def suggest_chip_candidates(
+    settings: dict,
+    *,
+    app_id: str,
+    app_name: str,
+    shortcut_name: str = "",
+) -> SessionRagChipCandidatesResult:
+    """Return curtailed preset-chip prompts from the offline KB for the running game."""
+    if settings.get("use_local_knowledge_base") is not True:
+        return SessionRagChipCandidatesResult(ok=False, reason="kb_off")
+
+    db_path = resolve_corpus_db_path(settings)
+    if not db_path:
+        return SessionRagChipCandidatesResult(ok=False, reason="corpus_missing")
+
+    try:
+        conn = _get_connection(db_path)
+        game_id, resolution = _resolve_game_id(
+            conn,
+            app_id=app_id,
+            app_name=app_name,
+            shortcut_name=shortcut_name,
+        )
+
+        candidates: list[SessionRagChipCandidate] = []
+        seen: set[str] = set()
+
+        if game_id is not None:
+            for section_type, name in _list_game_sections_for_chips(conn, game_id):
+                text = _curtail_section_to_chip(section_type, name)
+                if not text or text in seen:
+                    continue
+                seen.add(text)
+                candidates.append(
+                    SessionRagChipCandidate(
+                        text=text,
+                        category="strategy",
+                        prefer_ask_mode="strategy",
+                        domain="strategy",
+                    )
+                )
+
+        for compat in _compat_chip_candidates(conn):
+            if compat.text in seen:
+                continue
+            seen.add(compat.text)
+            candidates.append(compat)
+
+        if not candidates:
+            note = "app_unresolved" if game_id is None else "no_sections"
+            return SessionRagChipCandidatesResult(ok=False, reason=note)
+
+        _ = resolution
+        return SessionRagChipCandidatesResult(ok=True, candidates=candidates)
+    except sqlite3.Error as exc:
+        close_connection(db_path)
+        return SessionRagChipCandidatesResult(ok=False, reason=f"corpus_error:{exc}")
+
+
+def session_rag_chip_candidates_to_rpc(result: SessionRagChipCandidatesResult) -> dict[str, Any]:
+    """Serialize chip candidates for Decky RPC."""
+    return {
+        "ok": result.ok,
+        "reason": result.reason,
+        "candidates": [
+            {
+                "text": c.text,
+                "category": c.category,
+                "prefer_ask_mode": c.prefer_ask_mode,
+                "domain": c.domain,
+            }
+            for c in result.candidates
+        ],
+    }
+
+
 def stack_context_blocks(
     *,
     proton_text: str,

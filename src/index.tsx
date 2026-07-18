@@ -54,7 +54,6 @@ import { persistOllamaIpIfRoutingToLan as persistOllamaIpIfRoutingToLanUtil } fr
 import { clearOllamaTabLocalSurvival } from "./utils/ollamaTabLocalSurvival";
 import { clearSettingsTabLocalSurvival } from "./utils/settingsTabLocalSurvival";
 import { shouldClearUnifiedInputForPersistenceMode } from "./utils/unifiedInputPersistenceMode";
-import { getRandomPresets } from "./data/presets";
 import {
   AboutTabTitleIcon,
   BonsaiTreeTabIcon,
@@ -657,7 +656,7 @@ const Content: React.FC = () => {
     onStrategyChecklistToggle,
     resetAskSessionSlice,
     setStrategyGuideBranches,
-    setSuggestedPrompts,
+    reseedSuggestedPrompts,
     restoreSessionSnapshot,
     setAskThreadCollapsed,
     setAskThreadDisplayQuestion,
@@ -690,6 +689,7 @@ const Content: React.FC = () => {
     },
     aiCharacterEnabled,
     aiCharacterPresetId,
+    useLocalKnowledgeBase,
     chatThreads: chatThreadsBridge,
   });
 
@@ -1124,13 +1124,13 @@ const Content: React.FC = () => {
     setSelectedIndex(-1);
     setNavigationMessage("");
     setSelectedAttachment(null);
-    setSuggestedPrompts(getRandomPresets(3));
+    void reseedSuggestedPrompts("random", undefined, true);
     toaster.toast({
       title: "Session cleared",
       body: "Main tab cleared. Saved chats remain in All chats…",
       duration: 3800,
     });
-  }, [resetAskSessionSlice, setSuggestedPrompts]);
+  }, [resetAskSessionSlice, reseedSuggestedPrompts]);
 
   const onWipeDesktopChatExports = useCallback(async () => {
     await call("wipe_desktop_chat_exports_rpc", []);
@@ -1155,7 +1155,6 @@ const Content: React.FC = () => {
       localRuntimeBetaPromptIssuedRef.current = false;
       ollamaLocalOnDeckPrevRef.current = null;
       setPluginHelpDismissed(false);
-      setSuggestedPrompts(getRandomPresets(3));
       resetPluginSession();
       await intentPacks.refresh();
       showDisclaimerModalAgain();

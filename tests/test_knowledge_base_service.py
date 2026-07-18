@@ -7,8 +7,10 @@ from pathlib import Path
 from backend.services.knowledge_base_service import (
     close_connection,
     retrieve_knowledge_context,
+    session_rag_chip_candidates_to_rpc,
     should_retrieve_knowledge,
     stack_context_blocks,
+    suggest_chip_candidates,
 )
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -118,6 +120,63 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
       max_total_bytes=6000,
     )
     self.assertLessEqual(len(stacked.encode("utf-8")), 6200)
+
+  def test_suggest_chip_candidates_kb_off(self):
+    settings = {
+      "use_local_knowledge_base": False,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    result = suggest_chip_candidates(
+      settings,
+      app_id="1245620",
+      app_name="ELDEN RING",
+    )
+    self.assertFalse(result.ok)
+    self.assertEqual(result.reason, "kb_off")
+    self.assertEqual(result.candidates, [])
+
+  def test_suggest_chip_candidates_missing_corpus(self):
+    result = suggest_chip_candidates(
+      {"use_local_knowledge_base": True, "rag_corpus_path": "/nonexistent/path"},
+      app_id="1245620",
+      app_name="ELDEN RING",
+    )
+    self.assertFalse(result.ok)
+    self.assertEqual(result.reason, "corpus_missing")
+
+  def test_suggest_chip_candidates_appid_hit(self):
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    result = suggest_chip_candidates(
+      settings,
+      app_id="1245620",
+      app_name="ELDEN RING",
+    )
+    self.assertTrue(result.ok)
+    texts = [c.text for c in result.candidates]
+    self.assertTrue(any("Margit" in t for t in texts))
+    margit = next(c for c in result.candidates if "Margit" in c.text)
+    self.assertEqual(margit.category, "strategy")
+    self.assertEqual(margit.prefer_ask_mode, "strategy")
+    self.assertTrue(any("Proton" in t for t in texts))
+
+  def test_suggest_chip_candidates_rpc_shape(self):
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    result = suggest_chip_candidates(
+      settings,
+      app_id="413150",
+      app_name="The Legend of Zelda: Ocarina of Time",
+    )
+    payload = session_rag_chip_candidates_to_rpc(result)
+    self.assertTrue(payload["ok"])
+    self.assertGreaterEqual(len(payload["candidates"]), 1)
+    self.assertIn("text", payload["candidates"][0])
+    self.assertIn("category", payload["candidates"][0])
 
 
 if __name__ == "__main__":

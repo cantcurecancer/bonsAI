@@ -175,6 +175,10 @@ from backend.services.rag_corpus_download_service import (
     remove_corpus_at_path,
     run_rag_corpus_download,
 )
+from backend.services.knowledge_base_service import (
+    session_rag_chip_candidates_to_rpc,
+    suggest_chip_candidates,
+)
 from backend.services.knowledge_base_schema import (
     CORPUS_MANIFEST_FILENAME,
     default_corpus_dir_internal,
@@ -1727,6 +1731,23 @@ class Plugin:
             "use_local_knowledge_base": settings.get("use_local_knowledge_base") is True,
             "storage_options": storage_options,
         }
+
+    async def get_session_rag_chip_candidates(
+        self,
+        app_id: str = "",
+        app_name: str = "",
+        shortcut_name: str = "",
+    ):
+        """Return curtailed KB-backed preset chip candidates for the running game (read-only)."""
+        plugin = Plugin._coerce_instance(self)
+        settings = await plugin.load_settings()
+        result = suggest_chip_candidates(
+            settings,
+            app_id=str(app_id or ""),
+            app_name=str(app_name or ""),
+            shortcut_name=str(shortcut_name or ""),
+        )
+        return session_rag_chip_candidates_to_rpc(result)
 
     async def start_rag_corpus_download(self, data: Any = None):
         """Download and install the knowledge base corpus (user-initiated; Model A consent)."""

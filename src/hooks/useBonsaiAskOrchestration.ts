@@ -13,6 +13,8 @@ import {
   type UnifiedInputPersistenceMode,
 } from "../utils/settingsAndResponse";
 import { detectPromptCategory, getContextualPresets, getRandomPresets, type PresetPrompt } from "../data/presets";
+import { composePresetSeedsWithSessionRag } from "../features/preset-carousel/composePresetSeedsWithSessionRag";
+import type { SessionRagChipCandidate } from "../features/preset-carousel/sessionRagComposer";
 import {
   CUSTOM_RESOLUTION_INPUT_PREFIX,
   isStrategyCustomResolutionBranch,
@@ -67,6 +69,7 @@ import {
   type ReplyMicroActionId,
 } from "../data/replyMicroActions";
 import { startAskCompletionWatch, stopAskCompletionWatch } from "../utils/bonsaiAskCompletionWatch";
+import { fetchSessionRagChipCandidates } from "../utils/sessionRagChipCandidates";
 
 export type ChatThreadsBridge = {
   getActiveThreadId: () => string | null;
@@ -122,6 +125,7 @@ export type UseBonsaiAskOrchestrationArgs = {
   onExternalFailure?: (source: string, message: string, detail?: Record<string, unknown>) => void;
   aiCharacterEnabled?: boolean;
   aiCharacterPresetId?: string | null;
+  useLocalKnowledgeBase?: boolean;
   chatThreads?: ChatThreadsBridge;
 };
 
@@ -248,6 +252,90 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
   const [suggestedPrompts, setSuggestedPrompts] = useState<PresetPrompt[]>(
     () => survivalPeek?.suggestedPrompts ?? getRandomPresets(3)
   );
+  const ragCandidatesCacheRef = useRef<{ appId: string; candidates: SessionRagChipCandidate[] }>({
+    appId: "",
+    candidates: [],
+  });
+  const prevAppIdForPresetReseedRef = useRef<string | undefined>(undefined);
+  const coldMountPresetReseedDoneRef = useRef(!!survivalPeek?.suggestedPrompts?.length);
+
+  const loadSessionRagCandidates = useCallback(
+    async (
+      appId: string,
+      appName: string,
+      forceRefresh = false,
+    ): Promise<SessionRagChipCandidate[]> => {
+      if (!a.useLocalKnowledgeBase) {
+        ragCandidatesCacheRef.current = { appId, candidates: [] };
+        return [];
+      }
+      if (
+        !forceRefresh &&
+        ragCandidatesCacheRef.current.appId === appId &&
+        ragCandidatesCacheRef.current.candidates.length > 0
+      ) {
+        return ragCandidatesCacheRef.current.candidates;
+      }
+      const candidates = await fetchSessionRagChipCandidates({
+        appId,
+        appName,
+      });
+      ragCandidatesCacheRef.current = { appId, candidates };
+      return candidates;
+    },
+    [a.useLocalKnowledgeBase],
+  );
+
+  const applyComposedSuggestedPrompts = useCallback(
+    (staticSeeds: PresetPrompt[], candidates: SessionRagChipCandidate[]) => {
+      setSuggestedPrompts(
+        composePresetSeedsWithSessionRag({
+          staticSeeds,
+          ragCandidates: candidates,
+        }),
+      );
+    },
+    [],
+  );
+
+  const reseedSuggestedPrompts = useCallback(
+    async (mode: "random" | "contextual", category?: string, forceRefresh = false) => {
+      const appId = Router.MainRunningApp?.appid?.toString() ?? "";
+      const appName = Router.MainRunningApp?.display_name ?? "";
+      const staticSeeds =
+        mode === "contextual" && category
+          ? getContextualPresets(category, 3)
+          : getRandomPresets(3);
+      if (!a.useLocalKnowledgeBase) {
+        setSuggestedPrompts(staticSeeds);
+        return;
+      }
+      const candidates = await loadSessionRagCandidates(appId, appName, forceRefresh);
+      applyComposedSuggestedPrompts(staticSeeds, candidates);
+    },
+    [a.useLocalKnowledgeBase, applyComposedSuggestedPrompts, loadSessionRagCandidates],
+  );
+
+  useEffect(() => {
+    if (coldMountPresetReseedDoneRef.current) {
+      return;
+    }
+    coldMountPresetReseedDoneRef.current = true;
+    void reseedSuggestedPrompts("random");
+  }, [reseedSuggestedPrompts]);
+
+  useEffect(() => {
+    const prev = prevAppIdForPresetReseedRef.current;
+    prevAppIdForPresetReseedRef.current = trackedRunningAppId;
+    if (prev === undefined) {
+      return;
+    }
+    if (prev === trackedRunningAppId) {
+      return;
+    }
+    void reseedSuggestedPrompts("random");
+  }, [reseedSuggestedPrompts, trackedRunningAppId]);
+
   const [showSlowWarning, setShowSlowWarning] = useState(() => survivalPeek?.showSlowWarning ?? false);
   const [elapsedSeconds, setElapsedSeconds] = useState<number | null>(
     () => survivalPeek?.elapsedSeconds ?? null
@@ -447,7 +535,7 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
             const reseedRid = typeof status.request_id === "number" ? status.request_id : null;
             if (reseedRid === null || promptsReseededForRequestRef.current !== reseedRid) {
               promptsReseededForRequestRef.current = reseedRid;
-              setSuggestedPrompts(getContextualPresets(category, 3));
+              void reseedSuggestedPrompts("contextual", category, true);
             }
             const displayQ = (pendingThreadQuestionDisplayRef.current?.trim() || q).trim();
             pendingThreadQuestionDisplayRef.current = null;
@@ -1172,5 +1260,6 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
     resetAskSessionSlice,
     setStrategyGuideBranches,
     setSuggestedPrompts,
+    reseedSuggestedPrompts,
   };
 }

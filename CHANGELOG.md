@@ -5,6 +5,7 @@ All notable changes to this project are documented in this file.
 ## [Unreleased]
 
 ### Added
+- **Session RAG preset chips:** Main-tab carousel mixes ~30% offline-KB curtailed prompts (strategy + compat) per slot when the local knowledge base is enabled; reseeds on AppID change, after Ask, and cold mount. RPC `get_session_rag_chip_candidates`; `sessionRagComposer.ts`, `useBonsaiAskOrchestration.ts`.
 - **Voice STT session daemon:** Session-scoped `whisper-server` on `127.0.0.1:18765` for faster interim mic transcription; CLI fallback when server unavailable; incremental server install for existing CPU-safe `voice_bin`. `voice_whisper_daemon.py`, `voice_transcription_service.py`, `main.py`; tests `test_voice_whisper_daemon.py`.
 
 ### Changed
