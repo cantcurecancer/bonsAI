@@ -80,6 +80,7 @@ import { publishUiScaleScopeStyle } from "./utils/uiScaleScopeBridge";
 import { normalizeUiScaleProfileId, type UiScaleProfileId } from "./data/uiScaleProfile";
 import { formatDeckyRpcError } from "./utils/deckyCall";
 import { usePluginSettings } from "./hooks/usePluginSettings";
+import { useReplyLanguage } from "./hooks/useReplyLanguage";
 import { useIntentPacks } from "./hooks/useIntentPacks";
 import { useScreenshotBrowser } from "./hooks/useScreenshotBrowser";
 import { useSteamSettingsSearch } from "./hooks/useSteamSettingsSearch";
@@ -398,6 +399,8 @@ const Content: React.FC = () => {
     setOllamaKeepAlive,
     replyVerbosity,
     setReplyVerbosity,
+    replyLanguage,
+    setReplyLanguage,
     showDeveloperTab,
     setShowDeveloperTab,
     modelPolicyTier,
@@ -443,6 +446,8 @@ const Content: React.FC = () => {
     pauseDebouncedSettingsSave,
     syncSettingsFromDisk,
   } = usePluginSettings();
+
+  const { effectiveLang, steamClientLanguageLabel, t: uiT } = useReplyLanguage(replyLanguage);
 
   const isAskingRef = useRef(false);
   const {
@@ -493,11 +498,11 @@ const Content: React.FC = () => {
   const onVoiceError = useCallback((e: unknown) => {
     setVoiceRecording(false);
     toaster.toast({
-      title: "Voice input error",
+      title: uiT("toast.voiceInputError.title"),
       body: formatDeckyRpcError(e),
       duration: 5000,
     });
-  }, []);
+  }, [uiT]);
 
   const {
     startVoiceTranscription,
@@ -940,8 +945,8 @@ const Content: React.FC = () => {
   const openModelPolicyReadme = useCallback(() => {
     if (!capabilities.external_navigation) {
       toaster.toast({
-        title: "Permission required",
-        body: "Enable External and Steam navigation in the Permissions tab.",
+        title: uiT("toast.permissionRequired.title"),
+        body: uiT("toast.permissionRequired.body"),
         duration: 4500,
       });
       goToPermissionsTab();
@@ -952,7 +957,7 @@ const Content: React.FC = () => {
     } catch {
       toaster.toast({ title: "README", body: MODEL_POLICY_README_URL, duration: 4000 });
     }
-  }, [capabilities.external_navigation, goToPermissionsTab]);
+  }, [capabilities.external_navigation, goToPermissionsTab, uiT]);
 
   const onOpenControllerSettingsForShortcut = useCallback(() => {
     if (!capabilities.external_navigation) {
@@ -1023,11 +1028,11 @@ const Content: React.FC = () => {
     setSelectedAttachment(null);
     void reseedSuggestedPrompts("random", undefined, true);
     toaster.toast({
-      title: "Session cleared",
-      body: "Main tab cleared.",
+      title: uiT("toast.sessionCleared.title"),
+      body: uiT("toast.sessionCleared.body"),
       duration: 3800,
     });
-  }, [resetAskSessionSlice, reseedSuggestedPrompts]);
+  }, [resetAskSessionSlice, reseedSuggestedPrompts, uiT]);
 
   const onClearAllPluginData = useCallback(async () => {
     try {
@@ -1056,7 +1061,7 @@ const Content: React.FC = () => {
       });
     } catch (e: unknown) {
       toaster.toast({
-        title: "Clear failed",
+        title: uiT("toast.clearFailed.title"),
         body: formatDeckyRpcError(e),
         duration: 5000,
       });
@@ -1067,6 +1072,7 @@ const Content: React.FC = () => {
     resetPluginSession,
     showDisclaimerModalAgain,
     intentPacks.refresh,
+    uiT,
   ]);
 
   const onMicInput = useCallback(() => {
@@ -1853,9 +1859,22 @@ const Content: React.FC = () => {
         githubIssuesUrl={GITHUB_ISSUES_URL}
         allowExternalNavigation={capabilities.external_navigation}
         onNavigateToPermissions={goToPermissionsTab}
+        replyLanguage={replyLanguage}
+        onReplyLanguageChange={setReplyLanguage}
+        effectiveLang={effectiveLang}
+        steamClientLanguageLabel={steamClientLanguageLabel}
+        t={uiT}
       />
     ),
-    [capabilities.external_navigation, goToPermissionsTab]
+    [
+      capabilities.external_navigation,
+      goToPermissionsTab,
+      replyLanguage,
+      setReplyLanguage,
+      effectiveLang,
+      steamClientLanguageLabel,
+      uiT,
+    ]
   );
 
   const deckyTabs = useMemo(

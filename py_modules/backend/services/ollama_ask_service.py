@@ -34,6 +34,7 @@ from backend.services.model_policy import (
 )
 from backend.services.ollama_service import post_ollama_chat
 from backend.services.settings_service import sanitize_ollama_keep_alive, sanitize_reply_verbosity
+from backend.services.reply_language_service import resolve_effective_reply_language
 from refactor_helpers import (
     build_effective_models_to_try,
     filter_models_to_installed,
@@ -94,6 +95,7 @@ async def run_ask_ollama(
         )
     keep_alive = sanitize_ollama_keep_alive(settings.get("ollama_keep_alive"))
     reply_verbosity = sanitize_reply_verbosity(settings.get("reply_verbosity"))
+    reply_language = resolve_effective_reply_language(settings.get("reply_language"))
     apreset = str(settings.get("screenshot_attachment_preset") or "low")
     if apreset not in ("low", "mid", "max"):
         apreset = "low"
@@ -118,6 +120,7 @@ async def run_ask_ollama(
         character_roleplay_on=bool(settings.get("ai_character_enabled")),
         strategy_checklist_state=strategy_checklist_state,
         reply_verbosity=reply_verbosity,
+        reply_language=reply_language,
     )
     rp_meta = build_roleplay_system_suffix_meta(settings, ask_mode)
     roleplay = rp_meta.suffix
@@ -156,6 +159,7 @@ async def run_ask_ollama(
         "resolved_character_preset_id": rp_meta.resolved_preset_id,
         "pyro_asshole_mode": pyro_asshole,
         "reply_verbosity": reply_verbosity,
+        "reply_language": reply_language,
     }
 
     logger.info(

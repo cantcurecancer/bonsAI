@@ -66,6 +66,7 @@ from backend.services.intent_pack_service import (
     save_intent_packs,
     set_pack_enabled,
 )
+from backend.services.reply_language_service import reply_language_snapshot
 from backend.services.settings_service import (
     clamp_int,
     load_settings as load_settings_from_disk,
@@ -2069,6 +2070,12 @@ class Plugin:
             out["sysfs_writes"] = read_sandbox_sysfs_writes()
         return out
 
+    async def get_reply_language_snapshot(self):
+        """Return Steam client language, persisted override, and effective Ask reply language."""
+        plugin = Plugin._coerce_instance(self)
+        settings = plugin.load_settings()
+        return reply_language_snapshot(settings.get("reply_language"))
+
     async def save_ask_feedback(self, rating: str, request_id: int = 0, question_len: int = 0, success: bool = False):
         """Persist thumbs up/down locally (JSONL under plugin settings); no network."""
         from backend.services.feedback_service import append_ask_feedback
@@ -2649,6 +2656,7 @@ class Plugin:
         character_roleplay_on: bool = False,
         strategy_checklist_state: Optional[dict] = None,
         reply_verbosity: str = "balanced",
+        reply_language: str = "english",
     ) -> str:
         """Build the system prompt using plugin-local metadata lookups and attachment context."""
         proton = (proton_log_attachment or "").strip()
@@ -2666,6 +2674,7 @@ class Plugin:
             character_roleplay_on=character_roleplay_on,
             strategy_checklist_state=strategy_checklist_state,
             reply_verbosity=reply_verbosity,
+            reply_language=reply_language,
         )
         return append_deck_tdp_sysfs_grounding(
             base,

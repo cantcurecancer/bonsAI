@@ -13,6 +13,7 @@ from backend.services.ollama_service import (
     user_wants_power_or_performance_topic,
 )
 from backend.services.ollama_prompts import (
+    build_reply_language_block,
     build_reply_verbosity_block,
     user_asks_for_detail_depth,
 )
@@ -713,6 +714,25 @@ class OllamaServiceTests(unittest.TestCase):
 
     def test_user_asks_for_detail_depth_false_for_short_question(self):
         self.assertFalse(user_asks_for_detail_depth("quick fps tip?"))
+
+    def test_build_reply_language_block_english_empty(self):
+        self.assertEqual(build_reply_language_block("english"), "")
+
+    def test_build_system_prompt_japanese_includes_language_block(self):
+        lookup_app_name, lookup_vdf = self._verbosity_lookup_helpers()
+        prompt = build_system_prompt(
+            question="How do I fix stutter?",
+            app_id="",
+            app_name="",
+            normalized_attachments=[],
+            prepared_images=[],
+            lookup_app_name=lookup_app_name,
+            lookup_screenshot_vdf_metadata=lookup_vdf,
+            reply_language="japanese",
+        )
+        self.assertIn("REPLY LANGUAGE", prompt)
+        self.assertIn("Japanese", prompt)
+        self.assertIn("fence names", prompt)
 
 
 if __name__ == "__main__":

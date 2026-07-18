@@ -131,6 +131,14 @@ describe("settingsAndResponse", () => {
     expect(normalizeSettings({}).reply_verbosity).toBe(DEFAULT_REPLY_VERBOSITY);
   });
 
+  it("normalizes reply_language to follow_system, en, or steam codes", () => {
+    expect(normalizeSettings({ reply_language: "follow_system" }).reply_language).toBe("follow_system");
+    expect(normalizeSettings({ reply_language: "en" }).reply_language).toBe("en");
+    expect(normalizeSettings({ reply_language: "japanese" }).reply_language).toBe("japanese");
+    expect(normalizeSettings({ reply_language: "bogus" }).reply_language).toBe("follow_system");
+    expect(normalizeSettings({}).reply_language).toBe("follow_system");
+  });
+
   it("normalizes ask_mode to allowed ids", () => {
     expect(normalizeSettings({ ask_mode: "expert" }).ask_mode).toBe("expert");
     expect(normalizeSettings({ ask_mode: "deep" }).ask_mode).toBe("expert");
@@ -236,6 +244,7 @@ describe("settingsAndResponse", () => {
       askMode: "expert",
       ollamaKeepAlive: "30s",
       replyVerbosity: "detailed",
+      replyLanguage: "japanese",
       showDeveloperTab: true,
       modelPolicyTier: "open_weight",
       modelPolicyNonFossUnlocked: false,
@@ -266,6 +275,7 @@ describe("settingsAndResponse", () => {
     expect(p.ask_mode).toBe("expert");
     expect(p.ollama_keep_alive).toBe("30s");
     expect(p.reply_verbosity).toBe("detailed");
+    expect(p.reply_language).toBe("japanese");
     expect(p.model_allow_high_vram_fallbacks).toBe(true);
     expect(p.ollama_local_on_deck).toBe(true);
     expect(p.attach_proton_logs_when_troubleshooting).toBe(true);
@@ -301,6 +311,7 @@ describe("settingsAndResponse", () => {
       askMode: DEFAULT_ASK_MODE,
       ollamaKeepAlive: DEFAULT_OLLAMA_KEEP_ALIVE,
       replyVerbosity: DEFAULT_REPLY_VERBOSITY,
+      replyLanguage: "follow_system",
       showDeveloperTab: false,
       modelPolicyTier: "open_source_only" as const,
       modelPolicyNonFossUnlocked: false,
@@ -446,6 +457,7 @@ describe("settingsAndResponse", () => {
       askMode: normalized.ask_mode,
       ollamaKeepAlive: normalized.ollama_keep_alive,
       replyVerbosity: normalized.reply_verbosity,
+      replyLanguage: normalized.reply_language,
       showDeveloperTab: normalized.show_developer_tab,
       modelPolicyTier: normalized.model_policy_tier,
       modelPolicyNonFossUnlocked: normalized.model_policy_non_foss_unlocked,

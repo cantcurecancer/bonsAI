@@ -28,6 +28,7 @@ import {
   DEFAULT_MODEL_POLICY_TIER,
   DEFAULT_OLLAMA_KEEP_ALIVE,
   DEFAULT_REPLY_VERBOSITY,
+  DEFAULT_REPLY_LANGUAGE,
   DEFAULT_OLLAMA_LOCAL_ON_DECK,
   DEFAULT_PRESET_CHIP_ANIMATION,
   DEFAULT_PRESET_CHIP_FADE_ANIMATION_ENABLED,
@@ -54,6 +55,7 @@ import {
   type DesktopAppLogLevel,
   type OllamaKeepAliveDuration,
   type ReplyVerbosityId,
+  type ReplyLanguageId,
   type PresetChipAnimation,
   type ScreenshotAttachmentPreset,
   type UnifiedInputPersistenceMode,
@@ -92,6 +94,7 @@ function snapshotFromBonsaiSettings(normalized: BonsaiSettings): BonsaiSettingsS
     askMode: normalized.ask_mode,
     ollamaKeepAlive: normalized.ollama_keep_alive,
     replyVerbosity: normalized.reply_verbosity,
+    replyLanguage: normalized.reply_language,
     showDeveloperTab: normalized.show_developer_tab,
     modelPolicyTier: normalized.model_policy_tier,
     modelPolicyNonFossUnlocked: normalized.model_policy_non_foss_unlocked,
@@ -175,6 +178,7 @@ export function usePluginSettings() {
   const [askMode, setAskMode] = useState<AskModeId>(DEFAULT_ASK_MODE);
   const [ollamaKeepAlive, setOllamaKeepAlive] = useState<OllamaKeepAliveDuration>(DEFAULT_OLLAMA_KEEP_ALIVE);
   const [replyVerbosity, setReplyVerbosity] = useState<ReplyVerbosityId>(DEFAULT_REPLY_VERBOSITY);
+  const [replyLanguage, setReplyLanguage] = useState<ReplyLanguageId>(DEFAULT_REPLY_LANGUAGE);
   const [showDeveloperTab, setShowDeveloperTab] = useState<boolean>(DEFAULT_SHOW_DEVELOPER_TAB);
   const [modelPolicyTier, setModelPolicyTier] = useState<ModelPolicyTierId>(DEFAULT_MODEL_POLICY_TIER);
   const [modelPolicyNonFossUnlocked, setModelPolicyNonFossUnlocked] = useState<boolean>(false);
@@ -241,6 +245,7 @@ export function usePluginSettings() {
     askMode,
     ollamaKeepAlive,
     replyVerbosity,
+    replyLanguage,
     showDeveloperTab,
     modelPolicyTier,
     modelPolicyNonFossUnlocked,
@@ -291,6 +296,7 @@ export function usePluginSettings() {
     setAskMode(normalized.ask_mode);
     setOllamaKeepAlive(normalized.ollama_keep_alive);
     setReplyVerbosity(normalized.reply_verbosity);
+    setReplyLanguage(normalized.reply_language);
     setShowDeveloperTab(normalized.show_developer_tab);
     setModelPolicyTier(normalized.model_policy_tier);
     setModelPolicyNonFossUnlocked(normalized.model_policy_non_foss_unlocked);
@@ -460,6 +466,7 @@ export function usePluginSettings() {
     askMode,
     ollamaKeepAlive,
     replyVerbosity,
+    replyLanguage,
     showDeveloperTab,
     modelPolicyTier,
     modelPolicyNonFossUnlocked,
@@ -518,7 +525,9 @@ export function usePluginSettings() {
     ollamaKeepAlive,
     setOllamaKeepAlive,
     replyVerbosity,
+    replyLanguage,
     setReplyVerbosity,
+    setReplyLanguage,
     showDeveloperTab,
     setShowDeveloperTab,
     modelPolicyTier,

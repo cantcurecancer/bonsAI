@@ -9,6 +9,7 @@ import {
   isReplyVerbosityId,
   type ReplyVerbosityId,
 } from "./replyVerbosity";
+import { normalizeReplyLanguage } from "./replyLanguage";
 import {
   DEFAULT_OLLAMA_KEEP_ALIVE,
   isOllamaKeepAliveDuration,
@@ -445,6 +446,7 @@ export function normalizeSettings(data: unknown): BonsaiSettings {
     ask_mode: normalizeAskMode(raw.ask_mode),
     ollama_keep_alive: normalizeOllamaKeepAlive(raw.ollama_keep_alive),
     reply_verbosity: normalizeReplyVerbosity(raw.reply_verbosity),
+    reply_language: normalizeReplyLanguage(raw.reply_language),
     show_developer_tab: normalizeShowDeveloperTab(raw.show_developer_tab, rawRecord?.show_debug_tab),
     model_policy_tier: modelPolicy.model_policy_tier,
     model_policy_non_foss_unlocked: modelPolicy.model_policy_non_foss_unlocked,

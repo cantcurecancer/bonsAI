@@ -41,6 +41,7 @@ export const FRONTEND_RPC_METHODS = [
   "export_intent_pack",
   "import_intent_pack",
   "remove_intent_pack",
+  "get_reply_language_snapshot",
   "get_strategy_checklist_session",
   "save_strategy_checklist_session",
   "clear_strategy_checklist_session",
@@ -106,6 +107,12 @@ function defaultHandlers(): Record<string, RpcHandler> {
     append_desktop_chat_event: () => ({ success: true }),
     read_host_clipboard_text: () => ({ ok: true, text: "" }),
     get_input_transparency: () => ({ ok: true }),
+    get_reply_language_snapshot: () => ({
+      override: settings.reply_language ?? "follow_system",
+      steam_client_language: "english",
+      effective: "english",
+      display_name: "English",
+    }),
     save_ask_feedback: () => ({ ok: true }),
     fetch_ollama_catalog_metadata: () => ({ tags: {} }),
     fetch_pull_model_catalog: () => ({

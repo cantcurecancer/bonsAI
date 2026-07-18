@@ -1,8 +1,11 @@
-import React from "react";
-import { ButtonItem, Navigation, PanelSection, PanelSectionRow } from "@decky/ui";
+import React, { useRef } from "react";
+import { ButtonItem, Focusable, Navigation, PanelSection, PanelSectionRow } from "@decky/ui";
 import { toaster } from "@decky/api";
 import { BONSAI_FOREST_GREEN } from "../features/unified-input/constants";
 import supportPaypalQr from "../assets/qrcode.png";
+import { AboutReplyLanguageSection } from "./AboutReplyLanguageSection";
+import type { ReplyLanguageId } from "../data/replyLanguage";
+import type { UiStringKey } from "../i18n/keys";
 
 const PAYPAL_SUPPORT_URL = "https://paypal.me/quentind313";
 
@@ -13,6 +16,11 @@ type Props = {
   /** When false, external link buttons show a toast and optional navigation to Permissions. */
   allowExternalNavigation: boolean;
   onNavigateToPermissions: () => void;
+  replyLanguage: ReplyLanguageId;
+  onReplyLanguageChange: (next: ReplyLanguageId) => void;
+  effectiveLang: string;
+  steamClientLanguageLabel: string;
+  t: (key: UiStringKey) => string;
 };
 
 /**
@@ -23,12 +31,14 @@ function openExternalOrExplain(
   url: string,
   allow: boolean,
   onNavigateToPermissions: () => void,
-  toastTitle: string
+  toastTitle: string,
+  permissionTitle: string,
+  permissionBody: string,
 ) {
   if (!allow) {
     toaster.toast({
-      title: "Permission required",
-      body: "Enable External and Steam navigation in the Permissions tab.",
+      title: permissionTitle,
+      body: permissionBody,
       duration: 4500,
     });
     onNavigateToPermissions();
@@ -41,117 +51,196 @@ function openExternalOrExplain(
   }
 }
 
+const deckNav = (handlers: Record<string, () => boolean | void>) =>
+  handlers as unknown as Record<string, unknown>;
+
 export const AboutTab: React.FC<Props> = ({
   githubRepoUrl,
   ollamaRepoUrl,
   githubIssuesUrl,
   allowExternalNavigation,
   onNavigateToPermissions,
-}) => (
-  <PanelSection title="About bonsAI">
-    <PanelSectionRow>
-      <div style={{ fontSize: 12, color: "#c8c8c8", lineHeight: "1.2" }}>
-        Backend Ollama Node for Steam (A.I.) - An AI assistant embedded in the
-        Steam Deck Quick Access Menu. Ask questions, search settings, get game-specific
-        performance recommendations and apply TDP changes from the QAM (GPU
-        clock suggestions are recommendations only)
-      </div>
-    </PanelSectionRow>
-    <PanelSectionRow>
-      <div style={{ fontSize: 12, color: BONSAI_FOREST_GREEN, lineHeight: "1.2", fontWeight: 600, marginTop: "1.2em" }}>
-        This plugin is in beta. AI-generated recommendations — especially TDP
-        and performance changes — should be verified before relying on them.
-        bonsAI modifies system hardware settings based on AI suggestions. Use
-        at your own risk!
-      </div>
-    </PanelSectionRow>
-    <PanelSectionRow>
-      <ButtonItem
-        layout="below"
-        onClick={() => {
-          openExternalOrExplain(githubRepoUrl, allowExternalNavigation, onNavigateToPermissions, "GitHub");
-        }}
-      >
-        <span style={{ fontSize: 13 }}>GitHub</span>
-      </ButtonItem>
-    </PanelSectionRow>
-    <PanelSectionRow>
-      <ButtonItem
-        layout="below"
-        onClick={() => {
-          openExternalOrExplain(ollamaRepoUrl, allowExternalNavigation, onNavigateToPermissions, "Ollama");
-        }}
-      >
-        <span style={{ fontSize: 13 }}>Built on Ollama!</span>
-      </ButtonItem>
-    </PanelSectionRow>
-    <PanelSectionRow>
-      <ButtonItem
-        layout="below"
-        onClick={() => {
-          openExternalOrExplain(githubIssuesUrl, allowExternalNavigation, onNavigateToPermissions, "Report a Bug");
-        }}
-      >
-        <span style={{ fontSize: 13 }}>Bugs & Feature Requests</span>
-      </ButtonItem>
-    </PanelSectionRow>
-    <PanelSectionRow>
-      <div
-        style={{
-          width: "100%",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          boxSizing: "border-box",
-        }}
-      >
-        <div
-          style={{
-            width: "100%",
-            maxWidth: 180,
-            margin: "0 auto",
-            minWidth: 0,
-            boxSizing: "border-box",
-          }}
-        >
+  replyLanguage,
+  onReplyLanguageChange,
+  effectiveLang,
+  steamClientLanguageLabel,
+  t,
+}) => {
+  const githubBtnHostRef = useRef<HTMLDivElement | null>(null);
+  const paypalBtnHostRef = useRef<HTMLDivElement | null>(null);
+
+  const focusGithubBtn = () => {
+    githubBtnHostRef.current?.focus();
+    return true;
+  };
+
+  const focusPaypalBtn = () => {
+    paypalBtnHostRef.current?.focus();
+    return true;
+  };
+
+  const permissionTitle = t("toast.permissionRequired.title");
+  const permissionBody = t("toast.permissionRequired.body");
+
+  return (
+    <>
+      <PanelSection title="About bonsAI">
+        <PanelSectionRow>
+          <div style={{ fontSize: 12, color: "#c8c8c8", lineHeight: "1.2" }}>
+            Backend Ollama Node for Steam (A.I.) - An AI assistant embedded in the
+            Steam Deck Quick Access Menu. Ask questions, search settings, get game-specific
+            performance recommendations and apply TDP changes from the QAM (GPU
+            clock suggestions are recommendations only)
+          </div>
+        </PanelSectionRow>
+        <PanelSectionRow>
+          <div style={{ fontSize: 12, color: BONSAI_FOREST_GREEN, lineHeight: "1.2", fontWeight: 600, marginTop: "1.2em" }}>
+            This plugin is in beta. AI-generated recommendations — especially TDP
+            and performance changes — should be verified before relying on them.
+            bonsAI modifies system hardware settings based on AI suggestions. Use
+            at your own risk!
+          </div>
+        </PanelSectionRow>
+      </PanelSection>
+
+      <AboutReplyLanguageSection
+        replyLanguage={replyLanguage}
+        onReplyLanguageChange={onReplyLanguageChange}
+        effectiveLang={effectiveLang}
+        steamClientLanguageLabel={steamClientLanguageLabel}
+        onMoveUp={() => false}
+        onMoveDown={focusGithubBtn}
+      />
+
+      <PanelSection title="Links">
+            ref={githubBtnHostRef}
+            style={{ width: "100%" }}
+            {...deckNav({
+              onMoveUp: () => {
+                const el = document.querySelector<HTMLElement>("[data-bonsai-about-language-dropdown='1']");
+                el?.focus();
+                return true;
+              },
+              onMoveDown: () => {
+                paypalBtnHostRef.current?.focus();
+                return true;
+              },
+            })}
+          >
+            <ButtonItem
+              layout="below"
+              onClick={() => {
+                openExternalOrExplain(
+                  githubRepoUrl,
+                  allowExternalNavigation,
+                  onNavigateToPermissions,
+                  "GitHub",
+                  permissionTitle,
+                  permissionBody,
+                );
+              }}
+            >
+              <span style={{ fontSize: 13 }}>GitHub</span>
+            </ButtonItem>
+          </Focusable>
+        </PanelSectionRow>
+        <PanelSectionRow>
           <ButtonItem
             layout="below"
             onClick={() => {
               openExternalOrExplain(
-                PAYPAL_SUPPORT_URL,
+                ollamaRepoUrl,
                 allowExternalNavigation,
                 onNavigateToPermissions,
-                "PayPal"
+                "Ollama",
+                permissionTitle,
+                permissionBody,
               );
+            }}
+          >
+            <span style={{ fontSize: 13 }}>Built on Ollama!</span>
+          </ButtonItem>
+        </PanelSectionRow>
+        <PanelSectionRow>
+          <ButtonItem
+            layout="below"
+            onClick={() => {
+              openExternalOrExplain(
+                githubIssuesUrl,
+                allowExternalNavigation,
+                onNavigateToPermissions,
+                "Report a Bug",
+                permissionTitle,
+                permissionBody,
+              );
+            }}
+          >
+            <span style={{ fontSize: 13 }}>Bugs & Feature Requests</span>
+          </ButtonItem>
+        </PanelSectionRow>
+        <PanelSectionRow>
+          <div
+            style={{
+              width: "100%",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              boxSizing: "border-box",
             }}
           >
             <div
               style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                gap: 6,
-                textAlign: "center",
                 width: "100%",
+                maxWidth: 180,
+                margin: "0 auto",
+                minWidth: 0,
                 boxSizing: "border-box",
               }}
             >
-              <span style={{ fontSize: 14, lineHeight: 1.2 }}>Support my Steam Sale habit</span>
-              <img
-                src={supportPaypalQr}
-                alt="Support on PayPal — Support my Steam Sale habit"
-                style={{
-                  display: "block",
-                  width: 132,
-                  maxWidth: "100%",
-                  height: "auto",
-                  margin: "0 auto",
-                }}
-              />
+              <Focusable ref={paypalBtnHostRef} style={{ width: "100%" }}>
+                <ButtonItem
+                  layout="below"
+                  onClick={() => {
+                    openExternalOrExplain(
+                      PAYPAL_SUPPORT_URL,
+                      allowExternalNavigation,
+                      onNavigateToPermissions,
+                      "PayPal",
+                      permissionTitle,
+                      permissionBody,
+                    );
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      gap: 6,
+                      textAlign: "center",
+                      width: "100%",
+                      boxSizing: "border-box",
+                    }}
+                  >
+                    <span style={{ fontSize: 14, lineHeight: 1.2 }}>Support my Steam Sale habit</span>
+                    <img
+                      src={supportPaypalQr}
+                      alt="Support on PayPal — Support my Steam Sale habit"
+                      style={{
+                        display: "block",
+                        width: 132,
+                        maxWidth: "100%",
+                        height: "auto",
+                        margin: "0 auto",
+                      }}
+                    />
+                  </div>
+                </ButtonItem>
+              </Focusable>
             </div>
-          </ButtonItem>
-        </div>
-      </div>
-    </PanelSectionRow>
-  </PanelSection>
-);
+          </div>
+        </PanelSectionRow>
+      </PanelSection>
+    </>
+  );
+};

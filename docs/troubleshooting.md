@@ -302,6 +302,20 @@ It does **not** delete markdown or log files under `~/Desktop/bonsAI_logs/`.
 
 ---
 
+## 1e. Reply language (About tab)
+
+**Symptom:** Ask replies are in the wrong language, or mix English with your Steam client language.
+
+**Default:** bonsAI reads the Steam **client** preferred language from `config/config.vdf` (`Language` key) when **Reply language** is **Follow system**.
+
+**Fix:**
+
+1. Open **About** → **Reply language** and pick **Always English** or a specific language override.
+2. Retry the Ask (v1 does not auto-regenerate a wrong-language reply).
+3. Expect partial English in plugin UI labels and preset chips — only Ask replies and the bounded translated status/toast strings follow the selected language.
+
+**Note:** Strategy mode keeps JSON fence names and `id` keys in English; only player-facing `label` / `question` / `title` strings should localize.
+
 ## 1b. Desktop logs (`bonsAI_logs`)
 
 ### Folder rename (existing users)

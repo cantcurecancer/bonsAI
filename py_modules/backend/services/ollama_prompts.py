@@ -476,6 +476,25 @@ def user_asks_for_detail_depth(question: str) -> bool:
     return any(n in q for n in needles)
 
 
+from backend.services.reply_language_service import language_display_name
+
+
+def build_reply_language_block(reply_language: str) -> str:
+    """Hard instruction to reply in the user's configured language."""
+    code = (reply_language or "english").strip().lower()
+    if not code or code == "english":
+        return ""
+    label = language_display_name(code)
+    return (
+        f"\n\nREPLY LANGUAGE ({label}):\n"
+        f"You MUST write all user-visible prose in {label}. This overrides the language of the user's question.\n"
+        "For fenced JSON blocks (strategy branches, checklists, TDP recommendations): keep fence names, JSON keys, "
+        "and option \"id\" values exactly as specified in English; translate only player-facing string values "
+        "(\"label\", \"question\", \"title\", and similar).\n"
+        "Keep technical tokens in English: Proton, TDP, AppID, file paths, error codes, model names, and hardware units.\n"
+    )
+
+
 def build_reply_verbosity_block(
     reply_verbosity: str,
     *,
@@ -541,6 +560,7 @@ def build_system_prompt(
     character_roleplay_on: bool = False,
     strategy_checklist_state: Optional[dict] = None,
     reply_verbosity: str = "balanced",
+    reply_language: str = "english",
 ) -> str:
     """Build the system message used for Ollama requests from game and attachment context.
 
@@ -691,7 +711,8 @@ def build_system_prompt(
             ask_mode=ask_mode,
             character_roleplay_on=character_roleplay_on,
         )
-        return dynamic_block + general_block + early_block + middle + verbosity_block + tail
+        language_block = build_reply_language_block(reply_language)
+        return dynamic_block + general_block + early_block + middle + language_block + verbosity_block + tail
 
     ollama_q = user_asks_ollama_bonsai_host_or_latency(question)
     model_policy_q = _user_asks_model_policy_tiers_explainer(question)
@@ -800,7 +821,8 @@ def build_system_prompt(
         ask_mode=ask_mode,
         character_roleplay_on=character_roleplay_on,
     )
-    return dynamic_block + general_block + early_block + middle + verbosity_block + tail
+    language_block = build_reply_language_block(reply_language)
+    return dynamic_block + general_block + early_block + middle + language_block + verbosity_block + tail
 
 
 def format_ai_response(

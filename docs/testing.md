@@ -447,6 +447,7 @@ Maps [roadmap.md](roadmap.md) **Completed** summary and [archive/roadmap-complet
 
 | Feature ID | Shipped feature | Test ID(s) | Status | Evidence |
 |------------|-----------------|------------|--------|----------|
+| REPLY-LANG | Multi-language Ask replies + About override | LANG-01…03 | Open | Steam `config.vdf` detect + `reply_language` setting |
 | ABOUT-OLLAMA | Built on Ollama link | — | Open | Tier 3 |
 | GLASS-UI | Search surface glass pass | SMOKE-A | Open | |
 
@@ -692,6 +693,12 @@ Bazzite Game Mode only (gamescope session). Steam Deck regression: **SMOKE-A** t
 ### D-pad tab scroll viewport (2026-07-17)
 
 - [x] **D-PAD-SCROLL-01** Main + Settings/Ollama: D-pad reaches bottom of long content and scrolls back up to LB/RB tab icons (regression for `TabContentsScroll` viewport fix)
+
+### Multi-language replies (2026-07-18)
+
+- [ ] **LANG-01** About → **Reply language** dropdown: **Follow system** shows detected Steam client language line; change to **Always English** or a fixed language persists across QAM reopen
+- [ ] **LANG-02** D-pad: About beta disclaimer ↓ language dropdown ↕ GitHub link ↕ PayPal block (no skip)
+- [ ] **LANG-03** With Steam client set to Japanese (or override **Japanese**): Speed Ask reply prose is Japanese; Strategy first-turn JSON `label` / `question` localized; fence names and `id` keys stay English
 
 ---
 

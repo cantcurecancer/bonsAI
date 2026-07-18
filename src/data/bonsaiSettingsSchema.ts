@@ -5,6 +5,9 @@ import {
 import type { AskModeId } from "./askMode";
 import { DEFAULT_OLLAMA_KEEP_ALIVE, type OllamaKeepAliveDuration } from "./ollamaKeepAlive";
 import { DEFAULT_REPLY_VERBOSITY, type ReplyVerbosityId } from "./replyVerbosity";
+import { DEFAULT_REPLY_LANGUAGE, type ReplyLanguageId } from "./replyLanguage";
+
+export { DEFAULT_REPLY_LANGUAGE, type ReplyLanguageId } from "./replyLanguage";
 import {
   DEFAULT_MODEL_POLICY_TIER,
   type ModelPolicyTierId,
@@ -88,6 +91,8 @@ export type BonsaiSettings = {
   ollama_keep_alive: OllamaKeepAliveDuration;
   /** Global reply prose style (Short / Balanced / Detailed); Balanced = no verbosity inject. */
   reply_verbosity: ReplyVerbosityId;
+  /** Ask reply language: follow Steam client, always English, or a fixed Steam language code. */
+  reply_language: ReplyLanguageId;
   /** When true, show the Developer tab in the LB/RB strip (default off for typical users). */
   show_developer_tab: boolean;
   /** Which Ollama model families the backend may try (see README model policy). */
@@ -159,6 +164,7 @@ export type BonsaiSettingsSnapshotInput = {
   askMode: AskModeId;
   ollamaKeepAlive: OllamaKeepAliveDuration;
   replyVerbosity: ReplyVerbosityId;
+  replyLanguage: ReplyLanguageId;
   showDeveloperTab: boolean;
   modelPolicyTier: ModelPolicyTierId;
   modelPolicyNonFossUnlocked: boolean;

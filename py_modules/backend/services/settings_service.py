@@ -18,6 +18,7 @@ from backend.services.ai_character_service import (
 )
 from backend.services.capabilities import legacy_grandfather_capabilities, sanitize_capabilities
 from backend.services.model_policy import reconcile_model_policy_tier
+from backend.services.reply_language_service import sanitize_reply_language
 from backend.services.voice_transcription_service import sanitize_voice_stt_model
 
 UI_SCALE_PROFILE_IDS = frozenset({"handheld", "desktop", "couch", "immersive"})
@@ -459,6 +460,7 @@ def sanitize_settings(
         ),
         "ollama_keep_alive": sanitize_ollama_keep_alive(raw.get("ollama_keep_alive")),
         "reply_verbosity": sanitize_reply_verbosity(raw.get("reply_verbosity")),
+        "reply_language": sanitize_reply_language(raw.get("reply_language")),
         "ollama_local_on_deck": sanitize_ollama_local_on_deck(raw.get("ollama_local_on_deck")),
         "show_developer_tab": sanitize_show_developer_tab(
             raw.get("show_developer_tab"), raw.get("show_debug_tab")
