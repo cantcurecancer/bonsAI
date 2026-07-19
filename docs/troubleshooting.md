@@ -89,6 +89,8 @@ Optional on-Deck corpus for Strategy and troubleshooting Asks. Full architecture
 
 When the knowledge base is enabled and installed, Main-tab preset chips may occasionally show game-specific tips (boss/compat curtailed from the offline corpus) mixed with static suggestions.
 
+**Cause (fixed 2026-07-19):** `get_session_rag_chip_candidates` RPC was removed during named-chat-slot cleanup (`58089df`) while the frontend still called it; KB-backed chips silently fell back to static-only. Update to a build that restores the RPC.
+
 **SD card:** When a microSD is mounted under `/run/media/deck/…`, the download picker offers **Download to SD card** (install path `{mount}/.bonsai/rag`). Internal default remains `~/.bonsai/rag`.
 
 **Download fails / manifest error:** The plugin fetches `corpus-manifest.json` from Hugging Face (primary) and a GitHub Releases mirror. If both are unreachable (401/404), download stops with a manifest error — the maintainer must publish the corpus and manifest first (`scripts/build_rag_db.py`). For local QA without network, use Developer tab + `install_rag_corpus_local` RPC with a built `dist/knowledge-base` folder.
@@ -138,6 +140,10 @@ When the knowledge base is enabled and installed, Main-tab preset chips may occa
 **Symptom:** Orphan `whisper-server` after crash (rare).
 
 **Fix:** Stop/restart the plugin, or delete `voice_bin/whisper-server.pid` and kill the stale PID. **Clear all data** or revoking the mic permission also force-stops the server.
+
+**Cause (fixed 2026-07-19):** `VoiceTranscriptionSession.status()` was accidentally removed during the whisper-server daemon refactor (`742db60`), so mic start/status RPCs raised `AttributeError`. Update to a build that restores `status()`.
+
+**Cause (fixed 2026-07-19):** Overlapping `start_voice_transcription` calls during stale-session teardown could orphan PipeWire capture (second start overwrote `_voice_session`). Update to a build with the `_voice_start_generation` busy gate.
 
 **Maintainers — podman image:** Install pins `WHISPER_CPP_IMAGE` by **digest** (not `:main`). Bump procedure: [voice-input-follow-up.md](voice-input-follow-up.md#bumping-the-digest-maintainers).
 
@@ -315,6 +321,16 @@ It does **not** delete markdown or log files under `~/Desktop/bonsAI_logs/`.
 3. Expect partial English in plugin UI labels and preset chips — only Ask replies and the bounded translated status/toast strings follow the selected language.
 
 **Note:** Strategy mode keeps JSON fence names and `id` keys in English; only player-facing `label` / `question` / `title` strings should localize.
+
+**Cause (fixed 2026-07-19):** `get_reply_language_snapshot` omitted `await` on `load_settings`, so the About tab RPC could error (`'coroutine' object has no attribute 'get'`). Effective Ask language was unaffected (Ask path already awaited settings).
+
+## 1f. Ask failures (background RPC)
+
+**Symptom:** Every Ask fails immediately (no thinking state); plugin log shows `ValueError: too many values to unpack`.
+
+**Cause (fixed 2026-07-19):** `_parse_ask_payload` gained a ninth return value (`reply_followup`) but `start_background_game_ai` / `ask_game_ai` still unpacked eight fields (`8ace7c0`). Dict-shaped Ask payloads crashed before queueing work; reply micro-action follow-ups also never reached the model until `reply_followup` was wired through `_run_background_request`.
+
+**Fix:** Update to a build with nine-field unpack + `reply_followup` forwarding.
 
 ## 1b. Desktop logs (`bonsAI_logs`)
 

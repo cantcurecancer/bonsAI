@@ -239,6 +239,7 @@ class Plugin:
         }
         self._voice_lock = asyncio.Lock()
         self._voice_session: Optional[VoiceTranscriptionSession] = None
+        self._voice_start_generation = 0
         self._voice_install_lock = asyncio.Lock()
         self._voice_install_task: Optional[asyncio.Task] = None
         self._voice_install_cancel = threading.Event()
@@ -1452,6 +1453,23 @@ class Plugin:
             "storage_options": storage_options,
         }
 
+    async def get_session_rag_chip_candidates(
+        self,
+        app_id: str = "",
+        app_name: str = "",
+        shortcut_name: str = "",
+    ):
+        """Return curtailed KB-backed preset chip candidates for the running game (read-only)."""
+        plugin = Plugin._coerce_instance(self)
+        settings = await plugin.load_settings()
+        result = suggest_chip_candidates(
+            settings,
+            app_id=str(app_id or ""),
+            app_name=str(app_name or ""),
+            shortcut_name=str(shortcut_name or ""),
+        )
+        return session_rag_chip_candidates_to_rpc(result)
+
     async def start_rag_corpus_download(self, data: Any = None):
         """Download and install the knowledge base corpus (user-initiated; Model A consent)."""
         plugin = Plugin._coerce_instance(self)
@@ -2073,7 +2091,7 @@ class Plugin:
     async def get_reply_language_snapshot(self):
         """Return Steam client language, persisted override, and effective Ask reply language."""
         plugin = Plugin._coerce_instance(self)
-        settings = plugin.load_settings()
+        settings = await plugin.load_settings()
         return reply_language_snapshot(settings.get("reply_language"))
 
     async def save_ask_feedback(self, rating: str, request_id: int = 0, question_len: int = 0, success: bool = False):
@@ -2192,6 +2210,7 @@ class Plugin:
         spoiler_consent: bool = False,
         token_stream_request_id: Optional[int] = None,
         strategy_checklist_state: Optional[dict] = None,
+        reply_followup: Optional[dict] = None,
     ) -> dict:
         """Run one full ask lifecycle, including Ollama call timing and optional TDP application."""
         plugin = Plugin._coerce_instance(self)
@@ -2206,14 +2225,23 @@ class Plugin:
             spoiler_consent=spoiler_consent,
             token_stream_request_id=token_stream_request_id,
             strategy_checklist_state=strategy_checklist_state,
+            reply_followup=reply_followup,
         )
 
     async def ask_game_ai(self, question: Any = "", PcIp: str = ""):
         """Handle foreground ask RPCs and validate required inputs before execution."""
         logger.info("ask_game_ai: RPC entry (arg type=%s)", type(question).__name__)
-        parsed_question, pc_ip, app_id, app_name, attachments, ask_mode, spoiler_consent, strategy_checklist_state = (
-            Plugin._parse_ask_payload(question, PcIp)
-        )
+        (
+            parsed_question,
+            pc_ip,
+            app_id,
+            app_name,
+            attachments,
+            ask_mode,
+            spoiler_consent,
+            strategy_checklist_state,
+            reply_followup,
+        ) = Plugin._parse_ask_payload(question, PcIp)
         if not parsed_question:
             logger.info("ask_game_ai: rejected (empty question)")
             return Plugin._reject_ask_request("Question is required.", app_id=app_id)
@@ -2242,6 +2270,7 @@ class Plugin:
             ask_mode=ask_mode,
             spoiler_consent=spoiler_consent,
             strategy_checklist_state=strategy_checklist_state,
+            reply_followup=reply_followup,
         )
 
     async def _run_background_request(
@@ -2255,6 +2284,7 @@ class Plugin:
         ask_mode: str = "speed",
         spoiler_consent: bool = False,
         strategy_checklist_state: Optional[dict] = None,
+        reply_followup: Optional[dict] = None,
     ) -> None:
         """Execute a queued background request and publish terminal status for polling clients."""
         try:
@@ -2268,6 +2298,7 @@ class Plugin:
                 spoiler_consent=spoiler_consent,
                 token_stream_request_id=request_id,
                 strategy_checklist_state=strategy_checklist_state,
+                reply_followup=reply_followup,
             )
         except asyncio.CancelledError:
             return
@@ -2331,9 +2362,17 @@ class Plugin:
         plugin._ensure_background_state()
 
         logger.info("start_background_game_ai: RPC entry (arg type=%s)", type(question).__name__)
-        parsed_question, pc_ip, app_id, app_name, attachments, ask_mode, spoiler_consent, strategy_checklist_state = (
-            Plugin._parse_ask_payload(question, PcIp)
-        )
+        (
+            parsed_question,
+            pc_ip,
+            app_id,
+            app_name,
+            attachments,
+            ask_mode,
+            spoiler_consent,
+            strategy_checklist_state,
+            reply_followup,
+        ) = Plugin._parse_ask_payload(question, PcIp)
         app_context = "active" if app_id else "none"
         if not parsed_question:
             return {
@@ -2493,6 +2532,7 @@ class Plugin:
                     ask_mode=ask_mode,
                     spoiler_consent=spoiler_consent,
                     strategy_checklist_state=strategy_checklist_state,
+                    reply_followup=reply_followup,
                 )
             )
             await plugin._maybe_app_log(
@@ -2725,6 +2765,7 @@ class Plugin:
     async def _stop_voice_transcription_internal(self) -> None:
         plugin = Plugin._coerce_instance(self)
         async with plugin._voice_lock:
+            plugin._voice_start_generation += 1
             session = plugin._voice_session
             plugin._voice_session = None
         if session is not None:
@@ -2844,10 +2885,18 @@ class Plugin:
                 plugin._voice_session = None
             else:
                 old = None
+            plugin._voice_start_generation += 1
+            start_generation = plugin._voice_start_generation
         if old is not None:
             await asyncio.to_thread(old.force_stop)
 
         async with plugin._voice_lock:
+            if plugin._voice_start_generation != start_generation:
+                return {
+                    "accepted": False,
+                    "error": "busy",
+                    "reason": "Voice transcription start superseded.",
+                }
             session = VoiceTranscriptionSession(
                 PLUGIN_ROOT,
                 decky.DECKY_PLUGIN_SETTINGS_DIR,

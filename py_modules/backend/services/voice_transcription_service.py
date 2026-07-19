@@ -1209,6 +1209,8 @@ class VoiceTranscriptionSession:
             if text:
                 return text
         return _run_whisper_transcribe(whisper_bin, model_path, pcm, env)
+
+    def status(self) -> dict[str, Any]:
         with self._lock:
             return dict(self._state)
 
