@@ -396,7 +396,7 @@ Maps [roadmap.md](roadmap.md) **Completed** summary and [archive/roadmap-complet
 | QAM-BAZZITE-LAYOUT | Bazzite gamescope QAM tab strip / mount layout | QAM-BAZZITE-01 | Verified | On-Deck Bazzite 2026-07-08; `useQamPanelHeightGuard`, `useTabStripBodyOffset` |
 | REFACTOR-4DEF | Phase 4d–4f MainTab/index/styles split | SMOKE-A | Open | Unit/build gates pass; on-Deck regression via golden path |
 | REFACTOR-PHASE3 | Phase 3 backend extraction (`ollama_ask_service`, locks) | test_ollama_ask_service, test_background_abort_busy | Open | `pnpm run test:py`; on-Deck golden path |
-| CRITICAL-REG | Critical regression fixes (settings RMW, abort gate, PCM, stores) | test_background_abort_busy, test_settings_save_lock, test_intent_pack_store_lock, test_strategy_checklist_store_lock | Open | Tier 1 **SMOKE-H** Stop then new Ask |
+| CRITICAL-REG | Critical regression fixes (settings RMW, abort gate, PCM, stores, Ask unpack, voice start race) | test_background_abort_busy, test_settings_save_lock, test_intent_pack_store_lock, test_strategy_checklist_store_lock, test_parse_ask_payload_unpack, test_voice_start_superseded, test_reply_language_snapshot_rpc | Open | Tier 1 **SMOKE-H** Stop then new Ask; Ask dict payload; voice double-tap |
 | PERSIST-QA | Persist last Q&A on reopen | Tier 1 extra | Open | |
 | UNIFIED-INPUT | Unified search + ask | SMOKE-A | Open | |
 | PRESET-FADE-OPT | Preset chip fade opt-out | — | Open | Tier 3 cosmetic |
