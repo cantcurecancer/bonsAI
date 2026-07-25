@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { REPLY_LANGUAGE_FOLLOW_SYSTEM } from "../data/replyLanguage";
 import {
   buildResponseText,
   formatAppliedTuningBannerText,
@@ -311,7 +312,7 @@ describe("settingsAndResponse", () => {
       askMode: DEFAULT_ASK_MODE,
       ollamaKeepAlive: DEFAULT_OLLAMA_KEEP_ALIVE,
       replyVerbosity: DEFAULT_REPLY_VERBOSITY,
-      replyLanguage: "follow_system",
+      replyLanguage: REPLY_LANGUAGE_FOLLOW_SYSTEM,
       showDeveloperTab: false,
       modelPolicyTier: "open_source_only" as const,
       modelPolicyNonFossUnlocked: false,

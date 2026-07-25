@@ -79,6 +79,7 @@ import { UiScaleProvider } from "./context/UiScaleContext";
 import { publishUiScaleScopeStyle } from "./utils/uiScaleScopeBridge";
 import { normalizeUiScaleProfileId, type UiScaleProfileId } from "./data/uiScaleProfile";
 import { formatDeckyRpcError } from "./utils/deckyCall";
+import { SEED_KB_SOURCE_DIR } from "./data/knowledgeBaseDev";
 import { usePluginSettings } from "./hooks/usePluginSettings";
 import { useReplyLanguage } from "./hooks/useReplyLanguage";
 import { useIntentPacks } from "./hooks/useIntentPacks";
@@ -736,6 +737,7 @@ const Content: React.FC = () => {
       askMode,
       ollamaKeepAlive,
       replyVerbosity,
+      replyLanguage,
       showDeveloperTab,
       modelPolicyTier,
       modelPolicyNonFossUnlocked,
@@ -782,6 +784,7 @@ const Content: React.FC = () => {
       askMode,
       ollamaKeepAlive,
       replyVerbosity,
+      replyLanguage,
       showDeveloperTab,
       modelPolicyTier,
       modelPolicyNonFossUnlocked,
@@ -1796,6 +1799,27 @@ const Content: React.FC = () => {
     }
   }, [capabilities.external_navigation, goToPermissionsTab]);
 
+  const installSeedKnowledgeBase = useCallback(async () => {
+    const out = await call<
+      [{ source_dir: string }],
+      { ok?: boolean; error?: string; install_path?: string; version?: string }
+    >("install_rag_corpus_local", { source_dir: SEED_KB_SOURCE_DIR });
+    if (!out?.ok) {
+      toaster.toast({
+        title: "Seed KB install failed",
+        body: out?.error ?? "Could not install seed knowledge base.",
+        duration: 10000,
+      });
+      return;
+    }
+    await syncSettingsFromDisk();
+    toaster.toast({
+      title: "Seed knowledge base installed",
+      body: `${out.version ?? "seed"} → ${out.install_path ?? "~/.bonsai/rag"}`,
+      duration: 6000,
+    });
+  }, [syncSettingsFromDisk]);
+
   const developerTab = useMemo(
     () => (
       <DeveloperTab
@@ -1827,6 +1851,7 @@ const Content: React.FC = () => {
       ollamaLocalOnDeck={ollamaLocalOnDeck}
       onCompleteDeckyModalClose={finalizeShowModalAndRestoreActiveTab}
       onBeforeThinkingPullModal={captureThinkingPullModalSession}
+      onInstallSeedKnowledgeBase={showDeveloperTab ? installSeedKnowledgeBase : undefined}
       />
     ),
     [
@@ -1848,6 +1873,8 @@ const Content: React.FC = () => {
       ollamaLocalOnDeck,
       captureThinkingPullModalSession,
       finalizeShowModalAndRestoreActiveTab,
+      installSeedKnowledgeBase,
+      showDeveloperTab,
     ]
   );
 

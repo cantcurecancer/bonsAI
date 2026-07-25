@@ -74,11 +74,6 @@ export const AboutTab: React.FC<Props> = ({
     return true;
   };
 
-  const focusPaypalBtn = () => {
-    paypalBtnHostRef.current?.focus();
-    return true;
-  };
-
   const permissionTitle = t("toast.permissionRequired.title");
   const permissionBody = t("toast.permissionRequired.body");
 
@@ -113,6 +108,8 @@ export const AboutTab: React.FC<Props> = ({
       />
 
       <PanelSection title="Links">
+        <PanelSectionRow>
+          <Focusable
             ref={githubBtnHostRef}
             style={{ width: "100%" }}
             {...deckNav({

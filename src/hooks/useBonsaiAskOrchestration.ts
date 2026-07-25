@@ -416,15 +416,12 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
               : composeThinkingBlurb("your question", { requestId: status.request_id ?? 0 });
         const thinking = sanitizeThinkingSummary(rawThinking);
         setThinkingSummary(thinking);
-        const partial =
-          status.streaming === true &&
-          typeof status.partial_response === "string" &&
-          status.partial_response.trim()
-            ? status.partial_response
-            : "";
-        if (partial) {
-          setOllamaResponse(partial);
-          setIsStreamingPreview(true);
+        const partialRaw =
+          typeof status.partial_response === "string" ? status.partial_response : "";
+        const streamingActive = status.streaming === true;
+        if (streamingActive || partialRaw.trim()) {
+          setOllamaResponse(partialRaw);
+          setIsStreamingPreview(streamingActive);
           setIsStreamSettling(false);
         } else {
           const raw = status.response?.trim() ? status.response : "";

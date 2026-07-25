@@ -406,6 +406,19 @@ async def run_game_ai_request(
             strategy_checklist_state=strategy_checklist_state,
             preferred_model=preferred_model,
         )
+        # #region agent log
+        try:
+            from backend.services.rag_corpus_download_service import _agent_debug_log
+
+            _agent_debug_log(
+                "game_ai_request.py:run_game_ai_request",
+                "ask_ollama_returned",
+                {"success": bool(ollama_result.get("success")), "ask_mode": ask_mode},
+                "H2",
+            )
+        except Exception:
+            pass
+        # #endregion
         elapsed = round(time.time() - start, 1)
         base_response_text = str(ollama_result.get("response", "") or "No response text.")
         response_text = base_response_text
@@ -542,9 +555,22 @@ async def run_game_ai_request(
             ),
             "preset_carousel_inject": ollama_result.get("preset_carousel_inject"),
         }
-    except Exception:
+    except Exception as exc:
         elapsed = round(time.time() - start, 1)
         logger.exception("run_game_ai_request failed (%.1fs)", elapsed)
+        # #region agent log
+        try:
+            from backend.services.rag_corpus_download_service import _agent_debug_log
+
+            _agent_debug_log(
+                "game_ai_request.py:run_game_ai_request",
+                "run_failed",
+                {"error_type": type(exc).__name__, "error": str(exc)[:240]},
+                "H2",
+            )
+        except Exception:
+            pass
+        # #endregion
         await plugin._persist_input_transparency(
             build_error_route_snapshot(
                 raw_question=question,

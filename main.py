@@ -162,6 +162,7 @@ from backend.services.knowledge_base_service import (
 from backend.services.knowledge_base_schema import (
     CORPUS_MANIFEST_FILENAME,
     default_corpus_dir_internal,
+    default_seed_corpus_source_dir,
     list_rag_storage_options,
     load_manifest_from_path,
     resolve_corpus_db_path,
@@ -1572,10 +1573,24 @@ class Plugin:
         if isinstance(data, dict):
             src_dir = str(data.get("source_dir") or data.get("path") or "").strip()
         if not src_dir:
-            return {"ok": False, "error": "source_dir required"}
+            src_dir = default_seed_corpus_source_dir()
+        src_dir = os.path.expanduser(str(src_dir).strip())
         manifest_path = os.path.join(src_dir, CORPUS_MANIFEST_FILENAME)
         if not os.path.isfile(manifest_path):
-            return {"ok": False, "error": f"Missing {CORPUS_MANIFEST_FILENAME}"}
+            # #region agent log
+            try:
+                from backend.services.rag_corpus_download_service import _agent_debug_log
+
+                _agent_debug_log(
+                    "main.py:install_rag_corpus_local",
+                    "manifest_missing",
+                    {"src_dir": src_dir, "manifest_path": manifest_path},
+                    "H2",
+                )
+            except Exception:
+                pass
+            # #endregion
+            return {"ok": False, "error": f"Missing {CORPUS_MANIFEST_FILENAME} at {src_dir}"}
         install_dir = default_corpus_dir_internal()
         if isinstance(data, dict) and str(data.get("install_path") or "").strip():
             install_dir = str(data.get("install_path")).strip()
@@ -2192,6 +2207,7 @@ class Plugin:
         spoiler_consent: bool = False,
         token_stream_request_id: Optional[int] = None,
         strategy_checklist_state: Optional[dict] = None,
+        reply_followup: Optional[dict] = None,
     ) -> dict:
         """Run one full ask lifecycle, including Ollama call timing and optional TDP application."""
         plugin = Plugin._coerce_instance(self)
@@ -2206,14 +2222,23 @@ class Plugin:
             spoiler_consent=spoiler_consent,
             token_stream_request_id=token_stream_request_id,
             strategy_checklist_state=strategy_checklist_state,
+            reply_followup=reply_followup,
         )
 
     async def ask_game_ai(self, question: Any = "", PcIp: str = ""):
         """Handle foreground ask RPCs and validate required inputs before execution."""
         logger.info("ask_game_ai: RPC entry (arg type=%s)", type(question).__name__)
-        parsed_question, pc_ip, app_id, app_name, attachments, ask_mode, spoiler_consent, strategy_checklist_state = (
-            Plugin._parse_ask_payload(question, PcIp)
-        )
+        (
+            parsed_question,
+            pc_ip,
+            app_id,
+            app_name,
+            attachments,
+            ask_mode,
+            spoiler_consent,
+            strategy_checklist_state,
+            reply_followup,
+        ) = Plugin._parse_ask_payload(question, PcIp)
         if not parsed_question:
             logger.info("ask_game_ai: rejected (empty question)")
             return Plugin._reject_ask_request("Question is required.", app_id=app_id)
@@ -2242,6 +2267,7 @@ class Plugin:
             ask_mode=ask_mode,
             spoiler_consent=spoiler_consent,
             strategy_checklist_state=strategy_checklist_state,
+            reply_followup=reply_followup,
         )
 
     async def _run_background_request(
@@ -2255,6 +2281,7 @@ class Plugin:
         ask_mode: str = "speed",
         spoiler_consent: bool = False,
         strategy_checklist_state: Optional[dict] = None,
+        reply_followup: Optional[dict] = None,
     ) -> None:
         """Execute a queued background request and publish terminal status for polling clients."""
         try:
@@ -2268,6 +2295,7 @@ class Plugin:
                 spoiler_consent=spoiler_consent,
                 token_stream_request_id=request_id,
                 strategy_checklist_state=strategy_checklist_state,
+                reply_followup=reply_followup,
             )
         except asyncio.CancelledError:
             return
@@ -2331,9 +2359,34 @@ class Plugin:
         plugin._ensure_background_state()
 
         logger.info("start_background_game_ai: RPC entry (arg type=%s)", type(question).__name__)
-        parsed_question, pc_ip, app_id, app_name, attachments, ask_mode, spoiler_consent, strategy_checklist_state = (
-            Plugin._parse_ask_payload(question, PcIp)
-        )
+        (
+            parsed_question,
+            pc_ip,
+            app_id,
+            app_name,
+            attachments,
+            ask_mode,
+            spoiler_consent,
+            strategy_checklist_state,
+            reply_followup,
+        ) = Plugin._parse_ask_payload(question, PcIp)
+        # #region agent log
+        try:
+            from backend.services.rag_corpus_download_service import _agent_debug_log
+
+            _agent_debug_log(
+                "main.py:start_background_game_ai",
+                "ask_payload_parsed",
+                {
+                    "ask_mode": ask_mode,
+                    "question_len": len(parsed_question or ""),
+                    "has_reply_followup": bool(reply_followup),
+                },
+                "H1",
+            )
+        except Exception:
+            pass
+        # #endregion
         app_context = "active" if app_id else "none"
         if not parsed_question:
             return {
@@ -2493,6 +2546,7 @@ class Plugin:
                     ask_mode=ask_mode,
                     spoiler_consent=spoiler_consent,
                     strategy_checklist_state=strategy_checklist_state,
+                    reply_followup=reply_followup,
                 )
             )
             await plugin._maybe_app_log(
@@ -2701,6 +2755,7 @@ class Plugin:
         strategy_spoiler_consent: bool = False,
         token_stream_request_id: Optional[int] = None,
         strategy_checklist_state: Optional[dict] = None,
+        preferred_model: Optional[str] = None,
     ):
         """Orchestrate attachment prep, prompt assembly, and model fallback request execution."""
         return await run_ask_ollama(
@@ -2720,6 +2775,7 @@ class Plugin:
             strategy_spoiler_consent=strategy_spoiler_consent,
             token_stream_request_id=token_stream_request_id,
             strategy_checklist_state=strategy_checklist_state,
+            preferred_model=preferred_model,
         )
 
     async def _stop_voice_transcription_internal(self) -> None:

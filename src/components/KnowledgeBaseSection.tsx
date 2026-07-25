@@ -46,6 +46,7 @@ type Props = {
 };
 
 const KB_UNAVAILABLE_SESSION_KEY = "bonsai_kb_unavailable_warned";
+const KB_FAILURE_TOAST_KEY = "bonsai_kb_failure_toast";
 
 const deckNav = (handlers: Record<string, () => boolean | void>) =>
   handlers as unknown as Record<string, unknown>;
@@ -107,9 +108,9 @@ const RagCorpusStoragePickerModal: React.FC<StoragePickerModalProps> = ({
         </div>
       </div>
     }
-    strOKButtonText="Cancel"
+    bAlertDialog={true}
+    strOKButtonText="Close"
     onOK={onClose}
-    onCancel={onClose}
   />
 );
 
@@ -163,6 +164,27 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
         DECKY_RPC_TIMEOUT_MS,
       );
       setStatus(st);
+      // #region agent log
+      if ((st?.error ?? "").trim() || st?.phase === "failed") {
+        fetch("http://127.0.0.1:7548/ingest/455d5c32-fa64-45d1-b31c-f17b50f3371a", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "a3646d" },
+          body: JSON.stringify({
+            sessionId: "a3646d",
+            hypothesisId: "H1",
+            location: "KnowledgeBaseSection.tsx:refreshStatus",
+            message: "kb_status_error",
+            data: {
+              phase: st?.phase,
+              stage: st?.stage,
+              error: st?.error,
+              installed: st?.installed,
+            },
+            timestamp: Date.now(),
+          }),
+        }).catch(() => {});
+      }
+      // #endregion
       if (
         useLocalKnowledgeBase &&
         st &&
@@ -193,6 +215,17 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
       void callDeckyWithTimeout<[], RagCorpusStatus>("get_rag_corpus_status", [], DECKY_RPC_TIMEOUT_MS)
         .then((st) => {
           setStatus(st);
+          if (st?.phase === "failed" && (st.error ?? "").trim()) {
+            const errKey = `${st.error}|${st.stage ?? ""}`;
+            if (sessionStorage.getItem(KB_FAILURE_TOAST_KEY) !== errKey) {
+              sessionStorage.setItem(KB_FAILURE_TOAST_KEY, errKey);
+              toaster.toast({
+                title: "Knowledge base download failed",
+                body: st.error,
+                duration: 12000,
+              });
+            }
+          }
           if (st?.done || st?.phase === "failed" || st?.phase === "done" || st?.phase === "cancelled") {
             setDownloadBusy(false);
             void refreshStatus();
@@ -332,7 +365,14 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
               ) : null}
             </>
           ) : (
-            <span style={{ color: "#ffd299" }}>Not installed — download to enable grounded strategy help.</span>
+            <>
+              <span style={{ color: "#ffd299" }}>Not installed — download to enable grounded strategy help.</span>
+              <span style={{ display: "block", marginTop: 6, color: "#9fb7d5" }}>
+                Public download is not live yet. For Phase 1 QA: run <strong>build.ps1</strong> (deploys a seed
+                corpus), enable <strong>Developer</strong> tab in Settings, then Developer →{" "}
+                <strong>Install seed knowledge base</strong>.
+              </span>
+            </>
           )}
           {progress ? <span style={{ display: "block", marginTop: 6 }}>{progress}</span> : null}
           {(status?.error ?? "").trim() ? (

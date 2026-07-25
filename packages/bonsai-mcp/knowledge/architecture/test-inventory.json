@@ -39,6 +39,7 @@
     "src/utils/splitResponseIntoChunks.test.ts",
     "src/utils/strategyChecklist.test.ts",
     "src/utils/streamMarkdownPrepare.test.ts",
+    "src/utils/stripAssistantDisplayTags.test.ts",
     "src/utils/unifiedInputPersistenceMode.test.ts"
   ],
   "pytest": [

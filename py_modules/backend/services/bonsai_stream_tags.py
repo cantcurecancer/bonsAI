@@ -81,12 +81,20 @@ def _strip_incomplete_bonsai_status_open(raw: str) -> str:
 def extract_bonsai_status(text: str) -> Tuple[Optional[str], str]:
     """Return (status_summary, text_with_status_tags_removed)."""
     raw = text or ""
-    match = _BONSAI_STATUS_RE.search(raw)
-    if not match:
-        return None, _strip_incomplete_bonsai_status_open(raw)
-    summary = sanitize_thinking_summary((match.group(1) or "").strip())
-    stripped = _BONSAI_STATUS_RE.sub("", raw, count=1).lstrip()
-    return (summary[:240] if summary else None), stripped
+    summary: Optional[str] = None
+    stripped = raw
+    while True:
+        match = _BONSAI_STATUS_RE.search(stripped)
+        if not match:
+            break
+        if summary is None:
+            candidate = sanitize_thinking_summary((match.group(1) or "").strip())
+            if candidate:
+                summary = candidate[:240]
+        stripped = _BONSAI_STATUS_RE.sub("", stripped, count=1).lstrip()
+    stripped = _strip_incomplete_bonsai_status_open(stripped)
+    stripped = re.sub(r"\n{3,}", "\n\n", stripped).strip()
+    return summary, stripped
 
 
 def _sanitize_app_name(app_name: str) -> str:

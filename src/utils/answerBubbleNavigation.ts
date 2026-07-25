@@ -55,6 +55,11 @@ export function focusFirstAnswerChunk(answerKey: string): boolean {
     findAnswerBubbleByKey(answerKey);
   if (!el) return false;
   registerAnswerBubbleEl(answerKey, el);
+  const spoiler = el.querySelector<HTMLElement>(".bonsai-spoiler-reveal-target");
+  if (spoiler) {
+    spoiler.focus({ preventScroll: true });
+    if (spoiler.contains(document.activeElement)) return true;
+  }
   return focusPanelEl(el);
 }
 

@@ -1,5 +1,7 @@
 /** Re-export Steam language metadata for About tab and i18n. */
 export {
+  REPLY_LANGUAGE_ALWAYS_ENGLISH,
+  REPLY_LANGUAGE_FOLLOW_SYSTEM,
   STEAM_LANGUAGE_CODES,
   STEAM_LANGUAGE_LABELS,
   buildReplyLanguageDropdownOptions,

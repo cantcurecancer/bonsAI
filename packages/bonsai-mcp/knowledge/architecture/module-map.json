@@ -2,12 +2,12 @@
   "hotspots": [
     {
       "path": "main.py",
-      "lines": 2919,
+      "lines": 2975,
       "role": "Decky RPC entrypoints and orchestration"
     },
     {
       "path": "src/index.tsx",
-      "lines": 2001,
+      "lines": 2028,
       "role": "Plugin root: tabs, scoped CSS, RPC wiring, Settings"
     },
     {
@@ -17,7 +17,7 @@
     },
     {
       "path": "src/hooks/useBonsaiAskOrchestration.ts",
-      "lines": 1217,
+      "lines": 1214,
       "role": ""
     },
     {
@@ -62,7 +62,12 @@
     },
     {
       "path": "py_modules/backend/services/bonsai_stream_tags.py",
-      "lines": 642,
+      "lines": 650,
+      "role": ""
+    },
+    {
+      "path": "py_modules/backend/services/game_ai_request.py",
+      "lines": 602,
       "role": ""
     },
     {
@@ -79,11 +84,6 @@
       "path": "py_modules/backend/services/ollama_service.py",
       "lines": 588,
       "role": "Prompt build, Ollama HTTP, streaming"
-    },
-    {
-      "path": "py_modules/backend/services/game_ai_request.py",
-      "lines": 576,
-      "role": ""
     },
     {
       "path": "py_modules/backend/services/intent_pack_service.py",
@@ -117,7 +117,7 @@
     },
     {
       "path": "src/utils/settingsAndResponse.test.ts",
-      "lines": 490,
+      "lines": 491,
       "role": ""
     },
     {
@@ -126,8 +126,18 @@
       "role": ""
     },
     {
+      "path": "src/components/DeveloperTab.tsx",
+      "lines": 457,
+      "role": ""
+    },
+    {
       "path": "src/styles/sections/gamepadAndPullModels.ts",
       "lines": 448,
+      "role": ""
+    },
+    {
+      "path": "src/components/KnowledgeBaseSection.tsx",
+      "lines": 446,
       "role": ""
     },
     {
@@ -138,11 +148,6 @@
     {
       "path": "py_modules/backend/services/desktop_note_service.py",
       "lines": 432,
-      "role": ""
-    },
-    {
-      "path": "src/components/DeveloperTab.tsx",
-      "lines": 422,
       "role": ""
     },
     {
@@ -161,8 +166,8 @@
       "role": ""
     },
     {
-      "path": "src/components/KnowledgeBaseSection.tsx",
-      "lines": 406,
+      "path": "py_modules/backend/services/rag_corpus_download_service.py",
+      "lines": 386,
       "role": ""
     },
     {
@@ -188,11 +193,6 @@
     {
       "path": "py_modules/backend/services/voice_whisper_daemon.py",
       "lines": 361,
-      "role": ""
-    },
-    {
-      "path": "py_modules/backend/services/rag_corpus_download_service.py",
-      "lines": 342,
       "role": ""
     },
     {

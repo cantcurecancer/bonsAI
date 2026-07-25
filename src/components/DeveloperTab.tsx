@@ -86,6 +86,8 @@ export type DeveloperTabProps = {
   onCompleteDeckyModalClose?: (close: () => void) => void;
   /** Capture session with Ollama as post-modal return tab (thinking-blurbs pull confirm). */
   onBeforeThinkingPullModal?: () => void;
+  /** Dev/QA: install seed KB from Deck path (build.ps1 deploy). */
+  onInstallSeedKnowledgeBase?: () => Promise<void>;
 };
 
 /**
@@ -117,9 +119,42 @@ export const DeveloperTab: React.FC<DeveloperTabProps> = ({
   ollamaLocalOnDeck = false,
   onCompleteDeckyModalClose,
   onBeforeThinkingPullModal,
+  onInstallSeedKnowledgeBase,
 }) => {
+  const [seedKbBusy, setSeedKbBusy] = React.useState(false);
+
+  const runInstallSeedKb = () => {
+    if (!onInstallSeedKnowledgeBase || seedKbBusy) return;
+    setSeedKbBusy(true);
+    void onInstallSeedKnowledgeBase()
+      .catch((e: unknown) => {
+        toaster.toast({
+          title: "Seed KB install failed",
+          body: formatDeckyRpcError(e),
+          duration: 8000,
+        });
+      })
+      .finally(() => setSeedKbBusy(false));
+  };
+
   return (
     <div className="bonsai-tab-panel-shell bonsai-tab-panel-shell--tight bonsai-settings-section-stack">
+      {onInstallSeedKnowledgeBase ? (
+        <PanelSection title="Knowledge base (dev QA)">
+          <PanelSectionRow>
+            <div className="bonsai-settings-bleed" style={{ fontSize: 12, color: "#9fb7d5", lineHeight: 1.45 }}>
+              Public HF/GitHub download is not live yet. <strong>build.ps1</strong> copies a seed corpus (DRG
+              Survivor + OoT alias sample) to the Deck. Install it into <code>~/.bonsai/rag</code> for Phase 1
+              testing.
+            </div>
+          </PanelSectionRow>
+          <PanelSectionRow>
+            <ButtonItem layout="below" disabled={seedKbBusy} onClick={runInstallSeedKb}>
+              {seedKbBusy ? "Installing seed knowledge base…" : "Install seed knowledge base"}
+            </ButtonItem>
+          </PanelSectionRow>
+        </PanelSection>
+      ) : null}
       <PanelSection title="Diagnostics">
         <PanelSectionRow>
           <div className="bonsai-settings-bleed" style={{ width: "100%" }}>

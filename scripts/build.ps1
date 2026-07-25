@@ -31,6 +31,13 @@ if (!(Test-Path "dist")) { New-Item -ItemType Directory -Path "dist" | Out-Null 
 # Build the plugin frontend
 pnpm run build
 
+Write-Host "Building seed knowledge base for Deck QA..."
+python scripts/build_rag_db.py --seed --out dist/knowledge-base-seed
+if ($LASTEXITCODE -ne 0) {
+    Write-Error "Seed knowledge base build failed."
+    exit 1
+}
+
 Write-Host "Uploading to temporary Deck directory..."
 
 # 1. Create a safe temporary directory in the user folder (no sudo required)
@@ -49,6 +56,10 @@ scp dist/index.js "${User}@${HostIp}:~/decky_temp_$PluginName/dist/"
 if (Test-Path "dist\assets") {
     scp -r "dist\assets" "${User}@${HostIp}:~/decky_temp_$PluginName/dist/"
 }
+
+$SeedRemoteDir = "/home/$User/homebrew/settings/bonsAI/seed-knowledge-base"
+ssh "$User@$HostIp" "mkdir -p $SeedRemoteDir"
+scp dist/knowledge-base-seed/* "${User}@${HostIp}:$SeedRemoteDir/"
 
 Write-Host "Overwriting system files and restarting Decky Loader..."
 

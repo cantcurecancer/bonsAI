@@ -52,11 +52,19 @@ def _sha256_file(path: str) -> str:
 
 
 def seed_sample_corpus(conn: sqlite3.Connection) -> None:
-    """Seed dev/sample rows including SoH -> OoT alias (replaces hardcoded prompt rule)."""
+    """Seed dev/sample rows: OoT (alias QA) + Deep Rock Galactic: Survivor (primary Deck QA title)."""
     crawled = _utc_now()
     games = [
         (1, "413150", None, "The Legend of Zelda: Ocarina of Time", "N64", "Nintendo 64", '["action-adventure"]'),
-        (2, "1245620", None, "ELDEN RING", "PC", "Steam", '["soulslike","action-rpg"]'),
+        (
+            2,
+            "2321470",
+            None,
+            "Deep Rock Galactic: Survivor",
+            "PC",
+            "Steam",
+            '["bullet-heaven","roguelike","action"]',
+        ),
     ]
     conn.executemany(
         "INSERT INTO games(game_id, app_id, igdb_id, canonical_title, edition, platform, genres) "
@@ -69,7 +77,9 @@ def seed_sample_corpus(conn: sqlite3.Connection) -> None:
         (normalize_alias("zelda oot"), 1),
         (normalize_alias("ship of harkinian"), 1),
         (normalize_alias("soh"), 1),
-        (normalize_alias("elden ring"), 2),
+        (normalize_alias("deep rock galactic survivor"), 2),
+        (normalize_alias("drg survivor"), 2),
+        (normalize_alias("drgs"), 2),
     ]
     conn.executemany(
         "INSERT INTO aliases(alias_normalized, game_id) VALUES (?, ?)",
@@ -104,12 +114,24 @@ def seed_sample_corpus(conn: sqlite3.Connection) -> None:
             3,
             2,
             "boss",
-            "Margit, the Fell Omen",
-            "Use Spirit Summons if struggling. Jump attacks and heavy staggers after delayed swings. "
-            "Watch the delayed tail swipe at close range.",
-            "https://eldenring.fandom.com/wiki/Margit,_the_Fell_Omen",
-            "CC-BY-SA-3.0",
-            "1.10",
+            "Glyphid Dreadnought",
+            "Kite the Dreadnought between waves; focus weak-point armor plates as they open. "
+            "Save overclock/nuke for armor break windows. Prioritize movement tech over raw DPS early.",
+            "",
+            "bonsAI-maintainer",
+            "seed-1.0",
+            crawled,
+        ),
+        (
+            4,
+            2,
+            "area",
+            "Hollow Bough",
+            "Biome hazard: sticky webs and reduced visibility — take a mobility-focused build or "
+            "clear web shooters first. XP magnet perks help during swarm-heavy waves.",
+            "",
+            "bonsAI-maintainer",
+            None,
             crawled,
         ),
     ]
@@ -151,7 +173,7 @@ are adaptations of third-party content; design assumes CC BY-SA obligations appl
 ## Strategy cards (sample / seed build)
 
 - The Legend of Zelda: Ocarina of Time — Fandom wiki (CC BY-SA 3.0)
-- ELDEN RING — Fandom wiki (CC BY-SA 3.0)
+- Deep Rock Galactic: Survivor — maintainer seed cards (`bonsAI-maintainer`) for Deck QA
 
 ## Compat patterns
 

@@ -12,6 +12,7 @@ Active features, maintainer tasks, and **known defects**. *QAMP Phase 1 (safe de
 
 ### Bugs
 
+- ★ **Strategy spoiler false-positive:** Strategy replies sometimes wrap non-spoilery coaching (e.g. Glyphid Dreadnought boss tips) in `bonsai-spoiler` fences when the user did not opt in — tune spoiler policy / model fence heuristics so generic boss guidance stays visible by default.
 - ★ **Question Overlay Alignment Drift:** The 3-line question overlay has minor horizontal spacing mismatch vs native `TextField` internals.
 - ★★★ **Fullscreen picker D-pad edge-escape (audit):** Audit **Pull Models**, **Character picker**, **Ollama models hub**, and other `showModal` pickers for below-list / above-list escape (left from row → primary action; right from trailing control → Close).
 

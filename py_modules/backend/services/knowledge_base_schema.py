@@ -121,6 +121,11 @@ def default_corpus_dir_internal() -> str:
     return str(Path.home() / ".bonsai" / "rag")
 
 
+def default_seed_corpus_source_dir() -> str:
+    """Dev/QA seed corpus dropped by build.ps1 (install_rag_corpus_local source)."""
+    return str(Path.home() / "homebrew" / "settings" / "bonsAI" / "seed-knowledge-base")
+
+
 def _free_bytes_at_path(path: str) -> int:
     try:
         if hasattr(os, "statvfs"):

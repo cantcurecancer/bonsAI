@@ -766,6 +766,7 @@ Run after **SMOKE-E**. Unit coverage green 2026-04-30.
 - [ ] **STRAT-SPOIL-03** With permission: unrestricted guidance OK
 - [ ] **STRAT-SPOIL-04** Tap-to-reveal blocks default
 - [ ] **STRAT-SPOIL-05** Settings spoiler masking toggle behavior
+- [ ] **STRAT-SPOIL-06** D-pad: from turn header ↓ lands on **Spoiler — tap to show** `Button` (Decky `focusable`); A reveals; ↑ returns to answer bubble
 
 ### Vision + strategy
 
@@ -827,7 +828,7 @@ Spot-check only if attach/RPC changes. **SMOKE-G**.
 - [ ] Carousel mode: slide, D-pad history, post-Ask re-seed
 - [ ] Preset tap appends " for [game]" when game running
 - [ ] Follow-up category detection (battery / performance / troubleshooting / controls)
-- [ ] **SESSION-RAG-CHIPS-01:** KB on + corpus installed + game with seed AppID (e.g. ELDEN RING `1245620`) — occasional game-specific chip in trio; KB off or corpus missing → static-only; setup tip may appear from pool when sampled
+- [ ] **SESSION-RAG-CHIPS-01:** KB on + corpus installed + game with seed AppID (e.g. DRG Survivor `2321470`) — occasional game-specific chip in trio; KB off or corpus missing → static-only; setup tip may appear from pool when sampled
 
 ### Beta preset behavior
 

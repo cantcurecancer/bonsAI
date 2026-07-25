@@ -18,8 +18,6 @@ SEED_DB = REPO_ROOT / "dist" / "knowledge-base-test" / "corpus.db"
 
 
 def _ensure_seed_db() -> None:
-    if SEED_DB.is_file():
-        return
     SEED_DB.parent.mkdir(parents=True, exist_ok=True)
     subprocess.run(
         [sys.executable, str(REPO_ROOT / "scripts" / "build_rag_db.py"), "--seed", "--out", str(SEED_DB.parent)],
@@ -98,8 +96,8 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
       {"rag_corpus_path": "/nonexistent/path"},
       ask_mode="strategy",
       question="help",
-      app_id="1245620",
-      app_name="ELDEN RING",
+      app_id="2321470",
+      app_name="Deep Rock Galactic: Survivor",
       domain="strategy",
     )
     self.assertFalse(result.attached)
@@ -128,8 +126,8 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
     }
     result = suggest_chip_candidates(
       settings,
-      app_id="1245620",
-      app_name="ELDEN RING",
+      app_id="2321470",
+      app_name="Deep Rock Galactic: Survivor",
     )
     self.assertFalse(result.ok)
     self.assertEqual(result.reason, "kb_off")
@@ -138,8 +136,8 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
   def test_suggest_chip_candidates_missing_corpus(self):
     result = suggest_chip_candidates(
       {"use_local_knowledge_base": True, "rag_corpus_path": "/nonexistent/path"},
-      app_id="1245620",
-      app_name="ELDEN RING",
+      app_id="2321470",
+      app_name="Deep Rock Galactic: Survivor",
     )
     self.assertFalse(result.ok)
     self.assertEqual(result.reason, "corpus_missing")
@@ -151,15 +149,15 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
     }
     result = suggest_chip_candidates(
       settings,
-      app_id="1245620",
-      app_name="ELDEN RING",
+      app_id="2321470",
+      app_name="Deep Rock Galactic: Survivor",
     )
     self.assertTrue(result.ok)
     texts = [c.text for c in result.candidates]
-    self.assertTrue(any("Margit" in t for t in texts))
-    margit = next(c for c in result.candidates if "Margit" in c.text)
-    self.assertEqual(margit.category, "strategy")
-    self.assertEqual(margit.prefer_ask_mode, "strategy")
+    self.assertTrue(any("Dreadnought" in t for t in texts))
+    dreadnought = next(c for c in result.candidates if "Dreadnought" in c.text)
+    self.assertEqual(dreadnought.category, "strategy")
+    self.assertEqual(dreadnought.prefer_ask_mode, "strategy")
     self.assertTrue(any("Proton" in t for t in texts))
 
   def test_suggest_chip_candidates_rpc_shape(self):

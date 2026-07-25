@@ -5,7 +5,7 @@
 import type { Components } from "react-markdown";
 import { useMemo, useState } from "react";
 import ReactMarkdown from "react-markdown";
-import { Focusable } from "@decky/ui";
+import { Button } from "@decky/ui";
 
 export type MainTabBonsaiAiMarkdownChunkProps = {
   source: string;
@@ -101,8 +101,10 @@ function BonsaiSpoilerFence(props: {
 
   if (!open) {
     return (
-      <Focusable
+      <Button
+        focusable
         className="bonsai-spoiler-reveal-target"
+        onClick={() => setOpen(true)}
         style={{
           margin: "8px 0",
           padding: "10px 12px",
@@ -111,8 +113,11 @@ function BonsaiSpoilerFence(props: {
           background: "rgba(24, 40, 58, 0.55)",
           width: "100%",
           boxSizing: "border-box",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "flex-start",
+          textAlign: "left",
         }}
-        onActivate={() => setOpen(true)}
       >
         <div
           style={{
@@ -127,7 +132,7 @@ function BonsaiSpoilerFence(props: {
         <div style={{ fontSize: 11, color: "rgba(190, 205, 220, 0.75)", marginTop: 4 }}>
           Hidden until you reveal (Strategy Guide).
         </div>
-      </Focusable>
+      </Button>
     );
   }
 
@@ -144,15 +149,23 @@ function BonsaiSpoilerFence(props: {
         boxSizing: "border-box",
       }}
     >
-      <Focusable
+      <Button
+        focusable
         className="bonsai-spoiler-collapse-target"
-        style={{ marginBottom: 8 }}
-        onActivate={() => setOpen(false)}
+        onClick={() => setOpen(false)}
+        style={{
+          marginBottom: 8,
+          padding: 0,
+          minHeight: 0,
+          background: "transparent",
+          border: "none",
+          fontSize: 11,
+          color: "rgba(170, 200, 230, 0.85)",
+          fontWeight: 600,
+        }}
       >
-        <span style={{ fontSize: 11, color: "rgba(170, 200, 230, 0.85)", fontWeight: 600 }}>
-          Spoiler — tap to hide
-        </span>
-      </Focusable>
+        Spoiler — tap to hide
+      </Button>
       <ReactMarkdown components={innerComponents}>{body}</ReactMarkdown>
     </div>
   );

@@ -70,20 +70,60 @@ def _fetch_json_url(url: str, timeout: float = 60.0) -> dict[str, Any]:
         return parse_manifest_json(json.loads(resp.read().decode("utf-8")))
 
 
+def _agent_debug_log(location: str, message: str, data: dict[str, Any], hypothesis_id: str) -> None:
+    # #region agent log
+    try:
+        import time
+
+        log_path = os.path.join(os.path.expanduser("~"), ".bonsai", "debug-a3646d.log")
+        os.makedirs(os.path.dirname(log_path), exist_ok=True)
+        payload = {
+            "sessionId": "a3646d",
+            "hypothesisId": hypothesis_id,
+            "location": location,
+            "message": message,
+            "data": data,
+            "timestamp": int(time.time() * 1000),
+        }
+        with open(log_path, "a", encoding="utf-8") as fp:
+            fp.write(json.dumps(payload, ensure_ascii=False) + "\n")
+    except OSError:
+        pass
+    # #endregion
+
+
 def fetch_remote_manifest(
     *,
     hf_url: str = DEFAULT_MANIFEST_HF_URL,
     github_url: str = DEFAULT_MANIFEST_GITHUB_URL,
 ) -> dict[str, Any]:
-    for url in (hf_url, github_url):
+    failures: list[str] = []
+    for label, url in (("huggingface", hf_url), ("github", github_url)):
         if not url:
             continue
         try:
-            return _fetch_json_url(url)
-        except Exception:
+            manifest = _fetch_json_url(url)
+            _agent_debug_log(
+                "rag_corpus_download_service.py:fetch_remote_manifest",
+                "manifest_fetch_ok",
+                {"mirror": label, "url": url[:120]},
+                "H1",
+            )
+            return manifest
+        except Exception as exc:
+            detail = f"{label}: {type(exc).__name__}: {exc}"
+            failures.append(detail)
+            _agent_debug_log(
+                "rag_corpus_download_service.py:fetch_remote_manifest",
+                "manifest_fetch_failed",
+                {"mirror": label, "url": url[:120], "error": detail},
+                "H1",
+            )
             continue
+    summary = "; ".join(failures) if failures else "no mirrors configured"
     raise RuntimeError(
         "Could not fetch the knowledge base manifest (Hugging Face and GitHub mirror unreachable). "
+        f"Details: {summary}. "
         "The offline corpus may not be published yet — see docs/troubleshooting.md § Knowledge base."
     )
 
@@ -177,6 +217,10 @@ def install_corpus_from_manifest(
             raise RuntimeError("Invalid chunk filename.")
         dest = os.path.join(root, fname)
         expected_sha = str(chunk.get("sha256") or "").strip().lower()
+        if expected_sha and os.path.isfile(dest) and _sha256_file(dest) == expected_sha:
+            log(f"[bonsAI] Using existing {fname} (checksum OK).")
+            part_paths.append(dest)
+            continue
         url_hf = f"{hf_base}/{fname}" if hf_base else ""
         url_gh = f"{gh_base}/{fname}" if gh_base else ""
         last_err = ""

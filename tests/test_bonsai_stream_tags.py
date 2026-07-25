@@ -56,6 +56,12 @@ class BonsaiStreamTagsTests(unittest.TestCase):
         self.assertIsNone(summary)
         self.assertEqual(stripped, "")
 
+    def test_extract_strips_multiple_status_tags(self):
+        raw = "<bonsai-status>One</bonsai-status>\n\nBody\n\n<bonsai-status>Two</bonsai-status>\n\nTail."
+        summary, stripped = extract_bonsai_status(raw)
+        self.assertEqual(summary, "One")
+        self.assertEqual(stripped, "Body\n\nTail.")
+
     def test_deterministic_phase_fallback(self):
         self.assertIn(
             "masterpiece",

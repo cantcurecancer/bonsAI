@@ -5,7 +5,7 @@ import {
 import type { AskModeId } from "./askMode";
 import { DEFAULT_OLLAMA_KEEP_ALIVE, type OllamaKeepAliveDuration } from "./ollamaKeepAlive";
 import { DEFAULT_REPLY_VERBOSITY, type ReplyVerbosityId } from "./replyVerbosity";
-import { DEFAULT_REPLY_LANGUAGE, type ReplyLanguageId } from "./replyLanguage";
+import { type ReplyLanguageId } from "./replyLanguage";
 
 export { DEFAULT_REPLY_LANGUAGE, type ReplyLanguageId } from "./replyLanguage";
 import {
