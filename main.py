@@ -240,6 +240,7 @@ class Plugin:
         }
         self._voice_lock = asyncio.Lock()
         self._voice_session: Optional[VoiceTranscriptionSession] = None
+        self._voice_start_generation = 0
         self._voice_install_lock = asyncio.Lock()
         self._voice_install_task: Optional[asyncio.Task] = None
         self._voice_install_cancel = threading.Event()
@@ -1453,6 +1454,23 @@ class Plugin:
             "storage_options": storage_options,
         }
 
+    async def get_session_rag_chip_candidates(
+        self,
+        app_id: str = "",
+        app_name: str = "",
+        shortcut_name: str = "",
+    ):
+        """Return curtailed KB-backed preset chip candidates for the running game (read-only)."""
+        plugin = Plugin._coerce_instance(self)
+        settings = await plugin.load_settings()
+        result = suggest_chip_candidates(
+            settings,
+            app_id=str(app_id or ""),
+            app_name=str(app_name or ""),
+            shortcut_name=str(shortcut_name or ""),
+        )
+        return session_rag_chip_candidates_to_rpc(result)
+
     async def start_rag_corpus_download(self, data: Any = None):
         """Download and install the knowledge base corpus (user-initiated; Model A consent)."""
         plugin = Plugin._coerce_instance(self)
@@ -2088,7 +2106,7 @@ class Plugin:
     async def get_reply_language_snapshot(self):
         """Return Steam client language, persisted override, and effective Ask reply language."""
         plugin = Plugin._coerce_instance(self)
-        settings = plugin.load_settings()
+        settings = await plugin.load_settings()
         return reply_language_snapshot(settings.get("reply_language"))
 
     async def save_ask_feedback(self, rating: str, request_id: int = 0, question_len: int = 0, success: bool = False):
@@ -2781,6 +2799,7 @@ class Plugin:
     async def _stop_voice_transcription_internal(self) -> None:
         plugin = Plugin._coerce_instance(self)
         async with plugin._voice_lock:
+            plugin._voice_start_generation += 1
             session = plugin._voice_session
             plugin._voice_session = None
         if session is not None:
@@ -2900,10 +2919,18 @@ class Plugin:
                 plugin._voice_session = None
             else:
                 old = None
+            plugin._voice_start_generation += 1
+            start_generation = plugin._voice_start_generation
         if old is not None:
             await asyncio.to_thread(old.force_stop)
 
         async with plugin._voice_lock:
+            if plugin._voice_start_generation != start_generation:
+                return {
+                    "accepted": False,
+                    "error": "busy",
+                    "reason": "Voice transcription start superseded.",
+                }
             session = VoiceTranscriptionSession(
                 PLUGIN_ROOT,
                 decky.DECKY_PLUGIN_SETTINGS_DIR,
