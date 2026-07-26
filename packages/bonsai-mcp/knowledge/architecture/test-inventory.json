@@ -69,6 +69,7 @@
     "tests/test_ollama_prompts_stream_instruction.py",
     "tests/test_ollama_pull_registry.py",
     "tests/test_ollama_service.py",
+    "tests/test_parse_ask_payload_unpack.py",
     "tests/test_plugin_data_reset.py",
     "tests/test_proton_experiment_journal_service.py",
     "tests/test_proton_troubleshooting_logs.py",
@@ -78,6 +79,7 @@
     "tests/test_refactor_helpers.py",
     "tests/test_reply_followup.py",
     "tests/test_reply_language_service.py",
+    "tests/test_reply_language_snapshot_rpc.py",
     "tests/test_response_verify.py",
     "tests/test_screenshot_media.py",
     "tests/test_settings_save_lock.py",
@@ -89,6 +91,7 @@
     "tests/test_strategy_guide_parse.py",
     "tests/test_tdp_sandbox_sysfs.py",
     "tests/test_token_stream_request_id_wiring.py",
+    "tests/test_voice_start_superseded.py",
     "tests/test_voice_transcription_service.py",
     "tests/test_voice_whisper_daemon.py"
   ]
