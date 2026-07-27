@@ -223,6 +223,29 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
     () => survivalPeek?.askThreadDisplayQuestion ?? ""
   );
   const [isAsking, setIsAsking] = useState(false);
+
+  const syncOllamaContextFromRunningApp = useCallback(() => {
+    const appId =
+      trackedRunningAppId.trim() ||
+      (Router.MainRunningApp?.appid?.toString() ?? "").trim();
+    const next: NonNullable<OllamaContextUi> = {
+      app_id: appId,
+      app_context: appId ? "active" : "none",
+    };
+    setOllamaContext((prev) => {
+      if (prev?.app_id === next.app_id && prev?.app_context === next.app_context) {
+        return prev;
+      }
+      return next;
+    });
+  }, [trackedRunningAppId]);
+
+  /** Keep Main-tab game context in sync with Steam before/after Asks (not only mid-Ask). */
+  useEffect(() => {
+    if (isAsking) return;
+    syncOllamaContextFromRunningApp();
+  }, [trackedRunningAppId, isAsking, syncOllamaContextFromRunningApp]);
+
   const [lastApplied, setLastApplied] = useState<AppliedResult | null>(
     () => survivalPeek?.lastApplied ?? null
   );
@@ -572,11 +595,11 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
     }
 
     setIsStreamingPreview(false);
-    setOllamaContext(null);
+    syncOllamaContextFromRunningApp();
     setIsAsking(false);
     setPresetCarouselInject(null);
   },
-    [refreshInputTransparency],
+    [refreshInputTransparency, syncOllamaContextFromRunningApp],
   );
 
   const onTurnActivate = useCallback((key: string | "live") => {
@@ -592,7 +615,7 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
     setIsStreamSettling(false);
     setOllamaResponse(`Error: ${msg}`);
     setLastApplied(null);
-    setOllamaContext(null);
+    syncOllamaContextFromRunningApp();
     setLastExchange(null);
     setStrategyGuideBranches(null);
     setModelPolicyDisclosure(null);
@@ -600,7 +623,7 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
     setShortcutSetupVariant(null);
     pendingArchiveTurnRef.current = null;
     pendingThreadQuestionDisplayRef.current = null;
-  }, [a]);
+  }, [a, syncOllamaContextFromRunningApp]);
 
   const {
     startNextRequest,
@@ -653,7 +676,7 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
     a.setSelectedIndex(-1);
     a.setNavigationMessage("");
     setOllamaResponse("");
-    setOllamaContext(null);
+    syncOllamaContextFromRunningApp();
     setLastApplied(null);
     setLastExchange(null);
     setStrategyGuideBranches(null);
@@ -667,7 +690,7 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
     setShowSlowWarning(false);
     setIsStreamingPreview(false);
     setThinkingSummary(null);
-  }, [a, invalidateRequests, isAsking]);
+  }, [a, invalidateRequests, isAsking, syncOllamaContextFromRunningApp]);
 
   const onCancelAsk = useCallback(() => {
     void call<[], { ok?: boolean }>("abort_background_game_ai").catch(() => {
@@ -679,7 +702,7 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
     setThinkingSummary(null);
     setIsStreamingPreview(false);
     setOllamaResponse("Request cancelled.");
-    setOllamaContext(null);
+    syncOllamaContextFromRunningApp();
     setLastApplied(null);
     setElapsedSeconds(null);
     setShowSlowWarning(false);
@@ -687,7 +710,7 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
     setModelPolicyDisclosure(null);
     setPresetCarouselInject(null);
     setShortcutSetupVariant(null);
-  }, [invalidateRequests]);
+  }, [invalidateRequests, syncOllamaContextFromRunningApp]);
 
   const onAskOllama = useCallback(
     async (overrideQuestion?: string, opts?: { threadQuestionDisplay?: string }) => {
@@ -958,7 +981,7 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
         setIsAsking(false);
         setOllamaResponse(`Error: ${msg}`);
         setLastApplied(null);
-        setOllamaContext(null);
+        syncOllamaContextFromRunningApp();
         setStrategyGuideBranches(null);
         pendingThreadQuestionDisplayRef.current = null;
       }
@@ -970,6 +993,7 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
       refreshInputTransparency,
       startBackgroundStatusPolling,
       startNextRequest,
+      syncOllamaContextFromRunningApp,
     ],
   );
 
@@ -1140,7 +1164,7 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
     setIsStreamSettling(false);
     setThinkingSummary(null);
     setOllamaResponse("");
-    setOllamaContext(null);
+    syncOllamaContextFromRunningApp();
     setLastApplied(null);
     setLastExchange(null);
     setStrategyGuideBranches(null);
@@ -1161,7 +1185,7 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
     setLiveReplyFeedbackRating(null);
     setLiveReplyChipUsed(false);
     setLiveReplyChipError(null);
-  }, [invalidateRequests, isAsking]);
+  }, [invalidateRequests, isAsking, syncOllamaContextFromRunningApp]);
 
   return {
     ollamaResponse,

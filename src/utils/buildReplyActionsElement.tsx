@@ -8,6 +8,14 @@ import {
 } from "../components/icons";
 import type { ReplyMicroActionId } from "../data/replyMicroActions";
 import { replyMicroActionById } from "../data/replyMicroActions";
+import {
+  focusLastReplyChip,
+  focusReplyHelpful,
+  focusReplyNotReally,
+  focusReplyRetry,
+  focusReplyShowDetails,
+  queryLiveTurnSlot,
+} from "./liveTurnFocusGraph";
 
 const CHIP_ROW_REFINE: ReplyMicroActionId[] = ["bad_information", "misidentified_game"];
 const CHIP_ROW_LENGTH: ReplyMicroActionId[] = ["too_long", "too_short"];
@@ -97,15 +105,31 @@ export function buildReplyActionsElement(
   const chipsInactive = chipsDisabled || chipUsed || askInFlight;
   const thumbsLocked = rating !== null;
 
+  const liveSlot = () => queryLiveTurnSlot();
   const moveUpFromReply = () => false;
-  const thumbDeckNav = {
-    /* Yield to previous turn-slot sibling (branches / bubble). */
-    onMoveUp: moveUpFromReply,
+
+  /*
+   * Column-preserving vertical hops when thumbs sit directly above utility
+   * (no refinement chips): Helpful↔Retry, Not really↔Show details.
+   * With chips between, yield (return false) so Decky advances to the chip row.
+   */
+  const downFromHelpful = () => {
+    if (showChipRows) return false;
+    return focusReplyRetry(liveSlot());
   };
-  const utilityDeckNav = {
-    onMoveUp: () => false,
-    /* Yield to next turn-slot sibling (context hint / session strip). */
-    onMoveDown: () => false,
+  const downFromNotReally = () => {
+    if (showChipRows) return false;
+    return focusReplyShowDetails(liveSlot());
+  };
+  const upFromRetry = () => {
+    const slot = liveSlot();
+    if (showChipRows && focusLastReplyChip(slot)) return true;
+    return focusReplyHelpful(slot);
+  };
+  const upFromShowDetails = () => {
+    const slot = liveSlot();
+    if (showChipRows && focusLastReplyChip(slot)) return true;
+    return focusReplyNotReally(slot);
   };
 
   if (!showFeedback && !showUtilityRow && !showChipRows && rating === null) {
@@ -140,7 +164,11 @@ export function buildReplyActionsElement(
               disabled={feedbackDisabled || thumbsLocked}
               onClick={() => onRate("up")}
               aria-label="Mark reply helpful"
-              deckNav={thumbDeckNav}
+              replyStop="helpful"
+              deckNav={{
+                onMoveUp: moveUpFromReply,
+                onMoveDown: downFromHelpful,
+              }}
             >
               <ThumbUpOutlineIcon size={14} />
               Helpful
@@ -149,7 +177,11 @@ export function buildReplyActionsElement(
               disabled={feedbackDisabled || thumbsLocked}
               onClick={() => onRate("down")}
               aria-label="Mark reply not helpful"
-              deckNav={thumbDeckNav}
+              replyStop="not-really"
+              deckNav={{
+                onMoveUp: moveUpFromReply,
+                onMoveDown: downFromNotReally,
+              }}
             >
               <ThumbDownOutlineIcon size={14} />
               Not really
@@ -195,7 +227,11 @@ export function buildReplyActionsElement(
               disabled={askInFlight}
               onClick={onRetry}
               aria-label="Retry same prompt"
-              deckNav={utilityDeckNav}
+              replyStop="retry"
+              deckNav={{
+                onMoveUp: upFromRetry,
+                onMoveDown: () => false,
+              }}
             >
               <RefreshArrowIcon size={14} />
               Retry
@@ -207,7 +243,11 @@ export function buildReplyActionsElement(
               onClick={onToggleTransparency}
               aria-expanded={transparencyOpen}
               aria-label={transparencyOpen ? "Hide details" : "Show details"}
-              deckNav={utilityDeckNav}
+              replyStop="show-details"
+              deckNav={{
+                onMoveUp: upFromShowDetails,
+                onMoveDown: () => false,
+              }}
             >
               {transparencyOpen ? "Hide details" : "Show details"}
             </BonsaiChatSecondaryButton>

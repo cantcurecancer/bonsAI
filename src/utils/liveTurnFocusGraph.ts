@@ -1,5 +1,7 @@
 /** D-pad focus helpers for the live Ask turn (answer → strategy → feedback). */
 
+import { focusRegisteredReplyStop } from "./replyStopRegistry";
+
 const FOCUSABLE_SELECTOR =
   'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
@@ -82,21 +84,40 @@ export function focusStrategyChecklistToggle(liveSlot: HTMLElement | null, which
 }
 
 export function focusReplyThumbsRow(liveSlot: HTMLElement | null): boolean {
-  const reply = liveSlot?.querySelector(".bonsai-chat-reply-actions");
-  if (!reply) return false;
-  const helpful =
-    reply.querySelector<HTMLElement>('button[aria-label="Mark reply helpful"]') ??
-    reply.querySelector<HTMLElement>("button.bonsai-chat-secondary-btn");
-  return focusDeckOwner(helpful);
+  return focusReplyHelpful(liveSlot);
+}
+
+/**
+ * Focus a reply-actions 2x2 cell via the mount-time ref registry.
+ * `document.querySelector` returns null on Deck for these nodes (proven ok/found:false);
+ * registered Button refs are the reliable focus targets.
+ */
+export function focusReplyStop(
+  _liveSlot: HTMLElement | null,
+  stop: "helpful" | "not-really" | "retry" | "show-details",
+): boolean {
+  return focusRegisteredReplyStop(stop);
+}
+
+export function focusReplyHelpful(liveSlot: HTMLElement | null): boolean {
+  return focusReplyStop(liveSlot, "helpful");
+}
+
+export function focusReplyNotReally(liveSlot: HTMLElement | null): boolean {
+  return focusReplyStop(liveSlot, "not-really");
+}
+
+export function focusReplyRetry(liveSlot: HTMLElement | null): boolean {
+  return focusReplyStop(liveSlot, "retry");
+}
+
+export function focusReplyShowDetails(liveSlot: HTMLElement | null): boolean {
+  return focusReplyStop(liveSlot, "show-details");
 }
 
 export function focusReplyUtilityRow(liveSlot: HTMLElement | null): boolean {
-  const reply = liveSlot?.querySelector(".bonsai-chat-reply-actions");
-  if (!reply) return false;
-  const utility =
-    reply.querySelector<HTMLElement>(".bonsai-chat-reply-actions-row--utility button") ??
-    reply.querySelector<HTMLElement>('button[aria-label="Retry same prompt"]');
-  return focusDeckOwner(utility);
+  if (focusReplyRetry(liveSlot)) return true;
+  return focusReplyShowDetails(liveSlot);
 }
 
 export function focusLastReplyChip(liveSlot: HTMLElement | null): boolean {

@@ -11,4 +11,6 @@ Full policy: MCP `bonsai.policy.get` id=`decky-ui-focus` or [packages/bonsai-mcp
 
 - NEVER assume DOM order or nested `DeckFocusSlider` thumbs join the vertical graph. For sliders, ALWAYS add a document-flow **`Focusable` bridge** in the parent with vertical **and** horizontal handlers, or use proven parent ref wiring (`focusOllamaKeepAliveThumb` pattern).
 
+- NEVER hop between Decky D-pad siblings via `document.querySelector` / aria / `data-*` / class lookup or `document.activeElement` success checks — those miss on Deck and yield wrong spatial nav. ALWAYS register mounted focus owners (refs/registry) and return `true` from `onMove*` when the target is registered (`replyStopRegistry.ts`).
+
 - NEVER mark Deck-facing UI done without a **D-pad row in `docs/testing.md`** for the new control chain.

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Button } from "@decky/ui";
+import { registerReplyStop, type ReplyStopId } from "../utils/replyStopRegistry";
 
 type BonsaiChatSecondaryButtonProps = {
   children: ReactNode;
@@ -10,11 +11,13 @@ type BonsaiChatSecondaryButtonProps = {
   className?: string;
   style?: React.CSSProperties;
   deckNav?: Record<string, () => boolean | void>;
+  /** Registers this button in the reply 2x2 focus registry for column D-pad hops. */
+  replyStop?: ReplyStopId;
 };
 
 /** Decky `Button` focus stop — native `<button>` inside `Focusable` is not D-pad navigable. */
 export function BonsaiChatSecondaryButton(props: BonsaiChatSecondaryButtonProps) {
-  const { children, onClick, disabled, className, style, deckNav, ...aria } = props;
+  const { children, onClick, disabled, className, style, deckNav, replyStop, ...rest } = props;
   const extra = className ? ` ${className}` : "";
   return (
     <Button
@@ -23,8 +26,15 @@ export function BonsaiChatSecondaryButton(props: BonsaiChatSecondaryButtonProps)
       disabled={disabled}
       onClick={onClick}
       style={style}
+      ref={
+        replyStop
+          ? (el: HTMLElement | null) => {
+              registerReplyStop(replyStop, el);
+            }
+          : undefined
+      }
       {...(deckNav as Record<string, unknown> | undefined)}
-      {...aria}
+      {...(rest as Record<string, unknown>)}
     >
       {children}
     </Button>

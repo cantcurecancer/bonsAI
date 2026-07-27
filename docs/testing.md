@@ -367,7 +367,8 @@ Maps [roadmap.md](roadmap.md) **Completed** summary and [archive/roadmap-complet
 | SANITIZER | Input sanitizer lane | SMOKE-F | Partial | [SMOKE-F-disable-sanitize](test-evidence/tier0/2026-05-26-9e20a82/SMOKE-F-disable-sanitize/manifest.json); [preview 2026-05-26](test-evidence/tier0/2026-05-26-9e20a82/SMOKE-F-disable-sanitize/manifest.json) |
 | TRANSPARENCY | Input handling transparency panel | SMOKE-A | Partial | Superseded by context chip ladder (**CONTEXT-LADDER-01**); legacy panel removed 2026-07-17 |
 | PROTON-JOURNAL | Proton experiment journal (Settings CRUD + inject) | PROTON-JOURNAL-01…04 | Open | Settings → Proton troubleshooting; `~/.bonsai/proton_experiment_journal.json`; clear-all wipes file |
-| CONTEXT-LADDER | Context chip ladder + session strip (F11 Option C) | CONTEXT-LADDER-01…03 | Open | Live turn inline ladder; archived turns → session strip; D-pad **CONTEXT-LADDER-03** |
+| CONTEXT-LADDER | Context chip ladder + session strip (F11 Option C) | CONTEXT-LADDER-01…03 | Open | Live turn: **Show details** gates ladder; session strip for archived; D-pad **CONTEXT-LADDER-03** |
+| GAME-CONTEXT | Pre-Ask running-game footer / banner | GAME-CONTEXT-01 | Open | Sync `ollamaContext` from `MainRunningApp` when not mid-Ask |
 
 ### Connection, routing, diagnostics
 
@@ -417,7 +418,7 @@ Maps [roadmap.md](roadmap.md) **Completed** summary and [archive/roadmap-complet
 | RETRY-PROMPT | Retry same prompt (regenerate) | FEEDBACK-01 | Open | `buildReplyActionsElement.tsx`; on-Deck |
 | ASK-FEEDBACK | Per-turn local feedback (thumbs) | FEEDBACK-01 | Open | `save_ask_feedback` RPC; on-Deck |
 | MODEL-ROUTING | User-owned text/vision try-order pickers | ROUTING-01…04 | Open | `ModelRoutingOrderModal.tsx`, `tests/test_model_routing_order.py`; on-Deck D-pad |
-| REPLY-MICRO | Reply micro-action chips + follow-up send | MICRO-01…04 | Open | `replyMicroActions.ts`, `tests/test_reply_followup.py`; on-Deck |
+| REPLY-MICRO | Reply micro-action chips + follow-up send | MICRO-01…05 | Open | `replyMicroActions.ts`, `tests/test_reply_followup.py`; on-Deck; **MICRO-05** column D-pad |
 
 ### AI-assisted power and UX
 
@@ -591,6 +592,7 @@ Requires **Settings → Data → Show Developer tab** → **Token streaming (exp
 - [ ] **MICRO-02** Chip tap autofills Ask field + toast; one chip per reply; chip-tap RPC error inline under chips only
 - [ ] **MICRO-03** Send after chip arms follow-up (parent model pin, parent Q+A in backend); transparency route `reply_followup:*`
 - [ ] **MICRO-04** D-pad: answer bubble ↑ → branch options → checklist → thumbs → chip rows (after down only) → utility row → context strip
+- [ ] **MICRO-05** D-pad column align (no chips): **Not really** ↓ → **Show details**; **Retry** ↑ → **Helpful** (and **Helpful** ↓ → **Retry**; **Show details** ↑ → **Not really**)
 
 ### Proton experiment journal (2026-07-17)
 
@@ -601,9 +603,13 @@ Requires **Settings → Data → Show Developer tab** → **Token streaming (exp
 
 ### Context chip ladder (F11 Option C)
 
-- [ ] **CONTEXT-LADDER-01** Live turn: **Context used · tap for details** expands inline chip ladder after Ask completes
+- [ ] **CONTEXT-LADDER-01** Live turn: **Show details** reveals inline chip ladder; **Hide details** removes it (default closed after Ask)
 - [ ] **CONTEXT-LADDER-02** Older turn hint jumps to **Session context** strip row; ladder shows frozen snapshot
-- [ ] **CONTEXT-LADDER-03** D-pad: reply actions → context hint → ladder chip ↑/↓ → session strip (on-Deck)
+- [ ] **CONTEXT-LADDER-03** D-pad: reply actions → (when details open) ladder chip ↑/↓ → session strip; when details closed, utility row ↓ → session strip (on-Deck)
+
+### Game context (Main tab)
+
+- [ ] **GAME-CONTEXT-01** With a game running, type in Ask before sending → footer shows **Context: active game AppID …**; no “No game detected” banner under Ask
 
 ---
 

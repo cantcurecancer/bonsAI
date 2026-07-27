@@ -17,7 +17,7 @@
     },
     {
       "path": "src/hooks/useBonsaiAskOrchestration.ts",
-      "lines": 1219,
+      "lines": 1243,
       "role": ""
     },
     {
@@ -76,14 +76,14 @@
       "role": ""
     },
     {
+      "path": "src/components/MainTabChatTranscript.tsx",
+      "lines": 595,
+      "role": ""
+    },
+    {
       "path": "py_modules/backend/services/ollama_service.py",
       "lines": 593,
       "role": "Prompt build, Ollama HTTP, streaming"
-    },
-    {
-      "path": "src/components/MainTabChatTranscript.tsx",
-      "lines": 592,
-      "role": ""
     },
     {
       "path": "src/components/SettingsTab.tsx",

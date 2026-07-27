@@ -3,9 +3,14 @@ import { describe, expect, it } from "vitest";
 import {
   focusDeckOwner,
   focusDownFromLiveAnswerBubble,
+  focusReplyHelpful,
+  focusReplyNotReally,
+  focusReplyRetry,
+  focusReplyShowDetails,
   focusUpFromReplyActions,
   queryLiveTurnSlot,
 } from "./liveTurnFocusGraph";
+import { registerReplyStop } from "./replyStopRegistry";
 
 function mountLiveTurn(html: string): HTMLElement {
   document.body.innerHTML = html;
@@ -75,5 +80,42 @@ describe("liveTurnFocusGraph", () => {
     const slot = queryLiveTurnSlot(document.body);
     expect(focusUpFromReplyActions(slot)).toBe(true);
     expect(document.activeElement?.textContent).toContain("Check");
+  });
+
+  it("column helpers focus Not really / Show details / Retry / Helpful", () => {
+    mountLiveTurn(`
+      <div class="bonsai-chat-turn-slot">
+        <div class="bonsai-chat-turn-row-header bonsai-chat-turn-row-header--live"></div>
+        <div class="bonsai-chat-reply-actions">
+          <div class="Panel Focusable" tabindex="-1" id="stop-helpful">
+            <button class="bonsai-chat-secondary-btn">Helpful</button>
+          </div>
+          <div class="Panel Focusable" tabindex="-1" id="stop-not-really">
+            <button class="bonsai-chat-secondary-btn">Not really</button>
+          </div>
+          <div class="bonsai-chat-reply-actions-row--utility">
+            <div class="Panel Focusable" tabindex="-1" id="stop-retry">
+              <button class="bonsai-chat-secondary-btn">Retry</button>
+            </div>
+            <div class="Panel Focusable" tabindex="-1" id="stop-show-details">
+              <button class="bonsai-chat-secondary-btn">Show details</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `);
+    registerReplyStop("helpful", document.getElementById("stop-helpful"));
+    registerReplyStop("not-really", document.getElementById("stop-not-really"));
+    registerReplyStop("retry", document.getElementById("stop-retry"));
+    registerReplyStop("show-details", document.getElementById("stop-show-details"));
+    const slot = queryLiveTurnSlot(document.body);
+    expect(focusReplyNotReally(slot)).toBe(true);
+    expect(document.activeElement?.id).toBe("stop-not-really");
+    expect(focusReplyShowDetails(slot)).toBe(true);
+    expect(document.activeElement?.id).toBe("stop-show-details");
+    expect(focusReplyRetry(slot)).toBe(true);
+    expect(document.activeElement?.id).toBe("stop-retry");
+    expect(focusReplyHelpful(slot)).toBe(true);
+    expect(document.activeElement?.id).toBe("stop-helpful");
   });
 });

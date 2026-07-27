@@ -241,6 +241,11 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
     });
 
   const showTransparencyUi = transparencyUiAvailable(transparencySnapshot);
+  const renderInlineLadder =
+    expandedTurnKey === "live" &&
+    !isAsking &&
+    showTransparencyUi &&
+    transparencyDetailsOpen;
 
   return (
     <>
@@ -427,13 +432,11 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
                   askInFlight: isAsking,
                 })
               : null}
-            {expandedTurnKey === "live" &&
-            !isAsking &&
-            showTransparencyUi ? (
+            {renderInlineLadder ? (
               <div style={{ maxWidth: BONSAI_CHAT_AI_MAX_WIDTH_CSS }}>
                 <ContextChipLadder
                   snapshot={transparencySnapshot}
-                  collapsedHint
+                  collapsedHint={false}
                 />
               </div>
             ) : null}

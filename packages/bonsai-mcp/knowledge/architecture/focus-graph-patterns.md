@@ -49,6 +49,18 @@ Canonical: `SettingsTabUiScaleSection.tsx` (`bonsai-ui-scale-slider-focus-bridge
 
 Wrap chips/buttons in `Focusable flow-children="horizontal"` and spread `onMoveLeft` / `onMoveRight` / `onMoveDown` on each `Button`. See screenshot quality row in `SettingsTab.tsx`.
 
+## Pattern D — Explicit column hops (2×2 / non-DOM-order vertical)
+
+When two horizontal rows must preserve **columns** under D-pad (Helpful↔Retry, Not really↔Show details), Decky default spatial nav and `document.querySelector`-based `.focus()` both fail on Deck.
+
+**Required:**
+
+1. Register each cell’s Deck focus owner at mount (`ref` → registry), e.g. `replyStopRegistry.ts` + `BonsaiChatSecondaryButton` `replyStop` prop
+2. Wire `onMoveUp` / `onMoveDown` on each cell to focus the **registered** sibling owner
+3. Return **`true`** when the target is registered (claim the move) — returning `false` re-enters Steam spatial nav and produces diagonals
+
+Canonical: `src/utils/buildReplyActionsElement.tsx`, `src/utils/replyStopRegistry.ts`. On-Deck QA: **MICRO-05**.
+
 ## Anti-patterns (caused multi-prompt regressions)
 
 | Mistake | Symptom |
@@ -57,6 +69,9 @@ Wrap chips/buttons in `Focusable flow-children="horizontal"` and spread `onMoveL
 | Spread `onMoveDown` on `ToggleField` without bridge | Decky native graph jumps to next `Button` |
 | Bridge `Focusable` without `onMoveLeft`/`onMoveRight`/`onButtonDown` | Vertical works; Left/Right dead |
 | Programmatic `.focus()` to thumb while bridge owns focus | Highlight on thumb; D-pad still on bridge |
+| `querySelector` / aria / `data-*` / class to find sibling for `onMove*` | `found: false` on Deck; Steam spatial nav steals hop (wrong diagonal) |
+| Cross-column fallback when primary target “misses” | Helpful↓ lands on Show details “successfully” |
+| Gate `onMove*` success on `document.activeElement` | Focus attempted but handler returns `false`; spatial nav overwrites |
 
 ## Ship checklist
 
