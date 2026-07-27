@@ -725,11 +725,13 @@ Deck-only (multi-output: handheld, docked monitor, TV). Unit: `src/data/uiScaleP
 
 ### Knowledge base (RAG Deck query v1)
 
-Coverage: **KB-DOWNLOAD** / **KB-RETRIEVE** / **KB-UNAVAIL**. Architecture: [knowledge-base.md](knowledge-base.md).
+Coverage: **KB-DOWNLOAD** / **KB-RETRIEVE** / **KB-UNAVAIL**. Architecture: [knowledge-base.md](knowledge-base.md). Phase 2 hybrid discovery: [roadmap.md](roadmap.md) **RAG Deck query — hybrid vectors**.
 
 - [x] **KB-SMOKE-01** Ollama tab: download (or verify installed) corpus + **Use local knowledge base** on; status shows ready — *Partial 2026-07-27:* Developer tab seed install (HF/GitHub corpus not published yet); coverage **KB-DOWNLOAD** Partial
 - [x] **KB-SMOKE-02** Strategy or troubleshooting Ask with KB on + seeded AppID → **Show details** / context chips show local KB (or equivalent splice evidence); reply grounded in corpus — *Verified 2026-07-27:* DRG Survivor `2321470`; Show details → Local Knowledge Base `wiki_verified` + AppID; [DeckCapture_20260727_170321_game.png](../screenshots/DeckCapture_20260727_170321_game.png); coverage **KB-RETRIEVE** Verified
 - [ ] **KB-SMOKE-03** KB toggle on, corpus missing/unavailable → once/session toast; Ask still completes without crash
+
+**Phase 2 (when implementing hybrid — placeholders):** Show details / chips use **Keyword + meaning** when hybrid runs; **Keyword search** without `nomic-embed-text` or vectors; Ask still completes. Soft install hint does not auto-pull. Compat hybrid **not** in Phase 2 QA (Phase 3 research). **Spoiler confidence chip** is a separate Planned row — no smoke until owner decisions land.
 
 ---
 

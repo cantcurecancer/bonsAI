@@ -89,9 +89,11 @@ Optional on-Deck corpus for Strategy and troubleshooting Asks. Full architecture
 
 When the knowledge base is enabled and installed, Main-tab preset chips may occasionally show game-specific tips (boss/compat curtailed from the offline corpus) mixed with static suggestions.
 
+**Better search (Phase 2 — when shipped):** Optional Ollama model `nomic-embed-text` enables **Keyword + meaning** retrieval for Strategy tips. Without it, **Keyword search** still works. The plugin may show a soft install hint — it will **not** auto-pull the embed model or block Asks. Show details may label the path as **Keyword + meaning**, **Keyword search**, or **Keyword search (embed unavailable)**. See [knowledge-base.md](knowledge-base.md) § Phasing.
+
 **SD card:** When a microSD is mounted under `/run/media/deck/…`, the download picker offers **Download to SD card** (install path `{mount}/.bonsai/rag`). Internal default remains `~/.bonsai/rag`.
 
-**Download fails / manifest error:** The plugin fetches `corpus-manifest.json` from Hugging Face (primary) and a GitHub Releases mirror. If both are unreachable (401/404), download stops with a manifest error — the maintainer must publish the corpus and manifest first (`scripts/build_rag_db.py`). For local QA without network, use Developer tab + `install_rag_corpus_local` RPC with a built `dist/knowledge-base` folder.
+**Download fails / manifest error:** The plugin fetches `corpus-manifest.json` from Hugging Face (primary) and a GitHub Releases mirror. If both are unreachable (401/404), download stops with a manifest error — the maintainer must publish the corpus and manifest first (`scripts/build_rag_db.py`). For local QA without network, use Developer tab **Install seed knowledge base** (or `install_rag_corpus_local` RPC) with a built `dist/knowledge-base` folder.
 
 **Clear all plugin data** (Settings) also removes the installed corpus when `rag_corpus_path` is set.
 
