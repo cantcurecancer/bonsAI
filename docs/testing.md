@@ -381,8 +381,8 @@ Maps [roadmap.md](roadmap.md) **Completed** summary and [archive/roadmap-complet
 | NAMED-HOSTS | Named Ollama hosts (quick switch) | — | Open | Ollama tab; up to 4 labeled LAN URLs |
 | MAINT-HARNESS | Vitest Deck harness, watch-deploy | N/A (unit-only) | N/A | CI; [preGate](test-evidence/preGate/2026-05-26-9e20a82/batch-summary.json); [preview 2026-05-26](test-evidence/preGate/2026-05-26-9e20a82/UNIT-A-vitest-gates/manifest.json) |
 | OLLAMA-UPDATE | Update Ollama & Models on Deck | — | Open | Tier 2 |
-| KB-DOWNLOAD | Knowledge base download + verify | KB-SMOKE-01 | Open | Unit: `test_knowledge_base_service.py`; on-Deck download |
-| KB-RETRIEVE | Strategy/troubleshooting retrieval + splice | KB-SMOKE-02 | Open | Unit + Strategy Ask transparency |
+| KB-DOWNLOAD | Knowledge base download + verify | KB-SMOKE-01 | Partial | Unit: `test_knowledge_base_service.py`; 2026-07-27 Deck: Developer tab **Install seed knowledge base** + **Use local knowledge base** on (DRG Survivor seed). **Not Pass:** Hugging Face / GitHub Releases manifest download not live yet |
+| KB-RETRIEVE | Strategy/troubleshooting retrieval + splice | KB-SMOKE-02 | Verified | 2026-07-27 Deck: DRG Survivor (`2321470`) Strategy Ask with seed KB — Show details → Local Knowledge Base `wiki_verified` + AppID; chips include Pull KB compat cards; [screenshot](../screenshots/DeckCapture_20260727_170321_game.png). Earlier 2026-07-26 helpful Glyphid Dreadnought reply |
 | KB-UNAVAIL | KB unavailable graceful path | KB-SMOKE-03 | Open | Toggle on, corpus missing → once/session toast |
 | KB-FOCUS-01 | Ollama tab KB section D-pad chain + scroll-up | — | Open | Connection row ↔ KB toggle ↔ buttons ↔ Reply style slider ↔ Response verify; D-pad up from top scrolls to tab strip |
 | REPLY-VERB | Reply style (global verbosity) | REPLY-VERB-01 | Open | Ollama tab slider; prompt inject; Input transparency `reply_verbosity` |
@@ -540,6 +540,7 @@ On-Deck and preview-suite **PASS** rows only. FAIL / retry queue: [testing.md](t
 | 38 | 2026-06-09 / a9237e4 | preview | TDP-boundary-clamps-assert | TDP-1W, TDP-20W | preview-suite | PASS | [manifest](test-evidence/tier2Deep/2026-06-09-a9237e4/TDP-boundary-clamps-assert/manifest.json) |
 | 39 | 2026-06-09 / a9237e4 | preview | SMOKE-B-apply-with-perms | SMOKE-B, TDP-APPLY | preview-suite | PASS | [manifest](test-evidence/tier2Deep/2026-06-09-a9237e4/SMOKE-B-apply-with-perms/manifest.json) |
 | 40 | 2026-06-09 / a9237e4 | preview | BG-ASK-lifecycle | BG-ASK-V1, SMOKE-H | preview-suite | PASS | [manifest](test-evidence/tier2Deep/2026-06-09-a9237e4/BG-ASK-lifecycle/manifest.json) |
+| 41 | 2026-07-27 / Deck | DRG Survivor (`2321470`) | Strategy Ask (Glyphid Dreadnought / seed KB) | KB-SMOKE-02, KB-RETRIEVE | gemma4:e2b-it-qat | PASS | Dev-tab seed KB; Show details Local KB `wiki_verified`; [screenshot](../screenshots/DeckCapture_20260727_170321_game.png) |
 
 **Tier 0 preview batch (5/5):** [test-evidence/tier0/2026-05-26-9e20a82/](test-evidence/tier0/2026-05-26-9e20a82/) · **preGate (2/2):** [batch-summary](test-evidence/preGate/2026-05-26-9e20a82/batch-summary.json) · **tier1Core (3/3):** [batch-summary](test-evidence/tier1Core/2026-05-26-9e20a82/batch-summary.json) · **tier1Boundaries (5/5):** [batch-summary](test-evidence/tier1Boundaries/2026-05-26-9e20a82/batch-summary.json) · **tier2 (8/8):** [batch-summary](test-evidence/tier2/2026-05-26-9e20a82/batch-summary.json) · **deckOnly (3 skipped):** [batch-summary](test-evidence/deckOnly/2026-05-26-9e20a82/batch-summary.json)
 ---
@@ -715,6 +716,14 @@ Deck-only (multi-output: handheld, docked monitor, TV). Unit: `src/data/uiScaleP
 - [ ] **KB-FOCUS-01** D-pad (Ollama tab): connection row ↓ KB toggle ↓ download ↓ update ↓ remove ↓ Reply style slider ↓ Response verify toggle; D-pad up from Response verify reaches Reply style; D-pad up from KB toggle reaches connection row; D-pad up from **Run AI on this Deck** scrolls panel to tab strip
 - [ ] **REPLY-VERB-01** Reply style: set **Short** → Ask → Input handling shows `Reply verbosity: Short` and system prompt contains `SHORT REPLY STYLE`; repeat **Detailed**; **Balanced** → no `REPLY VERBOSITY` block vs unit baseline; Strategy Ask with **Detailed** still ends with `bonsai-strategy-branches` fence on first turn
 - [ ] **KB-DOWNLOAD-SD** Download modal: internal + SD card buttons match bonsAI button style; SD option when card inserted
+
+### Knowledge base (RAG Deck query v1)
+
+Coverage: **KB-DOWNLOAD** / **KB-RETRIEVE** / **KB-UNAVAIL**. Architecture: [knowledge-base.md](knowledge-base.md).
+
+- [x] **KB-SMOKE-01** Ollama tab: download (or verify installed) corpus + **Use local knowledge base** on; status shows ready — *Partial 2026-07-27:* Developer tab seed install (HF/GitHub corpus not published yet); coverage **KB-DOWNLOAD** Partial
+- [x] **KB-SMOKE-02** Strategy or troubleshooting Ask with KB on + seeded AppID → **Show details** / context chips show local KB (or equivalent splice evidence); reply grounded in corpus — *Verified 2026-07-27:* DRG Survivor `2321470`; Show details → Local Knowledge Base `wiki_verified` + AppID; [DeckCapture_20260727_170321_game.png](../screenshots/DeckCapture_20260727_170321_game.png); coverage **KB-RETRIEVE** Verified
+- [ ] **KB-SMOKE-03** KB toggle on, corpus missing/unavailable → once/session toast; Ask still completes without crash
 
 ---
 
