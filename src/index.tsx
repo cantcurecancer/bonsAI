@@ -418,6 +418,7 @@ const Content: React.FC = () => {
     setOllamaLocalOnDeck,
     strategySpoilerMaskingEnabled,
     setStrategySpoilerMaskingEnabled,
+    strategySpoilerAutoRevealAfterConsent,
     steamWebApiKey,
     setSteamWebApiKey,
     bonsaiTokenStreamingEnabled,
@@ -613,6 +614,7 @@ const Content: React.FC = () => {
     aiCharacterEnabled,
     aiCharacterPresetId,
     useLocalKnowledgeBase,
+    bonsaiTokenStreamingEnabled,
   });
 
   isAskingRef.current = isAsking;
@@ -746,6 +748,7 @@ const Content: React.FC = () => {
       visionModelRoutingOrder,
       ollamaLocalOnDeck,
       strategySpoilerMaskingEnabled,
+      strategySpoilerAutoRevealAfterConsent,
       steamWebApiKey,
       bonsaiTokenStreamingEnabled,
       showOnscreenDebugHud,
@@ -793,6 +796,7 @@ const Content: React.FC = () => {
       visionModelRoutingOrder,
       ollamaLocalOnDeck,
       strategySpoilerMaskingEnabled,
+      strategySpoilerAutoRevealAfterConsent,
       steamWebApiKey,
       bonsaiTokenStreamingEnabled,
       showOnscreenDebugHud,
@@ -1536,6 +1540,7 @@ const Content: React.FC = () => {
       shortcutSetupVariant={shortcutSetupVariant}
       onOpenControllerSettings={onOpenControllerSettingsForShortcut}
       strategySpoilerMaskingEnabled={strategySpoilerMaskingEnabled}
+      strategySpoilerAutoRevealAfterConsent={strategySpoilerAutoRevealAfterConsent}
       presetCarouselInject={presetCarouselInject}
       isStreamingPreview={isStreamingPreview || isStreamSettling}
       streamDisplayText={streamDisplayText}

@@ -25,7 +25,11 @@ from backend.ollama_connectivity import (
 from backend.ollama_urls import normalize_ollama_base
 
 from backend.services.bonsai_stream_tags import extract_bonsai_status
-from backend.services.strategy_guide_parse import extract_strategy_guide_branches, extract_strategy_checklist
+from backend.services.strategy_guide_parse import (
+    extract_strategy_guide_branches,
+    extract_strategy_checklist,
+    hide_incomplete_strategy_branch_fence,
+)
 from backend.services.ollama_prompts import (
     append_deck_tdp_sysfs_grounding,
     build_system_prompt,
@@ -375,6 +379,7 @@ def post_ollama_chat(
                             try:
                                 _joined = "".join(deltas)
                                 _thinking, _visible = extract_bonsai_status(_joined)
+                                _visible = hide_incomplete_strategy_branch_fence(_visible)
                                 on_delta(_visible, False, _thinking)
                             except Exception:
                                 logger.exception(

@@ -25,9 +25,9 @@ export const TEMP_PRESET_CAROUSEL_FROZEN = false;
  * Must match entries in `PRESET_PROMPTS` (same strings).
  */
 export const TEMP_CAROUSEL_FROZEN_TEXTS: readonly [string, string, string] = [
-  "Why is my game crashing?",
+  "What are the best settings for 60fps?",
   "How do I fix stuttering?",
-  "Help me troubleshoot a Proton issue",
+  "When should I use Expert mode instead of Speed?",
 ] as const;
 
 const PRESET_PROMPTS: PresetPrompt[] = [

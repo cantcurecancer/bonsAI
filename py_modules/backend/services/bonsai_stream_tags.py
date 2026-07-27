@@ -68,14 +68,33 @@ def sanitize_thinking_summary(text: str) -> str:
 
 
 def _strip_incomplete_bonsai_status_open(raw: str) -> str:
-    """Hide a still-streaming status tag from visible assistant text."""
+    """Hide a still-streaming status tag (full open, partial `<bons…`, or broken `<bons you're…`)."""
     lower = raw.lower()
     open_idx = lower.find(_BONSAI_STATUS_OPEN)
-    if open_idx < 0:
+    if open_idx >= 0:
+        if _BONSAI_STATUS_CLOSE in lower[open_idx:]:
+            return raw
+        return raw[:open_idx].rstrip()
+    # Tokens arrive as `<`, `<b`, `<bons`, … before the full opener exists.
+    # Models also emit broken forms like `<bons you're asking…` (prefix then prose).
+    lt = lower.rfind("<")
+    if lt < 0:
         return raw
-    if _BONSAI_STATUS_CLOSE in lower[open_idx:]:
+    target = "bonsai-status>"
+    rest = lower[lt + 1 :]
+    matched = 0
+    for ch in rest:
+        if matched < len(target) and ch == target[matched]:
+            matched += 1
+            continue
+        # Diverged after matching at least "bons" → treat as broken status opener.
+        if matched >= 4:
+            return raw[:lt].rstrip()
         return raw
-    return raw[:open_idx].rstrip()
+    # Exhausted input while still matching an incomplete opener (`<bons`, `<bonsai-stat`, …).
+    if matched > 0:
+        return raw[:lt].rstrip()
+    return raw
 
 
 def extract_bonsai_status(text: str) -> Tuple[Optional[str], str]:
@@ -434,17 +453,17 @@ def _phase_pool(
     if phase == "searching_kb":
         if tone == "deadpan":
             return [
-                f"Knowledge base: {quote}{game_bit}. Searching.",
-                f"Local KB lookup: {quote}.",
-                f"Offline notes for {quote}{game_bit}.",
-                f"KB query: {quote}.",
+                f"Searching knowledge base for {quote}{game_bit}.",
+                f"Local knowledge lookup: {quote}.",
+                f"Offline strategy notes for {quote}{game_bit}.",
+                f"Knowledge base query: {quote}.",
                 "🙄",
             ]
         return [
-            f"KB treasure hunt: {quote}{game_bit}.",
-            f"Offline wisdom for {quote} — rare{game_bit}.",
-            f"Flipping strategy cards on {quote}…",
-            f"Dusty tomes about {quote}{game_bit}.",
+            f"Searching knowledge base for {quote}{game_bit}.",
+            f"Looking up strategy notes on {quote}…",
+            f"Checking offline cards for {quote}{game_bit}.",
+            f"Pulling local tips about {quote}…",
             "🌳",
         ]
 

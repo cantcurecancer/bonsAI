@@ -106,6 +106,7 @@ export type MainTabProps = {
   shortcutSetupVariant?: "deck" | "stadia" | null;
   onOpenControllerSettings?: () => void;
   strategySpoilerMaskingEnabled?: boolean;
+  strategySpoilerAutoRevealAfterConsent?: boolean;
   presetCarouselInject?: { text: string } | null;
   isStreamingPreview?: boolean;
   streamDisplayText?: string;

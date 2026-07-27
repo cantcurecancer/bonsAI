@@ -23,7 +23,7 @@ import { buildTurnHeaderElement } from "../utils/buildTurnHeaderElement";
 import { buildCollapsedTurnTitle } from "../utils/chatTurnTitle";
 import { ContextChipLadder } from "./ContextChipLadder";
 import { SessionContextStrip } from "./SessionContextStrip";
-import { chipsFromSnapshot } from "../utils/contextChipsFromSnapshot";
+import { chipsFromSnapshot, transparencyUiAvailable } from "../utils/contextChipsFromSnapshot";
 import type {
   AppliedResult,
   AskThreadCollapsedTurn,
@@ -70,6 +70,7 @@ export type MainTabChatTranscriptProps = {
   shortcutSetupVariant?: "deck" | "stadia" | null;
   onOpenControllerSettings?: () => void;
   strategySpoilerMaskingEnabled?: boolean;
+  strategySpoilerAutoRevealAfterConsent?: boolean;
   isStreamingPreview?: boolean;
   streamDisplayText?: string;
   thinkingSummary?: string | null;
@@ -112,6 +113,7 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
     shortcutSetupVariant = null,
     onOpenControllerSettings,
     strategySpoilerMaskingEnabled = true,
+    strategySpoilerAutoRevealAfterConsent = false,
     isStreamingPreview = false,
     streamDisplayText = "",
     thinkingSummary = null,
@@ -157,6 +159,19 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
 
   const chatMainColumnRef = useRef<HTMLDivElement | null>(null);
   useStreamScrollPin(chatMainColumnRef, streamDisplayText, isStreamingPreview);
+
+  const showLiveStrategyBranches =
+    expandedTurnKey === "live" &&
+    !isAsking &&
+    Boolean(strategyGuideBranches?.options.length) &&
+    Boolean(onStrategyBranchPick);
+
+  const showLiveStrategyChecklist =
+    expandedTurnKey === "live" &&
+    !isAsking &&
+    askMode === "strategy" &&
+    Boolean(strategyChecklist?.items.length) &&
+    Boolean(onStrategyChecklistToggle);
 
   useEffect(() => {
     if (!expandedTurnKey) return;
@@ -215,9 +230,17 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
       body,
       streaming,
       spoilerMaskingEnabled: strategySpoilerMaskingEnabled,
+      spoilerDefaultExpanded:
+        answerKey === "live" &&
+        strategySpoilerAutoRevealAfterConsent &&
+        lastExchange?.spoilerConsentEffective === true,
       maxWidthCss: BONSAI_CHAT_AI_MAX_WIDTH_CSS,
       answerKey,
+      askQuestion: answerKey === "live" ? liveQuestion || lastExchange?.question || "" : "",
+      appId: answerKey === "live" ? ollamaContext?.app_id ?? null : null,
     });
+
+  const showTransparencyUi = transparencyUiAvailable(transparencySnapshot);
 
   return (
     <>
@@ -313,6 +336,76 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
             {expandedTurnKey === "live" && showLiveResponse
               ? renderAnswerBubble(liveResponseBody, isStreamingPreview, "live")
               : null}
+            {showLiveStrategyBranches && strategyGuideBranches && onStrategyBranchPick ? (
+              <Focusable
+                className="bonsai-glass-panel bonsai-strategy-branch-picker"
+                flow-children="vertical"
+                style={{
+                  width: "100%",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 8,
+                  marginTop: 4,
+                  marginBottom: 8,
+                  padding: "10px 12px",
+                  borderRadius: 8,
+                  border: "1px solid rgba(150, 187, 223, 0.45)",
+                  background:
+                    "linear-gradient(180deg, rgba(64, 93, 124, 0.42) 0%, rgba(48, 71, 95, 0.42) 100%)",
+                  boxSizing: "border-box",
+                }}
+              >
+                <div style={{ fontSize: 12, color: "#dce8f4", fontWeight: 600 }}>
+                  {strategyGuideBranches.question}
+                </div>
+                {strategyGuideBranches.options.map((opt, idx) => {
+                  const lastIdx = strategyGuideBranches.options.length - 1;
+                  /*
+                   * Edge exits return false so the parent turn-slot Focusable advances to the
+                   * previous/next sibling (answer bubble / reply actions). Programmatic .focus()
+                   * is unreliable on Deck and caused skips to Save chat.
+                   */
+                  const deckNav =
+                    idx === 0 || idx === lastIdx
+                      ? {
+                          ...(idx === 0 ? { onMoveUp: () => false } : {}),
+                          ...(idx === lastIdx ? { onMoveDown: () => false } : {}),
+                        }
+                      : undefined;
+                  return (
+                    <BonsaiChatSecondaryButton
+                      key={`sg-branch-${opt.id}-${idx}`}
+                      className="bonsai-strategy-branch-btn"
+                      onClick={() => onStrategyBranchPick(opt)}
+                      style={{
+                        width: "100%",
+                        minHeight: 36,
+                        fontSize: 12,
+                        fontWeight: 600,
+                        color: "#e8eef4",
+                        justifyContent: "flex-start",
+                        textAlign: "left",
+                        borderRadius: 4,
+                        border: "1px solid rgba(150, 187, 223, 0.35)",
+                        background: "rgba(36, 52, 70, 0.75)",
+                        boxShadow: "inset 0 1px 0 rgba(255, 255, 255, 0.06)",
+                      }}
+                      deckNav={deckNav}
+                    >
+                      {`${String.fromCharCode(65 + idx)}. ${opt.label}`}
+                    </BonsaiChatSecondaryButton>
+                  );
+                })}
+              </Focusable>
+            ) : null}
+            {showLiveStrategyChecklist && strategyChecklist && onStrategyChecklistToggle ? (
+              <StrategyChecklistPanel
+                checklist={strategyChecklist}
+                onToggle={onStrategyChecklistToggle}
+                onMoveUpFromFirst={() => false}
+                onMoveDownFromLast={() => false}
+              />
+            ) : null}
             {expandedTurnKey === "live" &&
             !isAsking &&
             (lastExchange?.answer?.trim() || onRetryLastResponse)
@@ -326,9 +419,7 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
                   onRetry: onRetryLastResponse ?? undefined,
                   transparencyOpen: transparencyDetailsOpen,
                   onToggleTransparency:
-                    transparencySnapshot && chipsFromSnapshot(transparencySnapshot).length > 0
-                      ? onToggleTransparencyDetails
-                      : undefined,
+                    showTransparencyUi ? onToggleTransparencyDetails : undefined,
                   chipsDisabled: false,
                   chipUsed: liveReplyChipUsed,
                   chipError: liveReplyChipError,
@@ -338,10 +429,12 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
               : null}
             {expandedTurnKey === "live" &&
             !isAsking &&
-            transparencySnapshot &&
-            chipsFromSnapshot(transparencySnapshot).length > 0 ? (
+            showTransparencyUi ? (
               <div style={{ maxWidth: BONSAI_CHAT_AI_MAX_WIDTH_CSS }}>
-                <ContextChipLadder snapshot={transparencySnapshot} collapsedHint />
+                <ContextChipLadder
+                  snapshot={transparencySnapshot}
+                  collapsedHint
+                />
               </div>
             ) : null}
             {expandedTurnKey === "live" && shortcutSetupVariant && onOpenControllerSettings ? (
@@ -396,64 +489,6 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
     </div>
   </PanelSectionRow>
 )}
-{strategyGuideBranches &&
-  strategyGuideBranches.options.length > 0 &&
-  !isAsking &&
-  expandedTurnKey === "live" &&
-  onStrategyBranchPick && (
-  <PanelSectionRow>
-    <div
-      className="bonsai-glass-panel bonsai-strategy-branch-picker"
-      style={{
-        width: "100%",
-        display: "flex",
-        flexDirection: "column",
-        gap: 8,
-        marginBottom: 72,
-        padding: "10px 12px",
-        borderRadius: 8,
-        border: "1px solid rgba(150, 187, 223, 0.45)",
-        background: "linear-gradient(180deg, rgba(64, 93, 124, 0.42) 0%, rgba(48, 71, 95, 0.42) 100%)",
-        boxSizing: "border-box",
-      }}
-    >
-      <div style={{ fontSize: 12, color: "#dce8f4", fontWeight: 600 }}>
-        {strategyGuideBranches.question}
-      </div>
-      {strategyGuideBranches.options.map((opt, idx) => (
-        <Button
-          key={`sg-branch-${opt.id}-${idx}`}
-          onClick={() => onStrategyBranchPick(opt)}
-          style={{
-            width: "100%",
-            minHeight: 36,
-            fontSize: 12,
-            fontWeight: 600,
-            color: "#e8eef4",
-            justifyContent: "flex-start",
-            textAlign: "left",
-            borderRadius: 4,
-            border: "1px solid rgba(150, 187, 223, 0.35)",
-            background: "rgba(36, 52, 70, 0.75)",
-            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06)",
-          }}
-        >
-          {`${String.fromCharCode(65 + idx)}. ${opt.label}`}
-        </Button>
-      ))}
-    </div>
-  </PanelSectionRow>
-)}
-{strategyChecklist &&
-  strategyChecklist.items.length > 0 &&
-  !isAsking &&
-  expandedTurnKey === "live" &&
-  askMode === "strategy" &&
-  onStrategyChecklistToggle && (
-  <PanelSectionRow>
-    <StrategyChecklistPanel checklist={strategyChecklist} onToggle={onStrategyChecklistToggle} />
-  </PanelSectionRow>
-)}
 {!isAsking && elapsedSeconds != null && elapsedSeconds > latencyWarningSeconds && (
   <PanelSectionRow>
     <div style={{ color: "#f2cf84", fontSize: 12, lineHeight: 1.35 }}>
@@ -465,23 +500,6 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
 {appliedTuningBannerText && (
   <PanelSectionRow>
     <div style={{ color: "#f2cf84", fontSize: 12, lineHeight: 1.35 }}>{appliedTuningBannerText}</div>
-  </PanelSectionRow>
-)}
-{canSaveDesktopNote && (
-  <PanelSectionRow>
-    <Button
-      onClick={() => onOpenDesktopNoteSave()}
-      style={{
-        width: "100%",
-        minHeight: 38,
-        border: "1px solid rgba(150, 187, 223, 0.45)",
-        background: "rgba(64, 93, 124, 0.35)",
-        color: "#dce8f4",
-        opacity: desktopNoteSaveEnabled ? 1 : 0.45,
-      }}
-    >
-      Save chat to Desktop
-    </Button>
   </PanelSectionRow>
 )}
 {desktopAskVerboseLogging && transparencySnapshot?.ask_diagnostics ? (
@@ -519,7 +537,7 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
 <PanelSectionRow>
   <SessionContextStrip
     liveTurn={
-      transparencySnapshot && chipsFromSnapshot(transparencySnapshot).length > 0
+      showTransparencyUi && transparencySnapshot
         ? {
             id: "live",
             label: (askThreadDisplayQuestion || lastExchange?.question || "Latest Ask").trim().slice(0, 48),
@@ -532,6 +550,25 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
     onHighlightClear={() => setSessionHighlightTurnId(null)}
   />
 </PanelSectionRow>
+{canSaveDesktopNote && (
+  <PanelSectionRow>
+    <div className="bonsai-save-chat-desktop-row">
+      <Button
+        onClick={() => onOpenDesktopNoteSave()}
+        style={{
+          width: "100%",
+          minHeight: 38,
+          border: "1px solid rgba(150, 187, 223, 0.45)",
+          background: "rgba(64, 93, 124, 0.35)",
+          color: "#dce8f4",
+          opacity: desktopNoteSaveEnabled ? 1 : 0.45,
+        }}
+      >
+        Save chat to Desktop
+      </Button>
+    </div>
+  </PanelSectionRow>
+)}
 {ollamaContext && (
   <PanelSectionRow>
     <div

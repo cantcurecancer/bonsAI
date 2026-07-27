@@ -7,6 +7,12 @@ export function chipsFromSnapshot(snapshot: TransparencySnapshot | null | undefi
   return [...snapshot.context_chips].sort((a, b) => a.rank - b.rank);
 }
 
+/** True when transparency entry points (Show details, session strip, inline hint) should render. */
+export function transparencyUiAvailable(snapshot: TransparencySnapshot | null | undefined): boolean {
+  if (!snapshot?.route) return false;
+  return chipsFromSnapshot(snapshot).length > 0 || snapshot.success === true;
+}
+
 export function windowRange(activeIndex: number, total: number, window = CONTEXT_CHIP_WINDOW) {
   const start = Math.max(0, activeIndex - window);
   const end = Math.min(total - 1, activeIndex + window);

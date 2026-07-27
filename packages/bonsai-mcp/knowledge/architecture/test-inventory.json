@@ -30,6 +30,7 @@
     "src/utils/i18n.test.ts",
     "src/utils/intentPackSearch.test.ts",
     "src/utils/joinPresetWithRunningGame.test.ts",
+    "src/utils/liveTurnFocusGraph.test.ts",
     "src/utils/localOnlyAskCommands.test.ts",
     "src/utils/mergePullModelCatalog.test.ts",
     "src/utils/persistOllamaIp.test.ts",
@@ -40,7 +41,8 @@
     "src/utils/strategyChecklist.test.ts",
     "src/utils/streamMarkdownPrepare.test.ts",
     "src/utils/stripAssistantDisplayTags.test.ts",
-    "src/utils/unifiedInputPersistenceMode.test.ts"
+    "src/utils/unifiedInputPersistenceMode.test.ts",
+    "src/utils/unwrapAskedEntitySpoilerFences.test.ts"
   ],
   "pytest": [
     "tests/test_accent_intensity_parity.py",

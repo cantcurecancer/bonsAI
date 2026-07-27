@@ -37,6 +37,38 @@ describe("useSmoothStreamReveal", () => {
     expect(result.current.length).toBeGreaterThanOrEqual(lenAfterFirst);
   });
 
+  it("restarts reveal after display catches up and target grows again", () => {
+    let rafId = 0;
+    const callbacks: FrameRequestCallback[] = [];
+    vi.spyOn(window, "requestAnimationFrame").mockImplementation((cb) => {
+      callbacks.push(cb);
+      return ++rafId;
+    });
+    vi.spyOn(window, "cancelAnimationFrame").mockImplementation(() => {});
+    const { result, rerender } = renderHook(
+      ({ target, enabled, done }) => useSmoothStreamReveal({ targetText: target, enabled, done }),
+      { initialProps: { target: "Hi", enabled: true, done: false } }
+    );
+    // Drain until caught up
+    for (let i = 0; i < 20 && result.current.length < 2; i++) {
+      const cb = callbacks.pop();
+      if (!cb) break;
+      act(() => {
+        cb(16 * (i + 1));
+      });
+    }
+    expect(result.current.length).toBe(2);
+    // New partial arrives after catch-up — RAF must restart
+    rerender({ target: "Hi there friend", enabled: true, done: false });
+    const before = result.current.length;
+    const cb = callbacks.pop();
+    expect(cb).toBeTruthy();
+    act(() => {
+      cb?.(1000);
+    });
+    expect(result.current.length).toBeGreaterThan(before);
+  });
+
   it("returns target immediately when disabled", () => {
     const { result } = renderHook(() =>
       useSmoothStreamReveal({ targetText: "full text", enabled: false, done: false })

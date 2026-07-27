@@ -63,6 +63,8 @@ export const BONSAI_PLUGIN_SIDE_PAD_PX = 4;
 
 /** Vertical gap (px) between the Ask bar and the chat transcript (user bubble column). */
 export const BONSAI_CHAT_INPUT_TO_TRANSCRIPT_GAP_PX = 12;
+/** Space between live reply chrome (e.g. Retry) and **Save chat to Desktop**. */
+export const BONSAI_CHAT_TRANSCRIPT_TO_SAVE_GAP_PX = 14;
 /** Vertical gap (px) above the AI response bubble stack (below status/thinking lines). */
 export const BONSAI_CHAT_RESPONSE_STACK_MARGIN_TOP_PX = 12;
 

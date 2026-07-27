@@ -30,22 +30,24 @@ def build_immediate_command_snapshot(
     pc_ip: str,
 ) -> dict[str, Any]:
     """Transparency row for sanitizer/shortcut/VAC paths that finish inside ``start_background_game_ai``."""
-    return {
-        "route": route,
-        "raw_question": parsed_question,
-        "sanitizer_action": sanitizer_action,
-        "sanitizer_reason_codes": list(sanitizer_reason_codes),
-        "text_after_sanitizer": parsed_question,
-        **_base_snapshot_fields(),
-        "final_response": resp,
-        "applied": None,
-        "success": True,
-        "app_id": app_id,
-        "app_name": app_name,
-        "pc_ip": pc_ip,
-        "error_message": "",
-        "elapsed_seconds": 0.0,
-    }
+    return ensure_context_chips_on_snapshot(
+        {
+            "route": route,
+            "raw_question": parsed_question,
+            "sanitizer_action": sanitizer_action,
+            "sanitizer_reason_codes": list(sanitizer_reason_codes),
+            "text_after_sanitizer": parsed_question,
+            **_base_snapshot_fields(),
+            "final_response": resp,
+            "applied": None,
+            "success": True,
+            "app_id": app_id,
+            "app_name": app_name,
+            "pc_ip": pc_ip,
+            "error_message": "",
+            "elapsed_seconds": 0.0,
+        }
+    )
 
 
 def build_sanitizer_block_snapshot(
@@ -183,6 +185,36 @@ def build_proton_journal_transparency(
         "proton_journal_entry_count": int(entry_count or 0),
         "proton_journal_notes": str(notes or ""),
     }
+
+
+def _developer_chip_snapshot_summary(snapshot: dict[str, Any]) -> dict[str, Any]:
+    """Lightweight dev chip payload — avoids duplicating full prompts in RPC responses."""
+    return {
+        "route": snapshot.get("route"),
+        "success": snapshot.get("success"),
+        "app_id": snapshot.get("app_id"),
+        "app_name": snapshot.get("app_name"),
+        "ollama_model": snapshot.get("ollama_model"),
+        "elapsed_seconds": snapshot.get("elapsed_seconds"),
+        "kb_attached": snapshot.get("kb_attached"),
+        "user_image_count": snapshot.get("user_image_count"),
+        "reply_verbosity": snapshot.get("reply_verbosity"),
+        "note": "Enable Desktop Ask verbose logging for full prompt dump.",
+    }
+
+
+def ensure_context_chips_on_snapshot(snapshot: dict[str, Any]) -> dict[str, Any]:
+    """Attach ranked context chips when missing (legacy/error/immediate-command rows)."""
+    if isinstance(snapshot.get("context_chips"), list) and snapshot["context_chips"]:
+        return snapshot
+    manifest = build_context_chips_manifest(
+        snapshot=snapshot,
+        overflow_skips=snapshot.get("overflow_skips") or [],
+    )
+    out = dict(snapshot)
+    out["context_chips"] = manifest["context_chips"]
+    out["overflow_skips"] = manifest["overflow_skips"]
+    return out
 
 
 def _chip_body(
@@ -384,7 +416,7 @@ def build_context_chips_manifest(
             "body": _chip_body(
                 title="Full transparency snapshot",
                 bullets=["Raw RPC snapshot JSON below"] + ([f"Skipped: {s}" for s in skips] if skips else []),
-                dev_json=snapshot,
+                dev_json=_developer_chip_snapshot_summary(snapshot),
             ),
         }
     )
@@ -472,25 +504,27 @@ def build_error_route_snapshot(
     pc_ip: str,
     elapsed_seconds: float,
 ) -> dict[str, Any]:
-    return {
-        "route": "error",
-        "raw_question": raw_question,
-        "sanitizer_action": "error",
-        "sanitizer_reason_codes": [],
-        "text_after_sanitizer": raw_question,
-        **_base_snapshot_fields(),
-        "final_response": final_response,
-        "applied": None,
-        "success": False,
-        "app_id": app_id,
-        "app_name": app_name,
-        "pc_ip": pc_ip,
-        "error_message": "Internal error (details logged on device).",
-        "elapsed_seconds": elapsed_seconds,
-        "proton_log_excerpt_attached": False,
-        "proton_log_sources": [],
-        "proton_log_notes": "",
-    }
+    return ensure_context_chips_on_snapshot(
+        {
+            "route": "error",
+            "raw_question": raw_question,
+            "sanitizer_action": "error",
+            "sanitizer_reason_codes": [],
+            "text_after_sanitizer": raw_question,
+            **_base_snapshot_fields(),
+            "final_response": final_response,
+            "applied": None,
+            "success": False,
+            "app_id": app_id,
+            "app_name": app_name,
+            "pc_ip": pc_ip,
+            "error_message": "Internal error (details logged on device).",
+            "elapsed_seconds": elapsed_seconds,
+            "proton_log_excerpt_attached": False,
+            "proton_log_sources": [],
+            "proton_log_notes": "",
+        }
+    )
 
 
 def build_voice_transcribe_snapshot(*, model_id: str) -> dict[str, Any]:

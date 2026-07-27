@@ -17,6 +17,11 @@ describe("stripAssistantDisplayTags", () => {
     expect(stripAssistantDisplayTags("Intro\n<bonsai-status>Still going")).toBe("Intro");
   });
 
+  it("hides broken partial open like <bons you're…", () => {
+    expect(stripAssistantDisplayTags("<bons you're asking about settings")).toBe("");
+    expect(stripAssistantDisplayTags("Hi\n<bons you're asking")).toBe("Hi");
+  });
+
   it("removes bracket strategy branch tag remnants", () => {
     const raw = 'Tips here.\n\n[bonsai-strategy-branches] ({"question":"Where?","options":[]})';
     expect(stripAssistantDisplayTags(raw)).toBe("Tips here.");

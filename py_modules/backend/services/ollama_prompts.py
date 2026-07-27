@@ -40,8 +40,105 @@ def user_consents_strategy_spoilers(question: str) -> bool:
     return any(n in s for n in needles)
 
 
-def _strategy_spoiler_policy_block(consent: bool, followup: bool) -> str:
+_BULLET_HEAVEN_GENRE_MARKERS = (
+    "roguelike",
+    "rogue-like",
+    "bullet heaven",
+    "bullet-heaven",
+    "survivor",
+    "twin stick",
+    "twin-stick",
+    "horde",
+    "arena shooter",
+    "action rpg",
+)
+
+
+def _game_genres_are_low_spoiler_risk(genres: str) -> bool:
+    g = (genres or "").lower()
+    return any(marker in g for marker in _BULLET_HEAVEN_GENRE_MARKERS)
+
+
+def extract_strategy_asked_entity(question: str) -> str:
+    """Pull the boss/enemy/entity name from common Strategy Ask phrasing."""
+    raw = (question or "").strip()
+    if raw.startswith(STRATEGY_FOLLOWUP_PREFIX):
+        raw = raw[len(STRATEGY_FOLLOWUP_PREFIX) :].lstrip()
+    patterns = (
+        r"(?:how\s+(?:do\s+i|to|can\s+i)\s+)?(?:beat|defeat|kill|fight|survive(?:\s+against)?)\s+(?:the\s+)?(.+?)(?:\?|$)",
+        r"(?:tips?\s+(?:for|on|against))\s+(?:the\s+)?(.+?)(?:\?|$)",
+    )
+    for pat in patterns:
+        match = re.search(pat, raw, flags=re.IGNORECASE)
+        if not match:
+            continue
+        entity = match.group(1).strip().rstrip("?.!")
+        if len(entity) >= 3:
+            return entity
+    return ""
+
+
+def kb_text_covers_asked_entity(kb_text: str, entity: str) -> bool:
+    """True when attached KB prose likely covers the entity the user asked about."""
+    if not entity or not kb_text:
+        return False
+    entity_l = entity.lower()
+    kb_l = kb_text.lower()
+    if entity_l in kb_l:
+        return True
+    tokens = [t for t in re.split(r"[\s\-_/]+", entity_l) if len(t) >= 4]
+    return bool(tokens) and sum(1 for t in tokens if t in kb_l) >= max(1, len(tokens) - 1)
+
+
+def _strategy_spoiler_low_risk_addendum(
+    *,
+    game_genres: str,
+    asked_entity: str,
+    kb_entity_match: bool,
+) -> str:
+    """Extra policy when boss/enemy tactics are routine gameplay, not narrative spoilers."""
+    if not _game_genres_are_low_spoiler_risk(game_genres) and not kb_entity_match:
+        return ""
+    lines = [
+        "LOW-SPOILER-RISK CONTEXT: This title treats named bosses/enemies/waves as routine gameplay beats, "
+        "not story spoilers.",
+    ]
+    if asked_entity:
+        lines.append(
+            f"The user asked about “{asked_entity}”. Keep direct tactics for that entity in plain text; "
+            "do NOT wrap routine boss/enemy guidance in ```bonsai-spoiler``` fences."
+        )
+    elif kb_entity_match:
+        lines.append(
+            "Attached knowledge-base cards cover the asked entity. Ground tactics in those cards in plain text; "
+            "do NOT fence KB-backed boss/enemy guidance as story spoilers."
+        )
+    else:
+        lines.append(
+            "For bullet-heaven / roguelike / survivor-style titles, boss and elite enemy names are not narrative "
+            "spoilers — keep mechanical coaching visible."
+        )
+    lines.append(
+        "Reserve ```bonsai-spoiler``` only for hidden narrative twists, endings, or secret unlock paths — "
+        "not standard boss move-sets or wave tactics.\n"
+    )
+    return "\n".join(lines) + "\n"
+
+
+def _strategy_spoiler_policy_block(
+    consent: bool,
+    followup: bool,
+    *,
+    game_genres: str = "",
+    asked_entity: str = "",
+    kb_entity_match: bool = False,
+) -> str:
     """Injected after STRATEGY GUIDE MODE header; defines ```bonsai-spoiler fences and ordering."""
+    low_risk = _strategy_spoiler_low_risk_addendum(
+        game_genres=game_genres,
+        asked_entity=asked_entity,
+        kb_entity_match=kb_entity_match,
+    )
     if consent:
         lines = (
             "STRATEGY SPOILER POLICY (user opted in): The user explicitly consented to spoilers for this turn "
@@ -56,7 +153,7 @@ def _strategy_spoiler_policy_block(consent: bool, followup: bool) -> str:
             )
         else:
             lines += "\n"
-        return lines
+        return lines + low_risk
     if followup:
         return (
             "STRATEGY SPOILER POLICY (default): Coaching is spoiler-minimized unless the user opted in. "
@@ -65,7 +162,8 @@ def _strategy_spoiler_policy_block(consent: bool, followup: bool) -> str:
             "(opening line exactly ```bonsai-spoiler, closing ``` on its own line). "
             "These fences may appear anywhere in this reply. "
             "Even under **If you want to cheat…**, keep spoilery plot or ending detail inside ```bonsai-spoiler "
-            "when the user has not opted in.\n\n"
+            "when the user has not opted in.\n"
+            f"{low_risk}\n"
         )
     return (
         "STRATEGY SPOILER POLICY (default): Coaching is spoiler-minimized by default; say so briefly in your opening. "
@@ -74,7 +172,8 @@ def _strategy_spoiler_policy_block(consent: bool, followup: bool) -> str:
         "Put unavoidably spoilery detail only inside ```bonsai-spoiler ... ``` fences "
         "(opening line exactly ```bonsai-spoiler).\n"
         "On this first turn, every ```bonsai-spoiler block must appear **above** the opening ```bonsai-strategy-branches line; "
-        "the branch fence must still close the reply — no characters after its closing ```.\n\n"
+        "the branch fence must still close the reply — no characters after its closing ```.\n"
+        f"{low_risk}\n"
     )
 
 def user_wants_power_or_performance_topic(question: str) -> bool:
@@ -557,6 +656,9 @@ def build_system_prompt(
     ask_mode: str = "speed",
     early_context_suffix: str = "",
     strategy_spoiler_consent: bool = False,
+    strategy_spoiler_game_genres: str = "",
+    strategy_spoiler_asked_entity: str = "",
+    strategy_spoiler_kb_entity_match: bool = False,
     character_roleplay_on: bool = False,
     strategy_checklist_state: Optional[dict] = None,
     reply_verbosity: str = "balanced",
@@ -718,7 +820,13 @@ def build_system_prompt(
     model_policy_q = _user_asks_model_policy_tiers_explainer(question)
     power_topic = user_wants_power_or_performance_topic(question)
     followup = is_strategy_followup_question(question)
-    spoiler_policy = _strategy_spoiler_policy_block(strategy_spoiler_consent, followup)
+    spoiler_policy = _strategy_spoiler_policy_block(
+        strategy_spoiler_consent,
+        followup,
+        game_genres=strategy_spoiler_game_genres,
+        asked_entity=strategy_spoiler_asked_entity,
+        kb_entity_match=strategy_spoiler_kb_entity_match,
+    )
     if followup:
         strategy_block = (
             "\n\nSTRATEGY GUIDE MODE (active — follow-up turn):\n"

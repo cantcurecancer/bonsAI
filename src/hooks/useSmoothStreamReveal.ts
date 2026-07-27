@@ -8,13 +8,14 @@ type UseSmoothStreamRevealArgs = {
 };
 
 /** Prose chars/sec caps for RAF smooth reveal (may tune). */
-const PROSE_RATE_MIN = 24;
-const PROSE_RATE_MAX = 80;
+const PROSE_RATE_MIN = 40;
+const PROSE_RATE_MAX = 160;
 /** After a non-spoiler fence closes, reveal backlog at this multiple (C2; may change). */
 const FENCE_BURST_RATE_MULTIPLIER = 3;
 
 function proseRevealRate(backlog: number): number {
-  return Math.min(PROSE_RATE_MAX, Math.max(PROSE_RATE_MIN, backlog * 2));
+  // Catch up faster on large poll chunks so streaming feels continuous, not blocky.
+  return Math.min(PROSE_RATE_MAX, Math.max(PROSE_RATE_MIN, backlog * 3));
 }
 
 /**
@@ -33,6 +34,36 @@ export function useSmoothStreamReveal({
   const rafRef = useRef<number | null>(null);
   const lastTsRef = useRef<number | null>(null);
   const burstTicksRef = useRef(0);
+
+  const ensureRaf = () => {
+    if (!enabled || done) return;
+    if (rafRef.current != null) return;
+    if (targetRef.current.length <= displayRef.current.length) return;
+    lastTsRef.current = null;
+    const tick = (ts: number) => {
+      const prev = lastTsRef.current ?? ts;
+      lastTsRef.current = ts;
+      const dt = Math.max(0, (ts - prev) / 1000);
+      const target = targetRef.current;
+      const cur = displayRef.current;
+      const backlog = target.length - cur.length;
+      if (backlog <= 0) {
+        rafRef.current = null;
+        return;
+      }
+      const baseRate = proseRevealRate(backlog);
+      const bursting = burstTicksRef.current > 0;
+      const rate = bursting ? baseRate * FENCE_BURST_RATE_MULTIPLIER : baseRate;
+      const step = Math.max(1, Math.floor(rate * dt) || 1);
+      const next = target.slice(cur.length, cur.length + step);
+      const merged = cur + next;
+      displayRef.current = merged;
+      setDisplayText(merged);
+      if (bursting) burstTicksRef.current -= 1;
+      rafRef.current = requestAnimationFrame(tick);
+    };
+    rafRef.current = requestAnimationFrame(tick);
+  };
 
   useEffect(() => {
     const prev = prevTargetRef.current;
@@ -56,7 +87,10 @@ export function useSmoothStreamReveal({
     if (!targetText) {
       displayRef.current = "";
       setDisplayText("");
+      return;
     }
+    // Critical: restart RAF when new partials arrive after display caught up.
+    ensureRaf();
   }, [targetText, enabled, done]);
 
   useEffect(() => {
@@ -68,31 +102,7 @@ export function useSmoothStreamReveal({
       lastTsRef.current = null;
       return;
     }
-
-    const tick = (ts: number) => {
-      const prev = lastTsRef.current ?? ts;
-      lastTsRef.current = ts;
-      const dt = Math.max(0, (ts - prev) / 1000);
-      const target = targetRef.current;
-      const cur = displayRef.current;
-      const backlog = target.length - cur.length;
-      if (backlog <= 0) {
-        rafRef.current = null;
-        return;
-      }
-      const baseRate = proseRevealRate(backlog);
-      const bursting = burstTicksRef.current > 0;
-      const rate = bursting ? baseRate * FENCE_BURST_RATE_MULTIPLIER : baseRate;
-      const step = Math.max(1, Math.floor(rate * dt));
-      const next = target.slice(cur.length, cur.length + step);
-      const merged = cur + next;
-      displayRef.current = merged;
-      setDisplayText(merged);
-      if (bursting) burstTicksRef.current -= 1;
-      rafRef.current = requestAnimationFrame(tick);
-    };
-
-    rafRef.current = requestAnimationFrame(tick);
+    ensureRaf();
     return () => {
       if (rafRef.current != null) {
         cancelAnimationFrame(rafRef.current);

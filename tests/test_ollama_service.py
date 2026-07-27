@@ -13,8 +13,11 @@ from backend.services.ollama_service import (
     user_wants_power_or_performance_topic,
 )
 from backend.services.ollama_prompts import (
+    _strategy_spoiler_policy_block,
     build_reply_language_block,
     build_reply_verbosity_block,
+    extract_strategy_asked_entity,
+    kb_text_covers_asked_entity,
     user_asks_for_detail_depth,
 )
 
@@ -616,6 +619,39 @@ class OllamaServiceTests(unittest.TestCase):
         self.assertTrue(user_consents_strategy_spoilers("full spoilers please"))
         self.assertTrue(user_consents_strategy_spoilers("Spoilers are okay"))
         self.assertFalse(user_consents_strategy_spoilers("no spoilers please"))
+
+    def test_extract_strategy_asked_entity_beat_boss(self):
+        self.assertEqual(
+            extract_strategy_asked_entity("How do I beat Glyphid Dreadnought?"),
+            "Glyphid Dreadnought",
+        )
+
+    def test_kb_text_covers_asked_entity(self):
+        kb = "## Glyphid Dreadnought\nFocus fire the glowing weak points."
+        self.assertTrue(kb_text_covers_asked_entity(kb, "Glyphid Dreadnought"))
+
+    def test_strategy_spoiler_policy_low_risk_genre_skips_fence_for_named_boss(self):
+        block = _strategy_spoiler_policy_block(
+            False,
+            False,
+            game_genres="Action Roguelike, Bullet Heaven",
+            asked_entity="Glyphid Dreadnought",
+            kb_entity_match=False,
+        )
+        self.assertIn("LOW-SPOILER-RISK CONTEXT", block)
+        self.assertIn("Glyphid Dreadnought", block)
+        self.assertIn("do NOT wrap routine boss/enemy guidance", block)
+
+    def test_strategy_spoiler_policy_story_game_keeps_default_fence(self):
+        block = _strategy_spoiler_policy_block(
+            False,
+            False,
+            game_genres="Adventure",
+            asked_entity="King Dodongo",
+            kb_entity_match=False,
+        )
+        self.assertNotIn("LOW-SPOILER-RISK CONTEXT", block)
+        self.assertIn("```bonsai-spoiler", block)
 
     def _verbosity_lookup_helpers(self):
         def lookup_app_name(_app_id: str) -> str:

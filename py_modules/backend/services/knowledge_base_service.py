@@ -286,6 +286,27 @@ def _format_block(
     return text, trust, sources
 
 
+def lookup_game_genres(settings: dict, app_id: str) -> str:
+    """Return comma-separated Steam genres for AppID from the local KB corpus, if available."""
+    aid = str(app_id or "").strip()
+    if not aid:
+        return ""
+    db_path = resolve_corpus_db_path(settings)
+    if not db_path:
+        return ""
+    try:
+        conn = _get_connection(db_path)
+        row = conn.execute(
+            "SELECT genres FROM games WHERE app_id = ? LIMIT 1",
+            (aid,),
+        ).fetchone()
+        if row and row["genres"]:
+            return str(row["genres"]).strip()
+    except Exception:
+        return ""
+    return ""
+
+
 def retrieve_knowledge_context(
     settings: dict,
     *,

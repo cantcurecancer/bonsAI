@@ -20,6 +20,8 @@ from backend.services.ai_character_service import build_roleplay_system_suffix_m
 from backend.services.input_sanitizer_service import apply_input_sanitizer_lane
 from backend.services.ollama_prompts import (
     build_reply_followup_context_block,
+    extract_strategy_asked_entity,
+    kb_text_covers_asked_entity,
     user_consents_strategy_spoilers,
     user_wants_power_or_performance_topic,
 )
@@ -29,6 +31,7 @@ from backend.services.ollama_service import (
 )
 from backend.services.proton_troubleshooting_logs import collect_proton_troubleshooting_logs
 from backend.services.knowledge_base_service import (
+    lookup_game_genres,
     retrieve_knowledge_context,
     should_retrieve_knowledge,
     stack_context_blocks,
@@ -383,10 +386,16 @@ async def run_game_ai_request(
             pre_cap = await _loop.run_in_executor(None, _read_cap)
 
         strategy_spoiler_consent_effective = False
+        strategy_spoiler_game_genres = ""
+        strategy_spoiler_asked_entity = ""
+        strategy_spoiler_kb_entity_match = False
         if ask_mode == "strategy":
             strategy_spoiler_consent_effective = bool(spoiler_consent) or user_consents_strategy_spoilers(
                 question_for_model
             )
+            strategy_spoiler_game_genres = lookup_game_genres(settings, app_id)
+            strategy_spoiler_asked_entity = extract_strategy_asked_entity(question_for_model)
+            strategy_spoiler_kb_entity_match = kb_text_covers_asked_entity(kb_text, strategy_spoiler_asked_entity)
 
         ollama_result = await plugin.ask_ollama(
             question_for_model,
@@ -402,23 +411,13 @@ async def run_game_ai_request(
             proton_log_attachment=early_context_combined or None,
             proton_log_transparency=proton_log_transparency,
             strategy_spoiler_consent=strategy_spoiler_consent_effective,
+            strategy_spoiler_game_genres=strategy_spoiler_game_genres,
+            strategy_spoiler_asked_entity=strategy_spoiler_asked_entity,
+            strategy_spoiler_kb_entity_match=strategy_spoiler_kb_entity_match,
             token_stream_request_id=token_stream_request_id,
             strategy_checklist_state=strategy_checklist_state,
             preferred_model=preferred_model,
         )
-        # #region agent log
-        try:
-            from backend.services.rag_corpus_download_service import _agent_debug_log
-
-            _agent_debug_log(
-                "game_ai_request.py:run_game_ai_request",
-                "ask_ollama_returned",
-                {"success": bool(ollama_result.get("success")), "ask_mode": ask_mode},
-                "H2",
-            )
-        except Exception:
-            pass
-        # #endregion
         elapsed = round(time.time() - start, 1)
         base_response_text = str(ollama_result.get("response", "") or "No response text.")
         response_text = base_response_text
@@ -558,19 +557,6 @@ async def run_game_ai_request(
     except Exception as exc:
         elapsed = round(time.time() - start, 1)
         logger.exception("run_game_ai_request failed (%.1fs)", elapsed)
-        # #region agent log
-        try:
-            from backend.services.rag_corpus_download_service import _agent_debug_log
-
-            _agent_debug_log(
-                "game_ai_request.py:run_game_ai_request",
-                "run_failed",
-                {"error_type": type(exc).__name__, "error": str(exc)[:240]},
-                "H2",
-            )
-        except Exception:
-            pass
-        # #endregion
         await plugin._persist_input_transparency(
             build_error_route_snapshot(
                 raw_question=question,

@@ -50,6 +50,14 @@ class BackgroundPartialStateTests(unittest.TestCase):
             self.assertEqual(snap["partial_response"], "Final")
             self.assertFalse(snap["streaming"])
 
+    def test_streaming_true_while_visible_text_empty(self) -> None:
+        self.plugin._reset_partial_stream_snapshot(5)
+        self.plugin._update_partial_response(5, "", False)
+        with self.plugin._partial_response_lock:
+            snap = self.plugin._partial_stream_snapshot
+            self.assertTrue(snap["streaming"])
+            self.assertIsNone(snap.get("partial_response"))
+
     def test_merge_partial_into_pending_status(self) -> None:
         self.plugin._background_state = {
             "status": "pending",

@@ -9,11 +9,12 @@ type BonsaiChatSecondaryButtonProps = {
   "aria-expanded"?: boolean;
   className?: string;
   style?: React.CSSProperties;
+  deckNav?: Record<string, () => boolean | void>;
 };
 
 /** Decky `Button` focus stop — native `<button>` inside `Focusable` is not D-pad navigable. */
 export function BonsaiChatSecondaryButton(props: BonsaiChatSecondaryButtonProps) {
-  const { children, onClick, disabled, className, style, ...aria } = props;
+  const { children, onClick, disabled, className, style, deckNav, ...aria } = props;
   const extra = className ? ` ${className}` : "";
   return (
     <Button
@@ -22,6 +23,7 @@ export function BonsaiChatSecondaryButton(props: BonsaiChatSecondaryButtonProps)
       disabled={disabled}
       onClick={onClick}
       style={style}
+      {...(deckNav as Record<string, unknown> | undefined)}
       {...aria}
     >
       {children}

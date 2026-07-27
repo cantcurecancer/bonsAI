@@ -1,4 +1,4 @@
-import { BONSAI_CHAT_INPUT_TO_TRANSCRIPT_GAP_PX } from "../../features/unified-input/constants";
+import { BONSAI_CHAT_INPUT_TO_TRANSCRIPT_GAP_PX, BONSAI_CHAT_TRANSCRIPT_TO_SAVE_GAP_PX } from "../../features/unified-input/constants";
 import { uiScalePx } from "./uiScalePx";
 
 export function buildSection6Section(): string {
@@ -471,6 +471,11 @@ export function buildSection6Section(): string {
           flex: 0 1 auto !important;
           white-space: nowrap !important;
           max-width: none !important;
+        }
+        .bonsai-scope .bonsai-save-chat-desktop-row {
+          margin-top: ${uiScalePx(BONSAI_CHAT_TRANSCRIPT_TO_SAVE_GAP_PX)} !important;
+          width: 100% !important;
+          box-sizing: border-box !important;
         }
         @keyframes bonsai-thinking-spin {
           from { transform: rotate(0deg); }

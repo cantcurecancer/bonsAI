@@ -14,13 +14,36 @@ from urllib.parse import unquote
 STRATEGY_FOLLOWUP_PREFIX = "[Strategy follow-up]"
 
 _FENCE_OPEN = "```bonsai-strategy-branches"
+_FENCE_OPEN_RE = re.compile(r"```\s*bonsai-strategy-branches\b[^\n]*\n?", re.IGNORECASE)
 _CHECKLIST_FENCE_OPEN = "```bonsai-strategy-checklist"
+# Models often emit ```json for the branch payload instead of the canonical fence name.
+_JSON_FENCE_OPEN_RE = re.compile(r"```(?:json|JSON)?\s*\n", re.MULTILINE)
 # Some models emit this tag with parenthesized JSON (often URL-encoded) instead of a markdown fence.
 _BRACKET_TAG_RE = re.compile(r"\[bonsai-strategy-branches\]\s*\(", re.IGNORECASE)
 _MAX_OPTIONS = 8
 _MIN_OPTIONS = 2
 _MAX_CHECKLIST_ITEMS = 12
 _MIN_CHECKLIST_ITEMS = 2
+
+
+def hide_incomplete_strategy_branch_fence(text: str) -> str:
+    """Hide strategy-branch fence bodies from streaming visible text (picker comes from final extract)."""
+    raw = text or ""
+    m = _FENCE_OPEN_RE.search(raw)
+    if m:
+        # Hide even after the closing ``` — final extract owns the branch UI.
+        return raw[: m.start()].rstrip()
+    # Also hide ```json that looks like a branch payload mid-stream (closed or open).
+    for jm in reversed(list(_JSON_FENCE_OPEN_RE.finditer(raw))):
+        open_line_start = raw.rfind("\n", 0, jm.start()) + 1
+        open_line = raw[open_line_start : jm.end()]
+        if "bonsai-strategy" in open_line.lower():
+            continue
+        tail = raw[jm.end() :]
+        peek = tail.lstrip()[:80].lower()
+        if '"question"' in peek or '"options"' in peek:
+            return raw[: jm.start()].rstrip()
+    return raw
 
 
 def is_strategy_followup_question(question: str) -> bool:
@@ -41,20 +64,54 @@ def _parse_strategy_json_blob(json_blob: str) -> dict[str, Any] | None:
         if close != -1:
             inner = inner[:close].strip()
         blob = inner or blob
-    try:
-        data = json.loads(blob)
-    except json.JSONDecodeError:
-        # Trailing commas: remove ,\s*} and ,\s*]
-        relaxed = re.sub(r",\s*}", "}", blob)
-        relaxed = re.sub(r",\s*]", "]", relaxed)
-        if relaxed != blob:
+    for candidate in (blob, _repair_truncated_json(blob)):
+        try:
+            data = json.loads(candidate)
+        except json.JSONDecodeError:
+            # Trailing commas: remove ,\s*} and ,\s*]
+            relaxed = re.sub(r",\s*}", "}", candidate)
+            relaxed = re.sub(r",\s*]", "]", relaxed)
+            if relaxed == candidate:
+                continue
             try:
                 data = json.loads(relaxed)
             except json.JSONDecodeError:
-                return None
-        else:
-            return None
-    return data if isinstance(data, dict) else None
+                continue
+        if isinstance(data, dict):
+            return data
+    return None
+
+
+def _repair_truncated_json(blob: str) -> str:
+    """Close unclosed braces/brackets/strings when the model cuts off mid-JSON."""
+    s = (blob or "").rstrip()
+    if not s:
+        return s
+    in_string = False
+    escape = False
+    stack: list[str] = []
+    for ch in s:
+        if in_string:
+            if escape:
+                escape = False
+            elif ch == "\\":
+                escape = True
+            elif ch == '"':
+                in_string = False
+            continue
+        if ch == '"':
+            in_string = True
+        elif ch == "{":
+            stack.append("}")
+        elif ch == "[":
+            stack.append("]")
+        elif ch in "}]" and stack and stack[-1] == ch:
+            stack.pop()
+    if in_string:
+        s += '"'
+    while stack:
+        s += stack.pop()
+    return s
 
 
 def _normalize_branch_payload(data: dict[str, Any] | None) -> dict[str, Any] | None:
@@ -84,30 +141,55 @@ def _normalize_branch_payload(data: dict[str, Any] | None) -> dict[str, Any] | N
     return {"question": q.strip(), "options": normalized}
 
 
+def _coerce_branch_payload_from_blob(json_blob: str) -> dict[str, Any] | None:
+    """Parse fence body into a branch payload; tolerate leading language tags / prose before JSON."""
+    blob = (json_blob or "").strip()
+    if not blob:
+        return None
+    # Drop a leading language tag line (e.g. "json") left inside the fence body.
+    if "\n" in blob:
+        first, rest = blob.split("\n", 1)
+        if first.strip().lower() in {"json", "javascript", "js"} and rest.strip().startswith("{"):
+            blob = rest.strip()
+    data = _parse_strategy_json_blob(blob)
+    payload = _normalize_branch_payload(data)
+    if payload is not None:
+        return payload
+    # Last resort: first `{` … last `}` (unclosed fence or trailing prose).
+    start = blob.find("{")
+    end = blob.rfind("}")
+    if start >= 0 and end > start:
+        data = _parse_strategy_json_blob(blob[start : end + 1])
+        return _normalize_branch_payload(data)
+    return None
+
+
 def _extract_fence(raw_text: str) -> tuple[str, dict[str, Any] | None]:
-    """Markdown ```bonsai-strategy-branches ... ``` form."""
+    """Markdown ```bonsai-strategy-branches ... ``` form (case-insensitive; closing fence optional)."""
     text = raw_text or ""
-    if _FENCE_OPEN not in text:
+    m = _FENCE_OPEN_RE.search(text)
+    if m:
+        head = text[: m.start()]
+        tail_from_fence = text[m.end() :]
+    elif _FENCE_OPEN in text:
+        idx = text.find(_FENCE_OPEN)
+        head = text[:idx]
+        tail_from_fence = text[idx + len(_FENCE_OPEN) :].lstrip()
+        if tail_from_fence.startswith("\n"):
+            tail_from_fence = tail_from_fence[1:]
+    else:
         return text, None
-
-    idx = text.find(_FENCE_OPEN)
-    head = text[:idx]
-    tail_from_fence = text[idx + len(_FENCE_OPEN) :]
-
-    # Allow optional language tag or whitespace after fence name
-    tail_from_fence = tail_from_fence.lstrip()
-    if tail_from_fence.startswith("\n"):
-        tail_from_fence = tail_from_fence[1:]
 
     close_idx = tail_from_fence.find("```")
-    if close_idx < 0:
-        return text, None
+    if close_idx >= 0:
+        json_blob = tail_from_fence[:close_idx].strip()
+        after_close = tail_from_fence[close_idx + 3 :].lstrip("\n")
+    else:
+        # Model omitted closing fence — still try to recover the JSON object.
+        json_blob = tail_from_fence.strip()
+        after_close = ""
 
-    json_blob = tail_from_fence[:close_idx].strip()
-    after_close = tail_from_fence[close_idx + 3 :].lstrip("\n")
-
-    data = _parse_strategy_json_blob(json_blob)
-    payload = _normalize_branch_payload(data)
+    payload = _coerce_branch_payload_from_blob(json_blob)
     if payload is None:
         return text, None
 
@@ -117,7 +199,6 @@ def _extract_fence(raw_text: str) -> tuple[str, dict[str, Any] | None]:
     else:
         visible = head_stripped.strip()
 
-    # Collapse excessive blank lines left after stripping the fence
     visible = re.sub(r"\n{3,}", "\n\n", visible).strip()
     if not visible:
         visible = "Choose where you are stuck below."
@@ -170,6 +251,45 @@ def _extract_bracket_paren(raw_text: str) -> tuple[str, dict[str, Any] | None]:
             visible = "Choose where you are stuck below."
         return visible, payload
 
+    return text, None
+
+
+def _extract_jsonish_branch_fence(raw_text: str) -> tuple[str, dict[str, Any] | None]:
+    """Accept trailing ```json / bare ``` fences whose body is a valid strategy branch payload.
+
+    Models frequently ignore the required ```bonsai-strategy-branches opener and emit ```json instead.
+    Only strips a fence when JSON normalizes to a branch payload (won't steal TDP ```json blocks).
+    """
+    text = raw_text or ""
+    # Prefer the last matching fence (branch picker must be at end of reply).
+    matches = list(_JSON_FENCE_OPEN_RE.finditer(text))
+    for m in reversed(matches):
+        # Skip canonical bonsai-* fences (handled elsewhere).
+        open_line_start = text.rfind("\n", 0, m.start()) + 1
+        open_line = text[open_line_start : m.end()]
+        if "bonsai-strategy" in open_line.lower():
+            continue
+        head = text[: m.start()]
+        tail = text[m.end() :]
+        close_idx = tail.find("```")
+        if close_idx >= 0:
+            json_blob = tail[:close_idx].strip()
+            after_close = tail[close_idx + 3 :].lstrip("\n")
+        else:
+            json_blob = tail.strip()
+            after_close = ""
+        payload = _coerce_branch_payload_from_blob(json_blob)
+        if payload is None:
+            continue
+        head_stripped = head.rstrip()
+        if after_close:
+            visible = (head_stripped + "\n\n" + after_close).strip() if head_stripped else after_close.strip()
+        else:
+            visible = head_stripped.strip()
+        visible = re.sub(r"\n{3,}", "\n\n", visible).strip()
+        if not visible:
+            visible = "Choose where you are stuck below."
+        return visible, payload
     return text, None
 
 
@@ -290,6 +410,7 @@ def extract_strategy_guide_branches(raw_text: str) -> tuple[str, dict[str, Any] 
 
     Supported shapes:
     - ```bonsai-strategy-branches ... ``` (canonical)
+    - ```json / bare ``` fences with a valid branch JSON body (common model drift)
     - [bonsai-strategy-branches] (JSON or %XX URL-encoded JSON)
 
     On any parse/validation failure for both shapes, returns (text_with_fence_or_tag_still_present, None)
@@ -297,6 +418,9 @@ def extract_strategy_guide_branches(raw_text: str) -> tuple[str, dict[str, Any] 
     """
     text = raw_text or ""
     vis, payload = _extract_fence(text)
+    if payload is not None:
+        return vis, payload
+    vis, payload = _extract_jsonish_branch_fence(text)
     if payload is not None:
         return vis, payload
     return _extract_bracket_paren(text)

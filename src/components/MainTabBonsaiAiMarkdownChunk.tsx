@@ -5,7 +5,7 @@
 import type { Components } from "react-markdown";
 import { useMemo, useState } from "react";
 import ReactMarkdown from "react-markdown";
-import { Button } from "@decky/ui";
+import { Focusable } from "@decky/ui";
 
 export type MainTabBonsaiAiMarkdownChunkProps = {
   source: string;
@@ -100,11 +100,15 @@ function BonsaiSpoilerFence(props: {
   const [open, setOpen] = useState(defaultExpanded);
 
   if (!open) {
+    // Mirror ContextChipLadder: Deck Focusable owns A / D-pad; native button is click-only.
     return (
-      <Button
-        focusable
+      <Focusable
         className="bonsai-spoiler-reveal-target"
-        onClick={() => setOpen(true)}
+        onActivate={() => setOpen(true)}
+        onButtonDown={() => {
+          setOpen(true);
+          return true;
+        }}
         style={{
           margin: "8px 0",
           padding: "10px 12px",
@@ -113,26 +117,39 @@ function BonsaiSpoilerFence(props: {
           background: "rgba(24, 40, 58, 0.55)",
           width: "100%",
           boxSizing: "border-box",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "flex-start",
-          textAlign: "left",
         }}
       >
-        <div
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
           style={{
-            fontSize: 12,
-            fontWeight: 600,
-            color: "rgba(220, 232, 245, 0.92)",
-            lineHeight: 1.35,
+            background: "none",
+            border: "none",
+            padding: 0,
+            width: "100%",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-start",
+            textAlign: "left",
+            cursor: "pointer",
+            font: "inherit",
           }}
         >
-          Spoiler — tap to show
-        </div>
-        <div style={{ fontSize: 11, color: "rgba(190, 205, 220, 0.75)", marginTop: 4 }}>
-          Hidden until you reveal (Strategy Guide).
-        </div>
-      </Button>
+          <div
+            style={{
+              fontSize: 12,
+              fontWeight: 600,
+              color: "rgba(220, 232, 245, 0.92)",
+              lineHeight: 1.35,
+            }}
+          >
+            Spoiler — tap to show
+          </div>
+          <div style={{ fontSize: 11, color: "rgba(190, 205, 220, 0.75)", marginTop: 4 }}>
+            Hidden until you reveal (Strategy Guide).
+          </div>
+        </button>
+      </Focusable>
     );
   }
 
@@ -149,23 +166,33 @@ function BonsaiSpoilerFence(props: {
         boxSizing: "border-box",
       }}
     >
-      <Button
-        focusable
+      <Focusable
         className="bonsai-spoiler-collapse-target"
-        onClick={() => setOpen(false)}
-        style={{
-          marginBottom: 8,
-          padding: 0,
-          minHeight: 0,
-          background: "transparent",
-          border: "none",
-          fontSize: 11,
-          color: "rgba(170, 200, 230, 0.85)",
-          fontWeight: 600,
+        onActivate={() => setOpen(false)}
+        onButtonDown={() => {
+          setOpen(false);
+          return true;
         }}
+        style={{ marginBottom: 8 }}
       >
-        Spoiler — tap to hide
-      </Button>
+        <button
+          type="button"
+          onClick={() => setOpen(false)}
+          style={{
+            background: "none",
+            border: "none",
+            padding: 0,
+            minHeight: 0,
+            fontSize: 11,
+            color: "rgba(170, 200, 230, 0.85)",
+            fontWeight: 600,
+            cursor: "pointer",
+            font: "inherit",
+          }}
+        >
+          Spoiler — tap to hide
+        </button>
+      </Focusable>
       <ReactMarkdown components={innerComponents}>{body}</ReactMarkdown>
     </div>
   );

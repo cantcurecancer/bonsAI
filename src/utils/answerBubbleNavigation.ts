@@ -56,10 +56,7 @@ export function focusFirstAnswerChunk(answerKey: string): boolean {
   if (!el) return false;
   registerAnswerBubbleEl(answerKey, el);
   const spoiler = el.querySelector<HTMLElement>(".bonsai-spoiler-reveal-target");
-  if (spoiler) {
-    spoiler.focus({ preventScroll: true });
-    if (spoiler.contains(document.activeElement)) return true;
-  }
+  if (spoiler && focusPanelEl(spoiler)) return true;
   return focusPanelEl(el);
 }
 
@@ -147,16 +144,20 @@ export function handleAnswerBubbleMoveDown(
   const scroll = findScrollablePanel(bubble);
   if (!scroll) return false;
 
-  const max = panelScrollMax(scroll);
-  const before = scroll.scrollTop;
+  /*
+   * Only scroll while THIS bubble still extends below the viewport.
+   * Previously we scrolled TabContentsScroll until max (past branches/thumbs to Save chat),
+   * so D-pad Down never yielded to live-turn focus peers (MICRO-04).
+   */
+  if (!chunkHasContentBelowViewport(bubble, scroll)) {
+    return false;
+  }
 
-  if (before < max - 2 && panelStepDown(bubble)) {
+  const max = panelScrollMax(scroll);
+  if (max > 0 && panelStepDown(bubble)) {
     return true;
   }
-  if (max <= 0 && chunkHasContentBelowViewport(bubble, scroll)) {
-    return tryGeometryPanelScroll(bubble, "down");
-  }
-  return false;
+  return tryGeometryPanelScroll(bubble, "down");
 }
 
 export function handleAnswerBubbleMoveUp(
@@ -169,7 +170,15 @@ export function handleAnswerBubbleMoveUp(
   if (!bubble || chunkTotal <= 0) return false;
 
   const scroll = findScrollablePanel(bubble);
-  if (!scroll || scroll.scrollTop <= 0) return false;
+  if (!scroll) return false;
 
+  /* Mirror down: only scroll while bubble content remains above the viewport. */
+  if (!chunkHasContentAboveViewport(bubble, scroll)) {
+    return false;
+  }
+
+  if (scroll.scrollTop <= 0) {
+    return tryGeometryPanelScroll(bubble, "up");
+  }
   return panelStepUp(bubble);
 }

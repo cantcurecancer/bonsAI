@@ -42,6 +42,7 @@ import {
   DEFAULT_RESPONSE_VERIFY_SECOND_PASS,
   type NamedOllamaHost,
   DEFAULT_STRATEGY_SPOILER_MASKING_ENABLED,
+  DEFAULT_STRATEGY_SPOILER_AUTO_REVEAL_AFTER_CONSENT,
   DEFAULT_UNIFIED_INPUT_PERSISTENCE_MODE,
   DEFAULT_VOICE_STT_MODEL,
   normalizeLatencyWarningSeconds,
@@ -103,6 +104,7 @@ function snapshotFromBonsaiSettings(normalized: BonsaiSettings): BonsaiSettingsS
     visionModelRoutingOrder: normalized.vision_model_routing_order,
     ollamaLocalOnDeck: normalized.ollama_local_on_deck,
     strategySpoilerMaskingEnabled: normalized.strategy_spoiler_masking_enabled,
+    strategySpoilerAutoRevealAfterConsent: normalized.strategy_spoiler_auto_reveal_after_consent,
     steamWebApiKey: normalized.steam_web_api_key,
     bonsaiTokenStreamingEnabled: normalized.bonsai_token_streaming_enabled,
     showOnscreenDebugHud: normalized.show_onscreen_debug_hud,
@@ -191,6 +193,9 @@ export function usePluginSettings() {
   const [strategySpoilerMaskingEnabled, setStrategySpoilerMaskingEnabled] = useState<boolean>(
     DEFAULT_STRATEGY_SPOILER_MASKING_ENABLED
   );
+  const [strategySpoilerAutoRevealAfterConsent, setStrategySpoilerAutoRevealAfterConsent] = useState<boolean>(
+    DEFAULT_STRATEGY_SPOILER_AUTO_REVEAL_AFTER_CONSENT
+  );
   const [steamWebApiKey, setSteamWebApiKey] = useState<string>("");
   const [bonsaiTokenStreamingEnabled, setBonsaiTokenStreamingEnabled] = useState<boolean>(
     DEFAULT_BONSAI_TOKEN_STREAMING_ENABLED
@@ -254,6 +259,7 @@ export function usePluginSettings() {
     visionModelRoutingOrder,
     ollamaLocalOnDeck,
     strategySpoilerMaskingEnabled,
+    strategySpoilerAutoRevealAfterConsent,
     steamWebApiKey,
     bonsaiTokenStreamingEnabled,
     showOnscreenDebugHud,
@@ -305,6 +311,7 @@ export function usePluginSettings() {
     setVisionModelRoutingOrder(normalized.vision_model_routing_order);
     setOllamaLocalOnDeck(normalized.ollama_local_on_deck);
     setStrategySpoilerMaskingEnabled(normalized.strategy_spoiler_masking_enabled);
+    setStrategySpoilerAutoRevealAfterConsent(normalized.strategy_spoiler_auto_reveal_after_consent);
     setSteamWebApiKey(normalized.steam_web_api_key);
     setBonsaiTokenStreamingEnabled(normalized.bonsai_token_streaming_enabled);
     setShowOnscreenDebugHud(normalized.show_onscreen_debug_hud);
@@ -475,6 +482,7 @@ export function usePluginSettings() {
     visionModelRoutingOrder,
     ollamaLocalOnDeck,
     strategySpoilerMaskingEnabled,
+    strategySpoilerAutoRevealAfterConsent,
     steamWebApiKey,
     bonsaiTokenStreamingEnabled,
     showOnscreenDebugHud,
@@ -544,6 +552,8 @@ export function usePluginSettings() {
     setOllamaLocalOnDeck,
     strategySpoilerMaskingEnabled,
     setStrategySpoilerMaskingEnabled,
+    strategySpoilerAutoRevealAfterConsent,
+    setStrategySpoilerAutoRevealAfterConsent,
     steamWebApiKey,
     setSteamWebApiKey,
     bonsaiTokenStreamingEnabled,

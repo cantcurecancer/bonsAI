@@ -111,6 +111,7 @@ export type UseBonsaiAskOrchestrationArgs = {
   aiCharacterEnabled?: boolean;
   aiCharacterPresetId?: string | null;
   useLocalKnowledgeBase?: boolean;
+  bonsaiTokenStreamingEnabled?: boolean;
 };
 
 export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
@@ -330,6 +331,8 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
 
   const streamRevealActive = isStreamingPreview || isStreamSettling;
   const streamPreviewActiveRef = useRef(false);
+  const tokenStreamingEnabledRef = useRef(a.bonsaiTokenStreamingEnabled === true);
+  tokenStreamingEnabledRef.current = a.bonsaiTokenStreamingEnabled === true;
   useEffect(() => {
     streamPreviewActiveRef.current = streamRevealActive;
   }, [streamRevealActive]);
@@ -604,7 +607,9 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
     invalidateRequests,
     startBackgroundStatusPolling,
     isRequestActive,
-  } = useBackgroundGameAi(applyBackgroundStatusToUi, onBackgroundPollError);
+  } = useBackgroundGameAi(applyBackgroundStatusToUi, onBackgroundPollError, {
+    tokenStreamingEnabledRef,
+  });
 
   /**
    * Mount-only restore. Must NOT re-run on dependency identity churn: callback deps change every

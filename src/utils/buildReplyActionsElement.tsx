@@ -1,7 +1,5 @@
 import React from "react";
 import { Focusable } from "@decky/ui";
-import { findAnswerBubbleByKey, panelStepUp } from "./answerBubbleNavigation";
-import { registerAnswerBubbleEl } from "./answerBubbleElRegistry";
 import { BonsaiChatSecondaryButton } from "../components/BonsaiChatSecondaryButton";
 import {
   RefreshArrowIcon,
@@ -27,6 +25,16 @@ export type BuildReplyActionsElementArgs = {
   chipError?: string | null;
   onChip?: (chipId: ReplyMicroActionId) => void;
   askInFlight?: boolean;
+  /** When set, D-pad Up from reply actions focuses strategy chrome before the answer bubble. */
+  onMoveUpFromReply?: () => boolean;
+  /** D-pad Up from utility row (Retry / Show details) when no chip rows are visible. */
+  onMoveUpFromUtility?: () => boolean;
+  /** D-pad Up from the first refinement chip → thumbs row. */
+  onMoveUpFromChips?: () => boolean;
+  /** D-pad Down from thumbs → utility row (Retry). */
+  onMoveDownFromThumbs?: () => boolean;
+  /** D-pad Down from utility row (Retry / Show details) → context hint / session strip. */
+  onMoveDownFromUtility?: () => boolean;
 };
 
 function renderChipRow(
@@ -35,9 +43,10 @@ function renderChipRow(
     chipsDisabled: boolean;
     onChip?: (chipId: ReplyMicroActionId) => void;
     rowClassName: string;
+    onMoveUpFirst?: () => boolean;
   }
 ): React.ReactElement | null {
-  const { chipsDisabled, onChip, rowClassName } = args;
+  const { chipsDisabled, onChip, rowClassName, onMoveUpFirst } = args;
   if (!onChip) return null;
   const defs = chipIds.map((id) => replyMicroActionById(id)).filter(Boolean);
   if (!defs.length) return null;
@@ -49,6 +58,11 @@ function renderChipRow(
           disabled={chipsDisabled}
           onClick={() => onChip(def!.id)}
           aria-label={def!.label}
+          deckNav={
+            onMoveUpFirst && def!.id === chipIds[0]
+              ? { onMoveUp: () => onMoveUpFirst() ?? false }
+              : undefined
+          }
         >
           {def!.label}
         </BonsaiChatSecondaryButton>
@@ -74,12 +88,25 @@ export function buildReplyActionsElement(
     chipError = null,
     onChip,
     askInFlight = false,
+    onMoveUpFromChips,
   } = args;
 
-  const showChipRows = Boolean(onChip) && showFeedback;
+  const showChipRows = Boolean(onChip) && rating === "down";
   const showUtilityRow = Boolean(onRetry) || Boolean(onToggleTransparency);
   const feedbackDisabled = askInFlight;
   const chipsInactive = chipsDisabled || chipUsed || askInFlight;
+  const thumbsLocked = rating !== null;
+
+  const moveUpFromReply = () => false;
+  const thumbDeckNav = {
+    /* Yield to previous turn-slot sibling (branches / bubble). */
+    onMoveUp: moveUpFromReply,
+  };
+  const utilityDeckNav = {
+    onMoveUp: () => false,
+    /* Yield to next turn-slot sibling (context hint / session strip). */
+    onMoveDown: () => false,
+  };
 
   if (!showFeedback && !showUtilityRow && !showChipRows && rating === null) {
     return null;
@@ -91,41 +118,38 @@ export function buildReplyActionsElement(
       className="bonsai-chat-reply-actions"
       flow-children="vertical"
       {...({
-        onMoveUp: () => {
-          const bubble = findAnswerBubbleByKey(replyKey);
-          if (bubble) registerAnswerBubbleEl(replyKey, bubble);
-          if (bubble && panelStepUp(bubble)) return true;
-          if (bubble) {
-            bubble.setAttribute("tabindex", "-1");
-            bubble.focus();
-            const active = document.activeElement as HTMLElement | null;
-            return Boolean(active && bubble.contains(active));
-          }
-          return false;
-        },
+        onMoveUp: moveUpFromReply,
       } as Record<string, unknown>)}
     >
-      {showFeedback && rating !== null ? (
+      {showFeedback && rating === "up" ? (
         <span className="bonsai-chat-feedback-row__label bonsai-chat-feedback-row--rated">
           Saved on this Deck
         </span>
       ) : null}
-      {showFeedback && rating === null ? (
+      {showFeedback && (rating === null || rating === "down") ? (
         <>
           <span className="bonsai-chat-feedback-row__label">Was this helpful?</span>
-          <Focusable className="bonsai-chat-reply-actions-row" flow-children="horizontal">
+          <Focusable
+            className="bonsai-chat-reply-actions-row"
+            flow-children="horizontal"
+            {...({
+              onMoveUp: moveUpFromReply,
+            } as Record<string, unknown>)}
+          >
             <BonsaiChatSecondaryButton
-              disabled={feedbackDisabled}
+              disabled={feedbackDisabled || thumbsLocked}
               onClick={() => onRate("up")}
               aria-label="Mark reply helpful"
+              deckNav={thumbDeckNav}
             >
               <ThumbUpOutlineIcon size={14} />
               Helpful
             </BonsaiChatSecondaryButton>
             <BonsaiChatSecondaryButton
-              disabled={feedbackDisabled}
+              disabled={feedbackDisabled || thumbsLocked}
               onClick={() => onRate("down")}
               aria-label="Mark reply not helpful"
+              deckNav={thumbDeckNav}
             >
               <ThumbDownOutlineIcon size={14} />
               Not really
@@ -133,11 +157,15 @@ export function buildReplyActionsElement(
           </Focusable>
         </>
       ) : null}
+      {showChipRows ? (
+        <span className="bonsai-chat-feedback-row__label">What went wrong?</span>
+      ) : null}
       {showChipRows
         ? renderChipRow(CHIP_ROW_REFINE, {
             chipsDisabled: chipsInactive,
             onChip,
             rowClassName: "bonsai-chat-reply-actions-row bonsai-chat-reply-actions-row--chips",
+            onMoveUpFirst: onMoveUpFromChips,
           })
         : null}
       {showChipRows
@@ -163,7 +191,12 @@ export function buildReplyActionsElement(
           style={{ display: "flex", flexDirection: "row", flexWrap: "nowrap", gap: 8, alignItems: "center" }}
         >
           {onRetry ? (
-            <BonsaiChatSecondaryButton disabled={askInFlight} onClick={onRetry} aria-label="Retry same prompt">
+            <BonsaiChatSecondaryButton
+              disabled={askInFlight}
+              onClick={onRetry}
+              aria-label="Retry same prompt"
+              deckNav={utilityDeckNav}
+            >
               <RefreshArrowIcon size={14} />
               Retry
             </BonsaiChatSecondaryButton>
@@ -174,6 +207,7 @@ export function buildReplyActionsElement(
               onClick={onToggleTransparency}
               aria-expanded={transparencyOpen}
               aria-label={transparencyOpen ? "Hide details" : "Show details"}
+              deckNav={utilityDeckNav}
             >
               {transparencyOpen ? "Hide details" : "Show details"}
             </BonsaiChatSecondaryButton>

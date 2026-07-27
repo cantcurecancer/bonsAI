@@ -70,28 +70,6 @@ def _fetch_json_url(url: str, timeout: float = 60.0) -> dict[str, Any]:
         return parse_manifest_json(json.loads(resp.read().decode("utf-8")))
 
 
-def _agent_debug_log(location: str, message: str, data: dict[str, Any], hypothesis_id: str) -> None:
-    # #region agent log
-    try:
-        import time
-
-        log_path = os.path.join(os.path.expanduser("~"), ".bonsai", "debug-a3646d.log")
-        os.makedirs(os.path.dirname(log_path), exist_ok=True)
-        payload = {
-            "sessionId": "a3646d",
-            "hypothesisId": hypothesis_id,
-            "location": location,
-            "message": message,
-            "data": data,
-            "timestamp": int(time.time() * 1000),
-        }
-        with open(log_path, "a", encoding="utf-8") as fp:
-            fp.write(json.dumps(payload, ensure_ascii=False) + "\n")
-    except OSError:
-        pass
-    # #endregion
-
-
 def fetch_remote_manifest(
     *,
     hf_url: str = DEFAULT_MANIFEST_HF_URL,
@@ -103,22 +81,10 @@ def fetch_remote_manifest(
             continue
         try:
             manifest = _fetch_json_url(url)
-            _agent_debug_log(
-                "rag_corpus_download_service.py:fetch_remote_manifest",
-                "manifest_fetch_ok",
-                {"mirror": label, "url": url[:120]},
-                "H1",
-            )
             return manifest
         except Exception as exc:
             detail = f"{label}: {type(exc).__name__}: {exc}"
             failures.append(detail)
-            _agent_debug_log(
-                "rag_corpus_download_service.py:fetch_remote_manifest",
-                "manifest_fetch_failed",
-                {"mirror": label, "url": url[:120], "error": detail},
-                "H1",
-            )
             continue
     summary = "; ".join(failures) if failures else "no mirrors configured"
     raise RuntimeError(

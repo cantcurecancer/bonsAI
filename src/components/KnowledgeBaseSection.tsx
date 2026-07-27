@@ -164,27 +164,6 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
         DECKY_RPC_TIMEOUT_MS,
       );
       setStatus(st);
-      // #region agent log
-      if ((st?.error ?? "").trim() || st?.phase === "failed") {
-        fetch("http://127.0.0.1:7548/ingest/455d5c32-fa64-45d1-b31c-f17b50f3371a", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "a3646d" },
-          body: JSON.stringify({
-            sessionId: "a3646d",
-            hypothesisId: "H1",
-            location: "KnowledgeBaseSection.tsx:refreshStatus",
-            message: "kb_status_error",
-            data: {
-              phase: st?.phase,
-              stage: st?.stage,
-              error: st?.error,
-              installed: st?.installed,
-            },
-            timestamp: Date.now(),
-          }),
-        }).catch(() => {});
-      }
-      // #endregion
       if (
         useLocalKnowledgeBase &&
         st &&

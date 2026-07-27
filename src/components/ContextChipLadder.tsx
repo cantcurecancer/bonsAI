@@ -20,12 +20,15 @@ export type ContextChipLadderProps = {
   /** When true, show compact hint only until expanded. */
   collapsedHint?: boolean;
   onExpandChange?: (expanded: boolean) => void;
+  /** D-pad Down from collapsed hint → session context strip (skips Save chat). */
+  onMoveDownFromHint?: () => boolean;
 };
 
 export function ContextChipLadder({
   snapshot,
   collapsedHint = false,
   onExpandChange,
+  onMoveDownFromHint,
 }: ContextChipLadderProps) {
   const chips = chipsFromSnapshot(snapshot);
   const [expanded, setExpanded] = useState(!collapsedHint);
@@ -57,6 +60,9 @@ export function ContextChipLadder({
         className="bonsai-context-hint"
         onActivate={() => setExpandedBoth(true)}
         onButtonDown={() => setExpandedBoth(true)}
+        {...deckNav({
+          ...(onMoveDownFromHint ? { onMoveDown: () => onMoveDownFromHint() ?? false } : {}),
+        })}
         style={{ marginTop: 8, maxWidth: "100%" }}
       >
         <button

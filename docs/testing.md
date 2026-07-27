@@ -586,10 +586,10 @@ Requires **Settings → Data → Show Developer tab** → **Token streaming (exp
 
 ### Reply micro-actions (2026-07-17)
 
-- [ ] **MICRO-01** After live reply: thumbs row + two chip rows + Retry/Show details; all disabled while Ask in flight
+- [ ] **MICRO-01** After live reply: strategy branch/checklist (when present) above thumbs; refinement chips only after **Not really**; Retry/Show details below; all disabled while Ask in flight
 - [ ] **MICRO-02** Chip tap autofills Ask field + toast; one chip per reply; chip-tap RPC error inline under chips only
 - [ ] **MICRO-03** Send after chip arms follow-up (parent model pin, parent Q+A in backend); transparency route `reply_followup:*`
-- [ ] **MICRO-04** D-pad: answer bubble ↑ → thumbs → chip rows → utility row → context strip
+- [ ] **MICRO-04** D-pad: answer bubble ↑ → branch options → checklist → thumbs → chip rows (after down only) → utility row → context strip
 
 ### Proton experiment journal (2026-07-17)
 
@@ -693,6 +693,7 @@ Bazzite Game Mode only (gamescope session). Steam Deck regression: **SMOKE-A** t
 ### D-pad tab scroll viewport (2026-07-17)
 
 - [x] **D-PAD-SCROLL-01** Main + Settings/Ollama: D-pad reaches bottom of long content and scrolls back up to LB/RB tab icons (regression for `TabContentsScroll` viewport fix)
+- [ ] **D-PAD-SCROLL-02** Strategy long reply: D-pad Down advances ~one readable line/chunk per press (no multi-paragraph jumps); compare before/after `chatPanelScroll.ts` step sizing on Deck
 
 ### Multi-language replies (2026-07-18)
 
@@ -767,6 +768,15 @@ Run after **SMOKE-E**. Unit coverage green 2026-04-30.
 - [ ] **STRAT-SPOIL-04** Tap-to-reveal blocks default
 - [ ] **STRAT-SPOIL-05** Settings spoiler masking toggle behavior
 - [ ] **STRAT-SPOIL-06** D-pad: from turn header ↓ lands on **Spoiler — tap to show** `Button` (Decky `focusable`); A reveals; ↑ returns to answer bubble
+
+| ID | Game | Question | Consent | Masking | Pass |
+|----|------|----------|---------|---------|------|
+| STRAT-SPOIL-DRG-01 | 2321470 | How do I beat Glyphid Dreadnought? | no | on | No spoiler fence for boss tactics |
+| STRAT-SPOIL-OOT-01 | 413150 | How do I beat King Dodongo? | no | on | Spoiler fence or minimized prose |
+| STRAT-SPOIL-CONSENT-01 | OoT | Spoilers are okay — how do I beat King Dodongo? | phrase | on | Plain-text OK |
+| STRAT-SPOIL-MASK-OFF-01 | 2321470 | Same as DRG-01 | no | off (Settings) | No tap-to-reveal UI |
+
+Phrase-only spoiler consent (`user_consents_strategy_spoilers` / RPC `spoiler_consent`); no per-Ask UI toggle in current build.
 
 ### Vision + strategy
 

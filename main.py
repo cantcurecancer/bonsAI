@@ -409,13 +409,22 @@ class Plugin:
                 if done:
                     snap["streaming"] = False
                 return
-            if not done:
-                prev = snap.get("partial_response")
-                last_flush = float(snap.get("last_flush_monotonic") or 0.0)
-                if prev and text and (now - last_flush) < Plugin.PARTIAL_RESPONSE_FLUSH_INTERVAL_S:
-                    return
-            snap["partial_response"] = text if text else None
-            snap["streaming"] = (not done) and bool(text)
+            if done:
+                snap["partial_response"] = text if text else snap.get("partial_response")
+                snap["streaming"] = False
+                snap["last_flush_monotonic"] = now
+                return
+
+            # Active token stream: keep fast-poll flag even when visible text is still empty
+            # (e.g. model is inside <bonsai-status> before body tokens arrive).
+            snap["streaming"] = True
+            if not text:
+                return
+            prev = snap.get("partial_response")
+            last_flush = float(snap.get("last_flush_monotonic") or 0.0)
+            if prev and (now - last_flush) < Plugin.PARTIAL_RESPONSE_FLUSH_INTERVAL_S:
+                return
+            snap["partial_response"] = text
             snap["last_flush_monotonic"] = now
 
     def _active_request_id(self) -> Optional[int]:
@@ -1577,19 +1586,6 @@ class Plugin:
         src_dir = os.path.expanduser(str(src_dir).strip())
         manifest_path = os.path.join(src_dir, CORPUS_MANIFEST_FILENAME)
         if not os.path.isfile(manifest_path):
-            # #region agent log
-            try:
-                from backend.services.rag_corpus_download_service import _agent_debug_log
-
-                _agent_debug_log(
-                    "main.py:install_rag_corpus_local",
-                    "manifest_missing",
-                    {"src_dir": src_dir, "manifest_path": manifest_path},
-                    "H2",
-                )
-            except Exception:
-                pass
-            # #endregion
             return {"ok": False, "error": f"Missing {CORPUS_MANIFEST_FILENAME} at {src_dir}"}
         install_dir = default_corpus_dir_internal()
         if isinstance(data, dict) and str(data.get("install_path") or "").strip():
@@ -2074,13 +2070,15 @@ class Plugin:
     async def get_input_transparency(self):
         """Return the last Ask transparency snapshot (full prompts; fetch after terminal completion)."""
         from backend.services.tdp_service import read_sandbox_sysfs_writes, sandbox_sysfs_root
+        from backend.services.transparency_service import ensure_context_chips_on_snapshot
 
         plugin = Plugin._coerce_instance(self)
         plugin._ensure_background_state()
         snap = plugin._last_input_transparency
         if not isinstance(snap, dict) or not snap:
             return {"available": False}
-        out: dict = {"available": True, "snapshot": dict(snap)}
+        enriched = ensure_context_chips_on_snapshot(dict(snap))
+        out: dict = {"available": True, "snapshot": enriched}
         if sandbox_sysfs_root():
             out["sysfs_writes"] = read_sandbox_sysfs_writes()
         return out
@@ -2370,23 +2368,6 @@ class Plugin:
             strategy_checklist_state,
             reply_followup,
         ) = Plugin._parse_ask_payload(question, PcIp)
-        # #region agent log
-        try:
-            from backend.services.rag_corpus_download_service import _agent_debug_log
-
-            _agent_debug_log(
-                "main.py:start_background_game_ai",
-                "ask_payload_parsed",
-                {
-                    "ask_mode": ask_mode,
-                    "question_len": len(parsed_question or ""),
-                    "has_reply_followup": bool(reply_followup),
-                },
-                "H1",
-            )
-        except Exception:
-            pass
-        # #endregion
         app_context = "active" if app_id else "none"
         if not parsed_question:
             return {
@@ -2707,6 +2688,9 @@ class Plugin:
         tdp_cap_w: Optional[int] = None,
         proton_log_attachment: Optional[str] = None,
         strategy_spoiler_consent: bool = False,
+        strategy_spoiler_game_genres: str = "",
+        strategy_spoiler_asked_entity: str = "",
+        strategy_spoiler_kb_entity_match: bool = False,
         character_roleplay_on: bool = False,
         strategy_checklist_state: Optional[dict] = None,
         reply_verbosity: str = "balanced",
@@ -2725,6 +2709,9 @@ class Plugin:
             ask_mode=ask_mode,
             early_context_suffix=proton,
             strategy_spoiler_consent=strategy_spoiler_consent,
+            strategy_spoiler_game_genres=strategy_spoiler_game_genres,
+            strategy_spoiler_asked_entity=strategy_spoiler_asked_entity,
+            strategy_spoiler_kb_entity_match=strategy_spoiler_kb_entity_match,
             character_roleplay_on=character_roleplay_on,
             strategy_checklist_state=strategy_checklist_state,
             reply_verbosity=reply_verbosity,
@@ -2753,6 +2740,9 @@ class Plugin:
         proton_log_attachment: Optional[str] = None,
         proton_log_transparency: Optional[dict] = None,
         strategy_spoiler_consent: bool = False,
+        strategy_spoiler_game_genres: str = "",
+        strategy_spoiler_asked_entity: str = "",
+        strategy_spoiler_kb_entity_match: bool = False,
         token_stream_request_id: Optional[int] = None,
         strategy_checklist_state: Optional[dict] = None,
         preferred_model: Optional[str] = None,
@@ -2773,6 +2763,9 @@ class Plugin:
             proton_log_attachment=proton_log_attachment,
             proton_log_transparency=proton_log_transparency,
             strategy_spoiler_consent=strategy_spoiler_consent,
+            strategy_spoiler_game_genres=strategy_spoiler_game_genres,
+            strategy_spoiler_asked_entity=strategy_spoiler_asked_entity,
+            strategy_spoiler_kb_entity_match=strategy_spoiler_kb_entity_match,
             token_stream_request_id=token_stream_request_id,
             strategy_checklist_state=strategy_checklist_state,
             preferred_model=preferred_model,

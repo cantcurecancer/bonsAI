@@ -44,7 +44,7 @@ export function toBonsaiSettingsPayload(
     vision_model_routing_order: input.visionModelRoutingOrder,
     ollama_local_on_deck: input.ollamaLocalOnDeck,
     strategy_spoiler_masking_enabled: input.strategySpoilerMaskingEnabled,
-    strategy_spoiler_auto_reveal_after_consent: false,
+    strategy_spoiler_auto_reveal_after_consent: input.strategySpoilerAutoRevealAfterConsent,
     steam_web_api_key: input.steamWebApiKey.trim().slice(0, STEAM_WEB_API_KEY_MAX_LEN),
     bonsai_token_streaming_enabled: input.bonsaiTokenStreamingEnabled,
     show_onscreen_debug_hud: input.showOnscreenDebugHud,

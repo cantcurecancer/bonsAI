@@ -19,13 +19,20 @@ import {
 import { prepareStreamMarkdown } from "./streamMarkdownPrepare";
 import { splitResponseIntoChunks } from "./splitResponseIntoChunks";
 import { stripAssistantDisplayTags } from "./stripAssistantDisplayTags";
+import { unwrapAskedEntitySpoilerFences } from "./unwrapAskedEntitySpoilerFences";
+import { focusSpoilerRevealIn } from "./liveTurnFocusGraph";
 
 export type BuildAnswerBubbleElementArgs = {
   body: string;
   streaming: boolean;
   spoilerMaskingEnabled: boolean;
+  spoilerDefaultExpanded?: boolean;
   maxWidthCss: string;
   answerKey: string;
+  /** Live Ask question — used to unwrap false-positive spoilers for the named entity. */
+  askQuestion?: string;
+  /** Active game AppID — used with low-spoiler-risk unwrap. */
+  appId?: string | null;
 };
 
 const noopChunkRef = { current: 0 };
@@ -39,6 +46,7 @@ function captureBubble(answerKey: string): HTMLElement | null {
 function renderStreamMarkdownStack(
   body: string,
   spoilerMaskingEnabled: boolean,
+  spoilerDefaultExpanded: boolean,
   answerKey: string
 ): React.ReactNode {
   const prepared = prepareStreamMarkdown(body);
@@ -54,6 +62,7 @@ function renderStreamMarkdownStack(
         <MainTabBonsaiAiMarkdownChunk
           source={block}
           spoilerMaskingEnabled={spoilerMaskingEnabled}
+          spoilerDefaultExpanded={spoilerDefaultExpanded}
         />
       </div>
     );
@@ -82,6 +91,7 @@ function renderStreamMarkdownStack(
         <MainTabBonsaiAiMarkdownChunk
           source={prepared.liveTail}
           spoilerMaskingEnabled={spoilerMaskingEnabled}
+          spoilerDefaultExpanded={spoilerDefaultExpanded}
         />
       </div>
     );
@@ -94,19 +104,23 @@ function renderStreamMarkdownStack(
  * One Focusable answer bubble per turn (display chunks are non-focusable divs inside).
  * Parent turn-slot Focusable uses flow-children="vertical" for header → answer → reply.
  */
-function focusSpoilerControlInBubble(bubble: HTMLElement | null, selector: string): boolean {
-  if (!bubble) return false;
-  const el = bubble.querySelector<HTMLElement>(selector);
-  if (!el) return false;
-  el.focus({ preventScroll: true });
-  return el.contains(document.activeElement);
-}
-
 export function buildAnswerBubbleElement(
   args: BuildAnswerBubbleElementArgs
 ): React.ReactElement | null {
-  const { body, streaming, spoilerMaskingEnabled, maxWidthCss, answerKey } = args;
-  const displayBody = stripAssistantDisplayTags(body);
+  const {
+    body,
+    streaming,
+    spoilerMaskingEnabled,
+    spoilerDefaultExpanded = false,
+    maxWidthCss,
+    answerKey,
+    askQuestion = "",
+    appId = null,
+  } = args;
+  let displayBody = stripAssistantDisplayTags(body);
+  if (spoilerMaskingEnabled && (askQuestion.trim() || appId)) {
+    displayBody = unwrapAskedEntitySpoilerFences(displayBody, { question: askQuestion, appId });
+  }
   if (!displayBody.trim()) return null;
 
   const prepared = streaming ? prepareStreamMarkdown(displayBody) : null;
@@ -116,15 +130,15 @@ export function buildAnswerBubbleElement(
 
   const moveDown = () => {
     const bubble = captureBubble(answerKey);
-    if (
-      focusSpoilerControlInBubble(
-        bubble,
-        ".bonsai-spoiler-reveal-target:not(:focus-within), .bonsai-spoiler-reveal-target"
-      )
-    ) {
-      return true;
-    }
-    return handleAnswerBubbleMoveDown(bubble, noopChunkRef, chunkTotal, answerKey);
+    const spoilerOk = focusSpoilerRevealIn(bubble);
+    if (spoilerOk) return true;
+    if (handleAnswerBubbleMoveDown(bubble, noopChunkRef, chunkTotal, answerKey)) return true;
+    /*
+     * Yield to parent turn-slot flow-children so the next sibling Focusable
+     * (branch picker / reply actions) receives focus. Do not programmatic-.focus()
+     * — that path skipped peers and escaped to Save chat on Deck.
+     */
+    return false;
   };
 
   const moveUp = () => {
@@ -132,7 +146,9 @@ export function buildAnswerBubbleElement(
     if (document.activeElement?.closest(".bonsai-spoiler-reveal-target, .bonsai-spoiler-collapse-target")) {
       return focusFirstAnswerChunk(answerKey);
     }
-    return handleAnswerBubbleMoveUp(bubble, noopChunkRef, chunkTotal, answerKey);
+    if (handleAnswerBubbleMoveUp(bubble, noopChunkRef, chunkTotal, answerKey)) return true;
+    /* Yield to turn header (previous sibling in turn-slot). */
+    return false;
   };
 
   const navHandlers = {
@@ -140,10 +156,7 @@ export function buildAnswerBubbleElement(
       captureBubble(answerKey);
       registerAnswerBubbleNav({ moveDown, moveUp, resetChunkIndex: () => {} });
     },
-    onMoveDown: () => {
-      const bubble = captureBubble(answerKey);
-      return handleAnswerBubbleMoveDown(bubble, noopChunkRef, chunkTotal, answerKey);
-    },
+    onMoveDown: () => moveDown(),
     onMoveUp: () => moveUp(),
     onActivate: () => {
       captureBubble(answerKey);
@@ -183,7 +196,12 @@ export function buildAnswerBubbleElement(
       >
         <div className="bonsai-ai-response-stack bonsai-ai-response-stack--in-bubble">
           {streaming
-            ? renderStreamMarkdownStack(displayBody, spoilerMaskingEnabled, answerKey)
+            ? renderStreamMarkdownStack(
+                displayBody,
+                spoilerMaskingEnabled,
+                spoilerDefaultExpanded,
+                answerKey
+              )
             : displayChunks.map((chunk, i) => (
                 <div
                   key={`${answerKey}-chunk-${i}`}
@@ -193,6 +211,7 @@ export function buildAnswerBubbleElement(
                   <MainTabBonsaiAiMarkdownChunk
                     source={chunk}
                     spoilerMaskingEnabled={spoilerMaskingEnabled}
+                    spoilerDefaultExpanded={spoilerDefaultExpanded}
                   />
                 </div>
               ))}

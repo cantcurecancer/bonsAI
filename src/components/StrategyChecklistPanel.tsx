@@ -1,10 +1,13 @@
 import { ToggleField } from "@decky/ui";
 
 import type { StrategyChecklistState } from "../types/bonsaiUi";
+import { deckNavHandlers } from "../utils/liveTurnFocusGraph";
 
 type Props = {
   checklist: StrategyChecklistState;
   onToggle: (itemId: string, checked: boolean) => void;
+  onMoveUpFromFirst?: () => boolean;
+  onMoveDownFromLast?: () => boolean;
 };
 
 function readToggleOn(raw: unknown): boolean {
@@ -12,7 +15,12 @@ function readToggleOn(raw: unknown): boolean {
   return false;
 }
 
-export function StrategyChecklistPanel({ checklist, onToggle }: Props) {
+export function StrategyChecklistPanel({
+  checklist,
+  onToggle,
+  onMoveUpFromFirst,
+  onMoveDownFromLast,
+}: Props) {
   return (
     <div
       className="bonsai-glass-panel bonsai-strategy-checklist-panel"
@@ -33,8 +41,17 @@ export function StrategyChecklistPanel({ checklist, onToggle }: Props) {
       <div style={{ fontSize: 11, color: "#a8b8c8", lineHeight: 1.35, marginBottom: 6 }}>
         Progress is saved for this game until you reset session cache or start a new Strategy thread.
       </div>
-      {checklist.items.map((item) => {
+      {checklist.items.map((item, idx) => {
         const checked = checklist.checkedIds.includes(item.id);
+        const isFirst = idx === 0;
+        const isLast = idx === checklist.items.length - 1;
+        const nav =
+          (isFirst && onMoveUpFromFirst) || (isLast && onMoveDownFromLast)
+            ? deckNavHandlers({
+                ...(isFirst && onMoveUpFromFirst ? { onMoveUp: () => onMoveUpFromFirst() } : {}),
+                ...(isLast && onMoveDownFromLast ? { onMoveDown: () => onMoveDownFromLast() } : {}),
+              })
+            : undefined;
         return (
           <ToggleField
             key={`sg-check-${item.id}`}
@@ -42,6 +59,7 @@ export function StrategyChecklistPanel({ checklist, onToggle }: Props) {
             description=""
             checked={checked}
             onChange={(v) => onToggle(item.id, readToggleOn(v))}
+            {...nav}
           />
         );
       })}

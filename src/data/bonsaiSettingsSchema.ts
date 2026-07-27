@@ -173,6 +173,7 @@ export type BonsaiSettingsSnapshotInput = {
   visionModelRoutingOrder: string[];
   ollamaLocalOnDeck: boolean;
   strategySpoilerMaskingEnabled: boolean;
+  strategySpoilerAutoRevealAfterConsent: boolean;
   steamWebApiKey: string;
   bonsaiTokenStreamingEnabled: boolean;
   showOnscreenDebugHud: boolean;

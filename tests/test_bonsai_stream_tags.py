@@ -56,6 +56,24 @@ class BonsaiStreamTagsTests(unittest.TestCase):
         self.assertIsNone(summary)
         self.assertEqual(stripped, "")
 
+    def test_partial_open_prefix_hidden(self):
+        """Streaming tokens like '<bons' must not leak into the reply bubble."""
+        summary, stripped = extract_bonsai_status("<bons")
+        self.assertIsNone(summary)
+        self.assertEqual(stripped, "")
+        summary, stripped = extract_bonsai_status("Hi\n<bonsai-stat")
+        self.assertIsNone(summary)
+        self.assertEqual(stripped, "Hi")
+
+    def test_broken_open_prefix_with_prose_hidden(self):
+        """Deck: model emits '<bons you're asking…' then corrects once the tag completes."""
+        summary, stripped = extract_bonsai_status("<bons you're asking about settings")
+        self.assertIsNone(summary)
+        self.assertEqual(stripped, "")
+        summary, stripped = extract_bonsai_status("Hi\n<bons you're asking")
+        self.assertIsNone(summary)
+        self.assertEqual(stripped, "Hi")
+
     def test_extract_strips_multiple_status_tags(self):
         raw = "<bonsai-status>One</bonsai-status>\n\nBody\n\n<bonsai-status>Two</bonsai-status>\n\nTail."
         summary, stripped = extract_bonsai_status(raw)
