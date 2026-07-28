@@ -24,3 +24,9 @@ def build_ollama_chat_url(raw: str) -> str:
     """Build the /api/chat endpoint URL from a normalized Ollama base value."""
     _, _, base = normalize_ollama_base(raw)
     return f"{base}/api/chat"
+
+
+def build_ollama_embed_url(raw: str) -> str:
+    """Build the /api/embed endpoint URL from a normalized Ollama base value."""
+    _, _, base = normalize_ollama_base(raw)
+    return f"{base}/api/embed"

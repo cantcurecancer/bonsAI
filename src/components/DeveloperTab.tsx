@@ -145,7 +145,8 @@ export const DeveloperTab: React.FC<DeveloperTabProps> = ({
             <div className="bonsai-settings-bleed" style={{ fontSize: 12, color: "#9fb7d5", lineHeight: 1.45 }}>
               Public HF/GitHub download is not live yet. <strong>build.ps1</strong> copies a seed corpus (DRG
               Survivor + OoT alias sample) to the Deck. Install it into <code>~/.bonsai/rag</code> for Phase 1
-              testing.
+              testing. Hybrid retrieval also needs vectorized seed + <strong>nomic-embed-text</strong> on your Ask
+              Ollama host.
             </div>
           </PanelSectionRow>
           <PanelSectionRow>

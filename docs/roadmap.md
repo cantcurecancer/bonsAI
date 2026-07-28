@@ -173,13 +173,6 @@ Within this section: ascending stars (★★★★ → ★★★★★ → ★�
   - **Files (expected):** `main.py`, `src/index.tsx`, install/troubleshooting docs; Phase 2 ties into `[py_modules/backend/services/ai_character_service.py](../py_modules/backend/services/ai_character_service.py)` / settings surfaces.
   - **Depends on:** Phase 1 transport before Phase 2; shipped character catalog ids for mapping.
   - **Not in scope:** Cloud celebrity voice cloning; wake-word or ambient mic; claiming official/licensed voices in UI.
-- ★★★★★ **RAG Deck query — hybrid vectors (Phase 2)**
-  - **Status:** **Discovery locked 2026-07-27** — v1 FTS5 shipped; on-Deck **KB-RETRIEVE** Verified (seed / Dev-tab). Architecture: [knowledge-base.md](knowledge-base.md).
-  - **Goal:** Bake section embeddings into the corpus; at Ask time embed the query via Ollama `/api/embed` (`nomic-embed-text`) and **re-rank an FTS shortlist** within the resolved game. Keyword search remains the always-on path when hybrid cannot run.
-  - **Primary work:** (1) Maintainer `build_rag_db.py` populates `section_vectors`; (2) query embed on the **same Ollama host as Ask**; (3) FTS top-N → cosine re-rank → existing top_k / byte budgets (**Strategy / per-game sections only**); (4) Ollama/KB soft hint to install `nomic-embed-text` (**B2** — no auto-pull; Ask never blocked); (5) transparency user-facing retrieval labels: **Keyword + meaning** (hybrid), **Keyword search** (vectors unused / not installed), **Keyword search (embed unavailable)** (tried hybrid, fell back) — Show details may expand the third; chips stay terse; (6) Dev-tab vectorized seed first; HF/GitHub publish parallel (closes **KB-DOWNLOAD** Partial).
-  - **Depends on:** Phase 1 offline KB (shipped); Ollama reachable for optional embed.
-  - **Not in scope (Phase 2):** **Compat / troubleshooting hybrid ranking** (**deferred to Phase 3 — needs research**; note in [knowledge-base.md](knowledge-base.md)); Session RAG chip ranking via vectors; edition clarifier; sqlite-vss / ANN indexes; new capability/permission; auto-pull of `nomic-embed-text`; PC-hosted Chroma companion.
-  - **Related (implement later):** **Spoiler confidence chip** (Near-term Planned) — transparency estimate only; open owner decisions on that row.
 - ★★★★★ **Kids master lock** (Steam parental restricted)
   - **GitHub (tracking placeholder):** [bonsAI Issues](https://github.com/cantcurecancer/bonsAI/issues) — dedicated issue TBD.
   - **Goal:** Disable plugin capabilities when Steam reports a restricted kids account; restore when full account returns.
@@ -310,7 +303,7 @@ Dependency graph and implementation notes that are not feature checklist items.
 - **SteamOS Media screenshot share button** → possible fast path into **Global screenshots and vision** if APIs allow.
 - **Reset session cache (shipped)** → in-memory unified-input / reply state only; see **Completed** → Tabs.
 - **Preset carousel (Phase 1 shipped)** → extends presentation without changing category routing; `PRESET_PROMPTS` **baseline (shipped)** → incremental **Preset chip expansion** (streaming / LAN / Steam Input themes) as features land — content tuning, not a distinct ship line; **Session RAG preset chips (shipped)** — AppID-aware ~30% RAG mix via offline KB curtail; **Pyro talent-manager easter egg (shipped)** adds a separate inject chip outside the trio’s `PRESET_CAROUSEL_ACTIVE_MS` window.
-- **RAG Deck query / offline KB v1** ([knowledge-base.md](knowledge-base.md)) → feeds **Session RAG preset chips** (compat + strategy curtail for running AppID); Ask-path splice remains separate. **Hybrid vectors (Phase 2)** discovery locked 2026-07-27 (Strategy-only re-rank; compat hybrid → Phase 3). **Spoiler confidence chip** (Near-term) is transparency-only and separate from hybrid retrieval.
+- **RAG Deck query / offline KB v1** ([knowledge-base.md](knowledge-base.md)) → feeds **Session RAG preset chips** (compat + strategy curtail for running AppID); Ask-path splice remains separate. **Hybrid vectors (Phase 2)** shipped 2026-07-28 (Strategy-only re-rank; compat hybrid → Phase 3). **Spoiler confidence chip** (Near-term) is transparency-only and separate from hybrid retrieval.
 - **Global quick-launch macro** ↔ **Native QAM shortcut tile** (shorter macro once a direct QAM tile exists).
 - **Bundled VDF parsing** → **Steam Input layout parse** (and optional deeper parsing).
 - **Steam Input settings search + jump** → Phase 1 shipped; broader catalog deferred.

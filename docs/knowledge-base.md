@@ -1,10 +1,10 @@
 # Knowledge base (offline RAG v1)
 
-Maintainer architecture for the **on-Deck offline strategy + compat knowledge base**. User setup: [troubleshooting.md](troubleshooting.md) § Knowledge base. QA: [testing.md](testing.md) **KB-*** rows. Roadmap: **RAG Deck query — hybrid vectors (Phase 2)** (discovery locked 2026-07-27).
+Maintainer architecture for the **on-Deck offline strategy + compat knowledge base**. User setup: [troubleshooting.md](troubleshooting.md) § Knowledge base. QA: [testing.md](testing.md) **KB-*** rows. **Phase 2 hybrid** shipped 2026-07-28 (see [archive/roadmap-completed.md](archive/roadmap-completed.md)).
 
 ## Overview
 
-v1 grounds Strategy and troubleshooting Asks by **pre-retrieval prompt-splice** into `early_context_suffix` (not model-facing tools). The corpus is **maintainer-built**, **manifest-driven**, and **downloaded on demand** (Hugging Face primary, GitHub Releases mirror). Retrieval today is **FTS5 + rule-based query expansion**. Schema includes `section_vectors` and manifest `embedding_model` / `embedding_dim` for Phase 2; the build pipeline does **not** populate vectors until Phase 2.
+v1 grounds Strategy and troubleshooting Asks by **pre-retrieval prompt-splice** into `early_context_suffix` (not model-facing tools). The corpus is **maintainer-built**, **manifest-driven**, and **downloaded on demand** (Hugging Face primary, GitHub Releases mirror). Retrieval is **FTS5 + rule-based query expansion**; **Phase 2** adds optional **hybrid re-rank** (FTS shortlist → `nomic-embed-text` cosine sort) for Strategy when vectors and the embed model are available.
 
 ## Retrieval flow
 
@@ -15,7 +15,7 @@ flowchart TD
   gate -->|yes| resolve["Resolve title:<br/>AppID -> IGDB via alias table"]
   resolve --> ambiguous{"Ambiguous edition/<br/>non-Steam?"}
   ambiguous -->|yes| clarifier["strategy-branches clarifier"]
-  ambiguous -->|no| retrieve["FTS5 query + expansion<br/>(vectors unused until Phase 2)"]
+  ambiguous -->|no| retrieve["FTS5 query + expansion<br/>optional hybrid re-rank (Phase 2)"]
   retrieve --> hit{"Hit?"}
   hit -->|yes| cards["Top-k cards + trust tier"]
   hit -->|no| genre["Genre/compat pattern<br/>(fallback tier)"]
@@ -48,7 +48,7 @@ python scripts/build_rag_db.py --seed --out ./dist/knowledge-base
 - Emits `corpus.db`, `corpus.db.zlib`, `corpus-manifest.json`, `ATTRIBUTIONS.md`.
 - **SoH → OoT** alias lives in the alias table (replaces the hardcoded prompt rule).
 - Full crawl + LLM distillation is maintainer-batch work; `--seed` ships a dev/sample DB for QA.
-- **Phase 2:** populate `section_vectors` with `nomic-embed-text` embeddings (maintainer PC); bump corpus version for Deck update/seed reinstall.
+- **Phase 2 (shipped 2026-07-28):** `build_rag_db.py` populates `section_vectors` when local Ollama has `nomic-embed-text`; manifest `embeddings_populated` + `embedding_section_count`.
 
 ## Corpus layout on Deck
 
@@ -81,7 +81,7 @@ Replies should use existing `bonsai-cite` markers; spoilery cards obey `bonsai-s
 | Phase | Scope |
 |-------|--------|
 | **v1 (shipped)** | FTS5, on-Deck download (or Dev-tab seed), Model A consent, Ollama tab UI |
-| **Phase 2 (discovery locked 2026-07-27)** | Hybrid retrieval for **Strategy / per-game section cards only**: bake vectors in `build_rag_db.py`; query embed via Ollama `/api/embed` (`nomic-embed-text`) on the **same host as Ask**; **FTS shortlist → cosine re-rank**; soft UI hint to install `nomic` (no auto-pull; Ask never blocked). User-facing transparency labels: **Keyword + meaning** (hybrid), **Keyword search**, **Keyword search (embed unavailable)**. Dev-tab vectorized seed first; HF/GitHub publish parallel. |
+| **Phase 2 (shipped 2026-07-28)** | Hybrid retrieval for **Strategy / per-game section cards only**: bake vectors in `build_rag_db.py`; query embed via Ollama `/api/embed` (`nomic-embed-text`) on the **same host as Ask**; **FTS shortlist → cosine re-rank**; soft UI hint to install `nomic` (no auto-pull; Ask never blocked). User-facing transparency labels: **Keyword + meaning** (hybrid), **Keyword search**, **Keyword search (embed unavailable)**. Dev-tab vectorized seed first; HF/GitHub publish parallel. |
 | **Phase 3** | **Compat / troubleshooting hybrid ranking** (deferred from Phase 2 — **needs research** before design lock); labeled eval sets; compat expansion; Session RAG chip ranking via vectors; structured enemy/item cards; visual maps |
 
 ### Phase 2 — locked decisions (2026-07-27)
@@ -112,4 +112,4 @@ Replies should use existing `bonsai-cite` markers; spoilery cards obey `bonsai-s
 - [archive/research/rag-sources-research.md](archive/research/rag-sources-research.md) — source research (superseded for runtime by this doc)
 - [development.md](development.md) — contributor index
 - [troubleshooting.md](troubleshooting.md) — download, storage, update, removal
-- [roadmap.md](roadmap.md) — Phase 2 Planned row + Spoiler confidence chip
+- [roadmap.md](roadmap.md) — Spoiler confidence chip (Planned)

@@ -383,7 +383,7 @@ Maps [roadmap.md](roadmap.md) **Completed** summary and [archive/roadmap-complet
 | MAINT-HARNESS | Vitest Deck harness, watch-deploy | N/A (unit-only) | N/A | CI; [preGate](test-evidence/preGate/2026-05-26-9e20a82/batch-summary.json); [preview 2026-05-26](test-evidence/preGate/2026-05-26-9e20a82/UNIT-A-vitest-gates/manifest.json) |
 | OLLAMA-UPDATE | Update Ollama & Models on Deck | — | Open | Tier 2 |
 | KB-DOWNLOAD | Knowledge base download + verify | KB-SMOKE-01 | Partial | Unit: `test_knowledge_base_service.py`; 2026-07-27 Deck: Developer tab **Install seed knowledge base** + **Use local knowledge base** on (DRG Survivor seed). **Not Pass:** Hugging Face / GitHub Releases manifest download not live yet |
-| KB-RETRIEVE | Strategy/troubleshooting retrieval + splice | KB-SMOKE-02 | Verified | 2026-07-27 Deck: DRG Survivor (`2321470`) Strategy Ask with seed KB — Show details → Local Knowledge Base `wiki_verified` + AppID; chips include Pull KB compat cards; [screenshot](../screenshots/DeckCapture_20260727_170321_game.png). Earlier 2026-07-26 helpful Glyphid Dreadnought reply |
+| KB-RETRIEVE | Strategy/troubleshooting retrieval + splice | KB-SMOKE-02, KB-SMOKE-04 | Verified | **KB-SMOKE-02** Verified 2026-07-27 (keyword FTS); **KB-SMOKE-04** Verified 2026-07-28 (hybrid **Keyword + meaning**); unit: `test_knowledge_base_service.py`, `test_transparency_kb_retrieval.py` |
 | KB-UNAVAIL | KB unavailable graceful path | KB-SMOKE-03 | Open | Toggle on, corpus missing → once/session toast |
 | KB-FOCUS-01 | Ollama tab KB section D-pad chain + scroll-up | — | Open | Connection row ↔ KB toggle ↔ buttons ↔ Reply style slider ↔ Response verify; D-pad up from top scrolls to tab strip |
 | REPLY-VERB | Reply style (global verbosity) | REPLY-VERB-01 | Open | Ollama tab slider; prompt inject; Input transparency `reply_verbosity` |
@@ -542,6 +542,7 @@ On-Deck and preview-suite **PASS** rows only. FAIL / retry queue: [testing.md](t
 | 39 | 2026-06-09 / a9237e4 | preview | SMOKE-B-apply-with-perms | SMOKE-B, TDP-APPLY | preview-suite | PASS | [manifest](test-evidence/tier2Deep/2026-06-09-a9237e4/SMOKE-B-apply-with-perms/manifest.json) |
 | 40 | 2026-06-09 / a9237e4 | preview | BG-ASK-lifecycle | BG-ASK-V1, SMOKE-H | preview-suite | PASS | [manifest](test-evidence/tier2Deep/2026-06-09-a9237e4/BG-ASK-lifecycle/manifest.json) |
 | 41 | 2026-07-27 / Deck | DRG Survivor (`2321470`) | Strategy Ask (Glyphid Dreadnought / seed KB) | KB-SMOKE-02, KB-RETRIEVE | gemma4:e2b-it-qat | PASS | Dev-tab seed KB; Show details Local KB `wiki_verified`; [screenshot](../screenshots/DeckCapture_20260727_170321_game.png) |
+| 42 | 2026-07-28 / Deck | DRG Survivor (`2321470`) | Strategy Ask (Dreadnought / vectorized seed + nomic) | KB-SMOKE-04, KB-RETRIEVE | gemma4:e2b-it-qat | PASS | Hybrid **Keyword + meaning**; embed ~1124 ms; [screenshot](../screenshots/DeckCapture_20260728_183448_game.png) |
 
 **Tier 0 preview batch (5/5):** [test-evidence/tier0/2026-05-26-9e20a82/](test-evidence/tier0/2026-05-26-9e20a82/) · **preGate (2/2):** [batch-summary](test-evidence/preGate/2026-05-26-9e20a82/batch-summary.json) · **tier1Core (3/3):** [batch-summary](test-evidence/tier1Core/2026-05-26-9e20a82/batch-summary.json) · **tier1Boundaries (5/5):** [batch-summary](test-evidence/tier1Boundaries/2026-05-26-9e20a82/batch-summary.json) · **tier2 (8/8):** [batch-summary](test-evidence/tier2/2026-05-26-9e20a82/batch-summary.json) · **deckOnly (3 skipped):** [batch-summary](test-evidence/deckOnly/2026-05-26-9e20a82/batch-summary.json)
 ---
@@ -725,13 +726,20 @@ Deck-only (multi-output: handheld, docked monitor, TV). Unit: `src/data/uiScaleP
 
 ### Knowledge base (RAG Deck query v1)
 
-Coverage: **KB-DOWNLOAD** / **KB-RETRIEVE** / **KB-UNAVAIL**. Architecture: [knowledge-base.md](knowledge-base.md). Phase 2 hybrid discovery: [roadmap.md](roadmap.md) **RAG Deck query — hybrid vectors**.
+Coverage: **KB-DOWNLOAD** / **KB-RETRIEVE** / **KB-UNAVAIL**. Architecture: [knowledge-base.md](knowledge-base.md). Phase 2 hybrid shipped 2026-07-28 — see **KB-SMOKE-04**–**07** below.
 
 - [x] **KB-SMOKE-01** Ollama tab: download (or verify installed) corpus + **Use local knowledge base** on; status shows ready — *Partial 2026-07-27:* Developer tab seed install (HF/GitHub corpus not published yet); coverage **KB-DOWNLOAD** Partial
 - [x] **KB-SMOKE-02** Strategy or troubleshooting Ask with KB on + seeded AppID → **Show details** / context chips show local KB (or equivalent splice evidence); reply grounded in corpus — *Verified 2026-07-27:* DRG Survivor `2321470`; Show details → Local Knowledge Base `wiki_verified` + AppID; [DeckCapture_20260727_170321_game.png](../screenshots/DeckCapture_20260727_170321_game.png); coverage **KB-RETRIEVE** Verified
 - [ ] **KB-SMOKE-03** KB toggle on, corpus missing/unavailable → once/session toast; Ask still completes without crash
 
-**Phase 2 (when implementing hybrid — placeholders):** Show details / chips use **Keyword + meaning** when hybrid runs; **Keyword search** without `nomic-embed-text` or vectors; Ask still completes. Soft install hint does not auto-pull. Compat hybrid **not** in Phase 2 QA (Phase 3 research). **Spoiler confidence chip** is a separate Planned row — no smoke until owner decisions land.
+**Phase 2 hybrid (shipped 2026-07-28):**
+
+- [x] **KB-SMOKE-04** Vectorized seed + `nomic-embed-text` on Ask host → Strategy Ask → Show details chip **Keyword + meaning** — *Verified 2026-07-28:* DRG Survivor `2321470`; chip **Keyword + meaning**; embed ~1124 ms; [DeckCapture_20260728_183448_game.png](../screenshots/DeckCapture_20260728_183448_game.png)
+- [ ] **KB-SMOKE-05** KB on, vectors in corpus, `nomic-embed-text` missing → chip **Keyword search** + Ollama tab soft hint; Ask succeeds
+- [ ] **KB-SMOKE-06** Force embed failure (wrong host / timeout) → chip **Keyword search**; Show details bullet **Keyword search (embed unavailable)**; Ask succeeds
+- [ ] **KB-SMOKE-07** Troubleshooting Ask unchanged — no hybrid requirement (compat domain FTS only)
+
+Compat hybrid **not** in Phase 2 QA (Phase 3 research). **Spoiler confidence chip** is a separate Planned row — no smoke until owner decisions land.
 
 ---
 

@@ -196,6 +196,7 @@ export const OllamaTab: React.FC<OllamaTabProps> = ({
         useLocalKnowledgeBase={useLocalKnowledgeBase}
         setUseLocalKnowledgeBase={setUseLocalKnowledgeBase}
         ragCorpusVersion={ragCorpusVersion}
+        ollamaIp={ollamaIp}
         onBeforeDeckyModal={onBeforeDeckyModal}
         onCompleteDeckyModalClose={onCompleteDeckyModalClose}
         toggleHostRef={kbToggleHostRef}

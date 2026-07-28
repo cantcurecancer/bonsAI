@@ -1,22 +1,32 @@
-"""On-Deck knowledge base retrieval (FTS5 v1; vectors baked but unused until Phase 2)."""
+"""On-Deck knowledge base retrieval (FTS5 + optional hybrid vector re-rank for Strategy)."""
 
 from __future__ import annotations
 
+import os
 import re
 import sqlite3
 import threading
 import time
 from dataclasses import dataclass, field
-from typing import Any, Optional
+from typing import Any, Literal, Optional
 
 from backend.services.knowledge_base_schema import (
+    CORPUS_MANIFEST_FILENAME,
+    DEFAULT_EMBEDDING_MODEL,
     TRUST_TIER_FALLBACK,
     TRUST_TIER_WIKI_NO_PATCH,
     TRUST_TIER_WIKI_VERIFIED,
+    corpus_has_usable_vectors,
+    load_manifest_from_path,
     normalize_alias,
     resolve_corpus_db_path,
+    unpack_embedding_vector,
 )
+from backend.services.ollama_embed_service import OllamaEmbedError, embed_texts, nomic_embed_available
 from backend.services.ollama_prompts import question_matches_troubleshooting_log_context
+
+HYBRID_FTS_SHORTLIST_K = 30
+RetrievalMethod = Literal["keyword", "hybrid", "keyword_embed_unavailable"]
 _CONN_LOCK = threading.Lock()
 _CONN_BY_PATH: dict[str, sqlite3.Connection] = {}
 
@@ -45,6 +55,7 @@ class KnowledgeRetrievalResult:
     notes: str = ""
     timing_ms: dict[str, float] = field(default_factory=dict)
     unavailable_reason: str = ""
+    retrieval_method: RetrievalMethod = "keyword"
 
 
 def _budget_for_mode(ask_mode: str) -> tuple[int, int]:
@@ -152,6 +163,61 @@ def _trust_tier_for_row(row: sqlite3.Row) -> str:
     if row["source_url"]:
         return TRUST_TIER_WIKI_NO_PATCH
     return TRUST_TIER_FALLBACK
+
+
+def _load_corpus_manifest(settings: dict) -> Optional[dict[str, Any]]:
+    root = str(settings.get("rag_corpus_path") or "").strip()
+    if not root:
+        return None
+    manifest_path = os.path.join(root, CORPUS_MANIFEST_FILENAME)
+    if not os.path.isfile(manifest_path):
+        return None
+    try:
+        return load_manifest_from_path(manifest_path)
+    except Exception:
+        return None
+
+
+def _dot_similarity(a: list[float], b: list[float]) -> float:
+    """Cosine similarity for L2-normalized Ollama embeddings (dot product)."""
+    return sum(x * y for x, y in zip(a, b))
+
+
+def _load_section_vectors(conn: sqlite3.Connection, section_ids: list[int]) -> dict[int, list[float]]:
+    if not section_ids:
+        return {}
+    placeholders = ",".join("?" for _ in section_ids)
+    rows = conn.execute(
+        f"SELECT section_id, embedding FROM section_vectors "
+        f"WHERE section_id IN ({placeholders}) AND embedding IS NOT NULL",
+        section_ids,
+    ).fetchall()
+    out: dict[int, list[float]] = {}
+    for row in rows:
+        vec = unpack_embedding_vector(bytes(row["embedding"]))
+        if vec:
+            out[int(row["section_id"])] = vec
+    return out
+
+
+def _rerank_cards_by_vector(
+    cards: list[KnowledgeCard],
+    query_vector: list[float],
+    vectors_by_id: dict[int, list[float]],
+    *,
+    top_k: int,
+) -> list[KnowledgeCard]:
+    scored: list[tuple[float, KnowledgeCard]] = []
+    unscored: list[KnowledgeCard] = []
+    for card in cards:
+        vec = vectors_by_id.get(card.section_id)
+        if vec:
+            scored.append((_dot_similarity(query_vector, vec), card))
+        else:
+            unscored.append(card)
+    scored.sort(key=lambda item: item[0], reverse=True)
+    ordered = [card for _, card in scored] + unscored
+    return ordered[:top_k]
 
 
 def _search_sections(
@@ -316,6 +382,7 @@ def retrieve_knowledge_context(
     app_name: str,
     shortcut_name: str = "",
     domain: str,
+    pc_ip: str = "",
 ) -> KnowledgeRetrievalResult:
     """Retrieve and format knowledge for early_context_suffix injection."""
     t0 = time.perf_counter()
@@ -328,6 +395,9 @@ def retrieve_knowledge_context(
         )
 
     top_k, max_bytes = _budget_for_mode(ask_mode)
+    retrieval_method: RetrievalMethod = "keyword"
+    embed_ms = 0.0
+    rerank_ms = 0.0
     try:
         conn = _get_connection(db_path)
         t_resolve = time.perf_counter()
@@ -340,9 +410,43 @@ def retrieve_knowledge_context(
         resolve_ms = round((time.perf_counter() - t_resolve) * 1000, 2)
 
         expanded = _expand_query(question, app_name)
+        manifest = _load_corpus_manifest(settings)
+        hybrid_eligible = domain == "strategy" and game_id is not None
+        has_vectors = hybrid_eligible and corpus_has_usable_vectors(conn, manifest)
+        nomic_ready = has_vectors and nomic_embed_available(pc_ip, model=DEFAULT_EMBEDDING_MODEL)
+
         t_fts = time.perf_counter()
-        cards = _search_sections(conn, game_id=game_id, query=expanded, top_k=top_k)
+        fts_k = HYBRID_FTS_SHORTLIST_K if nomic_ready else top_k
+        cards = _search_sections(conn, game_id=game_id, query=expanded, top_k=fts_k)
         fts_ms = round((time.perf_counter() - t_fts) * 1000, 2)
+
+        if nomic_ready and cards:
+            t_embed = time.perf_counter()
+            try:
+                query_vectors = embed_texts(
+                    pc_ip,
+                    [expanded],
+                    model=DEFAULT_EMBEDDING_MODEL,
+                    timeout_s=3.0,
+                )
+                query_vector = query_vectors[0]
+                embed_ms = round((time.perf_counter() - t_embed) * 1000, 2)
+                t_rerank = time.perf_counter()
+                vectors_by_id = _load_section_vectors(conn, [c.section_id for c in cards])
+                cards = _rerank_cards_by_vector(
+                    cards,
+                    query_vector,
+                    vectors_by_id,
+                    top_k=top_k,
+                )
+                rerank_ms = round((time.perf_counter() - t_rerank) * 1000, 2)
+                retrieval_method = "hybrid"
+            except (OllamaEmbedError, IndexError, ValueError):
+                embed_ms = round((time.perf_counter() - t_embed) * 1000, 2)
+                cards = cards[:top_k]
+                retrieval_method = "keyword_embed_unavailable"
+        elif cards and fts_k != top_k:
+            cards = cards[:top_k]
 
         fallback_text: Optional[str] = None
         if not cards:
@@ -362,9 +466,12 @@ def retrieve_knowledge_context(
             return KnowledgeRetrievalResult(
                 attached=False,
                 notes=f"no_hit ({resolution})",
+                retrieval_method=retrieval_method,
                 timing_ms={
                     "resolve_ms": resolve_ms,
                     "fts_ms": fts_ms,
+                    "embed_ms": embed_ms,
+                    "rerank_ms": rerank_ms,
                     "total_ms": total_ms,
                 },
             )
@@ -374,9 +481,12 @@ def retrieve_knowledge_context(
             trust_tier=trust,
             sources=sources,
             notes=resolution,
+            retrieval_method=retrieval_method,
             timing_ms={
                 "resolve_ms": resolve_ms,
                 "fts_ms": fts_ms,
+                "embed_ms": embed_ms,
+                "rerank_ms": rerank_ms,
                 "total_ms": total_ms,
             },
         )

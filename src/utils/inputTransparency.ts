@@ -53,6 +53,8 @@ export type TransparencySnapshot = {
   kb_sources?: string[];
   kb_notes?: string;
   kb_unavailable_reason?: string;
+  kb_retrieval_method?: string;
+  kb_timing_ms?: Record<string, number>;
   tdp_cap_watts?: number | null;
   context_chips?: ContextChip[];
   overflow_skips?: string[];

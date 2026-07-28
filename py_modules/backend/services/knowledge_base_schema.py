@@ -5,8 +5,9 @@ from __future__ import annotations
 import json
 import os
 import re
+import struct
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Iterable, Optional
 
 CORPUS_SCHEMA_VERSION = 1
 CORPUS_MANIFEST_FILENAME = "corpus-manifest.json"
@@ -271,3 +272,40 @@ def apply_schema(conn: Any) -> None:
     conn.executescript(CREATE_SCHEMA_SQL)
     conn.executescript(FTS_SYNC_TRIGGERS_SQL)
     conn.commit()
+
+
+def pack_embedding_vector(vec: Iterable[float]) -> bytes:
+    """Pack float32 embedding as little-endian BLOB for ``section_vectors.embedding``."""
+    values = list(vec)
+    return struct.pack(f"<{len(values)}f", *values)
+
+
+def unpack_embedding_vector(blob: bytes) -> list[float]:
+    """Unpack little-endian float32 BLOB from ``section_vectors.embedding``."""
+    if not blob:
+        return []
+    count = len(blob) // 4
+    return list(struct.unpack(f"<{count}f", blob[: count * 4]))
+
+
+def corpus_manifest_path(install_root: str) -> Optional[str]:
+    """Return absolute path to corpus-manifest.json when present under install root."""
+    root = str(install_root or "").strip()
+    if not root:
+        return None
+    manifest = os.path.join(root, CORPUS_MANIFEST_FILENAME)
+    return manifest if os.path.isfile(manifest) else None
+
+
+def corpus_has_usable_vectors(conn: Any, manifest: Optional[dict[str, Any]] = None) -> bool:
+    """True when the corpus ships populated section vectors usable for hybrid retrieval."""
+    if isinstance(manifest, dict) and manifest.get("embeddings_populated") is False:
+        return False
+    try:
+        row = conn.execute(
+            "SELECT COUNT(*) AS c FROM section_vectors WHERE embedding IS NOT NULL"
+        ).fetchone()
+    except Exception:
+        return False
+    count = int(row["c"] if hasattr(row, "keys") else row[0])
+    return count > 0

@@ -17,6 +17,7 @@ import json
 import os
 import sqlite3
 import sys
+import urllib.request
 import zlib
 from datetime import datetime, timezone
 from pathlib import Path
@@ -35,8 +36,59 @@ from backend.services.knowledge_base_schema import (  # noqa: E402
     DEFAULT_EMBEDDING_MODEL,
     apply_schema,
     normalize_alias,
+    pack_embedding_vector,
     write_manifest,
 )
+
+
+def _list_installed_ollama_tags(base_http: str, timeout_seconds: float = 5.0) -> list[str]:
+    url = f"{base_http.rstrip('/')}/api/tags"
+    try:
+        req = urllib.request.Request(url, method="GET")
+        with urllib.request.urlopen(req, timeout=timeout_seconds) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+        models = data.get("models") if isinstance(data, dict) else None
+        if not isinstance(models, list):
+            return []
+        tags: list[str] = []
+        for m in models:
+            if isinstance(m, dict):
+                name = str(m.get("name") or "").strip()
+                if name:
+                    tags.append(name)
+        return tags
+    except Exception:
+        return []
+
+
+DEFAULT_BUILD_OLLAMA_BASE = "http://127.0.0.1:11434"
+
+
+class _BuildEmbedError(Exception):
+    pass
+
+
+def _embed_texts_build(
+    base_http: str,
+    texts: list[str],
+    *,
+    model: str,
+    timeout_s: float,
+) -> list[list[float]]:
+    url = f"{base_http.rstrip('/')}/api/embed"
+    payload = {"model": model, "input": texts[0] if len(texts) == 1 else texts}
+    req = urllib.request.Request(
+        url,
+        data=json.dumps(payload).encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    with urllib.request.urlopen(req, timeout=timeout_s) as resp:
+        data = json.loads(resp.read().decode("utf-8"))
+    embeddings = data.get("embeddings") if isinstance(data, dict) else None
+    if not isinstance(embeddings, list) or len(embeddings) != len(texts):
+        raise _BuildEmbedError("invalid embed response")
+    return [[float(x) for x in item] for item in embeddings]
 
 
 def _utc_now() -> str:
@@ -196,6 +248,56 @@ def compress_db(db_path: Path) -> Path:
     return out
 
 
+def populate_section_vectors(
+    conn: sqlite3.Connection,
+    *,
+    ollama_base: str = DEFAULT_BUILD_OLLAMA_BASE,
+    model: str = DEFAULT_EMBEDDING_MODEL,
+    timeout_s: float = 120.0,
+) -> tuple[bool, int]:
+    """Embed section cards when local Ollama has ``model``; returns (populated, count)."""
+    tags = _list_installed_ollama_tags(ollama_base, timeout_seconds=5.0)
+    model_l = model.lower()
+    if not any(t.lower() == model_l or t.lower().startswith(f"{model_l}:") for t in tags):
+        print(f"Skipping embeddings: {model} not installed on {ollama_base}", file=sys.stderr)
+        return False, 0
+
+    rows = conn.execute(
+        "SELECT section_id, name, card FROM sections ORDER BY section_id"
+    ).fetchall()
+    if not rows:
+        return False, 0
+
+    conn.execute("DELETE FROM section_vectors")
+    populated = 0
+    texts = [f"{row[1]}\n{row[2]}" for row in rows]
+    try:
+        vectors = _embed_texts_build(
+            ollama_base,
+            texts,
+            model=model,
+            timeout_s=timeout_s,
+        )
+    except (_BuildEmbedError, OSError, urllib.error.URLError) as exc:
+        print(f"Skipping embeddings: {exc}", file=sys.stderr)
+        return False, 0
+
+    for row, vector in zip(rows, vectors):
+        if len(vector) != DEFAULT_EMBEDDING_DIM:
+            print(
+                f"Skipping section {row[0]}: expected dim {DEFAULT_EMBEDDING_DIM}, got {len(vector)}",
+                file=sys.stderr,
+            )
+            continue
+        conn.execute(
+            "INSERT INTO section_vectors(section_id, embedding) VALUES (?, ?)",
+            (int(row[0]), pack_embedding_vector(vector)),
+        )
+        populated += 1
+    conn.commit()
+    return populated > 0, populated
+
+
 def build_corpus(out_dir: Path, *, seed: bool) -> dict:
     out_dir.mkdir(parents=True, exist_ok=True)
     db_path = out_dir / CORPUS_DB_FILENAME
@@ -209,6 +311,7 @@ def build_corpus(out_dir: Path, *, seed: bool) -> dict:
             seed_sample_corpus(conn)
         # Rebuild FTS index after bulk insert
         conn.execute("INSERT INTO sections_fts(sections_fts) VALUES('rebuild')")
+        embeddings_populated, embedding_section_count = populate_section_vectors(conn)
         conn.commit()
     finally:
         conn.close()
@@ -223,6 +326,8 @@ def build_corpus(out_dir: Path, *, seed: bool) -> dict:
         "schema_version": CORPUS_SCHEMA_VERSION,
         "embedding_model": DEFAULT_EMBEDDING_MODEL,
         "embedding_dim": DEFAULT_EMBEDDING_DIM,
+        "embeddings_populated": embeddings_populated,
+        "embedding_section_count": embedding_section_count,
         "db_filename": CORPUS_DB_FILENAME,
         "db_sha256": db_sha,
         "compressed_filename": compressed.name,

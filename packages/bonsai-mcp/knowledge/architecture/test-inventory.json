@@ -67,6 +67,7 @@
     "tests/test_model_selection.py",
     "tests/test_ollama_ask_service.py",
     "tests/test_ollama_catalog_service.py",
+    "tests/test_ollama_embed_service.py",
     "tests/test_ollama_mdns_discovery_service.py",
     "tests/test_ollama_prompts_stream_instruction.py",
     "tests/test_ollama_pull_registry.py",
@@ -91,6 +92,7 @@
     "tests/test_strategy_guide_parse.py",
     "tests/test_tdp_sandbox_sysfs.py",
     "tests/test_token_stream_request_id_wiring.py",
+    "tests/test_transparency_kb_retrieval.py",
     "tests/test_voice_transcription_service.py",
     "tests/test_voice_whisper_daemon.py"
   ]

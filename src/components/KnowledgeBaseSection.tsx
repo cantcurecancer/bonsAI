@@ -25,6 +25,8 @@ export type RagCorpusStatus = {
   corpus_path?: string;
   corpus_version?: string;
   use_local_knowledge_base?: boolean;
+  embeddings_populated?: boolean;
+  embed_model_available?: boolean;
   log_tail?: string[];
   storage_options?: {
     internal?: RagStorageOption;
@@ -36,6 +38,7 @@ type Props = {
   useLocalKnowledgeBase: boolean;
   setUseLocalKnowledgeBase: (v: boolean) => void;
   ragCorpusVersion: string;
+  ollamaIp: string;
   onBeforeDeckyModal: () => void;
   onCompleteDeckyModalClose: (close: () => void) => void;
   toggleHostRef?: React.RefObject<HTMLDivElement | null>;
@@ -47,6 +50,7 @@ type Props = {
 
 const KB_UNAVAILABLE_SESSION_KEY = "bonsai_kb_unavailable_warned";
 const KB_FAILURE_TOAST_KEY = "bonsai_kb_failure_toast";
+const KB_NOMIC_HINT_SESSION_KEY = "bonsai_kb_nomic_hint_warned";
 
 const deckNav = (handlers: Record<string, () => boolean | void>) =>
   handlers as unknown as Record<string, unknown>;
@@ -118,6 +122,7 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
   useLocalKnowledgeBase,
   setUseLocalKnowledgeBase,
   ragCorpusVersion,
+  ollamaIp,
   onBeforeDeckyModal,
   onCompleteDeckyModalClose,
   toggleHostRef,
@@ -158,9 +163,12 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
 
   const refreshStatus = useCallback(async () => {
     try {
-      const st = await callDeckyWithTimeout<[], RagCorpusStatus>(
+      const st = await callDeckyWithTimeout<
+        [{ pc_ip: string }],
+        RagCorpusStatus
+      >(
         "get_rag_corpus_status",
-        [],
+        [{ pc_ip: ollamaIp.trim() }],
         DECKY_RPC_TIMEOUT_MS,
       );
       setStatus(st);
@@ -177,12 +185,26 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
           duration: 6000,
         });
       }
+      if (
+        useLocalKnowledgeBase &&
+        st?.installed &&
+        st.embeddings_populated &&
+        st.embed_model_available === false &&
+        !sessionStorage.getItem(KB_NOMIC_HINT_SESSION_KEY)
+      ) {
+        sessionStorage.setItem(KB_NOMIC_HINT_SESSION_KEY, "1");
+        toaster.toast({
+          title: "Keyword + meaning search",
+          body: "Install nomic-embed-text in Ollama for better strategy retrieval.",
+          duration: 8000,
+        });
+      }
       return st;
     } catch {
       setStatus(null);
       return null;
     }
-  }, [useLocalKnowledgeBase]);
+  }, [useLocalKnowledgeBase, ollamaIp]);
 
   useEffect(() => {
     void refreshStatus();
@@ -191,7 +213,11 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
   useEffect(() => {
     if (!downloadBusy) return;
     const id = window.setInterval(() => {
-      void callDeckyWithTimeout<[], RagCorpusStatus>("get_rag_corpus_status", [], DECKY_RPC_TIMEOUT_MS)
+      void callDeckyWithTimeout<[{ pc_ip: string }], RagCorpusStatus>(
+        "get_rag_corpus_status",
+        [{ pc_ip: ollamaIp.trim() }],
+        DECKY_RPC_TIMEOUT_MS,
+      )
         .then((st) => {
           setStatus(st);
           if (st?.phase === "failed" && (st.error ?? "").trim()) {
@@ -213,7 +239,7 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
         .catch(() => setDownloadBusy(false));
     }, 1500);
     return () => window.clearInterval(id);
-  }, [downloadBusy, refreshStatus]);
+  }, [downloadBusy, refreshStatus, ollamaIp]);
 
   const startDownload = async (installPath: string, storage: string) => {
     setDownloadBusy(true);
@@ -314,6 +340,11 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
           (status.bytes_total ?? 0) / (1024 * 1024),
         )} MB)`
       : null;
+  const showNomicHint =
+    useLocalKnowledgeBase &&
+    installed &&
+    status?.embeddings_populated === true &&
+    status?.embed_model_available === false;
 
   const onPrimaryClick = installed ? runUpdate : openStoragePicker;
 
@@ -323,7 +354,7 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
         <div ref={toggleHost} className="bonsai-settings-bleed" style={{ width: "100%" }}>
           <ToggleField
             label="Use local knowledge base"
-            description="Ground Strategy and troubleshooting Asks with downloaded offline cards (FTS5 search on Deck)."
+            description="Ground Strategy and troubleshooting Asks with downloaded offline cards (keyword or Keyword + meaning search)."
             checked={useLocalKnowledgeBase}
             onChange={(checked) => setUseLocalKnowledgeBase(checked)}
             {...deckNav({
@@ -353,6 +384,11 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
               </span>
             </>
           )}
+          {showNomicHint ? (
+            <span style={{ display: "block", marginTop: 6, color: "#ffd299" }}>
+              Install <strong>nomic-embed-text</strong> in Ollama for Keyword + meaning search.
+            </span>
+          ) : null}
           {progress ? <span style={{ display: "block", marginTop: 6 }}>{progress}</span> : null}
           {(status?.error ?? "").trim() ? (
             <span style={{ display: "block", marginTop: 6, color: "#ff9b9b" }}>{status?.error}</span>

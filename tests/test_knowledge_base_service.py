@@ -3,15 +3,23 @@ import subprocess
 import sys
 import unittest
 from pathlib import Path
+from unittest import mock
 
+from backend.services.knowledge_base_schema import (
+    pack_embedding_vector,
+    unpack_embedding_vector,
+)
 from backend.services.knowledge_base_service import (
+    KnowledgeCard,
     close_connection,
     retrieve_knowledge_context,
     session_rag_chip_candidates_to_rpc,
     should_retrieve_knowledge,
     stack_context_blocks,
     suggest_chip_candidates,
+    _rerank_cards_by_vector,
 )
+from backend.services.ollama_embed_service import OllamaEmbedError
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SEED_DB = REPO_ROOT / "dist" / "knowledge-base-test" / "corpus.db"
@@ -175,6 +183,133 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
     self.assertGreaterEqual(len(payload["candidates"]), 1)
     self.assertIn("text", payload["candidates"][0])
     self.assertIn("category", payload["candidates"][0])
+
+  def test_rerank_cards_by_vector_orders_by_similarity(self):
+    cards = [
+      KnowledgeCard(1, 2, "Game", "boss", "Low", "card low", "", "", None, None, "fallback_no_source"),
+      KnowledgeCard(2, 2, "Game", "boss", "High", "card high", "", "", None, None, "fallback_no_source"),
+    ]
+    vectors = {1: [0.0, 1.0], 2: [1.0, 0.0]}
+    reranked = _rerank_cards_by_vector(cards, [1.0, 0.0], vectors, top_k=1)
+    self.assertEqual(reranked[0].name, "High")
+
+  def test_hybrid_retrieval_uses_keyword_when_nomic_missing(self):
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    with mock.patch(
+      "backend.services.knowledge_base_service.nomic_embed_available",
+      return_value=False,
+    ), mock.patch(
+      "backend.services.knowledge_base_service.corpus_has_usable_vectors",
+      return_value=True,
+    ):
+      result = retrieve_knowledge_context(
+        settings,
+        ask_mode="strategy",
+        question="Glyphid Dreadnought weak point",
+        app_id="2321470",
+        app_name="Deep Rock Galactic: Survivor",
+        domain="strategy",
+        pc_ip="127.0.0.1:11434",
+      )
+    self.assertTrue(result.attached)
+    self.assertEqual(result.retrieval_method, "keyword")
+
+  def test_hybrid_retrieval_reranks_when_nomic_available(self):
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    with mock.patch(
+      "backend.services.knowledge_base_service.nomic_embed_available",
+      return_value=True,
+    ), mock.patch(
+      "backend.services.knowledge_base_service.corpus_has_usable_vectors",
+      return_value=True,
+    ), mock.patch(
+      "backend.services.knowledge_base_service.embed_texts",
+      return_value=[[1.0, 0.0] + [0.0] * 766],
+    ), mock.patch(
+      "backend.services.knowledge_base_service._load_section_vectors",
+      return_value={
+        3: [1.0, 0.0] + [0.0] * 766,
+        4: [0.0, 1.0] + [0.0] * 766,
+      },
+    ):
+      result = retrieve_knowledge_context(
+        settings,
+        ask_mode="strategy",
+        question="Glyphid Dreadnought weak point",
+        app_id="2321470",
+        app_name="Deep Rock Galactic: Survivor",
+        domain="strategy",
+        pc_ip="127.0.0.1:11434",
+      )
+    self.assertTrue(result.attached)
+    self.assertEqual(result.retrieval_method, "hybrid")
+    self.assertIn("Dreadnought", result.text_block)
+
+  def test_hybrid_embed_failure_falls_back_to_keyword_embed_unavailable(self):
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    with mock.patch(
+      "backend.services.knowledge_base_service.nomic_embed_available",
+      return_value=True,
+    ), mock.patch(
+      "backend.services.knowledge_base_service.corpus_has_usable_vectors",
+      return_value=True,
+    ), mock.patch(
+      "backend.services.knowledge_base_service.embed_texts",
+      side_effect=OllamaEmbedError("timeout"),
+    ):
+      result = retrieve_knowledge_context(
+        settings,
+        ask_mode="strategy",
+        question="Glyphid Dreadnought weak point",
+        app_id="2321470",
+        app_name="Deep Rock Galactic: Survivor",
+        domain="strategy",
+        pc_ip="127.0.0.1:11434",
+      )
+    self.assertTrue(result.attached)
+    self.assertEqual(result.retrieval_method, "keyword_embed_unavailable")
+
+  def test_compat_domain_unchanged_without_hybrid(self):
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    with mock.patch(
+      "backend.services.knowledge_base_service.nomic_embed_available",
+      return_value=True,
+    ), mock.patch(
+      "backend.services.knowledge_base_service.corpus_has_usable_vectors",
+      return_value=True,
+    ), mock.patch(
+      "backend.services.knowledge_base_service.embed_texts",
+    ) as embed_mock:
+      result = retrieve_knowledge_context(
+        settings,
+        ask_mode="speed",
+        question="why is my game crashing proton issue",
+        app_id="2321470",
+        app_name="Deep Rock Galactic: Survivor",
+        domain="compat",
+        pc_ip="127.0.0.1:11434",
+      )
+    embed_mock.assert_not_called()
+    self.assertEqual(result.retrieval_method, "keyword")
+
+  def test_vector_pack_unpack_roundtrip(self):
+    vec = [0.1, -0.2, 0.3]
+    blob = pack_embedding_vector(vec)
+    unpacked = unpack_embedding_vector(blob)
+    for a, b in zip(vec, unpacked):
+      self.assertAlmostEqual(a, b, places=5)
 
 
 if __name__ == "__main__":

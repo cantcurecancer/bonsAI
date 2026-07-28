@@ -150,6 +150,7 @@ def build_knowledge_base_transparency(
     notes: str,
     timing_ms: dict,
     unavailable_reason: str = "",
+    retrieval_method: str = "keyword",
 ) -> dict[str, Any]:
     return {
         "kb_attached": attached,
@@ -158,7 +159,24 @@ def build_knowledge_base_transparency(
         "kb_notes": notes or "",
         "kb_timing_ms": dict(timing_ms or {}),
         "kb_unavailable_reason": unavailable_reason or "",
+        "kb_retrieval_method": retrieval_method or "keyword",
     }
+
+
+def kb_retrieval_chip_label(retrieval_method: str) -> str:
+    """User-facing chip label for KB retrieval method."""
+    if retrieval_method == "hybrid":
+        return "Keyword + meaning"
+    return "Keyword search"
+
+
+def kb_retrieval_detail_label(retrieval_method: str) -> str:
+    """Full retrieval label for Show details bullets."""
+    if retrieval_method == "hybrid":
+        return "Keyword + meaning"
+    if retrieval_method == "keyword_embed_unavailable":
+        return "Keyword search (embed unavailable)"
+    return "Keyword search"
 
 
 def build_proton_log_transparency(
@@ -317,20 +335,35 @@ def build_context_chips_manifest(
     if snapshot.get("kb_attached") or snapshot.get("kb_notes") or snapshot.get("kb_unavailable_reason"):
         kb_sources = snapshot.get("kb_sources") or []
         kb_bullets: list[str] = []
+        retrieval_method = str(snapshot.get("kb_retrieval_method") or "keyword")
         if snapshot.get("kb_attached"):
+            kb_bullets.append(f"Retrieval: {kb_retrieval_detail_label(retrieval_method)}")
             tier = str(snapshot.get("kb_trust_tier") or "").strip()
-            kb_bullets.append(f"Trust tier: {tier}" if tier else "Cards attached")
+            if tier:
+                kb_bullets.append(f"Trust tier: {tier}")
             kb_notes = str(snapshot.get("kb_notes") or "").strip()
             if kb_notes:
                 kb_bullets.append(kb_notes)
+            timing = snapshot.get("kb_timing_ms") or {}
+            embed_ms = timing.get("embed_ms")
+            rerank_ms = timing.get("rerank_ms")
+            if embed_ms:
+                kb_bullets.append(f"Embed: {embed_ms} ms")
+            if rerank_ms:
+                kb_bullets.append(f"Re-rank: {rerank_ms} ms")
         else:
             reason = str(snapshot.get("kb_unavailable_reason") or snapshot.get("kb_notes") or "").strip()
             kb_bullets.append(reason or "Not attached")
+        chip_label = (
+            kb_retrieval_chip_label(retrieval_method)
+            if snapshot.get("kb_attached")
+            else "Knowledge base (skipped)"
+        )
         chips.append(
             {
                 "id": "kb",
                 "rank": rank,
-                "label": "Pull KB compat cards" if snapshot.get("kb_attached") else "Knowledge base (skipped)",
+                "label": chip_label,
                 "attached": bool(snapshot.get("kb_attached")),
                 "tier_class": "",
                 "body": _chip_body(
@@ -482,6 +515,7 @@ def build_ollama_route_snapshot(
         "kb_notes": str(ollama_result.get("kb_notes") or ""),
         "kb_timing_ms": ollama_result.get("kb_timing_ms") or {},
         "kb_unavailable_reason": str(ollama_result.get("kb_unavailable_reason") or ""),
+        "kb_retrieval_method": str(ollama_result.get("kb_retrieval_method") or "keyword"),
         "ask_diagnostics": ollama_result.get("ask_diagnostics"),
         "response_verify": verify_result,
         "reply_verbosity": str(ollama_result.get("reply_verbosity") or "balanced"),

@@ -341,6 +341,7 @@ async def run_game_ai_request(
                     app_name=app_name,
                     shortcut_name=shortcut_name,
                     domain=kb_domain,
+                    pc_ip=pc_ip,
                 )
 
             _loop_kb = asyncio.get_running_loop()
@@ -352,6 +353,7 @@ async def run_game_ai_request(
                 notes=kb_result.notes,
                 timing_ms=kb_result.timing_ms,
                 unavailable_reason=kb_result.unavailable_reason,
+                retrieval_method=kb_result.retrieval_method,
             )
             if kb_result.attached:
                 kb_text = kb_result.text_block

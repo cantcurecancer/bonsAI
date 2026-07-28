@@ -2,7 +2,7 @@
   "hotspots": [
     {
       "path": "main.py",
-      "lines": 2968,
+      "lines": 2995,
       "role": "Decky RPC entrypoints and orchestration"
     },
     {
@@ -56,6 +56,11 @@
       "role": ""
     },
     {
+      "path": "py_modules/backend/services/knowledge_base_service.py",
+      "lines": 705,
+      "role": ""
+    },
+    {
       "path": "py_modules/backend/services/bonsai_stream_tags.py",
       "lines": 669,
       "role": ""
@@ -71,11 +76,6 @@
       "role": ""
     },
     {
-      "path": "py_modules/backend/services/knowledge_base_service.py",
-      "lines": 595,
-      "role": ""
-    },
-    {
       "path": "src/components/MainTabChatTranscript.tsx",
       "lines": 595,
       "role": ""
@@ -86,13 +86,18 @@
       "role": "Prompt build, Ollama HTTP, streaming"
     },
     {
+      "path": "py_modules/backend/services/game_ai_request.py",
+      "lines": 590,
+      "role": ""
+    },
+    {
       "path": "src/components/SettingsTab.tsx",
       "lines": 590,
       "role": ""
     },
     {
-      "path": "py_modules/backend/services/game_ai_request.py",
-      "lines": 588,
+      "path": "py_modules/backend/services/transparency_service.py",
+      "lines": 577,
       "role": ""
     },
     {
@@ -104,11 +109,6 @@
       "path": "py_modules/backend/services/settings_service.py",
       "lines": 544,
       "role": "Load/save/merge settings.json"
-    },
-    {
-      "path": "py_modules/backend/services/transparency_service.py",
-      "lines": 543,
-      "role": ""
     },
     {
       "path": "src/styles/sections/section-6.ts",
@@ -126,8 +126,13 @@
       "role": ""
     },
     {
+      "path": "src/components/KnowledgeBaseSection.tsx",
+      "lines": 461,
+      "role": ""
+    },
+    {
       "path": "src/components/DeveloperTab.tsx",
-      "lines": 457,
+      "lines": 458,
       "role": ""
     },
     {
@@ -151,11 +156,6 @@
       "role": ""
     },
     {
-      "path": "src/components/KnowledgeBaseSection.tsx",
-      "lines": 425,
-      "role": ""
-    },
-    {
       "path": "py_modules/backend/services/ai_character_service.py",
       "lines": 420,
       "role": ""
@@ -172,7 +172,7 @@
     },
     {
       "path": "src/components/OllamaTab.tsx",
-      "lines": 383,
+      "lines": 384,
       "role": ""
     },
     {
