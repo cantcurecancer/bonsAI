@@ -89,7 +89,9 @@ Optional on-Deck corpus for Strategy and troubleshooting Asks. Full architecture
 
 When the knowledge base is enabled and installed, Main-tab preset chips may occasionally show game-specific tips (boss/compat curtailed from the offline corpus) mixed with static suggestions.
 
-**Better search (Phase 2 — when shipped):** Optional Ollama model `nomic-embed-text` enables **Keyword + meaning** retrieval for Strategy tips. Without it, **Keyword search** still works. The plugin may show a soft install hint — it will **not** auto-pull the embed model or block Asks. Show details may label the path as **Keyword + meaning**, **Keyword search**, or **Keyword search (embed unavailable)**. See [knowledge-base.md](knowledge-base.md) § Phasing.
+**Better search (Phase 2 — shipped):** Optional Ollama model `nomic-embed-text` enables **Keyword + meaning** retrieval for **Strategy** tips. Without it, **Keyword search** still works. The plugin may show a soft install hint — it will **not** auto-pull the embed model or block Asks. Show details may label the path as **Keyword + meaning**, **Keyword search**, or **Keyword search (embed unavailable)**.
+
+**Planned (Phase 3):** The same hybrid path will extend to **troubleshooting** Asks over a shared tip sheet (`compat_patterns`); Show details will note **Source: shared troubleshooting tips**. See [knowledge-base.md](knowledge-base.md) § Phasing.
 
 **SD card:** When a microSD is mounted under `/run/media/deck/…`, the download picker offers **Download to SD card** (install path `{mount}/.bonsai/rag`). Internal default remains `~/.bonsai/rag`.
 

@@ -388,6 +388,7 @@ Maps [roadmap.md](roadmap.md) **Completed** summary and [archive/roadmap-complet
 | KB-FOCUS-01 | Ollama tab KB section D-pad chain + scroll-up | — | Open | Connection row ↔ KB toggle ↔ buttons ↔ Reply style slider ↔ Response verify; D-pad up from top scrolls to tab strip |
 | REPLY-VERB | Reply style (global verbosity) | REPLY-VERB-01 | Open | Ollama tab slider; prompt inject; Input transparency `reply_verbosity` |
 | KB-DOWNLOAD-SD | KB download storage picker (SD card) | KB-SMOKE-01 | Open | Modal shows internal + SD when microSD mounted |
+| KB-EVAL | Labeled KB eval set (Phase 3) | KB-EVAL-01 | Open | ~20–30 queries; compat + strategy; maintainer-run before Phase 5 publish |
 
 ### Tabs, icons, unified ask
 
@@ -726,7 +727,7 @@ Deck-only (multi-output: handheld, docked monitor, TV). Unit: `src/data/uiScaleP
 
 ### Knowledge base (RAG Deck query v1)
 
-Coverage: **KB-DOWNLOAD** / **KB-RETRIEVE** / **KB-UNAVAIL**. Architecture: [knowledge-base.md](knowledge-base.md). Phase 2 hybrid shipped 2026-07-28 — see **KB-SMOKE-04**–**07** below.
+Coverage: **KB-DOWNLOAD** / **KB-RETRIEVE** / **KB-UNAVAIL**. Architecture: [knowledge-base.md](knowledge-base.md). Phase 2 hybrid shipped 2026-07-28 — see **KB-SMOKE-04**–**07** below. Phase 3 discovery locked 2026-07-28 — see **KB-SMOKE-08**–**10** and **KB-EVAL-01**.
 
 - [x] **KB-SMOKE-01** Ollama tab: download (or verify installed) corpus + **Use local knowledge base** on; status shows ready — *Partial 2026-07-27:* Developer tab seed install (HF/GitHub corpus not published yet); coverage **KB-DOWNLOAD** Partial
 - [x] **KB-SMOKE-02** Strategy or troubleshooting Ask with KB on + seeded AppID → **Show details** / context chips show local KB (or equivalent splice evidence); reply grounded in corpus — *Verified 2026-07-27:* DRG Survivor `2321470`; Show details → Local Knowledge Base `wiki_verified` + AppID; [DeckCapture_20260727_170321_game.png](../screenshots/DeckCapture_20260727_170321_game.png); coverage **KB-RETRIEVE** Verified
@@ -737,9 +738,16 @@ Coverage: **KB-DOWNLOAD** / **KB-RETRIEVE** / **KB-UNAVAIL**. Architecture: [kno
 - [x] **KB-SMOKE-04** Vectorized seed + `nomic-embed-text` on Ask host → Strategy Ask → Show details chip **Keyword + meaning** — *Verified 2026-07-28:* DRG Survivor `2321470`; chip **Keyword + meaning**; embed ~1124 ms; [DeckCapture_20260728_183448_game.png](../screenshots/DeckCapture_20260728_183448_game.png)
 - [ ] **KB-SMOKE-05** KB on, vectors in corpus, `nomic-embed-text` missing → chip **Keyword search** + Ollama tab soft hint; Ask succeeds
 - [ ] **KB-SMOKE-06** Force embed failure (wrong host / timeout) → chip **Keyword search**; Show details bullet **Keyword search (embed unavailable)**; Ask succeeds
-- [ ] **KB-SMOKE-07** Troubleshooting Ask unchanged — no hybrid requirement (compat domain FTS only)
+- [ ] **KB-SMOKE-07** Troubleshooting Ask — **pre-Phase 3:** keyword FTS on compat path only (no hybrid requirement). **After Phase 3 ship:** troubleshooting Ask with vectorized tips + nomic → **Keyword + meaning** + Show details **Source: shared troubleshooting tips**
 
-Compat hybrid **not** in Phase 2 QA (Phase 3 research). **Spoiler confidence chip** is a separate Planned row — no smoke until owner decisions land.
+Compat hybrid ships in **Phase 3** (discovery locked 2026-07-28). **Spoiler confidence chip** is a separate Planned row — no smoke until owner decisions land.
+
+**Phase 3 compat hybrid + corpus (Planned — discovery locked 2026-07-28):**
+
+- [ ] **KB-SMOKE-08** Vectorized seed with expanded `compat_patterns` + `nomic-embed-text` on Ask host → troubleshooting Ask (e.g. Proton / Deck sleep) → chip **Keyword + meaning**; Show details **Source: shared troubleshooting tips**
+- [ ] **KB-SMOKE-09** Troubleshooting Ask with vectors but no nomic → **Keyword search** + Ollama tab soft hint; Ask succeeds
+- [ ] **KB-SMOKE-10** Strategy Ask regression on interim game mix (e.g. L4D2 `550`, BG3 `1086940`, Cyberpunk `1091500`) → hybrid **Keyword + meaning** when game resolved; no regression vs Phase 2 DRG Survivor path
+- [ ] **KB-EVAL-01** Maintainer labeled eval set (~20–30 queries) — compat tips + strategy cards; document pass/fail before Phase 5 public publish
 
 ---
 

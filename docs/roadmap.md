@@ -118,6 +118,16 @@ Within this section: ascending stars (★★ → ★★★ → ★★★★). Br
   - **Files:** `main.py`, Settings or toast, [troubleshooting.md](troubleshooting.md) anchor.
   - **Depends on:** reliable benign signals (e.g. read-only root hints) without brittle parsing.
   - **Not in scope:** auto-fix firewall rules.
+- ★★★★ **RAG Deck query — extended retrieval (Phase 4)**
+  - **Goal:** Deferred RAG tracks from Phase 3 brainstorm — richer retrieval and content shapes after compat hybrid + corpus maturity ship.
+  - **Discovery locked (2026-07-28):** **Session RAG preset chip** vector ranking; structured enemy/item cards; per-game AppID compat rows (option 3). Full lock: [knowledge-base.md](knowledge-base.md) § Phasing.
+  - **Depends on:** **RAG Deck query — compat hybrid + corpus maturity (Phase 3)** (Medium-term).
+  - **Not in scope:** public HF publish (→ Phase 5); visual maps (separate row).
+- ★★★★ **RAG Deck query — public corpus publish (Phase 5)**
+  - **Goal:** Publish versioned corpus + `corpus-manifest.json` to Hugging Face (primary) and GitHub Releases mirror after extended on-Deck KB testing and **legal** double-check (ATTRIBUTIONS, licenses).
+  - **Discovery locked (2026-07-28):** Not a Phase 3 exit gate; closes **KB-DOWNLOAD** Partial when live.
+  - **Depends on:** Phase 3 corpus maturity + QA; legal review pass.
+  - **Not in scope:** auto-ingest from web without attribution; shipping before legal OK.
 
 
 
@@ -138,12 +148,25 @@ Within this section: ascending stars (★★★★ → ★★★★★ → ★�
   - **Files:** `main.py`, `PullModelsModal.tsx`, `OllamaWhereAiRunsSection.tsx`, connection/LAN helpers, [troubleshooting.md](troubleshooting.md).
   - **Depends on:** **Custom model in Pull Models picker** (Deck-local v1); LAN connection test path ([`test_ollama_connection`](../main.py)).
   - **Not in scope:** choosing R1–R4 in this roadmap row; shipping without explicit mechanism sign-off.
+- ★★★★ **RAG Deck query — compat hybrid + corpus maturity (Phase 3)**
+  - **Goal:** Extend Phase 2 hybrid to **troubleshooting Asks** via a shared **`compat_patterns`** tip sheet (~100–150 platform-tagged tips) and mature the strategy corpus for an interim **11-title** game mix — without public HF publish yet.
+  - **Discovery locked (2026-07-28):** Shared tips only (not per-game AppID compat); minimal schema (`topic` + `platforms`); FTS shortlist → `nomic-embed-text` re-rank; hybrid **always** on troubleshooting Asks; Phase 2 transparency labels + Show details **Source: shared troubleshooting tips**; one Ollama-tab nomic hint; maintainer authoring on PC with **`qwen3.6:27b`**; embeddings stay **`nomic-embed-text`**. Full lock: [knowledge-base.md](knowledge-base.md) § Phase 3.
+  - **Primary work:** `compat_patterns` vectors + FTS; expand tip sheet (Deck, Machine, BPM, Wine, Windows Steam, SteamVR, Proton, gamescope, anti-cheat, streaming, Frame/FEX thin, etc.); expand `build_rag_db.py` strategy sections for L4D2, BG3, FO4, State of Emergency (PCSX2), DRG Survivor, OoT/SoH, Hades, Cyberpunk 2077, GTA SA DE, Sims 4, RDR2; labeled eval set (~20–30 queries); Dev-tab/seed QA.
+  - **Done when:** Code + vectorized seed + smoke QA (troubleshooting → **Keyword + meaning** + shared-tips bullet; Strategy regression) + eval v0. **Not** public HF (→ Phase 5).
+  - **Files:** `knowledge_base_service.py`, `knowledge_base_schema.py`, `build_rag_db.py`, `transparency_service.py`, `ollama_embed_service.py`, `game_ai_request.py`, `KnowledgeBaseSection.tsx`.
+  - **Depends on:** **RAG Deck query — hybrid vectors (Phase 2, shipped 2026-07-28)**.
+  - **Not in scope:** Session RAG chip vector ranking, structured enemy/item cards, per-game AppID compat (→ Phase 4); public HF/GitHub publish (→ Phase 5); visual maps (separate row); sqlite-vss/ANN; auto-pull nomic.
 - ★★★★ **Steam Input layout parse** (VDF → AI context)
   - **Goal:** Parse controller VDF configs and feed actionable control context to AI.
   - **Primary work:** config discovery, VDF parsing, normalization to human-readable actions.
   - **Files:** `main.py`, `src/index.tsx`.
   - **Depends on:** bundled VDF parser support.
   - **Not in scope:** editing/writing controller configs.
+- ★★★ **KB visual maps** (strategy maps — light prelim)
+  - **Goal:** Optional visual strategy maps (areas, bosses, routes) surfaced in KB-grounded replies — deferred from Phase 3; **light prelim discovery only** until closer to implementation.
+  - **Status:** Separate from RAG hybrid/corpus phases; no code until owner expands scope.
+  - **Depends on:** mature strategy corpus + Phase 3/4 retrieval quality.
+  - **Not in scope:** Phase 3 ship; full map authoring pipeline.
 - ★★★★★ **Deck health snapshot** (full diagnostics + Ollama)
   - **GitHub (tracking placeholder):** [bonsAI Issues](https://github.com/cantcurecancer/bonsAI/issues) — dedicated issue TBD.
   - **Goal:** **Read-only** full diagnostics: device/DMI (incl. BIOS where readable), SteamOS/kernel/Steam client versions, plugin/Decky fingerprint, battery snapshot + health estimate, Ollama connection quality (extend `[test_ollama_connection](../main.py)`), running game, storage free space, TDP cap read-only (`[read_current_tdp_watts](../py_modules/backend/services/tdp_service.py)`), **line excerpts** from Proton/Steam/system journals and prior-boot kernel panic markers — bounded like `[proton_troubleshooting_logs.py](../py_modules/backend/services/proton_troubleshooting_logs.py)`. Save markdown/JSON to `~/Desktop/bonsAI_logs/` when **Save files to Desktop** is on. **Supersedes** former **Support diagnostics block** (version/fingerprint copy).
@@ -303,7 +326,7 @@ Dependency graph and implementation notes that are not feature checklist items.
 - **SteamOS Media screenshot share button** → possible fast path into **Global screenshots and vision** if APIs allow.
 - **Reset session cache (shipped)** → in-memory unified-input / reply state only; see **Completed** → Tabs.
 - **Preset carousel (Phase 1 shipped)** → extends presentation without changing category routing; `PRESET_PROMPTS` **baseline (shipped)** → incremental **Preset chip expansion** (streaming / LAN / Steam Input themes) as features land — content tuning, not a distinct ship line; **Session RAG preset chips (shipped)** — AppID-aware ~30% RAG mix via offline KB curtail; **Pyro talent-manager easter egg (shipped)** adds a separate inject chip outside the trio’s `PRESET_CAROUSEL_ACTIVE_MS` window.
-- **RAG Deck query / offline KB v1** ([knowledge-base.md](knowledge-base.md)) → feeds **Session RAG preset chips** (compat + strategy curtail for running AppID); Ask-path splice remains separate. **Hybrid vectors (Phase 2)** shipped 2026-07-28 (Strategy-only re-rank; compat hybrid → Phase 3). **Spoiler confidence chip** (Near-term) is transparency-only and separate from hybrid retrieval.
+- **RAG Deck query / offline KB v1** ([knowledge-base.md](knowledge-base.md)) → feeds **Session RAG preset chips** (compat + strategy curtail for running AppID); Ask-path splice remains separate. **Hybrid vectors (Phase 2)** shipped 2026-07-28 (Strategy-only re-rank). **Compat hybrid + corpus maturity (Phase 3)** discovery locked 2026-07-28 → **extended retrieval (Phase 4)** → **public publish (Phase 5)**. **KB visual maps** separate Planned row. **Spoiler confidence chip** (Near-term) is transparency-only and separate from hybrid retrieval.
 - **Global quick-launch macro** ↔ **Native QAM shortcut tile** (shorter macro once a direct QAM tile exists).
 - **Bundled VDF parsing** → **Steam Input layout parse** (and optional deeper parsing).
 - **Steam Input settings search + jump** → Phase 1 shipped; broader catalog deferred.
