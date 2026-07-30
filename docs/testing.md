@@ -62,7 +62,7 @@ One smoke often covers many features. Status: **Verified** / **Partial** / **Ope
 | Vision attach | SMOKE-G | Verified | Vision sweep 2026-04 |
 | Background Ask reopen | SMOKE-H | Partial | Full lifecycle → release |
 | Knowledge base retrieve (keyword + hybrid) | KB-SMOKE-02/04 | Verified | Seed KB on Deck Jul 2026 |
-| KB download (public HF/GitHub) | KB-SMOKE-01 | Partial | Seed install works; public publish = Phase 5 |
+| KB download (public HF/GitHub) | KB-SMOKE-01 | Partial | Seed install works; public publish = Phase 6 |
 | Context chip ladder / live transparency | CONTEXT-LADDER-01…03 | Partial | Wrap row + focus graph fix Jul 2026; on-Deck QA open |
 | Reply micro-actions / D-pad graph | MICRO-01…05 | Open | Bug: Strategy live-turn skips |
 | D-pad answer scroll | D-PAD-SCROLL-01/02 | Partial | Viewport fix; choppy scroll bug open |

@@ -1,6 +1,6 @@
 # Knowledge base (offline RAG v1)
 
-Maintainer architecture for the **on-Deck offline strategy + compat knowledge base**. User setup: [troubleshooting.md](troubleshooting.md) § Knowledge base. QA: [testing.md](testing.md) **KB-*** rows. **Phase 2 hybrid** shipped 2026-07-28; **Phase 3** discovery locked 2026-07-28 (see [roadmap.md](roadmap.md) Planned).
+Maintainer architecture for the **on-Deck offline strategy + compat knowledge base**. User setup: [troubleshooting.md](troubleshooting.md) § Knowledge base. QA: [testing.md](testing.md) **KB-*** rows. **Phase 2 hybrid** shipped 2026-07-28; **Phase 3** shipped 2026-07-29; **Phase 4–5** discovery locked 2026-07-30; **Phase 6–8** light discovery 2026-07-30 (see [roadmap.md](roadmap.md) Planned).
 
 ## Overview
 
@@ -49,7 +49,7 @@ python scripts/build_rag_db.py --seed --out ./dist/knowledge-base
 - **SoH → OoT** alias lives in the alias table (replaces the hardcoded prompt rule).
 - Full crawl + LLM distillation is maintainer-batch work; `--seed` ships a dev/sample DB for QA.
 - **Phase 2 (shipped 2026-07-28):** `build_rag_db.py` populates `section_vectors` when local Ollama has `nomic-embed-text`; manifest `embeddings_populated` + `embedding_section_count`.
-- **Phase 3 (planned):** expand `compat_patterns` (~100–150 tips with `topic` + `platforms`); bake compat-pattern vectors; expand strategy sections for the interim 11-title game mix (see § Phase 3). Draft tips/cards on maintainer PC with **`qwen3.6:27b`**; embed with **`nomic-embed-text`** only.
+- **Phase 3 (shipped 2026-07-29):** expand `compat_patterns` (~100–150 tips with `topic` + `platforms`); bake compat-pattern vectors; expand strategy sections for the interim 11-title game mix (see § Phase 3). Draft tips/cards on maintainer PC with **`qwen3.6:27b`**; embed with **`nomic-embed-text`** only.
 
 ## Corpus layout on Deck
 
@@ -83,11 +83,14 @@ Replies should use existing `bonsai-cite` markers; spoilery cards obey `bonsai-s
 |-------|--------|
 | **v1 (shipped)** | FTS5, on-Deck download (or Dev-tab seed), Model A consent, Ollama tab UI |
 | **Phase 2 (shipped 2026-07-28)** | Hybrid retrieval for **Strategy / per-game section cards only**: bake vectors in `build_rag_db.py`; query embed via Ollama `/api/embed` (`nomic-embed-text`) on the **same host as Ask**; **FTS shortlist → cosine re-rank**; soft UI hint to install `nomic` (no auto-pull; Ask never blocked). User-facing transparency labels: **Keyword + meaning** (hybrid), **Keyword search**, **Keyword search (embed unavailable)**. Dev-tab vectorized seed first. |
-| **Phase 3 (shipped 2026-07-29)** | **Compat/troubleshooting hybrid** on shared `compat_patterns` tip sheet (~124 platform-tagged maintainer tips) + **corpus maturity** (interim **11-title** strategy seed, 22 section cards). Schema v2: `compat_patterns_fts`, `compat_pattern_vectors`. Show details **Source: shared troubleshooting tips**. Eval set `tests/fixtures/kb_eval_v0.json`. **Not** public HF (→ Phase 5). |
-| **Phase 4** | Session RAG preset chip vector ranking; structured enemy/item cards; per-game AppID compat rows (option 3 from Phase 3 brainstorm). |
-| **Phase 5** | Hugging Face + GitHub Releases **public** corpus publish after extended on-Deck testing + **legal** double-check (closes **KB-DOWNLOAD** Partial). |
+| **Phase 3 (shipped 2026-07-29)** | **Compat/troubleshooting hybrid** on shared `compat_patterns` tip sheet (~124 platform-tagged maintainer tips) + **corpus maturity** (interim **11-title** strategy seed, 22 section cards). Schema v2: `compat_patterns_fts`, `compat_pattern_vectors`. Show details **Source: shared troubleshooting tips**. Eval set `tests/fixtures/kb_eval_v0.json`. **Not** public HF (→ Phase 6). |
+| **Phase 4** | Extended retrieval (discovery locked 2026-07-30; **not implementing yet**): session chip **visibility** (not vector ranking); structured enemy/item **sample** cards + light reply bullets; T1 per-game AppID compat tips; lean compat phrase-gate fix. |
+| **Phase 5** | **Corpus expansion** (discovery locked 2026-07-30; **not implementing yet**): deepen all **11** Phase 3 titles (content → chip vector ranking); profiled depth; baked chip ranking; Dev-tab install only until Phase 6. |
+| **Phase 6** | **Public publish + legal** (light discovery 2026-07-30): HF primary + GitHub mirror; Phase 5 matured **11** + shared tips; closes **KB-DOWNLOAD** Partial. |
+| **Phase 7** | **Retrieval infra** (intent): optional **sqlite-vss / ANN**; optional **auto-pull `nomic`** with consent. May spike in parallel with Phase 6; does not block publish. |
+| **Phase 8** | **Catalog corpus** (intent): large title coverage (Steam ~1000 / Deck ~100 / emu eras) — fuller discovery later. |
 
-**Separate roadmap row (not Phase 3):** **KB visual maps** — light prelim only until closer to implementation.
+**Separate roadmap row (not Phase 3–8):** **KB visual maps** — light prelim only until closer to implementation.
 
 ### Phase 2 — locked decisions (2026-07-27)
 
@@ -96,7 +99,7 @@ Replies should use existing `bonsai-cite` markers; spoilery cards obey `bonsai-s
 | Hybrid algorithm | FTS top-N shortlist → vector re-rank within resolved `game_id` |
 | Missing `nomic-embed-text` | Soft install hint (B2); silent keyword path; never block Ask |
 | Query embed host | Same Ollama host as Ask (Deck or LAN) |
-| Ship / QA path | Vectorized Dev-tab seed first; production HF download **not** a Phase 2 gate (→ Phase 5) |
+| Ship / QA path | Vectorized Dev-tab seed first; production HF download **not** a Phase 2 gate (→ Phase 6) |
 | Compat hybrid | **Out of Phase 2** → Phase 3 |
 | Out of scope | Chip semantic ranking, edition clarifier, sqlite-vss/ANN, new permission, auto-pull nomic, Chroma |
 
@@ -117,7 +120,7 @@ Replies should use existing `bonsai-cite` markers; spoilery cards obey `bonsai-s
 | Nomic UI | **One** Ollama-tab soft hint (covers hybrid generally — Strategy + troubleshooting) |
 | Authoring (PC) | **`qwen3.6:27b`** for drafting cards/tips (`ollama pull qwen3.6:27b`) |
 | Embeddings | **`nomic-embed-text`** only — do not swap without full re-bake |
-| Public publish | **Phase 5** — not a Phase 3 exit gate |
+| Public publish | **Phase 6** — not a Phase 3 exit gate |
 | Done when | Code + Dev-tab/seed + smoke QA + labeled eval set (~20–30 queries) |
 
 **Interim strategy game mix (final):**
@@ -136,7 +139,95 @@ Replies should use existing `bonsai-cite` markers; spoilery cards obey `bonsai-s
 | The Sims 4 | `1222670` |
 | Red Dead Redemption 2 | `1174180` |
 
-**Not in Phase 3:** Session RAG vector chip ranking, structured enemy/item cards, per-game AppID compat, visual maps implementation, sqlite-vss/ANN, auto-pull nomic, public HF/GitHub publish.
+**Not in Phase 3:** Session RAG chips polish, structured enemy/item cards, per-game AppID compat, visual maps implementation, sqlite-vss/ANN, auto-pull nomic, public HF/GitHub publish.
+
+### Phase 4 — locked decisions (2026-07-30)
+
+**Status:** Discovery complete; **document only** — implementation deferred. Ship all three tracks together when implemented.
+
+**Discovery note:** Session RAG Strategy chips were hard to notice on Deck even when Ask Show details proved corpus path OK — ~30% mix, reseed gaps (survivalPeek can skip cold-mount remix), and compat RAG text overlapping static presets. Phase 4 optimizes **visibility**, not ranking.
+
+| Topic | Lock |
+|-------|------|
+| Ship shape | **All three tracks** in one Phase 4 implementation pass |
+| Track 1 intent | **Visibility first** (vector ranking → Phase 5) |
+| Chip guarantee (V1) | When RAG candidates exist, ≥1 of 3 carousel chips is RAG |
+| Guarantee preference (G2) | Prefer a **game** Strategy RAG chip; fall back to compat RAG only if no game candidates |
+| Reseed (V3) | Fix reseed so remix runs when QAM opens / AppID is known (don’t leave restored static trio forever) |
+| Badge (V4) | Small **Tip** prefix/badge on **game** RAG chips only (not compat Proton/Deck RAG) |
+| Track 2 bar (C3) | Structured enemy/item **corpus + retrieval** and clearer reply shape |
+| Reply shape (R1) | Light labeled bullets in the answer panel (e.g. Weak points / Phases / Tips) — not a custom UI card |
+| Sample coverage (S1) | Handful of enemies **and** items on **DRG Survivor** + **OoT/SoH** only |
+| Card fields (F2) | name, type, summary, weaknesses/uses, tips; phases optional for bosses |
+| Spoiler | Stay **unfenced** when the user asked about that boss/item **by name** |
+| Track 3 retrieval (P1) | Prefer per-game AppID tips first; fall back to shared `compat_patterns` |
+| Tip volume (T1) | ~3–5 tips each for the sample titles |
+| Per-game hybrid | Same FTS→vector hybrid as shared tips |
+| Phrase gate (B1) | Lean fix for **KB compat retrieval phrase gate** ships with Phase 4 so natural-language troubleshooting can hit tips |
+| No running game (N1) | Shared tips only |
+| Settings (U1) | No new Settings — existing **Use local knowledge base** + corpus install |
+| Out of Phase 4 | Chip vector ranking; broad per-game tips beyond T1; structured cards beyond DRG+OoT; custom UI cards / KB visual maps; public publish (→ Phase 6); sqlite-vss/ANN / auto-pull nomic (→ Phase 7) |
+
+### Phase 5 — locked decisions (2026-07-30)
+
+**Status:** Discovery complete; **document only** — implementation deferred until Phase 4 is implemented and smoke-passed. One Phase 5 ship; internal order **content → chip vector ranking**.
+
+**North star:** Depth-first on the existing **11-title** mix (**B**), with publish-credible maturity as the **exit bar (C)** — not raw title count. No net-new titles in Phase 5.
+
+| Topic | Lock |
+|-------|------|
+| Ship shape | **One** Phase 5 pass; sequence **content first**, then session chip **vector ranking** |
+| Gate vs Phase 4 | **Strict** — no Phase 5 content or ranking work until Phase 4 is implemented **and** sample-path smoke has passed |
+| Title set | Deepen **all 11** Phase 3 interim titles; **no net-new titles** in Phase 5 (catalog scale → Phase 8) |
+| Depth profile | **Profiled minimum bar:** every title gets ~3–5 per-game AppID tips + richer strategy sections; enemy/item structured cards only where genre fits (Sims → systems/career; SoE → perf/compat-heavy). Selective tip bump (~8) for Proton-heavy titles (e.g. Cyberpunk, RDR2, GTA SA DE) if eval shows shared tips aren’t enough |
+| Strategy sections | ~**4–6** short section cards per title (up from ~2) |
+| Structured entity volume | Default **handful** (~3–8 enemies and/or items) per eligible title; allow more on dense titles that need it |
+| Shared `compat_patterns` | **Leave ~as-is** (~124); expand only if Phase 4 QA / KB-EVAL forces clear gaps |
+| Authoring | Heavier **wiki/fandom ingest** OK for speed; complete `source_url` / `source_license` / ATTRIBUTIONS **as cards are added** (no “fix later”) |
+| Install size | **No** Phase 5 Deck size budget |
+| Install path | **Dev-tab / local seed only** until Phase 6 public publish |
+| Chip ranking | **Hybrid:** cold QAM open = AppID/game pool ranked with **precomputed** corpus vectors (baked game centroid / candidate vectors); after Ask = re-rank vs recent question/mode (live embed OK). Fallback to Phase 4 visibility path if embed/nomic fails |
+| Chip mix | Keep ~**30%** RAG roll + Phase 4 **≥1 RAG when candidates exist**; ranking only improves *which* tip |
+| Settings / UX chrome | **No new Settings**; Tip badge / Show details unchanged except better ranking |
+| Reply shape | Inherit Phase 4 light labeled bullets + F2 fields; **genre-specific bullet labels** OK (still text bullets — no custom UI cards) |
+| Spoiler flag | Authoring-time **high-spoiler** metadata on sections; **no Phase 5 runtime behavior** (future Spoiler confidence / fencing rows may consume it) |
+| Non-Steam / alias | Deepen SoE + **verify** tip/card attach via alias / Non-Steam resolution on Deck; SoH→OoT unchanged |
+| Ask modes | Strategy + troubleshooting keep full paths; **Speed/Expert** may get **light** KB splice/tips when KB is on — **no** full structured enemy/item blocks (those stay Strategy) |
+| Exit bar | Content checklist for all 11 + expanded **KB-EVAL** + on-Deck smoke subset: **DRG Survivor, OoT/SoH, Cyberpunk, RDR2, State of Emergency** |
+| Out of Phase 5 | Public HF/GitHub publish (→ Phase 6); sqlite-vss/ANN + auto-pull nomic (→ Phase 7); catalog-scale titles (→ Phase 8); custom UI cards / **KB visual maps**; new Settings; higher RAG chip mix; runtime spoiler behavior from the new flag; material shared-tip-sheet growth |
+
+### Phase 6 — locked decisions (light, 2026-07-30)
+
+**Status:** Light discovery only — more Phase 6 detail in a later session. **Document only**; implementation after Phase 5 exit.
+
+**Split from older “three bullets” row:** publish/legal stays Phase 6; sqlite-vss/ANN + nomic auto-pull → **Phase 7**; catalog-scale corpus → **Phase 8**.
+
+| Topic | Lock |
+|-------|------|
+| Scope | **Publish + legal only** — closes **KB-DOWNLOAD** Partial |
+| Artifact | Phase 5 matured **11-title** corpus + shared `compat_patterns` tips — **not** catalog-scale |
+| Channels | Versioned `corpus-manifest.json` on **Hugging Face (primary)** + **GitHub Releases mirror** (existing download path) |
+| Legal | **Full scrub** before first public tag — complete ATTRIBUTIONS / `source_*`; **no placeholder licenses**. Public **NOTICE**: wiki/community sources can err; fix forward via point releases |
+| Updates | **Point releases** — rebuild → new manifest version → user re-download / update |
+| Not Phase 6 | sqlite-vss/ANN; auto-pull nomic (→ Phase 7); Steam ~1000 / Deck ~100 / emu catalog (→ Phase 8) |
+
+### Phase 7 — locked intent (2026-07-30)
+
+| Topic | Lock |
+|-------|------|
+| Scope | Optional **sqlite-vss / ANN** (beyond FTS shortlist → cosine) + optional **auto-pull `nomic-embed-text`** with explicit consent UX (never silent pull) |
+| Parallelism | May **spike / discover in parallel** with Phase 6 publish; **must not block** first public corpus |
+| Status | Intent only — fuller discovery later |
+
+### Phase 8 — locked intent (2026-07-30)
+
+**Catalog corpus** (long-horizon; fuller discovery later). Target sketch (not Phase 6/7 scope):
+
+- ~**Top 1000** Steam titles across years  
+- ~**Top 100** Steam Deck titles (mostly a priority slice of Steam after dedupe)  
+- ~**Top 50 emulated** per era from Sega Genesis through Xbox 360 / PS3 (~6 era buckets → ~**300–500** emu titles), with verified Non-Steam/alias matching  
+
+**Not** a thin redefinition of Phase 6 publish — Phase 6 ships the matured 11 first.
 
 ### Transparency retrieval labels (Phase 2)
 
@@ -146,7 +237,7 @@ Replies should use existing `bonsai-cite` markers; spoilery cards obey `bonsai-s
 | **Keyword search** | Vectors unused, missing, or corpus has no embeddings |
 | **Keyword search (embed unavailable)** | Hybrid attempted; embed failed/timeout — prefer Show details for the parenthetical; chip may stay **Keyword search** |
 
-### Related (not Phase 2 / 3 code)
+### Related (not Phase 2–8 code by default)
 
 - **Spoiler confidence chip** — Planned Near-term in [roadmap.md](roadmap.md); decisions locked 2026-07-29 (bands, heuristics + same-Ask risk tag, transparency-only); ready to implement. Related Planned: user-adjustable fencing, unfenced-spoiler feedback.
 - **KB visual maps** — separate Planned row; light prelim only.
@@ -156,4 +247,4 @@ Replies should use existing `bonsai-cite` markers; spoilery cards obey `bonsai-s
 - [archive/research/rag-sources-research.md](archive/research/rag-sources-research.md) — source research (superseded for runtime by this doc)
 - [development.md](development.md) — contributor index
 - [troubleshooting.md](troubleshooting.md) — download, storage, update, removal
-- [roadmap.md](roadmap.md) — Phase 3/4/5 Planned rows, Spoiler confidence chip, KB visual maps
+- [roadmap.md](roadmap.md) — Phase 4–8 Planned rows, Spoiler confidence chip, KB visual maps

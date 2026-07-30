@@ -22,7 +22,7 @@ Known **defects** only. Deferred QA lives under [QA backlog](#qa-backlog). *QAMP
 - ★★ **Strategy live-turn D-pad graph skips branches/feedback:** Geometry scroll gate + yield-to-parent (`return false`) with Focusable branch picker as turn-slot sibling; verify **MICRO-04** on Deck.
 - ★★★ **Soft** `num_predict` **+ thinking budget:** `options.num_predict` is a hard Ollama wall (500 Speed/Expert, 900 Strategy) with no overshoot/continue; `"think": False` avoids empty replies when thinking ate the wall (`done_reason=length`, zero content) but leaves quality on the table for thinking models. **Intent:** length preference with small overshoot OK — not a hard cut, not unlimited. **Fix lean:** (1) raise base caps; (2) continuation on `done_reason=length` (small extra budget, capped continues — especially when content empty/short); (3) optional Reply verbosity → answer `num_predict`; (4) **budget thinking separately** (application policy): re-enable thinking with a fixed Deck default effort (`low`/`medium`) plus answer-floor / continue-if-content-starved; log thinking vs content lengths. Ollama has no true dual hard budgets in one completion — levels + continue stand in. **Not in scope:** delete the ceiling entirely; Settings UI for effort (→ **Thinking effort control**); parallel second Ask; spoiler chip work.
 - ★★ **Model routing try-order modal focus + chrome:** Text/vision **Set … try order…** fullscreen (`ModelRoutingOrderModal`) — D-pad focus lands on leaf Up/Down buttons and feels broken; layout/chrome does not match other fullscreen pickers (Pull Models / Character picker / Models hub `ConfirmModal` pattern). Screenshot `DeckCapture_20260730_144925`. Discovery locked 2026-07-30. **Defer** — fetch-on-open + save already shipped; polish later.
-- ★★ **KB compat retrieval phrase gate:** Troubleshooting KB (compat hybrid / **Keyword + meaning**) only runs when `question_matches_troubleshooting_log_context` matches a **hardcoded phrase list** in `ollama_prompts.py` (preset-style strings like `proton issue`, `why is my game crashing`). Natural-language asks (e.g. `deck sleep resume proton black screen`) skip the KB entirely — no chip, no hybrid, no **Source: shared troubleshooting tips**. **Intent:** when **Use local knowledge base** is on, attempt compat tip retrieval for general troubleshooting-shaped Asks without growing a brittle regex/preset farm in bonsAI. **Fix lean:** broaden gate (e.g. KB-on + not strategy-with-game → compat shortlist; or lightweight intent/heuristic separate from carousel presets); keep Strategy path AppID-gated. Regression: **KB-SMOKE-07/08** queries in [testing-manual.md](testing-manual.md) must pass without adding new hardcoded strings per smoke case.
+- ★★ **KB compat retrieval phrase gate:** Troubleshooting KB (compat hybrid / **Keyword + meaning**) only runs when `question_matches_troubleshooting_log_context` matches a **hardcoded phrase list** in `ollama_prompts.py` (preset-style strings like `proton issue`, `why is my game crashing`). Natural-language asks (e.g. `deck sleep resume proton black screen`) skip the KB entirely — no chip, no hybrid, no **Source: shared troubleshooting tips**. **Intent:** when **Use local knowledge base** is on, attempt compat tip retrieval for general troubleshooting-shaped Asks without growing a brittle regex/preset farm in bonsAI. **Fix lean:** broaden gate (e.g. KB-on + not strategy-with-game → compat shortlist; or lightweight intent/heuristic separate from carousel presets); keep Strategy path AppID-gated. Regression: **KB-SMOKE-07/08** queries in [testing-manual.md](testing-manual.md) must pass without adding new hardcoded strings per smoke case. **Phase 4 discovery (2026-07-30):** lean gate fix (**B1**) ships with Phase 4 when implemented — not a separate forever-defer.
 - ★★★ **LB/RB tab switch flicker when scrolled:** Switching tabs with shoulder buttons while focus is deep in a scrolled panel (not on tab icons) flashes/jitters. Investigate carousel + remount/scroll/focus survival (partial anti-flicker CSS already on `TabContentsScroll`). Discovery locked 2026-07-29.
 
 ---
@@ -93,6 +93,7 @@ Within this section: ascending stars (★ → ★★★★).
 - ★★★ **KB visual maps** (strategy maps — light prelim)
   - **Goal:** Optional visual strategy maps in KB-grounded replies — light prelim discovery only until closer to implementation.
   - **Depends on:** mature strategy corpus + Phase 3/4 retrieval quality.
+  - **Note:** Separate roadmap row — not folded into RAG Phase 4–8.
 - ★★★★ **Llama.cpp provider spike** (Deck perf / replacement eval)
   - **Goal:** Research-only: can Deck-local llama.cpp beat Deck-local Ollama enough to justify a possible long-term replacement? **No code** in this spike. Supersedes the 2026-05-20 go/no-go in [llama-cpp-provider.md](archive/spikes/llama-cpp-provider.md).
   - **Discovery locked (2026-07-17):** Baseline Deck-local Ollama **gemma4 E2B**; go bar must win **both** game FPS hitch **and** peak GPU memory; load = DRG Survivor. Write [llama-cpp-provider-eval.md](archive/spikes/llama-cpp-provider-eval.md).
@@ -104,12 +105,28 @@ Within this section: ascending stars (★ → ★★★★).
   - **Goal:** Detection + deep link to troubleshooting for immutable spins.
   - **Not in scope:** auto-fix firewall rules.
 - ★★★★ **RAG Deck query — extended retrieval (Phase 4)**
-  - **Goal:** Deferred RAG tracks from Phase 3 — richer retrieval and content shapes after compat hybrid + corpus maturity.
-  - **Discovery locked (2026-07-28):** Session RAG preset chip vector ranking; structured enemy/item cards; per-game AppID compat rows. Full lock: [knowledge-base.md](knowledge-base.md) § Phasing.
+  - **Goal:** Richer retrieval and content shapes after Phase 3 — session chip **visibility**, structured enemy/item sample cards + light reply bullets, T1 per-game AppID compat tips, lean compat phrase-gate fix.
+  - **Status:** Discovery locked 2026-07-30; **docs only** — not implementing yet. Full lock: [knowledge-base.md](knowledge-base.md) § Phase 4.
+  - **Discovery locked (2026-07-30):** All three tracks in one ship when implemented. Track 1 = visibility first (**V1+V3+V4**): guarantee ≥1 RAG chip when candidates exist (prefer game RAG → **Tip** badge; compat fallback); reseed so remix actually runs; **Tip** badge on **game** RAG chips only. Track 2 = **C3** corpus + reply shape, **R1** light bullets, **S1** sample on DRG Survivor + OoT/SoH, **F2** fields, both enemies+items, unfenced when user named the entity. Track 3 = **P1** prefer per-game tips then shared; **T1** ~3–5 tips × sample titles; same hybrid; **B1** lean phrase-gate fix; **N1** no game → shared only; **U1** no new Settings.
   - **Depends on:** Phase 3 (shipped 2026-07-29).
-- ★★★★ **RAG Deck query — public corpus publish (Phase 5)**
-  - **Goal:** Publish versioned corpus + manifest to Hugging Face (primary) and GitHub Releases mirror after extended on-Deck KB testing and legal double-check.
-  - **Depends on:** Phase 3 corpus maturity + QA; legal review.
+  - **Not in scope (Phase 4):** Chip **vector ranking** (→ Phase 5); broad per-game tips beyond T1 (→ Phase 5); structured cards beyond DRG+OoT sample (→ Phase 5); custom UI enemy/item cards / **KB visual maps**; public HF publish (→ Phase 6); sqlite-vss / auto-pull nomic (→ Phase 7).
+- ★★★★ **RAG Deck query — corpus expansion (Phase 5)**
+  - **Goal:** Deepen the Phase 3 **11-title** corpus after Phase 4 sample paths — profiled strategy/tips/structured cards; then session chip **vector ranking** (baked cold-open / live after Ask).
+  - **Status:** Discovery locked 2026-07-30; **docs only** — not implementing yet. Full lock: [knowledge-base.md](knowledge-base.md) § Phase 5.
+  - **Discovery locked (2026-07-30):** One ship, **content → ranking**. Depth-first on all 11 (no net-new titles); profiled minimum bar (~3–5 tips + ~4–6 strategy sections; enemy/item handful where genre fits); heavier wiki ingest with complete attribution as added; shared tip sheet stays ~as-is; no size budget; Dev-tab install only. Chip ranking hybrid with precomputed cold path; keep ~30% + Phase 4 ≥1 guarantee; no new Settings. Spoiler high-flag metadata only (no runtime). Non-Steam/alias must retrieve (SoE). Speed/Expert light KB only. Exit = content bar + KB-EVAL + smoke on DRG, OoT/SoH, Cyberpunk, RDR2, SoE. Strict gate: after Phase 4 implement + smoke.
+  - **Depends on:** Phase 4 implementation + on-Deck QA of sample paths.
+  - **Not in scope:** Public HF/GitHub publish (→ Phase 6); sqlite-vss/ANN; auto-pull `nomic` (→ Phase 7); catalog-scale titles (→ Phase 8); custom UI cards / **KB visual maps**; new Settings; net-new titles; material shared-tip growth; runtime spoiler behavior from corpus flags.
+- ★★★★ **RAG Deck query — public publish (Phase 6)**
+  - **Goal:** First public versioned corpus + manifest (HF primary, GitHub Releases mirror) after Phase 5 maturity + legal scrub — closes **KB-DOWNLOAD** Partial.
+  - **Status:** Light discovery locked 2026-07-30; **docs only** — fuller Phase 6 discovery later. Lock: [knowledge-base.md](knowledge-base.md) § Phase 6.
+  - **Discovery locked (light, 2026-07-30):** Publish **Phase 5’s matured 11** + shared tips only (not catalog). Full ATTRIBUTIONS / no placeholder licenses on first public tag; NOTICE that sources can err → fix forward. Point-release updates. sqlite-vss/ANN + nomic auto-pull → **Phase 7**; catalog scale → **Phase 8**.
+  - **Depends on:** Phase 5 corpus expansion + extended on-Deck KB testing; legal scrub of published zip.
+  - **Not in scope:** sqlite-vss/ANN; auto-pull `nomic` (→ Phase 7); Steam ~1000 / Deck ~100 / emu catalog (→ Phase 8).
+- ★★★★ **RAG Deck query — retrieval infra (Phase 7)**
+  - **Goal:** Optional **sqlite-vss / ANN** vector index; optional **auto-pull `nomic-embed-text`** with explicit consent UX (never silent pull).
+  - **Status:** Intent locked 2026-07-30; fuller discovery later. May spike in parallel with Phase 6; **must not block** first public publish.
+  - **Depends on:** Phase 6 publish path healthy (or spike-only until then).
+  - **Not in scope:** Replacing Phase 6 publish; catalog authoring (→ Phase 8).
 
 ### Medium-term
 
@@ -179,6 +196,12 @@ Within this section: ascending stars (★★★★ → ★★★★★★).
   - **GitHub (tracking placeholder):** [bonsAI Issues](https://github.com/cantcurecancer/bonsAI/issues) — dedicated issue TBD.
   - **Goal:** Detect mod frameworks/files; mod-aware AI guidance.
   - **Not in scope:** downloading/installing mods automatically.
+- ★★★★★★ **RAG Deck query — catalog corpus (Phase 8)**
+  - **GitHub (tracking placeholder):** [bonsAI Issues](https://github.com/cantcurecancer/bonsAI/issues) — dedicated issue TBD.
+  - **Goal:** Large offline catalog after Phase 6’s matured-11 publish — sketch: ~top **1000** Steam titles; ~top **100** Steam Deck (priority slice); ~**50 emulated** per era Genesis→Xbox 360/PS3 (~300–500 emu) with verified alias/Non-Steam matching.
+  - **Status:** Intent only 2026-07-30; **fuller discovery later**. Not Phase 6 v1.
+  - **Depends on:** Phase 6 public publish + legal lessons; likely Phase 7 infra for scale.
+  - **Not in scope:** Shipping catalog as the first public HF corpus; thin stubs that drown hybrid retrieval without a tiering plan.
 - ★★★★★★ **Native QAM shortcut tile** (under Decky; upstream research)
   - **GitHub (tracking placeholder):** [bonsAI Issues](https://github.com/cantcurecancer/bonsAI/issues) — dedicated issue TBD.
   - **Goal:** Separate QAM left-rail entry for bonsAI beneath the Decky Loader icon (fewer steps than Decky plugin list). Requires upstream Steam/Decky support — plugins cannot register sibling QAM icons from `plugin.json` alone.
@@ -216,7 +239,7 @@ Coverage for shipped work: [testing.md](testing.md).
 - **Capability Permission Center** → gates filesystem, Steam/Proton log + screenshot reads, mic, Steam Web API; web/Steam jumps always allowed; TDP/GPU suggestions read-only (no apply).
 - **Llama.cpp provider spike** → research-only; related **Dynamic keep-alive / smart unload**.
 - **Preset carousel (shipped)** → incremental **Preset chip expansion**; **Session RAG preset chips (shipped)**.
-- **RAG / offline KB** → Phase 2–3 shipped → Phase 4–5 Planned; **KB visual maps** separate; **Spoiler confidence chip** → fencing + unfenced feedback.
+- **RAG / offline KB** → Phase 2–3 shipped → Phase 4–8 Planned (4 extended retrieval, 5 corpus expansion, 6 public publish, 7 sqlite-vss/ANN + nomic auto-pull, 8 catalog corpus); **KB visual maps** separate; **Spoiler confidence chip** → fencing + unfenced feedback.
 - **Soft** `num_predict` **+ thinking budget** (Bugs) → **Thinking effort control**.
 - **Native QAM shortcut tile** → shorter path than Guide-chord macro docs (§5).
 - **Steam Input jump Phase 1 (shipped)** → **Steam Input layout parse**.
@@ -235,7 +258,11 @@ flowchart TD
   whisperAsk[WhisperVoiceAskShipped] --> wakeWord[WakeWordListening]
   nativeQam[NativeQamShortcutTile] -.->|shorter path| macroDocs[GuideChordMacroDocsArchived]
   ragPhase3[RagPhase3Shipped] --> ragPhase4[RagPhase4]
-  ragPhase3 --> ragPhase5[RagPhase5]
+  ragPhase4 --> ragPhase5[RagPhase5Corpus]
+  ragPhase5 --> ragPhase6[RagPhase6Publish]
+  ragPhase6 --> ragPhase7[RagPhase7Infra]
+  ragPhase6 --> ragPhase8[RagPhase8Catalog]
+  ragPhase7 -.->|helps scale| ragPhase8
   softBudget[SoftNumPredictBug] --> thinkingEffort[ThinkingEffortControl]
 ```
 

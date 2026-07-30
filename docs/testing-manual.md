@@ -106,7 +106,7 @@ BPM (Desktop → Big Picture → QAM → bonsAI). Ollama reachable.
 | **Permissions cleanup** | PERMS-CLEAN-01…06 — About/Steam links no gate; no Open web links / Adjust power limits toggles; no journal / intent-pack / Response verification UI; troubleshoot hint dismissible |
 | **Token streaming** | STREAM-01…05 spot; Strategy spoiler stream if flag on |
 | **Strategy depth** | Spoiler policy, checklist persist, cheat gating |
-| **KB** | KB-SMOKE-03, 05–10; KB-EVAL-01 before Phase 5 |
+| **KB** | KB-SMOKE-03, 05–10; KB-EVAL-01 before Phase 6 |
 | **Character / Pyro** | One preset Ask; Pyro easter egg if touching character |
 | **mDNS / Desktop notes / Model policy** | Spot when those paths change |
 | **Voice STT** | VOICE-01…07 (mic required) |
