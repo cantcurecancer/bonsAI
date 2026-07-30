@@ -202,7 +202,7 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
       "backend.services.knowledge_base_service.nomic_embed_available",
       return_value=False,
     ), mock.patch(
-      "backend.services.knowledge_base_service.corpus_has_usable_vectors",
+      "backend.services.knowledge_base_service.corpus_has_usable_section_vectors",
       return_value=True,
     ):
       result = retrieve_knowledge_context(
@@ -226,7 +226,7 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
       "backend.services.knowledge_base_service.nomic_embed_available",
       return_value=True,
     ), mock.patch(
-      "backend.services.knowledge_base_service.corpus_has_usable_vectors",
+      "backend.services.knowledge_base_service.corpus_has_usable_section_vectors",
       return_value=True,
     ), mock.patch(
       "backend.services.knowledge_base_service.embed_texts",
@@ -260,7 +260,7 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
       "backend.services.knowledge_base_service.nomic_embed_available",
       return_value=True,
     ), mock.patch(
-      "backend.services.knowledge_base_service.corpus_has_usable_vectors",
+      "backend.services.knowledge_base_service.corpus_has_usable_section_vectors",
       return_value=True,
     ), mock.patch(
       "backend.services.knowledge_base_service.embed_texts",
@@ -278,7 +278,7 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
     self.assertTrue(result.attached)
     self.assertEqual(result.retrieval_method, "keyword_embed_unavailable")
 
-  def test_compat_domain_unchanged_without_hybrid(self):
+  def test_compat_hybrid_reranks_when_nomic_available(self):
     settings = {
       "use_local_knowledge_base": True,
       "rag_corpus_path": str(SEED_DB.parent),
@@ -287,22 +287,81 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
       "backend.services.knowledge_base_service.nomic_embed_available",
       return_value=True,
     ), mock.patch(
-      "backend.services.knowledge_base_service.corpus_has_usable_vectors",
+      "backend.services.knowledge_base_service.corpus_has_usable_compat_vectors",
       return_value=True,
     ), mock.patch(
       "backend.services.knowledge_base_service.embed_texts",
-    ) as embed_mock:
+      return_value=[[1.0, 0.0] + [0.0] * 766],
+    ), mock.patch(
+      "backend.services.knowledge_base_service._load_compat_vectors",
+      return_value={
+        1: [1.0, 0.0] + [0.0] * 766,
+        2: [0.0, 1.0] + [0.0] * 766,
+      },
+    ):
       result = retrieve_knowledge_context(
         settings,
         ask_mode="speed",
         question="why is my game crashing proton issue",
-        app_id="2321470",
-        app_name="Deep Rock Galactic: Survivor",
+        app_id="",
+        app_name="",
         domain="compat",
         pc_ip="127.0.0.1:11434",
       )
-    embed_mock.assert_not_called()
+    self.assertTrue(result.attached)
+    self.assertEqual(result.retrieval_method, "hybrid")
+    self.assertIn("Proton", result.text_block)
+
+  def test_compat_keyword_when_nomic_missing(self):
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    with mock.patch(
+      "backend.services.knowledge_base_service.nomic_embed_available",
+      return_value=False,
+    ), mock.patch(
+      "backend.services.knowledge_base_service.corpus_has_usable_compat_vectors",
+      return_value=True,
+    ):
+      result = retrieve_knowledge_context(
+        settings,
+        ask_mode="speed",
+        question="proton shader cache deck",
+        app_id="",
+        app_name="",
+        domain="compat",
+        pc_ip="127.0.0.1:11434",
+      )
+    self.assertTrue(result.attached)
     self.assertEqual(result.retrieval_method, "keyword")
+
+  def test_compat_embed_failure_falls_back(self):
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    with mock.patch(
+      "backend.services.knowledge_base_service.nomic_embed_available",
+      return_value=True,
+    ), mock.patch(
+      "backend.services.knowledge_base_service.corpus_has_usable_compat_vectors",
+      return_value=True,
+    ), mock.patch(
+      "backend.services.knowledge_base_service.embed_texts",
+      side_effect=OllamaEmbedError("timeout"),
+    ):
+      result = retrieve_knowledge_context(
+        settings,
+        ask_mode="speed",
+        question="proton crash deck sleep",
+        app_id="",
+        app_name="",
+        domain="compat",
+        pc_ip="127.0.0.1:11434",
+      )
+    self.assertTrue(result.attached)
+    self.assertEqual(result.retrieval_method, "keyword_embed_unavailable")
 
   def test_vector_pack_unpack_roundtrip(self):
     vec = [0.1, -0.2, 0.3]

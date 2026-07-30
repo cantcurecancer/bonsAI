@@ -4,6 +4,8 @@ from pathlib import Path
 from unittest import mock
 
 from backend.services.knowledge_base_schema import (
+    corpus_has_usable_compat_vectors,
+    corpus_has_usable_section_vectors,
     corpus_has_usable_vectors,
     default_corpus_dir_internal,
     default_corpus_dir_sd,
@@ -66,6 +68,21 @@ class KnowledgeBaseSchemaPathTests(unittest.TestCase):
         )
         self.assertFalse(corpus_has_usable_vectors(conn, {"embeddings_populated": False}))
         self.assertTrue(corpus_has_usable_vectors(conn, {"embeddings_populated": True}))
+
+    def test_corpus_has_usable_compat_vectors(self):
+        import sqlite3
+
+        conn = sqlite3.connect(":memory:")
+        conn.execute(
+            "CREATE TABLE compat_pattern_vectors (pattern_id INTEGER PRIMARY KEY, embedding BLOB)"
+        )
+        conn.execute(
+            "INSERT INTO compat_pattern_vectors(pattern_id, embedding) VALUES (1, ?)",
+            (pack_embedding_vector([0.1, 0.2]),),
+        )
+        self.assertTrue(corpus_has_usable_compat_vectors(conn))
+        self.assertTrue(corpus_has_usable_vectors(conn))
+        self.assertFalse(corpus_has_usable_section_vectors(conn))
 
 
 if __name__ == "__main__":

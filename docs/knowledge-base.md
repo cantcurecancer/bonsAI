@@ -83,7 +83,7 @@ Replies should use existing `bonsai-cite` markers; spoilery cards obey `bonsai-s
 |-------|--------|
 | **v1 (shipped)** | FTS5, on-Deck download (or Dev-tab seed), Model A consent, Ollama tab UI |
 | **Phase 2 (shipped 2026-07-28)** | Hybrid retrieval for **Strategy / per-game section cards only**: bake vectors in `build_rag_db.py`; query embed via Ollama `/api/embed` (`nomic-embed-text`) on the **same host as Ask**; **FTS shortlist → cosine re-rank**; soft UI hint to install `nomic` (no auto-pull; Ask never blocked). User-facing transparency labels: **Keyword + meaning** (hybrid), **Keyword search**, **Keyword search (embed unavailable)**. Dev-tab vectorized seed first. |
-| **Phase 3 (discovery locked 2026-07-28)** | **Compat/troubleshooting hybrid** on shared `compat_patterns` tip sheet + **corpus maturity** (~100–150 platform-tagged tips; interim **11-title** strategy mix). Done = code + Dev-tab/seed + smoke QA + small eval set (~20–30 queries). **Not** public HF. See [roadmap.md](roadmap.md) Planned row. |
+| **Phase 3 (shipped 2026-07-29)** | **Compat/troubleshooting hybrid** on shared `compat_patterns` tip sheet (~124 platform-tagged maintainer tips) + **corpus maturity** (interim **11-title** strategy seed, 22 section cards). Schema v2: `compat_patterns_fts`, `compat_pattern_vectors`. Show details **Source: shared troubleshooting tips**. Eval set `tests/fixtures/kb_eval_v0.json`. **Not** public HF (→ Phase 5). |
 | **Phase 4** | Session RAG preset chip vector ranking; structured enemy/item cards; per-game AppID compat rows (option 3 from Phase 3 brainstorm). |
 | **Phase 5** | Hugging Face + GitHub Releases **public** corpus publish after extended on-Deck testing + **legal** double-check (closes **KB-DOWNLOAD** Partial). |
 
@@ -148,7 +148,7 @@ Replies should use existing `bonsai-cite` markers; spoilery cards obey `bonsai-s
 
 ### Related (not Phase 2 / 3 code)
 
-- **Spoiler confidence chip** — Planned Near-term in [roadmap.md](roadmap.md); docs-only until owner decisions; implement later.
+- **Spoiler confidence chip** — Planned Near-term in [roadmap.md](roadmap.md); decisions locked 2026-07-29 (bands, heuristics + same-Ask risk tag, transparency-only); ready to implement. Related Planned: user-adjustable fencing, unfenced-spoiler feedback.
 - **KB visual maps** — separate Planned row; light prelim only.
 
 ## Related docs

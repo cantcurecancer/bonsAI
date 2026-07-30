@@ -311,6 +311,7 @@ async def run_game_ai_request(
             sources=[],
             notes="",
             timing_ms={},
+            kb_domain="",
         )
         kb_text = ""
         should_kb, kb_domain = should_retrieve_knowledge(
@@ -354,6 +355,7 @@ async def run_game_ai_request(
                 timing_ms=kb_result.timing_ms,
                 unavailable_reason=kb_result.unavailable_reason,
                 retrieval_method=kb_result.retrieval_method,
+                kb_domain=kb_domain,
             )
             if kb_result.attached:
                 kb_text = kb_result.text_block

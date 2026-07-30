@@ -1,4 +1,4 @@
-"""On-Deck knowledge base retrieval (FTS5 + optional hybrid vector re-rank for Strategy)."""
+"""On-Deck knowledge base retrieval (FTS5 + optional hybrid vector re-rank)."""
 
 from __future__ import annotations
 
@@ -16,7 +16,8 @@ from backend.services.knowledge_base_schema import (
     TRUST_TIER_FALLBACK,
     TRUST_TIER_WIKI_NO_PATCH,
     TRUST_TIER_WIKI_VERIFIED,
-    corpus_has_usable_vectors,
+    corpus_has_usable_compat_vectors,
+    corpus_has_usable_section_vectors,
     load_manifest_from_path,
     normalize_alias,
     resolve_corpus_db_path,
@@ -157,6 +158,22 @@ def _resolve_game_id(
     return None, "unresolved"
 
 
+def _trust_tier_for_compat_row(row: sqlite3.Row) -> str:
+    if row["source_url"]:
+        return TRUST_TIER_WIKI_NO_PATCH
+    return TRUST_TIER_FALLBACK
+
+
+def _fts_match_query(query: str) -> str:
+    q = (query or "").strip()
+    if not q:
+        return ""
+    tokens = re.findall(r"\w+", q)[:12]
+    if not tokens:
+        return ""
+    return " OR ".join(f'"{tok}"' for tok in tokens)
+
+
 def _trust_tier_for_row(row: sqlite3.Row) -> str:
     if row["source_version"]:
         return TRUST_TIER_WIKI_VERIFIED
@@ -181,6 +198,62 @@ def _load_corpus_manifest(settings: dict) -> Optional[dict[str, Any]]:
 def _dot_similarity(a: list[float], b: list[float]) -> float:
     """Cosine similarity for L2-normalized Ollama embeddings (dot product)."""
     return sum(x * y for x, y in zip(a, b))
+
+
+def _load_compat_vectors(conn: sqlite3.Connection, pattern_ids: list[int]) -> dict[int, list[float]]:
+    if not pattern_ids:
+        return {}
+    placeholders = ",".join("?" for _ in pattern_ids)
+    rows = conn.execute(
+        f"SELECT pattern_id, embedding FROM compat_pattern_vectors "
+        f"WHERE pattern_id IN ({placeholders}) AND embedding IS NOT NULL",
+        pattern_ids,
+    ).fetchall()
+    out: dict[int, list[float]] = {}
+    for row in rows:
+        vec = unpack_embedding_vector(bytes(row["embedding"]))
+        if vec:
+            out[int(row["pattern_id"])] = vec
+    return out
+
+
+def _compat_row_to_card(row: sqlite3.Row) -> KnowledgeCard:
+    return KnowledgeCard(
+        section_id=int(row["pattern_id"]),
+        game_id=0,
+        game_title="Shared troubleshooting",
+        section_type="tip",
+        name=str(row["topic"] or ""),
+        card=str(row["card"] or ""),
+        source_url=str(row["source_url"] or ""),
+        source_license=str(row["source_license"] or ""),
+        source_version=None,
+        crawled_at=None,
+        trust_tier=_trust_tier_for_compat_row(row),
+    )
+
+
+def _search_compat_patterns(
+    conn: sqlite3.Connection,
+    *,
+    query: str,
+    top_k: int,
+) -> list[KnowledgeCard]:
+    fts_q = _fts_match_query(query)
+    if not fts_q:
+        return []
+    sql = (
+        "SELECT p.pattern_id, p.topic, p.platforms, p.card, p.source_url, p.source_license "
+        "FROM compat_patterns_fts f "
+        "JOIN compat_patterns p ON p.pattern_id = f.rowid "
+        "WHERE compat_patterns_fts MATCH ? "
+        "ORDER BY rank LIMIT ?"
+    )
+    try:
+        rows = conn.execute(sql, (fts_q, top_k)).fetchall()
+    except sqlite3.Error:
+        return []
+    return [_compat_row_to_card(row) for row in rows]
 
 
 def _load_section_vectors(conn: sqlite3.Connection, section_ids: list[int]) -> dict[int, list[float]]:
@@ -227,14 +300,7 @@ def _search_sections(
     query: str,
     top_k: int,
 ) -> list[KnowledgeCard]:
-    q = (query or "").strip()
-    if not q:
-        return []
-    # FTS5 MATCH — OR-join tokens for recall (AND is too strict with query expansion).
-    tokens = re.findall(r"\w+", q)[:12]
-    if not tokens:
-        return []
-    fts_q = " OR ".join(f'"{tok}"' for tok in tokens)
+    fts_q = _fts_match_query(query)
     if not fts_q:
         return []
     if game_id is not None:
@@ -301,12 +367,9 @@ def _genre_fallback(conn: sqlite3.Connection, game_id: Optional[int]) -> Optiona
 
 
 def _compat_fallback(conn: sqlite3.Connection, question: str) -> Optional[str]:
-    _ = question
-    row = conn.execute(
-        "SELECT card, source_url FROM compat_patterns WHERE topic = 'proton' LIMIT 1"
-    ).fetchone()
-    if row:
-        return str(row["card"])
+    tips = _search_compat_patterns(conn, query=question, top_k=1)
+    if tips:
+        return tips[0].card
     return None
 
 
@@ -327,9 +390,12 @@ def _format_block(
         trust = cards[0].trust_tier
         for c in cards:
             tier = c.trust_tier
-            lines.append(
-                f"\n[{c.game_title} / {c.section_type}: {c.name}] (trust: {tier})\n{c.card}"
-            )
+            if domain == "compat":
+                lines.append(f"\n[Tip: {c.name}] (trust: {tier})\n{c.card}")
+            else:
+                lines.append(
+                    f"\n[{c.game_title} / {c.section_type}: {c.name}] (trust: {tier})\n{c.card}"
+                )
             if c.source_url:
                 sources.append(
                     {
@@ -411,14 +477,23 @@ def retrieve_knowledge_context(
 
         expanded = _expand_query(question, app_name)
         manifest = _load_corpus_manifest(settings)
-        hybrid_eligible = domain == "strategy" and game_id is not None
-        has_vectors = hybrid_eligible and corpus_has_usable_vectors(conn, manifest)
-        nomic_ready = has_vectors and nomic_embed_available(pc_ip, model=DEFAULT_EMBEDDING_MODEL)
 
-        t_fts = time.perf_counter()
-        fts_k = HYBRID_FTS_SHORTLIST_K if nomic_ready else top_k
-        cards = _search_sections(conn, game_id=game_id, query=expanded, top_k=fts_k)
-        fts_ms = round((time.perf_counter() - t_fts) * 1000, 2)
+        if domain == "compat":
+            has_vectors = corpus_has_usable_compat_vectors(conn, manifest)
+            nomic_ready = has_vectors and nomic_embed_available(pc_ip, model=DEFAULT_EMBEDDING_MODEL)
+            t_fts = time.perf_counter()
+            fts_k = HYBRID_FTS_SHORTLIST_K if nomic_ready else top_k
+            cards = _search_compat_patterns(conn, query=expanded, top_k=fts_k)
+            fts_ms = round((time.perf_counter() - t_fts) * 1000, 2)
+            resolution = "compat_tips"
+        else:
+            hybrid_eligible = domain == "strategy" and game_id is not None
+            has_vectors = hybrid_eligible and corpus_has_usable_section_vectors(conn, manifest)
+            nomic_ready = has_vectors and nomic_embed_available(pc_ip, model=DEFAULT_EMBEDDING_MODEL)
+            t_fts = time.perf_counter()
+            fts_k = HYBRID_FTS_SHORTLIST_K if nomic_ready else top_k
+            cards = _search_sections(conn, game_id=game_id, query=expanded, top_k=fts_k)
+            fts_ms = round((time.perf_counter() - t_fts) * 1000, 2)
 
         if nomic_ready and cards:
             t_embed = time.perf_counter()
@@ -432,7 +507,10 @@ def retrieve_knowledge_context(
                 query_vector = query_vectors[0]
                 embed_ms = round((time.perf_counter() - t_embed) * 1000, 2)
                 t_rerank = time.perf_counter()
-                vectors_by_id = _load_section_vectors(conn, [c.section_id for c in cards])
+                if domain == "compat":
+                    vectors_by_id = _load_compat_vectors(conn, [c.section_id for c in cards])
+                else:
+                    vectors_by_id = _load_section_vectors(conn, [c.section_id for c in cards])
                 cards = _rerank_cards_by_vector(
                     cards,
                     query_vector,

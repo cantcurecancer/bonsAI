@@ -18,6 +18,18 @@ Active features, maintainer tasks, and **known defects**. *QAMP Phase 1 (safe de
 - ★★ **Main tab answer D-pad scroll choppy / multi-line jumps:** Scrolling the Strategy reply with D-pad Down still advances many lines per press (choppy, hard to read line-by-line). Do not remove scroll-step logic until on-Deck confirmation after multi-day QA. Regression row: **D-PAD-SCROLL-02** in `docs/testing.md`.
 - ★★ **Live-turn transparency UI missing after successful Ask:** Backend `ensure_context_chips_on_snapshot` + slimmer dev chip JSON + frontend `transparencyUiAvailable` gating; verify **CONTEXT-LADDER-01** on Deck.
 - ★★ **Strategy live-turn D-pad graph skips branches/feedback:** Geometry scroll gate + yield-to-parent (`return false`) with Focusable branch picker as turn-slot sibling; verify **MICRO-04** on Deck.
+- ★★★ **Soft** `num_predict` **+ thinking budget:** `options.num_predict` is a hard Ollama wall (500 Speed/Expert, 900 Strategy) with no overshoot/continue; `"think": False` avoids empty replies when thinking ate the wall (`done_reason=length`, zero content) but leaves quality on the table for thinking models. **Intent:** length preference with small overshoot OK — not a hard cut, not unlimited. **Fix lean:** (1) raise base caps; (2) continuation on `done_reason=length` (small extra budget, capped continues — especially when content empty/short); (3) optional Reply verbosity → answer `num_predict`; (4) **budget thinking separately** (application policy): re-enable thinking with a fixed Deck default effort (`low`/`medium`) plus answer-floor / continue-if-content-starved; log thinking vs content lengths. Ollama has no true dual hard budgets in one completion — levels + continue stand in. **Not in scope:** delete the ceiling entirely; Settings UI for effort (→ **Thinking effort control**); parallel second Ask; spoiler chip work.
+- ★ **Keep-alive slider focus outline (1px):** White gpfocus ring on **Keep models loaded** thumb sits slightly high; shift outline **1px down**. Discovery locked 2026-07-29.
+- ★ **KB Update / Remove button sizing:** Match vertical height; make **Update knowledge base** slightly wider (more plugin width). Screenshot `DeckCapture_20260729_225126`. Discovery locked 2026-07-29.
+- ★ **Reply language default display:** About dropdown should show **Follow system** (schema default is already `follow_system`); closed control often shows placeholder **Language**. Discovery locked 2026-07-29.
+- ★ **Preset chips append game title:** Stop injecting running Steam title into Ask text (`joinPresetWithRunningGame` / “this game” + `— {Game}`); redundant with session game context. Discovery locked 2026-07-29.
+- ★★ **Ollama Install / Update label without Test connection:** On Ollama tab open, **Install Ollama** vs **Update AI & models** should reflect readiness without requiring **Test connection** (auto-probe / same reachable signal). Discovery locked 2026-07-29.
+- ★★ **KB Update / Remove D-pad vertical:** Left/Right between the pair is fine; Up/Down currently hop to each other (wired as stacked rows). Both: Up → KB toggle, Down → Reply style. Discovery locked 2026-07-29.
+- ★★ **Test connection Up skips Install options:** With **Run AI on this Deck**, Up from **Test connection** jumps to the local toggle; should go to **Install options…** (wire full local-setup vertical chain). Discovery locked 2026-07-29.
+- ★★ **Strategy placeholder shifts on focus:** Empty Strategy Ask field — fake caret inline before “Describe the level, boss…” pushes the placeholder; caret must not reflow that text. Discovery locked 2026-07-29.
+- ★★ **Models & routing buttons + try order:** (1) Restyle white bare `Button`s to glass (`SETTINGS_GLASS_BTN`). (2) Text/vision try-order modal fails / “no models” despite installs — fetch installed tags on open (don’t rely only on prior Test connection); ensure reorder+save sticks. Ties to Install/Update auto-probe. Screenshot `DeckCapture_20260729_223502`. Discovery locked 2026-07-29.
+- ★★★ **LB/RB tab switch flicker when scrolled:** Switching tabs with shoulder buttons while focus is deep in a scrolled panel (not on tab icons) flashes/jitters. Investigate carousel + remount/scroll/focus survival (partial anti-flicker CSS already on `TabContentsScroll`). Discovery locked 2026-07-29.
+
 
 
 ### Active work
@@ -39,16 +51,31 @@ Stars are **effort/risk** within bands (GTA scale in the header). Items below ar
 
 Maintainers may move items between horizons after discussion; if you want different definitions (e.g. time-boxed quarters), say so in an issue or PR.
 
-**The April 2026 release-window requirements freeze has ended.**
-
 **GitHub tracking:** Each **Planned** item rated **★★★★★** or **★★★★★★** includes a placeholder link to **[bonsAI Issues](https://github.com/cantcurecancer/bonsAI/issues)** for eventual per-feature tickets (replace with a specific issue URL when created).
 
 **Planned titles:** Short **noun-first** label (about 3-6 words, roughly one line); put secondary context in **parentheses** (brainstorm letter, phase, platform, research spike, dedup). Spell out detail under **Goal** / **Primary work**, not in the title.
 
 ### Near-term
 
-Within this section: ascending stars (★★ → ★★★ → ★★★★). Brainstorm letters **B**, **J–N**, **S**, **V**: [roadmap_feature_ideas plan](../.cursor/plans/roadmap_feature_ideas_f5560e15.plan.md).
+Within this section: ascending stars (★ → ★★★ → ★★★★). Brainstorm letters **B**, **J–N**, **S**, **V**: [roadmap_feature_ideas plan](../.cursor/plans/roadmap_feature_ideas_f5560e15.plan.md).
 
+- ★ **Remove Open web links permission** (always allow user-initiated opens — discovery locked 2026-07-29)
+  - **Goal:** Drop `external_navigation` capability. User-tapped docs/GitHub (`NavigateToExternalWeb`) and Steam settings / Steam Input jumps always allowed — no Permissions toggle.
+  - **Not in scope:** AI-initiated arbitrary URL opens (none today).
+- ★★ **Obsolete Proton experiment journal** (Settings form + inject — discovery locked 2026-07-29)
+  - **Goal:** Obsolete the Proton experiment journal UI and inject path (AppID / version / Suggest from log / launch options / outcome / note / list / clear / inject toggle). Attach Proton logs handled under **Fold Proton logs into game-context permission** + **Troubleshooting permission hint**.
+  - **Follow-up:** Later review whether any of this is worth keeping, cleaning up, or moving to Developer — not a hard forever-delete without that pass.
+  - **Not in scope:** removing Steam/Proton log *read* capability or auto-attach (see permission fold + hint rows).
+- ★★ **Obsolete Search intent packs UI** (Import/Export — discovery locked 2026-07-29)
+  - **Goal:** Obsolete Settings **Search intent packs** exchange UI (**Import from clipboard**, Export, section around it).
+  - **Follow-up:** Later review — drop entirely vs quiet bundled aliases vs revive under Developer.
+  - **Not in scope:** rewriting unified search ranking in the same change.
+- ★★ **Fold Proton logs into game-context permission** (discovery locked 2026-07-29)
+  - **Goal:** When **Read game & screenshot context** is on, auto-attach Proton logs on troubleshooting Asks; remove buried Settings **Attach Proton logs…** toggle. Clarify permission title/description (screenshots + Proton/game logs).
+  - **Depends on / related:** **Troubleshooting permission hint**; obsolete journal row removes the Settings neighborhood around the old toggle.
+- ★★ **Troubleshooting permission hint** (discovery locked 2026-07-29)
+  - **Goal:** Hint-only: on troubleshooting-style Asks, if game/screenshot/Proton context permission is off, suggest enabling it (dismissible; never auto-enable). No experiment-journal path.
+  - **Depends on:** **Fold Proton logs into game-context permission** (clearer permission copy).
 - ★★ **Prompt testing pass** (beyond shipped MVP)
   - **Goal:** Broader systematic validation and tuning beyond the shipped doc MVP (see **Completed** → Prompt-testing MVP; working matrices in [testing.md](testing.md)).
 - ★★ **Preset chip expansion** (streaming / LAN / Steam Input — incremental, N)
@@ -58,18 +85,38 @@ Within this section: ascending stars (★★ → ★★★ → ★★★★). Br
   - **Files:** `src/data/presets.ts`, optional docs cross-links.
   - **Depends on:** shipped preset carousel + category routing.
   - **Not in scope:** treating each string batch as a versioned feature ship. **AppID/session RAG dynamic chips** → **Session RAG preset chips** (separate Planned row).
-- ★★ **Spoiler confidence chip** (transparency estimate — implement later)
-  - **Goal:** Concise Show details / context-chip estimate of spoiler likelihood on Strategy (and KB-grounded) Asks — e.g. chip text like `Spoilers ~65%` or `Spoiler risk: med` (wording must stay very short for Deck chips).
-  - **Status:** Docs-only until scoped; **not** part of **RAG Deck query — hybrid vectors (Phase 2)** implementation.
-  - **Open decisions (owner before implement):**
-    1. **Scale:** percent (`Spoilers ~65%`) vs bands (`Spoiler risk: high` / `med` / `low`)?
-    2. **Heuristic inputs:** which signals (Ask mode, KB boss/entity hit, spoiler masking on, user spoilers-OK)? Label expanded details as **estimate** if not calibrated.
-    3. **When to show:** Strategy-only? Only when KB attached? Never on Speed?
-    4. **Effect:** transparency-only vs changing `bonsai-spoiler` fencing / tap-to-reveal behavior (*lean transparency-only* until **Strategy spoiler false-positive** is fixed).
-    5. **Max chip length** for QAM (target ≤ ~18 characters).
-    6. **Ship timing:** after spoiler false-positive fix, with hybrid Phase 2, or standalone?
+- ★★ **Spoiler confidence chip** (transparency estimate — decisions locked 2026-07-29)
+  - **Goal:** Concise Show details context-chip estimate of topic spoiler likelihood on **all Ask modes** — chip label `Spoiler risk: med` (bands `low` / `med` / `high`; keep ≤ ~18 chars).
+  - **Status:** Decisions locked; ready to implement (standalone). Distinct from hybrid retrieval.
+  - **Discovery locked (2026-07-29):**
+    1. **Scale:** bands only (`Spoiler risk: low` / `med` / `high`) — not percents.
+    2. **Score inputs (topic risk, not hide policy):** (a) genre (moderate weight); (b) question intent; (c) KB `section_type` of hits; (d) entity-match quality; (e) same-Ask model tag `<bonsai-spoiler-risk>…</bonsai-spoiler-risk>` emitted when model rates ≥ **med**, stripped like `<bonsai-status>` — ~**60%** weight when parsed, else heuristic-only. Ask mode, spoiler **masking**, and phrase **consent** do **not** feed the score (consent/masking = whether we hide; chip = how spoilery the topic is). Always show the risk band even when consent is on. Show details marks the band an **estimate**.
+    3. **When to show:** Always (all modes), under **Show details** / context chip ladder.
+    4. **Effect (v1):** transparency-only — no change to `bonsai-spoiler` fencing / tap-to-reveal. Fencing thresholds → **User-adjustable spoiler fencing**.
+    5. **Streaming:** heuristic chip ASAP; hide only incomplete fences / incomplete risk tags (not the whole bubble); blend when a med+ risk tag **closes**.
+    6. **Ship timing:** now (standalone). No parallel / second Ollama Ask for rating (AAA load/unload risk).
+  - **Primary work:** Heuristic scorer + chip in `transparency_service` / context ladder; prompt + parse for risk tag; Show details breakdown (signals + estimate honesty); tests + [testing.md](testing.md) smoke row.
   - **Depends on:** Context chip ladder / Show details; Strategy spoiler policy ([testing.md](testing.md) § Spoiler Policy).
-  - **Not in scope (v1 of chip):** Calibrated ML probability; long prose in the chip; claiming precise odds without honesty in expanded Show details.
+  - **Related (separate rows):** **User-adjustable spoiler fencing**; **Unfenced spoiler feedback**; corpus `spoiler_class` later for accuracy.
+  - **Not in scope (v1):** Calibrated ML probability; percent chip copy; parallel rater Ask; changing fencing from this chip; long prose in the chip.
+- ★★ **Unfenced spoiler feedback** (thumbs-down category — docs until implement)
+  - **Goal:** After thumbs-down, add a refinement chip for **unfenced spoilers** (reply leaked story spoilers outside `bonsai-spoiler` fences); optional sibling for **over-fenced / false spoiler** (ties to Strategy spoiler false-positive). Improves **future** Asks / prompt calibration — does not fix the current turn.
+  - **Depends on:** shipped reply micro-actions / thumbs-down chips; **Spoiler confidence chip** signals useful for later aggregates.
+  - **Not in scope:** auto-re-Ask rewrite on the same turn; cloud sync of ratings.
+- ★★ **User-adjustable spoiler fencing** (hide by risk band — docs until implement)
+  - **Goal:** Settings control for when to apply tap-to-reveal / fence masking from estimated risk — e.g. hide when risk ≥ **high** / **med** / **low**, or **never hide**. Consumes the locked **Spoiler confidence chip** band; does not replace phrase consent.
+  - **Depends on:** **Spoiler confidence chip** (band available); shipped `strategy_spoiler_masking_enabled` / tap-to-reveal path.
+  - **Not in scope:** chip v1 code; calibrated probability; changing consent phrase matching.
+- ★★ **Thinking effort control** (Settings Off / Low / Medium / High)
+  - **Goal:** User-adjustable Ollama thinking effort mapped to `think: false | "low" | "medium" | "high"` (global v1; per-mode later optional). Honest copy that thinking models may reason longer; non-thinking models ignore.
+  - **Depends on:** **Soft** `num_predict` **+ thinking budget** (Bugs) — safe default + answer-floor/continue before exposing Settings.
+  - **Not in scope:** shipping Settings before the soft-budget bug fix; exposing raw `message.thinking` in the chat bubble (optional Developer later); parallel Ask; unlimited generation.
+- ★★★ **Obsolete tiny-model blurbs + response verify; power limits read-only** (discovery locked 2026-07-29)
+  - **Goal:** (1) Remove optional tiny-Ollama thinking-status path (`thinking_status_tiny_model_enabled` / `thinking_tiny_model_service`) — keeps competing for resources; retain normal italic status lines. (2) Remove Ollama **Response verification** section (rules, second-pass model, verifier tag) and backend verify path. (3) Remove **Adjust power limits** permission and any apply/write path — TDP/GPU suggestions stay **read-only** (discuss only).
+  - **Not in scope:** removing witty/deterministic thinking status copy; QAMP Phase 2 profile sync.
+- ★★★ **Dynamic keep-alive / smart unload** (research spike — discovery locked 2026-07-29)
+  - **Goal:** Research-only: can we hold models loaded (long/`-1` keep-alive + unload on plugin unload) and heuristically unload when a game takes focus, safely on Deck APU shared memory? Spike outcome decides experimental hold+unload vs long presets only vs drop. No ship commitment until spike writes go/no-go.
+  - **Not in scope:** promising true per-game VRAM requirement detection; implementing production unload heuristics before the spike doc.
 - ★★★ **Per-mode latency timeouts** (warn vs hard limit profiles)
   - **Goal:** Separate warning and timeout values per selected mode.
   - **Primary work:** mode-keyed settings schema and runtime value resolution.
@@ -83,16 +130,21 @@ Within this section: ascending stars (★★ → ★★★ → ★★★★). Br
   - Verify behavior after Steam restart and full reboot.
   - Verify behavior when prompt includes GPU clock recommendations.
 - ★★★ **Custom model in Pull Models picker** (custom pull + Ask pin + New badges)
-  - **Goal:** Let users pull any valid Ollama-library tag not yet in the curated/living catalog, opt it in for Ask via a global **Use for Ask** toggle, and spot recently released catalog models via a **New** badge (released within 30 days). Custom pull is a **backup** to the living overlay ([`data/pull-model-catalog-overlay.json`](../data/pull-model-catalog-overlay.json)); opening the picker triggers a **background catalog refresh** when overlay data is stale (e.g. >24h since last successful fetch).
-  - **Primary work:** **Phase 1 — Pull UI:** footer **Add custom model…** → nested modal (`TextField` + validate + single-tag pull via existing `pull_ollama_models` / `_start_custom_ollama_pull` with `profile: "custom"`). Surfaces: [`PullModelsModal.tsx`](../src/components/PullModelsModal.tsx) fullscreen + [`OllamaModelsHubModal.tsx`](../src/components/OllamaModelsHubModal.tsx) embedded mode only. **Phase 1 — Ask pin:** per-row **Use for Ask** toggle on all rows; exactly one global preferred tag in settings (v1: same tag for Speed / Strategy / Expert); default **off** after successful custom pull; read-only line in Settings → Model policy (*Preferred model: `tag` — change in Browse models*). **Phase 1 — Routing:** prepend pinned tag when installed, then existing `select_ollama_models` chain + policy filter in [`ollama_ask_service.py`](../py_modules/backend/services/ollama_ask_service.py) / [`ollama_routing.py`](../py_modules/backend/ollama_routing.py); screenshot asks fall back to the vision chain with a clear status/transparency note when the pin lacks vision (no extra confirm). **Phase 1 — Unknown metadata:** minimal row for tags not in merged catalog; generic unclassified confirm; no stretch VRAM modal when size unknown; keep registry gate ([`ollama_catalog_service.py`](../py_modules/backend/services/ollama_catalog_service.py)). **Phase 1 — Discovery:** **New** badge when catalog `releasedYm` is within 30 days ([`pullModelCatalog.ts`](../src/data/pullModelCatalog.ts)); stale refresh on picker mount in [`usePullModelCatalog.ts`](../src/hooks/usePullModelCatalog.ts). **Phase 2:** full per-mode chain editor → future **Text model chains** row; custom pull should hook to seed top chain slot.
+  - **Goal:** Let users pull any valid Ollama-library tag not yet in the curated/living catalog, opt it in for Ask via a global **Use for Ask** toggle, and spot recently released catalog models via a **New** badge (released within 30 days). Custom pull is a **backup** to the living overlay (`[data/pull-model-catalog-overlay.json](../data/pull-model-catalog-overlay.json)`); opening the picker triggers a **background catalog refresh** when overlay data is stale (e.g. >24h since last successful fetch).
+  - **Primary work:** **Phase 1 — Pull UI:** footer **Add custom model…** → nested modal (`TextField` + validate + single-tag pull via existing `pull_ollama_models` / `_start_custom_ollama_pull` with `profile: "custom"`). Surfaces: `[PullModelsModal.tsx](../src/components/PullModelsModal.tsx)` fullscreen + `[OllamaModelsHubModal.tsx](../src/components/OllamaModelsHubModal.tsx)` embedded mode only. **Phase 1 — Ask pin:** per-row **Use for Ask** toggle on all rows; exactly one global preferred tag in settings (v1: same tag for Speed / Strategy / Expert); default **off** after successful custom pull; read-only line in Settings → Model policy (*Preferred model:* `tag` *— change in Browse models*). **Phase 1 — Routing:** prepend pinned tag when installed, then existing `select_ollama_models` chain + policy filter in `[ollama_ask_service.py](../py_modules/backend/services/ollama_ask_service.py)` / `[ollama_routing.py](../py_modules/backend/ollama_routing.py)`; screenshot asks fall back to the vision chain with a clear status/transparency note when the pin lacks vision (no extra confirm). **Phase 1 — Unknown metadata:** minimal row for tags not in merged catalog; generic unclassified confirm; no stretch VRAM modal when size unknown; keep registry gate (`[ollama_catalog_service.py](../py_modules/backend/services/ollama_catalog_service.py)`). **Phase 1 — Discovery:** **New** badge when catalog `releasedYm` is within 30 days (`[pullModelCatalog.ts](../src/data/pullModelCatalog.ts)`); stale refresh on picker mount in `[usePullModelCatalog.ts](../src/hooks/usePullModelCatalog.ts)`. **Phase 2:** full per-mode chain editor → future **Text model chains** row; custom pull should hook to seed top chain slot.
   - **Files:** `PullModelsModal.tsx`, new nested modal component, `OllamaModelsHubModal.tsx`, `usePullModelCatalog.ts`, `pullModelCatalog.ts`, `settings_service.py`, `settingsAndResponse.ts`, `settingsPayload.ts`, Model policy Settings panel, `ollama_routing.py`, `ollama_ask_service.py`, `main.py` (if RPC for pin persistence), `docs/testing.md` (D-pad + smoke when implementing).
-  - **Depends on:** shipped Pull Models picker + living overlay merge ([`mergePullModelCatalog.ts`](../src/utils/mergePullModelCatalog.ts)); `pull_ollama_models` custom profile; Ask routing (`select_ollama_models` + `build_effective_models_to_try`).
+  - **Depends on:** shipped Pull Models picker + living overlay merge (`[mergePullModelCatalog.ts](../src/utils/mergePullModelCatalog.ts)`); `pull_ollama_models` custom profile; Ask routing (`select_ollama_models` + `build_effective_models_to_try`).
   - **Not in scope:** LAN/remote `ollama pull` (see **LAN custom model pull**); Modelfile / `ollama create` UI; auto-append to maintainer overlay; full chain editor UI in v1; per-user “seen” badges; auto-pin after pull.
 - ★★★ **Search density UX** (match emphasis + tighter rows)
   - **Goal:** Tighter, more scannable results: spacing, wider lines, incremental filtering, highlighted match tokens.
   - **Files:** `src/index.tsx`, prompt/search UX test notes.
   - **Depends on:** unified search indexing and response-state handling.
   - **Not in scope:** changing ranking semantics for unrelated search domains.
+- ★★★ **KB visual maps** (strategy maps — light prelim)
+  - **Goal:** Optional visual strategy maps (areas, bosses, routes) surfaced in KB-grounded replies — deferred from Phase 3; **light prelim discovery only** until closer to implementation.
+  - **Status:** Separate from RAG hybrid/corpus phases; no code until owner expands scope.
+  - **Depends on:** mature strategy corpus + Phase 3/4 retrieval quality.
+  - **Not in scope:** Phase 3 ship; full map authoring pipeline.
 - ★★★★ **Llama.cpp provider spike** (Deck perf / replacement eval)
   - **Goal:** Research-only evaluation of whether **Deck-local llama.cpp** can beat **Deck-local Ollama** on resource cost for the same Ask quality, enough to justify a possible long-term **Ollama replacement** (maintainer cost must not outweigh wins). **No code** in this spike. Explicitly **supersedes** the 2026-05-20 Ollama-only go/no-go in [llama-cpp-provider.md](archive/spikes/llama-cpp-provider.md).
   - **Discovery locked (2026-07-17):** Baseline = Deck-local Ollama **gemma4 E2B**; spike recommends closest GGUF. Quality = envelope metrics only (TTFT, duration, tokens, context used, failures). **Go bar:** must win **both** game FPS hitch **and** peak GPU memory under load; VRAM-only wins with same GPU contest are no-go. Scorecard also records GPU busy/power (if readable), cold start→first token, warm tok/s, load/unload/keep-alive. Game load = **Deep Rock Galactic: Survivor** (fixed map/scene, pause OK, 3 runs/side). Lifecycle = sleep/resume with model loaded + long idle vs keep-alive (**match bonsAI Ollama keep-alive setting**). Measure text+stream+vision+load/unload on Deck; pull/catalog = document gaps only. Vision without peer GGUF: spike decides replacement no-go vs conditional dual-stack (still report text-only). Runtime under test = user-started server **or** noted packaging path — label which. UX cutover and model-mgmt options = recommend from evidence / list options+cost. Early abort only if streaming is unusable for Ask; ugly TTFT/chunk shape still finishes the matrix. Maintainer-cost weights: **must** API/Ask drift, support burden, dual-stack period; **should** binary/SteamOS/GPU matrix + model discovery; **note** test-surface growth.
@@ -100,12 +152,6 @@ Within this section: ascending stars (★★ → ★★★ → ★★★★). Br
   - **Expected output:** Superseding eval doc (go/no-go, phased path, risk matrix, GGUF recommendation, model-mgmt options+cost). Roadmap Files line then points at the eval doc.
   - **Files:** [docs/archive/spikes/llama-cpp-provider-eval.md](archive/spikes/llama-cpp-provider-eval.md) (to create), [llama-cpp-provider.md](archive/spikes/llama-cpp-provider.md) (supersede banner), this roadmap row.
   - **Not in scope:** Any production provider UI/code; LAN/remote llama.cpp; cloud APIs; Windows-only llama.cpp; embeddings/`nomic`; voice wake; shipping full production support.
-- ★★★★ **Session context and user stash** (deck-first context; C)
-  - **Goal:** Unified, **deck-first** context for Ask — no embeddings, no LAN companion, no cloud. Two lanes injected into the system prompt before mode/TDP tail: **(1) Live session context** — deterministic facts for *this turn* (running game/AppID, screenshot attachments, Proton/troubleshooting log excerpts when gated + relevant, TDP/sysfs snapshot when hardware topic applies); **(2) User stash** — user-editable plain-text notes (build URLs, ProtonDB tips, aliases) persisted on-device, optionally scoped per AppID, included when the user opts in or when a per-game stash matches the active title. Primary answer-quality path for **deck-only** and LAN users alike; explicit alternative to **RAG Deck query**.
-  - **Primary work:** **Phase 1 — User stash:** storage schema + size caps; Settings editor; per-Ask include toggle; inject via `early_context_suffix` / dedicated block in `[build_system_prompt](../py_modules/backend/services/ollama_prompts.py)` (same splice documented for future RAG). **Phase 2 — Session bundle:** single assembly helper (e.g. `context_bundle_service.py`) that gathers live session slices from existing paths (`[game_ai_request.py](../py_modules/backend/services/game_ai_request.py)`, `[proton_troubleshooting_logs.py](../py_modules/backend/services/proton_troubleshooting_logs.py)`, attachment prep in `[main.py](../main.py)`); token/byte budget + truncation rules; **Input transparency** and optional Main-tab **context chip** listing what was attached (stash vs live).
-  - **Files:** `py_modules/backend/services/ollama_prompts.py`, `game_ai_request.py`, `settings_service.py`, `main.py`; `src/utils/settingsAndResponse.ts`, Settings UI, `MainTab.tsx` / input transparency utils.
-  - **Depends on:** shipped **Input handling transparency**; **Capability Permission Center** (media, filesystem/log reads); `[build_system_prompt](../py_modules/backend/services/ollama_prompts.py)` layer order.
-  - **Not in scope:** embeddings, vector DBs, Chroma, outbound corpus ingest, multi-MB stash, cloud sync, auto web fetch (see **RAG Deck query**). Clipboard-only “append to Ask field” without system inject remains optional polish, not a separate ship line.
 - ★★★★ **SteamOS Share path** (capture → attach, A)
   - **Goal:** Faster path from SteamOS **Share** / capture flows into screenshot attach or Ask context where APIs allow.
   - **Primary work:** research spike on Decky/SteamOS hooks; gated integration behind capabilities.
@@ -121,7 +167,7 @@ Within this section: ascending stars (★★ → ★★★ → ★★★★). Br
 - ★★★★ **RAG Deck query — extended retrieval (Phase 4)**
   - **Goal:** Deferred RAG tracks from Phase 3 brainstorm — richer retrieval and content shapes after compat hybrid + corpus maturity ship.
   - **Discovery locked (2026-07-28):** **Session RAG preset chip** vector ranking; structured enemy/item cards; per-game AppID compat rows (option 3). Full lock: [knowledge-base.md](knowledge-base.md) § Phasing.
-  - **Depends on:** **RAG Deck query — compat hybrid + corpus maturity (Phase 3)** (Medium-term).
+  - **Depends on:** **RAG Deck query — compat hybrid + corpus maturity (Phase 3, shipped 2026-07-29)** (Medium-term).
   - **Not in scope:** public HF publish (→ Phase 5); visual maps (separate row).
 - ★★★★ **RAG Deck query — public corpus publish (Phase 5)**
   - **Goal:** Publish versioned corpus + `corpus-manifest.json` to Hugging Face (primary) and GitHub Releases mirror after extended on-Deck KB testing and **legal** double-check (ATTRIBUTIONS, licenses).
@@ -146,27 +192,14 @@ Within this section: ascending stars (★★★★ → ★★★★★ → ★�
   - **Decision points (resolve before implementation):** **R1 — Instructions only:** Deck UI captures tag + shows copy/pull instructions for the PC host (no remote execution). **R2 — Pull on Deck while Ask uses LAN:** run `ollama pull` on Deck even when routing targets LAN (usually wrong topology; likely reject). **R3 — Remote execution:** new RPC/agent runs `ollama pull` on the LAN host (secure remote path; highest lift). **R4 — Pin/routing only:** custom add sets **Use for Ask** for tags already on the LAN host; pull remains out-of-band (Konsole/PC).
   - **Primary work:** spike + pick R1–R4; if R3, security review for remote subprocess; UI parity with Deck-local custom add where honest.
   - **Files:** `main.py`, `PullModelsModal.tsx`, `OllamaWhereAiRunsSection.tsx`, connection/LAN helpers, [troubleshooting.md](troubleshooting.md).
-  - **Depends on:** **Custom model in Pull Models picker** (Deck-local v1); LAN connection test path ([`test_ollama_connection`](../main.py)).
+  - **Depends on:** **Custom model in Pull Models picker** (Deck-local v1); LAN connection test path (`[test_ollama_connection](../main.py)`).
   - **Not in scope:** choosing R1–R4 in this roadmap row; shipping without explicit mechanism sign-off.
-- ★★★★ **RAG Deck query — compat hybrid + corpus maturity (Phase 3)**
-  - **Goal:** Extend Phase 2 hybrid to **troubleshooting Asks** via a shared **`compat_patterns`** tip sheet (~100–150 platform-tagged tips) and mature the strategy corpus for an interim **11-title** game mix — without public HF publish yet.
-  - **Discovery locked (2026-07-28):** Shared tips only (not per-game AppID compat); minimal schema (`topic` + `platforms`); FTS shortlist → `nomic-embed-text` re-rank; hybrid **always** on troubleshooting Asks; Phase 2 transparency labels + Show details **Source: shared troubleshooting tips**; one Ollama-tab nomic hint; maintainer authoring on PC with **`qwen3.6:27b`**; embeddings stay **`nomic-embed-text`**. Full lock: [knowledge-base.md](knowledge-base.md) § Phase 3.
-  - **Primary work:** `compat_patterns` vectors + FTS; expand tip sheet (Deck, Machine, BPM, Wine, Windows Steam, SteamVR, Proton, gamescope, anti-cheat, streaming, Frame/FEX thin, etc.); expand `build_rag_db.py` strategy sections for L4D2, BG3, FO4, State of Emergency (PCSX2), DRG Survivor, OoT/SoH, Hades, Cyberpunk 2077, GTA SA DE, Sims 4, RDR2; labeled eval set (~20–30 queries); Dev-tab/seed QA.
-  - **Done when:** Code + vectorized seed + smoke QA (troubleshooting → **Keyword + meaning** + shared-tips bullet; Strategy regression) + eval v0. **Not** public HF (→ Phase 5).
-  - **Files:** `knowledge_base_service.py`, `knowledge_base_schema.py`, `build_rag_db.py`, `transparency_service.py`, `ollama_embed_service.py`, `game_ai_request.py`, `KnowledgeBaseSection.tsx`.
-  - **Depends on:** **RAG Deck query — hybrid vectors (Phase 2, shipped 2026-07-28)**.
-  - **Not in scope:** Session RAG chip vector ranking, structured enemy/item cards, per-game AppID compat (→ Phase 4); public HF/GitHub publish (→ Phase 5); visual maps (separate row); sqlite-vss/ANN; auto-pull nomic.
 - ★★★★ **Steam Input layout parse** (VDF → AI context)
   - **Goal:** Parse controller VDF configs and feed actionable control context to AI.
   - **Primary work:** config discovery, VDF parsing, normalization to human-readable actions.
   - **Files:** `main.py`, `src/index.tsx`.
   - **Depends on:** bundled VDF parser support.
   - **Not in scope:** editing/writing controller configs.
-- ★★★ **KB visual maps** (strategy maps — light prelim)
-  - **Goal:** Optional visual strategy maps (areas, bosses, routes) surfaced in KB-grounded replies — deferred from Phase 3; **light prelim discovery only** until closer to implementation.
-  - **Status:** Separate from RAG hybrid/corpus phases; no code until owner expands scope.
-  - **Depends on:** mature strategy corpus + Phase 3/4 retrieval quality.
-  - **Not in scope:** Phase 3 ship; full map authoring pipeline.
 - ★★★★★ **Deck health snapshot** (full diagnostics + Ollama)
   - **GitHub (tracking placeholder):** [bonsAI Issues](https://github.com/cantcurecancer/bonsAI/issues) — dedicated issue TBD.
   - **Goal:** **Read-only** full diagnostics: device/DMI (incl. BIOS where readable), SteamOS/kernel/Steam client versions, plugin/Decky fingerprint, battery snapshot + health estimate, Ollama connection quality (extend `[test_ollama_connection](../main.py)`), running game, storage free space, TDP cap read-only (`[read_current_tdp_watts](../py_modules/backend/services/tdp_service.py)`), **line excerpts** from Proton/Steam/system journals and prior-boot kernel panic markers — bounded like `[proton_troubleshooting_logs.py](../py_modules/backend/services/proton_troubleshooting_logs.py)`. Save markdown/JSON to `~/Desktop/bonsAI_logs/` when **Save files to Desktop** is on. **Supersedes** former **Support diagnostics block** (version/fingerprint copy).
@@ -242,8 +275,14 @@ Within this section: ascending stars (★★★★ → ★★★★★ → ★�
 
 ### Long-term
 
-Within this section: ★★★★★ items first (ascending stars), then ★★★★★★ items (ascending stars).
+Within this section: ascending stars (★★★★ → ★★★★★ → ★★★★★★).
 
+- ★★★★ **Session context and user stash** (deck-first context; C)
+  - **Goal:** Unified, **deck-first** context for Ask — no embeddings, no LAN companion, no cloud. Two lanes injected into the system prompt before mode/TDP tail: **(1) Live session context** — deterministic facts for *this turn* (running game/AppID, screenshot attachments, Proton/troubleshooting log excerpts when gated + relevant, TDP/sysfs snapshot when hardware topic applies); **(2) User stash** — user-editable plain-text notes (build URLs, ProtonDB tips, aliases) persisted on-device, optionally scoped per AppID, included when the user opts in or when a per-game stash matches the active title. Primary answer-quality path for **deck-only** and LAN users alike; explicit alternative to **RAG Deck query**.
+  - **Primary work:** **Phase 1 — User stash:** storage schema + size caps; Settings editor; per-Ask include toggle; inject via `early_context_suffix` / dedicated block in `[build_system_prompt](../py_modules/backend/services/ollama_prompts.py)` (same splice documented for future RAG). **Phase 2 — Session bundle:** single assembly helper (e.g. `context_bundle_service.py`) that gathers live session slices from existing paths (`[game_ai_request.py](../py_modules/backend/services/game_ai_request.py)`, `[proton_troubleshooting_logs.py](../py_modules/backend/services/proton_troubleshooting_logs.py)`, attachment prep in `[main.py](../main.py)`); token/byte budget + truncation rules; **Input transparency** and optional Main-tab **context chip** listing what was attached (stash vs live).
+  - **Files:** `py_modules/backend/services/ollama_prompts.py`, `game_ai_request.py`, `settings_service.py`, `main.py`; `src/utils/settingsAndResponse.ts`, Settings UI, `MainTab.tsx` / input transparency utils.
+  - **Depends on:** shipped **Input handling transparency**; **Capability Permission Center** (media, filesystem/log reads); `[build_system_prompt](../py_modules/backend/services/ollama_prompts.py)` layer order.
+  - **Not in scope:** embeddings, vector DBs, Chroma, outbound corpus ingest, multi-MB stash, cloud sync, auto web fetch (see **RAG Deck query**). Clipboard-only “append to Ask field” without system inject remains optional polish, not a separate ship line.
 - ★★★★★ **QAMP Phase 2 profiles** (experimental Steam opt-in)
   - **GitHub (tracking placeholder):** [bonsAI Issues](https://github.com/cantcurecancer/bonsAI/issues) — dedicated issue TBD.
   - **Status:** Backlog-only — scoped explicitly later; Phase 1 verification: [testing.md](testing.md) § QAMP Verification.
@@ -279,6 +318,8 @@ Within this section: ★★★★★ items first (ascending stars), then ★★�
     3. **Standalone or companion host:** What a non-Decky BonsAI surface would cost (separate surface, Decky-only APIs, TDP/sysfs paths, distribution) — long-range path if (1–2) are unavailable.
   - **Related:** **Global quick-launch macro** (Medium-term); when a native entry exists, refresh the macro sequence in [troubleshooting.md](troubleshooting.md).
   - **Not in scope:** Shipping a forked Steam client or undocumented UI injection as the default approach.
+
+
 
 ### Reference — vision model fallback order
 
@@ -317,27 +358,31 @@ Dependency graph and implementation notes that are not feature checklist items.
 - **Input sanitizer (shipped)** + **Input handling transparency (shipped)** → future sanitizer extensions should keep user-visible auditability.
 - **Strategy Ask mode (**`strategy`**; Strategy Guide in prompts)** (shipped) → **Strategy Guide safety and spoilers** (shipped — on-device QA: [testing.md](testing.md) § Spoiler Policy and Consent), **Strategy checklist** (shipped — per-game persistence; on-device QA: [testing.md](testing.md) § Strategy depth / `STRATEGY-CHECKLIST`).
 - **Global screenshots and vision** → richer strategy + screenshot context.
-- **Capability Permission Center** → gates filesystem, elevated tasks, hardware, Steam/Proton log reads for troubleshooting excerpts, and (future) web/search calls.
+- **Capability Permission Center** → gates filesystem, elevated tasks, Steam/Proton log reads (+ screenshots) for troubleshooting; **Remove Open web links permission** (Near-term) drops `external_navigation`; **Obsolete tiny-model blurbs + response verify; power limits read-only** removes hardware apply writes (suggestions stay read-only). **Fold Proton logs into game-context permission** + **Troubleshooting permission hint** (Near-term).
 - **Model policy tiers + disclosure UX (shipped)** → layered on **Capability Permission Center**; tiered routing + per-reply disclosure — see **Completed** → Permissions.
-- **Llama.cpp provider spike** (Deck perf / replacement eval; discovery locked 2026-07-17) → research-only; may inform deeper **Lan vs Deck provider layering** or a future replacement path atop shipped Deck-first routing defaults (**Local/runtime deck-first defaults + onboarding** — see **Completed** → Connection). Eval artifact: [llama-cpp-provider-eval.md](archive/spikes/llama-cpp-provider-eval.md) (not written yet); supersedes May 2026 POC go/no-go.
+- **Llama.cpp provider spike** (Deck perf / replacement eval; discovery locked 2026-07-17) → research-only; may inform deeper **Lan vs Deck provider layering** or a future replacement path atop shipped Deck-first routing defaults (**Local/runtime deck-first defaults + onboarding** — see **Completed** → Connection). Eval artifact: [llama-cpp-provider-eval.md](archive/spikes/llama-cpp-provider-eval.md) (not written yet); supersedes May 2026 POC go/no-go. Related: **Dynamic keep-alive / smart unload** (Near-term research spike).
 - **Local/runtime deck-first defaults + onboarding** (Completed) lays baseline routing + **Connection** onboarding; advanced provider matrix work remains backlog if needed alongside **Llama.cpp provider spike**.
 - **Restricted kids account master lock** → above permission toggles while restricted.
 - **Built on Ollama link** → shipped in About.
 - **SteamOS Media screenshot share button** → possible fast path into **Global screenshots and vision** if APIs allow.
 - **Reset session cache (shipped)** → in-memory unified-input / reply state only; see **Completed** → Tabs.
-- **Preset carousel (Phase 1 shipped)** → extends presentation without changing category routing; `PRESET_PROMPTS` **baseline (shipped)** → incremental **Preset chip expansion** (streaming / LAN / Steam Input themes) as features land — content tuning, not a distinct ship line; **Session RAG preset chips (shipped)** — AppID-aware ~30% RAG mix via offline KB curtail; **Pyro talent-manager easter egg (shipped)** adds a separate inject chip outside the trio’s `PRESET_CAROUSEL_ACTIVE_MS` window.
-- **RAG Deck query / offline KB v1** ([knowledge-base.md](knowledge-base.md)) → feeds **Session RAG preset chips** (compat + strategy curtail for running AppID); Ask-path splice remains separate. **Hybrid vectors (Phase 2)** shipped 2026-07-28 (Strategy-only re-rank). **Compat hybrid + corpus maturity (Phase 3)** discovery locked 2026-07-28 → **extended retrieval (Phase 4)** → **public publish (Phase 5)**. **KB visual maps** separate Planned row. **Spoiler confidence chip** (Near-term) is transparency-only and separate from hybrid retrieval.
+- **Preset carousel (Phase 1 shipped)** → extends presentation without changing category routing; `PRESET_PROMPTS` **baseline (shipped)** → incremental **Preset chip expansion** (streaming / LAN / Steam Input themes) as features land — content tuning, not a distinct ship line; **Session RAG preset chips (shipped)** — AppID-aware ~30% RAG mix via offline KB curtail; **Pyro talent-manager easter egg (shipped)** adds a separate inject chip outside the trio’s `PRESET_CAROUSEL_ACTIVE_MS` window. Bugs: **Preset chips append game title** (stop `joinPresetWithRunningGame`).
+- **RAG Deck query / offline KB v1** ([knowledge-base.md](knowledge-base.md)) → feeds **Session RAG preset chips** (compat + strategy curtail for running AppID); Ask-path splice remains separate. **Hybrid vectors (Phase 2)** shipped 2026-07-28 (Strategy-only re-rank). **Compat hybrid + corpus maturity (Phase 3)** shipped 2026-07-29 → **extended retrieval (Phase 4)** → **public publish (Phase 5)**. **KB visual maps** separate Planned row. **Spoiler confidence chip** (Near-term; decisions locked 2026-07-29) is transparency-only and separate from hybrid retrieval → **User-adjustable spoiler fencing** + **Unfenced spoiler feedback**.
+- **Soft** `num_predict` **+ thinking budget** (Bugs) → **Thinking effort control** (Settings); distinct from empty-reply `"think": False` reliability patch until soft budget ships.
 - **Global quick-launch macro** ↔ **Native QAM shortcut tile** (shorter macro once a direct QAM tile exists).
 - **Bundled VDF parsing** → **Steam Input layout parse** (and optional deeper parsing).
 - **Steam Input settings search + jump** → Phase 1 shipped; broader catalog deferred.
-- **Offline intent pack exchange** → offline-first search quality.
+- **Offline intent pack exchange** → **Obsolete Search intent packs UI** (Near-term; later review keep/quiet/Dev).
 - **Session context and user stash** → deck-first Ask quality; complements shipped game/vision/Proton/TDP injects and **RAG Deck query (on-Deck offline v1)**.
 - **User stash (Phase 1)** → **Input handling transparency** (show injected stash bytes and sources).
 - **Reply micro-actions** (shipped — see **Completed** → Tabs); distinct from shipped **Reply style** (global verbosity slider).
-- **Proton experiment journal (shipped 2026-07-17)** → complements Proton log attach; optional inject into troubleshooting Asks; **context chip ladder** shows journal slice in Main tab. Distinct from **Session context and user stash** (structured timeline vs freeform notes).
+- **Proton experiment journal (shipped 2026-07-17)** → **Obsolete Proton experiment journal** (Near-term; later review). Proton log attach → **Fold Proton logs into game-context permission** + **Troubleshooting permission hint**. Distinct from **Session context and user stash**.
 - **Deck health snapshot** → `steam_logs_read` + `[proton_troubleshooting_logs.py](../py_modules/backend/services/proton_troubleshooting_logs.py)` + connection test; **supersedes** removed **Support diagnostics block**; Desktop save needs `filesystem_write`.
 - **Settings persistence** → mode profiles, language override, background completion metadata; **Debug tab opt-in (Settings)** (shipped — see **Completed** → Tabs).
 - **Brainstorm letters (ecosystem E–H, companion J–N, chat R–V)** are indexed in [roadmap_feature_ideas plan](../.cursor/plans/roadmap_feature_ideas_f5560e15.plan.md); **Planned** above is canonical for horizon ordering.
+- **Ollama tab UX batch (discovery 2026-07-29):** Bugs — Install/Update label, KB D-pad + sizing, Test connection Up chain, keep-alive outline, Models & routing style/try-order, LB/RB flicker, Strategy placeholder, reply language display, preset game-title append. Planned — permission/obsolescence rows above + keep-alive spike.
+
+
 
 ```mermaid
 flowchart TD

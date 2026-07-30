@@ -9,7 +9,7 @@ import struct
 from pathlib import Path
 from typing import Any, Iterable, Optional
 
-CORPUS_SCHEMA_VERSION = 1
+CORPUS_SCHEMA_VERSION = 2
 CORPUS_MANIFEST_FILENAME = "corpus-manifest.json"
 CORPUS_DB_FILENAME = "corpus.db"
 CORPUS_ATTRIBUTIONS_FILENAME = "ATTRIBUTIONS.md"
@@ -86,13 +86,28 @@ CREATE TABLE IF NOT EXISTS genre_patterns (
 CREATE TABLE IF NOT EXISTS compat_patterns (
     pattern_id INTEGER PRIMARY KEY,
     topic TEXT NOT NULL,
+    platforms TEXT NOT NULL DEFAULT '[]',
     card TEXT NOT NULL,
     source_url TEXT,
     source_license TEXT
 );
 
+CREATE VIRTUAL TABLE IF NOT EXISTS compat_patterns_fts USING fts5(
+    topic,
+    platforms,
+    card,
+    content='compat_patterns',
+    content_rowid='pattern_id',
+    tokenize='porter unicode61'
+);
+
 CREATE TABLE IF NOT EXISTS section_vectors (
     section_id INTEGER PRIMARY KEY REFERENCES sections(section_id) ON DELETE CASCADE,
+    embedding BLOB
+);
+
+CREATE TABLE IF NOT EXISTS compat_pattern_vectors (
+    pattern_id INTEGER PRIMARY KEY REFERENCES compat_patterns(pattern_id) ON DELETE CASCADE,
     embedding BLOB
 );
 """
@@ -107,6 +122,17 @@ END;
 CREATE TRIGGER IF NOT EXISTS sections_au AFTER UPDATE ON sections BEGIN
     INSERT INTO sections_fts(sections_fts, rowid, name, card) VALUES('delete', old.section_id, old.name, old.card);
     INSERT INTO sections_fts(rowid, name, card) VALUES (new.section_id, new.name, new.card);
+END;
+
+CREATE TRIGGER IF NOT EXISTS compat_patterns_ai AFTER INSERT ON compat_patterns BEGIN
+    INSERT INTO compat_patterns_fts(rowid, topic, platforms, card) VALUES (new.pattern_id, new.topic, new.platforms, new.card);
+END;
+CREATE TRIGGER IF NOT EXISTS compat_patterns_ad AFTER DELETE ON compat_patterns BEGIN
+    INSERT INTO compat_patterns_fts(compat_patterns_fts, rowid, topic, platforms, card) VALUES('delete', old.pattern_id, old.topic, old.platforms, old.card);
+END;
+CREATE TRIGGER IF NOT EXISTS compat_patterns_au AFTER UPDATE ON compat_patterns BEGIN
+    INSERT INTO compat_patterns_fts(compat_patterns_fts, rowid, topic, platforms, card) VALUES('delete', old.pattern_id, old.topic, old.platforms, old.card);
+    INSERT INTO compat_patterns_fts(rowid, topic, platforms, card) VALUES (new.pattern_id, new.topic, new.platforms, new.card);
 END;
 """
 
@@ -268,9 +294,50 @@ def write_manifest(path: str, manifest: dict[str, Any]) -> None:
         fp.write("\n")
 
 
+def _migrate_compat_patterns_v2(conn: Any) -> None:
+    """Add Phase 3 columns/tables when opening a v1 corpus.db."""
+    row = conn.execute(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='compat_patterns'"
+    ).fetchone()
+    if not row:
+        return
+    cols = {r[1] for r in conn.execute("PRAGMA table_info(compat_patterns)").fetchall()}
+    if "platforms" not in cols:
+        conn.execute(
+            "ALTER TABLE compat_patterns ADD COLUMN platforms TEXT NOT NULL DEFAULT '[]'"
+        )
+    fts_row = conn.execute(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='compat_patterns_fts'"
+    ).fetchone()
+    if not fts_row:
+        conn.executescript(
+            """
+            CREATE VIRTUAL TABLE IF NOT EXISTS compat_patterns_fts USING fts5(
+                topic,
+                platforms,
+                card,
+                content='compat_patterns',
+                content_rowid='pattern_id',
+                tokenize='porter unicode61'
+            );
+            """
+        )
+        conn.execute("INSERT INTO compat_patterns_fts(compat_patterns_fts) VALUES('rebuild')")
+    vec_row = conn.execute(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='compat_pattern_vectors'"
+    ).fetchone()
+    if not vec_row:
+        conn.execute(
+            "CREATE TABLE IF NOT EXISTS compat_pattern_vectors ("
+            "pattern_id INTEGER PRIMARY KEY REFERENCES compat_patterns(pattern_id) ON DELETE CASCADE, "
+            "embedding BLOB)"
+        )
+
+
 def apply_schema(conn: Any) -> None:
     conn.executescript(CREATE_SCHEMA_SQL)
     conn.executescript(FTS_SYNC_TRIGGERS_SQL)
+    _migrate_compat_patterns_v2(conn)
     conn.commit()
 
 
@@ -297,15 +364,42 @@ def corpus_manifest_path(install_root: str) -> Optional[str]:
     return manifest if os.path.isfile(manifest) else None
 
 
-def corpus_has_usable_vectors(conn: Any, manifest: Optional[dict[str, Any]] = None) -> bool:
-    """True when the corpus ships populated section vectors usable for hybrid retrieval."""
-    if isinstance(manifest, dict) and manifest.get("embeddings_populated") is False:
-        return False
+def _vector_table_count(conn: Any, table: str) -> int:
     try:
         row = conn.execute(
-            "SELECT COUNT(*) AS c FROM section_vectors WHERE embedding IS NOT NULL"
+            f"SELECT COUNT(*) AS c FROM {table} WHERE embedding IS NOT NULL"
         ).fetchone()
     except Exception:
+        return 0
+    return int(row["c"] if hasattr(row, "keys") else row[0])
+
+
+def corpus_has_usable_section_vectors(
+    conn: Any, manifest: Optional[dict[str, Any]] = None
+) -> bool:
+    """True when strategy section vectors exist for hybrid retrieval."""
+    if isinstance(manifest, dict) and manifest.get("embeddings_populated") is False:
         return False
-    count = int(row["c"] if hasattr(row, "keys") else row[0])
-    return count > 0
+    return _vector_table_count(conn, "section_vectors") > 0
+
+
+def corpus_has_usable_compat_vectors(
+    conn: Any, manifest: Optional[dict[str, Any]] = None
+) -> bool:
+    """True when compat tip vectors exist for troubleshooting hybrid retrieval."""
+    if isinstance(manifest, dict) and manifest.get("embeddings_populated") is False:
+        return False
+    compat_count = _vector_table_count(conn, "compat_pattern_vectors")
+    if compat_count > 0:
+        return True
+    return False
+
+
+def corpus_has_usable_vectors(conn: Any, manifest: Optional[dict[str, Any]] = None) -> bool:
+    """True when the corpus ships any populated vectors (section or compat) for hybrid UI hints."""
+    if isinstance(manifest, dict) and manifest.get("embeddings_populated") is False:
+        return False
+    return (
+        _vector_table_count(conn, "section_vectors") > 0
+        or _vector_table_count(conn, "compat_pattern_vectors") > 0
+    )

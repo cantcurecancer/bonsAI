@@ -17,6 +17,25 @@ class TransparencyKbRetrievalTests(unittest.TestCase):
             "Keyword search (embed unavailable)",
         )
 
+    def test_compat_transparency_source_bullet(self):
+        snapshot = {
+            **build_knowledge_base_transparency(
+                attached=True,
+                trust_tier="fallback_no_source",
+                sources=[],
+                notes="compat_tips",
+                timing_ms={},
+                retrieval_method="hybrid",
+                kb_domain="compat",
+            ),
+            "proton_log_excerpt_attached": False,
+            "proton_log_sources": [],
+            "proton_log_notes": "",
+        }
+        manifest = build_context_chips_manifest(snapshot=snapshot)
+        kb_chip = next(c for c in manifest["context_chips"] if c["id"] == "kb")
+        self.assertIn("Source: shared troubleshooting tips", kb_chip["body"]["bullets"])
+
     def test_kb_chip_uses_retrieval_label(self):
         snapshot = {
             **build_knowledge_base_transparency(

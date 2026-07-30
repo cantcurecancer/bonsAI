@@ -91,7 +91,7 @@ When the knowledge base is enabled and installed, Main-tab preset chips may occa
 
 **Better search (Phase 2 — shipped):** Optional Ollama model `nomic-embed-text` enables **Keyword + meaning** retrieval for **Strategy** tips. Without it, **Keyword search** still works. The plugin may show a soft install hint — it will **not** auto-pull the embed model or block Asks. Show details may label the path as **Keyword + meaning**, **Keyword search**, or **Keyword search (embed unavailable)**.
 
-**Planned (Phase 3):** The same hybrid path will extend to **troubleshooting** Asks over a shared tip sheet (`compat_patterns`); Show details will note **Source: shared troubleshooting tips**. See [knowledge-base.md](knowledge-base.md) § Phasing.
+**Troubleshooting hybrid (Phase 3 — shipped 2026-07-29):** The same hybrid path runs on **troubleshooting** Asks over the shared `compat_patterns` tip sheet (~124 maintainer tips in the Dev-tab seed). Show details adds **Source: shared troubleshooting tips** when compat tips attach. Rebuild the seed corpus after pulling (`python scripts/build_rag_db.py --seed --out dist/knowledge-base`) and reinstall via Developer tab. See [knowledge-base.md](knowledge-base.md) § Phasing.
 
 **SD card:** When a microSD is mounted under `/run/media/deck/…`, the download picker offers **Download to SD card** (install path `{mount}/.bonsai/rag`). Internal default remains `~/.bonsai/rag`.
 

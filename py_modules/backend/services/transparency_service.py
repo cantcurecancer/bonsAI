@@ -151,6 +151,7 @@ def build_knowledge_base_transparency(
     timing_ms: dict,
     unavailable_reason: str = "",
     retrieval_method: str = "keyword",
+    kb_domain: str = "",
 ) -> dict[str, Any]:
     return {
         "kb_attached": attached,
@@ -160,6 +161,7 @@ def build_knowledge_base_transparency(
         "kb_timing_ms": dict(timing_ms or {}),
         "kb_unavailable_reason": unavailable_reason or "",
         "kb_retrieval_method": retrieval_method or "keyword",
+        "kb_domain": str(kb_domain or ""),
     }
 
 
@@ -338,6 +340,9 @@ def build_context_chips_manifest(
         retrieval_method = str(snapshot.get("kb_retrieval_method") or "keyword")
         if snapshot.get("kb_attached"):
             kb_bullets.append(f"Retrieval: {kb_retrieval_detail_label(retrieval_method)}")
+            kb_domain = str(snapshot.get("kb_domain") or "").strip().lower()
+            if kb_domain == "compat":
+                kb_bullets.append("Source: shared troubleshooting tips")
             tier = str(snapshot.get("kb_trust_tier") or "").strip()
             if tier:
                 kb_bullets.append(f"Trust tier: {tier}")

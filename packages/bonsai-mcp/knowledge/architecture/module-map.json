@@ -57,7 +57,7 @@
     },
     {
       "path": "py_modules/backend/services/knowledge_base_service.py",
-      "lines": 705,
+      "lines": 783,
       "role": ""
     },
     {
@@ -87,7 +87,7 @@
     },
     {
       "path": "py_modules/backend/services/game_ai_request.py",
-      "lines": 590,
+      "lines": 592,
       "role": ""
     },
     {
@@ -97,7 +97,7 @@
     },
     {
       "path": "py_modules/backend/services/transparency_service.py",
-      "lines": 577,
+      "lines": 582,
       "role": ""
     },
     {
@@ -171,6 +171,11 @@
       "role": ""
     },
     {
+      "path": "py_modules/backend/services/knowledge_base_schema.py",
+      "lines": 406,
+      "role": ""
+    },
+    {
       "path": "src/components/OllamaTab.tsx",
       "lines": 384,
       "role": ""
@@ -193,11 +198,6 @@
     {
       "path": "py_modules/backend/services/voice_whisper_daemon.py",
       "lines": 361,
-      "role": ""
-    },
-    {
-      "path": "py_modules/backend/services/rag_corpus_download_service.py",
-      "lines": 352,
       "role": ""
     }
   ]
