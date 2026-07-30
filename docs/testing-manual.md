@@ -113,7 +113,7 @@ BPM (Desktop → Big Picture → QAM → bonsAI). Ollama reachable.
 | **Context ladder / micro-actions** | CONTEXT-LADDER-01…03; MICRO-01…05 (open bugs) |
 | **D-pad scroll** | D-PAD-SCROLL-02 (choppy Strategy scroll bug) |
 | **Data clear** | DATA-CLEAR-01 (permissions/settings wipe survives reopen) |
-| **Reply language** | LANG-01…03 (Follow system display bug related) |
+| **Reply language** | LANG-01…03 (**LANG-01** Follow system on load — code fix Jul 2026; on-Deck confirm) |
 
 ### VAC / `bonsai:vac-check`
 
@@ -137,6 +137,7 @@ BPM (Desktop → Big Picture → QAM → bonsAI). Ollama reachable.
 - [ ] **OLLAMA-FOCUS-01** Ollama tab open (no prior Test): with Ollama reachable, primary button shows **Update AI & models** (quiet auto-probe)
 - [ ] **OLLAMA-FOCUS-02** Run AI on this Deck: D-pad vertical — toggle → Install/Update → Browse models → Install options… → Test connection → KB toggle
 - [ ] **OLLAMA-FOCUS-03** Up from Test connection lands on **Install options…** (or last Install-options submenu row when open)
+- [ ] **OLLAMA-KEEPALIVE-FOCUS-01** **Keep models loaded** slider thumb: white gpfocus ring vertically centered on the dot (no ~1px high offset)
 - [ ] **ROUTING-01** Set text/vision try order opens picker listing installed tags without requiring a prior Test connection tap
 - [ ] **ROUTING-02** Reorder + Done persists; reopen modal shows saved order
 - [ ] **ROUTING-FOCUS-01** Try-order modal D-pad + chrome match Pull Models / Character picker (deferred bug)

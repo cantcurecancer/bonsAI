@@ -37,8 +37,8 @@ export const AboutReplyLanguageSection: React.FC<Props> = ({
 }) => {
   const dropdownHostRef = useRef<HTMLDivElement | null>(null);
   const options = useMemo(() => buildReplyLanguageDropdownOptions(), []);
-  const selected =
-    options.find((o) => o.data === replyLanguage) ?? options[0]!;
+  // Decky Dropdown matches selectedOption against each option's `.data`, not the full option object.
+  const selectedOption = replyLanguage;
 
   const sectionTitle = translate("about.replyLanguage.sectionTitle", effectiveLang);
   const dropdownLabel = translate("about.replyLanguage.dropdownLabel", effectiveLang);
@@ -76,7 +76,7 @@ export const AboutReplyLanguageSection: React.FC<Props> = ({
           </div>
           <Dropdown
             rgOptions={options}
-            selectedOption={selected}
+            selectedOption={selectedOption}
             onChange={(opt) => onReplyLanguageChange((opt.data as ReplyLanguageId) ?? REPLY_LANGUAGE_FOLLOW_SYSTEM)}
             strDefaultLabel={dropdownLabel}
           />

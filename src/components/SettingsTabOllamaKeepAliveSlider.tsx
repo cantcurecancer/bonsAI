@@ -55,6 +55,8 @@ export function SettingsTabOllamaKeepAliveSlider(props: SettingsTabOllamaKeepAli
 
   const getThumbDotStyle = useCallback(
     ({ focused, editing }: DeckSliderThumbVisualState): React.CSSProperties => ({
+      // +1px vs shared DeckFocusSlider thumb so gpfocus ring looks vertically centered on this row.
+      marginTop: 3,
       border:
         focused && editing
           ? "2px solid #7af3b0"
