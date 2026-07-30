@@ -69,13 +69,15 @@ If Windows still falls back to CPU after FIX A:
 
 ## 1a. Permissions tab (blocked actions)
 
-**Feature:** The **Permissions** tab (lock icon) controls high-impact actions: saving notes to Desktop, applying TDP/GPU suggestions from the model, attaching Steam screenshots to asks, **voice input (microphone)**, opening external links from About, and the Developer tab Steam Input jump.
+**Feature:** The **Permissions** tab (lock icon) controls high-impact actions: saving notes to Desktop, attaching Steam screenshots and auto-attaching Proton/game logs on troubleshooting Asks (**Read game & screenshot context**), **voice input (microphone)**, and Steam ban lookup. Docs, GitHub, and Steam settings / Steam Input jumps always open when you tap them — no permission toggle. TDP/GPU clock suggestions from Ask are **read-only** (apply them yourself in Steam Performance if you choose).
 
 **Symptom:** Toasts like “Permission required” or backend errors mentioning Permissions when you try those actions.
 
 **Fix:** Open the **Permissions** tab and set the relevant scope to **ON**. Ollama requests to your PC on the LAN are not gated by these toggles.
 
-**Note:** If you upgraded from an older `settings.json` that had no `capabilities` block, the plugin enables most scopes until you save settings from the Permissions tab (grandfather behavior). **Voice input (microphone)** and **Steam ban lookup** stay **off** until you enable them explicitly.
+**Troubleshooting hint:** If an Ask looks like Proton/compat troubleshooting and **Read game & screenshot context** is off, Main shows a dismissible hint suggesting you enable it. The plugin never auto-enables that permission.
+
+**Note:** If you upgraded from an older `settings.json` that had no `capabilities` block, the plugin enables most scopes until you save settings from the Permissions tab (grandfather behavior). **Voice input (microphone)** and **Steam ban lookup** stay **off** until you enable them explicitly. Legacy **Open web links** / **Adjust power limits** toggles are ignored (removed).
 
 ### Knowledge base (offline strategy cards)
 
@@ -221,7 +223,7 @@ When the knowledge base is enabled and installed, Main-tab preset chips may occa
 | Browser `bonsai:*` keys | Ollama host draft, disclaimer dismissals, unified-input persistence (CEF localStorage) |
 | `~/Desktop/bonsAI_logs/` | Optional Desktop notes, app activity, verbose Ask traces (not removed by Clear all data) |
 | `~/.bonsai/cache/` | Pull-model catalog overlay |
-| `~/.bonsai/proton_experiment_journal.json` | Per-AppID Proton experiment timeline (Settings editor) |
+| `~/.bonsai/proton_experiment_journal.json` | Leftover Proton experiment journal (obsolete UI; safe to delete; Clear all removes it) |
 
 **Settings → Advanced** (bottom of the tab): **Clear cache…** only clears the **current session** in RAM (Main transcript, attachments, etc.) and does **not** delete `settings.json` or on-disk logs.
 
@@ -231,7 +233,7 @@ When the knowledge base is enabled and installed, Main-tab preset chips may occa
 - Clears `~/homebrew/data/bonsAI/` and log files under `~/homebrew/logs/bonsAI/`
 - Clears all `bonsai:*` browser storage keys
 - Removes `~/.bonsai/cache/` (catalog overlay)
-- Removes `~/.bonsai/proton_experiment_journal.json` (Proton experiment timeline)
+- Removes `~/.bonsai/proton_experiment_journal.json` (legacy Proton experiment timeline)
 - When **Ollama on this Deck** was enabled: also removes local model blobs (`~/.ollama`), user-prefix Ollama under `~/.local`
 - Shows beta disclaimer and permission prompts again
 
@@ -404,14 +406,11 @@ Then `sudo systemctl restart avahi-daemon` and ensure `OLLAMA_HOST=0.0.0.0` and 
 
 **Network (user-initiated only):** Catalog refresh may contact `raw.githubusercontent.com` (overlay JSON) and `registry.ollama.ai` (manifest sizes), same trust class as existing size lookup — no background sync.
 
-### Proton experiment journal
+### Proton logs on troubleshooting Asks
 
-- **Settings → Proton troubleshooting:** log per-AppID Proton attempts (version, launch options, worse/same/better outcome). Stored in `~/.bonsai/proton_experiment_journal.json`.
-- **Attach Proton logs on troubleshooting Asks** — bounded `steam-<appid>.log` / compatdata excerpts (requires **Permissions → Steam/Proton log read**).
-- **Inject experiment journal on troubleshooting Asks** — adds your timeline to the system prompt when the question matches troubleshooting heuristics and a numeric AppID is present.
-- **Suggest from log** — best-effort parse of the active Proton build from `~/steam-<appid>.log` tail (hint only; does not auto-save).
+- When **Permissions → Read game & screenshot context** is on, troubleshooting-style Asks with a numeric AppID **auto-attach** bounded `steam-<appid>.log` / compatdata excerpts (no separate Settings toggle).
+- The old **Proton experiment journal** Settings editor / inject path is obsolete (backend files may remain for later review). Leftover `~/.bonsai/proton_experiment_journal.json` is harmless; **Clear all data** still removes it.
 - **Main tab context chips** — after an Ask, **Show details** opens the inline chip ladder (wrap row when ≤6 chips); D-pad **Down** from **Retry** / **Show details** focuses the ladder; **Left/Right** cycles chips; **Developer details** is the last chip. Older turns link to the **Session context** strip at the bottom.
-- **Clear all data** removes the journal file along with other `~/.bonsai/` artifacts.
 
 **Local toggle and saved LAN IP:** While **Ollama on this Deck** is **on**, Ask uses `127.0.0.1:11434` but does **not** overwrite the saved **OLLAMA IP ADDRESS** field in browser storage. Toggling local **off** should restore your LAN PC host instead of leaving `127.0.0.1:11434` in the field after local-mode Asks.
 
@@ -626,13 +625,14 @@ Phase 1 is the **completed** scope for this feature; full search + catalog (Phas
 
 ## Search intent packs (offline JSON)
 
-**Settings → Search intent packs** manages offline alias packs for the main-tab unified search field (Steam / QAM settings navigation — not Ask model prompts).
+**Settings UI for Import/Export packs is obsolete.** Bundled **Deck basics** aliases may still quietly improve main-tab unified search ranking (Steam / QAM settings navigation — not Ask model prompts). A later review will decide keep / quiet / Developer revival — ranking itself was not rewritten in the cleanup.
 
-### What they do
+### What they do (backend still present)
 
 - Map short terms (e.g. `wifi`, `tdp`) to canonical settings paths such as `Settings > Internet > Enable Wi-Fi`.
 - Ship with a bundled **Deck basics** pack (`data/intent-packs/deck-basics.json` in the repo).
-- User packs are edited as JSON on a PC, copied to the Deck clipboard, then imported with an explicit confirm step.
+- Persisted as `intent_packs.json` under Decky plugin settings (not inside `settings.json`).
+- **Clear all plugin data** resets packs to bundled defaults.
 
 ### Pack JSON shape (schema_version 1)
 
@@ -654,22 +654,11 @@ Phase 1 is the **completed** scope for this feature; full search + catalog (Phas
 }
 ```
 
-- **`target`** must exactly match a path from the shipped settings catalog (`src/data/settingsDatabase.ts` / `data/settings-search-targets.json`). Unknown targets are rejected on import.
+- **`target`** must exactly match a path from the shipped settings catalog (`src/data/settingsDatabase.ts` / `data/settings-search-targets.json`).
 - **`aliases` / `synonyms`:** direct match when the search text contains the term (min 2 characters).
 - **`expansions`:** weaker match tier (surfaced after native and alias/synonym hits).
-- **Merge:** importing a pack with the same `id` merges entries; alias/synonym terms already owned by another target are skipped and listed in the confirm dialog.
 
-### Storage
-
-- Persisted as `intent_packs.json` under Decky plugin settings (not inside `settings.json`).
-- **Clear all plugin data** resets packs to bundled defaults.
-
-### Example workflow
-
-1. Export **Deck basics** from Settings to see the format.
-2. Edit on PC; copy JSON to clipboard.
-3. **Import from clipboard** on the Deck → review summary → confirm.
-4. On the **Main** tab, type `wifi` — unified search should list Wi-Fi settings even if the literal path text does not contain `wifi`.
+There is no in-plugin Import/Export UI anymore; maintainers who need custom packs can edit `intent_packs.json` on device for experiments until the later review.
 
 ---
 

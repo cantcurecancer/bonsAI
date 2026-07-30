@@ -9,13 +9,11 @@ import React from "react";
 import {
   Button,
   ButtonItem,
-  ConfirmModal,
   Focusable,
   PanelSection,
   PanelSectionRow,
   TextField,
   ToggleField,
-  showModal,
 } from "@decky/ui";
 import { toaster } from "@decky/api";
 import {
@@ -23,16 +21,7 @@ import {
   STEAM_WEB_API_KEY_MAX_LEN,
   type DesktopAppLogLevel,
 } from "../utils/settingsAndResponse";
-import { callDeckyWithTimeout, DECKY_RPC_TIMEOUT_MS, formatDeckyRpcError } from "../utils/deckyCall";
-import { patchPendingSessionSettingsSnapshot } from "../utils/bonsaiSessionSurvival";
-
-const TINY_THINKING_MODEL_TAG = "qwen2.5:1.5b";
-
-function tinyThinkingModelInstalled(models?: string[]): boolean {
-  return (models ?? []).some(
-    (m) => m === TINY_THINKING_MODEL_TAG || m.startsWith(`${TINY_THINKING_MODEL_TAG}:`)
-  );
-}
+import { formatDeckyRpcError } from "../utils/deckyCall";
 
 const desktopAppLogLevelLabel: Record<DesktopAppLogLevel, string> = {
   off: "Off",
@@ -72,10 +61,6 @@ export type DeveloperTabProps = {
   desktopAppLogLevel: DesktopAppLogLevel;
   setDesktopAppLogLevel: (v: DesktopAppLogLevel) => void;
   filesystemWrite: boolean;
-  attachProtonLogsWhenTroubleshooting: boolean;
-  setAttachProtonLogsWhenTroubleshooting: (v: boolean) => void;
-  thinkingStatusTinyModelEnabled: boolean;
-  setThinkingStatusTinyModelEnabled: (v: boolean) => void;
 
   presetChipFadeAnimationEnabled: boolean;
   setPresetChipFadeAnimationEnabled: (v: boolean) => void;
@@ -89,10 +74,6 @@ export type DeveloperTabProps = {
   setBonsaiTokenStreamingEnabled: (v: boolean) => void;
   showOnscreenDebugHud: boolean;
   setShowOnscreenDebugHud: (v: boolean) => void;
-  ollamaLocalOnDeck?: boolean;
-  onCompleteDeckyModalClose?: (close: () => void) => void;
-  /** Capture session with Ollama as post-modal return tab (thinking-blurbs pull confirm). */
-  onBeforeThinkingPullModal?: () => void;
   /** Dev/QA: install seed KB from Deck path (build.ps1 deploy). */
   onInstallSeedKnowledgeBase?: () => Promise<void>;
 };
@@ -119,13 +100,8 @@ export const DeveloperTab: React.FC<DeveloperTabProps> = ({
   setSteamWebApiKey,
   bonsaiTokenStreamingEnabled,
   setBonsaiTokenStreamingEnabled,
-  thinkingStatusTinyModelEnabled,
-  setThinkingStatusTinyModelEnabled,
   showOnscreenDebugHud,
   setShowOnscreenDebugHud,
-  ollamaLocalOnDeck = false,
-  onCompleteDeckyModalClose,
-  onBeforeThinkingPullModal,
   onInstallSeedKnowledgeBase,
 }) => {
   const [seedKbBusy, setSeedKbBusy] = React.useState(false);
@@ -349,84 +325,6 @@ export const DeveloperTab: React.FC<DeveloperTabProps> = ({
                 </Button>
               ))}
             </Focusable>
-          </div>
-        </PanelSectionRow>
-        <PanelSectionRow>
-          <div className="bonsai-settings-bleed" style={{ width: "100%" }}>
-            <ToggleField
-              label="Tiny-model thinking blurbs"
-              description="Fire-and-forget qwen2.5:1.5b status lines while waiting (experimental). Off by default; does not block the main Ask."
-              checked={thinkingStatusTinyModelEnabled}
-              onChange={(checked) => {
-                if (!checked) {
-                  setThinkingStatusTinyModelEnabled(false);
-                  return;
-                }
-                if (!ollamaLocalOnDeck) {
-                  toaster.toast({
-                    title: "Local Ollama required",
-                    body: "Enable Ollama on this Deck first, then pull qwen2.5:1.5b for tiny-model blurbs.",
-                    duration: 5500,
-                  });
-                  return;
-                }
-                if (tinyThinkingModelInstalled(lastConnectionStatus?.models)) {
-                  setThinkingStatusTinyModelEnabled(true);
-                  return;
-                }
-                onBeforeThinkingPullModal?.();
-                const handle = showModal(
-                  <ConfirmModal
-                    strTitle="Pull qwen2.5:1.5b for thinking blurbs?"
-                    strDescription={
-                      <div
-                        className="bonsai-prose"
-                        style={{ fontSize: 12, color: "#9fb7d5", lineHeight: 1.45 }}
-                      >
-                        Tiny-model thinking blurbs call{" "}
-                        <span style={{ color: "#9ce7ff" }}>{TINY_THINKING_MODEL_TAG}</span> in the
-                        background while you wait. It is not installed on this Deck yet (~1 GiB).
-                      </div>
-                    }
-                    strOKButtonText="Pull model and enable"
-                    strCancelButtonText="Cancel"
-                    onOK={() => {
-                      onCompleteDeckyModalClose?.(() => handle.Close());
-                      void (async () => {
-                        try {
-                          const res = await callDeckyWithTimeout<
-                            [string[]],
-                            { accepted?: boolean; reason?: string }
-                          >("pull_ollama_models", [[TINY_THINKING_MODEL_TAG]], DECKY_RPC_TIMEOUT_MS);
-                          if (res?.accepted) {
-                            setThinkingStatusTinyModelEnabled(true);
-                            patchPendingSessionSettingsSnapshot({ thinkingStatusTinyModelEnabled: true });
-                            toaster.toast({
-                              title: "Pull started",
-                              body: `${TINY_THINKING_MODEL_TAG} — enable thinking blurbs after it finishes.`,
-                              duration: 5000,
-                            });
-                          } else {
-                            toaster.toast({
-                              title: "Pull not started",
-                              body: res?.reason ?? "Local Ollama setup is busy or off.",
-                              duration: 5000,
-                            });
-                          }
-                        } catch (e: unknown) {
-                          toaster.toast({
-                            title: "Pull failed",
-                            body: formatDeckyRpcError(e),
-                            duration: 5000,
-                          });
-                        }
-                      })();
-                    }}
-                    onCancel={() => onCompleteDeckyModalClose?.(() => handle.Close())}
-                  />
-                );
-              }}
-            />
           </div>
         </PanelSectionRow>
         <PanelSectionRow>

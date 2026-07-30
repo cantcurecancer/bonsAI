@@ -20,9 +20,6 @@ type Props = {
   githubRepoUrl: string;
   ollamaRepoUrl: string;
   githubIssuesUrl: string;
-  /** When false, external link buttons show a toast and optional navigation to Permissions. */
-  allowExternalNavigation: boolean;
-  onNavigateToPermissions: () => void;
   replyLanguage: ReplyLanguageId;
   onReplyLanguageChange: (next: ReplyLanguageId) => void;
   effectiveLang: string;
@@ -34,23 +31,7 @@ type Props = {
  * This tab explains plugin purpose/safety context and provides contributor support links.
  * It keeps project metadata and external navigation actions out of the main screen component.
  */
-function openExternalOrExplain(
-  url: string,
-  allow: boolean,
-  onNavigateToPermissions: () => void,
-  toastTitle: string,
-  permissionTitle: string,
-  permissionBody: string,
-) {
-  if (!allow) {
-    toaster.toast({
-      title: permissionTitle,
-      body: permissionBody,
-      duration: 4500,
-    });
-    onNavigateToPermissions();
-    return;
-  }
+function openExternal(url: string, toastTitle: string) {
   try {
     Navigation.NavigateToExternalWeb(url);
   } catch {
@@ -65,13 +46,11 @@ export const AboutTab: React.FC<Props> = ({
   githubRepoUrl,
   ollamaRepoUrl,
   githubIssuesUrl,
-  allowExternalNavigation,
-  onNavigateToPermissions,
   replyLanguage,
   onReplyLanguageChange,
   effectiveLang,
   steamClientLanguageLabel,
-  t,
+  t: _t,
 }) => {
   const githubBtnHostRef = useRef<HTMLDivElement | null>(null);
   const paypalBtnHostRef = useRef<HTMLDivElement | null>(null);
@@ -81,26 +60,22 @@ export const AboutTab: React.FC<Props> = ({
     return true;
   };
 
-  const permissionTitle = t("toast.permissionRequired.title");
-  const permissionBody = t("toast.permissionRequired.body");
-
   return (
     <>
       <PanelSection title="About bonsAI">
         <PanelSectionRow>
           <div style={{ fontSize: 12, color: "#c8c8c8", lineHeight: "1.2" }}>
             Backend Ollama Node for Steam (A.I.) - An AI assistant embedded in the
-            Steam Deck Quick Access Menu. Ask questions, search settings, get game-specific
-            performance recommendations and apply TDP changes from the QAM (GPU
-            clock suggestions are recommendations only)
+            Steam Deck Quick Access Menu. Ask questions, search settings, and get game-specific
+            performance suggestions (TDP/GPU clock recommendations are read-only — apply them
+            yourself in Steam&apos;s Performance tab if you choose).
           </div>
         </PanelSectionRow>
         <PanelSectionRow>
           <div style={{ fontSize: 12, color: BONSAI_FOREST_GREEN, lineHeight: "1.2", fontWeight: 600, marginTop: "1.2em" }}>
             This plugin is in beta. AI-generated recommendations — especially TDP
             and performance changes — should be verified before relying on them.
-            bonsAI modifies system hardware settings based on AI suggestions. Use
-            at your own risk!
+            Use at your own risk!
           </div>
         </PanelSectionRow>
       </PanelSection>
@@ -131,54 +106,18 @@ export const AboutTab: React.FC<Props> = ({
               },
             })}
           >
-            <ButtonItem
-              layout="below"
-              onClick={() => {
-                openExternalOrExplain(
-                  githubRepoUrl,
-                  allowExternalNavigation,
-                  onNavigateToPermissions,
-                  "GitHub",
-                  permissionTitle,
-                  permissionBody,
-                );
-              }}
-            >
+            <ButtonItem layout="below" onClick={() => openExternal(githubRepoUrl, "GitHub")}>
               <span style={{ fontSize: 13 }}>GitHub</span>
             </ButtonItem>
           </Focusable>
         </PanelSectionRow>
         <PanelSectionRow>
-          <ButtonItem
-            layout="below"
-            onClick={() => {
-              openExternalOrExplain(
-                ollamaRepoUrl,
-                allowExternalNavigation,
-                onNavigateToPermissions,
-                "Ollama",
-                permissionTitle,
-                permissionBody,
-              );
-            }}
-          >
+          <ButtonItem layout="below" onClick={() => openExternal(ollamaRepoUrl, "Ollama")}>
             <span style={{ fontSize: 13 }}>Built on Ollama!</span>
           </ButtonItem>
         </PanelSectionRow>
         <PanelSectionRow>
-          <ButtonItem
-            layout="below"
-            onClick={() => {
-              openExternalOrExplain(
-                githubIssuesUrl,
-                allowExternalNavigation,
-                onNavigateToPermissions,
-                "Report a Bug",
-                permissionTitle,
-                permissionBody,
-              );
-            }}
-          >
+          <ButtonItem layout="below" onClick={() => openExternal(githubIssuesUrl, "Report a Bug")}>
             <span style={{ fontSize: 13 }}>Bugs & Feature Requests</span>
           </ButtonItem>
         </PanelSectionRow>
@@ -202,19 +141,7 @@ export const AboutTab: React.FC<Props> = ({
               }}
             >
               <Focusable ref={paypalBtnHostRef} style={{ width: "100%" }}>
-                <ButtonItem
-                  layout="below"
-                  onClick={() => {
-                    openExternalOrExplain(
-                      PAYPAL_SUPPORT_URL,
-                      allowExternalNavigation,
-                      onNavigateToPermissions,
-                      "PayPal",
-                      permissionTitle,
-                      permissionBody,
-                    );
-                  }}
-                >
+                <ButtonItem layout="below" onClick={() => openExternal(PAYPAL_SUPPORT_URL, "PayPal")}>
                   <div
                     style={{
                       display: "flex",

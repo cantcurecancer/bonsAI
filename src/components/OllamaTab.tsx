@@ -6,11 +6,10 @@
  * Does not: Run Ask or poll game AI — see Main tab and useBonsaiAskOrchestration.
  */
 import React, { useCallback, useRef } from "react";
-import { Button, PanelSection, PanelSectionRow, TextField, ToggleField } from "@decky/ui";
+import { Button, PanelSection, PanelSectionRow, ToggleField } from "@decky/ui";
 import {
   DEFAULT_LATENCY_WARNING_SECONDS,
   DEFAULT_REQUEST_TIMEOUT_SECONDS,
-  RESPONSE_VERIFY_MODEL_MAX_LEN,
   type OllamaKeepAliveDuration,
 } from "../utils/settingsAndResponse";
 import { MODEL_POLICY_TIER_LABELS_PLAIN, type ModelPolicyTierId } from "../data/modelPolicy";
@@ -39,12 +38,6 @@ export type OllamaTabProps = {
   onOpenOllamaModelsHub: (opts?: { initialSection?: "policy" | "browse" | "advanced" }) => void;
   onOpenRoutingOrderModal: (kind: "text" | "vision") => void;
 
-  responseVerifyEnabled: boolean;
-  setResponseVerifyEnabled: (v: boolean) => void;
-  responseVerifySecondPass: boolean;
-  setResponseVerifySecondPass: (v: boolean) => void;
-  responseVerifyModel: string;
-  setResponseVerifyModel: (v: string) => void;
 
   latencyWarningSeconds: number;
   requestTimeoutSeconds: number;
@@ -80,12 +73,6 @@ export const OllamaTab: React.FC<OllamaTabProps> = ({
   onCompleteDeckyModalClose,
   onOpenOllamaModelsHub,
   onOpenRoutingOrderModal,
-  responseVerifyEnabled,
-  setResponseVerifyEnabled,
-  responseVerifySecondPass,
-  setResponseVerifySecondPass,
-  responseVerifyModel,
-  setResponseVerifyModel,
   latencyWarningSeconds,
   requestTimeoutSeconds,
   latencyTimeoutsCustomEnabled,
@@ -109,10 +96,6 @@ export const OllamaTab: React.FC<OllamaTabProps> = ({
   const kbRemoveBtnRef = useRef<HTMLButtonElement>(null);
   const connectionTestBtnRef = useRef<HTMLButtonElement>(null);
   const replyVerbosityThumbHostRef = useRef<HTMLDivElement>(null);
-  const responseVerifyToggleHostRef = useRef<HTMLDivElement>(null);
-
-  const deckNav = (handlers: Record<string, () => boolean | void>) =>
-    handlers as unknown as Record<string, unknown>;
 
   const focusOllamaKeepAliveThumb = useCallback((): boolean => {
     const host = ollamaKeepAliveThumbHostRef.current;
@@ -141,14 +124,6 @@ export const OllamaTab: React.FC<OllamaTabProps> = ({
     return true;
   }, []);
 
-  const focusResponseVerifyToggle = useCallback((): boolean => {
-    const host = responseVerifyToggleHostRef.current;
-    if (!host) return false;
-    const target = host.querySelector<HTMLElement>("[tabindex], button, input");
-    if (!target) return false;
-    target.focus();
-    return true;
-  }, []);
 
   const focusReplyVerbosityThumb = useCallback((): boolean => {
     const host = replyVerbosityThumbHostRef.current;
@@ -230,42 +205,12 @@ export const OllamaTab: React.FC<OllamaTabProps> = ({
               onChange={setReplyVerbosity}
               thumbHostRef={replyVerbosityThumbHostRef}
               onMoveUp={focusKbUpFromReplyVerbosity}
-              onMoveDown={focusResponseVerifyToggle}
+              onMoveDown={focusLatencyWarningThumb}
             />
           </div>
         </PanelSectionRow>
       </PanelSection>
 
-      <PanelSection title="Response verification (advanced)">
-        <PanelSectionRow>
-          <div ref={responseVerifyToggleHostRef} className="bonsai-settings-bleed" style={{ width: "100%" }}>
-            <ToggleField
-              label="Response verify (rules)"
-              description="Optional post-reply rules (e.g. invented AppID without game context). Advanced — may be removed in a future cleanup."
-              checked={responseVerifyEnabled}
-              onChange={(checked) => setResponseVerifyEnabled(checked)}
-              {...deckNav({
-                onMoveUp: () => focusReplyVerbosityThumb(),
-              })}
-            />
-            <ToggleField
-              label="Response verify second pass (model)"
-              description="When rules fail (or rules are off), ask the verifier model below via Ollama. Requires a pulled tag on the active host."
-              checked={responseVerifySecondPass}
-              onChange={(checked) => setResponseVerifySecondPass(checked)}
-            />
-            <TextField
-              label="Verifier model tag"
-              description="Ollama tag for the second pass (e.g. qwen2.5:3b). Leave empty to disable the model call."
-              value={responseVerifyModel}
-              onChange={(e) =>
-                setResponseVerifyModel(e?.target?.value?.slice(0, RESPONSE_VERIFY_MODEL_MAX_LEN) ?? "")
-              }
-              disabled={!responseVerifySecondPass}
-            />
-          </div>
-        </PanelSectionRow>
-      </PanelSection>
 
       <PanelSection title="Connection tuning">
         <PanelSectionRow>

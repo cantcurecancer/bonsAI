@@ -53,10 +53,7 @@ class SettingsServiceTests(unittest.TestCase):
         self.assertFalse(sanitized["latency_timeouts_custom_enabled"])
         self.assertFalse(sanitized["desktop_debug_note_auto_save"])
         self.assertFalse(sanitized["desktop_ask_verbose_logging"])
-        self.assertFalse(sanitized["attach_proton_logs_when_troubleshooting"])
-        self.assertFalse(sanitized["include_proton_experiment_journal_when_troubleshooting"])
         self.assertFalse(sanitized["capabilities"]["filesystem_write"])
-        self.assertFalse(sanitized["capabilities"]["hardware_control"])
         self.assertFalse(sanitized["capabilities"]["steam_web_api"])
         self.assertEqual(sanitized["steam_web_api_key"], "")
         self.assertFalse(sanitized["ai_character_enabled"])
@@ -470,9 +467,7 @@ class SettingsServiceTests(unittest.TestCase):
             self.assertEqual(loaded["latency_warning_seconds"], 30)
             caps = loaded["capabilities"]
             self.assertTrue(caps["filesystem_write"])
-            self.assertTrue(caps["hardware_control"])
             self.assertTrue(caps["media_library_access"])
-            self.assertTrue(caps["external_navigation"])
             self.assertFalse(caps["steam_web_api"])
             self.assertFalse(caps["microphone_access"])
 

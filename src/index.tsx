@@ -49,7 +49,6 @@ import {
   getPluginDataClearedGeneration,
   markPluginDataCleared,
   patchPendingSessionSettingsSnapshot,
-  patchPendingSessionSurvival,
   peekBonsaiSessionPendingRestore,
   shouldIgnoreRestoredSettingsSnapshot,
   type BonsaiSessionSurvivalSnapshot,
@@ -369,9 +368,6 @@ const Content: React.FC = () => {
     screenshotAttachmentPreset,
     desktopDebugNoteAutoSave,
     desktopAskVerboseLogging,
-    attachProtonLogsWhenTroubleshooting,
-    includeProtonExperimentJournalWhenTroubleshooting,
-    thinkingStatusTinyModelEnabled,
     inputSanitizerUserDisabled,
     capabilities,
     setCapabilities,
@@ -394,9 +390,6 @@ const Content: React.FC = () => {
     setDesktopAskVerboseLogging,
     desktopAppLogLevel,
     setDesktopAppLogLevel,
-    setAttachProtonLogsWhenTroubleshooting,
-    setIncludeProtonExperimentJournalWhenTroubleshooting,
-    setThinkingStatusTinyModelEnabled,
     presetChipFadeAnimationEnabled,
     presetChipAnimation,
     setPresetChipAnimation,
@@ -432,12 +425,6 @@ const Content: React.FC = () => {
     setBonsaiTokenStreamingEnabled,
     showOnscreenDebugHud,
     setShowOnscreenDebugHud,
-    responseVerifyEnabled,
-    setResponseVerifyEnabled,
-    responseVerifySecondPass,
-    setResponseVerifySecondPass,
-    responseVerifyModel,
-    setResponseVerifyModel,
     namedOllamaHosts,
     setNamedOllamaHosts,
     voiceSttModel,
@@ -715,12 +702,6 @@ const Content: React.FC = () => {
     setCurrentTab("ollama");
   }, []);
 
-  const captureThinkingPullModalSession = useCallback(() => {
-    captureSessionBeforeModal();
-    characterPickerReturnTabRef.current = "ollama";
-    patchPendingSessionSurvival({ currentTab: "ollama" });
-  }, [captureSessionBeforeModal, characterPickerReturnTabRef]);
-
   const settingsSnapshotForSave = useMemo(
     () => ({
       latencyWarningSeconds,
@@ -731,9 +712,6 @@ const Content: React.FC = () => {
       desktopDebugNoteAutoSave,
       desktopAskVerboseLogging,
       desktopAppLogLevel,
-      attachProtonLogsWhenTroubleshooting,
-      includeProtonExperimentJournalWhenTroubleshooting,
-      thinkingStatusTinyModelEnabled,
       presetChipFadeAnimationEnabled,
       presetChipAnimation,
       inputSanitizerUserDisabled,
@@ -759,9 +737,6 @@ const Content: React.FC = () => {
       steamWebApiKey,
       bonsaiTokenStreamingEnabled,
       showOnscreenDebugHud,
-      responseVerifyEnabled,
-      responseVerifySecondPass,
-      responseVerifyModel,
       namedOllamaHosts,
       voiceSttModel,
       uiScaleAutoEnabled,
@@ -779,9 +754,6 @@ const Content: React.FC = () => {
       desktopDebugNoteAutoSave,
       desktopAskVerboseLogging,
       desktopAppLogLevel,
-      attachProtonLogsWhenTroubleshooting,
-      includeProtonExperimentJournalWhenTroubleshooting,
-      thinkingStatusTinyModelEnabled,
       presetChipFadeAnimationEnabled,
       presetChipAnimation,
       inputSanitizerUserDisabled,
@@ -807,9 +779,6 @@ const Content: React.FC = () => {
       steamWebApiKey,
       bonsaiTokenStreamingEnabled,
       showOnscreenDebugHud,
-      responseVerifyEnabled,
-      responseVerifySecondPass,
-      responseVerifyModel,
       namedOllamaHosts,
       voiceSttModel,
       uiScaleAutoEnabled,
@@ -957,32 +926,14 @@ const Content: React.FC = () => {
   ]);
 
   const openModelPolicyReadme = useCallback(() => {
-    if (!capabilities.external_navigation) {
-      toaster.toast({
-        title: uiT("toast.permissionRequired.title"),
-        body: uiT("toast.permissionRequired.body"),
-        duration: 4500,
-      });
-      goToPermissionsTab();
-      return;
-    }
     try {
       Navigation.NavigateToExternalWeb(MODEL_POLICY_README_URL);
     } catch {
       toaster.toast({ title: "README", body: MODEL_POLICY_README_URL, duration: 4000 });
     }
-  }, [capabilities.external_navigation, goToPermissionsTab, uiT]);
+  }, []);
 
   const onOpenControllerSettingsForShortcut = useCallback(() => {
-    if (!capabilities.external_navigation) {
-      toaster.toast({
-        title: "Permission required",
-        body: "Enable External and Steam navigation in the Permissions tab to open Controller settings from bonsAI.",
-        duration: 4500,
-      });
-      goToPermissionsTab();
-      return;
-    }
     try {
       const steamUrlApi = SteamClient.URL as unknown as SteamUrlApi;
       steamUrlApi.ExecuteSteamURL(getSteamSettingsUrl("Settings > Controller"));
@@ -991,7 +942,7 @@ const Content: React.FC = () => {
       const message = error instanceof Error ? error.message : String(error);
       toaster.toast({ title: "Navigation failed", body: message, duration: 3000 });
     }
-  }, [capabilities.external_navigation, goToPermissionsTab]);
+  }, []);
 
   // --- Slow-response warning timer (suppress once token streaming begins) ---
   useEffect(() => {
@@ -1242,7 +1193,6 @@ const Content: React.FC = () => {
     desktopDebugNoteAutoSave,
     desktopAskVerboseLogging,
     desktopAppLogLevel,
-    attachProtonLogsWhenTroubleshooting,
     presetChipFadeAnimationEnabled,
     inputSanitizerUserDisabled,
     capabilities,
@@ -1332,8 +1282,6 @@ const Content: React.FC = () => {
       );
     },
     [
-      captureSessionBeforeModal,
-      finalizeShowModalAndRestoreActiveTab,
       modelPolicyDisclosure?.model,
       modelPolicyTier,
       modelPolicyNonFossUnlocked,
@@ -1556,6 +1504,10 @@ const Content: React.FC = () => {
       canSaveDesktopNote={Boolean(lastExchange)}
       onOpenDesktopNoteSave={openDesktopNoteSaveModal}
       mediaLibraryEnabled={capabilities.media_library_access}
+      gameContextReadEnabled={
+        capabilities.media_library_access && capabilities.steam_logs_read
+      }
+      onNavigateToPermissions={goToPermissionsTab}
       desktopNoteSaveEnabled={capabilities.filesystem_write}
       aiCharacterPadClass={mainTabAiCharacterPad}
       aiCharacterAvatarPresetId={mainTabAvatarPresetId}
@@ -1625,6 +1577,9 @@ const Content: React.FC = () => {
       lastApplied,
       ollamaContext,
       lastExchange,
+      capabilities.media_library_access,
+      capabilities.steam_logs_read,
+      goToPermissionsTab,
       aiCharacterEnabled,
       mainTabAvatarPresetId,
       mainTabAvatarBadgeLetter,
@@ -1683,18 +1638,6 @@ const Content: React.FC = () => {
       onCompleteDeckyModalClose={finalizeShowModalAndRestoreActiveTab}
       onResetSession={resetPluginSession}
       onClearAllPluginData={onClearAllPluginData}
-      intentPackSummaries={intentPacks.summaries}
-      intentPacksLoading={intentPacks.loading}
-      intentPacksError={intentPacks.error}
-      onIntentPackEnabledChange={intentPacks.setPackEnabled}
-      onIntentPackExport={intentPacks.exportPack}
-      onIntentPackImport={intentPacks.importPack}
-      onIntentPackRemove={intentPacks.removePack}
-      attachProtonLogsWhenTroubleshooting={attachProtonLogsWhenTroubleshooting}
-      setAttachProtonLogsWhenTroubleshooting={setAttachProtonLogsWhenTroubleshooting}
-      includeProtonExperimentJournalWhenTroubleshooting={includeProtonExperimentJournalWhenTroubleshooting}
-      setIncludeProtonExperimentJournalWhenTroubleshooting={setIncludeProtonExperimentJournalWhenTroubleshooting}
-      steamLogsReadEnabled={capabilities.steam_logs_read === true}
     />
   ),
     [
@@ -1713,16 +1656,11 @@ const Content: React.FC = () => {
       uiScale.appliedProfileId,
       onApplyUiScale,
       capabilities.microphone_access,
-      intentPacks.summaries,
-      intentPacks.loading,
-      intentPacks.error,
-      intentPacks.setPackEnabled,
-      intentPacks.exportPack,
-      intentPacks.importPack,
-      intentPacks.removePack,
-      attachProtonLogsWhenTroubleshooting,
-      includeProtonExperimentJournalWhenTroubleshooting,
-      capabilities.steam_logs_read,
+      captureSessionBeforeModal,
+      finalizeShowModalAndRestoreActiveTab,
+      openCharacterPickerModal,
+      resetPluginSession,
+      onClearAllPluginData,
     ]
   );
 
@@ -1743,12 +1681,6 @@ const Content: React.FC = () => {
         onCompleteDeckyModalClose={finalizeShowModalAndRestoreActiveTab}
         onOpenOllamaModelsHub={openOllamaModelsHub}
         onOpenRoutingOrderModal={openRoutingOrderModal}
-        responseVerifyEnabled={responseVerifyEnabled}
-        setResponseVerifyEnabled={setResponseVerifyEnabled}
-        responseVerifySecondPass={responseVerifySecondPass}
-        setResponseVerifySecondPass={setResponseVerifySecondPass}
-        responseVerifyModel={responseVerifyModel}
-        setResponseVerifyModel={setResponseVerifyModel}
         latencyWarningSeconds={latencyWarningSeconds}
         requestTimeoutSeconds={requestTimeoutSeconds}
         latencyTimeoutsCustomEnabled={latencyTimeoutsCustomEnabled}
@@ -1772,9 +1704,6 @@ const Content: React.FC = () => {
       ollamaTabResetKey,
       lastConnectionStatus,
       namedOllamaHosts,
-      responseVerifyEnabled,
-      responseVerifySecondPass,
-      responseVerifyModel,
       latencyWarningSeconds,
       requestTimeoutSeconds,
       latencyTimeoutsCustomEnabled,
@@ -1791,47 +1720,17 @@ const Content: React.FC = () => {
     ]
   );
 
-  /** Persist immediately: Decky can unmount `Content` when the disclaimer modal closes, which drops in-memory state and cancels the debounced save. */
-  const onConfirmEnableHardwareControl = useCallback(() => {
-    setCapabilities((prev) => {
-      const next = { ...prev, hardware_control: true };
-      void call<[BonsaiSettings], BonsaiSettings>("save_settings", buildSettingsPayload({ capabilities: next }))
-        .then((saved) => hydrateFromSettings(saved))
-        .catch((err) => {
-          console.error("save_settings failed (hardware control confirm)", err);
-        });
-      return next;
-    });
-  }, [buildSettingsPayload, hydrateFromSettings, setCapabilities]);
-
   const permissionsTab = useMemo(
     () => (
       <PermissionsTab
         capabilities={capabilities}
         setCapabilities={setCapabilities}
-        onConfirmEnableHardwareControl={onConfirmEnableHardwareControl}
-        onBeforeDeckyModal={captureSessionBeforeModal}
-        onCompleteDeckyModalClose={finalizeShowModalAndRestoreActiveTab}
       />
     ),
-    [
-      capabilities,
-      onConfirmEnableHardwareControl,
-      captureSessionBeforeModal,
-      finalizeShowModalAndRestoreActiveTab,
-    ]
+    [capabilities, setCapabilities]
   );
 
   const onSteamInputPhase1Jump = useCallback(() => {
-    if (!capabilities.external_navigation) {
-      toaster.toast({
-        title: "Permission required",
-        body: "Enable External and Steam navigation in the Permissions tab for Steam Input jump.",
-        duration: 4500,
-      });
-      goToPermissionsTab();
-      return;
-    }
     const entry = getSteamInputLexiconEntry("phase1_per_game_controller_config");
     if (!entry) {
       toaster.toast({ title: "Steam Input", body: "Lexicon entry missing.", duration: 3500 });
@@ -1848,7 +1747,7 @@ const Content: React.FC = () => {
       const hint = entry.breadcrumb.length ? ` ${entry.breadcrumb[0]}` : "";
       toaster.toast({ title: "Steam Input jump", body: `${result.reason}${hint}`, duration: 6000 });
     }
-  }, [capabilities.external_navigation, goToPermissionsTab]);
+  }, []);
 
   const installSeedKnowledgeBase = useCallback(async () => {
     const out = await call<
@@ -1885,8 +1784,6 @@ const Content: React.FC = () => {
       desktopAppLogLevel={desktopAppLogLevel}
       setDesktopAppLogLevel={setDesktopAppLogLevel}
       filesystemWrite={capabilities.filesystem_write}
-      attachProtonLogsWhenTroubleshooting={attachProtonLogsWhenTroubleshooting}
-      setAttachProtonLogsWhenTroubleshooting={setAttachProtonLogsWhenTroubleshooting}
       presetChipFadeAnimationEnabled={presetChipFadeAnimationEnabled}
       setPresetChipFadeAnimationEnabled={setPresetChipFadeAnimationEnabled}
       presetChipAnimation={presetChipAnimation}
@@ -1895,13 +1792,8 @@ const Content: React.FC = () => {
       setSteamWebApiKey={setSteamWebApiKey}
       bonsaiTokenStreamingEnabled={bonsaiTokenStreamingEnabled}
       setBonsaiTokenStreamingEnabled={setBonsaiTokenStreamingEnabled}
-      thinkingStatusTinyModelEnabled={thinkingStatusTinyModelEnabled}
-      setThinkingStatusTinyModelEnabled={setThinkingStatusTinyModelEnabled}
       showOnscreenDebugHud={showOnscreenDebugHud}
       setShowOnscreenDebugHud={setShowOnscreenDebugHud}
-      ollamaLocalOnDeck={ollamaLocalOnDeck}
-      onCompleteDeckyModalClose={finalizeShowModalAndRestoreActiveTab}
-      onBeforeThinkingPullModal={captureThinkingPullModalSession}
       onInstallSeedKnowledgeBase={showDeveloperTab ? installSeedKnowledgeBase : undefined}
       />
     ),
@@ -1913,17 +1805,11 @@ const Content: React.FC = () => {
       desktopAskVerboseLogging,
       desktopAppLogLevel,
       capabilities.filesystem_write,
-      attachProtonLogsWhenTroubleshooting,
-      includeProtonExperimentJournalWhenTroubleshooting,
-      thinkingStatusTinyModelEnabled,
       presetChipFadeAnimationEnabled,
       presetChipAnimation,
       steamWebApiKey,
       bonsaiTokenStreamingEnabled,
       showOnscreenDebugHud,
-      ollamaLocalOnDeck,
-      captureThinkingPullModalSession,
-      finalizeShowModalAndRestoreActiveTab,
       installSeedKnowledgeBase,
       showDeveloperTab,
     ]
@@ -1935,8 +1821,6 @@ const Content: React.FC = () => {
         githubRepoUrl={GITHUB_REPO_URL}
         ollamaRepoUrl={OLLAMA_UPSTREAM_REPO_URL}
         githubIssuesUrl={GITHUB_ISSUES_URL}
-        allowExternalNavigation={capabilities.external_navigation}
-        onNavigateToPermissions={goToPermissionsTab}
         replyLanguage={replyLanguage}
         onReplyLanguageChange={setReplyLanguage}
         effectiveLang={effectiveLang}
@@ -1945,8 +1829,6 @@ const Content: React.FC = () => {
       />
     ),
     [
-      capabilities.external_navigation,
-      goToPermissionsTab,
       replyLanguage,
       setReplyLanguage,
       effectiveLang,

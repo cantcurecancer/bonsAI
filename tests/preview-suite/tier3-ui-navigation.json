@@ -158,7 +158,7 @@
           "type": "domContainsAny",
           "expect": [
             "Save files to Desktop",
-            "Adjust power limits"
+            "Read game & screenshot context"
           ]
         },
         {
@@ -271,7 +271,7 @@
           "type": "domContainsAny",
           "expect": [
             "Steam ban lookup",
-            "Open web links"
+            "Voice input (microphone)"
           ]
         }
       ]

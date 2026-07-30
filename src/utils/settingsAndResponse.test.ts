@@ -72,9 +72,7 @@ describe("settingsAndResponse", () => {
     expect(settings.desktop_debug_note_auto_save).toBe(false);
     expect(settings.desktop_ask_verbose_logging).toBe(false);
     expect(settings.desktop_app_log_level).toBe("off");
-    expect(settings.attach_proton_logs_when_troubleshooting).toBe(false);
     expect(settings.capabilities.filesystem_write).toBe(false);
-    expect(settings.capabilities.hardware_control).toBe(false);
     expect(settings.capabilities.steam_web_api).toBe(false);
     expect(settings.capabilities.microphone_access).toBe(false);
     expect(settings.voice_stt_model).toBe("tiny.en");
@@ -200,15 +198,12 @@ describe("settingsAndResponse", () => {
     const settings = normalizeSettings({
       capabilities: {
         filesystem_write: true,
-        hardware_control: "no" as unknown as boolean,
         media_library_access: 1 as unknown as boolean,
       },
     });
     expect(settings.capabilities.filesystem_write).toBe(true);
-    expect(settings.capabilities.hardware_control).toBe(false);
     expect(settings.capabilities.media_library_access).toBe(false);
     expect(settings.capabilities.steam_logs_read).toBe(false);
-    expect(settings.capabilities.external_navigation).toBe(false);
   });
 
   it("normalizeSettings applies ordering when raw values conflict", () => {
@@ -230,9 +225,6 @@ describe("settingsAndResponse", () => {
       desktopDebugNoteAutoSave: true,
       desktopAskVerboseLogging: false,
       desktopAppLogLevel: "off",
-      attachProtonLogsWhenTroubleshooting: true,
-      includeProtonExperimentJournalWhenTroubleshooting: true,
-      thinkingStatusTinyModelEnabled: false,
       presetChipFadeAnimationEnabled: true,
       presetChipAnimation: "fade",
       inputSanitizerUserDisabled: false,
@@ -256,9 +248,6 @@ describe("settingsAndResponse", () => {
       steamWebApiKey: "abc",
       bonsaiTokenStreamingEnabled: true,
       showOnscreenDebugHud: false,
-      responseVerifyEnabled: false,
-      responseVerifySecondPass: false,
-      responseVerifyModel: "",
       namedOllamaHosts: [],
       voiceSttModel: "tiny.en",
       uiScaleAutoEnabled: true,
@@ -280,7 +269,6 @@ describe("settingsAndResponse", () => {
     expect(p.reply_language).toBe("japanese");
     expect(p.model_allow_high_vram_fallbacks).toBe(true);
     expect(p.ollama_local_on_deck).toBe(true);
-    expect(p.attach_proton_logs_when_troubleshooting).toBe(true);
     expect(p.strategy_spoiler_masking_enabled).toBe(false);
     expect(p.strategy_spoiler_auto_reveal_after_consent).toBe(false);
     expect(p.steam_web_api_key).toBe("abc");
@@ -298,9 +286,6 @@ describe("settingsAndResponse", () => {
       desktopDebugNoteAutoSave: false,
       desktopAskVerboseLogging: false,
       desktopAppLogLevel: "off" as const,
-      attachProtonLogsWhenTroubleshooting: false,
-      includeProtonExperimentJournalWhenTroubleshooting: false,
-      thinkingStatusTinyModelEnabled: false,
       presetChipFadeAnimationEnabled: true,
       presetChipAnimation: "fade" as const,
       inputSanitizerUserDisabled: false,
@@ -324,9 +309,6 @@ describe("settingsAndResponse", () => {
       steamWebApiKey: "",
       bonsaiTokenStreamingEnabled: false,
       showOnscreenDebugHud: false,
-      responseVerifyEnabled: false,
-      responseVerifySecondPass: false,
-      responseVerifyModel: "",
       namedOllamaHosts: [],
       voiceSttModel: "tiny.en" as const,
       uiScaleAutoEnabled: true,
@@ -444,10 +426,6 @@ describe("settingsAndResponse", () => {
       desktopDebugNoteAutoSave: normalized.desktop_debug_note_auto_save,
       desktopAskVerboseLogging: normalized.desktop_ask_verbose_logging,
       desktopAppLogLevel: normalized.desktop_app_log_level,
-      attachProtonLogsWhenTroubleshooting: normalized.attach_proton_logs_when_troubleshooting,
-      includeProtonExperimentJournalWhenTroubleshooting:
-        normalized.include_proton_experiment_journal_when_troubleshooting,
-      thinkingStatusTinyModelEnabled: normalized.thinking_status_tiny_model_enabled,
       presetChipFadeAnimationEnabled: normalized.preset_chip_fade_animation_enabled,
       presetChipAnimation: normalized.preset_chip_animation,
       inputSanitizerUserDisabled: normalized.input_sanitizer_user_disabled,
@@ -471,9 +449,6 @@ describe("settingsAndResponse", () => {
       steamWebApiKey: normalized.steam_web_api_key,
       bonsaiTokenStreamingEnabled: normalized.bonsai_token_streaming_enabled,
       showOnscreenDebugHud: normalized.show_onscreen_debug_hud,
-      responseVerifyEnabled: normalized.response_verify_enabled,
-      responseVerifySecondPass: normalized.response_verify_second_pass,
-      responseVerifyModel: normalized.response_verify_model,
       namedOllamaHosts: normalized.named_ollama_hosts,
       voiceSttModel: normalized.voice_stt_model,
       uiScaleAutoEnabled: normalized.ui_scale_auto_enabled,

@@ -102,7 +102,8 @@ BPM (Desktop → Big Picture → QAM → bonsAI). Ollama reachable.
 | Block | Checklist |
 |-------|-----------|
 | **VAC matrix** | VAC-02…06 below (preview PASS; on-Deck still in QA backlog) |
-| **Proton logs** | PROTON-LOG-01…03 — attach on troubleshooting Ask |
+| **Proton logs** | PROTON-LOG-01…03 — auto-attach when **Read game & screenshot context** is on (troubleshooting Ask + AppID) |
+| **Permissions cleanup** | PERMS-CLEAN-01…06 — About/Steam links no gate; no Open web links / Adjust power limits toggles; no journal / intent-pack / Response verification UI; troubleshoot hint dismissible |
 | **Token streaming** | STREAM-01…05 spot; Strategy spoiler stream if flag on |
 | **Strategy depth** | Spoiler policy, checklist persist, cheat gating |
 | **KB** | KB-SMOKE-03, 05–10; KB-EVAL-01 before Phase 5 |

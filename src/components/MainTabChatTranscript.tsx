@@ -51,6 +51,7 @@ import {
   focusSessionContextStrip,
   queryLiveTurnSlot,
 } from "../utils/liveTurnFocusGraph";
+import { questionLooksLikeTroubleshootingAsk } from "../utils/troubleshootingAskHeuristic";
 
 const BONSAI_CHAT_AI_MAX_WIDTH_CSS = `min(${Math.round(BONSAI_CHAT_AI_BUBBLE_MAX_FRAC * 100)}%, 100%)`;
 
@@ -97,6 +98,9 @@ export type MainTabChatTranscriptProps = {
   liveReplyChipUsed?: boolean;
   liveReplyChipError?: string | null;
   askMode: AskModeId;
+  /** When false, troubleshooting-shaped Asks show a dismissible hint to enable game-context permission. */
+  gameContextReadEnabled?: boolean;
+  onNavigateToPermissions?: () => void;
 };
 
 export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
@@ -139,11 +143,14 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
     liveReplyChipUsed = false,
     liveReplyChipError = null,
     askMode,
+    gameContextReadEnabled = false,
+    onNavigateToPermissions,
   } = props;
 
   const [diagnosticsOpen, setDiagnosticsOpen] = useState(false);
   const [sessionHighlightTurnId, setSessionHighlightTurnId] = useState<string | null>(null);
   const [transparencyDetailsOpen, setTransparencyDetailsOpen] = useState(false);
+  const [troubleshootingPermHintDismissed, setTroubleshootingPermHintDismissed] = useState(false);
 
   useEffect(() => {
     setDiagnosticsOpen(false);
@@ -498,6 +505,46 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
       }}
     >
       No game detected — capture & attach a screenshot or name the game for sharper answers.
+    </div>
+  </PanelSectionRow>
+) : null}
+{!isAsking &&
+!gameContextReadEnabled &&
+!troubleshootingPermHintDismissed &&
+questionLooksLikeTroubleshootingAsk(unifiedInput) ? (
+  <PanelSectionRow>
+    <div
+      className="bonsai-full-bleed-row"
+      style={{
+        ...fullBleedRowStyle,
+        fontSize: 11,
+        color: "#c8d8ea",
+        lineHeight: 1.4,
+        display: "flex",
+        flexDirection: "column",
+        gap: 6,
+      }}
+    >
+      <div>
+        Troubleshooting Ask detected. Enable <strong>Read game & screenshot context</strong> in Permissions
+        to auto-attach Proton logs and screenshots (never turned on automatically).
+      </div>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        {onNavigateToPermissions ? (
+          <Button
+            onClick={() => onNavigateToPermissions()}
+            style={{ fontSize: 11, padding: "4px 10px" }}
+          >
+            Open Permissions
+          </Button>
+        ) : null}
+        <Button
+          onClick={() => setTroubleshootingPermHintDismissed(true)}
+          style={{ fontSize: 11, padding: "4px 10px" }}
+        >
+          Dismiss
+        </Button>
+      </div>
     </div>
   </PanelSectionRow>
 ) : null}

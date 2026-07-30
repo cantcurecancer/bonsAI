@@ -26,9 +26,6 @@ import {
   DEFAULT_DESKTOP_ASK_VERBOSE_LOGGING,
   DEFAULT_DESKTOP_DEBUG_NOTE_AUTO_SAVE,
   DEFAULT_DESKTOP_APP_LOG_LEVEL,
-  DEFAULT_ATTACH_PROTON_LOGS_WHEN_TROUBLESHOOTING,
-  DEFAULT_INCLUDE_PROTON_EXPERIMENT_JOURNAL_WHEN_TROUBLESHOOTING,
-  DEFAULT_THINKING_STATUS_TINY_MODEL_ENABLED,
   DEFAULT_INPUT_SANITIZER_USER_DISABLED,
   DEFAULT_LATENCY_WARNING_SECONDS,
   DEFAULT_MODEL_ALLOW_HIGH_VRAM_FALLBACKS,
@@ -44,9 +41,6 @@ import {
   DEFAULT_SHOW_DEVELOPER_TAB,
   DEFAULT_BONSAI_TOKEN_STREAMING_ENABLED,
   DEFAULT_SHOW_ONSCREEN_DEBUG_HUD,
-  DEFAULT_RESPONSE_VERIFY_ENABLED,
-  DEFAULT_RESPONSE_VERIFY_MODEL,
-  DEFAULT_RESPONSE_VERIFY_SECOND_PASS,
   type NamedOllamaHost,
   DEFAULT_STRATEGY_SPOILER_MASKING_ENABLED,
   DEFAULT_STRATEGY_SPOILER_AUTO_REVEAL_AFTER_CONSENT,
@@ -86,10 +80,6 @@ function snapshotFromBonsaiSettings(normalized: BonsaiSettings): BonsaiSettingsS
     desktopDebugNoteAutoSave: normalized.desktop_debug_note_auto_save,
     desktopAskVerboseLogging: normalized.desktop_ask_verbose_logging,
     desktopAppLogLevel: normalized.desktop_app_log_level,
-    attachProtonLogsWhenTroubleshooting: normalized.attach_proton_logs_when_troubleshooting,
-    includeProtonExperimentJournalWhenTroubleshooting:
-      normalized.include_proton_experiment_journal_when_troubleshooting,
-    thinkingStatusTinyModelEnabled: normalized.thinking_status_tiny_model_enabled,
     presetChipFadeAnimationEnabled: normalized.preset_chip_fade_animation_enabled,
     presetChipAnimation: normalized.preset_chip_animation,
     inputSanitizerUserDisabled: normalized.input_sanitizer_user_disabled,
@@ -115,9 +105,6 @@ function snapshotFromBonsaiSettings(normalized: BonsaiSettings): BonsaiSettingsS
     steamWebApiKey: normalized.steam_web_api_key,
     bonsaiTokenStreamingEnabled: normalized.bonsai_token_streaming_enabled,
     showOnscreenDebugHud: normalized.show_onscreen_debug_hud,
-    responseVerifyEnabled: normalized.response_verify_enabled,
-    responseVerifySecondPass: normalized.response_verify_second_pass,
-    responseVerifyModel: normalized.response_verify_model,
     namedOllamaHosts: normalized.named_ollama_hosts,
     voiceSttModel: normalized.voice_stt_model,
     uiScaleAutoEnabled: normalized.ui_scale_auto_enabled,
@@ -159,16 +146,6 @@ export function usePluginSettings() {
   const [desktopAppLogLevel, setDesktopAppLogLevel] = useState<DesktopAppLogLevel>(
     DEFAULT_DESKTOP_APP_LOG_LEVEL
   );
-  const [attachProtonLogsWhenTroubleshooting, setAttachProtonLogsWhenTroubleshooting] = useState<boolean>(
-    DEFAULT_ATTACH_PROTON_LOGS_WHEN_TROUBLESHOOTING
-  );
-  const [
-    includeProtonExperimentJournalWhenTroubleshooting,
-    setIncludeProtonExperimentJournalWhenTroubleshooting,
-  ] = useState<boolean>(DEFAULT_INCLUDE_PROTON_EXPERIMENT_JOURNAL_WHEN_TROUBLESHOOTING);
-  const [thinkingStatusTinyModelEnabled, setThinkingStatusTinyModelEnabled] = useState<boolean>(
-    DEFAULT_THINKING_STATUS_TINY_MODEL_ENABLED
-  );
   const [presetChipFadeAnimationEnabled, setPresetChipFadeAnimationEnabled] = useState<boolean>(
     DEFAULT_PRESET_CHIP_FADE_ANIMATION_ENABLED
   );
@@ -208,11 +185,6 @@ export function usePluginSettings() {
     DEFAULT_BONSAI_TOKEN_STREAMING_ENABLED
   );
   const [showOnscreenDebugHud, setShowOnscreenDebugHud] = useState<boolean>(DEFAULT_SHOW_ONSCREEN_DEBUG_HUD);
-  const [responseVerifyEnabled, setResponseVerifyEnabled] = useState<boolean>(DEFAULT_RESPONSE_VERIFY_ENABLED);
-  const [responseVerifySecondPass, setResponseVerifySecondPass] = useState<boolean>(
-    DEFAULT_RESPONSE_VERIFY_SECOND_PASS
-  );
-  const [responseVerifyModel, setResponseVerifyModel] = useState<string>(DEFAULT_RESPONSE_VERIFY_MODEL);
   const [namedOllamaHosts, setNamedOllamaHosts] = useState<NamedOllamaHost[]>([]);
   const [voiceSttModel, setVoiceSttModel] = useState<VoiceSttModelId>(DEFAULT_VOICE_STT_MODEL);
   const [uiScaleAutoEnabled, setUiScaleAutoEnabled] = useState<boolean>(DEFAULT_UI_SCALE_AUTO_ENABLED);
@@ -242,9 +214,6 @@ export function usePluginSettings() {
     desktopDebugNoteAutoSave,
     desktopAskVerboseLogging,
     desktopAppLogLevel,
-    attachProtonLogsWhenTroubleshooting,
-    includeProtonExperimentJournalWhenTroubleshooting,
-    thinkingStatusTinyModelEnabled,
     presetChipFadeAnimationEnabled,
     presetChipAnimation,
     inputSanitizerUserDisabled,
@@ -270,9 +239,6 @@ export function usePluginSettings() {
     steamWebApiKey,
     bonsaiTokenStreamingEnabled,
     showOnscreenDebugHud,
-    responseVerifyEnabled,
-    responseVerifySecondPass,
-    responseVerifyModel,
     namedOllamaHosts,
     voiceSttModel,
     uiScaleAutoEnabled,
@@ -292,11 +258,6 @@ export function usePluginSettings() {
     setDesktopDebugNoteAutoSave(normalized.desktop_debug_note_auto_save);
     setDesktopAskVerboseLogging(normalized.desktop_ask_verbose_logging);
     setDesktopAppLogLevel(normalized.desktop_app_log_level);
-    setAttachProtonLogsWhenTroubleshooting(normalized.attach_proton_logs_when_troubleshooting);
-    setIncludeProtonExperimentJournalWhenTroubleshooting(
-      normalized.include_proton_experiment_journal_when_troubleshooting,
-    );
-    setThinkingStatusTinyModelEnabled(normalized.thinking_status_tiny_model_enabled);
     setPresetChipAnimation(normalized.preset_chip_animation);
     setPresetChipFadeAnimationEnabled(normalized.preset_chip_fade_animation_enabled);
     setInputSanitizerUserDisabled(normalized.input_sanitizer_user_disabled);
@@ -322,9 +283,6 @@ export function usePluginSettings() {
     setSteamWebApiKey(normalized.steam_web_api_key);
     setBonsaiTokenStreamingEnabled(normalized.bonsai_token_streaming_enabled);
     setShowOnscreenDebugHud(normalized.show_onscreen_debug_hud);
-    setResponseVerifyEnabled(normalized.response_verify_enabled);
-    setResponseVerifySecondPass(normalized.response_verify_second_pass);
-    setResponseVerifyModel(normalized.response_verify_model);
     setNamedOllamaHosts(normalized.named_ollama_hosts);
     setVoiceSttModel(normalized.voice_stt_model);
     setUiScaleAutoEnabled(normalized.ui_scale_auto_enabled);
@@ -393,11 +351,6 @@ export function usePluginSettings() {
         setDesktopDebugNoteAutoSave(DEFAULT_DESKTOP_DEBUG_NOTE_AUTO_SAVE);
         setDesktopAskVerboseLogging(DEFAULT_DESKTOP_ASK_VERBOSE_LOGGING);
         setDesktopAppLogLevel(DEFAULT_DESKTOP_APP_LOG_LEVEL);
-        setAttachProtonLogsWhenTroubleshooting(DEFAULT_ATTACH_PROTON_LOGS_WHEN_TROUBLESHOOTING);
-        setIncludeProtonExperimentJournalWhenTroubleshooting(
-          DEFAULT_INCLUDE_PROTON_EXPERIMENT_JOURNAL_WHEN_TROUBLESHOOTING,
-        );
-        setThinkingStatusTinyModelEnabled(DEFAULT_THINKING_STATUS_TINY_MODEL_ENABLED);
         setPresetChipAnimation(DEFAULT_PRESET_CHIP_ANIMATION);
         setPresetChipFadeAnimationEnabled(DEFAULT_PRESET_CHIP_FADE_ANIMATION_ENABLED);
         setInputSanitizerUserDisabled(DEFAULT_INPUT_SANITIZER_USER_DISABLED);
@@ -419,9 +372,6 @@ export function usePluginSettings() {
         setSteamWebApiKey("");
         setBonsaiTokenStreamingEnabled(DEFAULT_BONSAI_TOKEN_STREAMING_ENABLED);
         setShowOnscreenDebugHud(DEFAULT_SHOW_ONSCREEN_DEBUG_HUD);
-        setResponseVerifyEnabled(DEFAULT_RESPONSE_VERIFY_ENABLED);
-        setResponseVerifySecondPass(DEFAULT_RESPONSE_VERIFY_SECOND_PASS);
-        setResponseVerifyModel(DEFAULT_RESPONSE_VERIFY_MODEL);
         setNamedOllamaHosts([]);
         setVoiceSttModel(DEFAULT_VOICE_STT_MODEL);
         setUiScaleAutoEnabled(DEFAULT_UI_SCALE_AUTO_ENABLED);
@@ -465,9 +415,6 @@ export function usePluginSettings() {
     desktopDebugNoteAutoSave,
     desktopAskVerboseLogging,
     desktopAppLogLevel,
-    attachProtonLogsWhenTroubleshooting,
-    includeProtonExperimentJournalWhenTroubleshooting,
-    thinkingStatusTinyModelEnabled,
     presetChipFadeAnimationEnabled,
     presetChipAnimation,
     inputSanitizerUserDisabled,
@@ -493,9 +440,6 @@ export function usePluginSettings() {
     steamWebApiKey,
     bonsaiTokenStreamingEnabled,
     showOnscreenDebugHud,
-    responseVerifyEnabled,
-    responseVerifySecondPass,
-    responseVerifyModel,
     namedOllamaHosts,
     voiceSttModel,
     uiScaleAutoEnabled,
@@ -515,9 +459,6 @@ export function usePluginSettings() {
     desktopDebugNoteAutoSave,
     desktopAskVerboseLogging,
     desktopAppLogLevel,
-    attachProtonLogsWhenTroubleshooting,
-    includeProtonExperimentJournalWhenTroubleshooting,
-    thinkingStatusTinyModelEnabled,
     presetChipFadeAnimationEnabled,
     setPresetChipFadeAnimationEnabled,
     presetChipAnimation,
@@ -567,12 +508,6 @@ export function usePluginSettings() {
     setBonsaiTokenStreamingEnabled,
     showOnscreenDebugHud,
     setShowOnscreenDebugHud,
-    responseVerifyEnabled,
-    setResponseVerifyEnabled,
-    responseVerifySecondPass,
-    setResponseVerifySecondPass,
-    responseVerifyModel,
-    setResponseVerifyModel,
     namedOllamaHosts,
     setNamedOllamaHosts,
     voiceSttModel,
@@ -594,9 +529,6 @@ export function usePluginSettings() {
     setDesktopDebugNoteAutoSave,
     setDesktopAskVerboseLogging,
     setDesktopAppLogLevel,
-    setAttachProtonLogsWhenTroubleshooting,
-    setIncludeProtonExperimentJournalWhenTroubleshooting,
-    setThinkingStatusTinyModelEnabled,
     setInputSanitizerUserDisabled,
     setLatencyTimeoutsCustomEnabled,
     setScreenshotAttachmentPreset,

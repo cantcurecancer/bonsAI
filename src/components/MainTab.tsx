@@ -121,6 +121,8 @@ export type MainTabProps = {
   desktopAskVerboseLogging?: boolean;
   lastRequestId?: number | null;
   lastExchange?: LastExchangeSnapshot | null;
+  gameContextReadEnabled?: boolean;
+  onNavigateToPermissions?: () => void;
 };
 
 export function MainTab(props: MainTabProps) {

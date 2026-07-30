@@ -40,10 +40,8 @@ export type ScreenshotAttachmentPreset = "low" | "mid" | "max";
 /** High-impact capability toggles; keep keys aligned with backend `capabilities` and Permission Center UI. */
 export type BonsaiCapabilities = {
   filesystem_write: boolean;
-  hardware_control: boolean;
   media_library_access: boolean;
   steam_logs_read: boolean;
-  external_navigation: boolean;
   /** Outbound Steam Web API (GetPlayerBans) for ``bonsai:vac-check``; key stored in settings. */
   steam_web_api: boolean;
   /** Local microphone capture for speech-to-text in the Ask bar. */
@@ -71,12 +69,6 @@ export type BonsaiSettings = {
   desktop_ask_verbose_logging: boolean;
   /** App activity log level written to Desktop/bonsAI_logs/bonsai-app-YYYY-MM-DD.log (requires filesystem_write). */
   desktop_app_log_level: DesktopAppLogLevel;
-  /** When true (with Permissions → Steam/Proton log read), troubleshooting-style Asks attach bounded local log excerpts. */
-  attach_proton_logs_when_troubleshooting: boolean;
-  /** When true, troubleshooting Asks inject the per-game Proton experiment journal block. */
-  include_proton_experiment_journal_when_troubleshooting: boolean;
-  /** When true, fire-and-forget tiny-model thinking blurbs (Developer opt-in; default off). */
-  thinking_status_tiny_model_enabled: boolean;
   /** @deprecated Prefer `preset_chip_animation`; kept for migration from older settings.json. */
   preset_chip_fade_animation_enabled: boolean;
   /** Main-tab preset chips: crossfade cycle, vertical carousel, or static rotation without opacity animation. */
@@ -124,12 +116,6 @@ export type BonsaiSettings = {
   bonsai_token_streaming_enabled: boolean;
   /** When true, show the translucent on-screen ingest debug HUD (Developer tab opt-in). */
   show_onscreen_debug_hud: boolean;
-  /** Rule-based post-check on Ollama replies (Developer / advanced). */
-  response_verify_enabled: boolean;
-  /** Optional second-model verifier (default off). */
-  response_verify_second_pass: boolean;
-  /** Ollama tag for verifier second pass (empty disables the model call). */
-  response_verify_model: string;
   /** Labeled ``host:port`` presets for quick Connection switching (max 4). */
   named_ollama_hosts: NamedOllamaHost[];
   /** Local whisper.cpp model for voice Ask (tiny.en default for Deck real-time). */
@@ -156,9 +142,6 @@ export type BonsaiSettingsSnapshotInput = {
   desktopDebugNoteAutoSave: boolean;
   desktopAskVerboseLogging: boolean;
   desktopAppLogLevel: DesktopAppLogLevel;
-  attachProtonLogsWhenTroubleshooting: boolean;
-  includeProtonExperimentJournalWhenTroubleshooting: boolean;
-  thinkingStatusTinyModelEnabled: boolean;
   presetChipFadeAnimationEnabled: boolean;
   presetChipAnimation: PresetChipAnimation;
   inputSanitizerUserDisabled: boolean;
@@ -184,9 +167,6 @@ export type BonsaiSettingsSnapshotInput = {
   steamWebApiKey: string;
   bonsaiTokenStreamingEnabled: boolean;
   showOnscreenDebugHud: boolean;
-  responseVerifyEnabled: boolean;
-  responseVerifySecondPass: boolean;
-  responseVerifyModel: string;
   namedOllamaHosts: NamedOllamaHost[];
   voiceSttModel: VoiceSttModelId;
   uiScaleAutoEnabled: boolean;
@@ -219,16 +199,9 @@ export const DEFAULT_DESKTOP_DEBUG_NOTE_AUTO_SAVE = false;
 export const DEFAULT_DESKTOP_ASK_VERBOSE_LOGGING = false;
 export const DEFAULT_BONSAI_TOKEN_STREAMING_ENABLED = false;
 export const DEFAULT_SHOW_ONSCREEN_DEBUG_HUD = false;
-export const DEFAULT_RESPONSE_VERIFY_ENABLED = false;
-export const DEFAULT_RESPONSE_VERIFY_SECOND_PASS = false;
-export const DEFAULT_RESPONSE_VERIFY_MODEL = "";
-export const RESPONSE_VERIFY_MODEL_MAX_LEN = 64;
 export const MAX_NAMED_OLLAMA_HOSTS = 4;
 export const DEFAULT_DESKTOP_APP_LOG_LEVEL: DesktopAppLogLevel = "off";
 export const DESKTOP_APP_LOG_LEVEL_OPTIONS: DesktopAppLogLevel[] = ["off", "default", "verbose"];
-export const DEFAULT_ATTACH_PROTON_LOGS_WHEN_TROUBLESHOOTING = false;
-export const DEFAULT_INCLUDE_PROTON_EXPERIMENT_JOURNAL_WHEN_TROUBLESHOOTING = false;
-export const DEFAULT_THINKING_STATUS_TINY_MODEL_ENABLED = false;
 export const DEFAULT_PRESET_CHIP_FADE_ANIMATION_ENABLED = true;
 export const DEFAULT_PRESET_CHIP_ANIMATION: PresetChipAnimation = "fade";
 export const PRESET_CHIP_ANIMATION_OPTIONS: PresetChipAnimation[] = ["fade", "carousel", "static"];
@@ -248,10 +221,8 @@ export const STEAM_WEB_API_KEY_MAX_LEN = 128;
 
 export const DEFAULT_CAPABILITIES: BonsaiCapabilities = {
   filesystem_write: false,
-  hardware_control: false,
   media_library_access: false,
   steam_logs_read: false,
-  external_navigation: false,
   steam_web_api: false,
   microphone_access: false,
 };

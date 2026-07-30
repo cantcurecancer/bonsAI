@@ -21,7 +21,7 @@ Known **defects** only. Deferred QA lives under [QA backlog](#qa-backlog). *QAMP
 - ★★ **Live-turn transparency UI missing after successful Ask:** Backend `ensure_context_chips_on_snapshot` + slimmer dev chip JSON + frontend `transparencyUiAvailable` gating; verify **CONTEXT-LADDER-01** on Deck.
 - ★★ **Strategy live-turn D-pad graph skips branches/feedback:** Geometry scroll gate + yield-to-parent (`return false`) with Focusable branch picker as turn-slot sibling; verify **MICRO-04** on Deck.
 - ★★★ **Soft** `num_predict` **+ thinking budget:** `options.num_predict` is a hard Ollama wall (500 Speed/Expert, 900 Strategy) with no overshoot/continue; `"think": False` avoids empty replies when thinking ate the wall (`done_reason=length`, zero content) but leaves quality on the table for thinking models. **Intent:** length preference with small overshoot OK — not a hard cut, not unlimited. **Fix lean:** (1) raise base caps; (2) continuation on `done_reason=length` (small extra budget, capped continues — especially when content empty/short); (3) optional Reply verbosity → answer `num_predict`; (4) **budget thinking separately** (application policy): re-enable thinking with a fixed Deck default effort (`low`/`medium`) plus answer-floor / continue-if-content-starved; log thinking vs content lengths. Ollama has no true dual hard budgets in one completion — levels + continue stand in. **Not in scope:** delete the ceiling entirely; Settings UI for effort (→ **Thinking effort control**); parallel second Ask; spoiler chip work.
- ★★ **Model routing try-order modal focus + chrome:** Text/vision **Set … try order…** fullscreen (`ModelRoutingOrderModal`) — D-pad focus lands on leaf Up/Down buttons and feels broken; layout/chrome does not match other fullscreen pickers (Pull Models / Character picker / Models hub `ConfirmModal` pattern). Screenshot `DeckCapture_20260730_144925`. Discovery locked 2026-07-30. **Defer** — fetch-on-open + save already shipped; polish later.
+- ★★ **Model routing try-order modal focus + chrome:** Text/vision **Set … try order…** fullscreen (`ModelRoutingOrderModal`) — D-pad focus lands on leaf Up/Down buttons and feels broken; layout/chrome does not match other fullscreen pickers (Pull Models / Character picker / Models hub `ConfirmModal` pattern). Screenshot `DeckCapture_20260730_144925`. Discovery locked 2026-07-30. **Defer** — fetch-on-open + save already shipped; polish later.
 - ★★ **KB compat retrieval phrase gate:** Troubleshooting KB (compat hybrid / **Keyword + meaning**) only runs when `question_matches_troubleshooting_log_context` matches a **hardcoded phrase list** in `ollama_prompts.py` (preset-style strings like `proton issue`, `why is my game crashing`). Natural-language asks (e.g. `deck sleep resume proton black screen`) skip the KB entirely — no chip, no hybrid, no **Source: shared troubleshooting tips**. **Intent:** when **Use local knowledge base** is on, attempt compat tip retrieval for general troubleshooting-shaped Asks without growing a brittle regex/preset farm in bonsAI. **Fix lean:** broaden gate (e.g. KB-on + not strategy-with-game → compat shortlist; or lightweight intent/heuristic separate from carousel presets); keep Strategy path AppID-gated. Regression: **KB-SMOKE-07/08** queries in [testing-manual.md](testing-manual.md) must pass without adding new hardcoded strings per smoke case.
 - ★★★ **LB/RB tab switch flicker when scrolled:** Switching tabs with shoulder buttons while focus is deep in a scrolled panel (not on tab icons) flashes/jitters. Investigate carousel + remount/scroll/focus survival (partial anti-flicker CSS already on `TabContentsScroll`). Discovery locked 2026-07-29.
 
@@ -54,23 +54,9 @@ Stars are **effort/risk** within bands. Grouped by **horizon**; **within each ho
 
 Within this section: ascending stars (★ → ★★★★).
 
-- ★ **Remove Open web links permission** (always allow user-initiated opens — discovery locked 2026-07-29)
-  - **Goal:** Drop `external_navigation` capability. User-tapped docs/GitHub (`NavigateToExternalWeb`) and Steam settings / Steam Input jumps always allowed — no Permissions toggle.
-  - **Not in scope:** AI-initiated arbitrary URL opens (none today).
-- ★★ **Obsolete Proton experiment journal** (Settings form + inject — discovery locked 2026-07-29)
-  - **Goal:** Obsolete the Proton experiment journal UI and inject path. Attach Proton logs handled under **Fold Proton logs into game-context permission** + **Troubleshooting permission hint**.
-  - **Follow-up:** Later review whether any of this is worth keeping, cleaning up, or moving to Developer.
-  - **Not in scope:** removing Steam/Proton log *read* capability or auto-attach.
-- ★★ **Obsolete Search intent packs UI** (Import/Export — discovery locked 2026-07-29)
-  - **Goal:** Obsolete Settings **Search intent packs** exchange UI.
-  - **Follow-up:** Later review — drop entirely vs quiet bundled aliases vs revive under Developer.
-  - **Not in scope:** rewriting unified search ranking in the same change.
-- ★★ **Fold Proton logs into game-context permission** (discovery locked 2026-07-29)
-  - **Goal:** When **Read game & screenshot context** is on, auto-attach Proton logs on troubleshooting Asks; remove buried Settings **Attach Proton logs…** toggle. Clarify permission title/description (screenshots + Proton/game logs).
-  - **Depends on / related:** **Troubleshooting permission hint**; obsolete journal row.
-- ★★ **Troubleshooting permission hint** (discovery locked 2026-07-29)
-  - **Goal:** Hint-only: on troubleshooting-style Asks, if game/screenshot/Proton context permission is off, suggest enabling it (dismissible; never auto-enable).
-  - **Depends on:** **Fold Proton logs into game-context permission**.
+- ★ **Proton journal / intent packs later review** (keep / quiet / Developer — discovery leftover 2026-07-30)
+  - **Goal:** Decide whether dormant Proton experiment journal RPCs/store and quiet intent-pack search aliases should be deleted, left quiet, or revived under Developer.
+  - **Not in scope:** rewriting unified search ranking; re-shipping journal inject without a redesign.
 - ★★ **Preset chip expansion** (streaming / LAN / Steam Input — incremental)
   - **Baseline shipped:** `PRESET_PROMPTS` in [`src/data/presets.ts`](../src/data/presets.ts).
   - **Goal:** Add or refresh preset strings as related features land — content tuning only.
@@ -91,9 +77,6 @@ Within this section: ascending stars (★ → ★★★★).
   - **Goal:** User-adjustable Ollama thinking effort mapped to `think: false | "low" | "medium" | "high"` (global v1).
   - **Depends on:** **Soft** `num_predict` **+ thinking budget** (Bugs).
   - **Not in scope:** shipping Settings before the soft-budget bug fix.
-- ★★★ **Obsolete tiny-model blurbs + response verify; power limits read-only** (discovery locked 2026-07-29)
-  - **Goal:** (1) Remove optional tiny-Ollama thinking-status path. (2) Remove Ollama **Response verification** section and backend verify path. (3) Remove **Adjust power limits** permission and any apply/write path — TDP/GPU suggestions stay **read-only**.
-  - **Not in scope:** removing witty/deterministic thinking status copy; QAMP Phase 2.
 - ★★★ **Dynamic keep-alive / smart unload** (research spike — discovery locked 2026-07-29)
   - **Goal:** Research-only: hold models loaded vs unload when a game takes focus, safely on Deck APU shared memory? Spike decides go/no-go. No ship commitment until spike writes outcome.
   - **Not in scope:** promising true per-game VRAM detection; production unload before spike doc.
@@ -230,15 +213,14 @@ Coverage for shipped work: [testing.md](testing.md).
 - **Character voice roleplay (shipped)** → accent intensity, avatars, UI accent theme, Random “?”, running-game suggestions, Pyro easter egg (all shipped); → **Local reply TTS** Phase 2.
 - **Whisper voice Ask (shipped)** + mic → **Wake-word listening**.
 - **Reply ready toast (shipped)** → required for hands-free wake when QAM closed.
-- **Capability Permission Center** → gates filesystem, elevated tasks, Steam/Proton log reads; **Remove Open web links permission**; **Obsolete tiny-model blurbs + response verify; power limits read-only**; **Fold Proton logs** + **Troubleshooting permission hint**.
+- **Capability Permission Center** → gates filesystem, Steam/Proton log + screenshot reads, mic, Steam Web API; web/Steam jumps always allowed; TDP/GPU suggestions read-only (no apply).
 - **Llama.cpp provider spike** → research-only; related **Dynamic keep-alive / smart unload**.
 - **Preset carousel (shipped)** → incremental **Preset chip expansion**; **Session RAG preset chips (shipped)**.
 - **RAG / offline KB** → Phase 2–3 shipped → Phase 4–5 Planned; **KB visual maps** separate; **Spoiler confidence chip** → fencing + unfenced feedback.
 - **Soft** `num_predict` **+ thinking budget** (Bugs) → **Thinking effort control**.
 - **Native QAM shortcut tile** → shorter path than Guide-chord macro docs (§5).
 - **Steam Input jump Phase 1 (shipped)** → **Steam Input layout parse**.
-- **Offline intent packs (shipped)** → **Obsolete Search intent packs UI**.
-- **Proton experiment journal (shipped)** → **Obsolete Proton experiment journal**.
+- **Offline intent packs (quiet)** → **Proton journal / intent packs later review**.
 - **Deck health snapshot** → `steam_logs_read` + Proton log helpers; Desktop save needs `filesystem_write`.
 
 ```mermaid

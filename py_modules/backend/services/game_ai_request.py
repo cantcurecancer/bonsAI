@@ -19,7 +19,6 @@ import decky
 
 from backend.services.capabilities import capability_enabled
 from backend.services.bonsai_stream_tags import compose_thinking_blurb
-from backend.services.thinking_tiny_model_service import spawn_tiny_thinking_blurb
 from backend.services.ai_character_service import build_roleplay_system_suffix_meta
 from backend.services.input_sanitizer_service import apply_input_sanitizer_lane
 from backend.services.ollama_prompts import (
@@ -41,34 +40,20 @@ from backend.services.knowledge_base_service import (
     stack_context_blocks,
 )
 from backend.services.screenshot_media import lookup_screenshot_vdf_metadata
-from backend.services.proton_experiment_journal_service import (
-    format_journal_for_prompt,
-    list_entries,
-    load_store as load_journal_store,
-)
 from backend.services.transparency_service import (
     build_capability_denied_snapshot,
     build_error_route_snapshot,
     build_knowledge_base_transparency,
     build_ollama_route_snapshot,
-    build_proton_journal_transparency,
     build_proton_log_transparency,
     build_sanitizer_block_snapshot,
     build_sanitizer_command_snapshot,
 )
-from backend.services.response_verify import (
-    maybe_append_verifier_notice,
-    run_verifier_second_pass,
-    verify_ollama_response,
-)
-from refactor_helpers import build_ollama_chat_url
 from backend.services.tdp_service import (
     GPU_CLK_MAX_MHZ,
     GPU_CLK_MIN_MHZ,
-    STEAMOS_PRIV_WRITE,
     TDP_MAX_W,
     TDP_MIN_W,
-    apply_tdp,
     read_current_tdp_watts,
 )
 from refactor_helpers import is_current_tdp_read_intent, parse_tdp_recommendation
@@ -218,20 +203,12 @@ async def run_game_ai_request(
                 character_preset_id=rp_meta.resolved_preset_id,
             )
             plugin._publish_thinking_phase(active_rid, blurb)
-            if settings.get("thinking_status_tiny_model_enabled") is True:
-                spawn_tiny_thinking_blurb(
-                    plugin,
-                    active_rid,
-                    question=question_for_model,
-                    app_name=app_name,
-                    pc_ip=pc_ip,
-                )
 
         proton_attachment_text = ""
         proton_sources: list = []
         proton_notes_parts: list[str] = []
         want_proton_logs = (
-            settings.get("attach_proton_logs_when_troubleshooting") is True
+            capability_enabled(settings, "steam_logs_read")
             and question_matches_troubleshooting_log_context(question_for_model)
             and bool(str(app_id or "").strip())
         )
@@ -246,58 +223,30 @@ async def run_game_ai_request(
                     character_enabled=bool(settings.get("ai_character_enabled")),
                     character_preset_id=rp_meta.resolved_preset_id,
                 )
-            if not capability_enabled(settings, "steam_logs_read"):
-                proton_notes_parts.append(
-                    "Proton log excerpts skipped: enable Steam/Proton log read in Permissions."
-                )
-            else:
-                _loop_pl = asyncio.get_running_loop()
+            _loop_pl = asyncio.get_running_loop()
 
-                def _collect_logs() -> dict:
-                    return collect_proton_troubleshooting_logs(app_id)
+            def _collect_logs() -> dict:
+                return collect_proton_troubleshooting_logs(app_id)
 
-                pl_result = await _loop_pl.run_in_executor(None, _collect_logs)
-                proton_attachment_text = str(pl_result.get("text") or "")
-                proton_sources = list(pl_result.get("sources") or [])
-                for w in pl_result.get("warnings") or []:
-                    if isinstance(w, str) and w.strip():
-                        proton_notes_parts.append(w.strip())
+            pl_result = await _loop_pl.run_in_executor(None, _collect_logs)
+            proton_attachment_text = str(pl_result.get("text") or "")
+            proton_sources = list(pl_result.get("sources") or [])
+            for w in pl_result.get("warnings") or []:
+                if isinstance(w, str) and w.strip():
+                    proton_notes_parts.append(w.strip())
+        elif (
+            question_matches_troubleshooting_log_context(question_for_model)
+            and bool(str(app_id or "").strip())
+            and not capability_enabled(settings, "steam_logs_read")
+        ):
+            proton_notes_parts.append(
+                "Proton log excerpts skipped: enable Read game & screenshot context in Permissions."
+            )
 
         proton_log_transparency = build_proton_log_transparency(
             excerpt_attached=bool(proton_attachment_text.strip()),
             sources=proton_sources,
             notes="; ".join(proton_notes_parts),
-        )
-
-        journal_attachment_text = ""
-        journal_notes_parts: list[str] = []
-        journal_entry_count = len(list_entries(load_journal_store(logger=logger), app_id))
-        want_journal = (
-            settings.get("include_proton_experiment_journal_when_troubleshooting") is True
-            and question_matches_troubleshooting_log_context(question_for_model)
-            and bool(str(app_id or "").strip())
-        )
-        if want_journal:
-            if isinstance(active_rid, int) and hasattr(plugin, "_publish_thinking_phase_key"):
-                plugin._publish_thinking_phase_key(
-                    active_rid,
-                    "experiment_journal",
-                    app_name=app_name,
-                    ask_mode=ask_mode,
-                    question=question_for_model,
-                    character_enabled=bool(settings.get("ai_character_enabled")),
-                    character_preset_id=rp_meta.resolved_preset_id,
-                )
-            if journal_entry_count <= 0:
-                journal_notes_parts.append("Proton experiment journal empty for this AppID.")
-            else:
-                journal_attachment_text = format_journal_for_prompt(app_id)
-                if not journal_attachment_text.strip():
-                    journal_notes_parts.append("Journal entries present but formatting yielded no text.")
-        journal_transparency = build_proton_journal_transparency(
-            attached=bool(journal_attachment_text.strip()),
-            entry_count=journal_entry_count,
-            notes="; ".join(journal_notes_parts),
         )
 
         shortcut_name = ""
@@ -366,7 +315,7 @@ async def run_game_ai_request(
 
         early_context_combined = stack_context_blocks(
             proton_text=proton_attachment_text,
-            journal_text=journal_attachment_text,
+            journal_text="",
             knowledge_text=kb_text,
         )
 
@@ -430,56 +379,11 @@ async def run_game_ai_request(
         base_response_text = str(ollama_result.get("response", "") or "No response text.")
         response_text = base_response_text
         applied = None
-        verify_result = None
         pyro_asshole = ollama_result.get("pyro_asshole_mode") is True
-
-        if ollama_result.get("success"):
-            has_game = bool((app_id or "").strip()) or bool((app_name or "").strip())
-            run_rules = settings.get("response_verify_enabled") is True
-            verify_model = str(settings.get("response_verify_model") or "").strip()
-            run_second = (
-                settings.get("response_verify_second_pass") is True and bool(verify_model)
-            )
-            if run_rules or run_second:
-                verify_result = (
-                    verify_ollama_response(
-                        response_text=base_response_text,
-                        app_id=app_id,
-                        app_name=app_name,
-                    )
-                    if run_rules
-                    else {"passed": True, "warnings": []}
-                )
-                should_second = run_second and (
-                    not run_rules or not verify_result.get("passed")
-                )
-                if should_second:
-                    loop_verify = asyncio.get_running_loop()
-
-                    def _second_pass() -> dict:
-                        return run_verifier_second_pass(
-                            chat_url=build_ollama_chat_url(pc_ip),
-                            model_name=verify_model,
-                            response_text=base_response_text,
-                            has_game=has_game,
-                            request_timeout_seconds=request_timeout_seconds,
-                            logger=logger,
-                        )
-
-                    second = await loop_verify.run_in_executor(None, _second_pass)
-                    verify_result = {**verify_result, "second_pass": second}
-                    if second.get("ran") and second.get("passed") is False:
-                        warnings = list(verify_result.get("warnings") or [])
-                        warnings.append("verifier model flagged possible unsupported claims")
-                        verify_result["passed"] = False
-                        verify_result["warnings"] = warnings
-                if not verify_result.get("passed") and not pyro_asshole:
-                    response_text = maybe_append_verifier_notice(base_response_text, verify_result)
 
         if ollama_result.get("success"):
             loop = asyncio.get_running_loop()
             tmin, tmax, gmin, gmax = TDP_MIN_W, TDP_MAX_W, GPU_CLK_MIN_MHZ, GPU_CLK_MAX_MHZ
-            priv_write = STEAMOS_PRIV_WRITE
 
             def _parse_only() -> Optional[dict]:
                 return parse_tdp_recommendation(
@@ -497,22 +401,17 @@ async def run_game_ai_request(
             elif pyro_asshole:
                 logger.info("ask_game_ai: pyro asshole easter egg; hardware apply suppressed")
             elif rec:
-                if not capability_enabled(settings, "hardware_control"):
-                    logger.info("ask_game_ai: TDP recommendation present but hardware_control disabled")
-                    response_text += "\n\n[Hardware tuning not applied: enable Hardware control in the Permissions tab.]"
-                    applied = {
-                        "tdp_watts": None,
-                        "gpu_clock_mhz": None,
-                        "errors": ["Hardware control disabled in Permissions."],
-                    }
-                else:
-                    logger.info("ask_game_ai: parsed TDP recommendation: %s", rec)
-
-                    def _apply() -> dict:
-                        return apply_tdp(rec, priv_write, logger)
-
-                    applied = await loop.run_in_executor(None, _apply)
-                    logger.info("ask_game_ai: apply result: %s", applied)
+                # TDP/GPU suggestions are read-only — never write sysfs from Ask.
+                logger.info("ask_game_ai: parsed TDP recommendation (suggestion-only): %s", rec)
+                applied = {
+                    "tdp_watts": None,
+                    "gpu_clock_mhz": None,
+                    "errors": [],
+                    "suggestion": {
+                        "tdp_watts": rec.get("tdp_watts"),
+                        "gpu_clock_mhz": rec.get("gpu_clock_mhz"),
+                    },
+                }
             else:
                 logger.info("ask_game_ai: no TDP recommendation found in response")
 
@@ -529,7 +428,6 @@ async def run_game_ai_request(
                 ollama_result={
                     **ollama_result,
                     **kb_transparency,
-                    **journal_transparency,
                     "tdp_cap_watts": pre_cap if tdp_grounding_requested else None,
                 },
                 base_response_text=base_response_text,
@@ -540,7 +438,6 @@ async def run_game_ai_request(
                 pc_ip=pc_ip,
                 err_tail=err_tail,
                 elapsed_seconds=elapsed,
-                verify_result=verify_result,
                 reply_followup=reply_followup,
             )
         )

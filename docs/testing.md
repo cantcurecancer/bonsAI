@@ -52,8 +52,9 @@ One smoke often covers many features. Status: **Verified** / **Partial** / **Ope
 |------|------------|--------|-------|
 | Plugin shell / tabs / Ask / connection test | SMOKE-A | Partial | Preview May 2026; on-Deck Tier 0 still in [QA backlog](roadmap.md#qa-backlog) |
 | Permissions gate | SMOKE-C | Partial | Preview May 2026 |
+| Permissions cleanup batch (web links always-on; Proton auto-attach; journal/intent UI gone; TDP read-only; troubleshoot hint) | PERMS-CLEAN-01…06 | Open | Schema/RPC unit; on-Deck: About links, Steam Input jump, troubleshooting Ask with game-context on/off + dismiss hint, no power-limits toggle, no Response verification section |
 | Deterministic commands / VAC off / shortcut keywords | SMOKE-F | Partial | VAC full matrix → Tier 2 manual |
-| TDP apply + QAMP banner | SMOKE-B | Verified | On-Deck + preview evidence |
+| TDP suggestions (read-only; no sysfs apply) | SMOKE-B | Open | Apply path removed 2026-07-30; re-verify suggestion-only banner/behavior |
 | Strategy mode + spoilers (spot) | SMOKE-E | Partial | Deeper spoiler/checklist → Tier 2 |
 | Preset carousel troubleshooting triple | SMOKE-D | Verified | |
 | Preset chip inject (no game append) | PRESET-GAME-01 | Open | Unit pass; on-Deck chip → Ask text |

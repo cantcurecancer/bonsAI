@@ -21,15 +21,15 @@ class CapabilitiesTests(unittest.TestCase):
         out = sanitize_capabilities(
             {
                 "filesystem_write": True,
-                "hardware_control": False,
                 "media_library_access": 1,
-                "external_navigation": "x",
+                "steam_logs_read": "x",
             }
         )
         self.assertTrue(out["filesystem_write"])
-        self.assertFalse(out["hardware_control"])
         self.assertTrue(out["media_library_access"])
-        self.assertFalse(out["external_navigation"])
+        self.assertFalse(out["steam_logs_read"])
+        self.assertNotIn("hardware_control", out)
+        self.assertNotIn("external_navigation", out)
 
     def test_legacy_grandfather_all_true_except_steam_web_api(self):
         # Matches legacy_grandfather_capabilities docstring: outbound Steam Web API stays off for legacy installs.
@@ -50,6 +50,7 @@ class CapabilitiesTests(unittest.TestCase):
             capability_enabled({"capabilities": {"filesystem_write": True}}, "filesystem_write")
         )
         self.assertFalse(capability_enabled({"capabilities": {}}, "hardware_control"))
+        self.assertFalse(capability_enabled({"capabilities": {"hardware_control": True}}, "hardware_control"))
 
 
 if __name__ == "__main__":

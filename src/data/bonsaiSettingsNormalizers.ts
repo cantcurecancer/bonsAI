@@ -40,7 +40,6 @@ import {
   DEFAULT_PRESET_CHIP_ANIMATION,
   DEFAULT_PRESET_CHIP_FADE_ANIMATION_ENABLED,
   DEFAULT_REQUEST_TIMEOUT_SECONDS,
-  DEFAULT_RESPONSE_VERIFY_MODEL,
   DEFAULT_SCREENSHOT_ATTACHMENT_PRESET,
   DEFAULT_SCREENSHOT_MAX_DIMENSION,
   DEFAULT_STRATEGY_SPOILER_MASKING_ENABLED,
@@ -54,7 +53,6 @@ import {
   MIN_REQUEST_TIMEOUT_SECONDS,
   PRESET_CHIP_ANIMATION_OPTIONS,
   REQUEST_TIMEOUT_STEP_SECONDS,
-  RESPONSE_VERIFY_MODEL_MAX_LEN,
   STEAM_WEB_API_KEY_MAX_LEN,
   VOICE_STT_MODEL_OPTIONS,
   type BonsaiCapabilities,
@@ -204,23 +202,6 @@ export function normalizeShowOnscreenDebugHud(value: unknown): boolean {
   return value === true;
 }
 
-export function normalizeResponseVerifyEnabled(value: unknown): boolean {
-  return value === true;
-}
-
-export function normalizeResponseVerifySecondPass(value: unknown): boolean {
-  return value === true;
-}
-
-const RESPONSE_VERIFY_MODEL_RE = /^[a-zA-Z0-9][a-zA-Z0-9._:/-]{0,63}$/;
-
-export function normalizeResponseVerifyModel(value: unknown): string {
-  if (typeof value !== "string") return DEFAULT_RESPONSE_VERIFY_MODEL;
-  const tag = value.trim().slice(0, RESPONSE_VERIFY_MODEL_MAX_LEN);
-  if (!tag || !RESPONSE_VERIFY_MODEL_RE.test(tag)) return DEFAULT_RESPONSE_VERIFY_MODEL;
-  return tag;
-}
-
 export function normalizeNamedOllamaHosts(value: unknown): NamedOllamaHost[] {
   if (!Array.isArray(value)) return [];
   const out: NamedOllamaHost[] = [];
@@ -242,18 +223,6 @@ export function normalizeDesktopAppLogLevel(value: unknown): DesktopAppLogLevel 
     return value;
   }
   return DEFAULT_DESKTOP_APP_LOG_LEVEL;
-}
-
-export function normalizeAttachProtonLogsWhenTroubleshooting(value: unknown): boolean {
-  return value === true;
-}
-
-export function normalizeIncludeProtonExperimentJournalWhenTroubleshooting(value: unknown): boolean {
-  return value === true;
-}
-
-export function normalizeThinkingStatusTinyModelEnabled(value: unknown): boolean {
-  return value === true;
 }
 
 export function normalizePresetChipFadeAnimationEnabled(value: unknown): boolean {
@@ -373,10 +342,8 @@ export function normalizeCapabilities(value: unknown): BonsaiCapabilities {
     typeof value === "object" && value !== null ? (value as Partial<BonsaiCapabilities>) : {};
   return {
     filesystem_write: raw.filesystem_write === true,
-    hardware_control: raw.hardware_control === true,
     media_library_access: raw.media_library_access === true,
     steam_logs_read: raw.steam_logs_read === true,
-    external_navigation: raw.external_navigation === true,
     steam_web_api: raw.steam_web_api === true,
     microphone_access: raw.microphone_access === true,
   };
@@ -427,16 +394,6 @@ export function normalizeSettings(data: unknown): BonsaiSettings {
     desktop_debug_note_auto_save: normalizeDesktopDebugNoteAutoSave(raw.desktop_debug_note_auto_save),
     desktop_ask_verbose_logging: normalizeDesktopAskVerboseLogging(raw.desktop_ask_verbose_logging),
     desktop_app_log_level: normalizeDesktopAppLogLevel(raw.desktop_app_log_level),
-    attach_proton_logs_when_troubleshooting: normalizeAttachProtonLogsWhenTroubleshooting(
-      raw.attach_proton_logs_when_troubleshooting,
-    ),
-    include_proton_experiment_journal_when_troubleshooting:
-      normalizeIncludeProtonExperimentJournalWhenTroubleshooting(
-        raw.include_proton_experiment_journal_when_troubleshooting,
-      ),
-    thinking_status_tiny_model_enabled: normalizeThinkingStatusTinyModelEnabled(
-      raw.thinking_status_tiny_model_enabled,
-    ),
     preset_chip_animation: normalizePresetChipAnimation(
       raw.preset_chip_animation,
       raw.preset_chip_fade_animation_enabled,
@@ -468,9 +425,6 @@ export function normalizeSettings(data: unknown): BonsaiSettings {
     steam_web_api_key: normalizeSteamWebApiKey(raw.steam_web_api_key),
     bonsai_token_streaming_enabled: normalizeBonsaiTokenStreamingEnabled(raw.bonsai_token_streaming_enabled),
     show_onscreen_debug_hud: normalizeShowOnscreenDebugHud(raw.show_onscreen_debug_hud),
-    response_verify_enabled: normalizeResponseVerifyEnabled(raw.response_verify_enabled),
-    response_verify_second_pass: normalizeResponseVerifySecondPass(raw.response_verify_second_pass),
-    response_verify_model: normalizeResponseVerifyModel(raw.response_verify_model),
     named_ollama_hosts: normalizeNamedOllamaHosts(raw.named_ollama_hosts),
     voice_stt_model: normalizeVoiceSttModel(raw.voice_stt_model),
     ui_scale_auto_enabled: normalizeUiScaleAutoEnabled(raw.ui_scale_auto_enabled),

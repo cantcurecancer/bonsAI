@@ -11,10 +11,8 @@ from typing import Any
 # Fixed keys persisted under settings["capabilities"]; keep in sync with frontend BonsaiSettings.
 CAPABILITY_KEYS = (
     "filesystem_write",
-    "hardware_control",
     "media_library_access",
     "steam_logs_read",
-    "external_navigation",
     "steam_web_api",
     "microphone_access",
 )

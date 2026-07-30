@@ -35,10 +35,7 @@ import {
 } from "../utils/settingsTabLocalSurvival";
 import { VoiceInputSettingsSection } from "./VoiceInputSettingsSection";
 import { SettingsTabUiScaleSection } from "./SettingsTabUiScaleSection";
-import { ProtonExperimentJournalSection } from "./ProtonExperimentJournalSection";
 import type { UiScaleProfileId } from "../data/uiScaleProfile";
-import type { IntentPackSummary } from "../hooks/useIntentPacks";
-import { SettingsTabIntentPacksSection } from "./SettingsTabIntentPacksSection";
 import type { VoiceSttModelId } from "../utils/settingsAndResponse";
 
 const persistenceModeLabel: Record<UnifiedInputPersistenceMode, string> = {
@@ -110,28 +107,7 @@ export type SettingsTabProps = {
   onResetSession: () => void;
   onClearAllPluginData: () => void | Promise<void>;
 
-  intentPackSummaries?: IntentPackSummary[];
-  intentPacksLoading?: boolean;
-  intentPacksError?: string | null;
-  onIntentPackEnabledChange?: (packId: string, enabled: boolean) => Promise<boolean>;
-  onIntentPackExport?: (packId: string) => Promise<{ ok: boolean; json?: string; error?: string }>;
-  onIntentPackImport?: (
-    json: string,
-    confirm: boolean
-  ) => Promise<{
-    ok: boolean;
-    error?: string;
-    conflicts?: Array<{ term: string; existing_target: string; incoming_target: string }>;
-    stats?: { added_entries?: number; merged_entries?: number; conflicts?: number };
-    pack?: { id?: string; label?: string };
-  }>;
-  onIntentPackRemove?: (packId: string) => Promise<boolean>;
 
-  attachProtonLogsWhenTroubleshooting: boolean;
-  setAttachProtonLogsWhenTroubleshooting: (v: boolean) => void;
-  includeProtonExperimentJournalWhenTroubleshooting: boolean;
-  setIncludeProtonExperimentJournalWhenTroubleshooting: (v: boolean) => void;
-  steamLogsReadEnabled: boolean;
 };
 
 export const SettingsTab: React.FC<SettingsTabProps> = ({
@@ -162,18 +138,6 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
   onCompleteDeckyModalClose,
   onResetSession,
   onClearAllPluginData,
-  intentPackSummaries = [],
-  intentPacksLoading = false,
-  intentPacksError = null,
-  onIntentPackEnabledChange,
-  onIntentPackExport,
-  onIntentPackImport,
-  onIntentPackRemove,
-  attachProtonLogsWhenTroubleshooting,
-  setAttachProtonLogsWhenTroubleshooting,
-  includeProtonExperimentJournalWhenTroubleshooting,
-  setIncludeProtonExperimentJournalWhenTroubleshooting,
-  steamLogsReadEnabled,
 }) => {
   const [accentIntensityMenuOpen, setAccentIntensityMenuOpen] = useState(
     () => peekSettingsTabLocalPending()?.accentIntensityMenuOpen ?? false
@@ -473,14 +437,6 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
           </div>
         </PanelSectionRow>
       </PanelSection>
-      <ProtonExperimentJournalSection
-        attachProtonLogsWhenTroubleshooting={attachProtonLogsWhenTroubleshooting}
-        setAttachProtonLogsWhenTroubleshooting={setAttachProtonLogsWhenTroubleshooting}
-        includeProtonExperimentJournalWhenTroubleshooting={includeProtonExperimentJournalWhenTroubleshooting}
-        setIncludeProtonExperimentJournalWhenTroubleshooting={setIncludeProtonExperimentJournalWhenTroubleshooting}
-        steamLogsReadEnabled={steamLogsReadEnabled}
-        onBeforeDeckyModal={onBeforeDeckyModal}
-      />
       <PanelSection title="Data">
         <PanelSectionRow>
           <div className="bonsai-settings-bleed" style={{ width: "100%" }}>
@@ -493,19 +449,6 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
           </div>
         </PanelSectionRow>
       </PanelSection>
-      {onIntentPackEnabledChange && onIntentPackExport && onIntentPackImport && onIntentPackRemove ? (
-        <SettingsTabIntentPacksSection
-          summaries={intentPackSummaries}
-          loading={intentPacksLoading}
-          error={intentPacksError}
-          onEnabledChange={onIntentPackEnabledChange}
-          onExport={onIntentPackExport}
-          onImport={onIntentPackImport}
-          onRemove={onIntentPackRemove}
-          onBeforeDeckyModal={onBeforeDeckyModal}
-          onCompleteDeckyModalClose={onCompleteDeckyModalClose}
-        />
-      ) : null}
       <Focusable
         className="bonsai-settings-cache-row"
         flow-children="horizontal"

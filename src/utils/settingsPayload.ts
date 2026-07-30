@@ -26,10 +26,6 @@ export function toBonsaiSettingsPayload(
     desktop_debug_note_auto_save: input.desktopDebugNoteAutoSave,
     desktop_ask_verbose_logging: input.desktopAskVerboseLogging,
     desktop_app_log_level: input.desktopAppLogLevel,
-    attach_proton_logs_when_troubleshooting: input.attachProtonLogsWhenTroubleshooting,
-    include_proton_experiment_journal_when_troubleshooting:
-      input.includeProtonExperimentJournalWhenTroubleshooting,
-    thinking_status_tiny_model_enabled: input.thinkingStatusTinyModelEnabled,
     preset_chip_fade_animation_enabled: input.presetChipAnimation === "fade",
     preset_chip_animation: input.presetChipAnimation,
     input_sanitizer_user_disabled: input.inputSanitizerUserDisabled,
@@ -55,9 +51,6 @@ export function toBonsaiSettingsPayload(
     steam_web_api_key: input.steamWebApiKey.trim().slice(0, STEAM_WEB_API_KEY_MAX_LEN),
     bonsai_token_streaming_enabled: input.bonsaiTokenStreamingEnabled,
     show_onscreen_debug_hud: input.showOnscreenDebugHud,
-    response_verify_enabled: input.responseVerifyEnabled,
-    response_verify_second_pass: input.responseVerifySecondPass,
-    response_verify_model: input.responseVerifyModel.trim().slice(0, 64),
     named_ollama_hosts: input.namedOllamaHosts,
     voice_stt_model: input.voiceSttModel,
     ui_scale_auto_enabled: input.uiScaleAutoEnabled,
@@ -76,6 +69,7 @@ const QAM_VERIFY_SLIDER_LINE =
 /**
  * One short banner for the main tab when last Ask included tuning `applied` metadata.
  * TDP (sysfs) is distinguished from GPU MHz (advisory; not written by this plugin yet).
+ * Apply path is obsolete — banner retained for any residual applied metadata from older sessions.
  */
 export function formatAppliedTuningBannerText(applied: AppliedResultLike | null | undefined): string | null {
   if (!applied) return null;

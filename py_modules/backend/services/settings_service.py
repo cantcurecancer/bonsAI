@@ -104,21 +104,6 @@ def sanitize_desktop_app_log_level(value: Any) -> str:
     return "off"
 
 
-def sanitize_attach_proton_logs_when_troubleshooting(value: Any) -> bool:
-    """Only explicit true attaches local Proton/Steam log excerpts on troubleshooting-style Asks."""
-    return value is True
-
-
-def sanitize_include_proton_experiment_journal_when_troubleshooting(value: Any) -> bool:
-    """Only explicit true injects the per-game Proton experiment journal on troubleshooting Asks."""
-    return value is True
-
-
-def sanitize_thinking_status_tiny_model_enabled(value: Any) -> bool:
-    """Optional tiny-model thinking blurbs (Developer); off unless explicitly enabled."""
-    return value is True
-
-
 def sanitize_preset_chip_fade_animation_enabled(value: Any) -> bool:
     """Staggered preset-chip fades are on unless the user explicitly saves ``false``."""
     return value is not False
@@ -193,30 +178,6 @@ def sanitize_model_routing_order(value: Any) -> list[str]:
 def sanitize_model_allow_high_vram_fallbacks(value: Any) -> bool:
     """Only explicit ``true`` appends large-model tails to Ollama fallback chains."""
     return value is True
-
-
-def sanitize_response_verify_enabled(value: Any) -> bool:
-    """Only explicit ``true`` runs rule-based post-check on Ollama replies."""
-    return value is True
-
-
-def sanitize_response_verify_second_pass(value: Any) -> bool:
-    """Only explicit ``true`` allows optional second-model verifier (default off)."""
-    return value is True
-
-
-_RESPONSE_VERIFY_MODEL_MAX = 64
-_RESPONSE_VERIFY_MODEL_RE = re.compile(r"^[a-zA-Z0-9][a-zA-Z0-9._:/-]{0,63}$")
-
-
-def sanitize_response_verify_model(value: Any) -> str:
-    """Ollama tag for the optional verifier second pass (empty = disabled)."""
-    if not isinstance(value, str):
-        return ""
-    tag = value.strip()[:_RESPONSE_VERIFY_MODEL_MAX]
-    if not tag or not _RESPONSE_VERIFY_MODEL_RE.match(tag):
-        return ""
-    return tag
 
 
 MAX_NAMED_OLLAMA_HOSTS = 4
@@ -428,15 +389,6 @@ def sanitize_settings(
         ),
         "show_onscreen_debug_hud": sanitize_show_onscreen_debug_hud(raw.get("show_onscreen_debug_hud")),
         "desktop_app_log_level": sanitize_desktop_app_log_level(raw.get("desktop_app_log_level")),
-        "attach_proton_logs_when_troubleshooting": sanitize_attach_proton_logs_when_troubleshooting(
-            raw.get("attach_proton_logs_when_troubleshooting")
-        ),
-        "include_proton_experiment_journal_when_troubleshooting": sanitize_include_proton_experiment_journal_when_troubleshooting(
-            raw.get("include_proton_experiment_journal_when_troubleshooting")
-        ),
-        "thinking_status_tiny_model_enabled": sanitize_thinking_status_tiny_model_enabled(
-            raw.get("thinking_status_tiny_model_enabled")
-        ),
         "preset_chip_fade_animation_enabled": sanitize_preset_chip_fade_animation_enabled(
             raw.get("preset_chip_fade_animation_enabled")
         ),
@@ -474,11 +426,6 @@ def sanitize_settings(
         ),
         "text_model_routing_order": sanitize_model_routing_order(raw.get("text_model_routing_order")),
         "vision_model_routing_order": sanitize_model_routing_order(raw.get("vision_model_routing_order")),
-        "response_verify_enabled": sanitize_response_verify_enabled(raw.get("response_verify_enabled")),
-        "response_verify_second_pass": sanitize_response_verify_second_pass(
-            raw.get("response_verify_second_pass")
-        ),
-        "response_verify_model": sanitize_response_verify_model(raw.get("response_verify_model")),
         "named_ollama_hosts": sanitize_named_ollama_hosts(raw.get("named_ollama_hosts")),
         "strategy_spoiler_masking_enabled": sanitize_strategy_spoiler_masking_enabled(
             raw.get("strategy_spoiler_masking_enabled")
