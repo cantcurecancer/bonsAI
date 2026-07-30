@@ -65,7 +65,8 @@ One smoke often covers many features. Status: **Verified** / **Partial** / **Ope
 | D-pad answer scroll | D-PAD-SCROLL-01/02 | Partial | Viewport fix; choppy scroll bug open |
 | Character voice / Pyro | CHAR-VOICE, PYRO-EGG | Open | Tier 2 |
 | Voice STT | VOICE-01…07 | Open | Tier 2; see troubleshooting § Voice |
-| Model routing pickers | ROUTING-01…04 | Open | Related bug: try-order modal |
+| Model routing pickers | ROUTING-01…02 | Partial | Fetch-on-open + save OK; focus/chrome → Bugs (**ROUTING-FOCUS-01**) |
+| Ollama local-setup focus / Install label | OLLAMA-FOCUS-01…03, KB-FOCUS-01 | Open | Auto-probe + vertical chain + KB pair; re-check KB equal height |
 | UI scale focus graph | UI-SCALE-01…05 | Open | Template for new controls |
 | Token streaming (experimental) | STREAM-01…10 | Partial | Several preview PASS; Strategy spoiler stream open |
 | Clean install / release zip | Tier 4 | Open | Before tag |

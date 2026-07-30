@@ -58,6 +58,8 @@ type Props = {
 const KB_UNAVAILABLE_SESSION_KEY = "bonsai_kb_unavailable_warned";
 const KB_FAILURE_TOAST_KEY = "bonsai_kb_failure_toast";
 const KB_NOMIC_HINT_SESSION_KEY = "bonsai_kb_nomic_hint_warned";
+/** Shared row height so Update (long label) and Remove match on Deck (stretch alone fails on Decky Button). */
+const KB_ACTION_ROW_MIN_HEIGHT = 44;
 
 const deckNav = (handlers: Record<string, () => boolean | void>) =>
   handlers as unknown as Record<string, unknown>;
@@ -409,8 +411,11 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
           style={{ display: "flex", flexDirection: "row", alignItems: "stretch", gap: 8, width: "100%" }}
         >
           {/* Pattern C: pair is one horizontal row — Up/Down both exit vertically; Left/Right stay in-row. */}
-          <div className="bonsai-settings-focus-btn-host" style={{ flex: "1.35 1 0", minWidth: 0, display: "flex" }}>
-            <Focusable onOKButton={onPrimaryClick} style={{ width: "100%", display: "flex" }}>
+          <div
+            className="bonsai-settings-focus-btn-host"
+            style={{ flex: "1.6 1 0", minWidth: 0, display: "flex", alignItems: "stretch" }}
+          >
+            <Focusable onOKButton={onPrimaryClick} style={{ width: "100%", display: "flex", alignItems: "stretch" }}>
               <Button
                 ref={(el) => {
                   const btn = el as HTMLButtonElement | null;
@@ -420,7 +425,19 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
                 className="bonsai-settings-focus-btn"
                 onClick={onPrimaryClick}
                 disabled={downloadBusy}
-                style={{ ...SETTINGS_GLASS_BTN, width: "100%", height: "100%", boxSizing: "border-box" }}
+                style={{
+                  ...SETTINGS_GLASS_BTN,
+                  width: "100%",
+                  minHeight: KB_ACTION_ROW_MIN_HEIGHT,
+                  height: KB_ACTION_ROW_MIN_HEIGHT,
+                  boxSizing: "border-box",
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "flex-start",
+                }}
                 {...deckNav({
                   onMoveUp: () => focusKbToggle(),
                   onMoveDown: () => onMoveDownFromRemove?.() ?? false,
@@ -436,8 +453,11 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
             </Focusable>
           </div>
           {installed ? (
-            <div className="bonsai-settings-focus-btn-host" style={{ flex: "1 1 0", minWidth: 0, display: "flex" }}>
-              <Focusable onOKButton={confirmRemove} style={{ width: "100%", display: "flex" }}>
+            <div
+              className="bonsai-settings-focus-btn-host"
+              style={{ flex: "0.9 1 0", minWidth: 72, display: "flex", alignItems: "stretch" }}
+            >
+              <Focusable onOKButton={confirmRemove} style={{ width: "100%", display: "flex", alignItems: "stretch" }}>
                 <Button
                   ref={(el) => {
                     const btn = el as HTMLButtonElement | null;
@@ -453,8 +473,12 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
                     ...SETTINGS_GLASS_BTN_DANGER,
                     flex: "1 1 auto",
                     width: "100%",
-                    height: "100%",
+                    minHeight: KB_ACTION_ROW_MIN_HEIGHT,
+                    height: KB_ACTION_ROW_MIN_HEIGHT,
                     boxSizing: "border-box",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
                   }}
                   {...deckNav({
                     onMoveUp: () => focusKbToggle(),

@@ -8,6 +8,8 @@ Headings group related work. Star counts match the historical list.
 
 ### Maintainer tooling and docs
 
+- ★★ **Ollama tab focus + connection + models routing batch (2026-07-30):** Auto-probe on Ollama section mount so **Install Ollama** / **Update AI & models** reflects reachability without **Test connection**; local-setup D-pad chain (toggle → Install/Update → Browse → Install options → Test); KB Update/Remove as horizontal pair (Up → toggle, Down → Reply style); Models & routing glass buttons; try-order modal fetches installed tags on open + persists reorder. KB equal-height follow-up: fixed shared `minHeight` + nowrap (DeckCapture_20260730_144644). Try-order focus/chrome deferred → Bugs. Files: `OllamaWhereAiRunsSection.tsx`, `KnowledgeBaseSection.tsx`, `OllamaTab.tsx`, `index.tsx` `openRoutingOrderModal`, `settingsGlassButton.ts`. On-Deck QA: **OLLAMA-FOCUS-01…03**, **KB-FOCUS-01**, **ROUTING-01…02** in [testing.md](../testing.md).
+
 - ★★ **Code clarity refactor Phase 0–2 (2026-07-30):** House-style file headers ([code-clarity.md](../code-clarity.md)), [glossary.md](../glossary.md), Ask-path map, section labels in `useBonsaiAskOrchestration.ts`, extracted `useStrategyChecklistSession.ts`, hotspot headers (Ask path, Ollama UI, `main.py` Ask/Settings RPC, key backend services). No behavior change.
 - ★★ **Code clarity remainder sweep (2026-07-30):** Headers on remaining `src/` hooks/utils/components/data/features/i18n`, all `py_modules/` services, `main.py` domain section labels, `refactor_helpers.py`, preview/styles entry files. Skipped per policy: `v0-drafts/`, `styles/sections/*` token dumps, `characterPlaceholderEmoticonGrids.ts`, generated `pluginVersion.ts`, `types.d.ts`. No behavior change.
 

@@ -85,7 +85,7 @@ import { useTabStripBodyOffset } from "./hooks/useTabStripBodyOffset";
 import { UiScaleProvider } from "./context/UiScaleContext";
 import { publishUiScaleScopeStyle } from "./utils/uiScaleScopeBridge";
 import { normalizeUiScaleProfileId, type UiScaleProfileId } from "./data/uiScaleProfile";
-import { formatDeckyRpcError } from "./utils/deckyCall";
+import { formatDeckyRpcError, callDeckyWithTimeout } from "./utils/deckyCall";
 import { SEED_KB_SOURCE_DIR } from "./data/knowledgeBaseDev";
 import { usePluginSettings } from "./hooks/usePluginSettings";
 import { useReplyLanguage } from "./hooks/useReplyLanguage";
@@ -1351,18 +1351,55 @@ const Content: React.FC = () => {
   }, []);
 
   const openRoutingOrderModal = useCallback(
-    (kind: ModelRoutingOrderKind) => {
-      const installed = lastConnectionStatus?.reachable
-        ? (lastConnectionStatus.models ?? []).filter(Boolean)
-        : [];
-      if (installed.length === 0) {
+    async (kind: ModelRoutingOrderKind) => {
+      const target = ollamaLocalOnDeck ? OLLAMA_LOCAL_ON_DECK_DEFAULT_PCIP : ollamaIp.trim();
+      if (!target) {
         toaster.toast({
-          title: "No installed models",
-          body: "Run a connection test on the Ollama tab first.",
+          title: "No Ollama host",
+          body: ollamaLocalOnDeck
+            ? "Enable Run AI on this Deck or set a PC address first."
+            : "Enter a PC address on the Ollama tab first.",
           duration: 5000,
         });
         return;
       }
+
+      const loopbackLikelyProbe =
+        ollamaLocalOnDeck ||
+        /^\s*127\.0\.0\.1\s*(:\s*\d+)?\s*$/i.test(target) ||
+        /^\s*localhost\s*(:\s*\d+)?\s*$/i.test(target);
+      const testTimeoutSec = 10;
+      const rpcDeadlineMs = testTimeoutSec * 1000 + (loopbackLikelyProbe ? 42000 : 3000);
+
+      let installed: string[] = [];
+      try {
+        const result = await callDeckyWithTimeout<[string, number], DeveloperConnectionStatus>(
+          "test_ollama_connection",
+          [target, testTimeoutSec],
+          rpcDeadlineMs
+        );
+        setLastConnectionStatus(result);
+        if (result.reachable && Array.isArray(result.models)) {
+          installed = result.models.filter(Boolean);
+        }
+      } catch (e: unknown) {
+        toaster.toast({
+          title: "Could not list models",
+          body: formatDeckyRpcError(e),
+          duration: 5000,
+        });
+        return;
+      }
+
+      if (installed.length === 0) {
+        toaster.toast({
+          title: "No installed models",
+          body: "Pull a model on the Ollama tab (Browse models or Install options), then try again.",
+          duration: 5000,
+        });
+        return;
+      }
+
       captureSessionBeforeModal();
       const savedOrder = kind === "vision" ? visionModelRoutingOrder : textModelRoutingOrder;
       const handle = showModal(
@@ -1398,7 +1435,8 @@ const Content: React.FC = () => {
       );
     },
     [
-      lastConnectionStatus,
+      ollamaLocalOnDeck,
+      ollamaIp,
       visionModelRoutingOrder,
       textModelRoutingOrder,
       catalogByTag,
@@ -1749,6 +1787,7 @@ const Content: React.FC = () => {
       captureSessionBeforeModal,
       finalizeShowModalAndRestoreActiveTab,
       openOllamaModelsHub,
+      openRoutingOrderModal,
     ]
   );
 

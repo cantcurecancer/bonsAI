@@ -7,7 +7,7 @@
     },
     {
       "path": "src/index.tsx",
-      "lines": 2040,
+      "lines": 2079,
       "role": "Plugin root: tabs, scoped CSS, RPC wiring, Settings"
     },
     {
@@ -22,7 +22,7 @@
     },
     {
       "path": "src/components/OllamaWhereAiRunsSection.tsx",
-      "lines": 1129,
+      "lines": 1160,
       "role": ""
     },
     {
@@ -116,6 +116,11 @@
       "role": ""
     },
     {
+      "path": "src/components/KnowledgeBaseSection.tsx",
+      "lines": 499,
+      "role": ""
+    },
+    {
       "path": "src/utils/settingsAndResponse.test.ts",
       "lines": 494,
       "role": ""
@@ -123,11 +128,6 @@
     {
       "path": "src/data/bonsaiSettingsNormalizers.ts",
       "lines": 484,
-      "role": ""
-    },
-    {
-      "path": "src/components/KnowledgeBaseSection.tsx",
-      "lines": 475,
       "role": ""
     },
     {
@@ -176,13 +176,13 @@
       "role": ""
     },
     {
-      "path": "src/components/OllamaTab.tsx",
-      "lines": 391,
+      "path": "py_modules/backend/services/ollama_ask_service.py",
+      "lines": 387,
       "role": ""
     },
     {
-      "path": "py_modules/backend/services/ollama_ask_service.py",
-      "lines": 387,
+      "path": "src/components/OllamaTab.tsx",
+      "lines": 383,
       "role": ""
     },
     {

@@ -151,7 +151,9 @@ export const OllamaWhereAiRunsSection: React.FC<OllamaWhereAiRunsSectionProps> =
   const setupAutoTestRanRef = useRef(false);
   const lastCompletedSetupProfileRef = useRef<string>("");
   const onTestConnectionRef = useRef<(opts?: { quiet?: boolean }) => Promise<void>>(async () => {});
-  const autoProbeRanRef = useRef(false);
+  const autoProbeRanRef = useRef(
+    peekOllamaTabLocalPending()?.connectionStatus != null
+  );
 
   const ollamaIpConnectionNavRef = useRef<HTMLDivElement>(null);
   const ollamaLocalToggleNavRef = useRef<HTMLDivElement>(null);
@@ -690,11 +692,18 @@ export const OllamaWhereAiRunsSection: React.FC<OllamaWhereAiRunsSectionProps> =
               ) : null}
               <Focusable flow-children="horizontal" style={{ display: "flex", flexDirection: "row", flexWrap: "wrap", gap: 8, width: "100%" }}>
                 <Button
+                  ref={(el) => {
+                    browseModelsBtnRef.current = el as HTMLButtonElement | null;
+                  }}
                   disabled={localSetupBusy}
                   onClick={() => {
                     onBeforeDeckyModal();
                     onOpenOllamaModelsHub({ initialSection: "browse" });
                   }}
+                  {...({
+                    onMoveUp: () => focusInstallUpdateBtn(),
+                    onMoveDown: () => focusInstallOptionsBtn(),
+                  } as unknown as Record<string, unknown>)}
                   style={{
                     flex: "1 1 160px",
                     minHeight: 36,
@@ -716,8 +725,16 @@ export const OllamaWhereAiRunsSection: React.FC<OllamaWhereAiRunsSectionProps> =
               </Focusable>
               <Focusable flow-children="horizontal" style={{ display: "flex", flexDirection: "row", flexWrap: "wrap", gap: 8, width: "100%" }}>
                 <Button
+                  ref={(el) => {
+                    installOptionsBtnRef.current = el as HTMLButtonElement | null;
+                  }}
                   disabled={localSetupBusy}
                   onClick={() => setLocalInstallMenuOpen((o) => !o)}
+                  {...({
+                    onMoveUp: () => focusBrowseModelsBtn(),
+                    onMoveDown: () =>
+                      localInstallMenuOpen ? focusTier1Btn() : focusConnectionTestBtn(),
+                  } as unknown as Record<string, unknown>)}
                   style={{
                     flex: "1 1 140px",
                     minHeight: 36,
@@ -743,22 +760,36 @@ export const OllamaWhereAiRunsSection: React.FC<OllamaWhereAiRunsSectionProps> =
                     style={{ display: "flex", flexDirection: "column", gap: 6, width: "100%" }}
                   >
                     <Button
+                      ref={(el) => {
+                        tier1EssentialsBtnRef.current = el as HTMLButtonElement | null;
+                      }}
                       disabled={localSetupBusy}
                       onClick={() => {
                         setLocalInstallMenuOpen(false);
                         openLocalSetupConfirm(LOCAL_OLLAMA_SETUP_PROFILE_TIER1_ESSENTIALS);
                       }}
+                      {...({
+                        onMoveUp: () => focusInstallOptionsBtn(),
+                        onMoveDown: () => focusTier2Btn(),
+                      } as unknown as Record<string, unknown>)}
                       style={{ width: "100%", minHeight: 34, fontSize: 11, fontWeight: 600 }}
                       aria-label="Install Tier 1 essentials"
                     >
                       Install Tier 1 essentials
                     </Button>
                     <Button
+                      ref={(el) => {
+                        tier2MultimodalBtnRef.current = el as HTMLButtonElement | null;
+                      }}
                       disabled={localSetupBusy}
                       onClick={() => {
                         setLocalInstallMenuOpen(false);
                         openLocalSetupConfirm(LOCAL_OLLAMA_SETUP_PROFILE_TIER2_MULTIMODAL);
                       }}
+                      {...({
+                        onMoveUp: () => focusTier1Btn(),
+                        onMoveDown: () => focusConnectionTestBtn(),
+                      } as unknown as Record<string, unknown>)}
                       style={{ width: "100%", minHeight: 34, fontSize: 11, fontWeight: 600 }}
                       aria-label="Install Tier 2 one-model multimodal"
                     >
@@ -972,7 +1003,7 @@ export const OllamaWhereAiRunsSection: React.FC<OllamaWhereAiRunsSectionProps> =
                 ref={(el) => {
                   if (connectionTestBtnRef) connectionTestBtnRef.current = el as HTMLButtonElement | null;
                 }}
-                onClick={onTestConnection}
+                onClick={() => void onTestConnection()}
                 disabled={connectionTesting || localSetupBusy || (!ollamaLocalOnDeck && !ollamaIp.trim())}
                 {...({
                   onMoveUp: () => handleMoveUpFromConnection(),

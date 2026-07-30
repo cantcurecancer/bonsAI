@@ -131,8 +131,13 @@ BPM (Desktop → Big Picture → QAM → bonsAI). Ollama reachable.
 - [ ] **MICRO-04** Strategy live-turn D-pad: branches → feedback → utilities
 - [ ] **D-PAD-SCROLL-02** Strategy reply: ~one readable step per D-pad Down
 - [ ] **STRAT-SPOIL-DRG-01** DRG Survivor boss names not false-positive spoilers
-- [ ] **KB-FOCUS-01** Ollama KB section vertical D-pad (Update/Remove Up/Down bug)
-- [ ] **ROUTING-01…04** Text/vision try-order modal lists installed tags; reorder persists
+- [ ] **KB-FOCUS-01** Ollama KB Update/Remove: Left/Right between pair; both Up → KB toggle; both Down → Reply style; **equal row height** (Update not taller than Remove)
+- [ ] **OLLAMA-FOCUS-01** Ollama tab open (no prior Test): with Ollama reachable, primary button shows **Update AI & models** (quiet auto-probe)
+- [ ] **OLLAMA-FOCUS-02** Run AI on this Deck: D-pad vertical — toggle → Install/Update → Browse models → Install options… → Test connection → KB toggle
+- [ ] **OLLAMA-FOCUS-03** Up from Test connection lands on **Install options…** (or last Install-options submenu row when open)
+- [ ] **ROUTING-01** Set text/vision try order opens picker listing installed tags without requiring a prior Test connection tap
+- [ ] **ROUTING-02** Reorder + Done persists; reopen modal shows saved order
+- [ ] **ROUTING-FOCUS-01** Try-order modal D-pad + chrome match Pull Models / Character picker (deferred bug)
 
 ---
 

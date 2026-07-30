@@ -22,6 +22,7 @@ import { SettingsTabOllamaKeepAliveSlider } from "./SettingsTabOllamaKeepAliveSl
 import { OllamaReplyVerbositySlider } from "./OllamaReplyVerbositySlider";
 import type { ReplyVerbosityId } from "../data/replyVerbosity";
 import type { NamedOllamaHost } from "../utils/settingsAndResponse";
+import { SETTINGS_GLASS_BTN } from "../styles/settingsGlassButton";
 
 export type OllamaTabProps = {
   ollamaIp: string;
@@ -159,12 +160,12 @@ export const OllamaTab: React.FC<OllamaTabProps> = ({
   }, []);
 
   const focusKbUpFromReplyVerbosity = useCallback((): boolean => {
-    if (kbRemoveBtnRef.current) {
-      kbRemoveBtnRef.current.focus();
-      return true;
-    }
     if (kbDownloadBtnRef.current) {
       kbDownloadBtnRef.current.focus();
+      return true;
+    }
+    if (kbRemoveBtnRef.current) {
+      kbRemoveBtnRef.current.focus();
       return true;
     }
     return focusKbToggle();
@@ -344,11 +345,8 @@ export const OllamaTab: React.FC<OllamaTabProps> = ({
             <Button
               onClick={() => onOpenOllamaModelsHub({ initialSection: "policy" })}
               style={{
+                ...SETTINGS_GLASS_BTN,
                 width: "100%",
-                minHeight: 36,
-                fontSize: 12,
-                fontWeight: 600,
-                textAlign: "left",
                 marginBottom: 8,
               }}
               aria-label="Open AI models hub"
@@ -358,11 +356,8 @@ export const OllamaTab: React.FC<OllamaTabProps> = ({
             <Button
               onClick={() => onOpenRoutingOrderModal("text")}
               style={{
+                ...SETTINGS_GLASS_BTN,
                 width: "100%",
-                minHeight: 36,
-                fontSize: 12,
-                fontWeight: 600,
-                textAlign: "left",
                 marginBottom: 8,
               }}
               aria-label="Set text model try order"
@@ -372,11 +367,8 @@ export const OllamaTab: React.FC<OllamaTabProps> = ({
             <Button
               onClick={() => onOpenRoutingOrderModal("vision")}
               style={{
+                ...SETTINGS_GLASS_BTN,
                 width: "100%",
-                minHeight: 36,
-                fontSize: 12,
-                fontWeight: 600,
-                textAlign: "left",
               }}
               aria-label="Set vision model try order"
             >
