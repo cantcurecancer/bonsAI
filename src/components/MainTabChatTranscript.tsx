@@ -1,3 +1,10 @@
+/**
+ * Title: Main tab chat transcript
+ * Purpose: Render live and collapsed Ask turns, strategy branches/checklist, reply actions, and context chips.
+ * Used for: MainTab below the Ask bar — displays ollamaResponse and thread history from orchestration.
+ * Solves: Separates transcript layout/focus from Ask submit and poll logic.
+ * Does not: Submit Asks or poll background status — receives props from useBonsaiAskOrchestration.
+ */
 import React, { useEffect, useRef, useState } from "react";
 import { PanelSectionRow, Button, Focusable } from "@decky/ui";
 import {

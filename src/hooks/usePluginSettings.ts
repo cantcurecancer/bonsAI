@@ -1,3 +1,10 @@
+/**
+ * Title: Plugin settings hook
+ * Purpose: Load, persist, and expose bonsAI settings from Decky RPC and local survival snapshots.
+ * Used for: index.tsx — feeds caps, Ask mode, Ollama host, and feature toggles to child tabs.
+ * Solves: One settings owner with debounced save and modal-remount restore.
+ * Does not: Render Settings UI — see SettingsTab and OllamaTab.
+ */
 import { useCallback, useEffect, useRef, useState } from "react";
 import { call } from "@decky/api";
 import { type AiCharacterAccentIntensityId } from "../data/aiCharacterAccentIntensity";

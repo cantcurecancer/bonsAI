@@ -1,3 +1,10 @@
+/**
+ * Title: Permissions tab
+ * Purpose: Capability toggles (filesystem, game context, hardware control, external navigation).
+ * Used for: index.tsx Permissions tab — gates privileged RPC paths on the Python side.
+ * Solves: User-consent surface for sensitive operations before Ask or settings use them.
+ * Does not: Enforce capabilities server-side — main.py capabilities service is authoritative.
+ */
 import React from "react";
 import { PanelSection, PanelSectionRow, ToggleField, showModal, ConfirmModal } from "@decky/ui";
 import type { BonsaiCapabilities } from "../utils/settingsAndResponse";

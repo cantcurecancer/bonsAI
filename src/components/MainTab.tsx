@@ -1,3 +1,10 @@
+/**
+ * Title: Main tab shell
+ * Purpose: Compose preset row, unified Ask bar, screenshot browser, and chat transcript on the Main tab.
+ * Used for: index.tsx Main tab panel — receives orchestration props from useBonsaiAskOrchestration.
+ * Solves: Keeps Main-tab layout thin; Ask logic stays in hooks and child components.
+ * Does not: Submit Asks, poll RPC, or own focus graphs — see MainTabUnifiedAskBar and MainTabChatTranscript.
+ */
 import React, { useRef, useState } from "react";
 import { PanelSection, PanelSectionRow } from "@decky/ui";
 import type { PresetPrompt } from "../data/presets";

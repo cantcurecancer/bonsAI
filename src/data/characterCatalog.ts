@@ -1,6 +1,10 @@
 /**
- * Character roleplay catalog — keep preset `id` values in sync with
- * `backend/services/ai_character_service.py` (`VALID_PRESET_IDS`).
+ * Title: Character roleplay catalog
+ * Purpose: Frontend list of roleplay character presets for the picker and main-tab chrome.
+ * Used for: Character picker columns, Settings summary line, avatar badge letter.
+ * Solves: One place for display labels and ids the UI shows; ids must match the Python allow-list.
+ * Does not: Generate prompts, enforce roleplay tone, or talk to Ollama — that lives in ai_character_service.
+ * Sync: preset `id` values must match `backend/services/ai_character_service.py` (`VALID_PRESET_IDS`).
  */
 export type CharacterCatalogEntry = {
   id: string;

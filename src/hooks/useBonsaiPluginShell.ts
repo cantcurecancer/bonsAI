@@ -1,3 +1,10 @@
+/**
+ * Title: Plugin shell hook
+ * Purpose: Survive Decky Content remounts — restore active tab and capture session snapshots for modals.
+ * Used for: index.tsx via BonsaiPluginShell when showModal unmounts the plugin tree.
+ * Solves: Tab and partial UI state reset when modals close on Steam Deck.
+ * Does not: Own Ask transcript state — see bonsaiSessionSurvival and useBonsaiAskOrchestration.
+ */
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
   captureBonsaiSessionForModal,

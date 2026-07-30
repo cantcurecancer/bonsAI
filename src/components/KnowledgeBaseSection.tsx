@@ -1,3 +1,10 @@
+/**
+ * Title: Knowledge base section
+ * Purpose: Ollama tab UI for KB toggle, download/update/remove, and storage picker.
+ * Used for: OllamaTab — offline RAG corpus management on Deck.
+ * Solves: Isolates KB RPC calls and D-pad focus chain from other Ollama settings.
+ * Does not: Run retrieval at Ask time — see knowledge_base_service on the Python side.
+ */
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Button, ConfirmModal, Focusable, PanelSection, PanelSectionRow, ToggleField, showModal } from "@decky/ui";
 import { toaster } from "@decky/api";

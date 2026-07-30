@@ -1,6 +1,10 @@
 /**
- * Main-tab Ask orchestration: RPC submit, background status bridge, presets/transparency/desktop autosave hooks.
- * Refs pair with `useBackgroundGameAi` polling — reordering hooks risks stale poll callbacks after unmount.
+ * Title: Ask orchestration hook
+ * Purpose: Own Main-tab Ask lifecycle — submit, background poll bridge, thread/archive, stream reveal, session restore.
+ * Used for: index.tsx wires this into MainTab (onAskOllama, transcript state, reply actions).
+ * Solves: One orchestration owner between UI and Decky RPC; pairs with useBackgroundGameAi polling.
+ * Does not: Render Ask UI, define RPC handlers, or run Ollama — see MainTab* and game_ai_request.
+ * Caution: Reordering hooks risks stale poll callbacks after unmount.
  */
 import { useCallback, useEffect, useRef, useState, type Dispatch, type RefObject, type SetStateAction } from "react";
 import { call, toaster } from "@decky/api";
@@ -28,7 +32,6 @@ import {
 } from "../utils/strategyChecklist";
 import {
   clearStrategyChecklistSession,
-  loadStrategyChecklistSession,
   scheduleStrategyChecklistSessionSave,
 } from "../utils/strategyChecklistPersistence";
 import { callDeckyWithTimeout, DECKY_RPC_TIMEOUT_MS, formatDeckyRpcError } from "../utils/deckyCall";
@@ -70,6 +73,7 @@ import {
 } from "../data/replyMicroActions";
 import { startAskCompletionWatch, stopAskCompletionWatch } from "../utils/bonsaiAskCompletionWatch";
 import { fetchSessionRagChipCandidates } from "../utils/sessionRagChipCandidates";
+import { useStrategyChecklistSession } from "./useStrategyChecklistSession";
 
 export type { AskThreadExpandedTurnKey } from "../types/bonsaiUi";
 
@@ -116,6 +120,17 @@ export type UseBonsaiAskOrchestrationArgs = {
 
 export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
   const survivalPeek = peekBonsaiSessionPendingRestore();
+
+  // --- Strategy checklist session (per-game disk sync) ---
+  const {
+    strategyChecklist,
+    setStrategyChecklist,
+    strategyChecklistRef,
+    hydrateStrategyChecklistFromDisk,
+    trackedRunningAppId,
+  } = useStrategyChecklistSession(a.askMode);
+
+  // --- Presentation state (survival restore on mount) ---
   const [ollamaResponse, setOllamaResponse] = useState(() => survivalPeek?.ollamaResponse ?? "");
   const [ollamaContext, setOllamaContext] = useState<OllamaContextUi>(
     () => survivalPeek?.ollamaContext ?? null
@@ -126,13 +141,6 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
   const [strategyGuideBranches, setStrategyGuideBranches] = useState<StrategyGuideBranchesPayload | null>(
     () => survivalPeek?.strategyGuideBranches ?? null
   );
-  const [strategyChecklist, setStrategyChecklist] = useState<StrategyChecklistState | null>(
-    () => survivalPeek?.strategyChecklist ?? null
-  );
-  const strategyChecklistRef = useRef<StrategyChecklistState | null>(strategyChecklist);
-  useEffect(() => {
-    strategyChecklistRef.current = strategyChecklist;
-  }, [strategyChecklist]);
 
   const [modelPolicyDisclosure, setModelPolicyDisclosure] = useState<ModelPolicyDisclosurePayload | null>(
     () => survivalPeek?.modelPolicyDisclosure ?? null
@@ -162,44 +170,7 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
     setLiveReplyChipError(null);
   }, [lastExchange?.question, lastExchange?.answer]);
 
-  const hydrateStrategyChecklistFromDisk = useCallback(async (appId: string) => {
-    runningAppIdRef.current = appId;
-    try {
-      const loaded = await loadStrategyChecklistSession(appId);
-      if (runningAppIdRef.current !== appId) return;
-      setStrategyChecklist(loaded);
-    } catch {
-      if (runningAppIdRef.current === appId) setStrategyChecklist(null);
-    }
-  }, []);
-
-  const [trackedRunningAppId, setTrackedRunningAppId] = useState(
-    () => Router.MainRunningApp?.appid?.toString() ?? "",
-  );
-  useEffect(() => {
-    const poll = () => {
-      const next = Router.MainRunningApp?.appid?.toString() ?? "";
-      setTrackedRunningAppId((prev) => (prev !== next ? next : prev));
-    };
-    poll();
-    const id = window.setInterval(poll, 1500);
-    return () => window.clearInterval(id);
-  }, []);
-
-  useEffect(() => {
-    void hydrateStrategyChecklistFromDisk(trackedRunningAppId);
-  }, [hydrateStrategyChecklistFromDisk, trackedRunningAppId]);
-
-  const prevAskModeRef = useRef(a.askMode);
-  useEffect(() => {
-    const prev = prevAskModeRef.current;
-    prevAskModeRef.current = a.askMode;
-    if (prev === "strategy" && a.askMode !== "strategy") {
-      const appId = Router.MainRunningApp?.appid?.toString() ?? "";
-      setStrategyChecklist(null);
-      void clearStrategyChecklistSession(appId).catch(() => {});
-    }
-  }, [a.askMode]);
+  // --- Ask thread archive refs ---
   const pendingArchiveTurnRef = useRef<{
     question: string;
     answer: string;
@@ -224,6 +195,7 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
   );
   const [isAsking, setIsAsking] = useState(false);
 
+  // --- Running game context (Ollama app_id chip) ---
   const syncOllamaContextFromRunningApp = useCallback(() => {
     const appId =
       trackedRunningAppId.trim() ||
@@ -246,6 +218,7 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
     syncOllamaContextFromRunningApp();
   }, [trackedRunningAppId, isAsking, syncOllamaContextFromRunningApp]);
 
+  // --- Preset carousel + session RAG chips ---
   const [lastApplied, setLastApplied] = useState<AppliedResult | null>(
     () => survivalPeek?.lastApplied ?? null
   );
@@ -336,6 +309,7 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
     void reseedSuggestedPrompts("random");
   }, [reseedSuggestedPrompts, trackedRunningAppId]);
 
+  // --- Stream reveal + slow-warning timers ---
   const [showSlowWarning, setShowSlowWarning] = useState(() => survivalPeek?.showSlowWarning ?? false);
   const [elapsedSeconds, setElapsedSeconds] = useState<number | null>(
     () => survivalPeek?.elapsedSeconds ?? null
@@ -394,6 +368,7 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
     pendingArchiveTurnRef.current = { question: lastExchange.question, answer: lastExchange.answer };
   }, [lastExchange]);
 
+  // --- Input transparency (Show details chip) ---
   const refreshInputTransparency = useCallback(async () => {
     try {
       const r = await callDeckyWithTimeout<[], InputTransparencyRpcResult>(
@@ -417,6 +392,7 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
     }
   }, []);
 
+  // --- Poll bridge: map get_background_game_ai_status → UI state ---
   const applyBackgroundStatusToUi = useCallback(
     (status: BackgroundRequestStatus, fallbackQuestion: string = "") => {
       const appId = status.app_id ?? "";
@@ -625,6 +601,7 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
     pendingThreadQuestionDisplayRef.current = null;
   }, [a, syncOllamaContextFromRunningApp]);
 
+  // --- Background status polling (useBackgroundGameAi) ---
   const {
     startNextRequest,
     invalidateRequests,
@@ -634,6 +611,7 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
     tokenStreamingEnabledRef,
   });
 
+  // --- Mount restore: resume pending Ask after plugin remount ---
   /**
    * Mount-only restore. Must NOT re-run on dependency identity churn: callback deps change every
    * render (hook args object), so depending on them re-fired this effect each render → status RPC
@@ -661,6 +639,7 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
       });
   }, []);
 
+  // --- Submit, cancel, clear Ask field ---
   const clearUnifiedInput = useCallback(() => {
     if (isAsking) {
       /* Ask-bar ✕ while a request is in flight: abort the backend too (it only reset UI state
@@ -997,6 +976,7 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
     ],
   );
 
+  // --- Strategy branches + checklist toggles ---
   const onStrategyBranchPick = useCallback(
     (opt: { id: string; label: string }) => {
       if (isStrategyCustomResolutionBranch(opt)) {
@@ -1055,6 +1035,7 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
     });
   }, []);
 
+  // --- Reply feedback + micro-action chips ---
   const onRetryLastResponse = useCallback(() => {
     pendingReplyFollowUpRef.current = null;
     setLiveReplyChipError(null);
@@ -1133,6 +1114,7 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
     [a, lastExchange, lastRequestId]
   );
 
+  // --- Session survival snapshot restore / reset ---
   const restoreSessionSnapshot = useCallback((snap: BonsaiSessionSurvivalSnapshot) => {
     setOllamaResponse(snap.ollamaResponse);
     setOllamaContext(snap.ollamaContext);

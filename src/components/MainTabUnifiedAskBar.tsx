@@ -1,3 +1,10 @@
+/**
+ * Title: Unified Ask bar
+ * Purpose: Main-tab Ask field, mode menu, attach/mic/cancel controls, and submit affordances.
+ * Used for: MainTab — user types or picks presets then triggers onAskOllama.
+ * Solves: One controller-first input surface with Deck focus wiring for the Ask chain.
+ * Does not: Run orchestration or RPC — parent passes onAskOllama and state from useBonsaiAskOrchestration.
+ */
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { PanelSectionRow, TextField, Button, Focusable } from "@decky/ui";
 import {

@@ -1,8 +1,12 @@
-"""Foreground game Ask orchestration (Ollama + optional TDP) without importing ``main``.
+"""Title: Game Ask orchestration
 
-Expects a Decky ``Plugin`` instance for ``load_settings``, transparency persistence, and keyword
-short-circuits. Top-level return dict keys must stay aligned with ``execute_game_ai`` RPC consumers and
-frontend parsers (success, response, applied, disclosure flags, etc.).
+Purpose: Run a foreground game Ask (Ollama + optional TDP) without importing main.
+Used for: RPC handlers and background workers that need the full Ask pipeline.
+Solves: Keeps main.py thin while preserving one orchestration owner for context, KB, sanitizer, and Ollama.
+Does not: Define Decky RPC method names or poll state — those live in main.py and async_background_job.
+
+Return dict keys must stay aligned with execute_game_ai RPC consumers and frontend parsers
+(success, response, applied, disclosure flags, etc.).
 """
 
 from __future__ import annotations

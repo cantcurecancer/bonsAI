@@ -1,4 +1,10 @@
-/** D-pad focus helpers for the live Ask turn (answer → strategy → feedback). */
+/**
+ * Title: Live turn focus graph
+ * Purpose: D-pad focus helpers for the live Ask turn (answer bubble → strategy branches → checklist → reply actions).
+ * Used for: Main-tab chat transcript focus graph on Steam Deck.
+ * Solves: Decky focus lives on `.Panel.Focusable`; inner button focus and querySelector hops fail on device.
+ * Does not: Register reply stop DOM nodes (see replyStopRegistry) or render turn UI.
+ */
 
 import { focusRegisteredReplyStop } from "./replyStopRegistry";
 

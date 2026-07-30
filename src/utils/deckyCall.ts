@@ -1,11 +1,19 @@
+/**
+ * Title: Decky RPC helpers
+ * Purpose: Wrap Decky `call()` with deadlines and normalize error payloads for UI toasts.
+ * Used for: Any frontend RPC that must not hang forever (Ask submit, feedback, settings).
+ * Solves: Python RPC strands leave the Ask overlay stuck; inconsistent error shapes confuse users.
+ * Does not: Define RPC methods — those live in main.py.
+ */
 import { call } from "@decky/api";
 
-/**
- * Decky's `call()` has no built-in deadline; racing with `DECKY_RPC_TIMEOUT_MS` avoids hung Python RPC
- * strands leaving the UI overlay stuck indefinitely.
- */
+/** Default RPC deadline (ms) before the UI treats the call as failed. */
 export const DECKY_RPC_TIMEOUT_MS = 15000;
 
+/**
+ * Feature: Decky RPC with timeout.
+ * Input: method name, args, optional timeout ms. Output: RPC result or timeout Error.
+ */
 export async function callDeckyWithTimeout<Args extends unknown[], Result>(
   method: string,
   args: Args,

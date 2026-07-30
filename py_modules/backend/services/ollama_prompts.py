@@ -1,6 +1,9 @@
-"""Prompt construction, intent detectors, and response formatting for Ollama Ask.
+"""Title: Ollama prompt builders
 
-Transport (`post_ollama_chat`, streaming) stays in ``ollama_service``; this module is pure string/policy logic.
+Purpose: Prompt construction, intent detectors, and response formatting for Ollama Ask.
+Used for: game_ai_request and ollama_ask_service before HTTP chat calls.
+Solves: Pure string/policy logic separated from transport in ollama_service.
+Does not: Post HTTP to Ollama — see post_ollama_chat in ollama_service.
 """
 
 import re

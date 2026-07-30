@@ -1,3 +1,10 @@
+/**
+ * Title: Background Ask polling
+ * Purpose: Poll get_background_game_ai_status until a terminal state and fan out to the UI bridge.
+ * Used for: useBonsaiAskOrchestration after start_background_game_ai.
+ * Solves: Stale poll callbacks when the user submits again or unmounts (sequence invalidation).
+ * Does not: Map status payloads to presentation state — caller supplies applyBackgroundStatusToUi.
+ */
 import { useCallback, useEffect, useRef } from "react";
 import { call } from "@decky/api";
 import type { BackgroundRequestStatus } from "../types/backgroundAsk";

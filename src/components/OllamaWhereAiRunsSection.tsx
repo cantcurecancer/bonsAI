@@ -1,3 +1,10 @@
+/**
+ * Title: Where AI runs section
+ * Purpose: Ollama tab section for local Deck vs LAN PC host, install options, and test connection.
+ * Used for: OllamaTab — first major block in the local-setup vertical focus chain.
+ * Solves: Isolates host toggle, install/update labels, and connection probe from the rest of Ollama settings.
+ * Does not: Pull models or define routing order — see PullModelsModal and ModelRouting panels.
+ */
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
   PanelSection,

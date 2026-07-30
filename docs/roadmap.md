@@ -61,6 +61,9 @@ Stars are **effort/risk** within bands. Grouped by **horizon**; **within each ho
 
 Within this section: ascending stars (★ → ★★★★).
 
+- ★ **Code clarity remainder sweep** (follow-up after Phase 0–2 ship — 2026-07-30)
+  - **Goal:** Apply [code-clarity.md](code-clarity.md) headers to remaining meaningful modules not covered in the hotspot pass (small utils, hooks, backend services).
+  - **Not in scope:** Data dumps, CSS token sections, behavior changes.
 - ★ **Remove Open web links permission** (always allow user-initiated opens — discovery locked 2026-07-29)
   - **Goal:** Drop `external_navigation` capability. User-tapped docs/GitHub (`NavigateToExternalWeb`) and Steam settings / Steam Input jumps always allowed — no Permissions toggle.
   - **Not in scope:** AI-initiated arbitrary URL opens (none today).

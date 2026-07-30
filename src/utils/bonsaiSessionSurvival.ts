@@ -1,6 +1,9 @@
 /**
- * Survives Decky unmounting plugin `Content` when `showModal` opens/closes.
- * Module-level snapshot restored on the next mount (see `index.tsx`).
+ * Title: Session survival snapshot
+ * Purpose: Capture and restore Main-tab Ask state across Decky Content remounts (modals, tab switches).
+ * Used for: index.tsx, useBonsaiPluginShell, useBonsaiAskOrchestration on mount restore.
+ * Solves: showModal unmount wipes React state; module-level peek/restore keeps Ask thread alive.
+ * Does not: Persist across plugin restarts — disk settings use separate storage keys.
  */
 import type { ModelPolicyDisclosurePayload } from "../data/modelPolicy";
 import type { PresetPrompt } from "../data/presets";

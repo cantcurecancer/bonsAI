@@ -37,7 +37,7 @@ Open the `~/bonsAI` folder in Cursor.
 
 IDE agents use the in-repo **bonsai-mcp** knowledge server plus **Decky Plugin Studio** for deploy/preview. See [mcp-setup.md](mcp-setup.md) and [AGENTS.md](../AGENTS.md). DPS itself lives in [qd313/decky-plugin-studio](https://github.com/qd313/decky-plugin-studio) — document issues and sync any DPS-related changes there (see mcp-setup § Decky Plugin Studio).
 
-**Maintainer architecture docs:** [archive/voice-input-follow-up.md](archive/voice-input-follow-up.md) (Whisper STT), [knowledge-base.md](knowledge-base.md) (offline RAG).
+**Maintainer architecture docs:** [archive/voice-input-follow-up.md](archive/voice-input-follow-up.md) (Whisper STT), [knowledge-base.md](knowledge-base.md) (offline RAG). **Code clarity:** [code-clarity.md](code-clarity.md) (file headers, Ask path map), [glossary.md](glossary.md) (acronyms).
 
 ```bash
 pnpm run mcp:install

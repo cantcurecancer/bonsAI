@@ -1,4 +1,10 @@
-"""Background local Ollama install + Tier-1 pull helpers (Linux / Steam Deck)."""
+"""Title: Local Ollama setup service
+
+Purpose: Install, update, probe, and tear down Ollama on the Steam Deck (loopback).
+Used for: Ollama tab Install/Update flows and background readiness checks.
+Solves: Shell/script orchestration for Tier-1 model pulls without bloating main.py.
+Does not: Run game Ask or build chat prompts — see local_ollama_setup callers in main.py.
+"""
 
 from __future__ import annotations
 

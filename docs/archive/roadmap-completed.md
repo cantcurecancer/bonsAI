@@ -6,6 +6,10 @@
 
 Headings group related work. Star counts match the historical list.
 
+### Maintainer tooling and docs
+
+- ★★ **Code clarity refactor Phase 0–2 (2026-07-30):** House-style file headers ([code-clarity.md](../code-clarity.md)), [glossary.md](../glossary.md), Ask-path map, section labels in `useBonsaiAskOrchestration.ts`, extracted `useStrategyChecklistSession.ts`, hotspot headers (Ask path, Ollama UI, `main.py` Ask/Settings RPC, key backend services). Follow-up: **Code clarity remainder sweep** in [roadmap.md](../roadmap.md). No behavior change.
+
 ### Release and distribution
 
 - ★ **Show details gates context chips + pre-Ask game context (2026-07-27):** Inline ladder mounts only while **Show details** is open; `ollamaContext` syncs from `Router.MainRunningApp` when not mid-Ask so the footer/banner is correct before send. Files: `MainTabChatTranscript.tsx`, `useBonsaiAskOrchestration.ts`. On-Deck QA: **CONTEXT-LADDER-01**, **GAME-CONTEXT-01**.

@@ -1,3 +1,10 @@
+/**
+ * Title: Pull models modal
+ * Purpose: Full-screen picker to browse, filter, and pull Ollama models from the catalog.
+ * Used for: Ollama / Settings flows via showModal — decky-plugin-studio preview and on-Deck QA.
+ * Solves: Large catalog UI with D-pad focus graph separate from inline Settings rows.
+ * Does not: Persist routing try-order — see ModelRoutingOrderModal.
+ */
 import { useCallback, useEffect, useMemo, useRef, useState, type RefCallback } from "react";
 import { Button, ConfirmModal, Focusable, showModal } from "@decky/ui";
 import { toaster } from "@decky/api";

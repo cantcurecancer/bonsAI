@@ -1,3 +1,10 @@
+/**
+ * Title: Plugin root
+ * Purpose: Decky plugin entry — tabs, scoped CSS, settings load/save, and hook wiring into Main/Settings/Ollama.
+ * Used for: definePlugin export; mounts BonsaiPluginShell and useBonsaiAskOrchestration.
+ * Solves: Single composition root for QAM UI without embedding Ask logic inline.
+ * Does not: Implement Ask orchestration or RPC handlers — see useBonsaiAskOrchestration and main.py.
+ */
 import React, { useCallback, useState, useMemo, useEffect, useLayoutEffect, useRef } from "react";
 import { definePlugin, toaster, call, useQuickAccessVisible } from "@decky/api";
 import { Navigation, Router, showModal, Tabs } from "@decky/ui";

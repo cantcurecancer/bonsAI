@@ -1,3 +1,10 @@
+/**
+ * Title: Input transparency types
+ * Purpose: Types and helpers for Show details context-chip ladder snapshots from RPC.
+ * Used for: MainTabChatTranscript ContextChipLadder and useBonsaiAskOrchestration refreshInputTransparency.
+ * Solves: Typed bridge between get_input_transparency RPC and UI chip rendering.
+ * Does not: Build transparency on the backend — see transparency_service.py.
+ */
 import type { ModelPolicyDisclosurePayload } from "../data/modelPolicy";
 
 export type ContextChipBody = {

@@ -1,4 +1,10 @@
-"""Extract model-emitted ``<bonsai-status>`` tags from streaming Ollama replies."""
+"""Title: BonsAI stream tags
+
+Purpose: Extract model-emitted ``<bonsai-status>`` tags from streaming Ollama replies.
+Used for: Token streaming path — thinking summaries and phase toasts during pending Ask.
+Solves: Parse incremental stream metadata without coupling HTTP layer to UI strings.
+Does not: Own smooth stream reveal on the frontend — see useSmoothStreamReveal.
+"""
 
 from __future__ import annotations
 

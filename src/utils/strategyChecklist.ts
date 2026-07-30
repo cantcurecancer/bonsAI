@@ -1,3 +1,10 @@
+/**
+ * Title: Strategy checklist helpers
+ * Purpose: Normalize RPC strategy_checklist payloads and merge toggle state for Ask submit.
+ * Used for: useBonsaiAskOrchestration Strategy mode checklist panel and start_background_game_ai payload.
+ * Solves: Shared shape validation between backend response and frontend checklist UI.
+ * Does not: Persist per-game session — see strategyChecklistPersistence and useStrategyChecklistSession.
+ */
 import type { StrategyChecklistPayload, StrategyChecklistState } from "../types/bonsaiUi";
 
 /** Coerce RPC `strategy_checklist` into a typed payload or null. */

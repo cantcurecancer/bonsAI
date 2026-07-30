@@ -1,7 +1,11 @@
-"""Decky Loader plugin entrypoint: RPC surface, capability gates, and Ask orchestration.
+"""Title: Decky plugin entrypoint
 
-The Python side owns Ollama calls and privileged I/O; the React bundle invokes methods via Decky RPC
-only. Some Ask branches (sanitizer keywords, shortcut guidance, VAC check) finalize inside the RPC
+Purpose: RPC surface, capability gates, and Ask orchestration entry for the bonsAI plugin.
+Used for: All React call() methods — settings, Ask, Ollama setup, media, capabilities.
+Solves: Single Decky Plugin class the loader discovers; delegates heavy work to py_modules services.
+Does not: Own Ollama HTTP or full Ask prompt assembly — see game_ai_request and ollama_ask_service.
+
+Some Ask branches (sanitizer keywords, shortcut guidance, VAC check) finalize inside the RPC
 handler so the UI polling loop can observe ``completed`` immediately without a worker task.
 """
 
@@ -753,6 +757,8 @@ class Plugin:
             "applied": None,
             "elapsed_seconds": 0.0,
         }
+
+    # --- Settings RPC ---
 
     async def load_settings(self):
         """Load persisted plugin settings from Decky's settings directory."""
@@ -2250,8 +2256,10 @@ class Plugin:
             reply_followup=reply_followup,
         )
 
+    # --- Ask RPC (foreground + background lifecycle) ---
+
     async def ask_game_ai(self, question: Any = "", PcIp: str = ""):
-        """Handle foreground ask RPCs and validate required inputs before execution."""
+        """Feature: Foreground Ask RPC. Input: question payload + PcIp. Output: terminal result dict."""
         logger.info("ask_game_ai: RPC entry (arg type=%s)", type(question).__name__)
         (
             parsed_question,
@@ -2379,7 +2387,7 @@ class Plugin:
         )
 
     async def start_background_game_ai(self, question: Any = "", PcIp: str = ""):
-        """Start a background ask request unless one is already active or payload is invalid."""
+        """Feature: Background Ask submit. Input: question payload + PcIp. Output: start ack or busy/error."""
         plugin = Plugin._coerce_instance(self)
         plugin._ensure_background_state()
 
@@ -2603,7 +2611,7 @@ class Plugin:
         return {"ok": True}
 
     async def get_background_game_ai_status(self):
-        """Return current background request status and reconcile completed task failures."""
+        """Feature: Background Ask poll. Input: none. Output: pending/completed status for UI bridge."""
         plugin = Plugin._coerce_instance(self)
         plugin._ensure_background_state()
         async with plugin._background_lock:

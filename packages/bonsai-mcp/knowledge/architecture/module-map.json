@@ -2,12 +2,12 @@
   "hotspots": [
     {
       "path": "main.py",
-      "lines": 2995,
+      "lines": 3003,
       "role": "Decky RPC entrypoints and orchestration"
     },
     {
       "path": "src/index.tsx",
-      "lines": 2033,
+      "lines": 2040,
       "role": "Plugin root: tabs, scoped CSS, RPC wiring, Settings"
     },
     {
@@ -17,22 +17,22 @@
     },
     {
       "path": "src/hooks/useBonsaiAskOrchestration.ts",
-      "lines": 1243,
+      "lines": 1225,
       "role": ""
     },
     {
       "path": "src/components/PullModelsModal.tsx",
-      "lines": 1097,
+      "lines": 1104,
       "role": ""
     },
     {
       "path": "src/components/OllamaWhereAiRunsSection.tsx",
-      "lines": 1051,
+      "lines": 1058,
       "role": ""
     },
     {
       "path": "py_modules/backend/services/screenshot_media.py",
-      "lines": 1028,
+      "lines": 1031,
       "role": ""
     },
     {
@@ -42,58 +42,58 @@
     },
     {
       "path": "src/components/MainTabUnifiedAskBar.tsx",
-      "lines": 1007,
+      "lines": 1014,
       "role": ""
     },
     {
       "path": "py_modules/backend/services/ollama_prompts.py",
-      "lines": 998,
+      "lines": 1001,
       "role": ""
     },
     {
       "path": "py_modules/backend/services/local_ollama_setup_service.py",
-      "lines": 909,
+      "lines": 915,
       "role": ""
     },
     {
       "path": "py_modules/backend/services/knowledge_base_service.py",
-      "lines": 783,
+      "lines": 789,
       "role": ""
     },
     {
       "path": "py_modules/backend/services/bonsai_stream_tags.py",
-      "lines": 669,
+      "lines": 675,
       "role": ""
     },
     {
       "path": "src/components/CharacterPickerModal.tsx",
-      "lines": 665,
+      "lines": 672,
       "role": ""
     },
     {
       "path": "src/hooks/usePluginSettings.ts",
-      "lines": 602,
+      "lines": 609,
       "role": ""
     },
     {
       "path": "src/components/MainTabChatTranscript.tsx",
-      "lines": 595,
+      "lines": 602,
+      "role": ""
+    },
+    {
+      "path": "src/components/SettingsTab.tsx",
+      "lines": 597,
+      "role": ""
+    },
+    {
+      "path": "py_modules/backend/services/game_ai_request.py",
+      "lines": 596,
       "role": ""
     },
     {
       "path": "py_modules/backend/services/ollama_service.py",
       "lines": 593,
       "role": "Prompt build, Ollama HTTP, streaming"
-    },
-    {
-      "path": "py_modules/backend/services/game_ai_request.py",
-      "lines": 592,
-      "role": ""
-    },
-    {
-      "path": "src/components/SettingsTab.tsx",
-      "lines": 590,
-      "role": ""
     },
     {
       "path": "py_modules/backend/services/transparency_service.py",
@@ -127,7 +127,7 @@
     },
     {
       "path": "src/components/KnowledgeBaseSection.tsx",
-      "lines": 461,
+      "lines": 468,
       "role": ""
     },
     {
@@ -177,17 +177,17 @@
     },
     {
       "path": "src/components/OllamaTab.tsx",
-      "lines": 384,
+      "lines": 391,
+      "role": ""
+    },
+    {
+      "path": "py_modules/backend/services/ollama_ask_service.py",
+      "lines": 387,
       "role": ""
     },
     {
       "path": "src/styles/sections/section-8.ts",
       "lines": 383,
-      "role": ""
-    },
-    {
-      "path": "py_modules/backend/services/ollama_ask_service.py",
-      "lines": 381,
       "role": ""
     },
     {

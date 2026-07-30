@@ -1,4 +1,10 @@
-"""On-Deck knowledge base retrieval (FTS5 + optional hybrid vector re-rank)."""
+"""Title: Knowledge base service
+
+Purpose: On-Deck knowledge base retrieval (FTS5 + optional hybrid vector re-rank).
+Used for: game_ai_request when use_local_knowledge_base is enabled.
+Solves: Offline RAG context blocks without cloud dependencies.
+Does not: Build UI or manage KB download UI — see KnowledgeBaseSection and rag_corpus_download_service.
+"""
 
 from __future__ import annotations
 

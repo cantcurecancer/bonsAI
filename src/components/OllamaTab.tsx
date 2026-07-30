@@ -1,3 +1,10 @@
+/**
+ * Title: Ollama settings tab
+ * Purpose: Settings tab for Ollama host, models, knowledge base, reply style, and local AI setup.
+ * Used for: index.tsx Ollama tab — connection test, install/update, model routing entry points.
+ * Solves: Groups all Ollama-adjacent settings in one focus-graph owner (OllamaTab + child sections).
+ * Does not: Run Ask or poll game AI — see Main tab and useBonsaiAskOrchestration.
+ */
 import React, { useCallback, useRef } from "react";
 import { Button, PanelSection, PanelSectionRow, TextField, ToggleField } from "@decky/ui";
 import {

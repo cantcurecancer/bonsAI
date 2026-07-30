@@ -1,6 +1,9 @@
-"""
-Steam screenshot listing, in-process capture, and image prep for Ollama multimodal requests.
-Extracted from the Decky plugin entrypoint to keep `main.py` as RPC wiring.
+"""Title: Screenshot media service
+
+Purpose: Steam screenshot listing, in-process capture, and image prep for Ollama multimodal requests.
+Used for: Ask attachments and game context when screenshot permission is enabled.
+Solves: Heavy media I/O extracted from main.py RPC wiring.
+Does not: Render screenshot browser UI — see MainTabScreenshotBrowser.
 """
 
 from __future__ import annotations

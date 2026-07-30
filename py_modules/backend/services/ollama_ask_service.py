@@ -1,4 +1,10 @@
-"""Ollama Ask orchestration extracted from ``Plugin.ask_ollama``."""
+"""Title: Ollama Ask service
+
+Purpose: HTTP chat/stream calls to Ollama for game Ask (extracted from Plugin.ask_ollama).
+Used for: game_ai_request and direct ask_ollama RPC paths.
+Solves: Keeps Ollama HTTP, model routing, and roleplay addons out of main.py.
+Does not: Build full game context or run KB retrieval — callers assemble prompts first.
+"""
 
 from __future__ import annotations
 

@@ -1,3 +1,10 @@
+/**
+ * Title: Settings tab
+ * Purpose: General plugin settings — UI scale, voice, permissions shortcuts, developer toggles, and links.
+ * Used for: index.tsx Settings tab panel with explicit D-pad focus graph per section.
+ * Solves: Groups non-Ollama settings away from OllamaTab while sharing survival snapshots.
+ * Does not: Host Ollama connection UI — see OllamaTab.
+ */
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
   PanelSection,

@@ -1,3 +1,10 @@
+/**
+ * Title: Character picker modal
+ * Purpose: Full-screen roleplay character preset picker with four-column D-pad layout.
+ * Used for: Settings / Main tab when AI character chrome is enabled.
+ * Solves: Large catalog navigation in a modal with its own focus graph owner.
+ * Does not: Apply roleplay prompts — backend ai_character_service builds system suffixes.
+ */
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button, ConfirmModal, Focusable, Router, TextField, ToggleField } from "@decky/ui";
 import {
