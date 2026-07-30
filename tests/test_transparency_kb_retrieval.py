@@ -55,6 +55,41 @@ class TransparencyKbRetrievalTests(unittest.TestCase):
         self.assertEqual(kb_chip["label"], "Keyword + meaning")
         self.assertIn("Keyword + meaning", kb_chip["body"]["bullets"][0])
 
+    def test_ollama_route_snapshot_propagates_kb_domain_for_compat_bullet(self):
+        from backend.services.transparency_service import build_ollama_route_snapshot
+
+        snapshot = build_ollama_route_snapshot(
+            raw_question="proton crash",
+            sanitizer_action="allow",
+            sanitizer_reason_codes=[],
+            text_after_sanitizer="proton crash",
+            ollama_result={
+                "model": "gemma4:e2b",
+                "success": True,
+                "response": "ok",
+                **build_knowledge_base_transparency(
+                    attached=True,
+                    trust_tier="fallback_no_source",
+                    sources=[],
+                    notes="compat_tips",
+                    timing_ms={"embed_ms": 10.0},
+                    retrieval_method="hybrid",
+                    kb_domain="compat",
+                ),
+            },
+            base_response_text="ok",
+            response_text="ok",
+            applied=None,
+            app_id="550",
+            app_name="Left 4 Dead 2",
+            pc_ip="127.0.0.1:11434",
+            err_tail="",
+            elapsed_seconds=1.0,
+        )
+        self.assertEqual(snapshot.get("kb_domain"), "compat")
+        kb_chip = next(c for c in snapshot["context_chips"] if c["id"] == "kb")
+        self.assertIn("Source: shared troubleshooting tips", kb_chip["body"]["bullets"])
+
 
 if __name__ == "__main__":
     unittest.main()

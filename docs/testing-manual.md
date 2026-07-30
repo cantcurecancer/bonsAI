@@ -126,7 +126,8 @@ BPM (Desktop → Big Picture → QAM → bonsAI). Ollama reachable.
 
 ### Open regression IDs (bugs / recent ships)
 
-- [ ] **CONTEXT-LADDER-01** Live turn Show details reveals chip ladder
+- [ ] **CONTEXT-LADDER-01** Live turn Show details reveals inline chip ladder
+- [ ] **CONTEXT-LADDER-03** D-pad: Show details / Retry **Down** → ladder focus (not session strip skip); **Left/Right** cycles chips; all chips visible when ≤6; **Up** from first chip → utility row; **Down** from last chip → session strip; **Developer details** chip reachable
 - [ ] **MICRO-04** Strategy live-turn D-pad: branches → feedback → utilities
 - [ ] **D-PAD-SCROLL-02** Strategy reply: ~one readable step per D-pad Down
 - [ ] **STRAT-SPOIL-DRG-01** DRG Survivor boss names not false-positive spoilers

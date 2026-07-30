@@ -14,6 +14,7 @@ import {
   chipBodyTitle,
   chipDevJson,
   chipsFromSnapshot,
+  CONTEXT_CHIP_SHOW_ALL_MAX,
   tierBackground,
   tierBorderColor,
   windowRange,
@@ -29,6 +30,10 @@ export type ContextChipLadderProps = {
   onExpandChange?: (expanded: boolean) => void;
   /** D-pad Down from collapsed hint → session context strip (skips Save chat). */
   onMoveDownFromHint?: () => boolean;
+  /** D-pad Up from ladder (first chip) → Retry / Show details utility row. */
+  onMoveUpFromLadder?: () => boolean;
+  /** D-pad Down from ladder (last chip) → session context strip. */
+  onMoveDownFromLadder?: () => boolean;
 };
 
 export function ContextChipLadder({
@@ -36,6 +41,8 @@ export function ContextChipLadder({
   collapsedHint = false,
   onExpandChange,
   onMoveDownFromHint,
+  onMoveUpFromLadder,
+  onMoveDownFromLadder,
 }: ContextChipLadderProps) {
   const chips = chipsFromSnapshot(snapshot);
   const [expanded, setExpanded] = useState(!collapsedHint);
@@ -59,7 +66,10 @@ export function ContextChipLadder({
 
   const safeIndex = Math.min(activeIndex, chips.length - 1);
   const active = chips[safeIndex];
-  const { start, end } = windowRange(safeIndex, chips.length);
+  const showAllChips = chips.length <= CONTEXT_CHIP_SHOW_ALL_MAX;
+  const { start, end } = showAllChips
+    ? { start: 0, end: chips.length - 1 }
+    : windowRange(safeIndex, chips.length);
 
   if (!expanded) {
     return (
@@ -70,7 +80,7 @@ export function ContextChipLadder({
         {...deckNav({
           ...(onMoveDownFromHint ? { onMoveDown: () => onMoveDownFromHint() ?? false } : {}),
         })}
-        style={{ marginTop: 8, maxWidth: "100%" }}
+        style={{ marginTop: 8, width: "100%", maxWidth: "100%" }}
       >
         <button
           type="button"
@@ -96,19 +106,48 @@ export function ContextChipLadder({
     setActiveIndex((i) => Math.max(0, Math.min(chips.length - 1, i + delta)));
   };
 
+  const moveLeft = () => {
+    if (safeIndex <= 0) return false;
+    stepChip(-1);
+    return true;
+  };
+
+  const moveRight = () => {
+    if (safeIndex >= chips.length - 1) {
+      if (onMoveDownFromLadder?.()) return true;
+      return false;
+    }
+    stepChip(1);
+    return true;
+  };
+
+  const moveUp = () => {
+    if (safeIndex <= 0) {
+      if (onMoveUpFromLadder?.()) return true;
+      return false;
+    }
+    stepChip(-1);
+    return true;
+  };
+
+  const moveDown = () => {
+    if (safeIndex >= chips.length - 1) {
+      if (onMoveDownFromLadder?.()) return true;
+      return false;
+    }
+    stepChip(1);
+    return true;
+  };
+
   return (
     <Focusable
       className="bonsai-chip-ladder"
       style={{ marginTop: 8, width: "100%", maxWidth: "100%", minWidth: 0 }}
       {...deckNav({
-        onMoveUp: () => {
-          stepChip(-1);
-          return true;
-        },
-        onMoveDown: () => {
-          stepChip(1);
-          return true;
-        },
+        onMoveLeft: moveLeft,
+        onMoveRight: moveRight,
+        onMoveUp: moveUp,
+        onMoveDown: moveDown,
       })}
       onButtonDown={(e) => {
         if (e.detail.button === 2 || e.detail.button === 3) {
@@ -121,39 +160,45 @@ export function ContextChipLadder({
       <div style={{ fontSize: 10, color: "#8fa6bd", marginBottom: 6 }}>
         Chip {safeIndex + 1} of {chips.length}
       </div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 4, marginBottom: 8 }}>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "row",
+          flexWrap: "wrap",
+          gap: 6,
+          marginBottom: 8,
+          width: "100%",
+          alignItems: "flex-start",
+        }}
+      >
         {chips.map((chip, idx) => {
           if (idx < start || idx > end) return null;
           const isActive = idx === safeIndex;
-          const truncated = !isActive;
-          const far = Math.abs(idx - safeIndex) >= 2;
+          const truncated = !isActive && !showAllChips;
+          const far = truncated && Math.abs(idx - safeIndex) >= 2;
           return (
-            <div
+            <span
               key={chip.id}
               style={{
+                display: "inline-block",
+                boxSizing: "border-box",
+                width: "fit-content",
+                maxWidth: "100%",
+                flex: "0 0 auto",
+                fontSize: isActive ? 11 : 10,
+                padding: "4px 10px",
+                borderRadius: 999,
+                border: `1px solid ${tierBorderColor(chip.tier_class)}`,
+                background: isActive ? tierBackground(chip.tier_class) : "rgba(26, 34, 44, 0.88)",
+                color: "#e2e8f0",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
                 opacity: truncated ? (far ? 0.38 : 0.55) : 1,
-                transform: truncated ? `scale(${far ? 0.92 : 0.96})` : "none",
-                transformOrigin: "left center",
               }}
             >
-              <span
-                style={{
-                  display: "inline-block",
-                  fontSize: isActive ? 11 : 10,
-                  padding: "4px 10px",
-                  borderRadius: 999,
-                  border: `1px solid ${tierBorderColor(chip.tier_class)}`,
-                  background: isActive ? tierBackground(chip.tier_class) : "rgba(26, 34, 44, 0.88)",
-                  color: "#e2e8f0",
-                  maxWidth: "100%",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {chip.label}
-              </span>
-            </div>
+              {chip.label}
+            </span>
           );
         })}
       </div>
@@ -169,6 +214,8 @@ function ChipExpandedBody({ chip }: { chip: ContextChip }) {
   return (
     <div
       style={{
+        width: "100%",
+        boxSizing: "border-box",
         padding: "8px 10px",
         borderRadius: 8,
         border: "1px solid rgba(100, 140, 180, 0.28)",

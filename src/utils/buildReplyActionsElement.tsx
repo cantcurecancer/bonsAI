@@ -16,6 +16,7 @@ import {
 import type { ReplyMicroActionId } from "../data/replyMicroActions";
 import { replyMicroActionById } from "../data/replyMicroActions";
 import {
+  focusDownFromReplyUtilityRow,
   focusLastReplyChip,
   focusReplyHelpful,
   focusReplyNotReally,
@@ -104,6 +105,7 @@ export function buildReplyActionsElement(
     onChip,
     askInFlight = false,
     onMoveUpFromChips,
+    onMoveDownFromUtility,
   } = args;
 
   const showChipRows = Boolean(onChip) && rating === "down";
@@ -114,6 +116,10 @@ export function buildReplyActionsElement(
 
   const liveSlot = () => queryLiveTurnSlot();
   const moveUpFromReply = () => false;
+  const downFromUtility = () => {
+    if (onMoveDownFromUtility?.()) return true;
+    return focusDownFromReplyUtilityRow(liveSlot());
+  };
 
   /*
    * Column-preserving vertical hops when thumbs sit directly above utility
@@ -237,7 +243,7 @@ export function buildReplyActionsElement(
               replyStop="retry"
               deckNav={{
                 onMoveUp: upFromRetry,
-                onMoveDown: () => false,
+                onMoveDown: downFromUtility,
               }}
             >
               <RefreshArrowIcon size={14} />
@@ -253,7 +259,7 @@ export function buildReplyActionsElement(
               replyStop="show-details"
               deckNav={{
                 onMoveUp: upFromShowDetails,
-                onMoveDown: () => false,
+                onMoveDown: downFromUtility,
               }}
             >
               {transparencyOpen ? "Hide details" : "Show details"}

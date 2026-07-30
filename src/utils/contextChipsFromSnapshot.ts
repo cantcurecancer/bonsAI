@@ -8,6 +8,8 @@
 import type { TransparencySnapshot, ContextChip, ContextChipBody } from "./inputTransparency";
 
 export const CONTEXT_CHIP_WINDOW = 2;
+/** When chip count is at or below this, show every pill (no sliding window). */
+export const CONTEXT_CHIP_SHOW_ALL_MAX = 6;
 
 export function chipsFromSnapshot(snapshot: TransparencySnapshot | null | undefined): ContextChip[] {
   if (!snapshot?.context_chips?.length) return [];

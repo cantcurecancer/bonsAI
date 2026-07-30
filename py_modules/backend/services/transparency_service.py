@@ -347,7 +347,8 @@ def build_context_chips_manifest(
         if snapshot.get("kb_attached"):
             kb_bullets.append(f"Retrieval: {kb_retrieval_detail_label(retrieval_method)}")
             kb_domain = str(snapshot.get("kb_domain") or "").strip().lower()
-            if kb_domain == "compat":
+            kb_notes = str(snapshot.get("kb_notes") or "").strip().lower()
+            if kb_domain == "compat" or kb_notes == "compat_tips":
                 kb_bullets.append("Source: shared troubleshooting tips")
             tier = str(snapshot.get("kb_trust_tier") or "").strip()
             if tier:
@@ -527,6 +528,7 @@ def build_ollama_route_snapshot(
         "kb_timing_ms": ollama_result.get("kb_timing_ms") or {},
         "kb_unavailable_reason": str(ollama_result.get("kb_unavailable_reason") or ""),
         "kb_retrieval_method": str(ollama_result.get("kb_retrieval_method") or "keyword"),
+        "kb_domain": str(ollama_result.get("kb_domain") or ""),
         "ask_diagnostics": ollama_result.get("ask_diagnostics"),
         "response_verify": verify_result,
         "reply_verbosity": str(ollama_result.get("reply_verbosity") or "balanced"),

@@ -174,6 +174,11 @@ export function focusUpFromReplyUtilityRow(liveSlot: HTMLElement | null): boolea
   return focusUpFromReplyActions(liveSlot);
 }
 
+export function focusContextChipLadder(liveSlot: HTMLElement | null): boolean {
+  const ladder = liveSlot?.querySelector<HTMLElement>(".bonsai-chip-ladder");
+  return focusDeckOwner(ladder);
+}
+
 export function focusContextHint(liveSlot: HTMLElement | null): boolean {
   const hint =
     liveSlot?.querySelector<HTMLElement>(".bonsai-context-hint") ??
@@ -188,8 +193,9 @@ export function focusSessionContextStrip(): boolean {
   return focusDeckOwner(strip);
 }
 
-/** Down from utility row (Retry / Show details): inline context hint → session strip. */
+/** Down from utility row (Retry / Show details): inline ladder → collapsed hint → session strip. */
 export function focusDownFromReplyUtilityRow(liveSlot: HTMLElement | null): boolean {
+  if (focusContextChipLadder(liveSlot)) return true;
   if (focusContextHint(liveSlot)) return true;
   return focusSessionContextStrip();
 }

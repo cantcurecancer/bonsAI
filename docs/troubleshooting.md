@@ -408,7 +408,7 @@ Then `sudo systemctl restart avahi-daemon` and ensure `OLLAMA_HOST=0.0.0.0` and 
 - **Attach Proton logs on troubleshooting Asks** — bounded `steam-<appid>.log` / compatdata excerpts (requires **Permissions → Steam/Proton log read**).
 - **Inject experiment journal on troubleshooting Asks** — adds your timeline to the system prompt when the question matches troubleshooting heuristics and a numeric AppID is present.
 - **Suggest from log** — best-effort parse of the active Proton build from `~/steam-<appid>.log` tail (hint only; does not auto-save).
-- **Main tab context chips** — after an Ask, **Context used · tap for details** opens the chip ladder; older turns link to the **Session context** strip at the bottom. Full RPC snapshot lives in the **Developer details** chip.
+- **Main tab context chips** — after an Ask, **Show details** opens the inline chip ladder (wrap row when ≤6 chips); D-pad **Down** from **Retry** / **Show details** focuses the ladder; **Left/Right** cycles chips; **Developer details** is the last chip. Older turns link to the **Session context** strip at the bottom.
 - **Clear all data** removes the journal file along with other `~/.bonsai/` artifacts.
 
 **Local toggle and saved LAN IP:** While **Ollama on this Deck** is **on**, Ask uses `127.0.0.1:11434` but does **not** overwrite the saved **OLLAMA IP ADDRESS** field in browser storage. Toggling local **off** should restore your LAN PC host instead of leaving `127.0.0.1:11434` in the field after local-mode Asks.

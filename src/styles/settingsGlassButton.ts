@@ -25,8 +25,6 @@ export const SETTINGS_GLASS_BTN: React.CSSProperties = {
 /** Compact destructive glass — red border/text only. */
 export const SETTINGS_GLASS_BTN_DANGER: React.CSSProperties = {
   ...SETTINGS_GLASS_BTN,
-  flex: "0 0 auto",
-  width: "auto",
   padding: "6px 12px",
   border: "1px solid rgba(248,113,113,0.5)",
   color: "#fecaca",

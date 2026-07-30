@@ -45,6 +45,12 @@ import { useStreamScrollPin } from "../hooks/useStreamScrollPin";
 import type { AskModeId } from "../data/askMode";
 import type { LastExchangeSnapshot } from "../types/backgroundAsk";
 import type { ReplyMicroActionId } from "../data/replyMicroActions";
+import {
+  focusDownFromReplyUtilityRow,
+  focusReplyUtilityRow,
+  focusSessionContextStrip,
+  queryLiveTurnSlot,
+} from "../utils/liveTurnFocusGraph";
 
 const BONSAI_CHAT_AI_MAX_WIDTH_CSS = `min(${Math.round(BONSAI_CHAT_AI_BUBBLE_MAX_FRAC * 100)}%, 100%)`;
 
@@ -437,13 +443,17 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
                   chipError: liveReplyChipError,
                   onChip: onReplyMicroAction,
                   askInFlight: isAsking,
+                  onMoveDownFromUtility: () =>
+                    focusDownFromReplyUtilityRow(queryLiveTurnSlot()),
                 })
               : null}
             {renderInlineLadder ? (
-              <div style={{ maxWidth: BONSAI_CHAT_AI_MAX_WIDTH_CSS }}>
+              <div style={{ width: "100%", minWidth: 0, boxSizing: "border-box" }}>
                 <ContextChipLadder
                   snapshot={transparencySnapshot}
                   collapsedHint={false}
+                  onMoveUpFromLadder={() => focusReplyUtilityRow(queryLiveTurnSlot())}
+                  onMoveDownFromLadder={() => focusSessionContextStrip()}
                 />
               </div>
             ) : null}

@@ -145,12 +145,21 @@ export const OllamaWhereAiRunsSection: React.FC<OllamaWhereAiRunsSectionProps> =
     () => peekOllamaTabLocalPending()?.mdnsDiscoveryMessage ?? null
   );
   const [localSetupStatus, setLocalSetupStatus] = useState<LocalOllamaSetupStatus | null>(null);
+  const [localInstallMenuOpen, setLocalInstallMenuOpen] = useState(
+    () => peekOllamaTabLocalPending()?.localInstallMenuOpen ?? false
+  );
   const setupAutoTestRanRef = useRef(false);
   const lastCompletedSetupProfileRef = useRef<string>("");
-  const onTestConnectionRef = useRef<() => Promise<void>>(async () => {});
+  const onTestConnectionRef = useRef<(opts?: { quiet?: boolean }) => Promise<void>>(async () => {});
+  const autoProbeRanRef = useRef(false);
 
   const ollamaIpConnectionNavRef = useRef<HTMLDivElement>(null);
   const ollamaLocalToggleNavRef = useRef<HTMLDivElement>(null);
+  const installUpdateBtnRef = useRef<HTMLButtonElement | null>(null);
+  const browseModelsBtnRef = useRef<HTMLButtonElement | null>(null);
+  const installOptionsBtnRef = useRef<HTMLButtonElement | null>(null);
+  const tier1EssentialsBtnRef = useRef<HTMLButtonElement | null>(null);
+  const tier2MultimodalBtnRef = useRef<HTMLButtonElement | null>(null);
 
   const focusLocalToggle = useCallback((): boolean => {
     const host = ollamaLocalToggleNavRef.current;
@@ -160,17 +169,53 @@ export const OllamaWhereAiRunsSection: React.FC<OllamaWhereAiRunsSectionProps> =
     return true;
   }, []);
 
+  const focusInstallUpdateBtn = useCallback((): boolean => {
+    installUpdateBtnRef.current?.focus();
+    return Boolean(installUpdateBtnRef.current);
+  }, []);
+
+  const focusBrowseModelsBtn = useCallback((): boolean => {
+    browseModelsBtnRef.current?.focus();
+    return Boolean(browseModelsBtnRef.current);
+  }, []);
+
+  const focusInstallOptionsBtn = useCallback((): boolean => {
+    installOptionsBtnRef.current?.focus();
+    return Boolean(installOptionsBtnRef.current);
+  }, []);
+
+  const focusTier1Btn = useCallback((): boolean => {
+    tier1EssentialsBtnRef.current?.focus();
+    return Boolean(tier1EssentialsBtnRef.current);
+  }, []);
+
+  const focusTier2Btn = useCallback((): boolean => {
+    tier2MultimodalBtnRef.current?.focus();
+    return Boolean(tier2MultimodalBtnRef.current);
+  }, []);
+
+  const focusConnectionTestBtn = useCallback((): boolean => {
+    connectionTestBtnRef?.current?.focus();
+    return Boolean(connectionTestBtnRef?.current);
+  }, [connectionTestBtnRef]);
+
+  /** Local Deck setup vertical chain: toggle → Install/Update → Browse → Install options → Test. */
   const handleMoveUpFromConnection = useCallback((): boolean => {
+    if (ollamaLocalOnDeck) {
+      if (localInstallMenuOpen && focusTier2Btn()) return true;
+      if (focusInstallOptionsBtn()) return true;
+    }
     return tryMoveUpWithPanelScroll(ollamaIpConnectionNavRef.current, focusLocalToggle);
-  }, [focusLocalToggle]);
+  }, [focusInstallOptionsBtn, focusLocalToggle, focusTier2Btn, localInstallMenuOpen, ollamaLocalOnDeck]);
 
   const handleMoveUpFromLocalToggle = useCallback((): boolean => {
     return tryMoveUpWithPanelScroll(ollamaLocalToggleNavRef.current);
   }, []);
 
-  const [localInstallMenuOpen, setLocalInstallMenuOpen] = useState(
-    () => peekOllamaTabLocalPending()?.localInstallMenuOpen ?? false
-  );
+  const handleMoveDownFromLocalToggle = useCallback((): boolean => {
+    if (ollamaLocalOnDeck && focusInstallUpdateBtn()) return true;
+    return focusConnectionTestBtn();
+  }, [focusConnectionTestBtn, focusInstallUpdateBtn, ollamaLocalOnDeck]);
 
   useLayoutEffect(() => {
     const local = consumeOllamaTabLocalPending();
@@ -179,6 +224,9 @@ export const OllamaWhereAiRunsSection: React.FC<OllamaWhereAiRunsSectionProps> =
     setMdnsHosts(local.mdnsHosts);
     setMdnsDiscoveryMessage(local.mdnsDiscoveryMessage);
     setLocalInstallMenuOpen(local.localInstallMenuOpen);
+    if (local.connectionStatus != null) {
+      autoProbeRanRef.current = true;
+    }
   }, []);
 
   useEffect(() => {
@@ -206,7 +254,8 @@ export const OllamaWhereAiRunsSection: React.FC<OllamaWhereAiRunsSectionProps> =
       });
   }, []);
 
-  const onTestConnection = async () => {
+  const onTestConnection = async (opts?: { quiet?: boolean }) => {
+    const quiet = opts?.quiet === true;
     const target = ollamaLocalOnDeck ? OLLAMA_LOCAL_ON_DECK_DEFAULT_PCIP : ollamaIp.trim();
     if (!target) return;
     const loopbackLikelyProbe =
@@ -217,8 +266,10 @@ export const OllamaWhereAiRunsSection: React.FC<OllamaWhereAiRunsSectionProps> =
       TEST_CONNECTION_TIMEOUT_SECONDS * 1000 +
       (loopbackLikelyProbe ? LOCAL_LOOPBACK_CONNECTION_TEST_RPC_EXTRA_MS : 3000);
 
-    setConnectionTesting(true);
-    setConnectionStatus(null);
+    if (!quiet) {
+      setConnectionTesting(true);
+      setConnectionStatus(null);
+    }
     try {
       const result = await callDeckyWithTimeout<[string, number], ConnectionStatus>(
         "test_ollama_connection",
@@ -229,14 +280,26 @@ export const OllamaWhereAiRunsSection: React.FC<OllamaWhereAiRunsSectionProps> =
       onLastConnectionStatus?.(result);
       if (result.reachable && !ollamaLocalOnDeck) onPersistOllamaIp(target);
     } catch (e: unknown) {
-      setConnectionStatus({ reachable: false, error: formatDeckyRpcError(e) });
-      onLastConnectionStatus?.({ reachable: false, error: formatDeckyRpcError(e) });
+      const failed = { reachable: false, error: formatDeckyRpcError(e) };
+      setConnectionStatus(failed);
+      onLastConnectionStatus?.(failed);
     } finally {
-      setConnectionTesting(false);
+      if (!quiet) setConnectionTesting(false);
     }
   };
 
   onTestConnectionRef.current = onTestConnection;
+
+  // Auto-probe once on mount so Install/Update label reflects reachability without Test connection.
+  useEffect(() => {
+    if (autoProbeRanRef.current) return;
+    const target = ollamaLocalOnDeck ? OLLAMA_LOCAL_ON_DECK_DEFAULT_PCIP : ollamaIp.trim();
+    if (!target) return;
+    autoProbeRanRef.current = true;
+    void onTestConnectionRef.current({ quiet: true });
+    // Mount-once probe; host changes still use explicit Test connection.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional one-shot on section mount
+  }, []);
 
   const localSetupBusy = localSetupStatus?.phase === "running";
   const ollamaEngineReady = Boolean(connectionStatus?.reachable);
@@ -533,6 +596,7 @@ export const OllamaWhereAiRunsSection: React.FC<OllamaWhereAiRunsSectionProps> =
               onChange={(c) => setOllamaLocalOnDeck(c)}
               {...({
                 onMoveUp: () => handleMoveUpFromLocalToggle(),
+                onMoveDown: () => handleMoveDownFromLocalToggle(),
               } as unknown as Record<string, unknown>)}
             />
             <div
@@ -576,9 +640,16 @@ export const OllamaWhereAiRunsSection: React.FC<OllamaWhereAiRunsSectionProps> =
               </div>
               <Focusable flow-children="horizontal" style={{ display: "flex", flexDirection: "row", flexWrap: "wrap", gap: 8, width: "100%" }}>
                 <Button
+                  ref={(el) => {
+                    installUpdateBtnRef.current = el as HTMLButtonElement | null;
+                  }}
                   className="bonsai-settings-focus-btn"
                   disabled={localSetupBusy}
                   onClick={() => openLocalSetupConfirm(LOCAL_OLLAMA_SETUP_PROFILE_UPDATE_INSTALLED)}
+                  {...({
+                    onMoveUp: () => focusLocalToggle(),
+                    onMoveDown: () => focusBrowseModelsBtn(),
+                  } as unknown as Record<string, unknown>)}
                   style={{
                     flex: "1 1 100%",
                     minHeight: 36,

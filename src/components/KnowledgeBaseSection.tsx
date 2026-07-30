@@ -408,8 +408,9 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
           className="bonsai-settings-bleed"
           style={{ display: "flex", flexDirection: "row", alignItems: "stretch", gap: 8, width: "100%" }}
         >
-          <div className="bonsai-settings-focus-btn-host" style={{ flex: "1 1 auto", minWidth: 0 }}>
-            <Focusable onOKButton={onPrimaryClick}>
+          {/* Pattern C: pair is one horizontal row — Up/Down both exit vertically; Left/Right stay in-row. */}
+          <div className="bonsai-settings-focus-btn-host" style={{ flex: "1.35 1 0", minWidth: 0, display: "flex" }}>
+            <Focusable onOKButton={onPrimaryClick} style={{ width: "100%", display: "flex" }}>
               <Button
                 ref={(el) => {
                   const btn = el as HTMLButtonElement | null;
@@ -419,10 +420,10 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
                 className="bonsai-settings-focus-btn"
                 onClick={onPrimaryClick}
                 disabled={downloadBusy}
-                style={{ ...SETTINGS_GLASS_BTN, width: "100%" }}
+                style={{ ...SETTINGS_GLASS_BTN, width: "100%", height: "100%", boxSizing: "border-box" }}
                 {...deckNav({
                   onMoveUp: () => focusKbToggle(),
-                  onMoveDown: () => (installed ? focusRemoveBtn() : onMoveDownFromRemove?.() ?? false),
+                  onMoveDown: () => onMoveDownFromRemove?.() ?? false,
                   onMoveRight: () => (installed ? focusRemoveBtn() : false),
                 })}
               >
@@ -435,8 +436,8 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
             </Focusable>
           </div>
           {installed ? (
-            <div className="bonsai-settings-focus-btn-host">
-              <Focusable onOKButton={confirmRemove}>
+            <div className="bonsai-settings-focus-btn-host" style={{ flex: "1 1 0", minWidth: 0, display: "flex" }}>
+              <Focusable onOKButton={confirmRemove} style={{ width: "100%", display: "flex" }}>
                 <Button
                   ref={(el) => {
                     const btn = el as HTMLButtonElement | null;
@@ -448,9 +449,15 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
                   className="bonsai-settings-focus-btn"
                   onClick={confirmRemove}
                   disabled={downloadBusy}
-                  style={SETTINGS_GLASS_BTN_DANGER}
+                  style={{
+                    ...SETTINGS_GLASS_BTN_DANGER,
+                    flex: "1 1 auto",
+                    width: "100%",
+                    height: "100%",
+                    boxSizing: "border-box",
+                  }}
                   {...deckNav({
-                    onMoveUp: () => focusPrimaryBtn(),
+                    onMoveUp: () => focusKbToggle(),
                     onMoveLeft: () => focusPrimaryBtn(),
                     onMoveDown: () => onMoveDownFromRemove?.() ?? false,
                   })}

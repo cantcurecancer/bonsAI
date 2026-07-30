@@ -152,7 +152,6 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
     BackgroundRequestStatus["shortcut_setup"]
   > | null>(() => survivalPeek?.shortcutSetupVariant ?? null);
   const lastStrategyAskQuestionRef = useRef<string>("");
-  const runningAppIdRef = useRef<string>("");
   const pendingReplyFollowUpRef = useRef<ReplyFollowUpPending | null>(null);
   const lastAskContextRef = useRef<{
     attachments: AskAttachmentSnapshot[];

@@ -10,6 +10,7 @@ import re
 from typing import Callable, Optional, Any
 
 from backend.constants import DEFAULT_OLLAMA_BASE_URL, OLLAMA_TAB_WHERE_AI_RUNS
+from backend.tdp_intent import is_current_tdp_read_intent
 from backend.services.strategy_guide_parse import (
     STRATEGY_FOLLOWUP_PREFIX,
     format_strategy_checklist_state_block,
@@ -401,6 +402,40 @@ def _user_asks_deck_troubleshooting_or_compat_line(question: str) -> bool:
         return True
     if "proton issue" in s:
         return True
+    if "proton" in s and any(
+        kw in s
+        for kw in (
+            "deck",
+            "sleep",
+            "resume",
+            "black screen",
+            "crash",
+            "launch",
+            "stutter",
+            "shader",
+            "wine",
+            "steamos",
+            "compat",
+        )
+    ):
+        return True
+    if "deck" in s and any(
+        kw in s
+        for kw in (
+            "sleep",
+            "resume",
+            "black screen",
+            "crash",
+            "proton",
+            "steamos",
+            "sd card",
+            "storage",
+            "update",
+            "gamescope",
+            "steam input",
+        )
+    ):
+        return True
     return False
 
 
@@ -423,6 +458,12 @@ OLLAMA_BONSAI_SETUP_LINE = (
 HARDWARE_APPENDIX_SKIPPED_FOR_OLLAMA_TOPIC = (
     "Hardware appendix (Deck TDP/GPU JSON): **Skipped for this topic** — the user is focused on Ollama/bonsAI inference or networking, not in-game power sliders. "
     "Do **not** output the ```json``` TDP/GPU block unless they **also** explicitly ask for Deck TDP or GPU MHz changes in the same message.\n\n"
+)
+
+HARDWARE_APPENDIX_SKIPPED_FOR_TROUBLESHOOT = (
+    "Hardware appendix (Deck TDP/GPU JSON): **Skipped for this topic** — troubleshooting/compat ask, not power tuning. "
+    "Do **not** output the ```json``` TDP/GPU block unless the user explicitly asks for Deck watts, FPS, GPU MHz, "
+    "battery drain, or thermal limits in the same message.\n\n"
 )
 
 MODEL_POLICY_TIERS_LINE = (
@@ -802,6 +843,9 @@ def build_system_prompt(
             and _user_asks_deck_troubleshooting_or_compat_line(question)
             and not ollama_q
         )
+        troubleshoot_compat = _user_asks_deck_troubleshooting_or_compat_line(question) and not ollama_q
+        power_topic = user_wants_power_or_performance_topic(question)
+        read_tdp = is_current_tdp_read_intent(question)
         middle = (
             (OLLAMA_BONSAI_SETUP_LINE if ollama_q else "")
             + (MODEL_POLICY_TIERS_LINE if model_policy_q else "")
@@ -809,7 +853,14 @@ def build_system_prompt(
             + gfx
             + (DECK_TROUBLESHOOT_GAME_SETTINGS_LINE if troubleshoot else "")
         )
-        tail = HARDWARE_APPENDIX_SKIPPED_FOR_OLLAMA_TOPIC if ollama_q else hardware_tdp_appendix
+        if ollama_q:
+            tail = HARDWARE_APPENDIX_SKIPPED_FOR_OLLAMA_TOPIC
+        elif troubleshoot_compat and not power_topic and not sweet and not read_tdp:
+            tail = HARDWARE_APPENDIX_SKIPPED_FOR_TROUBLESHOOT
+        elif power_topic or sweet or read_tdp:
+            tail = hardware_tdp_appendix
+        else:
+            tail = hardware_tdp_appendix
         verbosity_block = build_reply_verbosity_block(
             reply_verbosity,
             question=question,

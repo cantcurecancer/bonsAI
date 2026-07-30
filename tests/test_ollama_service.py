@@ -442,9 +442,51 @@ class OllamaServiceTests(unittest.TestCase):
         self.assertIn("ProtonDB", prompt)
         i_game = prompt.index("The currently running game is:")
         i_trouble = prompt.index("DECK TROUBLESHOOTING (game in focus)")
-        i_appendix = prompt.index("Hardware appendix (apply only when relevant)")
+        i_appendix = prompt.index("Hardware appendix (Deck TDP/GPU JSON): **Skipped for this topic**")
         self.assertLess(i_game, i_trouble)
         self.assertLess(i_trouble, i_appendix)
+        self.assertNotIn("IMPORTANT: When you recommend or apply a TDP or GPU clock change", prompt)
+
+    def test_build_system_prompt_troubleshoot_without_game_skips_tdp_appendix(self):
+        def lookup_app_name(_app_id: str) -> str:
+            return ""
+
+        def lookup_vdf(_path: str) -> dict:
+            return {}
+
+        prompt = build_system_prompt(
+            question="deck sleep resume proton black screen",
+            app_id="",
+            app_name="",
+            normalized_attachments=[],
+            prepared_images=[],
+            lookup_app_name=lookup_app_name,
+            lookup_screenshot_vdf_metadata=lookup_vdf,
+            ask_mode="speed",
+        )
+        self.assertIn("Hardware appendix (Deck TDP/GPU JSON): **Skipped for this topic**", prompt)
+        self.assertIn("troubleshooting/compat ask", prompt)
+        self.assertNotIn("IMPORTANT: When you recommend or apply a TDP or GPU clock change", prompt)
+
+    def test_build_system_prompt_power_ask_keeps_tdp_appendix(self):
+        def lookup_app_name(_app_id: str) -> str:
+            return ""
+
+        def lookup_vdf(_path: str) -> dict:
+            return {}
+
+        prompt = build_system_prompt(
+            question="best tdp for 60fps on deck",
+            app_id="",
+            app_name="",
+            normalized_attachments=[],
+            prepared_images=[],
+            lookup_app_name=lookup_app_name,
+            lookup_screenshot_vdf_metadata=lookup_vdf,
+            ask_mode="speed",
+        )
+        self.assertIn("IMPORTANT: When you recommend or apply a TDP or GPU clock change", prompt)
+        self.assertNotIn("troubleshooting/compat ask", prompt)
 
     def test_build_system_prompt_omits_deck_troubleshoot_gotchas_without_game_name(self):
         def lookup_app_name(_app_id: str) -> str:

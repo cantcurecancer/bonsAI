@@ -17,7 +17,12 @@
     },
     {
       "path": "src/hooks/useBonsaiAskOrchestration.ts",
-      "lines": 1225,
+      "lines": 1224,
+      "role": ""
+    },
+    {
+      "path": "src/components/OllamaWhereAiRunsSection.tsx",
+      "lines": 1129,
       "role": ""
     },
     {
@@ -26,8 +31,8 @@
       "role": ""
     },
     {
-      "path": "src/components/OllamaWhereAiRunsSection.tsx",
-      "lines": 1058,
+      "path": "py_modules/backend/services/ollama_prompts.py",
+      "lines": 1052,
       "role": ""
     },
     {
@@ -43,11 +48,6 @@
     {
       "path": "src/components/MainTabUnifiedAskBar.tsx",
       "lines": 1014,
-      "role": ""
-    },
-    {
-      "path": "py_modules/backend/services/ollama_prompts.py",
-      "lines": 1001,
       "role": ""
     },
     {
@@ -71,13 +71,13 @@
       "role": ""
     },
     {
-      "path": "src/hooks/usePluginSettings.ts",
-      "lines": 609,
+      "path": "src/components/MainTabChatTranscript.tsx",
+      "lines": 612,
       "role": ""
     },
     {
-      "path": "src/components/MainTabChatTranscript.tsx",
-      "lines": 602,
+      "path": "src/hooks/usePluginSettings.ts",
+      "lines": 609,
       "role": ""
     },
     {
@@ -97,7 +97,7 @@
     },
     {
       "path": "py_modules/backend/services/transparency_service.py",
-      "lines": 588,
+      "lines": 590,
       "role": ""
     },
     {
@@ -127,7 +127,7 @@
     },
     {
       "path": "src/components/KnowledgeBaseSection.tsx",
-      "lines": 468,
+      "lines": 475,
       "role": ""
     },
     {

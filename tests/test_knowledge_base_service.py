@@ -70,6 +70,17 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
     self.assertTrue(ok)
     self.assertEqual(domain, "compat")
 
+  def test_should_retrieve_compat_on_deck_sleep_proton(self):
+    ok, domain = should_retrieve_knowledge(
+      use_local_knowledge_base=True,
+      ask_mode="speed",
+      question="deck sleep resume proton black screen",
+      app_id="",
+      app_name="",
+    )
+    self.assertTrue(ok)
+    self.assertEqual(domain, "compat")
+
   def test_should_not_retrieve_when_disabled(self):
     ok, domain = should_retrieve_knowledge(
       use_local_knowledge_base=False,
