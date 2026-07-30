@@ -60,7 +60,8 @@ cli/*
 cli/decky
 
 # Local Deck screenshots (scripts/screenshot-deck.sh / screenshot-deck.ps1)
-screenshots/
+screenshots/*
+!screenshots/README.md
 
 # Preview suite run artifacts (JUnit-style JSON reports)
 tests/preview-results/

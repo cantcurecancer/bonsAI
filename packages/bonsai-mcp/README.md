@@ -26,7 +26,7 @@ BONSAI_REPO_ROOT=/path/to/bonsAI node dist/index.js
 
 ## Tools
 
-- `bonsai.session.bootstrap` — session start
+- `bonsai.session.bootstrap` — slim session start (policy ids + fetch hints)
 - `bonsai.policy.list` / `bonsai.policy.get`
 - `bonsai.workflow.get`
 - `bonsai.docs.search` / `bonsai.docs.get`

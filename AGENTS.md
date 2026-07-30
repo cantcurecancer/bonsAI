@@ -10,7 +10,7 @@ In-repo server: [`packages/bonsai-mcp/`](packages/bonsai-mcp/). Setup: [docs/mcp
 
 | Tool | Purpose |
 |------|---------|
-| `bonsai.session.bootstrap` | Always-on policies + index |
+| `bonsai.session.bootstrap` | Always-on policy **ids** + fetch hints (full text via `policy.get`) |
 | `bonsai.policy.list` / `bonsai.policy.get` | Policy slices (git, focus, deploy, …) |
 | `bonsai.workflow.get` | Deck dev loop, tier QA, preview, screenshot ingest |
 | `bonsai.docs.search` / `bonsai.docs.get` | Search or read `docs/` |

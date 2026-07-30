@@ -1,16 +1,22 @@
 ---
-description: Mandatory Decky focus-graph wiring for new Settings/QAM controls and sliders
+description: Mandatory Decky focus-graph wiring for new Settings/QAM controls and focus bugs
 alwaysApply: true
 ---
 
-# Decky focus graph (new UI controls)
+# Decky focus graph
 
-Full policy: MCP `bonsai.policy.get` id=`decky-ui-focus` or [packages/bonsai-mcp/knowledge/policies/decky-ui-focus.md](../../packages/bonsai-mcp/knowledge/policies/decky-ui-focus.md). Reference implementations: [focus-graph-patterns.md](../../packages/bonsai-mcp/knowledge/architecture/focus-graph-patterns.md).
+Full policy: MCP `bonsai.policy.get` id=`decky-ui-focus`. Patterns: `bonsai://architecture/focus-graph-patterns` or [focus-graph-patterns.md](../../packages/bonsai-mcp/knowledge/architecture/focus-graph-patterns.md).
+
+## New controls
 
 - ALWAYS design new Settings/QAM rows as an **explicit focus graph in the section parent** (list each stop, wire `onMoveUp`/`onMoveDown`/`onMoveLeft`/`onMoveRight`/`onButtonDown` on the **Deck focus owner**, verify on-device). Mirror `SettingsTabUiScaleSection.tsx`, `OllamaTab.tsx`, or `PullModelsModal.tsx`.
-
 - NEVER assume DOM order or nested `DeckFocusSlider` thumbs join the vertical graph. For sliders, ALWAYS add a document-flow **`Focusable` bridge** in the parent with vertical **and** horizontal handlers, or use proven parent ref wiring (`focusOllamaKeepAliveThumb` pattern).
-
 - NEVER hop between Decky D-pad siblings via `document.querySelector` / aria / `data-*` / class lookup or `document.activeElement` success checks — those miss on Deck and yield wrong spatial nav. ALWAYS register mounted focus owners (refs/registry) and return `true` from `onMove*` when the target is registered (`replyStopRegistry.ts`).
+- NEVER mark Deck-facing UI done without a **D-pad row in `docs/testing.md` / `docs/testing-manual.md`** for the new control chain. Preview does **not** validate Deck focus graphs.
 
-- NEVER mark Deck-facing UI done without a **D-pad row in `docs/testing.md`** for the new control chain.
+## Focus / D-pad bugs (main agent first)
+
+1. If the user mentions a screenshot/capture/`screenshots/` → skill **decky-screenshot-ingest** (Shell list by mtime; **not** Glob).
+2. Name the **section parent** and focus stops; match Pattern A/B/C/D in `focus-graph-patterns` before editing leaves.
+3. Apply **one** evidence-backed fix (graph owner / registry / bridge — not speculative CSS).
+4. Still wrong after that, or user wants instrumentation / log proof → Task / `@master-debugger` (`bonsai/triage/focus-bug`, then `bonsai/persona/master-debugger`). Do **not** auto-Task the debugger for every D-pad mention.

@@ -64,7 +64,7 @@ When adding Settings/QAM toggles, buttons, sliders, or chip rows:
 3. On-Deck QA: [testing.md](../../docs/testing.md) **FOCUS-GRAPH-01…05** + feature-specific row (e.g. UI-SCALE-05).
 4. Policy gate: `bonsai://policy/decky-ui-focus` § **New controls & settings rows**.
 
-Preview mocks do **not** validate Deck focus graphs — deploy + on-Deck pass required.
+**Focus bugs:** main agent runs the checklist in `.cursor/rules/decky-focus-graph.mdc` (screenshots → name graph → one evidence-backed fix). Task **master-debugger** only for a real debug loop (still broken after that, or instrumentation/log proof). Preview mocks do **not** validate Deck focus graphs — deploy + on-Deck pass required.
 
 ## Automated gates (before handoff)
 
@@ -81,11 +81,11 @@ Deck-facing changes: also run `./scripts/build.sh local` or remote equivalent.
 
 ## Visual verification (screenshots)
 
-When debugging layout, focus, or QAM:
+When debugging layout, focus, or QAM (or the user says a capture is in the repo):
 
 1. Reproduce on Deck (QAM open for game-mode UI).
 2. Run `.\scripts\screenshot-deck.ps1` or `./scripts/screenshot-deck.sh` (or `-Mode game` / `--mode game`).
-3. Follow **decky-screenshot-ingest** skill: read newest `screenshots/DeckCapture_*.png`.
+3. Follow skill **decky-screenshot-ingest**: Shell-list `screenshots/` by mtime (**not** Glob — folder is gitignored), then Read newest `DeckCapture_*.png`.
 
 On-Deck hotkey (optional): `-InstallDeckHelper` / `--install-deck-helper` then `bonsai-capture` on the Deck.
 

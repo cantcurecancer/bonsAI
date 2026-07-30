@@ -69,7 +69,7 @@ Keep **decky-plugin-studio** configured in the same file (see [AGENTS.md](../AGE
 
 **After first clone or MCP changes:** run `pnpm run mcp:install && pnpm run mcp:build`, then **Developer: Reload Window** (or restart Cursor). Confirm **bonsai** shows green in **Cursor Settings → MCP**.
 
-**Session start:** a `sessionStart` hook auto-injects always-on policies; agents may also call `bonsai.session.bootstrap`.
+**Session start:** a `sessionStart` hook auto-injects a **slim** bootstrap (always-on policy ids + when to fetch). Agents may also call `bonsai.session.bootstrap`. Full policy bodies: `bonsai.policy.get` only when the task needs them (avoids triple-injecting focus/layout walls every chat).
 
 ## Claude Desktop
 
@@ -99,7 +99,7 @@ Edit `claude_desktop_config.json`:
 
 | Tool | When |
 |------|------|
-| `bonsai.session.bootstrap` | Start of session — always-on policies |
+| `bonsai.session.bootstrap` | Start of session — policy ids + fetch hints (not full bodies) |
 | `bonsai.workflow.get` | Deck dev loop, tier QA, preview, screenshots |
 | `bonsai.policy.get` / `bonsai.policy.list` | Specific policy slices |
 | `bonsai.docs.search` / `bonsai.docs.get` | Search or read `docs/` |
@@ -112,7 +112,7 @@ Edit `claude_desktop_config.json`:
 |--------|------|
 | `bonsai/persona/master-debugger` | Focus, layout, log capture |
 | `bonsai/persona/security-auditor` | RPC, logging, permissions review |
-| `bonsai/triage/focus-bug` | Short focus triage checklist |
+| `bonsai/triage/focus-bug` | Short focus triage (screenshots → graph → one fix; debugger on second loop) |
 | `bonsai/triage/empty-ai-reply` | Silent/truncated AI replies |
 
 **Archived:** Red/Blue ship counsel and `bonsai/plan/ship-review` → [docs/archive/red-blue-counsel/](../docs/archive/red-blue-counsel/README.md).

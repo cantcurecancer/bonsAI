@@ -4,6 +4,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 import {
+  formatSessionBootstrap,
   getPolicies,
   getWorkflow,
   listKnowledgeEntries,
@@ -39,13 +40,15 @@ const DECKY_STUDIO_TOOLS = [
 const TRIAGE_PROMPTS: Record<string, string> = {
   "bonsai/triage/focus-bug": `# Focus bug triage (bonsAI)
 
-1. Classify: focus-graph vs layout vs backend.
-2. Verify Decky callbacks fire (\`onMoveLeft\`, \`onMoveRight\`, \`onOKButton\`) before DOM \`keydown\`.
-3. Never gate on \`modal.contains(activeElement)\` alone — traverse Shadow DOM hosts.
-4. Measure geometry before CSS changes; no ref-set inline styles on React nodes.
-5. Deploy with \`plugin.build\` or \`./scripts/build.ps1\` / \`./scripts/build.sh\`.
-6. Log via \`dbg_fe_log\` RPC when remote Deck cannot reach PC ingest.
-7. Load full persona: \`bonsai/persona/master-debugger\`.
+1. **Screenshots first** if the user mentions a capture / "see screenshot" / files in \`screenshots/\`: follow skill **decky-screenshot-ingest** (Shell list by mtime — \`screenshots/\` is gitignored; Glob misses it). Do not ask the user to paste images.
+2. Classify: focus-graph vs layout vs backend.
+3. Name the **section parent** focus stops; match Pattern A/B/C/D in \`bonsai://architecture/focus-graph-patterns\` before editing leaves.
+4. Verify Decky callbacks fire (\`onMoveLeft\`, \`onMoveRight\`, \`onOKButton\`) before DOM \`keydown\`.
+5. Never gate on \`modal.contains(activeElement)\` alone — traverse Shadow DOM hosts. Never \`querySelector\` / aria for sibling hops — use mount-time refs/registry; return \`true\` from \`onMove*\` when registered.
+6. Measure geometry before CSS changes; no ref-set inline styles on React nodes.
+7. One evidence-backed fix as the **main agent**. If still wrong after that, or user asks to instrument/prove root cause → Task / \`@master-debugger\` (\`bonsai/persona/master-debugger\`).
+8. Deploy with \`plugin.build\` or \`./scripts/build.ps1\` / \`./scripts/build.sh\`. Preview does **not** validate Deck focus graphs.
+9. Log via \`dbg_fe_log\` RPC when remote Deck cannot reach PC ingest.
 `,
   "bonsai/triage/empty-ai-reply": `# Empty AI reply triage (bonsAI)
 
@@ -111,25 +114,10 @@ export function createServer(): McpServer {
   // --- Tools ---
   server.tool(
     "bonsai.session.bootstrap",
-    "Return always-on policies and index URI for session start",
+    "Return always-on policy ids + fetch hints (full bodies via bonsai.policy.get)",
     {},
     async () => {
-      const policies = getPolicies({ alwaysApply: true });
-      const blocks = policies.map((p) => {
-        const body = readFileBody(p);
-        return `## ${p.id}\n\n${body}`;
-      });
-      const text = [
-        "# bonsAI session bootstrap",
-        "",
-        `Repo: ${resolveRepoRoot()}`,
-        "",
-        "Index: bonsai://index",
-        "",
-        "Deck operations: use **decky-plugin-studio** MCP (`plugin.build`, `deck.deploy`, `preview.*`).",
-        "",
-        ...blocks,
-      ].join("\n");
+      const text = formatSessionBootstrap();
       return { content: [{ type: "text" as const, text }] };
     },
   );

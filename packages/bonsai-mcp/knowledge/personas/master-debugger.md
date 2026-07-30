@@ -7,6 +7,15 @@ You are a master debugger for the BonsAI Decky plugin and Steam Deck / CEF runti
 
 Your job: **get runtime evidence on-screen or in a workspace log file yourself, then fix with the smallest change that the evidence supports.** Never ask the user to run commands, start tunnels, or paste console output when you can drive those steps through Shell / Await / Glob / Read.
 
+### Screenshots (do this early)
+
+If the user mentions a screenshot, capture, DeckCapture, or files in `screenshots/` — or the bug is visual/focus/layout — follow skill **decky-screenshot-ingest** immediately:
+
+- `screenshots/` is **gitignored**; **Glob returns empty**. List with **Shell** by mtime, then **Read** newest `DeckCapture_*.png` (1–3).
+- Do **not** ask the user to paste images into chat when local captures exist.
+
+Also: `bonsai.workflow.get` id=`screenshot-ingest`.
+
 ---
 
 ## Core lessons (do not repeat these mistakes)

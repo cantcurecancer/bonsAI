@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /**
- * sessionStart hook: inject bonsAI always-on policies (same content as bonsai.session.bootstrap).
+ * sessionStart hook: inject slim bonsAI bootstrap (policy ids + fetch hints).
+ * Same content as bonsai.session.bootstrap. Full policy bodies: bonsai.policy.get.
  * Requires: pnpm run mcp:build (packages/bonsai-mcp/dist must exist).
  */
 import fs from "node:fs";
@@ -12,7 +13,6 @@ async function main() {
   try {
     const chunks = [];
     for await (const chunk of process.stdin) chunks.push(chunk);
-    // input available for future session_id logging
     void chunks;
   } catch {
     /* stdin optional */
@@ -30,18 +30,8 @@ async function main() {
     return;
   }
 
-  const { getPolicies, readFileBody } = await import(pathToFileURL(distKnowledge).href);
-  const policies = getPolicies({ alwaysApply: true });
-  const blocks = policies.map((p) => `## ${p.id}\n\n${readFileBody(p)}`);
-  const context = [
-    "# bonsAI session bootstrap (auto-injected at sessionStart)",
-    "",
-    "MCP tools available after reload: `bonsai.session.bootstrap`, `bonsai.workflow.get`, `bonsai.policy.get`.",
-    "Deck deploy/preview: **decky-plugin-studio** (`plugin.build`, `deck.deploy`, `preview.*`).",
-    "",
-    ...blocks,
-  ].join("\n");
-
+  const { formatSessionBootstrap } = await import(pathToFileURL(distKnowledge).href);
+  const context = formatSessionBootstrap({ autoInjected: true });
   process.stdout.write(JSON.stringify({ additional_context: context }));
 }
 
