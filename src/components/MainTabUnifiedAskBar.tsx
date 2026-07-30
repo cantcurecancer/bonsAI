@@ -408,15 +408,12 @@ export function MainTabUnifiedAskBar(props: MainTabUnifiedAskBarProps) {
         >
           {!unifiedInput.trim() && askMode === "strategy" ? (
             <>
-              {/*
-                Caret must precede the long strategy placeholder: if the caret follows the
-                placeholder as an inline sibling, a wrapped placeholder leaves the caret alone
-                on the next line (Deck / narrow QAM).
-              */}
-              {isUnifiedInputFocused && <span className="bonsai-unified-input-fake-caret" aria-hidden>|</span>}
               <span className="bonsai-unified-input-strategy-placeholder">
                 Describe the level, boss, or puzzle you're stuck on.
               </span>
+              {isUnifiedInputFocused && (
+                <span className="bonsai-unified-input-fake-caret bonsai-unified-input-fake-caret--overlay" aria-hidden>|</span>
+              )}
             </>
           ) : (
             <>

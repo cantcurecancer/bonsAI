@@ -6,7 +6,7 @@
  * Does not: Persist selected presets or submit asks — parent setUnifiedInput handles composer text.
  */
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Button, Focusable, Router } from "@decky/ui";
+import { Button, Focusable } from "@decky/ui";
 import type { AskModeId } from "../data/askMode";
 import {
   getRandomPresetExcluding,
@@ -83,8 +83,7 @@ function PresetChipButton(props: {
       className="bonsai-preset-glass"
       focusable={focusable}
       onClick={() => {
-        const gameName = Router.MainRunningApp?.display_name ?? "";
-        setUnifiedInput(gameName ? joinPresetWithRunningGame(p.text, gameName) : p.text);
+        setUnifiedInput(joinPresetWithRunningGame(p.text));
         if (p.preferAskMode && onPreferAskMode) {
           onPreferAskMode(p.preferAskMode);
         }
@@ -399,8 +398,7 @@ function MainTabPresetAnimatedChipsInner(props: MainTabPresetAnimatedChipsProps)
               className="bonsai-preset-glass"
               focusable={presetInteractive}
               onClick={() => {
-                const gameName = Router.MainRunningApp?.display_name ?? "";
-                setUnifiedInput(gameName ? joinPresetWithRunningGame(p.text, gameName) : p.text);
+                setUnifiedInput(joinPresetWithRunningGame(p.text));
                 if (p.preferAskMode && onPreferAskMode) {
                   onPreferAskMode(p.preferAskMode);
                 }

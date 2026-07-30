@@ -56,6 +56,8 @@ One smoke often covers many features. Status: **Verified** / **Partial** / **Ope
 | TDP apply + QAMP banner | SMOKE-B | Verified | On-Deck + preview evidence |
 | Strategy mode + spoilers (spot) | SMOKE-E | Partial | Deeper spoiler/checklist → Tier 2 |
 | Preset carousel troubleshooting triple | SMOKE-D | Verified | |
+| Preset chip inject (no game append) | PRESET-GAME-01 | Open | Unit pass; on-Deck chip → Ask text |
+| Strategy Ask placeholder (focus caret) | STRATEGY-PLACEHOLDER-01 | Open | Unit/CSS fix; on-Deck empty Strategy field |
 | Vision attach | SMOKE-G | Verified | Vision sweep 2026-04 |
 | Background Ask reopen | SMOKE-H | Partial | Full lifecycle → release |
 | Knowledge base retrieve (keyword + hybrid) | KB-SMOKE-02/04 | Verified | Seed KB on Deck Jul 2026 |

@@ -6,7 +6,7 @@
  * Does not: Own carousel timing math — see MainTabPresetAnimatedChips and presets data module.
  */
 import React, { useEffect, useRef } from "react";
-import { Button, Router } from "@decky/ui";
+import { Button } from "@decky/ui";
 import type { PresetPrompt } from "../data/presets";
 import type { AskModeId } from "../data/askMode";
 import { MainTabPresetAnimatedChips } from "./MainTabPresetAnimatedChips";
@@ -94,9 +94,7 @@ export function MainTabPresetRow({
           className="bonsai-preset-glass bonsai-pyro-inject-chip"
           focusable
           onClick={() => {
-            const gameName = Router.MainRunningApp?.display_name ?? "";
-            const t = presetCarouselInject.text.trim();
-            setUnifiedInput(gameName ? joinPresetWithRunningGame(t, gameName) : t);
+            setUnifiedInput(joinPresetWithRunningGame(presetCarouselInject.text.trim()));
           }}
           style={{
             width: "100%",

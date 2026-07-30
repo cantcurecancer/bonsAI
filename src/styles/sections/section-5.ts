@@ -91,6 +91,14 @@ export function buildSection5Section(): string {
           transform: translateY(1px);
           animation: bonsai-caret-blink 1s step-end infinite;
         }
+
+        /* Strategy empty placeholder: overlay caret so placeholder text does not reflow on focus */
+        .bonsai-scope .bonsai-unified-input-fake-caret--overlay {
+          position: absolute;
+          left: 0;
+          top: 0;
+          margin-left: 0;
+        }
         @keyframes bonsai-caret-blink {
           0%, 45% { opacity: 0.9; }
           50%, 100% { opacity: 0; }
