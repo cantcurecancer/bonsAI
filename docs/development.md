@@ -37,7 +37,7 @@ Open the `~/bonsAI` folder in Cursor.
 
 IDE agents use the in-repo **bonsai-mcp** knowledge server plus **Decky Plugin Studio** for deploy/preview. See [mcp-setup.md](mcp-setup.md) and [AGENTS.md](../AGENTS.md). DPS itself lives in [qd313/decky-plugin-studio](https://github.com/qd313/decky-plugin-studio) — document issues and sync any DPS-related changes there (see mcp-setup § Decky Plugin Studio).
 
-**Maintainer architecture docs:** [voice-input-follow-up.md](voice-input-follow-up.md) (Whisper STT), [knowledge-base.md](knowledge-base.md) (offline RAG v1).
+**Maintainer architecture docs:** [archive/voice-input-follow-up.md](archive/voice-input-follow-up.md) (Whisper STT), [knowledge-base.md](knowledge-base.md) (offline RAG).
 
 ```bash
 pnpm run mcp:install
@@ -314,7 +314,7 @@ Output under **`out/*.zip`**.
 
 Prioritize refactors and reviews by **change risk** — large surfaces, branching logic, and **how much automated test signal** exists before edits. Use alongside [roadmap.md](roadmap.md) (**[In Progress](roadmap.md#in-progress)**, **[Planned](roadmap.md#planned)**).
 
-**How to use:** Before a non-trivial edit, find the row for the file you touch; run the listed tests plus `pnpm test`, `pnpm run test:py`, and `pnpm run build` (and `scripts/build.ps1` / `scripts/build.sh` when Deck UI or RPC changes). Full standing gate + Deck smoke: [testing.md](testing.md#regression-gates). After **Settings** is acceptably calm (see **Completed** in [roadmap.md](roadmap.md)), pull the **next extraction** items from the bottom queue — one slice per PR.
+**How to use:** Before a non-trivial edit, find the row for the file you touch; run the listed tests plus `pnpm test`, `pnpm run test:py`, and `pnpm run build` (and `scripts/build.ps1` / `scripts/build.sh` when Deck UI or RPC changes). Full standing gate: [testing-automated.md](testing-automated.md). Deck smoke: [testing-manual.md](testing-manual.md). After **Settings** is acceptably calm (see **Completed** in [roadmap.md](roadmap.md)), pull the **next extraction** items from the bottom queue — one slice per PR.
 
 ### Line counts (approximate, 2026-07-05)
 

@@ -26,7 +26,8 @@ const ROWS: {
   {
     key: "hardware_control",
     title: "Adjust power limits (beta)",
-    description: "AI may suggest TDP and GPU clock changes. Off keeps responses read-only.",
+    description:
+      "Optional: allow AI-driven TDP apply. Off keeps responses suggestion-only. Advanced — may become read-only later.",
   },
   {
     key: "steam_web_api",
@@ -42,7 +43,8 @@ const ROWS: {
   {
     key: "external_navigation",
     title: "Open web links",
-    description: "GitHub, docs, and Steam settings links from the plugin.",
+    description:
+      "GitHub, docs, and Steam settings links from the plugin. Likely to become always-on (no toggle) in a future update.",
   },
 ];
 

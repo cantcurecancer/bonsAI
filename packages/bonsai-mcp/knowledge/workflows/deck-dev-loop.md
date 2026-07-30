@@ -53,7 +53,7 @@ Python/RPC changes still need a full deploy (watch-deploy copies `py_modules/` +
 Track A: Steam Desktop → View → Big Picture → QAM → bonsAI.  
 Track B: Return to Gaming Mode → QAM → bonsAI.
 
-Scenario detail and coverage: [testing.md](../../docs/testing.md). PR gates: [testing.md](../../docs/testing.md#regression-gates) §1 + §3.
+Scenario detail and coverage: [testing.md](../../docs/testing.md). Automated gates: [testing-automated.md](../../docs/testing-automated.md). Deck smokes: [testing-manual.md](../../docs/testing-manual.md).
 
 ## New focusable controls (D-pad)
 

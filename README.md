@@ -2,7 +2,7 @@
 
 **bonsAI** is a [Decky Loader](https://github.com/SteamDeckHomebrew/decky-loader) plugin that brings **self-hosted** AI chat to your Steam Deck Quick Access Menu (QAM). It talks to **Ollama** on your Deck or another machine on your home network. No paid cloud AI API is required for the main workflow: prompts and responses stay on hardware you control. Models can still hallucinate: treat answers as assistant output, not authority.
 
-> **Beta software!** AI answers can be wrong or incomplete and features may break with Steam/Decky/plugin updates. Verify anything important yourself. Review **Permissions** before enabling. **Strategy** spoiler hiding and **VAC** results are best-effort but not foolproof. **Ollama on this Deck** can tax the system during games. **Power tips:** TDP apply is optional (**Permissions → Adjust power limits (beta)**). GPU clock suggestions are not written to hardware. Check **QAM → Performance** before you change settings.
+> **Beta software!** AI answers can be wrong or incomplete and features may break with Steam/Decky/plugin updates. Verify anything important yourself. Review **Permissions** before enabling. **Strategy** spoiler hiding and **VAC** results are best-effort but not foolproof. **Ollama on this Deck** can tax the system during games. **Power tips:** TDP suggestions are optional; applying limits via **Permissions → Adjust power limits (beta)** is advanced and may change in a future update. GPU clock lines are recommendations only. Check **QAM → Performance** before you change settings.
 
 ![bonsAI v0.5.0 on Steam Deck — Main tab with preset chips and unified Ask bar](assets/readme-hero.png)
 
@@ -54,14 +54,14 @@ Unfamiliar with **QAM**, **LAN**, or **Ollama**? See [Glossary](#glossary-quick)
 ### Find settings faster
 
 - Type in the Ask bar to **search Steam and QAM settings** and jump straight to a matching screen, no AI model required
-- **Search intent packs** (Settings) — import offline alias JSON to extend settings search without cloud services
+- Advanced: Settings may still show **Search intent packs** (offline alias import) — planned for simplification or removal
 
 
 
 ### Power and performance (beta)
 
-- AI can suggest **TDP** limits. Enable **Permissions → Adjust power limits**, bonsAI applies TDP on the Deck and reminds you to verify in **QAM → Performance**
-- **GPU clock** lines in replies are **recommendations only**, not currently written to hardware
+- AI can suggest **TDP** limits. Optional **Permissions → Adjust power limits** lets the plugin apply TDP (advanced; may become suggestion-only later). Always verify in **QAM → Performance**
+- **GPU clock** lines in replies are **recommendations only**, not written to hardware
 
 
 
@@ -71,14 +71,14 @@ Unfamiliar with **QAM**, **LAN**, or **Ollama**? See [Glossary](#glossary-quick)
 - **Install Ollama on this Deck** wizard with Tier 1 / Tier 2 essentials pulls when you want local inference
 - **Find LAN** (mDNS) —  save **named hosts**, run a **connection test**, and tune slow-reply warnings and timeouts
 - **AI models** hub — policy tiers (FOSS-first default), browse/pull/delete models, and a short **model source** note on replies
-- **Response verification** — optional rules on the Ollama tab to double-check replies before they reach you
+- Advanced: optional **Response verification** rules on the Ollama tab may be removed in a future cleanup
 
 For **Find LAN**, the Ollama host may need **Avahi/Bonjour** publishing — see [troubleshooting § Find Ollama on LAN](docs/troubleshooting.md#find-ollama-on-lan-mdns--optional).
 
 ### Trust and control
 
-- **Permissions** gated: read game & screenshot context, save chat/logs to Desktop, adjust power limits, voice input, open web links, and (beta) Steam ban lookup (`bonsai:vac-check`). Steam Web API key lives under **Developer → Integrations** when the Developer tab is enabled
-- **Input handling (last Ask)** on the main tab: See raw vs sanitized text and what was sent to Ollama
+- **Permissions** gated: read game & screenshot context, save chat/logs to Desktop, optional power-limit apply, voice input, and (beta) Steam ban lookup (`bonsai:vac-check`). Some toggles (e.g. open web links) may be simplified later. Steam Web API key lives under **Developer → Integrations** when the Developer tab is enabled
+- **Show details** on a reply: see what context and model path were used for that Ask
 - **Magic Ask commands** (no Ollama required for these): `bonsai:disable-sanitize` / `bonsai:enable-sanitize`, `bonsai:shortcut-setup-deck`, `bonsai:shortcut-setup-stadia`, and `bonsai:vac-check`
 - **Save to Desktop note**: Export Q&A to `~/Desktop/bonsAI_logs/` when **Permissions → Save files to Desktop** is on
 
@@ -142,13 +142,12 @@ More docs: [development.md](docs/development.md) · [testing.md](docs/testing.md
 
 | Doc                                                       | Audience          | What it is                                                         |
 | --------------------------------------------------------- | ----------------- | ------------------------------------------------------------------ |
-| [troubleshooting.md](docs/troubleshooting.md)             | Power users       | GPU, network, vision, permissions, QAM, deploy edge cases          |
-| [development.md](docs/development.md)                     | Contributors      | Deck-first setup, build/deploy, architecture, change-risk hotspots |
-| [testing.md](docs/testing.md)                             | QA / contributors | PR gates, Deck QA runbook, shipped-feature coverage, Test Results  |
-| [roadmap.md](docs/roadmap.md)                             | Planning          | In progress, planned backlog, completed summary                    |
-| [security-audit-report.md](docs/security-audit-report.md) | Maintainers       | RPC/log/UI disclosure review                                       |
-| [foss-advocate-report.md](docs/foss-advocate-report.md)   | Maintainers       | FOSS/transparency review                                           |
-| [archive/](docs/archive/)                                 | —                 | Historical research, plans, and completed-feature detail           |
+| [troubleshooting.md](docs/troubleshooting.md) | Power users | GPU, network, vision, permissions, QAM, deploy edge cases |
+| [development.md](docs/development.md) | Contributors | Deck-first setup, build/deploy, architecture, hotspots |
+| [testing.md](docs/testing.md) | QA / contributors | Testing hub — automated vs manual Deck QA |
+| [roadmap.md](docs/roadmap.md) | Planning | Bugs, QA backlog, planned backlog |
+| [archive/reports/](docs/archive/reports/) | Maintainers | Security / FOSS review snapshots |
+| [archive/](docs/archive/) | — | Historical research, plans, completed-feature detail |
 
 
 

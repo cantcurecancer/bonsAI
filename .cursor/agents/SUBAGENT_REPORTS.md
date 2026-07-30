@@ -332,3 +332,7 @@ Trade-offs: Prioritized safe seam extraction and modularity over deep behavior c
 **Shipped:** Vitest `src/test-harness/` + hook/RPC tests; `.cursor/skills/bonsai-deck-dev-loop/`; `watch-deploy` scripts; `bump-version.mjs` + `sync-versions.mjs`; `discover_mdns_ollama_hosts` + Settings **Find LAN**; docs/CHANGELOG updates.
 
 **Deferred:** Subnet scanning; auto git tag/push; stock Ollama mDNS without Avahi publish.
+### 2026-07-30 — refactor-specialist
+- **Summary:** Documentation Hard 3B cleanup: split testing, slim roadmap, archive stale docs, soft-pedal obsolete UI copy
+- **Triage:** triaged
+- **Findings:** Executed maintainer doc refactor (not LOC). Roadmap: QA backlog section; Named chat slots ★★★★★ with prior-failure note; Global quick-launch archived as low casual-user value; brainstorm letters removed; Planned re-sorted. Testing Hard 3B: testing.md hub + testing-automated.md + testing-manual.md; historical PASS/FAIL → docs/archive/testing-*-2026.md; preview suite --write retargeted. Deleted roadmap_old.md, mutlitask.md, pruned local screenshots to three 2026-07-29 refs; voice-input folded into troubleshooting + archive; security/foss reports → archive/reports/. Soft-pedal README + Permissions/intent packs/response verify labels. Follow-up: prune orphan test-evidence SHA folders when no longer linked; keep archive/testing-full-pre-2026-07-30.md until one release cycle then optional delete.

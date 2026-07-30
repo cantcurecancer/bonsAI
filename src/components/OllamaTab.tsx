@@ -228,12 +228,12 @@ export const OllamaTab: React.FC<OllamaTabProps> = ({
         </PanelSectionRow>
       </PanelSection>
 
-      <PanelSection title="Response verification">
+      <PanelSection title="Response verification (advanced)">
         <PanelSectionRow>
           <div ref={responseVerifyToggleHostRef} className="bonsai-settings-bleed" style={{ width: "100%" }}>
             <ToggleField
               label="Response verify (rules)"
-              description="After Ollama, run lightweight rules (e.g. invented AppID without game context). May append a short caution line; logs avoid raw user text."
+              description="Optional post-reply rules (e.g. invented AppID without game context). Advanced — may be removed in a future cleanup."
               checked={responseVerifyEnabled}
               onChange={(checked) => setResponseVerifyEnabled(checked)}
               {...deckNav({

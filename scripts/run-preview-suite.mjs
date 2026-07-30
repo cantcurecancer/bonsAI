@@ -25,9 +25,9 @@ const evidenceRoot = path.join(repoRoot, "docs", "test-evidence");
 const ipcDir = path.join(os.homedir(), ".decky-plugin-studio", "preview-ipc");
 const previewStatePath = path.join(os.homedir(), ".decky-plugin-studio", "preview-state.json");
 const testingDocPath = path.join(repoRoot, "docs", "testing.md");
-const promptTestingPath = testingDocPath;
-const promptTestingFailuresPath = testingDocPath;
-const runbookPath = testingDocPath;
+const promptTestingPath = path.join(repoRoot, "docs", "archive", "testing-results-2026.md");
+const promptTestingFailuresPath = path.join(repoRoot, "docs", "archive", "testing-failures-2026.md");
+const runbookPath = path.join(repoRoot, "docs", "testing-manual.md");
 
 const args = process.argv.slice(2);
 const writeBack = args.includes("--write");
@@ -630,12 +630,15 @@ function insertPreviewFailRows(md, rows) {
 }
 
 function ensureFailuresDoc() {
-  if (fs.existsSync(testingDocPath)) return;
+  if (fs.existsSync(promptTestingFailuresPath)) return;
+  fs.mkdirSync(path.dirname(promptTestingFailuresPath), { recursive: true });
   fs.writeFileSync(
-    testingDocPath,
-    `# bonsAI testing
+    promptTestingFailuresPath,
+    `# Historical failures & retries
 
-## Failures and retries
+Preview suite \`--write\` FAIL upserts into the marker table below.
+
+## Preview FAIL table (auto-updated)
 
 ${PREVIEW_FAIL_MARKER_START}
 | Build / date | Batch | Scenario | Status | Notes |
@@ -689,7 +692,7 @@ function patchPromptTesting(results, meta) {
 
     md = insertRowsIntoTestResults(md, newRows);
     fs.writeFileSync(promptTestingPath, md, "utf8");
-    console.log("Updated docs/testing.md Test Results (--write, PASS only)");
+    console.log("Updated docs/archive/testing-results-2026.md Test Results (--write, PASS only)");
 
     if (fs.existsSync(promptTestingFailuresPath)) {
       let failMd = fs.readFileSync(promptTestingFailuresPath, "utf8");
@@ -716,7 +719,7 @@ function patchPromptTesting(results, meta) {
     );
     failMd = insertPreviewFailRows(failMd, failRows);
     fs.writeFileSync(promptTestingFailuresPath, failMd, "utf8");
-    console.log("Updated docs/testing.md failures (--write, FAIL)");
+    console.log("Updated docs/archive/testing-failures-2026.md failures (--write, FAIL)");
   }
 }
 
@@ -753,7 +756,7 @@ function patchRunbookProgress(results, meta) {
   const updatedSection = section.replace(rowRe, `$1${status}$3${meta.runDate} / ${meta.gitSha}$5${notes}$7`);
   md = md.slice(0, trackerIdx) + updatedSection;
   fs.writeFileSync(runbookPath, md, "utf8");
-  console.log(`Updated docs/testing.md tier ${tier} progress (--write)`);
+  console.log(`Updated docs/testing-manual.md tier ${tier} progress (--write)`);
 }
 
 async function main() {

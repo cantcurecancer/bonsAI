@@ -131,7 +131,7 @@ When the knowledge base is enabled and installed, Main-tab preset chips may occa
 
 **Fix:** Use **tiny.en**; **base.en** needs more CPU on the Deck APU. Close heavy games while transcribing. Audio is processed in RAM only — nothing is uploaded or saved to disk.
 
-**Latency (2026-07-07):** Tier 1 tuning (shorter decode interval/window, faster UI poll, 4 threads) — see [voice-input-follow-up.md](voice-input-follow-up.md).
+**Latency (2026-07-07):** Tier 1 tuning shortens decode interval/window, speeds UI poll, and uses 4 whisper threads (more CPU while mic is active).
 
 **Session daemon (2026-07-17):** Mic sessions prefer a local `whisper-server` (`127.0.0.1:18765`) so the model loads once per recording. Re-run **Install voice engine** if you upgraded from an older build (incremental server install when CLI is already CPU-safe). If the server fails health checks, voice falls back to one-shot `whisper-cli` automatically.
 
@@ -143,7 +143,9 @@ When the knowledge base is enabled and installed, Main-tab preset chips may occa
 
 **Fix:** Stop/restart the plugin, or delete `voice_bin/whisper-server.pid` and kill the stale PID. **Clear all data** or revoking the mic permission also force-stops the server.
 
-**Maintainers — podman image:** Install pins `WHISPER_CPP_IMAGE` by **digest** (not `:main`). Bump procedure: [voice-input-follow-up.md](voice-input-follow-up.md#bumping-the-digest-maintainers).
+**Maintainers — podman image:** Install pins `WHISPER_CPP_IMAGE` by **digest** (not `:main`). To bump: pull a whisper.cpp image on Deck/Linux → `podman inspect … --format '{{.Digest}}'` → update `WHISPER_CPP_IMAGE` in `voice_transcription_service.py` → delete `~/homebrew/settings/bonsAI/voice_bin/` (or reinstall voice engine) → confirm mic → interim text. Do **not** copy prebuilt binaries from the image without a Deck CPU-safe compile + inference smoke. Full maintainer notes: [archive/voice-input-follow-up.md](archive/voice-input-follow-up.md).
+
+**Triage if voice breaks again:** (1) Permissions → mic on; (2) Settings → Voice input ready / Install voice engine; (3) red mic no text → logs / SIGILL → reinstall CPU-safe build; low RMS → speak closer; (4) install fail → podman / digest / compile timeout.
 
 ---
 
@@ -516,7 +518,7 @@ bonsAI does not read Steam's **Settings → Accessibility → UI Scale** program
 
 Because Decky Loader acts as a secure container for plugins, we cannot force a custom QAM tile for BonsAI. On standard SteamOS or a Bazzite Gamescope session, you can use a native **Steam Input** chord macro to open BonsAI from almost anywhere (in-game or the Home screen) with one combination after setup.
 
-**Short path in the main README:** [README.md](../README.md) (section *Open bonsAI quickly*). This section is the full recipe, delay ladder, and maintainer checks. For default plugin-shell smoke, see [testing.md](testing.md#regression-gates) §3 (Plugin shell), including the optional **Guide-chord / macro** row.
+**Short path in the main README:** [README.md](../README.md) (section *Open bonsAI quickly*). This section is the full recipe for **power users**. The Guide-chord macro is **not** a casual-user priority (archived from the product roadmap). Optional smoke: [testing-manual.md](testing-manual.md) Tier 3.
 
 **In-app help (no Ollama):** In the main tab Ask field, send exactly `bonsai:shortcut-setup-deck` or `bonsai:shortcut-setup-stadia` (optional leading `/`, trim + casefold) for a **fixed** reply, **Open Controller settings** when Permissions allow, and a pointer here. bonsAI **cannot** auto-create the chord; you still build the macro in **Controller → Guide Button Chord Layout**.
 
@@ -567,7 +569,7 @@ Hold **Steam** and press your chord button (e.g. **R4**). You should see QAM ope
 
 #### Verification checklist (maintainers / release QA)
 
-Run with a build that also satisfies [testing.md](testing.md#regression-gates) §3 *Plugin shell* when you touch QAM, Decky, or first paint.
+Run with a build that also satisfies [testing-manual.md](testing-manual.md) Tier 0 when you touch QAM, Decky, or first paint.
 
 - [ ] Chord triggers from the **Home** shell and with a **game focused** (at least one title).
 - [ ] QAM opens reliably; the rail moves until **Decky** is selected, then **Decky** opens.

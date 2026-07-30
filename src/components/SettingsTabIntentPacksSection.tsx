@@ -146,11 +146,11 @@ export function SettingsTabIntentPacksSection(props: SettingsTabIntentPacksSecti
   );
 
   return (
-    <PanelSection title="Search intent packs">
+    <PanelSection title="Search intent packs (advanced)">
       <PanelSectionRow>
         <div className="bonsai-settings-bleed bonsai-prose" style={{ fontSize: 11, color: "#9fb7d5", lineHeight: 1.35 }}>
-          Offline aliases for unified Steam/QAM settings search. Edit pack JSON on a PC, copy to clipboard, then
-          import here. Targets must match shipped settings paths (see troubleshooting docs).
+          Offline aliases for unified Steam/QAM settings search. Optional power-user import — this UI may be
+          removed or moved under Developer later. Edit pack JSON on a PC, copy to clipboard, then import here.
         </div>
       </PanelSectionRow>
       {error ? (

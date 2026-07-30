@@ -60,12 +60,12 @@ export function PluginQuickStartInstructionsBody() {
         blocked. Pick attachment quality under Settings.
       </li>
       <li style={itemStyle}>
-        <strong>TDP / power</strong> tips are read-only by default; enable <strong>Adjust power limits</strong> in Permissions if
-        you want the plugin to apply TDP on the Deck (GPU clock lines are recommendations only).
+        <strong>TDP / power</strong> tips are suggestion-first; optional <strong>Adjust power limits</strong> in Permissions is
+        advanced and may become read-only later. Always verify in QAM → Performance (GPU clock lines stay recommendations only).
       </li>
       <li style={{ marginBottom: 0 }}>
-        Other tabs: <strong>Ollama</strong> (connection, models, timing), <strong>Settings</strong> (voice, character, intent
-        packs), <strong>Permissions</strong> (gates), <strong>About</strong> (links).
+        Other tabs: <strong>Ollama</strong> (connection, models, timing), <strong>Settings</strong> (voice, character),{" "}
+        <strong>Permissions</strong> (gates), <strong>About</strong> (links).
       </li>
     </ul>
     </>
