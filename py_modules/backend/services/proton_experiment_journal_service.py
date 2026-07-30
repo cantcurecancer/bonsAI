@@ -1,4 +1,10 @@
-"""Per-game Proton experiment journal persisted under ~/.bonsai/."""
+"""Title: Proton experiment journal
+
+Purpose: Persist per-game Proton tweak experiments under ~/.bonsai for Ask context.
+Used for: Journal RPC, inject blocks in troubleshooting Ask, and outcome tracking.
+Solves: Bounded JSON store with schema validation, app buckets, and markdown inject formatting.
+Does not: Apply Proton settings or read live Steam config — users record outcomes manually.
+"""
 
 from __future__ import annotations
 

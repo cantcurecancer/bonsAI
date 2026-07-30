@@ -1,6 +1,9 @@
 /**
- * Per-preset UI accent colors (main hex) for character-derived theming.
- * Keep keys in sync with `ALL_PRESET_IDS` in `./characterCatalog`.
+ * Title: Character UI accent colors
+ * Purpose: Per-preset main/subtle accent pairs and helpers for character-derived theming.
+ * Used for: Main tab Ask bar, chat bubbles, and Settings character summary styling.
+ * Solves: Central map from catalog preset ids to distinctive hex accents and CSS variables.
+ * Does not: List character names or bios — see characterCatalog for display metadata.
  */
 import type { CSSProperties } from "react";
 import type { BonsaiSettings } from "../utils/settingsAndResponse";

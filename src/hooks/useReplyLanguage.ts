@@ -1,3 +1,10 @@
+/**
+ * Title: Reply language hook
+ * Purpose: Load effective Ask reply language snapshot from backend and expose localized t() helper.
+ * Used for: index.tsx and About/Settings reply-language rows.
+ * Solves: UI strings follow user language preference with English per-key fallback.
+ * Does not: Translate model system prompts — backend owns reply-language routing.
+ */
 import { useCallback, useEffect, useState } from "react";
 import { call } from "@decky/api";
 import {

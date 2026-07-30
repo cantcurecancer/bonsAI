@@ -1,3 +1,10 @@
+/**
+ * Title: Model policy tier panel
+ * Purpose: Three-button tier picker (open-source / open-weight / non-FOSS) with draft state hook.
+ * Used for: OllamaModelsHubModal policy section and Permissions tab disclosures.
+ * Solves: Visual tier chrome and local draft before parent commits model-policy settings.
+ * Does not: Classify installed tags or enforce pulls — backend model policy service owns classification.
+ */
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@decky/ui";
 import {

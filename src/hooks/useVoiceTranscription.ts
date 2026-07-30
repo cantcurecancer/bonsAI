@@ -1,3 +1,10 @@
+/**
+ * Title: Voice transcription hook
+ * Purpose: Start/stop voice Ask RPC, poll status, and stream partial transcripts into unified input.
+ * Used for: MainTab unified Ask bar mic control.
+ * Solves: Live dictation lifecycle without blocking the plugin shell.
+ * Does not: Render mic UI or request microphone permissions — see MainTab and PermissionsTab.
+ */
 import { useCallback, useEffect, useRef } from "react";
 import { call } from "@decky/api";
 

@@ -1,3 +1,10 @@
+/**
+ * Title: Debug overlay HUD
+ * Purpose: On-screen ring buffer of recent bonsAI debug ingest lines and mount counters.
+ * Used for: Developer → on-screen debug HUD opt-in during Deck focus and layout investigation.
+ * Solves: Lightweight live trace without leaving the game or attaching remote devtools.
+ * Does not: Capture screenshots or tail backend logs — see bonsaiDebugIngest and Developer tab.
+ */
 import { useEffect, useState } from "react";
 import { readBonsaiDebugRing, readContentMountCount, type BonsaiDebugEntry } from "../utils/bonsaiDebugIngest";
 

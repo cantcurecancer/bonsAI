@@ -1,4 +1,10 @@
-"""Rule-based post-check for Ollama replies (hallucination-prone patterns)."""
+"""Title: Ollama response verifier
+
+Purpose: Rule-based post-check for hallucination-prone patterns in Ollama replies.
+Used for: Optional verify pass after chat completes when game context is missing or JSON promised.
+Solves: Invented AppID warnings and lightweight secondary model verify without mutating text.
+Does not: Block or rewrite replies automatically — returns warnings for transparency/UI only.
+"""
 
 from __future__ import annotations
 

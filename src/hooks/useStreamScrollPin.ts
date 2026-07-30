@@ -1,3 +1,10 @@
+/**
+ * Title: Stream scroll pin hook
+ * Purpose: Preserve QAM scrollTop while user reads history during active token streaming.
+ * Used for: MainTab chat transcript anchor during background Ask streaming.
+ * Solves: Auto-scroll fighting manual scroll-up during long replies.
+ * Does not: Find scroll containers — see chatPanelScroll.findTabContentsScroll.
+ */
 import { useEffect, useRef, type RefObject } from "react";
 import { findTabContentsScroll } from "../utils/chatPanelScroll";
 

@@ -1,4 +1,10 @@
-"""Ollama model tag validation and registry metadata fetch for Pull Models UI."""
+"""Title: Ollama catalog validation
+
+Purpose: Validate pull tags and fetch registry metadata for the Pull Models UI.
+Used for: Custom tag entry checks and manifest lookups against registry.ollama.ai.
+Solves: Regex validation, byte-limited registry fetches, and normalized tag list helpers.
+Does not: Run ollama pull or manage installed tags — see pull_model_catalog_service overlay.
+"""
 
 from __future__ import annotations
 

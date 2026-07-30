@@ -1,3 +1,10 @@
+/**
+ * Title: Ollama tab local survival
+ * Purpose: Register and restore Ollama tab UI snapshot across Decky modal unmount cycles.
+ * Used for: OllamaTab connection status, mDNS hosts, and local install menu open state.
+ * Solves: Preserve in-progress connection UI when a modal closes and reopens the QAM panel.
+ * Does not: Save Ollama host/IP — see usePluginSettings and persistOllamaIp.
+ */
 import type { DeveloperConnectionStatus } from "../components/DeveloperTab";
 import { createTabLocalSurvival } from "./createTabLocalSurvival";
 

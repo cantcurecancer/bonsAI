@@ -1,3 +1,10 @@
+/**
+ * Title: bonsAI browser storage clearer
+ * Purpose: Remove all bonsai:* keys from localStorage and sessionStorage.
+ * Used for: Settings clear plugin data and disclaimer replay flows.
+ * Solves: Complete client-side plugin state wipe without touching unrelated site storage.
+ * Does not: Clear backend plugin data or Ollama models — see clear_plugin_data RPC.
+ */
 const BONSAI_STORAGE_PREFIX = "bonsai:";
 
 /** Remove all plugin keys from localStorage and sessionStorage (bonsai:*). */

@@ -1,3 +1,10 @@
+/**
+ * Title: Intent packs hook
+ * Purpose: Load, enable/disable, import/export, and remove offline intent packs via backend RPC.
+ * Used for: Settings intent packs section and useSteamSettingsSearch index.
+ * Solves: User-extensible search aliases without rebuilding SETTINGS_DATABASE.
+ * Does not: Build search index algorithms — see intentPackSearch utilities.
+ */
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { call } from "@decky/api";
 import {

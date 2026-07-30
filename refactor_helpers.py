@@ -1,6 +1,9 @@
-"""Backward-compatible re-exports for tests and legacy imports.
+"""Title: Legacy refactor re-exports
 
-Prefer ``backend.ollama_urls``, ``backend.ollama_routing``, and ``backend.tdp_intent`` in new code.
+Purpose: Backward-compatible re-exports for tests and legacy imports at plugin root.
+Used for: Older tests/scripts that import from refactor_helpers instead of backend.* modules.
+Solves: Gradual migration path without breaking import paths in one release.
+Does not: Own new logic — prefer backend.ollama_urls, backend.ollama_routing, backend.tdp_intent.
 """
 
 from backend.constants import DEFAULT_OLLAMA_HOST, DEFAULT_OLLAMA_PORT

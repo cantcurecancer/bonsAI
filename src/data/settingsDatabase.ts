@@ -1,6 +1,9 @@
 /**
- * This settings catalog powers in-plugin search/navigation across Steam and QAM settings.
- * Keeping it in a dedicated module reduces noise in the main UI orchestration file.
+ * Title: Steam settings path database
+ * Purpose: Searchable catalog of Steam Settings and QAM navigation breadcrumb strings.
+ * Used for: In-plugin settings search, Steam Input jumps, and AI navigation suggestions.
+ * Solves: Keeps long settings path lists out of UI orchestration files for easier maintenance.
+ * Does not: Open Steam URLs directly — see steamSettingsNavigation for route resolution.
  */
 export const SETTINGS_DATABASE = [
   // System

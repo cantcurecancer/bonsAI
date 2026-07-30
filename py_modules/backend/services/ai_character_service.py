@@ -1,4 +1,10 @@
-"""Opt-in character roleplay presets for Ollama system prompt augmentation."""
+"""Title: AI character presets
+
+Purpose: Sanitize settings and build optional roleplay system-prompt suffixes for Ask.
+Used for: Character picker UI, preset catalog ids, and Pyro easter-egg tip injection.
+Solves: Opt-in personality accents without altering core safety or routing policy.
+Does not: Call Ollama or persist chat history — only prompt augmentation helpers.
+"""
 
 from __future__ import annotations
 

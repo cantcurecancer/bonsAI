@@ -1,9 +1,9 @@
-"""Steam Deck TDP and GPU clock sysfs helpers (privileged writes via ``steamos-priv-write``).
+"""Title: Deck TDP service
 
-Clamp bounds mirror Deck-class limits; callers surface user-visible errors without echoing raw sysfs paths.
-
-When ``DECKY_SANDBOX_ROOT`` is set (Decky Plugin Studio preview sidecar), writes are recorded to
-``sysfs-writes.jsonl`` instead of real sysfs nodes.
+Purpose: Read and write Steam Deck TDP and GPU clock caps via steamos-priv-write sysfs helpers.
+Used for: TDP Ask recommendations, hardware_control capability paths, and preview sandbox mocks.
+Solves: Clamped watt/MHz bounds, clean subprocess env, and DECKY_SANDBOX_ROOT write recording.
+Does not: Recommend games or call Ollama — only privileged sysfs I/O and current-value reads.
 """
 
 import glob

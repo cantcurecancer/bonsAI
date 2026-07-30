@@ -1,3 +1,10 @@
+/**
+ * Title: Model routing order
+ * Purpose: Default text/vision model tag chains and heuristics aligned with backend ollama_routing.py.
+ * Used for: OllamaTab routing preview and pull-model recommendation scoring inputs.
+ * Solves: Consistent fallback order between frontend display and backend Ask routing.
+ * Does not: Probe installed models — see backend list and routing RPC.
+ */
 import type { PullModelEntry, PullModelLicenseClass } from "../data/pullModelCatalog";
 import type { ModelPolicyTierId } from "../data/modelPolicy";
 

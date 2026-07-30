@@ -1,4 +1,10 @@
-"""TDP intent detection and recommendation parsing for Ask routing."""
+"""Title: TDP intent detection
+
+Purpose: Classify Ask questions about TDP reads, changes, and recommendation parsing.
+Used for: Routing TDP-related local commands before or alongside Ollama Ask handling.
+Solves: Distinguish "what is my TDP" from set/recommend intents and parse JSON caps.
+Does not: Write sysfs or invoke steamos-priv-write — see tdp_service for hardware I/O.
+"""
 
 import json
 import re

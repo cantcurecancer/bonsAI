@@ -1,4 +1,10 @@
-"""Ollama model-selection and routing helpers used by ``main`` and backend services."""
+"""Title: Ollama model routing
+
+Purpose: Select Ollama model tags and fallback chains from settings and policy tiers.
+Used for: Ask mode routing, essentials lists, and high-VRAM optional tails in main and services.
+Solves: Centralized tag deduplication and tier-aware model pick logic for chat requests.
+Does not: Call Ollama HTTP APIs or build prompts — see ollama_service and ollama_prompts.
+"""
 
 from typing import Any
 

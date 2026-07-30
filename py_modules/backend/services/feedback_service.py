@@ -1,4 +1,10 @@
-"""Local per-turn Ask feedback (JSONL); no network."""
+"""Title: Ask feedback log
+
+Purpose: Append per-turn thumbs up/down feedback lines to a local JSONL file.
+Used for: Main tab feedback chips after Ask replies complete.
+Solves: Offline, no-network feedback capture with validated rating and chip ids.
+Does not: Upload telemetry or mutate chat transcripts — append-only local logging.
+"""
 
 from __future__ import annotations
 

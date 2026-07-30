@@ -1,4 +1,10 @@
-"""Offline search intent packs: load, sanitize, merge, and persist user/bundled alias packs."""
+"""Title: Intent pack service
+
+Purpose: Load, sanitize, merge, and persist offline search intent alias packs.
+Used for: Knowledge-base and Ask routing that maps user terms to search targets.
+Solves: Bundled and user-imported pack storage with schema validation and size limits.
+Does not: Execute web searches or embed queries — only pack data management.
+"""
 
 from __future__ import annotations
 

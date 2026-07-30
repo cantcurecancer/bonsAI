@@ -1,3 +1,10 @@
+/**
+ * Title: Media format helpers
+ * Purpose: Format file URIs, screenshot timestamps, and byte sizes for media list UI.
+ * Used for: useScreenshotBrowser rows and attachment preview metadata.
+ * Solves: Consistent human-readable media metadata across Steam and plugin captures.
+ * Does not: Read or write files — backend screenshot RPC and filesystem permissions.
+ */
 /** Convert absolute file paths to file:// URIs for image rendering contexts. */
 export function toFileUri(path: string): string {
   const normalized = path.replace(/\\/g, "/");

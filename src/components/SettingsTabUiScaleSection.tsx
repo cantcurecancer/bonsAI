@@ -1,3 +1,10 @@
+/**
+ * Title: UI scale settings section
+ * Purpose: Auto/manual UI scale profile controls with Focusable bridge for the manual slider thumb.
+ * Used for: SettingsTab; canonical reference for Deck focus-graph Pattern B (slider bridge).
+ * Solves: Wires toggle → slider bridge → Apply button with verified vertical D-pad hops.
+ * Does not: Measure viewport or apply CSS variables — see uiScaleProfile and UiScaleContext.
+ */
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button, Focusable, PanelSection, PanelSectionRow, ToggleField } from "@decky/ui";
 import type { UiScaleProfileId } from "../data/uiScaleProfile";

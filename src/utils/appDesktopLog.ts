@@ -1,3 +1,10 @@
+/**
+ * Title: App desktop log helper
+ * Purpose: Fire-and-forget append to Desktop/bonsAI_logs when settings allow filesystem writes.
+ * Used for: useCapturedFrontendErrors, Ask orchestration, and verbose debug instrumentation.
+ * Solves: Structured front-end events on disk without blocking UI on RPC completion.
+ * Does not: Tail or display logs — see DeveloperTab and backend log RPC.
+ */
 import { callDeckyWithTimeout, DECKY_RPC_TIMEOUT_MS } from "./deckyCall";
 import type { BonsaiCapabilities, DesktopAppLogLevel } from "./settingsAndResponse";
 

@@ -1,4 +1,10 @@
-"""Session-scoped whisper-server facade for mic (and future wake-word) STT."""
+"""Title: Whisper server daemon
+
+Purpose: Session-scoped whisper-server process facade for mic and future wake-word STT.
+Used for: Long-lived local HTTP inference on 127.0.0.1:18765 instead of per-chunk CLI spawn.
+Solves: Engine singleton, health polling, PID file lifecycle, and PCM-to-WAV inference posts.
+Does not: Capture microphone audio directly — voice_transcription_service owns capture and buffering.
+"""
 
 from __future__ import annotations
 

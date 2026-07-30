@@ -1,3 +1,10 @@
+/**
+ * Title: Main tab preset row
+ * Purpose: Top-of-Main row with help chip, animated preset carousel, and running-game join hints.
+ * Used for: MainTab above the unified Ask bar for quick prompt seeding.
+ * Solves: Wires preset animation modes and Ask-mode preference without bloating MainTab shell.
+ * Does not: Own carousel timing math — see MainTabPresetAnimatedChips and presets data module.
+ */
 import React, { useEffect, useRef } from "react";
 import { Button, Router } from "@decky/ui";
 import type { PresetPrompt } from "../data/presets";

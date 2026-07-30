@@ -1,8 +1,10 @@
 /**
- * Preview-only test hooks exposed on window.__bonsaiTestHooks when DECKY_PREVIEW is active.
- * Used by Decky Plugin Studio automated scenarios (scripts/run-preview-suite.mjs).
+ * Title: Preview test hooks
+ * Purpose: Expose window.__bonsaiTestHooks for Decky Plugin Studio automated preview scenarios.
+ * Used for: scripts/run-preview-suite.mjs and tier QA when DECKY_PREVIEW is active.
+ * Solves: Programmatic Ask/game/screenshot triggers without manual D-pad in CI preview.
+ * Does not: Ship in production Deck builds — preview harness only.
  */
-
 export type BonsaiPreviewTestHooks = {
   getState: () => Record<string, unknown>;
   setGame: (title: string, appId?: string) => void;

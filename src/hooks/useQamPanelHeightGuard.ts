@@ -1,3 +1,10 @@
+/**
+ * Title: QAM panel height guard
+ * Purpose: Pin Steam QAM tab pane height and flex column chain to prevent gamescope panel sag on hover.
+ * Used for: index.tsx `.bonsai-scope` alongside useTabStripBodyOffset.
+ * Solves: Shrinking or jumping QAM content area when pointer enters the plugin panel.
+ * Does not: Measure tab strip reserve — see useTabStripBodyOffset and tabBodyViewport.
+ */
 import { useLayoutEffect, useRef } from "react";
 import { syncTabBodyViewportHeight } from "../utils/tabBodyViewport";
 

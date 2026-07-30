@@ -1,3 +1,10 @@
+/**
+ * Title: Session RAG preset composer
+ * Purpose: Probabilistically mix static preset seeds with session RAG chip candidates.
+ * Used for: composePresetSeedsWithSessionRag and MainTab preset carousel seed list.
+ * Solves: Contextual preset variety without replacing the full static carousel each render.
+ * Does not: Call backend for candidates — see sessionRagChipCandidates RPC helper.
+ */
 import type { AskModeId } from "../../data/askMode";
 import type { PresetPrompt } from "../../data/presets";
 

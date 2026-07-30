@@ -1,6 +1,9 @@
-"""Extract Strategy Guide branch-picker payloads from model replies.
+"""Title: Strategy guide parser
 
-The Main tab sends follow-up Asks prefixed with ``STRATEGY_FOLLOWUP_PREFIX`` when the user picks a branch.
+Purpose: Extract branch-picker and checklist payloads from model replies and streaming text.
+Used for: Main tab strategy follow-ups prefixed with STRATEGY_FOLLOWUP_PREFIX and live streaming UI.
+Solves: Fence/tag parsing, incomplete fence hiding during stream, and checklist state blocks.
+Does not: Call Ollama or persist session state — see strategy_checklist_session_service for that.
 """
 
 from __future__ import annotations

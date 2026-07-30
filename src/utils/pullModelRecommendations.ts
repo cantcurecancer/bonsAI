@@ -1,3 +1,10 @@
+/**
+ * Title: Pull model recommendations
+ * Purpose: Score and rank pull-model catalog entries by role (speed/strategy/expert/vision) heuristics.
+ * Used for: PullModelsModal coverage hints and Ollama essentials recommendations UI.
+ * Solves: Performance-per-GB ranking and Swiss-army multimodal detection for pull suggestions.
+ * Does not: Install models — see backend pull RPC and Pull Models modal actions.
+ */
 import {
   PULL_MODEL_CATALOG,
   type PullModelEntry,

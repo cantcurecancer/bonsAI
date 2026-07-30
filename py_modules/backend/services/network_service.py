@@ -1,4 +1,10 @@
-"""Pure network helpers for Deck LAN IP discovery."""
+"""Title: Deck network helpers
+
+Purpose: Discover the Deck LAN IPv4 address for Ollama remote-access hints.
+Used for: Settings and setup flows that show the Deck IP to other machines on the LAN.
+Solves: Pure asyncio-friendly interface enumeration without privileged network scanning.
+Does not: Open firewall ports, configure Ollama bind addresses, or perform mDNS discovery.
+"""
 
 from __future__ import annotations
 

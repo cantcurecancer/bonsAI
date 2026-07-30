@@ -1,9 +1,12 @@
+/**
+ * Title: Preset prompt catalog
+ * Purpose: Suggested Ask composer prompts, category heuristics, and carousel sampling helpers.
+ * Used for: MainTabPresetRow chips, contextual carousel seeds, and QA frozen-carousel testing.
+ * Solves: Isolates conversational UX tuning data from view-layer components.
+ * Does not: Submit asks or join running-game titles — see joinPresetWithRunningGame util.
+ */
 import type { AskModeId } from "./askMode";
 
-/**
- * This module owns preset prompt suggestions and category heuristics used by the chat composer.
- * Isolating this data and logic keeps conversational UX tuning separate from view-layer code.
- */
 export type PresetPrompt = {
   text: string;
   category: string;

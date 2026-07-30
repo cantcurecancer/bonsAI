@@ -1,6 +1,9 @@
 /**
- * One assistant markdown bubble: Decky `Focusable` for controller routing plus nested `ReactMarkdown` when
- * fenced code blocks tagged `language-bonsai-spoiler` need inner formatting without breaking collapse UX.
+ * Title: AI markdown chunk renderer
+ * Purpose: Render one assistant markdown bubble with spoiler masking and Deck Focusable routing.
+ * Used for: MainTabChatTranscript for streaming and completed assistant reply bodies.
+ * Solves: Nested ReactMarkdown for bonsai-spoiler fences without breaking collapse UX on Deck.
+ * Does not: Stream tokens or parse strategy branches — parent supplies source string and mask flags.
  */
 import type { Components } from "react-markdown";
 import { useMemo, useState } from "react";

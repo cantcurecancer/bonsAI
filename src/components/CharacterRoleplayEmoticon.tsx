@@ -1,3 +1,10 @@
+/**
+ * Title: Character roleplay emoticon
+ * Purpose: Render preset or synthetic character avatars as colored emoticon grids with optional badge letter.
+ * Used for: Main tab Ask bar, character picker rows, and Settings character summary chrome.
+ * Solves: Consistent small avatar art without shipping per-character image assets.
+ * Does not: Load catalog metadata or apply accent colors — see characterCatalog and characterUiAccent.
+ */
 import React from "react";
 import { EMOTICON_PALETTE, resolvePlaceholderCharacterEmoticonGrid } from "../data/characterPlaceholderEmoticonGrids";
 

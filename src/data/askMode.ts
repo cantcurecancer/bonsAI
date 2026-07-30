@@ -1,4 +1,10 @@
-/** Persisted Ask inference mode (maps to ordered Ollama model fallbacks on the backend). */
+/**
+ * Title: Ask mode definitions
+ * Purpose: Speed / Strategy / Expert mode ids, labels, and accent color tokens for the Ask bar.
+ * Used for: MainTabAskModeMenuPopover, unified Ask bar chip, and settings normalizers.
+ * Solves: Shared visual and persisted vocabulary for inference mode selection.
+ * Does not: Map modes to Ollama model lists — backend ask routing owns fallback chains per mode.
+ */
 export type AskModeId = "speed" | "strategy" | "expert";
 
 export const ASK_MODE_IDS: readonly AskModeId[] = ["speed", "strategy", "expert"];

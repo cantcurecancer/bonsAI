@@ -1,3 +1,10 @@
+/**
+ * Title: Bonsai settings schema
+ * Purpose: TypeScript types and default constants for persisted plugin settings shape.
+ * Used for: usePluginSettings, RPC get/set settings, and bonsaiSettingsNormalizers coercion.
+ * Solves: Single schema for capabilities, Ollama options, UI preferences, and character fields.
+ * Does not: Validate at runtime alone — normalizers coerce unknown RPC payloads into this shape.
+ */
 import {
   DEFAULT_AI_CHARACTER_ACCENT_INTENSITY,
   type AiCharacterAccentIntensityId,

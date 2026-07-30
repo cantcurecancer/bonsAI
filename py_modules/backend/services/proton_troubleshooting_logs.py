@@ -1,7 +1,9 @@
-"""Discover and read bounded Proton / Steam log excerpts for troubleshooting Ask context.
+"""Title: Proton troubleshooting logs
 
-Attachment runs only when settings opt in and ``steam_logs_read`` is enabled; ``path_allowed_*``
-guards realpaths so symlink tricks cannot escape allowed Steam log roots.
+Purpose: Discover and read bounded Proton/Steam log excerpts for Ask attachments.
+Used for: Troubleshooting Ask when settings opt in and steam_logs_read capability is enabled.
+Solves: Path allowlisting, tail reads, line filtering, and total payload budget enforcement.
+Does not: Attach logs without explicit opt-in or escape allowed Steam log roots via symlinks.
 """
 
 from __future__ import annotations

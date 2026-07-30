@@ -1,3 +1,10 @@
+/**
+ * Title: Context chip ladder
+ * Purpose: Expandable ladder of transparency chips summarizing what context reached the model.
+ * Used for: SessionContextStrip and live-turn debugging when input transparency is enabled.
+ * Solves: Tier-colored chips with path bullets and optional dev JSON for audit workflows.
+ * Does not: Build TransparencySnapshot objects — see inputTransparency utils and orchestration hooks.
+ */
 import { useCallback, useState } from "react";
 import { Focusable } from "@decky/ui";
 import type { ContextChip, TransparencySnapshot } from "../utils/inputTransparency";

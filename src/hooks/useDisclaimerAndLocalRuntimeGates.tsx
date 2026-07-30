@@ -1,3 +1,10 @@
+/**
+ * Title: Disclaimer and local-runtime gates
+ * Purpose: Show first-run beta disclaimer and one-time Ollama-on-Deck warning modals with localStorage gates.
+ * Used for: index.tsx — couples disclaimer ack version to local-runtime beta prompt timing.
+ * Solves: Informed consent before privileged AI/hardware features without re-prompting every session.
+ * Does not: Enforce backend capability checks — see PermissionsTab and main.py RPC guards.
+ */
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { showModal, ConfirmModal } from "@decky/ui";
 import { TIER1_ESSENTIALS_TAG } from "../data/deckEssentialsTags";

@@ -1,3 +1,10 @@
+/**
+ * Title: Reply actions element builder
+ * Purpose: Build Helpful/Retry/Show details and refinement chip Focusable rows for a reply turn.
+ * Used for: MainTabChatTranscript reply micro-actions and liveTurnFocusGraph sibling hops.
+ * Solves: Registered Deck focus owners for D-pad navigation between reply action buttons.
+ * Does not: Submit follow-up Ask — see useBonsaiAskOrchestration reply chip handlers.
+ */
 import React from "react";
 import { Focusable } from "@decky/ui";
 import { BonsaiChatSecondaryButton } from "../components/BonsaiChatSecondaryButton";

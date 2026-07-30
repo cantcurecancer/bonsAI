@@ -1,3 +1,10 @@
+/**
+ * Title: Strategy checklist persistence
+ * Purpose: Debounced and immediate save/clear of strategy checklist session state via RPC.
+ * Used for: useStrategyChecklistSession and MainTab strategy checklist UI.
+ * Solves: Durable checklist progress per game without spamming save on every toggle.
+ * Does not: Render checklist rows — see strategyChecklist types and MainTab components.
+ */
 import { call } from "@decky/api";
 
 import type { StrategyChecklistState } from "../types/bonsaiUi";

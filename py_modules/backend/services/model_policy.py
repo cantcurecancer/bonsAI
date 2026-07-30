@@ -1,7 +1,9 @@
-"""
-Heuristic Ollama model source classes for policy tiers and disclosure copy.
+"""Title: Ollama model policy
 
-Classifications support UX and routing only — not legal advice. See README model policy section.
+Purpose: Heuristic model source classes and policy tiers for routing and disclosure copy.
+Used for: Settings tier reconciliation, Pull Models filtering, and UX policy messaging.
+Solves: FOSS/open-weight/non-FOSS classification from Ollama tag names for app policy.
+Does not: Provide legal advice or enforce licenses — classifications support UX only.
 """
 
 from __future__ import annotations

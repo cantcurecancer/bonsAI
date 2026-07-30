@@ -1,3 +1,10 @@
+/**
+ * Title: Tab body viewport sync
+ * Purpose: Pin TabContentsScroll height via --bonsai-tab-body-height so overflow scroll works on gamescope.
+ * Used for: useTabStripBodyOffset, useQamPanelHeightGuard, and tab layout hooks.
+ * Solves: Flex-only layouts that fail to constrain Decky Tabs subtree scroll range.
+ * Does not: Reserve LB/RB strip space — see useTabStripBodyOffset.
+ */
 const MIN_BODY_PX = 120;
 const CRUSHED_SCOPE_MAX_PX = 160;
 

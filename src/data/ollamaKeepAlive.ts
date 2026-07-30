@@ -1,6 +1,9 @@
 /**
- * Ollama `keep_alive` duration presets (plugin → host). Values are Go-style duration strings accepted by Ollama's API.
- * Default 5m matches Ollama's typical unload delay after a request.
+ * Title: Ollama keep-alive presets
+ * Purpose: Ordered keep_alive duration strings and helpers for the Settings Ollama slider.
+ * Used for: SettingsTabOllamaKeepAliveSlider and bonsaiSettingsNormalizers persistence.
+ * Solves: Single source for valid Go-style duration tokens, chip labels, and index math.
+ * Does not: Call Ollama unload APIs — value is sent per-request from backend ask service.
  */
 export type OllamaKeepAliveDuration =
   | "0s"

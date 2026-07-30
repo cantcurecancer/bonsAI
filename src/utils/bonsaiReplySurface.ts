@@ -1,3 +1,10 @@
+/**
+ * Title: Reply surface visibility state
+ * Purpose: Track whether Main tab reply surface is visible and queue QAM open from toast taps.
+ * Used for: bonsaiReplyReadyToast gating and MainTab focus-after-toast consumption.
+ * Solves: Avoid duplicate ready toasts when user already sees the answer; open QAM from notification.
+ * Does not: Poll Ask status — see useBackgroundGameAi and bonsaiAskCompletionWatch.
+ */
 import { Navigation, QuickAccessTab } from "@decky/ui";
 
 let replySurfaceVisible = false;

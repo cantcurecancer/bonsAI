@@ -1,4 +1,10 @@
-/** Must match backend `strategy_guide_parse.STRATEGY_FOLLOWUP_PREFIX`. */
+/**
+ * Title: Strategy guide follow-up constants
+ * Purpose: Prefix strings and helpers for strategy-branch custom resolution escape hatches.
+ * Used for: Strategy mode replies, branch picker UI, and backend strategy_guide_parse alignment.
+ * Solves: Detects when branch id "d" means custom resolution vs other strategy games.
+ * Does not: Parse full strategy JSON from model output — backend parser owns branch extraction.
+ */
 export const STRATEGY_FOLLOWUP_PREFIX = "[Strategy follow-up]";
 
 /**

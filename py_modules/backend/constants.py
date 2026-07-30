@@ -1,4 +1,10 @@
-"""Shared runtime constants for the bonsAI Decky backend."""
+"""Title: Backend runtime constants
+
+Purpose: Centralize shared defaults and path literals for the Decky plugin backend.
+Used for: Ollama host/port defaults, loopback detection, and UI navigation path strings.
+Solves: One source of truth so services and RPC handlers agree on baseline values.
+Does not: Load settings, perform I/O, or encode business logic beyond fixed literals.
+"""
 
 DEFAULT_OLLAMA_HOST = "127.0.0.1"
 DEFAULT_OLLAMA_PORT = 11434

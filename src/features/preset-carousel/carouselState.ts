@@ -1,3 +1,10 @@
+/**
+ * Title: Preset carousel state helpers
+ * Purpose: Constants and pure functions for vertical preset carousel history, timing, and track offset.
+ * Used for: MainTab preset carousel component and D-pad browse/auto-advance logic.
+ * Solves: Bounded history, manual pause, and translateY math for focused chip row centering.
+ * Does not: Fetch RAG candidates — see sessionRagComposer and sessionRagChipCandidates.
+ */
 import type { PresetPrompt } from "../../data/presets";
 
 /** Auto-advance interval for vertical carousel mode (ms). */

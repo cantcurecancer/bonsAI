@@ -1,3 +1,10 @@
+/**
+ * Title: Settings glass button tokens
+ * Purpose: Shared React.CSSProperties for SteamOS-style glass row buttons in Settings/Ollama tabs.
+ * Used for: Test connection, Browse models, KB actions, and other secondary controls.
+ * Solves: One visual spec instead of duplicating gradient/border styles per component.
+ * Does not: Own focus graphs or click handlers — consumers apply these style objects to Button.
+ */
 import type React from "react";
 
 /** SteamOS glass row button — matches Test connection / Browse models (no tint fill). */

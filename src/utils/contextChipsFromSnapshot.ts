@@ -1,3 +1,10 @@
+/**
+ * Title: Context chips from snapshot
+ * Purpose: Derive sorted context chips and transparency UI availability from input transparency snapshots.
+ * Used for: MainTab reply transparency strip and Show details entry points.
+ * Solves: Consistent chip ordering, windowing, and gating for route/context disclosure UI.
+ * Does not: Fetch transparency data — backend Ask status and inputTransparency types.
+ */
 import type { TransparencySnapshot, ContextChip, ContextChipBody } from "./inputTransparency";
 
 export const CONTEXT_CHIP_WINDOW = 2;

@@ -1,3 +1,10 @@
+/**
+ * Title: Ollama models hub modal
+ * Purpose: Tabbed fullscreen modal for model policy, browse/pull, and advanced routing settings.
+ * Used for: Ollama tab “Manage models” entry via showModal() with nested PullModelsModal.
+ * Solves: Groups tier panel, catalog browser, and advanced toggles with draft commit on save.
+ * Does not: Install Ollama or run pulls — delegates to PullModelsModal and parent RPC handlers.
+ */
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button, ConfirmModal, Focusable } from "@decky/ui";
 import type { ModelPolicyTierId } from "../data/modelPolicy";

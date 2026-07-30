@@ -1,3 +1,10 @@
+/**
+ * Title: UI scale profiles
+ * Purpose: Profile ids, viewport thresholds, labels, and classifier helpers for QAM density.
+ * Used for: SettingsTabUiScaleSection, UiScaleContext, and auto profile selection on resize.
+ * Solves: Typed Handheld/Desktop/Couch (and dev Immersive) profiles with multiplier math.
+ * Does not: Inject CSS at runtime — see bonsaiScopeStylesheet and uiScaleScopeBridge.
+ */
 import type React from "react";
 
 /** User-visible UI scale profiles (Immersive is dev-only until Steam Frame ships). */

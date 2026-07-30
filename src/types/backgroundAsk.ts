@@ -1,3 +1,10 @@
+/**
+ * Title: Background Ask types
+ * Purpose: TypeScript contracts for background Ask start/status payloads and related reply snapshots.
+ * Used for: useBackgroundGameAi, bonsaiReplyReadyToast, and MainTab transcript state.
+ * Solves: Shared typing between frontend polling and backend RPC response shapes.
+ * Does not: Implement polling or RPC — see hooks and deckyCall utilities.
+ */
 import type { ModelPolicyDisclosurePayload } from "../data/modelPolicy";
 import type { AppliedResult, StrategyGuideBranchesPayload, StrategyChecklistPayload } from "./bonsaiUi";
 

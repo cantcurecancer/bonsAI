@@ -1,3 +1,10 @@
+/**
+ * Title: Settings payload builder
+ * Purpose: Map frontend settings snapshot input into the backend BonsaiSettings RPC payload shape.
+ * Used for: usePluginSettings save path and immediate patch saves (character picker, permissions).
+ * Solves: One canonical object for set_settings without duplicating field mapping in callers.
+ * Does not: Validate or normalize raw RPC responses — see bonsaiSettingsNormalizers.
+ */
 import {
   STEAM_WEB_API_KEY_MAX_LEN,
   type AppliedResultLike,

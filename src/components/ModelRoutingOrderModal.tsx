@@ -1,3 +1,10 @@
+/**
+ * Title: Model routing order modal
+ * Purpose: Fullscreen picker to reorder text or vision Ollama model fallback chains.
+ * Used for: Ollama tab advanced routing when the user customizes installed-model priority.
+ * Solves: Drag-free Deck-friendly reorder UI with policy-tier and VRAM filters applied.
+ * Does not: Pull models or persist settings — parent supplies catalog and commits saved order.
+ */
 import { useCallback, useMemo, useRef, useState } from "react";
 import { Button, Focusable } from "@decky/ui";
 import type { ModelPolicyTierId } from "../data/modelPolicy";

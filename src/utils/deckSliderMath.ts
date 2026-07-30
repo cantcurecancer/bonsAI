@@ -1,3 +1,10 @@
+/**
+ * Title: Deck slider math
+ * Purpose: Clamp, index/percent mapping, and Deck button direction helpers for discrete sliders.
+ * Used for: DeckFocusSlider bridges and Settings/Ollama tab slider focus handlers.
+ * Solves: Consistent D-pad left/right stepping and track percentage math across slider UIs.
+ * Does not: Render sliders — see DeckFocusSlider and section parent focus graphs.
+ */
 import { isLeftNavigationKey, isRightNavigationKey } from "./focusNavigation";
 
 export function clamp(value: number, min: number, max: number): number {

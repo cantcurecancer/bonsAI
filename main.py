@@ -899,6 +899,8 @@ class Plugin:
         )
         return defaults
 
+    # --- Strategy checklist session RPC ---
+
     async def get_strategy_checklist_session(self, app_id: str = ""):
         """Return persisted checklist for the given game AppID (or generic bucket when empty)."""
         store = Plugin._load_strategy_checklist_store()
@@ -966,6 +968,8 @@ class Plugin:
     @staticmethod
     def _load_proton_journal_store() -> dict:
         return load_proton_journal_store(logger=logger)
+
+    # --- Proton experiment journal RPC ---
 
     async def get_proton_experiment_journal(self, app_id: str = ""):
         """Return journal entries for the given Steam AppID."""
@@ -1036,6 +1040,8 @@ class Plugin:
             return {"ok": False, "hint": "", "error": "steam_logs_read_disabled"}
         hint = await asyncio.to_thread(suggest_proton_version_from_logs, str(app_id or "").strip())
         return {"ok": True, "hint": hint}
+
+    # --- Intent packs RPC ---
 
     async def get_intent_packs(self):
         """Return intent pack summaries and full entries for unified search indexing."""
@@ -1124,6 +1130,8 @@ class Plugin:
     async def get_deck_ip(self):
         """Return the Steam Deck's LAN IP address."""
         return await get_deck_ip_async()
+
+    # --- Ollama connection and discovery RPC ---
 
     async def test_ollama_connection(self, pc_ip: str = "", timeout_seconds: int = 10):
         """Ping Ollama's /api/version and /api/tags to verify reachability."""
@@ -1348,6 +1356,8 @@ class Plugin:
                 "error": "Discovery failed on this device. Use manual PC address or see troubleshooting.",
             }
 
+    # --- Local Ollama install/setup RPC ---
+
     async def start_local_ollama_setup(self, data: Any = None):
         """Install/start Ollama on this Linux host and pull Tier-1 FOSS tags (runs in background)."""
         plugin = Plugin._coerce_instance(self)
@@ -1439,6 +1449,8 @@ class Plugin:
         if isinstance(ce, asyncio.Event):
             ce.set()
         return {"cancel_requested": True}
+
+    # --- Knowledge base (RAG corpus) RPC ---
 
     async def get_rag_corpus_status(self, data: Any = None):
         """Return knowledge-base download state and whether a corpus is installed."""
@@ -1753,6 +1765,8 @@ class Plugin:
         )
         return {"accepted": True, "pull_tags": tags}
 
+    # --- Ollama model pull and catalog RPC ---
+
     async def pull_ollama_models(self, tags: Any = None):
         """Pull one or more Ollama tags on this Deck (background, reuses setup service)."""
         plugin = Plugin._coerce_instance(self)
@@ -1847,6 +1861,8 @@ class Plugin:
                 "fetched_at": None,
                 "updated_at": None,
             }
+
+    # --- Screenshot and media RPC ---
 
     async def list_recent_screenshots(self, app_id: str = "", limit: int = 5):
         """List recent screenshots with preview and app metadata for attachment browsing."""
@@ -2099,6 +2115,8 @@ class Plugin:
         if shortcut_setup_for_response is not _OMIT_SHORTCUT_SETUP_FIELD:
             out["shortcut_setup"] = shortcut_setup_for_response
         return out
+
+    # --- Transparency, feedback, and clipboard RPC ---
 
     async def get_input_transparency(self):
         """Return the last Ask transparency snapshot (full prompts; fetch after terminal completion)."""

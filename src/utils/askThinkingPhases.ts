@@ -1,3 +1,10 @@
+/**
+ * Title: Ask thinking phase copy
+ * Purpose: Localized display strings and pending-placeholder detection for in-flight Ask status.
+ * Used for: MainTab thinking indicator and useSmoothStreamReveal gating.
+ * Solves: Consistent starting/working labels per reply language before backend phase arrives.
+ * Does not: Poll thinking_summary — backend status poll remains authoritative after first update.
+ */
 /** Display-only thinking phase copy; backend remains source of truth after first poll. */
 import { englishUiString } from "../i18n/catalog";
 import { t } from "./i18n";

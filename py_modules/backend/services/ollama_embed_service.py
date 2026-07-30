@@ -1,4 +1,10 @@
-"""Ollama ``/api/embed`` client for knowledge-base hybrid retrieval."""
+"""Title: Ollama embed client
+
+Purpose: Call Ollama /api/embed for knowledge-base hybrid retrieval vectors.
+Used for: knowledge_base_service when nomic-embed-text or configured embed model is needed.
+Solves: Model availability checks, HTTP embed requests, and structured OllamaEmbedError raises.
+Does not: Store vectors or query SQLite — only produces embedding arrays for callers.
+"""
 
 from __future__ import annotations
 

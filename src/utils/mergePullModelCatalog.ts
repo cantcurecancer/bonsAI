@@ -1,3 +1,10 @@
+/**
+ * Title: Pull model catalog merger
+ * Purpose: Merge bundled pull-model catalog with live/cached overlay entries, overrides, and removals.
+ * Used for: usePullModelCatalog and PullModelsModal tag lists.
+ * Solves: Fresh model metadata without replacing the shipped fallback catalog entirely.
+ * Does not: Fetch catalog from Ollama — see backend fetch_pull_model_catalog RPC.
+ */
 import type {
   PullModelEntry,
   PullModelGroup,

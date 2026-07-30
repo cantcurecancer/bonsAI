@@ -1,7 +1,10 @@
 /**
- * Model policy tiers and disclosure copy. Backend classifies tags; UI explains tradeoffs.
+ * Title: Model policy tiers
+ * Purpose: FOSS / open-weight / non-FOSS tier ids, labels, and disclosure copy for model routing.
+ * Used for: ModelPolicyTierPanel, Permissions tab, and settings normalizers.
+ * Solves: Shared frontend vocabulary aligned with backend model source classification.
+ * Does not: Classify individual Ollama tags — backend model policy service returns source_class.
  */
-
 const GITHUB_REPO_BASE = "https://github.com/cantcurecancer/bonsAI";
 
 /** README `### Model policy tiers` anchor on GitHub. */

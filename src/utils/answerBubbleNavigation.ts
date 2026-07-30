@@ -1,3 +1,10 @@
+/**
+ * Title: Answer bubble navigation
+ * Purpose: D-pad up/down scroll and focus moves between answer markdown chunks within a bubble.
+ * Used for: buildAnswerBubbleElement Focusable onMove handlers and liveTurnFocusGraph.
+ * Solves: Chunk-level navigation with panel scroll geometry when content exceeds viewport.
+ * Does not: Hop between reply action buttons — see buildReplyActionsElement and replyStopRegistry.
+ */
 import {
   chunkHasContentAboveViewport,
   chunkHasContentBelowViewport,

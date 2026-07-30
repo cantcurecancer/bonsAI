@@ -1,3 +1,10 @@
+/**
+ * Title: Preset animated chips
+ * Purpose: Fade or carousel preset prompt chips with running-game contextual seeding.
+ * Used for: MainTabPresetRow when presetChipAnimation is fade, carousel, or static.
+ * Solves: Timed slot fades, carousel track motion, and Deck-focusable chip buttons in one module.
+ * Does not: Persist selected presets or submit asks — parent setUnifiedInput handles composer text.
+ */
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Button, Focusable, Router } from "@decky/ui";
 import type { AskModeId } from "../data/askMode";

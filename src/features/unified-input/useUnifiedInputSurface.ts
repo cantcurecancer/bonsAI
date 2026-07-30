@@ -1,3 +1,10 @@
+/**
+ * Title: Unified input surface hook
+ * Purpose: Measure Decky TextField geometry and sync CSS vars for Ask bar width and text body height.
+ * Used for: MainTab unified input glass card and caret overlay alignment.
+ * Solves: Wrapper/host width drift on Deck where DOM order does not match painted field bounds.
+ * Does not: Handle Ask submit — see useBonsaiAskOrchestration and MainTab handlers.
+ */
 /** Main-tab unified Ask/search bar geometry: Decky `TextField` wrappers often diverge from host width, so we measure and sync CSS vars. */
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import {

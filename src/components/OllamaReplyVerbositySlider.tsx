@@ -1,3 +1,10 @@
+/**
+ * Title: Reply verbosity slider
+ * Purpose: Three-stop Deck slider for Short / Balanced / Detailed reply prose style.
+ * Used for: Ollama tab reply settings with parent thumb ref for vertical focus hops.
+ * Solves: Maps replyVerbosity ids to DeckFocusSlider with chip labels under the track.
+ * Does not: Inject system prompts — backend applies verbosity modifier on ask requests.
+ */
 import React, { useCallback, useMemo, useRef } from "react";
 import {
   indexOfReplyVerbosity,

@@ -1,3 +1,10 @@
+/**
+ * Title: Reply language section
+ * Purpose: About-tab dropdown for overriding the AI reply language independent of Steam UI locale.
+ * Used for: AboutTab below support links; pairs with backend reply-language prompt injection.
+ * Solves: Exposes follow-system vs fixed-language choices with live effective-language helper text.
+ * Does not: Translate plugin chrome — see i18n keys and steamLanguages re-exports.
+ */
 import React, { useMemo, useRef } from "react";
 import { Dropdown, Focusable, PanelSection, PanelSectionRow } from "@decky/ui";
 import {

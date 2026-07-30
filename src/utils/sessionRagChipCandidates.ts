@@ -1,3 +1,10 @@
+/**
+ * Title: Session RAG chip candidates RPC
+ * Purpose: Fetch and normalize session-scoped RAG preset chip candidates from backend RPC.
+ * Used for: Preset carousel session RAG composition on MainTab.
+ * Solves: Typed candidate list for composeSessionPresets without duplicating RPC parsing.
+ * Does not: Score or rank candidates — see sessionRagComposer probability mix.
+ */
 import { callDeckyWithTimeout, DECKY_RPC_TIMEOUT_MS } from "./deckyCall";
 import type { SessionRagChipCandidate } from "../features/preset-carousel/sessionRagComposer";
 

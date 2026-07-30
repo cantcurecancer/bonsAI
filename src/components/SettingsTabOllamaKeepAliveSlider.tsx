@@ -1,3 +1,10 @@
+/**
+ * Title: Ollama keep-alive slider
+ * Purpose: Discrete Deck slider for Ollama model unload delay (keep_alive duration presets).
+ * Used for: SettingsTab Ollama section with parent thumb ref for cross-row D-pad focus.
+ * Solves: Maps ordered duration chips to a single-thumb DeckFocusSlider track.
+ * Does not: Call Ollama or hot-reload models — value is persisted and sent on next request.
+ */
 import React, { useCallback, useMemo, useRef } from "react";
 import {
   indexOfOllamaKeepAlive,

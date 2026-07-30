@@ -1,3 +1,10 @@
+/**
+ * Title: Reply micro-action definitions
+ * Purpose: Follow-up chip ids, labels, and composer prefixes for quick reply corrections.
+ * Used for: MainTabChatTranscript reply action rows and transparency chip labels.
+ * Solves: Consistent user-facing copy when re-asking with too long / too short / bad info feedback.
+ * Does not: Submit asks or track analytics — parent orchestration prepends prefix and re-submits.
+ */
 export type ReplyMicroActionId =
   | "bad_information"
   | "too_long"

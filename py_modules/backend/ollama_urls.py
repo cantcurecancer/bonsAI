@@ -1,4 +1,10 @@
-"""Ollama host/port normalization and chat URL building."""
+"""Title: Ollama URL builders
+
+Purpose: Normalize user host/port input and build Ollama API endpoint URLs.
+Used for: Chat and embed URL construction from settings pc_ip or raw host strings.
+Solves: Consistent parsing of bare host:port vs full http URLs across the backend.
+Does not: Probe connectivity or validate that Ollama is running at the resolved base.
+"""
 
 from typing import Tuple
 from urllib.parse import urlparse

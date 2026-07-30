@@ -1,4 +1,10 @@
-"""Remove local Ollama models and user-prefix install when clearing bonsAI plugin data."""
+"""Title: Local Ollama teardown
+
+Purpose: Remove local Ollama models and user-prefix install when clearing plugin data.
+Used for: plugin_data_reset when ollama_local_on_deck or local Ollama artifacts are present.
+Solves: Coordinated rm tags, stop serve, and directory cleanup on Deck clear-data flows.
+Does not: Install or configure Ollama — see local_ollama_setup_service for setup paths.
+"""
 
 from __future__ import annotations
 

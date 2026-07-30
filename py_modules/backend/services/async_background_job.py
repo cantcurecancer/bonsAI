@@ -1,4 +1,10 @@
-"""Shared helpers for async background jobs (Ollama setup, custom pull, voice install)."""
+"""Title: Async background job helpers
+
+Purpose: Shared cancellation events and deduplicated stage logging for long-running jobs.
+Used for: Ollama setup, model pull, and voice install background tasks in main RPC paths.
+Solves: Consistent cooperative cancel and one-log-per-stage telemetry across job types.
+Does not: Implement job-specific work — callers own the actual install or download logic.
+"""
 
 from __future__ import annotations
 

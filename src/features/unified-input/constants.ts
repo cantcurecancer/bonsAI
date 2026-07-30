@@ -1,3 +1,10 @@
+/**
+ * Title: Unified input layout constants
+ * Purpose: Shared pixel constants for Ask bar typography, insets, carousel timing, and search thresholds.
+ * Used for: useUnifiedInputSurface, MainTab styles, and intentPackSearch min query length.
+ * Solves: Single source of truth so measure overlay, TextField, and CSS stay aligned on Deck.
+ * Does not: Apply styles — components consume these values in CSS vars and inline layout.
+ */
 /** Max height (px) of the whole glass card (text body + bottom icon strip). */
 export const UNIFIED_INPUT_HEIGHT_MAX_PX = 200;
 /** Reserved height (px) for attach + mic strip inside the glass host (below the text body). */

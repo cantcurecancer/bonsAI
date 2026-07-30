@@ -1,3 +1,10 @@
+/**
+ * Title: Proton experiment journal section
+ * Purpose: Log and review Proton version / launch-option experiments when troubleshooting games.
+ * Used for: Developer or troubleshooting flows when attach-proton-logs capability is enabled.
+ * Solves: CRUD UI for journal entries with outcome labels and optional RPC persistence.
+ * Does not: Collect Proton logs automatically — parent toggles control attachment at ask time.
+ */
 import { useCallback, useEffect, useState } from "react";
 import {
   Button,

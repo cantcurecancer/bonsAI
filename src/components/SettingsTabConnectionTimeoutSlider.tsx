@@ -1,3 +1,10 @@
+/**
+ * Title: Connection timeout slider
+ * Purpose: Dual-thumb slider for latency warning and hard request timeout seconds.
+ * Used for: SettingsTab connection section with Deck D-pad focus wiring to adjacent rows.
+ * Solves: Keeps warning and timeout reconciled while exposing both thresholds on one track.
+ * Does not: Perform health checks or cancel in-flight RPC — only edits settings values.
+ */
 import React, { useCallback, useMemo, useRef, useState } from "react";
 import {
   LATENCY_WARNING_STEP_SECONDS,

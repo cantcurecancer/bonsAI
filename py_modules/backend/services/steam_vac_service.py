@@ -1,4 +1,10 @@
-"""Steam Web API helpers for VAC / ban status lookups (GetPlayerBans)."""
+"""Title: Steam VAC lookup
+
+Purpose: Parse SteamIDs and call GetPlayerBans for VAC/ban status via the Steam Web API.
+Used for: vac_check_commands and Developer Integrations when steam_web_api capability is on.
+Solves: Token parsing, in-memory TTL cache, and markdown report formatting for Ask replies.
+Does not: Store API keys or bypass capability checks — callers supply key and permission gates.
+"""
 
 from __future__ import annotations
 

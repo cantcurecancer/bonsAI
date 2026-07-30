@@ -1,6 +1,9 @@
 /**
- * Versioned catalog for Steam Input jump targets. Routes and URIs are volatile across
- * Steam client builds; see docs/archive/research/steam-input-research.md for CEF verification and update process.
+ * Title: Steam Input lexicon
+ * Purpose: Versioned catalog of Steam Input jump targets with route confidence metadata.
+ * Used for: Steam Input phase-1 navigation experiments and AI-suggested settings jumps.
+ * Solves: Documents volatile steam:// and React Router templates with breadcrumb fallbacks.
+ * Does not: Guarantee navigation on all Steam builds — entries require on-Deck CEF verification.
  */
 export const STEAM_INPUT_LEXICON_VERSION = 1;
 

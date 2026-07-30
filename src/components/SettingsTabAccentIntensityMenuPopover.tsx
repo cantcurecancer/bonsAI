@@ -1,3 +1,10 @@
+/**
+ * Title: Accent intensity menu popover
+ * Purpose: Inline popover for AI character accent intensity (Light / Default / Strong / Unleashed).
+ * Used for: SettingsTab character roleplay row; mirrors MainTabAskModeMenuPopover paint model.
+ * Solves: Deck-safe anchored menu without breaking Steam compositing on dark glass backgrounds.
+ * Does not: Build system prompts — intensity ids sync to backend ai_character_service.
+ */
 import React, { useLayoutEffect, useRef } from "react";
 import { Focusable } from "@decky/ui";
 import {

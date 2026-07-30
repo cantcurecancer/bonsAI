@@ -1,11 +1,14 @@
+/**
+ * Title: Shared icon components
+ * Purpose: Centralized custom SVG and react-icons wrappers sized for Decky tab and inline UI.
+ * Used for: Tab titles, reply action buttons, screenshot browser chrome, and branding marks.
+ * Solves: Consistent IconShell sizing and stroke rules so icon tweaks stay in one module.
+ * Does not: Define accent colors or focus graphs — consumers pass size and className only.
+ */
 import React, { useState } from "react";
 import { FiLock, FiSettings, FiThumbsDown, FiThumbsUp } from "react-icons/fi";
 import bonsaiLogo from "../assets/icons/bonsai-logo.svg";
 
-/**
- * This shared icon shell keeps all custom icons aligned to Decky's sizing and baseline rules.
- * It centralizes sizing behavior so icon updates do not require scattered style tweaks.
- */
 const IconShell: React.FC<{ size: number; children: React.ReactNode }> = ({ size, children }) => (
   <span
     style={{

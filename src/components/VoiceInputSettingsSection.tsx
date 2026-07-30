@@ -1,3 +1,10 @@
+/**
+ * Title: Voice input settings section
+ * Purpose: STT model picker, engine status display, and install/retry controls for voice asks.
+ * Used for: SettingsTab when voice input capability and backend whisper.cpp engine are available.
+ * Solves: Surfaces binary/model readiness, download progress, and Deck-focusable model buttons.
+ * Does not: Capture microphone audio or run transcription — backend voice service owns the pipeline.
+ */
 import React, { useCallback, useEffect, useState } from "react";
 import { PanelSection, PanelSectionRow, Button, Focusable } from "@decky/ui";
 import { toaster } from "@decky/api";

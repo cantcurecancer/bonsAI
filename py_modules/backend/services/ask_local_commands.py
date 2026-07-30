@@ -1,4 +1,10 @@
-"""Unified Ask command normalization and local-command detection (no Ollama)."""
+"""Title: Ask local command detection
+
+Purpose: Normalize Ask input and detect local-only command kinds before Ollama runs.
+Used for: Sanitizer, shortcut-setup, and VAC-check keyword classification in Ask flow.
+Solves: Shared trim/casefold rules and a single LocalAskCommandKinds aggregate.
+Does not: Execute commands or format responses — see dedicated *\_commands services.
+"""
 
 from __future__ import annotations
 

@@ -1,6 +1,9 @@
 /**
- * Accent intensity for AI character roleplay (system prompt modulation).
- * Keep IDs in sync with backend `VALID_ACCENT_INTENSITY_IDS` in `backend/services/ai_character_service.py`.
+ * Title: AI character accent intensity
+ * Purpose: Accent intensity ids, labels, and option metadata for roleplay system-prompt modulation.
+ * Used for: SettingsTab character row, accent intensity popover, and settings normalizers.
+ * Solves: Typed frontend ids that must match backend VALID_ACCENT_INTENSITY_IDS allow-list.
+ * Does not: Generate roleplay prompts — backend ai_character_service applies intensity rules.
  */
 export type AiCharacterAccentIntensityId = "subtle" | "balanced" | "heavy" | "unleashed";
 

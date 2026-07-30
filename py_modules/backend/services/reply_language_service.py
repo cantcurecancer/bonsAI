@@ -1,4 +1,10 @@
-"""Steam client language detection and Ask reply-language resolution."""
+"""Title: Reply language resolver
+
+Purpose: Detect Steam client language and resolve Ask reply-language settings.
+Used for: System prompt language hints and sanitize_reply_language in settings_service.
+Solves: config.vdf parsing, follow-system vs forced English, and effective language labels.
+Does not: Translate model output post-hoc or change Steam client language settings.
+"""
 
 from __future__ import annotations
 

@@ -1,3 +1,10 @@
+/**
+ * Title: Session context strip
+ * Purpose: Summarize live and archived turn context chips above the chat transcript.
+ * Used for: MainTabChatTranscript to surface input-transparency snapshots per conversation turn.
+ * Solves: Collapsed hint + expandable ladder so users can audit what context reached the model.
+ * Does not: Build snapshots or fetch RPC data — receives turns from orchestration hooks.
+ */
 import { useState } from "react";
 import { Focusable } from "@decky/ui";
 import type { AskThreadCollapsedTurn } from "../types/bonsaiUi";

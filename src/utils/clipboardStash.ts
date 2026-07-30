@@ -1,3 +1,10 @@
+/**
+ * Title: Clipboard stash sanitizer
+ * Purpose: Read host clipboard via RPC and sanitize text before attaching to Ask input.
+ * Used for: MainTab attach-from-clipboard flow before backend input sanitizer runs.
+ * Solves: Safe length limits and control-character stripping for pasted context.
+ * Does not: Replace backend sanitizer — server still validates on submit.
+ */
 /** Client-side clipboard text prep before Ask (backend sanitizer still runs on submit). */
 
 import { callDeckyWithTimeout } from "./deckyCall";

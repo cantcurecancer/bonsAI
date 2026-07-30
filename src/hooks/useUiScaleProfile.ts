@@ -1,3 +1,10 @@
+/**
+ * Title: UI scale profile hook
+ * Purpose: Measure QAM viewport width, classify handheld/docked profile, and expose scope CSS variables.
+ * Used for: index.tsx and UiScaleContext — Settings Apply triggers remeasure via applyToken.
+ * Solves: Readable typography and spacing across Deck resolutions without manual per-panel tuning.
+ * Does not: Persist profile choice — see usePluginSettings and SettingsTab UI scale section.
+ */
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   buildBonsaiUiScaleInlineStyle,

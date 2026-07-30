@@ -1,3 +1,10 @@
+/**
+ * Title: Captured frontend errors hook
+ * Purpose: Collect uncaught errors and unhandled rejections for the Debug tab and optional desktop log.
+ * Used for: index.tsx — global window listeners for plugin lifetime.
+ * Solves: Surface front-end faults without crashing the Decky QAM shell.
+ * Does not: Capture Python backend logs — see DeveloperTab RPC tail helpers.
+ */
 import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from "react";
 import { appendAppDesktopLogWithPrefs, type AppDesktopLogPrefs } from "../utils/appDesktopLog";
 

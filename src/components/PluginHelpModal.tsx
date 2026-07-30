@@ -1,3 +1,10 @@
+/**
+ * Title: Plugin help modal
+ * Purpose: ConfirmModal wrapper showing quick-start instructions for new bonsAI users.
+ * Used for: Main tab preset row “How to use bonsAI” chip via showModal() only.
+ * Solves: Keeps help copy out of the QAM tree while reusing PluginQuickStartInstructionsBody.
+ * Does not: Persist dismissal state — parent tracks plugin-help-dismissed localStorage key.
+ */
 import { ConfirmModal } from "@decky/ui";
 import { PluginQuickStartInstructionsBody } from "../data/pluginQuickStartInstructions";
 

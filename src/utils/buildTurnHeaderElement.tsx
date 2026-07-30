@@ -1,3 +1,10 @@
+/**
+ * Title: Turn header element builder
+ * Purpose: Build Focusable collapsed/expanded Ask turn header rows for chat transcript slots.
+ * Used for: MainTabChatTranscript history and live turn slot rendering.
+ * Solves: Consistent header focus behavior and expand/collapse activation on Deck.
+ * Does not: Render answer body — see buildAnswerBubbleElement.
+ */
 import React from "react";
 import { Focusable } from "@decky/ui";
 import { focusFirstAnswerChunk } from "./answerBubbleNavigation";

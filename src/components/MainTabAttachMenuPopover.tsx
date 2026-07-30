@@ -1,3 +1,10 @@
+/**
+ * Title: Attach menu popover
+ * Purpose: Paperclip menu offering screenshot capture or recent-screenshot attach actions.
+ * Used for: MainTabUnifiedAskBar attach chip with anchor positioning on the unified input host.
+ * Solves: Keeps attach actions out of the icon strip with explicit focus return to the paperclip.
+ * Does not: Run media RPC or open the screenshot browser — parent handles selected action ids.
+ */
 import React, { useLayoutEffect, useRef, useState } from "react";
 import { Button } from "@decky/ui";
 import {

@@ -1,9 +1,12 @@
+/**
+ * Title: Plugin quick-start copy
+ * Purpose: JSX body for the “How to use bonsAI” help modal quick-start instructions.
+ * Used for: PluginHelpModal via showModal(); kept separate from README for QAM-friendly brevity.
+ * Solves: Single maintained copy block aligned with README tone without duplicating the full doc.
+ * Does not: Configure Ollama or run setup RPC — instructs users to visit the Ollama tab first.
+ */
 import React from "react";
 
-/**
- * Brief QAM-friendly quick start for the “How to use bonsAI” modal.
- * Kept in one place to stay aligned with README tone without duplicating the full doc.
- */
 export function PluginQuickStartInstructionsBody() {
   const itemStyle: React.CSSProperties = { marginBottom: "0.45em" };
   return (

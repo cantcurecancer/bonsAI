@@ -1,4 +1,10 @@
-"""Host clipboard read for Decky when the WebView cannot use ``navigator.clipboard``."""
+"""Title: Host clipboard reader
+
+Purpose: Read the Steam Deck host clipboard via a shell helper when WebView APIs are unavailable.
+Used for: Ask bar paste-from-clipboard RPC when navigator.clipboard is blocked in CEF.
+Solves: Bounded, timeout-guarded clipboard text retrieval with structured success/error dicts.
+Does not: Write to the clipboard or access clipboard without the helper script on disk.
+"""
 
 from __future__ import annotations
 

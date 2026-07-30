@@ -1,3 +1,10 @@
+/**
+ * Title: Ask completion watcher
+ * Purpose: Background poll loop for terminal Ask status when user leaves Main tab during a request.
+ * Used for: index.tsx after background Ask start when reply surface may be hidden.
+ * Solves: Ready/error toasts and completion handling without keeping MainTab mounted.
+ * Does not: Start Ask or stream tokens — see useBackgroundGameAi.
+ */
 import { call } from "@decky/api";
 import type { BackgroundRequestStatus } from "../types/backgroundAsk";
 import {

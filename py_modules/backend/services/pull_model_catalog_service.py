@@ -1,4 +1,10 @@
-"""Fetch and cache the bonsAI Pull Models catalog overlay (living recommendations)."""
+"""Title: Pull model catalog overlay
+
+Purpose: Fetch and cache the living Pull Models recommendation overlay from upstream JSON.
+Used for: Pull Models UI grouping, license tags, and maintainer-published model hints.
+Solves: TTL disk cache, host allowlist, schema validation, and merge with local tag checks.
+Does not: Pull models or talk to Ollama directly — overlay metadata only.
+"""
 
 from __future__ import annotations
 

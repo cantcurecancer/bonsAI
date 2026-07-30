@@ -1,6 +1,9 @@
 /**
- * Progressive markdown layout for token streaming (R2).
- * Closed blocks are safe for ReactMarkdown; open spoiler/code fences never leak body mid-stream.
+ * Title: Stream markdown preparer
+ * Purpose: Progressive markdown layout for token streaming with closed-block safety and wait chips.
+ * Used for: buildAnswerBubbleElement live tail rendering during partial_response polls.
+ * Solves: Open spoiler/code fences never leak body mid-stream; burst reveal after fence close.
+ * Does not: Split chunks for D-pad navigation — see splitResponseIntoChunks.
  */
 
 export const SPOILER_STREAM_MASK_LABEL = "Spoiler hidden until complete…";

@@ -1,3 +1,10 @@
+/**
+ * Title: UI string catalog
+ * Purpose: Per-language UI string tables with English defaults and partial translation fallback.
+ * Used for: utils/i18n lookupUiString and useReplyLanguage localized toasts/labels.
+ * Solves: Missing per-key fallback to English without failing the whole locale bundle.
+ * Does not: Detect Steam client language — backend get_reply_language_snapshot owns effective lang.
+ */
 import type { UiStringKey } from "./keys";
 
 export type UiStringCatalog = Partial<Record<UiStringKey, string>>;

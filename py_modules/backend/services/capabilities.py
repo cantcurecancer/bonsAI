@@ -1,4 +1,10 @@
-"""User capability toggles for high-impact plugin actions (Permission Center)."""
+"""Title: Capability toggles
+
+Purpose: Sanitize and default user capability flags for high-impact plugin actions.
+Used for: Permission Center settings, RPC guards, and legacy install grandfathering.
+Solves: A fixed key set with safe False defaults and explicit legacy all-on migration.
+Does not: Enforce permissions at runtime alone — callers must check before privileged I/O.
+"""
 
 from typing import Any
 

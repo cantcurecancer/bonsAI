@@ -1,3 +1,10 @@
+/**
+ * Title: Ask reply ready toast
+ * Purpose: Show one terminal toast per completed/failed background Ask when reply surface is hidden.
+ * Used for: useBackgroundGameAi and bonsaiAskCompletionWatch poll handlers.
+ * Solves: Notify user of finished Ask without spamming duplicate toasts per request_id.
+ * Does not: Open QAM or focus Main tab — see bonsaiReplySurface.openBonsaiReplyFromToast.
+ */
 import type { BackgroundRequestStatus } from "../types/backgroundAsk";
 import { formatDeckyRpcError } from "./deckyCall";
 import { showPhaseToast } from "./bonsaiPhaseToast";

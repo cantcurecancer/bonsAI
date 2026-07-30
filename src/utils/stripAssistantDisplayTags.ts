@@ -1,6 +1,9 @@
 /**
- * Strip model-emitted control tags from assistant text shown in the chat transcript.
- * Backend extraction should already remove these; this is a display safety net (e.g. follow-up turns).
+ * Title: Assistant display tag stripper
+ * Purpose: Remove model-emitted bonsai-status and strategy bracket tags from chat display text.
+ * Used for: buildAnswerBubbleElement and transcript rendering safety net.
+ * Solves: Leaked control tags in UI when backend extraction misses a follow-up turn.
+ * Does not: Parse structured status for logic — backend should strip before persistence.
  */
 
 const BONSAI_STATUS_RE = /<bonsai-status>\s*[\s\S]*?<\/bonsai-status>/gi;

@@ -1,4 +1,10 @@
-"""Ollama reachability helpers: loopback detection, CLI paths, HTTP base resolution."""
+"""Title: Ollama connectivity helpers
+
+Purpose: Resolve Ollama HTTP bases, loopback hosts, and CLI executable paths.
+Used for: Routing, embed/chat URL construction, and local-vs-remote Ollama detection.
+Solves: Normalized reachability checks shared across services and main RPC handlers.
+Does not: Perform HTTP requests or manage Ollama process lifecycle.
+"""
 
 import ipaddress
 import os

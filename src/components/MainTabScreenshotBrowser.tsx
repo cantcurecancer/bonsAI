@@ -1,3 +1,10 @@
+/**
+ * Title: Screenshot browser panel
+ * Purpose: Full-bleed recent-screenshot picker with refresh, clipboard paste, and attach actions.
+ * Used for: MainTab when the user opens attach → browse recent from the unified Ask bar.
+ * Solves: Deck-focusable list of media-library screenshots with error and loading states.
+ * Does not: Capture screenshots or enable media library — parent RPC and capabilities gate access.
+ */
 import React, { useCallback } from "react";
 import { toaster } from "@decky/api";
 import { Button, Focusable } from "@decky/ui";

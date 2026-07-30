@@ -1,3 +1,10 @@
+/**
+ * Title: Local-only Ask commands
+ * Purpose: Detect sanitizer, shortcut-setup, and VAC-check keyword commands that skip Ollama.
+ * Used for: useBonsaiAskOrchestration before background Ask start RPC.
+ * Solves: Fast local handling aligned with backend shortcut_setup_commands and vac_check_commands.
+ * Does not: Execute commands — backend RPC and Python handlers own side effects.
+ */
 import { INPUT_SANITIZER_COMMAND_DISABLE, INPUT_SANITIZER_COMMAND_ENABLE } from "../data/inputSanitizerCommands";
 
 /** Match ``backend/services/shortcut_setup_commands.py`` / ``vac_check_commands`` slash handling. */

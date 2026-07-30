@@ -1,3 +1,10 @@
+/**
+ * Title: Steam settings search hook
+ * Purpose: Filter Steam/QAM settings rows from unified input and deep-link via Router or steam:// URLs.
+ * Used for: MainTab search mode and SETTINGS_DATABASE navigation.
+ * Solves: Intent-pack-augmented settings discovery from the unified Ask bar.
+ * Does not: Own intent pack data — see useIntentPacks and intentPackSearch.
+ */
 import { useCallback, useMemo, type Dispatch, type SetStateAction } from "react";
 import { toaster } from "@decky/api";
 import { Navigation } from "@decky/ui";

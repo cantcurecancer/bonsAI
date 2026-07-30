@@ -1,3 +1,10 @@
+/**
+ * Title: Intent pack search
+ * Purpose: Build search index and match SETTINGS_DATABASE rows with offline intent pack aliases.
+ * Used for: useIntentPacks, useSteamSettingsSearch, and Settings search mode.
+ * Solves: Synonym/alias/expansion hits without changing native settings result shape.
+ * Does not: Persist packs — see useIntentPacks RPC import/export.
+ */
 /** Offline intent pack search — extends SETTINGS_DATABASE substring matching without changing result shape. */
 
 import { SETTINGS_SEARCH_MIN_QUERY_LENGTH } from "../features/unified-input/constants";

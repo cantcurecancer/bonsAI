@@ -1,7 +1,9 @@
 /**
- * Display-time unwrap for Strategy ```bonsai-spoiler fences that wrap the entity the user
- * already named (e.g. "How do I beat Glyphid Dreadnought?"). Prompt policy should prevent
- * these; this is a UI safety net when the model still fences boss tactics.
+ * Title: Asked-entity spoiler unwrap
+ * Purpose: Display-time unwrap of bonsai-spoiler fences when the user already named the entity.
+ * Used for: buildAnswerBubbleElement before markdown render.
+ * Solves: Redundant spoiler hiding for boss-fight questions the user explicitly asked about.
+ * Does not: Change backend spoiler policy — prompt and sanitizer remain authoritative.
  */
 
 const SPOILER_FENCE_RE = /```bonsai-spoiler\s*\n([\s\S]*?)```/gi;

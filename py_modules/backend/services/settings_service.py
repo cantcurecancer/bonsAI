@@ -1,7 +1,9 @@
-"""Load, sanitize, and save persisted plugin ``settings.json`` (shared by RPC handlers and tests).
+"""Title: Plugin settings service
 
-Keys and defaults must stay aligned with frontend ``normalizeSettings`` / ``BonsaiSettings`` and with
-``plugin.json`` migrations — breaking names strands older installs until reset.
+Purpose: Load, sanitize, and save persisted settings.json for the Decky plugin.
+Used for: RPC handlers, tests, and migrations that need the canonical settings shape.
+Solves: Frontend-aligned defaults, capability and character sanitizers, and atomic save helpers.
+Does not: Render UI or push settings to the frontend — only disk persistence and normalization.
 """
 
 import json

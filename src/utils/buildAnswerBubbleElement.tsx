@@ -1,3 +1,10 @@
+/**
+ * Title: Answer bubble element builder
+ * Purpose: Build the Focusable answer bubble React tree with chunks, streaming prep, and nav registration.
+ * Used for: MainTabChatTranscript live and history turn rendering.
+ * Solves: Unified markdown chunk layout, spoiler unwrap, and D-pad bubble navigation hooks.
+ * Does not: Poll Ask status — see useBackgroundGameAi and buildTurnHeaderElement.
+ */
 import React from "react";
 import { Focusable } from "@decky/ui";
 import { MainTabBonsaiAiMarkdownChunk } from "../components/MainTabBonsaiAiMarkdownChunk";

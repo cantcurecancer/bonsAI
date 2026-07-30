@@ -1,3 +1,10 @@
+/**
+ * Title: Answer bubble element registry
+ * Purpose: Register mounted answer bubble DOM nodes by answer key for focus graph navigation.
+ * Used for: buildAnswerBubbleElement, answerBubbleNavigation, and liveTurnFocusGraph.
+ * Solves: Focus hops without document.querySelector through Decky shadow roots.
+ * Does not: Track chunk index within a bubble — see answerBubbleNavRegistry.
+ */
 const bubbleByKey = new Map<string, HTMLElement>();
 
 export function registerAnswerBubbleEl(answerKey: string, el: HTMLElement | null): void {

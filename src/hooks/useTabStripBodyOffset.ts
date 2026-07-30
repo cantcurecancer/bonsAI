@@ -1,3 +1,10 @@
+/**
+ * Title: Tab strip body offset hook
+ * Purpose: Measure Decky tab strip height and reserve space so tab content is not painted into LB/RB titles.
+ * Used for: index.tsx — `.bonsai-scope` layout on gamescope/Bazzite.
+ * Solves: Crushed or overlapping tab body when TabContentsScroll bleeds into the strip row.
+ * Does not: Pin QAM host height — see useQamPanelHeightGuard.
+ */
 import { useLayoutEffect } from "react";
 import { TAB_STRIP_BODY_GAP_PX } from "../features/unified-input/constants";
 import { syncTabBodyViewportHeight } from "../utils/tabBodyViewport";

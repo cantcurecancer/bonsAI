@@ -1,6 +1,9 @@
-"""Deterministic input sanitization and README-documented magic phrases for Ask payloads.
+"""Title: Ask input sanitizer
 
-Lane results drive transparency ``sanitizer_action`` / ``reason_codes`` and may block before Ollama is called.
+Purpose: Deterministic sanitization, size limits, and magic-phrase toggles for Ask payloads.
+Used for: Pre-Ollama lane checks that drive transparency sanitizer_action and reason_codes.
+Solves: Block or trim unsafe user text and honor documented bonsai:enable/disable-sanitize commands.
+Does not: Call Ollama or perform network I/O — returns lane results for callers to act on.
 """
 
 from __future__ import annotations

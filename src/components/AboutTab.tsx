@@ -1,3 +1,10 @@
+/**
+ * Title: About tab
+ * Purpose: Credits, support links, reply-language override, and third-party attribution panel.
+ * Used for: About QAM tab from index.tsx with GitHub, Ollama, and PayPal support surfaces.
+ * Solves: Groups non-settings informational content away from Settings and Ollama configuration tabs.
+ * Does not: Change inference settings or model policy — see SettingsTab and OllamaTab for configuration.
+ */
 import React, { useRef } from "react";
 import { ButtonItem, Focusable, Navigation, PanelSection, PanelSectionRow } from "@decky/ui";
 import { toaster } from "@decky/api";

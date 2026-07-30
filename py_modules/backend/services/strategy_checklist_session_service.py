@@ -1,4 +1,10 @@
-"""Persist per-game Strategy checklist state across QAM close and plugin reload."""
+"""Title: Strategy checklist session
+
+Purpose: Persist per-game strategy checklist checked state across QAM close and reload.
+Used for: Main tab checklist UI sync and RPC load/save of in-progress strategy sessions.
+Solves: Bounded JSON store keyed by app id with item normalization and schema versioning.
+Does not: Generate checklist items from models — only stores user toggle state from the UI.
+"""
 
 from __future__ import annotations
 

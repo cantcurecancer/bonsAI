@@ -1,4 +1,10 @@
-"""Shared schema, manifest, and path helpers for the on-Deck knowledge base corpus."""
+"""Title: Knowledge base schema
+
+Purpose: Shared corpus manifest, SQLite schema, paths, and trust-tier constants.
+Used for: RAG corpus install, download verification, and knowledge_base_service queries.
+Solves: One canonical schema version, allowed install paths, and manifest parsing helpers.
+Does not: Download corpus assets or run hybrid retrieval — see rag and KB services.
+"""
 
 from __future__ import annotations
 

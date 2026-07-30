@@ -1,6 +1,9 @@
-"""Ask keyword: ``bonsai:vac-check`` — Steam Web API GetPlayerBans (no Ollama).
+"""Title: VAC check commands
 
-Requires the ``steam_web_api`` capability and a stored Web API key; responses are deterministic markdown.
+Purpose: Handle bonsai:vac-check Ask keyword with Steam Web API GetPlayerBans (no Ollama).
+Used for: Local Ask path when steam_web_api capability and stored API key are available.
+Solves: Command parsing, capability gating, and deterministic markdown VAC report responses.
+Does not: Look up bans without user-provided SteamID tokens or an configured Web API key.
 """
 
 from __future__ import annotations

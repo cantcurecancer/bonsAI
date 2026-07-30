@@ -1,4 +1,11 @@
 /**
+ * Title: Tab local survival factory
+ * Purpose: Factory for tab-local UI snapshots that survive Decky modal unmount/remount cycles.
+ * Used for: ollamaTabLocalSurvival, settingsTabLocalSurvival, and bonsaiSessionSurvival patterns.
+ * Solves: Capture/restore getter-based state when showModal tears down the QAM subtree.
+ * Does not: Persist to disk — sessionStorage and plugin settings own durable state.
+ */
+/**
  * Factory for tab-local UI state that survives Decky modal unmount/remount cycles.
  * Each tab registers a getter; capture stores a snapshot for restore on next mount.
  */

@@ -1,3 +1,10 @@
+/**
+ * Title: Strategy checklist panel
+ * Purpose: Toggle list for per-game strategy guide checklist items during a live turn.
+ * Used for: MainTabChatTranscript strategy mode replies with collapsible checklist state.
+ * Solves: Deck-navigable ToggleField rows wired into the live-turn focus graph.
+ * Does not: Parse strategy branches from model output — see strategyChecklist utils and backend parser.
+ */
 import { ToggleField } from "@decky/ui";
 
 import type { StrategyChecklistState } from "../types/bonsaiUi";

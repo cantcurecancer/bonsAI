@@ -1,5 +1,10 @@
-/** Ask reply language override (Steam client language + optional About-tab override). */
-
+/**
+ * Title: Reply language options
+ * Purpose: Steam language codes, reply-language override ids, and dropdown builder helpers.
+ * Used for: AboutReplyLanguageSection, i18n effective-lang resolution, and settings persistence.
+ * Solves: Canonical locale list with follow-system and always-English special cases.
+ * Does not: Translate plugin UI strings — see i18n keys and steamLanguages re-export barrel.
+ */
 export const REPLY_LANGUAGE_FOLLOW_SYSTEM = "follow_system" as const;
 export const REPLY_LANGUAGE_ALWAYS_ENGLISH = "en" as const;
 export const DEFAULT_REPLY_LANGUAGE = REPLY_LANGUAGE_FOLLOW_SYSTEM;

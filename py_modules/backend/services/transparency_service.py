@@ -1,4 +1,10 @@
-"""Builders for Ask transparency snapshot dicts shared across RPC paths."""
+"""Title: Ask transparency builders
+
+Purpose: Build Ask transparency snapshot dicts shared across RPC and background paths.
+Used for: Show details UI, immediate local-command rows, and post-Ollama context chip enrichment.
+Solves: Consistent snapshot field shapes for routes, sanitizer actions, and model disclosure.
+Does not: Persist snapshots to disk or render frontend UI — returns plain dicts for callers.
+"""
 
 from __future__ import annotations
 

@@ -1,3 +1,10 @@
+/**
+ * Title: Settings tab local survival
+ * Purpose: Register and restore Settings tab UI snapshot across Decky modal unmount cycles.
+ * Used for: SettingsTab accent intensity menu open state.
+ * Solves: Preserve dropdown/menu state when a modal closes and reopens the QAM panel.
+ * Does not: Persist settings values — see usePluginSettings RPC save path.
+ */
 import { createTabLocalSurvival } from "./createTabLocalSurvival";
 
 export type SettingsTabLocalSnapshot = {

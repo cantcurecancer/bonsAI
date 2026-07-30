@@ -1,3 +1,10 @@
+/**
+ * Title: Focus navigation key helpers
+ * Purpose: Normalize Deck/keyboard D-pad and stick direction keys for onMove and key handlers.
+ * Used for: deckSliderMath, buildReplyActionsElement, and slider/button focus bridges.
+ * Solves: Reliable left/right/up/down detection when Steam CEF leaves key empty or Unidentified.
+ * Does not: Implement focus graphs — section parents wire onMove* using these predicates.
+ */
 export function isRightNavigationKey(key: string): boolean {
   return key === "ArrowRight" || key === "Right" || key === "DPadRight" || key === "GamepadDPadRight";
 }

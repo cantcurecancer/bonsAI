@@ -1,4 +1,10 @@
-"""Reset Decky-persisted plugin data to sanitized defaults (new-install behavior)."""
+"""Title: Plugin data reset
+
+Purpose: Wipe Decky-persisted plugin files and restore sanitized default settings.
+Used for: Clear plugin data RPC and new-install-equivalent recovery flows.
+Solves: Safe settings_dir wipe, optional local Ollama teardown hook, and default reload/save.
+Does not: Uninstall the Decky plugin binary or remove unrelated Steam user data.
+"""
 
 from __future__ import annotations
 

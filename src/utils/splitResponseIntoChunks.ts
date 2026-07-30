@@ -1,4 +1,11 @@
 /**
+ * Title: Response chunk splitter
+ * Purpose: Split assistant markdown into scrollable chunks respecting code-fence boundaries.
+ * Used for: buildAnswerBubbleElement and answer bubble D-pad vertical navigation.
+ * Solves: Per-chunk focus and scroll without breaking open or closed GFM fences.
+ * Does not: Strip model control tags — see stripAssistantDisplayTags.
+ */
+/**
  * True when a line starts a GFM/Markdown code fence (``` or ```json).
  * Used for fence state toggling, not to detect backticks in prose.
  */

@@ -1,3 +1,10 @@
+/**
+ * Title: Ask mode menu popover
+ * Purpose: Paint the Speed / Strategy / Expert mode picker anchored to the unified Ask bar chip.
+ * Used for: MainTabUnifiedAskBar when the user opens the mode selector on Deck or desktop.
+ * Solves: Keeps the menu outside the 24px icon strip with explicit positioning to avoid QAM focus scatter.
+ * Does not: Persist Ask mode or submit requests — parent handles selection and RPC orchestration.
+ */
 import React, { useLayoutEffect, useRef, useState } from "react";
 import { Button } from "@decky/ui";
 import { ASK_LABEL_COLOR, DECK_MENU_FONT_PX, DECK_MENU_GAP_PX, DECK_MENU_PANEL_BG, DECK_MENU_PANEL_MIN_WIDTH_PX, DECK_MENU_ROW_PAD_X_PX, DECK_MENU_ROW_PAD_Y_PX, DECK_MENU_ROW_SELECTED_BG } from "../features/unified-input/constants";

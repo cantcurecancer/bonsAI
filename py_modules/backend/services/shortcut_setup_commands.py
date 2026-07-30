@@ -1,4 +1,10 @@
-"""Deterministic Ask keywords for bonsAI global quick-launch (Guide chord) setup guidance."""
+"""Title: Shortcut setup commands
+
+Purpose: Deterministic Ask keywords that return Guide-chord setup guidance for Deck/Stadia layouts.
+Used for: Local Ask path when users paste bonsai:shortcut-setup-deck or -stadia phrases.
+Solves: Classify shortcut commands and format troubleshooting doc pointers without Steam Input writes.
+Does not: Modify Steam Input VDF files or configure global chords — guidance text only.
+"""
 
 from __future__ import annotations
 

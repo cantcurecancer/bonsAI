@@ -1,4 +1,11 @@
 /**
+ * Title: bonsAI debug ingest ring
+ * Purpose: In-memory ring buffer of debug entries for the opt-in on-screen debug HUD overlay.
+ * Used for: BonsaiDebugOverlay and Developer → On-screen debug HUD setting.
+ * Solves: Lightweight front-end instrumentation without persisting verbose logs to disk.
+ * Does not: Ship NDJSON to external ingest servers — see bonsaiDebugIngest call sites and deck tunnel docs.
+ */
+/**
  * In-memory debug ring buffer feeding the opt-in on-screen HUD
  * (Developer → On-screen debug HUD, rendered by BonsaiDebugOverlay).
  */

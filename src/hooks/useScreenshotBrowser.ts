@@ -1,3 +1,10 @@
+/**
+ * Title: Screenshot browser hook
+ * Purpose: List, capture, dedupe, and attach recent game screenshots for Ask with session survival.
+ * Used for: MainTab media attach flow and screenshot browser modal.
+ * Solves: Screenshot picker state across Decky modal unmount with permission-aware RPC.
+ * Does not: Upload or analyze images — backend list_recent_screenshots and Ask attachment pipeline.
+ */
 import { useCallback, useRef, useState } from "react";
 import { call, toaster } from "@decky/api";
 import { Navigation, Router } from "@decky/ui";

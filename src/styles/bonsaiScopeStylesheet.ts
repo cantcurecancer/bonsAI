@@ -1,3 +1,10 @@
+/**
+ * Title: Scoped stylesheet builder
+ * Purpose: Concatenate all bonsAI scope CSS sections into one injectable string for `.bonsai-scope`.
+ * Used for: index.tsx / BonsaiPluginShell — single style tag for QAM plugin chrome.
+ * Solves: Central entry for section-1…9, scope base, gamepad rings, and modal portal CSS.
+ * Does not: Define per-section tokens — see `styles/sections/*` (intentionally light-touch).
+ */
 import { buildScopebaseSection } from "./sections/scopeBase";
 import { buildSection1Section } from "./sections/section-1";
 import { buildSection2Section } from "./sections/section-2";

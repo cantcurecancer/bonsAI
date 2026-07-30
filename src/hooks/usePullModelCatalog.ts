@@ -1,3 +1,10 @@
+/**
+ * Title: Pull model catalog hook
+ * Purpose: Fetch and merge live/cached pull-model catalog overlay with bundled defaults.
+ * Used for: PullModelsModal and Ollama connection UI model picker.
+ * Solves: Up-to-date model tags without shipping a plugin update for every catalog change.
+ * Does not: Run Ollama pulls — see backend fetch_pull_model_catalog and Pull Models UI.
+ */
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { PULL_MODEL_CATALOG } from "../data/pullModelCatalog";
 import { callDeckyWithTimeout, DECKY_RPC_TIMEOUT_MS } from "../utils/deckyCall";

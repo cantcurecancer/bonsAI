@@ -1,3 +1,10 @@
+/**
+ * Title: Smooth stream reveal hook
+ * Purpose: Reveal streamed assistant tokens at a capped prose rate with fence burst after close.
+ * Used for: MainTab live answer bubble while background Ask polls partial_response.
+ * Solves: Blocky token jumps during streaming without delaying final settle (T3 snap on done).
+ * Does not: Parse markdown fences — see streamMarkdownPrepare and splitResponseIntoChunks.
+ */
 import { useEffect, useRef, useState } from "react";
 import { didNonSpoilerFenceJustClose } from "../utils/streamMarkdownPrepare";
 

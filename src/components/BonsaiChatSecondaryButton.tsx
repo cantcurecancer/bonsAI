@@ -1,3 +1,10 @@
+/**
+ * Title: Chat secondary button
+ * Purpose: Decky Button wrapper for reply action rows with optional reply-stop focus registry.
+ * Used for: MainTabChatTranscript helpful/retry/details buttons in the 2×2 reply action grid.
+ * Solves: Registers focus owners for column D-pad hops per replyStopRegistry policy.
+ * Does not: Submit follow-up asks or stop streaming — parent onClick handlers own behavior.
+ */
 import type { ReactNode } from "react";
 import { Button } from "@decky/ui";
 import { registerReplyStop, type ReplyStopId } from "../utils/replyStopRegistry";

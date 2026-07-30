@@ -1,3 +1,10 @@
+/**
+ * Title: Intent packs settings section
+ * Purpose: Settings panel to enable, import, export, and remove Steam Input intent packs.
+ * Used for: SettingsTab when managing custom phrase → action mappings for voice and composer.
+ * Solves: Clipboard import flow, conflict resolution modal, and per-pack enable toggles in one section.
+ * Does not: Parse Steam Input at runtime — backend intent pack service owns storage and merge logic.
+ */
 import { useCallback, useState } from "react";
 import { Button, ButtonItem, ConfirmModal, Focusable, PanelSection, PanelSectionRow, ToggleField, showModal } from "@decky/ui";
 import { SETTINGS_GLASS_BTN } from "../styles/settingsGlassButton";

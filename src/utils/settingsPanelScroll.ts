@@ -1,3 +1,10 @@
+/**
+ * Title: Settings panel scroll helpers
+ * Purpose: Scroll settings tab panel to top and coordinate up-navigation with tab strip focus.
+ * Used for: SettingsTab and OllamaTab D-pad onMoveUp chains at panel boundaries.
+ * Solves: Escape clipped settings content and return focus to LB/RB tab titles at scroll top.
+ * Does not: Define per-row focus graphs — section parents list explicit focus stops.
+ */
 import { findScrollablePanel, tryScrollPanelFromAnchor } from "./chatPanelScroll";
 
 /** Snap the tab scroll container to the top (reveals content directly under the LB/RB strip). */

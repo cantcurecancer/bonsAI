@@ -2,7 +2,7 @@
   "hotspots": [
     {
       "path": "main.py",
-      "lines": 3003,
+      "lines": 3021,
       "role": "Decky RPC entrypoints and orchestration"
     },
     {
@@ -12,7 +12,7 @@
     },
     {
       "path": "py_modules/backend/services/voice_transcription_service.py",
-      "lines": 1506,
+      "lines": 1512,
       "role": ""
     },
     {
@@ -92,22 +92,22 @@
     },
     {
       "path": "py_modules/backend/services/ollama_service.py",
-      "lines": 593,
+      "lines": 595,
       "role": "Prompt build, Ollama HTTP, streaming"
     },
     {
       "path": "py_modules/backend/services/transparency_service.py",
-      "lines": 582,
+      "lines": 588,
       "role": ""
     },
     {
       "path": "py_modules/backend/services/intent_pack_service.py",
-      "lines": 575,
+      "lines": 581,
       "role": ""
     },
     {
       "path": "py_modules/backend/services/settings_service.py",
-      "lines": 544,
+      "lines": 546,
       "role": "Load/save/merge settings.json"
     },
     {
@@ -122,7 +122,7 @@
     },
     {
       "path": "src/data/bonsaiSettingsNormalizers.ts",
-      "lines": 477,
+      "lines": 484,
       "role": ""
     },
     {
@@ -132,17 +132,17 @@
     },
     {
       "path": "src/components/DeveloperTab.tsx",
-      "lines": 458,
+      "lines": 465,
+      "role": ""
+    },
+    {
+      "path": "src/components/MainTabPresetAnimatedChips.tsx",
+      "lines": 453,
       "role": ""
     },
     {
       "path": "src/styles/sections/gamepadAndPullModels.ts",
       "lines": 448,
-      "role": ""
-    },
-    {
-      "path": "src/components/MainTabPresetAnimatedChips.tsx",
-      "lines": 446,
       "role": ""
     },
     {
@@ -152,12 +152,12 @@
     },
     {
       "path": "py_modules/backend/services/strategy_guide_parse.py",
-      "lines": 427,
+      "lines": 430,
       "role": ""
     },
     {
       "path": "py_modules/backend/services/ai_character_service.py",
-      "lines": 420,
+      "lines": 426,
       "role": ""
     },
     {
@@ -172,7 +172,7 @@
     },
     {
       "path": "py_modules/backend/services/knowledge_base_schema.py",
-      "lines": 406,
+      "lines": 412,
       "role": ""
     },
     {
@@ -192,12 +192,12 @@
     },
     {
       "path": "src/data/pullModelCatalog.ts",
-      "lines": 370,
+      "lines": 374,
       "role": ""
     },
     {
       "path": "py_modules/backend/services/voice_whisper_daemon.py",
-      "lines": 361,
+      "lines": 367,
       "role": ""
     }
   ]

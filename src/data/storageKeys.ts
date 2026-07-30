@@ -1,5 +1,10 @@
-/** localStorage keys for plugin shell persistence (aligned with index.tsx usage). */
-
+/**
+ * Title: Storage key constants
+ * Purpose: localStorage keys and shared external URLs for plugin shell persistence.
+ * Used for: index.tsx hydration, disclaimer/help dismissal flags, and default PC IP placeholder.
+ * Solves: Prevents scattered magic strings for client-side persistence and support links.
+ * Does not: Read or write storage — consumers own get/set and migration logic.
+ */
 export const UNIFIED_INPUT_STORAGE_KEY = "bonsai:last-query";
 export const IP_STORAGE_KEY = "bonsai:pc-ip";
 export const IP_DEFAULT = "192.168.1.";

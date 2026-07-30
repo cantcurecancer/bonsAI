@@ -1,6 +1,10 @@
-/** Curated Ollama models for the Pull Models fullscreen picker (bundled offline fallback sizes).
- *  Living recommendations: see data/pull-model-catalog-overlay.json (merged at runtime). */
-
+/**
+ * Title: Pull model catalog
+ * Purpose: Curated Ollama model metadata for the fullscreen Pull Models picker and routing UI.
+ * Used for: PullModelsModal, ModelRoutingOrderModal, and runtime overlay merge from JSON.
+ * Solves: Offline fallback catalog with license class, use tags, groups, and human blurbs.
+ * Does not: Query Ollama registry live — overlay JSON and installed tags refine availability at runtime.
+ */
 export type PullModelLicenseClass = "foss" | "open_weight" | "non_foss" | "unknown";
 
 export type PullModelUseTag = "chat" | "vision" | "ocr" | "strategy" | "coding";

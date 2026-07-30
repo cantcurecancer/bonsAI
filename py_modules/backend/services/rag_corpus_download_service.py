@@ -1,4 +1,10 @@
-"""Download, verify, and install the on-Deck knowledge base corpus."""
+"""Title: RAG corpus downloader
+
+Purpose: Download, verify checksums, and install the on-Deck knowledge base corpus.
+Used for: Knowledge Base settings download job and corpus install RPC progress reporting.
+Solves: Manifest fetch, threaded download with cancel, SQLite install, and log tail state.
+Does not: Run hybrid retrieval queries — see knowledge_base_service after install completes.
+"""
 
 from __future__ import annotations
 

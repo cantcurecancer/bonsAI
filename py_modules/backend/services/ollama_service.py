@@ -1,7 +1,9 @@
-"""Ollama HTTP transport: streaming ``/api/chat``, unload/stop helpers, and process cleanup.
+"""Title: Ollama HTTP transport
 
-Prompt/policy construction lives in :mod:`backend.services.ollama_prompts`; public prompt helpers are
-re-exported here so imports like ``from backend.services.ollama_service import build_system_prompt`` stay stable.
+Purpose: Streaming /api/chat, unload/stop helpers, and Ollama process cleanup.
+Used for: All Ollama HTTP I/O from Ask and background jobs; re-exports ollama_prompts helpers.
+Solves: Central transport, streaming tag extraction, and stable import surface for prompt builders.
+Does not: Own prompt/policy string logic — see ollama_prompts for construction and intent detectors.
 """
 
 import json

@@ -1,5 +1,10 @@
-/** Keep in sync with ``refactor_helpers.DEPRIORITIZED_OLLAMA_TAGS`` / ``BLOCKED_PULL_CATALOG_TAGS``. */
-
+/**
+ * Title: Deprioritized Ollama tags
+ * Purpose: Sets of model tags deprioritized or blocked from the pull catalog and routing UI.
+ * Used for: PullModelsModal filtering, model routing order picker, and catalog overlay merge.
+ * Solves: Frontend mirror of refactor_helpers deprioritized/blocked tag lists in Python.
+ * Does not: Delete installed models or change backend routing — classification happens server-side.
+ */
 export const DEPRIORITIZED_OLLAMA_TAGS = new Set(
   [
     "qwen2.5:1.5b",

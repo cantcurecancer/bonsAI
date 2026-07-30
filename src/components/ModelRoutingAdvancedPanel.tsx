@@ -1,3 +1,10 @@
+/**
+ * Title: Model routing advanced panel
+ * Purpose: Advanced toggles for non-FOSS unlock and high-VRAM fallback routing in the models hub.
+ * Used for: OllamaModelsHubModal advanced section alongside tier selection.
+ * Solves: Groups policy intro copy with tier buttons and boolean routing switches in one panel.
+ * Does not: Reorder model lists — see ModelRoutingOrderModal for per-chain ordering.
+ */
 import React from "react";
 import { Button, ToggleField } from "@decky/ui";
 import { MODEL_POLICY_SETTINGS_INTRO, type ModelPolicyTierId } from "../data/modelPolicy";

@@ -1,3 +1,10 @@
+/**
+ * Title: Steam settings navigation helpers
+ * Purpose: Map settings breadcrumb strings to steam:// URLs and QAM QuickAccessTab targets.
+ * Used for: AI-suggested Steam settings jumps and in-plugin settings search result actions.
+ * Solves: Distinguishes QAM tab switches from full Settings app deep links.
+ * Does not: List every settings path — see settingsDatabase for the searchable catalog strings.
+ */
 import { QuickAccessTab } from "@decky/ui";
 
 const SETTINGS_SECTION_URLS: Record<string, string> = {

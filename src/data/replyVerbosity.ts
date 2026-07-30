@@ -1,4 +1,10 @@
-/** Global Ask reply prose style (system-prompt inject on backend). */
+/**
+ * Title: Reply verbosity presets
+ * Purpose: Short / Balanced / Detailed reply style ids, labels, and slider index helpers.
+ * Used for: OllamaReplyVerbositySlider and bonsaiSettingsNormalizers persistence.
+ * Solves: Typed verbosity enum with ordered chip labels for the three-stop settings slider.
+ * Does not: Modify system prompts — backend injects verbosity guidance on ask requests.
+ */
 export type ReplyVerbosityId = "short" | "balanced" | "detailed";
 
 export const REPLY_VERBOSITY_ORDER: readonly ReplyVerbosityId[] = ["short", "balanced", "detailed"] as const;

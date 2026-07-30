@@ -1,3 +1,10 @@
+/**
+ * Title: Stream fence wait chip
+ * Purpose: Show a pulsing status chip while streaming markdown is inside an open code fence or spoiler mask.
+ * Used for: MainTabChatTranscript during in-flight assistant replies (F2 fence / S1 spoiler variants).
+ * Solves: Gives visible feedback that the model is still writing inside a fenced or masked block.
+ * Does not: Parse markdown, close fences, or manage stream state — parent owns streaming lifecycle.
+ */
 export type StreamFenceWaitChipProps = {
   label: string;
   kind: "fence" | "spoiler";

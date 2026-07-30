@@ -1,3 +1,10 @@
+/**
+ * Title: Steam Input jump helper
+ * Purpose: Navigate to Steam Input surfaces using lexicon entry router paths or steam:// URLs.
+ * Used for: Permissions and shortcut-setup deep links from Ask keyword replies.
+ * Solves: Best-effort jumps with confidence labels when React Router or Steam URL succeeds.
+ * Does not: Edit controller bindings — Steam client owns configuration UI.
+ */
 import { Navigation, Router } from "@decky/ui";
 import type { SteamInputLexiconEntry } from "../data/steam-input-lexicon";
 import { interpolateSteamInputTemplate } from "../data/steam-input-lexicon";

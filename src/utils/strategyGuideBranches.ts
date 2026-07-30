@@ -1,3 +1,10 @@
+/**
+ * Title: Strategy guide branches normalizer
+ * Purpose: Coerce RPC strategy_guide_branches payloads into typed StrategyGuideBranchesPayload or null.
+ * Used for: useBackgroundGameAi status handling and MainTab strategy branch UI.
+ * Solves: Defensive parsing when backend shape drifts or partial options arrive.
+ * Does not: Render branch buttons — see MainTab strategy guide components.
+ */
 import type { StrategyGuideBranchesPayload } from "../types/bonsaiUi";
 
 /** Coerce RPC `strategy_guide_branches` into a typed payload or null. */

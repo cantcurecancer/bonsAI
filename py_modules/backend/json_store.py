@@ -1,4 +1,10 @@
-"""Generic JSON file load/sanitize/save for plugin persisted stores."""
+"""Title: JSON store helpers
+
+Purpose: Load, sanitize, and save JSON files for plugin-persisted data stores.
+Used for: Settings and other on-disk JSON blobs that need safe defaults on corruption.
+Solves: Consistent read/write with size limits, logging, and sanitize-on-load recovery.
+Does not: Define schema keys or domain-specific sanitizers — callers supply those.
+"""
 
 import json
 import os

@@ -1,3 +1,10 @@
+/**
+ * Title: Chat panel scroll helpers
+ * Purpose: Locate QAM TabContentsScroll, scroll panels by step, and geometry nudges for clipped content.
+ * Used for: answerBubbleNavigation, useStreamScrollPin, and settingsPanelScroll.
+ * Solves: Reliable scroll targets inside Decky tab panels without assuming a single overflow ancestor.
+ * Does not: Manage focus graph — see liveTurnFocusGraph and focusNavigation.
+ */
 /** QAM tab scroll container used by Decky plugin panels. */
 export function findTabContentsScroll(anchor: HTMLElement | null): HTMLElement | null {
   return anchor?.closest('[class*="TabContentsScroll"]') as HTMLElement | null;

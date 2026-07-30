@@ -1,4 +1,10 @@
-"""Optional Tier-C thinking blurbs via a tiny local Ollama model (fire-and-forget)."""
+"""Title: Tiny thinking blurbs
+
+Purpose: Optional fire-and-forget status lines from a tiny local Ollama model during Ask waits.
+Used for: Tier-C thinking UI when main chat model is slow and a small model is reachable.
+Solves: Short-timeout /api/chat to qwen2.5:1.5b with sanitized bonsai thinking tag extraction.
+Does not: Replace main Ask responses or block the primary Ollama streaming path on success/failure.
+"""
 
 from __future__ import annotations
 

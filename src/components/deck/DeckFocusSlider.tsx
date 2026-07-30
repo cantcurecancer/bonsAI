@@ -1,13 +1,13 @@
+/**
+ * Title: Deck focus slider
+ * Purpose: Reusable single- or dual-thumb slider with one Deck-focusable thumb for D-pad editing.
+ * Used for: Settings and Ollama sliders (UI scale, keep-alive, reply verbosity, connection timeout).
+ * Solves: Shared track math, thumb visuals, and horizontal Deck button stepping across settings rows.
+ * Does not: Join the vertical focus graph alone — parent sections must wire a Focusable bridge per decky-ui-focus policy.
+ */
 import React, { useCallback, useMemo, useRef, useState } from "react";
 import { Focusable } from "@decky/ui";
 import { isLeftDeckButton, isRightDeckButton } from "../../utils/deckSliderMath";
-
-/**
- * Deck slider with one focusable thumb. D-pad contract: the thumb is absolutely positioned and
- * is NOT a reliable vertical focus peer — parent sections MUST wire a document-flow Focusable
- * bridge (see SettingsTabUiScaleSection) or explicit parent refs (see OllamaTab).
- * Policy: bonsai://policy/decky-ui-focus · bonsai://architecture/focus-graph-patterns
- */
 
 export type DeckSliderThumbVisualState = {
   focused: boolean;

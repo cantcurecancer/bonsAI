@@ -1,4 +1,10 @@
-"""Local voice capture + whisper.cpp interim speech-to-text for the Ask bar."""
+"""Title: Voice transcription service
+
+Purpose: Local mic capture and whisper.cpp interim speech-to-text for the Ask bar.
+Used for: Voice input RPC, model install jobs, and rolling-buffer decode loops on Deck.
+Solves: PCM capture, RMS gating, whisper binary lifecycle, and sanitized transcript streaming.
+Does not: Send audio to cloud STT or run wake-word detection — see voice_whisper_daemon for server mode.
+"""
 
 from __future__ import annotations
 

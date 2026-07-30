@@ -1,3 +1,10 @@
+/**
+ * Title: Main tab Ask bar focus helpers
+ * Purpose: Programmatic focus hops between unified input, attach, avatar, preset chips, Ask, and mic controls.
+ * Used for: MainTab D-pad graph and liveTurnFocusGraph cross-row navigation.
+ * Solves: Reliable focus targets without document.querySelector across shadow roots.
+ * Does not: Register Decky onMove* handlers — callers wire graph edges with these helpers.
+ */
 import React, { useCallback, useMemo } from "react";
 
 export type MainTabAskBarFocusRefs = {

@@ -1,3 +1,10 @@
+/**
+ * Title: Developer tab
+ * Purpose: Maintainer-facing diagnostics, logging toggles, Steam Web API key, and debug HUD controls.
+ * Used for: Developer QAM tab from index.tsx when Developer Mode surfaces advanced tooling.
+ * Solves: Groups connection status, captured errors, preset carousel experiments, and RPC test hooks.
+ * Does not: Ship to default user flows — many rows are gated behind developer settings and capabilities.
+ */
 import React from "react";
 import {
   Button,

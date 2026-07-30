@@ -1,3 +1,10 @@
+/**
+ * Title: UI scale slider
+ * Purpose: Three-stop Deck slider for Handheld / Desktop / Couch manual UI scale profiles.
+ * Used for: SettingsTabUiScaleSection manual profile control with parent thumb ref wiring.
+ * Solves: Discrete profile snapping with label and description chips below the track.
+ * Does not: Apply CSS variables at runtime — parent onApply commits through UiScaleContext bridge.
+ */
 import React, { useCallback, useMemo, useRef } from "react";
 import {
   indexOfManualUiScaleProfile,

@@ -1,4 +1,10 @@
-"""User-triggered mDNS discovery for Ollama (_ollama._tcp.local only). No subnet or port scanning."""
+"""Title: Ollama mDNS discovery
+
+Purpose: User-triggered mDNS browse for _ollama._tcp.local hosts on the LAN.
+Used for: Ollama tab discovery when the user picks Find on network (no port scanning).
+Solves: Bounded DNS-SD listen/probe loop with HTTP health checks on discovered endpoints.
+Does not: Scan subnets, brute-force ports, or auto-change settings without user confirmation.
+"""
 
 from __future__ import annotations
 

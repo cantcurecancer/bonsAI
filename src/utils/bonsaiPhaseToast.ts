@@ -1,3 +1,10 @@
+/**
+ * Title: Phase toast manager
+ * Purpose: Show and replace single-stack Decky toasts for in-flight Ask phase updates.
+ * Used for: bonsaiReplyReadyToast and Ask progress notifications.
+ * Solves: Avoid stacking multiple phase toasts during long background Ask polls.
+ * Does not: Open QAM or navigate tabs — see bonsaiReplySurface.
+ */
 import { toaster, type ToastData, type ToastNotification } from "@decky/api";
 
 let activePhaseToast: ToastNotification | null = null;

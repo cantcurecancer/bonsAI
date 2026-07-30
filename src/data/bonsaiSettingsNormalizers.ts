@@ -1,3 +1,10 @@
+/**
+ * Title: Settings value normalizers
+ * Purpose: Coerce raw RPC/localStorage settings payloads into typed BonsaiSettings fields.
+ * Used for: usePluginSettings, session survival snapshots, and settings hydration on plugin load.
+ * Solves: Central validation for enums, booleans, strings, and nested capability toggles.
+ * Does not: Define default schema shape — see bonsaiSettingsSchema for type definitions and defaults.
+ */
 import {
   AI_CHARACTER_ACCENT_INTENSITY_IDS,
   DEFAULT_AI_CHARACTER_ACCENT_INTENSITY,
