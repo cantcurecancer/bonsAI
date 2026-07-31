@@ -1,6 +1,6 @@
 # Knowledge base (offline RAG v1)
 
-Maintainer architecture for the **on-Deck offline strategy + compat knowledge base**. User setup: [troubleshooting.md](troubleshooting.md) § Knowledge base. QA: [testing.md](testing.md) **KB-*** rows. **Phase 2 hybrid** shipped 2026-07-28; **Phase 3** shipped 2026-07-29; **Phase 4–5** discovery locked 2026-07-30; **Phase 6–8** light discovery 2026-07-30 (see [roadmap.md](roadmap.md) Planned).
+Maintainer architecture for the **on-Deck offline strategy + compat knowledge base**. User setup: [troubleshooting.md](troubleshooting.md) § Knowledge base. QA: [testing.md](testing.md) **KB-*** rows. **Phase 2 hybrid** shipped 2026-07-28; **Phase 3** shipped 2026-07-29; **Phase 4–5** discovery locked 2026-07-30; **Phase 6 / 8** light discovery 2026-07-30; **Phase 7** tight discovery locked 2026-07-30 (see [roadmap.md](roadmap.md) Planned).
 
 ## Overview
 
@@ -87,7 +87,7 @@ Replies should use existing `bonsai-cite` markers; spoilery cards obey `bonsai-s
 | **Phase 4** | Extended retrieval (discovery locked 2026-07-30; **not implementing yet**): session chip **visibility** (not vector ranking); structured enemy/item **sample** cards + light reply bullets; T1 per-game AppID compat tips; lean compat phrase-gate fix. |
 | **Phase 5** | **Corpus expansion** (discovery locked 2026-07-30; **not implementing yet**): deepen all **11** Phase 3 titles (content → chip vector ranking); profiled depth; baked chip ranking; Dev-tab install only until Phase 6. |
 | **Phase 6** | **Public publish + legal** (light discovery 2026-07-30): HF primary + GitHub mirror; Phase 5 matured **11** + shared tips; closes **KB-DOWNLOAD** Partial. |
-| **Phase 7** | **Retrieval infra** (intent): optional **sqlite-vss / ANN**; optional **auto-pull `nomic`** with consent. May spike in parallel with Phase 6; does not block publish. |
+| **Phase 7** | **Retrieval infra + optional paths** (tight discovery 2026-07-30): prior ANN + nomic auto-pull; plus RRF fusion, vision→entity→retrieve, thumbs demote, delta/packs, named thinking hit. One umbrella row; tracks not gated on each other; UX may ship early. Fuller discovery later. |
 | **Phase 8** | **Catalog corpus** (intent): large title coverage (Steam ~1000 / Deck ~100 / emu eras) — fuller discovery later. |
 
 **Separate roadmap row (not Phase 3–8):** **KB visual maps** — light prelim only until closer to implementation.
@@ -200,24 +200,44 @@ Replies should use existing `bonsai-cite` markers; spoilery cards obey `bonsai-s
 
 **Status:** Light discovery only — more Phase 6 detail in a later session. **Document only**; implementation after Phase 5 exit.
 
-**Split from older “three bullets” row:** publish/legal stays Phase 6; sqlite-vss/ANN + nomic auto-pull → **Phase 7**; catalog-scale corpus → **Phase 8**.
+**Split from older “three bullets” row:** publish/legal stays Phase 6 (plus forward-compatible manifest hooks for packs/deltas); sqlite-vss/ANN + nomic auto-pull + Phase 7 optional paths → **Phase 7**; catalog-scale corpus → **Phase 8**.
 
 | Topic | Lock |
 |-------|------|
 | Scope | **Publish + legal only** — closes **KB-DOWNLOAD** Partial |
 | Artifact | Phase 5 matured **11-title** corpus + shared `compat_patterns` tips — **not** catalog-scale |
 | Channels | Versioned `corpus-manifest.json` on **Hugging Face (primary)** + **GitHub Releases mirror** (existing download path) |
+| Manifest hooks | **Forward-compatible** fields for future packs/deltas (may be empty/unused at first public tag) so Phase 7 clients stay compatible — v1 artifact can still be **one** matured-11 zip |
 | Legal | **Full scrub** before first public tag — complete ATTRIBUTIONS / `source_*`; **no placeholder licenses**. Public **NOTICE**: wiki/community sources can err; fix forward via point releases |
 | Updates | **Point releases** — rebuild → new manifest version → user re-download / update |
-| Not Phase 6 | sqlite-vss/ANN; auto-pull nomic (→ Phase 7); Steam ~1000 / Deck ~100 / emu catalog (→ Phase 8) |
+| Not Phase 6 | sqlite-vss/ANN; auto-pull nomic; RRF/demote/vision→KB UX (→ Phase 7); Steam ~1000 / Deck ~100 / emu catalog (→ Phase 8). Pack/delta **wire format** is Phase 7+ (manifest hooks only here) |
 
-### Phase 7 — locked intent (2026-07-30)
+### Phase 7 — locked decisions (tight, 2026-07-30)
+
+**Status:** Tight discovery complete; **document only** — fuller discovery later; **not implementing yet**. One Phase 7 roadmap/KB umbrella; internal **optional tracks** are **not** gated on each other. UX tracks **may ship earlier** when dependencies exist. **Must not block** Phase 6 first public publish. May spike in parallel with Phase 6.
+
+**Prior scope (kept):** optional **sqlite-vss / ANN**; optional **auto-pull `nomic-embed-text`** with explicit consent UX (never silent pull).
 
 | Topic | Lock |
 |-------|------|
-| Scope | Optional **sqlite-vss / ANN** (beyond FTS shortlist → cosine) + optional **auto-pull `nomic-embed-text`** with explicit consent UX (never silent pull) |
-| Parallelism | May **spike / discover in parallel** with Phase 6 publish; **must not block** first public corpus |
-| Status | Intent only — fuller discovery later |
+| Shape | **Soft split under one row** — document as Phase 7 umbrella; tracks (infra / ranking / distribution / UX) ship independently when ready |
+| RRF default | **Silent upgrade** of hybrid when enough signals exist — **no new Settings** |
+| RRF signals v1 | **FTS** + **vector cosine** + **trust tier**; **+ local demote** when demote exists; **patch/freshness deferred** |
+| RRF ↔ ANN | **Do not lock** until ANN spike; working hypothesis = ANN as **another ranked list into RRF** (not hard-replace of FTS gate) |
+| Vision→entity pipeline | **Same Ask**, no confirm modal — extract/parse entities then retrieve+answer in one user action |
+| Vision→entity gate | **Lean** Strategy + screenshot attached + KB on; **final when-it-runs decision deferred** to fuller discovery |
+| Vision→entity cost | **No** separate pre-retrieve Ollama extract call — **piggyback** on the vision Ask; parse entities from that path (accept weaker/later retrieval timing); fall back to normal screenshot Ask + text-question KB if parse fails |
+| Thumbs chips (retrieval) | New downs: **`wrong_tip`** · **`outdated`** · **`wrong_edition`**. Spoiler chip stays on its own Planned row (**Unfenced spoiler feedback**) |
+| Demote store | **JSONL audit** (existing feedback log) **+** compact demote index (e.g. `rag_demote.json`) for fast ranking |
+| Demote strength | **Soft** RRF/rank penalty first; **hard exclude** after repeated downs (threshold **N** in fuller discovery) |
+| Demote IDs | Require spliced **`section_id`s** on the turn’s KB transparency slice before demote ships |
+| Packs | **Core** corpus always; **optional add-on packs**; Phase 8 catalog ≈ many add-ons |
+| Delta / incremental | **Goal only** this pass: refresh without full ~5 GB re-pull. Wire format deferred (lean preference: **pack-sized zips** over sqlite row patches) |
+| Named thinking hit | After retrieve, thinking phase may **name the hit** (title/tier); spoiler **fencing stays on the reply** (not stripped from the phase label) |
+| Screenshot + KB preset | Behavior **deferred** to fuller discovery (convenient entry to vision→KB, not necessarily the only door) |
+| First-run wow script | **Out** of Phase 7 |
+| Out of Phase 7 (this pass) | Cite-to-source tap; faithfulness/groundedness chip; abstain gate; KB browser; cross-encoder / ColBERT; cloud sync of demotes; first-run wow |
+| Open (fuller discovery) | Exact vision→KB mode gate; entity-parse without pre-call; screenshot+KB preset behavior; ANN↔RRF after spike; delta/pack wire format; demote repeat threshold **N** + chip copy |
 
 ### Phase 8 — locked intent (2026-07-30)
 
@@ -239,7 +259,7 @@ Replies should use existing `bonsai-cite` markers; spoilery cards obey `bonsai-s
 
 ### Related (not Phase 2–8 code by default)
 
-- **Spoiler confidence chip** — Planned Near-term in [roadmap.md](roadmap.md); decisions locked 2026-07-29 (bands, heuristics + same-Ask risk tag, transparency-only); ready to implement. Related Planned: user-adjustable fencing, unfenced-spoiler feedback.
+- **Spoiler confidence chip** — Planned Near-term in [roadmap.md](roadmap.md); decisions locked 2026-07-29 (bands, heuristics + same-Ask risk tag, transparency-only); ready to implement. Related Planned: user-adjustable fencing, unfenced-spoiler feedback (distinct from Phase 7 retrieval thumbs chips).
 - **KB visual maps** — separate Planned row; light prelim only.
 
 ## Related docs
@@ -247,4 +267,4 @@ Replies should use existing `bonsai-cite` markers; spoilery cards obey `bonsai-s
 - [archive/research/rag-sources-research.md](archive/research/rag-sources-research.md) — source research (superseded for runtime by this doc)
 - [development.md](development.md) — contributor index
 - [troubleshooting.md](troubleshooting.md) — download, storage, update, removal
-- [roadmap.md](roadmap.md) — Phase 4–8 Planned rows, Spoiler confidence chip, KB visual maps
+- [roadmap.md](roadmap.md) — Phase 4–8 Planned rows (Phase 7 optional paths), Spoiler confidence chip, KB visual maps

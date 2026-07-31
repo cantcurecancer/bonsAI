@@ -119,14 +119,15 @@ Within this section: ascending stars (★ → ★★★★).
 - ★★★★ **RAG Deck query — public publish (Phase 6)**
   - **Goal:** First public versioned corpus + manifest (HF primary, GitHub Releases mirror) after Phase 5 maturity + legal scrub — closes **KB-DOWNLOAD** Partial.
   - **Status:** Light discovery locked 2026-07-30; **docs only** — fuller Phase 6 discovery later. Lock: [knowledge-base.md](knowledge-base.md) § Phase 6.
-  - **Discovery locked (light, 2026-07-30):** Publish **Phase 5’s matured 11** + shared tips only (not catalog). Full ATTRIBUTIONS / no placeholder licenses on first public tag; NOTICE that sources can err → fix forward. Point-release updates. sqlite-vss/ANN + nomic auto-pull → **Phase 7**; catalog scale → **Phase 8**.
+  - **Discovery locked (light, 2026-07-30):** Publish **Phase 5’s matured 11** + shared tips only (not catalog). Full ATTRIBUTIONS / no placeholder licenses on first public tag; NOTICE that sources can err → fix forward. Point-release updates. Manifest **forward-hooks** for future packs/deltas (unused at v1 OK). sqlite-vss/ANN + nomic + Phase 7 optional paths → **Phase 7**; catalog scale → **Phase 8**.
   - **Depends on:** Phase 5 corpus expansion + extended on-Deck KB testing; legal scrub of published zip.
-  - **Not in scope:** sqlite-vss/ANN; auto-pull `nomic` (→ Phase 7); Steam ~1000 / Deck ~100 / emu catalog (→ Phase 8).
+  - **Not in scope:** sqlite-vss/ANN; auto-pull `nomic`; RRF/demote/vision→KB (→ Phase 7); Steam ~1000 / Deck ~100 / emu catalog (→ Phase 8). Pack/delta **wire format** is Phase 7+ (hooks only in Phase 6).
 - ★★★★ **RAG Deck query — retrieval infra (Phase 7)**
-  - **Goal:** Optional **sqlite-vss / ANN** vector index; optional **auto-pull `nomic-embed-text`** with explicit consent UX (never silent pull).
-  - **Status:** Intent locked 2026-07-30; fuller discovery later. May spike in parallel with Phase 6; **must not block** first public publish.
-  - **Depends on:** Phase 6 publish path healthy (or spike-only until then).
-  - **Not in scope:** Replacing Phase 6 publish; catalog authoring (→ Phase 8).
+  - **Goal:** Optional **sqlite-vss / ANN**; optional **auto-pull `nomic`** (consent); plus optional paths — **RRF** multi-signal fusion, **vision→entity→retrieve**, retrieval **thumbs + local demote**, **delta/packs**, **named thinking hit**.
+  - **Status:** Tight discovery locked 2026-07-30; **docs only** — fuller discovery later. One umbrella; tracks not gated on each other; UX may ship earlier when deps exist. May spike in parallel with Phase 6; **must not block** first public publish. Full lock: [knowledge-base.md](knowledge-base.md) § Phase 7.
+  - **Discovery locked (tight, 2026-07-30):** Silent RRF (FTS+vector+trust; +demote when ready); ANN↔RRF deferred (hypothesize ANN as another RRF list); vision same-Ask piggyback (no extra extract call; lean Strategy+screenshot+KB, gate deferred); thumbs `wrong_tip`/`outdated`/`wrong_edition`; demote = JSONL + index, soft then hard, needs `section_id`s; Phase 6 manifest forward-hooks; core + optional packs; delta = goal only; name thinking hits (fence on reply); screenshot+KB preset deferred; first-run wow out.
+  - **Depends on:** Phase 6 publish path healthy (or spike-only until then). Demote needs KB slice `section_id`s; some UX can precede ANN.
+  - **Not in scope:** Replacing Phase 6 publish; catalog authoring (→ Phase 8); cite-to-source tap; faithfulness chip; abstain; KB browser; cross-encoder; cloud demote sync; first-run wow.
 
 ### Medium-term
 
@@ -239,7 +240,7 @@ Coverage for shipped work: [testing.md](testing.md).
 - **Capability Permission Center** → gates filesystem, Steam/Proton log + screenshot reads, mic, Steam Web API; web/Steam jumps always allowed; TDP/GPU suggestions read-only (no apply).
 - **Llama.cpp provider spike** → research-only; related **Dynamic keep-alive / smart unload**.
 - **Preset carousel (shipped)** → incremental **Preset chip expansion**; **Session RAG preset chips (shipped)**.
-- **RAG / offline KB** → Phase 2–3 shipped → Phase 4–8 Planned (4 extended retrieval, 5 corpus expansion, 6 public publish, 7 sqlite-vss/ANN + nomic auto-pull, 8 catalog corpus); **KB visual maps** separate; **Spoiler confidence chip** → fencing + unfenced feedback.
+- **RAG / offline KB** → Phase 2–3 shipped → Phase 4–8 Planned (4 extended retrieval, 5 corpus expansion, 6 public publish, 7 infra + optional paths — ANN/nomic/RRF/vision→KB/demote/delta-packs/named hit, 8 catalog corpus); **KB visual maps** separate; **Spoiler confidence chip** → fencing + unfenced feedback (distinct from Phase 7 retrieval thumbs).
 - **Soft** `num_predict` **+ thinking budget** (Bugs) → **Thinking effort control**.
 - **Native QAM shortcut tile** → shorter path than Guide-chord macro docs (§5).
 - **Steam Input jump Phase 1 (shipped)** → **Steam Input layout parse**.
