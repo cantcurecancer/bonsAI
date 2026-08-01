@@ -119,7 +119,7 @@ Replies should use existing `bonsai-cite` markers; spoilery cards obey `bonsai-s
 | Transparency | Reuse Phase 2 chip labels; Show details bullet **Source: shared troubleshooting tips** |
 | Nomic UI | **One** Ollama-tab soft hint (covers hybrid generally — Strategy + troubleshooting) |
 | Authoring (PC) | **`qwen3.6:27b`** for drafting cards/tips (`ollama pull qwen3.6:27b`) |
-| Embeddings | **`nomic-embed-text`** only — do not swap without full re-bake |
+| Embeddings | **`nomic-embed-text`** only — do not swap without full re-bake. Bake-off (2026-07-31): [kb-embed-bakeoff-2026-07-31.md](archive/research/kb-embed-bakeoff-2026-07-31.md) — keep nomic; no FOSS alternative cleared ≥5 pt margin; keyword baseline beat hybrid on seed eval.
 | Public publish | **Phase 6** — not a Phase 3 exit gate |
 | Done when | Code + Dev-tab/seed + smoke QA + labeled eval set (~20–30 queries) |
 
@@ -212,18 +212,26 @@ Replies should use existing `bonsai-cite` markers; spoilery cards obey `bonsai-s
 | Updates | **Point releases** — rebuild → new manifest version → user re-download / update |
 | Not Phase 6 | sqlite-vss/ANN; auto-pull nomic; RRF/demote/vision→KB UX (→ Phase 7); Steam ~1000 / Deck ~100 / emu catalog (→ Phase 8). Pack/delta **wire format** is Phase 7+ (manifest hooks only here) |
 
-### Phase 7 — locked decisions (tight, 2026-07-30)
+### Phase 7 — locked decisions (tight, 2026-07-30; intent retrieval extended 2026-07-31)
 
 **Status:** Tight discovery complete; **document only** — fuller discovery later; **not implementing yet**. One Phase 7 roadmap/KB umbrella; internal **optional tracks** are **not** gated on each other. UX tracks **may ship earlier** when dependencies exist. **Must not block** Phase 6 first public publish. May spike in parallel with Phase 6.
 
 **Prior scope (kept):** optional **sqlite-vss / ANN**; optional **auto-pull `nomic-embed-text`** with explicit consent UX (never silent pull).
+
+**Intent / paraphrase / cross-lingual (locked 2026-07-31):** Goal = best KB hit for the user’s **intended** question (not only exact wording), while exact tokens like `proton` stay a **heavy** signal. Bake-off: [kb-embed-bakeoff-2026-07-31.md](archive/research/kb-embed-bakeoff-2026-07-31.md) — keep **`nomic-embed-text`**; FTS-only re-rank can underperform keyword; do **not** swap embeds to fix intent.
 
 | Topic | Lock |
 |-------|------|
 | Shape | **Soft split under one row** — document as Phase 7 umbrella; tracks (infra / ranking / distribution / UX) ship independently when ready |
 | RRF default | **Silent upgrade** of hybrid when enough signals exist — **no new Settings** |
 | RRF signals v1 | **FTS** + **vector cosine** + **trust tier**; **+ local demote** when demote exists; **patch/freshness deferred** |
-| RRF ↔ ANN | **Do not lock** until ANN spike; working hypothesis = ANN as **another ranked list into RRF** (not hard-replace of FTS gate) |
+| Ranking blend (intent) | **C:** when FTS is **strong**, **keyword-heavy** blend (exact terms outvote vague meaning); when FTS is **empty/weak**, **meaning fallback** over tips (vector/ANN list into RRF) — do **not** replace a good FTS order with cosine-only re-rank |
+| Embed default | **`nomic-embed-text` only** for the published corpus — query model must match baked vectors; no dual vector tables in one zip |
+| Multilingual embed | **Out of Phase 7 v1** — optional second embed needs an explicit later track: **second corpus artifact** *or* **on-device re-embed** (never mix v2-moe queries against nomic vectors) |
+| Cross-lingual v1 | **Gated translate → English → search** — short LLM rewrite (user’s Ask / routing model, **not** nomic); run only when text looks non-English **and/or** FTS+meaning still weak; prefer **one reply Ask**; treat translate as **rare** second call (Deck VRAM) |
+| Fuzzy glossary | **Nice-to-have** (Deck terms: proton, gamescope, steamvr, …) — not a Phase 7 exit gate |
+| Avoid | Dual `nomic` + multilingual vector tables in one download; routine translate on every Ask; soft-hinting a second embed against a nomic-baked KB |
+| RRF ↔ ANN | **Do not lock** until ANN spike; working hypothesis = ANN as **another ranked list into RRF** (not hard-replace of FTS gate); ANN/meaning list is what powers empty/weak-FTS fallback |
 | Vision→entity pipeline | **Same Ask**, no confirm modal — extract/parse entities then retrieve+answer in one user action |
 | Vision→entity gate | **Lean** Strategy + screenshot attached + KB on; **final when-it-runs decision deferred** to fuller discovery |
 | Vision→entity cost | **No** separate pre-retrieve Ollama extract call — **piggyback** on the vision Ask; parse entities from that path (accept weaker/later retrieval timing); fall back to normal screenshot Ask + text-question KB if parse fails |
@@ -236,8 +244,8 @@ Replies should use existing `bonsai-cite` markers; spoilery cards obey `bonsai-s
 | Named thinking hit | After retrieve, thinking phase may **name the hit** (title/tier); spoiler **fencing stays on the reply** (not stripped from the phase label) |
 | Screenshot + KB preset | Behavior **deferred** to fuller discovery (convenient entry to vision→KB, not necessarily the only door) |
 | First-run wow script | **Out** of Phase 7 |
-| Out of Phase 7 (this pass) | Cite-to-source tap; faithfulness/groundedness chip; abstain gate; KB browser; cross-encoder / ColBERT; cloud sync of demotes; first-run wow |
-| Open (fuller discovery) | Exact vision→KB mode gate; entity-parse without pre-call; screenshot+KB preset behavior; ANN↔RRF after spike; delta/pack wire format; demote repeat threshold **N** + chip copy |
+| Out of Phase 7 (this pass) | Cite-to-source tap; faithfulness/groundedness chip; abstain gate; KB browser; cross-encoder / ColBERT; cloud sync of demotes; first-run wow; multilingual default embed; dual vector tables in one zip |
+| Open (fuller discovery) | Exact vision→KB mode gate; entity-parse without pre-call; screenshot+KB preset behavior; ANN↔RRF after spike; delta/pack wire format; demote repeat threshold **N** + chip copy; translate gate heuristics; fuzzy glossary term list; whether/when to offer second corpus or local re-embed for multilingual |
 
 ### Phase 8 — locked intent (2026-07-30)
 
