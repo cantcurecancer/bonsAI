@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -51,33 +52,38 @@ class ShouldTeardownLocalOllamaTests(unittest.TestCase):
 
 
 class TeardownLocalOllamaTests(unittest.TestCase):
+    # Patch targets are the *teardown* module, not local_ollama_setup_service: the
+    # teardown service does `from ... import run_ollama_rm, ...`, which binds those
+    # names into its own namespace at import time, so patching the source module
+    # would leave the bound references untouched.
+    @patch.dict("os.environ", {"OLLAMA_MODELS": ""})
     @patch("backend.services.local_ollama_teardown_service.sys.platform", "linux")
     @patch("backend.services.local_ollama_teardown_service.shutil.rmtree")
-    @patch("backend.services.local_ollama_teardown_service.subprocess.run")
-    @patch("backend.services.local_ollama_setup_service.run_ollama_rm")
-    @patch("backend.services.local_ollama_setup_service.resolve_ollama_executable")
-    @patch("backend.services.local_ollama_setup_service.list_installed_ollama_tags")
-    @patch("backend.services.local_ollama_setup_service.terminate_setup_started_ollama_serve")
+    @patch("backend.services.local_ollama_teardown_service._stop_local_ollama_listener")
+    @patch("backend.services.local_ollama_teardown_service.run_ollama_rm")
+    @patch("backend.services.local_ollama_teardown_service.resolve_ollama_executable")
+    @patch("backend.services.local_ollama_teardown_service.list_installed_ollama_tags")
+    @patch("backend.services.local_ollama_teardown_service.terminate_setup_started_ollama_serve")
     def test_removes_tags_and_home_paths(
         self,
         _terminate,
         list_tags,
         resolve_bin,
         run_rm,
-        subprocess_run,
+        stop_listener,
         rmtree,
     ):
         list_tags.return_value = ["qwen2.5vl:3b"]
-        resolve_bin.return_value = "/home/deck/.local/bin/ollama"
         run_rm.return_value = (True, "")
 
-        fake_home = Path("/home/deck")
+        with tempfile.TemporaryDirectory() as tmp:
+            fake_home = Path(tmp)
+            resolve_bin.return_value = str(fake_home / ".local" / "bin" / "ollama")
 
-        def fake_home_fn():
-            return fake_home
+            def fake_home_fn():
+                return fake_home
 
-        with patch.object(Path, "home", staticmethod(fake_home_fn)):
-            with patch.object(Path, "expanduser", lambda self: self):
+            with patch.object(Path, "home", staticmethod(fake_home_fn)):
                 bin_path = fake_home / ".local" / "bin" / "ollama"
                 bin_path.parent.mkdir(parents=True, exist_ok=True)
                 bin_path.write_text("stub", encoding="utf-8")
@@ -90,9 +96,14 @@ class TeardownLocalOllamaTests(unittest.TestCase):
 
                 out = teardown_local_ollama_for_plugin_reset(MagicMock())
 
+                # unlink is not mocked, so the user-prefix binary is really removed.
+                self.assertFalse(bin_path.is_file())
+
         self.assertEqual(out["removed_tags"], ["qwen2.5vl:3b"])
         run_rm.assert_called_once()
-        self.assertTrue(subprocess_run.called)
+        # Stopping the running listener moved into _stop_local_ollama_listener
+        # (local_ollama_setup_service); the teardown service no longer shells out itself.
+        self.assertTrue(stop_listener.called)
         self.assertGreaterEqual(rmtree.call_count, 2)
 
 
