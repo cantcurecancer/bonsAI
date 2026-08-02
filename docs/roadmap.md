@@ -1,6 +1,6 @@
 # bonsAI Roadmap
 
-Tracks **bugs and active engineering** ([In Progress](#in-progress)), **decisions waiting on the maintainer** ([Decisions needed](#decisions-needed)), deferred **QA** ([QA backlog](#qa-backlog)), the **backlog** ([Planned](#planned)), and pointers to shipped work ([Completed](#completed)).
+Tracks **bugs and active engineering** ([In Progress](#in-progress)), **refactor decisions** ([Decisions needed](#decisions-needed) — locked 2026-08-02), deferred **QA** ([QA backlog](#qa-backlog)), the **backlog** ([Planned](#planned)), and pointers to shipped work ([Completed](#completed)).
 
 Setup and vision tuning: [troubleshooting.md](troubleshooting.md). QA: [testing.md](testing.md). Release: [development.md](development.md), [CHANGELOG.md](../CHANGELOG.md).
 
@@ -35,8 +35,9 @@ Both were invisible before 2026-08-02 because each call site swallowed its rejec
 
 Open questions that need a maintainer call before the work can continue. Written
 in plain language on purpose — each one says what the situation is, what your
-choices are, and what happens either way. Nothing here is urgent; the refactor
-has other work it can do first.
+choices are, and what happens either way. **Locked calls (2026-08-02)** are in
+[Maintainer decisions locked](#maintainer-decisions-locked--2026-08-02) below
+**D6**; implement from that section when it disagrees with an option above.
 
 Evidence for all of these lives in [docs/audit/](audit/), especially
 [05-plan.md](audit/05-plan.md).
@@ -227,6 +228,42 @@ Also worth knowing: the friction test (having a fresh pair of eyes try a real
 task and log everywhere they got stuck) is deferred until after the refactor, per
 your earlier call, so it will measure the improved codebase rather than the
 starting point.
+
+---
+
+### Maintainer decisions locked — 2026-08-02
+
+The options above stay as the decision record. **Locked below** is what we are
+doing and why. Where a locked call disagrees with an earlier recommendation in
+**D1–D6**, the locked call wins — some premises were corrected after reading the
+current tree (especially **D1b** and parts of **D2** / **D4**).
+
+| Id | Locked decision | Why |
+|----|-----------------|-----|
+| **D1** | **Finish both missing RPCs** — `merge_pulled_tags_into_routing_orders` and `get_session_rag_chip_candidates` | Both are wiring gaps, not greenfield features. Routing merge reuses `merge_pulled_tag` / `sanitize_model_routing_order` for `text_model_routing_order` and `vision_model_routing_order`. Session RAG already has `suggest_chip_candidates` + tests in `knowledge_base_service.py`; only the public RPC adapter on `class Plugin` is missing. Restores intended UX without reopening Phase 4 visibility / Phase 5 vector ranking. |
+| **D2** | **Targeted dead-code cleanup** — delete confirmed orphans; **archive** tiny-model thinking code; keep active Ask, debug, and KB-cancel paths | Proton journal RPCs + service, `apply_tdp` (+ its test-only caller), `log_navigation`, and legacy `capture_screenshot` are safe to remove after preview-suite grep. **`ask_game_ai`** stays — preview suite drives it. **`ask_ollama`** stays — every Ask calls it internally. **`dbg_fe_log`** stays — intentional on-Deck debug bridge. **`cancel_rag_corpus_download`** stays — backend cancel path exists; UI Cancel is planned (**D2 follow-up**). **`thinking_tiny_model_service.py`** is removed from active code but **archived** (not discarded) so tiny-model thinking blurbs can return later. |
+| **D3** | **Option A — characterization tests first, then refactor** | `index.tsx` and `useBonsaiAskOrchestration.ts` have zero automated coverage; `npm test` would pass if every component were deleted. `fakeDeckyRpc.ts` + existing hook tests prove the pattern. Preview and on-Deck QA still required for D-pad and layout. |
+| **D4** | **Prune by policy, not by folder count** | Keep evidence linked from current or archived QA docs; keep the latest useful pass per tier and meaningful failure runs. Audit links before deleting anything. Remove only duplicate, incomplete, or truly unreferenced generated runs. Add a retention rule so future `--write` runs do not grow `docs/test-evidence/` without bound. |
+| **D5** | **Option A — keep the built-in import graph** | Fast, no dependency, runs on every commit, and matches today's relative-import-only `tsconfig`. Revisit only if path aliases land, unresolved internal imports appear, or a parser-based tool finds real discrepancies. |
+| **D6** | **Sequencing below** | Fix real user-visible gaps before shrinking/refactoring; build the safety net before the risky split; measure handoff friction on the improved tree. |
+
+**Execution order (locked):**
+
+1. **Record decisions** — this section; turn accepted work into implementation rows as work ships.
+2. **D1 — wire both RPCs** — routing merge + session RAG adapter; backend/RPC tests; preview / on-Deck QA for **SESSION-RAG-CHIPS** and custom-pull routing.
+3. **D2 — targeted cleanup** — delete confirmed dead RPCs/modules; archive tiny-model service; grep `tests/preview-suite/` before each removal.
+4. **Mechanical refactors** — doc one-liners; delete `refactor_helpers.py` shim (update deploy scripts); delete `settingsAndResponse.ts` barrel; split `settingsPayload.ts` (the real *and* file per audit) — one behavior-preserving commit each, tests green between.
+5. **D3 — safety net** — characterize `useBonsaiAskOrchestration.ts` (submit, poll, cancel, errors, follow-ups); smoke/wiring tests for `index.tsx`; assert behavior, not implementation shape.
+6. **D3 — entry-point split** — `index.tsx` / orchestration refactor in small commits; preview pass per commit; on-Deck for focus and Ask regressions.
+7. **KB download Cancel button** — wire `cancel_rag_corpus_download` in `KnowledgeBaseSection.tsx`; D-pad row in `testing.md` / `testing-manual.md`.
+8. **D4 — evidence hygiene** — link audit, retention rule, prune orphans only.
+9. **Deferred friction test** — run Phase 2c newcomer task on the post-refactor tree; file `docs/audit/03-friction.md`.
+
+**Corrections to audit premises (for implementers):**
+
+- **D1b:** `suggest_chip_candidates` and `session_rag_chip_candidates_to_rpc` already exist; do not redesign ranking before wiring the RPC.
+- **D2:** `ask_game_ai` is not dead — `tests/preview-suite/` calls it extensively. `ask_ollama` is the internal Ask engine, not an orphan RPC.
+- **D4:** Six of nine evidence folders are not all unreferenced — several are cited from [archive/testing-results-2026.md](archive/testing-results-2026.md) and [archive/testing-failures-2026.md](archive/testing-failures-2026.md). Prune only after a link audit.
 
 ---
 
