@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 229,
-  "edgeCount": 511,
+  "fileCount": 230,
+  "edgeCount": 517,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -115,6 +115,7 @@
       "importedBy": [
         "src/components/OllamaTab.tsx",
         "src/components/OllamaWhereAiRunsSection.tsx",
+        "src/features/model-routing/useRoutingOrderModal.ts",
         "src/index.tsx",
         "src/utils/ollamaTabLocalSurvival.ts"
       ]
@@ -278,7 +279,7 @@
         "src/utils/modelRoutingOrder.ts"
       ],
       "importedBy": [
-        "src/index.tsx"
+        "src/features/model-routing/useRoutingOrderModal.ts"
       ]
     },
     "src/components/OllamaModelsHubModal.tsx": {
@@ -572,6 +573,7 @@
         "src/components/VoiceInputSettingsSection.tsx",
         "src/data/bonsaiSettingsNormalizers.ts",
         "src/data/characterUiAccent.ts",
+        "src/features/model-routing/useRoutingOrderModal.ts",
         "src/hooks/useBonsaiAskOrchestration.ts",
         "src/hooks/usePluginSettings.test.ts",
         "src/hooks/usePluginSettings.ts",
@@ -671,6 +673,7 @@
         "src/components/PullModelsModal.tsx",
         "src/data/bonsaiSettingsNormalizers.ts",
         "src/data/bonsaiSettingsSchema.ts",
+        "src/features/model-routing/useRoutingOrderModal.ts",
         "src/hooks/useBonsaiAskOrchestration.ts",
         "src/hooks/usePluginSettings.ts",
         "src/index.tsx",
@@ -723,6 +726,7 @@
       "importedBy": [
         "src/components/ModelRoutingOrderModal.tsx",
         "src/components/PullModelsModal.tsx",
+        "src/features/model-routing/useRoutingOrderModal.ts",
         "src/hooks/usePullModelCatalog.ts",
         "src/index.tsx",
         "src/utils/mergePullModelCatalog.test.ts",
@@ -850,6 +854,19 @@
         "src/data/uiScaleProfile.test.ts",
         "src/features/unified-input/useUnifiedInputSurface.ts",
         "src/hooks/useUiScaleProfile.ts",
+        "src/index.tsx"
+      ]
+    },
+    "src/features/model-routing/useRoutingOrderModal.ts": {
+      "imports": [
+        "src/components/DeveloperTab.tsx",
+        "src/components/ModelRoutingOrderModal.tsx",
+        "src/data/bonsaiSettingsSchema.ts",
+        "src/data/modelPolicy.ts",
+        "src/data/pullModelCatalog.ts",
+        "src/utils/deckyCall.ts"
+      ],
+      "importedBy": [
         "src/index.tsx"
       ]
     },
@@ -1243,7 +1260,6 @@
         "src/components/DesktopNoteSaveModal.tsx",
         "src/components/DeveloperTab.tsx",
         "src/components/MainTab.tsx",
-        "src/components/ModelRoutingOrderModal.tsx",
         "src/components/OllamaModelsHubModal.tsx",
         "src/components/OllamaTab.tsx",
         "src/components/PermissionsTab.tsx",
@@ -1262,6 +1278,7 @@
         "src/data/steamSettingsNavigation.ts",
         "src/data/storageKeys.ts",
         "src/data/uiScaleProfile.ts",
+        "src/features/model-routing/useRoutingOrderModal.ts",
         "src/features/plugin-shell/PluginErrorBoundary.tsx",
         "src/features/plugin-shell/pluginStorage.ts",
         "src/features/plugin-shell/tabTitles.tsx",
@@ -1873,6 +1890,7 @@
         "src/components/OllamaWhereAiRunsSection.tsx",
         "src/components/PullModelsModal.tsx",
         "src/components/VoiceInputSettingsSection.tsx",
+        "src/features/model-routing/useRoutingOrderModal.ts",
         "src/features/voice/useVoiceAskInput.ts",
         "src/hooks/useBackgroundGameAi.ts",
         "src/hooks/useBonsaiAskOrchestration.ts",

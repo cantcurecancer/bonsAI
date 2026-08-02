@@ -22,7 +22,6 @@ import { DeveloperTab, type DeveloperConnectionStatus } from "./components/Devel
 import { MainTab } from "./components/MainTab";
 import { PluginHelpModal } from "./components/PluginHelpModal";
 import { OllamaModelsHubModal, type OllamaModelsHubSection } from "./components/OllamaModelsHubModal";
-import { ModelRoutingOrderModal, type ModelRoutingOrderKind } from "./components/ModelRoutingOrderModal";
 import { PULL_MODEL_CATALOG } from "./data/pullModelCatalog";
 import { OllamaTab } from "./components/OllamaTab";
 import { PermissionsTab } from "./components/PermissionsTab";
@@ -89,6 +88,7 @@ import { useScreenshotBrowser } from "./hooks/useScreenshotBrowser";
 import { useSteamSettingsSearch } from "./hooks/useSteamSettingsSearch";
 import { useBonsaiPluginShell } from "./hooks/useBonsaiPluginShell";
 import { useVoiceAskInput } from "./features/voice/useVoiceAskInput";
+import { useRoutingOrderModal } from "./features/model-routing/useRoutingOrderModal";
 import { useBonsaiAskOrchestration } from "./hooks/useBonsaiAskOrchestration";
 import { useDisclaimerAndLocalRuntimeGates } from "./hooks/useDisclaimerAndLocalRuntimeGates";
 import { useCapturedFrontendErrors } from "./hooks/useCapturedFrontendErrors";
@@ -1129,108 +1129,24 @@ const Content: React.FC = () => {
     return m;
   }, []);
 
-  const openRoutingOrderModal = useCallback(
-    async (kind: ModelRoutingOrderKind) => {
-      const target = ollamaLocalOnDeck ? OLLAMA_LOCAL_ON_DECK_DEFAULT_PCIP : ollamaIp.trim();
-      if (!target) {
-        toaster.toast({
-          title: "No Ollama host",
-          body: ollamaLocalOnDeck
-            ? "Enable Run AI on this Deck or set a PC address first."
-            : "Enter a PC address on the Ollama tab first.",
-          duration: 5000,
-        });
-        return;
-      }
-
-      const loopbackLikelyProbe =
-        ollamaLocalOnDeck ||
-        /^\s*127\.0\.0\.1\s*(:\s*\d+)?\s*$/i.test(target) ||
-        /^\s*localhost\s*(:\s*\d+)?\s*$/i.test(target);
-      const testTimeoutSec = 10;
-      const rpcDeadlineMs = testTimeoutSec * 1000 + (loopbackLikelyProbe ? 42000 : 3000);
-
-      let installed: string[] = [];
-      try {
-        const result = await callDeckyWithTimeout<[string, number], DeveloperConnectionStatus>(
-          "test_ollama_connection",
-          [target, testTimeoutSec],
-          rpcDeadlineMs
-        );
-        setLastConnectionStatus(result);
-        if (result.reachable && Array.isArray(result.models)) {
-          installed = result.models.filter(Boolean);
-        }
-      } catch (e: unknown) {
-        toaster.toast({
-          title: "Could not list models",
-          body: formatDeckyRpcError(e),
-          duration: 5000,
-        });
-        return;
-      }
-
-      if (installed.length === 0) {
-        toaster.toast({
-          title: "No installed models",
-          body: "Pull a model on the Ollama tab (Browse models or Install options), then try again.",
-          duration: 5000,
-        });
-        return;
-      }
-
-      captureSessionBeforeModal();
-      const savedOrder = kind === "vision" ? visionModelRoutingOrder : textModelRoutingOrder;
-      const handle = showModal(
-        <ModelRoutingOrderModal
-          kind={kind}
-          installedTags={installed}
-          catalogByTag={catalogByTag}
-          modelPolicyTier={modelPolicyTier}
-          modelPolicyNonFossUnlocked={modelPolicyNonFossUnlocked}
-          modelAllowHighVramFallbacks={modelAllowHighVramFallbacks}
-          savedOrder={savedOrder}
-          onSave={async (order) => {
-            if (kind === "vision") {
-              setVisionModelRoutingOrder(order);
-            } else {
-              setTextModelRoutingOrder(order);
-            }
-            await pauseDebouncedSettingsSave();
-            const patch =
-              kind === "vision"
-                ? { vision_model_routing_order: order }
-                : { text_model_routing_order: order };
-            const saved = await callDeckyWithTimeout<[BonsaiSettings], BonsaiSettings>(
-              "save_settings",
-              [buildSettingsPayload(patch)]
-            );
-            hydrateFromSettings(saved);
-          }}
-          onClose={() => {
-            finalizeShowModalAndRestoreActiveTab(() => handle.Close());
-          }}
-        />
-      );
-    },
-    [
-      ollamaLocalOnDeck,
-      ollamaIp,
-      visionModelRoutingOrder,
-      textModelRoutingOrder,
-      catalogByTag,
-      modelPolicyTier,
-      modelPolicyNonFossUnlocked,
-      modelAllowHighVramFallbacks,
-      captureSessionBeforeModal,
-      finalizeShowModalAndRestoreActiveTab,
-      setVisionModelRoutingOrder,
-      setTextModelRoutingOrder,
-      pauseDebouncedSettingsSave,
-      buildSettingsPayload,
-      hydrateFromSettings,
-    ]
-  );
+  const openRoutingOrderModal = useRoutingOrderModal({
+    ollamaLocalOnDeck,
+    ollamaIp,
+    textModelRoutingOrder,
+    visionModelRoutingOrder,
+    setTextModelRoutingOrder,
+    setVisionModelRoutingOrder,
+    catalogByTag,
+    modelPolicyTier,
+    modelPolicyNonFossUnlocked,
+    modelAllowHighVramFallbacks,
+    setLastConnectionStatus,
+    captureSessionBeforeModal,
+    finalizeShowModalAndRestoreActiveTab,
+    pauseDebouncedSettingsSave,
+    buildSettingsPayload,
+    hydrateFromSettings,
+  });
 
   const fullBleedRowStyle = FULL_BLEED_ROW_STYLE;
   const presetButtonSurface = PRESET_BUTTON_SURFACE;
