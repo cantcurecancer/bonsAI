@@ -143,6 +143,14 @@ deleting it shrinks this item.
 >
 > Note `bonsai_stream_tags` is imported lazily inside functions
 > (`main.py:432,452,470`), so a successful plugin load does **not** exercise it.
+>
+> **`build.ps1` can print "Deployment complete!" without deploying.** On
+> 2026-08-02 a deploy ran while the Deck was drifting to sleep: the script
+> reported success, but `dist/index.js` on the Deck still carried the previous
+> deploy's timestamp and no new plugin log appeared. The script does not verify
+> what it copied. **Check the artifact, not the message** — compare
+> `ls -l --time-style=+%H:%M ~/homebrew/plugins/bonsAI/dist/index.js` against the
+> deploy time and confirm a fresh `bonsAI plugin loaded!` line.
 
 ### 1.4 Delete the `settingsAndResponse.ts` barrel
 
