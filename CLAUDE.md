@@ -17,13 +17,13 @@ Decky Loader imports directly.
 
 | Path | Contents |
 |---|---|
-| `src/` | Frontend, 223 `.ts`/`.tsx` files. Bundled to `dist/index.js` |
+| `src/` | Frontend, 225 `.ts`/`.tsx` files. Bundled to `dist/index.js` |
 | `src/features/` | Vertical feature slices (`preset-carousel`, `unified-input`, `voice`) |
 | `src/hooks/`, `src/components/`, `src/utils/`, `src/data/` | Type-bucket directories (most of the code lives here) |
 | `src/test-harness/` | Vitest setup + `fakeDeckyRpc.ts` |
-| `main.py` | The Decky `Plugin` class — RPC surface. 3021 lines |
-| `py_modules/backend/services/` | 44 service modules; the bulk of backend logic |
-| `tests/` | Python `unittest` suites (50 files) |
+| `main.py` | The Decky `Plugin` class — RPC surface. 2971 lines |
+| `py_modules/backend/services/` | 41 service modules; the bulk of backend logic |
+| `tests/` | Python `unittest` suites (51 files) |
 | `packages/bonsai-mcp/` | In-repo MCP server + generated architecture snapshots |
 | `scripts/` | Build, deploy, Deck capture, RAG tooling |
 | `docs/audit/` | Refactor recon output — read before re-deriving anything |
@@ -55,7 +55,7 @@ This is the only way the two sides talk. There is no HTTP server between them.
    `stop_voice_transcription` — each can outrun any UI deadline. Everything else
    is wrapped; justify a new raw `call()` in a comment.
 4. **An RPC method is any public `async def` at indent 4 on `class Plugin`.**
-   There is no decorator or registry; indentation is the contract. 55 such
+   There is no decorator or registry; indentation is the contract. 50 such
    methods exist.
 5. `packages/bonsai-mcp/knowledge/architecture/rpc-map.json` lists them all with
    line numbers. It is **generated** — never hand-edit it.
@@ -75,7 +75,8 @@ log to the console instead of failing silently, and are tracked under
 Adding one user-facing setting touches six files across two languages:
 `SettingsTab.tsx` (UI) → `usePluginSettings.ts` (state + debounced save) → RPC
 `load_settings`/`save_settings` → `settings_service.py` (28 hand-written
-`sanitize_*` fns), plus `src/utils/settingsAndResponse.ts` and both test files.
+`sanitize_*` fns), plus `src/data/bonsaiSettingsSchema.ts`,
+`bonsaiSettingsNormalizers.ts` and both test files.
 
 TS and Python each declare the setting shape independently. This is known and is
 the top-ranked item in [REFACTOR-PLAN.md](REFACTOR-PLAN.md) Phase 3.1.
@@ -83,8 +84,8 @@ the top-ranked item in [REFACTOR-PLAN.md](REFACTOR-PLAN.md) Phase 3.1.
 ## Commands
 
 ```bash
-npm test                 # vitest, src/**/*.test.ts — 44 files, 217 tests
-npm run test:py          # python unittest via scripts/run_python_tests.py — 399 tests
+npm test                 # vitest, src/**/*.test.{ts,tsx} — 46 files, 239 tests
+npm run test:py          # python unittest via scripts/run_python_tests.py — 413 tests
 npx tsc --noEmit         # typecheck (build does not typecheck)
 npm run build            # rollup -> dist/index.js
 npm run test:preview     # in-IDE QAM preview suite (see AGENTS.md)

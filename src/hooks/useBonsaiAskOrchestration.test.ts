@@ -22,7 +22,7 @@ function makeArgs(overrides: Partial<UseBonsaiAskOrchestrationArgs> = {}): UseBo
     askMode: "speed",
     unifiedInput: "",
     setUnifiedInput: vi.fn(),
-    unifiedInputPersistenceMode: "off",
+    unifiedInputPersistenceMode: "no_persist",
     effectiveOllamaPcIp: "127.0.0.1:11434",
     selectedAttachment: null,
     setSelectedAttachment: vi.fn(),
@@ -146,7 +146,7 @@ describe("useBonsaiAskOrchestration", () => {
             selectedAttachment: {
               path: "/home/deck/shot.png",
               name: "shot.png",
-              source: "steam_recent",
+              source: "recent",
               app_id: "570",
             },
           }),
@@ -158,7 +158,7 @@ describe("useBonsaiAskOrchestration", () => {
       });
 
       expect(startPayload()?.attachments).toEqual([
-        { path: "/home/deck/shot.png", name: "shot.png", source: "steam_recent", app_id: "570" },
+        { path: "/home/deck/shot.png", name: "shot.png", source: "recent", app_id: "570" },
       ]);
     });
   });

@@ -1,4 +1,5 @@
 import { afterEach, vi } from "vitest";
+import { cleanup } from "@testing-library/react";
 import { dispatchFakeRpc, resetFakeDeckyRpc } from "./fakeDeckyRpc";
 
 vi.mock("@decky/api", () => ({
@@ -18,6 +19,21 @@ vi.mock("@decky/ui", async () => {
   return { ...stubs };
 });
 
+// jsdom has no ResizeObserver; the Main tab measures layout with it, so without
+// this stub the whole component tree fails to mount and only the ErrorBoundary
+// fallback renders.
+if (!("ResizeObserver" in globalThis)) {
+  Object.defineProperty(globalThis, "ResizeObserver", {
+    value: class {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    },
+    writable: true,
+    configurable: true,
+  });
+}
+
 Object.defineProperty(globalThis, "SteamClient", {
   value: {
     URL: {
@@ -29,6 +45,10 @@ Object.defineProperty(globalThis, "SteamClient", {
 });
 
 afterEach(() => {
+  // `globals: false` means React Testing Library never registers its own
+  // auto-cleanup, so without this every render leaks into document.body and
+  // later `screen` queries see earlier tests' markup.
+  cleanup();
   resetFakeDeckyRpc();
   vi.clearAllMocks();
 });

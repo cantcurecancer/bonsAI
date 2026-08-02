@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 224,
-  "edgeCount": 497,
+  "fileCount": 225,
+  "edgeCount": 501,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -1186,6 +1186,15 @@
         "src/utils/i18n.ts"
       ]
     },
+    "src/index.test.tsx": {
+      "imports": [
+        "src/index.tsx",
+        "src/pluginVersion.ts",
+        "src/test-harness/fakeDeckyRpc.ts",
+        "src/test-harness/rpcFixtures.ts"
+      ],
+      "importedBy": []
+    },
     "src/index.tsx": {
       "imports": [
         "src/components/AboutTab.tsx",
@@ -1245,11 +1254,14 @@
         "src/utils/uiScaleScopeBridge.ts",
         "src/utils/unifiedInputPersistenceMode.ts"
       ],
-      "importedBy": []
+      "importedBy": [
+        "src/index.test.tsx"
+      ]
     },
     "src/pluginVersion.ts": {
       "imports": [],
       "importedBy": [
+        "src/index.test.tsx",
         "src/index.tsx"
       ]
     },
@@ -1396,6 +1408,7 @@
         "src/hooks/useBackgroundGameAi.test.ts",
         "src/hooks/useBonsaiAskOrchestration.test.ts",
         "src/hooks/usePluginSettings.test.ts",
+        "src/index.test.tsx",
         "src/test-harness/fakeDeckyRpc.test.ts",
         "src/test-harness/setup.ts",
         "src/utils/bonsaiAskCompletionWatch.test.ts",
@@ -1422,6 +1435,7 @@
         "src/hooks/useBackgroundGameAi.test.ts",
         "src/hooks/useBonsaiAskOrchestration.test.ts",
         "src/hooks/usePluginSettings.test.ts",
+        "src/index.test.tsx",
         "src/test-harness/fakeDeckyRpc.ts"
       ]
     },

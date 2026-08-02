@@ -15,6 +15,7 @@
     "src/hooks/useBonsaiAskOrchestration.test.ts",
     "src/hooks/usePluginSettings.test.ts",
     "src/hooks/useSmoothStreamReveal.test.ts",
+    "src/index.test.tsx",
     "src/test-harness/fakeDeckyRpc.test.ts",
     "src/utils/answerBubbleNavigation.test.ts",
     "src/utils/appDesktopLog.test.ts",

@@ -4,6 +4,36 @@ For each hotspot from [02-hotspots.md](02-hotspots.md): which tests exercise it,
 what they assert, and a coverage class. Files classified **none** must get
 characterization tests *before* they are refactored.
 
+> **Update 2026-08-02 (D3 safety net).** The two files graded **none** that block
+> the entry-point split now have characterization coverage:
+> `src/hooks/useBonsaiAskOrchestration.test.ts` (13 tests — submit guards,
+> payload, invalid/blocked/completed/error branches, polling, cancel, thread
+> archive) and `src/index.test.tsx` (9 tests — Decky contract, real mount,
+> settings wiring, tab set, error containment). Both were **mutation-checked
+> rather than assumed**: three deliberate breaks in each turn the suites red.
+> Suite went 217 → 239 tests.
+>
+> Three harness defects had to be fixed first, and each is part of why UI
+> coverage was zero rather than merely thin:
+>
+> 1. `vitest.config.ts` included only `src/**/*.test.ts` — **a `.tsx` test file
+>    was silently never collected**, so no component test could exist at all.
+> 2. jsdom has no `ResizeObserver`; without a stub the entire tree failed to
+>    mount and only the ErrorBoundary fallback rendered. A "renders without
+>    throwing" test passes anyway, which is why the assertion here is "does
+>    **not** show the error fallback" — the boundary makes the naive version
+>    worthless.
+> 3. `globals: false` means React Testing Library never registers auto-cleanup,
+>    so every render leaked into `document.body` between tests.
+>
+> One behavior to know before splitting: `bonsaiSessionSurvival.ts` keeps
+> module-level state so settings survive Decky remounting the panel on modal
+> open. Mounting the root twice in one module instance restores the previous
+> snapshot instead of the loaded settings, so root tests call `vi.resetModules()`
+> per test. The `Tabs` stub in `fakeDeckyUi.tsx` now models titles and active
+> content instead of spreading `[object Object]`, which is what makes tab-level
+> assertions possible.
+
 **Classes**
 - **Behavioral** — asserts observable outcomes; would catch a logic regression.
 - **Smoke-only** — proves it imports/constructs/returns a shape; would catch a
