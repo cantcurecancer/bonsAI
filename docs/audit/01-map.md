@@ -24,8 +24,9 @@ cross-checked against source.
 
 **CI** — two workflows, both in `.github/workflows/`:
 
-- `build-plugin-zip.yml` — `workflow_dispatch` only (manual, with `ref` and
-  `publish_github_release` inputs).
+- `build-plugin-zip.yml` — `workflow_dispatch` (with `ref` and
+  `publish_github_release` inputs), **plus** `push` on `v*` tags and on `main`
+  when `plugin.json` changes (`.github/workflows/build-plugin-zip.yml:22-28`).
 - `validate-mcp.yml` — `push` / `pull_request` filtered to `packages/bonsai-mcp/**`,
   `main.py`, `src/**`, `tests/preview-suite/**`, `.env.example`.
 
