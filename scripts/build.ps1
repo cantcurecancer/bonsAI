@@ -45,7 +45,6 @@ ssh "$User@$HostIp" "mkdir -p ~/decky_temp_$PluginName/dist"
 
 # 2. Upload everything into the temporary directory
 scp package.json plugin.json main.py "${User}@${HostIp}:~/decky_temp_$PluginName/"
-scp refactor_helpers.py "${User}@${HostIp}:~/decky_temp_$PluginName/"
 scp -r py_modules "${User}@${HostIp}:~/decky_temp_$PluginName/"
 if (Test-Path "data") {
     scp -r data "${User}@${HostIp}:~/decky_temp_$PluginName/"

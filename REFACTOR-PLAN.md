@@ -277,7 +277,11 @@ together; everything about settings together. **Resist** `components/`, `handler
 already has the vertical instinct (`useBonsaiAskOrchestration.ts`,
 `features/preset-carousel/`); follow it.
 
-**3.5 — Redistribute `refactor_helpers.py`**
+**3.5 — Redistribute `refactor_helpers.py`** — **done 2026-08-02.** Reframed
+first: the file had no functions, only 65 lines of re-export, so the work was
+repointing its 9 importers at `backend.ollama_routing` / `ollama_urls` /
+`tdp_intent` and deleting it. See [docs/audit/05-plan.md](docs/audit/05-plan.md)
+§1.3.
 
 > For every function in `refactor_helpers.py`, list its call sites. Propose relocating
 > each next to its primary consumer; flag any with zero call sites for deletion.

@@ -2,7 +2,7 @@ import asyncio
 import unittest
 
 from backend.services.game_ai_request import run_game_ai_request
-from refactor_helpers import parse_tdp_recommendation
+from backend.tdp_intent import parse_tdp_recommendation
 
 
 _TDP_JSON_RESPONSE = (

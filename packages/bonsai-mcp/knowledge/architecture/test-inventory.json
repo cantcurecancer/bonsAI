@@ -48,6 +48,7 @@
   "pytest": [
     "tests/test_accent_intensity_parity.py",
     "tests/test_ai_character_service.py",
+    "tests/test_backend_helpers.py",
     "tests/test_background_abort_busy.py",
     "tests/test_background_partial_state.py",
     "tests/test_bonsai_stream_tags.py",
@@ -79,7 +80,6 @@
     "tests/test_pull_model_catalog_merge.py",
     "tests/test_pull_model_catalog_parity.py",
     "tests/test_pyro_asshole_safety.py",
-    "tests/test_refactor_helpers.py",
     "tests/test_reply_followup.py",
     "tests/test_reply_language_service.py",
     "tests/test_response_verify.py",

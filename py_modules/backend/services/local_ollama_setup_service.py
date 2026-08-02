@@ -22,12 +22,12 @@ import urllib.request
 from pathlib import Path
 from typing import Any, Callable, Optional
 
-from refactor_helpers import (
+from backend.ollama_routing import (
     TIER2_MULTIMODAL_PULL_FALLBACK_TAG,
     TIER2_MULTIMODAL_PULL_TAGS,
-    normalize_ollama_base,
     setup_recommended_pull_tags,
 )
+from backend.ollama_urls import normalize_ollama_base
 
 OLLAMA_OFFICIAL_INSTALL_SH = "https://ollama.com/install.sh"
 DEFAULT_BASE = normalize_ollama_base("127.0.0.1:11434")[2]

@@ -129,6 +129,21 @@ on-device while every test still passes.
 Do 1.1 first: `thinking_tiny_model_service.py` is one of the importers, so
 deleting it shrinks this item.
 
+> **Done 2026-08-02. The deploy scripts copy but never prune** — `build.sh`,
+> `build.ps1` and `watch-deploy` all `scp`/`cp` over the plugin directory
+> without removing files that are no longer shipped. After deploying, the
+> deleted `refactor_helpers.py` was **still on the Deck** from the previous
+> deploy, so the plugin loading proved nothing: a stale copy would have
+> satisfied any import I had missed. The real check is to delete the file (and
+> `__pycache__`) on-device, restart `plugin_loader`, then confirm the load.
+> **Any future deletion of a Deck-facing Python file needs the same step**, or
+> the on-device test is a false pass. Verified here by importing the affected
+> modules against the deployed tree: `is_current_tdp_read_intent` resolves to
+> `backend.tdp_intent` and `refactor_helpers` has no spec.
+>
+> Note `bonsai_stream_tags` is imported lazily inside functions
+> (`main.py:432,452,470`), so a successful plugin load does **not** exercise it.
+
 ### 1.4 Delete the `settingsAndResponse.ts` barrel
 
 **Problem.** A 16-line pass-through with **22 importers**, obscuring which of the

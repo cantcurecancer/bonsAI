@@ -164,14 +164,12 @@ from backend.services.knowledge_base_schema import (
 )
 from backend.services.ollama_embed_service import nomic_embed_available
 from backend.constants import DEFAULT_OLLAMA_PCIP
-from refactor_helpers import (
-    build_ollama_chat_url,
+from backend.ollama_routing import (
     is_valid_setup_pull_profile,
     is_vision_capable_tag,
     merge_pulled_tag,
-    normalize_ollama_base,
-    remove_tag_from_routing_orders,
 )
+from backend.ollama_urls import build_ollama_chat_url, normalize_ollama_base
 
 logger = decky.logger
 

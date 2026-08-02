@@ -56,7 +56,7 @@ from backend.services.tdp_service import (
     TDP_MIN_W,
     read_current_tdp_watts,
 )
-from refactor_helpers import is_current_tdp_read_intent, parse_tdp_recommendation
+from backend.tdp_intent import is_current_tdp_read_intent, parse_tdp_recommendation
 
 logger = decky.logger
 

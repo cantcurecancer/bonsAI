@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Verify a Decky distributable zip contains the same runtime layout as dev deploy
-# (main.py, py_modules/backend/, refactor_helpers.py, dist/index.js, manifests).
+# (main.py, py_modules/backend/, dist/index.js, manifests).
 set -euo pipefail
 
 usage() {
@@ -41,7 +41,6 @@ need_file main.py
 need_file plugin.json
 need_file package.json
 need_file dist/index.js
-need_file refactor_helpers.py
 
 for spot in \
     py_modules/backend/services/ollama_service.py \

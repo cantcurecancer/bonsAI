@@ -17,7 +17,7 @@ from backend.services.ollama_prompts import (
     user_asks_ollama_bonsai_host_or_latency,
     user_wants_power_or_performance_topic,
 )
-from refactor_helpers import is_current_tdp_read_intent
+from backend.tdp_intent import is_current_tdp_read_intent
 
 AskThinkingPhase = Literal[
     "starting",

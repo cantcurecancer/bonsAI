@@ -41,14 +41,14 @@ from backend.services.model_policy import (
 from backend.services.ollama_service import post_ollama_chat
 from backend.services.settings_service import sanitize_ollama_keep_alive, sanitize_reply_verbosity
 from backend.services.reply_language_service import resolve_effective_reply_language
-from refactor_helpers import (
+from backend.ollama_routing import (
     build_effective_models_to_try,
     filter_models_to_installed,
     is_ollama_model_missing_error,
     no_installed_routing_models_message,
-    normalize_ollama_base,
     resolve_routing_order,
 )
+from backend.ollama_urls import normalize_ollama_base
 
 logger = decky.logger
 

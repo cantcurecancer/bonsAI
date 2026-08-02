@@ -1,24 +1,22 @@
 import unittest
 
-from refactor_helpers import (
+from backend.ollama_routing import (
     TIER1_ESSENTIALS_PULL_TAGS,
     TIER2_MULTIMODAL_PULL_TAGS,
     build_effective_models_to_try,
-    build_ollama_chat_url,
     filter_models_to_installed,
-    is_current_tdp_read_intent,
     is_ollama_model_missing_error,
     is_valid_setup_pull_profile,
     no_installed_routing_models_message,
-    normalize_ollama_base,
-    parse_tdp_recommendation,
     select_ollama_models,
     setup_recommended_pull_tags,
 )
+from backend.ollama_urls import build_ollama_chat_url, normalize_ollama_base
+from backend.tdp_intent import is_current_tdp_read_intent, parse_tdp_recommendation
 
 
-class RefactorHelperTests(unittest.TestCase):
-    """Contract tests for pure helper behavior extracted from backend orchestration paths."""
+class BackendHelperTests(unittest.TestCase):
+    """Contract tests for pure helper behavior in ollama_routing, ollama_urls, and tdp_intent."""
 
     def test_normalize_ollama_base_defaults(self):
         """Ensure empty host input resolves to the expected default localhost endpoint."""

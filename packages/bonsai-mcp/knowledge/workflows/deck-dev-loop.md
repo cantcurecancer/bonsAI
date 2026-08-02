@@ -7,7 +7,7 @@ description: Deck dev loop
 
 ## When to use
 
-- After editing **Deck-facing** code: `src/`, `main.py`, `refactor_helpers.py`, `py_modules/`, `plugin.json`.
+- After editing **Deck-facing** code: `src/`, `main.py`, `py_modules/`, `plugin.json`.
 - Before marking UI/focus/RPC tasks done.
 - When the user asks how to test on Deck or iterate quickly.
 
