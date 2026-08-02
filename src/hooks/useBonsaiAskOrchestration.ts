@@ -12,7 +12,7 @@ import { Router } from "@decky/ui";
 
 import type { AskAttachment } from "../types/bonsaiUi";
 import { type AskModeId, type UnifiedInputPersistenceMode } from "../data/bonsaiSettingsSchema";
-import { buildResponseText } from "../utils/settingsPayload";
+import { buildResponseText } from "../utils/appliedTuningText";
 import { detectPromptCategory, getContextualPresets, getRandomPresets, type PresetPrompt } from "../data/presets";
 import { composePresetSeedsWithSessionRag } from "../features/preset-carousel/composePresetSeedsWithSessionRag";
 import type { SessionRagChipCandidate } from "../features/preset-carousel/sessionRagComposer";

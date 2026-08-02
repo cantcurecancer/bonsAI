@@ -3,11 +3,11 @@
  * Purpose: Map frontend settings snapshot input into the backend BonsaiSettings RPC payload shape.
  * Used for: usePluginSettings save path and immediate patch saves (character picker, permissions).
  * Solves: One canonical object for set_settings without duplicating field mapping in callers.
- * Does not: Validate or normalize raw RPC responses — see bonsaiSettingsNormalizers.
+ * Does not: Validate or normalize raw RPC responses — see bonsaiSettingsNormalizers;
+ *   or format assistant reply text — see appliedTuningText.
  */
 import {
   STEAM_WEB_API_KEY_MAX_LEN,
-  type AppliedResultLike,
   type BonsaiSettings,
   type BonsaiSettingsSnapshotInput,
 } from "../data/bonsaiSettingsSchema";
@@ -60,50 +60,4 @@ export function toBonsaiSettingsPayload(
     rag_corpus_version: input.ragCorpusVersion,
   };
   return patch ? { ...base, ...patch } : base;
-}
-
-/** QAM Performance verification line — sysfs is source of truth; QAM can lag. */
-const QAM_VERIFY_SLIDER_LINE =
-  "If QAM Performance sliders look stale, close and reopen the QAM Performance tab to verify values match the applied cap.";
-
-/**
- * One short banner for the main tab when last Ask included tuning `applied` metadata.
- * TDP (sysfs) is distinguished from GPU MHz (advisory; not written by this plugin yet).
- * Apply path is obsolete — banner retained for any residual applied metadata from older sessions.
- */
-export function formatAppliedTuningBannerText(applied: AppliedResultLike | null | undefined): string | null {
-  if (!applied) return null;
-  const tdp = applied.tdp_watts;
-  const gpu = applied.gpu_clock_mhz;
-  if (tdp == null && gpu == null) return null;
-
-  const errList = applied.errors?.length ? applied.errors : [];
-  if (tdp != null) {
-    let s = `TDP ${tdp}W was applied. ${QAM_VERIFY_SLIDER_LINE}`;
-    if (gpu != null) {
-      s += ` GPU ${gpu} MHz is a recommendation; this plugin does not write GPU clock to hardware yet.`;
-    }
-    return s;
-  }
-
-  if (gpu != null) {
-    const pre = errList.length > 0 ? `TDP was not applied (${errList[0]}). ` : "";
-    return `${pre}GPU ${gpu} MHz is from the model; this plugin does not write GPU clock to hardware yet.`;
-  }
-
-  return null;
-}
-
-export function buildResponseText(responseText: string, applied?: AppliedResultLike | null): string {
-  let text = responseText || "No response text.";
-  if (!applied) return text;
-  const parts: string[] = [];
-  if (applied.tdp_watts != null) parts.push(`TDP: ${applied.tdp_watts}W`);
-  if (applied.gpu_clock_mhz != null) parts.push(`GPU: ${applied.gpu_clock_mhz} MHz`);
-  if (parts.length > 0) text += `\n\n[Applied: ${parts.join(", ")}]`;
-  if (applied.errors?.length) text += `\n[Errors: ${applied.errors.join("; ")}]`;
-  else if (parts.length > 0) {
-    text += `\n\nNote: If Steam's QAM Performance sliders look stale, close and reopen that tab to verify values match what was applied.`;
-  }
-  return text;
 }

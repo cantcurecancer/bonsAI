@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 222,
-  "edgeCount": 492,
+  "fileCount": 223,
+  "edgeCount": 494,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -186,6 +186,7 @@
         "src/types/bonsaiUi.ts",
         "src/utils/answerBubbleNavRegistry.ts",
         "src/utils/answerBubbleNavigation.ts",
+        "src/utils/appliedTuningText.ts",
         "src/utils/askThinkingPhases.ts",
         "src/utils/buildAnswerBubbleElement.tsx",
         "src/utils/buildReplyActionsElement.tsx",
@@ -195,7 +196,6 @@
         "src/utils/focusNavigation.ts",
         "src/utils/inputTransparency.ts",
         "src/utils/liveTurnFocusGraph.ts",
-        "src/utils/settingsPayload.ts",
         "src/utils/troubleshootingAskHeuristic.ts"
       ],
       "importedBy": [
@@ -578,6 +578,7 @@
         "src/index.tsx",
         "src/test-harness/rpcFixtures.ts",
         "src/utils/appDesktopLog.ts",
+        "src/utils/appliedTuningText.ts",
         "src/utils/bonsaiSessionSurvival.test.ts",
         "src/utils/bonsaiSessionSurvival.ts",
         "src/utils/composeThinkingBlurb.ts",
@@ -962,6 +963,7 @@
         "src/hooks/useStrategyChecklistSession.ts",
         "src/types/backgroundAsk.ts",
         "src/types/bonsaiUi.ts",
+        "src/utils/appliedTuningText.ts",
         "src/utils/askThinkingPhases.ts",
         "src/utils/bonsaiAskCompletionWatch.ts",
         "src/utils/bonsaiSessionSurvival.ts",
@@ -972,7 +974,6 @@
         "src/utils/localOnlyAskCommands.ts",
         "src/utils/presetCarouselInject.ts",
         "src/utils/sessionRagChipCandidates.ts",
-        "src/utils/settingsPayload.ts",
         "src/utils/strategyChecklist.ts",
         "src/utils/strategyChecklistPersistence.ts",
         "src/utils/strategyGuideBranches.ts"
@@ -1518,6 +1519,16 @@
         "src/utils/appDesktopLog.test.ts"
       ]
     },
+    "src/utils/appliedTuningText.ts": {
+      "imports": [
+        "src/data/bonsaiSettingsSchema.ts"
+      ],
+      "importedBy": [
+        "src/components/MainTabChatTranscript.tsx",
+        "src/hooks/useBonsaiAskOrchestration.ts",
+        "src/utils/settingsContracts.test.ts"
+      ]
+    },
     "src/utils/askThinkingPhases.test.ts": {
       "imports": [
         "src/utils/askThinkingPhases.ts"
@@ -2053,6 +2064,7 @@
         "src/data/bonsaiSettingsNormalizers.ts",
         "src/data/bonsaiSettingsSchema.ts",
         "src/data/replyLanguage.ts",
+        "src/utils/appliedTuningText.ts",
         "src/utils/settingsPayload.ts"
       ],
       "importedBy": []
@@ -2071,8 +2083,6 @@
         "src/data/bonsaiSettingsSchema.ts"
       ],
       "importedBy": [
-        "src/components/MainTabChatTranscript.tsx",
-        "src/hooks/useBonsaiAskOrchestration.ts",
         "src/hooks/usePluginSettings.ts",
         "src/index.tsx",
         "src/utils/settingsContracts.test.ts"

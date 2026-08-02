@@ -16,11 +16,8 @@ import {
   normalizeSettings,
   reconcileLatencyWarningAndTimeout,
 } from "../data/bonsaiSettingsNormalizers";
-import {
-  buildResponseText,
-  formatAppliedTuningBannerText,
-  toBonsaiSettingsPayload,
-} from "./settingsPayload";
+import { toBonsaiSettingsPayload } from "./settingsPayload";
+import { buildResponseText, formatAppliedTuningBannerText } from "./appliedTuningText";
 
 /** Regression tests for normalization bounds and response formatting behavior. */
 describe("settings contracts", () => {
