@@ -58,6 +58,7 @@ One smoke often covers many features. Status: **Verified** / **Partial** / **Ope
 | Strategy mode + spoilers (spot) | SMOKE-E | Partial | Deeper spoiler/checklist → Tier 2 |
 | Preset carousel troubleshooting triple | SMOKE-D | Verified | |
 | Preset chip inject (no game append) | PRESET-GAME-01 | Open | Unit pass; on-Deck chip → Ask text |
+| Session RAG preset chips | SESSION-RAG-CHIPS-01 | Open | 2026-08-02: `get_session_rag_chip_candidates` implemented (backend was missing since the feature shipped, so these chips have never appeared on-device). 5 RPC tests + existing service tests. On-Deck: with **Use local knowledge base** on and a seeded corpus, launch a covered title (DRG Survivor, OoT) and confirm KB-derived chips appear in the carousel — strategy chips should open in Strategy mode. Turn the KB **off** and confirm the carousel returns to static seeds with no console error. Uninstall the corpus and confirm the same (reason `corpus_missing`, still no rejection) |
 | Strategy Ask placeholder (focus caret) | STRATEGY-PLACEHOLDER-01 | Open | Unit/CSS fix; on-Deck empty Strategy field |
 | Vision attach | SMOKE-G | Verified | Vision sweep 2026-04 |
 | Background Ask reopen | SMOKE-H | Partial | Full lifecycle → release |

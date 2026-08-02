@@ -74,9 +74,10 @@ export async function fetchSessionRagChipCandidates(args: {
     }
     return out;
   } catch (e) {
-    // KNOWN BUG: get_session_rag_chip_candidates has no implementation in main.py,
-    // so this always rejects and session RAG chips never appear -- the carousel
-    // silently falls back to static seeds. See docs/roadmap.md "Known bugs".
+    // The RPC reports KB-off, a missing corpus and a corpus read failure as
+    // {ok: false} rather than by rejecting, so reaching here means the call
+    // itself failed (timeout, backend down). The carousel falls back to static
+    // seeds either way; log so the failure is visible on-device.
     console.error(
       "[bonsAI] get_session_rag_chip_candidates failed; session RAG preset chips unavailable:",
       formatDeckyRpcError(e)

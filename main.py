@@ -1678,6 +1678,27 @@ class Plugin:
         except Exception as exc:
             return {"ok": False, "error": str(exc)}
 
+    async def get_session_rag_chip_candidates(
+        self,
+        app_id: str = "",
+        app_name: str = "",
+        shortcut_name: str = "",
+    ):
+        """Preset-chip prompts drawn from the offline KB for the running game."""
+        settings = await self.load_settings()
+        try:
+            result = await asyncio.to_thread(
+                suggest_chip_candidates,
+                settings,
+                app_id=str(app_id or "").strip(),
+                app_name=str(app_name or "").strip(),
+                shortcut_name=str(shortcut_name or "").strip(),
+            )
+        except Exception:
+            logger.exception("get_session_rag_chip_candidates failed")
+            return {"ok": False, "reason": "chip_candidates_failed", "candidates": []}
+        return session_rag_chip_candidates_to_rpc(result)
+
     async def _require_local_ollama_on_deck(self) -> tuple[bool, dict[str, Any] | None]:
         plugin = Plugin._coerce_instance(self)
         settings = await plugin.load_settings()

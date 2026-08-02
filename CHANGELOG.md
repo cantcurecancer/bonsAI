@@ -5,7 +5,7 @@ All notable changes to this project are documented in this file.
 ## [Unreleased]
 
 ### Added
-- **Session RAG preset chips:** Main-tab carousel mixes ~30% offline-KB curtailed prompts (strategy + compat) per slot when the local knowledge base is enabled; reseeds on AppID change, after Ask, and cold mount. RPC `get_session_rag_chip_candidates`; `sessionRagComposer.ts`, `useBonsaiAskOrchestration.ts`. **Frontend only — not functional (2026-08-02):** the `get_session_rag_chip_candidates` RPC was never implemented in `main.py`, so the call always fails and the carousel falls back to static seeds. Tracked in [roadmap.md](docs/roadmap.md) § Bugs.
+- **Session RAG preset chips:** Main-tab carousel mixes ~30% offline-KB curtailed prompts (strategy + compat) per slot when the local knowledge base is enabled; reseeds on AppID change, after Ask, and cold mount. RPC `get_session_rag_chip_candidates`; `sessionRagComposer.ts`, `useBonsaiAskOrchestration.ts`. **Frontend shipped ahead of the backend and was corrected before release (2026-08-02):** the RPC was never implemented in `main.py`, so the call always failed and the carousel fell back to static seeds; the adapter now exists and the feature works as described. On-Deck **SESSION-RAG-CHIPS-01** in `docs/testing.md`.
 - **Voice STT session daemon:** Session-scoped `whisper-server` on `127.0.0.1:18765` for faster interim mic transcription; CLI fallback when server unavailable; incremental server install for existing CPU-safe `voice_bin`. `voice_whisper_daemon.py`, `voice_transcription_service.py`, `main.py`; tests `test_voice_whisper_daemon.py`.
 
 ### Changed
@@ -18,6 +18,7 @@ All notable changes to this project are documented in this file.
 - **`src/v0-drafts/`** — 56 untracked v0.dev scaffolding files, excluded from build, typecheck, tests, and the agent module map. Archived outside the repo before deletion.
 
 ### Fixed
+- **Session RAG preset chips now work:** `get_session_rag_chip_candidates` had no Python implementation, so with **Use local knowledge base** on the call always failed and the preset carousel silently fell back to static seeds — the chips have never appeared on-device. The RPC now adapts the existing `suggest_chip_candidates` / `session_rag_chip_candidates_to_rpc` service pair; no ranking or candidate policy changed. KB-off, missing corpus and corpus read errors return `{ok: false}` with a reason instead of rejecting. `tests/test_session_rag_chip_candidates_rpc.py`; on-Deck **SESSION-RAG-CHIPS-01** in `docs/testing.md`.
 - **Pulled models now join the model try order:** `merge_pulled_tags_into_routing_orders` had no Python implementation, so after a **custom** local-Ollama setup profile installed models the call always failed and the new tags never reached `text_model_routing_order` / `vision_model_routing_order` — try order had to be set by hand. Now implemented in `main.py`; pulled tags append to a saved try order (top instead when high-VRAM and that toggle is on), and vision-capable tags also join the vision list. When no try order has been saved the RPC deliberately writes nothing, because the order derived from installed models already includes the new tag. `tests/test_merge_pulled_tags_rpc.py`; on-Deck **ROUTING-MERGE-01** in `docs/testing.md`.
 
 ## [0.5.0] - 2026-07-15
