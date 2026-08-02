@@ -134,10 +134,37 @@ decision, not queued.
 
 ---
 
-## Bearing on Phase 2f (split docs by audience)
+## Phase 2f — resolved as already done (2026-08-02)
 
-The plan's 2f moves agent-session state to `docs/agent/` and leaves reader docs
-in `docs/`. On the evidence above:
+**2f requires no move. The split it asks for has already happened.**
+
+The plan's 2f says to move "roadmap, TODO, subagent reports, prompt-testing
+notes" into `docs/agent/`. Three of the four are no longer in `docs/`:
+
+| Target | State |
+|---|---|
+| `docs/TODO.md` | gone |
+| `docs/prompt-testing.md` | gone |
+| `docs/regression-and-smoke.md` | gone |
+| `SUBAGENT_REPORTS.md` | already outside `docs/`, at `.cursor/agents/SUBAGENT_REPORTS.md` |
+| `docs/roadmap.md` | **still in `docs/`** |
+
+So 2f reduces to moving one file — and `roadmap.md` has **53 inbound references
+across 20+ files**, including `README.md`, `CLAUDE.md`, `CHANGELOG.md`,
+`.cursorrules:11`, `.cursor/rules/docs-on-ship.mdc`, three MCP knowledge files
+(`policies/documentation.md`, `policies/plan-accountability.md`,
+`workflows/tier-qa.md`), and eight docs.
+
+Moving it would be the highest link-churn action in Phase 2, to separate a file
+that is *also* reader-facing (it is the public bug list, linked from `README.md`).
+The plan's Diagnosis 3 — "docs/ is two artifact classes jammed together … 350+
+changes" — was true when written; earlier cleanup has since resolved it.
+
+**Decision: leave `docs/` as-is.** The one real trap the triage found is the
+near-duplicate RAG plan filenames, handled by the archive move below rather than
+by an audience split.
+
+For reference, had a split been performed, the audience division would have been:
 
 | Destination | Files |
 |---|---|
@@ -145,9 +172,6 @@ in `docs/`. On the evidence above:
 | **`docs/`** (reader-facing) | `development.md`, `troubleshooting.md`, `glossary.md`, `knowledge-base.md`, `testing*.md`, `DOCUMENTATION_INDEX.md` |
 | **`docs/archive/`** | the self-declared archived RAG analysis |
 
-Caveat worth weighing before executing 2f: `roadmap.md` is referenced by **many**
-inbound links across `testing.md`, `knowledge-base.md`, `troubleshooting.md`,
-`CHANGELOG.md`, `CLAUDE.md`, `.cursorrules`, and the MCP knowledge policies.
-Moving it is the single highest-link-churn action in Phase 2, and the plan says
-2f should be "mechanical, no content changes" — so it needs a link sweep in the
-same commit or it will break a lot of navigation at once.
+If this is ever revisited, the link sweep must land in the same commit as the
+move — `roadmap.md` alone accounts for 53 references — or navigation breaks
+across the repo at once.
