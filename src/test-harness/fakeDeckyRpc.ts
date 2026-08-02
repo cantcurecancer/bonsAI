@@ -28,7 +28,6 @@ export const FRONTEND_RPC_METHODS = [
   "get_input_transparency",
   "save_ask_feedback",
   "list_recent_screenshots",
-  "capture_screenshot",
   "take_steam_screenshot",
   "start_voice_transcription",
   "stop_voice_transcription",
@@ -139,17 +138,6 @@ function defaultHandlers(): Record<string, RpcHandler> {
     pull_ollama_models: () => ({ accepted: true }),
     delete_ollama_model: () => ({ ok: true }),
     list_recent_screenshots: () => ({ success: true, items: [] }),
-    capture_screenshot: () => ({
-      success: true,
-      item: {
-        path: "/tmp/bonsai-capture-preview.png",
-        name: "bonsai-capture-preview.png",
-        mtime: Date.now() / 1000,
-        source: "capture",
-        app_id: "",
-        size_bytes: 1024,
-      },
-    }),
     take_steam_screenshot: () => ({
       success: true,
       item: {

@@ -3,257 +3,252 @@
     {
       "name": "load_settings",
       "domain": "settings",
-      "line": 753
+      "line": 752
     },
     {
       "name": "save_settings",
       "domain": "settings",
-      "line": 758
+      "line": 757
     },
     {
       "name": "clear_plugin_data",
       "domain": "settings",
-      "line": 789
+      "line": 788
     },
     {
       "name": "get_strategy_checklist_session",
       "domain": "strategy",
-      "line": 894
+      "line": 893
     },
     {
       "name": "save_strategy_checklist_session",
       "domain": "strategy",
-      "line": 909
+      "line": 908
     },
     {
       "name": "clear_strategy_checklist_session",
       "domain": "strategy",
-      "line": 939
+      "line": 938
     },
     {
       "name": "get_intent_packs",
       "domain": "intent_packs",
-      "line": 956
+      "line": 955
     },
     {
       "name": "set_intent_pack_enabled",
       "domain": "intent_packs",
-      "line": 966
+      "line": 965
     },
     {
       "name": "export_intent_pack",
       "domain": "intent_packs",
-      "line": 983
+      "line": 982
     },
     {
       "name": "import_intent_pack",
       "domain": "intent_packs",
-      "line": 989
+      "line": 988
     },
     {
       "name": "remove_intent_pack",
       "domain": "intent_packs",
-      "line": 1013
+      "line": 1012
     },
     {
       "name": "get_deck_ip",
       "domain": "capabilities",
-      "line": 1035
+      "line": 1034
     },
     {
       "name": "test_ollama_connection",
       "domain": "ollama",
-      "line": 1041
+      "line": 1040
     },
     {
       "name": "discover_mdns_ollama_hosts",
       "domain": "ollama",
-      "line": 1220
+      "line": 1219
     },
     {
       "name": "start_local_ollama_setup",
       "domain": "ollama",
-      "line": 1266
+      "line": 1265
     },
     {
       "name": "get_local_ollama_setup_status",
       "domain": "ollama",
-      "line": 1345
+      "line": 1344
     },
     {
       "name": "cancel_local_ollama_setup",
       "domain": "ollama",
-      "line": 1350
+      "line": 1349
     },
     {
       "name": "get_rag_corpus_status",
       "domain": "rag",
-      "line": 1360
+      "line": 1359
     },
     {
       "name": "start_rag_corpus_download",
       "domain": "rag",
-      "line": 1415
+      "line": 1414
     },
     {
       "name": "cancel_rag_corpus_download",
       "domain": "rag",
-      "line": 1481
+      "line": 1480
     },
     {
       "name": "update_rag_corpus",
       "domain": "rag",
-      "line": 1491
+      "line": 1490
     },
     {
       "name": "remove_rag_corpus",
       "domain": "rag",
-      "line": 1508
+      "line": 1507
     },
     {
       "name": "install_rag_corpus_local",
       "domain": "rag",
-      "line": 1525
+      "line": 1524
     },
     {
       "name": "get_session_rag_chip_candidates",
       "domain": "other",
-      "line": 1586
+      "line": 1585
     },
     {
       "name": "pull_ollama_models",
       "domain": "ollama",
-      "line": 1707
+      "line": 1706
     },
     {
       "name": "merge_pulled_tags_into_routing_orders",
       "domain": "other",
-      "line": 1713
+      "line": 1712
     },
     {
       "name": "delete_ollama_model",
       "domain": "ollama",
-      "line": 1773
+      "line": 1772
     },
     {
       "name": "fetch_ollama_catalog_metadata",
       "domain": "ollama",
-      "line": 1809
+      "line": 1808
     },
     {
       "name": "fetch_pull_model_catalog",
       "domain": "ollama",
-      "line": 1827
+      "line": 1826
     },
     {
       "name": "list_recent_screenshots",
       "domain": "screenshots",
-      "line": 1864
+      "line": 1863
     },
     {
       "name": "append_desktop_debug_note",
       "domain": "debug",
-      "line": 1901
+      "line": 1900
     },
     {
       "name": "append_desktop_chat_event",
       "domain": "debug",
-      "line": 1930
+      "line": 1929
     },
     {
       "name": "append_app_log",
       "domain": "debug",
-      "line": 1964
+      "line": 1963
     },
     {
       "name": "get_input_transparency",
       "domain": "ask",
-      "line": 2118
+      "line": 2117
     },
     {
       "name": "get_reply_language_snapshot",
       "domain": "language",
-      "line": 2134
+      "line": 2133
     },
     {
       "name": "save_ask_feedback",
       "domain": "ask",
-      "line": 2140
+      "line": 2139
     },
     {
       "name": "read_host_clipboard_text",
       "domain": "capabilities",
-      "line": 2154
-    },
-    {
-      "name": "capture_screenshot",
-      "domain": "screenshots",
-      "line": 2160
+      "line": 2153
     },
     {
       "name": "take_steam_screenshot",
       "domain": "screenshots",
-      "line": 2203
+      "line": 2159
     },
     {
       "name": "ask_game_ai",
       "domain": "ask",
-      "line": 2276
+      "line": 2232
     },
     {
       "name": "start_background_game_ai",
       "domain": "ask",
-      "line": 2404
+      "line": 2360
     },
     {
       "name": "dbg_fe_log",
       "domain": "debug",
-      "line": 2615
+      "line": 2571
     },
     {
       "name": "get_background_game_ai_status",
       "domain": "ask",
-      "line": 2628
+      "line": 2584
     },
     {
       "name": "abort_background_game_ai",
       "domain": "ask",
-      "line": 2655
+      "line": 2611
     },
     {
       "name": "ask_ollama",
       "domain": "ollama",
-      "line": 2777
+      "line": 2733
     },
     {
       "name": "get_voice_engine_status",
       "domain": "voice",
-      "line": 2846
+      "line": 2802
     },
     {
       "name": "install_voice_engine",
       "domain": "voice",
-      "line": 2855
+      "line": 2811
     },
     {
       "name": "get_voice_install_status",
       "domain": "voice",
-      "line": 2906
+      "line": 2862
     },
     {
       "name": "start_voice_transcription",
       "domain": "voice",
-      "line": 2911
+      "line": 2867
     },
     {
       "name": "stop_voice_transcription",
       "domain": "voice",
-      "line": 2971
+      "line": 2927
     },
     {
       "name": "get_voice_transcription_status",
       "domain": "voice",
-      "line": 2992
+      "line": 2948
     }
   ]
 }

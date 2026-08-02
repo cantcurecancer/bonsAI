@@ -99,7 +99,6 @@ from backend.services.screenshot_media import (
     resolve_plugin_capture_paths,
     merge_recent_screenshot_paths,
     take_steam_game_screenshot,
-    try_gamescope_screenshot_capture,
 )
 from backend.services.game_ai_request import run_game_ai_request
 from backend.services.async_background_job import (
@@ -2156,49 +2155,6 @@ class Plugin:
         from backend.services.clipboard_service import read_host_clipboard_text
 
         return read_host_clipboard_text(logger)
-
-    async def capture_screenshot(self, include_overlay: bool = True):
-        """Capture a screenshot using available gamescope commands and return attachment metadata."""
-        if isinstance(include_overlay, dict):
-            include_overlay = include_overlay.get("include_overlay", True) is not False
-        elif not isinstance(include_overlay, bool):
-            include_overlay = bool(include_overlay)
-        try:
-            plugin = Plugin._coerce_instance(self)
-            settings = await plugin.load_settings()
-            from backend.services.capabilities import capability_enabled
-
-            if not (
-                capability_enabled(settings, "media_library_access")
-                or capability_enabled(settings, "filesystem_write")
-            ):
-                return {
-                    "success": False,
-                    "error": (
-                        "Screenshot capture is disabled. Enable Read game & screenshot context "
-                        "in the Permissions tab."
-                    ),
-                }
-            runtime_dir = os.path.join(decky.DECKY_PLUGIN_RUNTIME_DIR, "captures")
-            os.makedirs(runtime_dir, exist_ok=True)
-            timestamp = time.strftime("%Y%m%d-%H%M%S")
-            output_path = os.path.join(runtime_dir, f"bonsai-capture-{timestamp}.png")
-            clean_env = Plugin._clean_env()
-            result = try_gamescope_screenshot_capture(output_path, include_overlay, clean_env)
-            if result.get("success") and isinstance(result.get("item"), dict):
-                item = dict(result["item"])
-                try:
-                    item["size_bytes"] = os.path.getsize(output_path)
-                except OSError:
-                    item["size_bytes"] = 0
-                preview = build_screenshot_preview_data_uri(output_path)
-                if preview:
-                    item["preview_data_uri"] = preview
-                result["item"] = item
-            return result
-        except Exception:
-            logger.exception("capture_screenshot failed")
-            raise
 
     async def take_steam_screenshot(self, app_id: str = ""):
         """Close-QAM flow: capture game into Steam screenshots (not auto-attached to Ask)."""
