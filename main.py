@@ -44,16 +44,6 @@ from backend.services.strategy_checklist_session_service import (
     session_path,
     upsert_session_entry,
 )
-from backend.services.proton_experiment_journal_service import (
-    append_entry as journal_append_entry,
-    clear_app as journal_clear_app,
-    delete_entry as journal_delete_entry,
-    journal_path as proton_journal_path,
-    list_entries as journal_list_entries,
-    load_store as load_proton_journal_store,
-    save_store as save_proton_journal_store,
-    suggest_proton_version_from_logs,
-)
 from backend.services.local_ollama_teardown_service import (
     should_teardown_local_ollama_on_clear,
     teardown_local_ollama_for_plugin_reset,
@@ -960,86 +950,6 @@ class Plugin:
                 merged = clear_session_entry(store, None)
             save_session_store(path, merged, settings_dir=decky.DECKY_PLUGIN_SETTINGS_DIR, logger=logger)
             return {"ok": True}
-
-    @staticmethod
-    def _proton_journal_path() -> str:
-        return proton_journal_path()
-
-    @staticmethod
-    def _load_proton_journal_store() -> dict:
-        return load_proton_journal_store(logger=logger)
-
-    # --- Proton experiment journal RPC ---
-
-    async def get_proton_experiment_journal(self, app_id: str = ""):
-        """Return journal entries for the given Steam AppID."""
-        store = Plugin._load_proton_journal_store()
-        aid = str(app_id or "").strip()
-        entries = journal_list_entries(store, aid)
-        return {"app_id": aid, "entries": entries}
-
-    async def save_proton_experiment_journal_entry(self, payload: Any = None):
-        """Append one Proton experiment journal entry for an AppID."""
-        if not isinstance(payload, dict):
-            return {"ok": False, "error": "Invalid payload"}
-        app_id = str(payload.get("app_id") or payload.get("appId") or "").strip()
-        plugin = Plugin._coerce_instance(self)
-        if not hasattr(plugin, "_proton_journal_store_lock"):
-            plugin._proton_journal_store_lock = asyncio.Lock()
-        async with plugin._proton_journal_store_lock:
-            store = Plugin._load_proton_journal_store()
-            try:
-                merged = journal_append_entry(
-                    store,
-                    app_id,
-                    proton_version=str(payload.get("proton_version") or payload.get("protonVersion") or ""),
-                    launch_options=str(payload.get("launch_options") or payload.get("launchOptions") or "%command%"),
-                    outcome=str(payload.get("outcome") or "same"),
-                    note=str(payload.get("note") or ""),
-                )
-            except ValueError as exc:
-                return {"ok": False, "error": str(exc)}
-            save_proton_journal_store(merged, logger=logger)
-            return {"ok": True, "entries": journal_list_entries(merged, app_id)}
-
-    async def delete_proton_experiment_journal_entry(self, payload: Any = None):
-        """Delete one journal entry by id for an AppID."""
-        if not isinstance(payload, dict):
-            return {"ok": False, "error": "Invalid payload"}
-        app_id = str(payload.get("app_id") or payload.get("appId") or "").strip()
-        entry_id = str(payload.get("entry_id") or payload.get("entryId") or "").strip()
-        plugin = Plugin._coerce_instance(self)
-        if not hasattr(plugin, "_proton_journal_store_lock"):
-            plugin._proton_journal_store_lock = asyncio.Lock()
-        async with plugin._proton_journal_store_lock:
-            store = Plugin._load_proton_journal_store()
-            merged = journal_delete_entry(store, app_id, entry_id)
-            save_proton_journal_store(merged, logger=logger)
-            return {"ok": True, "entries": journal_list_entries(merged, app_id)}
-
-    async def clear_proton_experiment_journal(self, app_id: str = ""):
-        """Clear journal for one AppID or entire file when app_id omitted."""
-        plugin = Plugin._coerce_instance(self)
-        if not hasattr(plugin, "_proton_journal_store_lock"):
-            plugin._proton_journal_store_lock = asyncio.Lock()
-        async with plugin._proton_journal_store_lock:
-            store = Plugin._load_proton_journal_store()
-            if str(app_id or "").strip():
-                merged = journal_clear_app(store, app_id)
-            else:
-                merged = {"version": 1, "by_app_id": {}}
-            save_proton_journal_store(merged, logger=logger)
-            return {"ok": True}
-
-    async def suggest_proton_journal_version_from_log(self, app_id: str = ""):
-        """Best-effort Proton version hint from steam-<appid>.log tail."""
-        from backend.services.capabilities import capability_enabled
-
-        settings = await Plugin._coerce_instance(self).load_settings()
-        if not capability_enabled(settings, "steam_logs_read"):
-            return {"ok": False, "hint": "", "error": "steam_logs_read_disabled"}
-        hint = await asyncio.to_thread(suggest_proton_version_from_logs, str(app_id or "").strip())
-        return {"ok": True, "hint": hint}
 
     # --- Intent packs RPC ---
 
