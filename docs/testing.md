@@ -74,6 +74,7 @@ One smoke often covers many features. Status: **Verified** / **Partial** / **Ope
 | UI scale focus graph | UI-SCALE-01…05 | Open | Template for new controls |
 | Token streaming (experimental) | STREAM-01…10 | Partial | Several preview PASS; Strategy spoiler stream open |
 | Reply language (About override) | LANG-01…03 | Partial | **LANG-01** regression fixed Jul 2026 — closed dropdown shows **Follow system** on load (`selectedOption` = option `.data`); on-Deck confirm |
+| RPC timeout wrapper (behavior change) | RPC-TIMEOUT-01 | Open | 2026-08-02: bounded RPCs moved to `callDeckyWithTimeout` (15s). Verify on-Deck that settings save/load, Ask submit, background status/abort, intent packs, strategy checklist, screenshots and voice status all still succeed normally — and that the 4 deliberately unbounded calls (`clear_plugin_data`, `install_rag_corpus_local`, `start`/`stop_voice_transcription`) still complete on slow paths (multi-GB model teardown, corpus copy, long recording) without a spurious timeout |
 | Clean install / release zip | Tier 4 | Open | Before tag |
 
 **Evidence snapshots (keep):** [tier0/2026-05-26](test-evidence/tier0/2026-05-26-9e20a82/), [tier1Core](test-evidence/tier1Core/2026-05-26-9e20a82/), [tier2Deep/2026-06-09](test-evidence/tier2Deep/2026-06-09-a9237e4/). Historical PASS narration: [archive/testing-results-2026.md](archive/testing-results-2026.md). Orphan evidence folders may be pruned later when nothing links them.

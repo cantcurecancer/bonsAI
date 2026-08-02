@@ -5,11 +5,17 @@ All notable changes to this project are documented in this file.
 ## [Unreleased]
 
 ### Added
-- **Session RAG preset chips:** Main-tab carousel mixes ~30% offline-KB curtailed prompts (strategy + compat) per slot when the local knowledge base is enabled; reseeds on AppID change, after Ask, and cold mount. RPC `get_session_rag_chip_candidates`; `sessionRagComposer.ts`, `useBonsaiAskOrchestration.ts`.
+- **Session RAG preset chips:** Main-tab carousel mixes ~30% offline-KB curtailed prompts (strategy + compat) per slot when the local knowledge base is enabled; reseeds on AppID change, after Ask, and cold mount. RPC `get_session_rag_chip_candidates`; `sessionRagComposer.ts`, `useBonsaiAskOrchestration.ts`. **Frontend only — not functional (2026-08-02):** the `get_session_rag_chip_candidates` RPC was never implemented in `main.py`, so the call always fails and the carousel falls back to static seeds. Tracked in [roadmap.md](docs/roadmap.md) § Bugs.
 - **Voice STT session daemon:** Session-scoped `whisper-server` on `127.0.0.1:18765` for faster interim mic transcription; CLI fallback when server unavailable; incremental server install for existing CPU-safe `voice_bin`. `voice_whisper_daemon.py`, `voice_transcription_service.py`, `main.py`; tests `test_voice_whisper_daemon.py`.
 
 ### Changed
 - **Install voice engine:** Podman build compiles `whisper-cli` + `whisper-server` in one pass; **VOICE-05**–**VOICE-07** QA rows in `docs/testing.md`.
+- **RPC calls now time out (behavior change):** Frontend RPCs go through `callDeckyWithTimeout` (15s, `DECKY_RPC_TIMEOUT_MS`) instead of raw `call()` — settings load/save, Ask submit, background-ask status/abort, intent packs, strategy checklist, reply language, screenshots, voice status, desktop debug notes. **A hung backend now surfaces a timeout error where the UI previously waited indefinitely.** Four long-running calls deliberately stay unbounded and are commented in place: `clear_plugin_data`, `install_rag_corpus_local`, `start_voice_transcription`, `stop_voice_transcription`. On-Deck QA: **RPC-TIMEOUT-01** in `docs/testing.md`.
+- **Agent architecture snapshots:** `module-map.json` renamed `hotspots.json` (it is a size ranking, not a dependency graph) and a real `import-graph.json` added — importers/imports for every `src/` TS file, plus cycle and orphan detection. Both regenerate via the existing pre-commit hook. Anything reading `module-map.json` must be updated.
+
+### Removed
+- **`src/config.ts`** and its `scripts/build.sh` generator (`do_generate_config`), plus the now-unused `PC_IP` build preflight. The exported `HostIp`/`PcIp` constants had no importers; `PC_IP` remains a runtime `.env` value.
+- **`src/v0-drafts/`** — 56 untracked v0.dev scaffolding files, excluded from build, typecheck, tests, and the agent module map. Archived outside the repo before deletion.
 
 ## [0.5.0] - 2026-07-15
 
