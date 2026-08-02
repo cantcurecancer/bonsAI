@@ -1032,11 +1032,6 @@ class Plugin:
         """Proxy sanitized subprocess environment generation through the service layer."""
         return clean_env()
 
-    async def log_navigation(self, setting_path: str):
-        """Log settings-navigation actions from the frontend for diagnostics."""
-        logger.info(f"User navigated to: {setting_path}")
-        return True
-
     async def get_deck_ip(self):
         """Return the Steam Deck's LAN IP address."""
         return await get_deck_ip_async()
