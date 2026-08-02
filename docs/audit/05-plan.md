@@ -74,12 +74,19 @@ it ([01-map.md](01-map.md) §4).
 > `TDP-APPLY` gate. Grep the preview suite for the *test filename* too. Only
 > `test_tdp_sandbox_sysfs.py` and `test_capabilities.py` are referenced that way.
 
-**Deletions cascade one level.** Removing an authorized RPC orphaned a helper
-below it in two cases — `try_gamescope_screenshot_capture`
-(`screenshot_media.py:861`, now unreferenced, but that module is DO-NOT-TOUCH)
-and the `write_sysfs` / `find_amdgpu_hwmon` pair that only `apply_tdp` calls.
-Neither was in D2's list. Check one level down before declaring a deletion
-complete.
+**Deletions cascade, and not always one level.** Removing an authorized RPC
+orphaned helpers below it every time. Both cascades were taken to the depth the
+maintainer approved on 2026-08-02 and then stopped deliberately:
+
+| Removed | Orphaned by it | Disposition |
+|---|---|---|
+| `apply_tdp` | `write_sysfs`, `append_sandbox_sysfs_write`, `STEAMOS_PRIV_WRITE` | all deleted |
+| — | `find_amdgpu_hwmon` | **kept** — `read_current_tdp_watts` still calls it (`tdp_service.py:68`), contrary to the audit |
+| — | `read_sandbox_sysfs_writes` | **kept** by decision — `get_input_transparency` reports it, though nothing writes the file any more |
+| `capture_screenshot` | `try_gamescope_screenshot_capture` | deleted |
+| — | `try_kmsgrab_screenshot`, `_desktop_session_active` | **left in place** — next level down, not yet reviewed |
+
+Check one level down before declaring a deletion complete, then check again.
 
 **Why first:** permanently shrinks the search space for every later session,
 needs no design decisions, and is the highest-confidence item in the audit.

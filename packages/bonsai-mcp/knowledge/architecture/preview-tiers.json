@@ -111,7 +111,7 @@
     },
     "tier2Deep": {
       "runbookTier": "2-3",
-      "description": "Deep Tier 2: streaming flags, VAC matrix, BG-ASK lifecycle, sysfs TDP apply + clamp asserts.",
+      "description": "Deep Tier 2: streaming flags, VAC matrix, BG-ASK lifecycle, TDP clamp asserts (suggestion-only; the sysfs apply path was removed 2026-08-02).",
       "scenarioIds": [
         "STREAM-02-flag-on-speed",
         "STREAM-03-strategy-spoiler",

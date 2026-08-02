@@ -92,7 +92,7 @@
     "tests/test_strategy_checklist_session_service.py",
     "tests/test_strategy_checklist_store_lock.py",
     "tests/test_strategy_guide_parse.py",
-    "tests/test_tdp_sandbox_sysfs.py",
+    "tests/test_tdp_service.py",
     "tests/test_token_stream_request_id_wiring.py",
     "tests/test_transparency_kb_retrieval.py",
     "tests/test_voice_transcription_service.py",

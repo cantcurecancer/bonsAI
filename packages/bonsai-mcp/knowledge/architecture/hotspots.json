@@ -36,11 +36,6 @@
       "role": ""
     },
     {
-      "path": "py_modules/backend/services/screenshot_media.py",
-      "lines": 1031,
-      "role": ""
-    },
-    {
       "path": "src/data/characterPlaceholderEmoticonGrids.ts",
       "lines": 1024,
       "role": ""
@@ -48,6 +43,11 @@
     {
       "path": "src/components/MainTabUnifiedAskBar.tsx",
       "lines": 1011,
+      "role": ""
+    },
+    {
+      "path": "py_modules/backend/services/screenshot_media.py",
+      "lines": 963,
       "role": ""
     },
     {

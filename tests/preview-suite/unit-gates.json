@@ -22,7 +22,7 @@
       "checkboxIds": [],
       "captureSteps": [1],
       "steps": [
-        { "action": "shellPytest", "file": "tests/test_tdp_sandbox_sysfs.py" },
+        { "action": "shellPytest", "file": "tests/test_tdp_service.py" },
         { "action": "shellPytest", "file": "tests/test_capabilities.py" }
       ]
     }
