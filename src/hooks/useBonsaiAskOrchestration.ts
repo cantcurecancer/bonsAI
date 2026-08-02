@@ -7,7 +7,7 @@
  * Caution: Reordering hooks risks stale poll callbacks after unmount.
  */
 import { useCallback, useEffect, useRef, useState, type Dispatch, type RefObject, type SetStateAction } from "react";
-import { call, toaster } from "@decky/api";
+import { toaster } from "@decky/api";
 import { Router } from "@decky/ui";
 
 import type { AskAttachment } from "../types/bonsaiUi";
@@ -623,7 +623,7 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
     const fns = restoreFnsRef.current;
     const seq = fns.startNextRequest();
 
-    call<[], BackgroundRequestStatus>("get_background_game_ai_status")
+    callDeckyWithTimeout<[], BackgroundRequestStatus>("get_background_game_ai_status", [])
       .then((status) => {
         const f = restoreFnsRef.current;
         if (!f.isRequestActive(seq)) return;
@@ -643,7 +643,7 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
     if (isAsking) {
       /* Ask-bar ✕ while a request is in flight: abort the backend too (it only reset UI state
          before, so Ollama kept generating — the "x doesn't stop it" regression). */
-      void call<[], { ok?: boolean }>("abort_background_game_ai").catch(() => {
+      void callDeckyWithTimeout<[], { ok?: boolean }>("abort_background_game_ai", []).catch(() => {
         /* best-effort RPC */
       });
       invalidateRequests();
@@ -671,7 +671,7 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
   }, [a, invalidateRequests, isAsking, syncOllamaContextFromRunningApp]);
 
   const onCancelAsk = useCallback(() => {
-    void call<[], { ok?: boolean }>("abort_background_game_ai").catch(() => {
+    void callDeckyWithTimeout<[], { ok?: boolean }>("abort_background_game_ai", []).catch(() => {
       /* best-effort RPC */
     });
     invalidateRequests();
@@ -801,7 +801,7 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
         app_context: appId ? "active" : "none",
       });
       try {
-        const data = await call<
+        const data = await callDeckyWithTimeout<
           [
             {
               question: string;
@@ -821,28 +821,30 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
             },
           ],
           BackgroundStartResponse
-        >("start_background_game_ai", {
-          question: q,
-          PcIp: ip,
-          appId,
-          appName,
-          attachments: attachments as AskAttachment[],
-          ask_mode: askModeForRequest,
-          spoiler_consent: spoilerConsentForRequest,
-          ...(followUpPending
-            ? {
-                reply_followup: {
-                  chip_id: followUpPending.chipId,
-                  parent_question: followUpPending.parentQuestion,
-                  parent_answer: followUpPending.parentAnswer,
-                  preferred_model: followUpPending.preferredModel,
-                },
-              }
-            : {}),
-          ...(askModeForRequest === "strategy" && !isStrategyFirstTurn && strategyChecklistRef.current
-            ? { strategy_checklist_state: strategyChecklistToAskPayload(strategyChecklistRef.current) }
-            : {}),
-        });
+        >("start_background_game_ai", [
+          {
+            question: q,
+            PcIp: ip,
+            appId,
+            appName,
+            attachments: attachments as AskAttachment[],
+            ask_mode: askModeForRequest,
+            spoiler_consent: spoilerConsentForRequest,
+            ...(followUpPending
+              ? {
+                  reply_followup: {
+                    chip_id: followUpPending.chipId,
+                    parent_question: followUpPending.parentQuestion,
+                    parent_answer: followUpPending.parentAnswer,
+                    preferred_model: followUpPending.preferredModel,
+                  },
+                }
+              : {}),
+            ...(askModeForRequest === "strategy" && !isStrategyFirstTurn && strategyChecklistRef.current
+              ? { strategy_checklist_state: strategyChecklistToAskPayload(strategyChecklistRef.current) }
+              : {}),
+          },
+        ]);
 
         if (!isRequestActive(seq)) return;
 

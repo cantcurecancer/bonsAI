@@ -6,7 +6,12 @@
  * Does not: Render mic UI or request microphone permissions — see MainTab and PermissionsTab.
  */
 import { useCallback, useEffect, useRef } from "react";
+// NOTE: start/stop_voice_transcription deliberately use raw call() with no
+// deadline -- stop runs whisper finalization over the recorded buffer and start
+// may load the model into memory, either of which can exceed any UI timeout on
+// Deck hardware. Only the status poll below is wrapped.
 import { call } from "@decky/api";
+import { callDeckyWithTimeout } from "../utils/deckyCall";
 
 /** Poll interval while voice transcription is active (interim streaming). */
 export const VOICE_TRANSCRIPTION_POLL_MS = 150;
@@ -68,7 +73,10 @@ export function useVoiceTranscription(
     async (seq: number) => {
       if (!isVoiceActive(seq)) return;
       try {
-        const status = await call<[], VoiceTranscriptionStatus>("get_voice_transcription_status");
+        const status = await callDeckyWithTimeout<[], VoiceTranscriptionStatus>(
+          "get_voice_transcription_status",
+          []
+        );
         if (!isVoiceActive(seq)) return;
 
         if (status.status === "permission_denied" || status.error === "Microphone permission revoked.") {

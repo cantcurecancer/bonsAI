@@ -6,7 +6,7 @@
  * Does not: Render Settings UI — see SettingsTab and OllamaTab.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
-import { call } from "@decky/api";
+import { callDeckyWithTimeout } from "../utils/deckyCall";
 import { type AiCharacterAccentIntensityId } from "../data/aiCharacterAccentIntensity";
 import { type ModelPolicyTierId } from "../data/modelPolicy";
 import {
@@ -306,10 +306,9 @@ export function usePluginSettings() {
     await pauseDebouncedSettingsSave();
     settingsSaveInFlightRef.current += 1;
     try {
-      const saved = await call<[BonsaiSettings], BonsaiSettings>(
-        "save_settings",
-        toBonsaiSettingsPayload(settingsSnapshotForDebouncedSaveRef.current)
-      );
+      const saved = await callDeckyWithTimeout<[BonsaiSettings], BonsaiSettings>("save_settings", [
+        toBonsaiSettingsPayload(settingsSnapshotForDebouncedSaveRef.current),
+      ]);
       hydrateFromSettings(saved);
       return saved;
     } finally {
@@ -319,14 +318,14 @@ export function usePluginSettings() {
 
   const syncSettingsFromDisk = useCallback(async () => {
     await pauseDebouncedSettingsSave();
-    const saved = await call<[], BonsaiSettings>("load_settings");
+    const saved = await callDeckyWithTimeout<[], BonsaiSettings>("load_settings", []);
     hydrateFromSettings(saved);
     return saved;
   }, [hydrateFromSettings, pauseDebouncedSettingsSave]);
 
   useEffect(() => {
     let cancelled = false;
-    call<[], BonsaiSettings>("load_settings")
+    callDeckyWithTimeout<[], BonsaiSettings>("load_settings", [])
       .then((saved) => {
         if (cancelled) return;
         const ignoreRestored = shouldIgnoreRestoredSettingsSnapshot(pluginDataClearSeenAtMountRef.current);
@@ -394,10 +393,9 @@ export function usePluginSettings() {
     const timer = setTimeout(() => {
       if (settingsPersistEpochRef.current !== epochAtSchedule) return;
       settingsSaveInFlightRef.current += 1;
-      call<[BonsaiSettings], BonsaiSettings>(
-        "save_settings",
-        toBonsaiSettingsPayload(settingsSnapshotForDebouncedSaveRef.current)
-      )
+      callDeckyWithTimeout<[BonsaiSettings], BonsaiSettings>("save_settings", [
+        toBonsaiSettingsPayload(settingsSnapshotForDebouncedSaveRef.current),
+      ])
         .catch((err) => {
           console.error("save_settings failed", err);
         })

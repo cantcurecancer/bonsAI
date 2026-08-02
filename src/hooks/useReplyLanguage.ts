@@ -6,7 +6,7 @@
  * Does not: Translate model system prompts — backend owns reply-language routing.
  */
 import { useCallback, useEffect, useState } from "react";
-import { call } from "@decky/api";
+import { callDeckyWithTimeout } from "../utils/deckyCall";
 import {
   REPLY_LANGUAGE_FOLLOW_SYSTEM,
   type ReplyLanguageId,
@@ -35,7 +35,10 @@ export function useReplyLanguage(replyLanguage: ReplyLanguageId) {
 
   const refresh = useCallback(async () => {
     try {
-      const snap = await call<[], ReplyLanguageSnapshot>("get_reply_language_snapshot");
+      const snap = await callDeckyWithTimeout<[], ReplyLanguageSnapshot>(
+        "get_reply_language_snapshot",
+        []
+      );
       if (snap && typeof snap.effective === "string") {
         setSnapshot(snap);
       }

@@ -795,13 +795,12 @@ const Content: React.FC = () => {
       setUiScaleAutoEnabled(autoEnabled);
       setUiScaleManualProfile(normalized);
       await pauseDebouncedSettingsSave();
-      const saved = await call<[BonsaiSettings], BonsaiSettings>(
-        "save_settings",
+      const saved = await callDeckyWithTimeout<[BonsaiSettings], BonsaiSettings>("save_settings", [
         toBonsaiSettingsPayload(settingsSnapshotForSave, {
           ui_scale_auto_enabled: autoEnabled,
           ui_scale_manual_profile: normalized,
         }),
-      );
+      ]);
       hydrateFromSettings(saved);
       setUiScaleApplyToken((t) => t + 1);
       toaster.toast({ title: "UI scale applied", body: "Plugin layout updated.", duration: 2800 });
@@ -893,7 +892,9 @@ const Content: React.FC = () => {
       getTransparencyJson: () => lastTransparency,
       getSysfsWrites: async () => {
         try {
-          const res = (await call("get_input_transparency")) as { sysfs_writes?: unknown };
+          const res = (await callDeckyWithTimeout("get_input_transparency", [])) as {
+            sysfs_writes?: unknown;
+          };
           return res?.sysfs_writes ?? [];
         } catch {
           return [];
@@ -1007,6 +1008,8 @@ const Content: React.FC = () => {
       setLastConnectionStatus(null);
       setOllamaTabResetKey((k) => k + 1);
       await pauseDebouncedSettingsSave();
+      // Deliberately unwrapped: clear_plugin_data tears down local Ollama models
+      // (ollama rm plus multi-GB rmtree), which can far exceed any UI deadline.
       await call("clear_plugin_data");
       clearBonsaiBrowserStorage();
       await syncSettingsFromDisk();
@@ -1120,10 +1123,10 @@ const Content: React.FC = () => {
             return;
           }
           try {
-            const result = await call<[{ stem: string; question: string; response: string }], AppendDesktopNoteResult>(
-              "append_desktop_debug_note",
-              { stem, question: ex.question, response: ex.answer }
-            );
+            const result = await callDeckyWithTimeout<
+              [{ stem: string; question: string; response: string }],
+              AppendDesktopNoteResult
+            >("append_desktop_debug_note", [{ stem, question: ex.question, response: ex.answer }]);
             if (result.success) {
               toaster.toast({ title: "Note saved", body: result.path ?? "Saved.", duration: 3800 });
               finalizeShowModalAndRestoreActiveTab(() => handle.Close());
@@ -1157,13 +1160,15 @@ const Content: React.FC = () => {
           setAiCharacterPresetId(pid);
           setAiCharacterCustomText(ctxt);
           try {
-            const saved = await call<[BonsaiSettings], BonsaiSettings>(
+            const saved = await callDeckyWithTimeout<[BonsaiSettings], BonsaiSettings>(
               "save_settings",
-              buildSettingsPayload({
-                ai_character_random: next.random,
-                ai_character_preset_id: pid,
-                ai_character_custom_text: ctxt,
-              })
+              [
+                buildSettingsPayload({
+                  ai_character_random: next.random,
+                  ai_character_preset_id: pid,
+                  ai_character_custom_text: ctxt,
+                }),
+              ]
             );
             hydrateFromSettings(saved);
             finalizeShowModalAndRestoreActiveTab(() => handle.Close());
@@ -1231,14 +1236,13 @@ const Content: React.FC = () => {
       setModelPolicyNonFossUnlocked(patch.modelPolicyNonFossUnlocked);
       setModelAllowHighVramFallbacks(patch.modelAllowHighVramFallbacks);
       await pauseDebouncedSettingsSave();
-      const saved = await call<[BonsaiSettings], BonsaiSettings>(
-        "save_settings",
+      const saved = await callDeckyWithTimeout<[BonsaiSettings], BonsaiSettings>("save_settings", [
         buildSettingsPayload({
           model_policy_tier: patch.modelPolicyTier,
           model_policy_non_foss_unlocked: patch.modelPolicyNonFossUnlocked,
           model_allow_high_vram_fallbacks: patch.modelAllowHighVramFallbacks,
-        })
-      );
+        }),
+      ]);
       hydrateFromSettings(saved);
       patchPendingSessionSettingsSnapshot({
         modelPolicyTier: patch.modelPolicyTier,
@@ -1252,10 +1256,9 @@ const Content: React.FC = () => {
   const onApplyTier2MultimodalPolicy = useCallback(async () => {
     await pauseDebouncedSettingsSave();
     setModelPolicyTier("open_weight");
-    const saved = await call<[BonsaiSettings], BonsaiSettings>(
-      "save_settings",
-      buildSettingsPayload({ model_policy_tier: "open_weight" })
-    );
+    const saved = await callDeckyWithTimeout<[BonsaiSettings], BonsaiSettings>("save_settings", [
+      buildSettingsPayload({ model_policy_tier: "open_weight" }),
+    ]);
     hydrateFromSettings(saved);
     patchPendingSessionSettingsSnapshot({ modelPolicyTier: "open_weight" });
   }, [buildSettingsPayload, hydrateFromSettings, setModelPolicyTier, pauseDebouncedSettingsSave]);
@@ -1370,9 +1373,9 @@ const Content: React.FC = () => {
               kind === "vision"
                 ? { vision_model_routing_order: order }
                 : { text_model_routing_order: order };
-            const saved = await call<[BonsaiSettings], BonsaiSettings>(
+            const saved = await callDeckyWithTimeout<[BonsaiSettings], BonsaiSettings>(
               "save_settings",
-              buildSettingsPayload(patch)
+              [buildSettingsPayload(patch)]
             );
             hydrateFromSettings(saved);
           }}
@@ -1750,6 +1753,8 @@ const Content: React.FC = () => {
   }, []);
 
   const installSeedKnowledgeBase = useCallback(async () => {
+    // Deliberately unwrapped: installing a corpus copies the whole seed knowledge
+    // base to disk, which can outrun any UI deadline on Deck storage.
     const out = await call<
       [{ source_dir: string }],
       { ok?: boolean; error?: string; install_path?: string; version?: string }

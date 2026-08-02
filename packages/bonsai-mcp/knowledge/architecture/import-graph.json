@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
   "fileCount": 223,
-  "edgeCount": 479,
+  "edgeCount": 486,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -914,7 +914,8 @@
     },
     "src/hooks/useBackgroundGameAi.ts": {
       "imports": [
-        "src/types/backgroundAsk.ts"
+        "src/types/backgroundAsk.ts",
+        "src/utils/deckyCall.ts"
       ],
       "importedBy": [
         "src/hooks/useBackgroundGameAi.test.ts",
@@ -983,6 +984,7 @@
     },
     "src/hooks/useIntentPacks.ts": {
       "imports": [
+        "src/utils/deckyCall.ts",
         "src/utils/intentPackSearch.ts"
       ],
       "importedBy": [
@@ -1009,6 +1011,7 @@
         "src/data/aiCharacterAccentIntensity.ts",
         "src/data/modelPolicy.ts",
         "src/utils/bonsaiSessionSurvival.ts",
+        "src/utils/deckyCall.ts",
         "src/utils/settingsAndResponse.ts"
       ],
       "importedBy": [
@@ -1040,6 +1043,7 @@
         "src/data/replyLanguage.ts",
         "src/i18n/catalog.ts",
         "src/i18n/keys.ts",
+        "src/utils/deckyCall.ts",
         "src/utils/i18n.ts"
       ],
       "importedBy": [
@@ -1118,7 +1122,9 @@
       ]
     },
     "src/hooks/useVoiceTranscription.ts": {
-      "imports": [],
+      "imports": [
+        "src/utils/deckyCall.ts"
+      ],
       "importedBy": [
         "src/index.tsx"
       ]
@@ -1513,7 +1519,8 @@
       "imports": [
         "src/hooks/useBackgroundGameAi.ts",
         "src/types/backgroundAsk.ts",
-        "src/utils/bonsaiReplyReadyToast.ts"
+        "src/utils/bonsaiReplyReadyToast.ts",
+        "src/utils/deckyCall.ts"
       ],
       "importedBy": [
         "src/hooks/useBonsaiAskOrchestration.ts",
@@ -1757,15 +1764,22 @@
         "src/components/OllamaWhereAiRunsSection.tsx",
         "src/components/PullModelsModal.tsx",
         "src/components/VoiceInputSettingsSection.tsx",
+        "src/hooks/useBackgroundGameAi.ts",
         "src/hooks/useBonsaiAskOrchestration.ts",
+        "src/hooks/useIntentPacks.ts",
+        "src/hooks/usePluginSettings.ts",
         "src/hooks/usePullModelCatalog.ts",
+        "src/hooks/useReplyLanguage.ts",
         "src/hooks/useScreenshotBrowser.ts",
+        "src/hooks/useVoiceTranscription.ts",
         "src/index.tsx",
         "src/utils/appDesktopLog.ts",
+        "src/utils/bonsaiAskCompletionWatch.ts",
         "src/utils/bonsaiReplyReadyToast.ts",
         "src/utils/clipboardStash.ts",
         "src/utils/deckyCall.test.ts",
-        "src/utils/sessionRagChipCandidates.ts"
+        "src/utils/sessionRagChipCandidates.ts",
+        "src/utils/strategyChecklistPersistence.ts"
       ]
     },
     "src/utils/desktopChatAutosave.ts": {
@@ -2109,6 +2123,7 @@
     "src/utils/strategyChecklistPersistence.ts": {
       "imports": [
         "src/types/bonsaiUi.ts",
+        "src/utils/deckyCall.ts",
         "src/utils/strategyChecklist.ts"
       ],
       "importedBy": [

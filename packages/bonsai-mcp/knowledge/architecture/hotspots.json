@@ -7,7 +7,7 @@
     },
     {
       "path": "src/index.tsx",
-      "lines": 1961,
+      "lines": 1966,
       "role": "Plugin root: tabs, scoped CSS, RPC wiring, Settings"
     },
     {
@@ -17,7 +17,7 @@
     },
     {
       "path": "src/hooks/useBonsaiAskOrchestration.ts",
-      "lines": 1224,
+      "lines": 1226,
       "role": ""
     },
     {
@@ -91,13 +91,13 @@
       "role": ""
     },
     {
-      "path": "src/hooks/usePluginSettings.ts",
-      "lines": 541,
+      "path": "src/components/SettingsTab.tsx",
+      "lines": 540,
       "role": ""
     },
     {
-      "path": "src/components/SettingsTab.tsx",
-      "lines": 540,
+      "path": "src/hooks/usePluginSettings.ts",
+      "lines": 539,
       "role": ""
     },
     {

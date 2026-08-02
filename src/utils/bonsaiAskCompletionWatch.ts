@@ -5,7 +5,7 @@
  * Solves: Ready/error toasts and completion handling without keeping MainTab mounted.
  * Does not: Start Ask or stream tokens — see useBackgroundGameAi.
  */
-import { call } from "@decky/api";
+import { callDeckyWithTimeout } from "./deckyCall";
 import type { BackgroundRequestStatus } from "../types/backgroundAsk";
 import {
   BACKGROUND_STATUS_POLL_MS,
@@ -30,7 +30,10 @@ function isWatchActive(seq: number): boolean {
 async function pollOnce(seq: number): Promise<void> {
   if (!isWatchActive(seq)) return;
   try {
-    const status = await call<[], BackgroundRequestStatus>("get_background_game_ai_status");
+    const status = await callDeckyWithTimeout<[], BackgroundRequestStatus>(
+      "get_background_game_ai_status",
+      []
+    );
     if (!isWatchActive(seq)) return;
 
     if (status.status === "completed" || status.status === "failed") {

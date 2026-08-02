@@ -45,42 +45,37 @@ Decky Loader imports directly.
 This is the only way the two sides talk. There is no HTTP server between them.
 
 1. Frontend calls `call<Args, Result>("method_name", ...args)` from `@decky/api`.
-2. Two styles are in use, and **raw `call()` is currently the majority**: 29 raw
-   call sites vs 24 through `callDeckyWithTimeout()` in
-   [src/utils/deckyCall.ts](src/utils/deckyCall.ts). The wrapper adds a 15s
-   deadline (`DECKY_RPC_TIMEOUT_MS`) and normalizes error payloads; a bare
-   `call()` can hang the UI indefinitely. Prefer the wrapper for new code. Note
-   that `deckyCall.ts:4` claims it is used for "settings", but every
-   `save_settings` / `load_settings` call site uses raw `call()`.
-3. **An RPC method is any public `async def` at indent 4 on `class Plugin`.**
+2. **Use `callDeckyWithTimeout()`** from
+   [src/utils/deckyCall.ts](src/utils/deckyCall.ts), which adds a 15s deadline
+   (`DECKY_RPC_TIMEOUT_MS`) and normalizes error payloads. A bare `call()` can
+   hang the UI indefinitely. Note the arg convention differs: `call()` spreads
+   its arguments, the wrapper takes them as an **array**.
+3. Four call sites deliberately use raw `call()` and say why in a comment:
+   `clear_plugin_data`, `install_rag_corpus_local`, `start_voice_transcription`,
+   `stop_voice_transcription` — each can outrun any UI deadline. Everything else
+   is wrapped; justify a new raw `call()` in a comment.
+4. **An RPC method is any public `async def` at indent 4 on `class Plugin`.**
    There is no decorator or registry; indentation is the contract. 55 such
    methods exist.
-4. `packages/bonsai-mcp/knowledge/architecture/rpc-map.json` lists them all with
+5. `packages/bonsai-mcp/knowledge/architecture/rpc-map.json` lists them all with
    line numbers. It is **generated** — never hand-edit it.
 
-Frontend RPC call sites are concentrated in `src/hooks/` (`usePluginSettings`,
-`useBonsaiAskOrchestration`, `useBackgroundGameAi`, `useVoiceTranscription`,
-`useIntentPacks`, `useScreenshotBrowser`, `useReplyLanguage`), plus
-`src/index.tsx`.
+Call sites are concentrated in `src/hooks/` plus `src/index.tsx`.
 
 There is no compile-time check that a called name exists in `main.py`. Two
-frontend calls currently target methods that do not exist anywhere in Python and
-fail silently — see [docs/audit/phase1-map-verification.md](docs/audit/phase1-map-verification.md).
+frontend calls currently target methods that exist nowhere in Python; they now
+log to the console instead of failing silently, and are tracked under
+`docs/roadmap.md` "Bugs". Evidence:
+[docs/audit/phase1-map-verification.md](docs/audit/phase1-map-verification.md).
 
 ## Where settings live
 
 `settings.json` under `decky.DECKY_PLUGIN_SETTINGS_DIR` (`main.py:221`, `:274`).
 
-Adding one user-facing setting currently touches six files across two languages:
-
-```
-src/components/SettingsTab.tsx        UI control
-src/hooks/usePluginSettings.ts        state + debounced save
-  -> RPC load_settings / save_settings
-py_modules/backend/services/settings_service.py   28 hand-written sanitize_* fns
-src/utils/settingsAndResponse.ts      shared shape helpers
-tests/test_settings_service.py + src/utils/settingsAndResponse.test.ts
-```
+Adding one user-facing setting touches six files across two languages:
+`SettingsTab.tsx` (UI) → `usePluginSettings.ts` (state + debounced save) → RPC
+`load_settings`/`save_settings` → `settings_service.py` (28 hand-written
+`sanitize_*` fns), plus `src/utils/settingsAndResponse.ts` and both test files.
 
 TS and Python each declare the setting shape independently. This is known and is
 the top-ranked item in [REFACTOR-PLAN.md](REFACTOR-PLAN.md) Phase 3.1.

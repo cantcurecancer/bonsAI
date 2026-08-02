@@ -6,7 +6,7 @@
  * Does not: Map status payloads to presentation state — caller supplies applyBackgroundStatusToUi.
  */
 import { useCallback, useEffect, useRef } from "react";
-import { call } from "@decky/api";
+import { callDeckyWithTimeout } from "../utils/deckyCall";
 import type { BackgroundRequestStatus } from "../types/backgroundAsk";
 
 /** Poll interval while backend ``status`` stays ``pending`` (matches Steam Deck cadence vs RPC load). */
@@ -60,7 +60,10 @@ export function useBackgroundGameAi(
       const pollOnce = async () => {
         if (!isRequestActive(seq)) return;
         try {
-          const status = await call<[], BackgroundRequestStatus>("get_background_game_ai_status");
+          const status = await callDeckyWithTimeout<[], BackgroundRequestStatus>(
+            "get_background_game_ai_status",
+            []
+          );
           if (!isRequestActive(seq)) return;
           applyBackgroundStatusToUi(status, fallbackQuestion);
 

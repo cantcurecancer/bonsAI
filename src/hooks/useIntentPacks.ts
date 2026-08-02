@@ -6,7 +6,7 @@
  * Does not: Build search index algorithms — see intentPackSearch utilities.
  */
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { call } from "@decky/api";
+import { callDeckyWithTimeout } from "../utils/deckyCall";
 import {
   buildIntentPackSearchIndex,
   type IntentPack,
@@ -85,7 +85,7 @@ export function useIntentPacks(): IntentPacksState {
     setLoading(true);
     setError(null);
     try {
-      const data = await call<[], GetIntentPacksResponse>("get_intent_packs");
+      const data = await callDeckyWithTimeout<[], GetIntentPacksResponse>("get_intent_packs", []);
       applyResponse(setPacks, setSummaries, data);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -102,7 +102,10 @@ export function useIntentPacks(): IntentPacksState {
 
   const setPackEnabled = useCallback(async (packId: string, enabled: boolean) => {
     try {
-      const data = await call<[string, boolean], MutationResponse>("set_intent_pack_enabled", packId, enabled);
+      const data = await callDeckyWithTimeout<[string, boolean], MutationResponse>(
+        "set_intent_pack_enabled",
+        [packId, enabled]
+      );
       if (data?.ok === false) {
         setError(typeof data.error === "string" ? data.error : "Failed to update pack");
         return false;
@@ -117,7 +120,9 @@ export function useIntentPacks(): IntentPacksState {
 
   const exportPack = useCallback(async (packId: string) => {
     try {
-      const data = await call<[string], MutationResponse>("export_intent_pack", packId);
+      const data = await callDeckyWithTimeout<[string], MutationResponse>("export_intent_pack", [
+        packId,
+      ]);
       if (data?.ok === false) {
         return { ok: false, error: typeof data.error === "string" ? data.error : "Export failed" };
       }
@@ -132,10 +137,10 @@ export function useIntentPacks(): IntentPacksState {
 
   const importPack = useCallback(async (json: string, confirm: boolean) => {
     try {
-      const data = await call<[{ json: string; confirm: boolean }], MutationResponse>("import_intent_pack", {
-        json,
-        confirm,
-      });
+      const data = await callDeckyWithTimeout<[{ json: string; confirm: boolean }], MutationResponse>(
+        "import_intent_pack",
+        [{ json, confirm }]
+      );
       if (data?.ok === false) {
         return { ok: false, error: typeof data.error === "string" ? data.error : "Import failed" };
       }
@@ -156,7 +161,9 @@ export function useIntentPacks(): IntentPacksState {
 
   const removePack = useCallback(async (packId: string) => {
     try {
-      const data = await call<[string], MutationResponse>("remove_intent_pack", packId);
+      const data = await callDeckyWithTimeout<[string], MutationResponse>("remove_intent_pack", [
+        packId,
+      ]);
       if (data?.ok === false) {
         setError(typeof data.error === "string" ? data.error : "Remove failed");
         return false;

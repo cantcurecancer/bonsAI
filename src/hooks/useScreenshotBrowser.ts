@@ -6,10 +6,10 @@
  * Does not: Upload or analyze images — backend list_recent_screenshots and Ask attachment pipeline.
  */
 import { useCallback, useRef, useState } from "react";
-import { call, toaster } from "@decky/api";
+import { toaster } from "@decky/api";
 import { Navigation, Router } from "@decky/ui";
 import type { AskAttachment, ScreenshotItem } from "../types/bonsaiUi";
-import { formatDeckyRpcError } from "../utils/deckyCall";
+import { callDeckyWithTimeout, formatDeckyRpcError } from "../utils/deckyCall";
 import { peekBonsaiSessionPendingRestore } from "../utils/bonsaiSessionSurvival";
 
 type RecentScreenshotsResponse = {
@@ -81,10 +81,9 @@ export function useScreenshotBrowser({
     setIsLoadingRecentScreenshots(true);
     setMediaError("");
     try {
-      const response = await call<[string, number], RecentScreenshotsResponse>(
+      const response = await callDeckyWithTimeout<[string, number], RecentScreenshotsResponse>(
         "list_recent_screenshots",
-        appId,
-        limit,
+        [appId, limit],
       );
       if (response.success) {
         const rawItems = response.items ?? [];
@@ -115,10 +114,10 @@ export function useScreenshotBrowser({
     const appId = runningApp?.appid?.toString() ?? "";
     setIsCapturingScreenshot(true);
     try {
-      const rpcPromise = call<
+      const rpcPromise = callDeckyWithTimeout<
         [string],
         { success?: boolean; item?: ScreenshotItem; error?: string }
-      >("take_steam_screenshot", appId);
+      >("take_steam_screenshot", [appId]);
       Navigation.CloseSideMenus();
       const response = await rpcPromise;
       if (!response?.success || !response.item?.path) {

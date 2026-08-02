@@ -102,8 +102,16 @@ but every `save_settings` / `load_settings` call site uses raw `call()` —
 5 in `src/index.tsx` plus 4 in `src/hooks/usePluginSettings.ts`. The doc comment
 describes an intent that the code does not follow.
 
-Candidate Phase 3 item, and a cheap one: the change is mechanical and the
-behavior difference is a timeout that only fires on a hung backend.
+**Resolved 2026-08-02.** The split is now 4 raw call sites, everything else
+wrapped. The four exceptions are deliberate and commented in place —
+`clear_plugin_data` and `install_rag_corpus_local` (`src/index.tsx`),
+`start_voice_transcription` and `stop_voice_transcription`
+(`src/hooks/useVoiceTranscription.ts`) — because multi-GB model teardown, a
+corpus copy, and whisper finalization can each legitimately outrun any UI
+deadline. Note this is a **deliberate behavior change**, not a pure refactor: a
+hung backend now surfaces a timeout error where the UI previously waited forever.
+Converting also means moving spread args into an array, since the wrapper takes
+`(method, argsArray, timeoutMs)`.
 
 ### In `rpc-map.json` but never called from TypeScript — 11
 
