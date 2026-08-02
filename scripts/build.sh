@@ -57,7 +57,6 @@ if [[ "$COMMAND" != "release" && "$COMMAND" != "-h" && "$COMMAND" != "--help" ]]
     : "${DECK_PORT:=22}"
     : "${DECK_USER:=deck}"
     : "${DECK_DIR:=/home/deck}"
-    : "${PC_IP:?PC_IP is not set in .env}"
     : "${PLUGIN_NAME:=bonsAI}"
     SSH_DEST="${DECK_USER}@${DECK_IP}"
     SSH_OPTS="-p ${DECK_PORT}"
@@ -89,15 +88,6 @@ do_install() {
     fi
 }
 
-do_generate_config() {
-    bold "Generating src/config.ts..."
-    cat > src/config.ts <<CONF
-export const HostIp = '${DECK_IP}';
-export const PcIp = '${PC_IP}';
-CONF
-    green "  src/config.ts written (HostIp=${DECK_IP}, PcIp=${PC_IP})"
-}
-
 do_build() {
     bold "Building plugin frontend..."
     pnpm run build
@@ -108,7 +98,6 @@ do_full_build() {
     ensure_pnpm
     ensure_node
     do_install
-    do_generate_config
     do_build
 }
 
