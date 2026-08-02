@@ -33,6 +33,17 @@ async function freshPlugin(): Promise<DeckyPlugin> {
   return (await import("./index")).default as DeckyPlugin;
 }
 
+/**
+ * For tests that never mount the tree, so module state cannot matter. Importing
+ * index.tsx pulls in the whole component graph, which is slow enough that doing
+ * it once per test pushes the file past the default timeout under full-suite load.
+ */
+let shared: Promise<DeckyPlugin> | null = null;
+function sharedPlugin(): Promise<DeckyPlugin> {
+  if (!shared) shared = import("./index").then((m) => m.default as DeckyPlugin);
+  return shared;
+}
+
 describe("plugin root", () => {
   beforeEach(() => {
     resetFakeDeckyRpc();
@@ -40,7 +51,7 @@ describe("plugin root", () => {
 
   describe("Decky contract", () => {
     it("exposes the fields Decky needs to show the plugin in the QAM", async () => {
-      const plugin = await freshPlugin();
+      const plugin = await sharedPlugin();
       expect(plugin.name).toBe("bonsAI");
       expect(plugin.titleView).toBeTruthy();
       expect(plugin.content).toBeTruthy();
@@ -49,12 +60,12 @@ describe("plugin root", () => {
     });
 
     it("unmounts without throwing", async () => {
-      const plugin = await freshPlugin();
+      const plugin = await sharedPlugin();
       expect(() => plugin.onDismount?.()).not.toThrow();
     });
 
     it("shows the build version in the title", async () => {
-      const plugin = await freshPlugin();
+      const plugin = await sharedPlugin();
       render(plugin.titleView as ReactElement);
       expect(screen.getByText(`v${PLUGIN_VERSION}`)).toBeTruthy();
     });

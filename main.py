@@ -2114,7 +2114,6 @@ class Plugin:
 
     async def get_input_transparency(self):
         """Return the last Ask transparency snapshot (full prompts; fetch after terminal completion)."""
-        from backend.services.tdp_service import read_sandbox_sysfs_writes, sandbox_sysfs_root
         from backend.services.transparency_service import ensure_context_chips_on_snapshot
 
         plugin = Plugin._coerce_instance(self)
@@ -2123,10 +2122,7 @@ class Plugin:
         if not isinstance(snap, dict) or not snap:
             return {"available": False}
         enriched = ensure_context_chips_on_snapshot(dict(snap))
-        out: dict = {"available": True, "snapshot": enriched}
-        if sandbox_sysfs_root():
-            out["sysfs_writes"] = read_sandbox_sysfs_writes()
-        return out
+        return {"available": True, "snapshot": enriched}
 
     async def get_reply_language_snapshot(self):
         """Return Steam client language, persisted override, and effective Ask reply language."""

@@ -8,6 +8,9 @@ export default defineConfig({
     // this was .ts only, which is part of why 44 component files had no tests:
     // a .tsx test file was silently never collected.
     include: ["src/**/*.test.{ts,tsx}"],
+    // Mounting the full plugin tree (index.test.tsx) is inherently slow, and
+    // slower still when files run in parallel; 5s is not enough under load.
+    testTimeout: 20000,
     globals: false,
   },
 });

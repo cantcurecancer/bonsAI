@@ -1,4 +1,4 @@
-"""TDP reads and the preview sandbox hwmon path (the sysfs write path was removed 2026-08-02)."""
+"""TDP reads and the preview sandbox hwmon path (the sysfs write path and its write log were removed 2026-08-02)."""
 
 import os
 import tempfile
@@ -27,10 +27,8 @@ class TdpSandboxTests(unittest.TestCase):
             "/sys/class/hwmon/hwmon-amdgpu-preview",
         )
 
-    def test_read_sandbox_sysfs_writes_is_empty_without_a_producer(self):
-        # Nothing writes this file since the apply path was removed; the reader
-        # stays because get_input_transparency still reports it.
-        self.assertEqual(tdp_service.read_sandbox_sysfs_writes(), [])
+    def test_sandbox_root_reads_from_env(self):
+        self.assertEqual(tdp_service.sandbox_sysfs_root(), self._tmpdir.name)
 
 
 class TdpReadTests(unittest.TestCase):

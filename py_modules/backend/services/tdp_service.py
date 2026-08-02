@@ -3,12 +3,11 @@
 Purpose: Read current Steam Deck TDP and supply the clamp bounds Ask recommendations use.
 Used for: TDP Ask recommendations and the preview sandbox hwmon path.
 Solves: Clamped watt/MHz bounds, clean subprocess env, and current-cap reads from amdgpu hwmon.
-Does not: Write to sysfs. The apply path was removed on 2026-07-30 (TDP is suggestion-only);
-  read_sandbox_sysfs_writes survives for preview transparency and now has no producer.
+Does not: Write to sysfs, or report sandbox writes. The apply path was removed on
+  2026-07-30 (TDP is suggestion-only) and the sandbox write log it fed went with it.
 """
 
 import glob
-import json
 import os
 from typing import Any, Optional
 
@@ -23,27 +22,6 @@ def sandbox_sysfs_root() -> Optional[str]:
     """Preview sidecar sandbox root; when set, sysfs writes are mocked."""
     raw = (os.environ.get("DECKY_SANDBOX_ROOT") or "").strip()
     return raw or None
-
-
-def read_sandbox_sysfs_writes() -> list[dict]:
-    """Return parsed sysfs mock writes from the preview sandbox (for tests)."""
-    root = sandbox_sysfs_root()
-    if not root:
-        return []
-    out_path = os.path.join(root, "sysfs-writes.jsonl")
-    if not os.path.isfile(out_path):
-        return []
-    rows: list[dict] = []
-    with open(out_path, encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if not line:
-                continue
-            try:
-                rows.append(json.loads(line))
-            except json.JSONDecodeError:
-                continue
-    return rows
 
 
 _PREVIEW_AMGPU_HWMON = "/sys/class/hwmon/hwmon-amdgpu-preview"

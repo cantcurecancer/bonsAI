@@ -885,16 +885,11 @@ const Content: React.FC = () => {
         });
       },
       getTransparencyJson: () => lastTransparency,
-      getSysfsWrites: async () => {
-        try {
-          const res = (await callDeckyWithTimeout("get_input_transparency", [])) as {
-            sysfs_writes?: unknown;
-          };
-          return res?.sysfs_writes ?? [];
-        } catch {
-          return [];
-        }
-      },
+      // bonsAI stopped writing sysfs on 2026-07-30 and the sandbox write log was
+      // removed with it, so there is nothing left to report. Kept as a stable
+      // empty contract because DPS preview scenarios live outside this repo and
+      // may still call it.
+      getSysfsWrites: async () => [],
       setTab: (tabId: string) => setCurrentTab(tabId),
       resetDisclaimer: () => {
         try {
