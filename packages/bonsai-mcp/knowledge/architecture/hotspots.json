@@ -2,12 +2,12 @@
   "hotspots": [
     {
       "path": "main.py",
-      "lines": 3021,
+      "lines": 3025,
       "role": "Decky RPC entrypoints and orchestration"
     },
     {
       "path": "src/index.tsx",
-      "lines": 1966,
+      "lines": 1970,
       "role": "Plugin root: tabs, scoped CSS, RPC wiring, Settings"
     },
     {
@@ -101,13 +101,13 @@
       "role": ""
     },
     {
-      "path": "src/styles/sections/section-6.ts",
-      "lines": 503,
+      "path": "src/components/KnowledgeBaseSection.tsx",
+      "lines": 517,
       "role": ""
     },
     {
-      "path": "src/components/KnowledgeBaseSection.tsx",
-      "lines": 499,
+      "path": "src/styles/sections/section-6.ts",
+      "lines": 503,
       "role": ""
     },
     {
