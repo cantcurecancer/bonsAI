@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 228,
-  "edgeCount": 507,
+  "fileCount": 229,
+  "edgeCount": 511,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -955,6 +955,17 @@
         "src/index.tsx"
       ]
     },
+    "src/features/voice/useVoiceAskInput.ts": {
+      "imports": [
+        "src/hooks/useVoiceTranscription.ts",
+        "src/i18n/catalog.ts",
+        "src/i18n/keys.ts",
+        "src/utils/deckyCall.ts"
+      ],
+      "importedBy": [
+        "src/index.tsx"
+      ]
+    },
     "src/hooks/useBackgroundGameAi.test.ts": {
       "imports": [
         "src/hooks/useBackgroundGameAi.ts",
@@ -1190,7 +1201,7 @@
         "src/utils/deckyCall.ts"
       ],
       "importedBy": [
-        "src/index.tsx"
+        "src/features/voice/useVoiceAskInput.ts"
       ]
     },
     "src/i18n/catalog.ts": {
@@ -1198,6 +1209,7 @@
         "src/i18n/keys.ts"
       ],
       "importedBy": [
+        "src/features/voice/useVoiceAskInput.ts",
         "src/hooks/useReplyLanguage.ts",
         "src/utils/askThinkingPhases.ts",
         "src/utils/i18n.ts"
@@ -1207,6 +1219,7 @@
       "imports": [],
       "importedBy": [
         "src/components/AboutTab.tsx",
+        "src/features/voice/useVoiceAskInput.ts",
         "src/hooks/useReplyLanguage.ts",
         "src/i18n/catalog.ts",
         "src/utils/i18n.ts"
@@ -1254,6 +1267,7 @@
         "src/features/plugin-shell/tabTitles.tsx",
         "src/features/unified-input/constants.ts",
         "src/features/unified-input/useUnifiedInputSurface.ts",
+        "src/features/voice/useVoiceAskInput.ts",
         "src/hooks/useBonsaiAskOrchestration.ts",
         "src/hooks/useBonsaiPluginShell.ts",
         "src/hooks/useCapturedFrontendErrors.ts",
@@ -1266,7 +1280,6 @@
         "src/hooks/useSteamSettingsSearch.ts",
         "src/hooks/useTabStripBodyOffset.ts",
         "src/hooks/useUiScaleProfile.ts",
-        "src/hooks/useVoiceTranscription.ts",
         "src/pluginVersion.ts",
         "src/preview/previewTestHooks.ts",
         "src/utils/appDesktopLog.ts",
@@ -1860,6 +1873,7 @@
         "src/components/OllamaWhereAiRunsSection.tsx",
         "src/components/PullModelsModal.tsx",
         "src/components/VoiceInputSettingsSection.tsx",
+        "src/features/voice/useVoiceAskInput.ts",
         "src/hooks/useBackgroundGameAi.ts",
         "src/hooks/useBonsaiAskOrchestration.ts",
         "src/hooks/useIntentPacks.ts",

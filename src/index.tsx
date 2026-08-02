@@ -88,7 +88,7 @@ import { useIntentPacks } from "./hooks/useIntentPacks";
 import { useScreenshotBrowser } from "./hooks/useScreenshotBrowser";
 import { useSteamSettingsSearch } from "./hooks/useSteamSettingsSearch";
 import { useBonsaiPluginShell } from "./hooks/useBonsaiPluginShell";
-import { useVoiceTranscription } from "./hooks/useVoiceTranscription";
+import { useVoiceAskInput } from "./features/voice/useVoiceAskInput";
 import { useBonsaiAskOrchestration } from "./hooks/useBonsaiAskOrchestration";
 import { useDisclaimerAndLocalRuntimeGates } from "./hooks/useDisclaimerAndLocalRuntimeGates";
 import { useCapturedFrontendErrors } from "./hooks/useCapturedFrontendErrors";
@@ -373,31 +373,6 @@ const Content: React.FC = () => {
     setSelectedIndex,
     setNavigationMessage,
   });
-
-  const [voiceRecording, setVoiceRecording] = useState(false);
-
-  const onVoiceError = useCallback((e: unknown) => {
-    setVoiceRecording(false);
-    toaster.toast({
-      title: uiT("toast.voiceInputError.title"),
-      body: formatDeckyRpcError(e),
-      duration: 5000,
-    });
-  }, [uiT]);
-
-  const {
-    startVoiceTranscription,
-    stopVoiceTranscription,
-    invalidateVoice,
-  } = useVoiceTranscription(setUnifiedInput, onVoiceError);
-
-  useEffect(() => {
-    if (!capabilities.microphone_access && voiceRecording) {
-      void stopVoiceTranscription();
-      invalidateVoice();
-      setVoiceRecording(false);
-    }
-  }, [capabilities.microphone_access, voiceRecording, stopVoiceTranscription, invalidateVoice]);
 
   const appLogPrefs = useMemo(
     () => ({
@@ -923,41 +898,14 @@ const Content: React.FC = () => {
     uiT,
   ]);
 
-  const onMicInput = useCallback(() => {
-    if (isAsking) return;
-    if (voiceRecording) {
-      setVoiceRecording(false);
-      void stopVoiceTranscription();
-      return;
-    }
-    if (!capabilities.microphone_access) {
-      toaster.toast({
-        title: "Permission required",
-        body: "Enable Voice input (microphone) in the Permissions tab to use speech-to-text.",
-        duration: 4500,
-      });
-      goToPermissionsTab();
-      return;
-    }
-    void startVoiceTranscription(unifiedInput)
-      .then(() => setVoiceRecording(true))
-      .catch((e: unknown) => {
-        setVoiceRecording(false);
-        toaster.toast({
-          title: "Voice input unavailable",
-          body: e instanceof Error ? e.message : formatDeckyRpcError(e),
-          duration: 5500,
-        });
-      });
-  }, [
-    isAsking,
-    voiceRecording,
-    capabilities.microphone_access,
-    goToPermissionsTab,
-    startVoiceTranscription,
-    stopVoiceTranscription,
+  const { voiceRecording, onMicInput } = useVoiceAskInput({
+    setUnifiedInput,
     unifiedInput,
-  ]);
+    microphoneAccess: capabilities.microphone_access,
+    isAsking,
+    goToPermissionsTab,
+    uiT,
+  });
 
   const showSearchClearButton = Boolean(unifiedInput.trim());
 
