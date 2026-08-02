@@ -1,6 +1,6 @@
 # bonsAI Roadmap
 
-Tracks **bugs and active engineering** ([In Progress](#in-progress)), **refactor decisions** ([Decisions needed](#decisions-needed) — locked 2026-08-02), deferred **QA** ([QA backlog](#qa-backlog)), the **backlog** ([Planned](#planned)), and pointers to shipped work ([Completed](#completed)).
+Tracks **bugs and active engineering** ([In Progress](#in-progress)), **known dead code awaiting a call** ([Cleanup candidates](#cleanup-candidates)), **refactor decisions** ([Decisions needed](#decisions-needed) — locked 2026-08-02), deferred **QA** ([QA backlog](#qa-backlog)), the **backlog** ([Planned](#planned)), and pointers to shipped work ([Completed](#completed)).
 
 Setup and vision tuning: [troubleshooting.md](troubleshooting.md). QA: [testing.md](testing.md). Release: [development.md](development.md), [CHANGELOG.md](../CHANGELOG.md).
 
@@ -276,6 +276,23 @@ the split.
 - **D1b:** `suggest_chip_candidates` ([knowledge_base_service.py:685](../py_modules/backend/services/knowledge_base_service.py)) and `session_rag_chip_candidates_to_rpc` (`:744`) already exist with four tests in `tests/test_knowledge_base_service.py`. **`main.py:163-164` already imports both and never calls them** — the work was interrupted between the import and the method. The frontend sends `[appId, appName, shortcutName]` ([sessionRagChipCandidates.ts:55](../src/utils/sessionRagChipCandidates.ts)), which matches the service signature exactly. This is an adapter of roughly ten lines. Do not redesign ranking before wiring it.
 - **D2:** `ask_game_ai` is not dead — `tests/preview-suite/` calls it extensively. `ask_ollama` is the internal Ask engine, not an orphan RPC.
 - **D4:** Six of nine evidence folders are not all unreferenced — several are cited from [archive/testing-results-2026.md](archive/testing-results-2026.md) and [archive/testing-failures-2026.md](archive/testing-failures-2026.md). Prune only after a link audit.
+
+---
+
+## Cleanup candidates
+
+Dead or hazardous code found during the 2026-08-02 refactor and **deliberately
+left in place** — each was outside the scope of the commit that surfaced it.
+Not defects: nothing here misbehaves today. Each row says what it is, why it was
+skipped, and what deleting it costs. Verified against the tree on 2026-08-02.
+
+| What | Evidence | Why it was skipped | Risk to delete |
+|---|---|---|---|
+| **One-shot migration scripts** — `scripts/extract_ollama_section.py`, `scripts/trim_settings_tab.py` | Both rewrite `SettingsTab.tsx` / `OllamaWhereAiRunsSection.tsx` from source text hardcoded inside the script | Outside the barrel-deletion commit's scope | **None — and leaving them is the risk.** They are not on the build, test, or deploy path, and their embedded source is now badly stale. Running either today would revert real components and reintroduce the deleted `settingsAndResponse` barrel import. Delete outright |
+| **Orphaned kmsgrab capture sub-tree** — `try_kmsgrab_screenshot` (`screenshot_media.py:818`), `_fix_capture_file_ownership` (`:772`), `_sudo_nopasswd_available` (`:756`), `_desktop_session_active` (`:586`) | Reachable only from `try_gamescope_screenshot_capture`, deleted in `45cb0ff` with the `capture_screenshot` RPC | `screenshot_media.py` is on the [05-plan.md](audit/05-plan.md) DO-NOT-TOUCH list, and that commit had already gone one level past its remit | Low — four functions, no callers, module has real behavioral coverage. Confirm no preview-suite reference **by filename as well as symbol** first |
+| **`journal_text` plumbing** — `stack_context_blocks` still takes the parameter (`knowledge_base_service.py:764,773`) and `game_ai_request.py:318` passes `""` permanently | Proton journal feature removed 2026-07-30; its service deleted in `ebdc0f2` | Removing a parameter from a live function on the **Ask path** deserves its own commit, not a ride-along in a deletion pass | Low-medium — signature change on a hot path. Covered by `test_stack_context_journal_between_proton_and_kb` |
+| **`sysfs_writes` reporting with no producer** — `get_input_transparency` (`main.py:2117,2128`) calls `read_sandbox_sysfs_writes`, which reads a file nothing writes since the TDP apply path went | `tdp_service.py` | Kept by explicit decision on 2026-08-02 so preview transparency keeps its field | Low, but decide *why* it exists first: if preview automation asserts on the field, it should keep returning `[]`; if not, both it and the reader can go |
+| **Broken links inside `docs/archive/`** — 272 relative links resolve to a `docs/` layout that no longer exists | Sweep recorded in [06-doc-triage.md](audit/06-doc-triage.md) § Link audit | ~272 edits across historical files nobody navigates by link | None, but low value. Fold into the **D4** evidence-hygiene pass rather than doing it standalone |
 
 ---
 
