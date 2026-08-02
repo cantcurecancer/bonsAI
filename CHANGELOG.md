@@ -17,6 +17,9 @@ All notable changes to this project are documented in this file.
 - **`src/config.ts`** and its `scripts/build.sh` generator (`do_generate_config`), plus the now-unused `PC_IP` build preflight. The exported `HostIp`/`PcIp` constants had no importers; `PC_IP` remains a runtime `.env` value.
 - **`src/v0-drafts/`** — 56 untracked v0.dev scaffolding files, excluded from build, typecheck, tests, and the agent module map. Archived outside the repo before deletion.
 
+### Fixed
+- **Pulled models now join the model try order:** `merge_pulled_tags_into_routing_orders` had no Python implementation, so after a **custom** local-Ollama setup profile installed models the call always failed and the new tags never reached `text_model_routing_order` / `vision_model_routing_order` — try order had to be set by hand. Now implemented in `main.py`; pulled tags append to a saved try order (top instead when high-VRAM and that toggle is on), and vision-capable tags also join the vision list. When no try order has been saved the RPC deliberately writes nothing, because the order derived from installed models already includes the new tag. `tests/test_merge_pulled_tags_rpc.py`; on-Deck **ROUTING-MERGE-01** in `docs/testing.md`.
+
 ## [0.5.0] - 2026-07-15
 
 ### Added

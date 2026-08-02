@@ -59,9 +59,15 @@ it ([01-map.md](01-map.md) §4).
 `test_tdp_sandbox_sysfs.py` exist and would be deleted with their subjects.
 **Risk: LOW** — with one gate. **Blocked on [D2](../roadmap.md#decisions-needed).**
 
-> **Gate before deleting:** the RPC scan covered `src/` only. Confirm nothing in
-> `tests/preview-suite/` or the `preview.callRpc` tooling drives these. `UNKNOWN`
-> until checked; it is a single grep over the preview suite.
+> **Gate before deleting: CLEARED 2026-08-02.** The RPC scan originally covered
+> `src/` only. Grepping `tests/preview-suite/` and `scripts/` returns zero hits
+> for `proton_experiment`, `apply_tdp`, `log_navigation`, `capture_screenshot`,
+> `dbg_fe_log`, `cancel_rag_corpus_download`, and `thinking_tiny`. `ask_game_ai`
+> returns 22 hits across five tier files — it stays, per
+> [D2](../roadmap.md#maintainer-decisions-locked--2026-08-02). `apply_tdp` has no
+> non-test reference anywhere in the repo, so the `tier1-tdp.json` cases that ask
+> to set wattage exercise the recommendation path and cannot reach it. Do not
+> re-run this grep.
 
 **Why first:** permanently shrinks the search space for every later session,
 needs no design decisions, and is the highest-confidence item in the audit.

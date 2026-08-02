@@ -569,10 +569,10 @@ export const OllamaWhereAiRunsSection: React.FC<OllamaWhereAiRunsSectionProps> =
       }
       const pulled = localSetupStatus.pull_tags?.filter(Boolean) ?? [];
       if (localSetupStatus.profile === "custom" && pulled.length > 0) {
-        // KNOWN BUG: merge_pulled_tags_into_routing_orders has no implementation in
-        // main.py, so this always rejects and pulled tags never reach the routing
-        // order. See docs/roadmap.md "Known bugs". Logged rather than swallowed so
-        // the failure is visible on-device.
+        // Appends the pulled tags to the saved try orders. A no-op when the user
+        // has no saved order, because the derived one already includes anything
+        // just installed. Logged rather than swallowed so failures stay visible
+        // on-device.
         void callDeckyWithTimeout<[string[]], { ok?: boolean }>(
           "merge_pulled_tags_into_routing_orders",
           [pulled],

@@ -69,6 +69,7 @@ One smoke often covers many features. Status: **Verified** / **Partial** / **Ope
 | Character voice / Pyro | CHAR-VOICE, PYRO-EGG | Open | Tier 2 |
 | Voice STT | VOICE-01…07 | Open | Tier 2; see troubleshooting § Voice |
 | Model routing pickers | ROUTING-01…02 | Partial | Fetch-on-open + save OK; focus/chrome → Bugs (**ROUTING-FOCUS-01**) |
+| Pulled tags merged into try order | ROUTING-MERGE-01 | Open | 2026-08-02: `merge_pulled_tags_into_routing_orders` implemented (backend was missing since the feature shipped). 8 unit tests in `tests/test_merge_pulled_tags_rpc.py`. On-Deck: run a **custom** local-Ollama setup profile that pulls a model, then confirm the new tag appears at the bottom of **Set text try order…** — and at the top instead when **Allow high-VRAM model fallbacks** is on and the tag is a large one. A vision-capable pull (e.g. `qwen2.5vl:3b`) must also appear in the vision list; a text-only pull must not. With **no** saved try order the setting stays empty by design — verify the pulled model is still reachable for Ask |
 | Ollama local-setup focus / Install label | OLLAMA-FOCUS-01…03, KB-FOCUS-01 | Open | Auto-probe + vertical chain + KB pair; re-check KB equal height |
 | Ollama keep-alive slider gpfocus ring | OLLAMA-KEEPALIVE-FOCUS-01 | Open | Keep models loaded thumb: white ring vertically centered on dot (1px regression) |
 | UI scale focus graph | UI-SCALE-01…05 | Open | Template for new controls |

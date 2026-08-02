@@ -63,6 +63,7 @@
     "tests/test_local_ollama_loopback.py",
     "tests/test_local_ollama_setup_service.py",
     "tests/test_local_ollama_teardown.py",
+    "tests/test_merge_pulled_tags_rpc.py",
     "tests/test_model_policy.py",
     "tests/test_model_routing_order.py",
     "tests/test_model_selection.py",

@@ -1773,6 +1773,66 @@ class Plugin:
         raw = tags if isinstance(tags, list) else []
         return await plugin._start_custom_ollama_pull(raw)
 
+    async def merge_pulled_tags_into_routing_orders(self, tags: Any = None):
+        """Append newly pulled tags to the user's saved text/vision try orders."""
+        plugin = Plugin._coerce_instance(self)
+        pulled = normalize_ollama_pull_tags(tags if isinstance(tags, list) else [])
+        if not pulled:
+            return {"ok": False, "error": "no_tags", "merged": []}
+
+        current = await self.load_settings()
+        high_vram = current.get("model_allow_high_vram_fallbacks") is True
+        saved_text = current.get("text_model_routing_order")
+        saved_vision = current.get("vision_model_routing_order")
+        text_order = list(saved_text) if isinstance(saved_text, list) else []
+        vision_order = list(saved_vision) if isinstance(saved_vision, list) else []
+
+        # An empty saved list means the user never set a try order, so
+        # resolve_routing_order() derives one from installed models
+        # (ollama_routing.py:366-370) and a just-pulled tag is already in it.
+        # Writing a one-tag list here would replace that derived chain instead of
+        # extending it, so empty orders are left alone.
+        merged: list[str] = []
+        for tag in pulled:
+            changed = False
+            if text_order:
+                text_order = merge_pulled_tag(text_order, tag, high_vram)
+                changed = True
+            if vision_order and is_vision_capable_tag(tag):
+                vision_order = merge_pulled_tag(vision_order, tag, high_vram)
+                changed = True
+            if changed:
+                merged.append(tag)
+
+        if not merged:
+            reason = "defaults_in_use" if not text_order and not vision_order else "no_matching_order"
+            return {
+                "ok": True,
+                "merged": [],
+                "reason": reason,
+                "text_model_routing_order": text_order,
+                "vision_model_routing_order": vision_order,
+            }
+
+        saved = await self.save_settings(
+            {
+                "text_model_routing_order": text_order,
+                "vision_model_routing_order": vision_order,
+            }
+        )
+        await plugin._maybe_app_log(
+            "local_setup.routing_merge",
+            "pulled tags merged into routing order",
+            fields={"merged": ",".join(merged)},
+        )
+        return {
+            "ok": True,
+            "merged": merged,
+            "error": "",
+            "text_model_routing_order": saved.get("text_model_routing_order", []),
+            "vision_model_routing_order": saved.get("vision_model_routing_order", []),
+        }
+
     async def delete_ollama_model(self, tag: str = ""):
         """Remove one installed Ollama model via ``ollama rm`` (argv form)."""
         plugin = Plugin._coerce_instance(self)
