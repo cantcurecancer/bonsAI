@@ -17,11 +17,7 @@ import {
   ConfirmModal,
 } from "@decky/ui";
 import { toaster } from "@decky/api";
-import {
-  OLLAMA_LOCAL_ON_DECK_DEFAULT_PCIP,
-  type NamedOllamaHost,
-  MAX_NAMED_OLLAMA_HOSTS,
-} from "../utils/settingsAndResponse";
+import { OLLAMA_LOCAL_ON_DECK_DEFAULT_PCIP, type NamedOllamaHost, MAX_NAMED_OLLAMA_HOSTS } from "../data/bonsaiSettingsSchema";
 import type { DeveloperConnectionStatus } from "./DeveloperTab";
 import { callDeckyWithTimeout, DECKY_RPC_TIMEOUT_MS, formatDeckyRpcError } from "../utils/deckyCall";
 import {

@@ -7,11 +7,7 @@
  */
 import React, { useCallback, useRef } from "react";
 import { Button, PanelSection, PanelSectionRow, ToggleField } from "@decky/ui";
-import {
-  DEFAULT_LATENCY_WARNING_SECONDS,
-  DEFAULT_REQUEST_TIMEOUT_SECONDS,
-  type OllamaKeepAliveDuration,
-} from "../utils/settingsAndResponse";
+import { DEFAULT_LATENCY_WARNING_SECONDS, DEFAULT_REQUEST_TIMEOUT_SECONDS, type OllamaKeepAliveDuration } from "../data/bonsaiSettingsSchema";
 import { MODEL_POLICY_TIER_LABELS_PLAIN, type ModelPolicyTierId } from "../data/modelPolicy";
 import type { DeveloperConnectionStatus } from "./DeveloperTab";
 import { OllamaWhereAiRunsSection } from "./OllamaWhereAiRunsSection";
@@ -20,7 +16,7 @@ import { SettingsTabConnectionTimeoutSlider } from "./SettingsTabConnectionTimeo
 import { SettingsTabOllamaKeepAliveSlider } from "./SettingsTabOllamaKeepAliveSlider";
 import { OllamaReplyVerbositySlider } from "./OllamaReplyVerbositySlider";
 import type { ReplyVerbosityId } from "../data/replyVerbosity";
-import type { NamedOllamaHost } from "../utils/settingsAndResponse";
+import type { NamedOllamaHost } from "../data/bonsaiSettingsSchema";
 import { SETTINGS_GLASS_BTN } from "../styles/settingsGlassButton";
 
 export type OllamaTabProps = {

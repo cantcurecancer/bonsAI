@@ -16,11 +16,7 @@ import {
   ToggleField,
 } from "@decky/ui";
 import { toaster } from "@decky/api";
-import {
-  DESKTOP_APP_LOG_LEVEL_OPTIONS,
-  STEAM_WEB_API_KEY_MAX_LEN,
-  type DesktopAppLogLevel,
-} from "../utils/settingsAndResponse";
+import { DESKTOP_APP_LOG_LEVEL_OPTIONS, STEAM_WEB_API_KEY_MAX_LEN, type DesktopAppLogLevel } from "../data/bonsaiSettingsSchema";
 import { formatDeckyRpcError } from "../utils/deckyCall";
 
 const desktopAppLogLevelLabel: Record<DesktopAppLogLevel, string> = {
@@ -64,8 +60,8 @@ export type DeveloperTabProps = {
 
   presetChipFadeAnimationEnabled: boolean;
   setPresetChipFadeAnimationEnabled: (v: boolean) => void;
-  presetChipAnimation: import("../utils/settingsAndResponse").PresetChipAnimation;
-  setPresetChipAnimation: (v: import("../utils/settingsAndResponse").PresetChipAnimation) => void;
+  presetChipAnimation: import("../data/bonsaiSettingsSchema").PresetChipAnimation;
+  setPresetChipAnimation: (v: import("../data/bonsaiSettingsSchema").PresetChipAnimation) => void;
 
   steamWebApiKey: string;
   setSteamWebApiKey: (v: string) => void;

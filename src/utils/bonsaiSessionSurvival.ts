@@ -17,7 +17,7 @@ import type {
   StrategyGuideBranchesPayload,
   StrategyChecklistState,
 } from "../types/bonsaiUi";
-import type { BonsaiSettingsSnapshotInput } from "./settingsAndResponse";
+import type { BonsaiSettingsSnapshotInput } from "../data/bonsaiSettingsSchema";
 import type { TransparencySnapshot } from "./inputTransparency";
 import type { LastExchangeSnapshot } from "../types/backgroundAsk";
 import type { AskThreadExpandedTurnKey } from "../types/bonsaiUi";

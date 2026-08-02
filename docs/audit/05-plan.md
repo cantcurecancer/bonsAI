@@ -159,6 +159,22 @@ through this barrel (116 `normalize` references). Splitting the test by module i
 part of the work.
 **Risk: LOW** — mechanical, compiler-verified.
 
+> **Done 2026-08-02.** 22 importers repointed by script, verified by
+> `tsc --noEmit`; the test moved to `settingsContracts.test.ts` and
+> `unit-gates.json` followed it. Two gotchas a plain import sweep misses:
+> `DeveloperTab.tsx:63` used inline `import("...").Type` expressions rather than
+> import statements, and `AskModeId` / `OllamaKeepAliveDuration` reach consumers
+> through `bonsaiSettingsSchema.ts:25-26` re-exports (`export type { X };`), so
+> an exports scan that only reads declarations will not find their owner.
+>
+> **Found, not fixed:** `scripts/extract_ollama_section.py` and
+> `scripts/trim_settings_tab.py` are one-shot migration scripts from an earlier
+> refactor. They rewrite `SettingsTab.tsx` / `OllamaWhereAiRunsSection.tsx` from
+> hardcoded source text that is now years stale — running either today would
+> revert real files and reintroduce the deleted barrel import. They are not on
+> the build, test, or deploy path. Candidates for deletion; left in place
+> because that is outside this item's scope.
+
 ---
 
 ## Tier 2 — real design work

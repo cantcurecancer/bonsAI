@@ -5,8 +5,7 @@
  * Solves: Avoid wiping restored input on every remount while already in no_persist.
  * Does not: Persist input text — session survival and settings mode own storage behavior.
  */
-import type { UnifiedInputPersistenceMode } from "./settingsAndResponse";
-
+import type { UnifiedInputPersistenceMode } from "../data/bonsaiSettingsSchema";
 /**
  * Clear the Ask field only when the user switches *into* no_persist — not on every mount while
  * already in no_persist (Decky remounts Content after showModal and session survival restores input).

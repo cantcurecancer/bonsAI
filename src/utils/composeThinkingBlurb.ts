@@ -2,8 +2,7 @@
  * Client-side mirror of backend `compose_thinking_blurb` for instant Ask openers.
  * Keep selection logic aligned with `py_modules/backend/services/bonsai_stream_tags.py`.
  */
-import type { AskModeId } from "./settingsAndResponse";
-
+import type { AskModeId } from "../data/bonsaiSettingsSchema";
 const SNIPPET_MAX_LEN = 56;
 const PHASE_MAX_LEN = 240;
 const APP_NAME_MAX_LEN = 40;

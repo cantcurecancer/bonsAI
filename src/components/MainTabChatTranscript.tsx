@@ -19,7 +19,7 @@ import {
   isDownNavigationEvent,
   isUpNavigationEvent,
 } from "../utils/focusNavigation";
-import { formatAppliedTuningBannerText } from "../utils/settingsAndResponse";
+import { formatAppliedTuningBannerText } from "../utils/settingsPayload";
 import type { ModelPolicyDisclosurePayload } from "../data/modelPolicy";
 import { StrategyChecklistPanel } from "./StrategyChecklistPanel";
 import { isPendingPlaceholderResponse } from "../utils/askThinkingPhases";

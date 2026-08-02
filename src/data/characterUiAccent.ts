@@ -6,7 +6,7 @@
  * Does not: List character names or bios — see characterCatalog for display metadata.
  */
 import type { CSSProperties } from "react";
-import type { BonsaiSettings } from "../utils/settingsAndResponse";
+import type { BonsaiSettings } from "./bonsaiSettingsSchema";
 import { ALL_PRESET_IDS, isValidPresetId } from "./characterCatalog";
 import { BONSAI_FOREST_GREEN } from "../features/unified-input/constants";
 

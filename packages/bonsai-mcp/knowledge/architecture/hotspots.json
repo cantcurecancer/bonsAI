@@ -7,7 +7,7 @@
     },
     {
       "path": "src/index.tsx",
-      "lines": 1966,
+      "lines": 1961,
       "role": "Plugin root: tabs, scoped CSS, RPC wiring, Settings"
     },
     {
@@ -17,12 +17,12 @@
     },
     {
       "path": "src/hooks/useBonsaiAskOrchestration.ts",
-      "lines": 1226,
+      "lines": 1223,
       "role": ""
     },
     {
       "path": "src/components/OllamaWhereAiRunsSection.tsx",
-      "lines": 1169,
+      "lines": 1165,
       "role": ""
     },
     {
@@ -92,12 +92,7 @@
     },
     {
       "path": "src/components/SettingsTab.tsx",
-      "lines": 540,
-      "role": ""
-    },
-    {
-      "path": "src/hooks/usePluginSettings.ts",
-      "lines": 539,
+      "lines": 535,
       "role": ""
     },
     {
@@ -121,8 +116,13 @@
       "role": "Load/save/merge settings.json"
     },
     {
-      "path": "src/utils/settingsAndResponse.test.ts",
-      "lines": 469,
+      "path": "src/hooks/usePluginSettings.ts",
+      "lines": 487,
+      "role": ""
+    },
+    {
+      "path": "src/utils/settingsContracts.test.ts",
+      "lines": 473,
       "role": ""
     },
     {
@@ -157,7 +157,7 @@
     },
     {
       "path": "src/utils/composeThinkingBlurb.ts",
-      "lines": 419,
+      "lines": 418,
       "role": ""
     },
     {
@@ -192,7 +192,7 @@
     },
     {
       "path": "src/components/DeveloperTab.tsx",
-      "lines": 363,
+      "lines": 359,
       "role": ""
     },
     {

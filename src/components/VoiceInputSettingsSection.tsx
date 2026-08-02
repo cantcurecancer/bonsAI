@@ -8,10 +8,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { PanelSection, PanelSectionRow, Button, Focusable } from "@decky/ui";
 import { toaster } from "@decky/api";
-import {
-  VOICE_STT_MODEL_OPTIONS,
-  type VoiceSttModelId,
-} from "../utils/settingsAndResponse";
+import { VOICE_STT_MODEL_OPTIONS, type VoiceSttModelId } from "../data/bonsaiSettingsSchema";
 import { callDeckyWithTimeout, DECKY_RPC_TIMEOUT_MS, formatDeckyRpcError } from "../utils/deckyCall";
 
 type VoiceEngineStatus = {

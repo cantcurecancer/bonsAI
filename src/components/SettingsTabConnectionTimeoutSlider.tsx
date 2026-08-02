@@ -6,16 +6,8 @@
  * Does not: Perform health checks or cancel in-flight RPC — only edits settings values.
  */
 import React, { useCallback, useMemo, useRef, useState } from "react";
-import {
-  LATENCY_WARNING_STEP_SECONDS,
-  MAX_REQUEST_TIMEOUT_SECONDS,
-  MIN_LATENCY_WARNING_SECONDS,
-  MIN_REQUEST_TIMEOUT_SECONDS,
-  normalizeLatencyWarningSeconds,
-  normalizeRequestTimeoutSeconds,
-  reconcileLatencyWarningAndTimeout,
-  REQUEST_TIMEOUT_STEP_SECONDS,
-} from "../utils/settingsAndResponse";
+import { LATENCY_WARNING_STEP_SECONDS, MAX_REQUEST_TIMEOUT_SECONDS, MIN_LATENCY_WARNING_SECONDS, MIN_REQUEST_TIMEOUT_SECONDS, REQUEST_TIMEOUT_STEP_SECONDS } from "../data/bonsaiSettingsSchema";
+import { normalizeLatencyWarningSeconds, normalizeRequestTimeoutSeconds, reconcileLatencyWarningAndTimeout } from "../data/bonsaiSettingsNormalizers";
 import { DeckFocusSliderThumb } from "./deck/DeckFocusSlider";
 import {
   clamp,

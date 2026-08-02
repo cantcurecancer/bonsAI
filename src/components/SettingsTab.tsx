@@ -15,11 +15,7 @@ import {
   showModal,
   ConfirmModal,
 } from "@decky/ui";
-import {
-  SCREENSHOT_ATTACHMENT_PRESET_OPTIONS,
-  type ScreenshotAttachmentPreset,
-  type UnifiedInputPersistenceMode,
-} from "../utils/settingsAndResponse";
+import { SCREENSHOT_ATTACHMENT_PRESET_OPTIONS, type ScreenshotAttachmentPreset, type UnifiedInputPersistenceMode } from "../data/bonsaiSettingsSchema";
 import {
   AI_CHARACTER_ACCENT_INTENSITY_OPTIONS,
   type AiCharacterAccentIntensityId,
@@ -36,8 +32,7 @@ import {
 import { VoiceInputSettingsSection } from "./VoiceInputSettingsSection";
 import { SettingsTabUiScaleSection } from "./SettingsTabUiScaleSection";
 import type { UiScaleProfileId } from "../data/uiScaleProfile";
-import type { VoiceSttModelId } from "../utils/settingsAndResponse";
-
+import type { VoiceSttModelId } from "../data/bonsaiSettingsSchema";
 const persistenceModeLabel: Record<UnifiedInputPersistenceMode, string> = {
   persist_all: "Remember everything",
   persist_search_only: "Remember search only",

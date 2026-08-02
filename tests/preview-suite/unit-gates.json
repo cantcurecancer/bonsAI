@@ -10,7 +10,7 @@
       "captureSteps": [1],
       "steps": [
         { "action": "shellVitest", "file": "src/data/presets.test.ts" },
-        { "action": "shellVitest", "file": "src/utils/settingsAndResponse.test.ts" }
+        { "action": "shellVitest", "file": "src/utils/settingsContracts.test.ts" }
       ]
     },
     {

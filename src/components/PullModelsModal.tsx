@@ -26,7 +26,7 @@ import {
   type PullModelGroup,
 } from "../data/pullModelCatalog";
 import { isDeprioritizedOllamaTag } from "../data/deprioritizedModels";
-import { OLLAMA_LOCAL_ON_DECK_DEFAULT_PCIP } from "../utils/settingsAndResponse";
+import { OLLAMA_LOCAL_ON_DECK_DEFAULT_PCIP } from "../data/bonsaiSettingsSchema";
 import { callDeckyWithTimeout, DECKY_RPC_TIMEOUT_MS, formatDeckyRpcError } from "../utils/deckyCall";
 import type { ModelPolicyTierId } from "../data/modelPolicy";
 import { disclosureSummaryForSourceClass } from "../data/modelPolicy";

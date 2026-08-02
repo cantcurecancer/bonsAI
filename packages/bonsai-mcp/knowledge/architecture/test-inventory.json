@@ -37,7 +37,7 @@
     "src/utils/persistOllamaIp.test.ts",
     "src/utils/pullModelRecommendations.test.ts",
     "src/utils/runningGameCharacterSuggestions.test.ts",
-    "src/utils/settingsAndResponse.test.ts",
+    "src/utils/settingsContracts.test.ts",
     "src/utils/splitResponseIntoChunks.test.ts",
     "src/utils/strategyChecklist.test.ts",
     "src/utils/streamMarkdownPrepare.test.ts",

@@ -4,8 +4,7 @@ import { call } from "@decky/api";
 import { usePluginSettings } from "./usePluginSettings";
 import { defaultSettingsFixture } from "../test-harness/rpcFixtures";
 import { dispatchFakeRpc, getRpcCallLog, resetFakeDeckyRpc, setRpcHandler } from "../test-harness/fakeDeckyRpc";
-import { DEFAULT_LATENCY_WARNING_SECONDS } from "../utils/settingsAndResponse";
-
+import { DEFAULT_LATENCY_WARNING_SECONDS } from "../data/bonsaiSettingsSchema";
 describe("usePluginSettings", () => {
   beforeEach(() => {
     resetFakeDeckyRpc();

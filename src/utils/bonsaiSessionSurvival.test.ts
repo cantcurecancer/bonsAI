@@ -13,8 +13,7 @@ import {
   takeRestoredSettingsSnapshot,
   type BonsaiSessionSurvivalSnapshot,
 } from "./bonsaiSessionSurvival";
-import { DEFAULT_CAPABILITIES, DEFAULT_DESKTOP_APP_LOG_LEVEL, DEFAULT_MODEL_POLICY_TIER } from "./settingsAndResponse";
-
+import { DEFAULT_CAPABILITIES, DEFAULT_DESKTOP_APP_LOG_LEVEL, DEFAULT_MODEL_POLICY_TIER } from "../data/bonsaiSettingsSchema";
 function minimalSnapshot(overrides: Partial<BonsaiSessionSurvivalSnapshot> = {}): BonsaiSessionSurvivalSnapshot {
   return {
     currentTab: "settings",

@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 223,
-  "edgeCount": 486,
+  "fileCount": 222,
+  "edgeCount": 492,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -109,8 +109,8 @@
     },
     "src/components/DeveloperTab.tsx": {
       "imports": [
-        "src/utils/deckyCall.ts",
-        "src/utils/settingsAndResponse.ts"
+        "src/data/bonsaiSettingsSchema.ts",
+        "src/utils/deckyCall.ts"
       ],
       "importedBy": [
         "src/components/OllamaTab.tsx",
@@ -195,7 +195,7 @@
         "src/utils/focusNavigation.ts",
         "src/utils/inputTransparency.ts",
         "src/utils/liveTurnFocusGraph.ts",
-        "src/utils/settingsAndResponse.ts",
+        "src/utils/settingsPayload.ts",
         "src/utils/troubleshootingAskHeuristic.ts"
       ],
       "importedBy": [
@@ -311,10 +311,10 @@
         "src/components/OllamaWhereAiRunsSection.tsx",
         "src/components/SettingsTabConnectionTimeoutSlider.tsx",
         "src/components/SettingsTabOllamaKeepAliveSlider.tsx",
+        "src/data/bonsaiSettingsSchema.ts",
         "src/data/modelPolicy.ts",
         "src/data/replyVerbosity.ts",
-        "src/styles/settingsGlassButton.ts",
-        "src/utils/settingsAndResponse.ts"
+        "src/styles/settingsGlassButton.ts"
       ],
       "importedBy": [
         "src/index.tsx"
@@ -323,12 +323,12 @@
     "src/components/OllamaWhereAiRunsSection.tsx": {
       "imports": [
         "src/components/DeveloperTab.tsx",
+        "src/data/bonsaiSettingsSchema.ts",
         "src/data/deckEssentialsTags.ts",
         "src/data/modelPolicy.ts",
         "src/utils/deckyCall.ts",
         "src/utils/ollamaTabLocalSurvival.ts",
         "src/utils/pullModelCatalogRefresh.ts",
-        "src/utils/settingsAndResponse.ts",
         "src/utils/settingsPanelScroll.ts"
       ],
       "importedBy": [
@@ -337,7 +337,7 @@
     },
     "src/components/PermissionsTab.tsx": {
       "imports": [
-        "src/utils/settingsAndResponse.ts"
+        "src/data/bonsaiSettingsSchema.ts"
       ],
       "importedBy": [
         "src/index.tsx"
@@ -354,14 +354,14 @@
     "src/components/PullModelsModal.tsx": {
       "imports": [
         "src/components/BonsaiModalScope.tsx",
+        "src/data/bonsaiSettingsSchema.ts",
         "src/data/deprioritizedModels.ts",
         "src/data/modelPolicy.ts",
         "src/data/pullModelCatalog.ts",
         "src/hooks/usePullModelCatalog.ts",
         "src/utils/deckyCall.ts",
         "src/utils/mergePullModelCatalog.ts",
-        "src/utils/pullModelRecommendations.ts",
-        "src/utils/settingsAndResponse.ts"
+        "src/utils/pullModelRecommendations.ts"
       ],
       "importedBy": [
         "src/components/OllamaModelsHubModal.tsx"
@@ -390,10 +390,10 @@
         "src/components/SettingsTabUiScaleSection.tsx",
         "src/components/VoiceInputSettingsSection.tsx",
         "src/data/aiCharacterAccentIntensity.ts",
+        "src/data/bonsaiSettingsSchema.ts",
         "src/data/characterCatalog.ts",
         "src/data/uiScaleProfile.ts",
         "src/features/unified-input/constants.ts",
-        "src/utils/settingsAndResponse.ts",
         "src/utils/settingsTabLocalSurvival.ts"
       ],
       "importedBy": [
@@ -412,8 +412,9 @@
     "src/components/SettingsTabConnectionTimeoutSlider.tsx": {
       "imports": [
         "src/components/deck/DeckFocusSlider.tsx",
-        "src/utils/deckSliderMath.ts",
-        "src/utils/settingsAndResponse.ts"
+        "src/data/bonsaiSettingsNormalizers.ts",
+        "src/data/bonsaiSettingsSchema.ts",
+        "src/utils/deckSliderMath.ts"
       ],
       "importedBy": [
         "src/components/OllamaTab.tsx"
@@ -466,8 +467,8 @@
     },
     "src/components/VoiceInputSettingsSection.tsx": {
       "imports": [
-        "src/utils/deckyCall.ts",
-        "src/utils/settingsAndResponse.ts"
+        "src/data/bonsaiSettingsSchema.ts",
+        "src/utils/deckyCall.ts"
       ],
       "importedBy": [
         "src/components/SettingsTab.tsx"
@@ -542,7 +543,11 @@
         "src/data/uiScaleProfile.ts"
       ],
       "importedBy": [
-        "src/utils/settingsAndResponse.ts"
+        "src/components/SettingsTabConnectionTimeoutSlider.tsx",
+        "src/hooks/usePluginSettings.ts",
+        "src/index.tsx",
+        "src/test-harness/rpcFixtures.ts",
+        "src/utils/settingsContracts.test.ts"
       ]
     },
     "src/data/bonsaiSettingsSchema.ts": {
@@ -556,9 +561,29 @@
         "src/data/uiScaleProfile.ts"
       ],
       "importedBy": [
+        "src/components/DeveloperTab.tsx",
+        "src/components/OllamaTab.tsx",
+        "src/components/OllamaWhereAiRunsSection.tsx",
+        "src/components/PermissionsTab.tsx",
+        "src/components/PullModelsModal.tsx",
+        "src/components/SettingsTab.tsx",
+        "src/components/SettingsTabConnectionTimeoutSlider.tsx",
+        "src/components/VoiceInputSettingsSection.tsx",
         "src/data/bonsaiSettingsNormalizers.ts",
-        "src/utils/settingsAndResponse.ts",
-        "src/utils/settingsPayload.ts"
+        "src/data/characterUiAccent.ts",
+        "src/hooks/useBonsaiAskOrchestration.ts",
+        "src/hooks/usePluginSettings.test.ts",
+        "src/hooks/usePluginSettings.ts",
+        "src/hooks/useStrategyChecklistSession.ts",
+        "src/index.tsx",
+        "src/test-harness/rpcFixtures.ts",
+        "src/utils/appDesktopLog.ts",
+        "src/utils/bonsaiSessionSurvival.test.ts",
+        "src/utils/bonsaiSessionSurvival.ts",
+        "src/utils/composeThinkingBlurb.ts",
+        "src/utils/settingsContracts.test.ts",
+        "src/utils/settingsPayload.ts",
+        "src/utils/unifiedInputPersistenceMode.ts"
       ]
     },
     "src/data/characterCatalog.test.ts": {
@@ -595,9 +620,9 @@
     },
     "src/data/characterUiAccent.ts": {
       "imports": [
+        "src/data/bonsaiSettingsSchema.ts",
         "src/data/characterCatalog.ts",
-        "src/features/unified-input/constants.ts",
-        "src/utils/settingsAndResponse.ts"
+        "src/features/unified-input/constants.ts"
       ],
       "importedBy": [
         "src/data/characterUiAccent.test.ts",
@@ -721,7 +746,7 @@
         "src/data/steamLanguages.ts",
         "src/hooks/useReplyLanguage.ts",
         "src/utils/i18n.ts",
-        "src/utils/settingsAndResponse.test.ts"
+        "src/utils/settingsContracts.test.ts"
       ]
     },
     "src/data/replyMicroActions.test.ts": {
@@ -925,6 +950,7 @@
     },
     "src/hooks/useBonsaiAskOrchestration.ts": {
       "imports": [
+        "src/data/bonsaiSettingsSchema.ts",
         "src/data/modelPolicy.ts",
         "src/data/presets.ts",
         "src/data/replyMicroActions.ts",
@@ -946,7 +972,7 @@
         "src/utils/localOnlyAskCommands.ts",
         "src/utils/presetCarouselInject.ts",
         "src/utils/sessionRagChipCandidates.ts",
-        "src/utils/settingsAndResponse.ts",
+        "src/utils/settingsPayload.ts",
         "src/utils/strategyChecklist.ts",
         "src/utils/strategyChecklistPersistence.ts",
         "src/utils/strategyGuideBranches.ts"
@@ -999,20 +1025,22 @@
     },
     "src/hooks/usePluginSettings.test.ts": {
       "imports": [
+        "src/data/bonsaiSettingsSchema.ts",
         "src/hooks/usePluginSettings.ts",
         "src/test-harness/fakeDeckyRpc.ts",
-        "src/test-harness/rpcFixtures.ts",
-        "src/utils/settingsAndResponse.ts"
+        "src/test-harness/rpcFixtures.ts"
       ],
       "importedBy": []
     },
     "src/hooks/usePluginSettings.ts": {
       "imports": [
         "src/data/aiCharacterAccentIntensity.ts",
+        "src/data/bonsaiSettingsNormalizers.ts",
+        "src/data/bonsaiSettingsSchema.ts",
         "src/data/modelPolicy.ts",
         "src/utils/bonsaiSessionSurvival.ts",
         "src/utils/deckyCall.ts",
-        "src/utils/settingsAndResponse.ts"
+        "src/utils/settingsPayload.ts"
       ],
       "importedBy": [
         "src/hooks/usePluginSettings.test.ts",
@@ -1087,9 +1115,9 @@
     },
     "src/hooks/useStrategyChecklistSession.ts": {
       "imports": [
+        "src/data/bonsaiSettingsSchema.ts",
         "src/types/bonsaiUi.ts",
         "src/utils/bonsaiSessionSurvival.ts",
-        "src/utils/settingsAndResponse.ts",
         "src/utils/strategyChecklistPersistence.ts"
       ],
       "importedBy": [
@@ -1165,6 +1193,8 @@
         "src/components/SettingsTab.tsx",
         "src/components/icons.tsx",
         "src/context/UiScaleContext.tsx",
+        "src/data/bonsaiSettingsNormalizers.ts",
+        "src/data/bonsaiSettingsSchema.ts",
         "src/data/characterCatalog.ts",
         "src/data/characterUiAccent.ts",
         "src/data/knowledgeBaseDev.ts",
@@ -1199,7 +1229,7 @@
         "src/utils/deckyCall.ts",
         "src/utils/ollamaTabLocalSurvival.ts",
         "src/utils/persistOllamaIp.ts",
-        "src/utils/settingsAndResponse.ts",
+        "src/utils/settingsPayload.ts",
         "src/utils/settingsTabLocalSurvival.ts",
         "src/utils/steamInputJump.ts",
         "src/utils/uiScaleScopeBridge.ts",
@@ -1373,8 +1403,9 @@
     },
     "src/test-harness/rpcFixtures.ts": {
       "imports": [
-        "src/types/backgroundAsk.ts",
-        "src/utils/settingsAndResponse.ts"
+        "src/data/bonsaiSettingsNormalizers.ts",
+        "src/data/bonsaiSettingsSchema.ts",
+        "src/types/backgroundAsk.ts"
       ],
       "importedBy": [
         "src/hooks/useBackgroundGameAi.test.ts",
@@ -1478,8 +1509,8 @@
     },
     "src/utils/appDesktopLog.ts": {
       "imports": [
-        "src/utils/deckyCall.ts",
-        "src/utils/settingsAndResponse.ts"
+        "src/data/bonsaiSettingsSchema.ts",
+        "src/utils/deckyCall.ts"
       ],
       "importedBy": [
         "src/hooks/useCapturedFrontendErrors.ts",
@@ -1583,20 +1614,20 @@
     },
     "src/utils/bonsaiSessionSurvival.test.ts": {
       "imports": [
-        "src/utils/bonsaiSessionSurvival.ts",
-        "src/utils/settingsAndResponse.ts"
+        "src/data/bonsaiSettingsSchema.ts",
+        "src/utils/bonsaiSessionSurvival.ts"
       ],
       "importedBy": []
     },
     "src/utils/bonsaiSessionSurvival.ts": {
       "imports": [
+        "src/data/bonsaiSettingsSchema.ts",
         "src/data/modelPolicy.ts",
         "src/data/presets.ts",
         "src/types/backgroundAsk.ts",
         "src/types/bonsaiUi.ts",
         "src/utils/createTabLocalSurvival.ts",
-        "src/utils/inputTransparency.ts",
-        "src/utils/settingsAndResponse.ts"
+        "src/utils/inputTransparency.ts"
       ],
       "importedBy": [
         "src/hooks/useBonsaiAskOrchestration.ts",
@@ -1703,7 +1734,7 @@
     },
     "src/utils/composeThinkingBlurb.ts": {
       "imports": [
-        "src/utils/settingsAndResponse.ts"
+        "src/data/bonsaiSettingsSchema.ts"
       ],
       "importedBy": [
         "src/hooks/useBonsaiAskOrchestration.ts",
@@ -2017,43 +2048,14 @@
         "src/hooks/useBonsaiAskOrchestration.ts"
       ]
     },
-    "src/utils/settingsAndResponse.test.ts": {
-      "imports": [
-        "src/data/replyLanguage.ts",
-        "src/utils/settingsAndResponse.ts"
-      ],
-      "importedBy": []
-    },
-    "src/utils/settingsAndResponse.ts": {
+    "src/utils/settingsContracts.test.ts": {
       "imports": [
         "src/data/bonsaiSettingsNormalizers.ts",
         "src/data/bonsaiSettingsSchema.ts",
+        "src/data/replyLanguage.ts",
         "src/utils/settingsPayload.ts"
       ],
-      "importedBy": [
-        "src/components/DeveloperTab.tsx",
-        "src/components/MainTabChatTranscript.tsx",
-        "src/components/OllamaTab.tsx",
-        "src/components/OllamaWhereAiRunsSection.tsx",
-        "src/components/PermissionsTab.tsx",
-        "src/components/PullModelsModal.tsx",
-        "src/components/SettingsTab.tsx",
-        "src/components/SettingsTabConnectionTimeoutSlider.tsx",
-        "src/components/VoiceInputSettingsSection.tsx",
-        "src/data/characterUiAccent.ts",
-        "src/hooks/useBonsaiAskOrchestration.ts",
-        "src/hooks/usePluginSettings.test.ts",
-        "src/hooks/usePluginSettings.ts",
-        "src/hooks/useStrategyChecklistSession.ts",
-        "src/index.tsx",
-        "src/test-harness/rpcFixtures.ts",
-        "src/utils/appDesktopLog.ts",
-        "src/utils/bonsaiSessionSurvival.test.ts",
-        "src/utils/bonsaiSessionSurvival.ts",
-        "src/utils/composeThinkingBlurb.ts",
-        "src/utils/settingsAndResponse.test.ts",
-        "src/utils/unifiedInputPersistenceMode.ts"
-      ]
+      "importedBy": []
     },
     "src/utils/settingsPanelScroll.ts": {
       "imports": [
@@ -2069,7 +2071,11 @@
         "src/data/bonsaiSettingsSchema.ts"
       ],
       "importedBy": [
-        "src/utils/settingsAndResponse.ts"
+        "src/components/MainTabChatTranscript.tsx",
+        "src/hooks/useBonsaiAskOrchestration.ts",
+        "src/hooks/usePluginSettings.ts",
+        "src/index.tsx",
+        "src/utils/settingsContracts.test.ts"
       ]
     },
     "src/utils/settingsTabLocalSurvival.ts": {
@@ -2194,7 +2200,7 @@
     },
     "src/utils/unifiedInputPersistenceMode.ts": {
       "imports": [
-        "src/utils/settingsAndResponse.ts"
+        "src/data/bonsaiSettingsSchema.ts"
       ],
       "importedBy": [
         "src/index.tsx",

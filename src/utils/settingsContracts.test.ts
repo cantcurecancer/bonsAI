@@ -1,8 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { REPLY_LANGUAGE_FOLLOW_SYSTEM } from "../data/replyLanguage";
 import {
-  buildResponseText,
-  formatAppliedTuningBannerText,
   DEFAULT_AI_CHARACTER_ACCENT_INTENSITY,
   DEFAULT_ASK_MODE,
   DEFAULT_CAPABILITIES,
@@ -11,15 +9,21 @@ import {
   DEFAULT_SCREENSHOT_ATTACHMENT_PRESET,
   DEFAULT_STRATEGY_SPOILER_MASKING_ENABLED,
   type DesktopAppLogLevel,
+} from "../data/bonsaiSettingsSchema";
+import {
   normalizeLatencyWarningSeconds,
   normalizeRequestTimeoutSeconds,
   normalizeSettings,
   reconcileLatencyWarningAndTimeout,
+} from "../data/bonsaiSettingsNormalizers";
+import {
+  buildResponseText,
+  formatAppliedTuningBannerText,
   toBonsaiSettingsPayload,
-} from "./settingsAndResponse";
+} from "./settingsPayload";
 
 /** Regression tests for normalization bounds and response formatting behavior. */
-describe("settingsAndResponse", () => {
+describe("settings contracts", () => {
   it("normalizeSettings: ui scale defaults and manual profile", () => {
     const defaults = normalizeSettings({});
     expect(defaults.ui_scale_auto_enabled).toBe(true);

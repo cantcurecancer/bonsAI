@@ -10,14 +10,9 @@ import { definePlugin, toaster, call, useQuickAccessVisible } from "@decky/api";
 import { Navigation, Router, showModal, Tabs } from "@decky/ui";
 
 import { PLUGIN_VERSION } from "./pluginVersion";
-import {
-  DEFAULT_LATENCY_WARNING_SECONDS,
-  OLLAMA_LOCAL_ON_DECK_DEFAULT_PCIP,
-  normalizeAiCharacterCustomText,
-  normalizeAiCharacterPresetId,
-  toBonsaiSettingsPayload,
-  type BonsaiSettings,
-} from "./utils/settingsAndResponse";
+import { DEFAULT_LATENCY_WARNING_SECONDS, OLLAMA_LOCAL_ON_DECK_DEFAULT_PCIP, type BonsaiSettings } from "./data/bonsaiSettingsSchema";
+import { normalizeAiCharacterCustomText, normalizeAiCharacterPresetId } from "./data/bonsaiSettingsNormalizers";
+import { toBonsaiSettingsPayload } from "./utils/settingsPayload";
 import { AboutTab } from "./components/AboutTab";
 import { BonsaiPluginShell } from "./components/BonsaiPluginShell";
 import { BonsaiDebugOverlay } from "./components/BonsaiDebugOverlay";

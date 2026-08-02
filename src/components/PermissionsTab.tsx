@@ -7,8 +7,7 @@
  */
 import React from "react";
 import { PanelSection, PanelSectionRow, ToggleField } from "@decky/ui";
-import type { BonsaiCapabilities } from "../utils/settingsAndResponse";
-
+import type { BonsaiCapabilities } from "../data/bonsaiSettingsSchema";
 type Props = {
   capabilities: BonsaiCapabilities;
   setCapabilities: React.Dispatch<React.SetStateAction<BonsaiCapabilities>>;

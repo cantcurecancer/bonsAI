@@ -6,8 +6,7 @@
  * Does not: Tail or display logs — see DeveloperTab and backend log RPC.
  */
 import { callDeckyWithTimeout, DECKY_RPC_TIMEOUT_MS } from "./deckyCall";
-import type { BonsaiCapabilities, DesktopAppLogLevel } from "./settingsAndResponse";
-
+import type { BonsaiCapabilities, DesktopAppLogLevel } from "../data/bonsaiSettingsSchema";
 export type AppDesktopLogFields = Record<string, string | number | boolean | null>;
 
 function appLogLevelAllows(configured: DesktopAppLogLevel, eventLevel: "default" | "verbose"): boolean {

@@ -1,6 +1,6 @@
 import type { BackgroundRequestStatus } from "../types/backgroundAsk";
-import { normalizeSettings, type BonsaiSettings } from "../utils/settingsAndResponse";
-
+import { type BonsaiSettings } from "../data/bonsaiSettingsSchema";
+import { normalizeSettings } from "../data/bonsaiSettingsNormalizers";
 /** Default settings payload aligned with backend `load_settings` / `normalize_settings`. */
 export function defaultSettingsFixture(): BonsaiSettings {
   return normalizeSettings({});

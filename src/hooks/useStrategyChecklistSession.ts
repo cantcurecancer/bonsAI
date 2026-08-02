@@ -8,7 +8,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Router } from "@decky/ui";
 
-import type { AskModeId } from "../utils/settingsAndResponse";
+import type { AskModeId } from "../data/bonsaiSettingsSchema";
 import type { StrategyChecklistState } from "../types/bonsaiUi";
 import {
   clearStrategyChecklistSession,
