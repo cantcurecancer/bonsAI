@@ -761,16 +761,14 @@ def session_rag_chip_candidates_to_rpc(result: SessionRagChipCandidatesResult) -
 def stack_context_blocks(
     *,
     proton_text: str,
-    journal_text: str = "",
     knowledge_text: str,
     max_total_bytes: int = 100 * 1024,
 ) -> str:
-    """Stack Proton logs, experiment journal, then knowledge cards under a shared byte budget."""
+    """Stack Proton logs then knowledge cards under a shared byte budget."""
     parts: list[str] = []
     budget = max_total_bytes
     for label, block in (
         ("proton", proton_text),
-        ("journal", journal_text),
         ("knowledge", knowledge_text),
     ):
         chunk = (block or "").strip()

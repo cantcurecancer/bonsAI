@@ -130,18 +130,13 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
     )
     self.assertLess(stacked.index("Proton"), stacked.index("Local knowledge"))
 
-  def test_stack_context_journal_between_proton_and_kb(self):
-    # Moved from test_proton_experiment_journal_service.py when that module was
-    # deleted. The journal feature is gone and game_ai_request.py:318 now always
-    # passes journal_text="", but the parameter still exists and still orders.
+  def test_stack_context_skips_empty_blocks(self):
     stacked = stack_context_blocks(
-      proton_text="--- Proton logs ---\nline1",
-      journal_text="--- Proton experiment journal ---\ntry1",
+      proton_text="",
       knowledge_text="--- Local knowledge base ---\ncard1",
       max_total_bytes=10_000,
     )
-    self.assertLess(stacked.index("Proton logs"), stacked.index("experiment journal"))
-    self.assertLess(stacked.index("experiment journal"), stacked.index("Local knowledge"))
+    self.assertTrue(stacked.startswith("--- Local knowledge base ---"))
 
   def test_stack_context_byte_budget(self):
     stacked = stack_context_blocks(

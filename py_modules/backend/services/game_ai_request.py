@@ -315,7 +315,6 @@ async def run_game_ai_request(
 
         early_context_combined = stack_context_blocks(
             proton_text=proton_attachment_text,
-            journal_text="",
             knowledge_text=kb_text,
         )
 
