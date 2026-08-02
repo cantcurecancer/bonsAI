@@ -59,15 +59,27 @@ it ([01-map.md](01-map.md) §4).
 `test_tdp_sandbox_sysfs.py` exist and would be deleted with their subjects.
 **Risk: LOW** — with one gate. **Blocked on [D2](../roadmap.md#decisions-needed).**
 
-> **Gate before deleting: CLEARED 2026-08-02.** The RPC scan originally covered
-> `src/` only. Grepping `tests/preview-suite/` and `scripts/` returns zero hits
-> for `proton_experiment`, `apply_tdp`, `log_navigation`, `capture_screenshot`,
-> `dbg_fe_log`, `cancel_rag_corpus_download`, and `thinking_tiny`. `ask_game_ai`
-> returns 22 hits across five tier files — it stays, per
+> **Gate before deleting: run 2026-08-02, one hole found.** The RPC scan
+> originally covered `src/` only. Grepping `tests/preview-suite/` and `scripts/`
+> for symbol names returns zero hits for `proton_experiment`, `apply_tdp`,
+> `log_navigation`, `capture_screenshot`, `dbg_fe_log`,
+> `cancel_rag_corpus_download`, and `thinking_tiny`. `ask_game_ai` returns 22
+> hits across five tier files — it stays, per
 > [D2](../roadmap.md#maintainer-decisions-locked--2026-08-02). `apply_tdp` has no
 > non-test reference anywhere in the repo, so the `tier1-tdp.json` cases that ask
-> to set wattage exercise the recommendation path and cannot reach it. Do not
-> re-run this grep.
+> to set wattage exercise the recommendation path and cannot reach it.
+>
+> **A symbol grep is not sufficient.** The preview suite also names test files
+> directly: `unit-gates.json:25` runs `tests/test_tdp_sandbox_sysfs.py` under a
+> `TDP-APPLY` gate. Grep the preview suite for the *test filename* too. Only
+> `test_tdp_sandbox_sysfs.py` and `test_capabilities.py` are referenced that way.
+
+**Deletions cascade one level.** Removing an authorized RPC orphaned a helper
+below it in two cases — `try_gamescope_screenshot_capture`
+(`screenshot_media.py:861`, now unreferenced, but that module is DO-NOT-TOUCH)
+and the `write_sysfs` / `find_amdgpu_hwmon` pair that only `apply_tdp` calls.
+Neither was in D2's list. Check one level down before declaring a deletion
+complete.
 
 **Why first:** permanently shrinks the search space for every later session,
 needs no design decisions, and is the highest-confidence item in the audit.
