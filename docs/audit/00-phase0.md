@@ -5,30 +5,35 @@ re-derive them. Commits: `00adaf4`, `c5c782a`.
 
 ---
 
-## Test baseline — the Python suite is NOT fully green
+## Test baseline — fully green as of `372aae5`
 
-The refactor rule "tests green between commits" needs this qualifier. As of
-`aa8d2c4` (before any Phase 0 change), the Python suite has **two pre-existing
-failures** that are unrelated to any refactor work:
-
-| Test | Kind |
-|---|---|
-| `test_local_ollama_teardown.TeardownLocalOllamaTests.test_removes_tags_and_home_paths` | ERROR — `AttributeError: module 'backend.services.local_ollama_teardown_service' has no attribute 'subprocess'` (mock patch target is wrong) |
-| `test_ollama_prompts_stream_instruction.BonsaiStatusStreamInstructionTests.test_character_off_encourages_playful_sarcasm` | FAIL — asserts the literal string `sarcastic` appears in the generated prompt; prompt now says "disgruntled or dry-deadpan" |
-
-**Green baseline to compare against:**
+**Every suite passes. Any red is a regression you introduced.**
 
 ```
-npm test        -> 44 files, 217 tests, all pass
+npm test         -> 44 files, 217 tests, all pass
 npx tsc --noEmit -> exit 0, no output
-npm run build   -> rollup succeeds, dist/index.js written
-npm run test:py -> Ran 399 tests, FAILED (failures=1, errors=1, skipped=4)
+npm run build    -> rollup succeeds, dist/index.js written
+npm run test:py  -> Ran 399 tests, OK (skipped=4)
 ```
 
-A future session should confirm the Python failure *count and names* are
-unchanged, not that the suite passes. Both failures look cheap to fix and are
-good standalone candidates, but fixing them is a behavior/test change, not a
-refactor — keep it in its own commit.
+Phase 0 found two pre-existing Python failures at `aa8d2c4`. Both were stale
+*tests*, not code defects, and both were fixed before Phase 1 (`7e81420`,
+`372aae5`) so that later phases have an unambiguous signal:
+
+| Test | Was | Fix |
+|---|---|---|
+| `test_local_ollama_teardown...test_removes_tags_and_home_paths` | ERROR — patched `local_ollama_teardown_service.subprocess`, which that module never imported | `b43480e` had moved process-stopping behind `_stop_local_ollama_listener`. Retargeted the assertion there. Also retargeted the other patches at the teardown module (it uses `from ... import`, so patching the source module never intercepted the calls) and switched the fake home from a hardcoded `/home/deck` to `tempfile.TemporaryDirectory` |
+| `test_ollama_prompts_stream_instruction...test_character_off_encourages_playful_sarcasm` | FAIL — asserted the literal word `sarcastic` | `ff6547f` ("Thinking blurb copy refresh") deliberately reworded the branch to "disgruntled or dry-deadpan". Renamed to `test_character_off_requests_wry_tone` and asserted the durable intent instead of one adjective |
+
+Both are the same failure mode the plan predicts for `settingsAndResponse.test.ts`
+in Phase 3.2 — **tests pinned to implementation shape rather than behavior**, left
+behind when the thing they mirrored moved. Worth remembering that the repo has
+prior art for this: the fix is to re-assert the behavior, not to restore the old
+wording.
+
+> Side effect cleaned up going forward: the teardown test used to create real
+> directories under `C:\home\deck` on a Windows dev host. Empty residue may still
+> exist there from earlier runs; it is safe to delete and will not be recreated.
 
 ---
 
