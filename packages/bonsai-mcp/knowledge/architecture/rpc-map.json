@@ -106,11 +106,6 @@
       "line": 1361
     },
     {
-      "name": "runner",
-      "domain": "other",
-      "line": 1420
-    },
-    {
       "name": "get_local_ollama_setup_status",
       "domain": "ollama",
       "line": 1440
@@ -131,11 +126,6 @@
       "line": 1510
     },
     {
-      "name": "runner",
-      "domain": "other",
-      "line": 1548
-    },
-    {
       "name": "cancel_rag_corpus_download",
       "domain": "other",
       "line": 1576
@@ -154,11 +144,6 @@
       "name": "install_rag_corpus_local",
       "domain": "other",
       "line": 1620
-    },
-    {
-      "name": "runner",
-      "domain": "other",
-      "line": 1748
     },
     {
       "name": "pull_ollama_models",
@@ -269,11 +254,6 @@
       "name": "install_voice_engine",
       "domain": "voice",
       "line": 2858
-    },
-    {
-      "name": "runner",
-      "domain": "other",
-      "line": 2880
     },
     {
       "name": "get_voice_install_status",

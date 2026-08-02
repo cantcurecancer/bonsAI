@@ -33,7 +33,10 @@ function generateRpcMap() {
   const lines = mainPy.split("\n");
   const methods = [];
   for (let i = 0; i < lines.length; i++) {
-    const m = lines[i].match(/^\s+async def ([a-z_][a-z0-9_]*)\s*\(/);
+    // Exactly four spaces: a method on the Plugin class. `^\s+` also matched
+    // nested local coroutines (four `async def runner()` helpers at indent 12),
+    // which are not RPC methods and inflated the map with false entries.
+    const m = lines[i].match(/^ {4}async def ([a-z_][a-z0-9_]*)\s*\(/);
     if (!m) continue;
     const name = m[1];
     if (name.startsWith("_") && name !== "_main" && name !== "_unload") continue;
