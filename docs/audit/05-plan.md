@@ -7,6 +7,11 @@ Ranked by **value ÷ risk**, not by size. Each item states what it fixes, what i
 touches, blast radius, whether it is strictly behavior-preserving, what test
 coverage exists, and a risk grade.
 
+> **Maintainer decisions live in [roadmap.md](../roadmap.md#decisions-needed)**
+> (D1–D6), written in plain language with options and trade-offs. This document
+> is the technical evidence behind them; that one is where the calls get made.
+> Items below that are blocked cite their decision id.
+
 **No item below proposes a new abstraction.** Three propose *deleting* one. Per
 the plan's rule, an abstraction needs 3+ existing call sites that collapse into
 it; nothing here qualified, so nothing is invented.
@@ -52,7 +57,7 @@ it ([01-map.md](01-map.md) §4).
 **Behavior-preserving.** Yes, if the precondition holds.
 **Coverage.** `test_proton_experiment_journal_service.py` and
 `test_tdp_sandbox_sysfs.py` exist and would be deleted with their subjects.
-**Risk: LOW** — with one gate.
+**Risk: LOW** — with one gate. **Blocked on [D2](../roadmap.md#decisions-needed).**
 
 > **Gate before deleting:** the RPC scan covered `src/` only. Confirm nothing in
 > `tests/preview-suite/` or the `preview.callRpc` tooling drives these. `UNKNOWN`
@@ -183,7 +188,7 @@ locking, not RPC behavior.
 ([04-coverage.md](04-coverage.md)). 44 component files share one vitest file.
 
 **Risk: HIGH.** A behavior-preserving move here **cannot be verified as
-behavior-preserving**. `npm test` would pass with every component deleted.
+behavior-preserving**. **Blocked on [D3](../roadmap.md#decisions-needed).** `npm test` would pass with every component deleted.
 
 **Do not start this until one of:**
 

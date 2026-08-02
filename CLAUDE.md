@@ -131,7 +131,9 @@ Deploy to a Deck (needs `.env`, copy from `.env.example`):
 ## Refactor rules
 
 The repo is mid-refactor; see [REFACTOR-PLAN.md](REFACTOR-PLAN.md) for phases and
-[docs/audit/](docs/audit/) for completed recon.
+[docs/audit/](docs/audit/) for completed recon. Questions that need a maintainer
+call go in `docs/roadmap.md` § **Decisions needed** (plain language, with
+options) — not into chat, where they get lost.
 
 1. **One refactor per commit**, behavior-preserving, tests green between commits.
    Never mix a move with a rewrite — it makes the diff unreviewable and

@@ -1,6 +1,6 @@
 # bonsAI Roadmap
 
-Tracks **bugs and active engineering** ([In Progress](#in-progress)), deferred **QA** ([QA backlog](#qa-backlog)), the **backlog** ([Planned](#planned)), and pointers to shipped work ([Completed](#completed)).
+Tracks **bugs and active engineering** ([In Progress](#in-progress)), **decisions waiting on the maintainer** ([Decisions needed](#decisions-needed)), deferred **QA** ([QA backlog](#qa-backlog)), the **backlog** ([Planned](#planned)), and pointers to shipped work ([Completed](#completed)).
 
 Setup and vision tuning: [troubleshooting.md](troubleshooting.md). QA: [testing.md](testing.md). Release: [development.md](development.md), [CHANGELOG.md](../CHANGELOG.md).
 
@@ -28,6 +28,205 @@ Known **defects** only. Deferred QA lives under [QA backlog](#qa-backlog). *QAMP
 - ★ **Pulled model tags never merged into routing order — RPC has no backend:** After a **custom** local-Ollama setup profile completes with pulled tags, [OllamaWhereAiRunsSection.tsx:573](../src/components/OllamaWhereAiRunsSection.tsx) calls `merge_pulled_tags_into_routing_orders`, which **is not implemented anywhere in Python**. The call always rejects, so newly pulled models are not added to `model_routing_order` and the user must set try-order by hand. **Fix lean:** small — add the RPC on `class Plugin`, merge the tag list into the existing `model_routing_order` setting and reuse `sanitize_model_routing_order` in `settings_service.py`. Discovery 2026-08-02 ([phase1-map-verification.md](audit/phase1-map-verification.md)).
 
 Both were invisible before 2026-08-02 because each call site swallowed its rejection; they now log to the console instead. Neither is a regression — they have never worked.
+
+---
+
+## Decisions needed
+
+Open questions that need a maintainer call before the work can continue. Written
+in plain language on purpose — each one says what the situation is, what your
+choices are, and what happens either way. Nothing here is urgent; the refactor
+has other work it can do first.
+
+Evidence for all of these lives in [docs/audit/](audit/), especially
+[05-plan.md](audit/05-plan.md).
+
+---
+
+### D1 — Two features were built with a frontend but no backend. Build them, or remove them?
+
+**What's going on.** Two buttons/flows in the UI call into Python functions that
+were never written. The names exist only in TypeScript. Because both call sites
+threw the error away, nothing ever surfaced — no crash, no log, no message. They
+now log to the console, and both are listed as bugs above.
+
+The two are very different sizes, so you may want a different answer for each.
+
+**Option A — build the small one, delete the big one.** *(my recommendation)*
+
+`merge_pulled_tags_into_routing_orders` is small: after you install models with a
+custom setup profile, it should add those models to your try-order list. The
+setting it needs (`model_routing_order`) and its validator already exist, so this
+is a short piece of work with a clear right answer.
+
+`get_session_rag_chip_candidates` is the bigger one: it should suggest preset
+prompts drawn from your local knowledge base for whatever game is running. There
+is no backend for it at all, and building one means deciding what counts as a
+good suggestion and how to rank them — that is product design, not a refactor.
+Deleting the frontend path means the preset carousel keeps using its fixed
+built-in prompts, which is exactly what it does today, so users would notice no
+change.
+
+**Option B — build both.** You get the RAG preset chips feature you originally
+planned. It costs real design time and it is new behavior, so it should not ride
+along inside refactor work.
+
+**Option C — delete both.** Smallest and safest. You lose the pulled-model
+try-order convenience, which means setting try-order by hand after installing
+models.
+
+**Option D — leave them as they are.** They now log loudly, so they are no longer
+invisible. Costs nothing, but two dead paths stay in the code and a future reader
+has to work out why they are there.
+
+**Either way:** the CHANGELOG entry that announced "Session RAG preset chips" as
+a shipped feature has been corrected to say it is frontend-only and not working.
+
+---
+
+### D2 — A whole group of backend functions is unused. Safe to delete?
+
+**What's going on.** When the Proton experiment journal UI was removed on
+2026-07-30, the backend behind it was left in place. Five backend functions and
+their service module are still there with nothing calling them. The same cleanup
+removed the "tiny model thinking blurbs" feature and left
+`thinking_tiny_model_service.py` behind — that file is now imported by literally
+nothing. There are also six other backend functions with no caller, and a TDP
+power-adjustment function whose only remaining caller is its own test.
+
+Altogether that is roughly 12 unused entry points plus two modules.
+
+**Option A — delete it all after one check.** *(my recommendation)*
+
+The check: I looked at the app code only, not the preview test suite. Before
+deleting anything I would grep `tests/preview-suite/` to confirm none of these
+are driven from there. That is a couple of minutes' work. If it comes back clean,
+deleting is safe and makes every future search through the codebase smaller and
+less confusing.
+
+**Option B — delete the certain ones, keep the ambiguous ones.** The Proton
+journal group and `thinking_tiny_model_service.py` are unambiguous — the features
+were removed on purpose. Two others are worth a second thought:
+
+- `ask_game_ai` is described in the code as the *foreground* Ask path. The app
+  only uses the background one now. If you ever want a synchronous Ask, this is
+  the code for it; if not, it is dead weight.
+- `cancel_rag_corpus_download` suggests knowledge-base downloads were meant to be
+  cancellable and the button was never wired up. That might be a missing feature
+  rather than dead code.
+
+**Option C — keep everything.** No risk, but the confusion stays: a newcomer
+reading `main.py` cannot tell which of the 55 functions are live.
+
+---
+
+### D3 — The riskiest refactor has no safety net. How do you want to handle it?
+
+**What's going on.** This is the most important decision here.
+
+The plan's Phase 3.4 wants to break up the two biggest frontend files —
+`src/index.tsx` (1,965 lines, changed more often than any other file) and
+`useBonsaiAskOrchestration.ts` (the whole Ask flow: submit, cancel, polling,
+streaming, follow-ups).
+
+Neither has a single automated test. More broadly, 44 UI component files share
+one test file between them. The practical meaning: **`npm test` passing tells you
+nothing about whether a UI change broke something.** It would still pass if every
+component were deleted. So a refactor that is supposed to change structure
+without changing behavior cannot actually be *shown* to have done that.
+
+**Option A — write safety-net tests first, then refactor.** *(my recommendation
+if this refactor matters to you)*
+
+Write tests that capture what these files do today, then move code and confirm
+the tests still pass. The groundwork exists — there is already a fake backend for
+tests (`fakeDeckyRpc.ts`) and three working hook tests — so this is a known
+quantity, not an experiment. It is real extra work up front, and it is the only
+option where a mistake gets caught before it reaches your Deck.
+
+**Option B — refactor anyway, verify by hand on the Deck.** Faster to start. Each
+change needs you to install to the Deck and click through it, and a subtle
+regression (focus behaviour, a race in Ask polling) can slip through a manual
+pass. If you choose this, the work should be sequenced last and done in small
+commits so anything broken is easy to undo.
+
+**Option C — leave those two files alone.** Do the lower-risk items instead
+(there are plenty) and accept that the two biggest files stay big. Honest and
+zero-risk; the handoff goal is only partly met, since these are exactly the files
+a newcomer finds hardest.
+
+The smaller `MainTab.tsx` is a useful middle ground under any option: it is only
+187 lines and changes constantly purely because every new feature has to thread
+props through it. Fixing that is structural and easy to eyeball.
+
+---
+
+### D4 — Old QA evidence: keep or prune?
+
+**What's going on.** `docs/test-evidence/` holds 263 files across nine folders of
+past test-run output. Only three of those folders are linked from any document;
+the other six are referenced by nothing. It is the largest directory in `docs/`
+and about 96% of it is unreferenced. `testing.md` already anticipated this,
+noting orphan evidence folders may be pruned once nothing links them.
+
+**Option A — prune the six unreferenced folders.** Keeps the three that are cited
+as evidence. Makes `docs/` much smaller and easier to look through.
+
+**Option B — keep everything.** It is only disk space, and old run output can be
+useful when chasing a regression that reappears.
+
+**Option C — prune, but archive first.** Zip the removed folders somewhere
+outside the repo, same approach used for the v0 drafts in Phase 0.
+
+I have no strong view — this is about what QA history is worth to you, not about
+code quality. I did not touch it.
+
+---
+
+### D5 — Import graph: keep the built-in one, or switch to madge?
+
+**What's going on.** You approved adding a dependency graph so the refactor can
+answer "who imports this file?" reliably. The plan suggested the `madge` tool.
+madge was not installed, and this generator runs on **every commit** via the
+pre-commit hook, so adding a tool plus a multi-second graph build to every commit
+seemed like the wrong trade. I wrote a small built-in version instead — about 50
+lines, no new dependency, instant.
+
+It currently reports 479 imports, no circular dependencies, no orphans. It has
+already proved more accurate than searching by hand: checking what imports
+`deckyCall.ts`, it found 15 files where my own grep found 14.
+
+**Option A — keep the built-in one.** *(my recommendation)* Fast, no dependency,
+and it does what the refactor needs.
+
+**Option B — switch to madge.** More battle-tested and handles exotic import
+styles this codebase does not currently use. Costs a dependency and slows every
+commit slightly. Worth doing if you ever add TypeScript path aliases, which would
+make the simple version unreliable.
+
+---
+
+### D6 — Sequencing: what should I do next?
+
+Not a hard decision, just a checkpoint. The audit produced a ranked plan in
+[05-plan.md](audit/05-plan.md). The first four items are all low-risk, mechanical,
+and verifiable by the compiler and existing tests:
+
+1. Delete the unused backend code (needs **D2**)
+2. Fix four one-line inaccuracies in the docs, and move a plan document that
+   declares itself archived into the archive folder
+3. Delete `refactor_helpers.py` — a leftover forwarding file that adds nothing
+   (careful: the deploy scripts copy it, so that has to be updated too)
+4. Delete `settingsAndResponse.ts` — another forwarding file, this one with 22
+   files pointing at it
+
+Together these measurably shrink the codebase without requiring any design
+decision. **D3** is the one that changes the shape of everything after it.
+
+Also worth knowing: the friction test (having a fresh pair of eyes try a real
+task and log everywhere they got stuck) is deferred until after the refactor, per
+your earlier call, so it will measure the improved codebase rather than the
+starting point.
 
 ---
 
