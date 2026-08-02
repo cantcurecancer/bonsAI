@@ -46,13 +46,13 @@
       "role": ""
     },
     {
-      "path": "py_modules/backend/services/screenshot_media.py",
-      "lines": 963,
+      "path": "py_modules/backend/services/local_ollama_setup_service.py",
+      "lines": 915,
       "role": ""
     },
     {
-      "path": "py_modules/backend/services/local_ollama_setup_service.py",
-      "lines": 915,
+      "path": "py_modules/backend/services/screenshot_media.py",
+      "lines": 822,
       "role": ""
     },
     {
