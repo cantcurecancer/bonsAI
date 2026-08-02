@@ -120,10 +120,15 @@ Deploy to a Deck (needs `.env`, copy from `.env.example`):
   change with no compiler to catch it.
 - **New Settings/QAM controls need a focus-graph entry** for D-pad navigation —
   `.cursor/rules/decky-focus-graph.mdc` before writing the control.
-- **Generated files are not editable.** The five JSON snapshots under
+- **Generated files are not editable.** The six JSON snapshots under
   `packages/bonsai-mcp/knowledge/architecture/` are rewritten and staged by
   `.githooks/pre-commit` on every commit (installed via npm `prepare`). Change
   `packages/bonsai-mcp/scripts/generate-architecture.mjs` instead.
+- **`import-graph.json` answers "who imports this?"** — full `imports` /
+  `importedBy` sets for all 223 TS files under `src/`, plus cycle and orphan
+  detection. Check it before moving a symbol; it is more reliable than grep,
+  which misses specifiers that differ by relative depth. `hotspots.json` is a
+  size ranking, not a dependency graph.
 - **Do not `git push` unless the user explicitly asks.** No `cursor/*` branches.
 - Before marking feature work done, update `docs/roadmap.md` and `docs/testing.md`
   in the same change set.

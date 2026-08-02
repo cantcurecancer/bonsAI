@@ -62,7 +62,8 @@ for (const sub of ["policies", "workflows", "personas"]) {
 const archDir = path.join(KNOWLEDGE, "architecture");
 const requiredJson = [
   "rpc-map.json",
-  "module-map.json",
+  "hotspots.json",
+  "import-graph.json",
   "test-inventory.json",
   "preview-tiers.json",
   "env-vars.json",

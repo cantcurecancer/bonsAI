@@ -1,0 +1,2203 @@
+{
+  "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
+  "fileCount": 223,
+  "edgeCount": 479,
+  "cycles": [],
+  "orphans": [],
+  "unresolved": [
+    {
+      "from": "src/components/AboutTab.tsx",
+      "spec": "../assets/qrcode.png"
+    },
+    {
+      "from": "src/components/icons.tsx",
+      "spec": "../assets/icons/bonsai-logo.svg"
+    }
+  ],
+  "modules": {
+    "src/components/AboutReplyLanguageSection.tsx": {
+      "imports": [
+        "src/data/steamLanguages.ts",
+        "src/utils/i18n.ts"
+      ],
+      "importedBy": [
+        "src/components/AboutTab.tsx"
+      ]
+    },
+    "src/components/AboutTab.tsx": {
+      "imports": [
+        "src/components/AboutReplyLanguageSection.tsx",
+        "src/data/replyLanguage.ts",
+        "src/features/unified-input/constants.ts",
+        "src/i18n/keys.ts"
+      ],
+      "importedBy": [
+        "src/index.tsx"
+      ]
+    },
+    "src/components/BonsaiChatSecondaryButton.tsx": {
+      "imports": [
+        "src/utils/replyStopRegistry.ts"
+      ],
+      "importedBy": [
+        "src/components/MainTabChatTranscript.tsx",
+        "src/utils/buildReplyActionsElement.tsx"
+      ]
+    },
+    "src/components/BonsaiDebugOverlay.tsx": {
+      "imports": [
+        "src/utils/bonsaiDebugIngest.ts"
+      ],
+      "importedBy": [
+        "src/index.tsx"
+      ]
+    },
+    "src/components/BonsaiModalScope.tsx": {
+      "imports": [
+        "src/context/UiScaleContext.tsx",
+        "src/styles/bonsaiScopeStylesheet.ts",
+        "src/utils/uiScaleScopeBridge.ts"
+      ],
+      "importedBy": [
+        "src/components/ModelRoutingOrderModal.tsx",
+        "src/components/OllamaModelsHubModal.tsx",
+        "src/components/PullModelsModal.tsx"
+      ]
+    },
+    "src/components/BonsaiPluginShell.tsx": {
+      "imports": [
+        "src/styles/bonsaiScopeStylesheet.ts"
+      ],
+      "importedBy": [
+        "src/index.tsx"
+      ]
+    },
+    "src/components/CharacterPickerModal.tsx": {
+      "imports": [
+        "src/components/CharacterRoleplayEmoticon.tsx",
+        "src/data/characterCatalog.ts",
+        "src/utils/runningGameCharacterSuggestions.ts"
+      ],
+      "importedBy": [
+        "src/index.tsx"
+      ]
+    },
+    "src/components/CharacterRoleplayEmoticon.tsx": {
+      "imports": [
+        "src/data/characterPlaceholderEmoticonGrids.ts"
+      ],
+      "importedBy": [
+        "src/components/CharacterPickerModal.tsx",
+        "src/components/MainTabUnifiedAskBar.tsx"
+      ]
+    },
+    "src/components/ContextChipLadder.tsx": {
+      "imports": [
+        "src/utils/contextChipsFromSnapshot.ts",
+        "src/utils/inputTransparency.ts"
+      ],
+      "importedBy": [
+        "src/components/MainTabChatTranscript.tsx",
+        "src/components/SessionContextStrip.tsx"
+      ]
+    },
+    "src/components/DesktopNoteSaveModal.tsx": {
+      "imports": [],
+      "importedBy": [
+        "src/index.tsx"
+      ]
+    },
+    "src/components/DeveloperTab.tsx": {
+      "imports": [
+        "src/utils/deckyCall.ts",
+        "src/utils/settingsAndResponse.ts"
+      ],
+      "importedBy": [
+        "src/components/OllamaTab.tsx",
+        "src/components/OllamaWhereAiRunsSection.tsx",
+        "src/index.tsx",
+        "src/utils/ollamaTabLocalSurvival.ts"
+      ]
+    },
+    "src/components/KnowledgeBaseSection.tsx": {
+      "imports": [
+        "src/styles/settingsGlassButton.ts",
+        "src/utils/deckyCall.ts",
+        "src/utils/settingsPanelScroll.ts"
+      ],
+      "importedBy": [
+        "src/components/OllamaTab.tsx"
+      ]
+    },
+    "src/components/MainTab.tsx": {
+      "imports": [
+        "src/components/MainTabChatTranscript.tsx",
+        "src/components/MainTabPresetRow.tsx",
+        "src/components/MainTabScreenshotBrowser.tsx",
+        "src/components/MainTabUnifiedAskBar.tsx",
+        "src/data/askMode.ts",
+        "src/data/modelPolicy.ts",
+        "src/data/presets.ts",
+        "src/data/replyMicroActions.ts",
+        "src/types/backgroundAsk.ts",
+        "src/types/bonsaiUi.ts",
+        "src/utils/inputTransparency.ts"
+      ],
+      "importedBy": [
+        "src/index.tsx"
+      ]
+    },
+    "src/components/MainTabAskModeMenuPopover.tsx": {
+      "imports": [
+        "src/data/askMode.ts",
+        "src/features/unified-input/constants.ts"
+      ],
+      "importedBy": [
+        "src/components/MainTabUnifiedAskBar.tsx"
+      ]
+    },
+    "src/components/MainTabAttachMenuPopover.tsx": {
+      "imports": [
+        "src/features/unified-input/constants.ts"
+      ],
+      "importedBy": [
+        "src/components/MainTabUnifiedAskBar.tsx"
+      ]
+    },
+    "src/components/MainTabBonsaiAiMarkdownChunk.tsx": {
+      "imports": [],
+      "importedBy": [
+        "src/utils/buildAnswerBubbleElement.tsx"
+      ]
+    },
+    "src/components/MainTabChatTranscript.tsx": {
+      "imports": [
+        "src/components/BonsaiChatSecondaryButton.tsx",
+        "src/components/ContextChipLadder.tsx",
+        "src/components/SessionContextStrip.tsx",
+        "src/components/StrategyChecklistPanel.tsx",
+        "src/components/icons.tsx",
+        "src/data/askMode.ts",
+        "src/data/modelPolicy.ts",
+        "src/data/replyMicroActions.ts",
+        "src/features/unified-input/constants.ts",
+        "src/hooks/useStreamScrollPin.ts",
+        "src/types/backgroundAsk.ts",
+        "src/types/bonsaiUi.ts",
+        "src/utils/answerBubbleNavRegistry.ts",
+        "src/utils/answerBubbleNavigation.ts",
+        "src/utils/askThinkingPhases.ts",
+        "src/utils/buildAnswerBubbleElement.tsx",
+        "src/utils/buildReplyActionsElement.tsx",
+        "src/utils/buildTurnHeaderElement.tsx",
+        "src/utils/chatTurnTitle.ts",
+        "src/utils/contextChipsFromSnapshot.ts",
+        "src/utils/focusNavigation.ts",
+        "src/utils/inputTransparency.ts",
+        "src/utils/liveTurnFocusGraph.ts",
+        "src/utils/settingsAndResponse.ts",
+        "src/utils/troubleshootingAskHeuristic.ts"
+      ],
+      "importedBy": [
+        "src/components/MainTab.tsx"
+      ]
+    },
+    "src/components/MainTabPresetAnimatedChips.tsx": {
+      "imports": [
+        "src/data/askMode.ts",
+        "src/data/presets.ts",
+        "src/features/preset-carousel/carouselState.ts",
+        "src/features/unified-input/constants.ts",
+        "src/utils/joinPresetWithRunningGame.ts"
+      ],
+      "importedBy": [
+        "src/components/MainTabPresetRow.tsx"
+      ]
+    },
+    "src/components/MainTabPresetRow.tsx": {
+      "imports": [
+        "src/components/MainTabPresetAnimatedChips.tsx",
+        "src/data/askMode.ts",
+        "src/data/presets.ts",
+        "src/utils/joinPresetWithRunningGame.ts"
+      ],
+      "importedBy": [
+        "src/components/MainTab.tsx"
+      ]
+    },
+    "src/components/MainTabScreenshotBrowser.tsx": {
+      "imports": [
+        "src/components/icons.tsx",
+        "src/types/bonsaiUi.ts",
+        "src/utils/clipboardStash.ts",
+        "src/utils/deckyCall.ts",
+        "src/utils/mediaFormat.ts"
+      ],
+      "importedBy": [
+        "src/components/MainTab.tsx"
+      ]
+    },
+    "src/components/MainTabUnifiedAskBar.tsx": {
+      "imports": [
+        "src/components/CharacterRoleplayEmoticon.tsx",
+        "src/components/MainTabAskModeMenuPopover.tsx",
+        "src/components/MainTabAttachMenuPopover.tsx",
+        "src/components/icons.tsx",
+        "src/data/askMode.ts",
+        "src/features/unified-input/constants.ts",
+        "src/hooks/useMainTabAskBarFocus.ts",
+        "src/types/bonsaiUi.ts",
+        "src/utils/focusNavigation.ts",
+        "src/utils/mediaFormat.ts"
+      ],
+      "importedBy": [
+        "src/components/MainTab.tsx"
+      ]
+    },
+    "src/components/ModelPolicyTierPanel.tsx": {
+      "imports": [
+        "src/data/modelPolicy.ts"
+      ],
+      "importedBy": [
+        "src/components/OllamaModelsHubModal.tsx"
+      ]
+    },
+    "src/components/ModelRoutingAdvancedPanel.tsx": {
+      "imports": [
+        "src/data/modelPolicy.ts"
+      ],
+      "importedBy": [
+        "src/components/OllamaModelsHubModal.tsx"
+      ]
+    },
+    "src/components/ModelRoutingOrderModal.tsx": {
+      "imports": [
+        "src/components/BonsaiModalScope.tsx",
+        "src/data/modelPolicy.ts",
+        "src/data/pullModelCatalog.ts",
+        "src/utils/modelRoutingOrder.ts"
+      ],
+      "importedBy": [
+        "src/index.tsx"
+      ]
+    },
+    "src/components/OllamaModelsHubModal.tsx": {
+      "imports": [
+        "src/components/BonsaiModalScope.tsx",
+        "src/components/ModelPolicyTierPanel.tsx",
+        "src/components/ModelRoutingAdvancedPanel.tsx",
+        "src/components/PullModelsModal.tsx",
+        "src/data/modelPolicy.ts"
+      ],
+      "importedBy": [
+        "src/index.tsx"
+      ]
+    },
+    "src/components/OllamaReplyVerbositySlider.tsx": {
+      "imports": [
+        "src/components/deck/DeckFocusSlider.tsx",
+        "src/data/replyVerbosity.ts",
+        "src/utils/deckSliderMath.ts"
+      ],
+      "importedBy": [
+        "src/components/OllamaTab.tsx"
+      ]
+    },
+    "src/components/OllamaTab.tsx": {
+      "imports": [
+        "src/components/DeveloperTab.tsx",
+        "src/components/KnowledgeBaseSection.tsx",
+        "src/components/OllamaReplyVerbositySlider.tsx",
+        "src/components/OllamaWhereAiRunsSection.tsx",
+        "src/components/SettingsTabConnectionTimeoutSlider.tsx",
+        "src/components/SettingsTabOllamaKeepAliveSlider.tsx",
+        "src/data/modelPolicy.ts",
+        "src/data/replyVerbosity.ts",
+        "src/styles/settingsGlassButton.ts",
+        "src/utils/settingsAndResponse.ts"
+      ],
+      "importedBy": [
+        "src/index.tsx"
+      ]
+    },
+    "src/components/OllamaWhereAiRunsSection.tsx": {
+      "imports": [
+        "src/components/DeveloperTab.tsx",
+        "src/data/deckEssentialsTags.ts",
+        "src/data/modelPolicy.ts",
+        "src/utils/deckyCall.ts",
+        "src/utils/ollamaTabLocalSurvival.ts",
+        "src/utils/pullModelCatalogRefresh.ts",
+        "src/utils/settingsAndResponse.ts",
+        "src/utils/settingsPanelScroll.ts"
+      ],
+      "importedBy": [
+        "src/components/OllamaTab.tsx"
+      ]
+    },
+    "src/components/PermissionsTab.tsx": {
+      "imports": [
+        "src/utils/settingsAndResponse.ts"
+      ],
+      "importedBy": [
+        "src/index.tsx"
+      ]
+    },
+    "src/components/PluginHelpModal.tsx": {
+      "imports": [
+        "src/data/pluginQuickStartInstructions.tsx"
+      ],
+      "importedBy": [
+        "src/index.tsx"
+      ]
+    },
+    "src/components/PullModelsModal.tsx": {
+      "imports": [
+        "src/components/BonsaiModalScope.tsx",
+        "src/data/deprioritizedModels.ts",
+        "src/data/modelPolicy.ts",
+        "src/data/pullModelCatalog.ts",
+        "src/hooks/usePullModelCatalog.ts",
+        "src/utils/deckyCall.ts",
+        "src/utils/mergePullModelCatalog.ts",
+        "src/utils/pullModelRecommendations.ts",
+        "src/utils/settingsAndResponse.ts"
+      ],
+      "importedBy": [
+        "src/components/OllamaModelsHubModal.tsx"
+      ]
+    },
+    "src/components/SessionContextStrip.tsx": {
+      "imports": [
+        "src/components/ContextChipLadder.tsx",
+        "src/types/bonsaiUi.ts",
+        "src/utils/contextChipsFromSnapshot.ts",
+        "src/utils/inputTransparency.ts"
+      ],
+      "importedBy": [
+        "src/components/MainTabChatTranscript.tsx"
+      ]
+    },
+    "src/components/SettingsTab.mdns.test.ts": {
+      "imports": [
+        "src/test-harness/fakeDeckyRpc.ts"
+      ],
+      "importedBy": []
+    },
+    "src/components/SettingsTab.tsx": {
+      "imports": [
+        "src/components/SettingsTabAccentIntensityMenuPopover.tsx",
+        "src/components/SettingsTabUiScaleSection.tsx",
+        "src/components/VoiceInputSettingsSection.tsx",
+        "src/data/aiCharacterAccentIntensity.ts",
+        "src/data/characterCatalog.ts",
+        "src/data/uiScaleProfile.ts",
+        "src/features/unified-input/constants.ts",
+        "src/utils/settingsAndResponse.ts",
+        "src/utils/settingsTabLocalSurvival.ts"
+      ],
+      "importedBy": [
+        "src/index.tsx"
+      ]
+    },
+    "src/components/SettingsTabAccentIntensityMenuPopover.tsx": {
+      "imports": [
+        "src/data/aiCharacterAccentIntensity.ts",
+        "src/features/unified-input/constants.ts"
+      ],
+      "importedBy": [
+        "src/components/SettingsTab.tsx"
+      ]
+    },
+    "src/components/SettingsTabConnectionTimeoutSlider.tsx": {
+      "imports": [
+        "src/components/deck/DeckFocusSlider.tsx",
+        "src/utils/deckSliderMath.ts",
+        "src/utils/settingsAndResponse.ts"
+      ],
+      "importedBy": [
+        "src/components/OllamaTab.tsx"
+      ]
+    },
+    "src/components/SettingsTabOllamaKeepAliveSlider.tsx": {
+      "imports": [
+        "src/components/deck/DeckFocusSlider.tsx",
+        "src/data/ollamaKeepAlive.ts",
+        "src/utils/deckSliderMath.ts"
+      ],
+      "importedBy": [
+        "src/components/OllamaTab.tsx"
+      ]
+    },
+    "src/components/SettingsTabUiScaleSection.tsx": {
+      "imports": [
+        "src/components/SettingsTabUiScaleSlider.tsx",
+        "src/data/uiScaleProfile.ts",
+        "src/utils/deckSliderMath.ts"
+      ],
+      "importedBy": [
+        "src/components/SettingsTab.tsx"
+      ]
+    },
+    "src/components/SettingsTabUiScaleSlider.tsx": {
+      "imports": [
+        "src/components/deck/DeckFocusSlider.tsx",
+        "src/data/uiScaleProfile.ts",
+        "src/utils/deckSliderMath.ts"
+      ],
+      "importedBy": [
+        "src/components/SettingsTabUiScaleSection.tsx"
+      ]
+    },
+    "src/components/StrategyChecklistPanel.tsx": {
+      "imports": [
+        "src/types/bonsaiUi.ts",
+        "src/utils/liveTurnFocusGraph.ts"
+      ],
+      "importedBy": [
+        "src/components/MainTabChatTranscript.tsx"
+      ]
+    },
+    "src/components/StreamFenceWaitChip.tsx": {
+      "imports": [],
+      "importedBy": [
+        "src/utils/buildAnswerBubbleElement.tsx"
+      ]
+    },
+    "src/components/VoiceInputSettingsSection.tsx": {
+      "imports": [
+        "src/utils/deckyCall.ts",
+        "src/utils/settingsAndResponse.ts"
+      ],
+      "importedBy": [
+        "src/components/SettingsTab.tsx"
+      ]
+    },
+    "src/components/deck/DeckFocusSlider.tsx": {
+      "imports": [
+        "src/utils/deckSliderMath.ts"
+      ],
+      "importedBy": [
+        "src/components/OllamaReplyVerbositySlider.tsx",
+        "src/components/SettingsTabConnectionTimeoutSlider.tsx",
+        "src/components/SettingsTabOllamaKeepAliveSlider.tsx",
+        "src/components/SettingsTabUiScaleSlider.tsx"
+      ]
+    },
+    "src/components/icons.tsx": {
+      "imports": [],
+      "importedBy": [
+        "src/components/MainTabChatTranscript.tsx",
+        "src/components/MainTabScreenshotBrowser.tsx",
+        "src/components/MainTabUnifiedAskBar.tsx",
+        "src/index.tsx",
+        "src/utils/buildReplyActionsElement.tsx"
+      ]
+    },
+    "src/context/UiScaleContext.tsx": {
+      "imports": [
+        "src/data/uiScaleProfile.ts"
+      ],
+      "importedBy": [
+        "src/components/BonsaiModalScope.tsx",
+        "src/index.tsx"
+      ]
+    },
+    "src/data/aiCharacterAccentIntensity.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/components/SettingsTab.tsx",
+        "src/components/SettingsTabAccentIntensityMenuPopover.tsx",
+        "src/data/bonsaiSettingsNormalizers.ts",
+        "src/data/bonsaiSettingsSchema.ts",
+        "src/hooks/usePluginSettings.ts"
+      ]
+    },
+    "src/data/askMode.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/components/MainTab.tsx",
+        "src/components/MainTabAskModeMenuPopover.tsx",
+        "src/components/MainTabChatTranscript.tsx",
+        "src/components/MainTabPresetAnimatedChips.tsx",
+        "src/components/MainTabPresetRow.tsx",
+        "src/components/MainTabUnifiedAskBar.tsx",
+        "src/data/bonsaiSettingsNormalizers.ts",
+        "src/data/bonsaiSettingsSchema.ts",
+        "src/data/presets.ts",
+        "src/features/preset-carousel/sessionRagComposer.ts",
+        "src/types/backgroundAsk.ts"
+      ]
+    },
+    "src/data/bonsaiSettingsNormalizers.ts": {
+      "imports": [
+        "src/data/aiCharacterAccentIntensity.ts",
+        "src/data/askMode.ts",
+        "src/data/bonsaiSettingsSchema.ts",
+        "src/data/characterCatalog.ts",
+        "src/data/modelPolicy.ts",
+        "src/data/ollamaKeepAlive.ts",
+        "src/data/replyLanguage.ts",
+        "src/data/replyVerbosity.ts",
+        "src/data/uiScaleProfile.ts"
+      ],
+      "importedBy": [
+        "src/utils/settingsAndResponse.ts"
+      ]
+    },
+    "src/data/bonsaiSettingsSchema.ts": {
+      "imports": [
+        "src/data/aiCharacterAccentIntensity.ts",
+        "src/data/askMode.ts",
+        "src/data/modelPolicy.ts",
+        "src/data/ollamaKeepAlive.ts",
+        "src/data/replyLanguage.ts",
+        "src/data/replyVerbosity.ts",
+        "src/data/uiScaleProfile.ts"
+      ],
+      "importedBy": [
+        "src/data/bonsaiSettingsNormalizers.ts",
+        "src/utils/settingsAndResponse.ts",
+        "src/utils/settingsPayload.ts"
+      ]
+    },
+    "src/data/characterCatalog.test.ts": {
+      "imports": [
+        "src/data/characterCatalog.ts"
+      ],
+      "importedBy": []
+    },
+    "src/data/characterCatalog.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/components/CharacterPickerModal.tsx",
+        "src/components/SettingsTab.tsx",
+        "src/data/bonsaiSettingsNormalizers.ts",
+        "src/data/characterCatalog.test.ts",
+        "src/data/characterUiAccent.test.ts",
+        "src/data/characterUiAccent.ts",
+        "src/index.tsx",
+        "src/utils/runningGameCharacterSuggestions.ts"
+      ]
+    },
+    "src/data/characterPlaceholderEmoticonGrids.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/components/CharacterRoleplayEmoticon.tsx"
+      ]
+    },
+    "src/data/characterUiAccent.test.ts": {
+      "imports": [
+        "src/data/characterCatalog.ts",
+        "src/data/characterUiAccent.ts"
+      ],
+      "importedBy": []
+    },
+    "src/data/characterUiAccent.ts": {
+      "imports": [
+        "src/data/characterCatalog.ts",
+        "src/features/unified-input/constants.ts",
+        "src/utils/settingsAndResponse.ts"
+      ],
+      "importedBy": [
+        "src/data/characterUiAccent.test.ts",
+        "src/index.tsx"
+      ]
+    },
+    "src/data/deckEssentialsTags.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/components/OllamaWhereAiRunsSection.tsx",
+        "src/hooks/useDisclaimerAndLocalRuntimeGates.tsx"
+      ]
+    },
+    "src/data/deprioritizedModels.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/components/PullModelsModal.tsx"
+      ]
+    },
+    "src/data/inputSanitizerCommands.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/utils/localOnlyAskCommands.test.ts",
+        "src/utils/localOnlyAskCommands.ts"
+      ]
+    },
+    "src/data/knowledgeBaseDev.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/index.tsx"
+      ]
+    },
+    "src/data/modelPolicy.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/components/MainTab.tsx",
+        "src/components/MainTabChatTranscript.tsx",
+        "src/components/ModelPolicyTierPanel.tsx",
+        "src/components/ModelRoutingAdvancedPanel.tsx",
+        "src/components/ModelRoutingOrderModal.tsx",
+        "src/components/OllamaModelsHubModal.tsx",
+        "src/components/OllamaTab.tsx",
+        "src/components/OllamaWhereAiRunsSection.tsx",
+        "src/components/PullModelsModal.tsx",
+        "src/data/bonsaiSettingsNormalizers.ts",
+        "src/data/bonsaiSettingsSchema.ts",
+        "src/hooks/useBonsaiAskOrchestration.ts",
+        "src/hooks/usePluginSettings.ts",
+        "src/index.tsx",
+        "src/types/backgroundAsk.ts",
+        "src/utils/bonsaiSessionSurvival.ts",
+        "src/utils/inputTransparency.ts",
+        "src/utils/modelRoutingOrder.ts"
+      ]
+    },
+    "src/data/ollamaKeepAlive.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/components/SettingsTabOllamaKeepAliveSlider.tsx",
+        "src/data/bonsaiSettingsNormalizers.ts",
+        "src/data/bonsaiSettingsSchema.ts"
+      ]
+    },
+    "src/data/pluginQuickStartInstructions.tsx": {
+      "imports": [],
+      "importedBy": [
+        "src/components/PluginHelpModal.tsx"
+      ]
+    },
+    "src/data/presets.test.ts": {
+      "imports": [
+        "src/data/presets.ts"
+      ],
+      "importedBy": []
+    },
+    "src/data/presets.ts": {
+      "imports": [
+        "src/data/askMode.ts"
+      ],
+      "importedBy": [
+        "src/components/MainTab.tsx",
+        "src/components/MainTabPresetAnimatedChips.tsx",
+        "src/components/MainTabPresetRow.tsx",
+        "src/data/presets.test.ts",
+        "src/features/preset-carousel/carouselState.test.ts",
+        "src/features/preset-carousel/carouselState.ts",
+        "src/features/preset-carousel/composePresetSeedsWithSessionRag.ts",
+        "src/features/preset-carousel/sessionRagComposer.test.ts",
+        "src/features/preset-carousel/sessionRagComposer.ts",
+        "src/hooks/useBonsaiAskOrchestration.ts",
+        "src/utils/bonsaiSessionSurvival.ts"
+      ]
+    },
+    "src/data/pullModelCatalog.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/components/ModelRoutingOrderModal.tsx",
+        "src/components/PullModelsModal.tsx",
+        "src/hooks/usePullModelCatalog.ts",
+        "src/index.tsx",
+        "src/utils/mergePullModelCatalog.test.ts",
+        "src/utils/mergePullModelCatalog.ts",
+        "src/utils/modelRoutingOrder.ts",
+        "src/utils/pullModelRecommendations.test.ts",
+        "src/utils/pullModelRecommendations.ts"
+      ]
+    },
+    "src/data/replyLanguage.test.ts": {
+      "imports": [
+        "src/data/replyLanguage.ts"
+      ],
+      "importedBy": []
+    },
+    "src/data/replyLanguage.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/components/AboutTab.tsx",
+        "src/data/bonsaiSettingsNormalizers.ts",
+        "src/data/bonsaiSettingsSchema.ts",
+        "src/data/replyLanguage.test.ts",
+        "src/data/steamLanguages.ts",
+        "src/hooks/useReplyLanguage.ts",
+        "src/utils/i18n.ts",
+        "src/utils/settingsAndResponse.test.ts"
+      ]
+    },
+    "src/data/replyMicroActions.test.ts": {
+      "imports": [
+        "src/data/replyMicroActions.ts"
+      ],
+      "importedBy": []
+    },
+    "src/data/replyMicroActions.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/components/MainTab.tsx",
+        "src/components/MainTabChatTranscript.tsx",
+        "src/data/replyMicroActions.test.ts",
+        "src/hooks/useBonsaiAskOrchestration.ts",
+        "src/types/backgroundAsk.ts",
+        "src/utils/buildReplyActionsElement.tsx"
+      ]
+    },
+    "src/data/replyVerbosity.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/components/OllamaReplyVerbositySlider.tsx",
+        "src/components/OllamaTab.tsx",
+        "src/data/bonsaiSettingsNormalizers.ts",
+        "src/data/bonsaiSettingsSchema.ts"
+      ]
+    },
+    "src/data/settingsDatabase.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/hooks/useSteamSettingsSearch.ts"
+      ]
+    },
+    "src/data/steam-input-lexicon.test.ts": {
+      "imports": [
+        "src/data/steam-input-lexicon.ts"
+      ],
+      "importedBy": []
+    },
+    "src/data/steam-input-lexicon.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/data/steam-input-lexicon.test.ts",
+        "src/index.tsx",
+        "src/utils/steamInputJump.ts"
+      ]
+    },
+    "src/data/steamLanguages.ts": {
+      "imports": [
+        "src/data/replyLanguage.ts"
+      ],
+      "importedBy": [
+        "src/components/AboutReplyLanguageSection.tsx"
+      ]
+    },
+    "src/data/steamSettingsNavigation.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/hooks/useSteamSettingsSearch.ts",
+        "src/index.tsx"
+      ]
+    },
+    "src/data/storageKeys.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/index.tsx"
+      ]
+    },
+    "src/data/strategyGuideFollowup.test.ts": {
+      "imports": [
+        "src/data/strategyGuideFollowup.ts"
+      ],
+      "importedBy": []
+    },
+    "src/data/strategyGuideFollowup.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/data/strategyGuideFollowup.test.ts",
+        "src/hooks/useBonsaiAskOrchestration.ts"
+      ]
+    },
+    "src/data/uiScaleProfile.test.ts": {
+      "imports": [
+        "src/data/uiScaleProfile.ts"
+      ],
+      "importedBy": []
+    },
+    "src/data/uiScaleProfile.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/components/SettingsTab.tsx",
+        "src/components/SettingsTabUiScaleSection.tsx",
+        "src/components/SettingsTabUiScaleSlider.tsx",
+        "src/context/UiScaleContext.tsx",
+        "src/data/bonsaiSettingsNormalizers.ts",
+        "src/data/bonsaiSettingsSchema.ts",
+        "src/data/uiScaleProfile.test.ts",
+        "src/features/unified-input/useUnifiedInputSurface.ts",
+        "src/hooks/useUiScaleProfile.ts",
+        "src/index.tsx"
+      ]
+    },
+    "src/features/preset-carousel/carouselState.test.ts": {
+      "imports": [
+        "src/data/presets.ts",
+        "src/features/preset-carousel/carouselState.ts"
+      ],
+      "importedBy": []
+    },
+    "src/features/preset-carousel/carouselState.ts": {
+      "imports": [
+        "src/data/presets.ts"
+      ],
+      "importedBy": [
+        "src/components/MainTabPresetAnimatedChips.tsx",
+        "src/features/preset-carousel/carouselState.test.ts"
+      ]
+    },
+    "src/features/preset-carousel/composePresetSeedsWithSessionRag.ts": {
+      "imports": [
+        "src/data/presets.ts",
+        "src/features/preset-carousel/sessionRagComposer.ts"
+      ],
+      "importedBy": [
+        "src/hooks/useBonsaiAskOrchestration.ts"
+      ]
+    },
+    "src/features/preset-carousel/sessionRagComposer.test.ts": {
+      "imports": [
+        "src/data/presets.ts",
+        "src/features/preset-carousel/sessionRagComposer.ts"
+      ],
+      "importedBy": []
+    },
+    "src/features/preset-carousel/sessionRagComposer.ts": {
+      "imports": [
+        "src/data/askMode.ts",
+        "src/data/presets.ts"
+      ],
+      "importedBy": [
+        "src/features/preset-carousel/composePresetSeedsWithSessionRag.ts",
+        "src/features/preset-carousel/sessionRagComposer.test.ts",
+        "src/hooks/useBonsaiAskOrchestration.ts",
+        "src/utils/sessionRagChipCandidates.ts"
+      ]
+    },
+    "src/features/unified-input/constants.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/components/AboutTab.tsx",
+        "src/components/MainTabAskModeMenuPopover.tsx",
+        "src/components/MainTabAttachMenuPopover.tsx",
+        "src/components/MainTabChatTranscript.tsx",
+        "src/components/MainTabPresetAnimatedChips.tsx",
+        "src/components/MainTabUnifiedAskBar.tsx",
+        "src/components/SettingsTab.tsx",
+        "src/components/SettingsTabAccentIntensityMenuPopover.tsx",
+        "src/data/characterUiAccent.ts",
+        "src/features/unified-input/useUnifiedInputSurface.ts",
+        "src/hooks/useTabStripBodyOffset.ts",
+        "src/index.tsx",
+        "src/styles/sections/scopeBase.ts",
+        "src/styles/sections/section-1.ts",
+        "src/styles/sections/section-3.ts",
+        "src/styles/sections/section-4.ts",
+        "src/styles/sections/section-5.ts",
+        "src/styles/sections/section-6.ts",
+        "src/styles/sections/section-8.ts",
+        "src/utils/intentPackSearch.ts"
+      ]
+    },
+    "src/features/unified-input/useUnifiedInputSurface.ts": {
+      "imports": [
+        "src/data/uiScaleProfile.ts",
+        "src/features/unified-input/constants.ts"
+      ],
+      "importedBy": [
+        "src/index.tsx"
+      ]
+    },
+    "src/hooks/useBackgroundGameAi.test.ts": {
+      "imports": [
+        "src/hooks/useBackgroundGameAi.ts",
+        "src/test-harness/fakeDeckyRpc.ts",
+        "src/test-harness/rpcFixtures.ts",
+        "src/types/backgroundAsk.ts"
+      ],
+      "importedBy": []
+    },
+    "src/hooks/useBackgroundGameAi.ts": {
+      "imports": [
+        "src/types/backgroundAsk.ts"
+      ],
+      "importedBy": [
+        "src/hooks/useBackgroundGameAi.test.ts",
+        "src/hooks/useBonsaiAskOrchestration.ts",
+        "src/utils/bonsaiAskCompletionWatch.ts"
+      ]
+    },
+    "src/hooks/useBonsaiAskOrchestration.ts": {
+      "imports": [
+        "src/data/modelPolicy.ts",
+        "src/data/presets.ts",
+        "src/data/replyMicroActions.ts",
+        "src/data/strategyGuideFollowup.ts",
+        "src/features/preset-carousel/composePresetSeedsWithSessionRag.ts",
+        "src/features/preset-carousel/sessionRagComposer.ts",
+        "src/hooks/useBackgroundGameAi.ts",
+        "src/hooks/useSmoothStreamReveal.ts",
+        "src/hooks/useStrategyChecklistSession.ts",
+        "src/types/backgroundAsk.ts",
+        "src/types/bonsaiUi.ts",
+        "src/utils/askThinkingPhases.ts",
+        "src/utils/bonsaiAskCompletionWatch.ts",
+        "src/utils/bonsaiSessionSurvival.ts",
+        "src/utils/composeThinkingBlurb.ts",
+        "src/utils/deckyCall.ts",
+        "src/utils/desktopChatAutosave.ts",
+        "src/utils/inputTransparency.ts",
+        "src/utils/localOnlyAskCommands.ts",
+        "src/utils/presetCarouselInject.ts",
+        "src/utils/sessionRagChipCandidates.ts",
+        "src/utils/settingsAndResponse.ts",
+        "src/utils/strategyChecklist.ts",
+        "src/utils/strategyChecklistPersistence.ts",
+        "src/utils/strategyGuideBranches.ts"
+      ],
+      "importedBy": [
+        "src/index.tsx"
+      ]
+    },
+    "src/hooks/useBonsaiPluginShell.ts": {
+      "imports": [
+        "src/utils/bonsaiDebugIngest.ts",
+        "src/utils/bonsaiSessionSurvival.ts",
+        "src/utils/ollamaTabLocalSurvival.ts",
+        "src/utils/settingsTabLocalSurvival.ts"
+      ],
+      "importedBy": [
+        "src/index.tsx"
+      ]
+    },
+    "src/hooks/useCapturedFrontendErrors.ts": {
+      "imports": [
+        "src/utils/appDesktopLog.ts"
+      ],
+      "importedBy": [
+        "src/index.tsx"
+      ]
+    },
+    "src/hooks/useDisclaimerAndLocalRuntimeGates.tsx": {
+      "imports": [
+        "src/data/deckEssentialsTags.ts"
+      ],
+      "importedBy": [
+        "src/index.tsx"
+      ]
+    },
+    "src/hooks/useIntentPacks.ts": {
+      "imports": [
+        "src/utils/intentPackSearch.ts"
+      ],
+      "importedBy": [
+        "src/index.tsx"
+      ]
+    },
+    "src/hooks/useMainTabAskBarFocus.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/components/MainTabUnifiedAskBar.tsx"
+      ]
+    },
+    "src/hooks/usePluginSettings.test.ts": {
+      "imports": [
+        "src/hooks/usePluginSettings.ts",
+        "src/test-harness/fakeDeckyRpc.ts",
+        "src/test-harness/rpcFixtures.ts",
+        "src/utils/settingsAndResponse.ts"
+      ],
+      "importedBy": []
+    },
+    "src/hooks/usePluginSettings.ts": {
+      "imports": [
+        "src/data/aiCharacterAccentIntensity.ts",
+        "src/data/modelPolicy.ts",
+        "src/utils/bonsaiSessionSurvival.ts",
+        "src/utils/settingsAndResponse.ts"
+      ],
+      "importedBy": [
+        "src/hooks/usePluginSettings.test.ts",
+        "src/index.tsx"
+      ]
+    },
+    "src/hooks/usePullModelCatalog.ts": {
+      "imports": [
+        "src/data/pullModelCatalog.ts",
+        "src/utils/deckyCall.ts",
+        "src/utils/mergePullModelCatalog.ts",
+        "src/utils/pullModelCatalogRefresh.ts"
+      ],
+      "importedBy": [
+        "src/components/PullModelsModal.tsx"
+      ]
+    },
+    "src/hooks/useQamPanelHeightGuard.ts": {
+      "imports": [
+        "src/utils/tabBodyViewport.ts"
+      ],
+      "importedBy": [
+        "src/index.tsx"
+      ]
+    },
+    "src/hooks/useReplyLanguage.ts": {
+      "imports": [
+        "src/data/replyLanguage.ts",
+        "src/i18n/catalog.ts",
+        "src/i18n/keys.ts",
+        "src/utils/i18n.ts"
+      ],
+      "importedBy": [
+        "src/index.tsx"
+      ]
+    },
+    "src/hooks/useScreenshotBrowser.ts": {
+      "imports": [
+        "src/types/bonsaiUi.ts",
+        "src/utils/bonsaiSessionSurvival.ts",
+        "src/utils/deckyCall.ts"
+      ],
+      "importedBy": [
+        "src/index.tsx"
+      ]
+    },
+    "src/hooks/useSmoothStreamReveal.test.ts": {
+      "imports": [
+        "src/hooks/useSmoothStreamReveal.ts"
+      ],
+      "importedBy": []
+    },
+    "src/hooks/useSmoothStreamReveal.ts": {
+      "imports": [
+        "src/utils/streamMarkdownPrepare.ts"
+      ],
+      "importedBy": [
+        "src/hooks/useBonsaiAskOrchestration.ts",
+        "src/hooks/useSmoothStreamReveal.test.ts"
+      ]
+    },
+    "src/hooks/useSteamSettingsSearch.ts": {
+      "imports": [
+        "src/data/settingsDatabase.ts",
+        "src/data/steamSettingsNavigation.ts",
+        "src/utils/intentPackSearch.ts"
+      ],
+      "importedBy": [
+        "src/index.tsx"
+      ]
+    },
+    "src/hooks/useStrategyChecklistSession.ts": {
+      "imports": [
+        "src/types/bonsaiUi.ts",
+        "src/utils/bonsaiSessionSurvival.ts",
+        "src/utils/settingsAndResponse.ts",
+        "src/utils/strategyChecklistPersistence.ts"
+      ],
+      "importedBy": [
+        "src/hooks/useBonsaiAskOrchestration.ts"
+      ]
+    },
+    "src/hooks/useStreamScrollPin.ts": {
+      "imports": [
+        "src/utils/chatPanelScroll.ts"
+      ],
+      "importedBy": [
+        "src/components/MainTabChatTranscript.tsx"
+      ]
+    },
+    "src/hooks/useTabStripBodyOffset.ts": {
+      "imports": [
+        "src/features/unified-input/constants.ts",
+        "src/utils/tabBodyViewport.ts"
+      ],
+      "importedBy": [
+        "src/index.tsx"
+      ]
+    },
+    "src/hooks/useUiScaleProfile.ts": {
+      "imports": [
+        "src/data/uiScaleProfile.ts"
+      ],
+      "importedBy": [
+        "src/index.tsx"
+      ]
+    },
+    "src/hooks/useVoiceTranscription.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/index.tsx"
+      ]
+    },
+    "src/i18n/catalog.ts": {
+      "imports": [
+        "src/i18n/keys.ts"
+      ],
+      "importedBy": [
+        "src/hooks/useReplyLanguage.ts",
+        "src/utils/askThinkingPhases.ts",
+        "src/utils/i18n.ts"
+      ]
+    },
+    "src/i18n/keys.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/components/AboutTab.tsx",
+        "src/hooks/useReplyLanguage.ts",
+        "src/i18n/catalog.ts",
+        "src/utils/i18n.ts"
+      ]
+    },
+    "src/index.tsx": {
+      "imports": [
+        "src/components/AboutTab.tsx",
+        "src/components/BonsaiDebugOverlay.tsx",
+        "src/components/BonsaiPluginShell.tsx",
+        "src/components/CharacterPickerModal.tsx",
+        "src/components/DesktopNoteSaveModal.tsx",
+        "src/components/DeveloperTab.tsx",
+        "src/components/MainTab.tsx",
+        "src/components/ModelRoutingOrderModal.tsx",
+        "src/components/OllamaModelsHubModal.tsx",
+        "src/components/OllamaTab.tsx",
+        "src/components/PermissionsTab.tsx",
+        "src/components/PluginHelpModal.tsx",
+        "src/components/SettingsTab.tsx",
+        "src/components/icons.tsx",
+        "src/context/UiScaleContext.tsx",
+        "src/data/characterCatalog.ts",
+        "src/data/characterUiAccent.ts",
+        "src/data/knowledgeBaseDev.ts",
+        "src/data/modelPolicy.ts",
+        "src/data/pullModelCatalog.ts",
+        "src/data/steam-input-lexicon.ts",
+        "src/data/steamSettingsNavigation.ts",
+        "src/data/storageKeys.ts",
+        "src/data/uiScaleProfile.ts",
+        "src/features/unified-input/constants.ts",
+        "src/features/unified-input/useUnifiedInputSurface.ts",
+        "src/hooks/useBonsaiAskOrchestration.ts",
+        "src/hooks/useBonsaiPluginShell.ts",
+        "src/hooks/useCapturedFrontendErrors.ts",
+        "src/hooks/useDisclaimerAndLocalRuntimeGates.tsx",
+        "src/hooks/useIntentPacks.ts",
+        "src/hooks/usePluginSettings.ts",
+        "src/hooks/useQamPanelHeightGuard.ts",
+        "src/hooks/useReplyLanguage.ts",
+        "src/hooks/useScreenshotBrowser.ts",
+        "src/hooks/useSteamSettingsSearch.ts",
+        "src/hooks/useTabStripBodyOffset.ts",
+        "src/hooks/useUiScaleProfile.ts",
+        "src/hooks/useVoiceTranscription.ts",
+        "src/pluginVersion.ts",
+        "src/preview/previewTestHooks.ts",
+        "src/utils/appDesktopLog.ts",
+        "src/utils/bonsaiDebugIngest.ts",
+        "src/utils/bonsaiReplySurface.ts",
+        "src/utils/bonsaiSessionSurvival.ts",
+        "src/utils/clearBonsaiBrowserStorage.ts",
+        "src/utils/deckyCall.ts",
+        "src/utils/ollamaTabLocalSurvival.ts",
+        "src/utils/persistOllamaIp.ts",
+        "src/utils/settingsAndResponse.ts",
+        "src/utils/settingsTabLocalSurvival.ts",
+        "src/utils/steamInputJump.ts",
+        "src/utils/uiScaleScopeBridge.ts",
+        "src/utils/unifiedInputPersistenceMode.ts"
+      ],
+      "importedBy": []
+    },
+    "src/pluginVersion.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/index.tsx"
+      ]
+    },
+    "src/preview/previewTestHooks.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/index.tsx"
+      ]
+    },
+    "src/styles/bonsaiScopeStylesheet.ts": {
+      "imports": [
+        "src/styles/sections/gamepadAndPullModels.ts",
+        "src/styles/sections/scopeBase.ts",
+        "src/styles/sections/section-1.ts",
+        "src/styles/sections/section-2.ts",
+        "src/styles/sections/section-3.ts",
+        "src/styles/sections/section-4.ts",
+        "src/styles/sections/section-5.ts",
+        "src/styles/sections/section-6.ts",
+        "src/styles/sections/section-7.ts",
+        "src/styles/sections/section-8.ts",
+        "src/styles/sections/section-9.ts"
+      ],
+      "importedBy": [
+        "src/components/BonsaiModalScope.tsx",
+        "src/components/BonsaiPluginShell.tsx"
+      ]
+    },
+    "src/styles/sections/gamepadAndPullModels.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/styles/bonsaiScopeStylesheet.ts"
+      ]
+    },
+    "src/styles/sections/scopeBase.ts": {
+      "imports": [
+        "src/features/unified-input/constants.ts",
+        "src/styles/sections/uiScalePx.ts"
+      ],
+      "importedBy": [
+        "src/styles/bonsaiScopeStylesheet.ts"
+      ]
+    },
+    "src/styles/sections/section-1.ts": {
+      "imports": [
+        "src/features/unified-input/constants.ts"
+      ],
+      "importedBy": [
+        "src/styles/bonsaiScopeStylesheet.ts"
+      ]
+    },
+    "src/styles/sections/section-2.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/styles/bonsaiScopeStylesheet.ts"
+      ]
+    },
+    "src/styles/sections/section-3.ts": {
+      "imports": [
+        "src/features/unified-input/constants.ts",
+        "src/styles/sections/uiScalePx.ts"
+      ],
+      "importedBy": [
+        "src/styles/bonsaiScopeStylesheet.ts"
+      ]
+    },
+    "src/styles/sections/section-4.ts": {
+      "imports": [
+        "src/features/unified-input/constants.ts",
+        "src/styles/sections/uiScalePx.ts"
+      ],
+      "importedBy": [
+        "src/styles/bonsaiScopeStylesheet.ts"
+      ]
+    },
+    "src/styles/sections/section-5.ts": {
+      "imports": [
+        "src/features/unified-input/constants.ts",
+        "src/styles/sections/uiScalePx.ts"
+      ],
+      "importedBy": [
+        "src/styles/bonsaiScopeStylesheet.ts"
+      ]
+    },
+    "src/styles/sections/section-6.ts": {
+      "imports": [
+        "src/features/unified-input/constants.ts",
+        "src/styles/sections/uiScalePx.ts"
+      ],
+      "importedBy": [
+        "src/styles/bonsaiScopeStylesheet.ts"
+      ]
+    },
+    "src/styles/sections/section-7.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/styles/bonsaiScopeStylesheet.ts"
+      ]
+    },
+    "src/styles/sections/section-8.ts": {
+      "imports": [
+        "src/features/unified-input/constants.ts"
+      ],
+      "importedBy": [
+        "src/styles/bonsaiScopeStylesheet.ts"
+      ]
+    },
+    "src/styles/sections/section-9.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/styles/bonsaiScopeStylesheet.ts"
+      ]
+    },
+    "src/styles/sections/uiScalePx.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/styles/sections/scopeBase.ts",
+        "src/styles/sections/section-3.ts",
+        "src/styles/sections/section-4.ts",
+        "src/styles/sections/section-5.ts",
+        "src/styles/sections/section-6.ts"
+      ]
+    },
+    "src/styles/settingsGlassButton.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/components/KnowledgeBaseSection.tsx",
+        "src/components/OllamaTab.tsx"
+      ]
+    },
+    "src/test-harness/fakeDeckyRpc.test.ts": {
+      "imports": [
+        "src/test-harness/fakeDeckyRpc.ts"
+      ],
+      "importedBy": []
+    },
+    "src/test-harness/fakeDeckyRpc.ts": {
+      "imports": [
+        "src/test-harness/rpcFixtures.ts",
+        "src/types/backgroundAsk.ts"
+      ],
+      "importedBy": [
+        "src/components/SettingsTab.mdns.test.ts",
+        "src/hooks/useBackgroundGameAi.test.ts",
+        "src/hooks/usePluginSettings.test.ts",
+        "src/test-harness/fakeDeckyRpc.test.ts",
+        "src/test-harness/setup.ts",
+        "src/utils/bonsaiAskCompletionWatch.test.ts",
+        "src/utils/deckyCall.test.ts"
+      ]
+    },
+    "src/test-harness/fakeDeckyUi.tsx": {
+      "imports": [],
+      "importedBy": [
+        "src/test-harness/setup.ts"
+      ]
+    },
+    "src/test-harness/renderWithHarness.tsx": {
+      "imports": [],
+      "importedBy": []
+    },
+    "src/test-harness/rpcFixtures.ts": {
+      "imports": [
+        "src/types/backgroundAsk.ts",
+        "src/utils/settingsAndResponse.ts"
+      ],
+      "importedBy": [
+        "src/hooks/useBackgroundGameAi.test.ts",
+        "src/hooks/usePluginSettings.test.ts",
+        "src/test-harness/fakeDeckyRpc.ts"
+      ]
+    },
+    "src/test-harness/setup.ts": {
+      "imports": [
+        "src/test-harness/fakeDeckyRpc.ts",
+        "src/test-harness/fakeDeckyUi.tsx"
+      ],
+      "importedBy": []
+    },
+    "src/types.d.ts": {
+      "imports": [],
+      "importedBy": []
+    },
+    "src/types/backgroundAsk.ts": {
+      "imports": [
+        "src/data/askMode.ts",
+        "src/data/modelPolicy.ts",
+        "src/data/replyMicroActions.ts",
+        "src/types/bonsaiUi.ts"
+      ],
+      "importedBy": [
+        "src/components/MainTab.tsx",
+        "src/components/MainTabChatTranscript.tsx",
+        "src/hooks/useBackgroundGameAi.test.ts",
+        "src/hooks/useBackgroundGameAi.ts",
+        "src/hooks/useBonsaiAskOrchestration.ts",
+        "src/test-harness/fakeDeckyRpc.ts",
+        "src/test-harness/rpcFixtures.ts",
+        "src/utils/bonsaiAskCompletionWatch.test.ts",
+        "src/utils/bonsaiAskCompletionWatch.ts",
+        "src/utils/bonsaiReplyReadyToast.test.ts",
+        "src/utils/bonsaiReplyReadyToast.ts",
+        "src/utils/bonsaiSessionSurvival.ts",
+        "src/utils/presetCarouselInject.ts"
+      ]
+    },
+    "src/types/bonsaiUi.ts": {
+      "imports": [
+        "src/utils/inputTransparency.ts"
+      ],
+      "importedBy": [
+        "src/components/MainTab.tsx",
+        "src/components/MainTabChatTranscript.tsx",
+        "src/components/MainTabScreenshotBrowser.tsx",
+        "src/components/MainTabUnifiedAskBar.tsx",
+        "src/components/SessionContextStrip.tsx",
+        "src/components/StrategyChecklistPanel.tsx",
+        "src/hooks/useBonsaiAskOrchestration.ts",
+        "src/hooks/useScreenshotBrowser.ts",
+        "src/hooks/useStrategyChecklistSession.ts",
+        "src/types/backgroundAsk.ts",
+        "src/utils/bonsaiSessionSurvival.ts",
+        "src/utils/strategyChecklist.ts",
+        "src/utils/strategyChecklistPersistence.ts",
+        "src/utils/strategyGuideBranches.ts"
+      ]
+    },
+    "src/utils/answerBubbleElRegistry.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/utils/answerBubbleNavigation.ts",
+        "src/utils/buildAnswerBubbleElement.tsx"
+      ]
+    },
+    "src/utils/answerBubbleNavRegistry.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/components/MainTabChatTranscript.tsx",
+        "src/utils/answerBubbleNavigation.ts",
+        "src/utils/buildAnswerBubbleElement.tsx"
+      ]
+    },
+    "src/utils/answerBubbleNavigation.test.ts": {
+      "imports": [
+        "src/utils/splitResponseIntoChunks.ts"
+      ],
+      "importedBy": []
+    },
+    "src/utils/answerBubbleNavigation.ts": {
+      "imports": [
+        "src/utils/answerBubbleElRegistry.ts",
+        "src/utils/answerBubbleNavRegistry.ts",
+        "src/utils/chatPanelScroll.ts"
+      ],
+      "importedBy": [
+        "src/components/MainTabChatTranscript.tsx",
+        "src/utils/buildAnswerBubbleElement.tsx",
+        "src/utils/buildTurnHeaderElement.tsx"
+      ]
+    },
+    "src/utils/appDesktopLog.test.ts": {
+      "imports": [
+        "src/utils/appDesktopLog.ts"
+      ],
+      "importedBy": []
+    },
+    "src/utils/appDesktopLog.ts": {
+      "imports": [
+        "src/utils/deckyCall.ts",
+        "src/utils/settingsAndResponse.ts"
+      ],
+      "importedBy": [
+        "src/hooks/useCapturedFrontendErrors.ts",
+        "src/index.tsx",
+        "src/utils/appDesktopLog.test.ts"
+      ]
+    },
+    "src/utils/askThinkingPhases.test.ts": {
+      "imports": [
+        "src/utils/askThinkingPhases.ts"
+      ],
+      "importedBy": []
+    },
+    "src/utils/askThinkingPhases.ts": {
+      "imports": [
+        "src/i18n/catalog.ts",
+        "src/utils/i18n.ts"
+      ],
+      "importedBy": [
+        "src/components/MainTabChatTranscript.tsx",
+        "src/hooks/useBonsaiAskOrchestration.ts",
+        "src/utils/askThinkingPhases.test.ts"
+      ]
+    },
+    "src/utils/bonsaiAskCompletionWatch.test.ts": {
+      "imports": [
+        "src/test-harness/fakeDeckyRpc.ts",
+        "src/types/backgroundAsk.ts",
+        "src/utils/bonsaiAskCompletionWatch.ts",
+        "src/utils/bonsaiPhaseToast.ts",
+        "src/utils/bonsaiReplyReadyToast.ts",
+        "src/utils/bonsaiReplySurface.ts"
+      ],
+      "importedBy": []
+    },
+    "src/utils/bonsaiAskCompletionWatch.ts": {
+      "imports": [
+        "src/hooks/useBackgroundGameAi.ts",
+        "src/types/backgroundAsk.ts",
+        "src/utils/bonsaiReplyReadyToast.ts"
+      ],
+      "importedBy": [
+        "src/hooks/useBonsaiAskOrchestration.ts",
+        "src/utils/bonsaiAskCompletionWatch.test.ts"
+      ]
+    },
+    "src/utils/bonsaiDebugIngest.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/components/BonsaiDebugOverlay.tsx",
+        "src/hooks/useBonsaiPluginShell.ts",
+        "src/index.tsx"
+      ]
+    },
+    "src/utils/bonsaiPhaseToast.test.ts": {
+      "imports": [
+        "src/utils/bonsaiPhaseToast.ts"
+      ],
+      "importedBy": []
+    },
+    "src/utils/bonsaiPhaseToast.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/utils/bonsaiAskCompletionWatch.test.ts",
+        "src/utils/bonsaiPhaseToast.test.ts",
+        "src/utils/bonsaiReplyReadyToast.test.ts",
+        "src/utils/bonsaiReplyReadyToast.ts"
+      ]
+    },
+    "src/utils/bonsaiReplyReadyToast.test.ts": {
+      "imports": [
+        "src/types/backgroundAsk.ts",
+        "src/utils/bonsaiPhaseToast.ts",
+        "src/utils/bonsaiReplyReadyToast.ts",
+        "src/utils/bonsaiReplySurface.ts"
+      ],
+      "importedBy": []
+    },
+    "src/utils/bonsaiReplyReadyToast.ts": {
+      "imports": [
+        "src/types/backgroundAsk.ts",
+        "src/utils/bonsaiPhaseToast.ts",
+        "src/utils/bonsaiReplySurface.ts",
+        "src/utils/deckyCall.ts"
+      ],
+      "importedBy": [
+        "src/utils/bonsaiAskCompletionWatch.test.ts",
+        "src/utils/bonsaiAskCompletionWatch.ts",
+        "src/utils/bonsaiReplyReadyToast.test.ts"
+      ]
+    },
+    "src/utils/bonsaiReplySurface.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/index.tsx",
+        "src/utils/bonsaiAskCompletionWatch.test.ts",
+        "src/utils/bonsaiReplyReadyToast.test.ts",
+        "src/utils/bonsaiReplyReadyToast.ts"
+      ]
+    },
+    "src/utils/bonsaiSessionSurvival.test.ts": {
+      "imports": [
+        "src/utils/bonsaiSessionSurvival.ts",
+        "src/utils/settingsAndResponse.ts"
+      ],
+      "importedBy": []
+    },
+    "src/utils/bonsaiSessionSurvival.ts": {
+      "imports": [
+        "src/data/modelPolicy.ts",
+        "src/data/presets.ts",
+        "src/types/backgroundAsk.ts",
+        "src/types/bonsaiUi.ts",
+        "src/utils/createTabLocalSurvival.ts",
+        "src/utils/inputTransparency.ts",
+        "src/utils/settingsAndResponse.ts"
+      ],
+      "importedBy": [
+        "src/hooks/useBonsaiAskOrchestration.ts",
+        "src/hooks/useBonsaiPluginShell.ts",
+        "src/hooks/usePluginSettings.ts",
+        "src/hooks/useScreenshotBrowser.ts",
+        "src/hooks/useStrategyChecklistSession.ts",
+        "src/index.tsx",
+        "src/utils/bonsaiSessionSurvival.test.ts"
+      ]
+    },
+    "src/utils/buildAnswerBubbleElement.tsx": {
+      "imports": [
+        "src/components/MainTabBonsaiAiMarkdownChunk.tsx",
+        "src/components/StreamFenceWaitChip.tsx",
+        "src/utils/answerBubbleElRegistry.ts",
+        "src/utils/answerBubbleNavRegistry.ts",
+        "src/utils/answerBubbleNavigation.ts",
+        "src/utils/focusNavigation.ts",
+        "src/utils/liveTurnFocusGraph.ts",
+        "src/utils/splitResponseIntoChunks.ts",
+        "src/utils/streamMarkdownPrepare.ts",
+        "src/utils/stripAssistantDisplayTags.ts",
+        "src/utils/unwrapAskedEntitySpoilerFences.ts"
+      ],
+      "importedBy": [
+        "src/components/MainTabChatTranscript.tsx"
+      ]
+    },
+    "src/utils/buildReplyActionsElement.tsx": {
+      "imports": [
+        "src/components/BonsaiChatSecondaryButton.tsx",
+        "src/components/icons.tsx",
+        "src/data/replyMicroActions.ts",
+        "src/utils/liveTurnFocusGraph.ts"
+      ],
+      "importedBy": [
+        "src/components/MainTabChatTranscript.tsx"
+      ]
+    },
+    "src/utils/buildTurnHeaderElement.tsx": {
+      "imports": [
+        "src/utils/answerBubbleNavigation.ts",
+        "src/utils/focusNavigation.ts"
+      ],
+      "importedBy": [
+        "src/components/MainTabChatTranscript.tsx"
+      ]
+    },
+    "src/utils/chatPanelScroll.test.ts": {
+      "imports": [
+        "src/utils/chatPanelScroll.ts"
+      ],
+      "importedBy": []
+    },
+    "src/utils/chatPanelScroll.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/hooks/useStreamScrollPin.ts",
+        "src/utils/answerBubbleNavigation.ts",
+        "src/utils/chatPanelScroll.test.ts",
+        "src/utils/settingsPanelScroll.ts"
+      ]
+    },
+    "src/utils/chatTurnTitle.test.ts": {
+      "imports": [
+        "src/utils/chatTurnTitle.ts"
+      ],
+      "importedBy": []
+    },
+    "src/utils/chatTurnTitle.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/components/MainTabChatTranscript.tsx",
+        "src/utils/chatTurnTitle.test.ts"
+      ]
+    },
+    "src/utils/clearBonsaiBrowserStorage.test.ts": {
+      "imports": [
+        "src/utils/clearBonsaiBrowserStorage.ts"
+      ],
+      "importedBy": []
+    },
+    "src/utils/clearBonsaiBrowserStorage.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/index.tsx",
+        "src/utils/clearBonsaiBrowserStorage.test.ts"
+      ]
+    },
+    "src/utils/clipboardStash.ts": {
+      "imports": [
+        "src/utils/deckyCall.ts"
+      ],
+      "importedBy": [
+        "src/components/MainTabScreenshotBrowser.tsx"
+      ]
+    },
+    "src/utils/composeThinkingBlurb.test.ts": {
+      "imports": [
+        "src/utils/composeThinkingBlurb.ts"
+      ],
+      "importedBy": []
+    },
+    "src/utils/composeThinkingBlurb.ts": {
+      "imports": [
+        "src/utils/settingsAndResponse.ts"
+      ],
+      "importedBy": [
+        "src/hooks/useBonsaiAskOrchestration.ts",
+        "src/utils/composeThinkingBlurb.test.ts"
+      ]
+    },
+    "src/utils/contextChipsFromSnapshot.ts": {
+      "imports": [
+        "src/utils/inputTransparency.ts"
+      ],
+      "importedBy": [
+        "src/components/ContextChipLadder.tsx",
+        "src/components/MainTabChatTranscript.tsx",
+        "src/components/SessionContextStrip.tsx"
+      ]
+    },
+    "src/utils/createTabLocalSurvival.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/utils/bonsaiSessionSurvival.ts",
+        "src/utils/ollamaTabLocalSurvival.ts",
+        "src/utils/settingsTabLocalSurvival.ts"
+      ]
+    },
+    "src/utils/deckSliderMath.test.ts": {
+      "imports": [
+        "src/utils/deckSliderMath.ts"
+      ],
+      "importedBy": []
+    },
+    "src/utils/deckSliderMath.ts": {
+      "imports": [
+        "src/utils/focusNavigation.ts"
+      ],
+      "importedBy": [
+        "src/components/OllamaReplyVerbositySlider.tsx",
+        "src/components/SettingsTabConnectionTimeoutSlider.tsx",
+        "src/components/SettingsTabOllamaKeepAliveSlider.tsx",
+        "src/components/SettingsTabUiScaleSection.tsx",
+        "src/components/SettingsTabUiScaleSlider.tsx",
+        "src/components/deck/DeckFocusSlider.tsx",
+        "src/utils/deckSliderMath.test.ts"
+      ]
+    },
+    "src/utils/deckyCall.test.ts": {
+      "imports": [
+        "src/test-harness/fakeDeckyRpc.ts",
+        "src/utils/deckyCall.ts"
+      ],
+      "importedBy": []
+    },
+    "src/utils/deckyCall.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/components/DeveloperTab.tsx",
+        "src/components/KnowledgeBaseSection.tsx",
+        "src/components/MainTabScreenshotBrowser.tsx",
+        "src/components/OllamaWhereAiRunsSection.tsx",
+        "src/components/PullModelsModal.tsx",
+        "src/components/VoiceInputSettingsSection.tsx",
+        "src/hooks/useBonsaiAskOrchestration.ts",
+        "src/hooks/usePullModelCatalog.ts",
+        "src/hooks/useScreenshotBrowser.ts",
+        "src/index.tsx",
+        "src/utils/appDesktopLog.ts",
+        "src/utils/bonsaiReplyReadyToast.ts",
+        "src/utils/clipboardStash.ts",
+        "src/utils/deckyCall.test.ts",
+        "src/utils/sessionRagChipCandidates.ts"
+      ]
+    },
+    "src/utils/desktopChatAutosave.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/hooks/useBonsaiAskOrchestration.ts"
+      ]
+    },
+    "src/utils/focusNavigation.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/components/MainTabChatTranscript.tsx",
+        "src/components/MainTabUnifiedAskBar.tsx",
+        "src/utils/buildAnswerBubbleElement.tsx",
+        "src/utils/buildTurnHeaderElement.tsx",
+        "src/utils/deckSliderMath.ts"
+      ]
+    },
+    "src/utils/i18n.test.ts": {
+      "imports": [
+        "src/utils/i18n.ts"
+      ],
+      "importedBy": []
+    },
+    "src/utils/i18n.ts": {
+      "imports": [
+        "src/data/replyLanguage.ts",
+        "src/i18n/catalog.ts",
+        "src/i18n/keys.ts"
+      ],
+      "importedBy": [
+        "src/components/AboutReplyLanguageSection.tsx",
+        "src/hooks/useReplyLanguage.ts",
+        "src/utils/askThinkingPhases.ts",
+        "src/utils/i18n.test.ts"
+      ]
+    },
+    "src/utils/inputTransparency.ts": {
+      "imports": [
+        "src/data/modelPolicy.ts"
+      ],
+      "importedBy": [
+        "src/components/ContextChipLadder.tsx",
+        "src/components/MainTab.tsx",
+        "src/components/MainTabChatTranscript.tsx",
+        "src/components/SessionContextStrip.tsx",
+        "src/hooks/useBonsaiAskOrchestration.ts",
+        "src/types/bonsaiUi.ts",
+        "src/utils/bonsaiSessionSurvival.ts",
+        "src/utils/contextChipsFromSnapshot.ts"
+      ]
+    },
+    "src/utils/intentPackSearch.test.ts": {
+      "imports": [
+        "src/utils/intentPackSearch.ts"
+      ],
+      "importedBy": []
+    },
+    "src/utils/intentPackSearch.ts": {
+      "imports": [
+        "src/features/unified-input/constants.ts"
+      ],
+      "importedBy": [
+        "src/hooks/useIntentPacks.ts",
+        "src/hooks/useSteamSettingsSearch.ts",
+        "src/utils/intentPackSearch.test.ts"
+      ]
+    },
+    "src/utils/joinPresetWithRunningGame.test.ts": {
+      "imports": [
+        "src/utils/joinPresetWithRunningGame.ts"
+      ],
+      "importedBy": []
+    },
+    "src/utils/joinPresetWithRunningGame.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/components/MainTabPresetAnimatedChips.tsx",
+        "src/components/MainTabPresetRow.tsx",
+        "src/utils/joinPresetWithRunningGame.test.ts"
+      ]
+    },
+    "src/utils/liveTurnFocusGraph.test.ts": {
+      "imports": [
+        "src/utils/liveTurnFocusGraph.ts",
+        "src/utils/replyStopRegistry.ts"
+      ],
+      "importedBy": []
+    },
+    "src/utils/liveTurnFocusGraph.ts": {
+      "imports": [
+        "src/utils/replyStopRegistry.ts"
+      ],
+      "importedBy": [
+        "src/components/MainTabChatTranscript.tsx",
+        "src/components/StrategyChecklistPanel.tsx",
+        "src/utils/buildAnswerBubbleElement.tsx",
+        "src/utils/buildReplyActionsElement.tsx",
+        "src/utils/liveTurnFocusGraph.test.ts"
+      ]
+    },
+    "src/utils/localOnlyAskCommands.test.ts": {
+      "imports": [
+        "src/data/inputSanitizerCommands.ts",
+        "src/utils/localOnlyAskCommands.ts"
+      ],
+      "importedBy": []
+    },
+    "src/utils/localOnlyAskCommands.ts": {
+      "imports": [
+        "src/data/inputSanitizerCommands.ts"
+      ],
+      "importedBy": [
+        "src/hooks/useBonsaiAskOrchestration.ts",
+        "src/utils/localOnlyAskCommands.test.ts"
+      ]
+    },
+    "src/utils/mediaFormat.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/components/MainTabScreenshotBrowser.tsx",
+        "src/components/MainTabUnifiedAskBar.tsx"
+      ]
+    },
+    "src/utils/mergePullModelCatalog.test.ts": {
+      "imports": [
+        "src/data/pullModelCatalog.ts",
+        "src/utils/mergePullModelCatalog.ts"
+      ],
+      "importedBy": []
+    },
+    "src/utils/mergePullModelCatalog.ts": {
+      "imports": [
+        "src/data/pullModelCatalog.ts"
+      ],
+      "importedBy": [
+        "src/components/PullModelsModal.tsx",
+        "src/hooks/usePullModelCatalog.ts",
+        "src/utils/mergePullModelCatalog.test.ts"
+      ]
+    },
+    "src/utils/modelRoutingOrder.ts": {
+      "imports": [
+        "src/data/modelPolicy.ts",
+        "src/data/pullModelCatalog.ts"
+      ],
+      "importedBy": [
+        "src/components/ModelRoutingOrderModal.tsx"
+      ]
+    },
+    "src/utils/ollamaTabLocalSurvival.ts": {
+      "imports": [
+        "src/components/DeveloperTab.tsx",
+        "src/utils/createTabLocalSurvival.ts"
+      ],
+      "importedBy": [
+        "src/components/OllamaWhereAiRunsSection.tsx",
+        "src/hooks/useBonsaiPluginShell.ts",
+        "src/index.tsx"
+      ]
+    },
+    "src/utils/persistOllamaIp.test.ts": {
+      "imports": [
+        "src/utils/persistOllamaIp.ts"
+      ],
+      "importedBy": []
+    },
+    "src/utils/persistOllamaIp.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/index.tsx",
+        "src/utils/persistOllamaIp.test.ts"
+      ]
+    },
+    "src/utils/presetCarouselInject.ts": {
+      "imports": [
+        "src/types/backgroundAsk.ts"
+      ],
+      "importedBy": [
+        "src/hooks/useBonsaiAskOrchestration.ts"
+      ]
+    },
+    "src/utils/pullModelCatalogRefresh.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/components/OllamaWhereAiRunsSection.tsx",
+        "src/hooks/usePullModelCatalog.ts"
+      ]
+    },
+    "src/utils/pullModelRecommendations.test.ts": {
+      "imports": [
+        "src/data/pullModelCatalog.ts",
+        "src/utils/pullModelRecommendations.ts"
+      ],
+      "importedBy": []
+    },
+    "src/utils/pullModelRecommendations.ts": {
+      "imports": [
+        "src/data/pullModelCatalog.ts"
+      ],
+      "importedBy": [
+        "src/components/PullModelsModal.tsx",
+        "src/utils/pullModelRecommendations.test.ts"
+      ]
+    },
+    "src/utils/replyStopRegistry.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/components/BonsaiChatSecondaryButton.tsx",
+        "src/utils/liveTurnFocusGraph.test.ts",
+        "src/utils/liveTurnFocusGraph.ts"
+      ]
+    },
+    "src/utils/runningGameCharacterSuggestions.test.ts": {
+      "imports": [
+        "src/utils/runningGameCharacterSuggestions.ts"
+      ],
+      "importedBy": []
+    },
+    "src/utils/runningGameCharacterSuggestions.ts": {
+      "imports": [
+        "src/data/characterCatalog.ts"
+      ],
+      "importedBy": [
+        "src/components/CharacterPickerModal.tsx",
+        "src/utils/runningGameCharacterSuggestions.test.ts"
+      ]
+    },
+    "src/utils/sessionRagChipCandidates.ts": {
+      "imports": [
+        "src/features/preset-carousel/sessionRagComposer.ts",
+        "src/utils/deckyCall.ts"
+      ],
+      "importedBy": [
+        "src/hooks/useBonsaiAskOrchestration.ts"
+      ]
+    },
+    "src/utils/settingsAndResponse.test.ts": {
+      "imports": [
+        "src/data/replyLanguage.ts",
+        "src/utils/settingsAndResponse.ts"
+      ],
+      "importedBy": []
+    },
+    "src/utils/settingsAndResponse.ts": {
+      "imports": [
+        "src/data/bonsaiSettingsNormalizers.ts",
+        "src/data/bonsaiSettingsSchema.ts",
+        "src/utils/settingsPayload.ts"
+      ],
+      "importedBy": [
+        "src/components/DeveloperTab.tsx",
+        "src/components/MainTabChatTranscript.tsx",
+        "src/components/OllamaTab.tsx",
+        "src/components/OllamaWhereAiRunsSection.tsx",
+        "src/components/PermissionsTab.tsx",
+        "src/components/PullModelsModal.tsx",
+        "src/components/SettingsTab.tsx",
+        "src/components/SettingsTabConnectionTimeoutSlider.tsx",
+        "src/components/VoiceInputSettingsSection.tsx",
+        "src/data/characterUiAccent.ts",
+        "src/hooks/useBonsaiAskOrchestration.ts",
+        "src/hooks/usePluginSettings.test.ts",
+        "src/hooks/usePluginSettings.ts",
+        "src/hooks/useStrategyChecklistSession.ts",
+        "src/index.tsx",
+        "src/test-harness/rpcFixtures.ts",
+        "src/utils/appDesktopLog.ts",
+        "src/utils/bonsaiSessionSurvival.test.ts",
+        "src/utils/bonsaiSessionSurvival.ts",
+        "src/utils/composeThinkingBlurb.ts",
+        "src/utils/settingsAndResponse.test.ts",
+        "src/utils/unifiedInputPersistenceMode.ts"
+      ]
+    },
+    "src/utils/settingsPanelScroll.ts": {
+      "imports": [
+        "src/utils/chatPanelScroll.ts"
+      ],
+      "importedBy": [
+        "src/components/KnowledgeBaseSection.tsx",
+        "src/components/OllamaWhereAiRunsSection.tsx"
+      ]
+    },
+    "src/utils/settingsPayload.ts": {
+      "imports": [
+        "src/data/bonsaiSettingsSchema.ts"
+      ],
+      "importedBy": [
+        "src/utils/settingsAndResponse.ts"
+      ]
+    },
+    "src/utils/settingsTabLocalSurvival.ts": {
+      "imports": [
+        "src/utils/createTabLocalSurvival.ts"
+      ],
+      "importedBy": [
+        "src/components/SettingsTab.tsx",
+        "src/hooks/useBonsaiPluginShell.ts",
+        "src/index.tsx"
+      ]
+    },
+    "src/utils/splitResponseIntoChunks.test.ts": {
+      "imports": [
+        "src/utils/splitResponseIntoChunks.ts"
+      ],
+      "importedBy": []
+    },
+    "src/utils/splitResponseIntoChunks.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/utils/answerBubbleNavigation.test.ts",
+        "src/utils/buildAnswerBubbleElement.tsx",
+        "src/utils/splitResponseIntoChunks.test.ts"
+      ]
+    },
+    "src/utils/steamInputJump.ts": {
+      "imports": [
+        "src/data/steam-input-lexicon.ts"
+      ],
+      "importedBy": [
+        "src/index.tsx"
+      ]
+    },
+    "src/utils/strategyChecklist.test.ts": {
+      "imports": [
+        "src/utils/strategyChecklist.ts"
+      ],
+      "importedBy": []
+    },
+    "src/utils/strategyChecklist.ts": {
+      "imports": [
+        "src/types/bonsaiUi.ts"
+      ],
+      "importedBy": [
+        "src/hooks/useBonsaiAskOrchestration.ts",
+        "src/utils/strategyChecklist.test.ts",
+        "src/utils/strategyChecklistPersistence.ts"
+      ]
+    },
+    "src/utils/strategyChecklistPersistence.ts": {
+      "imports": [
+        "src/types/bonsaiUi.ts",
+        "src/utils/strategyChecklist.ts"
+      ],
+      "importedBy": [
+        "src/hooks/useBonsaiAskOrchestration.ts",
+        "src/hooks/useStrategyChecklistSession.ts"
+      ]
+    },
+    "src/utils/strategyGuideBranches.ts": {
+      "imports": [
+        "src/types/bonsaiUi.ts"
+      ],
+      "importedBy": [
+        "src/hooks/useBonsaiAskOrchestration.ts"
+      ]
+    },
+    "src/utils/streamMarkdownPrepare.test.ts": {
+      "imports": [
+        "src/utils/streamMarkdownPrepare.ts"
+      ],
+      "importedBy": []
+    },
+    "src/utils/streamMarkdownPrepare.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/hooks/useSmoothStreamReveal.ts",
+        "src/utils/buildAnswerBubbleElement.tsx",
+        "src/utils/streamMarkdownPrepare.test.ts"
+      ]
+    },
+    "src/utils/stripAssistantDisplayTags.test.ts": {
+      "imports": [
+        "src/utils/stripAssistantDisplayTags.ts"
+      ],
+      "importedBy": []
+    },
+    "src/utils/stripAssistantDisplayTags.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/utils/buildAnswerBubbleElement.tsx",
+        "src/utils/stripAssistantDisplayTags.test.ts"
+      ]
+    },
+    "src/utils/tabBodyViewport.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/hooks/useQamPanelHeightGuard.ts",
+        "src/hooks/useTabStripBodyOffset.ts"
+      ]
+    },
+    "src/utils/troubleshootingAskHeuristic.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/components/MainTabChatTranscript.tsx"
+      ]
+    },
+    "src/utils/uiScaleScopeBridge.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/components/BonsaiModalScope.tsx",
+        "src/index.tsx"
+      ]
+    },
+    "src/utils/unifiedInputPersistenceMode.test.ts": {
+      "imports": [
+        "src/utils/unifiedInputPersistenceMode.ts"
+      ],
+      "importedBy": []
+    },
+    "src/utils/unifiedInputPersistenceMode.ts": {
+      "imports": [
+        "src/utils/settingsAndResponse.ts"
+      ],
+      "importedBy": [
+        "src/index.tsx",
+        "src/utils/unifiedInputPersistenceMode.test.ts"
+      ]
+    },
+    "src/utils/unwrapAskedEntitySpoilerFences.test.ts": {
+      "imports": [
+        "src/utils/unwrapAskedEntitySpoilerFences.ts"
+      ],
+      "importedBy": []
+    },
+    "src/utils/unwrapAskedEntitySpoilerFences.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/utils/buildAnswerBubbleElement.tsx",
+        "src/utils/unwrapAskedEntitySpoilerFences.test.ts"
+      ]
+    }
+  }
+}

@@ -11,7 +11,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, "..", "..", "..");
 const ARCH_FILES = [
   "packages/bonsai-mcp/knowledge/architecture/rpc-map.json",
-  "packages/bonsai-mcp/knowledge/architecture/module-map.json",
+  "packages/bonsai-mcp/knowledge/architecture/hotspots.json",
+  "packages/bonsai-mcp/knowledge/architecture/import-graph.json",
   "packages/bonsai-mcp/knowledge/architecture/test-inventory.json",
   "packages/bonsai-mcp/knowledge/architecture/preview-tiers.json",
   "packages/bonsai-mcp/knowledge/architecture/env-vars.json",
@@ -40,7 +41,8 @@ run("git", [
   "add",
   "--",
   "packages/bonsai-mcp/knowledge/architecture/rpc-map.json",
-  "packages/bonsai-mcp/knowledge/architecture/module-map.json",
+  "packages/bonsai-mcp/knowledge/architecture/hotspots.json",
+  "packages/bonsai-mcp/knowledge/architecture/import-graph.json",
   "packages/bonsai-mcp/knowledge/architecture/test-inventory.json",
   "packages/bonsai-mcp/knowledge/architecture/preview-tiers.json",
   "packages/bonsai-mcp/knowledge/architecture/env-vars.json",

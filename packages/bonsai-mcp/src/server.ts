@@ -243,7 +243,7 @@ export function createServer(): McpServer {
     "Return change-risk hotspots (module map + test inventory)",
     {},
     async () => {
-      const moduleMap = path.join(knowledgeDir(), "architecture", "module-map.json");
+      const moduleMap = path.join(knowledgeDir(), "architecture", "hotspots.json");
       const testInv = path.join(knowledgeDir(), "architecture", "test-inventory.json");
       const platform = path.join(knowledgeDir(), "architecture", "platform-contract.md");
       const parts: string[] = [];
@@ -251,7 +251,7 @@ export function createServer(): McpServer {
         parts.push(fs.readFileSync(platform, "utf8"));
       }
       if (fs.existsSync(moduleMap)) {
-        parts.push("\n## module-map.json\n\n```json\n" + fs.readFileSync(moduleMap, "utf8") + "\n```");
+        parts.push("\n## hotspots.json\n\n```json\n" + fs.readFileSync(moduleMap, "utf8") + "\n```");
       }
       if (fs.existsSync(testInv)) {
         parts.push("\n## test-inventory.json\n\n```json\n" + fs.readFileSync(testInv, "utf8") + "\n```");

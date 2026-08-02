@@ -20,8 +20,13 @@ Phase 1 proposed writing a generator and adding a pre-commit hook. Both exist:
 | Hook install | `npm run mcp:install-hooks`, wired to npm `prepare` (`package.json:24-25`), so it self-installs on `pnpm install` |
 | Drift gate | `npm run mcp:validate` (`--check-generated`), also runs when `CI=true` |
 
-Five snapshots are produced: `rpc-map.json`, `module-map.json`,
+Six snapshots are produced: `rpc-map.json`, `hotspots.json`, `import-graph.json`,
 `test-inventory.json`, `preview-tiers.json`, `env-vars.json`.
+
+> **Superseded 2026-08-02.** The findings below were written against the
+> pre-fix state. `module-map.json` has since been renamed `hotspots.json`,
+> `import-graph.json` was added, and the domain taxonomy was completed — see
+> [Follow-up fixes](#follow-up-fixes-2026-08-02) at the end.
 
 The drift gate compares each file against **`HEAD`**, not the index
 (`validate-knowledge.mjs:93-99`), so staged-but-uncommitted snapshots still fail —
@@ -154,6 +159,43 @@ Top of the size ranking, for reference:
 1052  py_modules/backend/services/ollama_prompts.py
 1031  py_modules/backend/services/screenshot_media.py
 ```
+
+---
+
+## Follow-up fixes (2026-08-02)
+
+Everything flagged above as "reported, not fixed" has since been addressed.
+
+**`module-map.json` → `hotspots.json`.** The file is a size ranking and is served
+by `bonsai.arch.hotspots`; it now says so. Updated in `generate-architecture.mjs`,
+`validate-knowledge.mjs`, `sync-architecture-for-commit.mjs`, and
+`packages/bonsai-mcp/src/server.ts`. The internal generator function was renamed
+`generateModuleMap` → `generateHotspots` to match.
+
+**`import-graph.json` added.** Full `imports` / `importedBy` sets for all 223
+TS/TSX files under `src/`, plus cycle detection, orphan detection, and a list of
+unresolved specifiers. Current state: **479 edges, 0 cycles, 0 orphans**, and 2
+unresolved specifiers that are both legitimate asset imports (`qrcode.png`,
+`bonsai-logo.svg`). This confirms the plan's one-off `madge --circular` result and
+now re-checks it on every commit.
+
+Built **without madge**, deliberately. madge was not installed, and this generator
+runs from `.githooks/pre-commit` on every commit — adding a dependency plus a
+multi-second graph build to that path is friction the refactor plan explicitly
+warns against. `tsconfig.json` declares no path aliases, so resolution is just
+relative specifiers plus `.ts`/`.tsx`/`index.*`, which is ~50 lines.
+
+Worth knowing: the graph is **more accurate than ad-hoc grep**. Checking importers
+of `src/utils/deckyCall.ts`, the graph found 15 and a hand-written grep found 14 —
+it missed `src/index.tsx`, which imports `"./utils/deckyCall"` rather than the
+`"../utils/deckyCall"` the pattern assumed. Prefer the graph when establishing an
+importer set before a move.
+
+**Domain taxonomy completed.** `DOMAIN_KEYWORDS` gained `rag`, `proton`,
+`intent_packs`, `strategy`, and `language`. All 55 RPC methods now classify;
+**0 fall through to `"other"`** (was 20 of 55 after the `runner` fix). Because
+`classifyRpc` is first-match-wins and the new entries are appended, no
+previously-classified method changed domain.
 
 ---
 

@@ -11,6 +11,9 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, "..", "..", "..");
 const OUT_DIR = path.join(__dirname, "..", "knowledge", "architecture");
 
+// First match wins, so keywords must not overlap across domains. Appending a
+// domain is safe: methods already matched by an earlier entry keep it, and only
+// previously-"other" methods can move.
 const DOMAIN_KEYWORDS = {
   settings: ["settings", "navigation", "clear_plugin", "save_settings", "load_settings"],
   ollama: ["ollama", "pull_", "delete_ollama", "catalog", "mdns"],
@@ -19,6 +22,11 @@ const DOMAIN_KEYWORDS = {
   voice: ["voice_", "transcription", "microphone"],
   debug: ["dbg_fe_log", "append_desktop", "append_app_log"],
   capabilities: ["clipboard", "deck_ip"],
+  rag: ["rag_corpus"],
+  proton: ["proton"],
+  intent_packs: ["intent_pack"],
+  strategy: ["strategy_checklist"],
+  language: ["reply_language"],
 };
 
 function classifyRpc(name) {
@@ -86,7 +94,9 @@ const MODULE_ROLES = {
   "py_modules/backend/services/settings_service.py": "Load/save/merge settings.json",
 };
 
-function generateModuleMap() {
+// Size ranking of the largest files. Not a dependency graph -- see
+// generateImportGraph for that.
+function generateHotspots() {
   const srcFiles = walkDir(path.join(REPO_ROOT, "src"), path.join(REPO_ROOT, "src"));
   const pyServices = walkDir(
     path.join(REPO_ROOT, "py_modules", "backend", "services"),
@@ -110,6 +120,105 @@ function generateModuleMap() {
     }));
 
   return { hotspots };
+}
+
+// --- import graph -----------------------------------------------------------
+// Dependency-free on purpose: this runs from .githooks/pre-commit on every
+// commit, so it must stay fast and must not require an extra install. tsconfig
+// declares no path aliases, so relative-specifier resolution is the whole job.
+const FROM_RE = /\bfrom\s*["']([^"']+)["']/g;
+const DYNAMIC_RE = /\bimport\s*\(\s*["']([^"']+)["']\s*\)/g;
+const BARE_RE = /^\s*import\s+["']([^"']+)["']/gm;
+
+function resolveImport(spec, fromFile) {
+  if (!spec.startsWith(".")) return null; // external package, not a graph node
+  const base = path.resolve(path.dirname(fromFile), spec);
+  for (const cand of [
+    `${base}.ts`,
+    `${base}.tsx`,
+    path.join(base, "index.ts"),
+    path.join(base, "index.tsx"),
+    base,
+  ]) {
+    if ((cand.endsWith(".ts") || cand.endsWith(".tsx")) && fs.existsSync(cand)) {
+      return path.relative(REPO_ROOT, cand).replace(/\\/g, "/");
+    }
+  }
+  return null; // .css/.png/.json asset, or a broken specifier
+}
+
+function findCycles(imports) {
+  const cycles = [];
+  const state = new Map(); // 0 = visiting, 1 = done
+  const stack = [];
+  function visit(node) {
+    if (state.get(node) === 1) return;
+    if (state.get(node) === 0) {
+      const at = stack.indexOf(node);
+      if (at !== -1) cycles.push([...stack.slice(at), node]);
+      return;
+    }
+    state.set(node, 0);
+    stack.push(node);
+    for (const next of imports[node] ?? []) visit(next);
+    stack.pop();
+    state.set(node, 1);
+  }
+  for (const node of Object.keys(imports)) visit(node);
+  return cycles;
+}
+
+function generateImportGraph() {
+  const files = walkDir(path.join(REPO_ROOT, "src"), REPO_ROOT, [".ts", ".tsx"]).map((f) => f.path);
+  const imports = Object.fromEntries(files.map((f) => [f, []]));
+  const importedBy = Object.fromEntries(files.map((f) => [f, []]));
+  const unresolved = [];
+
+  for (const file of files) {
+    const text = fs.readFileSync(path.join(REPO_ROOT, file), "utf8");
+    const specs = new Set();
+    for (const re of [FROM_RE, DYNAMIC_RE, BARE_RE]) {
+      re.lastIndex = 0;
+      let m;
+      while ((m = re.exec(text)) !== null) specs.add(m[1]);
+    }
+    for (const spec of specs) {
+      if (!spec.startsWith(".")) continue;
+      const target = resolveImport(spec, path.join(REPO_ROOT, file));
+      if (!target) {
+        unresolved.push({ from: file, spec });
+        continue;
+      }
+      if (target === file || imports[file].includes(target)) continue;
+      imports[file].push(target);
+      if (importedBy[target]) importedBy[target].push(file);
+    }
+  }
+
+  const modules = {};
+  for (const file of files.sort()) {
+    modules[file] = {
+      imports: imports[file].sort(),
+      importedBy: importedBy[file].sort(),
+    };
+  }
+
+  // Entry point and test scaffolding legitimately have no importers.
+  const isEntryOrTest = (f) =>
+    f === "src/index.tsx" ||
+    f.includes(".test.") ||
+    f.startsWith("src/test-harness/") ||
+    f.endsWith(".d.ts");
+
+  return {
+    note: "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
+    fileCount: files.length,
+    edgeCount: Object.values(imports).reduce((n, list) => n + list.length, 0),
+    cycles: findCycles(imports),
+    orphans: files.filter((f) => importedBy[f].length === 0 && !isEntryOrTest(f)).sort(),
+    unresolved: unresolved.sort((a, b) => a.from.localeCompare(b.from) || a.spec.localeCompare(b.spec)),
+    modules,
+  };
 }
 
 function generateTestInventory() {
@@ -155,7 +264,10 @@ function writeJson(name, data) {
 
 fs.mkdirSync(OUT_DIR, { recursive: true });
 writeJson("rpc-map.json", generateRpcMap());
-writeJson("module-map.json", generateModuleMap());
+// Named for what it contains: a size ranking, not a dependency graph. The graph
+// is import-graph.json.
+writeJson("hotspots.json", generateHotspots());
+writeJson("import-graph.json", generateImportGraph());
 writeJson("test-inventory.json", generateTestInventory());
 writeJson("preview-tiers.json", generatePreviewTiers());
 writeJson("env-vars.json", generateEnvVars());
