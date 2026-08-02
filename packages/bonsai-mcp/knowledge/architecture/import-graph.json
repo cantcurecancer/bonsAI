@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 225,
-  "edgeCount": 501,
+  "fileCount": 228,
+  "edgeCount": 507,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -491,6 +491,7 @@
         "src/components/MainTabChatTranscript.tsx",
         "src/components/MainTabScreenshotBrowser.tsx",
         "src/components/MainTabUnifiedAskBar.tsx",
+        "src/features/plugin-shell/tabTitles.tsx",
         "src/index.tsx",
         "src/utils/buildReplyActionsElement.tsx"
       ]
@@ -814,6 +815,7 @@
     "src/data/storageKeys.ts": {
       "imports": [],
       "importedBy": [
+        "src/features/plugin-shell/pluginStorage.ts",
         "src/index.tsx"
       ]
     },
@@ -848,6 +850,29 @@
         "src/data/uiScaleProfile.test.ts",
         "src/features/unified-input/useUnifiedInputSurface.ts",
         "src/hooks/useUiScaleProfile.ts",
+        "src/index.tsx"
+      ]
+    },
+    "src/features/plugin-shell/PluginErrorBoundary.tsx": {
+      "imports": [],
+      "importedBy": [
+        "src/index.tsx"
+      ]
+    },
+    "src/features/plugin-shell/pluginStorage.ts": {
+      "imports": [
+        "src/data/storageKeys.ts"
+      ],
+      "importedBy": [
+        "src/index.tsx"
+      ]
+    },
+    "src/features/plugin-shell/tabTitles.tsx": {
+      "imports": [
+        "src/components/icons.tsx",
+        "src/features/unified-input/constants.ts"
+      ],
+      "importedBy": [
         "src/index.tsx"
       ]
     },
@@ -907,6 +932,7 @@
         "src/components/SettingsTab.tsx",
         "src/components/SettingsTabAccentIntensityMenuPopover.tsx",
         "src/data/characterUiAccent.ts",
+        "src/features/plugin-shell/tabTitles.tsx",
         "src/features/unified-input/useUnifiedInputSurface.ts",
         "src/hooks/useTabStripBodyOffset.ts",
         "src/index.tsx",
@@ -1223,6 +1249,9 @@
         "src/data/steamSettingsNavigation.ts",
         "src/data/storageKeys.ts",
         "src/data/uiScaleProfile.ts",
+        "src/features/plugin-shell/PluginErrorBoundary.tsx",
+        "src/features/plugin-shell/pluginStorage.ts",
+        "src/features/plugin-shell/tabTitles.tsx",
         "src/features/unified-input/constants.ts",
         "src/features/unified-input/useUnifiedInputSurface.ts",
         "src/hooks/useBonsaiAskOrchestration.ts",

@@ -56,23 +56,24 @@ import { clearOllamaTabLocalSurvival } from "./utils/ollamaTabLocalSurvival";
 import { clearSettingsTabLocalSurvival } from "./utils/settingsTabLocalSurvival";
 import { shouldClearUnifiedInputForPersistenceMode } from "./utils/unifiedInputPersistenceMode";
 import {
-  AboutTabTitleIcon,
-  BonsaiTreeTabIcon,
   BonsaiSvgIcon,
-  BugIcon,
-  GearIcon,
-  LockIcon,
-  OllamaTabIcon,
 } from "./components/icons";
 import { MODEL_POLICY_README_URL, type ModelPolicyTierId } from "./data/modelPolicy";
 import {
   ASK_LABEL_COLOR_50,
   BONSAI_FOREST_GREEN,
-  TAB_TITLE_DEBUG_TAB_ICON_PX,
-  TAB_TITLE_ICON_PX,
-  TAB_TITLE_MAIN_TAB_ICON_PX,
 } from "./features/unified-input/constants";
 import { useUnifiedInputSurface } from "./features/unified-input/useUnifiedInputSurface";
+import { PluginErrorBoundary } from "./features/plugin-shell/PluginErrorBoundary";
+import { DECKY_TAB_TITLES } from "./features/plugin-shell/tabTitles";
+import {
+  loadSavedIp,
+  loadSavedSearchQuery,
+  markPluginHelpDismissedPersist,
+  persistSearchQuery,
+  pluginHelpDismissedFromStorage,
+  saveIp,
+} from "./features/plugin-shell/pluginStorage";
 import { useUiScaleProfile } from "./hooks/useUiScaleProfile";
 import { useQamPanelHeightGuard } from "./hooks/useQamPanelHeightGuard";
 import { useTabStripBodyOffset } from "./hooks/useTabStripBodyOffset";
@@ -96,10 +97,7 @@ import { registerPreviewTestHooks, isDeckyPreviewRuntime } from "./preview/previ
 import {
   GITHUB_ISSUES_URL,
   IP_DEFAULT,
-  IP_STORAGE_KEY,
   OLLAMA_UPSTREAM_REPO_URL,
-  PLUGIN_HELP_DISMISSED_STORAGE_KEY,
-  UNIFIED_INPUT_STORAGE_KEY,
 } from "./data/storageKeys";
 
 /**
@@ -107,40 +105,6 @@ import {
  * opens/closes (same lifecycle issue as tab restore in `useBonsaiPluginShell`).
  */
 let __bonsaiPluginHelpDismissed = false;
-
-/**
- * This boundary protects the plugin UI from render-time failures so Decky can keep the panel alive.
- * It captures component errors, logs diagnostics, and shows a recoverable fallback with reset controls.
- */
-class ErrorBoundary extends React.Component<any, { error: any; info?: any }> {
-  /** Initialize boundary state with no captured error. */
-  constructor(props: any) {
-    super(props);
-    this.state = { error: null };
-  }
-
-  /** Capture runtime render errors and persist debug details for the fallback panel. */
-  componentDidCatch(error: any, info: any) {
-    this.setState({ error, info });
-    try {
-      console.error("React render error", error, info);
-    } catch (e) {}
-  }
-
-  /** Render either the fallback UI or the child tree based on current boundary state. */
-  render() {
-    if (this.state.error) {
-      return (
-        <div style={{ padding: 16, color: "white" }}>
-          <div style={{ fontWeight: 700, marginBottom: 6 }}>Plugin error</div>
-          <div style={{ color: "tomato", whiteSpace: "pre-wrap" }}>{String(this.state.error)}</div>
-          <pre style={{ color: "gray", whiteSpace: "pre-wrap" }}>{this.state.info?.componentStack ?? ""}</pre>
-        </div>
-      );
-    }
-    return this.props.children;
-  }
-}
 
 type SteamUrlApi = {
   ExecuteSteamURL(url: string): void;
@@ -152,72 +116,7 @@ type AppendDesktopNoteResult = {
   error?: string;
 };
 
-// Load persisted unified input text based on the selected persistence mode.
-function loadSavedSearchQuery(): string {
-  if (typeof window === "undefined") return "";
-  try {
-    return window.localStorage.getItem(UNIFIED_INPUT_STORAGE_KEY) ?? "";
-  } catch {
-    return "";
-  }
-}
-
-// Persist or clear unified input text according to current persistence preference.
-function persistSearchQuery(unifiedInputText: string): void {
-  if (typeof window === "undefined") return;
-  try {
-    if (unifiedInputText) {
-      window.localStorage.setItem(UNIFIED_INPUT_STORAGE_KEY, unifiedInputText);
-    } else {
-      window.localStorage.removeItem(UNIFIED_INPUT_STORAGE_KEY);
-    }
-  } catch {}
-}
-
-// Load saved Ollama host/IP for convenience between plugin sessions.
-function loadSavedIp(): string {
-  if (typeof window === "undefined") return IP_DEFAULT;
-  try {
-    return window.localStorage.getItem(IP_STORAGE_KEY) || IP_DEFAULT;
-  } catch { return IP_DEFAULT; }
-}
-
-// Persist Ollama host/IP updates from the connection field.
-function saveIp(ip: string): void {
-  if (typeof window === "undefined") return;
-  try { window.localStorage.setItem(IP_STORAGE_KEY, ip); } catch {}
-}
-
 const GITHUB_REPO_URL = GITHUB_ISSUES_URL.replace(/\/issues$/, "");
-
-function pluginHelpDismissedFromStorage(): boolean {
-  try {
-    return window.localStorage.getItem(PLUGIN_HELP_DISMISSED_STORAGE_KEY) === "1";
-  } catch {
-    return false;
-  }
-}
-
-function markPluginHelpDismissedPersist(): void {
-  try {
-    window.localStorage.setItem(PLUGIN_HELP_DISMISSED_STORAGE_KEY, "1");
-  } catch {
-    /* ignore */
-  }
-}
-
-function bonsaiTabIconTitle(
-  classSuffix: "main" | "ollama" | "settings" | "permissions" | "developer" | "about",
-  children: React.ReactNode,
-): React.ReactElement {
-  return (
-    <div className="bonsai-tab-title-leaf">
-      <div className={`bonsai-tab-title-shell bonsai-tab-title-shell--${classSuffix}`}>
-        <span className={`bonsai-tab-title-icon bonsai-tab-title-icon--${classSuffix}`}>{children}</span>
-      </div>
-    </div>
-  );
-}
 
 const FULL_BLEED_ROW_STYLE: React.CSSProperties = {
   width: "100%",
@@ -231,15 +130,6 @@ const PRESET_BUTTON_SURFACE: React.CSSProperties = {
   background: "rgba(255,255,255,0.03)",
   color: "#93a3b0",
 };
-
-const DECKY_TAB_TITLES = {
-  main: bonsaiTabIconTitle("main", <BonsaiTreeTabIcon size={TAB_TITLE_MAIN_TAB_ICON_PX} />),
-  ollama: bonsaiTabIconTitle("ollama", <OllamaTabIcon size={TAB_TITLE_ICON_PX} />),
-  settings: bonsaiTabIconTitle("settings", <GearIcon size={TAB_TITLE_ICON_PX} />),
-  permissions: bonsaiTabIconTitle("permissions", <LockIcon size={TAB_TITLE_ICON_PX} />),
-  developer: bonsaiTabIconTitle("developer", <BugIcon size={TAB_TITLE_DEBUG_TAB_ICON_PX} />),
-  about: bonsaiTabIconTitle("about", <AboutTabTitleIcon size={TAB_TITLE_ICON_PX} />),
-} as const;
 
 /**
  * Primary plugin shell: tabs plus Ask/settings wiring. Heavy logic lives in hooks under `src/hooks/`
@@ -1903,9 +1793,9 @@ const Content: React.FC = () => {
 
 // Mount the content tree inside an error boundary to keep plugin recovery user-accessible.
 const Root: React.FC = () => (
-  <ErrorBoundary>
+  <PluginErrorBoundary>
     <Content />
-  </ErrorBoundary>
+  </PluginErrorBoundary>
 );
 
 export default definePlugin(() => {
