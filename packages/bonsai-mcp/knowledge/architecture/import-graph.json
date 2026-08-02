@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 223,
-  "edgeCount": 494,
+  "fileCount": 224,
+  "edgeCount": 497,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -949,6 +949,14 @@
         "src/utils/bonsaiAskCompletionWatch.ts"
       ]
     },
+    "src/hooks/useBonsaiAskOrchestration.test.ts": {
+      "imports": [
+        "src/hooks/useBonsaiAskOrchestration.ts",
+        "src/test-harness/fakeDeckyRpc.ts",
+        "src/test-harness/rpcFixtures.ts"
+      ],
+      "importedBy": []
+    },
     "src/hooks/useBonsaiAskOrchestration.ts": {
       "imports": [
         "src/data/bonsaiSettingsSchema.ts",
@@ -979,6 +987,7 @@
         "src/utils/strategyGuideBranches.ts"
       ],
       "importedBy": [
+        "src/hooks/useBonsaiAskOrchestration.test.ts",
         "src/index.tsx"
       ]
     },
@@ -1385,6 +1394,7 @@
       "importedBy": [
         "src/components/SettingsTab.mdns.test.ts",
         "src/hooks/useBackgroundGameAi.test.ts",
+        "src/hooks/useBonsaiAskOrchestration.test.ts",
         "src/hooks/usePluginSettings.test.ts",
         "src/test-harness/fakeDeckyRpc.test.ts",
         "src/test-harness/setup.ts",
@@ -1410,6 +1420,7 @@
       ],
       "importedBy": [
         "src/hooks/useBackgroundGameAi.test.ts",
+        "src/hooks/useBonsaiAskOrchestration.test.ts",
         "src/hooks/usePluginSettings.test.ts",
         "src/test-harness/fakeDeckyRpc.ts"
       ]

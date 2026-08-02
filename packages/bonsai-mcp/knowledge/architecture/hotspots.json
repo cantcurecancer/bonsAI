@@ -186,6 +186,11 @@
       "role": ""
     },
     {
+      "path": "src/hooks/useBonsaiAskOrchestration.test.ts",
+      "lines": 370,
+      "role": ""
+    },
+    {
       "path": "py_modules/backend/services/voice_whisper_daemon.py",
       "lines": 367,
       "role": ""
@@ -193,11 +198,6 @@
     {
       "path": "src/components/DeveloperTab.tsx",
       "lines": 359,
-      "role": ""
-    },
-    {
-      "path": "py_modules/backend/services/rag_corpus_download_service.py",
-      "lines": 358,
       "role": ""
     }
   ]

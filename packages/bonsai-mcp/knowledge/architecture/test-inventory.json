@@ -12,6 +12,7 @@
     "src/features/preset-carousel/carouselState.test.ts",
     "src/features/preset-carousel/sessionRagComposer.test.ts",
     "src/hooks/useBackgroundGameAi.test.ts",
+    "src/hooks/useBonsaiAskOrchestration.test.ts",
     "src/hooks/usePluginSettings.test.ts",
     "src/hooks/useSmoothStreamReveal.test.ts",
     "src/test-harness/fakeDeckyRpc.test.ts",
