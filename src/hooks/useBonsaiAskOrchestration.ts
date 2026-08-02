@@ -34,7 +34,7 @@ import {
   clearStrategyChecklistSession,
   scheduleStrategyChecklistSessionSave,
 } from "../utils/strategyChecklistPersistence";
-import { callDeckyWithTimeout, DECKY_RPC_TIMEOUT_MS, formatDeckyRpcError } from "../utils/deckyCall";
+import { callDeckyWithTimeout, DECKY_ASK_START_RPC_TIMEOUT_MS, DECKY_RPC_TIMEOUT_MS, formatDeckyRpcError } from "../utils/deckyCall";
 import { useBackgroundGameAi } from "./useBackgroundGameAi";
 import type {
   AppendDesktopChatEventPayload,
@@ -844,7 +844,7 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
               ? { strategy_checklist_state: strategyChecklistToAskPayload(strategyChecklistRef.current) }
               : {}),
           },
-        ]);
+        ], DECKY_ASK_START_RPC_TIMEOUT_MS);
 
         if (!isRequestActive(seq)) return;
 

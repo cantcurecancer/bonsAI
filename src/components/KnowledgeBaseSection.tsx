@@ -7,7 +7,7 @@
  */
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Button, ConfirmModal, Focusable, PanelSection, PanelSectionRow, ToggleField, showModal } from "@decky/ui";
-import { toaster } from "@decky/api";
+import { call, toaster } from "@decky/api";
 import { callDeckyWithTimeout, DECKY_RPC_TIMEOUT_MS, formatDeckyRpcError } from "../utils/deckyCall";
 import { tryMoveUpWithPanelScroll } from "../utils/settingsPanelScroll";
 import { SETTINGS_GLASS_BTN, SETTINGS_GLASS_BTN_DANGER } from "../styles/settingsGlassButton";
@@ -53,6 +53,10 @@ type Props = {
   removeBtnRef?: React.RefObject<HTMLButtonElement | null>;
   onMoveUpToConnection?: () => boolean;
   onMoveDownFromRemove?: () => boolean;
+  /** Pause debounced settings save before destructive KB RPCs (avoids stale UI re-writing disk). */
+  pauseDebouncedSettingsSave?: () => Promise<void>;
+  /** Reload settings from disk after KB remove so UI matches backend persistence. */
+  syncSettingsFromDisk?: () => Promise<unknown>;
 };
 
 const KB_UNAVAILABLE_SESSION_KEY = "bonsai_kb_unavailable_warned";
@@ -139,6 +143,8 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
   removeBtnRef: removeBtnRefProp,
   onMoveUpToConnection,
   onMoveDownFromRemove,
+  pauseDebouncedSettingsSave,
+  syncSettingsFromDisk,
 }) => {
   const [status, setStatus] = useState<RagCorpusStatus | null>(null);
   const [downloadBusy, setDownloadBusy] = useState(false);
@@ -327,15 +333,27 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
         strCancelButtonText="Cancel"
         onOK={() => {
           onCompleteDeckyModalClose(() => handle.Close());
-          void callDeckyWithTimeout<[], { ok?: boolean }>("remove_rag_corpus", [], DECKY_RPC_TIMEOUT_MS)
-            .then(() => {
-              setUseLocalKnowledgeBase(false);
+          void (async () => {
+            try {
+              await pauseDebouncedSettingsSave?.();
+              // Deliberately unwrapped: remove_rag_corpus runs multi-GB rmtree on Deck storage
+              // and can far exceed the default 15s UI deadline (bf36a94 timeout wrapper).
+              await call<[], { ok?: boolean }>("remove_rag_corpus", []);
+              if (syncSettingsFromDisk) {
+                await syncSettingsFromDisk();
+              } else {
+                setUseLocalKnowledgeBase(false);
+              }
               void refreshStatus();
-              toaster.toast({ title: "Knowledge base removed", body: "Corpus deleted from disk.", duration: 3000 });
-            })
-            .catch((e) =>
-              toaster.toast({ title: "Remove failed", body: formatDeckyRpcError(e), duration: 5000 }),
-            );
+              toaster.toast({
+                title: "Knowledge base removed",
+                body: "Corpus deleted from disk.",
+                duration: 3000,
+              });
+            } catch (e) {
+              toaster.toast({ title: "Remove failed", body: formatDeckyRpcError(e), duration: 5000 });
+            }
+          })();
         }}
         onCancel={() => onCompleteDeckyModalClose(() => handle.Close())}
       />,

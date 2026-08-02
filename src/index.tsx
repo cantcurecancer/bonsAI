@@ -1699,6 +1699,8 @@ const Content: React.FC = () => {
         useLocalKnowledgeBase={useLocalKnowledgeBase}
         setUseLocalKnowledgeBase={setUseLocalKnowledgeBase}
         ragCorpusVersion={ragCorpusVersion}
+        pauseDebouncedSettingsSave={pauseDebouncedSettingsSave}
+        syncSettingsFromDisk={syncSettingsFromDisk}
       />
     ),
     [
@@ -1720,6 +1722,8 @@ const Content: React.FC = () => {
       finalizeShowModalAndRestoreActiveTab,
       openOllamaModelsHub,
       openRoutingOrderModal,
+      pauseDebouncedSettingsSave,
+      syncSettingsFromDisk,
     ]
   );
 

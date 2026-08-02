@@ -57,6 +57,9 @@ export type OllamaTabProps = {
 
   replyVerbosity: ReplyVerbosityId;
   setReplyVerbosity: (v: ReplyVerbosityId) => void;
+
+  pauseDebouncedSettingsSave?: () => Promise<void>;
+  syncSettingsFromDisk?: () => Promise<unknown>;
 };
 
 export const OllamaTab: React.FC<OllamaTabProps> = ({
@@ -88,6 +91,8 @@ export const OllamaTab: React.FC<OllamaTabProps> = ({
   ragCorpusVersion,
   replyVerbosity,
   setReplyVerbosity,
+  pauseDebouncedSettingsSave,
+  syncSettingsFromDisk,
 }) => {
   const latencyWarningThumbHostRef = useRef<HTMLDivElement>(null);
   const ollamaKeepAliveThumbHostRef = useRef<HTMLDivElement>(null);
@@ -187,6 +192,8 @@ export const OllamaTab: React.FC<OllamaTabProps> = ({
         removeBtnRef={kbRemoveBtnRef}
         onMoveUpToConnection={focusConnectionTestBtn}
         onMoveDownFromRemove={focusReplyVerbosityThumb}
+        pauseDebouncedSettingsSave={pauseDebouncedSettingsSave}
+        syncSettingsFromDisk={syncSettingsFromDisk}
       />
 
       <PanelSection title="Reply style">
