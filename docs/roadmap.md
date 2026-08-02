@@ -1,6 +1,8 @@
 # bonsAI Roadmap
 
-Tracks **bugs and active engineering** ([In Progress](#in-progress)), **known dead code awaiting a call** ([Cleanup candidates](#cleanup-candidates)), **refactor decisions** ([Decisions needed](#decisions-needed) — locked 2026-08-02), deferred **QA** ([QA backlog](#qa-backlog)), the **backlog** ([Planned](#planned)), and pointers to shipped work ([Completed](#completed)).
+**Next session starts at** [execution order](#maintainer-decisions-locked--2026-08-02) **step 6** (`main.py` investigation) or **step 8** (resume the entry-point split from 5b). Four open calls first: [D7–D10](#still-open--raised-during-the-2026-08-02-session).
+
+Tracks **bugs and active engineering** ([In Progress](#in-progress)), **executed cleanup** ([Cleanup candidates](#cleanup-candidates)), **refactor decisions** ([Decisions needed](#decisions-needed) — locked 2026-08-02), deferred **QA** ([QA backlog](#qa-backlog)), the **backlog** ([Planned](#planned)), and pointers to shipped work ([Completed](#completed)).
 
 Setup and vision tuning: [troubleshooting.md](troubleshooting.md). QA: [testing.md](testing.md). Release: [development.md](development.md), [CHANGELOG.md](../CHANGELOG.md).
 
@@ -231,6 +233,90 @@ starting point.
 
 ---
 
+### Still open — raised during the 2026-08-02 session
+
+**D1–D6 are locked and largely executed.** These four came out of doing the work
+and have not been decided. None blocks the next session from starting; **D8** is
+the one with a real cost attached to leaving it.
+
+---
+
+#### D7 — Two more dead functions turned up. Delete them too?
+
+`_reencode_oversized_capture` and `_mirror_capture_to_plugin_dir` in
+`screenshot_media.py` have no callers. Unlike the kmsgrab set deleted in
+`4a26cfa`, these were **already dead before** any of this session's work — they
+are not a cascade from a deletion, so they were left alone rather than folded
+into someone else's commit.
+
+- **Delete them.** Consistent with everything else this session removed; ~2
+  functions, no callers, and the module has real behavioral coverage.
+- **Keep them.** If either is a deliberate parking spot for capture work you
+  intend to resume, say so and they get a comment saying why they are unused —
+  which is the thing that stops a future session proposing this again.
+
+---
+
+#### D8 — The deploy path has two blind spots. Fix them, or keep checking by hand?
+
+Both were found by accident this session, and both mean a deploy can look
+successful while the Deck is running something else:
+
+1. **It reports success without landing.** A deploy ran while the Deck drifted to
+   sleep. `build.ps1` printed *Deployment complete!*; the bundle on the Deck
+   still carried the previous deploy's timestamp and no new plugin log appeared.
+   The script never verifies what it copied.
+2. **It copies but never prunes.** Files no longer shipped stay on the device
+   from earlier deploys. When `refactor_helpers.py` was deleted, the stale copy
+   sat on the Deck and would have satisfied any import that had been missed —
+   the plugin loading proved nothing until it was removed by hand.
+
+**Options.** Harden the scripts (compare a build hash after upload; remove
+plugin files that are no longer in the manifest) — a contained change to
+`build.sh` / `build.ps1` that removes a whole class of false-pass. Or leave them
+and rely on the manual check now written into [05-plan.md](audit/05-plan.md)
+§1.3, accepting that it depends on someone remembering.
+
+The second option is the one Phase 5's prevention pass would reject on
+principle: discipline is not a mechanism.
+
+---
+
+#### D9 — How far does the entry-point split actually go?
+
+Three slices are out of `index.tsx` (1955 → 1709). The remaining list in
+execution-order step 8 would land it near 700–800 lines. Two bigger files were
+never in scope and still are not:
+
+- **`useBonsaiAskOrchestration.ts`** — 1222 lines, the whole Ask state machine.
+  It now has 13 characterization tests, so it is the best-protected large file
+  in the repo; it is also where a subtle polling or cancel regression would hurt
+  most on-device.
+- **`MainTab.tsx`** — 187 lines, churn 42, and [05-plan.md](audit/05-plan.md)
+  calls it the cheapest entry point because its churn is pure prop-threading
+  tax. It gets cheaper still after the state extractions above.
+
+Decide whether "done" means `index.tsx` alone, or those two as well.
+
+---
+
+#### D10 — Focus and D-pad behavior has no automated coverage. What gates the remaining split?
+
+The safety net built in step 5 covers the **Ask lifecycle** and the plugin
+**mounting** — not focus order, not modal open/close lifecycle. The remaining
+extractions (character picker, models hub, desktop note, plugin help) are
+exactly that kind of behavior.
+
+- **On-Deck D-pad pass per commit.** Slowest, and the only option that actually
+  catches a focus regression before it ships.
+- **Preview suite per commit, on-Deck at the end.** Faster; a focus regression
+  would be found late, against a batch of commits rather than one.
+- **Write focus-graph tests first.** Highest up-front cost. Worth pricing only if
+  focus regressions have bitten before — `.cursor/rules/decky-focus-graph.mdc`
+  and the **UI-SCALE-01…05** rows suggest they have.
+
+---
+
 ### Maintainer decisions locked — 2026-08-02
 
 The options above stay as the decision record. **Locked below** is what we are
@@ -251,7 +337,7 @@ current tree (especially **D1b** and parts of **D2** / **D4**).
 
 1. **Record decisions** — this section; turn accepted work into implementation rows as work ships. *(done — `dcbcccf`, `e2111f9`, plus this amendment)*
 2. **D1 — wire both RPCs** — **done 2026-08-02**, see Bugs § *Fixed*. D1a routing merge (`510139d`) and D1b session RAG adapter, 13 new unit tests between them. On-Deck QA still open: **ROUTING-MERGE-01** and **SESSION-RAG-CHIPS-01** in [testing.md](testing.md). **This is feature work, not refactor** — separate commits, not labeled behavior-preserving, and it changes what `useBonsaiAskOrchestration.ts` does at runtime. Sequenced before step 5 on purpose so the characterization tests capture intended behavior rather than the silent-fallback bug.
-3. **D2 — targeted cleanup** — **done 2026-08-02** (`309c386`, `ebdc0f2`, `c8ed045`, `45cb0ff`, `d93027b`, `36f34cd`). Removed: 5 Proton-journal RPCs + their service, `thinking_tiny_model_service.py`, `log_navigation`, `capture_screenshot`, and the TDP sysfs write path. Kept per D2: `ask_game_ai`, `ask_ollama`, `dbg_fe_log`, `cancel_rag_corpus_download`. RPC surface 57 → 50. Two things the audit got wrong are recorded in [05-plan.md](audit/05-plan.md) §1.1: the journal service was not dead (`clear_plugin_data` needed its file wipe) and `find_amdgpu_hwmon` was not apply-only (`read_current_tdp_watts` calls it). Still orphaned and deliberately not pursued: `try_kmsgrab_screenshot` and `_desktop_session_active` in `screenshot_media.py`.
+3. **D2 — targeted cleanup** — **done 2026-08-02** (`309c386`, `ebdc0f2`, `c8ed045`, `45cb0ff`, `d93027b`, `36f34cd`). Removed: 5 Proton-journal RPCs + their service, `thinking_tiny_model_service.py`, `log_navigation`, `capture_screenshot`, and the TDP sysfs write path. Kept per D2: `ask_game_ai`, `ask_ollama`, `dbg_fe_log`, `cancel_rag_corpus_download`. RPC surface 57 → 50. Two things the audit got wrong are recorded in [05-plan.md](audit/05-plan.md) §1.1: the journal service was not dead (`clear_plugin_data` needed its file wipe) and `find_amdgpu_hwmon` was not apply-only (`read_current_tdp_watts` calls it). The kmsgrab orphans this pass left behind were cleared later the same day under **Cleanup candidates** (`4a26cfa`).
 
    **Preview-suite gate — first pass was incomplete.** Grepping `tests/preview-suite/` and `scripts/` for *symbol* names returns zero hits for `proton_experiment`, `apply_tdp`, `log_navigation`, `capture_screenshot`, `dbg_fe_log`, `cancel_rag_corpus_download`, `thinking_tiny`, and 22 hits for `ask_game_ai` across five tiers (keep, per D2). **That grep missed file-level references.** `tests/preview-suite/unit-gates.json:25` runs `tests/test_tdp_sandbox_sysfs.py` by filename under a gate tagged `TDP-APPLY`, and `tier-manifest.json:96` advertises "sysfs TDP apply + clamp asserts" in the Tier 2 description. Only two test files are referenced this way — the other is `test_capabilities.py` — so no other deletion in this pass was affected. **When checking whether a deletion is preview-safe, grep the preview suite for the test filename as well as the symbol.**
 4. **Mechanical refactors** — **done 2026-08-02** (`3813764`, `666e3e3`, `2156441`, `ef65f8e`), one behavior-preserving commit each, all gates green between. Four stale doc claims fixed and the self-declared-archived RAG analysis moved to `archive/`; `refactor_helpers.py` shim deleted and its 9 importers repointed; `settingsAndResponse.ts` barrel deleted and its 22 importers repointed (`tsc --noEmit` is the safety net here); `settingsPayload.ts` split, with reply-text formatting moved to `appliedTuningText.ts`.
@@ -266,7 +352,7 @@ current tree (especially **D1b** and parts of **D2** / **D4**).
 
 6. **2.3 — `main.py` extraction investigation** — read-only; produce a `file:line` inventory of what logic remains inline in `main.py` and where each piece belongs ([05-plan.md](audit/05-plan.md) §2.3). Feeds both step 7 and the `main.py` half of step 8.
 7. **2.2 — settings single source of truth** — REFACTOR-PLAN §3.1, the highest-value item in the audit and the best-covered by existing tests (`tests/test_settings_service.py` asserts per-setting round-trips). Expect that suite to break on shape, not behavior — rewrite the assertions, do not contort the design.
-8. **D3 — entry-point split** — `index.tsx` / orchestration refactor in small commits; preview pass per commit; on-Deck for focus and Ask regressions.
+8. **D3 — entry-point split, continued** — resume from **5b** above, which records what has already moved and why the order is state-before-JSX. Remaining, in the order they get cheaper: character-picker modal (~76 lines, ~11 deps), Ollama models hub (~84, ~10), desktop-note modal (~49), plugin-help modal (~11), connection/IP, session-reset, UI-scale, error-capture — **then** the six tab payloads, which only become cheap once the state above them has moved. Small commits, `tsc` + suite per commit, and an **on-Deck D-pad pass per commit** from the character picker onward: those flows are focus and modal-lifecycle behavior, which no automated test in this repo covers. Still untouched and not yet scoped: `useBonsaiAskOrchestration.ts` (1222 lines) and `MainTab.tsx` (187 lines of prop threading) — see **D9**.
 9. **KB download Cancel button** — wire `cancel_rag_corpus_download` in `KnowledgeBaseSection.tsx`; D-pad row in `testing.md` / `testing-manual.md`.
 10. **D4 — evidence hygiene** — link audit, prune orphans only. The retention rule must live **in the script that writes evidence**, not in a doc — a rule that depends on remembering is not a mechanism.
 11. **Deferred friction test** — run Phase 2c newcomer task on the post-refactor tree; file `docs/audit/03-friction.md`.
@@ -276,6 +362,40 @@ order. As first written it ran the riskiest, least-covered work (entry-point
 split) while skipping the highest-value, best-covered work (settings SSOT), and
 left step 8 without the `main.py` inventory it needs. Both are restored ahead of
 the split.
+
+**Session results — 2026-08-02.** Steps 1–5 complete, step 6 partly done, all
+Cleanup candidates executed. Gates green at every commit.
+
+| Measure | Before | After |
+|---|---|---|
+| RPC surface (`class Plugin`) | 55 | 50 |
+| `main.py` | 3021 | 2971 |
+| `index.tsx` | 1955 | 1709 |
+| Python tests | 399 | 413 |
+| Frontend tests | 217 (44 files) | 239 (46 files) |
+
+Shipped: both missing RPCs wired (session RAG chips and pulled-tag routing merge
+had **never worked** on-device); dead backend from three removed features
+deleted; two re-export shims removed and their 31 importers repointed; the two
+files that blocked the split given mutation-checked characterization tests.
+
+**Four things the audit or the tooling got wrong**, all recorded with evidence
+so they are not rediscovered:
+
+1. `proton_experiment_journal_service.py` was **not** dead — `clear_plugin_data`
+   needed its file wipe. Deleting it as written would have broken *Clear all
+   data* on-device with every test still green.
+2. `find_amdgpu_hwmon` was **not** apply-only — `read_current_tdp_watts` calls
+   it, so removing it would have killed the current-TDP read Ask uses.
+3. The preview-suite gate grep searched **symbols only**; the suite also names
+   test *files*. Grep both. ([05-plan.md](audit/05-plan.md) §1.1)
+4. `vitest.config.ts` collected only `*.test.ts`, so a `.tsx` test **could never
+   run**. The 44 untested component files were a tooling gap, not a discipline
+   gap. ([04-coverage.md](audit/04-coverage.md))
+
+**Outstanding on-Deck QA from this session:** **ROUTING-MERGE-01** and
+**SESSION-RAG-CHIPS-01** in [testing.md](testing.md) — both features are
+implemented and unit-tested but have never been exercised on a Deck.
 
 **Corrections to audit premises (for implementers):**
 
