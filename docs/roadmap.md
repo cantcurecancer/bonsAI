@@ -279,20 +279,25 @@ the split.
 
 ---
 
-## Cleanup candidates
+## Cleanup candidates — locked and executed 2026-08-02
 
-Dead or hazardous code found during the 2026-08-02 refactor and **deliberately
-left in place** — each was outside the scope of the commit that surfaced it.
-Not defects: nothing here misbehaves today. Each row says what it is, why it was
-skipped, and what deleting it costs. Verified against the tree on 2026-08-02.
+Dead or hazardous code found during the 2026-08-02 refactor. All five rows were
+locked by the maintainer and, except the deferred one, executed the same day.
+Nothing here changed product behavior.
 
-| What | Evidence | Why it was skipped | Risk to delete |
-|---|---|---|---|
-| **One-shot migration scripts** — `scripts/extract_ollama_section.py`, `scripts/trim_settings_tab.py` | Both rewrite `SettingsTab.tsx` / `OllamaWhereAiRunsSection.tsx` from source text hardcoded inside the script | Outside the barrel-deletion commit's scope | **None — and leaving them is the risk.** They are not on the build, test, or deploy path, and their embedded source is now badly stale. Running either today would revert real components and reintroduce the deleted `settingsAndResponse` barrel import. Delete outright |
-| **Orphaned kmsgrab capture sub-tree** — `try_kmsgrab_screenshot` (`screenshot_media.py:818`), `_fix_capture_file_ownership` (`:772`), `_sudo_nopasswd_available` (`:756`), `_desktop_session_active` (`:586`) | Reachable only from `try_gamescope_screenshot_capture`, deleted in `45cb0ff` with the `capture_screenshot` RPC | `screenshot_media.py` is on the [05-plan.md](audit/05-plan.md) DO-NOT-TOUCH list, and that commit had already gone one level past its remit | Low — four functions, no callers, module has real behavioral coverage. Confirm no preview-suite reference **by filename as well as symbol** first |
-| **`journal_text` plumbing** — `stack_context_blocks` still takes the parameter (`knowledge_base_service.py:764,773`) and `game_ai_request.py:318` passes `""` permanently | Proton journal feature removed 2026-07-30; its service deleted in `ebdc0f2` | Removing a parameter from a live function on the **Ask path** deserves its own commit, not a ride-along in a deletion pass | Low-medium — signature change on a hot path. Covered by `test_stack_context_journal_between_proton_and_kb` |
-| **`sysfs_writes` reporting with no producer** — `get_input_transparency` (`main.py:2117,2128`) calls `read_sandbox_sysfs_writes`, which reads a file nothing writes since the TDP apply path went | `tdp_service.py` | Kept by explicit decision on 2026-08-02 so preview transparency keeps its field | Low, but decide *why* it exists first: if preview automation asserts on the field, it should keep returning `[]`; if not, both it and the reader can go |
-| **Broken links inside `docs/archive/`** — 272 relative links resolve to a `docs/` layout that no longer exists | Sweep recorded in [06-doc-triage.md](audit/06-doc-triage.md) § Link audit | ~272 edits across historical files nobody navigates by link | None, but low value. Fold into the **D4** evidence-hygiene pass rather than doing it standalone |
+| # | Locked decision | Outcome |
+|---|---|---|
+| 1 | **Delete the one-shot migration scripts** | `071221e` — `scripts/extract_ollama_section.py` and `scripts/trim_settings_tab.py` gone. They rewrote `SettingsTab.tsx` / `OllamaWhereAiRunsSection.tsx` from source text hardcoded inside the scripts; running either would have reverted real components and reintroduced the deleted `settingsAndResponse` barrel import. Keeping them was the hazard |
+| 2 | **Delete the orphaned kmsgrab capture sub-tree** | `4a26cfa` — six functions, not the four enumerated. `_build_kmsgrab_argv` was called only by `try_kmsgrab_screenshot`, and `gamescope_session_active` only by `_desktop_session_active`, so stopping at four would have left the same problem one node deeper. Preview gate run on **symbols and filenames** both, per the TDP lesson: clean. Live capture paths untouched |
+| 3 | **Remove the `journal_text` plumbing** | `a029c2d` — parameter dropped from `stack_context_blocks`, caller stopped passing `""`. Its ordering test asserted a three-block arrangement that can no longer occur and was replaced with one covering what the stacker still guarantees. The duplicate roadmap note under Planned is collapsed |
+| 4 | **Remove the `sysfs_writes` reader and field; keep the preview hook empty** | `a9353cc` — `read_sandbox_sysfs_writes` and the `get_input_transparency` field gone; `sandbox_sysfs_root` stays because `find_amdgpu_hwmon` needs it. `getSysfsWrites` kept returning `[]`: the in-repo runner never calls it, but `__bonsaiTestHooks` is consumed by DPS scenarios outside this repo, so the contract stands |
+| 5 | **Defer the `docs/archive/` broken links to D4** | Not actionable here by decision. 272 relative links in historical files point at a `docs/` layout that no longer exists; fixing them is evidence hygiene, not code legibility. Folded into **D4** — see [06-doc-triage.md](audit/06-doc-triage.md) § Link audit. Live docs are already link-clean |
+
+**Found while executing, not in the lock and not actioned:**
+`_reencode_oversized_capture` and `_mirror_capture_to_plugin_dir` in
+`screenshot_media.py` have no callers **and had none before this work** — they
+are pre-existing dead code, not a cascade from these deletions, so they were
+left for a separate decision rather than folded in.
 
 ---
 

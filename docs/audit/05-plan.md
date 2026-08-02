@@ -82,9 +82,9 @@ maintainer approved on 2026-08-02 and then stopped deliberately:
 |---|---|---|
 | `apply_tdp` | `write_sysfs`, `append_sandbox_sysfs_write`, `STEAMOS_PRIV_WRITE` | all deleted |
 | — | `find_amdgpu_hwmon` | **kept** — `read_current_tdp_watts` still calls it (`tdp_service.py:68`), contrary to the audit |
-| — | `read_sandbox_sysfs_writes` | **kept** by decision — `get_input_transparency` reports it, though nothing writes the file any more |
+| — | `read_sandbox_sysfs_writes` | kept on the day, then **deleted 2026-08-02** in `a9353cc` once the maintainer locked it: nothing had written the file since the apply path went. `sandbox_sysfs_root` stays — `find_amdgpu_hwmon` needs it |
 | `capture_screenshot` | `try_gamescope_screenshot_capture` | deleted |
-| — | `try_kmsgrab_screenshot`, `_desktop_session_active` | **left in place** — next level down, not yet reviewed |
+| — | `try_kmsgrab_screenshot`, `_desktop_session_active`, and below them `_fix_capture_file_ownership`, `_sudo_nopasswd_available`, `_build_kmsgrab_argv`, `gamescope_session_active` | all deleted 2026-08-02 in `4a26cfa` once the maintainer locked the sub-tree |
 
 Check one level down before declaring a deletion complete, then check again.
 
@@ -167,13 +167,10 @@ part of the work.
 > through `bonsaiSettingsSchema.ts:25-26` re-exports (`export type { X };`), so
 > an exports scan that only reads declarations will not find their owner.
 >
-> **Found, not fixed:** `scripts/extract_ollama_section.py` and
-> `scripts/trim_settings_tab.py` are one-shot migration scripts from an earlier
-> refactor. They rewrite `SettingsTab.tsx` / `OllamaWhereAiRunsSection.tsx` from
-> hardcoded source text that is now years stale — running either today would
-> revert real files and reintroduce the deleted barrel import. They are not on
-> the build, test, or deploy path. Candidates for deletion; left in place
-> because that is outside this item's scope.
+> **Resolved 2026-08-02:** `scripts/extract_ollama_section.py` and
+> `scripts/trim_settings_tab.py` were one-shot migration scripts whose embedded
+> source had gone stale enough that running either would revert real components.
+> Deleted in `071221e`.
 
 ---
 
