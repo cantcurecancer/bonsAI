@@ -101,6 +101,22 @@ of `docs/`, an incomplete map is the one failure mode that matters here.
 
 ---
 
+## Link audit (added 2026-08-02, when the fixes below were applied)
+
+The triage above checked *claims*. It did not check *links*. A sweep of every
+relative markdown link under `docs/` found **276 broken targets**:
+
+| Where | Count | Disposition |
+|---|---|---|
+| `docs/archive/**` | 272 | **Pre-existing and left alone.** These files were written when they lived at `docs/` root; archiving them broke their relative paths wholesale. They are historical documents whose links point at a layout that no longer exists |
+| Live docs | 4 | **Fixed.** `development.md` ×2 (`spikes/cursor-deck-visibility.md`, `security-audit-report.md` — both now under `archive/`), `troubleshooting.md` ×1 (`plans/post-p0-feature-backlog.md`), `roadmap.md` ×1 (a forward reference to a spike deliverable that does not exist yet — unlinked rather than repointed) |
+
+Live docs are now link-clean. The archive is not, and fixing it would be ~272
+edits across historical files nobody navigates by link. Recorded rather than
+done; it is a candidate for the **D4** evidence-hygiene pass, not for this one.
+
+---
+
 ## Recommended moves
 
 ### Archive one doc

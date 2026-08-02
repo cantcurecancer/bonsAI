@@ -104,6 +104,7 @@ Edit `claude_desktop_config.json`:
 | `bonsai.policy.get` / `bonsai.policy.list` | Specific policy slices |
 | `bonsai.docs.search` / `bonsai.docs.get` | Search or read `docs/` |
 | `bonsai.arch.rpcMap` / `bonsai.arch.hotspots` | Codebase context |
+| `bonsai.arch.previewTiers` | Preview-suite tiers and the scenarios in each |
 | `bonsai.report.archive` | Append subagent findings |
 
 ## Key prompts

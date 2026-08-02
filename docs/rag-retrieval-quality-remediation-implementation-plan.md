@@ -1,7 +1,7 @@
 # RAG retrieval quality remediation — implementation plan
 
 **Status:** Decisions locked (discovery 2026-08-02). **Docs only until PR1 starts.**  
-**Analysis source (do not edit as ship plan):** [rag-retrieval-quality-remediation-plan.md](rag-retrieval-quality-remediation-plan.md)
+**Analysis source (do not edit as ship plan):** [archive/rag-retrieval-quality-remediation-plan.md](archive/rag-retrieval-quality-remediation-plan.md)
 
 This is the **active ship plan**. It copies the technical stages from the analysis doc, then overlays maintainer-locked decisions and reconciliation items (R1–R5). Where this plan and the analysis disagree, **this plan wins**.
 

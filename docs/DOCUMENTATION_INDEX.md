@@ -1,19 +1,28 @@
 # bonsAI documentation index
 
-Short guide to markdown under `docs/`. Repo root **[README.md](../README.md)** stays the primary install entry; **[CHANGELOG.md](../CHANGELOG.md)** is release history.
+Short guide to markdown under `docs/`. Repo root **[README.md](../README.md)** stays the primary install entry; **[CLAUDE.md](../CLAUDE.md)** orients agents on the codebase; **[CHANGELOG.md](../CHANGELOG.md)** is release history.
 
 | Doc | Audience | What it is |
 |-----|----------|------------|
 | [mcp-setup.md](mcp-setup.md) | Contributors / agents | MCP servers — bonsai knowledge + Decky Plugin Studio |
 | [development.md](development.md) | Contributors | Deck-first setup, build/deploy, architecture, hotspots |
 | [troubleshooting.md](troubleshooting.md) | Power users | GPU, network, vision, permissions, QAM, deploy edge cases |
-| [roadmap.md](roadmap.md) | Planning | Bugs, QA backlog, planned backlog |
+| [roadmap.md](roadmap.md) | Planning | Bugs, QA backlog, planned backlog, locked maintainer decisions |
 | [testing.md](testing.md) | QA / contributors | Testing hub + slim coverage |
 | [testing-automated.md](testing-automated.md) | Agents / CI | Commands runnable without a human on Deck |
 | [testing-manual.md](testing-manual.md) | Maintainers | On-Deck smokes and Tier 0–4 runbook |
 | [knowledge-base.md](knowledge-base.md) | Maintainers | Offline RAG / corpus phases |
+| [code-clarity.md](code-clarity.md) | Contributors / agents | Module header convention and its exclusions |
+| [glossary.md](glossary.md) | Everyone | Terms used in file headers and maintainer docs |
+| [rag-retrieval-quality-remediation-implementation-plan.md](rag-retrieval-quality-remediation-implementation-plan.md) | Maintainers | **Active** RAG hybrid-retrieval fix plan (PR1/PR2) |
+| [audit/](audit/) | Contributors / agents | Refactor recon — read before re-deriving anything |
 | [archive/reports/](archive/reports/) | Maintainers | Security / FOSS review snapshots |
 | [archive/](archive/) | — | Historical research, plans, completed features, old testing dumps |
+
+The archived RAG *analysis* lives at
+[archive/rag-retrieval-quality-remediation-plan.md](archive/rag-retrieval-quality-remediation-plan.md).
+Its name differs from the active implementation plan by one word — implement from
+the file listed in the table above, not that one.
 
 ## MCP knowledge (agents)
 

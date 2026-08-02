@@ -207,7 +207,7 @@ When the knowledge base is enabled and installed, Main-tab preset chips may occa
 
 **Cause (fixed 2026-05-19):** Character instructions were prepended *before* the long bonsAI identity block; later lines (“answer directly, concisely, in English”) overrode voice. Build now **appends** character voice + a short end-of-system reminder.
 
-**Plan for stronger model honesty:** [plans/post-p0-feature-backlog.md](plans/post-p0-feature-backlog.md) (model truth section).
+**Plan for stronger model honesty:** [archive/plans/post-p0-feature-backlog.md](archive/plans/post-p0-feature-backlog.md) (model truth section).
 
 ---
 
