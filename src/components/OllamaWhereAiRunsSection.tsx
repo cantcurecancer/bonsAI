@@ -569,11 +569,20 @@ export const OllamaWhereAiRunsSection: React.FC<OllamaWhereAiRunsSectionProps> =
       }
       const pulled = localSetupStatus.pull_tags?.filter(Boolean) ?? [];
       if (localSetupStatus.profile === "custom" && pulled.length > 0) {
+        // KNOWN BUG: merge_pulled_tags_into_routing_orders has no implementation in
+        // main.py, so this always rejects and pulled tags never reach the routing
+        // order. See docs/roadmap.md "Known bugs". Logged rather than swallowed so
+        // the failure is visible on-device.
         void callDeckyWithTimeout<[string[]], { ok?: boolean }>(
           "merge_pulled_tags_into_routing_orders",
           [pulled],
           DECKY_RPC_TIMEOUT_MS
-        ).catch(() => {});
+        ).catch((e) => {
+          console.error(
+            "[bonsAI] merge_pulled_tags_into_routing_orders failed; pulled tags not merged into model routing order:",
+            formatDeckyRpcError(e)
+          );
+        });
       }
       toaster.toast({
         title: "Local Ollama setup complete",

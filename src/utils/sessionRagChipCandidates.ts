@@ -5,7 +5,7 @@
  * Solves: Typed candidate list for composeSessionPresets without duplicating RPC parsing.
  * Does not: Score or rank candidates — see sessionRagComposer probability mix.
  */
-import { callDeckyWithTimeout, DECKY_RPC_TIMEOUT_MS } from "./deckyCall";
+import { callDeckyWithTimeout, DECKY_RPC_TIMEOUT_MS, formatDeckyRpcError } from "./deckyCall";
 import type { SessionRagChipCandidate } from "../features/preset-carousel/sessionRagComposer";
 
 export type SessionRagChipCandidatesRpcResult = {
@@ -56,6 +56,10 @@ export async function fetchSessionRagChipCandidates(args: {
       DECKY_RPC_TIMEOUT_MS,
     );
     if (!result?.ok || !Array.isArray(result.candidates)) {
+      console.warn(
+        "[bonsAI] get_session_rag_chip_candidates returned no usable candidates; falling back to static preset chips.",
+        result?.reason ?? "no reason given"
+      );
       return [];
     }
     const out: SessionRagChipCandidate[] = [];
@@ -69,7 +73,14 @@ export async function fetchSessionRagChipCandidates(args: {
       out.push(normalized);
     }
     return out;
-  } catch {
+  } catch (e) {
+    // KNOWN BUG: get_session_rag_chip_candidates has no implementation in main.py,
+    // so this always rejects and session RAG chips never appear -- the carousel
+    // silently falls back to static seeds. See docs/roadmap.md "Known bugs".
+    console.error(
+      "[bonsAI] get_session_rag_chip_candidates failed; session RAG preset chips unavailable:",
+      formatDeckyRpcError(e)
+    );
     return [];
   }
 }
