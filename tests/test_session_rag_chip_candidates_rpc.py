@@ -122,6 +122,36 @@ class SessionRagChipCandidatesRpcTests(unittest.IsolatedAsyncioTestCase):
         # The frontend normalizer treats a null prefer_ask_mode as "no preference".
         self.assertIsNone(out["candidates"][1]["prefer_ask_mode"])
 
+    async def test_unreadable_corpus_is_logged_once_per_fault(self) -> None:
+        """The carousel retries after every Ask, so a repeated fault must not repeat the log."""
+        broken = SessionRagChipCandidatesResult(ok=False, reason="corpus_error:database disk image is malformed")
+        healthy = SessionRagChipCandidatesResult(ok=True, candidates=[])
+
+        with patch.object(main, "logger") as log:
+            with patch.object(main, "suggest_chip_candidates", return_value=broken):
+                await self.plugin.get_session_rag_chip_candidates("2321470", "Deep Rock")
+                await self.plugin.get_session_rag_chip_candidates("2321470", "Deep Rock")
+            self.assertEqual(log.warning.call_count, 1)
+
+            # Recovering and breaking again is a new fault and must be logged again.
+            with patch.object(main, "suggest_chip_candidates", return_value=healthy):
+                await self.plugin.get_session_rag_chip_candidates("2321470", "Deep Rock")
+            with patch.object(main, "suggest_chip_candidates", return_value=broken):
+                await self.plugin.get_session_rag_chip_candidates("2321470", "Deep Rock")
+            self.assertEqual(log.warning.call_count, 2)
+
+    async def test_empty_result_is_not_logged_as_a_fault(self) -> None:
+        """A game with no KB content is normal, not a fault."""
+        with patch.object(main, "logger") as log:
+            with patch.object(
+                main,
+                "suggest_chip_candidates",
+                return_value=SessionRagChipCandidatesResult(ok=False, reason="no_sections"),
+            ):
+                await self.plugin.get_session_rag_chip_candidates("2321470", "Deep Rock")
+
+        log.warning.assert_not_called()
+
     async def test_corpus_error_returns_failure_instead_of_raising(self) -> None:
         """A raised exception would reject the RPC — the exact failure this feature shipped with."""
         with patch.object(main, "suggest_chip_candidates", side_effect=sqlite3.Error("corpus gone")):

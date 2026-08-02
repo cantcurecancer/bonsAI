@@ -1685,6 +1685,7 @@ class Plugin:
         shortcut_name: str = "",
     ):
         """Preset-chip prompts drawn from the offline KB for the running game."""
+        plugin = Plugin._coerce_instance(self)
         settings = await self.load_settings()
         try:
             result = await asyncio.to_thread(
@@ -1697,7 +1698,17 @@ class Plugin:
         except Exception:
             logger.exception("get_session_rag_chip_candidates failed")
             return {"ok": False, "reason": "chip_candidates_failed", "candidates": []}
-        return session_rag_chip_candidates_to_rpc(result)
+
+        payload = session_rag_chip_candidates_to_rpc(result)
+        # An unreadable corpus is a real fault, not "this game has no tips", and the
+        # carousel retries after every Ask -- so record it once per distinct fault
+        # instead of on every call. Cleared on success so a later break logs again.
+        reason = str(payload.get("reason") or "")
+        fault = reason if reason.startswith("corpus_error") else ""
+        if fault and fault != getattr(plugin, "_last_chip_candidates_fault", ""):
+            logger.warning("get_session_rag_chip_candidates: knowledge base unreadable (%s)", fault)
+        plugin._last_chip_candidates_fault = fault
+        return payload
 
     async def _require_local_ollama_on_deck(self) -> tuple[bool, dict[str, Any] | None]:
         plugin = Plugin._coerce_instance(self)
