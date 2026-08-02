@@ -38,7 +38,6 @@ Skip obvious getters, prop passthroughs, and trivial wrappers.
 - Pure data dumps (`characterPlaceholderEmoticonGrids.ts`)
 - Generated `dist/`, `pluginVersion.ts`, ambient `types.d.ts`
 - CSS token section dumps (`styles/sections/section-*.ts`, `scopeBase.ts`, `uiScalePx.ts`)
-- `src/v0-drafts/` (non-shipping UI experiments)
 - Tiny re-exports, empty `__init__.py`, one-liner shims
 
 ## Ask path map
