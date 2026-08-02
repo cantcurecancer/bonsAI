@@ -75,7 +75,6 @@
     "tests/test_ollama_pull_registry.py",
     "tests/test_ollama_service.py",
     "tests/test_plugin_data_reset.py",
-    "tests/test_proton_experiment_journal_service.py",
     "tests/test_proton_troubleshooting_logs.py",
     "tests/test_pull_model_catalog_merge.py",
     "tests/test_pull_model_catalog_parity.py",

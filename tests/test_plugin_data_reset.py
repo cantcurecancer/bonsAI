@@ -1,8 +1,15 @@
+import sys
 import unittest
 import tempfile
+from contextlib import contextmanager
 from pathlib import Path
+from unittest.mock import patch
 
-from backend.services.plugin_data_reset import reset_plugin_disk_and_defaults
+from backend.services.plugin_data_reset import (
+    PROTON_JOURNAL_FILENAME,
+    reset_plugin_disk_and_defaults,
+    wipe_proton_experiment_journal,
+)
 from backend.services.settings_service import load_settings, save_settings, sanitize_settings
 
 
@@ -138,6 +145,65 @@ class PluginDataResetTests(unittest.TestCase):
             self.assertFalse((settings_dir / "bonsai_feedback.jsonl").exists())
             self.assertTrue(Path(settings_path).is_file())
             self.assertFalse(out["capabilities"]["filesystem_write"])
+
+
+class ProtonJournalWipeTests(unittest.TestCase):
+    """Moved here from test_proton_experiment_journal_service.py with the function itself.
+
+    The wipe is Deck-only, so the platform guard is faked rather than skipped —
+    the original test asserted nothing on Windows and so never ran here.
+    """
+
+    @contextmanager
+    def _deck_home(self, home: Path):
+        with patch.object(sys, "platform", "linux"), patch.object(Path, "home", return_value=home):
+            yield
+
+    def test_wipe_removes_journal_under_home(self):
+        logger = _Logger()
+        with tempfile.TemporaryDirectory() as tmp:
+            home = Path(tmp)
+            journal = home / ".bonsai" / PROTON_JOURNAL_FILENAME
+            journal.parent.mkdir(parents=True)
+            journal.write_text("{}", encoding="utf-8")
+
+            with self._deck_home(home):
+                self.assertTrue(wipe_proton_experiment_journal(logger, str(home)))
+
+            self.assertFalse(journal.exists())
+
+    def test_wipe_refuses_paths_outside_home(self):
+        logger = _Logger()
+        with tempfile.TemporaryDirectory() as tmp, tempfile.TemporaryDirectory() as other_home:
+            home = Path(tmp)
+            journal = home / ".bonsai" / PROTON_JOURNAL_FILENAME
+            journal.parent.mkdir(parents=True)
+            journal.write_text("{}", encoding="utf-8")
+
+            with self._deck_home(Path(other_home)):
+                self.assertFalse(wipe_proton_experiment_journal(logger, str(home)))
+
+            self.assertTrue(journal.exists())
+
+    def test_wipe_succeeds_when_no_journal_exists(self):
+        logger = _Logger()
+        with tempfile.TemporaryDirectory() as tmp:
+            home = Path(tmp)
+            with self._deck_home(home):
+                self.assertTrue(wipe_proton_experiment_journal(logger, str(home)))
+
+    def test_wipe_is_a_no_op_on_windows(self):
+        logger = _Logger()
+        with tempfile.TemporaryDirectory() as tmp:
+            home = Path(tmp)
+            journal = home / ".bonsai" / PROTON_JOURNAL_FILENAME
+            journal.parent.mkdir(parents=True)
+            journal.write_text("{}", encoding="utf-8")
+
+            with patch.object(sys, "platform", "win32"):
+                self.assertFalse(wipe_proton_experiment_journal(logger, str(home)))
+
+            self.assertTrue(journal.exists())
 
 
 if __name__ == "__main__":

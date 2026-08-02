@@ -60,11 +60,30 @@ def wipe_bonsai_cache_dir(logger: Any) -> bool:
     return False
 
 
-def wipe_proton_experiment_journal(logger: Any) -> bool:
-    """Remove ~/.bonsai/proton_experiment_journal.json when under user home."""
-    from backend.services.proton_experiment_journal_service import wipe_journal_file
+PROTON_JOURNAL_FILENAME = "proton_experiment_journal.json"
 
-    return wipe_journal_file(logger=logger)
+
+def wipe_proton_experiment_journal(logger: Any, home: str | None = None) -> bool:
+    """Remove ~/.bonsai/proton_experiment_journal.json when under user home.
+
+    The Proton experiment journal feature was removed in 2026-07. This stays so
+    Clear all data still cleans up the file on Decks that used it, and is the
+    only part of the old journal service that outlived the feature.
+    """
+    if sys.platform.startswith("win"):
+        return False
+    path = Path(os.path.expanduser(home or "~")) / ".bonsai" / PROTON_JOURNAL_FILENAME
+    try:
+        home_rp = Path.home().resolve()
+        file_rp = path.resolve()
+        if not str(file_rp).startswith(str(home_rp) + os.sep) and file_rp != home_rp:
+            return False
+        if file_rp.exists():
+            file_rp.unlink()
+        return True
+    except OSError as exc:
+        logger.warning("wipe_proton_experiment_journal: %s", exc)
+        return False
 
 
 def wipe_rag_corpus_dir(corpus_path: str, logger: Any) -> bool:

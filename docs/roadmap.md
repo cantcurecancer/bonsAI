@@ -304,6 +304,8 @@ Within this section: ascending stars (★ → ★★★★).
 
 - ★ **Proton journal / intent packs later review** (keep / quiet / Developer — discovery leftover 2026-07-30)
   - **Goal:** Decide whether dormant Proton experiment journal RPCs/store and quiet intent-pack search aliases should be deleted, left quiet, or revived under Developer.
+  - **Journal half resolved 2026-08-02 (D2):** the 5 journal RPCs and `proton_experiment_journal_service.py` are deleted; only the file wipe survived, relocated into `plugin_data_reset.py` because **Clear all data** still needs it. Reviving the feature now means rebuilding the store, not re-enabling it.
+  - **Leftover found during that cleanup:** `stack_context_blocks` still takes a `journal_text` parameter and `game_ai_request.py:318` passes `""` to it permanently — dead plumbing through a live Ask path. Left alone deliberately: removing a parameter from a function on the Ask path deserves its own commit, not a ride-along in a deletion pass. Covered by `test_stack_context_journal_between_proton_and_kb`.
   - **Not in scope:** rewriting unified search ranking; re-shipping journal inject without a redesign.
 - ★★ **Preset chip expansion** (streaming / LAN / Steam Input — incremental)
   - **Baseline shipped:** `PRESET_PROMPTS` in [`src/data/presets.ts`](../src/data/presets.ts).
