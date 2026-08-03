@@ -72,6 +72,7 @@
     "tests/test_model_policy.py",
     "tests/test_model_routing_order.py",
     "tests/test_model_selection.py",
+    "tests/test_no_unreachable_code.py",
     "tests/test_ollama_ask_service.py",
     "tests/test_ollama_catalog_service.py",
     "tests/test_ollama_embed_service.py",
@@ -102,6 +103,7 @@
     "tests/test_tdp_service.py",
     "tests/test_token_stream_request_id_wiring.py",
     "tests/test_transparency_kb_retrieval.py",
+    "tests/test_voice_session_status.py",
     "tests/test_voice_transcription_service.py",
     "tests/test_voice_whisper_daemon.py"
   ]

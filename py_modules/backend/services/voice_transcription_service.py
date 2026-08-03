@@ -1215,6 +1215,17 @@ class VoiceTranscriptionSession:
             if text:
                 return text
         return _run_whisper_transcribe(whisper_bin, model_path, pcm, env)
+
+    def status(self) -> dict[str, Any]:
+        """Snapshot of the live session state for RPC polling.
+
+        Restored 2026-08-03. ``742db60`` (Voice STT session daemon) replaced this method's
+        signature line with ``_transcribe_pcm`` and never re-added it, leaving these two body
+        lines stranded as unreachable code after that method's ``return``. ``start()``,
+        ``stop()`` and both voice RPCs all call it, so voice raised
+        ``AttributeError: 'VoiceTranscriptionSession' object has no attribute 'status'`` on
+        every attempt from then until this fix.
+        """
         with self._lock:
             return dict(self._state)
 

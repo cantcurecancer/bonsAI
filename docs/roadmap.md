@@ -16,6 +16,7 @@ Known **defects** only. Deferred QA lives under [QA backlog](#qa-backlog). *QAMP
 
 ### Bugs
 
+- ★ **Install voice engine button is actionable when the engine is already ready:** Settings → Voice input offers **Install voice engine** even when `engine_readiness` reports `binary_ready` and `model_ready`; pressing it re-runs the full install, including a podman pull of `ghcr.io/ggml-org/whisper.cpp`. Observed 2026-08-03 while troubleshooting the voice `status()` bug — the user pressed it precisely because the Main tab claimed voice was broken while Settings said ready, so the misleading state came from that bug, but the button being live regardless is its own issue. **Fix lean:** when ready, show the state and offer *Reinstall* as a distinct, clearly-labelled secondary action rather than the primary one. Needs a focus-graph entry if the control count changes (`.cursor/rules/decky-focus-graph.mdc`).
 - ★ **Strategy spoiler false-positive:** Genre-aware spoiler policy + KB entity match (DRG Survivor boss names); verify **STRAT-SPOIL-DRG-01** on Deck.
 - ★ **Question Overlay Alignment Drift:** The 3-line question overlay has minor horizontal spacing mismatch vs native `TextField` internals.
 - ★★★ **Fullscreen picker D-pad edge-escape (audit):** Audit **Pull Models**, **Character picker**, **Ollama models hub**, and other `showModal` pickers for below-list / above-list escape (left from row → primary action; right from trailing control → Close).
@@ -26,6 +27,37 @@ Known **defects** only. Deferred QA lives under [QA backlog](#qa-backlog). *QAMP
 - ★★ **Model routing try-order modal focus + chrome:** Text/vision **Set … try order…** fullscreen (`ModelRoutingOrderModal`) — D-pad focus lands on leaf Up/Down buttons and feels broken; layout/chrome does not match other fullscreen pickers (Pull Models / Character picker / Models hub `ConfirmModal` pattern). Screenshot `DeckCapture_20260730_144925`. Discovery locked 2026-07-30. **Defer** — fetch-on-open + save already shipped; polish later.
 - ★★ **KB compat retrieval phrase gate:** Troubleshooting KB (compat hybrid / **Keyword + meaning**) only runs when `question_matches_troubleshooting_log_context` matches a **hardcoded phrase list** in `ollama_prompts.py` (preset-style strings like `proton issue`, `why is my game crashing`). Natural-language asks (e.g. `deck sleep resume proton black screen`) skip the KB entirely — no chip, no hybrid, no **Source: shared troubleshooting tips**. **Intent:** when **Use local knowledge base** is on, attempt compat tip retrieval for general troubleshooting-shaped Asks without growing a brittle regex/preset farm in bonsAI. **Fix lean:** broaden gate (e.g. KB-on + not strategy-with-game → compat shortlist; or lightweight intent/heuristic separate from carousel presets); keep Strategy path AppID-gated. Regression: **KB-SMOKE-07/08** queries in [testing-manual.md](testing-manual.md) must pass without adding new hardcoded strings per smoke case. **Phase 4 discovery (2026-07-30):** lean gate fix (**B1**) ships with Phase 4 when implemented — not a separate forever-defer.
 - ★★★ **LB/RB tab switch flicker when scrolled:** Switching tabs with shoulder buttons while focus is deep in a scrolled panel (not on tab icons) flashes/jitters. Investigate carousel + remount/scroll/focus survival (partial anti-flicker CSS already on `TabContentsScroll`). Discovery locked 2026-07-29. **Recon: [08-lbrb-tab-flicker.md](audit/08-lbrb-tab-flicker.md)** — ranked hypotheses, fix tracks, on-Deck probe P0 to run first.
+
+**Fixed 2026-08-03 — voice input was completely broken for two and a half weeks.**
+`VoiceTranscriptionSession.status()` did not exist. `742db60` (*Voice STT session daemon*,
+2026-07-17) replaced the `def status(self)` **signature line** with the new `_transcribe_pcm`
+method and never re-added it, leaving `status()`'s two body lines stranded as **unreachable
+code** after `_transcribe_pcm`'s `return`. Python does not warn about that, and neither did any
+gate.
+
+One deleted line broke four callers: `start()` and `stop()` inside the class, plus
+`start_voice_transcription` and `get_voice_transcription_status` in `main.py`. Every voice
+attempt raised `AttributeError: 'VoiceTranscriptionSession' object has no attribute 'status'`.
+
+**Why the symptoms looked contradictory.** Settings correctly reported *voice ready* because
+`get_voice_engine_status` checks the binary and model on disk and never touches `status()`; only
+the Main-tab start path did. The engine was genuinely fine throughout — verified after the fact:
+`binary_ready: true, model_ready: true, ready: true`. The **Voice input unavailable** message
+that appeared later was the frontend reacting to repeated RPC failures, not a real missing
+engine, so no reinstall was ever needed.
+
+**Found from a user report, not a gate** — the traceback was only in `journalctl -u
+plugin_loader`, since the exception was raised before the plugin's own logger ran. Worth
+remembering: **plugin-side RPC exceptions land in the loader journal, not
+`homebrew/logs/bonsAI/`.**
+
+Coverage, both mutation-checked: `tests/test_voice_session_status.py` (5 tests, including a
+public-surface assertion over `start`/`stop`/`force_stop`/`status`) and
+`tests/test_no_unreachable_code.py` — an AST guard over `main.py` and all of `py_modules/` that
+fails on any statement following a `return`/`raise`/`break`/`continue`. That second one is the
+real mechanism: it catches the *fingerprint of a half-finished deletion* rather than this one
+instance. It found zero other sites, so the tree is clean. Re-verified on the deployed plugin:
+`status()` returns the state mapping. **On-Deck retry of a live recording is still needed.**
 
 **Fixed 2026-08-03 — reply-language snapshot RPC raised on every call.**
 `get_reply_language_snapshot` read `self.load_settings()` **without awaiting it** and then
