@@ -1,6 +1,6 @@
 # bonsAI Roadmap
 
-**Next session starts at** [execution order](#maintainer-decisions-locked--2026-08-02) **step 7** (settings single source of truth), then **step 8** (entry-point split). Steps **5c** ([D8](#d8--the-deploy-path-has-two-blind-spots-fix-them-or-keep-checking-by-hand)), **5d** ([D7](#d7--two-more-dead-functions-turned-up-delete-them-too)), **6** (`main.py` inventory — [07-mainpy-inventory.md](audit/07-mainpy-inventory.md)) and **6b** ([D11](#d11--mainpy-carries-a-compatibility-shim-for-a-loader-you-may-never-use-remove-it) shim removal, `main.py` 2971 → 2865) are done. The deploy path is verified on-device, so step 8's gates are trustworthy (**DEPLOY-VERIFY-01/03** verified, **02** partial; see [testing.md](testing.md)). **No decisions are open.** [D7–D10](#d7d10--raised-during-the-2026-08-02-session-locked-2026-08-03) locked 2026-08-03.
+**Next session starts at** [execution order](#maintainer-decisions-locked--2026-08-02) **step 7b** (settings single source of truth — **blocked on [D12](#d12--settings-live-in-two-languages-how-far-do-you-want-to-go-to-fix-that)**), then **step 8** (entry-point split). Steps **5c** ([D8](#d8--the-deploy-path-has-two-blind-spots-fix-them-or-keep-checking-by-hand)), **5d** ([D7](#d7--two-more-dead-functions-turned-up-delete-them-too)), **6** (`main.py` inventory — [07-mainpy-inventory.md](audit/07-mainpy-inventory.md)), **6b** ([D11](#d11--mainpy-carries-a-compatibility-shim-for-a-loader-you-may-never-use-remove-it) shim removal, `main.py` 2971 → 2865) and **7a** (settings drift guard) are done. The deploy path is verified on-device, so step 8's gates are trustworthy (**DEPLOY-VERIFY-01/03** verified, **02** partial; see [testing.md](testing.md)). **No decisions are open.** [D7–D10](#d7d10--raised-during-the-2026-08-02-session-locked-2026-08-03) locked 2026-08-03.
 
 Tracks **bugs and active engineering** ([In Progress](#in-progress)), **executed cleanup** ([Cleanup candidates](#cleanup-candidates)), **refactor decisions** ([Decisions needed](#decisions-needed) — locked 2026-08-02), deferred **QA** ([QA backlog](#qa-backlog)), the **backlog** ([Planned](#planned)), and pointers to shipped work ([Completed](#completed)).
 
@@ -42,7 +42,7 @@ choices are, and what happens either way. **Locked calls (2026-08-02 for D1–D6
 [Maintainer decisions locked](#maintainer-decisions-locked--2026-08-02); implement
 from that section when it disagrees with an option above.
 
-**None currently open.** D1–D11 are all locked; see the table below for each call.
+**Currently open: [D12](#d12--settings-live-in-two-languages-how-far-do-you-want-to-go-to-fix-that)** (step 7b is blocked on it). D1–D11 are locked; see the table below.
 
 Evidence for all of these lives in [docs/audit/](audit/), especially
 [05-plan.md](audit/05-plan.md).
@@ -391,6 +391,53 @@ assumption. See execution-order step **6b**.
 
 ---
 
+### D12 — Settings live in two languages. How far do you want to go to fix that?
+
+**What's going on.** Step 7's goal is making "add a setting" cheap. Recon first
+established the baseline (execution-order step **7a**): TS and Python each declare all
+**40** settings independently, and — checked by running both — they currently agree
+**exactly**, 40 keys, zero differences.
+
+So nothing is broken. The cost is that adding one setting means editing six files across
+two languages and getting them to match by hand, with nothing checking that you did.
+
+**Already shipped (step 7a), and it needs no decision:** a shared defaults fixture both
+languages assert against, so an incomplete two-language edit now fails a test. That closes
+the *drift* risk. It does not reduce the *cost*, which is what the options below are about.
+
+**Option A — declarative field table per language.** *(my recommendation)*
+
+Most of the 40 settings are one of five boring kinds: boolean defaulting false, boolean
+defaulting true, enum with a default, integer clamped to a range, string with a max length.
+Those become rows in a table on each side rather than a hand-written function. The genuinely
+custom ones — the latency/timeout reconciliation, the two legacy migrations, model policy,
+capabilities, named hosts, routing order — stay as functions.
+
+Adding a simple setting becomes one row in each language plus the UI control. Roughly
+two-thirds of the 28 Python sanitizers collapse. Both languages stay readable on their own
+terms, and the fixture proves the rewrite changed nothing.
+
+**Option B — generate both sides from one spec.** A single machine-readable file describing
+every field, from which the TypeScript types and the Python sanitizers are generated. This is
+the only option where the two languages *cannot* disagree, because only one thing is written
+by hand. It fits how the repo already works — six architecture snapshots are generated and
+validated on every commit.
+
+It is also the biggest commitment: a generator to maintain, generated files people must not
+edit, and the awkward cases (migrations, cross-field reconciliation) either stay hand-written
+anyway or push complexity into the spec format.
+
+**Option C — stop here.** Keep the fixture, keep the hand-written code. Drift is now caught,
+which was the real risk; adding a setting stays a six-file chore. Zero further work, and
+honest if settings are not being added often.
+
+**What I'd weigh.** B's advantage over A is only realized if settings keep being added — the
+generator has to be paid for by future edits. A gets most of the cost reduction for a fraction
+of the machinery, and does not foreclose B later, since the field table is most of the spec B
+would need anyway.
+
+---
+
 ### Maintainer decisions locked — 2026-08-02
 
 The options above stay as the decision record. **Locked below** is what we are
@@ -552,7 +599,38 @@ current tree (especially **D1b** and parts of **D2** / **D4**).
    deployed `main.py` at 2865 lines. **On-Deck functional QA of the Ask, voice and
    knowledge-base paths is still open** — **D11-SHIM-01** in [testing.md](testing.md).
 
-7. **2.2 — settings single source of truth** — REFACTOR-PLAN §3.1, the highest-value item in the audit and the best-covered by existing tests (`tests/test_settings_service.py` asserts per-setting round-trips). Expect that suite to break on shape, not behavior — rewrite the assertions, do not contort the design.
+7a. **2.2 — settings recon + drift guard** — **done 2026-08-03.** The audit deferred this
+   design deliberately ([05-plan.md](audit/05-plan.md) §2.2: *"Do not design the shared-schema
+   mechanism from this document"*), so the first move was measuring rather than building.
+
+   **Baseline: there is no drift.** Both sides were executed and their outputs diffed —
+   Python `sanitize_settings({})` against TypeScript `normalizeSettings({})` — and they agree
+   **exactly**: 40 keys each, no key on one side only, **zero value differences**. That
+   reframes the work: step 7 is not fixing a bug, it is removing a per-setting cost and the
+   standing risk that the two hand-maintained shapes stop matching. It also makes the
+   remaining refactor verifiable — any mechanism must reproduce exactly this payload.
+
+   *(An early probe appeared to show `capabilities` differing. That was the probe's own bug —
+   a replacer array passed to `JSON.stringify` filters keys at every nesting level, not just
+   the top. Re-measured before reporting.)*
+
+   **Shipped: a drift guard, not a redesign.** `tests/contracts/settings-defaults.json` is the
+   fresh-install payload, and each language asserts against it in its own runner — no
+   cross-runtime plumbing. Python: `tests/test_settings_contract.py`. TypeScript:
+   `src/data/bonsaiSettingsContract.test.ts`. Three assertions each: exact equality, key-set
+   equality reported separately so a missing key reads as a key rather than a diff, and
+   **idempotency** — feeding the defaults back in must not change them, which specifically
+   guards the two legacy migrations (`preset_chip_animation` reading
+   `preset_chip_fade_animation_enabled`, `screenshot_attachment_preset` reading
+   `screenshot_max_dimension`), where a re-firing migration would rewrite a saved value on
+   every load.
+
+   **Mutation-checked**: mutating one fixture value fails both halves. Suites 413 → 416
+   Python, 239 → 242 frontend. `tsc` clean.
+
+   **Next decision: [D12](#d12--settings-live-in-two-languages-how-far-do-you-want-to-go-to-fix-that)** — how far to go on reducing the six-file cost. Step 7b is blocked on it.
+
+7b. **2.2 — settings single source of truth** — **blocked on [D12](#d12--settings-live-in-two-languages-how-far-do-you-want-to-go-to-fix-that).** — REFACTOR-PLAN §3.1, the highest-value item in the audit and the best-covered by existing tests (`tests/test_settings_service.py` asserts per-setting round-trips). Expect that suite to break on shape, not behavior — rewrite the assertions, do not contort the design.
 8. **D3 — entry-point split, continued** — resume from **5b** above (after **5c** deploy hardening). Remaining, in the order they get cheaper: character-picker modal (~76 lines, ~11 deps), Ollama models hub (~84, ~10), desktop-note modal (~49), plugin-help modal (~11), connection/IP, session-reset, UI-scale, error-capture — **then** the six tab payloads. **`tsc` + `npm test` + preview smoke every commit** per locked **D10**. **On-Deck D-pad pass only for the four modal extractions** (not state-only commits). **Done scope = `index.tsx` only** per locked **D9** — `useBonsaiAskOrchestration.ts` and `MainTab.tsx` are follow-ups after step 8.
 9. **KB download Cancel button** — wire `cancel_rag_corpus_download` in `KnowledgeBaseSection.tsx`; D-pad row in `testing.md` / `testing-manual.md`.
 10. **D4 — evidence hygiene** — link audit, prune orphans only. The retention rule must live **in the script that writes evidence**, not in a doc — a rule that depends on remembering is not a mechanism.

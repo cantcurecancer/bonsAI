@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 230,
-  "edgeCount": 517,
+  "fileCount": 231,
+  "edgeCount": 518,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -532,6 +532,12 @@
         "src/types/backgroundAsk.ts"
       ]
     },
+    "src/data/bonsaiSettingsContract.test.ts": {
+      "imports": [
+        "src/data/bonsaiSettingsNormalizers.ts"
+      ],
+      "importedBy": []
+    },
     "src/data/bonsaiSettingsNormalizers.ts": {
       "imports": [
         "src/data/aiCharacterAccentIntensity.ts",
@@ -546,6 +552,7 @@
       ],
       "importedBy": [
         "src/components/SettingsTabConnectionTimeoutSlider.tsx",
+        "src/data/bonsaiSettingsContract.test.ts",
         "src/hooks/usePluginSettings.ts",
         "src/index.tsx",
         "src/test-harness/rpcFixtures.ts",
