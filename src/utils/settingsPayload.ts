@@ -51,6 +51,7 @@ export function toBonsaiSettingsPayload(
     steam_web_api_key: input.steamWebApiKey.trim().slice(0, STEAM_WEB_API_KEY_MAX_LEN),
     bonsai_token_streaming_enabled: input.bonsaiTokenStreamingEnabled,
     show_onscreen_debug_hud: input.showOnscreenDebugHud,
+    dev_force_session_rag_chips: input.devForceSessionRagChips,
     named_ollama_hosts: input.namedOllamaHosts,
     voice_stt_model: input.voiceSttModel,
     ui_scale_auto_enabled: input.uiScaleAutoEnabled,

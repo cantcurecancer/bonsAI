@@ -7,7 +7,7 @@
     },
     {
       "path": "src/index.tsx",
-      "lines": 1710,
+      "lines": 1718,
       "role": "Plugin root: tabs, scoped CSS, RPC wiring, Settings"
     },
     {
@@ -17,7 +17,7 @@
     },
     {
       "path": "src/hooks/useBonsaiAskOrchestration.ts",
-      "lines": 1223,
+      "lines": 1239,
       "role": ""
     },
     {
@@ -106,23 +106,23 @@
       "role": ""
     },
     {
+      "path": "src/hooks/usePluginSettings.ts",
+      "lines": 497,
+      "role": ""
+    },
+    {
       "path": "py_modules/backend/services/game_ai_request.py",
       "lines": 492,
       "role": ""
     },
     {
-      "path": "src/hooks/usePluginSettings.ts",
-      "lines": 487,
-      "role": ""
-    },
-    {
       "path": "py_modules/backend/services/settings_service.py",
-      "lines": 472,
+      "lines": 474,
       "role": "Load/save/merge settings.json"
     },
     {
       "path": "src/utils/settingsContracts.test.ts",
-      "lines": 470,
+      "lines": 471,
       "role": ""
     },
     {
@@ -137,7 +137,7 @@
     },
     {
       "path": "src/data/bonsaiSettingsNormalizers.ts",
-      "lines": 442,
+      "lines": 443,
       "role": ""
     },
     {
@@ -191,13 +191,13 @@
       "role": ""
     },
     {
-      "path": "py_modules/backend/services/voice_whisper_daemon.py",
-      "lines": 367,
+      "path": "src/components/DeveloperTab.tsx",
+      "lines": 369,
       "role": ""
     },
     {
-      "path": "src/components/DeveloperTab.tsx",
-      "lines": 359,
+      "path": "py_modules/backend/services/voice_whisper_daemon.py",
+      "lines": 367,
       "role": ""
     }
   ]

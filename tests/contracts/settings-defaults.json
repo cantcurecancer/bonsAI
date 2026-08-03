@@ -16,6 +16,7 @@
   "desktop_app_log_level": "off",
   "desktop_ask_verbose_logging": false,
   "desktop_debug_note_auto_save": false,
+  "dev_force_session_rag_chips": false,
   "input_sanitizer_user_disabled": false,
   "latency_timeouts_custom_enabled": false,
   "latency_warning_seconds": 60,

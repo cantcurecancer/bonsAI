@@ -309,7 +309,9 @@ const Content: React.FC = () => {
     bonsaiTokenStreamingEnabled,
     setBonsaiTokenStreamingEnabled,
     showOnscreenDebugHud,
+    devForceSessionRagChips,
     setShowOnscreenDebugHud,
+    setDevForceSessionRagChips,
     namedOllamaHosts,
     setNamedOllamaHosts,
     voiceSttModel,
@@ -468,6 +470,7 @@ const Content: React.FC = () => {
     aiCharacterEnabled,
     aiCharacterPresetId,
     useLocalKnowledgeBase,
+    devForceSessionRagChips,
     bonsaiTokenStreamingEnabled,
   });
 
@@ -597,6 +600,7 @@ const Content: React.FC = () => {
       steamWebApiKey,
       bonsaiTokenStreamingEnabled,
       showOnscreenDebugHud,
+      devForceSessionRagChips,
       namedOllamaHosts,
       voiceSttModel,
       uiScaleAutoEnabled,
@@ -639,6 +643,7 @@ const Content: React.FC = () => {
       steamWebApiKey,
       bonsaiTokenStreamingEnabled,
       showOnscreenDebugHud,
+      devForceSessionRagChips,
       namedOllamaHosts,
       voiceSttModel,
       uiScaleAutoEnabled,
@@ -1543,6 +1548,8 @@ const Content: React.FC = () => {
       setBonsaiTokenStreamingEnabled={setBonsaiTokenStreamingEnabled}
       showOnscreenDebugHud={showOnscreenDebugHud}
       setShowOnscreenDebugHud={setShowOnscreenDebugHud}
+      devForceSessionRagChips={devForceSessionRagChips}
+      setDevForceSessionRagChips={setDevForceSessionRagChips}
       onInstallSeedKnowledgeBase={showDeveloperTab ? installSeedKnowledgeBase : undefined}
       />
     ),
@@ -1559,6 +1566,7 @@ const Content: React.FC = () => {
       steamWebApiKey,
       bonsaiTokenStreamingEnabled,
       showOnscreenDebugHud,
+      devForceSessionRagChips,
       installSeedKnowledgeBase,
       showDeveloperTab,
     ]

@@ -84,3 +84,49 @@ describe("sessionRagComposer", () => {
     expect(SESSION_RAG_CHIP_PROBABILITY).toBe(0.3);
   });
 });
+
+describe("QA probability override", () => {
+  const seeds = [
+    { text: "seed a", category: "general" },
+    { text: "seed b", category: "general" },
+    { text: "seed c", category: "general" },
+  ];
+  const candidates = [
+    { text: "How do I beat Glyphid Dreadnought?", category: "strategy" },
+    { text: "Tips for Hollow Bough in this game?", category: "strategy" },
+    { text: "Any known Proton issues for this game?", category: "troubleshooting" },
+  ];
+
+  it("at probability 1 every slot takes a RAG candidate", () => {
+    // The Developer-tab override exists because the default 0.3 roll makes
+    // SESSION-RAG-CHIPS-01 luck-based: with three slots, P(no RAG chip) is 0.7^3 ~= 34%.
+    const out = composeSessionPresets({
+      staticSeeds: seeds,
+      ragCandidates: candidates,
+      ragProbability: 1,
+      random: () => 0,
+    });
+    expect(out.map((p) => p.text)).toEqual(candidates.map((c) => c.text));
+  });
+
+  it("at the default probability a losing roll keeps the static seeds", () => {
+    const out = composeSessionPresets({
+      staticSeeds: seeds,
+      ragCandidates: candidates,
+      random: () => 0.99,
+    });
+    expect(out.map((p) => p.text)).toEqual(seeds.map((s) => s.text));
+  });
+
+  it("at probability 1 with fewer candidates than slots, remaining slots fall back to seeds", () => {
+    const out = composeSessionPresets({
+      staticSeeds: seeds,
+      ragCandidates: [candidates[0]!],
+      ragProbability: 1,
+      random: () => 0,
+    });
+    expect(out[0]!.text).toBe(candidates[0]!.text);
+    expect(out).toHaveLength(3);
+    expect(new Set(out.map((p) => p.text)).size).toBe(3);
+  });
+});

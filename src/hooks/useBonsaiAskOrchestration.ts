@@ -112,6 +112,8 @@ export type UseBonsaiAskOrchestrationArgs = {
   aiCharacterEnabled?: boolean;
   aiCharacterPresetId?: string | null;
   useLocalKnowledgeBase?: boolean;
+  /** QA override (Developer tab): force every eligible carousel slot to a session RAG chip. */
+  devForceSessionRagChips?: boolean;
   bonsaiTokenStreamingEnabled?: boolean;
 };
 
@@ -261,10 +263,13 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
         composePresetSeedsWithSessionRag({
           staticSeeds,
           ragCandidates: candidates,
+          // QA override: every eligible slot takes a RAG chip instead of rolling 0.3, so
+          // SESSION-RAG-CHIPS-01 stops depending on luck. Developer tab only, default off.
+          ...(a.devForceSessionRagChips ? { ragProbability: 1 } : {}),
         }),
       );
     },
-    [],
+    [a.devForceSessionRagChips],
   );
 
   const reseedSuggestedPrompts = useCallback(
@@ -292,6 +297,17 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
     coldMountPresetReseedDoneRef.current = true;
     void reseedSuggestedPrompts("random");
   }, [reseedSuggestedPrompts]);
+
+  const prevDevForceRagRef = useRef(a.devForceSessionRagChips);
+  useEffect(() => {
+    if (prevDevForceRagRef.current === a.devForceSessionRagChips) {
+      return;
+    }
+    prevDevForceRagRef.current = a.devForceSessionRagChips;
+    // Bypass both the cold-mount guard and the appId guard: the survival snapshot would
+    // otherwise keep the previously composed chips for the rest of the session.
+    void reseedSuggestedPrompts("random", undefined, true);
+  }, [a.devForceSessionRagChips, reseedSuggestedPrompts]);
 
   useEffect(() => {
     const prev = prevAppIdForPresetReseedRef.current;

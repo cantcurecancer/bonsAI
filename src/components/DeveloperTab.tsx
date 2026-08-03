@@ -70,6 +70,8 @@ export type DeveloperTabProps = {
   setBonsaiTokenStreamingEnabled: (v: boolean) => void;
   showOnscreenDebugHud: boolean;
   setShowOnscreenDebugHud: (v: boolean) => void;
+  devForceSessionRagChips: boolean;
+  setDevForceSessionRagChips: (v: boolean) => void;
   /** Dev/QA: install seed KB from Deck path (build.ps1 deploy). */
   onInstallSeedKnowledgeBase?: () => Promise<void>;
 };
@@ -98,6 +100,8 @@ export const DeveloperTab: React.FC<DeveloperTabProps> = ({
   setBonsaiTokenStreamingEnabled,
   showOnscreenDebugHud,
   setShowOnscreenDebugHud,
+  devForceSessionRagChips,
+  setDevForceSessionRagChips,
   onInstallSeedKnowledgeBase,
 }) => {
   const [seedKbBusy, setSeedKbBusy] = React.useState(false);
@@ -330,6 +334,12 @@ export const DeveloperTab: React.FC<DeveloperTabProps> = ({
               description="Render Ollama replies as they stream. TDP banners, strategy branches, model-policy disclosure, and spoilers still apply at the end of the reply."
               checked={bonsaiTokenStreamingEnabled}
               onChange={(checked) => setBonsaiTokenStreamingEnabled(checked)}
+            />
+            <ToggleField
+              label="Force session RAG chips (QA)"
+              description="Always fill preset carousel slots from the knowledge base instead of a 30% chance each, and reseed the chips immediately. For verifying SESSION-RAG-CHIPS-01 without waiting on the roll. Needs Use local knowledge base on and a covered game running."
+              checked={devForceSessionRagChips}
+              onChange={(checked) => setDevForceSessionRagChips(checked)}
             />
           </div>
         </PanelSectionRow>

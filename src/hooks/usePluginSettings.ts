@@ -15,7 +15,7 @@ import {
   shouldIgnoreRestoredSettingsSnapshot,
   takeRestoredSettingsSnapshot,
 } from "../utils/bonsaiSessionSurvival";
-import { DEFAULT_AI_CHARACTER_ACCENT_INTENSITY, DEFAULT_AI_CHARACTER_CUSTOM_TEXT, DEFAULT_AI_CHARACTER_ENABLED, DEFAULT_AI_CHARACTER_PRESET_ID, DEFAULT_AI_CHARACTER_RANDOM, DEFAULT_ASK_MODE, DEFAULT_CAPABILITIES, DEFAULT_DESKTOP_ASK_VERBOSE_LOGGING, DEFAULT_DESKTOP_DEBUG_NOTE_AUTO_SAVE, DEFAULT_DESKTOP_APP_LOG_LEVEL, DEFAULT_INPUT_SANITIZER_USER_DISABLED, DEFAULT_LATENCY_WARNING_SECONDS, DEFAULT_MODEL_ALLOW_HIGH_VRAM_FALLBACKS, DEFAULT_MODEL_POLICY_TIER, DEFAULT_OLLAMA_KEEP_ALIVE, DEFAULT_REPLY_VERBOSITY, DEFAULT_REPLY_LANGUAGE, DEFAULT_OLLAMA_LOCAL_ON_DECK, DEFAULT_PRESET_CHIP_ANIMATION, DEFAULT_PRESET_CHIP_FADE_ANIMATION_ENABLED, DEFAULT_REQUEST_TIMEOUT_SECONDS, DEFAULT_SCREENSHOT_ATTACHMENT_PRESET, DEFAULT_SHOW_DEVELOPER_TAB, DEFAULT_BONSAI_TOKEN_STREAMING_ENABLED, DEFAULT_SHOW_ONSCREEN_DEBUG_HUD, type NamedOllamaHost, DEFAULT_STRATEGY_SPOILER_MASKING_ENABLED, DEFAULT_STRATEGY_SPOILER_AUTO_REVEAL_AFTER_CONSENT, DEFAULT_UNIFIED_INPUT_PERSISTENCE_MODE, DEFAULT_VOICE_STT_MODEL, type AskModeId, type BonsaiCapabilities, type BonsaiSettings, type BonsaiSettingsSnapshotInput, type DesktopAppLogLevel, type OllamaKeepAliveDuration, type ReplyVerbosityId, type ReplyLanguageId, type PresetChipAnimation, type ScreenshotAttachmentPreset, type UnifiedInputPersistenceMode, type VoiceSttModelId, type UiScaleProfileId, DEFAULT_UI_SCALE_AUTO_ENABLED, DEFAULT_UI_SCALE_MANUAL_PROFILE, DEFAULT_USE_LOCAL_KNOWLEDGE_BASE, DEFAULT_RAG_CORPUS_PATH, DEFAULT_RAG_CORPUS_VERSION } from "../data/bonsaiSettingsSchema";
+import { DEFAULT_AI_CHARACTER_ACCENT_INTENSITY, DEFAULT_AI_CHARACTER_CUSTOM_TEXT, DEFAULT_AI_CHARACTER_ENABLED, DEFAULT_AI_CHARACTER_PRESET_ID, DEFAULT_AI_CHARACTER_RANDOM, DEFAULT_ASK_MODE, DEFAULT_CAPABILITIES, DEFAULT_DESKTOP_ASK_VERBOSE_LOGGING, DEFAULT_DESKTOP_DEBUG_NOTE_AUTO_SAVE, DEFAULT_DESKTOP_APP_LOG_LEVEL, DEFAULT_INPUT_SANITIZER_USER_DISABLED, DEFAULT_LATENCY_WARNING_SECONDS, DEFAULT_MODEL_ALLOW_HIGH_VRAM_FALLBACKS, DEFAULT_MODEL_POLICY_TIER, DEFAULT_OLLAMA_KEEP_ALIVE, DEFAULT_REPLY_VERBOSITY, DEFAULT_REPLY_LANGUAGE, DEFAULT_OLLAMA_LOCAL_ON_DECK, DEFAULT_PRESET_CHIP_ANIMATION, DEFAULT_PRESET_CHIP_FADE_ANIMATION_ENABLED, DEFAULT_REQUEST_TIMEOUT_SECONDS, DEFAULT_SCREENSHOT_ATTACHMENT_PRESET, DEFAULT_SHOW_DEVELOPER_TAB, DEFAULT_BONSAI_TOKEN_STREAMING_ENABLED, DEFAULT_SHOW_ONSCREEN_DEBUG_HUD, DEFAULT_DEV_FORCE_SESSION_RAG_CHIPS, type NamedOllamaHost, DEFAULT_STRATEGY_SPOILER_MASKING_ENABLED, DEFAULT_STRATEGY_SPOILER_AUTO_REVEAL_AFTER_CONSENT, DEFAULT_UNIFIED_INPUT_PERSISTENCE_MODE, DEFAULT_VOICE_STT_MODEL, type AskModeId, type BonsaiCapabilities, type BonsaiSettings, type BonsaiSettingsSnapshotInput, type DesktopAppLogLevel, type OllamaKeepAliveDuration, type ReplyVerbosityId, type ReplyLanguageId, type PresetChipAnimation, type ScreenshotAttachmentPreset, type UnifiedInputPersistenceMode, type VoiceSttModelId, type UiScaleProfileId, DEFAULT_UI_SCALE_AUTO_ENABLED, DEFAULT_UI_SCALE_MANUAL_PROFILE, DEFAULT_USE_LOCAL_KNOWLEDGE_BASE, DEFAULT_RAG_CORPUS_PATH, DEFAULT_RAG_CORPUS_VERSION } from "../data/bonsaiSettingsSchema";
 import { normalizeLatencyWarningSeconds, normalizeRequestTimeoutSeconds, normalizeSettings } from "../data/bonsaiSettingsNormalizers";
 import { toBonsaiSettingsPayload } from "../utils/settingsPayload";
 function snapshotFromBonsaiSettings(normalized: BonsaiSettings): BonsaiSettingsSnapshotInput {
@@ -53,6 +53,7 @@ function snapshotFromBonsaiSettings(normalized: BonsaiSettings): BonsaiSettingsS
     steamWebApiKey: normalized.steam_web_api_key,
     bonsaiTokenStreamingEnabled: normalized.bonsai_token_streaming_enabled,
     showOnscreenDebugHud: normalized.show_onscreen_debug_hud,
+    devForceSessionRagChips: normalized.dev_force_session_rag_chips,
     namedOllamaHosts: normalized.named_ollama_hosts,
     voiceSttModel: normalized.voice_stt_model,
     uiScaleAutoEnabled: normalized.ui_scale_auto_enabled,
@@ -133,6 +134,9 @@ export function usePluginSettings() {
     DEFAULT_BONSAI_TOKEN_STREAMING_ENABLED
   );
   const [showOnscreenDebugHud, setShowOnscreenDebugHud] = useState<boolean>(DEFAULT_SHOW_ONSCREEN_DEBUG_HUD);
+  const [devForceSessionRagChips, setDevForceSessionRagChips] = useState<boolean>(
+    DEFAULT_DEV_FORCE_SESSION_RAG_CHIPS,
+  );
   const [namedOllamaHosts, setNamedOllamaHosts] = useState<NamedOllamaHost[]>([]);
   const [voiceSttModel, setVoiceSttModel] = useState<VoiceSttModelId>(DEFAULT_VOICE_STT_MODEL);
   const [uiScaleAutoEnabled, setUiScaleAutoEnabled] = useState<boolean>(DEFAULT_UI_SCALE_AUTO_ENABLED);
@@ -187,6 +191,7 @@ export function usePluginSettings() {
     steamWebApiKey,
     bonsaiTokenStreamingEnabled,
     showOnscreenDebugHud,
+    devForceSessionRagChips,
     namedOllamaHosts,
     voiceSttModel,
     uiScaleAutoEnabled,
@@ -231,6 +236,7 @@ export function usePluginSettings() {
     setSteamWebApiKey(normalized.steam_web_api_key);
     setBonsaiTokenStreamingEnabled(normalized.bonsai_token_streaming_enabled);
     setShowOnscreenDebugHud(normalized.show_onscreen_debug_hud);
+    setDevForceSessionRagChips(normalized.dev_force_session_rag_chips);
     setNamedOllamaHosts(normalized.named_ollama_hosts);
     setVoiceSttModel(normalized.voice_stt_model);
     setUiScaleAutoEnabled(normalized.ui_scale_auto_enabled);
@@ -319,6 +325,7 @@ export function usePluginSettings() {
         setSteamWebApiKey("");
         setBonsaiTokenStreamingEnabled(DEFAULT_BONSAI_TOKEN_STREAMING_ENABLED);
         setShowOnscreenDebugHud(DEFAULT_SHOW_ONSCREEN_DEBUG_HUD);
+        setDevForceSessionRagChips(DEFAULT_DEV_FORCE_SESSION_RAG_CHIPS);
         setNamedOllamaHosts([]);
         setVoiceSttModel(DEFAULT_VOICE_STT_MODEL);
         setUiScaleAutoEnabled(DEFAULT_UI_SCALE_AUTO_ENABLED);
@@ -386,6 +393,7 @@ export function usePluginSettings() {
     steamWebApiKey,
     bonsaiTokenStreamingEnabled,
     showOnscreenDebugHud,
+    devForceSessionRagChips,
     namedOllamaHosts,
     voiceSttModel,
     uiScaleAutoEnabled,
@@ -453,7 +461,9 @@ export function usePluginSettings() {
     bonsaiTokenStreamingEnabled,
     setBonsaiTokenStreamingEnabled,
     showOnscreenDebugHud,
+    devForceSessionRagChips,
     setShowOnscreenDebugHud,
+    setDevForceSessionRagChips,
     namedOllamaHosts,
     setNamedOllamaHosts,
     voiceSttModel,

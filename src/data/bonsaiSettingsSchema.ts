@@ -116,6 +116,11 @@ export type BonsaiSettings = {
   bonsai_token_streaming_enabled: boolean;
   /** When true, show the translucent on-screen ingest debug HUD (Developer tab opt-in). */
   show_onscreen_debug_hud: boolean;
+  /**
+   * QA only: force every eligible preset-carousel slot to a session RAG chip instead of rolling
+   * `SESSION_RAG_CHIP_PROBABILITY`. Makes SESSION-RAG-CHIPS-01 deterministic; not a user feature.
+   */
+  dev_force_session_rag_chips: boolean;
   /** Labeled ``host:port`` presets for quick Connection switching (max 4). */
   named_ollama_hosts: NamedOllamaHost[];
   /** Local whisper.cpp model for voice Ask (tiny.en default for Deck real-time). */
@@ -167,6 +172,7 @@ export type BonsaiSettingsSnapshotInput = {
   steamWebApiKey: string;
   bonsaiTokenStreamingEnabled: boolean;
   showOnscreenDebugHud: boolean;
+  devForceSessionRagChips: boolean;
   namedOllamaHosts: NamedOllamaHost[];
   voiceSttModel: VoiceSttModelId;
   uiScaleAutoEnabled: boolean;
@@ -199,6 +205,7 @@ export const DEFAULT_DESKTOP_DEBUG_NOTE_AUTO_SAVE = false;
 export const DEFAULT_DESKTOP_ASK_VERBOSE_LOGGING = false;
 export const DEFAULT_BONSAI_TOKEN_STREAMING_ENABLED = false;
 export const DEFAULT_SHOW_ONSCREEN_DEBUG_HUD = false;
+export const DEFAULT_DEV_FORCE_SESSION_RAG_CHIPS = false;
 export const MAX_NAMED_OLLAMA_HOSTS = 4;
 export const DEFAULT_DESKTOP_APP_LOG_LEVEL: DesktopAppLogLevel = "off";
 export const DESKTOP_APP_LOG_LEVEL_OPTIONS: DesktopAppLogLevel[] = ["off", "default", "verbose"];

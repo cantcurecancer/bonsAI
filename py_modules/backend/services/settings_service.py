@@ -293,6 +293,8 @@ _SIMPLE_FIELDS: dict[str, Any] = {
     "desktop_ask_verbose_logging": _bool_default_false,
     "bonsai_token_streaming_enabled": _bool_default_false,
     "show_onscreen_debug_hud": _bool_default_false,
+    # QA only: forces every eligible preset-carousel slot to a session RAG chip.
+    "dev_force_session_rag_chips": _bool_default_false,
     "desktop_app_log_level": _enum(_VALID_DESKTOP_APP_LOG_LEVELS, "off", strip=True),
     # Ask behavior.
     "input_sanitizer_user_disabled": _bool_default_false,
