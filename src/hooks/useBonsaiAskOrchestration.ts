@@ -228,7 +228,15 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
     candidates: [],
   });
   const prevAppIdForPresetReseedRef = useRef<string | undefined>(undefined);
-  const coldMountPresetReseedDoneRef = useRef(!!survivalPeek?.suggestedPrompts?.length);
+  // Always reseed on mount, so reopening the QAM draws fresh chips. This used to start as
+  // `!!survivalPeek?.suggestedPrompts?.length`, which meant a restored session skipped the
+  // reseed entirely and kept the same three chips for the rest of the Steam session — the
+  // session RAG roll never re-ran, so RAG chips could never appear after the first seeding.
+  // The ref still guards against re-running when `reseedSuggestedPrompts` changes identity.
+  //
+  // Restored prompts stay on screen until the reseed's RPC resolves, so there is no empty
+  // carousel frame; the survival snapshot is what makes that hand-off seamless.
+  const coldMountPresetReseedDoneRef = useRef(false);
 
   const loadSessionRagCandidates = useCallback(
     async (
