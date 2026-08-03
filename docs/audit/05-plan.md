@@ -151,6 +151,15 @@ deleting it shrinks this item.
 > what it copied. **Check the artifact, not the message** — compare
 > `ls -l --time-style=+%H:%M ~/homebrew/plugins/bonsAI/dist/index.js` against the
 > deploy time and confirm a fresh `bonsAI plugin loaded!` line.
+>
+> **Fixed 2026-08-03 (D8, roadmap step 5c) — both halves are now mechanisms, not
+> discipline.** `build.ps1` wipes the plugin dir before copy, exit-code checks
+> every `ssh`/`scp` (unchecked native exit codes were how a sleeping Deck reported
+> success), and SHA-256 compares all 52 shipped code files after upload, failing
+> the script with a per-file `MISSING` / `STALE` list. The manual steps above
+> remain the fallback for `build.sh`, which prunes but still does not verify.
+> The prune also retires the "delete the file on-device by hand" step for
+> **Windows** deploys — on a wiped directory a stale copy cannot survive.
 
 ### 1.4 Delete the `settingsAndResponse.ts` barrel
 
