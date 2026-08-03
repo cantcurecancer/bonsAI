@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 233,
-  "edgeCount": 522,
+  "fileCount": 234,
+  "edgeCount": 524,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -104,7 +104,7 @@
     "src/components/DesktopNoteSaveModal.tsx": {
       "imports": [],
       "importedBy": [
-        "src/index.tsx"
+        "src/features/plugin-shell/useDesktopNoteSaveModal.tsx"
       ]
     },
     "src/components/DeveloperTab.tsx": {
@@ -908,6 +908,15 @@
         "src/index.tsx"
       ]
     },
+    "src/features/plugin-shell/useDesktopNoteSaveModal.tsx": {
+      "imports": [
+        "src/components/DesktopNoteSaveModal.tsx",
+        "src/utils/deckyCall.ts"
+      ],
+      "importedBy": [
+        "src/index.tsx"
+      ]
+    },
     "src/features/plugin-shell/usePluginHelpModal.tsx": {
       "imports": [
         "src/components/PluginHelpModal.tsx",
@@ -1282,7 +1291,6 @@
         "src/components/BonsaiDebugOverlay.tsx",
         "src/components/BonsaiPluginShell.tsx",
         "src/components/CharacterPickerModal.tsx",
-        "src/components/DesktopNoteSaveModal.tsx",
         "src/components/DeveloperTab.tsx",
         "src/components/MainTab.tsx",
         "src/components/OllamaModelsHubModal.tsx",
@@ -1306,6 +1314,7 @@
         "src/features/plugin-shell/PluginErrorBoundary.tsx",
         "src/features/plugin-shell/pluginStorage.ts",
         "src/features/plugin-shell/tabTitles.tsx",
+        "src/features/plugin-shell/useDesktopNoteSaveModal.tsx",
         "src/features/plugin-shell/usePluginHelpModal.tsx",
         "src/features/unified-input/constants.ts",
         "src/features/unified-input/useUnifiedInputSurface.ts",
@@ -1917,6 +1926,7 @@
         "src/components/PullModelsModal.tsx",
         "src/components/VoiceInputSettingsSection.tsx",
         "src/features/model-routing/useRoutingOrderModal.ts",
+        "src/features/plugin-shell/useDesktopNoteSaveModal.tsx",
         "src/features/voice/useVoiceAskInput.ts",
         "src/hooks/useBackgroundGameAi.ts",
         "src/hooks/useBonsaiAskOrchestration.ts",
