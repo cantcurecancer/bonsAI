@@ -12,14 +12,11 @@ import { Navigation, Router, Tabs } from "@decky/ui";
 import { PLUGIN_VERSION } from "./pluginVersion";
 import { DEFAULT_LATENCY_WARNING_SECONDS, type BonsaiSettings } from "./data/bonsaiSettingsSchema";
 import { toBonsaiSettingsPayload } from "./utils/settingsPayload";
-import { AboutTab } from "./components/AboutTab";
 import { BonsaiPluginShell } from "./components/BonsaiPluginShell";
 import { BonsaiDebugOverlay } from "./components/BonsaiDebugOverlay";
-import { DeveloperTab } from "./components/DeveloperTab";
 import { MainTab } from "./components/MainTab";
 import { PULL_MODEL_CATALOG } from "./data/pullModelCatalog";
 import { OllamaTab } from "./components/OllamaTab";
-import { PermissionsTab } from "./components/PermissionsTab";
 import { SettingsTab } from "./components/SettingsTab";
 import { getSteamInputLexiconEntry } from "./data/steam-input-lexicon";
 import { jumpToSteamInputEntry } from "./utils/steamInputJump";
@@ -64,6 +61,9 @@ import {
   saveIp,
 } from "./features/plugin-shell/pluginStorage";
 import { useOllamaConnectionState } from "./features/plugin-shell/useOllamaConnectionState";
+import { useDeveloperTabPayload } from "./features/plugin-shell/tabs/useDeveloperTabPayload";
+import { useAboutTabPayload } from "./features/plugin-shell/tabs/useAboutTabPayload";
+import { usePermissionsTabPayload } from "./features/plugin-shell/tabs/usePermissionsTabPayload";
 import { useUiScaleProfile } from "./hooks/useUiScaleProfile";
 import { useQamPanelHeightGuard } from "./hooks/useQamPanelHeightGuard";
 import { useTabStripBodyOffset } from "./hooks/useTabStripBodyOffset";
@@ -89,17 +89,11 @@ import { useDisclaimerAndLocalRuntimeGates } from "./hooks/useDisclaimerAndLocal
 import { useCapturedFrontendErrors } from "./hooks/useCapturedFrontendErrors";
 import { getSteamSettingsUrl, isQamSetting } from "./data/steamSettingsNavigation";
 import { registerPreviewTestHooks, isDeckyPreviewRuntime } from "./preview/previewTestHooks";
-import {
-  GITHUB_ISSUES_URL,
-  IP_DEFAULT,
-  OLLAMA_UPSTREAM_REPO_URL,
-} from "./data/storageKeys";
+import { IP_DEFAULT } from "./data/storageKeys";
 
 type SteamUrlApi = {
   ExecuteSteamURL(url: string): void;
 };
-
-const GITHUB_REPO_URL = GITHUB_ISSUES_URL.replace(/\/issues$/, "");
 
 const FULL_BLEED_ROW_STYLE: React.CSSProperties = {
   width: "100%",
@@ -1269,15 +1263,7 @@ const Content: React.FC = () => {
     ]
   );
 
-  const permissionsTab = useMemo(
-    () => (
-      <PermissionsTab
-        capabilities={capabilities}
-        setCapabilities={setCapabilities}
-      />
-    ),
-    [capabilities, setCapabilities]
-  );
+  const permissionsTab = usePermissionsTabPayload({ capabilities, setCapabilities });
 
   const onSteamInputPhase1Jump = useCallback(() => {
     const entry = getSteamInputLexiconEntry("phase1_per_game_controller_config");
@@ -1321,75 +1307,41 @@ const Content: React.FC = () => {
     });
   }, [syncSettingsFromDisk]);
 
-  const developerTab = useMemo(
-    () => (
-      <DeveloperTab
-      capturedErrors={capturedErrors}
-      onClearErrors={() => setCapturedErrors([])}
-      onSteamInputPhase1Jump={onSteamInputPhase1Jump}
-      lastConnectionStatus={lastConnectionStatus}
-      desktopDebugNoteAutoSave={desktopDebugNoteAutoSave}
-      setDesktopDebugNoteAutoSave={setDesktopDebugNoteAutoSave}
-      desktopAskVerboseLogging={desktopAskVerboseLogging}
-      setDesktopAskVerboseLogging={setDesktopAskVerboseLogging}
-      desktopAppLogLevel={desktopAppLogLevel}
-      setDesktopAppLogLevel={setDesktopAppLogLevel}
-      filesystemWrite={capabilities.filesystem_write}
-      presetChipFadeAnimationEnabled={presetChipFadeAnimationEnabled}
-      setPresetChipFadeAnimationEnabled={setPresetChipFadeAnimationEnabled}
-      presetChipAnimation={presetChipAnimation}
-      setPresetChipAnimation={setPresetChipAnimation}
-      steamWebApiKey={steamWebApiKey}
-      setSteamWebApiKey={setSteamWebApiKey}
-      bonsaiTokenStreamingEnabled={bonsaiTokenStreamingEnabled}
-      setBonsaiTokenStreamingEnabled={setBonsaiTokenStreamingEnabled}
-      showOnscreenDebugHud={showOnscreenDebugHud}
-      setShowOnscreenDebugHud={setShowOnscreenDebugHud}
-      devForceSessionRagChips={devForceSessionRagChips}
-      setDevForceSessionRagChips={setDevForceSessionRagChips}
-      onInstallSeedKnowledgeBase={showDeveloperTab ? installSeedKnowledgeBase : undefined}
-      />
-    ),
-    [
-      capturedErrors,
-      onSteamInputPhase1Jump,
-      lastConnectionStatus,
-      desktopDebugNoteAutoSave,
-      desktopAskVerboseLogging,
-      desktopAppLogLevel,
-      capabilities.filesystem_write,
-      presetChipFadeAnimationEnabled,
-      presetChipAnimation,
-      steamWebApiKey,
-      bonsaiTokenStreamingEnabled,
-      showOnscreenDebugHud,
-      devForceSessionRagChips,
-      installSeedKnowledgeBase,
-      showDeveloperTab,
-    ]
-  );
+  const developerTab = useDeveloperTabPayload({
+    capturedErrors,
+    setCapturedErrors,
+    onSteamInputPhase1Jump,
+    lastConnectionStatus,
+    desktopDebugNoteAutoSave,
+    setDesktopDebugNoteAutoSave,
+    desktopAskVerboseLogging,
+    setDesktopAskVerboseLogging,
+    desktopAppLogLevel,
+    setDesktopAppLogLevel,
+    filesystemWrite: capabilities.filesystem_write,
+    presetChipFadeAnimationEnabled,
+    setPresetChipFadeAnimationEnabled,
+    presetChipAnimation,
+    setPresetChipAnimation,
+    steamWebApiKey,
+    setSteamWebApiKey,
+    bonsaiTokenStreamingEnabled,
+    setBonsaiTokenStreamingEnabled,
+    showOnscreenDebugHud,
+    setShowOnscreenDebugHud,
+    devForceSessionRagChips,
+    setDevForceSessionRagChips,
+    installSeedKnowledgeBase,
+    showDeveloperTab,
+  });
 
-  const aboutTab = useMemo(
-    () => (
-      <AboutTab
-        githubRepoUrl={GITHUB_REPO_URL}
-        ollamaRepoUrl={OLLAMA_UPSTREAM_REPO_URL}
-        githubIssuesUrl={GITHUB_ISSUES_URL}
-        replyLanguage={replyLanguage}
-        onReplyLanguageChange={setReplyLanguage}
-        effectiveLang={effectiveLang}
-        steamClientLanguageLabel={steamClientLanguageLabel}
-        t={uiT}
-      />
-    ),
-    [
-      replyLanguage,
-      setReplyLanguage,
-      effectiveLang,
-      steamClientLanguageLabel,
-      uiT,
-    ]
-  );
+  const aboutTab = useAboutTabPayload({
+    replyLanguage,
+    onReplyLanguageChange: setReplyLanguage,
+    effectiveLang,
+    steamClientLanguageLabel,
+    t: uiT,
+  });
 
   const deckyTabs = useMemo(
     () => {

@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 237,
-  "edgeCount": 537,
+  "fileCount": 240,
+  "edgeCount": 541,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -32,7 +32,7 @@
         "src/i18n/keys.ts"
       ],
       "importedBy": [
-        "src/index.tsx"
+        "src/features/plugin-shell/tabs/useAboutTabPayload.tsx"
       ]
     },
     "src/components/BonsaiChatSecondaryButton.tsx": {
@@ -116,8 +116,8 @@
         "src/components/OllamaTab.tsx",
         "src/components/OllamaWhereAiRunsSection.tsx",
         "src/features/model-routing/useRoutingOrderModal.ts",
+        "src/features/plugin-shell/tabs/useDeveloperTabPayload.tsx",
         "src/features/plugin-shell/useOllamaConnectionState.ts",
-        "src/index.tsx",
         "src/utils/ollamaTabLocalSurvival.ts"
       ]
     },
@@ -342,7 +342,7 @@
         "src/data/bonsaiSettingsSchema.ts"
       ],
       "importedBy": [
-        "src/index.tsx"
+        "src/features/plugin-shell/tabs/usePermissionsTabPayload.tsx"
       ]
     },
     "src/components/PluginHelpModal.tsx": {
@@ -839,6 +839,7 @@
       "imports": [],
       "importedBy": [
         "src/features/plugin-shell/pluginStorage.ts",
+        "src/features/plugin-shell/tabs/useAboutTabPayload.tsx",
         "src/index.tsx"
       ]
     },
@@ -909,6 +910,31 @@
       "imports": [
         "src/components/icons.tsx",
         "src/features/unified-input/constants.ts"
+      ],
+      "importedBy": [
+        "src/index.tsx"
+      ]
+    },
+    "src/features/plugin-shell/tabs/useAboutTabPayload.tsx": {
+      "imports": [
+        "src/components/AboutTab.tsx",
+        "src/data/storageKeys.ts"
+      ],
+      "importedBy": [
+        "src/index.tsx"
+      ]
+    },
+    "src/features/plugin-shell/tabs/useDeveloperTabPayload.tsx": {
+      "imports": [
+        "src/components/DeveloperTab.tsx"
+      ],
+      "importedBy": [
+        "src/index.tsx"
+      ]
+    },
+    "src/features/plugin-shell/tabs/usePermissionsTabPayload.tsx": {
+      "imports": [
+        "src/components/PermissionsTab.tsx"
       ],
       "importedBy": [
         "src/index.tsx"
@@ -1328,13 +1354,10 @@
     },
     "src/index.tsx": {
       "imports": [
-        "src/components/AboutTab.tsx",
         "src/components/BonsaiDebugOverlay.tsx",
         "src/components/BonsaiPluginShell.tsx",
-        "src/components/DeveloperTab.tsx",
         "src/components/MainTab.tsx",
         "src/components/OllamaTab.tsx",
-        "src/components/PermissionsTab.tsx",
         "src/components/SettingsTab.tsx",
         "src/components/icons.tsx",
         "src/context/UiScaleContext.tsx",
@@ -1352,6 +1375,9 @@
         "src/features/plugin-shell/PluginErrorBoundary.tsx",
         "src/features/plugin-shell/pluginStorage.ts",
         "src/features/plugin-shell/tabTitles.tsx",
+        "src/features/plugin-shell/tabs/useAboutTabPayload.tsx",
+        "src/features/plugin-shell/tabs/useDeveloperTabPayload.tsx",
+        "src/features/plugin-shell/tabs/usePermissionsTabPayload.tsx",
         "src/features/plugin-shell/useCharacterPickerModal.tsx",
         "src/features/plugin-shell/useDesktopNoteSaveModal.tsx",
         "src/features/plugin-shell/useOllamaConnectionState.ts",
