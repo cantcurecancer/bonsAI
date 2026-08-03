@@ -14,15 +14,9 @@ import { DEFAULT_LATENCY_WARNING_SECONDS, type BonsaiSettings } from "./data/bon
 import { toBonsaiSettingsPayload } from "./utils/settingsPayload";
 import { BonsaiPluginShell } from "./components/BonsaiPluginShell";
 import { BonsaiDebugOverlay } from "./components/BonsaiDebugOverlay";
-import { MainTab } from "./components/MainTab";
 import { PULL_MODEL_CATALOG } from "./data/pullModelCatalog";
 import { getSteamInputLexiconEntry } from "./data/steam-input-lexicon";
 import { jumpToSteamInputEntry } from "./utils/steamInputJump";
-import {
-  formatAiCharacterSelectionLine,
-  resolveMainTabAvatarBadgeLetter,
-  resolveMainTabAvatarPresetId,
-} from "./data/characterCatalog";
 import { buildBonsaiScopeAccentInlineStyle, resolveUiAccentFromCharacterSettings } from "./data/characterUiAccent";
 import { appendAppDesktopLogWithPrefs } from "./utils/appDesktopLog";
 import {
@@ -60,6 +54,7 @@ import { useAboutTabPayload } from "./features/plugin-shell/tabs/useAboutTabPayl
 import { usePermissionsTabPayload } from "./features/plugin-shell/tabs/usePermissionsTabPayload";
 import { useSettingsTabPayload } from "./features/plugin-shell/tabs/useSettingsTabPayload";
 import { useOllamaTabPayload } from "./features/plugin-shell/tabs/useOllamaTabPayload";
+import { useMainTabPayload } from "./features/plugin-shell/tabs/useMainTabPayload";
 import { useUiScaleProfile } from "./hooks/useUiScaleProfile";
 import { useQamPanelHeightGuard } from "./hooks/useQamPanelHeightGuard";
 import { useTabStripBodyOffset } from "./hooks/useTabStripBodyOffset";
@@ -83,25 +78,12 @@ import { usePluginHelpModal } from "./features/plugin-shell/usePluginHelpModal";
 import { useBonsaiAskOrchestration } from "./hooks/useBonsaiAskOrchestration";
 import { useDisclaimerAndLocalRuntimeGates } from "./hooks/useDisclaimerAndLocalRuntimeGates";
 import { useCapturedFrontendErrors } from "./hooks/useCapturedFrontendErrors";
-import { getSteamSettingsUrl, isQamSetting } from "./data/steamSettingsNavigation";
+import { getSteamSettingsUrl } from "./data/steamSettingsNavigation";
 import { registerPreviewTestHooks, isDeckyPreviewRuntime } from "./preview/previewTestHooks";
 import { IP_DEFAULT } from "./data/storageKeys";
 
 type SteamUrlApi = {
   ExecuteSteamURL(url: string): void;
-};
-
-const FULL_BLEED_ROW_STYLE: React.CSSProperties = {
-  width: "100%",
-  marginLeft: 0,
-  marginRight: 0,
-  boxSizing: "border-box",
-};
-
-const PRESET_BUTTON_SURFACE: React.CSSProperties = {
-  border: "1px solid rgba(255,255,255,0.1)",
-  background: "rgba(255,255,255,0.03)",
-  color: "#93a3b0",
 };
 
 /**
@@ -940,212 +922,110 @@ const Content: React.FC = () => {
     hydrateFromSettings,
   });
 
-  const fullBleedRowStyle = FULL_BLEED_ROW_STYLE;
-  const presetButtonSurface = PRESET_BUTTON_SURFACE;
-  const mainTabAiCharacterPad = aiCharacterEnabled;
-  const mainTabAvatarPresetId = aiCharacterEnabled
-    ? resolveMainTabAvatarPresetId({
-        enabled: aiCharacterEnabled,
-        random: aiCharacterRandom,
-        presetId: aiCharacterPresetId,
-        customText: aiCharacterCustomText,
-      })
-    : null;
-
-  const mainTabAvatarBadgeLetter = resolveMainTabAvatarBadgeLetter({
-    enabled: aiCharacterEnabled,
-    random: aiCharacterRandom,
-    presetId: aiCharacterPresetId,
-    customText: aiCharacterCustomText,
-  });
-
-  const aiCharacterDebugLineForMainTab =
-    typeof window !== "undefined" &&
-    (window as unknown as { __BONSAI_DEBUG_AI_CHARACTER__?: boolean }).__BONSAI_DEBUG_AI_CHARACTER__
-      ? [
-          `avatar=${mainTabAvatarPresetId ?? "null"}`,
-          `presetId="${aiCharacterPresetId}"`,
-          `random=${String(aiCharacterRandom)}`,
-          `line=${formatAiCharacterSelectionLine({
-            random: aiCharacterRandom,
-            presetId: aiCharacterPresetId,
-            customText: aiCharacterCustomText,
-          })}`,
-          `accent=${aiCharacterAccentIntensity}`,
-        ].join(" | ")
-      : null;
-
   // =====================================================================
   // TAB CONTENT
   // =====================================================================
 
-  const mainTab = useMemo(
-    () => (
-    <MainTab
-      key="bonsai-main-tab"
-      fullBleedRowStyle={fullBleedRowStyle}
-      presetButtonSurface={presetButtonSurface}
-      suggestedPrompts={suggestedPrompts}
-      showPluginHelpChip={!pluginHelpDismissed}
-      onOpenPluginHelp={openPluginHelpModal}
-      presetChipFadeAnimationEnabled={presetChipFadeAnimationEnabled}
-      presetChipAnimation={presetChipAnimation}
-      onRetryLastResponse={onRetryLastResponse}
-      liveReplyFeedbackRating={liveReplyFeedbackRating}
-      onReplyFeedback={onReplyFeedback}
-      onReplyMicroAction={onReplyMicroAction}
-      liveReplyChipUsed={liveReplyChipUsed}
-      liveReplyChipError={liveReplyChipError}
-      setUnifiedInput={setUnifiedInput}
-      unifiedInputHostRef={unifiedInputHostRef as React.Ref<HTMLDivElement>}
-      unifiedInputFieldLayerRef={unifiedInputFieldLayerRef as React.Ref<HTMLDivElement>}
-      unifiedInputMeasureRef={unifiedInputMeasureRef as React.Ref<HTMLDivElement>}
-      attachActionHostRef={attachActionHostRef as React.Ref<HTMLDivElement>}
-      askBarHostRef={askBarHostRef as React.Ref<HTMLDivElement>}
-      screenshotBrowserHostRef={screenshotBrowserHostRef as React.Ref<HTMLDivElement>}
-      unifiedInputSurfacePx={unifiedInputSurfacePx}
-      unifiedInput={unifiedInput}
-      usesNativeMultilineField={usesNativeMultilineField}
-      setIsUnifiedInputFocused={setIsUnifiedInputFocused}
-      isUnifiedInputFocused={isUnifiedInputFocused}
-      setSelectedIndex={setSelectedIndex}
-      filteredSettings={filteredSettings}
-      selectedIndex={selectedIndex}
-      onSettingClick={onSettingClick}
-      isAsking={isAsking}
-      ollamaIp={effectiveOllamaPcIp}
-      onAskOllama={onAskOllama}
-      onOpenScreenshotBrowser={onOpenScreenshotBrowser}
-      onTakeScreenshot={onTakeScreenshot}
-      onCancelAsk={onCancelAsk}
-      onMicInput={onMicInput}
-      voiceRecording={voiceRecording}
-      selectedAttachment={selectedAttachment}
-      setSelectedAttachment={setSelectedAttachment}
-      clearUnifiedInput={clearUnifiedInput}
-      showSearchClearButton={showSearchClearButton}
-      isScreenshotBrowserOpen={isScreenshotBrowserOpen}
-      onCloseScreenshotBrowser={onCloseScreenshotBrowser}
-      loadRecentScreenshots={loadRecentScreenshots}
-      mediaError={mediaError}
-      isCapturingScreenshot={isCapturingScreenshot}
-      recentScreenshots={recentScreenshots}
-      isLoadingRecentScreenshots={isLoadingRecentScreenshots}
-      onSelectRecentScreenshot={onSelectRecentScreenshot}
-      navigationMessage={navigationMessage}
-      isQamSetting={isQamSetting}
-      showSlowWarning={showSlowWarning}
-      latencyWarningSeconds={effectiveLatencyWarningSeconds}
-      ollamaResponse={ollamaResponse}
-      elapsedSeconds={elapsedSeconds}
-      lastApplied={lastApplied}
-      ollamaContext={ollamaContext}
-      canSaveDesktopNote={Boolean(lastExchange)}
-      onOpenDesktopNoteSave={openDesktopNoteSaveModal}
-      mediaLibraryEnabled={capabilities.media_library_access}
-      gameContextReadEnabled={
-        capabilities.media_library_access && capabilities.steam_logs_read
+  const mainTab = useMainTabPayload({
+    suggestedPrompts,
+    showPluginHelpChip: !pluginHelpDismissed,
+    onOpenPluginHelp: openPluginHelpModal,
+    presetChipFadeAnimationEnabled,
+    presetChipAnimation,
+    onRetryLastResponse,
+    liveReplyFeedbackRating,
+    onReplyFeedback,
+    onReplyMicroAction,
+    liveReplyChipUsed,
+    liveReplyChipError,
+    setUnifiedInput,
+    unifiedInputHostRef: unifiedInputHostRef as React.Ref<HTMLDivElement>,
+    unifiedInputFieldLayerRef: unifiedInputFieldLayerRef as React.Ref<HTMLDivElement>,
+    unifiedInputMeasureRef: unifiedInputMeasureRef as React.Ref<HTMLDivElement>,
+    attachActionHostRef: attachActionHostRef as React.Ref<HTMLDivElement>,
+    askBarHostRef: askBarHostRef as React.Ref<HTMLDivElement>,
+    screenshotBrowserHostRef: screenshotBrowserHostRef as React.Ref<HTMLDivElement>,
+    unifiedInputSurfacePx,
+    unifiedInput,
+    usesNativeMultilineField,
+    setIsUnifiedInputFocused,
+    isUnifiedInputFocused,
+    setSelectedIndex,
+    filteredSettings,
+    selectedIndex,
+    onSettingClick,
+    isAsking,
+    ollamaIp: effectiveOllamaPcIp,
+    onAskOllama,
+    onOpenScreenshotBrowser,
+    onTakeScreenshot,
+    onCancelAsk,
+    onMicInput,
+    voiceRecording,
+    selectedAttachment,
+    setSelectedAttachment,
+    clearUnifiedInput,
+    showSearchClearButton,
+    isScreenshotBrowserOpen,
+    onCloseScreenshotBrowser,
+    loadRecentScreenshots,
+    mediaError,
+    isCapturingScreenshot,
+    recentScreenshots,
+    isLoadingRecentScreenshots,
+    onSelectRecentScreenshot,
+    navigationMessage,
+    showSlowWarning,
+    latencyWarningSeconds: effectiveLatencyWarningSeconds,
+    ollamaResponse,
+    elapsedSeconds,
+    lastApplied,
+    ollamaContext,
+    canSaveDesktopNote: Boolean(lastExchange),
+    onOpenDesktopNoteSave: openDesktopNoteSaveModal,
+    mediaLibraryEnabled: capabilities.media_library_access,
+    gameContextReadEnabled: capabilities.media_library_access && capabilities.steam_logs_read,
+    onNavigateToPermissions: goToPermissionsTab,
+    desktopNoteSaveEnabled: capabilities.filesystem_write,
+    aiCharacterEnabled,
+    aiCharacterRandom,
+    aiCharacterPresetId,
+    aiCharacterCustomText,
+    aiCharacterAccentIntensity,
+    openCharacterPickerModal,
+    transparencySnapshot: lastTransparency,
+    onRunOriginalAsk: (text) => {
+      setUnifiedInput(text);
+      if (unifiedInputPersistenceMode === "persist_all") {
+        persistSearchQuery(text);
       }
-      onNavigateToPermissions={goToPermissionsTab}
-      desktopNoteSaveEnabled={capabilities.filesystem_write}
-      aiCharacterPadClass={mainTabAiCharacterPad}
-      aiCharacterAvatarPresetId={mainTabAvatarPresetId}
-      aiCharacterAvatarBadgeLetter={mainTabAvatarBadgeLetter}
-      onOpenCharacterPicker={aiCharacterEnabled ? openCharacterPickerModal : undefined}
-      aiCharacterDebugLine={aiCharacterDebugLineForMainTab}
-      transparencySnapshot={lastTransparency}
-      onRunOriginalAsk={(text) => {
-        setUnifiedInput(text);
-        if (unifiedInputPersistenceMode === "persist_all") {
-          persistSearchQuery(text);
-        }
-      }}
-      askMode={askMode}
-      onAskModeChange={setAskMode}
-      strategyGuideBranches={strategyGuideBranches}
-      strategyChecklist={strategyChecklist}
-      onStrategyChecklistToggle={onStrategyChecklistToggle}
-      onStrategyBranchPick={onStrategyBranchPick}
-      onPresetPreferAskMode={setAskMode}
-      askThreadCollapsed={askThreadCollapsed}
-      askThreadDisplayQuestion={askThreadDisplayQuestion}
-      expandedTurnKey={expandedTurnKey}
-      onTurnActivate={onTurnActivate}
-      modelPolicyDisclosure={modelPolicyDisclosure}
-      onOpenModelPolicyReadme={openModelPolicyReadme}
-      shortcutSetupVariant={shortcutSetupVariant}
-      onOpenControllerSettings={onOpenControllerSettingsForShortcut}
-      strategySpoilerMaskingEnabled={strategySpoilerMaskingEnabled}
-      strategySpoilerAutoRevealAfterConsent={strategySpoilerAutoRevealAfterConsent}
-      presetCarouselInject={presetCarouselInject}
-      isStreamingPreview={isStreamingPreview || isStreamSettling}
-      streamDisplayText={streamDisplayText}
-      thinkingSummary={thinkingSummary}
-      desktopAskVerboseLogging={desktopAskVerboseLogging}
-      lastRequestId={lastRequestId}
-      lastExchange={lastExchange}
-    />
-  ),
-    [
-      fullBleedRowStyle,
-      presetButtonSurface,
-      suggestedPrompts,
-      pluginHelpDismissed,
-      presetChipFadeAnimationEnabled,
-      presetChipAnimation,
-      unifiedInput,
-      unifiedInputSurfacePx,
-      usesNativeMultilineField,
-      isUnifiedInputFocused,
-      filteredSettings,
-      selectedIndex,
-      isAsking,
-      effectiveOllamaPcIp,
-      selectedAttachment,
-      showSearchClearButton,
-      isScreenshotBrowserOpen,
-      mediaError,
-      isCapturingScreenshot,
-      recentScreenshots,
-      isLoadingRecentScreenshots,
-      navigationMessage,
-      showSlowWarning,
-      effectiveLatencyWarningSeconds,
-      ollamaResponse,
-      elapsedSeconds,
-      lastApplied,
-      ollamaContext,
-      lastExchange,
-      capabilities.media_library_access,
-      capabilities.steam_logs_read,
-      goToPermissionsTab,
-      aiCharacterEnabled,
-      mainTabAvatarPresetId,
-      mainTabAvatarBadgeLetter,
-      aiCharacterDebugLineForMainTab,
-      lastTransparency,
-      askMode,
-      strategyGuideBranches,
-      strategyChecklist,
-      askThreadCollapsed,
-      askThreadDisplayQuestion,
-      expandedTurnKey,
-      modelPolicyDisclosure,
-      shortcutSetupVariant,
-      strategySpoilerMaskingEnabled,
-      presetCarouselInject,
-      onRetryLastResponse,
-      onReplyFeedback,
-      onReplyMicroAction,
-      liveReplyFeedbackRating,
-      liveReplyChipUsed,
-      liveReplyChipError,
-      voiceRecording,
-      onMicInput,
-      onOpenScreenshotBrowser,
-      onTakeScreenshot,
-    ]
-  );
+    },
+    askMode,
+    onAskModeChange: setAskMode,
+    strategyGuideBranches,
+    strategyChecklist,
+    onStrategyChecklistToggle,
+    onStrategyBranchPick,
+    onPresetPreferAskMode: setAskMode,
+    askThreadCollapsed,
+    askThreadDisplayQuestion,
+    expandedTurnKey,
+    onTurnActivate,
+    modelPolicyDisclosure,
+    onOpenModelPolicyReadme: openModelPolicyReadme,
+    shortcutSetupVariant,
+    onOpenControllerSettings: onOpenControllerSettingsForShortcut,
+    strategySpoilerMaskingEnabled,
+    strategySpoilerAutoRevealAfterConsent,
+    presetCarouselInject,
+    isStreamingPreview: isStreamingPreview || isStreamSettling,
+    streamDisplayText,
+    thinkingSummary,
+    desktopAskVerboseLogging,
+    lastRequestId,
+    lastExchange,
+  });
+
 
   const settingsTab = useSettingsTabPayload({
     screenshotAttachmentPreset,

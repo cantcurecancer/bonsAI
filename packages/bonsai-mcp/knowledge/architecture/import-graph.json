@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 242,
-  "edgeCount": 544,
+  "fileCount": 243,
+  "edgeCount": 547,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -146,7 +146,7 @@
         "src/utils/inputTransparency.ts"
       ],
       "importedBy": [
-        "src/index.tsx"
+        "src/features/plugin-shell/tabs/useMainTabPayload.tsx"
       ]
     },
     "src/components/MainTabAskModeMenuPopover.tsx": {
@@ -514,6 +514,7 @@
         "src/components/SettingsTabAccentIntensityMenuPopover.tsx",
         "src/data/bonsaiSettingsNormalizers.ts",
         "src/data/bonsaiSettingsSchema.ts",
+        "src/features/plugin-shell/tabs/useMainTabPayload.tsx",
         "src/hooks/usePluginSettings.ts"
       ]
     },
@@ -623,7 +624,7 @@
         "src/data/characterCatalog.test.ts",
         "src/data/characterUiAccent.test.ts",
         "src/data/characterUiAccent.ts",
-        "src/index.tsx",
+        "src/features/plugin-shell/tabs/useMainTabPayload.tsx",
         "src/utils/runningGameCharacterSuggestions.ts"
       ]
     },
@@ -831,6 +832,7 @@
     "src/data/steamSettingsNavigation.ts": {
       "imports": [],
       "importedBy": [
+        "src/features/plugin-shell/tabs/useMainTabPayload.tsx",
         "src/hooks/useSteamSettingsSearch.ts",
         "src/index.tsx"
       ]
@@ -928,6 +930,17 @@
     "src/features/plugin-shell/tabs/useDeveloperTabPayload.tsx": {
       "imports": [
         "src/components/DeveloperTab.tsx"
+      ],
+      "importedBy": [
+        "src/index.tsx"
+      ]
+    },
+    "src/features/plugin-shell/tabs/useMainTabPayload.tsx": {
+      "imports": [
+        "src/components/MainTab.tsx",
+        "src/data/aiCharacterAccentIntensity.ts",
+        "src/data/characterCatalog.ts",
+        "src/data/steamSettingsNavigation.ts"
       ],
       "importedBy": [
         "src/index.tsx"
@@ -1374,11 +1387,9 @@
       "imports": [
         "src/components/BonsaiDebugOverlay.tsx",
         "src/components/BonsaiPluginShell.tsx",
-        "src/components/MainTab.tsx",
         "src/components/icons.tsx",
         "src/context/UiScaleContext.tsx",
         "src/data/bonsaiSettingsSchema.ts",
-        "src/data/characterCatalog.ts",
         "src/data/characterUiAccent.ts",
         "src/data/knowledgeBaseDev.ts",
         "src/data/modelPolicy.ts",
@@ -1393,6 +1404,7 @@
         "src/features/plugin-shell/tabTitles.tsx",
         "src/features/plugin-shell/tabs/useAboutTabPayload.tsx",
         "src/features/plugin-shell/tabs/useDeveloperTabPayload.tsx",
+        "src/features/plugin-shell/tabs/useMainTabPayload.tsx",
         "src/features/plugin-shell/tabs/useOllamaTabPayload.tsx",
         "src/features/plugin-shell/tabs/usePermissionsTabPayload.tsx",
         "src/features/plugin-shell/tabs/useSettingsTabPayload.tsx",
