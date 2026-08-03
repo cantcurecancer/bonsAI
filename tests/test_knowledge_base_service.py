@@ -17,6 +17,7 @@ from backend.services.knowledge_base_service import (
     should_retrieve_knowledge,
     stack_context_blocks,
     suggest_chip_candidates,
+    _COMPAT_CHIP_TEMPLATES,
     _rerank_cards_by_vector,
 )
 from backend.services.ollama_embed_service import OllamaEmbedError
@@ -186,6 +187,89 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
     self.assertEqual(dreadnought.category, "strategy")
     self.assertEqual(dreadnought.prefer_ask_mode, "strategy")
     self.assertTrue(any("Proton" in t for t in texts))
+
+  def test_suggest_chip_candidates_exact_pool_for_a_covered_game(self):
+    """Pin the whole candidate list, so any pool regression fails rather than degrades quietly.
+
+    Before this policy the same corpus produced 29 candidates, 25 of them the template
+    "Any known TOPIC issues for this game?" built from raw corpus topic slugs (steam_machine,
+    bpm, desktop_mode, gaming_mode, wine, windows_steam, steamvr). Asserting the exact list
+    catches a reintroduced fallback, a lifted cap, a reordering, or a new template - a
+    "no slugs present" assertion could not, since the offending code path is now gone.
+    """
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    result = suggest_chip_candidates(
+      settings,
+      app_id="2321470",
+      app_name="Deep Rock Galactic: Survivor",
+    )
+    self.assertTrue(result.ok)
+    self.assertEqual(
+      [c.text for c in result.candidates],
+      [
+        "How do I beat Glyphid Dreadnought?",
+        "Tips for Hollow Bough in this game?",
+        "Any known Proton issues for this game?",
+        "Any Steam Input issues for this game?",
+      ],
+    )
+    self.assertEqual([c.domain for c in result.candidates], ["strategy", "strategy", "compat", "compat"])
+
+  def test_suggest_chip_candidates_caps_generic_compat_chips(self):
+    """Generic compat chips are bounded so they cannot crowd out entity-named ones."""
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    result = suggest_chip_candidates(
+      settings,
+      app_id="2321470",
+      app_name="Deep Rock Galactic: Survivor",
+    )
+    compat = [c for c in result.candidates if c.domain == "compat"]
+    strategy = [c for c in result.candidates if c.domain == "strategy"]
+    self.assertLessEqual(len(compat), 2)
+    self.assertTrue(strategy, "expected at least one entity-named candidate")
+    # Entity-named candidates come first, because the composer walks the pool in order.
+    self.assertEqual(result.candidates[: len(strategy)], strategy)
+
+  def test_suggest_chip_candidates_uncovered_game_falls_back_to_static_seeds(self):
+    """A game with no corpus sections returns ok False rather than generic-only chips."""
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    result = suggest_chip_candidates(
+      settings,
+      app_id="999999999",
+      app_name="Some Game Not In The Corpus",
+    )
+    self.assertFalse(result.ok)
+    self.assertIn(result.reason, ("app_unresolved", "no_sections"))
+    self.assertEqual(result.candidates, [])
+
+  def test_suggest_chip_candidates_every_chip_is_corpus_grounded_or_curated(self):
+    """The stated rule: a returned chip either names a corpus entity or is a curated topic."""
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    result = suggest_chip_candidates(
+      settings,
+      app_id="413150",
+      app_name="The Legend of Zelda: Ocarina of Time",
+    )
+    self.assertTrue(result.ok)
+    curated = set(_COMPAT_CHIP_TEMPLATES.values())
+    for candidate in result.candidates:
+      if candidate.domain == "compat":
+        self.assertIn(candidate.text, curated)
+      else:
+        self.assertEqual(candidate.domain, "strategy")
+        self.assertEqual(candidate.prefer_ask_mode, "strategy")
 
   def test_suggest_chip_candidates_rpc_shape(self):
     settings = {

@@ -588,11 +588,18 @@ _CHIP_TEXT_MAX_LEN = 80
 # Section types surfaced first for session preset chips (boss / stuck-style).
 _CHIP_SECTION_TYPE_ORDER = ("boss", "dungeon", "encounter", "area", "quest")
 
+# Insertion order is the display order for compat chips — see _compat_chip_candidates.
+# Note "deck" is textually identical to a static carousel seed (src/data/presets.ts), so it is
+# ordered after "proton"; de-duplicating the two lists properly needs the seed list shared
+# across the TS/Python boundary and is tracked separately under roadmap Bugs.
 _COMPAT_CHIP_TEMPLATES: dict[str, str] = {
     "proton": "Any known Proton issues for this game?",
-    "deck": "How well does this game run on Deck?",
     "controller": "Any Steam Input issues for this game?",
+    "deck": "How well does this game run on Deck?",
 }
+
+# Generic compat chips are capped so they cannot crowd out entity-named candidates.
+_MAX_COMPAT_CHIP_CANDIDATES = 2
 
 
 @dataclass
@@ -632,16 +639,6 @@ def _curtail_section_to_chip(section_type: str, name: str) -> str:
     return _truncate_chip_text(f"What should I know about {n}?")
 
 
-def _curtail_compat_topic_to_chip(topic: str) -> str:
-    key = (topic or "").strip().lower()
-    template = _COMPAT_CHIP_TEMPLATES.get(key)
-    if template:
-        return _truncate_chip_text(template)
-    if key:
-        return _truncate_chip_text(f"Any known {key} issues for this game?")
-    return ""
-
-
 def _list_game_sections_for_chips(
     conn: sqlite3.Connection,
     game_id: int,
@@ -660,18 +657,31 @@ def _list_game_sections_for_chips(
     return [(str(r["section_type"] or ""), str(r["name"] or "")) for r in rows]
 
 
-def _compat_chip_candidates(conn: sqlite3.Connection) -> list[SessionRagChipCandidate]:
+def _compat_chip_candidates(
+    conn: sqlite3.Connection,
+    *,
+    limit: int = _MAX_COMPAT_CHIP_CANDIDATES,
+) -> list[SessionRagChipCandidate]:
+    """Curated compat chips this corpus actually has patterns for, capped and ordered.
+
+    Capped because these are generic by construction — they read identically for every game,
+    so an unbounded tail of them crowds out the entity-named candidates. Ordered by
+    ``_COMPAT_CHIP_TEMPLATES`` insertion order rather than ``pattern_id`` so the chips a user
+    sees do not shuffle when corpus row order changes.
+    """
+    topics = {
+        str(row["topic"] or "").strip().lower()
+        for row in conn.execute("SELECT topic FROM compat_patterns").fetchall()
+    }
     out: list[SessionRagChipCandidate] = []
-    seen: set[str] = set()
-    rows = conn.execute(
-        "SELECT topic FROM compat_patterns ORDER BY pattern_id"
-    ).fetchall()
-    for row in rows:
-        topic = str(row["topic"] or "")
-        text = _curtail_compat_topic_to_chip(topic)
-        if not text or text in seen:
+    for key, template in _COMPAT_CHIP_TEMPLATES.items():
+        if len(out) >= max(0, limit):
+            break
+        if key not in topics:
             continue
-        seen.add(text)
+        text = _truncate_chip_text(template)
+        if not text:
+            continue
         out.append(
             SessionRagChipCandidate(
                 text=text,
@@ -724,15 +734,20 @@ def suggest_chip_candidates(
                     )
                 )
 
+        # A session RAG chip must name something the corpus knows about *this* game. Without a
+        # single section, every chip we could return is a generic compat template that reads
+        # the same for every title — indistinguishable from a static seed, so the carousel is
+        # better served by its own seeds. Reported as {ok: false}, which the frontend already
+        # treats as "use static seeds" without logging an error.
+        if not candidates:
+            note = "app_unresolved" if game_id is None else "no_sections"
+            return SessionRagChipCandidatesResult(ok=False, reason=note)
+
         for compat in _compat_chip_candidates(conn):
             if compat.text in seen:
                 continue
             seen.add(compat.text)
             candidates.append(compat)
-
-        if not candidates:
-            note = "app_unresolved" if game_id is None else "no_sections"
-            return SessionRagChipCandidatesResult(ok=False, reason=note)
 
         _ = resolution
         return SessionRagChipCandidatesResult(ok=True, candidates=candidates)
