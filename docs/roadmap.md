@@ -1,6 +1,6 @@
 # bonsAI Roadmap
 
-**Next session starts at** [execution order](#maintainer-decisions-locked--2026-08-02) **step 6** (`main.py` investigation) or **step 8** (resume the entry-point split from 5b). Four open calls first: [D7–D10](#still-open--raised-during-the-2026-08-02-session).
+**Next session starts at** [execution order](#maintainer-decisions-locked--2026-08-02) **steps 5c–5d** ([D8](#d8--the-deploy-path-has-two-blind-spots-fix-them-or-keep-checking-by-hand) deploy hardening, then [D7](#d7--two-more-dead-functions-turned-up-delete-them-too) screenshot cleanup), then **step 6** (`main.py` investigation). [D7–D10](#d7d10--raised-during-the-2026-08-02-session-locked-2026-08-03) locked 2026-08-03.
 
 Tracks **bugs and active engineering** ([In Progress](#in-progress)), **executed cleanup** ([Cleanup candidates](#cleanup-candidates)), **refactor decisions** ([Decisions needed](#decisions-needed) — locked 2026-08-02), deferred **QA** ([QA backlog](#qa-backlog)), the **backlog** ([Planned](#planned)), and pointers to shipped work ([Completed](#completed)).
 
@@ -233,27 +233,33 @@ starting point.
 
 ---
 
-### Still open — raised during the 2026-08-02 session
+### D7–D10 — raised during the 2026-08-02 session, locked 2026-08-03
 
-**D1–D6 are locked and largely executed.** These four came out of doing the work
-and have not been decided. None blocks the next session from starting; **D8** is
-the one with a real cost attached to leaving it.
+**D1–D6 are locked and largely executed.** These four came out of doing the work;
+options below stay as the decision record. **Locked calls** are in the table under
+[Maintainer decisions locked](#maintainer-decisions-locked--2026-08-02) and in
+**execution order** steps **5c–5d**.
 
 ---
 
 #### D7 — Two more dead functions turned up. Delete them too?
 
 `_reencode_oversized_capture` and `_mirror_capture_to_plugin_dir` in
-`screenshot_media.py` have no callers. Unlike the kmsgrab set deleted in
-`4a26cfa`, these were **already dead before** any of this session's work — they
-are not a cascade from a deletion, so they were left alone rather than folded
-into someone else's commit.
+`screenshot_media.py` have **no production callers** (`_mirror_capture_to_plugin_dir`
+is an explicit deprecated no-op; capture uses `_finalize_steam_capture_file`).
+Unlike the kmsgrab set deleted in `4a26cfa`, these were **already dead before**
+any of this session's work — they are not a cascade from a deletion, so they were
+left alone rather than folded into someone else's commit. One unit test still calls
+`_reencode_oversized_capture`.
 
 - **Delete them.** Consistent with everything else this session removed; ~2
-  functions, no callers, and the module has real behavioral coverage.
+  functions, no production callers, and the module has real behavioral coverage.
 - **Keep them.** If either is a deliberate parking spot for capture work you
   intend to resume, say so and they get a comment saying why they are unused —
   which is the thing that stops a future session proposing this again.
+
+**Locked 2026-08-03:** **Delete both**; remove the `_reencode_oversized_capture`
+unit test (or fold any useful assertion into `_finalize_steam_capture_file` tests).
 
 ---
 
@@ -271,22 +277,33 @@ successful while the Deck is running something else:
    sat on the Deck and would have satisfied any import that had been missed —
    the plugin loading proved nothing until it was removed by hand.
 
+   **Code check (2026-08-03):** this is primarily a **Windows / `build.ps1`**
+   problem — `build.sh deploy` already `rm -rf`s the plugin dir before copy.
+   `watch-deploy.ps1` delegates to `build.ps1`; `watch-deploy.sh` delegates to
+   `build.sh deploy`.
+
 **Options.** Harden the scripts (compare a build hash after upload; remove
 plugin files that are no longer in the manifest) — a contained change to
-`build.sh` / `build.ps1` that removes a whole class of false-pass. Or leave them
-and rely on the manual check now written into [05-plan.md](audit/05-plan.md)
-§1.3, accepting that it depends on someone remembering.
+`build.ps1` (and `watch-deploy.ps1` by inheritance) that removes a whole class
+of false-pass. Or leave them and rely on the manual check now written into
+[05-plan.md](audit/05-plan.md) §1.3, accepting that it depends on someone
+remembering.
 
 The second option is the one Phase 5's prevention pass would reject on
 principle: discipline is not a mechanism.
+
+**Locked 2026-08-03:** **Harden `build.ps1`** — prune stale plugin files before
+copy and verify the deploy landed (e.g. compare `dist/index.js` hash or mtime on
+the Deck vs local build; fail the script on mismatch). **Blocker before step 8**
+(entry-point split resumes only after deploy trust is fixed).
 
 ---
 
 #### D9 — How far does the entry-point split actually go?
 
 Three slices are out of `index.tsx` (1955 → 1709). The remaining list in
-execution-order step 8 would land it near 700–800 lines. Two bigger files were
-never in scope and still are not:
+execution-order step 8 would land it near **700–800 lines** (estimate, not yet
+measured). Two bigger files were never in scope for step 8:
 
 - **`useBonsaiAskOrchestration.ts`** — 1222 lines, the whole Ask state machine.
   It now has 13 characterization tests, so it is the best-protected large file
@@ -298,6 +315,10 @@ never in scope and still are not:
 
 Decide whether "done" means `index.tsx` alone, or those two as well.
 
+**Locked 2026-08-03:** **Done = finish step 8 (`index.tsx` only).**
+`useBonsaiAskOrchestration.ts` and `MainTab.tsx` are **follow-ups** — revisit
+after step 8 lands and `index.tsx` is near the 700–800 line target.
+
 ---
 
 #### D10 — Focus and D-pad behavior has no automated coverage. What gates the remaining split?
@@ -305,7 +326,8 @@ Decide whether "done" means `index.tsx` alone, or those two as well.
 The safety net built in step 5 covers the **Ask lifecycle** and the plugin
 **mounting** — not focus order, not modal open/close lifecycle. The remaining
 extractions (character picker, models hub, desktop note, plugin help) are
-exactly that kind of behavior.
+exactly that kind of behavior. Preview tier 3 covers tabs/settings/permissions —
+**not** those four modals.
 
 - **On-Deck D-pad pass per commit.** Slowest, and the only option that actually
   catches a focus regression before it ships.
@@ -314,6 +336,12 @@ exactly that kind of behavior.
 - **Write focus-graph tests first.** Highest up-front cost. Worth pricing only if
   focus regressions have bitten before — `.cursor/rules/decky-focus-graph.mdc`
   and the **UI-SCALE-01…05** rows suggest they have.
+
+**Locked 2026-08-03:** **`tsc` + `npm test` + preview smoke every step 8
+commit.** **On-Deck D-pad pass required only for the four modal extractions**
+(character picker, models hub, desktop note, plugin help) — not for mechanical
+state-only commits (connection/IP, session-reset, UI-scale, error-capture). Do
+not write focus-graph tests upfront.
 
 ---
 
@@ -332,8 +360,12 @@ current tree (especially **D1b** and parts of **D2** / **D4**).
 | **D4** | **Prune by policy, not by folder count** | Keep evidence linked from current or archived QA docs; keep the latest useful pass per tier and meaningful failure runs. Audit links before deleting anything. Remove only duplicate, incomplete, or truly unreferenced generated runs. Add a retention rule so future `--write` runs do not grow `docs/test-evidence/` without bound. |
 | **D5** | **Option A — keep the built-in import graph** | Fast, no dependency, runs on every commit, and matches today's relative-import-only `tsconfig`. Revisit only if path aliases land, unresolved internal imports appear, or a parser-based tool finds real discrepancies. |
 | **D6** | **Sequencing below** | Fix real user-visible gaps before shrinking/refactoring; build the safety net before the risky split; measure handoff friction on the improved tree. |
+| **D7** | **Delete both screenshot helpers** | `_reencode_oversized_capture` and `_mirror_capture_to_plugin_dir` have no production callers; `_mirror_capture_to_plugin_dir` is an explicit deprecated no-op. One unit test still calls `_reencode` — remove it with the function. Consistent with D2 cleanup; module has behavioral coverage via `_finalize_steam_capture_file`. |
+| **D8** | **Harden `build.ps1` (prune + verify)** | Windows deploy path merges without pruning and prints success without checking the artifact landed. `build.sh deploy` already wipes the plugin dir — fix `build.ps1` (and `watch-deploy.ps1` by inheritance): remove stale files, compare `dist/index.js` hash or mtime after upload, fail on mismatch. Blocker before step 8. |
+| **D9** | **Done = step 8 (`index.tsx`) only** | Finish the state-before-JSX plan to ~700–800 lines (estimate). `useBonsaiAskOrchestration.ts` (1222 lines, 13 characterization tests) and `MainTab.tsx` (187 lines, prop-threading tax) are follow-ups after step 8 — splitting them now fights the locked order. |
+| **D10** | **Preview/tests every commit; on-Deck D-pad for modal extractions only** | `tsc` + `npm test` + preview smoke on every step 8 commit. On-Deck D-pad required for character picker, models hub, desktop note, and plugin help extractions only — not state-only commits. Tier 3 preview does not cover those modals; focus-graph tests upfront rejected. |
 
-**Execution order (locked, amended 2026-08-02):**
+**Execution order (locked, amended 2026-08-03):**
 
 1. **Record decisions** — this section; turn accepted work into implementation rows as work ships. *(done — `dcbcccf`, `e2111f9`, plus this amendment)*
 2. **D1 — wire both RPCs** — **done 2026-08-02**, see Bugs § *Fixed*. D1a routing merge (`510139d`) and D1b session RAG adapter, 13 new unit tests between them. On-Deck QA still open: **ROUTING-MERGE-01** and **SESSION-RAG-CHIPS-01** in [testing.md](testing.md). **This is feature work, not refactor** — separate commits, not labeled behavior-preserving, and it changes what `useBonsaiAskOrchestration.ts` does at runtime. Sequenced before step 5 on purpose so the characterization tests capture intended behavior rather than the silent-fallback bug.
@@ -350,9 +382,13 @@ current tree (especially **D1b** and parts of **D2** / **D4**).
 
    **Remaining in `Content`:** character-picker modal (~76 lines, ~11 deps), Ollama models hub (~84, ~10), desktop-note modal (~49), plugin-help modal (~11), plus connection/IP, session-reset, UI-scale and error-capture state. Then the tab payloads.
 
+5c. **D8 — harden `build.ps1`** — prune stale plugin files before copy; verify deploy landed (hash or mtime on `dist/index.js`). **Blocker before step 8** per locked **D8**. `watch-deploy.ps1` inherits the fix.
+
+5d. **D7 — delete screenshot helpers** — remove `_reencode_oversized_capture` and `_mirror_capture_to_plugin_dir` from `screenshot_media.py` and the `_reencode` unit test per locked **D7**.
+
 6. **2.3 — `main.py` extraction investigation** — read-only; produce a `file:line` inventory of what logic remains inline in `main.py` and where each piece belongs ([05-plan.md](audit/05-plan.md) §2.3). Feeds both step 7 and the `main.py` half of step 8.
 7. **2.2 — settings single source of truth** — REFACTOR-PLAN §3.1, the highest-value item in the audit and the best-covered by existing tests (`tests/test_settings_service.py` asserts per-setting round-trips). Expect that suite to break on shape, not behavior — rewrite the assertions, do not contort the design.
-8. **D3 — entry-point split, continued** — resume from **5b** above, which records what has already moved and why the order is state-before-JSX. Remaining, in the order they get cheaper: character-picker modal (~76 lines, ~11 deps), Ollama models hub (~84, ~10), desktop-note modal (~49), plugin-help modal (~11), connection/IP, session-reset, UI-scale, error-capture — **then** the six tab payloads, which only become cheap once the state above them has moved. Small commits, `tsc` + suite per commit, and an **on-Deck D-pad pass per commit** from the character picker onward: those flows are focus and modal-lifecycle behavior, which no automated test in this repo covers. Still untouched and not yet scoped: `useBonsaiAskOrchestration.ts` (1222 lines) and `MainTab.tsx` (187 lines of prop threading) — see **D9**.
+8. **D3 — entry-point split, continued** — resume from **5b** above (after **5c** deploy hardening). Remaining, in the order they get cheaper: character-picker modal (~76 lines, ~11 deps), Ollama models hub (~84, ~10), desktop-note modal (~49), plugin-help modal (~11), connection/IP, session-reset, UI-scale, error-capture — **then** the six tab payloads. **`tsc` + `npm test` + preview smoke every commit** per locked **D10**. **On-Deck D-pad pass only for the four modal extractions** (not state-only commits). **Done scope = `index.tsx` only** per locked **D9** — `useBonsaiAskOrchestration.ts` and `MainTab.tsx` are follow-ups after step 8.
 9. **KB download Cancel button** — wire `cancel_rag_corpus_download` in `KnowledgeBaseSection.tsx`; D-pad row in `testing.md` / `testing-manual.md`.
 10. **D4 — evidence hygiene** — link audit, prune orphans only. The retention rule must live **in the script that writes evidence**, not in a doc — a rule that depends on remembering is not a mechanism.
 11. **Deferred friction test** — run Phase 2c newcomer task on the post-refactor tree; file `docs/audit/03-friction.md`.
@@ -362,6 +398,12 @@ order. As first written it ran the riskiest, least-covered work (entry-point
 split) while skipping the highest-value, best-covered work (settings SSOT), and
 left step 8 without the `main.py` inventory it needs. Both are restored ahead of
 the split.
+
+**Amendment rationale (2026-08-03):** **D7–D10** locked after code verification.
+**D8** inserted as **5c** before step 8 — Windows `build.ps1` merge-without-prune
+was the real false-pass class; **D7** as **5d** is a quick cleanup. **D9** narrows
+"done" to step 8 only. **D10** replaces "on-Deck every commit" with modal-only
+D-pad gating so state extractions are not blocked on full device QA.
 
 **Session results — 2026-08-02.** Steps 1–5 complete, step 6 partly done, all
 Cleanup candidates executed. Gates green at every commit.
@@ -419,11 +461,9 @@ Nothing here changed product behavior.
 | 4 | **Remove the `sysfs_writes` reader and field; keep the preview hook empty** | `a9353cc` — `read_sandbox_sysfs_writes` and the `get_input_transparency` field gone; `sandbox_sysfs_root` stays because `find_amdgpu_hwmon` needs it. `getSysfsWrites` kept returning `[]`: the in-repo runner never calls it, but `__bonsaiTestHooks` is consumed by DPS scenarios outside this repo, so the contract stands |
 | 5 | **Defer the `docs/archive/` broken links to D4** | Not actionable here by decision. 272 relative links in historical files point at a `docs/` layout that no longer exists; fixing them is evidence hygiene, not code legibility. Folded into **D4** — see [06-doc-triage.md](audit/06-doc-triage.md) § Link audit. Live docs are already link-clean |
 
-**Found while executing, not in the lock and not actioned:**
+**Found while executing, deferred to D7 (locked 2026-08-03):**
 `_reencode_oversized_capture` and `_mirror_capture_to_plugin_dir` in
-`screenshot_media.py` have no callers **and had none before this work** — they
-are pre-existing dead code, not a cascade from these deletions, so they were
-left for a separate decision rather than folded in.
+`screenshot_media.py` — no production callers; see execution-order step **5d**.
 
 ---
 
