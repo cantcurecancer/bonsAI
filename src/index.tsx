@@ -10,12 +10,12 @@ import { definePlugin, toaster, call, useQuickAccessVisible } from "@decky/api";
 import { Navigation, Router, Tabs } from "@decky/ui";
 
 import { PLUGIN_VERSION } from "./pluginVersion";
-import { DEFAULT_LATENCY_WARNING_SECONDS, OLLAMA_LOCAL_ON_DECK_DEFAULT_PCIP, type BonsaiSettings } from "./data/bonsaiSettingsSchema";
+import { DEFAULT_LATENCY_WARNING_SECONDS, type BonsaiSettings } from "./data/bonsaiSettingsSchema";
 import { toBonsaiSettingsPayload } from "./utils/settingsPayload";
 import { AboutTab } from "./components/AboutTab";
 import { BonsaiPluginShell } from "./components/BonsaiPluginShell";
 import { BonsaiDebugOverlay } from "./components/BonsaiDebugOverlay";
-import { DeveloperTab, type DeveloperConnectionStatus } from "./components/DeveloperTab";
+import { DeveloperTab } from "./components/DeveloperTab";
 import { MainTab } from "./components/MainTab";
 import { PULL_MODEL_CATALOG } from "./data/pullModelCatalog";
 import { OllamaTab } from "./components/OllamaTab";
@@ -44,7 +44,6 @@ import {
 import { consumePendingFocusMainTab, setReplySurfaceVisible } from "./utils/bonsaiReplySurface";
 import { clearBonsaiBrowserStorage } from "./utils/clearBonsaiBrowserStorage";
 import { bonsaiDebugLog } from "./utils/bonsaiDebugIngest";
-import { persistOllamaIpIfRoutingToLan as persistOllamaIpIfRoutingToLanUtil } from "./utils/persistOllamaIp";
 import { clearOllamaTabLocalSurvival } from "./utils/ollamaTabLocalSurvival";
 import { clearSettingsTabLocalSurvival } from "./utils/settingsTabLocalSurvival";
 import { shouldClearUnifiedInputForPersistenceMode } from "./utils/unifiedInputPersistenceMode";
@@ -60,11 +59,11 @@ import { useUnifiedInputSurface } from "./features/unified-input/useUnifiedInput
 import { PluginErrorBoundary } from "./features/plugin-shell/PluginErrorBoundary";
 import { DECKY_TAB_TITLES } from "./features/plugin-shell/tabTitles";
 import {
-  loadSavedIp,
   loadSavedSearchQuery,
   persistSearchQuery,
   saveIp,
 } from "./features/plugin-shell/pluginStorage";
+import { useOllamaConnectionState } from "./features/plugin-shell/useOllamaConnectionState";
 import { useUiScaleProfile } from "./hooks/useUiScaleProfile";
 import { useQamPanelHeightGuard } from "./hooks/useQamPanelHeightGuard";
 import { useTabStripBodyOffset } from "./hooks/useTabStripBodyOffset";
@@ -182,8 +181,6 @@ const Content: React.FC = () => {
 
   const pendingSessionRestoreFinalizeRef = useRef(false);
   const pluginDataClearSeenRef = useRef(getPluginDataClearedGeneration());
-  const [lastConnectionStatus, setLastConnectionStatus] = useState<DeveloperConnectionStatus | null>(null);
-  const [ollamaTabResetKey, setOllamaTabResetKey] = useState(0);
 
   // --- Unified input/search state ---
   const [unifiedInput, setUnifiedInput] = useState(() => {
@@ -206,11 +203,6 @@ const Content: React.FC = () => {
     usesNativeMultilineField,
     remeasureUnifiedInputSurface,
   } = useUnifiedInputSurface(currentTab, unifiedInput);
-
-  // --- Connection / misc shell state (Ask + poll state: ``useBonsaiAskOrchestration``) ---
-  const [ollamaIp, setOllamaIp] = useState(
-    () => peekBonsaiSessionPendingRestore()?.ollamaIp ?? loadSavedIp()
-  );
 
   const {
     pluginHelpDismissed,
@@ -372,17 +364,17 @@ const Content: React.FC = () => {
     appendAppDesktopLogWithPrefs(appLogPrefs, "verbose", "ui.tab", `opened ${currentTab} tab`);
   }, [currentTab, settingsLoaded, appLogPrefs]);
 
-  const effectiveOllamaPcIp = useMemo(
-    () => (ollamaLocalOnDeck ? OLLAMA_LOCAL_ON_DECK_DEFAULT_PCIP : ollamaIp.trim()),
-    [ollamaLocalOnDeck, ollamaIp]
-  );
-
-  const persistOllamaIpIfRoutingToLan = useCallback(
-    (ip: string) => {
-      persistOllamaIpIfRoutingToLanUtil(ollamaLocalOnDeck, saveIp, ip);
-    },
-    [ollamaLocalOnDeck]
-  );
+  // --- Connection / host state (Ask + poll state: ``useBonsaiAskOrchestration``) ---
+  const {
+    ollamaIp,
+    setOllamaIp,
+    effectiveOllamaPcIp,
+    persistOllamaIpIfRoutingToLan,
+    lastConnectionStatus,
+    setLastConnectionStatus,
+    ollamaTabResetKey,
+    resetOllamaTab,
+  } = useOllamaConnectionState({ ollamaLocalOnDeck });
 
   const {
     ollamaResponse,
@@ -847,7 +839,7 @@ const Content: React.FC = () => {
       clearSettingsTabLocalSurvival();
       clearOllamaTabLocalSurvival();
       setLastConnectionStatus(null);
-      setOllamaTabResetKey((k) => k + 1);
+      resetOllamaTab();
       await pauseDebouncedSettingsSave();
       // Deliberately unwrapped: clear_plugin_data tears down local Ollama models
       // (ollama rm plus multi-GB rmtree), which can far exceed any UI deadline.

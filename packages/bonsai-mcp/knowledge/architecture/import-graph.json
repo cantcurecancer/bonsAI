@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 236,
-  "edgeCount": 532,
+  "fileCount": 237,
+  "edgeCount": 537,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -116,6 +116,7 @@
         "src/components/OllamaTab.tsx",
         "src/components/OllamaWhereAiRunsSection.tsx",
         "src/features/model-routing/useRoutingOrderModal.ts",
+        "src/features/plugin-shell/useOllamaConnectionState.ts",
         "src/index.tsx",
         "src/utils/ollamaTabLocalSurvival.ts"
       ]
@@ -589,6 +590,7 @@
         "src/data/characterUiAccent.ts",
         "src/features/model-routing/useRoutingOrderModal.ts",
         "src/features/plugin-shell/useCharacterPickerModal.tsx",
+        "src/features/plugin-shell/useOllamaConnectionState.ts",
         "src/features/plugin-shell/useOllamaModelsHubModal.tsx",
         "src/hooks/useBonsaiAskOrchestration.ts",
         "src/hooks/usePluginSettings.test.ts",
@@ -898,6 +900,7 @@
         "src/data/storageKeys.ts"
       ],
       "importedBy": [
+        "src/features/plugin-shell/useOllamaConnectionState.ts",
         "src/features/plugin-shell/usePluginHelpModal.tsx",
         "src/index.tsx"
       ]
@@ -926,6 +929,18 @@
       "imports": [
         "src/components/DesktopNoteSaveModal.tsx",
         "src/utils/deckyCall.ts"
+      ],
+      "importedBy": [
+        "src/index.tsx"
+      ]
+    },
+    "src/features/plugin-shell/useOllamaConnectionState.ts": {
+      "imports": [
+        "src/components/DeveloperTab.tsx",
+        "src/data/bonsaiSettingsSchema.ts",
+        "src/features/plugin-shell/pluginStorage.ts",
+        "src/utils/bonsaiSessionSurvival.ts",
+        "src/utils/persistOllamaIp.ts"
       ],
       "importedBy": [
         "src/index.tsx"
@@ -1339,6 +1354,7 @@
         "src/features/plugin-shell/tabTitles.tsx",
         "src/features/plugin-shell/useCharacterPickerModal.tsx",
         "src/features/plugin-shell/useDesktopNoteSaveModal.tsx",
+        "src/features/plugin-shell/useOllamaConnectionState.ts",
         "src/features/plugin-shell/useOllamaModelsHubModal.tsx",
         "src/features/plugin-shell/usePluginHelpModal.tsx",
         "src/features/unified-input/constants.ts",
@@ -1365,7 +1381,6 @@
         "src/utils/clearBonsaiBrowserStorage.ts",
         "src/utils/deckyCall.ts",
         "src/utils/ollamaTabLocalSurvival.ts",
-        "src/utils/persistOllamaIp.ts",
         "src/utils/settingsPayload.ts",
         "src/utils/settingsTabLocalSurvival.ts",
         "src/utils/steamInputJump.ts",
@@ -1784,6 +1799,7 @@
         "src/utils/inputTransparency.ts"
       ],
       "importedBy": [
+        "src/features/plugin-shell/useOllamaConnectionState.ts",
         "src/features/plugin-shell/useOllamaModelsHubModal.tsx",
         "src/features/plugin-shell/usePluginHelpModal.tsx",
         "src/hooks/useBonsaiAskOrchestration.ts",
@@ -2142,7 +2158,7 @@
     "src/utils/persistOllamaIp.ts": {
       "imports": [],
       "importedBy": [
-        "src/index.tsx",
+        "src/features/plugin-shell/useOllamaConnectionState.ts",
         "src/utils/persistOllamaIp.test.ts"
       ]
     },
