@@ -32,16 +32,12 @@ import { normalizeUiScaleProfileId } from "./uiScaleProfile";
 import {
   DEFAULT_AI_CHARACTER_CUSTOM_TEXT,
   DEFAULT_AI_CHARACTER_PRESET_ID,
-  DEFAULT_AI_CHARACTER_RANDOM,
   DEFAULT_ASK_MODE,
   DEFAULT_DESKTOP_APP_LOG_LEVEL,
   DEFAULT_LATENCY_WARNING_SECONDS,
-  DEFAULT_OLLAMA_LOCAL_ON_DECK,
   DEFAULT_PRESET_CHIP_ANIMATION,
-  DEFAULT_PRESET_CHIP_FADE_ANIMATION_ENABLED,
   DEFAULT_REQUEST_TIMEOUT_SECONDS,
   DEFAULT_SCREENSHOT_ATTACHMENT_PRESET,
-  DEFAULT_STRATEGY_SPOILER_MASKING_ENABLED,
   DEFAULT_UNIFIED_INPUT_PERSISTENCE_MODE,
   DEFAULT_VOICE_STT_MODEL,
   LATENCY_WARNING_STEP_SECONDS,
@@ -150,13 +146,6 @@ export function reconcileLatencyWarningAndTimeout(
   return { latency_warning_seconds: w, request_timeout_seconds: t };
 }
 
-export function normalizeUnifiedInputPersistenceMode(value: unknown): UnifiedInputPersistenceMode {
-  if (value === "persist_all" || value === "persist_search_only" || value === "no_persist") {
-    return value;
-  }
-  return DEFAULT_UNIFIED_INPUT_PERSISTENCE_MODE;
-}
-
 export function normalizeScreenshotAttachmentPreset(
   data: Record<string, unknown> | null | undefined,
 ): ScreenshotAttachmentPreset {
@@ -173,24 +162,43 @@ export function normalizeScreenshotAttachmentPreset(
   return DEFAULT_SCREENSHOT_ATTACHMENT_PRESET;
 }
 
-export function normalizeLatencyTimeoutsCustomEnabled(value: unknown): boolean {
+// --- field kinds -------------------------------------------------------------
+// Mirrors the `_SIMPLE_FIELDS` table in py_modules/backend/services/settings_service.py.
+// Most settings are one of a handful of plain shapes; declaring them keeps "add a setting" to
+// one row per language instead of a hand-written function each. Settings needing a legacy key,
+// another field's value, or a nested structure stay as functions below, on purpose.
+//
+// The predicates are not interchangeable. `=== true` and `!== false` differ for every
+// non-boolean value, and the two string kinds differ for non-strings. See
+// tests/contracts/settings-hostile-inputs.json, which pins both languages to the same answers.
+
+/** Off unless the value is exactly `true` — any other type stays off. */
+function boolDefaultFalse(value: unknown): boolean {
   return value === true;
 }
 
-export function normalizeDesktopDebugNoteAutoSave(value: unknown): boolean {
-  return value === true;
+/** On unless the user explicitly saved `false` — a missing key stays on. */
+function boolDefaultTrue(value: unknown): boolean {
+  return value !== false;
 }
 
-export function normalizeDesktopAskVerboseLogging(value: unknown): boolean {
-  return value === true;
+/** Membership in `options` or the default. `trim` normalizes first; matching stays case-sensitive. */
+function enumOf<T extends string>(
+  options: readonly T[],
+  fallback: T,
+  { trim = false }: { trim?: boolean } = {},
+): (value: unknown) => T {
+  const allowed = new Set<string>(options);
+  return (value: unknown): T => {
+    if (typeof value !== "string") return fallback;
+    const candidate = trim ? value.trim() : value;
+    return allowed.has(candidate) ? (candidate as T) : fallback;
+  };
 }
 
-export function normalizeBonsaiTokenStreamingEnabled(value: unknown): boolean {
-  return value === true;
-}
-
-export function normalizeShowOnscreenDebugHud(value: unknown): boolean {
-  return value === true;
+/** Trimmed and length-capped. A non-string is rejected outright, not stringified. */
+function boundedString(maxLength: number): (value: unknown) => string {
+  return (value: unknown): string => (typeof value === "string" ? value.trim().slice(0, maxLength) : "");
 }
 
 export function normalizeNamedOllamaHosts(value: unknown): NamedOllamaHost[] {
@@ -207,16 +215,6 @@ export function normalizeNamedOllamaHosts(value: unknown): NamedOllamaHost[] {
     out.push({ label, host });
   }
   return out;
-}
-
-export function normalizeDesktopAppLogLevel(value: unknown): DesktopAppLogLevel {
-  // Trimmed before matching so a hand-edited settings.json with `" verbose "` reads the same
-  // here as it does in Python (D13: Python is authoritative because it decides what persists).
-  const t = typeof value === "string" ? value.trim() : value;
-  if (t === "off" || t === "default" || t === "verbose") {
-    return t;
-  }
-  return DEFAULT_DESKTOP_APP_LOG_LEVEL;
 }
 
 /**
@@ -242,15 +240,6 @@ export function normalizeRagCorpusPath(value: unknown): string {
   return raw.slice(0, 512);
 }
 
-export function normalizeRagCorpusVersion(value: unknown): string {
-  return coerceScalarToTrimmedString(value).slice(0, 64);
-}
-
-export function normalizePresetChipFadeAnimationEnabled(value: unknown): boolean {
-  if (value === false) return false;
-  return DEFAULT_PRESET_CHIP_FADE_ANIMATION_ENABLED;
-}
-
 export function normalizePresetChipAnimation(
   value: unknown,
   legacyFadeEnabled: unknown,
@@ -263,39 +252,10 @@ export function normalizePresetChipAnimation(
   return DEFAULT_PRESET_CHIP_ANIMATION;
 }
 
-export function normalizeInputSanitizerUserDisabled(value: unknown): boolean {
-  return value === true;
-}
-
 export function normalizeShowDeveloperTab(value: unknown, legacyShowDebugTab?: unknown): boolean {
   if (value === true) return true;
   if (legacyShowDebugTab === true) return true;
   return false;
-}
-
-export function normalizeModelAllowHighVramFallbacks(value: unknown): boolean {
-  return value === true;
-}
-
-export function normalizeOllamaLocalOnDeck(value: unknown): boolean {
-  if (value === undefined || value === null) {
-    return DEFAULT_OLLAMA_LOCAL_ON_DECK;
-  }
-  return value === true;
-}
-
-export function normalizeStrategySpoilerMaskingEnabled(value: unknown): boolean {
-  if (value === false) return false;
-  return DEFAULT_STRATEGY_SPOILER_MASKING_ENABLED;
-}
-
-export function normalizeStrategySpoilerAutoRevealAfterConsent(value: unknown): boolean {
-  return value === true;
-}
-
-export function normalizeSteamWebApiKey(value: unknown): string {
-  if (typeof value !== "string") return "";
-  return value.trim().slice(0, STEAM_WEB_API_KEY_MAX_LEN);
 }
 
 const _askModeSet = new Set<string>(ASK_MODE_IDS);
@@ -324,16 +284,6 @@ export function normalizeReplyVerbosity(value: unknown): ReplyVerbosityId {
   return DEFAULT_REPLY_VERBOSITY;
 }
 
-export function normalizeAiCharacterEnabled(value: unknown): boolean {
-  return value === true;
-}
-
-export function normalizeAiCharacterRandom(value: unknown): boolean {
-  if (value === false) return false;
-  if (value === true) return true;
-  return DEFAULT_AI_CHARACTER_RANDOM;
-}
-
 export function normalizeAiCharacterPresetId(value: unknown): string {
   if (typeof value !== "string") return DEFAULT_AI_CHARACTER_PRESET_ID;
   const t = value.trim();
@@ -349,14 +299,6 @@ export function normalizeAiCharacterCustomText(value: unknown): string {
   return s;
 }
 
-const _accentIntensitySet = new Set<string>(AI_CHARACTER_ACCENT_INTENSITY_IDS);
-
-export function normalizeAiCharacterAccentIntensity(value: unknown): AiCharacterAccentIntensityId {
-  if (typeof value !== "string") return DEFAULT_AI_CHARACTER_ACCENT_INTENSITY;
-  const t = value.trim();
-  if (_accentIntensitySet.has(t)) return t as AiCharacterAccentIntensityId;
-  return DEFAULT_AI_CHARACTER_ACCENT_INTENSITY;
-}
 
 export function normalizeCapabilities(value: unknown): BonsaiCapabilities {
   const raw =
@@ -368,17 +310,6 @@ export function normalizeCapabilities(value: unknown): BonsaiCapabilities {
     steam_web_api: raw.steam_web_api === true,
     microphone_access: raw.microphone_access === true,
   };
-}
-
-export function normalizeVoiceSttModel(value: unknown): VoiceSttModelId {
-  if (typeof value === "string" && (VOICE_STT_MODEL_OPTIONS as string[]).includes(value.trim())) {
-    return value.trim() as VoiceSttModelId;
-  }
-  return DEFAULT_VOICE_STT_MODEL;
-}
-
-export function normalizeUiScaleAutoEnabled(value: unknown): boolean {
-  return value !== false;
 }
 
 export function normalizeModelRoutingOrder(raw: unknown): string[] {
@@ -397,61 +328,114 @@ export function normalizeModelRoutingOrder(raw: unknown): string[] {
   return out;
 }
 
+// --- the field table ---------------------------------------------------------
+// One row per setting whose rule is a plain shape, mirroring `_SIMPLE_FIELDS` in
+// settings_service.py. Adding such a setting is one row here plus one there;
+// tests/contracts/settings-defaults.json and settings-hostile-inputs.json fail if the two
+// disagree. Anything needing a legacy key, another field's value, or a nested structure is
+// deliberately absent — see the functions above and `normalizeSettings` below.
+//
+// A few rows delegate to a named function rather than a kind, because the rule's option list
+// or feature gate lives in that field's own module. `ui_scale_manual_profile` is the important
+// one: `normalizeUiScaleProfileId` also applies the `SHOW_IMMERSIVE_UI_SCALE` gate, which is a
+// deliberate TS-only behavior and the documented exception to TS/Python parity.
+const SIMPLE_FIELDS = {
+  // Developer and Desktop logging opt-ins.
+  desktop_debug_note_auto_save: boolDefaultFalse,
+  desktop_ask_verbose_logging: boolDefaultFalse,
+  bonsai_token_streaming_enabled: boolDefaultFalse,
+  show_onscreen_debug_hud: boolDefaultFalse,
+  // Trimmed before matching so a hand-edited `" verbose "` reads the same as in Python (D13).
+  desktop_app_log_level: enumOf<DesktopAppLogLevel>(
+    ["off", "default", "verbose"],
+    DEFAULT_DESKTOP_APP_LOG_LEVEL,
+    { trim: true },
+  ),
+  // Ask behavior.
+  input_sanitizer_user_disabled: boolDefaultFalse,
+  latency_timeouts_custom_enabled: boolDefaultFalse,
+  unified_input_persistence_mode: enumOf<UnifiedInputPersistenceMode>(
+    ["persist_all", "persist_search_only", "no_persist"],
+    DEFAULT_UNIFIED_INPUT_PERSISTENCE_MODE,
+  ),
+  reply_verbosity: normalizeReplyVerbosity,
+  reply_language: normalizeReplyLanguage,
+  ollama_keep_alive: normalizeOllamaKeepAlive,
+  // `undefined`/`null` mean "never saved", which is off — same as any other non-`true`.
+  ollama_local_on_deck: boolDefaultFalse,
+  model_allow_high_vram_fallbacks: boolDefaultFalse,
+  // Presentation, defaulting on: only an explicit `false` turns these off.
+  strategy_spoiler_masking_enabled: boolDefaultTrue,
+  ui_scale_auto_enabled: boolDefaultTrue,
+  strategy_spoiler_auto_reveal_after_consent: boolDefaultFalse,
+  ui_scale_manual_profile: normalizeUiScaleProfileId,
+  // Character.
+  ai_character_enabled: boolDefaultFalse,
+  ai_character_random: boolDefaultTrue,
+  ai_character_preset_id: normalizeAiCharacterPresetId,
+  ai_character_custom_text: normalizeAiCharacterCustomText,
+  ai_character_accent_intensity: enumOf<AiCharacterAccentIntensityId>(
+    AI_CHARACTER_ACCENT_INTENSITY_IDS,
+    DEFAULT_AI_CHARACTER_ACCENT_INTENSITY,
+    { trim: true },
+  ),
+  // Knowledge base.
+  use_local_knowledge_base: boolDefaultFalse,
+  rag_corpus_version: (value: unknown) => coerceScalarToTrimmedString(value).slice(0, 64),
+  // Voice and credentials.
+  voice_stt_model: enumOf<VoiceSttModelId>(VOICE_STT_MODEL_OPTIONS, DEFAULT_VOICE_STT_MODEL, {
+    trim: true,
+  }),
+  steam_web_api_key: boundedString(STEAM_WEB_API_KEY_MAX_LEN),
+} as const satisfies { [K in keyof BonsaiSettings]?: (value: unknown) => BonsaiSettings[K] };
+
+type SimpleFieldKey = keyof typeof SIMPLE_FIELDS;
+
 export function normalizeSettings(data: unknown): BonsaiSettings {
   const raw = typeof data === "object" && data !== null ? (data as Partial<BonsaiSettings>) : {};
+  const rawRecord =
+    typeof data === "object" && data !== null ? (data as Record<string, unknown>) : undefined;
+
+  const simple = {} as { [K in SimpleFieldKey]: BonsaiSettings[K] };
+  for (const key of Object.keys(SIMPLE_FIELDS) as SimpleFieldKey[]) {
+    const coerce = SIMPLE_FIELDS[key] as (value: unknown) => BonsaiSettings[SimpleFieldKey];
+    simple[key] = coerce(raw[key]) as never;
+  }
+
+  // Everything below needs something a table row cannot express: another field's value, a
+  // legacy key, a nested structure, or a pairwise reconciliation.
   const latencyTimeout = reconcileLatencyWarningAndTimeout(
     raw.latency_warning_seconds ?? DEFAULT_LATENCY_WARNING_SECONDS,
     raw.request_timeout_seconds ?? DEFAULT_REQUEST_TIMEOUT_SECONDS,
   );
   const modelPolicy = reconcileModelPolicySettings(raw.model_policy_tier, raw.model_policy_non_foss_unlocked);
-  const rawRecord =
-    typeof data === "object" && data !== null ? (data as Record<string, unknown>) : undefined;
+  const presetChipAnimation = normalizePresetChipAnimation(
+    raw.preset_chip_animation,
+    raw.preset_chip_fade_animation_enabled,
+  );
+
   return {
+    ...simple,
+    // Clamped as a pair — the warning must land below the timeout.
     latency_warning_seconds: latencyTimeout.latency_warning_seconds,
     request_timeout_seconds: latencyTimeout.request_timeout_seconds,
-    latency_timeouts_custom_enabled: normalizeLatencyTimeoutsCustomEnabled(raw.latency_timeouts_custom_enabled),
-    unified_input_persistence_mode: normalizeUnifiedInputPersistenceMode(raw.unified_input_persistence_mode),
-    screenshot_attachment_preset: normalizeScreenshotAttachmentPreset(rawRecord),
-    desktop_debug_note_auto_save: normalizeDesktopDebugNoteAutoSave(raw.desktop_debug_note_auto_save),
-    desktop_ask_verbose_logging: normalizeDesktopAskVerboseLogging(raw.desktop_ask_verbose_logging),
-    desktop_app_log_level: normalizeDesktopAppLogLevel(raw.desktop_app_log_level),
-    preset_chip_animation: normalizePresetChipAnimation(
-      raw.preset_chip_animation,
-      raw.preset_chip_fade_animation_enabled,
-    ),
-    preset_chip_fade_animation_enabled:
-      normalizePresetChipAnimation(raw.preset_chip_animation, raw.preset_chip_fade_animation_enabled) === "fade",
-    input_sanitizer_user_disabled: normalizeInputSanitizerUserDisabled(raw.input_sanitizer_user_disabled),
-    capabilities: normalizeCapabilities(raw.capabilities),
-    ai_character_enabled: normalizeAiCharacterEnabled(raw.ai_character_enabled),
-    ai_character_random: normalizeAiCharacterRandom(raw.ai_character_random),
-    ai_character_preset_id: normalizeAiCharacterPresetId(raw.ai_character_preset_id),
-    ai_character_custom_text: normalizeAiCharacterCustomText(raw.ai_character_custom_text),
-    ai_character_accent_intensity: normalizeAiCharacterAccentIntensity(raw.ai_character_accent_intensity),
-    ask_mode: normalizeAskMode(raw.ask_mode),
-    ollama_keep_alive: normalizeOllamaKeepAlive(raw.ollama_keep_alive),
-    reply_verbosity: normalizeReplyVerbosity(raw.reply_verbosity),
-    reply_language: normalizeReplyLanguage(raw.reply_language),
-    show_developer_tab: normalizeShowDeveloperTab(raw.show_developer_tab, rawRecord?.show_debug_tab),
+    // Reconciled as a pair — tier 3 requires the non-FOSS acknowledgment.
     model_policy_tier: modelPolicy.model_policy_tier,
     model_policy_non_foss_unlocked: modelPolicy.model_policy_non_foss_unlocked,
-    model_allow_high_vram_fallbacks: normalizeModelAllowHighVramFallbacks(raw.model_allow_high_vram_fallbacks),
+    // Read a legacy key as well as their own.
+    screenshot_attachment_preset: normalizeScreenshotAttachmentPreset(rawRecord),
+    ask_mode: normalizeAskMode(raw.ask_mode),
+    show_developer_tab: normalizeShowDeveloperTab(raw.show_developer_tab, rawRecord?.show_debug_tab),
+    preset_chip_animation: presetChipAnimation,
+    // Deprecated, and derived from the live field rather than read independently — Python
+    // matches this since D13, because reading it on its own can contradict the animation.
+    preset_chip_fade_animation_enabled: presetChipAnimation === "fade",
+    // Structured or list-valued.
+    capabilities: normalizeCapabilities(raw.capabilities),
+    named_ollama_hosts: normalizeNamedOllamaHosts(raw.named_ollama_hosts),
     text_model_routing_order: normalizeModelRoutingOrder(raw.text_model_routing_order),
     vision_model_routing_order: normalizeModelRoutingOrder(raw.vision_model_routing_order),
-    ollama_local_on_deck: normalizeOllamaLocalOnDeck(raw.ollama_local_on_deck),
-    strategy_spoiler_masking_enabled: normalizeStrategySpoilerMaskingEnabled(raw.strategy_spoiler_masking_enabled),
-    strategy_spoiler_auto_reveal_after_consent: normalizeStrategySpoilerAutoRevealAfterConsent(
-      raw.strategy_spoiler_auto_reveal_after_consent,
-    ),
-    steam_web_api_key: normalizeSteamWebApiKey(raw.steam_web_api_key),
-    bonsai_token_streaming_enabled: normalizeBonsaiTokenStreamingEnabled(raw.bonsai_token_streaming_enabled),
-    show_onscreen_debug_hud: normalizeShowOnscreenDebugHud(raw.show_onscreen_debug_hud),
-    named_ollama_hosts: normalizeNamedOllamaHosts(raw.named_ollama_hosts),
-    voice_stt_model: normalizeVoiceSttModel(raw.voice_stt_model),
-    ui_scale_auto_enabled: normalizeUiScaleAutoEnabled(raw.ui_scale_auto_enabled),
-    ui_scale_manual_profile: normalizeUiScaleProfileId(raw.ui_scale_manual_profile),
-    use_local_knowledge_base: raw.use_local_knowledge_base === true,
+    // Path validation beyond a length cap (traversal rejection).
     rag_corpus_path: normalizeRagCorpusPath(raw.rag_corpus_path),
-    rag_corpus_version: normalizeRagCorpusVersion(raw.rag_corpus_version),
   };
 }

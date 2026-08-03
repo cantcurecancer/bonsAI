@@ -1,6 +1,6 @@
 # bonsAI Roadmap
 
-**Next session starts at** [execution order](#maintainer-decisions-locked--2026-08-02) **step 7d** (TypeScript settings field table), then **step 8** (entry-point split). Steps **5c** ([D8](#d8--the-deploy-path-has-two-blind-spots-fix-them-or-keep-checking-by-hand)), **5d** ([D7](#d7--two-more-dead-functions-turned-up-delete-them-too)), **6** (`main.py` inventory — [07-mainpy-inventory.md](audit/07-mainpy-inventory.md)), **6b** ([D11](#d11--mainpy-carries-a-compatibility-shim-for-a-loader-you-may-never-use-remove-it) shim removal, `main.py` 2971 → 2865) , **7a** (settings drift guard) and **7b** (Python settings field table) are done. The deploy path is verified on-device, so step 8's gates are trustworthy (**DEPLOY-VERIFY-01/03** verified, **02** partial; see [testing.md](testing.md)). **No decisions are open.** [D7–D10](#d7d10--raised-during-the-2026-08-02-session-locked-2026-08-03) locked 2026-08-03.
+**Next session starts at** [execution order](#maintainer-decisions-locked--2026-08-02) **step 8** (entry-point split — resume `index.tsx` from step 5b's remaining list). Steps **5c** ([D8](#d8--the-deploy-path-has-two-blind-spots-fix-them-or-keep-checking-by-hand)), **5d** ([D7](#d7--two-more-dead-functions-turned-up-delete-them-too)), **6** (`main.py` inventory — [07-mainpy-inventory.md](audit/07-mainpy-inventory.md)), **6b** ([D11](#d11--mainpy-carries-a-compatibility-shim-for-a-loader-you-may-never-use-remove-it) shim removal, `main.py` 2971 → 2865)  and **7a–7d** (settings: drift guard, Python field table, D13 alignment, TypeScript field table) are done. The deploy path is verified on-device, so step 8's gates are trustworthy (**DEPLOY-VERIFY-01/03** verified, **02** partial; see [testing.md](testing.md)). **No decisions are open.** [D7–D10](#d7d10--raised-during-the-2026-08-02-session-locked-2026-08-03) locked 2026-08-03.
 
 Tracks **bugs and active engineering** ([In Progress](#in-progress)), **executed cleanup** ([Cleanup candidates](#cleanup-candidates)), **refactor decisions** ([Decisions needed](#decisions-needed) — locked 2026-08-02), deferred **QA** ([QA backlog](#qa-backlog)), the **backlog** ([Planned](#planned)), and pointers to shipped work ([Completed](#completed)).
 
@@ -784,7 +784,39 @@ verbatim in commit subjects, and keep one label to one commit series.
    frontend 242 → 263. Re-running the 31-input probe after the fixes: **1 divergence left**, the
    intentional immersive gate, documented in [tests/contracts/README.md](../tests/contracts/README.md).
 
-7d. **D12 — TypeScript field table** — the mirror of step 7b, now unblocked. — REFACTOR-PLAN §3.1, the highest-value item in the audit and the best-covered by existing tests (`tests/test_settings_service.py` asserts per-setting round-trips). Expect that suite to break on shape, not behavior — rewrite the assertions, do not contort the design.
+7d. **D12 — TypeScript field table** — **done 2026-08-03.** The mirror of step 7b.
+   `SIMPLE_FIELDS` in [bonsaiSettingsNormalizers.ts](../src/data/bonsaiSettingsNormalizers.ts)
+   now declares **26 settings** in one row each; 15 hand-written normalizers collapsed into
+   them. Exported functions **36 → 16**, file 457 → 441 lines. Same honest caveat as 7b: the
+   value is the per-setting edit cost, not the line count.
+
+   **The TS table has a shape the Python one does not.** Some rows delegate to a named function
+   because that field's option list or feature gate lives in its own module — `reply_verbosity`,
+   `reply_language`, `ollama_keep_alive`, and importantly `ui_scale_manual_profile`, whose
+   `normalizeUiScaleProfileId` also applies the `SHOW_IMMERSIVE_UI_SCALE` gate. Inlining that as
+   a plain enum row would have silently dropped the gate — the same mistake the original D13
+   write-up nearly made. The row is annotated to say so.
+
+   **Four `DEFAULT_*` imports became unused** and were removed: the boolean defaults had been
+   stated twice, once as a constant and once inside the predicate. The kinds encode them once.
+
+   **`as const satisfies { [K in keyof BonsaiSettings]?: (value: unknown) => BonsaiSettings[K] }`**
+   makes the table self-checking: a row whose coercer returns the wrong type for its key, or
+   names a key that is not in `BonsaiSettings`, fails `tsc` rather than a test.
+
+   **Verified by differential test**, matching 7b's rigor. The pre-refactor module was copied in
+   beside the new one and both run over **~6,000 comparisons** — every key set individually to
+   each of ~75 hostile values, non-object payloads, 3,000 seeded random combinations, all three
+   migration pairs exhaustively, and the latency/timeout pair across its clamp boundaries. Zero
+   mismatches; mutation-checked (flipping one row's default fails all five groups). Temporary
+   copy and test removed afterwards. All four gates green: `tsc`, 263 frontend, 418 Python,
+   `npm run build`.
+
+   A dead `normalizeScreenshotMaxDimension` — the exact twin of the Python function deleted in
+   step 7b — went first in its own commit.
+
+**Step 7 is complete.** Both languages now declare their simple settings as tables, the shape
+is pinned by two shared contracts, and the five D13 divergences are resolved. — REFACTOR-PLAN §3.1, the highest-value item in the audit and the best-covered by existing tests (`tests/test_settings_service.py` asserts per-setting round-trips). Expect that suite to break on shape, not behavior — rewrite the assertions, do not contort the design.
 8. **D3 — entry-point split, continued** — resume from **5b** above (after **5c** deploy hardening). Remaining, in the order they get cheaper: character-picker modal (~76 lines, ~11 deps), Ollama models hub (~84, ~10), desktop-note modal (~49), plugin-help modal (~11), connection/IP, session-reset, UI-scale, error-capture — **then** the six tab payloads. **`tsc` + `npm test` + preview smoke every commit** per locked **D10**. **On-Deck D-pad pass only for the four modal extractions** (not state-only commits). **Done scope = `index.tsx` only** per locked **D9** — `useBonsaiAskOrchestration.ts` and `MainTab.tsx` are follow-ups after step 8.
 9. **KB download Cancel button** — wire `cancel_rag_corpus_download` in `KnowledgeBaseSection.tsx`; D-pad row in `testing.md` / `testing-manual.md`.
 10. **D4 — evidence hygiene** — link audit, prune orphans only. The retention rule must live **in the script that writes evidence**, not in a doc — a rule that depends on remembering is not a mechanism.
