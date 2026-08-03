@@ -1,4 +1,4 @@
-# QA automation — what agents can realistically own
+# 01 — QA automation — what agents can realistically own
 
 Planning answer to [roadmap-planning-questions.md](roadmap-planning-questions.md) § 1.
 Recon only — **no implementation**. Effort uses the roadmap GTA scale (`★` … `★★★★★★`).

@@ -1,4 +1,4 @@
-# README.md redesign — plan
+# 02 — README.md redesign — plan
 
 Planning answer to [roadmap-planning-questions.md](roadmap-planning-questions.md) § 2.
 Recon and specification only — **no README text written, no images produced**.

@@ -1,4 +1,4 @@
-# 11 — Named chat slots: post-mortem and v2 redesign (2026-08-03)
+# 07 — Named chat slots: post-mortem and v2 redesign (2026-08-03)
 
 Evidence for the ★★★★★ **Named chat slots** row in
 [roadmap.md](../roadmap.md#planned) ("redesign only; do not re-ship the old
@@ -297,7 +297,7 @@ the slot has a deterministic auto-label (`heuristic_thread_label` is fine —
 `"<Game>: <first 60 chars of question>"`); renaming is an explicit action in the
 picker. No model involvement, no naming friction, no empty threads.
 
-**Why C is rejected.** LB/RB are already contended — `docs/audit/08-lbrb-tab-flicker.md`
+**Why C is rejected.** LB/RB are already contended — `docs/planning/03-lbrb-tab-flicker.md`
 documents a tab-flicker bug on those very bumpers, and Steam plus the running
 game both claim them. A bumper binding is also an invisible affordance with
 nowhere to show which slot you are on without adding the Main-tab indicator that

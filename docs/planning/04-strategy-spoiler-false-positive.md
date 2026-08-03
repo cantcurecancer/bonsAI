@@ -1,4 +1,4 @@
-# 09 — Strategy spoiler false positives (STRAT-SPOIL-DRG-01)
+# 04 — Strategy spoiler false positives (STRAT-SPOIL-DRG-01)
 
 Recon only. No fixes applied. Scope: why the roadmap bug
 *"Genre-aware spoiler policy + KB entity match (DRG Survivor boss names); verify
@@ -273,7 +273,7 @@ false-negative direction, and nothing in the current matrix covers it.
   `a9237e4`) verifies that an open `bonsai-spoiler` fence **does** mask mid-stream
   with no body flash. That is the opposite polarity of this bug. There is **no
   preview coverage for over-fencing** today.
-- `docs/planning/qa-automation-plan.md:193` and `:258` already call this out:
+- `docs/planning/01-qa-automation-plan.md:193` and `:258` already call this out:
   spoiler-mask *appropriateness* ("are DRG Survivor boss names spoilers?") is
   classed as qualitative / vision-tier, not DOM-assertable.
 - What *can* be automated cheaply and is not: a vitest case that renders a

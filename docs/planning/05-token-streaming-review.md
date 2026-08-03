@@ -1,4 +1,4 @@
-# 09 — Token streaming: architecture review, risks, ship readiness
+# 05 — Token streaming: architecture review, risks, ship readiness
 
 Status: **analysis only, no fix implemented.** Answers `docs/planning/roadmap-planning-questions.md` § 5.
 Written 2026-08-03 from static reading of `main.py`, `py_modules/backend/services/`, `src/`.

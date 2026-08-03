@@ -15,6 +15,7 @@ Short guide to markdown under `docs/`. Repo root **[README.md](../README.md)** s
 | [code-clarity.md](code-clarity.md) | Contributors / agents | Module header convention and its exclusions |
 | [glossary.md](glossary.md) | Everyone | Terms used in file headers and maintainer docs |
 | [rag-retrieval-quality-remediation-implementation-plan.md](rag-retrieval-quality-remediation-implementation-plan.md) | Maintainers | **Active** RAG hybrid-retrieval fix plan (PR1/PR2) |
+| [planning/](planning/) | Maintainers / agents | Planning prompts ([roadmap-planning-questions.md](planning/roadmap-planning-questions.md)) and numbered answers (Q1–Q8) |
 | [audit/](audit/) | Contributors / agents | Refactor recon — read before re-deriving anything |
 | [archive/reports/](archive/reports/) | Maintainers | Security / FOSS review snapshots |
 | [archive/](archive/) | — | Historical research, plans, completed features, old testing dumps |
@@ -28,4 +29,4 @@ the file listed in the table above, not that one.
 
 Policies, workflows, and specialist personas live in [`packages/bonsai-mcp/knowledge/`](../packages/bonsai-mcp/knowledge/). Call **`bonsai.session.bootstrap`** at session start. See [mcp-setup.md](mcp-setup.md).
 
-**Start here:** install → [README.md](../README.md); contributor setup → [development.md](development.md); agent MCP → [mcp-setup.md](mcp-setup.md); on-Deck QA → [testing-manual.md](testing-manual.md); planning → [roadmap.md](roadmap.md).
+**Start here:** install → [README.md](../README.md); contributor setup → [development.md](development.md); agent MCP → [mcp-setup.md](mcp-setup.md); on-Deck QA → [testing-manual.md](testing-manual.md); planning → [roadmap.md](roadmap.md) and [planning/](planning/) answers.

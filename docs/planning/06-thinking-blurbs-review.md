@@ -1,4 +1,4 @@
-# 11 — Thinking blurbs: implementation review, best practice, confidence bounds
+# 06 — Thinking blurbs: implementation review, best practice, confidence bounds
 
 Status: **analysis only, no fix implemented.** Answers `docs/planning/roadmap-planning-questions.md` § 6.
 Written 2026-08-03 from static reading of `main.py`, `py_modules/backend/services/`, `src/`, plus two

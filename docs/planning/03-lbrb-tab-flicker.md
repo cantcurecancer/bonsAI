@@ -1,4 +1,4 @@
-# 08 — LB/RB tab-switch flicker when scrolled (root-cause recon)
+# 03 — LB/RB tab-switch flicker when scrolled (root-cause recon)
 
 Status: **analysis only, no fix implemented.** Discovery locked 2026-07-29
 (`docs/roadmap.md` § In Progress → Bugs).
@@ -360,7 +360,7 @@ ranking must be revised toward H4.
 ```markdown
 - [ ] **TAB-SWITCH-01** LB/RB from a deep-scrolled Settings/Ollama panel: no
       flash or jitter in the tab strip or content pane; repeat with focus parked
-      on the tab icons (must also be clean) — [audit](audit/08-lbrb-tab-flicker.md)
+      on the tab icons (must also be clean) — [planning](03-lbrb-tab-flicker.md)
 ```
 
 And a coverage line in `docs/testing.md` alongside the D-pad scroll row

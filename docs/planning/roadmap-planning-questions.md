@@ -4,6 +4,26 @@ Prepared prompts for a future AI planning session. Each section has a short summ
 
 ---
 
+## Deliverables
+
+| Q# | Topic | Answer |
+|----|-------|--------|
+| 1 | Automating Device QA and prompt testing | [01-qa-automation-plan.md](01-qa-automation-plan.md) |
+| 2 | README.md redo | [02-readme-redesign-plan.md](02-readme-redesign-plan.md) |
+| 3 | LB/RB tab switch flicker when scrolled | [03-lbrb-tab-flicker.md](03-lbrb-tab-flicker.md) |
+| 4 | Strategy spoiler false-positive | [04-strategy-spoiler-false-positive.md](04-strategy-spoiler-false-positive.md) |
+| 5 | Token streaming evaluation | [05-token-streaming-review.md](05-token-streaming-review.md) |
+| 6 | Thinking blurbs evaluation | [06-thinking-blurbs-review.md](06-thinking-blurbs-review.md) |
+| 7 | Named chat slots | [07-named-chat-slots-postmortem.md](07-named-chat-slots-postmortem.md) |
+| 8 | Kids master lock feasibility | [08-kids-master-lock-feasibility.md](08-kids-master-lock-feasibility.md) |
+| 9 | Steam Frame companion UX feasibility | *not yet written* |
+| 10 | Wake-word listening feasibility and cost | *not yet written* |
+| 11 | Native QAM shortcut tile / decouple from Decky | *not yet written* |
+| 12 | Deep mod AI hints feasibility | *not yet written* |
+| 13 | Feature ideas for roadmap.md (star-rated) | *not yet written* |
+
+---
+
 ## 1. Automating Device QA and prompt testing
 
 ### Summary
