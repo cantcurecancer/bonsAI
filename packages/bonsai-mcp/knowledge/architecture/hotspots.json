@@ -7,7 +7,7 @@
     },
     {
       "path": "src/index.tsx",
-      "lines": 1718,
+      "lines": 1719,
       "role": "Plugin root: tabs, scoped CSS, RPC wiring, Settings"
     },
     {
@@ -17,7 +17,7 @@
     },
     {
       "path": "src/hooks/useBonsaiAskOrchestration.ts",
-      "lines": 1247,
+      "lines": 1261,
       "role": ""
     },
     {
@@ -141,6 +141,11 @@
       "role": ""
     },
     {
+      "path": "src/hooks/useBonsaiAskOrchestration.test.ts",
+      "lines": 439,
+      "role": ""
+    },
+    {
       "path": "py_modules/backend/services/desktop_note_service.py",
       "lines": 432,
       "role": ""
@@ -183,11 +188,6 @@
     {
       "path": "src/data/pullModelCatalog.ts",
       "lines": 374,
-      "role": ""
-    },
-    {
-      "path": "src/hooks/useBonsaiAskOrchestration.test.ts",
-      "lines": 370,
       "role": ""
     },
     {

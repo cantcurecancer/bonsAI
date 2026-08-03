@@ -112,6 +112,12 @@ export type UseBonsaiAskOrchestrationArgs = {
   aiCharacterEnabled?: boolean;
   aiCharacterPresetId?: string | null;
   useLocalKnowledgeBase?: boolean;
+  /**
+   * False until ``load_settings`` resolves. The preset carousel waits for it before its
+   * one-shot mount reseed, because the KB flags above are still at their UI defaults
+   * before then. Omit to opt out of the wait (tests that do not model settings loading).
+   */
+  settingsLoaded?: boolean;
   /** QA override (Developer tab): force every eligible carousel slot to a session RAG chip. */
   devForceSessionRagChips?: boolean;
   bonsaiTokenStreamingEnabled?: boolean;
@@ -299,12 +305,20 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
   );
 
   useEffect(() => {
+    // Wait for load_settings before spending the one-shot reseed. useLocalKnowledgeBase
+    // starts at its UI default of false, so reseeding first takes reseedSuggestedPrompts'
+    // static-only early return AND marks the mount reseed done. The re-run that follows
+    // hydration is then swallowed by the guard below, which is why session RAG chips could
+    // not appear on any open -- reopening only re-ran the same losing race.
+    if (a.settingsLoaded === false) {
+      return;
+    }
     if (coldMountPresetReseedDoneRef.current) {
       return;
     }
     coldMountPresetReseedDoneRef.current = true;
     void reseedSuggestedPrompts("random");
-  }, [reseedSuggestedPrompts]);
+  }, [a.settingsLoaded, reseedSuggestedPrompts]);
 
   const prevDevForceRagRef = useRef(a.devForceSessionRagChips);
   useEffect(() => {

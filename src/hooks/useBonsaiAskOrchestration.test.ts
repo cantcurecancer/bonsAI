@@ -337,6 +337,75 @@ describe("useBonsaiAskOrchestration", () => {
     });
   });
 
+  describe("session RAG preset chips", () => {
+    const DREADNOUGHT = "How do I beat Glyphid Dreadnought?";
+
+    function serveOneRagCandidate() {
+      setRpcHandler("get_session_rag_chip_candidates", () => ({
+        ok: true,
+        candidates: [
+          {
+            text: DREADNOUGHT,
+            category: "strategy",
+            prefer_ask_mode: "strategy",
+            domain: "strategy",
+          },
+        ],
+      }));
+    }
+
+    /**
+     * The mount reseed is one-shot, and both KB flags are at their UI defaults until
+     * ``load_settings`` resolves. Spending the reseed on that pre-hydration render left
+     * the carousel on static seeds for the whole session — no reopen could recover it,
+     * because a reopen just re-ran the same race.
+     *
+     * ``devForceSessionRagChips`` is true from the first render on purpose: it pins the
+     * roll at 1.0 without ever changing value, so the separate override effect never
+     * fires and the mount reseed is the only thing that can produce this chip.
+     */
+    it("draws a RAG chip when the knowledge base arrives with the settings load", async () => {
+      serveOneRagCandidate();
+
+      const { result, rerender } = renderHook(
+        (props: { settingsLoaded: boolean; useLocalKnowledgeBase: boolean }) =>
+          useBonsaiAskOrchestration(makeArgs({ ...props, devForceSessionRagChips: true })),
+        { initialProps: { settingsLoaded: false, useLocalKnowledgeBase: false } },
+      );
+
+      expect(
+        getRpcCallLog().some((c) => c.method === "get_session_rag_chip_candidates"),
+      ).toBe(false);
+
+      await act(async () => {
+        rerender({ settingsLoaded: true, useLocalKnowledgeBase: true });
+      });
+
+      expect(result.current.suggestedPrompts.map((p) => p.text)).toContain(DREADNOUGHT);
+    });
+
+    it("keeps static seeds when the knowledge base is off after settings load", async () => {
+      serveOneRagCandidate();
+
+      const { result } = renderHook(() =>
+        useBonsaiAskOrchestration(
+          makeArgs({
+            settingsLoaded: true,
+            useLocalKnowledgeBase: false,
+            devForceSessionRagChips: true,
+          }),
+        ),
+      );
+
+      await act(async () => {});
+
+      expect(result.current.suggestedPrompts.map((p) => p.text)).not.toContain(DREADNOUGHT);
+      expect(
+        getRpcCallLog().some((c) => c.method === "get_session_rag_chip_candidates"),
+      ).toBe(false);
+    });
+  });
+
   describe("thread history", () => {
     it("moves the previous exchange into the thread when the next question is asked", async () => {
       setRpcHandler("start_background_game_ai", () => ({

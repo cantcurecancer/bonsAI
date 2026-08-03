@@ -470,6 +470,7 @@ const Content: React.FC = () => {
     aiCharacterEnabled,
     aiCharacterPresetId,
     useLocalKnowledgeBase,
+    settingsLoaded,
     devForceSessionRagChips,
     bonsaiTokenStreamingEnabled,
   });
