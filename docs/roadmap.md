@@ -29,6 +29,7 @@ Known **defects** only. Deferred QA lives under [QA backlog](#qa-backlog). *QAMP
   - **Why the QA override appeared to work while the real path did not:** `dev_force_session_rag_chips` reseeds on *change*, and hydration flips it `false → true` — after `useLocalKnowledgeBase` is already true. So the override had its own working path into the carousel and told us nothing about the default one. A QA toggle that bypasses the broken step cannot verify the step.
   - **Coverage:** two tests in `useBonsaiAskOrchestration.test.ts`. Mutation-checked — removing the `settingsLoaded` wait fails the first one.
   - **Confirmed in the UI 2026-08-03:** maintainer saw the `Glyphid Dreadnought` chip with DRG Survivor running and the override off. **SESSION-RAG-CHIPS-01** moves to Verified — the first time the feature was observed working rather than inferred from RPC output.
+- ★★ **Token streaming reveals in chunks, not smoothly — the Main tab memo never sees the reveal frames.** Found by static analysis while extracting the Main tab payload (step 8); **not introduced by it** — the dependency list was carried over verbatim from before. `useSmoothStreamReveal` advances `streamDisplayText` on `requestAnimationFrame` ([useSmoothStreamReveal.ts:70-72](../src/hooks/useSmoothStreamReveal.ts)), but `streamDisplayText` is **not** in the Main tab payload's memo dependency list ([useMainTabPayload.tsx](../src/features/plugin-shell/tabs/useMainTabPayload.tsx)). React bails out of re-rendering a subtree when the element reference is unchanged, so those frames never reach `MainTab`. The reveal only advances when a listed dependency changes — in practice `ollamaResponse`, which the poll loop rewrites with each partial ([useBonsaiAskOrchestration.ts:459](../src/hooks/useBonsaiAskOrchestration.ts)). **Net effect: the smoothing is throttled to the backend poll cadence** — which is the same symptom (*"blocky on Deck"*) that [10-token-streaming-review.md](audit/10-token-streaming-review.md) W4 was investigating. Note W4's premise is the opposite of this finding: it assumed up to 60 reveal ticks/s *do* reach the tab and re-parse every block. Only one of the two can be true, and W4's proposed fix (P1, `React.memo` on the chunk component) addresses a re-render storm that this analysis says cannot be happening. **Settle which before spending effort on P1.** Two more props are missing from the same list — `isStreamingPreview` and `isStreamSettling` — so the rAF that ends the stream and swaps to the finished-answer layout ([useBonsaiAskOrchestration.ts:370-378](../src/hooks/useBonsaiAskOrchestration.ts)) also changes no listed dependency; that one is likely masked in practice by the async prompt reseed landing shortly after, so treat it as lower confidence. **Fix lean:** add the four props to the dependency list, or drop the memo and use `React.memo` on `MainTab` — the second removes a hand-maintained 55-entry list that has now been wrong at least once, but it is a behavior change and needs on-Deck confirmation, not a refactor commit. Verify **STREAM-REVEAL-01** ([testing.md](testing.md)) before fixing — the analysis is static, and this has never been observed under instrumentation.
 - ★ **Static seed tells you to enable the knowledge base when it is already on:** `"Enable local knowledge base for better game tips"` ([presets.ts:66](../src/data/presets.ts)) is an ordinary static seed with **no gate on `use_local_knowledge_base`**, so it appears in the carousel for users who already have the KB enabled. Spotted by the maintainer during the 2026-08-03 RAG chip pass — a fair thing to find suspicious, since it implies the KB is off while the backend reports it on. **Fix lean:** filter KB-advice seeds out when the setting is on; needs the KB flag threaded into `getRandomPresets` / `getContextualPresets`, which currently take no settings context.
 - ★ **Install voice engine button is actionable when the engine is already ready:** Settings → Voice input offers **Install voice engine** even when `engine_readiness` reports `binary_ready` and `model_ready`; pressing it re-runs the full install, including a podman pull of `ghcr.io/ggml-org/whisper.cpp`. Observed 2026-08-03 while troubleshooting the voice `status()` bug — the user pressed it precisely because the Main tab claimed voice was broken while Settings said ready, so the misleading state came from that bug, but the button being live regardless is its own issue. **Fix lean:** when ready, show the state and offer *Reinstall* as a distinct, clearly-labelled secondary action rather than the primary one. Needs a focus-graph entry if the control count changes (`.cursor/rules/decky-focus-graph.mdc`).
 - ★ **Strategy spoiler false-positive:** Genre-aware spoiler policy + KB entity match (DRG Survivor boss names); verify **STRAT-SPOIL-DRG-01** on Deck.
@@ -593,6 +594,45 @@ and it is the intentional immersive gate.
 
 ---
 
+### D14 — `index.tsx` is at 1291 lines, not the 700–800 step 8 predicted. Stop, or keep going?
+
+**What's going on.** Everything step 8 listed is done: three slices, four modals, one state
+hook, six tab payloads. `index.tsx` went 1955 → 1291. The 700–800 figure in **D9** was an
+estimate made before anyone measured what was left, and it assumed the remaining lines were
+JSX. They are not. What is left is four blocks of prop threading:
+
+| Block | Lines | What it is |
+|---|---|---|
+| `usePluginSettings` destructure | ~85 | 40 settings and their setters, unpacked into locals |
+| `settingsSnapshotForSave` | ~90 | the same 40 keys listed twice — object body and memo deps |
+| session-survival snapshot | ~65 | a default shape plus a live snapshot getter, ~30 fields each |
+| preview test-hook registration | ~55 | a preview-only `getState`/`setTab`/`triggerAsk` bridge |
+
+Moving any of these to another file does not make them smaller; it moves the same lines and
+adds an argument list. They shrink only by **collapsing** — passing grouped objects instead of
+40 named locals — and that is a rewrite of every consumer, which refactor rule 1 keeps out of a
+behavior-preserving step.
+
+**Option A — call step 8 done at 1291 and correct the estimate.** *(my recommendation)* The
+stated goal was a composition root that composes; that is now literally what the file is. The
+700–800 number was never measured and chasing it buys nothing a reader would notice.
+
+**Option B — do the one cheap collapse first, then stop.** Have `usePluginSettings` return
+`settingsSnapshotForSave` itself. It already owns all 40 states, so this is a move into the hook
+that owns the data, not a redesign — about 90 lines out of `index.tsx`, and it deletes a 40-key
+list that is currently maintained by hand in two places. It is genuinely step 7 work (settings
+SSOT) that happens to land in `index.tsx`. Low risk, one commit, gates unchanged.
+
+**Option C — collapse the prop threading properly.** Group the Ask slice and the settings slice
+into objects and thread those. Would get near the original estimate. It is also exactly the
+rewrite **D9** deferred, it touches `MainTab.tsx` (already a follow-up), and it is unreviewable
+as a single diff.
+
+**Not urgent.** Nothing is blocked on this. It only decides whether step 8 closes now or takes
+one more commit first.
+
+---
+
 ### Maintainer decisions locked — 2026-08-02
 
 The options above stay as the decision record. **Locked below** is what we are
@@ -909,7 +949,34 @@ still-open **D11-SHIM-01** pass. — REFACTOR-PLAN §3.1, the highest-value item
 
    **Gate note:** `npm run test:preview` **cannot run headlessly** — buckets C/D need Decky's preview open in Cursor (`preview-state.json` missing → `IPC timeout for callTestHook`). `npm run test:preview -- --tier=preGate` does run and was green (2/2) on every commit; that is the runnable portion of the D10 preview gate here.
 
-   Remaining, cheapest first: the Ollama-connection state hook (~15 lines) — **then** the six tab payloads. **`tsc` + `npm test` + preview smoke every commit** per locked **D10**. **On-Deck D-pad pass only for the four modal extractions** (not state-only commits). **Done scope = `index.tsx` only** per locked **D9** — `useBonsaiAskOrchestration.ts` and `MainTab.tsx` are follow-ups after step 8.
+   **State slice and all six payloads done 2026-08-03**, `index.tsx` **1522 → 1291** across
+   four more gated commits. `useOllamaConnectionState` took the host/connection slice; the six
+   tab payloads moved to `src/features/plugin-shell/tabs/`. Each payload hook derives its
+   argument type from the tab component's own props (`React.ComponentProps<typeof Tab>`), so a
+   prop added to a tab cannot drift from its payload. Derivations that served exactly one tab
+   moved with it: the two layout constants, `isQamSetting` and the whole AI-character avatar
+   block went to the Main tab, the `saveIp` binding and the remount key to the Ollama tab, and
+   the three project links to About. `index.tsx` no longer imports `MainTab`, `SettingsTab`,
+   `OllamaTab`, `PermissionsTab`, `DeveloperTab`, `AboutTab` or `characterCatalog`.
+
+   **The 700–800 line target is not reachable this way, and the estimate should be corrected
+   rather than chased.** At 1291 lines the remaining bulk is not JSX; it is prop threading —
+   the ~85-line `usePluginSettings` destructure, the ~90-line `settingsSnapshotForSave` memo
+   that lists all 40 settings twice, the ~65-line session-survival snapshot, and the ~55-line
+   preview-hook registration. Moving those into files does not shrink them; **collapsing** them
+   does, and that means passing grouped objects instead of 40 named locals — a rewrite, not a
+   move, which rule 1 keeps out of this step. The cheapest real win left is having
+   `usePluginSettings` return `settingsSnapshotForSave` itself, since it already owns all 40
+   states: about 90 lines, and it removes a list that is currently duplicated by hand. That is
+   step 7 territory (settings SSOT), not step 8. **Decision needed** — see **D14** below.
+
+   **Gates on every commit:** `tsc`, 268 frontend tests, preview `preGate` 2/2, `npm run build`.
+   The Main tab move was additionally checked prop-for-prop against the previous commit: 95
+   props, identical set and order. **On-Deck:** the four modal extractions still owe their D-pad
+   batch per **D10**; the state and payload commits add no new control, so they need the
+   **SHELL-PAYLOAD-01** smoke rather than a full pass. **Found while extracting:** a pre-existing
+   token-streaming defect, filed under Bugs — the Main tab memo never sees the smooth-reveal
+   frames, and its premise contradicts audit item W4.
 9. **KB download Cancel button** — wire `cancel_rag_corpus_download` in `KnowledgeBaseSection.tsx`; D-pad row in `testing.md` / `testing-manual.md`.
 10. **D4 — evidence hygiene** — link audit, prune orphans only. The retention rule must live **in the script that writes evidence**, not in a doc — a rule that depends on remembering is not a mechanism.
 11. **Deferred friction test** — run Phase 2c newcomer task on the post-refactor tree; file `docs/audit/03-friction.md`.
