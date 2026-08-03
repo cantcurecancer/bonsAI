@@ -1,6 +1,6 @@
 # bonsAI Roadmap
 
-**Next session starts at** [execution order](#maintainer-decisions-locked--2026-08-02) **step 6** (`main.py` extraction investigation, read-only), then **step 7** (settings SSOT) and **step 8** (entry-point split). Steps **5c** ([D8](#d8--the-deploy-path-has-two-blind-spots-fix-them-or-keep-checking-by-hand)) and **5d** ([D7](#d7--two-more-dead-functions-turned-up-delete-them-too)) are done and **deployed to a Deck** — the deploy path is trustworthy for step 8's gates (**DEPLOY-VERIFY-01/03** verified, **02** partial; see [testing.md](testing.md)). [D7–D10](#d7d10--raised-during-the-2026-08-02-session-locked-2026-08-03) locked 2026-08-03.
+**Next session starts at** [execution order](#maintainer-decisions-locked--2026-08-02) **step 7** (settings single source of truth), then **step 8** (entry-point split). Steps **5c** ([D8](#d8--the-deploy-path-has-two-blind-spots-fix-them-or-keep-checking-by-hand)), **5d** ([D7](#d7--two-more-dead-functions-turned-up-delete-them-too)) and **6** (`main.py` inventory — [07-mainpy-inventory.md](audit/07-mainpy-inventory.md)) are done; the deploy path is verified on-device, so step 8's gates are trustworthy (**DEPLOY-VERIFY-01/03** verified, **02** partial; see [testing.md](testing.md)). **One new decision is open: [D11](#d11--mainpy-carries-a-compatibility-shim-for-a-loader-you-may-never-use-remove-it)** — read before step 7, since it affects instance lifetime. [D7–D10](#d7d10--raised-during-the-2026-08-02-session-locked-2026-08-03) locked 2026-08-03.
 
 Tracks **bugs and active engineering** ([In Progress](#in-progress)), **executed cleanup** ([Cleanup candidates](#cleanup-candidates)), **refactor decisions** ([Decisions needed](#decisions-needed) — locked 2026-08-02), deferred **QA** ([QA backlog](#qa-backlog)), the **backlog** ([Planned](#planned)), and pointers to shipped work ([Completed](#completed)).
 
@@ -37,9 +37,13 @@ Known **defects** only. Deferred QA lives under [QA backlog](#qa-backlog). *QAMP
 
 Open questions that need a maintainer call before the work can continue. Written
 in plain language on purpose — each one says what the situation is, what your
-choices are, and what happens either way. **Locked calls (2026-08-02)** are in
-[Maintainer decisions locked](#maintainer-decisions-locked--2026-08-02) below
-**D6**; implement from that section when it disagrees with an option above.
+choices are, and what happens either way. **Locked calls (2026-08-02 for D1–D6,
+2026-08-03 for D7–D10)** are in
+[Maintainer decisions locked](#maintainer-decisions-locked--2026-08-02); implement
+from that section when it disagrees with an option above.
+
+**Currently open: [D11](#d11--mainpy-carries-a-compatibility-shim-for-a-loader-you-may-never-use-remove-it) only.** D1–D10 are locked and executed or in
+flight.
 
 Evidence for all of these lives in [docs/audit/](audit/), especially
 [05-plan.md](audit/05-plan.md).
@@ -345,6 +349,45 @@ not write focus-graph tests upfront.
 
 ---
 
+### D11 — `main.py` carries a compatibility shim for a loader you may never use. Remove it?
+
+**What's going on.** Found during the step 6 inventory
+([07-mainpy-inventory.md](audit/07-mainpy-inventory.md) §3). Every RPC in `main.py` starts
+by calling `_coerce_instance(self)` — **55 call sites**. Its whole job is to cope with an
+older Decky loader that passes the *class* instead of an instance. `plugin.json:6` declares
+`"api_version": 1`, and that loader passes an instance, so on your Deck this call does
+nothing at all.
+
+It has a partner: `_ensure_background_state` (35 lines) re-creates runtime state for the
+same "loader skipped `__init__`" case.
+
+Two things make this more than tidying:
+
+- The fallback **does not work anyway.** It backfills 11 of the 29 pieces of runtime state.
+  Voice, knowledge-base download, intent packs and Ollama setup are not covered, so if the
+  case it defends against ever happened, those would still crash.
+- If the class-passed branch ever *did* fire, `_coerce_instance` would build a brand new
+  plugin object and quietly throw away any Ask in progress. It is not a safety net; it is a
+  bug that never fires.
+
+**Option A — remove both.** *(my recommendation)* About 90-120 lines gone and 55 call sites
+simplified — the single largest mechanical shrink left in `main.py`. Safe as long as bonsAI
+stays on `api_version: 1`. If Decky ever ships a loader that behaves differently, the plugin
+would fail loudly at load rather than silently losing state, which is the better failure.
+
+**Option B — keep them, and write down why.** Costs nothing today. The comment has to explain
+why a half-covering fallback is worth 55 call sites, because otherwise a future session
+proposes this again.
+
+**Option C — finish the fallback instead.** Extend `_ensure_background_state` to cover all 29
+attributes. Most work, and it makes a path nothing exercises more elaborate.
+
+**Not urgent.** Nothing depends on this; it is sequenced after step 8. Flagged now because
+step 7 (settings single source of truth) touches instance lifetime and would be affected by
+the answer.
+
+---
+
 ### Maintainer decisions locked — 2026-08-02
 
 The options above stay as the decision record. **Locked below** is what we are
@@ -450,7 +493,38 @@ current tree (especially **D1b** and parts of **D2** / **D4**).
    helper's argument. Dropping it changes a public signature, which is not what D7 authorized;
    it belongs with the step-6 `main.py` inventory pass.
 
-6. **2.3 — `main.py` extraction investigation** — read-only; produce a `file:line` inventory of what logic remains inline in `main.py` and where each piece belongs ([05-plan.md](audit/05-plan.md) §2.3). Feeds both step 7 and the `main.py` half of step 8.
+6. **2.3 — `main.py` extraction investigation** — **done 2026-08-03**, read-only, no code
+   changed. Inventory: [07-mainpy-inventory.md](audit/07-mainpy-inventory.md).
+
+   **Answer to §2.3's question ("thin facade or logic in both layers?"): both, and not where
+   the file claims.** By count it reads as a facade — 27 of 96 methods are ≤8 lines. By
+   volume it is not: the six largest public RPCs are **706 lines, 24% of the file**, and ten
+   methods hold 869 lines (29% of the file in 10% of its methods). Split: 1767 lines across
+   the 50 public RPCs, 895 across 46 private helpers, ~210 in imports and class constants.
+
+   **One outright contract violation.** `main.py:6` says the file *"Does not: Own Ollama
+   HTTP"*. `test_ollama_connection` ([main.py:1038](../main.py), 178 lines) is the only
+   `urllib` consumer in the file — it opens `/api/version`, `/api/tags` and `/api/ps`
+   directly and derives a VRAM-share ratio from the response. About 70 lines of transport
+   belong in `ollama_service.py`; the loopback-recovery policy and logging stay.
+
+   **Four other findings**, each with the destination named in the doc: the background-state
+   dict shape is declared **four times** (one copy omits three keys — latent, not live, since
+   `_merge_partial_into_background_status` backfills them); three near-identical local-command
+   dispatch blocks in `start_background_game_ai`; four repetitions of cancel-task-and-reset in
+   `clear_plugin_data`; and `abort_background_game_ai` closing a raw `urllib` handle
+   cross-thread. Ranked extraction order with risk is §8 — **none of it was executed**, per
+   "investigation, not yet a refactor".
+
+   **Raised as [D11](#d11--mainpy-carries-a-compatibility-shim-for-a-loader-you-may-never-use-remove-it):** `_coerce_instance` is a no-op under `api_version: 1` and is called
+   at **55 sites**, with a 35-line `_ensure_background_state` partner. Biggest mechanical
+   shrink available (~90-120 lines) but it needs a maintainer call, not a refactor decision.
+
+   **Two §2.3 premises were stale** and are corrected in the doc: `main.py` is 2971 lines not
+   3021, imports 29 of 40 services not "35 of 42", and the coverage claim ("5 tests, all
+   locking, none RPC behavior") is now 8 test files, two of which do test RPC behavior — those
+   two are the pattern to copy for the extractions above. Still true: **none of the ten
+   largest methods has a behavioral test.**
 7. **2.2 — settings single source of truth** — REFACTOR-PLAN §3.1, the highest-value item in the audit and the best-covered by existing tests (`tests/test_settings_service.py` asserts per-setting round-trips). Expect that suite to break on shape, not behavior — rewrite the assertions, do not contort the design.
 8. **D3 — entry-point split, continued** — resume from **5b** above (after **5c** deploy hardening). Remaining, in the order they get cheaper: character-picker modal (~76 lines, ~11 deps), Ollama models hub (~84, ~10), desktop-note modal (~49), plugin-help modal (~11), connection/IP, session-reset, UI-scale, error-capture — **then** the six tab payloads. **`tsc` + `npm test` + preview smoke every commit** per locked **D10**. **On-Deck D-pad pass only for the four modal extractions** (not state-only commits). **Done scope = `index.tsx` only** per locked **D9** — `useBonsaiAskOrchestration.ts` and `MainTab.tsx` are follow-ups after step 8.
 9. **KB download Cancel button** — wire `cancel_rag_corpus_download` in `KnowledgeBaseSection.tsx`; D-pad row in `testing.md` / `testing-manual.md`.

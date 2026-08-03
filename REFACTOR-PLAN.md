@@ -261,13 +261,19 @@ file to break — that's the refactor telling you those tests asserted shape, no
 behavior. Rewrite them against behavior rather than contorting the code to keep them
 passing.
 
-**3.3 — Resolve the `main.py` extraction**
+**3.3 — Resolve the `main.py` extraction** — **investigated 2026-08-03**, not yet
+executed. See [docs/audit/07-mainpy-inventory.md](docs/audit/07-mainpy-inventory.md).
 
 > Is `main.py` a thin facade over `py_modules/backend/services/`, or does business
 > logic live in both? Cite `file:line`. If both, list what remains in `main.py` and
 > where each piece belongs.
 
 "Some logic here, some there, no rule" is worse for a reader than either extreme.
+
+**Answer: both.** 27 of 96 methods are ≤8 lines, but the six largest public RPCs are 706
+lines — 24% of the file. `test_ollama_connection` ([main.py:1038](main.py)) owns raw
+Ollama HTTP that `main.py:6` explicitly disclaims. The inventory names a destination and
+a risk level for each piece, in a recommended order.
 
 **3.4 — Split the entry points by feature, not by type**
 
