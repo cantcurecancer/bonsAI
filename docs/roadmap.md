@@ -1,6 +1,6 @@
 # bonsAI Roadmap
 
-**Next session starts at** [execution order](#maintainer-decisions-locked--2026-08-02) **step 7b** (settings single source of truth — **blocked on [D12](#d12--settings-live-in-two-languages-how-far-do-you-want-to-go-to-fix-that)**), then **step 8** (entry-point split). Steps **5c** ([D8](#d8--the-deploy-path-has-two-blind-spots-fix-them-or-keep-checking-by-hand)), **5d** ([D7](#d7--two-more-dead-functions-turned-up-delete-them-too)), **6** (`main.py` inventory — [07-mainpy-inventory.md](audit/07-mainpy-inventory.md)), **6b** ([D11](#d11--mainpy-carries-a-compatibility-shim-for-a-loader-you-may-never-use-remove-it) shim removal, `main.py` 2971 → 2865) and **7a** (settings drift guard) are done. The deploy path is verified on-device, so step 8's gates are trustworthy (**DEPLOY-VERIFY-01/03** verified, **02** partial; see [testing.md](testing.md)). **No decisions are open.** [D7–D10](#d7d10--raised-during-the-2026-08-02-session-locked-2026-08-03) locked 2026-08-03.
+**Next session starts at** [execution order](#maintainer-decisions-locked--2026-08-02) **step 7c** (TypeScript settings field table — **blocked on [D13](#d13--ts-and-python-disagree-about-six-settings-which-side-is-right)**), then **step 8** (entry-point split). Steps **5c** ([D8](#d8--the-deploy-path-has-two-blind-spots-fix-them-or-keep-checking-by-hand)), **5d** ([D7](#d7--two-more-dead-functions-turned-up-delete-them-too)), **6** (`main.py` inventory — [07-mainpy-inventory.md](audit/07-mainpy-inventory.md)), **6b** ([D11](#d11--mainpy-carries-a-compatibility-shim-for-a-loader-you-may-never-use-remove-it) shim removal, `main.py` 2971 → 2865) , **7a** (settings drift guard) and **7b** (Python settings field table) are done. The deploy path is verified on-device, so step 8's gates are trustworthy (**DEPLOY-VERIFY-01/03** verified, **02** partial; see [testing.md](testing.md)). **No decisions are open.** [D7–D10](#d7d10--raised-during-the-2026-08-02-session-locked-2026-08-03) locked 2026-08-03.
 
 Tracks **bugs and active engineering** ([In Progress](#in-progress)), **executed cleanup** ([Cleanup candidates](#cleanup-candidates)), **refactor decisions** ([Decisions needed](#decisions-needed) — locked 2026-08-02), deferred **QA** ([QA backlog](#qa-backlog)), the **backlog** ([Planned](#planned)), and pointers to shipped work ([Completed](#completed)).
 
@@ -42,7 +42,7 @@ choices are, and what happens either way. **Locked calls (2026-08-02 for D1–D6
 [Maintainer decisions locked](#maintainer-decisions-locked--2026-08-02); implement
 from that section when it disagrees with an option above.
 
-**Currently open: [D12](#d12--settings-live-in-two-languages-how-far-do-you-want-to-go-to-fix-that)** (step 7b is blocked on it). D1–D11 are locked; see the table below.
+**Currently open: [D13](#d13--ts-and-python-disagree-about-six-settings-which-side-is-right)** (step 7c is blocked on it). D1–D12 are locked; see the table below.
 
 Evidence for all of these lives in [docs/audit/](audit/), especially
 [05-plan.md](audit/05-plan.md).
@@ -438,6 +438,61 @@ would need anyway.
 
 ---
 
+### D13 — TS and Python disagree about six settings. Which side is right?
+
+**What's going on.** The step 7a check compared the two languages on a **fresh install** and
+found them identical. That was true and is still true — but it only tested one input. Writing
+the TypeScript field table meant reading every rule side by side, which surfaced six settings
+where the two disagree once the value is *not* the default.
+
+Confirmed by running both sanitizers over 31 hostile inputs:
+
+| Setting | Input | TypeScript | Python |
+|---|---|---|---|
+| `rag_corpus_path` | `"../../etc/passwd"` | passes it through | `""` (traversal rejected) |
+| `preset_chip_fade_animation_enabled` | `{preset_chip_animation: "carousel"}` | `false` (derived from the new field) | `true` (independent, defaults on) |
+| `desktop_app_log_level` | `" verbose "` | `"off"` (exact match only) | `"verbose"` (trims first) |
+| `ui_scale_manual_profile` | `"IMMERSIVE"` | `"handheld"` (case-sensitive) | `"immersive"` (lowercases) |
+| `rag_corpus_version` | `123` | `""` (non-strings rejected) | `"123"` (stringified) |
+
+**How much does this matter?** Less than the table suggests, and it is worth being precise.
+The UI sends exact values from its own controls, so none of these fire in normal use, and
+**Python is the gatekeeper for what reaches disk** — `save_settings` sanitizes on the way in,
+so the persisted file is always the Python answer. The exposure is a hand-edited
+`settings.json`, a value from an older build, or the frontend acting on its own reading before
+a save round-trips.
+
+`rag_corpus_path` is the one I would not leave alone: the frontend would show and act on a
+traversal path that the backend refuses to store, so the two layers genuinely disagree about
+what the knowledge-base location is.
+
+One detail worth knowing: `ui_scale_manual_profile: " Handheld "` **agrees** across both
+sides — but only because both happen to land on `handheld`, one by trimming and one by
+falling back to the default. Agreement by coincidence, not by shared rule.
+
+**Option A — make Python authoritative and align TS to it.** *(my recommendation)* Python is
+what persists, so aligning TS to it removes the possibility of the UI showing something the
+backend will not store. Five of the six are one-line changes to the TS normalizers; the sixth
+(`preset_chip_fade_animation_enabled`) needs a call on whether the legacy field is derived or
+independent — see below.
+
+**Option B — align case by case.** For at least one setting TS is arguably the better
+behavior: deriving `preset_chip_fade_animation_enabled` from `preset_chip_animation` keeps the
+deprecated field consistent with the live one, where Python can report `fade_enabled: true`
+alongside `animation: "carousel"`. Pick per row rather than by language.
+
+**Option C — leave them and document.** Nothing is broken in normal use. Costs nothing now,
+and the next person to read both files finds the same six discrepancies.
+
+**Either way, the guard should get stronger.** The 7a fixture only pins the fresh-install
+payload. Once the six are settled, the same hostile-input set that found them should become a
+second shared contract, so this class of drift fails a test instead of waiting to be noticed.
+
+**Blocks step 7c** (the TypeScript field table). Writing that table now means encoding rules
+this decision may change, then rewriting it.
+
+---
+
 ### Maintainer decisions locked — 2026-08-02
 
 The options above stay as the decision record. **Locked below** is what we are
@@ -456,6 +511,7 @@ current tree (especially **D1b** and parts of **D2** / **D4**).
 | **D7** | **Delete both screenshot helpers** | `_reencode_oversized_capture` and `_mirror_capture_to_plugin_dir` have no production callers; `_mirror_capture_to_plugin_dir` is an explicit deprecated no-op. One unit test still calls `_reencode` — remove it with the function. Consistent with D2 cleanup; module has behavioral coverage via `_finalize_steam_capture_file`. |
 | **D8** | **Harden `build.ps1` (prune + verify)** | Windows deploy path merges without pruning and prints success without checking the artifact landed. `build.sh deploy` already wipes the plugin dir — fix `build.ps1` (and `watch-deploy.ps1` by inheritance): remove stale files, compare `dist/index.js` hash or mtime after upload, fail on mismatch. Blocker before step 8. |
 | **D9** | **Done = step 8 (`index.tsx`) only** | Finish the state-before-JSX plan to ~700–800 lines (estimate). `useBonsaiAskOrchestration.ts` (1222 lines, 13 characterization tests) and `MainTab.tsx` (187 lines, prop-threading tax) are follow-ups after step 8 — splitting them now fights the locked order. |
+| **D12** | **Option A — declarative field table per language** | The two languages agreed exactly on fresh-install defaults, so this is cost reduction, not a bug fix. Most settings are one of five plain shapes; those become one-line rows, and the genuinely custom ones stay functions with a stated reason. Python side shipped as step **7b** (19 rows, 32 → 20 defs, 6,659-input differential test, zero mismatches). Full codegen (Option B) was not taken: its only extra guarantee is that the languages cannot disagree, and it has to be paid for by future settings churn — the field table is most of the spec it would need anyway, so it stays available later. |
 | **D11** | **Option A — remove `_coerce_instance` and `_ensure_background_state`** | Both exist for a loader that passes the class instead of an instance; `plugin.json:6` pins `api_version: 1`, where the call is an identity function across 55 sites. The fallback covered 11 of 29 runtime attributes, and if it had ever fired it would have built a fresh `Plugin` and discarded the in-flight Ask — a latent bug, not a safety net. Removed 103 lines with the RPC surface unchanged at 50. Executed as step **6b**, ahead of step 7, because step 7 depends on the same instance-lifetime assumption. |
 | **D10** | **Preview/tests every commit; on-Deck D-pad for modal extractions only** | `tsc` + `npm test` + preview smoke on every step 8 commit. On-Deck D-pad required for character picker, models hub, desktop note, and plugin help extractions only — not state-only commits. Tier 3 preview does not cover those modals; focus-graph tests upfront rejected. |
 
@@ -630,7 +686,40 @@ current tree (especially **D1b** and parts of **D2** / **D4**).
 
    **Next decision: [D12](#d12--settings-live-in-two-languages-how-far-do-you-want-to-go-to-fix-that)** — how far to go on reducing the six-file cost. Step 7b is blocked on it.
 
-7b. **2.2 — settings single source of truth** — **blocked on [D12](#d12--settings-live-in-two-languages-how-far-do-you-want-to-go-to-fix-that).** — REFACTOR-PLAN §3.1, the highest-value item in the audit and the best-covered by existing tests (`tests/test_settings_service.py` asserts per-setting round-trips). Expect that suite to break on shape, not behavior — rewrite the assertions, do not contort the design.
+7b. **D12 — Python field table** — **done 2026-08-03.** [D12](#d12--settings-live-in-two-languages-how-far-do-you-want-to-go-to-fix-that) locked Option A. 19 settings whose rule is a plain
+   shape (boolean defaulting false, boolean defaulting true, enum with a default, trimmed
+   length-capped string, and a variant that stringifies non-strings) are now one-line rows in
+   `_SIMPLE_FIELDS` instead of a hand-written function each. Adding such a setting was two
+   edits in this file — write a `sanitize_*`, then wire it into the returned dict — and is now
+   one row. Top-level defs **32 → 20**.
+
+   **Line count barely moved (477 → 458)** and that is the honest number: the shape builders
+   and the comments explaining why each remaining function is exempt cost most of what the
+   collapsed functions saved. The value is the per-setting edit cost and having the five
+   shapes named once, not the size of the file.
+
+   Two collapsed sanitizers keep a named function because `ollama_ask_service` imports them
+   directly; they delegate to their table row so the rule still has one definition. The exempt
+   settings are now annotated with *why* — reconciled in pairs, options supplied by `Plugin`
+   class constants, reads a legacy key, structured/list-valued, traversal rejection, or owned
+   by another service.
+
+   **Verified by differential test, not by the suite alone.** The pre-refactor module was
+   loaded from git alongside the new one and both run over **6,659 inputs** — every key set
+   individually to each of ~60 hostile values, non-dict payloads, 4,000 random combinations,
+   both migration pairs exhaustively, and the latency/timeout pair across its clamp
+   boundaries. **Zero mismatches.** Mutation-checked: flipping one row's default diverges
+   6,643 of them. This mattered — the predicates are not interchangeable (`is True` vs
+   `is not False` differ for every non-boolean, and the two string kinds differ for
+   non-strings), and the 7a fixture only pins the empty-input case.
+
+   A dead `sanitize_screenshot_max_dimension` was deleted first, in its own commit, so this
+   diff stayed purely structural.
+
+7c. **D12 — TypeScript field table** — **blocked on [D13](#d13--ts-and-python-disagree-about-six-settings-which-side-is-right).** Reading the TS
+   rules against the Python ones to build the mirror table is what surfaced **six settings
+   where the two languages disagree on non-default input**. Writing the table now would encode
+   rules D13 may change. Evidence and options are in D13. — REFACTOR-PLAN §3.1, the highest-value item in the audit and the best-covered by existing tests (`tests/test_settings_service.py` asserts per-setting round-trips). Expect that suite to break on shape, not behavior — rewrite the assertions, do not contort the design.
 8. **D3 — entry-point split, continued** — resume from **5b** above (after **5c** deploy hardening). Remaining, in the order they get cheaper: character-picker modal (~76 lines, ~11 deps), Ollama models hub (~84, ~10), desktop-note modal (~49), plugin-help modal (~11), connection/IP, session-reset, UI-scale, error-capture — **then** the six tab payloads. **`tsc` + `npm test` + preview smoke every commit** per locked **D10**. **On-Deck D-pad pass only for the four modal extractions** (not state-only commits). **Done scope = `index.tsx` only** per locked **D9** — `useBonsaiAskOrchestration.ts` and `MainTab.tsx` are follow-ups after step 8.
 9. **KB download Cancel button** — wire `cancel_rag_corpus_download` in `KnowledgeBaseSection.tsx`; D-pad row in `testing.md` / `testing-manual.md`.
 10. **D4 — evidence hygiene** — link audit, prune orphans only. The retention rule must live **in the script that writes evidence**, not in a doc — a rule that depends on remembering is not a mechanism.
