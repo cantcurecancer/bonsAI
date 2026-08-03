@@ -2043,7 +2043,7 @@ class Plugin:
 
     async def get_reply_language_snapshot(self):
         """Return Steam client language, persisted override, and effective Ask reply language."""
-        settings = self.load_settings()
+        settings = await self.load_settings()
         return reply_language_snapshot(settings.get("reply_language"))
 
     async def save_ask_feedback(self, rating: str, request_id: int = 0, question_len: int = 0, success: bool = False):

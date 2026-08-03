@@ -86,6 +86,7 @@
     "tests/test_pyro_asshole_safety.py",
     "tests/test_reply_followup.py",
     "tests/test_reply_language_service.py",
+    "tests/test_reply_language_snapshot_rpc.py",
     "tests/test_response_verify.py",
     "tests/test_screenshot_media.py",
     "tests/test_session_rag_chip_candidates_rpc.py",

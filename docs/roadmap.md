@@ -27,6 +27,31 @@ Known **defects** only. Deferred QA lives under [QA backlog](#qa-backlog). *QAMP
 - ★★ **KB compat retrieval phrase gate:** Troubleshooting KB (compat hybrid / **Keyword + meaning**) only runs when `question_matches_troubleshooting_log_context` matches a **hardcoded phrase list** in `ollama_prompts.py` (preset-style strings like `proton issue`, `why is my game crashing`). Natural-language asks (e.g. `deck sleep resume proton black screen`) skip the KB entirely — no chip, no hybrid, no **Source: shared troubleshooting tips**. **Intent:** when **Use local knowledge base** is on, attempt compat tip retrieval for general troubleshooting-shaped Asks without growing a brittle regex/preset farm in bonsAI. **Fix lean:** broaden gate (e.g. KB-on + not strategy-with-game → compat shortlist; or lightweight intent/heuristic separate from carousel presets); keep Strategy path AppID-gated. Regression: **KB-SMOKE-07/08** queries in [testing-manual.md](testing-manual.md) must pass without adding new hardcoded strings per smoke case. **Phase 4 discovery (2026-07-30):** lean gate fix (**B1**) ships with Phase 4 when implemented — not a separate forever-defer.
 - ★★★ **LB/RB tab switch flicker when scrolled:** Switching tabs with shoulder buttons while focus is deep in a scrolled panel (not on tab icons) flashes/jitters. Investigate carousel + remount/scroll/focus survival (partial anti-flicker CSS already on `TabContentsScroll`). Discovery locked 2026-07-29. **Recon: [08-lbrb-tab-flicker.md](audit/08-lbrb-tab-flicker.md)** — ranked hypotheses, fix tracks, on-Deck probe P0 to run first.
 
+**Fixed 2026-08-03 — reply-language snapshot RPC raised on every call.**
+`get_reply_language_snapshot` read `self.load_settings()` **without awaiting it** and then
+called `.get()` on the coroutine ([main.py:2046](../main.py)), so it raised
+`AttributeError: 'coroutine' object has no attribute 'get'` every single time — broken since the
+multi-language feature shipped in `9fb79bd`, not a regression from any refactor (the pre-D11
+code had the same omission).
+
+**Why nothing caught it.** The frontend hook swallows the failure and keeps its English default
+([useReplyLanguage.ts:45](../src/hooks/useReplyLanguage.ts)), and
+`src/test-harness/fakeDeckyRpc.ts` stubs this RPC with a canned object, so the frontend suite
+exercised the fake rather than the backend. Python unit tests import services, not `class
+Plugin`. It passed `tsc`, 263 frontend tests, 418 Python tests, and `npm run build`.
+
+**Scope, precisely.** Ask reply *content* was unaffected — that reads `reply_language` from
+settings on the Ask path, not from this snapshot. What silently fell back to English was the
+plugin's own UI-string translation (`t()`) and the displayed Steam client language.
+
+**Found by driving the deployed RPC surface directly**, which is now kept as
+[scripts/probe_deck_rpc_surface.py](../scripts/probe_deck_rpc_surface.py) rather than thrown
+away — it calls every read-only RPC plus the Ask admission path against a real deployed plugin,
+with all writes redirected to a temp dir. A sweep for the same mistake across `main.py` found no
+others (the one other hit was `asyncio.create_task`, correct by construction). Coverage:
+`tests/test_reply_language_snapshot_rpc.py`, 3 tests, mutation-checked — all three error without
+the `await`. Verified on-device: 21/21 RPCs ok, `bonsAI plugin loaded!`, zero log errors.
+
 **Fixed 2026-08-02 — session RAG preset chips never appeared.** `get_session_rag_chip_candidates` is now implemented at [main.py:1681](../main.py); the frontend at [sessionRagChipCandidates.ts:54](../src/utils/sessionRagChipCandidates.ts) had called it since the feature shipped, so with **Use local knowledge base** on the call always rejected and the carousel silently fell back to static seeds. The backend it needed already existed — `suggest_chip_candidates` and `session_rag_chip_candidates_to_rpc` in `knowledge_base_service.py`, with tests — so this is the missing RPC adapter only; **no ranking or candidate policy was designed or changed**, per **D1b**. KB-off, missing corpus and corpus read errors all return `{ok: false}` with a reason rather than rejecting. An **unreadable corpus** is additionally written to the plugin log — it is a real fault rather than "this game has no tips", and the console warning the frontend emits is not somewhere anyone looks on a Deck. It is logged once per distinct fault, not per Ask, because the carousel re-queries whenever it has no cached suggestions ([useBonsaiAskOrchestration.ts:244-249](../src/hooks/useBonsaiAskOrchestration.ts)). Coverage: `tests/test_session_rag_chip_candidates_rpc.py` (7 tests) over the existing service tests; on-Deck row **SESSION-RAG-CHIPS-01** in [testing.md](testing.md).
 
 **Fixed 2026-08-02 — pulled model tags never merged into routing order.** `merge_pulled_tags_into_routing_orders` is now implemented at [main.py:1776](../main.py); the frontend call at [OllamaWhereAiRunsSection.tsx:576](../src/components/OllamaWhereAiRunsSection.tsx) had no Python counterpart since the feature shipped. Pulled tags append to a saved try order (or go to the top when they are high-VRAM and that toggle is on), and vision-capable tags also join the vision list. **Deliberate no-op:** when the user has no saved try order, the RPC writes nothing — `resolve_routing_order` derives the chain from installed models ([ollama_routing.py:366-370](../py_modules/backend/ollama_routing.py)) and already includes anything just pulled, so writing a one-tag list would have *narrowed* the chain rather than extended it. Coverage: `tests/test_merge_pulled_tags_rpc.py` (8 tests); on-Deck row **ROUTING-MERGE-01** in [testing.md](testing.md).
