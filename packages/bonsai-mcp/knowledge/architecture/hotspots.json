@@ -116,14 +116,14 @@
       "role": ""
     },
     {
-      "path": "py_modules/backend/services/settings_service.py",
-      "lines": 478,
-      "role": "Load/save/merge settings.json"
-    },
-    {
       "path": "src/utils/settingsContracts.test.ts",
       "lines": 470,
       "role": ""
+    },
+    {
+      "path": "py_modules/backend/services/settings_service.py",
+      "lines": 459,
+      "role": "Load/save/merge settings.json"
     },
     {
       "path": "src/components/MainTabPresetAnimatedChips.tsx",

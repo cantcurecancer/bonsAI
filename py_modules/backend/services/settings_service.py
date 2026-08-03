@@ -28,17 +28,67 @@ DEFAULT_UI_SCALE_AUTO_ENABLED = True
 DEFAULT_UI_SCALE_MANUAL_PROFILE = "handheld"
 
 
-def sanitize_ui_scale_auto_enabled(value: Any) -> bool:
-    """Default on — only explicit ``false`` disables automatic UI scale."""
+# --- field kinds -------------------------------------------------------------
+# Most settings are one of a handful of boring shapes. These build the coercer for a
+# shape so `_SIMPLE_FIELDS` below can declare a setting in one row rather than a
+# hand-written function. Settings whose rules are genuinely their own -- the two legacy
+# migrations, the latency/timeout pair, model policy, capabilities, named hosts, routing
+# order -- stay as functions further down, on purpose. A row that needs a special case is
+# a sign it belongs there instead.
+#
+# The exact predicates matter and are not interchangeable: `is True` and `is not False`
+# differ for every non-boolean value, and the two string kinds differ for non-strings.
+
+
+def _bool_default_false(value: Any) -> bool:
+    """Off unless the value is exactly ``True`` -- any other type stays off."""
+    return value is True
+
+
+def _bool_default_true(value: Any) -> bool:
+    """On unless the user explicitly saved ``False`` -- a missing key stays on."""
     return value is not False
 
 
-def sanitize_ui_scale_manual_profile(value: Any) -> str:
-    if isinstance(value, str):
-        t = value.strip().lower()
-        if t in UI_SCALE_PROFILE_IDS:
-            return t
-    return DEFAULT_UI_SCALE_MANUAL_PROFILE
+def _enum(options: frozenset[str], default: str, *, strip: bool = False, lower: bool = False):
+    """Membership in ``options`` or the default. ``strip``/``lower`` normalize first."""
+
+    def _coerce(value: Any) -> str:
+        if isinstance(value, str):
+            candidate = value
+            if strip:
+                candidate = candidate.strip()
+            if lower:
+                candidate = candidate.lower()
+            if candidate in options:
+                return candidate
+        return default
+
+    return _coerce
+
+
+def _bounded_str(max_len: int):
+    """Trimmed and length-capped. A non-string is rejected outright, not stringified."""
+
+    def _coerce(value: Any) -> str:
+        if not isinstance(value, str):
+            return ""
+        return value.strip()[:max_len]
+
+    return _coerce
+
+
+def _coerced_str(max_len: int):
+    """As ``_bounded_str`` but stringifies non-strings, so ``123`` becomes ``"123"``.
+
+    Kept distinct because ``rag_corpus_version`` has always behaved this way and a version
+    written as a number would otherwise start coming back empty.
+    """
+
+    def _coerce(value: Any) -> str:
+        return str(value or "").strip()[:max_len]
+
+    return _coerce
 
 
 def clamp_int(value: Any, default: int, minimum: int, maximum: int) -> int:
@@ -74,40 +124,7 @@ def sanitize_ask_mode(
     return default_mode
 
 
-def sanitize_desktop_debug_note_auto_save(value: Any) -> bool:
-    """Only explicit true enables daily chat auto-save."""
-    return value is True
-
-
-def sanitize_desktop_ask_verbose_logging(value: Any) -> bool:
-    """Only explicit true enables verbose Ask trace append to Desktop notes."""
-    return value is True
-
-
-def sanitize_bonsai_token_streaming_enabled(value: Any) -> bool:
-    """Only explicit true enables progressive token streaming to the Main tab (Developer opt-in)."""
-    return value is True
-
-
-def sanitize_show_onscreen_debug_hud(value: Any) -> bool:
-    """Only explicit true shows the translucent on-screen ingest debug HUD."""
-    return value is True
-
-
 _VALID_DESKTOP_APP_LOG_LEVELS = frozenset({"off", "default", "verbose"})
-
-
-def sanitize_desktop_app_log_level(value: Any) -> str:
-    """App activity log level for Desktop/bonsAI_logs; default off (opt-in)."""
-    if isinstance(value, str) and value.strip() in _VALID_DESKTOP_APP_LOG_LEVELS:
-        return value.strip()
-    return "off"
-
-
-def sanitize_preset_chip_fade_animation_enabled(value: Any) -> bool:
-    """Staggered preset-chip fades are on unless the user explicitly saves ``false``."""
-    return value is not False
-
 
 _VALID_PRESET_CHIP_ANIMATION = frozenset({"fade", "carousel", "static"})
 
@@ -123,32 +140,7 @@ def sanitize_preset_chip_animation(value: Any, legacy_fade: Any) -> str:
     return "fade"
 
 
-def sanitize_input_sanitizer_user_disabled(value: Any) -> bool:
-    """Only explicit ``true`` means the user disabled the sanitizer lane (keyword command)."""
-    return value is True
-
-
-def sanitize_strategy_spoiler_masking_enabled(value: Any) -> bool:
-    """Strategy ```bonsai-spoiler``` tap-to-reveal is on unless the user explicitly saves ``false``."""
-    return value is not False
-
-
-def sanitize_strategy_spoiler_auto_reveal_after_consent(value: Any) -> bool:
-    """Only explicit ``true`` expands spoiler blocks by default after an opted-in Ask."""
-    return value is True
-
-
 STEAM_WEB_API_KEY_MAX_LEN = 128
-
-
-def sanitize_steam_web_api_key(value: Any) -> str:
-    """Strip and bound Steam Web API key length; never store non-string blobs."""
-    if not isinstance(value, str):
-        return ""
-    s = value.strip()
-    if len(s) > STEAM_WEB_API_KEY_MAX_LEN:
-        s = s[:STEAM_WEB_API_KEY_MAX_LEN]
-    return s
 
 
 def sanitize_show_developer_tab(value: Any, legacy_show_debug_tab: Any = None) -> bool:
@@ -160,24 +152,12 @@ def sanitize_show_developer_tab(value: Any, legacy_show_debug_tab: Any = None) -
     return False
 
 
-def sanitize_ollama_local_on_deck(value: Any) -> bool:
-    """Explicit ``true`` routes Ask to localhost Ollama; omitted / ``None`` defaults off (LAN field applies)."""
-    if value is None:
-        return False
-    return value is True
-
-
 def sanitize_model_routing_order(value: Any) -> list[str]:
     """Dedupe Ollama tags for text/vision try-order lists (max 16)."""
     from backend.ollama_routing import MAX_MODEL_ROUTING_ORDER_LEN
     from backend.services.ollama_catalog_service import normalize_ollama_pull_tags
 
     return normalize_ollama_pull_tags(value)[:MAX_MODEL_ROUTING_ORDER_LEN]
-
-
-def sanitize_model_allow_high_vram_fallbacks(value: Any) -> bool:
-    """Only explicit ``true`` appends large-model tails to Ollama fallback chains."""
-    return value is True
 
 
 MAX_NAMED_OLLAMA_HOSTS = 4
@@ -232,18 +212,21 @@ REPLY_VERBOSITY_OPTIONS = frozenset({"short", "balanced", "detailed"})
 DEFAULT_REPLY_VERBOSITY = "balanced"
 
 
+_reply_verbosity_field = _enum(REPLY_VERBOSITY_OPTIONS, DEFAULT_REPLY_VERBOSITY)
+_ollama_keep_alive_field = _enum(OLLAMA_KEEP_ALIVE_OPTIONS, DEFAULT_OLLAMA_KEEP_ALIVE)
+
+
+# These two are the only field-table entries that also have callers outside this module
+# (``ollama_ask_service`` reads both straight off the settings dict), so they keep a named
+# function rather than living only as a row.
 def sanitize_reply_verbosity(value: Any) -> str:
     """Validate global reply prose style; balanced = no verbosity inject."""
-    if isinstance(value, str) and value in REPLY_VERBOSITY_OPTIONS:
-        return value
-    return DEFAULT_REPLY_VERBOSITY
+    return _reply_verbosity_field(value)
 
 
 def sanitize_ollama_keep_alive(value: Any) -> str:
     """Validate Ollama keep_alive duration tokens and fall back to the plugin default."""
-    if isinstance(value, str) and value in OLLAMA_KEEP_ALIVE_OPTIONS:
-        return value
-    return DEFAULT_OLLAMA_KEEP_ALIVE
+    return _ollama_keep_alive_field(value)
 
 
 def _reconcile_latency_warning_before_timeout(
@@ -270,11 +253,6 @@ def _reconcile_latency_warning_before_timeout(
     return w, t
 
 
-def sanitize_latency_timeouts_custom_enabled(value: Any) -> bool:
-    """Only explicit true lets stored warning/timeout values apply to Ollama and UI (defaults when false)."""
-    return value is True
-
-
 def resolve_screenshot_attachment_preset(data: Any, default_preset: str) -> str:
     """Prefer screenshot_attachment_preset; map legacy screenshot_max_dimension when absent."""
     if not isinstance(data, dict):
@@ -294,11 +272,6 @@ def resolve_screenshot_attachment_preset(data: Any, default_preset: str) -> str:
     return "low"
 
 
-def sanitize_use_local_knowledge_base(value: Any) -> bool:
-    """Only explicit true enables knowledge-base retrieval."""
-    return value is True
-
-
 def sanitize_rag_corpus_path(value: Any) -> str:
     raw = str(value or "").strip()
     if not raw:
@@ -309,8 +282,40 @@ def sanitize_rag_corpus_path(value: Any) -> str:
     return raw[:512]
 
 
-def sanitize_rag_corpus_version(value: Any) -> str:
-    return str(value or "").strip()[:64]
+# --- the field table ---------------------------------------------------------
+# One row per setting whose rule is a plain shape. Adding such a setting is one row here
+# plus one in the TypeScript table; `tests/contracts/settings-defaults.json` fails if the
+# two disagree. Anything needing a legacy migration, another field's value, or a nested
+# structure is deliberately absent -- see the functions above and `sanitize_settings` below.
+_SIMPLE_FIELDS: dict[str, Any] = {
+    # Developer and Desktop logging opt-ins.
+    "desktop_debug_note_auto_save": _bool_default_false,
+    "desktop_ask_verbose_logging": _bool_default_false,
+    "bonsai_token_streaming_enabled": _bool_default_false,
+    "show_onscreen_debug_hud": _bool_default_false,
+    "desktop_app_log_level": _enum(_VALID_DESKTOP_APP_LOG_LEVELS, "off", strip=True),
+    # Ask behavior.
+    "input_sanitizer_user_disabled": _bool_default_false,
+    "latency_timeouts_custom_enabled": _bool_default_false,
+    "reply_verbosity": _reply_verbosity_field,
+    "ollama_keep_alive": _ollama_keep_alive_field,
+    # ``None`` means "never saved", which is off -- same result as any other non-``True``.
+    "ollama_local_on_deck": _bool_default_false,
+    "model_allow_high_vram_fallbacks": _bool_default_false,
+    # Presentation, defaulting on: only an explicit ``False`` turns these off.
+    "preset_chip_fade_animation_enabled": _bool_default_true,
+    "strategy_spoiler_masking_enabled": _bool_default_true,
+    "ui_scale_auto_enabled": _bool_default_true,
+    "strategy_spoiler_auto_reveal_after_consent": _bool_default_false,
+    "ui_scale_manual_profile": _enum(
+        UI_SCALE_PROFILE_IDS, DEFAULT_UI_SCALE_MANUAL_PROFILE, strip=True, lower=True
+    ),
+    # Knowledge base.
+    "use_local_knowledge_base": _bool_default_false,
+    "rag_corpus_version": _coerced_str(64),
+    # Credentials.
+    "steam_web_api_key": _bounded_str(STEAM_WEB_API_KEY_MAX_LEN),
+}
 
 
 def sanitize_settings(
@@ -350,82 +355,58 @@ def sanitize_settings(
     mp_tier, mp_unlock = reconcile_model_policy_tier(
         raw.get("model_policy_tier"), raw.get("model_policy_non_foss_unlocked")
     )
-    screenshot_attachment_preset = resolve_screenshot_attachment_preset(raw, "low")
-    return {
-        "latency_warning_seconds": latency,
-        "request_timeout_seconds": timeout,
-        "latency_timeouts_custom_enabled": sanitize_latency_timeouts_custom_enabled(
-            raw.get("latency_timeouts_custom_enabled")
-        ),
-        "unified_input_persistence_mode": sanitize_unified_input_persistence_mode(
-            raw.get("unified_input_persistence_mode"),
-            valid_persistence_modes,
-            default_persistence_mode,
-        ),
-        "screenshot_attachment_preset": screenshot_attachment_preset,
-        "desktop_debug_note_auto_save": sanitize_desktop_debug_note_auto_save(
-            raw.get("desktop_debug_note_auto_save")
-        ),
-        "desktop_ask_verbose_logging": sanitize_desktop_ask_verbose_logging(
-            raw.get("desktop_ask_verbose_logging")
-        ),
-        "bonsai_token_streaming_enabled": sanitize_bonsai_token_streaming_enabled(
-            raw.get("bonsai_token_streaming_enabled")
-        ),
-        "show_onscreen_debug_hud": sanitize_show_onscreen_debug_hud(raw.get("show_onscreen_debug_hud")),
-        "desktop_app_log_level": sanitize_desktop_app_log_level(raw.get("desktop_app_log_level")),
-        "preset_chip_fade_animation_enabled": sanitize_preset_chip_fade_animation_enabled(
-            raw.get("preset_chip_fade_animation_enabled")
-        ),
-        "preset_chip_animation": sanitize_preset_chip_animation(
-            raw.get("preset_chip_animation"),
-            raw.get("preset_chip_fade_animation_enabled"),
-        ),
-        "input_sanitizer_user_disabled": sanitize_input_sanitizer_user_disabled(
-            raw.get("input_sanitizer_user_disabled")
-        ),
-        "capabilities": sanitize_capabilities(raw.get("capabilities")),
-        "ai_character_enabled": sanitize_ai_character_enabled(raw.get("ai_character_enabled")),
-        "ai_character_random": sanitize_ai_character_random(raw.get("ai_character_random")),
-        "ai_character_preset_id": sanitize_ai_character_preset_id(raw.get("ai_character_preset_id")),
-        "ai_character_custom_text": sanitize_ai_character_custom_text(raw.get("ai_character_custom_text")),
-        "ai_character_accent_intensity": sanitize_ai_character_accent_intensity(
-            raw.get("ai_character_accent_intensity")
-        ),
-        "ask_mode": sanitize_ask_mode(
-            raw.get("ask_mode"),
-            valid_ask_modes,
-            default_ask_mode,
-        ),
-        "ollama_keep_alive": sanitize_ollama_keep_alive(raw.get("ollama_keep_alive")),
-        "reply_verbosity": sanitize_reply_verbosity(raw.get("reply_verbosity")),
-        "reply_language": sanitize_reply_language(raw.get("reply_language")),
-        "ollama_local_on_deck": sanitize_ollama_local_on_deck(raw.get("ollama_local_on_deck")),
-        "show_developer_tab": sanitize_show_developer_tab(
-            raw.get("show_developer_tab"), raw.get("show_debug_tab")
-        ),
-        "model_policy_tier": mp_tier,
-        "model_policy_non_foss_unlocked": mp_unlock,
-        "model_allow_high_vram_fallbacks": sanitize_model_allow_high_vram_fallbacks(
-            raw.get("model_allow_high_vram_fallbacks")
-        ),
-        "text_model_routing_order": sanitize_model_routing_order(raw.get("text_model_routing_order")),
-        "vision_model_routing_order": sanitize_model_routing_order(raw.get("vision_model_routing_order")),
-        "named_ollama_hosts": sanitize_named_ollama_hosts(raw.get("named_ollama_hosts")),
-        "strategy_spoiler_masking_enabled": sanitize_strategy_spoiler_masking_enabled(
-            raw.get("strategy_spoiler_masking_enabled")
-        ),
-        "strategy_spoiler_auto_reveal_after_consent": sanitize_strategy_spoiler_auto_reveal_after_consent(
-            raw.get("strategy_spoiler_auto_reveal_after_consent")
-        ),
-        "steam_web_api_key": sanitize_steam_web_api_key(raw.get("steam_web_api_key")),
-        "voice_stt_model": sanitize_voice_stt_model(raw.get("voice_stt_model")),
-        "ui_scale_auto_enabled": sanitize_ui_scale_auto_enabled(raw.get("ui_scale_auto_enabled")),
-        "ui_scale_manual_profile": sanitize_ui_scale_manual_profile(raw.get("ui_scale_manual_profile")),
-        "use_local_knowledge_base": sanitize_use_local_knowledge_base(raw.get("use_local_knowledge_base")),
-        "rag_corpus_path": sanitize_rag_corpus_path(raw.get("rag_corpus_path")),
-        "rag_corpus_version": sanitize_rag_corpus_version(raw.get("rag_corpus_version")),
-    }
+    out: dict[str, Any] = {name: coerce(raw.get(name)) for name, coerce in _SIMPLE_FIELDS.items()}
+
+    # Everything below needs something a table row cannot express: another field's value,
+    # a legacy key, a nested structure, or a caller-supplied set of valid options.
+    out.update(
+        {
+            # Clamped as a pair -- the warning must land below the timeout.
+            "latency_warning_seconds": latency,
+            "request_timeout_seconds": timeout,
+            # Reconciled as a pair -- tier 3 requires the non-FOSS acknowledgment.
+            "model_policy_tier": mp_tier,
+            "model_policy_non_foss_unlocked": mp_unlock,
+            # Valid options come from the Plugin class constants, not from this module.
+            "unified_input_persistence_mode": sanitize_unified_input_persistence_mode(
+                raw.get("unified_input_persistence_mode"),
+                valid_persistence_modes,
+                default_persistence_mode,
+            ),
+            "ask_mode": sanitize_ask_mode(raw.get("ask_mode"), valid_ask_modes, default_ask_mode),
+            # Read a legacy key as well as their own.
+            "screenshot_attachment_preset": resolve_screenshot_attachment_preset(raw, "low"),
+            "preset_chip_animation": sanitize_preset_chip_animation(
+                raw.get("preset_chip_animation"),
+                raw.get("preset_chip_fade_animation_enabled"),
+            ),
+            "show_developer_tab": sanitize_show_developer_tab(
+                raw.get("show_developer_tab"), raw.get("show_debug_tab")
+            ),
+            # Structured or list-valued.
+            "capabilities": sanitize_capabilities(raw.get("capabilities")),
+            "named_ollama_hosts": sanitize_named_ollama_hosts(raw.get("named_ollama_hosts")),
+            "text_model_routing_order": sanitize_model_routing_order(raw.get("text_model_routing_order")),
+            "vision_model_routing_order": sanitize_model_routing_order(
+                raw.get("vision_model_routing_order")
+            ),
+            # Path validation beyond a length cap (traversal rejection).
+            "rag_corpus_path": sanitize_rag_corpus_path(raw.get("rag_corpus_path")),
+            # Owned by another service; imported rather than redefined here.
+            "ai_character_enabled": sanitize_ai_character_enabled(raw.get("ai_character_enabled")),
+            "ai_character_random": sanitize_ai_character_random(raw.get("ai_character_random")),
+            "ai_character_preset_id": sanitize_ai_character_preset_id(raw.get("ai_character_preset_id")),
+            "ai_character_custom_text": sanitize_ai_character_custom_text(
+                raw.get("ai_character_custom_text")
+            ),
+            "ai_character_accent_intensity": sanitize_ai_character_accent_intensity(
+                raw.get("ai_character_accent_intensity")
+            ),
+            "reply_language": sanitize_reply_language(raw.get("reply_language")),
+            "voice_stt_model": sanitize_voice_stt_model(raw.get("voice_stt_model")),
+        }
+    )
+    return out
 
 
 def load_settings(path: str, sanitize_func: Callable[[Any], dict], logger: Any) -> dict:
