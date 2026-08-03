@@ -78,7 +78,6 @@ async def run_ask_ollama(
 ) -> dict[str, Any]:
     """Orchestrate attachment prep, prompt assembly, and model fallback request execution."""
     plugin_inst = plugin
-    plugin_inst._ensure_background_state()
     active_request_id = plugin_inst._active_request_id()
 
     url = plugin_inst._build_ollama_chat_url(pc_ip)

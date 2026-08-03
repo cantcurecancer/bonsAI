@@ -45,9 +45,6 @@ class _FakePlugin:
             "ollama_keep_alive": "",
         }
 
-    def _ensure_background_state(self) -> None:
-        pass
-
     def _active_request_id(self) -> None:
         return None
 

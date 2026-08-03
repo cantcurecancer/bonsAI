@@ -7,6 +7,12 @@ changed producing this. Output is a `file:line` inventory of what logic remains 
 Measured against `main.py` at commit `8f6d9ad` (2971 lines). Every claim below cites a
 line; anything not verified says `UNKNOWN`.
 
+> **Superseded in part, 2026-08-03.** §8 item 6 (the `_coerce_instance` /
+> `_ensure_background_state` removal) was **executed** the same day after **D11** was locked
+> to Option A — `main.py` is now **2865 lines / 94 methods**, RPC surface unchanged at 50.
+> Line numbers below are the pre-removal ones and are ~100 lines high after `main.py:496`.
+> Everything else in this inventory is unexecuted and still current.
+
 ---
 
 ## 1. Answer to the §2.3 question
@@ -96,10 +102,30 @@ this worth a decision rather than a silent deletion:
    instance** and silently discard all in-flight background state. It is not a safe
    fallback; it is a state-loss bug that never triggers.
 
-**This is not a step-6 action.** Removing 55 call sites plus a 35-line method is the
-single biggest mechanical shrink available in `main.py` (~90-120 lines), but it is only
-behavior-preserving if the `api_version: 1` assumption is permanent. That is a maintainer
-call — filed as **D11** in [roadmap.md](../roadmap.md#decisions-needed).
+**This was not a step-6 action.** Removing 55 call sites plus a 35-line method is the
+single biggest mechanical shrink available in `main.py`, but it is only behavior-preserving
+if the `api_version: 1` assumption is permanent — a maintainer call, filed as **D11**.
+
+> **Locked Option A and executed 2026-08-03.** Both are gone; `main.py` 2971 → 2865
+> (−103 lines, −2 methods), RPC surface unchanged at 50. The 53 `plugin = ...` aliases
+> became direct `self` use rather than `plugin = self`, so no vestigial indirection remains.
+>
+> **The shim had a service-side half the inventory missed.**
+> `ollama_ask_service.py:81` called `plugin_inst._ensure_background_state()` defensively
+> before touching `_active_request_id()` and the chat attributes, and
+> `tests/test_ollama_ask_service.py` carried a matching no-op on its `_FakePlugin`. Deleting
+> only the `main.py` side would have thrown `AttributeError` on **every Ask** while the unit
+> suite stayed green, because that fake satisfied the call. Both were removed with it.
+>
+> **How it was verified.** A token-level differ compared the pre- and post-transform files:
+> after removing the intentionally deleted regions, both sides yield **15,446 identical
+> tokens**, with 236 `plugin`/`plugin_bg` NAME tokens becoming `self` and **zero** other
+> differences — proof the change is mechanical rather than merely untested, which matters
+> because 8 test files cover only a fraction of the 53 methods touched. Then 413 Python
+> tests, then a deploy: `bonsAI plugin loaded!`, no `Traceback`/`ERROR`, deployed `main.py`
+> at 2865 lines. A text-level find-and-replace would have corrupted the
+> `"plugin.lifecycle"` and `"plugin.data_clear"` log event names and the docstring prose;
+> those are string tokens and were left untouched.
 
 ---
 
@@ -222,10 +248,10 @@ document.
 | 3 | Local-command dispatch table in `start_background_game_ai` | ~40 | MED | Behavior-preserving but touches the Ask admission path — the highest-traffic code in the plugin |
 | 4 | `cancel_and_reset` helper for `clear_plugin_data` | ~45 | MED | Four subsystems; a mistake here breaks *Clear all data*, which has burned this refactor once already ([05-plan.md](05-plan.md) §1.1) |
 | 5 | `abort_background_game_ai` transport half | ~25 | MED | Cross-thread HTTP close; hard to test, easy to get subtly wrong |
-| 6 | `_coerce_instance` + `_ensure_background_state` removal | ~90-120 | **Blocked on D11** | Biggest shrink, but only valid if `api_version: 1` is permanent |
+| 6 | `_coerce_instance` + `_ensure_background_state` removal | 103 | ~~Blocked on D11~~ **done 2026-08-03** | Biggest shrink; D11 locked Option A. See §3 |
 
-Items 1-2 are worth doing before **step 7**; item 6 interacts with step 7 because
-`_ensure_background_state` and the settings layer both assume things about instance
+Items 1-2 are worth doing before **step 7**. Item 6 is done — it was pulled ahead of its
+place in this order precisely because it interacts with step 7, which touches instance
 lifetime. Items 3-5 can wait until after **step 8**.
 
 ---

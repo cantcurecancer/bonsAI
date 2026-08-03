@@ -1,6 +1,6 @@
 # bonsAI Roadmap
 
-**Next session starts at** [execution order](#maintainer-decisions-locked--2026-08-02) **step 7** (settings single source of truth), then **step 8** (entry-point split). Steps **5c** ([D8](#d8--the-deploy-path-has-two-blind-spots-fix-them-or-keep-checking-by-hand)), **5d** ([D7](#d7--two-more-dead-functions-turned-up-delete-them-too)) and **6** (`main.py` inventory — [07-mainpy-inventory.md](audit/07-mainpy-inventory.md)) are done; the deploy path is verified on-device, so step 8's gates are trustworthy (**DEPLOY-VERIFY-01/03** verified, **02** partial; see [testing.md](testing.md)). **One new decision is open: [D11](#d11--mainpy-carries-a-compatibility-shim-for-a-loader-you-may-never-use-remove-it)** — read before step 7, since it affects instance lifetime. [D7–D10](#d7d10--raised-during-the-2026-08-02-session-locked-2026-08-03) locked 2026-08-03.
+**Next session starts at** [execution order](#maintainer-decisions-locked--2026-08-02) **step 7** (settings single source of truth), then **step 8** (entry-point split). Steps **5c** ([D8](#d8--the-deploy-path-has-two-blind-spots-fix-them-or-keep-checking-by-hand)), **5d** ([D7](#d7--two-more-dead-functions-turned-up-delete-them-too)), **6** (`main.py` inventory — [07-mainpy-inventory.md](audit/07-mainpy-inventory.md)) and **6b** ([D11](#d11--mainpy-carries-a-compatibility-shim-for-a-loader-you-may-never-use-remove-it) shim removal, `main.py` 2971 → 2865) are done. The deploy path is verified on-device, so step 8's gates are trustworthy (**DEPLOY-VERIFY-01/03** verified, **02** partial; see [testing.md](testing.md)). **No decisions are open.** [D7–D10](#d7d10--raised-during-the-2026-08-02-session-locked-2026-08-03) locked 2026-08-03.
 
 Tracks **bugs and active engineering** ([In Progress](#in-progress)), **executed cleanup** ([Cleanup candidates](#cleanup-candidates)), **refactor decisions** ([Decisions needed](#decisions-needed) — locked 2026-08-02), deferred **QA** ([QA backlog](#qa-backlog)), the **backlog** ([Planned](#planned)), and pointers to shipped work ([Completed](#completed)).
 
@@ -25,7 +25,7 @@ Known **defects** only. Deferred QA lives under [QA backlog](#qa-backlog). *QAMP
 - ★★★ **Soft** `num_predict` **+ thinking budget:** `options.num_predict` is a hard Ollama wall (500 Speed/Expert, 900 Strategy) with no overshoot/continue; `"think": False` avoids empty replies when thinking ate the wall (`done_reason=length`, zero content) but leaves quality on the table for thinking models. **Intent:** length preference with small overshoot OK — not a hard cut, not unlimited. **Fix lean:** (1) raise base caps; (2) continuation on `done_reason=length` (small extra budget, capped continues — especially when content empty/short); (3) optional Reply verbosity → answer `num_predict`; (4) **budget thinking separately** (application policy): re-enable thinking with a fixed Deck default effort (`low`/`medium`) plus answer-floor / continue-if-content-starved; log thinking vs content lengths. Ollama has no true dual hard budgets in one completion — levels + continue stand in. **Not in scope:** delete the ceiling entirely; Settings UI for effort (→ **Thinking effort control**); parallel second Ask; spoiler chip work.
 - ★★ **Model routing try-order modal focus + chrome:** Text/vision **Set … try order…** fullscreen (`ModelRoutingOrderModal`) — D-pad focus lands on leaf Up/Down buttons and feels broken; layout/chrome does not match other fullscreen pickers (Pull Models / Character picker / Models hub `ConfirmModal` pattern). Screenshot `DeckCapture_20260730_144925`. Discovery locked 2026-07-30. **Defer** — fetch-on-open + save already shipped; polish later.
 - ★★ **KB compat retrieval phrase gate:** Troubleshooting KB (compat hybrid / **Keyword + meaning**) only runs when `question_matches_troubleshooting_log_context` matches a **hardcoded phrase list** in `ollama_prompts.py` (preset-style strings like `proton issue`, `why is my game crashing`). Natural-language asks (e.g. `deck sleep resume proton black screen`) skip the KB entirely — no chip, no hybrid, no **Source: shared troubleshooting tips**. **Intent:** when **Use local knowledge base** is on, attempt compat tip retrieval for general troubleshooting-shaped Asks without growing a brittle regex/preset farm in bonsAI. **Fix lean:** broaden gate (e.g. KB-on + not strategy-with-game → compat shortlist; or lightweight intent/heuristic separate from carousel presets); keep Strategy path AppID-gated. Regression: **KB-SMOKE-07/08** queries in [testing-manual.md](testing-manual.md) must pass without adding new hardcoded strings per smoke case. **Phase 4 discovery (2026-07-30):** lean gate fix (**B1**) ships with Phase 4 when implemented — not a separate forever-defer.
-- ★★★ **LB/RB tab switch flicker when scrolled:** Switching tabs with shoulder buttons while focus is deep in a scrolled panel (not on tab icons) flashes/jitters. Investigate carousel + remount/scroll/focus survival (partial anti-flicker CSS already on `TabContentsScroll`). Discovery locked 2026-07-29.
+- ★★★ **LB/RB tab switch flicker when scrolled:** Switching tabs with shoulder buttons while focus is deep in a scrolled panel (not on tab icons) flashes/jitters. Investigate carousel + remount/scroll/focus survival (partial anti-flicker CSS already on `TabContentsScroll`). Discovery locked 2026-07-29. **Recon: [08-lbrb-tab-flicker.md](audit/08-lbrb-tab-flicker.md)** — ranked hypotheses, fix tracks, on-Deck probe P0 to run first.
 
 **Fixed 2026-08-02 — session RAG preset chips never appeared.** `get_session_rag_chip_candidates` is now implemented at [main.py:1681](../main.py); the frontend at [sessionRagChipCandidates.ts:54](../src/utils/sessionRagChipCandidates.ts) had called it since the feature shipped, so with **Use local knowledge base** on the call always rejected and the carousel silently fell back to static seeds. The backend it needed already existed — `suggest_chip_candidates` and `session_rag_chip_candidates_to_rpc` in `knowledge_base_service.py`, with tests — so this is the missing RPC adapter only; **no ranking or candidate policy was designed or changed**, per **D1b**. KB-off, missing corpus and corpus read errors all return `{ok: false}` with a reason rather than rejecting. An **unreadable corpus** is additionally written to the plugin log — it is a real fault rather than "this game has no tips", and the console warning the frontend emits is not somewhere anyone looks on a Deck. It is logged once per distinct fault, not per Ask, because the carousel re-queries whenever it has no cached suggestions ([useBonsaiAskOrchestration.ts:244-249](../src/hooks/useBonsaiAskOrchestration.ts)). Coverage: `tests/test_session_rag_chip_candidates_rpc.py` (7 tests) over the existing service tests; on-Deck row **SESSION-RAG-CHIPS-01** in [testing.md](testing.md).
 
@@ -42,8 +42,7 @@ choices are, and what happens either way. **Locked calls (2026-08-02 for D1–D6
 [Maintainer decisions locked](#maintainer-decisions-locked--2026-08-02); implement
 from that section when it disagrees with an option above.
 
-**Currently open: [D11](#d11--mainpy-carries-a-compatibility-shim-for-a-loader-you-may-never-use-remove-it) only.** D1–D10 are locked and executed or in
-flight.
+**None currently open.** D1–D11 are all locked; see the table below for each call.
 
 Evidence for all of these lives in [docs/audit/](audit/), especially
 [05-plan.md](audit/05-plan.md).
@@ -386,6 +385,10 @@ attributes. Most work, and it makes a path nothing exercises more elaborate.
 step 7 (settings single source of truth) touches instance lifetime and would be affected by
 the answer.
 
+**Locked 2026-08-03: Option A — remove both.** Executed the same day and pulled ahead of
+step 7 rather than left until after step 8, since step 7 touches the same instance-lifetime
+assumption. See execution-order step **6b**.
+
 ---
 
 ### Maintainer decisions locked — 2026-08-02
@@ -406,6 +409,7 @@ current tree (especially **D1b** and parts of **D2** / **D4**).
 | **D7** | **Delete both screenshot helpers** | `_reencode_oversized_capture` and `_mirror_capture_to_plugin_dir` have no production callers; `_mirror_capture_to_plugin_dir` is an explicit deprecated no-op. One unit test still calls `_reencode` — remove it with the function. Consistent with D2 cleanup; module has behavioral coverage via `_finalize_steam_capture_file`. |
 | **D8** | **Harden `build.ps1` (prune + verify)** | Windows deploy path merges without pruning and prints success without checking the artifact landed. `build.sh deploy` already wipes the plugin dir — fix `build.ps1` (and `watch-deploy.ps1` by inheritance): remove stale files, compare `dist/index.js` hash or mtime after upload, fail on mismatch. Blocker before step 8. |
 | **D9** | **Done = step 8 (`index.tsx`) only** | Finish the state-before-JSX plan to ~700–800 lines (estimate). `useBonsaiAskOrchestration.ts` (1222 lines, 13 characterization tests) and `MainTab.tsx` (187 lines, prop-threading tax) are follow-ups after step 8 — splitting them now fights the locked order. |
+| **D11** | **Option A — remove `_coerce_instance` and `_ensure_background_state`** | Both exist for a loader that passes the class instead of an instance; `plugin.json:6` pins `api_version: 1`, where the call is an identity function across 55 sites. The fallback covered 11 of 29 runtime attributes, and if it had ever fired it would have built a fresh `Plugin` and discarded the in-flight Ask — a latent bug, not a safety net. Removed 103 lines with the RPC surface unchanged at 50. Executed as step **6b**, ahead of step 7, because step 7 depends on the same instance-lifetime assumption. |
 | **D10** | **Preview/tests every commit; on-Deck D-pad for modal extractions only** | `tsc` + `npm test` + preview smoke on every step 8 commit. On-Deck D-pad required for character picker, models hub, desktop note, and plugin help extractions only — not state-only commits. Tier 3 preview does not cover those modals; focus-graph tests upfront rejected. |
 
 **Execution order (locked, amended 2026-08-03):**
@@ -525,6 +529,29 @@ current tree (especially **D1b** and parts of **D2** / **D4**).
    locking, none RPC behavior") is now 8 test files, two of which do test RPC behavior — those
    two are the pattern to copy for the extractions above. Still true: **none of the ten
    largest methods has a behavioral test.**
+6b. **D11 — remove the legacy-loader compatibility layer** — **done 2026-08-03.**
+   `_coerce_instance` (55 call sites) and `_ensure_background_state` (35 lines) deleted;
+   `main.py` **2971 → 2865** (−103 lines, −2 methods), **RPC surface unchanged at 50**. The
+   53 `plugin = Plugin._coerce_instance(self)` aliases became direct `self` use, not
+   `plugin = self`, so no vestigial indirection is left behind.
+
+   **The shim had a service-side half** that [07-mainpy-inventory.md](audit/07-mainpy-inventory.md)
+   had not found: [ollama_ask_service.py:81](../py_modules/backend/services/ollama_ask_service.py)
+   called `plugin_inst._ensure_background_state()` before touching `_active_request_id()`,
+   and `tests/test_ollama_ask_service.py` carried a matching no-op on its `_FakePlugin`.
+   Deleting only the `main.py` side would have raised `AttributeError` on **every Ask** with
+   the unit suite still green — the fake satisfied the call. Both removed together.
+
+   **Verified as mechanical, not merely untested.** A token-level differ compared the files
+   before and after: with the intentionally deleted regions removed, both sides yield
+   **15,446 identical tokens**, 236 `plugin`/`plugin_bg` NAME tokens become `self`, and
+   there are **zero** other differences. This mattered — 8 test files touch only a fraction
+   of the 53 methods changed, and a plain find-and-replace would have corrupted the
+   `"plugin.lifecycle"` / `"plugin.data_clear"` log event names and docstring prose. Then
+   413 Python tests, then a deploy: `bonsAI plugin loaded!`, zero `Traceback`/`ERROR`,
+   deployed `main.py` at 2865 lines. **On-Deck functional QA of the Ask, voice and
+   knowledge-base paths is still open** — **D11-SHIM-01** in [testing.md](testing.md).
+
 7. **2.2 — settings single source of truth** — REFACTOR-PLAN §3.1, the highest-value item in the audit and the best-covered by existing tests (`tests/test_settings_service.py` asserts per-setting round-trips). Expect that suite to break on shape, not behavior — rewrite the assertions, do not contort the design.
 8. **D3 — entry-point split, continued** — resume from **5b** above (after **5c** deploy hardening). Remaining, in the order they get cheaper: character-picker modal (~76 lines, ~11 deps), Ollama models hub (~84, ~10), desktop-note modal (~49), plugin-help modal (~11), connection/IP, session-reset, UI-scale, error-capture — **then** the six tab payloads. **`tsc` + `npm test` + preview smoke every commit** per locked **D10**. **On-Deck D-pad pass only for the four modal extractions** (not state-only commits). **Done scope = `index.tsx` only** per locked **D9** — `useBonsaiAskOrchestration.ts` and `MainTab.tsx` are follow-ups after step 8.
 9. **KB download Cancel button** — wire `cancel_rag_corpus_download` in `KnowledgeBaseSection.tsx`; D-pad row in `testing.md` / `testing-manual.md`.

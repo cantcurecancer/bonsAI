@@ -251,12 +251,6 @@ class Plugin:
         evt = getattr(self, "_abort_current_ollama_chat", None)
         return isinstance(evt, threading.Event) and evt.is_set()
 
-    @staticmethod
-    def _coerce_instance(self_or_cls: Any) -> "Plugin":
-        """api_version 1 uses an instance; older loaders may pass the class as self."""
-        return self_or_cls() if isinstance(self_or_cls, type) else self_or_cls
-
-    @staticmethod
     def _settings_path() -> str:
         return os.path.join(decky.DECKY_PLUGIN_SETTINGS_DIR, Plugin.SETTINGS_FILENAME)
 
@@ -305,28 +299,26 @@ class Plugin:
 
     async def _main(self):
         """Run plugin startup hooks and ensure background state exists before serving RPCs."""
-        self._ensure_background_state()
         logger.info("bonsAI plugin loaded!")
         await self._maybe_app_log("plugin.lifecycle", "plugin loaded")
 
     async def _unload(self):
         """Run plugin shutdown logging for Decky unload events."""
-        plugin = Plugin._coerce_instance(self)
-        await plugin._maybe_app_log("plugin.lifecycle", "plugin unloading")
-        ce = getattr(plugin, "_local_ollama_cancel_event", None)
+        await self._maybe_app_log("plugin.lifecycle", "plugin unloading")
+        ce = getattr(self, "_local_ollama_cancel_event", None)
         if isinstance(ce, asyncio.Event):
             ce.set()
-        lt = getattr(plugin, "_local_ollama_setup_task", None)
+        lt = getattr(self, "_local_ollama_setup_task", None)
         if lt is not None and not lt.done():
             lt.cancel()
             try:
                 await lt
             except asyncio.CancelledError:
                 pass
-        await plugin._stop_voice_transcription_internal()
-        vit = getattr(plugin, "_voice_install_task", None)
+        await self._stop_voice_transcription_internal()
+        vit = getattr(self, "_voice_install_task", None)
         if vit is not None and not vit.done():
-            ce_voice = getattr(plugin, "_voice_install_cancel", None)
+            ce_voice = getattr(self, "_voice_install_cancel", None)
             if isinstance(ce_voice, threading.Event):
                 ce_voice.set()
             vit.cancel()
@@ -423,7 +415,6 @@ class Plugin:
 
     def _active_request_id(self) -> Optional[int]:
         """Return the in-flight background Ask request_id, if any."""
-        self._ensure_background_state()
         rid = self._background_state.get("request_id")
         return rid if isinstance(rid, int) else None
 
@@ -493,42 +484,6 @@ class Plugin:
             out["thinking_summary"] = None
         return out
 
-    def _ensure_background_state(self) -> None:
-        """Backfill runtime attributes for compatibility with loaders that skip __init__."""
-        if not hasattr(self, "_background_lock"):
-            self._background_lock = asyncio.Lock()
-        if not hasattr(self, "_background_task"):
-            self._background_task = None
-        if not hasattr(self, "_background_state") or not isinstance(self._background_state, dict):
-            self._background_state = self._new_background_state()
-        if not hasattr(self, "_background_request_seq"):
-            self._background_request_seq = 0
-        if not hasattr(self, "_last_input_transparency"):
-            self._last_input_transparency = None
-        if not hasattr(self, "_abort_current_ollama_chat"):
-            self._abort_current_ollama_chat = threading.Event()
-        if not hasattr(self, "_active_ollama_chat_pc_ip"):
-            self._active_ollama_chat_pc_ip = None
-        if not hasattr(self, "_active_ollama_chat_model"):
-            self._active_ollama_chat_model = None
-        if not hasattr(self, "_active_ollama_chat_http_response"):
-            self._active_ollama_chat_http_response = None
-        if not hasattr(self, "_chat_resp_ready_evt"):
-            self._chat_resp_ready_evt = None
-        if not hasattr(self, "_partial_response_lock"):
-            self._partial_response_lock = threading.Lock()
-        if not hasattr(self, "_partial_stream_snapshot") or not isinstance(
-            self._partial_stream_snapshot, dict
-        ):
-            self._partial_stream_snapshot = {
-                "request_id": None,
-                "partial_response": None,
-                "thinking_summary": None,
-                "streaming": False,
-                "last_flush_monotonic": 0.0,
-            }
-
-    @staticmethod
     def _desktop_app_log_level_allows(settings: dict, event_level: str) -> bool:
         lvl = str(settings.get("desktop_app_log_level") or "off")
         if lvl == "off":
@@ -567,9 +522,8 @@ class Plugin:
         fields: Optional[dict] = None,
     ) -> None:
         """Best-effort append to Desktop/bonsAI_logs/bonsai-app-*.log; never raises."""
-        plugin = Plugin._coerce_instance(self)
         try:
-            settings = await plugin.load_settings()
+            settings = await self.load_settings()
             if not Plugin._desktop_app_log_level_allows(settings, level):
                 return
             if not capability_enabled(settings, "filesystem_write"):
@@ -695,9 +649,8 @@ class Plugin:
         cmd = classify_sanitizer_command(question)
         if cmd is None:
             return None
-        plugin = Plugin._coerce_instance(self)
         new_disabled = cmd == "disable"
-        await plugin.save_settings({"input_sanitizer_user_disabled": new_disabled})
+        await self.save_settings({"input_sanitizer_user_disabled": new_disabled})
         app_context = "active" if app_id else "none"
         return {
             "success": True,
@@ -730,8 +683,7 @@ class Plugin:
         parsed_arg = parse_vac_check_command(question)
         if parsed_arg is None:
             return None
-        plugin = Plugin._coerce_instance(self)
-        settings = await plugin.load_settings()
+        settings = await self.load_settings()
         ok = capability_enabled(settings, "steam_web_api")
         key = str(settings.get("steam_web_api_key") or "")
         response = response_for_vac_check(parsed_arg, api_key=key, capability_ok=ok)
@@ -754,10 +706,9 @@ class Plugin:
 
     async def save_settings(self, data: Any = None):
         """Persist plugin settings to Decky's settings directory."""
-        plugin = Plugin._coerce_instance(self)
-        if not hasattr(plugin, "_settings_save_lock"):
-            plugin._settings_save_lock = asyncio.Lock()
-        async with plugin._settings_save_lock:
+        if not hasattr(self, "_settings_save_lock"):
+            self._settings_save_lock = asyncio.Lock()
+        async with self._settings_save_lock:
             current = await self.load_settings()
             path = Plugin._settings_path()
             saved = save_settings_to_disk(
@@ -780,45 +731,43 @@ class Plugin:
             prev_mic = prev_caps.get("microphone_access") is True
             next_mic = next_caps.get("microphone_access") is True
             if prev_mic and not next_mic:
-                await plugin._stop_voice_transcription_internal()
+                await self._stop_voice_transcription_internal()
             return saved
 
     async def clear_plugin_data(self):
         """Remove persisted settings/runtime/logs and return fresh defaults (new-install behavior)."""
-        plugin = Plugin._coerce_instance(self)
-        plugin._ensure_background_state()
-        async with plugin._background_lock:
-            task = plugin._background_task
-            plugin._background_task = None
+        async with self._background_lock:
+            task = self._background_task
+            self._background_task = None
             if task is not None and not task.done():
                 task.cancel()
                 try:
                     await task
                 except asyncio.CancelledError:
                     pass
-            plugin._background_state = plugin._new_background_state()
-            plugin._background_request_seq += 1
-        plugin._last_input_transparency = None
+            self._background_state = self._new_background_state()
+            self._background_request_seq += 1
+        self._last_input_transparency = None
 
-        async with plugin._local_ollama_setup_lock:
-            if plugin._local_ollama_cancel_event is not None:
-                plugin._local_ollama_cancel_event.set()
-            lst = plugin._local_ollama_setup_task
+        async with self._local_ollama_setup_lock:
+            if self._local_ollama_cancel_event is not None:
+                self._local_ollama_cancel_event.set()
+            lst = self._local_ollama_setup_task
             if lst is not None and not lst.done():
                 lst.cancel()
                 try:
                     await lst
                 except asyncio.CancelledError:
                     pass
-            plugin._local_ollama_setup_task = None
-            plugin._local_ollama_cancel_event = None
-            plugin._local_ollama_setup_state = new_local_ollama_setup_state()
+            self._local_ollama_setup_task = None
+            self._local_ollama_cancel_event = None
+            self._local_ollama_setup_state = new_local_ollama_setup_state()
 
-        await plugin._stop_voice_transcription_internal()
+        await self._stop_voice_transcription_internal()
 
-        vit = getattr(plugin, "_voice_install_task", None)
+        vit = getattr(self, "_voice_install_task", None)
         if vit is not None and not vit.done():
-            ce_voice = getattr(plugin, "_voice_install_cancel", None)
+            ce_voice = getattr(self, "_voice_install_cancel", None)
             if isinstance(ce_voice, threading.Event):
                 ce_voice.set()
             vit.cancel()
@@ -826,11 +775,11 @@ class Plugin:
                 await vit
             except asyncio.CancelledError:
                 pass
-            plugin._voice_install_task = None
-            plugin._voice_install_cancel = None
-            plugin._voice_install_state = new_voice_install_state()
+            self._voice_install_task = None
+            self._voice_install_cancel = None
+            self._voice_install_state = new_voice_install_state()
 
-        current = await plugin.load_settings()
+        current = await self.load_settings()
         rag_path = str((current or {}).get("rag_corpus_path") or "").strip()
         local_on_deck = should_teardown_local_ollama_on_clear(
             current if isinstance(current, dict) else None
@@ -839,7 +788,7 @@ class Plugin:
             teardown_summary = await asyncio.to_thread(
                 teardown_local_ollama_for_plugin_reset, logger
             )
-            await plugin._maybe_app_log(
+            await self._maybe_app_log(
                 "clear_plugin_data.ollama_teardown",
                 "local ollama teardown",
                 fields={
@@ -874,7 +823,7 @@ class Plugin:
             decky.DECKY_PLUGIN_SETTINGS_DIR,
             logger=logger,
         )
-        await plugin._maybe_app_log(
+        await self._maybe_app_log(
             "plugin.data_clear",
             "plugin data cleared",
             fields={
@@ -911,10 +860,9 @@ class Plugin:
         frag = rpc_entry_to_store_payload(payload)
         if frag is None:
             return {"ok": False, "error": "Invalid checklist payload"}
-        plugin = Plugin._coerce_instance(self)
-        if not hasattr(plugin, "_strategy_checklist_store_lock"):
-            plugin._strategy_checklist_store_lock = asyncio.Lock()
-        async with plugin._strategy_checklist_store_lock:
+        if not hasattr(self, "_strategy_checklist_store_lock"):
+            self._strategy_checklist_store_lock = asyncio.Lock()
+        async with self._strategy_checklist_store_lock:
             store = Plugin._load_strategy_checklist_store()
             merged = upsert_session_entry(
                 store,
@@ -935,10 +883,9 @@ class Plugin:
 
     async def clear_strategy_checklist_session(self, app_id: str = ""):
         """Remove persisted checklist for one game or entire file when app_id omitted."""
-        plugin = Plugin._coerce_instance(self)
-        if not hasattr(plugin, "_strategy_checklist_store_lock"):
-            plugin._strategy_checklist_store_lock = asyncio.Lock()
-        async with plugin._strategy_checklist_store_lock:
+        if not hasattr(self, "_strategy_checklist_store_lock"):
+            self._strategy_checklist_store_lock = asyncio.Lock()
+        async with self._strategy_checklist_store_lock:
             path = Plugin._strategy_checklist_session_path()
             store = Plugin._load_strategy_checklist_store()
             if str(app_id or "").strip():
@@ -952,8 +899,7 @@ class Plugin:
 
     async def get_intent_packs(self):
         """Return intent pack summaries and full entries for unified search indexing."""
-        plugin = Plugin._coerce_instance(self)
-        store = plugin._load_intent_pack_store()
+        store = self._load_intent_pack_store()
         return {
             "schema_version": store.get("schema_version"),
             "summaries": pack_summaries(store),
@@ -962,15 +908,14 @@ class Plugin:
 
     async def set_intent_pack_enabled(self, pack_id: str = "", enabled: bool = True):
         """Enable or disable a search intent pack."""
-        plugin = Plugin._coerce_instance(self)
-        if not hasattr(plugin, "_intent_pack_store_lock"):
-            plugin._intent_pack_store_lock = asyncio.Lock()
-        async with plugin._intent_pack_store_lock:
-            store = plugin._load_intent_pack_store()
+        if not hasattr(self, "_intent_pack_store_lock"):
+            self._intent_pack_store_lock = asyncio.Lock()
+        async with self._intent_pack_store_lock:
+            store = self._load_intent_pack_store()
             result = set_pack_enabled(store, pack_id, enabled)
             if not result.get("ok"):
                 return result
-            saved = plugin._save_intent_pack_store(result["store"])
+            saved = self._save_intent_pack_store(result["store"])
             return {
                 "ok": True,
                 "summaries": pack_summaries(saved),
@@ -979,13 +924,11 @@ class Plugin:
 
     async def export_intent_pack(self, pack_id: str = ""):
         """Export one intent pack as formatted JSON."""
-        plugin = Plugin._coerce_instance(self)
-        store = plugin._load_intent_pack_store()
+        store = self._load_intent_pack_store()
         return export_pack(store, pack_id)
 
     async def import_intent_pack(self, payload: Any = None):
         """Dry-run or confirm-merge import of a single intent pack from JSON."""
-        plugin = Plugin._coerce_instance(self)
         data = payload if isinstance(payload, dict) else {}
         raw_json = data.get("json")
         confirm = data.get("confirm") is True
@@ -994,30 +937,29 @@ class Plugin:
         incoming, parse_error = parse_import_payload(raw_json)
         if parse_error:
             return {"ok": False, "error": parse_error}
-        if not hasattr(plugin, "_intent_pack_store_lock"):
-            plugin._intent_pack_store_lock = asyncio.Lock()
-        async with plugin._intent_pack_store_lock:
-            store = plugin._load_intent_pack_store()
+        if not hasattr(self, "_intent_pack_store_lock"):
+            self._intent_pack_store_lock = asyncio.Lock()
+        async with self._intent_pack_store_lock:
+            store = self._load_intent_pack_store()
             result = merge_import_pack(store, incoming or {}, confirm=confirm)
             if not result.get("ok"):
                 return result
             if confirm and isinstance(result.get("store"), dict):
-                saved = plugin._save_intent_pack_store(result["store"])
+                saved = self._save_intent_pack_store(result["store"])
                 result["summaries"] = pack_summaries(saved)
                 result["packs"] = saved.get("packs") or []
             return result
 
     async def remove_intent_pack(self, pack_id: str = ""):
         """Remove a user/imported intent pack (bundled packs cannot be removed)."""
-        plugin = Plugin._coerce_instance(self)
-        if not hasattr(plugin, "_intent_pack_store_lock"):
-            plugin._intent_pack_store_lock = asyncio.Lock()
-        async with plugin._intent_pack_store_lock:
-            store = plugin._load_intent_pack_store()
+        if not hasattr(self, "_intent_pack_store_lock"):
+            self._intent_pack_store_lock = asyncio.Lock()
+        async with self._intent_pack_store_lock:
+            store = self._load_intent_pack_store()
             result = remove_pack(store, pack_id)
             if not result.get("ok"):
                 return result
-            saved = plugin._save_intent_pack_store(result["store"])
+            saved = self._save_intent_pack_store(result["store"])
             return {
                 "ok": True,
                 "summaries": pack_summaries(saved),
@@ -1216,11 +1158,10 @@ class Plugin:
 
     async def discover_mdns_ollama_hosts(self, timeout_seconds: int = 8):
         """User-triggered mDNS browse for ``_ollama._tcp.local`` only (no subnet scan)."""
-        plugin = Plugin._coerce_instance(self)
         safe_timeout = max(2, min(15, int(timeout_seconds or 8)))
 
         try:
-            settings = await plugin.load_settings()
+            settings = await self.load_settings()
             if settings.get("ollama_local_on_deck"):
                 return {
                     "ok": False,
@@ -1233,14 +1174,14 @@ class Plugin:
 
             out = await asyncio.wait_for(asyncio.to_thread(_run_sync), timeout=float(safe_timeout) + 2.0)
             host_count = len(out.get("hosts") or [])
-            await plugin._maybe_app_log(
+            await self._maybe_app_log(
                 "connection.discover",
                 "mDNS Ollama discovery",
                 fields={"found": host_count, "ok": bool(out.get("ok"))},
             )
             return out
         except asyncio.TimeoutError:
-            await plugin._maybe_app_log(
+            await self._maybe_app_log(
                 "connection.discover",
                 "mDNS discovery timed out",
                 fields={"found": 0, "ok": False},
@@ -1262,19 +1203,18 @@ class Plugin:
 
     async def start_local_ollama_setup(self, data: Any = None):
         """Install/start Ollama on this Linux host and pull Tier-1 FOSS tags (runs in background)."""
-        plugin = Plugin._coerce_instance(self)
         prof = ""
         if isinstance(data, dict):
             prof = str(data.get("profile", data.get("Profile", "")) or "").strip()
         elif isinstance(data, str):
             prof = data.strip()
-        settings = await plugin.load_settings()
+        settings = await self.load_settings()
         if not settings.get("ollama_local_on_deck"):
             out = {
                 "accepted": False,
                 "reason": "Enable «Ollama on this Deck» in Ollama → Where AI runs first.",
             }
-            await plugin._maybe_app_log(
+            await self._maybe_app_log(
                 "local_setup.start",
                 "setup rejected",
                 fields={"profile": prof, "accepted": False, "reason": "local_off"},
@@ -1285,25 +1225,25 @@ class Plugin:
                 "accepted": False,
                 "reason": 'Invalid profile: use "tier1_essentials", "tier2_multimodal", or "update_installed".',
             }
-            await plugin._maybe_app_log(
+            await self._maybe_app_log(
                 "local_setup.start",
                 "setup rejected",
                 fields={"profile": prof, "accepted": False, "reason": "invalid_profile"},
             )
             return out
 
-        async with plugin._local_ollama_setup_lock:
-            existing = plugin._local_ollama_setup_task
+        async with self._local_ollama_setup_lock:
+            existing = self._local_ollama_setup_task
             if existing is not None and not existing.done():
                 out = {"accepted": False, "reason": "Setup already running."}
-                await plugin._maybe_app_log(
+                await self._maybe_app_log(
                     "local_setup.start",
                     "setup rejected",
                     fields={"profile": prof, "accepted": False, "reason": "busy"},
                 )
                 return out
 
-            plugin._local_ollama_cancel_event = new_asyncio_cancel_event()
+            self._local_ollama_cancel_event = new_asyncio_cancel_event()
             new_st = new_local_ollama_setup_state()
             new_st.update(
                 {
@@ -1314,25 +1254,25 @@ class Plugin:
                     "profile": prof,
                 }
             )
-            plugin._local_ollama_setup_state = new_st
+            self._local_ollama_setup_state = new_st
 
             setup_loop = asyncio.get_running_loop()
-            on_stage, on_verbose_line = make_local_ollama_setup_hooks(plugin, setup_loop)
+            on_stage, on_verbose_line = make_local_ollama_setup_hooks(self, setup_loop)
 
             async def runner() -> None:
-                assert plugin._local_ollama_cancel_event is not None
+                assert self._local_ollama_cancel_event is not None
                 await run_local_setup(
                     profile=prof,
-                    state=plugin._local_ollama_setup_state,
+                    state=self._local_ollama_setup_state,
                     logger=logger,
-                    cancel_event=plugin._local_ollama_cancel_event,
+                    cancel_event=self._local_ollama_cancel_event,
                     on_stage=on_stage,
                     on_verbose_line=on_verbose_line,
                 )
 
-            plugin._local_ollama_setup_task = asyncio.create_task(runner())
+            self._local_ollama_setup_task = asyncio.create_task(runner())
 
-        await plugin._maybe_app_log(
+        await self._maybe_app_log(
             "local_setup.start",
             "setup accepted",
             fields={"profile": prof, "accepted": True},
@@ -1341,13 +1281,11 @@ class Plugin:
 
     async def get_local_ollama_setup_status(self):
         """Return last status for the local Ollama installer (plain JSON dict)."""
-        plugin = Plugin._coerce_instance(self)
-        return dict(plugin._local_ollama_setup_state)
+        return dict(self._local_ollama_setup_state)
 
     async def cancel_local_ollama_setup(self):
         """Request cancellation of an in-progress setup (best-effort)."""
-        plugin = Plugin._coerce_instance(self)
-        ce = getattr(plugin, "_local_ollama_cancel_event", None)
+        ce = getattr(self, "_local_ollama_cancel_event", None)
         if isinstance(ce, asyncio.Event):
             ce.set()
         return {"cancel_requested": True}
@@ -1356,8 +1294,7 @@ class Plugin:
 
     async def get_rag_corpus_status(self, data: Any = None):
         """Return knowledge-base download state and whether a corpus is installed."""
-        plugin = Plugin._coerce_instance(self)
-        settings = await plugin.load_settings()
+        settings = await self.load_settings()
         db_path = resolve_corpus_db_path(settings)
         pc_ip = ""
         if isinstance(data, dict):
@@ -1399,7 +1336,7 @@ class Plugin:
                 "sd_card": None,
             }
         return {
-            **dict(plugin._rag_corpus_download_state),
+            **dict(self._rag_corpus_download_state),
             "installed": bool(db_path),
             "corpus_path": corpus_path,
             "corpus_version": str(settings.get("rag_corpus_version") or ""),
@@ -1411,7 +1348,6 @@ class Plugin:
 
     async def start_rag_corpus_download(self, data: Any = None):
         """Download and install the knowledge base corpus (user-initiated; Model A consent)."""
-        plugin = Plugin._coerce_instance(self)
         install_dir = default_corpus_dir_internal()
         storage = "internal"
         if isinstance(data, dict):
@@ -1430,14 +1366,14 @@ class Plugin:
         except OSError as exc:
             return {"accepted": False, "reason": f"Could not create install folder: {exc}"}
 
-        async with plugin._rag_corpus_download_lock:
-            existing = plugin._rag_corpus_download_task
+        async with self._rag_corpus_download_lock:
+            existing = self._rag_corpus_download_task
             if existing is not None and not existing.done():
                 return {"accepted": False, "reason": "Knowledge base download already running."}
 
-            plugin._rag_corpus_cancel_event = new_asyncio_cancel_event()
-            plugin._rag_corpus_download_state = new_rag_corpus_download_state()
-            plugin._rag_corpus_download_state.update(
+            self._rag_corpus_cancel_event = new_asyncio_cancel_event()
+            self._rag_corpus_download_state = new_rag_corpus_download_state()
+            self._rag_corpus_download_state.update(
                 {
                     "phase": "running",
                     "done": False,
@@ -1448,17 +1384,17 @@ class Plugin:
             )
 
             async def runner() -> None:
-                assert plugin._rag_corpus_cancel_event is not None
+                assert self._rag_corpus_cancel_event is not None
                 await run_rag_corpus_download(
                     install_dir=install_dir,
-                    state=plugin._rag_corpus_download_state,
+                    state=self._rag_corpus_download_state,
                     logger=logger,
-                    cancel_event=plugin._rag_corpus_cancel_event,
+                    cancel_event=self._rag_corpus_cancel_event,
                 )
-                if plugin._rag_corpus_download_state.get("phase") == "done":
-                    version = str(plugin._rag_corpus_download_state.get("manifest_version") or "")
-                    root = str(plugin._rag_corpus_download_state.get("install_path") or install_dir)
-                    await plugin.save_settings(
+                if self._rag_corpus_download_state.get("phase") == "done":
+                    version = str(self._rag_corpus_download_state.get("manifest_version") or "")
+                    root = str(self._rag_corpus_download_state.get("install_path") or install_dir)
+                    await self.save_settings(
                         {
                             "rag_corpus_path": root,
                             "rag_corpus_version": version,
@@ -1466,9 +1402,9 @@ class Plugin:
                         }
                     )
 
-            plugin._rag_corpus_download_task = asyncio.create_task(runner())
+            self._rag_corpus_download_task = asyncio.create_task(runner())
 
-        await plugin._maybe_app_log(
+        await self._maybe_app_log(
             "rag_corpus.start",
             "knowledge base download accepted",
             fields={"install_path": install_dir, "storage": storage},
@@ -1476,19 +1412,17 @@ class Plugin:
         return {"accepted": True, "install_path": install_dir}
 
     async def cancel_rag_corpus_download(self):
-        plugin = Plugin._coerce_instance(self)
-        ce = getattr(plugin, "_rag_corpus_cancel_event", None)
+        ce = getattr(self, "_rag_corpus_cancel_event", None)
         if isinstance(ce, asyncio.Event):
             ce.set()
-        st = dict(plugin._rag_corpus_download_state)
+        st = dict(self._rag_corpus_download_state)
         st["cancel_requested"] = True
-        plugin._rag_corpus_download_state = st
+        self._rag_corpus_download_state = st
         return {"cancel_requested": True}
 
     async def update_rag_corpus(self):
         """Check remote manifest and re-download when version differs."""
-        plugin = Plugin._coerce_instance(self)
-        settings = await plugin.load_settings()
+        settings = await self.load_settings()
         try:
             manifest = await asyncio.to_thread(fetch_remote_manifest)
         except Exception as exc:
@@ -1497,20 +1431,19 @@ class Plugin:
         local_ver = str(settings.get("rag_corpus_version") or "")
         if remote_ver and remote_ver == local_ver and resolve_corpus_db_path(settings):
             return {"ok": True, "updated": False, "version": local_ver}
-        out = await plugin.start_rag_corpus_download(
+        out = await self.start_rag_corpus_download(
             {"install_path": settings.get("rag_corpus_path") or default_corpus_dir_internal()}
         )
         return {"ok": bool(out.get("accepted")), "updated": True, "version": remote_ver, **out}
 
     async def remove_rag_corpus(self):
         """Remove installed corpus files and clear path settings."""
-        plugin = Plugin._coerce_instance(self)
-        settings = await plugin.load_settings()
+        settings = await self.load_settings()
         path = str(settings.get("rag_corpus_path") or "").strip()
         removed = False
         if path:
             removed = await asyncio.to_thread(remove_corpus_at_path, path, logger)
-        await plugin.save_settings(
+        await self.save_settings(
             {
                 "rag_corpus_path": "",
                 "rag_corpus_version": "",
@@ -1521,8 +1454,7 @@ class Plugin:
 
     async def install_rag_corpus_local(self, data: Any = None):
         """Dev/QA: install corpus from a local manifest directory (no network)."""
-        plugin = Plugin._coerce_instance(self)
-        settings = await plugin.load_settings()
+        settings = await self.load_settings()
         if not settings.get("show_developer_tab"):
             return {"ok": False, "error": "Developer tab must be enabled for local corpus install."}
         src_dir = ""
@@ -1569,7 +1501,7 @@ class Plugin:
             root = await asyncio.to_thread(_install)
             manifest = load_manifest_from_path(os.path.join(root, CORPUS_MANIFEST_FILENAME))
             version = str(manifest.get("version") or "")
-            await plugin.save_settings(
+            await self.save_settings(
                 {
                     "rag_corpus_path": root,
                     "rag_corpus_version": version,
@@ -1587,7 +1519,6 @@ class Plugin:
         shortcut_name: str = "",
     ):
         """Preset-chip prompts drawn from the offline KB for the running game."""
-        plugin = Plugin._coerce_instance(self)
         settings = await self.load_settings()
         try:
             result = await asyncio.to_thread(
@@ -1607,14 +1538,13 @@ class Plugin:
         # instead of on every call. Cleared on success so a later break logs again.
         reason = str(payload.get("reason") or "")
         fault = reason if reason.startswith("corpus_error") else ""
-        if fault and fault != getattr(plugin, "_last_chip_candidates_fault", ""):
+        if fault and fault != getattr(self, "_last_chip_candidates_fault", ""):
             logger.warning("get_session_rag_chip_candidates: knowledge base unreadable (%s)", fault)
-        plugin._last_chip_candidates_fault = fault
+        self._last_chip_candidates_fault = fault
         return payload
 
     async def _require_local_ollama_on_deck(self) -> tuple[bool, dict[str, Any] | None]:
-        plugin = Plugin._coerce_instance(self)
-        settings = await plugin.load_settings()
+        settings = await self.load_settings()
         if not settings.get("ollama_local_on_deck"):
             return False, {
                 "accepted": False,
@@ -1625,8 +1555,7 @@ class Plugin:
         return True, None
 
     async def _start_custom_ollama_pull(self, pull_tags: list[str]) -> dict[str, Any]:
-        plugin = Plugin._coerce_instance(self)
-        ok_gate, gate_out = await plugin._require_local_ollama_on_deck()
+        ok_gate, gate_out = await self._require_local_ollama_on_deck()
         if not ok_gate:
             return gate_out or {"accepted": False, "reason": "local_off"}
 
@@ -1649,19 +1578,19 @@ class Plugin:
                 "invalid_tags": registry_bad,
             }
         if registry_bad:
-            await plugin._maybe_app_log(
+            await self._maybe_app_log(
                 "local_setup.start",
                 "skipped invalid registry tags",
                 fields={"invalid_tags": registry_bad[:12]},
             )
         tags = registry_ok
 
-        async with plugin._local_ollama_setup_lock:
-            existing = plugin._local_ollama_setup_task
+        async with self._local_ollama_setup_lock:
+            existing = self._local_ollama_setup_task
             if existing is not None and not existing.done():
                 return {"accepted": False, "reason": "Setup already running.", "error": "busy"}
 
-            plugin._local_ollama_cancel_event = new_asyncio_cancel_event()
+            self._local_ollama_cancel_event = new_asyncio_cancel_event()
             new_st = new_local_ollama_setup_state()
             new_st.update(
                 {
@@ -1674,25 +1603,25 @@ class Plugin:
                     "total_pull_steps": len(tags),
                 }
             )
-            plugin._local_ollama_setup_state = new_st
+            self._local_ollama_setup_state = new_st
 
             setup_loop = asyncio.get_running_loop()
-            on_stage, on_verbose_line = make_local_ollama_setup_hooks(plugin, setup_loop)
+            on_stage, on_verbose_line = make_local_ollama_setup_hooks(self, setup_loop)
 
             async def runner() -> None:
-                assert plugin._local_ollama_cancel_event is not None
+                assert self._local_ollama_cancel_event is not None
                 await run_local_setup(
                     profile="custom",
-                    state=plugin._local_ollama_setup_state,
+                    state=self._local_ollama_setup_state,
                     logger=logger,
-                    cancel_event=plugin._local_ollama_cancel_event,
+                    cancel_event=self._local_ollama_cancel_event,
                     on_stage=on_stage,
                     on_verbose_line=on_verbose_line,
                 )
 
-            plugin._local_ollama_setup_task = asyncio.create_task(runner())
+            self._local_ollama_setup_task = asyncio.create_task(runner())
 
-        await plugin._maybe_app_log(
+        await self._maybe_app_log(
             "local_setup.start",
             "custom pull accepted",
             fields={"profile": "custom", "accepted": True, "tag_count": len(tags)},
@@ -1703,13 +1632,11 @@ class Plugin:
 
     async def pull_ollama_models(self, tags: Any = None):
         """Pull one or more Ollama tags on this Deck (background, reuses setup service)."""
-        plugin = Plugin._coerce_instance(self)
         raw = tags if isinstance(tags, list) else []
-        return await plugin._start_custom_ollama_pull(raw)
+        return await self._start_custom_ollama_pull(raw)
 
     async def merge_pulled_tags_into_routing_orders(self, tags: Any = None):
         """Append newly pulled tags to the user's saved text/vision try orders."""
-        plugin = Plugin._coerce_instance(self)
         pulled = normalize_ollama_pull_tags(tags if isinstance(tags, list) else [])
         if not pulled:
             return {"ok": False, "error": "no_tags", "merged": []}
@@ -1754,7 +1681,7 @@ class Plugin:
                 "vision_model_routing_order": vision_order,
             }
         )
-        await plugin._maybe_app_log(
+        await self._maybe_app_log(
             "local_setup.routing_merge",
             "pulled tags merged into routing order",
             fields={"merged": ",".join(merged)},
@@ -1769,8 +1696,7 @@ class Plugin:
 
     async def delete_ollama_model(self, tag: str = ""):
         """Remove one installed Ollama model via ``ollama rm`` (argv form)."""
-        plugin = Plugin._coerce_instance(self)
-        ok_gate, gate_out = await plugin._require_local_ollama_on_deck()
+        ok_gate, gate_out = await self._require_local_ollama_on_deck()
         if not ok_gate:
             return gate_out or {"ok": False, "error": "local_off"}
 
@@ -1778,25 +1704,25 @@ class Plugin:
         if not is_valid_ollama_pull_tag(t):
             return {"ok": False, "error": "invalid_tag"}
 
-        st = dict(getattr(plugin, "_local_ollama_setup_state", {}) or {})
+        st = dict(getattr(self, "_local_ollama_setup_state", {}) or {})
         if st.get("phase") == "running" and not st.get("done", True):
             return {"ok": False, "error": "busy"}
 
-        active = getattr(plugin, "_active_ollama_chat_model", None)
+        active = getattr(self, "_active_ollama_chat_model", None)
         if isinstance(active, str) and active.strip() and active.strip() == t:
             return {"ok": False, "error": "in_use", "removed": ""}
 
         ok_rm, err = await run_ollama_rm_async(t)
         if not ok_rm:
             safe_err = (err or "delete_failed")[:160]
-            await plugin._maybe_app_log(
+            await self._maybe_app_log(
                 "local_setup.delete",
                 "ollama rm failed",
                 fields={"ok": False, "error": safe_err},
             )
             return {"ok": False, "error": safe_err, "removed": ""}
 
-        await plugin._maybe_app_log(
+        await self._maybe_app_log(
             "local_setup.delete",
             "ollama rm succeeded",
             fields={"ok": True},
@@ -1805,8 +1731,7 @@ class Plugin:
 
     async def fetch_ollama_catalog_metadata(self, tags: Any = None):
         """Live sizes from registry.ollama.ai with offline fallback metadata."""
-        plugin = Plugin._coerce_instance(self)
-        ok_gate, gate_out = await plugin._require_local_ollama_on_deck()
+        ok_gate, gate_out = await self._require_local_ollama_on_deck()
         if not ok_gate:
             return {**(gate_out or {}), "source": "offline", "tags": {}}
 
@@ -1823,8 +1748,7 @@ class Plugin:
 
     async def fetch_pull_model_catalog(self, opts: Any = None):
         """Living Pull Models overlay (remote JSON + disk cache) for frontend merge."""
-        plugin = Plugin._coerce_instance(self)
-        ok_gate, gate_out = await plugin._require_local_ollama_on_deck()
+        ok_gate, gate_out = await self._require_local_ollama_on_deck()
         force = False
         if isinstance(opts, dict):
             force = bool(opts.get("force"))
@@ -1861,7 +1785,7 @@ class Plugin:
     async def list_recent_screenshots(self, app_id: str = "", limit: int = 5):
         """List recent screenshots with preview and app metadata for attachment browsing."""
         try:
-            settings = await Plugin._coerce_instance(self).load_settings()
+            settings = await self.load_settings()
             if not capability_enabled(settings, "media_library_access"):
                 return {
                     "success": False,
@@ -1897,10 +1821,9 @@ class Plugin:
 
     async def append_desktop_debug_note(self, payload: Any = None):
         """Append timestamped Q&A markdown under ~/Desktop/bonsAI_logs/<name>.md (append-only)."""
-        plugin = Plugin._coerce_instance(self)
-        settings = await plugin.load_settings()
+        settings = await self.load_settings()
         if not capability_enabled(settings, "filesystem_write"):
-            await plugin._maybe_app_log(
+            await self._maybe_app_log(
                 "capability.denied",
                 "filesystem_write denied for append_desktop_debug_note",
                 level="verbose",
@@ -1926,10 +1849,9 @@ class Plugin:
 
     async def append_desktop_chat_event(self, payload: Any = None):
         """Append Ask or AI response lines to daily UTC chat file under ~/Desktop/bonsAI_logs/."""
-        plugin = Plugin._coerce_instance(self)
-        settings = await plugin.load_settings()
+        settings = await self.load_settings()
         if not capability_enabled(settings, "filesystem_write"):
-            await plugin._maybe_app_log(
+            await self._maybe_app_log(
                 "capability.denied",
                 "filesystem_write denied for append_desktop_chat_event",
                 level="verbose",
@@ -1960,8 +1882,7 @@ class Plugin:
 
     async def append_app_log(self, payload: Any = None):
         """Append one app-activity line to ~/Desktop/bonsAI_logs/bonsai-app-YYYY-MM-DD.log."""
-        plugin = Plugin._coerce_instance(self)
-        settings = await plugin.load_settings()
+        settings = await self.load_settings()
         if not isinstance(payload, dict):
             return {"success": False, "error": "Invalid request."}
         event_level = str(payload.get("level", "default") or "default").strip().lower()
@@ -1994,9 +1915,8 @@ class Plugin:
 
     async def _persist_input_transparency(self, snapshot: dict) -> None:
         """Store last transparency for ``get_input_transparency``; optionally append verbose Desktop trace."""
-        plugin = Plugin._coerce_instance(self)
-        plugin._last_input_transparency = snapshot
-        settings = await plugin.load_settings()
+        self._last_input_transparency = snapshot
+        settings = await self.load_settings()
         if settings.get("desktop_ask_verbose_logging") is not True:
             return
         if not capability_enabled(settings, "filesystem_write"):
@@ -2057,11 +1977,10 @@ class Plugin:
         Local keyword branches (sanitizer / shortcut / VAC) never spawn ``_run_background_request``; they must
         still mint a monotonic ``request_id`` so UI polling and Desktop autosave dedupe stay consistent.
         """
-        plugin = Plugin._coerce_instance(self)
-        plugin._background_request_seq += 1
-        request_id = plugin._background_request_seq
+        self._background_request_seq += 1
+        request_id = self._background_request_seq
         now = time.time()
-        await plugin._persist_input_transparency(
+        await self._persist_input_transparency(
             Plugin._immediate_command_transparency_snapshot(
                 route=transparency_route,
                 parsed_question=parsed_question,
@@ -2092,8 +2011,8 @@ class Plugin:
         }
         if shortcut_setup_for_state is not _OMIT_SHORTCUT_SETUP_FIELD:
             state["shortcut_setup"] = shortcut_setup_for_state
-        plugin._background_state = state
-        plugin._background_task = None
+        self._background_state = state
+        self._background_task = None
         out: dict[str, Any] = {
             "accepted": True,
             "status": "completed",
@@ -2116,9 +2035,7 @@ class Plugin:
         """Return the last Ask transparency snapshot (full prompts; fetch after terminal completion)."""
         from backend.services.transparency_service import ensure_context_chips_on_snapshot
 
-        plugin = Plugin._coerce_instance(self)
-        plugin._ensure_background_state()
-        snap = plugin._last_input_transparency
+        snap = self._last_input_transparency
         if not isinstance(snap, dict) or not snap:
             return {"available": False}
         enriched = ensure_context_chips_on_snapshot(dict(snap))
@@ -2126,15 +2043,13 @@ class Plugin:
 
     async def get_reply_language_snapshot(self):
         """Return Steam client language, persisted override, and effective Ask reply language."""
-        plugin = Plugin._coerce_instance(self)
-        settings = plugin.load_settings()
+        settings = self.load_settings()
         return reply_language_snapshot(settings.get("reply_language"))
 
     async def save_ask_feedback(self, rating: str, request_id: int = 0, question_len: int = 0, success: bool = False):
         """Persist thumbs up/down locally (JSONL under plugin settings); no network."""
         from backend.services.feedback_service import append_ask_feedback
 
-        plugin = Plugin._coerce_instance(self)
         rid = int(request_id) if request_id else None
         return append_ask_feedback(
             decky.DECKY_PLUGIN_SETTINGS_DIR,
@@ -2153,8 +2068,7 @@ class Plugin:
     async def take_steam_screenshot(self, app_id: str = ""):
         """Close-QAM flow: capture game into Steam screenshots (not auto-attached to Ask)."""
         try:
-            plugin = Plugin._coerce_instance(self)
-            settings = await plugin.load_settings()
+            settings = await self.load_settings()
             from backend.services.capabilities import capability_enabled
 
             if not (
@@ -2206,9 +2120,8 @@ class Plugin:
         reply_followup: Optional[dict] = None,
     ) -> dict:
         """Run one full ask lifecycle, including Ollama call timing and optional TDP application."""
-        plugin = Plugin._coerce_instance(self)
         return await run_game_ai_request(
-            plugin,
+            self,
             question,
             pc_ip,
             app_id,
@@ -2297,9 +2210,7 @@ class Plugin:
             )
         except asyncio.CancelledError:
             return
-        self._ensure_background_state()
-        plugin_bg = Plugin._coerce_instance(self)
-        bg_abort = getattr(plugin_bg, "_abort_current_ollama_chat", None)
+        bg_abort = getattr(self, "_abort_current_ollama_chat", None)
         if isinstance(bg_abort, threading.Event):
             bg_abort.clear()
         async with self._background_lock:
@@ -2353,8 +2264,6 @@ class Plugin:
 
     async def start_background_game_ai(self, question: Any = "", PcIp: str = ""):
         """Feature: Background Ask submit. Input: question payload + PcIp. Output: start ack or busy/error."""
-        plugin = Plugin._coerce_instance(self)
-        plugin._ensure_background_state()
 
         logger.info("start_background_game_ai: RPC entry (arg type=%s)", type(question).__name__)
         (
@@ -2385,12 +2294,12 @@ class Plugin:
             }
 
         if not has_local_command:
-            pre_settings = await plugin.load_settings()
+            pre_settings = await self.load_settings()
             if not bool(pre_settings.get("input_sanitizer_user_disabled")):
                 pre_lane = apply_input_sanitizer_lane(parsed_question, False)
                 if pre_lane.action == "block":
                     um = str(pre_lane.user_message or "")
-                    await plugin._persist_input_transparency(
+                    await self._persist_input_transparency(
                         build_sanitizer_block_snapshot(
                             raw_question=parsed_question,
                             sanitizer_action=str(pre_lane.action),
@@ -2414,13 +2323,13 @@ class Plugin:
                         "elapsed_seconds": 0.0,
                     }
 
-        async with plugin._background_lock:
+        async with self._background_lock:
             if (
-                plugin._background_state.get("status") == "pending"
-                and plugin._background_task is not None
-                and not plugin._background_task.done()
+                self._background_state.get("status") == "pending"
+                and self._background_task is not None
+                and not self._background_task.done()
             ):
-                state = dict(plugin._background_state)
+                state = dict(self._background_state)
                 return {
                     "accepted": False,
                     "status": "busy",
@@ -2430,16 +2339,16 @@ class Plugin:
                     "response": "A request is already in progress.",
                 }
 
-            lingering = plugin._background_task
+            lingering = self._background_task
             if lingering is not None and not lingering.done():
                 lingering.cancel()
-            plugin._background_task = None
+            self._background_task = None
 
             if local_kinds.sanitizer:
-                handled = await plugin._try_handle_sanitizer_keyword_command(parsed_question, app_id)
+                handled = await self._try_handle_sanitizer_keyword_command(parsed_question, app_id)
                 if handled is not None:
                     resp = str(handled.get("response", ""))
-                    return await plugin._finalize_immediate_background_local_command(
+                    return await self._finalize_immediate_background_local_command(
                         parsed_question=parsed_question,
                         resp=resp,
                         app_id=app_id,
@@ -2454,11 +2363,11 @@ class Plugin:
                     )
 
             if local_kinds.shortcut:
-                handled = await plugin._try_handle_shortcut_setup_command(parsed_question, app_id)
+                handled = await self._try_handle_shortcut_setup_command(parsed_question, app_id)
                 if handled is not None:
                     resp = str(handled.get("response", ""))
                     variant = handled.get("shortcut_setup")
-                    return await plugin._finalize_immediate_background_local_command(
+                    return await self._finalize_immediate_background_local_command(
                         parsed_question=parsed_question,
                         resp=resp,
                         app_id=app_id,
@@ -2475,10 +2384,10 @@ class Plugin:
                     )
 
             if local_kinds.vac:
-                handled_v = await plugin._try_handle_vac_check_command(parsed_question, app_id)
+                handled_v = await self._try_handle_vac_check_command(parsed_question, app_id)
                 if handled_v is not None:
                     resp = str(handled_v.get("response", ""))
-                    return await plugin._finalize_immediate_background_local_command(
+                    return await self._finalize_immediate_background_local_command(
                         parsed_question=parsed_question,
                         resp=resp,
                         app_id=app_id,
@@ -2493,10 +2402,10 @@ class Plugin:
                         shortcut_setup_for_state=None,
                     )
 
-            plugin._background_request_seq += 1
-            request_id = plugin._background_request_seq
-            plugin._reset_partial_stream_snapshot(request_id)
-            plugin._background_state = {
+            self._background_request_seq += 1
+            request_id = self._background_request_seq
+            self._reset_partial_stream_snapshot(request_id)
+            self._background_state = {
                 "status": "pending",
                 "request_id": request_id,
                 "question": parsed_question,
@@ -2516,8 +2425,8 @@ class Plugin:
                 "streaming": False,
                 "thinking_summary": None,
             }
-            plugin._background_task = asyncio.create_task(
-                plugin._run_background_request(
+            self._background_task = asyncio.create_task(
+                self._run_background_request(
                     request_id,
                     parsed_question,
                     pc_ip,
@@ -2530,7 +2439,7 @@ class Plugin:
                     reply_followup=reply_followup,
                 )
             )
-            await plugin._maybe_app_log(
+            await self._maybe_app_log(
                 "ask.start",
                 "background ask pending",
                 fields={
@@ -2541,7 +2450,7 @@ class Plugin:
                     "question_len": len(parsed_question or ""),
                 },
             )
-            await plugin._maybe_app_log(
+            await self._maybe_app_log(
                 "ask.rpc",
                 "RPC start_background_game_ai",
                 level="verbose",
@@ -2577,18 +2486,16 @@ class Plugin:
 
     async def get_background_game_ai_status(self):
         """Feature: Background Ask poll. Input: none. Output: pending/completed status for UI bridge."""
-        plugin = Plugin._coerce_instance(self)
-        plugin._ensure_background_state()
-        async with plugin._background_lock:
-            if plugin._background_task and plugin._background_task.done():
+        async with self._background_lock:
+            if self._background_task and self._background_task.done():
                 try:
-                    plugin._background_task.result()
+                    self._background_task.result()
                 except asyncio.CancelledError:
                     pass
                 except Exception as exc:
                     logger.exception("get_background_game_ai_status: background task failed: %s", exc)
-                    plugin._background_state = {
-                        **plugin._background_state,
+                    self._background_state = {
+                        **self._background_state,
                         "status": "failed",
                         "success": False,
                         "response": _BACKGROUND_TASK_FAILED_USER_MESSAGE,
@@ -2600,25 +2507,23 @@ class Plugin:
                         "partial_response": None,
                         "streaming": False,
                     }
-            return plugin._merge_partial_into_background_status(dict(plugin._background_state))
+            return self._merge_partial_into_background_status(dict(self._background_state))
 
     async def abort_background_game_ai(self):
         """Frontend Stop: unblock in-flight urllib read(s); Ollama may stop once the TCP session closes."""
-        plugin = Plugin._coerce_instance(self)
-        plugin._ensure_background_state()
-        evt = getattr(plugin, "_abort_current_ollama_chat", None)
+        evt = getattr(self, "_abort_current_ollama_chat", None)
         if isinstance(evt, threading.Event):
             evt.set()
             logger.info(
                 "abort_background_game_ai: stop requested — closing HTTP read; scheduling Ollama stop/unload"
             )
 
-        wre = getattr(plugin, "_active_ollama_chat_http_response", None)
+        wre = getattr(self, "_active_ollama_chat_http_response", None)
         if wre is None:
-            ev = getattr(plugin, "_chat_resp_ready_evt", None)
+            ev = getattr(self, "_chat_resp_ready_evt", None)
             if isinstance(ev, threading.Event):
                 ev.wait(timeout=1.5)
-                wre = getattr(plugin, "_active_ollama_chat_http_response", None)
+                wre = getattr(self, "_active_ollama_chat_http_response", None)
         if wre is not None:
             try:
                 wre.close()
@@ -2628,8 +2533,8 @@ class Plugin:
             except Exception as exc:
                 logger.warning("abort_background_game_ai: close active HTTP response failed: %s", exc)
 
-        ipc = str(getattr(plugin, "_active_ollama_chat_pc_ip", None) or "").strip()
-        imodel = getattr(plugin, "_active_ollama_chat_model", None)
+        ipc = str(getattr(self, "_active_ollama_chat_pc_ip", None) or "").strip()
+        imodel = getattr(self, "_active_ollama_chat_model", None)
 
         def _stop_bg() -> None:
             try:
@@ -2642,27 +2547,27 @@ class Plugin:
                 logger.exception("abort_background_game_ai: kill/unload helper failed")
 
         threading.Thread(target=_stop_bg, name="bonsai-ollama-stop", daemon=True).start()
-        with plugin._partial_response_lock:
-            snap = plugin._partial_stream_snapshot
-            if snap.get("request_id") == plugin._background_state.get("request_id"):
+        with self._partial_response_lock:
+            snap = self._partial_stream_snapshot
+            if snap.get("request_id") == self._background_state.get("request_id"):
                 snap["streaming"] = False
-        async with plugin._background_lock:
-            task = plugin._background_task
+        async with self._background_lock:
+            task = self._background_task
             if task is not None and not task.done():
                 task.cancel()
-            plugin._background_task = None
-            rid = plugin._background_state.get("request_id")
-            if rid is not None and plugin._background_state.get("status") == "pending":
+            self._background_task = None
+            rid = self._background_state.get("request_id")
+            if rid is not None and self._background_state.get("status") == "pending":
                 partial_text = None
-                with plugin._partial_response_lock:
-                    snap = plugin._partial_stream_snapshot
+                with self._partial_response_lock:
+                    snap = self._partial_stream_snapshot
                     if snap.get("request_id") == rid:
                         partial = snap.get("partial_response")
                         if isinstance(partial, str) and partial.strip():
                             partial_text = partial.strip()
                 cancel_response = partial_text if partial_text else "Request cancelled."
-                plugin._background_state = {
-                    **plugin._background_state,
+                self._background_state = {
+                    **self._background_state,
                     "status": "cancelled",
                     "success": False,
                     "response": cancel_response,
@@ -2671,7 +2576,7 @@ class Plugin:
                     "partial_response": None,
                     "streaming": False,
                 }
-        await plugin._maybe_app_log("ask.abort", "background ask abort requested")
+        await self._maybe_app_log("ask.abort", "background ask abort requested")
         return {"ok": True}
 
     def _build_system_prompt(
@@ -2749,7 +2654,7 @@ class Plugin:
     ):
         """Orchestrate attachment prep, prompt assembly, and model fallback request execution."""
         return await run_ask_ollama(
-            Plugin._coerce_instance(self),
+            self,
             question,
             PcIp,
             app_id,
@@ -2772,10 +2677,9 @@ class Plugin:
         )
 
     async def _stop_voice_transcription_internal(self) -> None:
-        plugin = Plugin._coerce_instance(self)
-        async with plugin._voice_lock:
-            session = plugin._voice_session
-            plugin._voice_session = None
+        async with self._voice_lock:
+            session = self._voice_session
+            self._voice_session = None
         if session is not None:
             await asyncio.to_thread(session.force_stop)
         from backend.services.voice_whisper_daemon import force_whisper_engine_stop
@@ -2783,8 +2687,7 @@ class Plugin:
         await asyncio.to_thread(force_whisper_engine_stop)
 
     async def _require_microphone_access(self) -> tuple[bool, dict[str, Any]]:
-        plugin = Plugin._coerce_instance(self)
-        settings = await plugin.load_settings()
+        settings = await self.load_settings()
         if not capability_enabled(settings, "microphone_access"):
             return False, {
                 "accepted": False,
@@ -2795,34 +2698,32 @@ class Plugin:
 
     async def get_voice_engine_status(self):
         """Return whisper binary + model readiness for the configured STT model."""
-        plugin = Plugin._coerce_instance(self)
-        settings = await plugin.load_settings()
+        settings = await self.load_settings()
         model_id = sanitize_voice_stt_model(settings.get("voice_stt_model"))
         ready = engine_readiness(PLUGIN_ROOT, decky.DECKY_PLUGIN_SETTINGS_DIR, model_id)
-        install = dict(plugin._voice_install_state)
+        install = dict(self._voice_install_state)
         return {**ready, "install": install}
 
     async def install_voice_engine(self, model_id: str = ""):
         """Install whisper-cli (podman) and download the selected GGUF model (requires microphone_access)."""
-        plugin = Plugin._coerce_instance(self)
-        ok_gate, gate_out = await plugin._require_microphone_access()
+        ok_gate, gate_out = await self._require_microphone_access()
         if not ok_gate:
             return gate_out or {"accepted": False, "reason": "permission_denied"}
 
-        settings = await plugin.load_settings()
+        settings = await self.load_settings()
         mid = sanitize_voice_stt_model(model_id or settings.get("voice_stt_model"))
-        async with plugin._voice_install_lock:
-            existing = plugin._voice_install_task
+        async with self._voice_install_lock:
+            existing = self._voice_install_task
             if existing is not None and not existing.done():
                 return {"accepted": False, "reason": "Voice engine install already running.", "error": "busy"}
 
-            plugin._voice_install_cancel = new_threading_cancel_event()
-            plugin._voice_install_state = new_voice_install_state()
-            plugin._voice_install_state.update(
+            self._voice_install_cancel = new_threading_cancel_event()
+            self._voice_install_state = new_voice_install_state()
+            self._voice_install_state.update(
                 {"phase": "running", "done": False, "accepted": True, "model_id": mid}
             )
 
-            on_stage = make_state_updating_on_stage(plugin._voice_install_state)
+            on_stage = make_state_updating_on_stage(self._voice_install_state)
 
             async def runner() -> None:
                 try:
@@ -2830,8 +2731,8 @@ class Plugin:
                         install_whisper_cli,
                         PLUGIN_ROOT,
                         decky.DECKY_PLUGIN_SETTINGS_DIR,
-                        plugin._voice_install_state,
-                        plugin._voice_install_cancel,
+                        self._voice_install_state,
+                        self._voice_install_cancel,
                         on_stage,
                     )
                     await asyncio.to_thread(
@@ -2839,33 +2740,31 @@ class Plugin:
                         PLUGIN_ROOT,
                         decky.DECKY_PLUGIN_SETTINGS_DIR,
                         mid,
-                        plugin._voice_install_state,
-                        plugin._voice_install_cancel,
+                        self._voice_install_state,
+                        self._voice_install_cancel,
                         on_stage,
                     )
                 except Exception as exc:
-                    plugin._voice_install_state.update(
+                    self._voice_install_state.update(
                         {"phase": "failed", "done": True, "error": str(exc)[:500]}
                     )
 
-            plugin._voice_install_task = asyncio.create_task(runner())
+            self._voice_install_task = asyncio.create_task(runner())
 
-        await plugin._maybe_app_log("voice.install", "voice engine install accepted", fields={"model_id": mid})
+        await self._maybe_app_log("voice.install", "voice engine install accepted", fields={"model_id": mid})
         return {"accepted": True, "model_id": mid}
 
     async def get_voice_install_status(self):
         """Poll voice model download progress."""
-        plugin = Plugin._coerce_instance(self)
-        return dict(plugin._voice_install_state)
+        return dict(self._voice_install_state)
 
     async def start_voice_transcription(self):
         """Start PipeWire/Pulse capture and local whisper interim transcription."""
-        plugin = Plugin._coerce_instance(self)
-        ok_gate, gate_out = await plugin._require_microphone_access()
+        ok_gate, gate_out = await self._require_microphone_access()
         if not ok_gate:
             return gate_out or {"accepted": False, "reason": "permission_denied"}
 
-        settings = await plugin.load_settings()
+        settings = await self.load_settings()
         model_id = sanitize_voice_stt_model(settings.get("voice_stt_model"))
         ready = engine_readiness(PLUGIN_ROOT, decky.DECKY_PLUGIN_SETTINGS_DIR, model_id)
         if not ready.get("binary_ready"):
@@ -2884,19 +2783,19 @@ class Plugin:
                 "reason": f"Download the {model_id} voice model in Settings → Voice input first.",
             }
 
-        async with plugin._voice_lock:
-            if plugin._voice_session is not None:
-                st = plugin._voice_session.status()
+        async with self._voice_lock:
+            if self._voice_session is not None:
+                st = self._voice_session.status()
                 if st.get("recording"):
                     return {"accepted": True, "status": st}
-                old = plugin._voice_session
-                plugin._voice_session = None
+                old = self._voice_session
+                self._voice_session = None
             else:
                 old = None
         if old is not None:
             await asyncio.to_thread(old.force_stop)
 
-        async with plugin._voice_lock:
+        async with self._voice_lock:
             session = VoiceTranscriptionSession(
                 PLUGIN_ROOT,
                 decky.DECKY_PLUGIN_SETTINGS_DIR,
@@ -2905,13 +2804,13 @@ class Plugin:
             )
             out = await asyncio.to_thread(session.start)
             if out.get("accepted"):
-                plugin._voice_session = session
+                self._voice_session = session
             else:
-                plugin._voice_session = None
+                self._voice_session = None
 
         if out.get("accepted"):
-            await plugin._persist_input_transparency(build_voice_transcribe_snapshot(model_id=model_id))
-            await plugin._maybe_app_log(
+            await self._persist_input_transparency(build_voice_transcribe_snapshot(model_id=model_id))
+            await self._maybe_app_log(
                 "voice.start",
                 "voice transcription started",
                 fields={"model_id": model_id},
@@ -2920,10 +2819,9 @@ class Plugin:
 
     async def stop_voice_transcription(self):
         """Stop capture and return finalized transcript."""
-        plugin = Plugin._coerce_instance(self)
-        async with plugin._voice_lock:
-            session = plugin._voice_session
-            plugin._voice_session = None
+        async with self._voice_lock:
+            session = self._voice_session
+            self._voice_session = None
         if session is None:
             return {
                 "stopped": True,
@@ -2932,7 +2830,7 @@ class Plugin:
                 "partial_transcript": "",
             }
         out = await asyncio.to_thread(session.stop)
-        await plugin._maybe_app_log(
+        await self._maybe_app_log(
             "voice.stop",
             "voice transcription stopped",
             fields={"transcript_len": len(str(out.get("finalized_transcript") or ""))},
@@ -2941,10 +2839,9 @@ class Plugin:
 
     async def get_voice_transcription_status(self):
         """Poll interim/final transcript while recording."""
-        plugin = Plugin._coerce_instance(self)
-        settings = await plugin.load_settings()
+        settings = await self.load_settings()
         if not capability_enabled(settings, "microphone_access"):
-            await plugin._stop_voice_transcription_internal()
+            await self._stop_voice_transcription_internal()
             return {
                 **new_voice_transcription_state(),
                 "status": "permission_denied",
@@ -2953,8 +2850,8 @@ class Plugin:
                 "streaming": False,
             }
 
-        async with plugin._voice_lock:
-            session = plugin._voice_session
+        async with self._voice_lock:
+            session = self._voice_session
         if session is None:
             return new_voice_transcription_state()
         st = await asyncio.to_thread(session.status)
