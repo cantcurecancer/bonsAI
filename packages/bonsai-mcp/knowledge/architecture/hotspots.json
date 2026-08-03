@@ -106,11 +106,6 @@
       "role": ""
     },
     {
-      "path": "py_modules/backend/services/settings_service.py",
-      "lines": 493,
-      "role": "Load/save/merge settings.json"
-    },
-    {
       "path": "py_modules/backend/services/game_ai_request.py",
       "lines": 492,
       "role": ""
@@ -119,6 +114,11 @@
       "path": "src/hooks/usePluginSettings.ts",
       "lines": 487,
       "role": ""
+    },
+    {
+      "path": "py_modules/backend/services/settings_service.py",
+      "lines": 478,
+      "role": "Load/save/merge settings.json"
     },
     {
       "path": "src/utils/settingsContracts.test.ts",

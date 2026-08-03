@@ -270,21 +270,6 @@ def _reconcile_latency_warning_before_timeout(
     return w, t
 
 
-def sanitize_screenshot_max_dimension(
-    value: Any,
-    valid_dimensions: set[int],
-    default_dimension: int,
-) -> int:
-    """Validate screenshot dimension values against the explicit allowed dimension set."""
-    try:
-        parsed = int(value)
-    except (TypeError, ValueError):
-        parsed = default_dimension
-    if parsed in valid_dimensions:
-        return parsed
-    return default_dimension
-
-
 def sanitize_latency_timeouts_custom_enabled(value: Any) -> bool:
     """Only explicit true lets stored warning/timeout values apply to Ollama and UI (defaults when false)."""
     return value is True
