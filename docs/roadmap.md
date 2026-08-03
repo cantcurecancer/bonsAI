@@ -626,9 +626,15 @@ verbatim in commit subjects, and keep one label to one commit series.
    caught only exceptions, so an `exit 1` would have been swallowed and the watch loop would
    have carried on as if the Deck were current: the same false pass, one level up.
 
-   **Remaining gap:** the sleep-mid-deploy scenario was not re-staged, though its guard is
-   confirmed (`ssh` and `scp` to an unreachable host both return 255, which `Assert-LastExit`
-   turns into an abort), and the `STALE` branch of the hash compare is simulation-tested only.
+   **The false-pass fix then proved itself for real, later the same day.** A step 7 deploy was
+   attempted while the Deck had drifted to sleep. The script failed at the first `ssh`
+   (exit 255) and reported *"Deploy aborted - the Deck may be asleep or unreachable"* with a
+   non-zero exit. Before D8 that exact run would have attempted every `scp`, ignored all of
+   their failures, and printed **Deployment complete!** — the original bug, reproduced by
+   accident and now caught. **DEPLOY-VERIFY-02 upgraded to Verified.**
+
+   **Remaining gap:** the `STALE` branch of the hash compare is still simulation-tested only —
+   it needs a deploy where files land but with stale content, which has not happened naturally.
    **DEPLOY-VERIFY-01…03** in [testing.md](testing.md).
 
 5d. **D7 — delete screenshot helpers** — **done 2026-08-03.** `_reencode_oversized_capture`
@@ -816,7 +822,14 @@ verbatim in commit subjects, and keep one label to one commit series.
    step 7b — went first in its own commit.
 
 **Step 7 is complete.** Both languages now declare their simple settings as tables, the shape
-is pinned by two shared contracts, and the five D13 divergences are resolved. — REFACTOR-PLAN §3.1, the highest-value item in the audit and the best-covered by existing tests (`tests/test_settings_service.py` asserts per-setting round-trips). Expect that suite to break on shape, not behavior — rewrite the assertions, do not contort the design.
+is pinned by two shared contracts, and the five D13 divergences are resolved.
+
+**Not yet deployed.** Steps 7a–7d are verified by `tsc`, 263 frontend tests, 418 Python tests,
+`npm run build`, and two differential tests — but the Deck was asleep when the deploy was
+attempted, so this work has **not run on-device**. Settings load on every plugin start
+(`_main` → `_maybe_app_log` → `load_settings` → `sanitize_settings`), so a deploy plus a
+`bonsAI plugin loaded!` check is a real smoke of it. Do that before step 8, together with the
+still-open **D11-SHIM-01** pass. — REFACTOR-PLAN §3.1, the highest-value item in the audit and the best-covered by existing tests (`tests/test_settings_service.py` asserts per-setting round-trips). Expect that suite to break on shape, not behavior — rewrite the assertions, do not contort the design.
 8. **D3 — entry-point split, continued** — resume from **5b** above (after **5c** deploy hardening). Remaining, in the order they get cheaper: character-picker modal (~76 lines, ~11 deps), Ollama models hub (~84, ~10), desktop-note modal (~49), plugin-help modal (~11), connection/IP, session-reset, UI-scale, error-capture — **then** the six tab payloads. **`tsc` + `npm test` + preview smoke every commit** per locked **D10**. **On-Deck D-pad pass only for the four modal extractions** (not state-only commits). **Done scope = `index.tsx` only** per locked **D9** — `useBonsaiAskOrchestration.ts` and `MainTab.tsx` are follow-ups after step 8.
 9. **KB download Cancel button** — wire `cancel_rag_corpus_download` in `KnowledgeBaseSection.tsx`; D-pad row in `testing.md` / `testing-manual.md`.
 10. **D4 — evidence hygiene** — link audit, prune orphans only. The retention rule must live **in the script that writes evidence**, not in a doc — a rule that depends on remembering is not a mechanism.
