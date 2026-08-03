@@ -16,8 +16,6 @@ import { BonsaiPluginShell } from "./components/BonsaiPluginShell";
 import { BonsaiDebugOverlay } from "./components/BonsaiDebugOverlay";
 import { MainTab } from "./components/MainTab";
 import { PULL_MODEL_CATALOG } from "./data/pullModelCatalog";
-import { OllamaTab } from "./components/OllamaTab";
-import { SettingsTab } from "./components/SettingsTab";
 import { getSteamInputLexiconEntry } from "./data/steam-input-lexicon";
 import { jumpToSteamInputEntry } from "./utils/steamInputJump";
 import {
@@ -55,15 +53,13 @@ import {
 import { useUnifiedInputSurface } from "./features/unified-input/useUnifiedInputSurface";
 import { PluginErrorBoundary } from "./features/plugin-shell/PluginErrorBoundary";
 import { DECKY_TAB_TITLES } from "./features/plugin-shell/tabTitles";
-import {
-  loadSavedSearchQuery,
-  persistSearchQuery,
-  saveIp,
-} from "./features/plugin-shell/pluginStorage";
+import { loadSavedSearchQuery, persistSearchQuery } from "./features/plugin-shell/pluginStorage";
 import { useOllamaConnectionState } from "./features/plugin-shell/useOllamaConnectionState";
 import { useDeveloperTabPayload } from "./features/plugin-shell/tabs/useDeveloperTabPayload";
 import { useAboutTabPayload } from "./features/plugin-shell/tabs/useAboutTabPayload";
 import { usePermissionsTabPayload } from "./features/plugin-shell/tabs/usePermissionsTabPayload";
+import { useSettingsTabPayload } from "./features/plugin-shell/tabs/useSettingsTabPayload";
+import { useOllamaTabPayload } from "./features/plugin-shell/tabs/useOllamaTabPayload";
 import { useUiScaleProfile } from "./hooks/useUiScaleProfile";
 import { useQamPanelHeightGuard } from "./hooks/useQamPanelHeightGuard";
 import { useTabStripBodyOffset } from "./hooks/useTabStripBodyOffset";
@@ -1151,117 +1147,66 @@ const Content: React.FC = () => {
     ]
   );
 
-  const settingsTab = useMemo(
-    () => (
-    <SettingsTab
-      screenshotAttachmentPreset={screenshotAttachmentPreset}
-      setScreenshotAttachmentPreset={setScreenshotAttachmentPreset}
-      unifiedInputPersistenceMode={unifiedInputPersistenceMode}
-      setUnifiedInputPersistenceMode={setUnifiedInputPersistenceMode}
-      aiCharacterEnabled={aiCharacterEnabled}
-      setAiCharacterEnabled={setAiCharacterEnabled}
-      aiCharacterRandom={aiCharacterRandom}
-      aiCharacterPresetId={aiCharacterPresetId}
-      aiCharacterCustomText={aiCharacterCustomText}
-      aiCharacterAccentIntensity={aiCharacterAccentIntensity}
-      setAiCharacterAccentIntensity={setAiCharacterAccentIntensity}
-      showDeveloperTab={showDeveloperTab}
-      setShowDeveloperTab={setShowDeveloperTab}
-      strategySpoilerMaskingEnabled={strategySpoilerMaskingEnabled}
-      setStrategySpoilerMaskingEnabled={setStrategySpoilerMaskingEnabled}
-      voiceSttModel={voiceSttModel}
-      setVoiceSttModel={setVoiceSttModel}
-      microphoneAccessEnabled={capabilities.microphone_access}
-      uiScaleAutoEnabled={uiScaleAutoEnabled}
-      uiScaleManualProfile={uiScaleManualProfile}
-      appliedUiScaleProfileId={uiScale.appliedProfileId}
-      onApplyUiScale={onApplyUiScale}
-      onOpenCharacterPicker={openCharacterPickerModal}
-      onBeforeDeckyModal={captureSessionBeforeModal}
-      onCompleteDeckyModalClose={finalizeShowModalAndRestoreActiveTab}
-      onResetSession={resetPluginSession}
-      onClearAllPluginData={onClearAllPluginData}
-    />
-  ),
-    [
-      screenshotAttachmentPreset,
-      unifiedInputPersistenceMode,
-      aiCharacterEnabled,
-      aiCharacterRandom,
-      aiCharacterPresetId,
-      aiCharacterCustomText,
-      aiCharacterAccentIntensity,
-      showDeveloperTab,
-      strategySpoilerMaskingEnabled,
-      voiceSttModel,
-      uiScaleAutoEnabled,
-      uiScaleManualProfile,
-      uiScale.appliedProfileId,
-      onApplyUiScale,
-      capabilities.microphone_access,
-      captureSessionBeforeModal,
-      finalizeShowModalAndRestoreActiveTab,
-      openCharacterPickerModal,
-      resetPluginSession,
-      onClearAllPluginData,
-    ]
-  );
+  const settingsTab = useSettingsTabPayload({
+    screenshotAttachmentPreset,
+    setScreenshotAttachmentPreset,
+    unifiedInputPersistenceMode,
+    setUnifiedInputPersistenceMode,
+    aiCharacterEnabled,
+    setAiCharacterEnabled,
+    aiCharacterRandom,
+    aiCharacterPresetId,
+    aiCharacterCustomText,
+    aiCharacterAccentIntensity,
+    setAiCharacterAccentIntensity,
+    showDeveloperTab,
+    setShowDeveloperTab,
+    strategySpoilerMaskingEnabled,
+    setStrategySpoilerMaskingEnabled,
+    voiceSttModel,
+    setVoiceSttModel,
+    microphoneAccessEnabled: capabilities.microphone_access,
+    uiScaleAutoEnabled,
+    uiScaleManualProfile,
+    appliedUiScaleProfileId: uiScale.appliedProfileId,
+    onApplyUiScale,
+    onOpenCharacterPicker: openCharacterPickerModal,
+    onBeforeDeckyModal: captureSessionBeforeModal,
+    onCompleteDeckyModalClose: finalizeShowModalAndRestoreActiveTab,
+    onResetSession: resetPluginSession,
+    onClearAllPluginData,
+  });
 
-  const ollamaTab = useMemo(
-    () => (
-      <OllamaTab
-        key={`ollama-tab-${ollamaTabResetKey}`}
-        ollamaIp={ollamaIp}
-        onOllamaIpChange={setOllamaIp}
-        onPersistOllamaIp={saveIp}
-        ollamaLocalOnDeck={ollamaLocalOnDeck}
-        setOllamaLocalOnDeck={setOllamaLocalOnDeck}
-        onLastConnectionStatus={setLastConnectionStatus}
-        lastConnectionStatus={lastConnectionStatus}
-        namedOllamaHosts={namedOllamaHosts}
-        setNamedOllamaHosts={setNamedOllamaHosts}
-        onBeforeDeckyModal={captureSessionBeforeModal}
-        onCompleteDeckyModalClose={finalizeShowModalAndRestoreActiveTab}
-        onOpenOllamaModelsHub={openOllamaModelsHub}
-        onOpenRoutingOrderModal={openRoutingOrderModal}
-        latencyWarningSeconds={latencyWarningSeconds}
-        requestTimeoutSeconds={requestTimeoutSeconds}
-        latencyTimeoutsCustomEnabled={latencyTimeoutsCustomEnabled}
-        setLatencyTimeoutsCustomEnabled={setLatencyTimeoutsCustomEnabled}
-        setLatencyWarningSeconds={setLatencyWarningSeconds}
-        setRequestTimeoutSeconds={setRequestTimeoutSeconds}
-        ollamaKeepAlive={ollamaKeepAlive}
-        setOllamaKeepAlive={setOllamaKeepAlive}
-        replyVerbosity={replyVerbosity}
-        setReplyVerbosity={setReplyVerbosity}
-        modelPolicyTier={modelPolicyTier}
-        onApplyTier2MultimodalPolicy={onApplyTier2MultimodalPolicy}
-        useLocalKnowledgeBase={useLocalKnowledgeBase}
-        setUseLocalKnowledgeBase={setUseLocalKnowledgeBase}
-        ragCorpusVersion={ragCorpusVersion}
-      />
-    ),
-    [
-      ollamaIp,
-      ollamaLocalOnDeck,
-      ollamaTabResetKey,
-      lastConnectionStatus,
-      namedOllamaHosts,
-      latencyWarningSeconds,
-      requestTimeoutSeconds,
-      latencyTimeoutsCustomEnabled,
-      ollamaKeepAlive,
-      replyVerbosity,
-      modelPolicyTier,
-      onApplyTier2MultimodalPolicy,
-      useLocalKnowledgeBase,
-      ragCorpusVersion,
-      captureSessionBeforeModal,
-      finalizeShowModalAndRestoreActiveTab,
-      openOllamaModelsHub,
-      openRoutingOrderModal,
-    ]
-  );
+  const ollamaTab = useOllamaTabPayload({
+    ollamaTabResetKey,
+    ollamaIp,
+    onOllamaIpChange: setOllamaIp,
+    ollamaLocalOnDeck,
+    setOllamaLocalOnDeck,
+    onLastConnectionStatus: setLastConnectionStatus,
+    lastConnectionStatus,
+    namedOllamaHosts,
+    setNamedOllamaHosts,
+    onBeforeDeckyModal: captureSessionBeforeModal,
+    onCompleteDeckyModalClose: finalizeShowModalAndRestoreActiveTab,
+    onOpenOllamaModelsHub: openOllamaModelsHub,
+    onOpenRoutingOrderModal: openRoutingOrderModal,
+    latencyWarningSeconds,
+    requestTimeoutSeconds,
+    latencyTimeoutsCustomEnabled,
+    setLatencyTimeoutsCustomEnabled,
+    setLatencyWarningSeconds,
+    setRequestTimeoutSeconds,
+    ollamaKeepAlive,
+    setOllamaKeepAlive,
+    replyVerbosity,
+    setReplyVerbosity,
+    modelPolicyTier,
+    onApplyTier2MultimodalPolicy,
+    useLocalKnowledgeBase,
+    setUseLocalKnowledgeBase,
+    ragCorpusVersion,
+  });
 
   const permissionsTab = usePermissionsTabPayload({ capabilities, setCapabilities });
 

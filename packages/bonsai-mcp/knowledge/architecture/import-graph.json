@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 240,
-  "edgeCount": 541,
+  "fileCount": 242,
+  "edgeCount": 544,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -319,7 +319,7 @@
         "src/styles/settingsGlassButton.ts"
       ],
       "importedBy": [
-        "src/index.tsx"
+        "src/features/plugin-shell/tabs/useOllamaTabPayload.tsx"
       ]
     },
     "src/components/OllamaWhereAiRunsSection.tsx": {
@@ -399,7 +399,7 @@
         "src/utils/settingsTabLocalSurvival.ts"
       ],
       "importedBy": [
-        "src/index.tsx"
+        "src/features/plugin-shell/tabs/useSettingsTabPayload.tsx"
       ]
     },
     "src/components/SettingsTabAccentIntensityMenuPopover.tsx": {
@@ -901,6 +901,7 @@
         "src/data/storageKeys.ts"
       ],
       "importedBy": [
+        "src/features/plugin-shell/tabs/useOllamaTabPayload.tsx",
         "src/features/plugin-shell/useOllamaConnectionState.ts",
         "src/features/plugin-shell/usePluginHelpModal.tsx",
         "src/index.tsx"
@@ -932,9 +933,26 @@
         "src/index.tsx"
       ]
     },
+    "src/features/plugin-shell/tabs/useOllamaTabPayload.tsx": {
+      "imports": [
+        "src/components/OllamaTab.tsx",
+        "src/features/plugin-shell/pluginStorage.ts"
+      ],
+      "importedBy": [
+        "src/index.tsx"
+      ]
+    },
     "src/features/plugin-shell/tabs/usePermissionsTabPayload.tsx": {
       "imports": [
         "src/components/PermissionsTab.tsx"
+      ],
+      "importedBy": [
+        "src/index.tsx"
+      ]
+    },
+    "src/features/plugin-shell/tabs/useSettingsTabPayload.tsx": {
+      "imports": [
+        "src/components/SettingsTab.tsx"
       ],
       "importedBy": [
         "src/index.tsx"
@@ -1357,8 +1375,6 @@
         "src/components/BonsaiDebugOverlay.tsx",
         "src/components/BonsaiPluginShell.tsx",
         "src/components/MainTab.tsx",
-        "src/components/OllamaTab.tsx",
-        "src/components/SettingsTab.tsx",
         "src/components/icons.tsx",
         "src/context/UiScaleContext.tsx",
         "src/data/bonsaiSettingsSchema.ts",
@@ -1377,7 +1393,9 @@
         "src/features/plugin-shell/tabTitles.tsx",
         "src/features/plugin-shell/tabs/useAboutTabPayload.tsx",
         "src/features/plugin-shell/tabs/useDeveloperTabPayload.tsx",
+        "src/features/plugin-shell/tabs/useOllamaTabPayload.tsx",
         "src/features/plugin-shell/tabs/usePermissionsTabPayload.tsx",
+        "src/features/plugin-shell/tabs/useSettingsTabPayload.tsx",
         "src/features/plugin-shell/useCharacterPickerModal.tsx",
         "src/features/plugin-shell/useDesktopNoteSaveModal.tsx",
         "src/features/plugin-shell/useOllamaConnectionState.ts",
