@@ -263,19 +263,6 @@ def _finalize_steam_capture_file(path: str, clean_env: Optional[dict] = None) ->
     return src
 
 
-def _reencode_oversized_capture(path: str, max_bytes: int = 900_000, clean_env: Optional[dict] = None) -> str:
-    """Re-encode huge compositor/kmsgrab frames as JPEG so thumbnails stay usable."""
-    src = str(path or "").strip()
-    if not src or not os.path.isfile(src):
-        return src
-    try:
-        if os.path.getsize(src) <= max_bytes:
-            return src
-    except OSError:
-        return src
-    return _compress_capture_to_jpeg(src, clean_env)
-
-
 def try_qam_closed_compositor_capture(
     output_path: str,
     clean_env: dict,
@@ -379,11 +366,6 @@ def take_steam_game_screenshot(
     if gs_error:
         error_text = f"{error_text} {gs_error}"
     return {"success": False, "error": error_text[:500]}
-
-
-def _mirror_capture_to_plugin_dir(source_path: str, plugin_runtime_dir: str, timestamp: str) -> None:
-    """Deprecated: steam screenshots folder is the single source of truth for recents."""
-    del source_path, plugin_runtime_dir, timestamp
 
 
 def merge_recent_screenshot_paths(

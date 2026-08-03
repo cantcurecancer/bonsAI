@@ -10,7 +10,6 @@ from backend.services.screenshot_media import (
     lookup_screenshot_vdf_metadata,
     lookup_steam_app_name,
     resolve_steam_screenshot_output_dir,
-    _reencode_oversized_capture,
     _finalize_steam_capture_file,
     try_gamescope_atom_screenshot,
 )
@@ -119,11 +118,16 @@ class ScreenshotMediaTests(unittest.TestCase):
                 merged = merge_recent_screenshot_paths(steam, plugin, limit=5)
         self.assertEqual(merged, steam)
 
-    def test_reencode_oversized_capture_keeps_small_png(self) -> None:
-        with mock.patch("os.path.getsize", return_value=500_000):
-            with mock.patch("os.path.isfile", return_value=True):
-                out = _reencode_oversized_capture("/tmp/small.png")
-        self.assertEqual(out, "/tmp/small.png")
+    def test_finalize_steam_capture_file_passes_through_missing_file(self) -> None:
+        # Folded in from the deleted _reencode_oversized_capture test: a path the finalizer
+        # cannot work on comes back untouched rather than being handed to the JPEG encoder.
+        with mock.patch("os.path.isfile", return_value=False):
+            with mock.patch(
+                "backend.services.screenshot_media._compress_capture_to_jpeg",
+            ) as compress_mock:
+                out = _finalize_steam_capture_file("/tmp/gone.png")
+        compress_mock.assert_not_called()
+        self.assertEqual(out, "/tmp/gone.png")
 
     def test_finalize_steam_capture_file_compresses_large_rgba(self) -> None:
         from backend.services.screenshot_media import _finalize_steam_capture_file

@@ -1,6 +1,6 @@
 # bonsAI Roadmap
 
-**Next session starts at** [execution order](#maintainer-decisions-locked--2026-08-02) **steps 5c–5d** ([D8](#d8--the-deploy-path-has-two-blind-spots-fix-them-or-keep-checking-by-hand) deploy hardening, then [D7](#d7--two-more-dead-functions-turned-up-delete-them-too) screenshot cleanup), then **step 6** (`main.py` investigation). [D7–D10](#d7d10--raised-during-the-2026-08-02-session-locked-2026-08-03) locked 2026-08-03.
+**Next session starts at** [execution order](#maintainer-decisions-locked--2026-08-02) **step 5c** ([D8](#d8--the-deploy-path-has-two-blind-spots-fix-them-or-keep-checking-by-hand) deploy hardening), then **step 6** (`main.py` investigation). **5d** ([D7](#d7--two-more-dead-functions-turned-up-delete-them-too)) is done. [D7–D10](#d7d10--raised-during-the-2026-08-02-session-locked-2026-08-03) locked 2026-08-03.
 
 Tracks **bugs and active engineering** ([In Progress](#in-progress)), **executed cleanup** ([Cleanup candidates](#cleanup-candidates)), **refactor decisions** ([Decisions needed](#decisions-needed) — locked 2026-08-02), deferred **QA** ([QA backlog](#qa-backlog)), the **backlog** ([Planned](#planned)), and pointers to shipped work ([Completed](#completed)).
 
@@ -384,7 +384,18 @@ current tree (especially **D1b** and parts of **D2** / **D4**).
 
 5c. **D8 — harden `build.ps1`** — prune stale plugin files before copy; verify deploy landed (hash or mtime on `dist/index.js`). **Blocker before step 8** per locked **D8**. `watch-deploy.ps1` inherits the fix.
 
-5d. **D7 — delete screenshot helpers** — remove `_reencode_oversized_capture` and `_mirror_capture_to_plugin_dir` from `screenshot_media.py` and the `_reencode` unit test per locked **D7**.
+5d. **D7 — delete screenshot helpers** — **done 2026-08-03.** `_reencode_oversized_capture`
+   and `_mirror_capture_to_plugin_dir` removed from `screenshot_media.py`. Preview gate run
+   on **symbols and the test filename** per the step-3 lesson: clean. The `_reencode` unit
+   test asserted "a file that needs no work is returned untouched"; that assertion is folded
+   into `test_finalize_steam_capture_file_passes_through_missing_file`, which covers the
+   equivalent guard on the live function ([screenshot_media.py:245](../py_modules/backend/services/screenshot_media.py))
+   and was previously untested. Python suite stays at 413.
+
+   **Left alone deliberately:** `take_steam_game_screenshot` still declares a
+   `plugin_runtime_dir` parameter that nothing in its body reads — it was the mirror
+   helper's argument. Dropping it changes a public signature, which is not what D7 authorized;
+   it belongs with the step-6 `main.py` inventory pass.
 
 6. **2.3 — `main.py` extraction investigation** — read-only; produce a `file:line` inventory of what logic remains inline in `main.py` and where each piece belongs ([05-plan.md](audit/05-plan.md) §2.3). Feeds both step 7 and the `main.py` half of step 8.
 7. **2.2 — settings single source of truth** — REFACTOR-PLAN §3.1, the highest-value item in the audit and the best-covered by existing tests (`tests/test_settings_service.py` asserts per-setting round-trips). Expect that suite to break on shape, not behavior — rewrite the assertions, do not contort the design.
@@ -461,9 +472,9 @@ Nothing here changed product behavior.
 | 4 | **Remove the `sysfs_writes` reader and field; keep the preview hook empty** | `a9353cc` — `read_sandbox_sysfs_writes` and the `get_input_transparency` field gone; `sandbox_sysfs_root` stays because `find_amdgpu_hwmon` needs it. `getSysfsWrites` kept returning `[]`: the in-repo runner never calls it, but `__bonsaiTestHooks` is consumed by DPS scenarios outside this repo, so the contract stands |
 | 5 | **Defer the `docs/archive/` broken links to D4** | Not actionable here by decision. 272 relative links in historical files point at a `docs/` layout that no longer exists; fixing them is evidence hygiene, not code legibility. Folded into **D4** — see [06-doc-triage.md](audit/06-doc-triage.md) § Link audit. Live docs are already link-clean |
 
-**Found while executing, deferred to D7 (locked 2026-08-03):**
+**Found while executing, deferred to D7 (locked 2026-08-03, executed same day):**
 `_reencode_oversized_capture` and `_mirror_capture_to_plugin_dir` in
-`screenshot_media.py` — no production callers; see execution-order step **5d**.
+`screenshot_media.py` — no production callers; deleted in execution-order step **5d**.
 
 ---
 
