@@ -303,7 +303,6 @@ _SIMPLE_FIELDS: dict[str, Any] = {
     "ollama_local_on_deck": _bool_default_false,
     "model_allow_high_vram_fallbacks": _bool_default_false,
     # Presentation, defaulting on: only an explicit ``False`` turns these off.
-    "preset_chip_fade_animation_enabled": _bool_default_true,
     "strategy_spoiler_masking_enabled": _bool_default_true,
     "ui_scale_auto_enabled": _bool_default_true,
     "strategy_spoiler_auto_reveal_after_consent": _bool_default_false,
@@ -355,6 +354,10 @@ def sanitize_settings(
     mp_tier, mp_unlock = reconcile_model_policy_tier(
         raw.get("model_policy_tier"), raw.get("model_policy_non_foss_unlocked")
     )
+    preset_chip_animation = sanitize_preset_chip_animation(
+        raw.get("preset_chip_animation"),
+        raw.get("preset_chip_fade_animation_enabled"),
+    )
     out: dict[str, Any] = {name: coerce(raw.get(name)) for name, coerce in _SIMPLE_FIELDS.items()}
 
     # Everything below needs something a table row cannot express: another field's value,
@@ -376,10 +379,20 @@ def sanitize_settings(
             "ask_mode": sanitize_ask_mode(raw.get("ask_mode"), valid_ask_modes, default_ask_mode),
             # Read a legacy key as well as their own.
             "screenshot_attachment_preset": resolve_screenshot_attachment_preset(raw, "low"),
-            "preset_chip_animation": sanitize_preset_chip_animation(
-                raw.get("preset_chip_animation"),
-                raw.get("preset_chip_fade_animation_enabled"),
-            ),
+            "preset_chip_animation": preset_chip_animation,
+            # Deprecated, and derived from the live field rather than read independently.
+            #
+            # D13 resolved the TS/Python split here **towards TypeScript**, against the general
+            # "Python is authoritative" rule, because reading this key on its own produces a
+            # self-contradictory payload: ``preset_chip_animation: "carousel"`` alongside
+            # ``preset_chip_fade_animation_enabled: True`` says fades are on while a non-fade
+            # animation is selected. The frontend already derived it on both the normalize and
+            # the save path (``settingsPayload.ts``), so Python was the odd one out.
+            #
+            # Harmless where it is consumed: ``MainTabPresetRow`` gates on
+            # ``presetChipAnimation === "fade" && presetChipFadeAnimationEnabled``, so the flag
+            # is only ever read when the animation is already ``fade``.
+            "preset_chip_fade_animation_enabled": preset_chip_animation == "fade",
             "show_developer_tab": sanitize_show_developer_tab(
                 raw.get("show_developer_tab"), raw.get("show_debug_tab")
             ),

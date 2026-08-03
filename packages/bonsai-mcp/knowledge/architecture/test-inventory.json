@@ -2,6 +2,7 @@
   "vitest": [
     "src/components/SettingsTab.mdns.test.ts",
     "src/data/bonsaiSettingsContract.test.ts",
+    "src/data/bonsaiSettingsHostileContract.test.ts",
     "src/data/characterCatalog.test.ts",
     "src/data/characterUiAccent.test.ts",
     "src/data/presets.test.ts",
@@ -89,6 +90,7 @@
     "tests/test_screenshot_media.py",
     "tests/test_session_rag_chip_candidates_rpc.py",
     "tests/test_settings_contract.py",
+    "tests/test_settings_hostile_contract.py",
     "tests/test_settings_save_lock.py",
     "tests/test_settings_service.py",
     "tests/test_shortcut_setup_commands.py",

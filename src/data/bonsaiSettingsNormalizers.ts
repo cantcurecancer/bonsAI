@@ -219,10 +219,40 @@ export function normalizeNamedOllamaHosts(value: unknown): NamedOllamaHost[] {
 }
 
 export function normalizeDesktopAppLogLevel(value: unknown): DesktopAppLogLevel {
-  if (value === "off" || value === "default" || value === "verbose") {
-    return value;
+  // Trimmed before matching so a hand-edited settings.json with `" verbose "` reads the same
+  // here as it does in Python (D13: Python is authoritative because it decides what persists).
+  const t = typeof value === "string" ? value.trim() : value;
+  if (t === "off" || t === "default" || t === "verbose") {
+    return t;
   }
   return DEFAULT_DESKTOP_APP_LOG_LEVEL;
+}
+
+/**
+ * Mirror of Python's `str(value or "").strip()` for the value types that realistically reach
+ * settings.json. Exact for strings and numbers, which is what matters: a version or path
+ * written unquoted must read the same on both sides.
+ *
+ * Not exact for booleans, objects and arrays — Python would stringify those to `"True"` or a
+ * container repr. Those are garbage-in cases with no sensible reading, so both sides discard
+ * them here rather than pretending at parity.
+ */
+function coerceScalarToTrimmedString(value: unknown): string {
+  if (typeof value === "string") return value.trim();
+  if (typeof value === "number" && Number.isFinite(value) && value !== 0) return String(value).trim();
+  return "";
+}
+
+/** D13: matches Python, which rejects traversal outright rather than storing it. */
+export function normalizeRagCorpusPath(value: unknown): string {
+  const raw = coerceScalarToTrimmedString(value);
+  if (!raw) return "";
+  if (raw.replace(/\\/g, "/").includes("..")) return "";
+  return raw.slice(0, 512);
+}
+
+export function normalizeRagCorpusVersion(value: unknown): string {
+  return coerceScalarToTrimmedString(value).slice(0, 64);
 }
 
 export function normalizePresetChipFadeAnimationEnabled(value: unknown): boolean {
@@ -430,8 +460,7 @@ export function normalizeSettings(data: unknown): BonsaiSettings {
     ui_scale_auto_enabled: normalizeUiScaleAutoEnabled(raw.ui_scale_auto_enabled),
     ui_scale_manual_profile: normalizeUiScaleProfileId(raw.ui_scale_manual_profile),
     use_local_knowledge_base: raw.use_local_knowledge_base === true,
-    rag_corpus_path: typeof raw.rag_corpus_path === "string" ? raw.rag_corpus_path.trim().slice(0, 512) : "",
-    rag_corpus_version:
-      typeof raw.rag_corpus_version === "string" ? raw.rag_corpus_version.trim().slice(0, 64) : "",
+    rag_corpus_path: normalizeRagCorpusPath(raw.rag_corpus_path),
+    rag_corpus_version: normalizeRagCorpusVersion(raw.rag_corpus_version),
   };
 }

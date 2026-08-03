@@ -1,0 +1,206 @@
+[
+  {
+    "name": "log level is trimmed before matching",
+    "input": {
+      "desktop_app_log_level": " verbose "
+    },
+    "expected": {
+      "desktop_app_log_level": "verbose"
+    }
+  },
+  {
+    "name": "log level stays case-sensitive",
+    "input": {
+      "desktop_app_log_level": "VERBOSE"
+    },
+    "expected": {
+      "desktop_app_log_level": "off"
+    }
+  },
+  {
+    "name": "corpus path rejects traversal",
+    "input": {
+      "rag_corpus_path": "../../etc/passwd"
+    },
+    "expected": {
+      "rag_corpus_path": ""
+    }
+  },
+  {
+    "name": "corpus path rejects backslash traversal",
+    "input": {
+      "rag_corpus_path": "a\\..\\b"
+    },
+    "expected": {
+      "rag_corpus_path": ""
+    }
+  },
+  {
+    "name": "corpus path keeps an absolute path",
+    "input": {
+      "rag_corpus_path": "  /home/deck/kb  "
+    },
+    "expected": {
+      "rag_corpus_path": "/home/deck/kb"
+    }
+  },
+  {
+    "name": "corpus version accepts an unquoted number",
+    "input": {
+      "rag_corpus_version": 123
+    },
+    "expected": {
+      "rag_corpus_version": "123"
+    }
+  },
+  {
+    "name": "corpus version is trimmed",
+    "input": {
+      "rag_corpus_version": "  2026.08.03  "
+    },
+    "expected": {
+      "rag_corpus_version": "2026.08.03"
+    }
+  },
+  {
+    "name": "legacy fade flag follows the live animation field",
+    "input": {
+      "preset_chip_animation": "carousel"
+    },
+    "expected": {
+      "preset_chip_animation": "carousel",
+      "preset_chip_fade_animation_enabled": false
+    }
+  },
+  {
+    "name": "legacy fade flag false migrates to static",
+    "input": {
+      "preset_chip_fade_animation_enabled": false
+    },
+    "expected": {
+      "preset_chip_animation": "static",
+      "preset_chip_fade_animation_enabled": false
+    }
+  },
+  {
+    "name": "ask mode migrates deep to expert",
+    "input": {
+      "ask_mode": "deep"
+    },
+    "expected": {
+      "ask_mode": "expert"
+    }
+  },
+  {
+    "name": "screenshot dimension migrates to a preset",
+    "input": {
+      "screenshot_max_dimension": 1920
+    },
+    "expected": {
+      "screenshot_attachment_preset": "mid"
+    }
+  },
+  {
+    "name": "legacy debug tab flag shows the developer tab",
+    "input": {
+      "show_debug_tab": true
+    },
+    "expected": {
+      "show_developer_tab": true
+    }
+  },
+  {
+    "name": "named hosts are trimmed and rejected when blank",
+    "input": {
+      "named_ollama_hosts": [
+        {
+          "label": "  L  ",
+          "host": "  h  "
+        },
+        {
+          "label": "",
+          "host": "x"
+        }
+      ]
+    },
+    "expected": {
+      "named_ollama_hosts": [
+        {
+          "label": "L",
+          "host": "h"
+        }
+      ]
+    }
+  },
+  {
+    "name": "routing order dedupes and trims",
+    "input": {
+      "text_model_routing_order": [
+        "llama3",
+        "llama3",
+        "  qwen  "
+      ]
+    },
+    "expected": {
+      "text_model_routing_order": [
+        "llama3",
+        "qwen"
+      ]
+    }
+  },
+  {
+    "name": "capabilities accept only true",
+    "input": {
+      "capabilities": {
+        "filesystem_write": "yes"
+      }
+    },
+    "expected": {
+      "capabilities": {
+        "filesystem_write": false,
+        "media_library_access": false,
+        "steam_logs_read": false,
+        "steam_web_api": false,
+        "microphone_access": false
+      }
+    }
+  },
+  {
+    "name": "latency warning is pulled below the timeout",
+    "input": {
+      "latency_warning_seconds": 500,
+      "request_timeout_seconds": 5
+    },
+    "expected": {
+      "latency_warning_seconds": 300,
+      "request_timeout_seconds": 310
+    }
+  },
+  {
+    "name": "spoiler masking stays on unless explicitly false",
+    "input": {
+      "strategy_spoiler_masking_enabled": "no"
+    },
+    "expected": {
+      "strategy_spoiler_masking_enabled": true
+    }
+  },
+  {
+    "name": "knowledge base needs an explicit true",
+    "input": {
+      "use_local_knowledge_base": "yes"
+    },
+    "expected": {
+      "use_local_knowledge_base": false
+    }
+  },
+  {
+    "name": "api key rejects a non-string",
+    "input": {
+      "steam_web_api_key": 12345
+    },
+    "expected": {
+      "steam_web_api_key": ""
+    }
+  }
+]
