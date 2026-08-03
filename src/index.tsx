@@ -11,12 +11,10 @@ import { Navigation, Router, showModal, Tabs } from "@decky/ui";
 
 import { PLUGIN_VERSION } from "./pluginVersion";
 import { DEFAULT_LATENCY_WARNING_SECONDS, OLLAMA_LOCAL_ON_DECK_DEFAULT_PCIP, type BonsaiSettings } from "./data/bonsaiSettingsSchema";
-import { normalizeAiCharacterCustomText, normalizeAiCharacterPresetId } from "./data/bonsaiSettingsNormalizers";
 import { toBonsaiSettingsPayload } from "./utils/settingsPayload";
 import { AboutTab } from "./components/AboutTab";
 import { BonsaiPluginShell } from "./components/BonsaiPluginShell";
 import { BonsaiDebugOverlay } from "./components/BonsaiDebugOverlay";
-import { CharacterPickerModal } from "./components/CharacterPickerModal";
 import { DeveloperTab, type DeveloperConnectionStatus } from "./components/DeveloperTab";
 import { MainTab } from "./components/MainTab";
 import { OllamaModelsHubModal, type OllamaModelsHubSection } from "./components/OllamaModelsHubModal";
@@ -85,6 +83,7 @@ import { useSteamSettingsSearch } from "./hooks/useSteamSettingsSearch";
 import { useBonsaiPluginShell } from "./hooks/useBonsaiPluginShell";
 import { useVoiceAskInput } from "./features/voice/useVoiceAskInput";
 import { useRoutingOrderModal } from "./features/model-routing/useRoutingOrderModal";
+import { useCharacterPickerModal } from "./features/plugin-shell/useCharacterPickerModal";
 import { useDesktopNoteSaveModal } from "./features/plugin-shell/useDesktopNoteSaveModal";
 import { usePluginHelpModal } from "./features/plugin-shell/usePluginHelpModal";
 import { useBonsaiAskOrchestration } from "./hooks/useBonsaiAskOrchestration";
@@ -905,81 +904,18 @@ const Content: React.FC = () => {
     returnTabRef: characterPickerReturnTabRef,
   });
 
-  const openCharacterPickerModal = useCallback(() => {
-    captureSessionBeforeModal();
-    const handle = showModal(
-      <CharacterPickerModal
-        initialDraft={{
-          random: aiCharacterRandom,
-          presetId: aiCharacterPresetId,
-          customText: aiCharacterCustomText,
-        }}
-        onCancel={() => {
-          finalizeShowModalAndRestoreActiveTab(() => handle.Close());
-        }}
-        onOK={async (next) => {
-          const pid = normalizeAiCharacterPresetId(next.presetId);
-          const ctxt = normalizeAiCharacterCustomText(next.customText);
-          setAiCharacterRandom(next.random);
-          setAiCharacterPresetId(pid);
-          setAiCharacterCustomText(ctxt);
-          try {
-            const saved = await callDeckyWithTimeout<[BonsaiSettings], BonsaiSettings>(
-              "save_settings",
-              [
-                buildSettingsPayload({
-                  ai_character_random: next.random,
-                  ai_character_preset_id: pid,
-                  ai_character_custom_text: ctxt,
-                }),
-              ]
-            );
-            hydrateFromSettings(saved);
-            finalizeShowModalAndRestoreActiveTab(() => handle.Close());
-          } catch (err: unknown) {
-            console.error("save_settings failed (character picker OK)", err);
-            toaster.toast({
-              title: "Character not saved",
-              body: formatDeckyRpcError(err),
-              duration: 5000,
-            });
-          }
-        }}
-      />
-    );
-  }, [
-    currentTab,
+  const openCharacterPickerModal = useCharacterPickerModal({
     aiCharacterRandom,
     aiCharacterPresetId,
     aiCharacterCustomText,
-    aiCharacterAccentIntensity,
-    aiCharacterEnabled,
-    latencyWarningSeconds,
-    requestTimeoutSeconds,
-    latencyTimeoutsCustomEnabled,
-    unifiedInputPersistenceMode,
-    screenshotAttachmentPreset,
-    desktopDebugNoteAutoSave,
-    desktopAskVerboseLogging,
-    desktopAppLogLevel,
-    presetChipFadeAnimationEnabled,
-    inputSanitizerUserDisabled,
-    capabilities,
     setAiCharacterRandom,
     setAiCharacterPresetId,
     setAiCharacterCustomText,
     buildSettingsPayload,
     hydrateFromSettings,
+    captureSessionBeforeModal,
     finalizeShowModalAndRestoreActiveTab,
-    askMode,
-    ollamaKeepAlive,
-    showDeveloperTab,
-    modelPolicyTier,
-    modelPolicyNonFossUnlocked,
-    modelAllowHighVramFallbacks,
-    ollamaLocalOnDeck,
-    strategySpoilerMaskingEnabled,
-  ]);
+  });
 
   const onCommitOllamaModelsHub = useCallback(
     async (patch: {

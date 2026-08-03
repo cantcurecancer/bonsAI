@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 234,
-  "edgeCount": 524,
+  "fileCount": 235,
+  "edgeCount": 527,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -79,7 +79,7 @@
         "src/utils/runningGameCharacterSuggestions.ts"
       ],
       "importedBy": [
-        "src/index.tsx"
+        "src/features/plugin-shell/useCharacterPickerModal.tsx"
       ]
     },
     "src/components/CharacterRoleplayEmoticon.tsx": {
@@ -560,8 +560,8 @@
         "src/components/SettingsTabConnectionTimeoutSlider.tsx",
         "src/data/bonsaiSettingsContract.test.ts",
         "src/data/bonsaiSettingsHostileContract.test.ts",
+        "src/features/plugin-shell/useCharacterPickerModal.tsx",
         "src/hooks/usePluginSettings.ts",
-        "src/index.tsx",
         "src/test-harness/rpcFixtures.ts",
         "src/utils/settingsContracts.test.ts"
       ]
@@ -588,6 +588,7 @@
         "src/data/bonsaiSettingsNormalizers.ts",
         "src/data/characterUiAccent.ts",
         "src/features/model-routing/useRoutingOrderModal.ts",
+        "src/features/plugin-shell/useCharacterPickerModal.tsx",
         "src/hooks/useBonsaiAskOrchestration.ts",
         "src/hooks/usePluginSettings.test.ts",
         "src/hooks/usePluginSettings.ts",
@@ -903,6 +904,17 @@
       "imports": [
         "src/components/icons.tsx",
         "src/features/unified-input/constants.ts"
+      ],
+      "importedBy": [
+        "src/index.tsx"
+      ]
+    },
+    "src/features/plugin-shell/useCharacterPickerModal.tsx": {
+      "imports": [
+        "src/components/CharacterPickerModal.tsx",
+        "src/data/bonsaiSettingsNormalizers.ts",
+        "src/data/bonsaiSettingsSchema.ts",
+        "src/utils/deckyCall.ts"
       ],
       "importedBy": [
         "src/index.tsx"
@@ -1290,7 +1302,6 @@
         "src/components/AboutTab.tsx",
         "src/components/BonsaiDebugOverlay.tsx",
         "src/components/BonsaiPluginShell.tsx",
-        "src/components/CharacterPickerModal.tsx",
         "src/components/DeveloperTab.tsx",
         "src/components/MainTab.tsx",
         "src/components/OllamaModelsHubModal.tsx",
@@ -1299,7 +1310,6 @@
         "src/components/SettingsTab.tsx",
         "src/components/icons.tsx",
         "src/context/UiScaleContext.tsx",
-        "src/data/bonsaiSettingsNormalizers.ts",
         "src/data/bonsaiSettingsSchema.ts",
         "src/data/characterCatalog.ts",
         "src/data/characterUiAccent.ts",
@@ -1314,6 +1324,7 @@
         "src/features/plugin-shell/PluginErrorBoundary.tsx",
         "src/features/plugin-shell/pluginStorage.ts",
         "src/features/plugin-shell/tabTitles.tsx",
+        "src/features/plugin-shell/useCharacterPickerModal.tsx",
         "src/features/plugin-shell/useDesktopNoteSaveModal.tsx",
         "src/features/plugin-shell/usePluginHelpModal.tsx",
         "src/features/unified-input/constants.ts",
@@ -1926,6 +1937,7 @@
         "src/components/PullModelsModal.tsx",
         "src/components/VoiceInputSettingsSection.tsx",
         "src/features/model-routing/useRoutingOrderModal.ts",
+        "src/features/plugin-shell/useCharacterPickerModal.tsx",
         "src/features/plugin-shell/useDesktopNoteSaveModal.tsx",
         "src/features/voice/useVoiceAskInput.ts",
         "src/hooks/useBackgroundGameAi.ts",
