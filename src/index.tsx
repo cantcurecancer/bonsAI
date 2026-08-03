@@ -7,7 +7,7 @@
  */
 import React, { useCallback, useState, useMemo, useEffect, useLayoutEffect, useRef } from "react";
 import { definePlugin, toaster, call, useQuickAccessVisible } from "@decky/api";
-import { Navigation, Router, showModal, Tabs } from "@decky/ui";
+import { Navigation, Router, Tabs } from "@decky/ui";
 
 import { PLUGIN_VERSION } from "./pluginVersion";
 import { DEFAULT_LATENCY_WARNING_SECONDS, OLLAMA_LOCAL_ON_DECK_DEFAULT_PCIP, type BonsaiSettings } from "./data/bonsaiSettingsSchema";
@@ -17,7 +17,6 @@ import { BonsaiPluginShell } from "./components/BonsaiPluginShell";
 import { BonsaiDebugOverlay } from "./components/BonsaiDebugOverlay";
 import { DeveloperTab, type DeveloperConnectionStatus } from "./components/DeveloperTab";
 import { MainTab } from "./components/MainTab";
-import { OllamaModelsHubModal, type OllamaModelsHubSection } from "./components/OllamaModelsHubModal";
 import { PULL_MODEL_CATALOG } from "./data/pullModelCatalog";
 import { OllamaTab } from "./components/OllamaTab";
 import { PermissionsTab } from "./components/PermissionsTab";
@@ -38,7 +37,6 @@ import {
   finalizeSessionRestoreAfterRemount,
   getPluginDataClearedGeneration,
   markPluginDataCleared,
-  patchPendingSessionSettingsSnapshot,
   peekBonsaiSessionPendingRestore,
   shouldIgnoreRestoredSettingsSnapshot,
   type BonsaiSessionSurvivalSnapshot,
@@ -53,7 +51,7 @@ import { shouldClearUnifiedInputForPersistenceMode } from "./utils/unifiedInputP
 import {
   BonsaiSvgIcon,
 } from "./components/icons";
-import { MODEL_POLICY_README_URL, type ModelPolicyTierId } from "./data/modelPolicy";
+import { MODEL_POLICY_README_URL } from "./data/modelPolicy";
 import {
   ASK_LABEL_COLOR_50,
   BONSAI_FOREST_GREEN,
@@ -83,6 +81,7 @@ import { useSteamSettingsSearch } from "./hooks/useSteamSettingsSearch";
 import { useBonsaiPluginShell } from "./hooks/useBonsaiPluginShell";
 import { useVoiceAskInput } from "./features/voice/useVoiceAskInput";
 import { useRoutingOrderModal } from "./features/model-routing/useRoutingOrderModal";
+import { useOllamaModelsHubModal } from "./features/plugin-shell/useOllamaModelsHubModal";
 import { useCharacterPickerModal } from "./features/plugin-shell/useCharacterPickerModal";
 import { useDesktopNoteSaveModal } from "./features/plugin-shell/useDesktopNoteSaveModal";
 import { usePluginHelpModal } from "./features/plugin-shell/usePluginHelpModal";
@@ -917,83 +916,22 @@ const Content: React.FC = () => {
     finalizeShowModalAndRestoreActiveTab,
   });
 
-  const onCommitOllamaModelsHub = useCallback(
-    async (patch: {
-      modelPolicyTier: ModelPolicyTierId;
-      modelPolicyNonFossUnlocked: boolean;
-      modelAllowHighVramFallbacks: boolean;
-    }) => {
-      if (patch.modelPolicyTier === "non_foss" && !patch.modelPolicyNonFossUnlocked) {
-        toaster.toast({
-          title: "Unlock required",
-          body: "Turn on Tier 3 unlock under Advanced before Any installed model.",
-          duration: 5000,
-        });
-        goToOllamaTab();
-        return;
-      }
-      setModelPolicyTier(patch.modelPolicyTier);
-      setModelPolicyNonFossUnlocked(patch.modelPolicyNonFossUnlocked);
-      setModelAllowHighVramFallbacks(patch.modelAllowHighVramFallbacks);
-      await pauseDebouncedSettingsSave();
-      const saved = await callDeckyWithTimeout<[BonsaiSettings], BonsaiSettings>("save_settings", [
-        buildSettingsPayload({
-          model_policy_tier: patch.modelPolicyTier,
-          model_policy_non_foss_unlocked: patch.modelPolicyNonFossUnlocked,
-          model_allow_high_vram_fallbacks: patch.modelAllowHighVramFallbacks,
-        }),
-      ]);
-      hydrateFromSettings(saved);
-      patchPendingSessionSettingsSnapshot({
-        modelPolicyTier: patch.modelPolicyTier,
-        modelPolicyNonFossUnlocked: patch.modelPolicyNonFossUnlocked,
-        modelAllowHighVramFallbacks: patch.modelAllowHighVramFallbacks,
-      });
-    },
-    [buildSettingsPayload, hydrateFromSettings, setModelPolicyTier, setModelPolicyNonFossUnlocked, setModelAllowHighVramFallbacks, goToOllamaTab, pauseDebouncedSettingsSave]
-  );
-
-  const onApplyTier2MultimodalPolicy = useCallback(async () => {
-    await pauseDebouncedSettingsSave();
-    setModelPolicyTier("open_weight");
-    const saved = await callDeckyWithTimeout<[BonsaiSettings], BonsaiSettings>("save_settings", [
-      buildSettingsPayload({ model_policy_tier: "open_weight" }),
-    ]);
-    hydrateFromSettings(saved);
-    patchPendingSessionSettingsSnapshot({ modelPolicyTier: "open_weight" });
-  }, [buildSettingsPayload, hydrateFromSettings, setModelPolicyTier, pauseDebouncedSettingsSave]);
-
-  const openOllamaModelsHub = useCallback(
-    (opts?: { initialSection?: OllamaModelsHubSection }) => {
-      captureSessionBeforeModal();
-      const handle = showModal(
-        <OllamaModelsHubModal
-          initialSection={opts?.initialSection}
-          activeRoutingTag={modelPolicyDisclosure?.model ?? null}
-          modelPolicyTier={modelPolicyTier}
-          modelPolicyNonFossUnlocked={modelPolicyNonFossUnlocked}
-          modelAllowHighVramFallbacks={modelAllowHighVramFallbacks}
-          onCommitOllamaModelsHub={onCommitOllamaModelsHub}
-          onReadModelPolicy={openModelPolicyReadme}
-          onApplyTier2MultimodalPolicy={onApplyTier2MultimodalPolicy}
-          onBeforeNestedDeckyModal={captureSessionBeforeModal}
-          onCompleteNestedDeckyModalClose={finalizeShowModalAndRestoreActiveTab}
-          onClose={() => {
-            finalizeShowModalAndRestoreActiveTab(() => handle.Close());
-          }}
-        />
-      );
-    },
-    [
-      modelPolicyDisclosure?.model,
-      modelPolicyTier,
-      modelPolicyNonFossUnlocked,
-      modelAllowHighVramFallbacks,
-      onCommitOllamaModelsHub,
-      openModelPolicyReadme,
-      onApplyTier2MultimodalPolicy,
-    ]
-  );
+  const { openOllamaModelsHub, onApplyTier2MultimodalPolicy } = useOllamaModelsHubModal({
+    modelPolicyTier,
+    modelPolicyNonFossUnlocked,
+    modelAllowHighVramFallbacks,
+    setModelPolicyTier,
+    setModelPolicyNonFossUnlocked,
+    setModelAllowHighVramFallbacks,
+    activeRoutingTag: modelPolicyDisclosure?.model ?? null,
+    buildSettingsPayload,
+    hydrateFromSettings,
+    pauseDebouncedSettingsSave,
+    goToOllamaTab,
+    openModelPolicyReadme,
+    captureSessionBeforeModal,
+    finalizeShowModalAndRestoreActiveTab,
+  });
 
   const catalogByTag = useMemo(() => {
     const m = new Map<string, (typeof PULL_MODEL_CATALOG)[number]>();

@@ -6,14 +6,14 @@
       "role": "Decky RPC entrypoints and orchestration"
     },
     {
-      "path": "src/index.tsx",
-      "lines": 1585,
-      "role": "Plugin root: tabs, scoped CSS, RPC wiring, Settings"
-    },
-    {
       "path": "py_modules/backend/services/voice_transcription_service.py",
       "lines": 1523,
       "role": ""
+    },
+    {
+      "path": "src/index.tsx",
+      "lines": 1523,
+      "role": "Plugin root: tabs, scoped CSS, RPC wiring, Settings"
     },
     {
       "path": "src/hooks/useBonsaiAskOrchestration.ts",

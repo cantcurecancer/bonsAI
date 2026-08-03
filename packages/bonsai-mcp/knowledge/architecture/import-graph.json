@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 235,
-  "edgeCount": 527,
+  "fileCount": 236,
+  "edgeCount": 532,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -291,7 +291,7 @@
         "src/data/modelPolicy.ts"
       ],
       "importedBy": [
-        "src/index.tsx"
+        "src/features/plugin-shell/useOllamaModelsHubModal.tsx"
       ]
     },
     "src/components/OllamaReplyVerbositySlider.tsx": {
@@ -589,6 +589,7 @@
         "src/data/characterUiAccent.ts",
         "src/features/model-routing/useRoutingOrderModal.ts",
         "src/features/plugin-shell/useCharacterPickerModal.tsx",
+        "src/features/plugin-shell/useOllamaModelsHubModal.tsx",
         "src/hooks/useBonsaiAskOrchestration.ts",
         "src/hooks/usePluginSettings.test.ts",
         "src/hooks/usePluginSettings.ts",
@@ -689,6 +690,7 @@
         "src/data/bonsaiSettingsNormalizers.ts",
         "src/data/bonsaiSettingsSchema.ts",
         "src/features/model-routing/useRoutingOrderModal.ts",
+        "src/features/plugin-shell/useOllamaModelsHubModal.tsx",
         "src/hooks/useBonsaiAskOrchestration.ts",
         "src/hooks/usePluginSettings.ts",
         "src/index.tsx",
@@ -923,6 +925,18 @@
     "src/features/plugin-shell/useDesktopNoteSaveModal.tsx": {
       "imports": [
         "src/components/DesktopNoteSaveModal.tsx",
+        "src/utils/deckyCall.ts"
+      ],
+      "importedBy": [
+        "src/index.tsx"
+      ]
+    },
+    "src/features/plugin-shell/useOllamaModelsHubModal.tsx": {
+      "imports": [
+        "src/components/OllamaModelsHubModal.tsx",
+        "src/data/bonsaiSettingsSchema.ts",
+        "src/data/modelPolicy.ts",
+        "src/utils/bonsaiSessionSurvival.ts",
         "src/utils/deckyCall.ts"
       ],
       "importedBy": [
@@ -1304,7 +1318,6 @@
         "src/components/BonsaiPluginShell.tsx",
         "src/components/DeveloperTab.tsx",
         "src/components/MainTab.tsx",
-        "src/components/OllamaModelsHubModal.tsx",
         "src/components/OllamaTab.tsx",
         "src/components/PermissionsTab.tsx",
         "src/components/SettingsTab.tsx",
@@ -1326,6 +1339,7 @@
         "src/features/plugin-shell/tabTitles.tsx",
         "src/features/plugin-shell/useCharacterPickerModal.tsx",
         "src/features/plugin-shell/useDesktopNoteSaveModal.tsx",
+        "src/features/plugin-shell/useOllamaModelsHubModal.tsx",
         "src/features/plugin-shell/usePluginHelpModal.tsx",
         "src/features/unified-input/constants.ts",
         "src/features/unified-input/useUnifiedInputSurface.ts",
@@ -1770,6 +1784,7 @@
         "src/utils/inputTransparency.ts"
       ],
       "importedBy": [
+        "src/features/plugin-shell/useOllamaModelsHubModal.tsx",
         "src/features/plugin-shell/usePluginHelpModal.tsx",
         "src/hooks/useBonsaiAskOrchestration.ts",
         "src/hooks/useBonsaiPluginShell.ts",
@@ -1939,6 +1954,7 @@
         "src/features/model-routing/useRoutingOrderModal.ts",
         "src/features/plugin-shell/useCharacterPickerModal.tsx",
         "src/features/plugin-shell/useDesktopNoteSaveModal.tsx",
+        "src/features/plugin-shell/useOllamaModelsHubModal.tsx",
         "src/features/voice/useVoiceAskInput.ts",
         "src/hooks/useBackgroundGameAi.ts",
         "src/hooks/useBonsaiAskOrchestration.ts",
