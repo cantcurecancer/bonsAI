@@ -41,7 +41,6 @@ import {
   DEFAULT_PRESET_CHIP_FADE_ANIMATION_ENABLED,
   DEFAULT_REQUEST_TIMEOUT_SECONDS,
   DEFAULT_SCREENSHOT_ATTACHMENT_PRESET,
-  DEFAULT_SCREENSHOT_MAX_DIMENSION,
   DEFAULT_STRATEGY_SPOILER_MASKING_ENABLED,
   DEFAULT_UNIFIED_INPUT_PERSISTENCE_MODE,
   DEFAULT_VOICE_STT_MODEL,
@@ -61,7 +60,6 @@ import {
   type NamedOllamaHost,
   type PresetChipAnimation,
   type ScreenshotAttachmentPreset,
-  type ScreenshotMaxDimension,
   type UnifiedInputPersistenceMode,
   type VoiceSttModelId,
 } from "./bonsaiSettingsSchema";
@@ -157,13 +155,6 @@ export function normalizeUnifiedInputPersistenceMode(value: unknown): UnifiedInp
     return value;
   }
   return DEFAULT_UNIFIED_INPUT_PERSISTENCE_MODE;
-}
-
-export function normalizeScreenshotMaxDimension(value: unknown): ScreenshotMaxDimension {
-  if (value === 1920 || value === 3160) {
-    return value;
-  }
-  return DEFAULT_SCREENSHOT_MAX_DIMENSION;
 }
 
 export function normalizeScreenshotAttachmentPreset(
