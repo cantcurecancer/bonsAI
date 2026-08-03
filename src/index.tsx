@@ -20,7 +20,6 @@ import { CharacterPickerModal } from "./components/CharacterPickerModal";
 import { DesktopNoteSaveModal } from "./components/DesktopNoteSaveModal";
 import { DeveloperTab, type DeveloperConnectionStatus } from "./components/DeveloperTab";
 import { MainTab } from "./components/MainTab";
-import { PluginHelpModal } from "./components/PluginHelpModal";
 import { OllamaModelsHubModal, type OllamaModelsHubSection } from "./components/OllamaModelsHubModal";
 import { PULL_MODEL_CATALOG } from "./data/pullModelCatalog";
 import { OllamaTab } from "./components/OllamaTab";
@@ -68,9 +67,7 @@ import { DECKY_TAB_TITLES } from "./features/plugin-shell/tabTitles";
 import {
   loadSavedIp,
   loadSavedSearchQuery,
-  markPluginHelpDismissedPersist,
   persistSearchQuery,
-  pluginHelpDismissedFromStorage,
   saveIp,
 } from "./features/plugin-shell/pluginStorage";
 import { useUiScaleProfile } from "./hooks/useUiScaleProfile";
@@ -89,6 +86,7 @@ import { useSteamSettingsSearch } from "./hooks/useSteamSettingsSearch";
 import { useBonsaiPluginShell } from "./hooks/useBonsaiPluginShell";
 import { useVoiceAskInput } from "./features/voice/useVoiceAskInput";
 import { useRoutingOrderModal } from "./features/model-routing/useRoutingOrderModal";
+import { usePluginHelpModal } from "./features/plugin-shell/usePluginHelpModal";
 import { useBonsaiAskOrchestration } from "./hooks/useBonsaiAskOrchestration";
 import { useDisclaimerAndLocalRuntimeGates } from "./hooks/useDisclaimerAndLocalRuntimeGates";
 import { useCapturedFrontendErrors } from "./hooks/useCapturedFrontendErrors";
@@ -99,12 +97,6 @@ import {
   IP_DEFAULT,
   OLLAMA_UPSTREAM_REPO_URL,
 } from "./data/storageKeys";
-
-/**
- * Preserves “plugin help chip dismissed” across Decky remounting `Content` when `showModal`
- * opens/closes (same lifecycle issue as tab restore in `useBonsaiPluginShell`).
- */
-let __bonsaiPluginHelpDismissed = false;
 
 type SteamUrlApi = {
   ExecuteSteamURL(url: string): void;
@@ -227,21 +219,18 @@ const Content: React.FC = () => {
   const [ollamaIp, setOllamaIp] = useState(
     () => peekBonsaiSessionPendingRestore()?.ollamaIp ?? loadSavedIp()
   );
-  const [pluginHelpDismissed, setPluginHelpDismissed] = useState(() => {
-    const snap = peekBonsaiSessionPendingRestore();
-    if (snap?.pluginHelpDismissed != null) {
-      __bonsaiPluginHelpDismissed = snap.pluginHelpDismissed;
-      return snap.pluginHelpDismissed;
-    }
-    if (pluginHelpDismissedFromStorage()) {
-      __bonsaiPluginHelpDismissed = true;
-      return true;
-    }
-    return __bonsaiPluginHelpDismissed;
+
+  const {
+    pluginHelpDismissed,
+    openPluginHelpModal,
+    restorePluginHelpDismissed,
+    resetPluginHelpDismissed,
+  } = usePluginHelpModal({
+    currentTab,
+    captureSessionBeforeModal,
+    finalizeShowModalAndRestoreActiveTab,
+    returnTabRef: characterPickerReturnTabRef,
   });
-  useEffect(() => {
-    __bonsaiPluginHelpDismissed = pluginHelpDismissed;
-  }, [pluginHelpDismissed]);
 
   const attachActionHostRef = useRef<HTMLDivElement>(null);
 
@@ -504,8 +493,7 @@ const Content: React.FC = () => {
       recentScreenshots: survived.recentScreenshots,
       isLoadingRecentScreenshots: survived.isLoadingRecentScreenshots,
     });
-    setPluginHelpDismissed(survived.pluginHelpDismissed);
-    __bonsaiPluginHelpDismissed = survived.pluginHelpDismissed;
+    restorePluginHelpDismissed(survived.pluginHelpDismissed);
     setOllamaIp(survived.ollamaIp);
     hydrateFromSettings(toBonsaiSettingsPayload(survived.settingsSnapshot));
     restoreSessionSnapshot(survived);
@@ -876,10 +864,9 @@ const Content: React.FC = () => {
       await syncSettingsFromDisk();
       acknowledgePluginDataClearHandled();
       setOllamaIp(IP_DEFAULT);
-      __bonsaiPluginHelpDismissed = false;
       localRuntimeBetaPromptIssuedRef.current = false;
       ollamaLocalOnDeckPrevRef.current = null;
-      setPluginHelpDismissed(false);
+      resetPluginHelpDismissed();
       resetPluginSession();
       await intentPacks.refresh();
       showDisclaimerModalAgain();
@@ -914,17 +901,6 @@ const Content: React.FC = () => {
   });
 
   const showSearchClearButton = Boolean(unifiedInput.trim());
-
-  const openPluginHelpModal = useCallback(() => {
-    captureSessionBeforeModal();
-    markPluginHelpDismissedPersist();
-    __bonsaiPluginHelpDismissed = true;
-    setPluginHelpDismissed(true);
-    characterPickerReturnTabRef.current = currentTab;
-    const handle = showModal(
-      <PluginHelpModal onClose={() => finalizeShowModalAndRestoreActiveTab(() => handle.Close())} />
-    );
-  }, [currentTab, captureSessionBeforeModal, finalizeShowModalAndRestoreActiveTab]);
 
   const openDesktopNoteSaveModal = useCallback(() => {
     if (!capabilities.filesystem_write) {

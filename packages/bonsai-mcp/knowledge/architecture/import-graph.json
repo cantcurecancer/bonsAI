@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 232,
-  "edgeCount": 519,
+  "fileCount": 233,
+  "edgeCount": 522,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -349,7 +349,7 @@
         "src/data/pluginQuickStartInstructions.tsx"
       ],
       "importedBy": [
-        "src/index.tsx"
+        "src/features/plugin-shell/usePluginHelpModal.tsx"
       ]
     },
     "src/components/PullModelsModal.tsx": {
@@ -895,6 +895,7 @@
         "src/data/storageKeys.ts"
       ],
       "importedBy": [
+        "src/features/plugin-shell/usePluginHelpModal.tsx",
         "src/index.tsx"
       ]
     },
@@ -902,6 +903,16 @@
       "imports": [
         "src/components/icons.tsx",
         "src/features/unified-input/constants.ts"
+      ],
+      "importedBy": [
+        "src/index.tsx"
+      ]
+    },
+    "src/features/plugin-shell/usePluginHelpModal.tsx": {
+      "imports": [
+        "src/components/PluginHelpModal.tsx",
+        "src/features/plugin-shell/pluginStorage.ts",
+        "src/utils/bonsaiSessionSurvival.ts"
       ],
       "importedBy": [
         "src/index.tsx"
@@ -1277,7 +1288,6 @@
         "src/components/OllamaModelsHubModal.tsx",
         "src/components/OllamaTab.tsx",
         "src/components/PermissionsTab.tsx",
-        "src/components/PluginHelpModal.tsx",
         "src/components/SettingsTab.tsx",
         "src/components/icons.tsx",
         "src/context/UiScaleContext.tsx",
@@ -1296,6 +1306,7 @@
         "src/features/plugin-shell/PluginErrorBoundary.tsx",
         "src/features/plugin-shell/pluginStorage.ts",
         "src/features/plugin-shell/tabTitles.tsx",
+        "src/features/plugin-shell/usePluginHelpModal.tsx",
         "src/features/unified-input/constants.ts",
         "src/features/unified-input/useUnifiedInputSurface.ts",
         "src/features/voice/useVoiceAskInput.ts",
@@ -1739,6 +1750,7 @@
         "src/utils/inputTransparency.ts"
       ],
       "importedBy": [
+        "src/features/plugin-shell/usePluginHelpModal.tsx",
         "src/hooks/useBonsaiAskOrchestration.ts",
         "src/hooks/useBonsaiPluginShell.ts",
         "src/hooks/usePluginSettings.ts",
