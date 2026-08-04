@@ -50,20 +50,47 @@ export function markSpoilerFenceVisited(el: HTMLElement): void {
   }
 }
 
-/** Focus a fence and mark it visited. Returns true when a fence was claimed. */
+/**
+ * Focus a fence and mark it visited. Returns true when a fence was claimed.
+ *
+ * Uses the same target ladder as `focusRegisteredReplyStop`, which is the one focus-moving helper
+ * in this repo that demonstrably works on Deck: Decky's `.Panel.Focusable` wrapper first, then the
+ * native `<button>` inside, then the element itself — each with `tabindex="-1"` set before
+ * focusing. The first version of this focused only the outer `Focusable` div and did nothing on
+ * device (2026-08-04); focusing the inner native button is the difference between the two.
+ */
 export function focusSpoilerFence(el: HTMLElement | null): boolean {
   if (!el) return false;
   markSpoilerFenceVisited(el);
-  try {
-    el.focus({ preventScroll: true });
-  } catch {
+  const panel = (
+    el.matches?.(".Panel.Focusable") ? el : el.closest?.(".Panel.Focusable")
+  ) as HTMLElement | null;
+  const button = el.matches?.("button") ? el : (el.querySelector?.("button") as HTMLElement | null);
+  const targets = [panel, button, el].filter(Boolean) as HTMLElement[];
+  if (!targets.length) return false;
+  for (const target of targets) {
     try {
-      el.focus();
+      target.setAttribute("tabindex", "-1");
+      target.focus({ preventScroll: true });
     } catch {
-      return false;
+      try {
+        target.focus();
+      } catch {
+        /* ignore */
+      }
     }
   }
   return true;
+}
+
+/** Debug shape for the on-device probe: which targets the ladder found. */
+export function describeSpoilerFenceTargets(el: HTMLElement | null): Record<string, boolean> {
+  if (!el) return { el: false, panel: false, button: false };
+  return {
+    el: true,
+    panel: Boolean(el.matches?.(".Panel.Focusable") || el.closest?.(".Panel.Focusable")),
+    button: Boolean(el.matches?.("button") || el.querySelector?.("button")),
+  };
 }
 
 /** Test-only reset. */

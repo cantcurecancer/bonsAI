@@ -19,9 +19,12 @@ import {
   registerAnswerBubbleEl,
   resolveFocusedAnswerBubble,
 } from "./answerBubbleElRegistry";
+import { call } from "@decky/api";
+
 import {
+  describeSpoilerFenceTargets,
   findUnvisitedSpoilerFenceInView,
-  focusSpoilerFence,
+  markSpoilerFenceVisited,
 } from "./spoilerFenceRegistry";
 
 /** True when `el` overlaps the visible band of its scroll container. */
@@ -177,8 +180,20 @@ export function handleAnswerBubbleMoveDown(
   const fence = findUnvisitedSpoilerFenceInView(bubble, (el) =>
     elementIsWithinViewportOf(el, scroll),
   );
-  if (fence && focusSpoilerFence(fence)) {
-    return true;
+  if (fence) {
+    const targets = describeSpoilerFenceTargets(fence);
+    // `focusPanelEl` is the helper `focusFirstAnswerChunk` already uses on this exact element
+    // (`.bonsai-spoiler-reveal-target`), and it confirms the move landed instead of assuming it.
+    // The first attempt used a bespoke ladder in the registry and did nothing on device.
+    markSpoilerFenceVisited(fence);
+    const claimed = focusPanelEl(fence);
+    // TEMPORARY probe (2026-08-04) — the first attempt at this diversion did nothing on device and
+    // the registry cannot tell "never fired" from "fired but Decky ignored the focus". Remove once
+    // SPOILER-DPAD-01 passes.
+    void call("dbg_fe_log", "spoiler-dpad", { fired: true, claimed, targets }).catch(() => {});
+    if (claimed) return true;
+  } else {
+    void call("dbg_fe_log", "spoiler-dpad", { fired: false }).catch(() => {});
   }
 
   /*
