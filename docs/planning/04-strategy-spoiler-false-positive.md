@@ -2,7 +2,7 @@
 
 Recon only. No fixes applied. Scope: why the roadmap bug
 *"Genre-aware spoiler policy + KB entity match (DRG Survivor boss names); verify
-STRAT-SPOIL-DRG-01 on Deck"* (`docs/roadmap.md:19`) is still open, and what
+STRAT-SPOIL-DRG-01 on Deck"* ([roadmap.md § Bugs](../roadmap.md#bugs)) is still open, and what
 closing it can honestly promise.
 
 Failure mode under study is **over-fencing**: masking routine boss tactics the
@@ -230,7 +230,7 @@ code can keep. "No false positives" is not.
 | 5 | Expand genre/AppID allowlist | ★★ | Cheap, but raises false negatives (Hades). **Not recommended.** |
 | 6 | Shared entity extraction across TS/Python | ★★ | Removes drift risk. Does not fix this bug. |
 | 7 | Unwrap open fences mid-stream | ★★ | Closes R4. Cosmetic; defer until QA says the flash matters. |
-| 8 | Spoiler confidence chip, transparency-only | ★★ | Separate roadmap item (`roadmap.md:643`). Does not close this bug. |
+| 8 | Spoiler confidence chip, transparency-only | ★★ | Separate roadmap item ([roadmap.md § Planned](../roadmap.md#planned)). Does not close this bug. |
 
 **Recommended primary:** 1 + 2 + 4. All ★, all independently testable, and
 together they cover the display path (1), the instruction conflict (2), and the

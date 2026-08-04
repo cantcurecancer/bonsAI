@@ -35,8 +35,8 @@ Eight gaps. None of these is an open bug row or an existing Planned bullet.
    `get_session_rag_chip_candidates` already returns
    `{ok: false, reason: "no_sections" | "app_unresolved"}` and the frontend
    deliberately treats that as *silently fall back to static seeds*
-   ([roadmap.md:22](../roadmap.md)). The real ceiling is content — DRG Survivor
-   has **2 sections against a per-game cap of 6** ([roadmap.md:25](../roadmap.md)).
+   ([archive/roadmap-bugs-fixed.md](../archive/roadmap-bugs-fixed.md)). The real ceiling is content — DRG Survivor
+   has **2 sections against a per-game cap of 6** (same archive).
    A user cannot tell apart "KB off", "no corpus", "corpus has nothing for this
    game", and "the KB actually helped".
 
@@ -50,7 +50,7 @@ Eight gaps. None of these is an open bug row or an existing Planned bullet.
    weeks.** Both August failures — `VoiceTranscriptionSession.status()` deleted,
    and `get_reply_language_snapshot` missing an `await` — passed `tsc`, 263
    frontend tests, 418 Python tests and `npm run build`
-   ([roadmap.md:47-101](../roadmap.md)). Python tests import services, not
+   ([archive/roadmap-bugs-fixed.md](../archive/roadmap-bugs-fixed.md)). Python tests import services, not
    `class Plugin`; `fakeDeckyRpc.ts` stubs the very RPC the frontend calls.
    `scripts/probe_deck_rpc_surface.py` was kept, but it runs only when a human
    remembers, against a deployed Deck. [CLAUDE.md](../../CLAUDE.md) separately
@@ -267,7 +267,7 @@ Eight gaps. None of these is an open bug row or an existing Planned bullet.
   unreviewed cards into the local corpus; wiki scraping (→ Phase 5/7).
 - **Horizon:** Long.
 - **Why now:** gaps 3 and 4 — the corpus ceiling is *content*, not retrieval
-  ([roadmap.md:25](../roadmap.md)), and the one signal users already give is
+  ([archive/roadmap-bugs-fixed.md](../archive/roadmap-bugs-fixed.md)), and the one signal users already give is
   written to a file nothing reads.
 - **★ justification / blockers:** the cost is not the code. It is moderation,
   licensing and attribution of user-submitted text, and a review pipeline the

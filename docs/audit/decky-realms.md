@@ -176,7 +176,7 @@ Fixed here: `answerBubbleElRegistry`, `answerBubbleNavigation`, `buildAnswerBubb
 `liveTurnFocusGraph`, `spoilerFenceRegistry`.
 
 Still asking the global `document`, same root cause, not yet swept — tracked in
-`docs/roadmap.md`:
+[roadmap.md § Bugs](../roadmap.md#bugs) (document-sweep row):
 
 | File | Line | Shape |
 |---|---|---|

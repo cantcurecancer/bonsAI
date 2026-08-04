@@ -1,0 +1,1068 @@
+# Maintainer decisions locked (refactor / handoff)
+
+> **Moved from** [roadmap.md](../roadmap.md) **2026-08-04.** Full decision record for D1–D15, execution order, and cleanup candidates. Active index: [roadmap.md](../roadmap.md). Reorg commit: `PLACEHOLDER` (`git show PLACEHOLDER`).
+
+Evidence lives in this audit folder — especially [05-plan.md](05-plan.md).
+
+---
+
+## Decisions needed
+
+Open questions that need a maintainer call before the work can continue. Written
+in plain language on purpose — each one says what the situation is, what your
+choices are, and what happens either way. **Locked calls (2026-08-02 for D1–D6,
+2026-08-03 for D7–D10)** are in
+[Maintainer decisions locked](#maintainer-decisions-locked--2026-08-02); implement
+from that section when it disagrees with an option above.
+
+**None currently open.** D1–D13 are all locked; see the table below for each call.
+
+Evidence for all of these lives in [docs/audit/](.), especially
+[05-plan.md](05-plan.md).
+
+---
+
+### D1 — Two features were built with a frontend but no backend. Build them, or remove them?
+
+**What's going on.** Two buttons/flows in the UI call into Python functions that
+were never written. The names exist only in TypeScript. Because both call sites
+threw the error away, nothing ever surfaced — no crash, no log, no message. They
+now log to the console, and both are listed as bugs above.
+
+The two are very different sizes, so you may want a different answer for each.
+
+**~~Option A — build the small one, delete the big one.~~** *(my recommendation)*
+
+`merge_pulled_tags_into_routing_orders` is small: after you install models with a
+custom setup profile, it should add those models to your try-order list. The
+setting it needs (`model_routing_order`) and its validator already exist, so this
+is a short piece of work with a clear right answer.
+
+`get_session_rag_chip_candidates` is the bigger one: it should suggest preset
+prompts drawn from your local knowledge base for whatever game is running. There
+is no backend for it at all, and building one means deciding what counts as a
+good suggestion and how to rank them — that is product design, not a refactor.
+Deleting the frontend path means the preset carousel keeps using its fixed
+built-in prompts, which is exactly what it does today, so users would notice no
+change.
+
+**Option B — build both.** You get the RAG preset chips feature you originally
+planned. It costs real design time and it is new behavior, so it should not ride
+along inside refactor work.
+
+**~~Option C — delete both.~~** Smallest and safest. You lose the pulled-model
+try-order convenience, which means setting try-order by hand after installing
+models.
+
+**~~Option D — leave them as they are.~~** They now log loudly, so they are no longer
+invisible. Costs nothing, but two dead paths stay in the code and a future reader
+has to work out why they are there.
+
+**Either way:** the CHANGELOG entry that announced "Session RAG preset chips" as
+a shipped feature has been corrected to say it is frontend-only and not working.
+
+---
+
+### D2 — A whole group of backend functions is unused. Safe to delete?
+
+**What's going on.** When the Proton experiment journal UI was removed on
+2026-07-30, the backend behind it was left in place. Five backend functions and
+their service module are still there with nothing calling them. The same cleanup
+removed the "tiny model thinking blurbs" feature and left
+`thinking_tiny_model_service.py` behind — that file is now imported by literally
+nothing. There are also six other backend functions with no caller, and a TDP
+power-adjustment function whose only remaining caller is its own test.
+
+Altogether that is roughly 12 unused entry points plus two modules.
+
+**Option A — delete it all after one check.** *(my recommendation)*
+
+The check: I looked at the app code only, not the preview test suite. Before
+deleting anything I would grep `tests/preview-suite/` to confirm none of these
+are driven from there. That is a couple of minutes' work. If it comes back clean,
+deleting is safe and makes every future search through the codebase smaller and
+less confusing.
+
+**~~Option B — delete the certain ones, keep the ambiguous ones.~~** The Proton
+journal group and `thinking_tiny_model_service.py` are unambiguous — the features
+were removed on purpose. Two others are worth a second thought:
+
+- `ask_game_ai` is described in the code as the *foreground* Ask path. The app
+  only uses the background one now. If you ever want a synchronous Ask, this is
+  the code for it; if not, it is dead weight.
+- `cancel_rag_corpus_download` suggests knowledge-base downloads were meant to be
+  cancellable and the button was never wired up. That might be a missing feature
+  rather than dead code.
+
+**~~Option C — keep everything.~~** No risk, but the confusion stays: a newcomer
+reading `main.py` cannot tell which of the 55 functions are live.
+
+---
+
+### D3 — The riskiest refactor has no safety net. How do you want to handle it?
+
+**What's going on.** This is the most important decision here.
+
+The plan's Phase 3.4 wants to break up the two biggest frontend files —
+`src/index.tsx` (1,965 lines, changed more often than any other file) and
+`useBonsaiAskOrchestration.ts` (the whole Ask flow: submit, cancel, polling,
+streaming, follow-ups).
+
+Neither has a single automated test. More broadly, 44 UI component files share
+one test file between them. The practical meaning: **`npm test` passing tells you
+nothing about whether a UI change broke something.** It would still pass if every
+component were deleted. So a refactor that is supposed to change structure
+without changing behavior cannot actually be *shown* to have done that.
+
+**Option A — write safety-net tests first, then refactor.** *(my recommendation
+if this refactor matters to you)*
+
+Write tests that capture what these files do today, then move code and confirm
+the tests still pass. The groundwork exists — there is already a fake backend for
+tests (`fakeDeckyRpc.ts`) and three working hook tests — so this is a known
+quantity, not an experiment. It is real extra work up front, and it is the only
+option where a mistake gets caught before it reaches your Deck.
+
+**~~Option B — refactor anyway, verify by hand on the Deck.~~** Faster to start. Each
+change needs you to install to the Deck and click through it, and a subtle
+regression (focus behaviour, a race in Ask polling) can slip through a manual
+pass. If you choose this, the work should be sequenced last and done in small
+commits so anything broken is easy to undo.
+
+**~~Option C — leave those two files alone.~~** Do the lower-risk items instead
+(there are plenty) and accept that the two biggest files stay big. Honest and
+zero-risk; the handoff goal is only partly met, since these are exactly the files
+a newcomer finds hardest.
+
+The smaller `MainTab.tsx` is a useful middle ground under any option: it is only
+187 lines and changes constantly purely because every new feature has to thread
+props through it. Fixing that is structural and easy to eyeball.
+
+---
+
+### D4 — Old QA evidence: keep or prune?
+
+**What's going on.** `docs/test-evidence/` holds 263 files across nine folders of
+past test-run output. Only three of those folders are linked from any document;
+the other six are referenced by nothing. It is the largest directory in `docs/`
+and about 96% of it is unreferenced. `testing.md` already anticipated this,
+noting orphan evidence folders may be pruned once nothing links them.
+
+**Option A — prune the six unreferenced folders.** Keeps the three that are cited
+as evidence. Makes `docs/` much smaller and easier to look through.
+
+**~~Option B — keep everything.~~** It is only disk space, and old run output can be
+useful when chasing a regression that reappears.
+
+**~~Option C — prune, but archive first.~~** Zip the removed folders somewhere
+outside the repo, same approach used for the v0 drafts in Phase 0.
+
+I have no strong view — this is about what QA history is worth to you, not about
+code quality. I did not touch it.
+
+---
+
+### D5 — Import graph: keep the built-in one, or switch to madge?
+
+**What's going on.** You approved adding a dependency graph so the refactor can
+answer "who imports this file?" reliably. The plan suggested the `madge` tool.
+madge was not installed, and this generator runs on **every commit** via the
+pre-commit hook, so adding a tool plus a multi-second graph build to every commit
+seemed like the wrong trade. I wrote a small built-in version instead — about 50
+lines, no new dependency, instant.
+
+It currently reports 479 imports, no circular dependencies, no orphans. It has
+already proved more accurate than searching by hand: checking what imports
+`deckyCall.ts`, it found 15 files where my own grep found 14.
+
+**Option A — keep the built-in one.** *(my recommendation)* Fast, no dependency,
+and it does what the refactor needs.
+
+**~~Option B — switch to madge.~~** More battle-tested and handles exotic import
+styles this codebase does not currently use. Costs a dependency and slows every
+commit slightly. Worth doing if you ever add TypeScript path aliases, which would
+make the simple version unreliable.
+
+---
+
+### D6 — Sequencing: what should I do next?
+
+Not a hard decision, just a checkpoint. The audit produced a ranked plan in
+[05-plan.md](audit/05-plan.md). The first four items are all low-risk, mechanical,
+and verifiable by the compiler and existing tests:
+
+1. Delete the unused backend code (needs **D2**)
+2. Fix four one-line inaccuracies in the docs, and move a plan document that
+   declares itself archived into the archive folder
+3. Delete `refactor_helpers.py` — a leftover forwarding file that adds nothing
+   (careful: the deploy scripts copy it, so that has to be updated too)
+4. Delete `settingsAndResponse.ts` — another forwarding file, this one with 22
+   files pointing at it
+
+Together these measurably shrink the codebase without requiring any design
+decision. **D3** is the one that changes the shape of everything after it.
+
+Also worth knowing: the friction test (having a fresh pair of eyes try a real
+task and log everywhere they got stuck) is deferred until after the refactor, per
+your earlier call, so it will measure the improved codebase rather than the
+starting point.
+
+---
+
+### D7–D10 — raised during the 2026-08-02 session, locked 2026-08-03
+
+**D1–D6 are locked and largely executed.** These four came out of doing the work;
+options below stay as the decision record. **Locked calls** are in the table under
+[Maintainer decisions locked](#maintainer-decisions-locked--2026-08-02) and in
+**execution order** steps **5c–5d**.
+
+---
+
+#### D7 — Two more dead functions turned up. Delete them too?
+
+`_reencode_oversized_capture` and `_mirror_capture_to_plugin_dir` in
+`screenshot_media.py` have **no production callers** (`_mirror_capture_to_plugin_dir`
+is an explicit deprecated no-op; capture uses `_finalize_steam_capture_file`).
+Unlike the kmsgrab set deleted in `4a26cfa`, these were **already dead before**
+any of this session's work — they are not a cascade from a deletion, so they were
+left alone rather than folded into someone else's commit. One unit test still calls
+`_reencode_oversized_capture`.
+
+- **Delete them.** Consistent with everything else this session removed; ~2
+  functions, no production callers, and the module has real behavioral coverage.
+- **Keep them.** If either is a deliberate parking spot for capture work you
+  intend to resume, say so and they get a comment saying why they are unused —
+  which is the thing that stops a future session proposing this again.
+
+**Locked 2026-08-03:** **Delete both**; remove the `_reencode_oversized_capture`
+unit test (or fold any useful assertion into `_finalize_steam_capture_file` tests).
+
+---
+
+#### D8 — The deploy path has two blind spots. Fix them, or keep checking by hand?
+
+Both were found by accident this session, and both mean a deploy can look
+successful while the Deck is running something else:
+
+1. **It reports success without landing.** A deploy ran while the Deck drifted to
+   sleep. `build.ps1` printed *Deployment complete!*; the bundle on the Deck
+   still carried the previous deploy's timestamp and no new plugin log appeared.
+   The script never verifies what it copied.
+2. **It copies but never prunes.** Files no longer shipped stay on the device
+   from earlier deploys. When `refactor_helpers.py` was deleted, the stale copy
+   sat on the Deck and would have satisfied any import that had been missed —
+   the plugin loading proved nothing until it was removed by hand.
+
+   **Code check (2026-08-03):** this is primarily a **Windows / `build.ps1`**
+   problem — `build.sh deploy` already `rm -rf`s the plugin dir before copy.
+   `watch-deploy.ps1` delegates to `build.ps1`; `watch-deploy.sh` delegates to
+   `build.sh deploy`.
+
+**Options.** Harden the scripts (compare a build hash after upload; remove
+plugin files that are no longer in the manifest) — a contained change to
+`build.ps1` (and `watch-deploy.ps1` by inheritance) that removes a whole class
+of false-pass. Or leave them and rely on the manual check now written into
+[05-plan.md](audit/05-plan.md) §1.3, accepting that it depends on someone
+remembering.
+
+The second option is the one Phase 5's prevention pass would reject on
+principle: discipline is not a mechanism.
+
+**Locked 2026-08-03:** **Harden `build.ps1`** — prune stale plugin files before
+copy and verify the deploy landed (e.g. compare `dist/index.js` hash or mtime on
+the Deck vs local build; fail the script on mismatch). **Blocker before step 8**
+(entry-point split resumes only after deploy trust is fixed).
+
+---
+
+#### D9 — How far does the entry-point split actually go?
+
+Three slices are out of `index.tsx` (1955 → 1709). The remaining list in
+execution-order step 8 would land it near **700–800 lines** (estimate, not yet
+measured). Two bigger files were never in scope for step 8:
+
+- **`useBonsaiAskOrchestration.ts`** — 1222 lines, the whole Ask state machine.
+  It now has 13 characterization tests, so it is the best-protected large file
+  in the repo; it is also where a subtle polling or cancel regression would hurt
+  most on-device.
+- **`MainTab.tsx`** — 187 lines, churn 42, and [05-plan.md](audit/05-plan.md)
+  calls it the cheapest entry point because its churn is pure prop-threading
+  tax. It gets cheaper still after the state extractions above.
+
+Decide whether "done" means `index.tsx` alone, or those two as well.
+
+**Locked 2026-08-03:** **Done = finish step 8 (`index.tsx` only).**
+`useBonsaiAskOrchestration.ts` and `MainTab.tsx` are **follow-ups** — revisit
+after step 8 lands and `index.tsx` is near the 700–800 line target.
+
+---
+
+#### D10 — Focus and D-pad behavior has no automated coverage. What gates the remaining split?
+
+The safety net built in step 5 covers the **Ask lifecycle** and the plugin
+**mounting** — not focus order, not modal open/close lifecycle. The remaining
+extractions (character picker, models hub, desktop note, plugin help) are
+exactly that kind of behavior. Preview tier 3 covers tabs/settings/permissions —
+**not** those four modals.
+
+- **On-Deck D-pad pass per commit.** Slowest, and the only option that actually
+  catches a focus regression before it ships.
+- **Preview suite per commit, on-Deck at the end.** Faster; a focus regression
+  would be found late, against a batch of commits rather than one.
+- **Write focus-graph tests first.** Highest up-front cost. Worth pricing only if
+  focus regressions have bitten before — `.cursor/rules/decky-focus-graph.mdc`
+  and the **UI-SCALE-01…05** rows suggest they have.
+
+**Locked 2026-08-03:** **`tsc` + `npm test` + preview smoke every step 8
+commit.** **On-Deck D-pad pass required only for the four modal extractions**
+(character picker, models hub, desktop note, plugin help) — not for mechanical
+state-only commits (connection/IP, session-reset, UI-scale, error-capture). Do
+not write focus-graph tests upfront.
+
+---
+
+### D11 — `main.py` carries a compatibility shim for a loader you may never use. Remove it?
+
+**What's going on.** Found during the step 6 inventory
+([07-mainpy-inventory.md](audit/07-mainpy-inventory.md) §3). Every RPC in `main.py` starts
+by calling `_coerce_instance(self)` — **55 call sites**. Its whole job is to cope with an
+older Decky loader that passes the *class* instead of an instance. `plugin.json:6` declares
+`"api_version": 1`, and that loader passes an instance, so on your Deck this call does
+nothing at all.
+
+It has a partner: `_ensure_background_state` (35 lines) re-creates runtime state for the
+same "loader skipped `__init__`" case.
+
+Two things make this more than tidying:
+
+- The fallback **does not work anyway.** It backfills 11 of the 29 pieces of runtime state.
+  Voice, knowledge-base download, intent packs and Ollama setup are not covered, so if the
+  case it defends against ever happened, those would still crash.
+- If the class-passed branch ever *did* fire, `_coerce_instance` would build a brand new
+  plugin object and quietly throw away any Ask in progress. It is not a safety net; it is a
+  bug that never fires.
+
+**Option A — remove both.** *(my recommendation)* About 90-120 lines gone and 55 call sites
+simplified — the single largest mechanical shrink left in `main.py`. Safe as long as bonsAI
+stays on `api_version: 1`. If Decky ever ships a loader that behaves differently, the plugin
+would fail loudly at load rather than silently losing state, which is the better failure.
+
+**~~Option B — keep them, and write down why.~~** Costs nothing today. The comment has to explain
+why a half-covering fallback is worth 55 call sites, because otherwise a future session
+proposes this again.
+
+**~~Option C — finish the fallback instead.~~** Extend `_ensure_background_state` to cover all 29
+attributes. Most work, and it makes a path nothing exercises more elaborate.
+
+**Not urgent.** Nothing depends on this; it is sequenced after step 8. Flagged now because
+step 7 (settings single source of truth) touches instance lifetime and would be affected by
+the answer.
+
+**Locked 2026-08-03: Option A — remove both.** Executed the same day and pulled ahead of
+step 7 rather than left until after step 8, since step 7 touches the same instance-lifetime
+assumption. See execution-order step **6b**.
+
+---
+
+### D12 — Settings live in two languages. How far do you want to go to fix that?
+
+**What's going on.** Step 7's goal is making "add a setting" cheap. Recon first
+established the baseline (execution-order step **7a**): TS and Python each declare all
+**40** settings independently, and — checked by running both — they currently agree
+**exactly**, 40 keys, zero differences.
+
+So nothing is broken. The cost is that adding one setting means editing six files across
+two languages and getting them to match by hand, with nothing checking that you did.
+
+**Already shipped (step 7a), and it needs no decision:** a shared defaults fixture both
+languages assert against, so an incomplete two-language edit now fails a test. That closes
+the *drift* risk. It does not reduce the *cost*, which is what the options below are about.
+
+**Option A — declarative field table per language.** *(my recommendation)*
+
+Most of the 40 settings are one of five boring kinds: boolean defaulting false, boolean
+defaulting true, enum with a default, integer clamped to a range, string with a max length.
+Those become rows in a table on each side rather than a hand-written function. The genuinely
+custom ones — the latency/timeout reconciliation, the two legacy migrations, model policy,
+capabilities, named hosts, routing order — stay as functions.
+
+Adding a simple setting becomes one row in each language plus the UI control. Roughly
+two-thirds of the 28 Python sanitizers collapse. Both languages stay readable on their own
+terms, and the fixture proves the rewrite changed nothing.
+
+**~~Option B — generate both sides from one spec.~~** A single machine-readable file describing
+every field, from which the TypeScript types and the Python sanitizers are generated. This is
+the only option where the two languages *cannot* disagree, because only one thing is written
+by hand. It fits how the repo already works — six architecture snapshots are generated and
+validated on every commit.
+
+It is also the biggest commitment: a generator to maintain, generated files people must not
+edit, and the awkward cases (migrations, cross-field reconciliation) either stay hand-written
+anyway or push complexity into the spec format.
+
+**~~Option C — stop here.~~** Keep the fixture, keep the hand-written code. Drift is now caught,
+which was the real risk; adding a setting stays a six-file chore. Zero further work, and
+honest if settings are not being added often.
+
+**What I'd weigh.** B's advantage over A is only realized if settings keep being added — the
+generator has to be paid for by future edits. A gets most of the cost reduction for a fraction
+of the machinery, and does not foreclose B later, since the field table is most of the spec B
+would need anyway.
+
+---
+
+### D13 — TS and Python disagree about five settings. Which side is right?
+
+**What's going on.** The step 7a check compared the two languages on a **fresh install** and
+found them identical. That was true and is still true — but it only tested one input. Writing
+the TypeScript field table meant reading every rule side by side, which surfaced six settings
+where the two disagree once the value is *not* the default.
+
+Confirmed by running both sanitizers over 31 hostile inputs:
+
+| Setting | Input | TypeScript | Python |
+|---|---|---|---|
+| `rag_corpus_path` | `"../../etc/passwd"` | passes it through | `""` (traversal rejected) |
+| `preset_chip_fade_animation_enabled` | `{preset_chip_animation: "carousel"}` | `false` (derived from the new field) | `true` (independent, defaults on) |
+| `desktop_app_log_level` | `" verbose "` | `"off"` (exact match only) | `"verbose"` (trims first) |
+| `rag_corpus_version` | `123` | `""` (non-strings rejected) | `"123"` (stringified) |
+| ~~`ui_scale_manual_profile`~~ | `"IMMERSIVE"` | `"handheld"` | `"immersive"` |
+
+**Correction (2026-08-03):** the `ui_scale_manual_profile` row is **not drift** and was
+mis-diagnosed here as case-sensitivity. `normalizeUiScaleProfileId`
+([uiScaleProfile.ts:117](../src/data/uiScaleProfile.ts)) already trims *and* lowercases; the
+downgrade comes from `SHOW_IMMERSIVE_UI_SCALE = false` two lines later — a deliberate feature
+gate on a profile the UI never offers. Aligning it to Python would have re-enabled a hidden
+profile. So the count is **five settings** (six diverging cases — `preset_chip_animation`
+diverged for both `"carousel"` and `"static"`), of which four were fixed.
+
+**How much does this matter?** Less than the table suggests, and it is worth being precise.
+The UI sends exact values from its own controls, so none of these fire in normal use, and
+**Python is the gatekeeper for what reaches disk** — `save_settings` sanitizes on the way in,
+so the persisted file is always the Python answer. The exposure is a hand-edited
+`settings.json`, a value from an older build, or the frontend acting on its own reading before
+a save round-trips.
+
+`rag_corpus_path` is the one I would not leave alone: the frontend would show and act on a
+traversal path that the backend refuses to store, so the two layers genuinely disagree about
+what the knowledge-base location is.
+
+One detail worth knowing: `ui_scale_manual_profile: " Handheld "` **agrees** across both
+sides — but only because both happen to land on `handheld`, one by trimming and one by
+falling back to the default. Agreement by coincidence, not by shared rule.
+
+**Option A — make Python authoritative and align TS to it.** *(my recommendation)* Python is
+what persists, so aligning TS to it removes the possibility of the UI showing something the
+backend will not store. Five of the six are one-line changes to the TS normalizers; the sixth
+(`preset_chip_fade_animation_enabled`) needs a call on whether the legacy field is derived or
+independent — see below.
+
+**~~Option B — align case by case.~~** For at least one setting TS is arguably the better
+behavior: deriving `preset_chip_fade_animation_enabled` from `preset_chip_animation` keeps the
+deprecated field consistent with the live one, where Python can report `fade_enabled: true`
+alongside `animation: "carousel"`. Pick per row rather than by language.
+
+**~~Option C — leave them and document.~~** Nothing is broken in normal use. Costs nothing now,
+and the next person to read both files finds the same six discrepancies.
+
+**Either way, the guard should get stronger.** The 7a fixture only pins the fresh-install
+payload. Once the six are settled, the same hostile-input set that found them should become a
+second shared contract, so this class of drift fails a test instead of waiting to be noticed.
+
+**Blocks step 7d** (the TypeScript field table). Writing that table now means encoding rules
+this decision may change, then rewriting it.
+
+**Locked 2026-08-03: Option A — Python authoritative, TS aligned.** Executed as step **7c**;
+`save_settings` decides what reaches disk, so a frontend reading a value the backend will not
+store is the broken combination.
+
+**One row went the other way, deliberately.** `preset_chip_fade_animation_enabled` was aligned
+**Python → TypeScript** (derived from `preset_chip_animation`) rather than the reverse. Reading
+the deprecated key independently produces a self-contradictory payload —
+`preset_chip_animation: "carousel"` with `fade_animation_enabled: True` claims fades are on
+while a non-fade animation is selected — and TypeScript already derived it on **both** its
+normalize and save paths ([settingsPayload.ts:29](../src/utils/settingsPayload.ts)), so Python
+was the outlier. Safe where it is read: `MainTabPresetRow` gates on
+`presetChipAnimation === "fade" && presetChipFadeAnimationEnabled`, so the flag is only
+consulted when the animation is already `fade`. This is the row flagged up front as a genuine
+judgement call; applying Option A literally would have made the payload contradict itself.
+
+**And the guard got stronger, as this decision required.**
+`tests/contracts/settings-hostile-inputs.json` now holds 19 cases — the inputs that found the
+divergences plus the migrations and clamps most likely to drift next — asserted by both
+languages. Re-running the 31-input cross-language probe afterwards: **1 divergence remaining**,
+and it is the intentional immersive gate.
+
+---
+
+### D14 — `index.tsx` is at 1291 lines, not the 700–800 step 8 predicted. Stop, or keep going?
+
+**What's going on.** Everything step 8 listed is done: three slices, four modals, one state
+hook, six tab payloads. `index.tsx` went 1955 → 1291. The 700–800 figure in **D9** was an
+estimate made before anyone measured what was left, and it assumed the remaining lines were
+JSX. They are not. What is left is four blocks of prop threading:
+
+| Block | Lines | What it is |
+|---|---|---|
+| `usePluginSettings` destructure | ~85 | 40 settings and their setters, unpacked into locals |
+| `settingsSnapshotForSave` | ~90 | the same 40 keys listed twice — object body and memo deps |
+| session-survival snapshot | ~65 | a default shape plus a live snapshot getter, ~30 fields each |
+| preview test-hook registration | ~55 | a preview-only `getState`/`setTab`/`triggerAsk` bridge |
+
+Moving any of these to another file does not make them smaller; it moves the same lines and
+adds an argument list. They shrink only by **collapsing** — passing grouped objects instead of
+40 named locals — and that is a rewrite of every consumer, which refactor rule 1 keeps out of a
+behavior-preserving step.
+
+**Option A — call step 8 done at 1291 and correct the estimate.** *(my recommendation)* The
+stated goal was a composition root that composes; that is now literally what the file is. The
+700–800 number was never measured and chasing it buys nothing a reader would notice.
+
+**~~Option B — do the one cheap collapse first, then stop.~~** Have `usePluginSettings` return
+`settingsSnapshotForSave` itself. It already owns all 40 states, so this is a move into the hook
+that owns the data, not a redesign — about 90 lines out of `index.tsx`, and it deletes a 40-key
+list that is currently maintained by hand in two places. It is genuinely step 7 work (settings
+SSOT) that happens to land in `index.tsx`. Low risk, one commit, gates unchanged.
+
+**~~Option C — collapse the prop threading properly.~~** Group the Ask slice and the settings slice
+into objects and thread those. Would get near the original estimate. It is also exactly the
+rewrite **D9** deferred, it touches `MainTab.tsx` (already a follow-up), and it is unreviewable
+as a single diff.
+
+**Not urgent.** Nothing is blocked on this. It only decides whether step 8 closes now or takes
+one more commit first.
+
+**Locked 2026-08-03: Option A — step 8 is done at 1291 lines; the 700–800 estimate in D9 is
+withdrawn as unmeasured.** Option B stays available but belongs to step 7's settings SSOT
+thread, not here; it is not a prerequisite for anything and is not scheduled.
+
+**Record the cost honestly, because step 5b predicted it.** Across the five commits `src/`
+grew **+1012 / −447, net +565 lines** while `index.tsx` fell 1522 → 1291. Step 5b already
+measured this: *"extracting the tab JSX is a lateral change… `index.tsx` would shrink while the
+codebase got worse."* Doing the state and modal extractions first removed some of that tax, and
+deriving each payload's args from `React.ComponentProps<typeof Tab>` removed the rest of the
+*type* duplication 5b warned about — but the prop **names** are still written twice per tab,
+once at the call site and once in the hook. The payload step bought a composition root that
+reads as composition, and it cost 565 lines to get it. **The state and modal extractions were
+worth more per line than the payloads were**, which is the useful lesson for the next entry
+point: do the state, and treat the JSX as optional.
+
+---
+
+### D15 — When you reopen the plugin, should it put you back where you were?
+
+**What's going on.** Today it always opens on **Main**. Not by decision — by omission: the only
+tab-restoring machinery is for modal round-trips, and nothing saves your tab when the plugin
+closes. Reported on-Deck 2026-08-04 as *"getting back to the tab you were at seems cumbersome"*.
+
+The code change is a few lines either way (persist `currentTab`, read it in `resolveInitialTab`).
+The question is what the plugin should *do*, and that is not a code question.
+
+**~~Option A — always open on Main.~~** *(today's behavior, by accident)* Main is where you Ask, and
+Asking is the point. Every open starts from the same place, which is predictable and needs no
+memory of what you were doing. The cost is exactly what was reported: if you were mid-way through
+Ollama or Settings, you walk back every time.
+
+**Option B — resume the tab you left.** *(my recommendation)* Matches how the plugin already
+behaves around modals, so it is consistent rather than novel, and it removes the reported
+friction. The risk is the opposite complaint: you set something in Settings, come back later
+wanting to Ask, and land in Settings. On a D-pad that is one shoulder press, so the downside is
+smaller than the upside.
+
+**~~Option C — resume, but expire it.~~** *(shipped as Developer toggle only, not default)* Resume the tab if you reopen within N minutes, else Main.
+Fixes both complaints and is the most code and the most explaining. Hard to justify before A or
+B has actually annoyed someone.
+
+**Worth deciding together with the focus-restore item above** — if pickers are going to restore
+focus within a tab, resuming the tab itself is the same idea one level up. Doing B without focus
+restore is still a clear improvement; doing focus restore without B is a bit odd.
+
+**Locked 2026-08-04: Option B — resume the tab you left.** Shipped the same day, together with
+the focus-restore item as the discussion above suggested. See both entries under **Bugs**.
+On-Deck confirmation still owed: **TAB-RESUME-01** and **PICKER-FOCUS-01**.
+
+**Amended 2026-08-04: all three options now ship behind one Developer control**, `tab_resume_mode`
+— `always_main` (A) / `resume` (B) / `resume_recent` (C, five minutes). **B stays the default and
+the locked decision**; the other two exist so this entry stops being settled on paper alone. C was
+argued above as *"hard to justify before A or B has actually annoyed someone"* — that argument was
+against **shipping** C as the default, and it is unchanged. What changed is the cost of finding
+out: with a stop for each, the answer comes from a week of use rather than another discussion.
+**Close this out when there is a verdict** — if nobody moves off B, delete the control and the
+setting rather than leaving three modes to maintain forever. See the **Bugs** entry for the
+mechanism and **TAB-RESUME-MODE-01** for how to test it.
+
+---
+
+### Maintainer decisions locked — 2026-08-02
+
+The options above stay as the decision record. **Locked below** is what we are
+doing and why. Where a locked call disagrees with an earlier recommendation in
+**D1–D6**, the locked call wins — some premises were corrected after reading the
+current tree (especially **D1b** and parts of **D2** / **D4**).
+
+| Id | Locked decision | Why |
+|----|-----------------|-----|
+| **D1** | **Finish both missing RPCs** — `merge_pulled_tags_into_routing_orders` and `get_session_rag_chip_candidates` | Both are wiring gaps, not greenfield features. Routing merge reuses `merge_pulled_tag` / `sanitize_model_routing_order` for `text_model_routing_order` and `vision_model_routing_order`. Session RAG already has `suggest_chip_candidates` + tests in `knowledge_base_service.py`; only the public RPC adapter on `class Plugin` is missing. Restores intended UX without reopening Phase 4 visibility / Phase 5 vector ranking. |
+| **D2** | **Targeted dead-code cleanup** — delete confirmed orphans; **archive** tiny-model thinking code; keep active Ask, debug, and KB-cancel paths | Proton journal RPCs + service, `apply_tdp` (+ its test-only caller), `log_navigation`, and legacy `capture_screenshot` are safe to remove after preview-suite grep. **`ask_game_ai`** stays — preview suite drives it. **`ask_ollama`** stays — every Ask calls it internally. **`dbg_fe_log`** stays — intentional on-Deck debug bridge. **`cancel_rag_corpus_download`** stays — backend cancel path exists; UI Cancel is planned (**D2 follow-up**). **`thinking_tiny_model_service.py`** is **deleted outright** in `c8ed045`; git history is the archive. To restore the tiny-model thinking blurbs: `git show c8ed045^:py_modules/backend/services/thinking_tiny_model_service.py`. An in-tree archive folder was rejected — the file would still surface in greps and still need explaining, which defeats the point of the cleanup. |
+| **D3** | **Option A — characterization tests first, then refactor** | `index.tsx` and `useBonsaiAskOrchestration.ts` have zero automated coverage; `npm test` would pass if every component were deleted. `fakeDeckyRpc.ts` + existing hook tests prove the pattern. Preview and on-Deck QA still required for D-pad and layout. |
+| **D4** | **Prune by policy, not by folder count** | Keep evidence linked from current or archived QA docs; keep the latest useful pass per tier and meaningful failure runs. Audit links before deleting anything. Remove only duplicate, incomplete, or truly unreferenced generated runs. Add a retention rule so future `--write` runs do not grow `docs/test-evidence/` without bound. |
+| **D5** | **Option A — keep the built-in import graph** | Fast, no dependency, runs on every commit, and matches today's relative-import-only `tsconfig`. Revisit only if path aliases land, unresolved internal imports appear, or a parser-based tool finds real discrepancies. |
+| **D6** | **Sequencing below** | Fix real user-visible gaps before shrinking/refactoring; build the safety net before the risky split; measure handoff friction on the improved tree. |
+| **D7** | **Delete both screenshot helpers** | `_reencode_oversized_capture` and `_mirror_capture_to_plugin_dir` have no production callers; `_mirror_capture_to_plugin_dir` is an explicit deprecated no-op. One unit test still calls `_reencode` — remove it with the function. Consistent with D2 cleanup; module has behavioral coverage via `_finalize_steam_capture_file`. |
+| **D8** | **Harden `build.ps1` (prune + verify)** | Windows deploy path merges without pruning and prints success without checking the artifact landed. `build.sh deploy` already wipes the plugin dir — fix `build.ps1` (and `watch-deploy.ps1` by inheritance): remove stale files, compare `dist/index.js` hash or mtime after upload, fail on mismatch. Blocker before step 8. |
+| **D9** | **Done = step 8 (`index.tsx`) only** | Finish the state-before-JSX plan. `useBonsaiAskOrchestration.ts` (1222 lines, 13 characterization tests) and `MainTab.tsx` (187 lines, prop-threading tax) are follow-ups after step 8 — splitting them now fights the locked order. **Amended 2026-08-03 (D14):** the "~700–800 lines" figure here was an unmeasured estimate and is **withdrawn**. Step 8 closed at **1291**; what remains is prop threading that only a rewrite would shrink. |
+| **D13** | **Option A — Python authoritative, TypeScript aligned (one row inverted)** | `save_settings` decides what reaches disk, so a frontend reading a value the backend will not store is the broken combination. Four settings aligned TS → Python. `preset_chip_fade_animation_enabled` went the other way — reading the deprecated key independently yields a self-contradictory payload and TS already derived it on both its normalize and save paths, so Python was the outlier. `ui_scale_manual_profile` turned out not to be drift at all but the `SHOW_IMMERSIVE_UI_SCALE` gate; left alone. Guard extended to a 19-case hostile-input contract asserted by both languages. Executed as step **7c**. |
+| **D12** | **Option A — declarative field table per language** | The two languages agreed exactly on fresh-install defaults, so this is cost reduction, not a bug fix. Most settings are one of five plain shapes; those become one-line rows, and the genuinely custom ones stay functions with a stated reason. Python side shipped as step **7b** (19 rows, 32 → 20 defs, 6,659-input differential test, zero mismatches). Full codegen (Option B) was not taken: its only extra guarantee is that the languages cannot disagree, and it has to be paid for by future settings churn — the field table is most of the spec it would need anyway, so it stays available later. |
+| **D11** | **Option A — remove `_coerce_instance` and `_ensure_background_state`** | Both exist for a loader that passes the class instead of an instance; `plugin.json:6` pins `api_version: 1`, where the call is an identity function across 55 sites. The fallback covered 11 of 29 runtime attributes, and if it had ever fired it would have built a fresh `Plugin` and discarded the in-flight Ask — a latent bug, not a safety net. Removed 103 lines with the RPC surface unchanged at 50. Executed as step **6b**, ahead of step 7, because step 7 depends on the same instance-lifetime assumption. |
+| **D10** | **Preview/tests every commit; on-Deck D-pad for modal extractions only** | `tsc` + `npm test` + preview smoke on every step 8 commit. On-Deck D-pad required for character picker, models hub, desktop note, and plugin help extractions only — not state-only commits. Tier 3 preview does not cover those modals; focus-graph tests upfront rejected. |
+
+**Step labels.** The numbers in this list are the **only** authoritative step labels; cite them
+verbatim in commit subjects, and keep one label to one commit series.
+
+> **Collision resolved 2026-08-03.** Commit `b5b8e95` carries the subject *"Step 7b: evaluate
+> the cost of shared-schema mechanism for settings"*, which clashes with **7b** below (the
+> Python field table). Its subject also does not describe its diff — the commit adds five
+> unrelated audit and planning documents, while the settings evaluation it describes is step
+> **7a** (`6651e45`). History was left alone rather than rewritten; read this list, not that
+> subject line. The settings work is `6651e45` → `3f44368` → `65fc2bf` → step 7c.
+>
+> Same pass renamed `docs/audit/09-token-streaming-review.md` to `10-…` — it had been committed
+> alongside `09-strategy-spoiler-false-positive.md`, giving two different documents the same
+> ordinal. Nothing linked either file, so the rename was safe. **2026-08-03:** planning answers
+> (Q1–Q8) now live under `docs/planning/` with question-number prefixes; refactor recon stays in
+> `docs/audit/`.
+
+**Execution order (locked, amended 2026-08-03):**
+
+1. **Record decisions** — this section; turn accepted work into implementation rows as work ships. *(done — `dcbcccf`, `e2111f9`, plus this amendment)*
+2. **D1 — wire both RPCs** — **done 2026-08-02**, see Bugs § *Fixed*. D1a routing merge (`510139d`) and D1b session RAG adapter, 13 new unit tests between them. On-Deck QA still open: **ROUTING-MERGE-01** and **SESSION-RAG-CHIPS-01** in [testing.md](testing.md). **This is feature work, not refactor** — separate commits, not labeled behavior-preserving, and it changes what `useBonsaiAskOrchestration.ts` does at runtime. Sequenced before step 5 on purpose so the characterization tests capture intended behavior rather than the silent-fallback bug.
+3. **D2 — targeted cleanup** — **done 2026-08-02** (`309c386`, `ebdc0f2`, `c8ed045`, `45cb0ff`, `d93027b`, `36f34cd`). Removed: 5 Proton-journal RPCs + their service, `thinking_tiny_model_service.py`, `log_navigation`, `capture_screenshot`, and the TDP sysfs write path. Kept per D2: `ask_game_ai`, `ask_ollama`, `dbg_fe_log`, `cancel_rag_corpus_download`. RPC surface 57 → 50. Two things the audit got wrong are recorded in [05-plan.md](audit/05-plan.md) §1.1: the journal service was not dead (`clear_plugin_data` needed its file wipe) and `find_amdgpu_hwmon` was not apply-only (`read_current_tdp_watts` calls it). The kmsgrab orphans this pass left behind were cleared later the same day under **Cleanup candidates** (`4a26cfa`).
+
+   **Preview-suite gate — first pass was incomplete.** Grepping `tests/preview-suite/` and `scripts/` for *symbol* names returns zero hits for `proton_experiment`, `apply_tdp`, `log_navigation`, `capture_screenshot`, `dbg_fe_log`, `cancel_rag_corpus_download`, `thinking_tiny`, and 22 hits for `ask_game_ai` across five tiers (keep, per D2). **That grep missed file-level references.** `tests/preview-suite/unit-gates.json:25` runs `tests/test_tdp_sandbox_sysfs.py` by filename under a gate tagged `TDP-APPLY`, and `tier-manifest.json:96` advertises "sysfs TDP apply + clamp asserts" in the Tier 2 description. Only two test files are referenced this way — the other is `test_capabilities.py` — so no other deletion in this pass was affected. **When checking whether a deletion is preview-safe, grep the preview suite for the test filename as well as the symbol.**
+4. **Mechanical refactors** — **done 2026-08-02** (`3813764`, `666e3e3`, `2156441`, `ef65f8e`), one behavior-preserving commit each, all gates green between. Four stale doc claims fixed and the self-declared-archived RAG analysis moved to `archive/`; `refactor_helpers.py` shim deleted and its 9 importers repointed; `settingsAndResponse.ts` barrel deleted and its 22 importers repointed (`tsc --noEmit` is the safety net here); `settingsPayload.ts` split, with reply-text formatting moved to `appliedTuningText.ts`.
+
+   **Deploy gate — passed, and it mattered.** The shim was referenced by `build.sh`, `build.ps1` and `verify-decky-plugin-zip.sh`, none of which any test covers. Deployed to the Deck and confirmed `bonsAI plugin loaded!`. **The first load proved nothing**: the deploy scripts copy without pruning, so the deleted shim was still sitting on the Deck from an earlier deploy and would have satisfied any import that had been missed. Deleting it plus `__pycache__` on-device and restarting `plugin_loader` is what made the check real. See [05-plan.md](audit/05-plan.md) §1.3 — **any future deletion of a Deck-facing Python file needs the same step.**
+5. **D3 — safety net** — **done 2026-08-02.** 22 new tests (suite 217 → 239): `useBonsaiAskOrchestration.test.ts` covers submit guards, request payload, the invalid / blocked / completed / thrown-error branches, polling, cancel, and thread archiving; `index.test.tsx` covers the Decky contract, a real mount, settings wiring, the tab set, and error containment. Both **mutation-checked** — three deliberate breaks in each turn the suite red — because a characterization test that cannot fail is worse than none. Three harness defects had to be fixed first and are recorded in [04-coverage.md](audit/04-coverage.md): vitest collected only `*.test.ts` so **a `.tsx` test could never run**, jsdom lacks `ResizeObserver` so the tree silently rendered the ErrorBoundary fallback, and `globals: false` left renders leaking between tests.
+5b. **D3 — entry-point split, in progress 2026-08-02.** `index.tsx` 1955 → 1709 across three commits: `984498e` moved the stateless shell pieces (error boundary, localStorage helpers, tab titles) to `src/features/plugin-shell/`; `26c67e6` moved voice Ask input to `src/features/voice/`; `fda8051` moved the try-order modal to `src/features/model-routing/`. Destination follows REFACTOR-PLAN §3.4 (vertical slices), not the type-buckets.
+
+   **Measured finding that redirected the work:** extracting the tab JSX — the obvious first move — is a *lateral* change. The six tab payloads thread 94 (`mainTab`), ~30 (`ollamaTab`), 27 (`settingsTab`) and 21 (`developerTab`) props out of `Content`'s scope, so moving one to its own module means declaring those props a second time as an args type. `index.tsx` would shrink while the codebase got worse. The threading is a *symptom* of state living in `Content`; each state extraction deletes props instead of copying them, and the tab JSX becomes cheap to move only afterwards. **Do the state first.**
+
+   **Remaining in `Content`:** character-picker modal (~76 lines, ~11 deps), Ollama models hub (~84, ~10), desktop-note modal (~49), plugin-help modal (~11), plus connection/IP, session-reset, UI-scale and error-capture state. Then the tab payloads.
+
+5c. **D8 — harden `build.ps1`** — **done 2026-08-03.** Three changes: the plugin dir is
+   `rm -rf`'d before copy (matching `build.sh deploy`, and the remote temp dir is wiped
+   first so a failed run cannot ship stale files); every `ssh`/`scp` is exit-code checked
+   via `Assert-LastExit` — **unchecked native exit codes were the actual false-pass
+   mechanism**, since PowerShell does not stop on a non-zero `scp`; and the deploy is
+   verified by SHA-256 after upload. `watch-deploy.ps1` inherits all of it.
+
+   **Verification hashes all 52 shipped code files, not just `dist/index.js`.** The locked
+   text suggested `dist/index.js` alone, which does not hold: a Python-only change leaves
+   the bundle byte-identical to the previous deploy, so an index.js-only check would pass
+   while nothing new landed — the same false pass, one layer down. The list is
+   `package.json`, `plugin.json`, `main.py`, `dist/index.js`, and every non-`__pycache__`
+   `py_modules/**/*.py`; the remote side is one `sha256sum` call (~2.5 KB command line).
+   `plugin_loader` is restarted **even when verification fails** — leaving it stopped would
+   break every other Decky plugin on the device, not just this one — and the script then
+   exits non-zero with a per-file `MISSING` / `STALE` list.
+
+   **Found while doing it — `watch-deploy.ps1` could not parse under Windows PowerShell
+   5.1.** No `.ps1` in `scripts/` has a BOM, so 5.1 decodes them as CP1252; a UTF-8 em-dash
+   inside a **double-quoted string** becomes `U+201D`, which PowerShell accepts as a string
+   delimiter, and parsing dies at the *next* line. Reproduced with a two-line script, then
+   confirmed by parsing every `scripts/*.ps1`: `watch-deploy.ps1:44` was the only live
+   casualty (em-dashes in *comments* are harmless, which is why `setup-dev.ps1` and
+   `revert-dev.ps1` are fine). Both deploy scripts are ASCII-only now with a comment saying
+   why. **New file rule: no non-ASCII in `.ps1` strings.**
+
+   **Verified on-device the same day**, two deploys. Both printed `Verified 52 files on the
+   Deck.` and exited 0, with `bonsAI plugin loaded!` at 00:47:29 and 00:51:24 and no
+   `Traceback`/`ERROR` in the log.
+
+   **The prune was proven with planted sentinels, not by inference.** The obvious witness —
+   the stale `refactor_helpers.py` from 2026-08-02 — proves nothing, because it was
+   *hand-deleted* on-device that day; it was already absent before any of this. So a
+   `STALE_SENTINEL.py` and a whole `py_modules/backend/stale_dir/ghost.py` were planted on
+   the Deck first: after the deploy, both files **and the directory** are gone. `__pycache__`
+   likewise cannot outlive a deletion — the two dirs on the device are regenerated by the
+   loader after the copy.
+
+   **Regression found and fixed during that testing.** The first version of this script
+   opened with `$ErrorActionPreference = "Stop"`. Under 5.1 that promotes a *native command's
+   stderr* to a terminating `NativeCommandError` whenever the script's output is redirected,
+   so `.\scripts\build.ps1 2>&1 | ...` died on a `pnpm`/node **deprecation warning** before
+   reaching the Deck. It is removed: every failure path already calls `exit 1` explicitly, so
+   the preference bought nothing, and the two cmdlets whose silent failure would corrupt the
+   run (`Set-Location`, `Get-FileHash`) carry their own `-ErrorAction Stop`. Failure messages
+   are `Write-Host` red rather than `Write-Error` so the exit code is the single signal.
+   `watch-deploy.ps1` now checks `$LASTEXITCODE` after invoking the deploy — it previously
+   caught only exceptions, so an `exit 1` would have been swallowed and the watch loop would
+   have carried on as if the Deck were current: the same false pass, one level up.
+
+   **The false-pass fix then proved itself for real, later the same day.** A step 7 deploy was
+   attempted while the Deck had drifted to sleep. The script failed at the first `ssh`
+   (exit 255) and reported *"Deploy aborted - the Deck may be asleep or unreachable"* with a
+   non-zero exit. Before D8 that exact run would have attempted every `scp`, ignored all of
+   their failures, and printed **Deployment complete!** — the original bug, reproduced by
+   accident and now caught. **DEPLOY-VERIFY-02 upgraded to Verified.**
+
+   **Remaining gap:** the `STALE` branch of the hash compare is still simulation-tested only —
+   it needs a deploy where files land but with stale content, which has not happened naturally.
+   **DEPLOY-VERIFY-01…03** in [testing.md](testing.md).
+
+5d. **D7 — delete screenshot helpers** — **done 2026-08-03.** `_reencode_oversized_capture`
+   and `_mirror_capture_to_plugin_dir` removed from `screenshot_media.py`. Preview gate run
+   on **symbols and the test filename** per the step-3 lesson: clean. The `_reencode` unit
+   test asserted "a file that needs no work is returned untouched"; that assertion is folded
+   into `test_finalize_steam_capture_file_passes_through_missing_file`, which covers the
+   equivalent guard on the live function ([screenshot_media.py:245](../py_modules/backend/services/screenshot_media.py))
+   and was previously untested. Python suite stays at 413.
+
+   **Left alone deliberately:** `take_steam_game_screenshot` still declares a
+   `plugin_runtime_dir` parameter that nothing in its body reads — it was the mirror
+   helper's argument. Dropping it changes a public signature, which is not what D7 authorized;
+   it belongs with the step-6 `main.py` inventory pass.
+
+6. **2.3 — `main.py` extraction investigation** — **done 2026-08-03**, read-only, no code
+   changed. Inventory: [07-mainpy-inventory.md](audit/07-mainpy-inventory.md).
+
+   **Answer to §2.3's question ("thin facade or logic in both layers?"): both, and not where
+   the file claims.** By count it reads as a facade — 27 of 96 methods are ≤8 lines. By
+   volume it is not: the six largest public RPCs are **706 lines, 24% of the file**, and ten
+   methods hold 869 lines (29% of the file in 10% of its methods). Split: 1767 lines across
+   the 50 public RPCs, 895 across 46 private helpers, ~210 in imports and class constants.
+
+   **One outright contract violation.** `main.py:6` says the file *"Does not: Own Ollama
+   HTTP"*. `test_ollama_connection` ([main.py:1038](../main.py), 178 lines) is the only
+   `urllib` consumer in the file — it opens `/api/version`, `/api/tags` and `/api/ps`
+   directly and derives a VRAM-share ratio from the response. About 70 lines of transport
+   belong in `ollama_service.py`; the loopback-recovery policy and logging stay.
+
+   **Four other findings**, each with the destination named in the doc: the background-state
+   dict shape is declared **four times** (one copy omits three keys — latent, not live, since
+   `_merge_partial_into_background_status` backfills them); three near-identical local-command
+   dispatch blocks in `start_background_game_ai`; four repetitions of cancel-task-and-reset in
+   `clear_plugin_data`; and `abort_background_game_ai` closing a raw `urllib` handle
+   cross-thread. Ranked extraction order with risk is §8 — **none of it was executed**, per
+   "investigation, not yet a refactor".
+
+   **Raised as [D11](#d11--mainpy-carries-a-compatibility-shim-for-a-loader-you-may-never-use-remove-it):** `_coerce_instance` is a no-op under `api_version: 1` and is called
+   at **55 sites**, with a 35-line `_ensure_background_state` partner. Biggest mechanical
+   shrink available (~90-120 lines) but it needs a maintainer call, not a refactor decision.
+
+   **Two §2.3 premises were stale** and are corrected in the doc: `main.py` is 2971 lines not
+   3021, imports 29 of 40 services not "35 of 42", and the coverage claim ("5 tests, all
+   locking, none RPC behavior") is now 8 test files, two of which do test RPC behavior — those
+   two are the pattern to copy for the extractions above. Still true: **none of the ten
+   largest methods has a behavioral test.**
+6b. **D11 — remove the legacy-loader compatibility layer** — **done 2026-08-03.**
+   `_coerce_instance` (55 call sites) and `_ensure_background_state` (35 lines) deleted;
+   `main.py` **2971 → 2865** (−103 lines, −2 methods), **RPC surface unchanged at 50**. The
+   53 `plugin = Plugin._coerce_instance(self)` aliases became direct `self` use, not
+   `plugin = self`, so no vestigial indirection is left behind.
+
+   **The shim had a service-side half** that [07-mainpy-inventory.md](audit/07-mainpy-inventory.md)
+   had not found: [ollama_ask_service.py:81](../py_modules/backend/services/ollama_ask_service.py)
+   called `plugin_inst._ensure_background_state()` before touching `_active_request_id()`,
+   and `tests/test_ollama_ask_service.py` carried a matching no-op on its `_FakePlugin`.
+   Deleting only the `main.py` side would have raised `AttributeError` on **every Ask** with
+   the unit suite still green — the fake satisfied the call. Both removed together.
+
+   **Verified as mechanical, not merely untested.** A token-level differ compared the files
+   before and after: with the intentionally deleted regions removed, both sides yield
+   **15,446 identical tokens**, 236 `plugin`/`plugin_bg` NAME tokens become `self`, and
+   there are **zero** other differences. This mattered — 8 test files touch only a fraction
+   of the 53 methods changed, and a plain find-and-replace would have corrupted the
+   `"plugin.lifecycle"` / `"plugin.data_clear"` log event names and docstring prose. Then
+   413 Python tests, then a deploy: `bonsAI plugin loaded!`, zero `Traceback`/`ERROR`,
+   deployed `main.py` at 2865 lines. **On-Deck functional QA of the Ask, voice and
+   knowledge-base paths is still open** — **D11-SHIM-01** in [testing.md](testing.md).
+
+7a. **2.2 — settings recon + drift guard** — **done 2026-08-03.** The audit deferred this
+   design deliberately ([05-plan.md](audit/05-plan.md) §2.2: *"Do not design the shared-schema
+   mechanism from this document"*), so the first move was measuring rather than building.
+
+   **Baseline: there is no drift.** Both sides were executed and their outputs diffed —
+   Python `sanitize_settings({})` against TypeScript `normalizeSettings({})` — and they agree
+   **exactly**: 40 keys each, no key on one side only, **zero value differences**. That
+   reframes the work: step 7 is not fixing a bug, it is removing a per-setting cost and the
+   standing risk that the two hand-maintained shapes stop matching. It also makes the
+   remaining refactor verifiable — any mechanism must reproduce exactly this payload.
+
+   *(An early probe appeared to show `capabilities` differing. That was the probe's own bug —
+   a replacer array passed to `JSON.stringify` filters keys at every nesting level, not just
+   the top. Re-measured before reporting.)*
+
+   **Shipped: a drift guard, not a redesign.** `tests/contracts/settings-defaults.json` is the
+   fresh-install payload, and each language asserts against it in its own runner — no
+   cross-runtime plumbing. Python: `tests/test_settings_contract.py`. TypeScript:
+   `src/data/bonsaiSettingsContract.test.ts`. Three assertions each: exact equality, key-set
+   equality reported separately so a missing key reads as a key rather than a diff, and
+   **idempotency** — feeding the defaults back in must not change them, which specifically
+   guards the two legacy migrations (`preset_chip_animation` reading
+   `preset_chip_fade_animation_enabled`, `screenshot_attachment_preset` reading
+   `screenshot_max_dimension`), where a re-firing migration would rewrite a saved value on
+   every load.
+
+   **Mutation-checked**: mutating one fixture value fails both halves. Suites 413 → 416
+   Python, 239 → 242 frontend. `tsc` clean.
+
+   **Next decision: [D12](#d12--settings-live-in-two-languages-how-far-do-you-want-to-go-to-fix-that)** — how far to go on reducing the six-file cost. Step 7b is blocked on it.
+
+7b. **D12 — Python field table** — **done 2026-08-03.** [D12](#d12--settings-live-in-two-languages-how-far-do-you-want-to-go-to-fix-that) locked Option A. 19 settings whose rule is a plain
+   shape (boolean defaulting false, boolean defaulting true, enum with a default, trimmed
+   length-capped string, and a variant that stringifies non-strings) are now one-line rows in
+   `_SIMPLE_FIELDS` instead of a hand-written function each. Adding such a setting was two
+   edits in this file — write a `sanitize_*`, then wire it into the returned dict — and is now
+   one row. Top-level defs **32 → 20**.
+
+   **Line count barely moved (477 → 458)** and that is the honest number: the shape builders
+   and the comments explaining why each remaining function is exempt cost most of what the
+   collapsed functions saved. The value is the per-setting edit cost and having the five
+   shapes named once, not the size of the file.
+
+   Two collapsed sanitizers keep a named function because `ollama_ask_service` imports them
+   directly; they delegate to their table row so the rule still has one definition. The exempt
+   settings are now annotated with *why* — reconciled in pairs, options supplied by `Plugin`
+   class constants, reads a legacy key, structured/list-valued, traversal rejection, or owned
+   by another service.
+
+   **Verified by differential test, not by the suite alone.** The pre-refactor module was
+   loaded from git alongside the new one and both run over **6,659 inputs** — every key set
+   individually to each of ~60 hostile values, non-dict payloads, 4,000 random combinations,
+   both migration pairs exhaustively, and the latency/timeout pair across its clamp
+   boundaries. **Zero mismatches.** Mutation-checked: flipping one row's default diverges
+   6,643 of them. This mattered — the predicates are not interchangeable (`is True` vs
+   `is not False` differ for every non-boolean, and the two string kinds differ for
+   non-strings), and the 7a fixture only pins the empty-input case.
+
+   A dead `sanitize_screenshot_max_dimension` was deleted first, in its own commit, so this
+   diff stayed purely structural.
+
+7c. **D13 — align the five diverging settings** — **done 2026-08-03.** [D13](#d13--ts-and-python-disagree-about-five-settings-which-side-is-right) locked Option A
+   (Python authoritative). Four settings changed on the TypeScript side: `desktop_app_log_level`
+   now trims before matching, `rag_corpus_path` rejects `..` traversal as Python always did,
+   `rag_corpus_version` accepts an unquoted number, and both string coercions share one helper
+   documenting exactly where parity stops (scalars are exact; booleans, objects and arrays are
+   garbage-in cases both sides now discard rather than pretending to match Python's `repr`).
+
+   **One row was aligned the other way on purpose** — `preset_chip_fade_animation_enabled` is
+   now derived in Python too. See D13 for why applying Option A literally there would have made
+   the payload contradict itself.
+
+   **One row was not drift at all.** `ui_scale_manual_profile` was mis-diagnosed in the original
+   D13 write-up as case-sensitivity; the TS normalizer already trims and lowercases, and the
+   downgrade is the `SHOW_IMMERSIVE_UI_SCALE = false` feature gate. Changing it would have
+   re-enabled a hidden profile. Corrected in D13 rather than quietly dropped.
+
+   **Guard strengthened, per D13's own condition:**
+   `tests/contracts/settings-hostile-inputs.json`, 19 cases, asserted by
+   `tests/test_settings_hostile_contract.py` and
+   `src/data/bonsaiSettingsHostileContract.test.ts`. Each case pins only the keys it is about,
+   so a failure names the broken rule instead of dumping a 40-key diff. Python 416 → 418,
+   frontend 242 → 263. Re-running the 31-input probe after the fixes: **1 divergence left**, the
+   intentional immersive gate, documented in [tests/contracts/README.md](../tests/contracts/README.md).
+
+7d. **D12 — TypeScript field table** — **done 2026-08-03.** The mirror of step 7b.
+   `SIMPLE_FIELDS` in [bonsaiSettingsNormalizers.ts](../src/data/bonsaiSettingsNormalizers.ts)
+   now declares **26 settings** in one row each; 15 hand-written normalizers collapsed into
+   them. Exported functions **36 → 16**, file 457 → 441 lines. Same honest caveat as 7b: the
+   value is the per-setting edit cost, not the line count.
+
+   **The TS table has a shape the Python one does not.** Some rows delegate to a named function
+   because that field's option list or feature gate lives in its own module — `reply_verbosity`,
+   `reply_language`, `ollama_keep_alive`, and importantly `ui_scale_manual_profile`, whose
+   `normalizeUiScaleProfileId` also applies the `SHOW_IMMERSIVE_UI_SCALE` gate. Inlining that as
+   a plain enum row would have silently dropped the gate — the same mistake the original D13
+   write-up nearly made. The row is annotated to say so.
+
+   **Four `DEFAULT_*` imports became unused** and were removed: the boolean defaults had been
+   stated twice, once as a constant and once inside the predicate. The kinds encode them once.
+
+   **`as const satisfies { [K in keyof BonsaiSettings]?: (value: unknown) => BonsaiSettings[K] }`**
+   makes the table self-checking: a row whose coercer returns the wrong type for its key, or
+   names a key that is not in `BonsaiSettings`, fails `tsc` rather than a test.
+
+   **Verified by differential test**, matching 7b's rigor. The pre-refactor module was copied in
+   beside the new one and both run over **~6,000 comparisons** — every key set individually to
+   each of ~75 hostile values, non-object payloads, 3,000 seeded random combinations, all three
+   migration pairs exhaustively, and the latency/timeout pair across its clamp boundaries. Zero
+   mismatches; mutation-checked (flipping one row's default fails all five groups). Temporary
+   copy and test removed afterwards. All four gates green: `tsc`, 263 frontend, 418 Python,
+   `npm run build`.
+
+   A dead `normalizeScreenshotMaxDimension` — the exact twin of the Python function deleted in
+   step 7b — went first in its own commit.
+
+**Step 7 is complete.** Both languages now declare their simple settings as tables, the shape
+is pinned by two shared contracts, and the five D13 divergences are resolved.
+
+**Not yet deployed.** Steps 7a–7d are verified by `tsc`, 263 frontend tests, 418 Python tests,
+`npm run build`, and two differential tests — but the Deck was asleep when the deploy was
+attempted, so this work has **not run on-device**. Settings load on every plugin start
+(`_main` → `_maybe_app_log` → `load_settings` → `sanitize_settings`), so a deploy plus a
+`bonsAI plugin loaded!` check is a real smoke of it. Do that before step 8, together with the
+still-open **D11-SHIM-01** pass. — REFACTOR-PLAN §3.1, the highest-value item in the audit and the best-covered by existing tests (`tests/test_settings_service.py` asserts per-setting round-trips). Expect that suite to break on shape, not behavior — rewrite the assertions, do not contort the design.
+8. **D3 — entry-point split — COMPLETE 2026-08-03** (`index.tsx` **1955 → 1291**, closed at
+   Option A of **D14**). Everything below shipped behavior-preserving with gates green between
+   commits. **Remaining work is on-Deck QA, not code**: the four-modal D-pad batch
+   (**MODAL-EXTRACT-01…04**) and the **SHELL-PAYLOAD-01** smoke.
+
+   **Modals done 2026-08-03**, `index.tsx` **1718 → 1522** across four gated commits (`e7728fa`, `6cd0b93`, `fdc669a`, `5cb7707`). All four now live in `src/features/plugin-shell/` as hooks: plugin-help, desktop-note save, character picker, Ollama models hub. **`index.tsx` no longer references `showModal` at all** — the shell opens no Decky modal directly. **On-Deck D-pad pass for the four modals is due in one batch** per **D10**; deployed and loading clean, so it can be run against real code.
+
+   **Two roadmap estimates were wrong, in opposite directions.** The state items are much smaller than listed — `error-capture` and `UI-scale` were **already extracted** into `useCapturedFrontendErrors` and `useUiScaleProfile` before this session, so what remains of "connection/IP, session-reset, UI-scale, error-capture" is roughly **15 lines**: three `useState`s (`ollamaIp`, `ollamaTabResetKey`, `lastConnectionStatus`), one memo, and a one-line `uiScaleApplyToken`. Those three cohere as one Ollama-connection concern and are worth one small hook, not four commits. The modals were the real win and were listed last.
+
+   **Found while extracting — three inconsistencies and a redundant dependency array.** The four openers each combined the same two lifecycle steps differently: plugin-help captured the session *and* set the return-tab ref, desktop-note set the ref *without* capturing, character picker captured *without* setting the ref. All preserved exactly and now commented where a reader would ask. Having them in one directory is what made it visible. Separately, `openCharacterPickerModal` carried a **32-entry dependency array of which 22 were never read in the body** — redundant, because `buildSettingsPayload` is memoized on the settings snapshot and its identity already changes when any setting does; the hook lists the 10 real deps, matching what `onCommitOllamaModelsHub` and the step-5b `useRoutingOrderModal` already did. `openOllamaModelsHub` was also missing two deps it used.
+
+   **Gate note:** `npm run test:preview` **cannot run headlessly** — buckets C/D need Decky's preview open in Cursor (`preview-state.json` missing → `IPC timeout for callTestHook`). `npm run test:preview -- --tier=preGate` does run and was green (2/2) on every commit; that is the runnable portion of the D10 preview gate here.
+
+   **State slice and all six payloads done 2026-08-03**, `index.tsx` **1522 → 1291** across
+   four more gated commits. `useOllamaConnectionState` took the host/connection slice; the six
+   tab payloads moved to `src/features/plugin-shell/tabs/`. Each payload hook derives its
+   argument type from the tab component's own props (`React.ComponentProps<typeof Tab>`), so a
+   prop added to a tab cannot drift from its payload. Derivations that served exactly one tab
+   moved with it: the two layout constants, `isQamSetting` and the whole AI-character avatar
+   block went to the Main tab, the `saveIp` binding and the remount key to the Ollama tab, and
+   the three project links to About. `index.tsx` no longer imports `MainTab`, `SettingsTab`,
+   `OllamaTab`, `PermissionsTab`, `DeveloperTab`, `AboutTab` or `characterCatalog`.
+
+   **The 700–800 line target is not reachable this way, and the estimate should be corrected
+   rather than chased.** At 1291 lines the remaining bulk is not JSX; it is prop threading —
+   the ~85-line `usePluginSettings` destructure, the ~90-line `settingsSnapshotForSave` memo
+   that lists all 40 settings twice, the ~65-line session-survival snapshot, and the ~55-line
+   preview-hook registration. Moving those into files does not shrink them; **collapsing** them
+   does, and that means passing grouped objects instead of 40 named locals — a rewrite, not a
+   move, which rule 1 keeps out of this step. The cheapest real win left is having
+   `usePluginSettings` return `settingsSnapshotForSave` itself, since it already owns all 40
+   states: about 90 lines, and it removes a list that is currently duplicated by hand. That is
+   step 7 territory (settings SSOT), not step 8. **Locked as D14 Option A** — the estimate is
+   withdrawn, step 8 closes at 1291, and that 90-line collapse is unscheduled. D14 also records
+   the cost: **net +565 lines across `src/`**, exactly the lateral trade step 5b predicted.
+
+   **Gates on every commit:** `tsc`, 268 frontend tests, preview `preGate` 2/2, `npm run build`.
+   The Main tab move was additionally checked prop-for-prop against the previous commit: 95
+   props, identical set and order. **On-Deck:** the four modal extractions still owe their D-pad
+   batch per **D10**; the state and payload commits add no new control, so they need the
+   **SHELL-PAYLOAD-01** smoke rather than a full pass. **Found while extracting:** a pre-existing
+   token-streaming defect, filed under Bugs — the Main tab memo never sees the smooth-reveal
+   frames, and its premise contradicts audit item W4.
+9. **KB download Cancel button** — wire `cancel_rag_corpus_download` in `KnowledgeBaseSection.tsx`; D-pad row in `testing.md` / `testing-manual.md`.
+10. **D4 — evidence hygiene** — link audit, prune orphans only. The retention rule must live **in the script that writes evidence**, not in a doc — a rule that depends on remembering is not a mechanism.
+11. **Deferred friction test** — run Phase 2c newcomer task on the post-refactor tree; file `docs/audit/03-friction.md`.
+12. **`main.py` extractions — COMPLETE.** Items 1, 2, 4 and 5 executed 2026-08-03; item 3
+    **dropped** 2026-08-04 by maintainer call (reasoning below). `main.py` **2865 → 2750**, with
+    **66 new Python tests** where these paths had almost none. One commit each, suite green
+    between. Remaining work is on-Deck QA, not code.
+
+    | Item | What moved | Where | Tests |
+    |---|---|---|---|
+    | 1 | Background-request state shape | `background_request_state.py` | 20 |
+    | 2 | Ollama health probe (`/api/version`, `/api/tags`, `/api/ps`) | `ollama_service.py` | 22 |
+    | 4 | Cancel-and-await, from 5 teardown sites | `async_task_lifecycle.py` | 8 |
+    | 5 | Stop-button transport (close handle, spawn unload) | `ollama_service.py` | 9 |
+
+    **`main.py` no longer imports `urllib`** — item 2 resolved the header contradiction the
+    inventory called its one clear contract violation. Every new test file is mutation-checked.
+
+    **Item 3 — dropped 2026-08-04 by maintainer call. The list is now 4 of 4; step 12 is
+    complete as scoped.** The reasoning, kept as the record: the
+    three blocks (sanitizer / shortcut / VAC) look identical but differ in a column that is not a
+    value: `shortcut_setup` is *omitted* for sanitizer, *taken from the handler's return* for
+    shortcut, and *explicitly None* for VAC. A table would need a three-way mode enum with one
+    mode per row, which relocates the difference rather than collapsing it — and it would put a
+    `getattr`-by-name indirection on the Ask admission path, the highest-traffic code in the
+    plugin, to save about 17 lines. Refactor rule 2 wants 3+ call sites that *collapse*; these
+    three do not. If it is ever reopened, the honest version is a small helper for the
+    `handled is not None` / `resp = str(...)` preamble — ~12 lines, and the dispatch stays
+    readable. **Do not re-propose the table** without new evidence; this is the second time the
+    three blocks have been read as duplication that turned out not to be.
+
+    **One defect found while extracting and fixed separately 2026-08-04** — a finished voice
+    install surviving *Clear all plugin data*, now `_reset_voice_install_after_clear` with 6
+    tests, two of which fail against the old code. It was filed under Bugs first and fixed in its
+    own commit rather than inside a behavior-preserving move. Separately, a first draft of item 2
+    hardened `/api/ps` parsing per-row; that was reverted for the same reason and the original
+    all-or-nothing behavior is now pinned by a test.
+
+    **Not yet deployed.** All four extractions plus the voice fix are verified by 492 Python
+    tests only; none has run on-device. Item 5 changes the Stop path, item 4 changes plugin
+    unload, and the voice fix changes *Clear all plugin data* — all three want a real on-Deck
+    check (**MAINPY-EXTRACT-01** and **VOICE-CLEAR-01** in [testing.md](testing.md)).
+
+    Original entry: the ranked list in [07-mainpy-inventory.md](audit/07-mainpy-inventory.md) §8, **identified 2026-08-03**. Item 6 (the D11 shim) was pulled ahead and is done; 1–5 are not: background-request state shape (~60 lines, LOW), `test_ollama_connection` transport → `ollama_service.py` (~70, LOW-MED — the only outright contradiction of `main.py`'s own header), local-command dispatch table (~40, MED), `cancel_and_reset` for `clear_plugin_data` (~45, MED), `abort_background_game_ai` transport (~25, MED). ~240 lines against a 2865-line file that is still the #1 hotspot by nearly 3×.
+
+    **Sequencing needs a call.** §8 said items 1–2 were *"worth doing before step 7"* — step 7 shipped without them, so that guidance already lapsed once; items 3–5 were gated on *"after step 8"*, which is now. Nothing here is blocked, and nothing above is blocked on it. **Note the coverage cost before starting:** none of the ten largest `main.py` methods has a behavioral test (§9), so unlike step 8 there is no safety net — `test_merge_pulled_tags_rpc.py` and `test_session_rag_chip_candidates_rpc.py` are the only worked examples of testing a `class Plugin` RPC directly and are the pattern to copy. Expect *write the test first* to be most of the work for items 2–5.
+
+**Amendment rationale (2026-08-02):** steps 6 and 7 were missing from the original
+order. As first written it ran the riskiest, least-covered work (entry-point
+split) while skipping the highest-value, best-covered work (settings SSOT), and
+left step 8 without the `main.py` inventory it needs. Both are restored ahead of
+the split.
+
+**Amendment rationale (2026-08-03):** **D7–D10** locked after code verification.
+**D8** inserted as **5c** before step 8 — Windows `build.ps1` merge-without-prune
+was the real false-pass class; **D7** as **5d** is a quick cleanup. **D9** narrows
+"done" to step 8 only. **D10** replaces "on-Deck every commit" with modal-only
+D-pad gating so state extractions are not blocked on full device QA.
+
+**Session results — 2026-08-02.** Steps 1–5 complete, step 6 partly done, all
+Cleanup candidates executed. Gates green at every commit.
+
+| Measure | Before | After |
+|---|---|---|
+| RPC surface (`class Plugin`) | 55 | 50 |
+| `main.py` | 3021 | 2971 |
+| `index.tsx` | 1955 | 1709 |
+| Python tests | 399 | 413 |
+| Frontend tests | 217 (44 files) | 239 (46 files) |
+
+Shipped: both missing RPCs wired (session RAG chips and pulled-tag routing merge
+had **never worked** on-device); dead backend from three removed features
+deleted; two re-export shims removed and their 31 importers repointed; the two
+files that blocked the split given mutation-checked characterization tests.
+
+**Four things the audit or the tooling got wrong**, all recorded with evidence
+so they are not rediscovered:
+
+1. `proton_experiment_journal_service.py` was **not** dead — `clear_plugin_data`
+   needed its file wipe. Deleting it as written would have broken *Clear all
+   data* on-device with every test still green.
+2. `find_amdgpu_hwmon` was **not** apply-only — `read_current_tdp_watts` calls
+   it, so removing it would have killed the current-TDP read Ask uses.
+3. The preview-suite gate grep searched **symbols only**; the suite also names
+   test *files*. Grep both. ([05-plan.md](audit/05-plan.md) §1.1)
+4. `vitest.config.ts` collected only `*.test.ts`, so a `.tsx` test **could never
+   run**. The 44 untested component files were a tooling gap, not a discipline
+   gap. ([04-coverage.md](audit/04-coverage.md))
+
+**Outstanding on-Deck QA from this session:** **ROUTING-MERGE-01** in
+[testing.md](testing.md) — implemented and unit-tested but never exercised on a
+Deck. **SESSION-RAG-CHIPS-01** closed 2026-08-03: verified end-to-end in the UI
+once the `settingsLoaded` race was fixed (see [Bugs](#bugs)).
+
+**Corrections to audit premises (for implementers):**
+
+- **D1b:** `suggest_chip_candidates` ([knowledge_base_service.py:685](../py_modules/backend/services/knowledge_base_service.py)) and `session_rag_chip_candidates_to_rpc` (`:744`) already exist with four tests in `tests/test_knowledge_base_service.py`. **`main.py:163-164` already imports both and never calls them** — the work was interrupted between the import and the method. The frontend sends `[appId, appName, shortcutName]` ([sessionRagChipCandidates.ts:55](../src/utils/sessionRagChipCandidates.ts)), which matches the service signature exactly. This is an adapter of roughly ten lines. Do not redesign ranking before wiring it.
+- **D2:** `ask_game_ai` is not dead — `tests/preview-suite/` calls it extensively. `ask_ollama` is the internal Ask engine, not an orphan RPC.
+- **D4:** Six of nine evidence folders are not all unreferenced — several are cited from [archive/testing-results-2026.md](archive/testing-results-2026.md) and [archive/testing-failures-2026.md](archive/testing-failures-2026.md). Prune only after a link audit.
+
+---
+
+## Cleanup candidates — locked and executed 2026-08-02
+
+Dead or hazardous code found during the 2026-08-02 refactor. All five rows were
+locked by the maintainer and, except the deferred one, executed the same day.
+Nothing here changed product behavior.
+
+| # | Locked decision | Outcome |
+|---|---|---|
+| 1 | **Delete the one-shot migration scripts** | `071221e` — `scripts/extract_ollama_section.py` and `scripts/trim_settings_tab.py` gone. They rewrote `SettingsTab.tsx` / `OllamaWhereAiRunsSection.tsx` from source text hardcoded inside the scripts; running either would have reverted real components and reintroduced the deleted `settingsAndResponse` barrel import. Keeping them was the hazard |
+| 2 | **Delete the orphaned kmsgrab capture sub-tree** | `4a26cfa` — six functions, not the four enumerated. `_build_kmsgrab_argv` was called only by `try_kmsgrab_screenshot`, and `gamescope_session_active` only by `_desktop_session_active`, so stopping at four would have left the same problem one node deeper. Preview gate run on **symbols and filenames** both, per the TDP lesson: clean. Live capture paths untouched |
+| 3 | **Remove the `journal_text` plumbing** | `a029c2d` — parameter dropped from `stack_context_blocks`, caller stopped passing `""`. Its ordering test asserted a three-block arrangement that can no longer occur and was replaced with one covering what the stacker still guarantees. The duplicate roadmap note under Planned is collapsed |
+| 4 | **Remove the `sysfs_writes` reader and field; keep the preview hook empty** | `a9353cc` — `read_sandbox_sysfs_writes` and the `get_input_transparency` field gone; `sandbox_sysfs_root` stays because `find_amdgpu_hwmon` needs it. `getSysfsWrites` kept returning `[]`: the in-repo runner never calls it, but `__bonsaiTestHooks` is consumed by DPS scenarios outside this repo, so the contract stands |
+| 5 | **Defer the `docs/archive/` broken links to D4** | Not actionable here by decision. 272 relative links in historical files point at a `docs/` layout that no longer exists; fixing them is evidence hygiene, not code legibility. Folded into **D4** — see [06-doc-triage.md](audit/06-doc-triage.md) § Link audit. Live docs are already link-clean |
+
+**Found while executing, deferred to D7 (locked 2026-08-03, executed same day):**
+`_reencode_oversized_capture` and `_mirror_capture_to_plugin_dir` in
+`screenshot_media.py` — no production callers; deleted in execution-order step **5d**.
+

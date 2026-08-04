@@ -1,7 +1,7 @@
 # 03 — LB/RB tab-switch flicker when scrolled (root-cause recon)
 
 Status: **analysis only, no fix implemented.** Discovery locked 2026-07-29
-(`docs/roadmap.md` § In Progress → Bugs).
+(`docs/roadmap.md` [§ Bugs](../roadmap.md#bugs)).
 Written 2026-08-03 from static reading of `src/` + `node_modules/@decky/ui`.
 No on-Deck run backs this document; every claim is either a `file:line` citation
 or marked **UNKNOWN**.

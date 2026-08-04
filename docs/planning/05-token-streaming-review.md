@@ -98,7 +98,7 @@ Flow, front to back:
 | W5 | **Reveal rate is hard-capped below real generation speed.** `PROSE_RATE_MAX = 160` chars/s ≈ 40 tok/s; `Math.floor(rate*dt)` at 60 fps yields ~120 chars/s actual. Any host faster than that leaves the reveal permanently behind, and T3 dumps the remainder in one frame. | [useSmoothStreamReveal.ts:18-19, 64](../../src/hooks/useSmoothStreamReveal.ts) |
 | W6 | **Two render layouts for one answer.** Streaming uses `prepareStreamMarkdown` (block stack, `chunkTotal=1`); terminal uses `splitResponseIntoChunks` (`chunkTotal=N`). Any partition disagreement is visible as a re-layout, and D-pad semantics change under the user's thumb. | [buildAnswerBubbleElement.tsx:133-135](../../src/utils/buildAnswerBubbleElement.tsx) |
 | W7 | **Scroll pin releases exactly at the layout swap.** `enabled` is `isStreamingPreview`, which goes false in the same RAF that swaps stream-stack → chunk-chain and snaps text to full — the moment height changes most. | [MainTabChatTranscript.tsx:181](../../src/components/MainTabChatTranscript.tsx), [useBonsaiAskOrchestration.ts:333-341](../../src/hooks/useBonsaiAskOrchestration.ts) |
-| W8 | **`think: False` is global and unconditional.** Not a streaming decision — but streaming is what made it necessary, and it caps quality for thinking models. Tracked as the soft-`num_predict` bug. | [ollama_service.py:327-332](../../py_modules/backend/services/ollama_service.py), `docs/roadmap.md:25` |
+| W8 | **`think: False` is global and unconditional.** Not a streaming decision — but streaming is what made it necessary, and it caps quality for thinking models. Tracked as the soft-`num_predict` bug. | [ollama_service.py:327-332](../../py_modules/backend/services/ollama_service.py), [roadmap.md § Bugs](../roadmap.md#bugs) |
 
 ### 1.4 Poll vs push — and is the split right?
 
@@ -226,7 +226,7 @@ Severity = user-visible harm if it fires. Likelihood = with the flag on, on a De
 | R4 | **T3 layout + focus + scroll discontinuity** (STREAM-08/09, echo of D-PAD-SCROLL-01) | Med | Med–High | W6 + W7; `chunkTotal` 1→N at [buildAnswerBubbleElement.tsx:135](../../src/utils/buildAnswerBubbleElement.tsx). |
 | R5 | **RPC load on Deck** — 150 ms polls across the entire pending window, full-text payload each time | Med | Med | W1 + W2. Worst with Strategy (`num_predict` 900) plus a running game. |
 | R6 | **Backend per-token CPU paid even with the flag off** | Med | **Certain** | W3. Notable because it undermines "off is safe". |
-| R7 | **`think: False` quality tradeoff** | Med | **Certain** | [ollama_service.py:327-332](../../py_modules/backend/services/ollama_service.py). Not streaming-specific; tracked as the soft-`num_predict` bug (`roadmap.md:25`). Streaming raises its visibility because truncation is now *watched* happening. |
+| R7 | **`think: False` quality tradeoff** | Med | **Certain** | [ollama_service.py:327-332](../../py_modules/backend/services/ollama_service.py). Not streaming-specific; tracked as the soft-`num_predict` bug ([roadmap.md § Bugs](../roadmap.md#bugs)). Streaming raises its visibility because truncation is now *watched* happening. |
 | R8 | **Spoiler wait-chip label mismatch mid-stream** | Low | Med | §2.2. Cosmetic; no body exposure. |
 | R9 | **Dual render paths drift** (stream partition vs chunk split) | Low | Med | W6. A maintenance tax that P6 removes entirely. |
 | R10 | **Experimental support burden** | Low | Low | Contained today: one Developer toggle, default off, documented in `troubleshooting.md:584-605`. Rises sharply at P8/P9. |
@@ -301,7 +301,7 @@ Reasoning:
   reveal (R3, high likelihood, ★ to fix), and (c) an off-path that isn't actually cheap (R6). All three are
   single-commit, behaviour-preserving-or-better changes.
 - Promotion to Settings (P8) and default-on for Speed (P9) both depend on the soft-`num_predict` bug
-  (`roadmap.md:25`), because streaming makes truncation something the user *watches happen*. Shipping
+  ([roadmap.md § Bugs](../roadmap.md#bugs)), because streaming makes truncation something the user *watches happen*. Shipping
   streaming wider before that fix ships the truncation more visibly, not less.
 - **P6 (keep the stream bubble as final layout) is the one design question worth deciding soon**, because
   it determines whether STREAM-08 is a test to pass or a row to delete. Deciding it late means paying for
@@ -310,7 +310,7 @@ Reasoning:
 Suggested next-session order: **P1, P2, P3, P4** (four small commits) → **P5** (STREAM-04, with the test
 rewrite it implies) → decide **P6** → then re-run the STREAM matrix on-Deck and revisit P8.
 
-Open question for the maintainer — belongs in `roadmap.md` § Decisions needed:
+Open question for the maintainer — see [roadmap.md § Bugs](../roadmap.md#bugs) (soft `num_predict`) or [maintainer-decisions-locked.md](../audit/maintainer-decisions-locked.md) if a new decision is needed:
 
 > **Should a streamed turn keep the stream bubble as its final layout (no chunk split)?**
 > Yes → STREAM-08 is deleted, the T3 discontinuity disappears, but streamed turns and history turns

@@ -7,7 +7,9 @@ Short guide to markdown under `docs/`. Repo root **[README.md](../README.md)** s
 | [mcp-setup.md](mcp-setup.md) | Contributors / agents | MCP servers — bonsai knowledge + Decky Plugin Studio |
 | [development.md](development.md) | Contributors | Deck-first setup, build/deploy, architecture, hotspots |
 | [troubleshooting.md](troubleshooting.md) | Power users | GPU, network, vision, permissions, QAM, deploy edge cases |
-| [roadmap.md](roadmap.md) | Planning | Bugs, QA backlog, planned backlog, locked maintainer decisions |
+| [roadmap.md](roadmap.md) | Planning | Active index — bugs, QA backlog, planned backlog, needs verification, completed stubs |
+| [audit/maintainer-decisions-locked.md](audit/maintainer-decisions-locked.md) | Planning / refactor | Locked D1–D15 decisions, execution order, cleanup candidates |
+| [archive/roadmap-bugs-fixed.md](archive/roadmap-bugs-fixed.md) | Planning | Fixed-bug writeups (full detail) |
 | [testing.md](testing.md) | QA / contributors | Testing hub + slim coverage |
 | [testing-automated.md](testing-automated.md) | Agents / CI | Commands runnable without a human on Deck |
 | [testing-manual.md](testing-manual.md) | Maintainers | On-Deck smokes and Tier 0–4 runbook |
@@ -15,7 +17,7 @@ Short guide to markdown under `docs/`. Repo root **[README.md](../README.md)** s
 | [code-clarity.md](code-clarity.md) | Contributors / agents | Module header convention and its exclusions |
 | [glossary.md](glossary.md) | Everyone | Terms used in file headers and maintainer docs |
 | [rag-retrieval-quality-remediation-implementation-plan.md](rag-retrieval-quality-remediation-implementation-plan.md) | Maintainers | **Active** RAG hybrid-retrieval fix plan (PR1/PR2) |
-| [planning/](planning/) | Maintainers / agents | Planning prompts ([roadmap-planning-questions.md](planning/roadmap-planning-questions.md)) and numbered answers (Q1–Q9) |
+| [planning/](planning/) | Maintainers / agents | Planning prompts ([roadmap-planning-questions.md](planning/roadmap-planning-questions.md)), answers (Q1–Q13), [web-permission-discovery.md](planning/web-permission-discovery.md) |
 | [audit/](audit/) | Contributors / agents | Refactor recon — read before re-deriving anything |
 | [archive/reports/](archive/reports/) | Maintainers | Security / FOSS review snapshots |
 | [archive/](archive/) | — | Historical research, plans, completed features, old testing dumps |

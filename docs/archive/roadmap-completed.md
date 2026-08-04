@@ -1,4 +1,4 @@
-> **Archived** — see [archive README](README.md). Active summary: [roadmap.md](../roadmap.md#completed)
+> **Archived** — see [archive README](README.md). Active summary: [roadmap.md](../roadmap.md#completed) · [needs verification](../roadmap.md#needs-verification) · [fixed bugs](roadmap-bugs-fixed.md)
 
 # bonsAI roadmap — completed features (full detail)
 

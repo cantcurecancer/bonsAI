@@ -2,7 +2,7 @@
 
 Research only. No code, no roadmap edits, no implementation. Answers the six
 questions raised against the Planned item at
-[docs/roadmap.md:1278-1281](../roadmap.md) — *"Research-first companion
+[roadmap.md § Planned — Steam Frame companion UX](../roadmap.md#planned) — *"Research-first companion
 workflows for Steam Frame; comfort/framerate/wrong-display disclaimers"*,
 ★★★★★★, with *"Shipping a full VR overlay inside Frame as v1"* already declared
 out of scope.
@@ -123,7 +123,7 @@ correct statement is:
 > interaction model that works at all.
 
 I also missed that **the missing half is already on the roadmap**: **Local reply
-TTS**, ★★★★★, at [docs/roadmap.md:1290-1292](../roadmap.md) — "Phase 1 offline
+TTS**, ★★★★★, at [roadmap.md § Planned — Local reply TTS](../roadmap.md#planned) — "Phase 1 offline
 TTS play/stop; Phase 2 character-aligned read-aloud". Its `Dedup` line
 explicitly separates it from wake-word. For Deck use that separation is right.
 **For VR it is the wrong seam**, and that is worth recording: Frame is the case
@@ -431,7 +431,7 @@ profile should still be judged on its own merits, not held hostage to VR.
 `normalizeUiScaleProfileId` already downgrades it to `handheld` when the flag is
 off ([:119-122](../../src/data/uiScaleProfile.ts)), so either decision is cheap.
 
-**B8 — Remote Play diagnostics** ([docs/roadmap.md:1273-1276](../roadmap.md)) —
+**B8 — Remote Play diagnostics** ([roadmap.md § Planned](../roadmap.md#planned)) —
 separate item. Frame streaming is a Remote Play case; noted, not folded in.
 Packet diagnostics out of scope per the brief.
 
@@ -553,14 +553,14 @@ better bet than building for one unreleased device.
 
 ### Suggested `Decisions needed` entries
 
-Per `CLAUDE.md` these belong in [docs/roadmap.md § Decisions needed](../roadmap.md):
+Per `CLAUDE.md` locked product calls live in [maintainer-decisions-locked.md](../audit/maintainer-decisions-locked.md) (moved from roadmap 2026-08-04). Planned backlog: [roadmap.md § Planned](../roadmap.md#planned).
 
 1. **Re-rate Steam Frame companion UX ★★★★★★ → ★★, and split off a Phase 1b
    OpenVR LoE spike?** Options: (a) re-rate + add the spike; (b) re-rate only;
    (c) leave as-is until Frame ships.
 2. **Should Local reply TTS become a dependency of Wake-word rather than a
    sibling?** Their current `Dedup` lines separate them
-   ([roadmap.md:1292](../roadmap.md)). For VR — and arguably for eyes-on-game
+   ([roadmap.md § Planned — Local reply TTS](../roadmap.md#planned)). For VR — and arguably for eyes-on-game
    Deck use — voice-in without voice-out is half a feature. Options: (a) make
    TTS Phase 1 a hard dependency of wake-word; (b) keep separate, note the
    pairing; (c) no change.

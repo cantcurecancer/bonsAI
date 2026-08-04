@@ -10,6 +10,10 @@ generalization, speculative abstraction, architectural purity — is out of scop
 **Repo:** `C:\Users\still\Documents\BonsAI` — Decky plugin, TypeScript frontend
 (`src/`, 281 files) + Python backend (`main.py`, `py_modules/backend/`).
 
+**Planning docs:** active backlog → [docs/roadmap.md](docs/roadmap.md); locked
+maintainer decisions and execution order →
+[docs/audit/maintainer-decisions-locked.md](docs/audit/maintainer-decisions-locked.md).
+
 ---
 
 ## Rules for the agent (apply to every phase)
