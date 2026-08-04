@@ -29,7 +29,7 @@ Known **defects** only. Deferred QA lives under [QA backlog](#qa-backlog). *QAMP
   - **Why the QA override appeared to work while the real path did not:** `dev_force_session_rag_chips` reseeds on *change*, and hydration flips it `false → true` — after `useLocalKnowledgeBase` is already true. So the override had its own working path into the carousel and told us nothing about the default one. A QA toggle that bypasses the broken step cannot verify the step.
   - **Coverage:** two tests in `useBonsaiAskOrchestration.test.ts`. Mutation-checked — removing the `settingsLoaded` wait fails the first one.
   - **Confirmed in the UI 2026-08-03:** maintainer saw the `Glyphid Dreadnought` chip with DRG Survivor running and the override off. **SESSION-RAG-CHIPS-01** moves to Verified — the first time the feature was observed working rather than inferred from RPC output.
-- ★ **A finished voice install survives "Clear all plugin data".** Found while extracting the teardown helper (step 12.3); pre-existing. In `clear_plugin_data`, the three voice-install resets — `_voice_install_task`, `_voice_install_cancel`, `_voice_install_state` — sit **inside** the `if vit is not None and not vit.done()` guard, while the background-Ask and local-Ollama blocks immediately above reset unconditionally. So if a voice install *completed* earlier in the session, clearing all data leaves `_voice_install_state` reporting that old result, and `get_voice_install_status` keeps serving it after the files it describes were deleted. The asymmetry is preserved and commented at the site rather than fixed inside a behavior-preserving move. **Fix lean:** move the three resets outside the guard, matching the other two blocks. **Low severity** — cosmetic staleness in a status read, not data loss — but it is the kind of mismatch that makes *Clear all data* look untrustworthy, and that flow has burned this refactor once already ([05-plan.md](audit/05-plan.md) §1.1). Worth a Deck check of Settings → Voice after a clear.
+- ~~★ **A finished voice install survives "Clear all plugin data"**~~ — **fixed 2026-08-04, maintainer call.** Found while extracting the teardown helper (step 12.3); pre-existing. In `clear_plugin_data`, the three voice-install resets — `_voice_install_task`, `_voice_install_cancel`, `_voice_install_state` — sat **inside** the `if vit is not None and not vit.done()` guard, while the background-Ask and local-Ollama blocks immediately above reset unconditionally. So a voice install that *completed* earlier in the session survived the clear, and `get_voice_install_status` kept serving that result after the files it described were deleted. Now `_reset_voice_install_after_clear`, unconditional, matching the other two teardowns. Extracted to its own method so it is testable without driving the whole RPC, which also touches settings, disk reset and Ollama teardown. **Coverage:** 6 tests, two of which fail against the previous code — verified by reverting the fix. **Still worth the Deck check** (**VOICE-CLEAR-01**): the unit tests prove the state resets, not that Settings → Voice renders the reset state.
 - ★★ **Token streaming reveals in chunks, not smoothly — the Main tab memo never sees the reveal frames.** Found by static analysis while extracting the Main tab payload (step 8); **not introduced by it** — the dependency list was carried over verbatim from before. `useSmoothStreamReveal` advances `streamDisplayText` on `requestAnimationFrame` ([useSmoothStreamReveal.ts:70-72](../src/hooks/useSmoothStreamReveal.ts)), but `streamDisplayText` is **not** in the Main tab payload's memo dependency list ([useMainTabPayload.tsx](../src/features/plugin-shell/tabs/useMainTabPayload.tsx)). React bails out of re-rendering a subtree when the element reference is unchanged, so those frames never reach `MainTab`. The reveal only advances when a listed dependency changes — in practice `ollamaResponse`, which the poll loop rewrites with each partial ([useBonsaiAskOrchestration.ts:459](../src/hooks/useBonsaiAskOrchestration.ts)). **Net effect: the smoothing is throttled to the backend poll cadence** — which is the same symptom (*"blocky on Deck"*) that [05-token-streaming-review.md](planning/05-token-streaming-review.md) W4 was investigating. Note W4's premise is the opposite of this finding: it assumed up to 60 reveal ticks/s *do* reach the tab and re-parse every block. Only one of the two can be true, and W4's proposed fix (P1, `React.memo` on the chunk component) addresses a re-render storm that this analysis says cannot be happening. **Settle which before spending effort on P1.** Two more props are missing from the same list — `isStreamingPreview` and `isStreamSettling` — so the rAF that ends the stream and swaps to the finished-answer layout ([useBonsaiAskOrchestration.ts:370-378](../src/hooks/useBonsaiAskOrchestration.ts)) also changes no listed dependency; that one is likely masked in practice by the async prompt reseed landing shortly after, so treat it as lower confidence. **Fix lean:** add the four props to the dependency list, or drop the memo and use `React.memo` on `MainTab` — the second removes a hand-maintained 55-entry list that has now been wrong at least once, but it is a behavior change and needs on-Deck confirmation, not a refactor commit. Verify **STREAM-REVEAL-01** ([testing.md](testing.md)) before fixing — the analysis is static, and this has never been observed under instrumentation.
 - ★ **Static seed tells you to enable the knowledge base when it is already on:** `"Enable local knowledge base for better game tips"` ([presets.ts:66](../src/data/presets.ts)) is an ordinary static seed with **no gate on `use_local_knowledge_base`**, so it appears in the carousel for users who already have the KB enabled. Spotted by the maintainer during the 2026-08-03 RAG chip pass — a fair thing to find suspicious, since it implies the KB is off while the backend reports it on. **Fix lean:** filter KB-advice seeds out when the setting is on; needs the KB flag threaded into `getRandomPresets` / `getContextualPresets`, which currently take no settings context.
 - ★ **Install voice engine button is actionable when the engine is already ready:** Settings → Voice input offers **Install voice engine** even when `engine_readiness` reports `binary_ready` and `model_ready`; pressing it re-runs the full install, including a podman pull of `ghcr.io/ggml-org/whisper.cpp`. Observed 2026-08-03 while troubleshooting the voice `status()` bug — the user pressed it precisely because the Main tab claimed voice was broken while Settings said ready, so the misleading state came from that bug, but the button being live regardless is its own issue. **Fix lean:** when ready, show the state and offer *Reinstall* as a distinct, clearly-labelled secondary action rather than the primary one. Needs a focus-graph entry if the control count changes (`.cursor/rules/decky-focus-graph.mdc`).
@@ -1005,8 +1005,10 @@ still-open **D11-SHIM-01** pass. — REFACTOR-PLAN §3.1, the highest-value item
 9. **KB download Cancel button** — wire `cancel_rag_corpus_download` in `KnowledgeBaseSection.tsx`; D-pad row in `testing.md` / `testing-manual.md`.
 10. **D4 — evidence hygiene** — link audit, prune orphans only. The retention rule must live **in the script that writes evidence**, not in a doc — a rule that depends on remembering is not a mechanism.
 11. **Deferred friction test** — run Phase 2c newcomer task on the post-refactor tree; file `docs/audit/03-friction.md`.
-12. **`main.py` extractions — 4 of 5 done 2026-08-03**, `main.py` **2865 → 2743**, and **60 new
-    Python tests** where these paths had almost none. One commit each, suite green between.
+12. **`main.py` extractions — COMPLETE.** Items 1, 2, 4 and 5 executed 2026-08-03; item 3
+    **dropped** 2026-08-04 by maintainer call (reasoning below). `main.py` **2865 → 2750**, with
+    **66 new Python tests** where these paths had almost none. One commit each, suite green
+    between. Remaining work is on-Deck QA, not code.
 
     | Item | What moved | Where | Tests |
     |---|---|---|---|
@@ -1018,24 +1020,30 @@ still-open **D11-SHIM-01** pass. — REFACTOR-PLAN §3.1, the highest-value item
     **`main.py` no longer imports `urllib`** — item 2 resolved the header contradiction the
     inventory called its one clear contract violation. Every new test file is mutation-checked.
 
-    **Item 3 — the local-command dispatch table — was examined and deliberately not done.** The
+    **Item 3 — dropped 2026-08-04 by maintainer call. The list is now 4 of 4; step 12 is
+    complete as scoped.** The reasoning, kept as the record: the
     three blocks (sanitizer / shortcut / VAC) look identical but differ in a column that is not a
     value: `shortcut_setup` is *omitted* for sanitizer, *taken from the handler's return* for
     shortcut, and *explicitly None* for VAC. A table would need a three-way mode enum with one
     mode per row, which relocates the difference rather than collapsing it — and it would put a
     `getattr`-by-name indirection on the Ask admission path, the highest-traffic code in the
     plugin, to save about 17 lines. Refactor rule 2 wants 3+ call sites that *collapse*; these
-    three do not. **Recommendation: drop item 3 from the list.** If it is ever revisited, the
-    honest version is a small helper for the `handled is not None` / `resp = str(...)` preamble,
-    which saves ~12 lines and leaves the dispatch readable.
+    three do not. If it is ever reopened, the honest version is a small helper for the
+    `handled is not None` / `resp = str(...)` preamble — ~12 lines, and the dispatch stays
+    readable. **Do not re-propose the table** without new evidence; this is the second time the
+    three blocks have been read as duplication that turned out not to be.
 
-    **Two defects found while extracting, both filed under Bugs and neither fixed here** — a
-    stale voice-install state surviving *Clear all plugin data*, and a first draft of item 2 that
-    hardened `/api/ps` parsing per-row, which was reverted as a rewrite smuggled into a move.
+    **One defect found while extracting and fixed separately 2026-08-04** — a finished voice
+    install surviving *Clear all plugin data*, now `_reset_voice_install_after_clear` with 6
+    tests, two of which fail against the old code. It was filed under Bugs first and fixed in its
+    own commit rather than inside a behavior-preserving move. Separately, a first draft of item 2
+    hardened `/api/ps` parsing per-row; that was reverted for the same reason and the original
+    all-or-nothing behavior is now pinned by a test.
 
-    **Not yet deployed.** All four are verified by 486 Python tests only; none has run on-device.
-    Item 5 changes the Stop path and item 4 changes plugin unload — both are worth a real
-    on-Deck check (**MAINPY-EXTRACT-01** in [testing.md](testing.md)).
+    **Not yet deployed.** All four extractions plus the voice fix are verified by 492 Python
+    tests only; none has run on-device. Item 5 changes the Stop path, item 4 changes plugin
+    unload, and the voice fix changes *Clear all plugin data* — all three want a real on-Deck
+    check (**MAINPY-EXTRACT-01** and **VOICE-CLEAR-01** in [testing.md](testing.md)).
 
     Original entry: the ranked list in [07-mainpy-inventory.md](audit/07-mainpy-inventory.md) §8, **identified 2026-08-03**. Item 6 (the D11 shim) was pulled ahead and is done; 1–5 are not: background-request state shape (~60 lines, LOW), `test_ollama_connection` transport → `ollama_service.py` (~70, LOW-MED — the only outright contradiction of `main.py`'s own header), local-command dispatch table (~40, MED), `cancel_and_reset` for `clear_plugin_data` (~45, MED), `abort_background_game_ai` transport (~25, MED). ~240 lines against a 2865-line file that is still the #1 hotspot by nearly 3×.
 

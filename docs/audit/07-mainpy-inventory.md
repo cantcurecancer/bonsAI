@@ -245,7 +245,7 @@ document.
 |---|---|---|---|---|
 | 1 | Background-request state shape → `background_request_state.py` | ~60 | LOW | Pure data, 3 existing tests touch it, kills a 4-way duplication |
 | 2 | `test_ollama_connection` transport → `ollama_service.py` | ~70 | LOW-MED | Removes the only header contradiction; no test today, so add one with the move |
-| 3 | Local-command dispatch table in `start_background_game_ai` | ~40 | MED | Behavior-preserving but touches the Ask admission path — the highest-traffic code in the plugin |
+| 3 | ~~Local-command dispatch table in `start_background_game_ai`~~ | ~40 | **Dropped 2026-08-04** | The three blocks differ in the *kind* of one argument, not its value — they do not collapse. See the note below |
 | 4 | `cancel_and_reset` helper for `clear_plugin_data` | ~45 | MED | Four subsystems; a mistake here breaks *Clear all data*, which has burned this refactor once already ([05-plan.md](05-plan.md) §1.1) |
 | 5 | `abort_background_game_ai` transport half | ~25 | MED | Cross-thread HTTP close; hard to test, easy to get subtly wrong |
 | 6 | `_coerce_instance` + `_ensure_background_state` removal | 103 | ~~Blocked on D11~~ **done 2026-08-03** | Biggest shrink; D11 locked Option A. See §3 |
@@ -265,7 +265,8 @@ lifetime. Items 3-5 can wait until after **step 8**.
 > audit document does not survive contact with the next session — it has to become a
 > numbered step.
 >
-> **Item 3 was examined and rejected**, see roadmap step 12 for the reasoning: the three
+> **Item 3 was examined and dropped from this list** by maintainer call 2026-08-04. See roadmap
+> step 12 for the reasoning: the three
 > dispatch blocks differ in the *kind* of their `shortcut_setup` argument (omitted / from the
 > handler / explicit None), so a table needs a three-way mode enum with one mode per row. That
 > relocates the difference instead of collapsing it, and puts an indirection on the Ask
