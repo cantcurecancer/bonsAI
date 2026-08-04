@@ -46,7 +46,10 @@ Known **defects** only. Deferred QA lives under [QA backlog](#qa-backlog). *QAMP
 - ★★★ **Soft** `num_predict` **+ thinking budget:** `options.num_predict` is a hard Ollama wall (500 Speed/Expert, 900 Strategy) with no overshoot/continue; `"think": False` avoids empty replies when thinking ate the wall (`done_reason=length`, zero content) but leaves quality on the table for thinking models. **Intent:** length preference with small overshoot OK — not a hard cut, not unlimited. **Fix lean:** (1) raise base caps; (2) continuation on `done_reason=length` (small extra budget, capped continues — especially when content empty/short); (3) optional Reply verbosity → answer `num_predict`; (4) **budget thinking separately** (application policy): re-enable thinking with a fixed Deck default effort (`low`/`medium`) plus answer-floor / continue-if-content-starved; log thinking vs content lengths. Ollama has no true dual hard budgets in one completion — levels + continue stand in. **Not in scope:** delete the ceiling entirely; Settings UI for effort (→ **Thinking effort control**); parallel second Ask; spoiler chip work.
 - ★★ **Model routing try-order modal focus + chrome:** Text/vision **Set … try order…** fullscreen (`ModelRoutingOrderModal`) — D-pad focus lands on leaf Up/Down buttons and feels broken; layout/chrome does not match other fullscreen pickers (Pull Models / Character picker / Models hub `ConfirmModal` pattern). Screenshot `DeckCapture_20260730_144925`. Discovery locked 2026-07-30. **Defer** — fetch-on-open + save already shipped; polish later.
 - ★★ **KB compat retrieval phrase gate:** Troubleshooting KB (compat hybrid / **Keyword + meaning**) only runs when `question_matches_troubleshooting_log_context` matches a **hardcoded phrase list** in `ollama_prompts.py` (preset-style strings like `proton issue`, `why is my game crashing`). Natural-language asks (e.g. `deck sleep resume proton black screen`) skip the KB entirely — no chip, no hybrid, no **Source: shared troubleshooting tips**. **Intent:** when **Use local knowledge base** is on, attempt compat tip retrieval for general troubleshooting-shaped Asks without growing a brittle regex/preset farm in bonsAI. **Fix lean:** broaden gate (e.g. KB-on + not strategy-with-game → compat shortlist; or lightweight intent/heuristic separate from carousel presets); keep Strategy path AppID-gated. Regression: **KB-SMOKE-07/08** queries in [testing-manual.md](testing-manual.md) must pass without adding new hardcoded strings per smoke case. **Phase 4 discovery (2026-07-30):** lean gate fix (**B1**) ships with Phase 4 when implemented — not a separate forever-defer.
+- ★★ **Your tab is not remembered when you leave and reopen the plugin.** Reported on-Deck 2026-08-04: deep in a tab, close the plugin, reopen — you are on **Main**, and walking back is cumbersome. **Not a regression; there has never been a mechanism for it.** `resolveInitialTab` ([useBonsaiPluginShell.ts:28-33](../src/hooks/useBonsaiPluginShell.ts)) restores from exactly two sources: a session-survival snapshot, which is only written by `captureSessionBeforeModal` before a Decky modal opens, and `__bonsaiTabRestoreAfterModal`, set when a modal closes. Both are **modal round-trip** machinery. Nothing persists the tab across a QAM close, so the fallback `return "main"` is what a normal reopen always hits. (`pendingFocusMainTab` is not involved — it is set only by tapping a reply-ready toast.) **Fix is small — persist `currentTab` and read it in `resolveInitialTab` — but the policy is a real choice**, so it is filed as **D15** below rather than guessed at.
+- ★ **Fullscreen pickers return you to the right tab, but not to the right control.** Reported on-Deck 2026-08-04. The tab restore works — that is the modal extraction behaving correctly — but focus lands somewhere other than the control you opened the picker from. There is **no focus-restore mechanism at all**: the shell saves and restores the *tab*, never the focused element within it. Cosmetic on a mouse, genuinely annoying on a D-pad, where regaining your place means re-traversing the panel. **Fix lean:** have the opener record the focused element (or its focus-graph id) alongside the return tab, and restore it in the same `useLayoutEffect` that restores the tab. Worth pricing against `.cursor/rules/decky-focus-graph.mdc` first — the focus graph may already give a stable id to target.
 - ★★★ **LB/RB tab switch flicker when scrolled:** Switching tabs with shoulder buttons while focus is deep in a scrolled panel (not on tab icons) flashes/jitters. Investigate carousel + remount/scroll/focus survival (partial anti-flicker CSS already on `TabContentsScroll`). Discovery locked 2026-07-29. **Recon: [03-lbrb-tab-flicker.md](planning/03-lbrb-tab-flicker.md)** — ranked hypotheses, fix tracks, on-Deck probe P0 to run first.
+  - **Downgraded and re-scoped 2026-08-04 from a fresh on-Deck pass.** The severe symptom is **gone**: no whole-frame judder, none of the jarring effect that made this ★★★. What remains is narrower and is worth re-aiming the recon at: the **tab icon strip** looks busy and the icons **shuffle**, most reproducibly when pressing **LB on the leftmost tab or RB on the rightmost** — i.e. on a switch that cannot go anywhere. A no-op switch still perturbing the strip points at the strip re-rendering or re-measuring on every shoulder press regardless of whether the active tab changed, which is a much smaller target than the original carousel/remount/scroll hypotheses. Focus retention across a normal LB/RB switch was confirmed **working** in the same pass. Not caused by step 8 — the tab strip content (`DECKY_TAB_TITLES`) was not touched, only how tab bodies are built.
 
 **Fixed 2026-08-03 — voice input was completely broken for two and a half weeks.**
 `VoiceTranscriptionSession.status()` did not exist. `742db60` (*Voice STT session daemon*,
@@ -650,6 +653,36 @@ once at the call site and once in the hook. The payload step bought a compositio
 reads as composition, and it cost 565 lines to get it. **The state and modal extractions were
 worth more per line than the payloads were**, which is the useful lesson for the next entry
 point: do the state, and treat the JSX as optional.
+
+---
+
+### D15 — When you reopen the plugin, should it put you back where you were?
+
+**What's going on.** Today it always opens on **Main**. Not by decision — by omission: the only
+tab-restoring machinery is for modal round-trips, and nothing saves your tab when the plugin
+closes. Reported on-Deck 2026-08-04 as *"getting back to the tab you were at seems cumbersome"*.
+
+The code change is a few lines either way (persist `currentTab`, read it in `resolveInitialTab`).
+The question is what the plugin should *do*, and that is not a code question.
+
+**Option A — always open on Main.** *(today's behavior, by accident)* Main is where you Ask, and
+Asking is the point. Every open starts from the same place, which is predictable and needs no
+memory of what you were doing. The cost is exactly what was reported: if you were mid-way through
+Ollama or Settings, you walk back every time.
+
+**Option B — resume the tab you left.** *(my recommendation)* Matches how the plugin already
+behaves around modals, so it is consistent rather than novel, and it removes the reported
+friction. The risk is the opposite complaint: you set something in Settings, come back later
+wanting to Ask, and land in Settings. On a D-pad that is one shoulder press, so the downside is
+smaller than the upside.
+
+**Option C — resume, but expire it.** Resume the tab if you reopen within N minutes, else Main.
+Fixes both complaints and is the most code and the most explaining. Hard to justify before A or
+B has actually annoyed someone.
+
+**Worth deciding together with the focus-restore item above** — if pickers are going to restore
+focus within a tab, resuming the tab itself is the same idea one level up. Doing B without focus
+restore is still a clear improvement; doing focus restore without B is a bit odd.
 
 ---
 
