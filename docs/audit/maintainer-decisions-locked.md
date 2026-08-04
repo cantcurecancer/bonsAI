@@ -1,6 +1,6 @@
 # Maintainer decisions locked (refactor / handoff)
 
-> **Moved from** [roadmap.md](../roadmap.md) **2026-08-04.** Full decision record for D1–D15, execution order, and cleanup candidates. Active index: [roadmap.md](../roadmap.md). Reorg commit: `PLACEHOLDER` (`git show PLACEHOLDER`).
+> **Moved from** [roadmap.md](../roadmap.md) **2026-08-04.** Full decision record for D1–D15, execution order, and cleanup candidates. Active index: [roadmap.md](../roadmap.md). Reorg commit: `ba2e5c5` (`git show ba2e5c5`).
 
 Evidence lives in this audit folder — especially [05-plan.md](05-plan.md).
 

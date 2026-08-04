@@ -1,6 +1,6 @@
 # bonsAI Roadmap
 
-**Next session:** refactor handoff is at [execution order](audit/maintainer-decisions-locked.md#execution-order-locked-amended-2026-08-03) step **8** complete (`index.tsx` **1291** lines). Follow-ups: on-Deck QA in [Needs verification](#needs-verification), open [Bugs](#bugs), and `main.py` / settings SSOT items in the decisions doc. Reorg commit: `PLACEHOLDER` (`git show PLACEHOLDER`).
+**Next session:** refactor handoff is at [execution order](audit/maintainer-decisions-locked.md#execution-order-locked-amended-2026-08-03) step **8** complete (`index.tsx` **1291** lines). Follow-ups: on-Deck QA in [Needs verification](#needs-verification), open [Bugs](#bugs), and `main.py` / settings SSOT items in the decisions doc. Reorg commit: `ba2e5c5` (`git show ba2e5c5`).
 
 **Moved (same commit):** locked maintainer decisions, execution order, and cleanup candidates → [audit/maintainer-decisions-locked.md](audit/maintainer-decisions-locked.md). Fixed-bug writeups → [archive/roadmap-bugs-fixed.md](archive/roadmap-bugs-fixed.md). Web permission discovery → [planning/web-permission-discovery.md](planning/web-permission-discovery.md).
 
@@ -55,7 +55,7 @@ Status tags: **OPEN** · **PARTIAL** · **FOLDED** (tracked in linked plan) · *
 
 ---
 
-> **Decisions needed / locked / execution order / cleanup candidates** moved to [audit/maintainer-decisions-locked.md](audit/maintainer-decisions-locked.md) (commit `PLACEHOLDER`). **No decisions are open** — D1–D15 locked; implement from that file.
+> **Decisions needed / locked / execution order / cleanup candidates** moved to [audit/maintainer-decisions-locked.md](audit/maintainer-decisions-locked.md) (commit `ba2e5c5`). **No decisions are open** — D1–D15 locked; implement from that file.
 
 ---
 
@@ -297,7 +297,7 @@ Coverage for shipped work: [testing.md](testing.md).
 ---
 
 
-> **Cleanup candidates (locked and executed 2026-08-02)** moved to [audit/maintainer-decisions-locked.md](audit/maintainer-decisions-locked.md#cleanup-candidates--locked-and-executed-2026-08-02) (commit `PLACEHOLDER`).
+> **Cleanup candidates (locked and executed 2026-08-02)** moved to [audit/maintainer-decisions-locked.md](audit/maintainer-decisions-locked.md#cleanup-candidates--locked-and-executed-2026-08-02) (commit `ba2e5c5`).
 
 ## Appendix
 

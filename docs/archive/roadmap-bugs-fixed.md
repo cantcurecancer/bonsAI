@@ -1,6 +1,6 @@
 # bonsAI roadmap — fixed bugs (full detail)
 
-> **Archived** — active index: [roadmap.md](../roadmap.md). Reorg commit: `PLACEHOLDER` (`git show PLACEHOLDER`).
+> **Archived** — active index: [roadmap.md](../roadmap.md). Reorg commit: `ba2e5c5` (`git show ba2e5c5`).
 
 Strikeout titles match the original roadmap bug list. Items awaiting on-Deck QA are also listed under [Needs verification](../roadmap.md#needs-verification).
 
