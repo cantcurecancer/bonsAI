@@ -7,6 +7,7 @@
  */
 import React, { useState } from "react";
 import { ConfirmModal, TextField } from "@decky/ui";
+import { BonsaiModalScope } from "./BonsaiModalScope";
 
 export type DesktopNoteSaveModalProps = {
   /** Shown above the name field (path + append behavior). */
@@ -27,6 +28,7 @@ export function DesktopNoteSaveModal(props: DesktopNoteSaveModalProps) {
     <ConfirmModal
       strTitle="Save to Desktop note"
       strDescription={
+        <BonsaiModalScope>
         <div style={{ display: "flex", flexDirection: "column", gap: 10, textAlign: "left" }}>
           <div style={{ whiteSpace: "pre-wrap", fontSize: 13, lineHeight: 1.35, color: "#c8d4e0" }}>
             {strDescriptionPrefix}
@@ -37,6 +39,7 @@ export function DesktopNoteSaveModal(props: DesktopNoteSaveModalProps) {
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setStem(e.target.value)}
           />
         </div>
+        </BonsaiModalScope>
       }
       strOKButtonText="Save"
       strCancelButtonText="Cancel"

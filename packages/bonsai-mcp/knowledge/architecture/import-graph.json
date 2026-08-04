@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
   "fileCount": 246,
-  "edgeCount": 558,
+  "edgeCount": 561,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -59,8 +59,11 @@
         "src/utils/uiScaleScopeBridge.ts"
       ],
       "importedBy": [
+        "src/components/CharacterPickerModal.tsx",
+        "src/components/DesktopNoteSaveModal.tsx",
         "src/components/ModelRoutingOrderModal.tsx",
         "src/components/OllamaModelsHubModal.tsx",
+        "src/components/PluginHelpModal.tsx",
         "src/components/PullModelsModal.tsx"
       ]
     },
@@ -74,6 +77,7 @@
     },
     "src/components/CharacterPickerModal.tsx": {
       "imports": [
+        "src/components/BonsaiModalScope.tsx",
         "src/components/CharacterRoleplayEmoticon.tsx",
         "src/data/characterCatalog.ts",
         "src/utils/runningGameCharacterSuggestions.ts"
@@ -102,7 +106,9 @@
       ]
     },
     "src/components/DesktopNoteSaveModal.tsx": {
-      "imports": [],
+      "imports": [
+        "src/components/BonsaiModalScope.tsx"
+      ],
       "importedBy": [
         "src/features/plugin-shell/useDesktopNoteSaveModal.tsx"
       ]
@@ -350,6 +356,7 @@
     },
     "src/components/PluginHelpModal.tsx": {
       "imports": [
+        "src/components/BonsaiModalScope.tsx",
         "src/data/pluginQuickStartInstructions.tsx"
       ],
       "importedBy": [

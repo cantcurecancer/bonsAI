@@ -7,6 +7,7 @@
  */
 import { ConfirmModal } from "@decky/ui";
 import { PluginQuickStartInstructionsBody } from "../data/pluginQuickStartInstructions";
+import { BonsaiModalScope } from "./BonsaiModalScope";
 
 export type PluginHelpModalProps = {
   onClose: () => void;
@@ -21,9 +22,11 @@ export function PluginHelpModal(props: PluginHelpModalProps) {
     <ConfirmModal
       strTitle="Using bonsAI"
       strDescription={
+        <BonsaiModalScope>
         <div style={{ display: "flex", flexDirection: "column", gap: 10, textAlign: "left" }}>
           <PluginQuickStartInstructionsBody />
         </div>
+        </BonsaiModalScope>
       }
       strOKButtonText="Got it"
       strCancelButtonText="Cancel"

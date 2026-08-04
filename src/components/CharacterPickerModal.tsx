@@ -22,6 +22,7 @@ import {
   type RunningGameCharacterSuggestions,
 } from "../utils/runningGameCharacterSuggestions";
 import { CharacterRoleplayEmoticon } from "./CharacterRoleplayEmoticon";
+import { BonsaiModalScope } from "./BonsaiModalScope";
 
 export type AiCharacterPickerDraft = {
   random: boolean;
@@ -442,8 +443,8 @@ export function CharacterPickerModal(props: CharacterPickerModalProps) {
     <ConfirmModal
       strTitle="AI character"
       strDescription={
+        <BonsaiModalScope shellRef={pickerShellRef}>
         <div
-          ref={pickerShellRef}
           style={{
             display: "flex",
             flexDirection: "column",
@@ -701,6 +702,7 @@ export function CharacterPickerModal(props: CharacterPickerModalProps) {
             </div>
           </div>
         </div>
+        </BonsaiModalScope>
       }
       strOKButtonText={strOKButtonText}
       strCancelButtonText="Cancel"

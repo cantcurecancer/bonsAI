@@ -15,6 +15,24 @@ export function buildGamepadFocusRingStylesheet(): string {
         /* ==========================================================================
            GAMEPAD FOCUS RINGS (.gpfocus)
            ========================================================================== */
+
+        /* Default ring — added 2026-08-04.
+           Every other rule here targets an enumerated bonsAI class, so a plain Decky Button
+           (Browse models, Install options, Test connection) fell through to the browser's
+           \`:focus-visible\` heuristics — a ring that was sometimes yellow, sometimes absent,
+           while classed neighbours drew white. Matching the element instead of a class list means
+           a new control is styled by default rather than by remembering to add one.
+           Specific rules below still win on specificity, so the inset variants are unaffected.
+           This reaches modal content too, but only where the modal is wrapped in
+           \`BonsaiModalScope\` — that wrapper is what puts \`.bonsai-scope\` on portalled content
+           and injects this sheet. A modal without it gets no bonsAI focus styling at all. */
+        .bonsai-scope button.gpfocus,
+        .bonsai-scope button:focus-visible,
+        .bonsai-scope [role="button"].gpfocus,
+        .bonsai-scope [role="button"]:focus-visible {
+          ${ring}
+        }
+
         .bonsai-scope .bonsai-attach-menu-surface .bonsai-attach-menu-item.gpfocus,
         .bonsai-scope .bonsai-attach-menu-surface .bonsai-attach-menu-item:focus-visible,
         .bonsai-scope .bonsai-ask-mode-menu-surface .bonsai-ask-mode-menu-item.gpfocus,

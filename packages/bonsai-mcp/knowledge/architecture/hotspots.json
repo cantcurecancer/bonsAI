@@ -61,14 +61,14 @@
       "role": ""
     },
     {
+      "path": "src/components/CharacterPickerModal.tsx",
+      "lines": 720,
+      "role": ""
+    },
+    {
       "path": "py_modules/backend/services/ollama_service.py",
       "lines": 718,
       "role": "Prompt build, Ollama HTTP, streaming"
-    },
-    {
-      "path": "src/components/CharacterPickerModal.tsx",
-      "lines": 718,
-      "role": ""
     },
     {
       "path": "py_modules/backend/services/bonsai_stream_tags.py",
@@ -126,13 +126,13 @@
       "role": ""
     },
     {
-      "path": "src/components/MainTabPresetAnimatedChips.tsx",
-      "lines": 451,
+      "path": "src/styles/sections/gamepadAndPullModels.ts",
+      "lines": 466,
       "role": ""
     },
     {
-      "path": "src/styles/sections/gamepadAndPullModels.ts",
-      "lines": 448,
+      "path": "src/components/MainTabPresetAnimatedChips.tsx",
+      "lines": 451,
       "role": ""
     },
     {
