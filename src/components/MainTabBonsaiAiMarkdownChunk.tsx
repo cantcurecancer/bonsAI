@@ -11,6 +11,7 @@ import ReactMarkdown from "react-markdown";
 import { Focusable } from "@decky/ui";
 
 import { registerSpoilerFence } from "../utils/spoilerFenceRegistry";
+import { isDownDeckButtonEvent, isUpDeckButtonEvent } from "../utils/focusNavigation";
 
 /** Per-mount counter for spoiler fence ids; only needs to be unique among mounted fences. */
 let spoilerFenceSeq = 0;
@@ -129,7 +130,11 @@ function BonsaiSpoilerFence(props: {
           registerSpoilerFence(fenceIdRef.current, null);
           setOpen(true);
         }}
-        onButtonDown={() => {
+        onButtonDown={(button: unknown) => {
+          /* Let D-pad up/down through. `onButtonDown` fires for every button, so revealing on all
+             of them meant the press that should have moved focus past a fence opened it instead —
+             there was no way to skip a spoiler once focus landed on it. */
+          if (isDownDeckButtonEvent(button) || isUpDeckButtonEvent(button)) return false;
           registerSpoilerFence(fenceIdRef.current, null);
           setOpen(true);
           return true;
@@ -194,7 +199,9 @@ function BonsaiSpoilerFence(props: {
       <Focusable
         className="bonsai-spoiler-collapse-target"
         onActivate={() => setOpen(false)}
-        onButtonDown={() => {
+        onButtonDown={(button: unknown) => {
+          /* Same rule as the masked fence: directional presses navigate, they do not collapse. */
+          if (isDownDeckButtonEvent(button) || isUpDeckButtonEvent(button)) return false;
           setOpen(false);
           return true;
         }}

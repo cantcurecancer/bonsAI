@@ -7,6 +7,8 @@
  * Does not: Decide what is masked, or reveal it — the fence owns its open state.
  */
 
+import { elementHasFocus, rememberUiDocument } from "./uiDocument";
+
 type FenceEntry = {
   el: HTMLElement;
   /** Set once Down has parked focus here, so a second Down scrolls on instead of trapping the user. */
@@ -17,8 +19,12 @@ const fences = new Map<string, FenceEntry>();
 
 /** Ref callback: element on mount, null on unmount or once the fence opens. */
 export function registerSpoilerFence(id: string, el: HTMLElement | null): void {
-  if (el) fences.set(id, { el, visited: false });
-  else fences.delete(id);
+  if (el) {
+    rememberUiDocument(el);
+    fences.set(id, { el, visited: false });
+  } else {
+    fences.delete(id);
+  }
 }
 
 /**
@@ -51,46 +57,33 @@ export function markSpoilerFenceVisited(el: HTMLElement): void {
 }
 
 /**
- * Focus a fence and mark it visited. Returns true when a fence was claimed.
+ * Focus a fence and mark it visited. Returns true only when focus actually landed.
  *
- * Uses the same target ladder as `focusRegisteredReplyStop`, which is the one focus-moving helper
- * in this repo that demonstrably works on Deck: Decky's `.Panel.Focusable` wrapper first, then the
- * native `<button>` inside, then the element itself — each with `tabindex="-1"` set before
- * focusing. The first version of this focused only the outer `Focusable` div and did nothing on
- * device (2026-08-04); focusing the inner native button is the difference between the two.
+ * The fence element is itself the `.Panel.Focusable` Decky renders for our `<Focusable>`, and a
+ * plain `.focus()` on it moves Steam's own gamepad ring onto it — verified on device over CEF
+ * remote debugging (2026-08-04): `gpfocus gpfocuswithin` appeared on the fence one tick later.
+ *
+ * Two details are load-bearing:
+ *  - Do not overwrite an existing `tabindex`. Decky gives the node `tabindex="0"`; forcing `-1`
+ *    takes it back out of Steam's navigation graph for the presses that follow.
+ *  - Verify with `elementHasFocus`, which asks the fence's own document. The earlier
+ *    `contains(document.activeElement)` shape asked SharedJSContext's shell document and returned
+ *    false even when the focus move had succeeded.
  */
 export function focusSpoilerFence(el: HTMLElement | null): boolean {
   if (!el) return false;
   markSpoilerFenceVisited(el);
-  const panel = (
-    el.matches?.(".Panel.Focusable") ? el : el.closest?.(".Panel.Focusable")
-  ) as HTMLElement | null;
-  const button = el.matches?.("button") ? el : (el.querySelector?.("button") as HTMLElement | null);
-  const targets = [panel, button, el].filter(Boolean) as HTMLElement[];
-  if (!targets.length) return false;
-  for (const target of targets) {
+  try {
+    if (!el.hasAttribute("tabindex")) el.setAttribute("tabindex", "-1");
+    el.focus({ preventScroll: true });
+  } catch {
     try {
-      target.setAttribute("tabindex", "-1");
-      target.focus({ preventScroll: true });
+      el.focus();
     } catch {
-      try {
-        target.focus();
-      } catch {
-        /* ignore */
-      }
+      /* ignore — a detached fence simply fails to claim focus */
     }
   }
-  return true;
-}
-
-/** Debug shape for the on-device probe: which targets the ladder found. */
-export function describeSpoilerFenceTargets(el: HTMLElement | null): Record<string, boolean> {
-  if (!el) return { el: false, panel: false, button: false };
-  return {
-    el: true,
-    panel: Boolean(el.matches?.(".Panel.Focusable") || el.closest?.(".Panel.Focusable")),
-    button: Boolean(el.matches?.("button") || el.querySelector?.("button")),
-  };
+  return elementHasFocus(el);
 }
 
 /** Test-only reset. */

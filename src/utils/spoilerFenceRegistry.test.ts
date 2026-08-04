@@ -74,6 +74,46 @@ describe("spoiler fence registry", () => {
     expect(findUnvisitedSpoilerFenceInView(bubble, alwaysInView)).toBeNull();
   });
 
+  /*
+   * Decky renders the fence with tabindex="0" and navigates by it. Replacing that with "-1" — which
+   * the first version of this helper did to every element it touched — takes the fence back out of
+   * Steam's navigation graph, so the press after the reveal has nowhere to go.
+   */
+  it("leaves Decky's own tabindex alone", () => {
+    const fence = document.createElement("div");
+    fence.setAttribute("tabindex", "0");
+    makeBubbleWith(fence);
+    registerSpoilerFence("a", fence);
+
+    focusSpoilerFence(fence);
+
+    expect(fence.getAttribute("tabindex")).toBe("0");
+  });
+
+  it("makes an untabbable fence focusable before focusing it", () => {
+    const fence = document.createElement("div");
+    makeBubbleWith(fence);
+    registerSpoilerFence("a", fence);
+
+    focusSpoilerFence(fence);
+
+    expect(fence.getAttribute("tabindex")).toBe("-1");
+  });
+
+  /* The return value is a measurement, not an assumption: the previous version returned true
+     unconditionally, so a diversion that moved no focus still reported success and swallowed the
+     press. */
+  it("reports false when focus does not land", () => {
+    const fence = document.createElement("div");
+    makeBubbleWith(fence);
+    vi.spyOn(fence, "focus").mockImplementation(() => {
+      /* focus refused, as a detached or hidden node would */
+    });
+    registerSpoilerFence("a", fence);
+
+    expect(focusSpoilerFence(fence)).toBe(false);
+  });
+
   it("focusSpoilerFence is a no-op for null", () => {
     expect(focusSpoilerFence(null)).toBe(false);
   });

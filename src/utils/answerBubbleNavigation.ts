@@ -19,12 +19,11 @@ import {
   registerAnswerBubbleEl,
   resolveFocusedAnswerBubble,
 } from "./answerBubbleElRegistry";
-import { call } from "@decky/api";
+import { elementHasFocus, getUiDocument } from "./uiDocument";
 
 import {
-  describeSpoilerFenceTargets,
   findUnvisitedSpoilerFenceInView,
-  markSpoilerFenceVisited,
+  focusSpoilerFence,
 } from "./spoilerFenceRegistry";
 
 /** True when `el` overlaps the visible band of its scroll container. */
@@ -34,7 +33,7 @@ export function elementIsWithinViewportOf(el: HTMLElement, scroll: HTMLElement):
   return elRect.bottom > scrollRect.top && elRect.top < scrollRect.bottom;
 }
 
-/** Walk turn slots — document.querySelector cannot pierce Decky shadow roots. */
+/** Walk turn slots. Must query the UI document, not SharedJSContext's shell — see uiDocument.ts. */
 export function findAnswerBubbleByKey(answerKey: string): HTMLElement | null {
   const registered = getRegisteredAnswerBubble(answerKey);
   if (registered) return registered;
@@ -45,7 +44,7 @@ export function findAnswerBubbleByKey(answerKey: string): HTMLElement | null {
     if (key) return focused;
   }
 
-  for (const slot of document.querySelectorAll(".bonsai-chat-turn-slot")) {
+  for (const slot of getUiDocument().querySelectorAll(".bonsai-chat-turn-slot")) {
     const isLive = answerKey === "live";
     const hasLiveHeader = Boolean(slot.querySelector(".bonsai-chat-turn-row-header--live"));
     const hasTurnMarker = Boolean(slot.querySelector(`[data-bonsai-turn-id="${answerKey}"]`));
@@ -57,16 +56,24 @@ export function findAnswerBubbleByKey(answerKey: string): HTMLElement | null {
   return null;
 }
 
+/**
+ * Focus the `.Panel.Focusable` Decky navigates by, and report whether focus actually landed.
+ *
+ * `elementHasFocus` asks the element's own document; the previous `contains(document.activeElement)`
+ * asked SharedJSContext's shell and so returned false on every successful move (uiDocument.ts).
+ * An existing `tabindex` is left alone — overwriting Decky's `0` with `-1` drops the node out of
+ * Steam's navigation graph for subsequent presses.
+ */
 function focusPanelEl(el: HTMLElement): boolean {
   const panel = (
     el.matches(".Panel.Focusable") ? el : el.closest(".Panel.Focusable")
   ) as HTMLElement | null;
   const target = panel ?? el;
-  target.setAttribute("tabindex", "-1");
+  if (!target.hasAttribute("tabindex")) target.setAttribute("tabindex", "-1");
   target.focus({ preventScroll: true });
-  if (target.contains(document.activeElement)) return true;
+  if (elementHasFocus(target)) return true;
   el.focus({ preventScroll: true });
-  return el.contains(document.activeElement);
+  return elementHasFocus(el);
 }
 
 export function focusFirstAnswerChunk(answerKey: string): boolean {
@@ -176,25 +183,15 @@ export function handleAnswerBubbleMoveDown(
    * Only fences already on screen are eligible, and each is offered once: press A to reveal, or
    * press Down again to scroll on. Without the visited flag a fence you chose not to open would
    * trap Down forever.
+   *
+   * The first two attempts at this diversion never ran at all: `bubble` could not resolve, because
+   * both routes to it asked the global `document` (uiDocument.ts). Everything below this point was
+   * dead code on device, which is why the instrumentation added for it logged nothing.
    */
   const fence = findUnvisitedSpoilerFenceInView(bubble, (el) =>
     elementIsWithinViewportOf(el, scroll),
   );
-  if (fence) {
-    const targets = describeSpoilerFenceTargets(fence);
-    // `focusPanelEl` is the helper `focusFirstAnswerChunk` already uses on this exact element
-    // (`.bonsai-spoiler-reveal-target`), and it confirms the move landed instead of assuming it.
-    // The first attempt used a bespoke ladder in the registry and did nothing on device.
-    markSpoilerFenceVisited(fence);
-    const claimed = focusPanelEl(fence);
-    // TEMPORARY probe (2026-08-04) — the first attempt at this diversion did nothing on device and
-    // the registry cannot tell "never fired" from "fired but Decky ignored the focus". Remove once
-    // SPOILER-DPAD-01 passes.
-    void call("dbg_fe_log", "spoiler-dpad", { fired: true, claimed, targets }).catch(() => {});
-    if (claimed) return true;
-  } else {
-    void call("dbg_fe_log", "spoiler-dpad", { fired: false }).catch(() => {});
-  }
+  if (fence && focusSpoilerFence(fence)) return true;
 
   /*
    * Only scroll while THIS bubble still extends below the viewport.

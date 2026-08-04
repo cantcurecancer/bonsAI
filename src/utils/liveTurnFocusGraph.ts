@@ -7,6 +7,7 @@
  */
 
 import { focusRegisteredReplyStop } from "./replyStopRegistry";
+import { elementHasFocus, getUiDocument } from "./uiDocument";
 
 const FOCUSABLE_SELECTOR =
   'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -26,20 +27,22 @@ export function focusDeckOwner(el: HTMLElement | null | undefined): boolean {
     el.matches(".Panel.Focusable") ? el : el.closest(".Panel.Focusable")
   ) as HTMLElement | null;
   const target = panel ?? el;
-  target.setAttribute("tabindex", "-1");
+  // Keep Decky's own tabindex; replacing "0" with "-1" removes the node from Steam's nav graph.
+  if (!target.hasAttribute("tabindex")) target.setAttribute("tabindex", "-1");
   target.focus({ preventScroll: true });
-  if (target.contains(document.activeElement)) return true;
+  // Asked of the element's own document: the global one belongs to SharedJSContext (uiDocument.ts),
+  // so the old `contains(document.activeElement)` check reported failure on every successful move.
+  if (elementHasFocus(target)) return true;
   el.focus({ preventScroll: true });
-  return el.contains(document.activeElement);
+  return elementHasFocus(el);
 }
 
 export function queryLiveTurnSlot(root?: HTMLElement | Document | null): HTMLElement | null {
-  const scope = root ?? document;
+  // Note the fallbacks resolve to the UI document, not the global one — see uiDocument.ts.
+  const scope = root ?? getUiDocument();
   const header =
-    scope instanceof HTMLElement
-      ? scope.querySelector(".bonsai-chat-turn-row-header--live")
-      : scope.querySelector?.(".bonsai-chat-turn-row-header--live") ??
-        document.querySelector(".bonsai-chat-turn-row-header--live");
+    scope.querySelector?.(".bonsai-chat-turn-row-header--live") ??
+    getUiDocument().querySelector(".bonsai-chat-turn-row-header--live");
   return (header?.closest(".bonsai-chat-turn-slot") as HTMLElement | null) ?? null;
 }
 
@@ -187,9 +190,10 @@ export function focusContextHint(liveSlot: HTMLElement | null): boolean {
 }
 
 export function focusSessionContextStrip(): boolean {
+  const doc = getUiDocument();
   const strip =
-    document.querySelector<HTMLElement>(".bonsai-session-context-strip") ??
-    document.querySelector<HTMLElement>(".bonsai-session-context-strip button");
+    doc.querySelector<HTMLElement>(".bonsai-session-context-strip") ??
+    doc.querySelector<HTMLElement>(".bonsai-session-context-strip button");
   return focusDeckOwner(strip);
 }
 
@@ -200,8 +204,9 @@ export function focusDownFromReplyUtilityRow(liveSlot: HTMLElement | null): bool
   return focusSessionContextStrip();
 }
 
-export function focusSpoilerRevealIn(root: HTMLElement | null): boolean {
-  if (!root) return false;
-  const spoiler = root.querySelector<HTMLElement>(".bonsai-spoiler-reveal-target");
-  return focusDeckOwner(spoiler);
-}
+/*
+ * `focusSpoilerRevealIn` was removed 2026-08-04. It focused the first masked fence in a bubble on
+ * every Down press regardless of where that fence was, and the answer-bubble Down handler already
+ * diverts to fences that are actually on screen — see handleAnswerBubbleMoveDown and
+ * spoilerFenceRegistry.
+ */

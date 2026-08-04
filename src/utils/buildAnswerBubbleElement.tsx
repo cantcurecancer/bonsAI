@@ -11,6 +11,7 @@ import { MainTabBonsaiAiMarkdownChunk } from "../components/MainTabBonsaiAiMarkd
 import { StreamFenceWaitChip } from "../components/StreamFenceWaitChip";
 import { registerAnswerBubbleNav } from "./answerBubbleNavRegistry";
 import {
+  getRegisteredAnswerBubble,
   registerAnswerBubbleEl,
   resolveFocusedAnswerBubble,
 } from "./answerBubbleElRegistry";
@@ -19,6 +20,7 @@ import {
   handleAnswerBubbleMoveDown,
   handleAnswerBubbleMoveUp,
 } from "./answerBubbleNavigation";
+import { uiActiveElement } from "./uiDocument";
 import {
   isDownDeckButtonEvent,
   isUpDeckButtonEvent,
@@ -27,7 +29,6 @@ import { prepareStreamMarkdown } from "./streamMarkdownPrepare";
 import { splitResponseIntoChunks } from "./splitResponseIntoChunks";
 import { stripAssistantDisplayTags } from "./stripAssistantDisplayTags";
 import { unwrapAskedEntitySpoilerFences } from "./unwrapAskedEntitySpoilerFences";
-import { focusSpoilerRevealIn } from "./liveTurnFocusGraph";
 
 export type BuildAnswerBubbleElementArgs = {
   body: string;
@@ -44,8 +45,16 @@ export type BuildAnswerBubbleElementArgs = {
 
 const noopChunkRef = { current: 0 };
 
+/**
+ * The bubble this handler belongs to.
+ *
+ * Falls back to the mount-time ref registration, because focus-derived lookup is the fragile half:
+ * it depends on `activeElement`, and every navigation helper below is a no-op when it comes back
+ * null. That is exactly what happened on device — the D-pad diversion for masked spoilers never
+ * ran once, in either shipped attempt.
+ */
 function captureBubble(answerKey: string): HTMLElement | null {
-  const bubble = resolveFocusedAnswerBubble();
+  const bubble = resolveFocusedAnswerBubble() ?? getRegisteredAnswerBubble(answerKey);
   if (bubble) registerAnswerBubbleEl(answerKey, bubble);
   return bubble;
 }
@@ -137,8 +146,12 @@ export function buildAnswerBubbleElement(
 
   const moveDown = () => {
     const bubble = captureBubble(answerKey);
-    const spoilerOk = focusSpoilerRevealIn(bubble);
-    if (spoilerOk) return true;
+    /*
+     * Masked spoilers are handled inside handleAnswerBubbleMoveDown, which only diverts to a fence
+     * that is already on screen and not yet offered. The unconditional `focusSpoilerRevealIn(bubble)`
+     * that used to run first jumped to the first fence in the bubble however far below it was,
+     * skipping the answer text between here and there.
+     */
     if (handleAnswerBubbleMoveDown(bubble, noopChunkRef, chunkTotal, answerKey)) return true;
     /*
      * Yield to parent turn-slot flow-children so the next sibling Focusable
@@ -150,7 +163,7 @@ export function buildAnswerBubbleElement(
 
   const moveUp = () => {
     const bubble = captureBubble(answerKey);
-    if (document.activeElement?.closest(".bonsai-spoiler-reveal-target, .bonsai-spoiler-collapse-target")) {
+    if (uiActiveElement()?.closest(".bonsai-spoiler-reveal-target, .bonsai-spoiler-collapse-target")) {
       return focusFirstAnswerChunk(answerKey);
     }
     if (handleAnswerBubbleMoveUp(bubble, noopChunkRef, chunkTotal, answerKey)) return true;
@@ -178,6 +191,9 @@ export function buildAnswerBubbleElement(
   return (
     <Focusable
       key={`answer-bubble-${answerKey}`}
+      /* Mount-time registration. Without it the only route to this element was `activeElement`,
+         which plugin code cannot read for its own UI — see uiDocument.ts. */
+      ref={(el: HTMLElement | null) => registerAnswerBubbleEl(answerKey, el)}
       className={`bonsai-chat-ai-bubble bonsai-glass-panel${
         streaming ? " bonsai-chat-ai-bubble--stream-preview" : ""
       }${fenceWaitActive ? " bonsai-chat-ai-bubble--fence-wait" : ""}`}

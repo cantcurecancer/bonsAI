@@ -1,10 +1,24 @@
 export function buildGamepadFocusRingStylesheet(): string {
+  /*
+   * White, not the character accent — the maintainer's ask is "white focus rings everywhere, make
+   * them all consistent" (docs/roadmap.md).
+   *
+   * These three values used to read `var(--bonsai-ui-tab-focus-1/-2, <white>)`. Those variables are
+   * the *tab strip's* accent pair, set from the active AI character in characterUiAccent.ts, so the
+   * gamepad ring silently followed the character: gold for Ali G / the TF2 Announcer, purple for
+   * Shadowheart, and so on. The white fallbacks written here show the ring was meant to be white all
+   * along — it only looked that way while no character accent was applied. Once character selection
+   * started sticking (c9ad633) the ring turned yellow on device. Measured 2026-08-04: a focused
+   * `.bonsai-preset-glass` chip computed `outline: rgba(241, 196, 15, 0.92) solid 2px`.
+   *
+   * The tab strip keeps its accent tint — see section-1.ts, where the same variables are correct.
+   */
   const ring = `
-          outline: 2px solid var(--bonsai-ui-tab-focus-1, rgba(255, 255, 255, 0.9)) !important;
+          outline: 2px solid rgba(255, 255, 255, 0.9) !important;
           outline-offset: 2px !important;
           box-shadow:
-            0 0 0 2px var(--bonsai-ui-tab-focus-1, rgba(255, 255, 255, 0.92)),
-            0 0 0 5px var(--bonsai-ui-tab-focus-2, rgba(255, 255, 255, 0.2)) !important;
+            0 0 0 2px rgba(255, 255, 255, 0.92),
+            0 0 0 5px rgba(255, 255, 255, 0.2) !important;
   `;
   const ringInset = `
           outline: 2px solid rgba(255, 255, 255, 0.85) !important;

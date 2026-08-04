@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 248,
-  "edgeCount": 565,
+  "fileCount": 251,
+  "edgeCount": 573,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -174,6 +174,7 @@
     },
     "src/components/MainTabBonsaiAiMarkdownChunk.tsx": {
       "imports": [
+        "src/utils/focusNavigation.ts",
         "src/utils/spoilerFenceRegistry.ts"
       ],
       "importedBy": [
@@ -1729,9 +1730,19 @@
         "src/utils/strategyGuideBranches.ts"
       ]
     },
+    "src/utils/answerBubbleElRegistry.test.ts": {
+      "imports": [
+        "src/utils/answerBubbleElRegistry.ts",
+        "src/utils/uiDocument.ts"
+      ],
+      "importedBy": []
+    },
     "src/utils/answerBubbleElRegistry.ts": {
-      "imports": [],
+      "imports": [
+        "src/utils/uiDocument.ts"
+      ],
       "importedBy": [
+        "src/utils/answerBubbleElRegistry.test.ts",
         "src/utils/answerBubbleNavigation.ts",
         "src/utils/buildAnswerBubbleElement.tsx"
       ]
@@ -1755,7 +1766,8 @@
         "src/utils/answerBubbleElRegistry.ts",
         "src/utils/answerBubbleNavRegistry.ts",
         "src/utils/chatPanelScroll.ts",
-        "src/utils/spoilerFenceRegistry.ts"
+        "src/utils/spoilerFenceRegistry.ts",
+        "src/utils/uiDocument.ts"
       ],
       "importedBy": [
         "src/components/MainTabChatTranscript.tsx",
@@ -1924,10 +1936,10 @@
         "src/utils/answerBubbleNavRegistry.ts",
         "src/utils/answerBubbleNavigation.ts",
         "src/utils/focusNavigation.ts",
-        "src/utils/liveTurnFocusGraph.ts",
         "src/utils/splitResponseIntoChunks.ts",
         "src/utils/streamMarkdownPrepare.ts",
         "src/utils/stripAssistantDisplayTags.ts",
+        "src/utils/uiDocument.ts",
         "src/utils/unwrapAskedEntitySpoilerFences.ts"
       ],
       "importedBy": [
@@ -2104,6 +2116,7 @@
     "src/utils/focusNavigation.ts": {
       "imports": [],
       "importedBy": [
+        "src/components/MainTabBonsaiAiMarkdownChunk.tsx",
         "src/components/MainTabChatTranscript.tsx",
         "src/components/MainTabUnifiedAskBar.tsx",
         "src/utils/buildAnswerBubbleElement.tsx",
@@ -2184,12 +2197,12 @@
     },
     "src/utils/liveTurnFocusGraph.ts": {
       "imports": [
-        "src/utils/replyStopRegistry.ts"
+        "src/utils/replyStopRegistry.ts",
+        "src/utils/uiDocument.ts"
       ],
       "importedBy": [
         "src/components/MainTabChatTranscript.tsx",
         "src/components/StrategyChecklistPanel.tsx",
-        "src/utils/buildAnswerBubbleElement.tsx",
         "src/utils/buildReplyActionsElement.tsx",
         "src/utils/liveTurnFocusGraph.test.ts"
       ]
@@ -2390,7 +2403,9 @@
       "importedBy": []
     },
     "src/utils/spoilerFenceRegistry.ts": {
-      "imports": [],
+      "imports": [
+        "src/utils/uiDocument.ts"
+      ],
       "importedBy": [
         "src/components/MainTabBonsaiAiMarkdownChunk.tsx",
         "src/utils/answerBubbleNavigation.ts",
@@ -2478,6 +2493,24 @@
       "imports": [],
       "importedBy": [
         "src/components/MainTabChatTranscript.tsx"
+      ]
+    },
+    "src/utils/uiDocument.test.ts": {
+      "imports": [
+        "src/utils/uiDocument.ts"
+      ],
+      "importedBy": []
+    },
+    "src/utils/uiDocument.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/utils/answerBubbleElRegistry.test.ts",
+        "src/utils/answerBubbleElRegistry.ts",
+        "src/utils/answerBubbleNavigation.ts",
+        "src/utils/buildAnswerBubbleElement.tsx",
+        "src/utils/liveTurnFocusGraph.ts",
+        "src/utils/spoilerFenceRegistry.ts",
+        "src/utils/uiDocument.test.ts"
       ]
     },
     "src/utils/uiScaleScopeBridge.ts": {
