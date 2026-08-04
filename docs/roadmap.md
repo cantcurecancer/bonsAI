@@ -631,6 +631,21 @@ as a single diff.
 **Not urgent.** Nothing is blocked on this. It only decides whether step 8 closes now or takes
 one more commit first.
 
+**Locked 2026-08-03: Option A — step 8 is done at 1291 lines; the 700–800 estimate in D9 is
+withdrawn as unmeasured.** Option B stays available but belongs to step 7's settings SSOT
+thread, not here; it is not a prerequisite for anything and is not scheduled.
+
+**Record the cost honestly, because step 5b predicted it.** Across the five commits `src/`
+grew **+1012 / −447, net +565 lines** while `index.tsx` fell 1522 → 1291. Step 5b already
+measured this: *"extracting the tab JSX is a lateral change… `index.tsx` would shrink while the
+codebase got worse."* Doing the state and modal extractions first removed some of that tax, and
+deriving each payload's args from `React.ComponentProps<typeof Tab>` removed the rest of the
+*type* duplication 5b warned about — but the prop **names** are still written twice per tab,
+once at the call site and once in the hook. The payload step bought a composition root that
+reads as composition, and it cost 565 lines to get it. **The state and modal extractions were
+worth more per line than the payloads were**, which is the useful lesson for the next entry
+point: do the state, and treat the JSX as optional.
+
 ---
 
 ### Maintainer decisions locked — 2026-08-02
@@ -650,7 +665,7 @@ current tree (especially **D1b** and parts of **D2** / **D4**).
 | **D6** | **Sequencing below** | Fix real user-visible gaps before shrinking/refactoring; build the safety net before the risky split; measure handoff friction on the improved tree. |
 | **D7** | **Delete both screenshot helpers** | `_reencode_oversized_capture` and `_mirror_capture_to_plugin_dir` have no production callers; `_mirror_capture_to_plugin_dir` is an explicit deprecated no-op. One unit test still calls `_reencode` — remove it with the function. Consistent with D2 cleanup; module has behavioral coverage via `_finalize_steam_capture_file`. |
 | **D8** | **Harden `build.ps1` (prune + verify)** | Windows deploy path merges without pruning and prints success without checking the artifact landed. `build.sh deploy` already wipes the plugin dir — fix `build.ps1` (and `watch-deploy.ps1` by inheritance): remove stale files, compare `dist/index.js` hash or mtime after upload, fail on mismatch. Blocker before step 8. |
-| **D9** | **Done = step 8 (`index.tsx`) only** | Finish the state-before-JSX plan to ~700–800 lines (estimate). `useBonsaiAskOrchestration.ts` (1222 lines, 13 characterization tests) and `MainTab.tsx` (187 lines, prop-threading tax) are follow-ups after step 8 — splitting them now fights the locked order. |
+| **D9** | **Done = step 8 (`index.tsx`) only** | Finish the state-before-JSX plan. `useBonsaiAskOrchestration.ts` (1222 lines, 13 characterization tests) and `MainTab.tsx` (187 lines, prop-threading tax) are follow-ups after step 8 — splitting them now fights the locked order. **Amended 2026-08-03 (D14):** the "~700–800 lines" figure here was an unmeasured estimate and is **withdrawn**. Step 8 closed at **1291**; what remains is prop threading that only a rewrite would shrink. |
 | **D13** | **Option A — Python authoritative, TypeScript aligned (one row inverted)** | `save_settings` decides what reaches disk, so a frontend reading a value the backend will not store is the broken combination. Four settings aligned TS → Python. `preset_chip_fade_animation_enabled` went the other way — reading the deprecated key independently yields a self-contradictory payload and TS already derived it on both its normalize and save paths, so Python was the outlier. `ui_scale_manual_profile` turned out not to be drift at all but the `SHOW_IMMERSIVE_UI_SCALE` gate; left alone. Guard extended to a 19-case hostile-input contract asserted by both languages. Executed as step **7c**. |
 | **D12** | **Option A — declarative field table per language** | The two languages agreed exactly on fresh-install defaults, so this is cost reduction, not a bug fix. Most settings are one of five plain shapes; those become one-line rows, and the genuinely custom ones stay functions with a stated reason. Python side shipped as step **7b** (19 rows, 32 → 20 defs, 6,659-input differential test, zero mismatches). Full codegen (Option B) was not taken: its only extra guarantee is that the languages cannot disagree, and it has to be paid for by future settings churn — the field table is most of the spec it would need anyway, so it stays available later. |
 | **D11** | **Option A — remove `_coerce_instance` and `_ensure_background_state`** | Both exist for a loader that passes the class instead of an instance; `plugin.json:6` pins `api_version: 1`, where the call is an identity function across 55 sites. The fallback covered 11 of 29 runtime attributes, and if it had ever fired it would have built a fresh `Plugin` and discarded the in-flight Ask — a latent bug, not a safety net. Removed 103 lines with the RPC surface unchanged at 50. Executed as step **6b**, ahead of step 7, because step 7 depends on the same instance-lifetime assumption. |
@@ -943,7 +958,12 @@ attempted, so this work has **not run on-device**. Settings load on every plugin
 (`_main` → `_maybe_app_log` → `load_settings` → `sanitize_settings`), so a deploy plus a
 `bonsAI plugin loaded!` check is a real smoke of it. Do that before step 8, together with the
 still-open **D11-SHIM-01** pass. — REFACTOR-PLAN §3.1, the highest-value item in the audit and the best-covered by existing tests (`tests/test_settings_service.py` asserts per-setting round-trips). Expect that suite to break on shape, not behavior — rewrite the assertions, do not contort the design.
-8. **D3 — entry-point split, continued** — **modals done 2026-08-03**, `index.tsx` **1718 → 1522** across four gated commits (`e7728fa`, `6cd0b93`, `fdc669a`, `5cb7707`). All four now live in `src/features/plugin-shell/` as hooks: plugin-help, desktop-note save, character picker, Ollama models hub. **`index.tsx` no longer references `showModal` at all** — the shell opens no Decky modal directly. **On-Deck D-pad pass for the four modals is due in one batch** per **D10**; deployed and loading clean, so it can be run against real code.
+8. **D3 — entry-point split — COMPLETE 2026-08-03** (`index.tsx` **1955 → 1291**, closed at
+   Option A of **D14**). Everything below shipped behavior-preserving with gates green between
+   commits. **Remaining work is on-Deck QA, not code**: the four-modal D-pad batch
+   (**MODAL-EXTRACT-01…04**) and the **SHELL-PAYLOAD-01** smoke.
+
+   **Modals done 2026-08-03**, `index.tsx` **1718 → 1522** across four gated commits (`e7728fa`, `6cd0b93`, `fdc669a`, `5cb7707`). All four now live in `src/features/plugin-shell/` as hooks: plugin-help, desktop-note save, character picker, Ollama models hub. **`index.tsx` no longer references `showModal` at all** — the shell opens no Decky modal directly. **On-Deck D-pad pass for the four modals is due in one batch** per **D10**; deployed and loading clean, so it can be run against real code.
 
    **Two roadmap estimates were wrong, in opposite directions.** The state items are much smaller than listed — `error-capture` and `UI-scale` were **already extracted** into `useCapturedFrontendErrors` and `useUiScaleProfile` before this session, so what remains of "connection/IP, session-reset, UI-scale, error-capture" is roughly **15 lines**: three `useState`s (`ollamaIp`, `ollamaTabResetKey`, `lastConnectionStatus`), one memo, and a one-line `uiScaleApplyToken`. Those three cohere as one Ollama-connection concern and are worth one small hook, not four commits. The modals were the real win and were listed last.
 
@@ -970,7 +990,9 @@ still-open **D11-SHIM-01** pass. — REFACTOR-PLAN §3.1, the highest-value item
    move, which rule 1 keeps out of this step. The cheapest real win left is having
    `usePluginSettings` return `settingsSnapshotForSave` itself, since it already owns all 40
    states: about 90 lines, and it removes a list that is currently duplicated by hand. That is
-   step 7 territory (settings SSOT), not step 8. **Decision needed** — see **D14** below.
+   step 7 territory (settings SSOT), not step 8. **Locked as D14 Option A** — the estimate is
+   withdrawn, step 8 closes at 1291, and that 90-line collapse is unscheduled. D14 also records
+   the cost: **net +565 lines across `src/`**, exactly the lateral trade step 5b predicted.
 
    **Gates on every commit:** `tsc`, 268 frontend tests, preview `preGate` 2/2, `npm run build`.
    The Main tab move was additionally checked prop-for-prop against the previous commit: 95
