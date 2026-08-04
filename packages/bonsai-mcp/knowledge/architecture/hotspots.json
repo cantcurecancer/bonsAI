@@ -12,7 +12,7 @@
     },
     {
       "path": "src/index.tsx",
-      "lines": 1292,
+      "lines": 1309,
       "role": "Plugin root: tabs, scoped CSS, RPC wiring, Settings"
     },
     {
@@ -96,6 +96,11 @@
       "role": ""
     },
     {
+      "path": "src/hooks/usePluginSettings.ts",
+      "lines": 517,
+      "role": ""
+    },
+    {
       "path": "src/styles/sections/section-6.ts",
       "lines": 503,
       "role": ""
@@ -106,24 +111,19 @@
       "role": ""
     },
     {
-      "path": "src/hooks/usePluginSettings.ts",
-      "lines": 497,
-      "role": ""
-    },
-    {
       "path": "py_modules/backend/services/game_ai_request.py",
       "lines": 492,
       "role": ""
     },
     {
-      "path": "py_modules/backend/services/settings_service.py",
-      "lines": 474,
-      "role": "Load/save/merge settings.json"
+      "path": "src/utils/settingsContracts.test.ts",
+      "lines": 487,
+      "role": ""
     },
     {
-      "path": "src/utils/settingsContracts.test.ts",
-      "lines": 471,
-      "role": ""
+      "path": "py_modules/backend/services/settings_service.py",
+      "lines": 482,
+      "role": "Load/save/merge settings.json"
     },
     {
       "path": "src/styles/sections/gamepadAndPullModels.ts",
@@ -137,7 +137,12 @@
     },
     {
       "path": "src/data/bonsaiSettingsNormalizers.ts",
-      "lines": 443,
+      "lines": 451,
+      "role": ""
+    },
+    {
+      "path": "src/components/DeveloperTab.tsx",
+      "lines": 444,
       "role": ""
     },
     {
@@ -188,11 +193,6 @@
     {
       "path": "src/data/pullModelCatalog.ts",
       "lines": 374,
-      "role": ""
-    },
-    {
-      "path": "src/components/DeveloperTab.tsx",
-      "lines": 369,
       "role": ""
     },
     {

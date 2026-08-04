@@ -16,7 +16,14 @@ import {
   ToggleField,
 } from "@decky/ui";
 import { toaster } from "@decky/api";
-import { DESKTOP_APP_LOG_LEVEL_OPTIONS, STEAM_WEB_API_KEY_MAX_LEN, type DesktopAppLogLevel } from "../data/bonsaiSettingsSchema";
+import {
+  DESKTOP_APP_LOG_LEVEL_OPTIONS,
+  STEAM_WEB_API_KEY_MAX_LEN,
+  TAB_RESUME_MODE_OPTIONS,
+  TAB_RESUME_RECENT_WINDOW_MS,
+  type DesktopAppLogLevel,
+  type TabResumeMode,
+} from "../data/bonsaiSettingsSchema";
 import { formatDeckyRpcError } from "../utils/deckyCall";
 
 const desktopAppLogLevelLabel: Record<DesktopAppLogLevel, string> = {
@@ -28,6 +35,21 @@ const desktopAppLogLevelDescription: Record<DesktopAppLogLevel, string> = {
   off: "No app activity log file on Desktop.",
   default: "Summary events (connection tests, asks, settings changes).",
   verbose: "Default events plus RPC details, setup log lines, and frontend errors.",
+};
+
+const TAB_RESUME_RECENT_WINDOW_MINUTES = Math.round(TAB_RESUME_RECENT_WINDOW_MS / 60000);
+
+// Labelled by roadmap option letter on purpose: this control exists to compare D15 A/B/C
+// on-device, so the mapping back to the decision record should be readable from the Deck.
+const tabResumeModeLabel: Record<TabResumeMode, string> = {
+  always_main: "A · Main",
+  resume: "B · Resume",
+  resume_recent: `C · ${TAB_RESUME_RECENT_WINDOW_MINUTES} min`,
+};
+const tabResumeModeDescription: Record<TabResumeMode, string> = {
+  always_main: "Every reopen starts on Main, whatever tab you left from.",
+  resume: "Reopen lands on the tab you left. Shipped default.",
+  resume_recent: `Reopen resumes the tab within ${TAB_RESUME_RECENT_WINDOW_MINUTES} minutes, then falls back to Main.`,
 };
 
 export type DeveloperConnectionStatus = {
@@ -72,6 +94,8 @@ export type DeveloperTabProps = {
   setShowOnscreenDebugHud: (v: boolean) => void;
   devForceSessionRagChips: boolean;
   setDevForceSessionRagChips: (v: boolean) => void;
+  tabResumeMode: TabResumeMode;
+  setTabResumeMode: (v: TabResumeMode) => void;
   /** Dev/QA: install seed KB from Deck path (build.ps1 deploy). */
   onInstallSeedKnowledgeBase?: () => Promise<void>;
 };
@@ -102,6 +126,8 @@ export const DeveloperTab: React.FC<DeveloperTabProps> = ({
   setShowOnscreenDebugHud,
   devForceSessionRagChips,
   setDevForceSessionRagChips,
+  tabResumeMode,
+  setTabResumeMode,
   onInstallSeedKnowledgeBase,
 }) => {
   const [seedKbBusy, setSeedKbBusy] = React.useState(false);
@@ -223,6 +249,55 @@ export const DeveloperTab: React.FC<DeveloperTabProps> = ({
             </div>
           </PanelSectionRow>
         ) : null}
+      </PanelSection>
+
+      <PanelSection title="Navigation">
+        <PanelSectionRow>
+          {/*
+            Same shape as the app-log-level row below: one `Focusable` with horizontal flow owning
+            three leaf `Button`s. That row is shipped and its D-pad behaviour is known good, so the
+            new control inherits a focus graph rather than inventing one.
+          */}
+          <div className="bonsai-prose-host bonsai-settings-bleed" style={{ width: "100%", maxWidth: "100%", minWidth: 0 }}>
+            <div style={{ color: "#d9d9d9", fontWeight: 600, fontSize: 13, marginBottom: 6 }}>
+              Tab to open on (D15)
+            </div>
+            <div className="bonsai-prose" style={{ fontSize: 11, color: "#9fb7d5", marginBottom: 8, lineHeight: 1.35 }}>
+              {tabResumeModeDescription[tabResumeMode]} Takes effect the next time you close and
+              reopen the plugin.
+            </div>
+            <Focusable
+              flow-children="horizontal"
+              style={{ display: "flex", gap: 6, width: "100%", minWidth: 0, maxWidth: "100%", alignItems: "stretch" }}
+            >
+              {TAB_RESUME_MODE_OPTIONS.map((mode) => {
+                const active = mode === tabResumeMode;
+                return (
+                  <Button
+                    key={mode}
+                    onClick={() => setTabResumeMode(mode)}
+                    style={{
+                      flex: 1,
+                      minHeight: 36,
+                      fontSize: 12,
+                      fontWeight: 600,
+                      padding: "4px 4px",
+                      borderRadius: 4,
+                      border: active ? "1px solid rgba(56,189,248,0.55)" : "1px solid rgba(255,255,255,0.12)",
+                      background: active
+                        ? "linear-gradient(180deg, rgba(56,189,248,0.22) 0%, rgba(14,116,144,0.35) 100%)"
+                        : "rgba(255,255,255,0.04)",
+                      color: active ? "#e0f2fe" : "#9fb0c0",
+                    }}
+                    aria-label={`${tabResumeModeLabel[mode]}: ${tabResumeModeDescription[mode]}`}
+                  >
+                    {tabResumeModeLabel[mode]}
+                  </Button>
+                );
+              })}
+            </Focusable>
+          </div>
+        </PanelSectionRow>
       </PanelSection>
 
       <PanelSection title="Logging & exports">

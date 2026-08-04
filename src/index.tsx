@@ -257,6 +257,8 @@ const Content: React.FC = () => {
     devForceSessionRagChips,
     setShowOnscreenDebugHud,
     setDevForceSessionRagChips,
+    tabResumeMode,
+    setTabResumeMode,
     namedOllamaHosts,
     setNamedOllamaHosts,
     voiceSttModel,
@@ -546,6 +548,7 @@ const Content: React.FC = () => {
       bonsaiTokenStreamingEnabled,
       showOnscreenDebugHud,
       devForceSessionRagChips,
+      tabResumeMode,
       namedOllamaHosts,
       voiceSttModel,
       uiScaleAutoEnabled,
@@ -589,6 +592,7 @@ const Content: React.FC = () => {
       bonsaiTokenStreamingEnabled,
       showOnscreenDebugHud,
       devForceSessionRagChips,
+      tabResumeMode,
       namedOllamaHosts,
       voiceSttModel,
       uiScaleAutoEnabled,
@@ -1156,6 +1160,8 @@ const Content: React.FC = () => {
     setShowOnscreenDebugHud,
     devForceSessionRagChips,
     setDevForceSessionRagChips,
+    tabResumeMode,
+    setTabResumeMode,
     installSeedKnowledgeBase,
     showDeveloperTab,
   });
@@ -1224,7 +1230,18 @@ const Content: React.FC = () => {
         }}
       >
         <BonsaiDebugOverlay enabled={showOnscreenDebugHud} />
-        <div key={`bonsai-tabs-gen-${uiScale.generation}`} className="bonsai-decky-tabs-root">
+        {/*
+          data-bonsai-active-tab drives the persistent active-tab marker in section-1.ts.
+          Measured on device 2026-08-04: SteamOS does not put `.Active` on these tab buttons, it
+          uses a build-hashed class, so the marker cannot be keyed on Steam's own classes. This
+          attribute is the only thing that changes on a tab switch — DECKY_TAB_TITLES stays
+          referentially identical, so the strip itself does not re-render.
+        */}
+        <div
+          key={`bonsai-tabs-gen-${uiScale.generation}`}
+          className="bonsai-decky-tabs-root"
+          data-bonsai-active-tab={currentTab}
+        >
           <Tabs
             activeTab={currentTab}
             onShowTab={onTabsShowTab}

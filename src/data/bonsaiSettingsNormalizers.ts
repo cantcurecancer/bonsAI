@@ -49,6 +49,8 @@ import {
   PRESET_CHIP_ANIMATION_OPTIONS,
   REQUEST_TIMEOUT_STEP_SECONDS,
   STEAM_WEB_API_KEY_MAX_LEN,
+  TAB_RESUME_MODE_OPTIONS,
+  DEFAULT_TAB_RESUME_MODE,
   VOICE_STT_MODEL_OPTIONS,
   type BonsaiCapabilities,
   type BonsaiSettings,
@@ -56,6 +58,7 @@ import {
   type NamedOllamaHost,
   type PresetChipAnimation,
   type ScreenshotAttachmentPreset,
+  type TabResumeMode,
   type UnifiedInputPersistenceMode,
   type VoiceSttModelId,
 } from "./bonsaiSettingsSchema";
@@ -352,6 +355,11 @@ const SIMPLE_FIELDS = {
     DEFAULT_DESKTOP_APP_LOG_LEVEL,
     { trim: true },
   ),
+  // Defaults to `resume` rather than off, because D15 option B is the locked behavior and this
+  // control exists to compare the alternatives, not to gate the feature.
+  tab_resume_mode: enumOf<TabResumeMode>(TAB_RESUME_MODE_OPTIONS, DEFAULT_TAB_RESUME_MODE, {
+    trim: true,
+  }),
   // Ask behavior.
   input_sanitizer_user_disabled: boolDefaultFalse,
   latency_timeouts_custom_enabled: boolDefaultFalse,

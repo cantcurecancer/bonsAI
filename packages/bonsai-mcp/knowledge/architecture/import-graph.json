@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
   "fileCount": 255,
-  "edgeCount": 584,
+  "edgeCount": 588,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -607,10 +607,12 @@
         "src/data/bonsaiSettingsNormalizers.ts",
         "src/data/characterUiAccent.ts",
         "src/features/model-routing/useRoutingOrderModal.ts",
+        "src/features/plugin-shell/pluginStorage.ts",
         "src/features/plugin-shell/useCharacterPickerModal.tsx",
         "src/features/plugin-shell/useOllamaConnectionState.ts",
         "src/features/plugin-shell/useOllamaModelsHubModal.tsx",
         "src/hooks/useBonsaiAskOrchestration.ts",
+        "src/hooks/useBonsaiPluginShell.test.ts",
         "src/hooks/usePluginSettings.test.ts",
         "src/hooks/usePluginSettings.ts",
         "src/hooks/useStrategyChecklistSession.ts",
@@ -935,6 +937,7 @@
     },
     "src/features/plugin-shell/pluginStorage.ts": {
       "imports": [
+        "src/data/bonsaiSettingsSchema.ts",
         "src/data/storageKeys.ts"
       ],
       "importedBy": [
@@ -943,6 +946,7 @@
         "src/features/plugin-shell/usePluginHelpModal.tsx",
         "src/hooks/useBonsaiPluginShell.test.ts",
         "src/hooks/useBonsaiPluginShell.ts",
+        "src/hooks/usePluginSettings.ts",
         "src/index.tsx"
       ]
     },
@@ -952,7 +956,8 @@
         "src/features/unified-input/constants.ts"
       ],
       "importedBy": [
-        "src/index.tsx"
+        "src/index.tsx",
+        "src/styles/sections/section-1.ts"
       ]
     },
     "src/features/plugin-shell/tabs/useAboutTabPayload.tsx": {
@@ -1217,6 +1222,7 @@
     },
     "src/hooks/useBonsaiPluginShell.test.ts": {
       "imports": [
+        "src/data/bonsaiSettingsSchema.ts",
         "src/data/storageKeys.ts",
         "src/features/plugin-shell/pluginStorage.ts",
         "src/hooks/useBonsaiPluginShell.ts",
@@ -1284,6 +1290,7 @@
         "src/data/bonsaiSettingsNormalizers.ts",
         "src/data/bonsaiSettingsSchema.ts",
         "src/data/modelPolicy.ts",
+        "src/features/plugin-shell/pluginStorage.ts",
         "src/utils/bonsaiSessionSurvival.ts",
         "src/utils/deckyCall.ts",
         "src/utils/settingsPayload.ts"
@@ -1546,6 +1553,7 @@
     },
     "src/styles/sections/section-1.ts": {
       "imports": [
+        "src/features/plugin-shell/tabTitles.tsx",
         "src/features/unified-input/constants.ts"
       ],
       "importedBy": [

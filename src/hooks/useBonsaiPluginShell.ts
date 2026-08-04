@@ -18,7 +18,7 @@ import {
 import {
   captureOllamaTabLocalSnapshot,
 } from "../utils/ollamaTabLocalSurvival";
-import { loadLastTab, saveLastTab } from "../features/plugin-shell/pluginStorage";
+import { resolveResumeTab, saveLastTab } from "../features/plugin-shell/pluginStorage";
 import { restoreModalReturnFocusWithRetry } from "../features/plugin-shell/modalReturnFocusRegistry";
 
 /**
@@ -31,9 +31,10 @@ function resolveInitialTab(): string {
   const snap = peekBonsaiSessionPendingRestore();
   if (snap?.currentTab) return snap.currentTab;
   if (__bonsaiTabRestoreAfterModal != null) return __bonsaiTabRestoreAfterModal;
-  // D15 option B: the two sources above are modal round-trip machinery and are empty on a normal
-  // open, which is why every reopen used to land on Main. Resume the last tab instead.
-  return loadLastTab() ?? "main";
+  // The two sources above are modal round-trip machinery and are empty on a normal open, which is
+  // why every reopen used to land on Main. What happens instead is the user's D15 choice —
+  // `resolveResumeTab` reads it from the synchronous mirror and falls back to Main.
+  return resolveResumeTab("main");
 }
 
 export type UseBonsaiPluginShellOptions = {
@@ -64,8 +65,10 @@ export function useBonsaiPluginShell({ getSessionSnapshot }: UseBonsaiPluginShel
     }
   }, []);
 
-  // D15 option B. Written on every change rather than on close: Decky gives the plugin no
-  // reliable "closing" hook, so there is no later moment guaranteed to run.
+  // Written on every change rather than on close: Decky gives the plugin no reliable "closing"
+  // hook, so there is no later moment guaranteed to run. Written in every mode, including
+  // `always_main` — what the mode selects is whether the *next open* reads this, and recording it
+  // unconditionally means switching back to a resuming mode works immediately.
   useEffect(() => {
     saveLastTab(currentTab);
   }, [currentTab]);

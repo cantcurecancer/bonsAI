@@ -9,6 +9,7 @@ import {
   DEFAULT_SCREENSHOT_ATTACHMENT_PRESET,
   DEFAULT_STRATEGY_SPOILER_MASKING_ENABLED,
   type DesktopAppLogLevel,
+  type TabResumeMode,
 } from "../data/bonsaiSettingsSchema";
 import {
   normalizeLatencyWarningSeconds,
@@ -153,6 +154,18 @@ describe("settings contracts", () => {
     expect(normalizeSettings({ desktop_app_log_level: "bogus" as unknown as DesktopAppLogLevel }).desktop_app_log_level).toBe("off");
   });
 
+  it("normalizes tab resume mode, defaulting to the locked D15 option B", () => {
+    expect(normalizeSettings({ tab_resume_mode: "always_main" }).tab_resume_mode).toBe("always_main");
+    expect(normalizeSettings({ tab_resume_mode: "resume_recent" }).tab_resume_mode).toBe("resume_recent");
+    expect(normalizeSettings({ tab_resume_mode: " resume " }).tab_resume_mode).toBe("resume");
+    // Unlike every other Developer toggle, an unreadable value must not land on an off-like
+    // state: the shipped behavior is to resume, and this control only picks between options.
+    expect(normalizeSettings({}).tab_resume_mode).toBe("resume");
+    expect(
+      normalizeSettings({ tab_resume_mode: "off" as unknown as TabResumeMode }).tab_resume_mode
+    ).toBe("resume");
+  });
+
   it("normalizes desktop ask verbose logging: only explicit true enables", () => {
     expect(normalizeSettings({ desktop_ask_verbose_logging: true }).desktop_ask_verbose_logging).toBe(true);
     expect(normalizeSettings({ desktop_ask_verbose_logging: false }).desktop_ask_verbose_logging).toBe(false);
@@ -249,6 +262,7 @@ describe("settings contracts", () => {
       steamWebApiKey: "abc",
       bonsaiTokenStreamingEnabled: true,
       showOnscreenDebugHud: false, devForceSessionRagChips: false,
+      tabResumeMode: "resume",
       namedOllamaHosts: [],
       voiceSttModel: "tiny.en",
       uiScaleAutoEnabled: true,
@@ -310,6 +324,7 @@ describe("settings contracts", () => {
       steamWebApiKey: "",
       bonsaiTokenStreamingEnabled: false,
       showOnscreenDebugHud: false, devForceSessionRagChips: false,
+      tabResumeMode: "resume" as const,
       namedOllamaHosts: [],
       voiceSttModel: "tiny.en" as const,
       uiScaleAutoEnabled: true,
@@ -451,6 +466,7 @@ describe("settings contracts", () => {
       bonsaiTokenStreamingEnabled: normalized.bonsai_token_streaming_enabled,
       showOnscreenDebugHud: normalized.show_onscreen_debug_hud,
       devForceSessionRagChips: normalized.dev_force_session_rag_chips,
+      tabResumeMode: normalized.tab_resume_mode,
       namedOllamaHosts: normalized.named_ollama_hosts,
       voiceSttModel: normalized.voice_stt_model,
       uiScaleAutoEnabled: normalized.ui_scale_auto_enabled,

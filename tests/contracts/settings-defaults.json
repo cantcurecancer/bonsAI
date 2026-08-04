@@ -39,6 +39,7 @@
   "steam_web_api_key": "",
   "strategy_spoiler_auto_reveal_after_consent": false,
   "strategy_spoiler_masking_enabled": true,
+  "tab_resume_mode": "resume",
   "text_model_routing_order": [],
   "ui_scale_auto_enabled": true,
   "ui_scale_manual_profile": "handheld",

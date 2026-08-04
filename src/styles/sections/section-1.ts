@@ -1,3 +1,4 @@
+import { ALL_BONSAI_TAB_IDS } from "../../features/plugin-shell/tabTitles";
 import {
   TAB_TITLE_DEBUG_TAB_ICON_PX,
   TAB_TITLE_ICON_PX,
@@ -243,24 +244,30 @@ export function buildSection1Section(): string {
         }
 
         /*
-          Persistent active-tab marker. Keyed on .Active with no focus qualifier, so the accent
-          survives focus moving deep into the tab body and survives reopening the plugin mid-tab —
-          the two cases where the strip previously showed nothing and you had to D-pad up to find out
-          which tab you were on. Colour only: no box is drawn, so this cannot change leaf geometry
-          and cannot move the strip out of the 48-56px stable window useTabStripBodyOffset measures.
+          Persistent active-tab marker.
 
-          Specificity walks the real leaf > shell > icon nesting (see bonsaiTabIconTitle) so this
-          outranks both white-icon rules above whichever one Decky's class nesting happens to match.
-          Those keep their job: grey = another tab, white = the non-active tab the strip is pointing
-          at, accent = the tab you are on.
+          Keyed on our own [data-bonsai-active-tab] on the tabs root, NOT on .Active. Measured
+          over CEF on device 2026-08-04 (docs/audit/decky-tab-strip-classes.md): SteamOS never puts
+          .Active on these tab buttons — it marks the active one with a build-hashed class that
+          changes with every Steam client build. Every .Active rule above is therefore dead, which
+          is why the strip showed no active tab at all and why a first attempt keyed on .Active
+          also did nothing. Do not key anything here on .Active without re-measuring first.
+
+          Colour only, no box, so leaf geometry cannot change and the strip cannot leave the 48-56px
+          stable window useTabStripBodyOffset measures. The attribute is the only thing that changes
+          on a tab switch, so the strip does not re-render on a shoulder press.
+
+          Specificity is 8, deliberately above the .gpfocuswithin:not(.Active) white rule (7) that
+          currently paints every glyph #fcfcfc; it walks the real leaf > shell > icon nesting from
+          bonsaiTabIconTitle rather than padding the selector.
 
           Follows the AI character accent like the strip rings above, and unlike the gamepad focus
           rings, which are deliberately white literals (see gamepadAndPullModels.ts).
         */
-        .bonsai-scope .bonsai-decky-tabs-root .Panel.Focusable.Active .bonsai-tab-title-leaf .bonsai-tab-title-shell .bonsai-tab-title-icon,
-        .bonsai-scope .bonsai-decky-tabs-root .DialogButton.Active .bonsai-tab-title-leaf .bonsai-tab-title-shell .bonsai-tab-title-icon,
-        .bonsai-scope .bonsai-decky-tabs-root .DialogButton.active .bonsai-tab-title-leaf .bonsai-tab-title-shell .bonsai-tab-title-icon,
-        .bonsai-scope .bonsai-decky-tabs-root .Focusable.Active .bonsai-tab-title-leaf .bonsai-tab-title-shell .bonsai-tab-title-icon {
+        ${ALL_BONSAI_TAB_IDS.map(
+          (id) =>
+            `.bonsai-scope .bonsai-decky-tabs-root[data-bonsai-active-tab="${id}"] .bonsai-tab-title-leaf .bonsai-tab-title-shell.bonsai-tab-title-shell--${id} .bonsai-tab-title-icon.bonsai-tab-title-icon--${id}`
+        ).join(",\n        ")} {
           color: var(--bonsai-ui-tab-active-icon, rgba(82, 216, 138, 0.98)) !important;
         }
 

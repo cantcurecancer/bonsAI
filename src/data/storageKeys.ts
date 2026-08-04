@@ -12,6 +12,13 @@ export const DISCLAIMER_STORAGE_KEY = "bonsai:disclaimer-accepted";
 export const PLUGIN_HELP_DISMISSED_STORAGE_KEY = "bonsai:plugin-help-dismissed";
 /** Last tab the user was on, so reopening the plugin resumes there instead of Main (D15 option B). */
 export const LAST_TAB_STORAGE_KEY = "bonsai:last-tab";
+/** Epoch ms the last tab was recorded at; only D15 option C (`resume_recent`) reads it. */
+export const LAST_TAB_AT_STORAGE_KEY = "bonsai:last-tab-at";
+/**
+ * Synchronous mirror of the `tab_resume_mode` setting. `settings.json` is the source of truth;
+ * the opening tab is picked on the first render, before `load_settings` can answer.
+ */
+export const TAB_RESUME_MODE_STORAGE_KEY = "bonsai:tab-resume-mode";
 export const LOCAL_RUNTIME_BETA_DISMISSED_STORAGE_KEY = "bonsai:local-runtime-beta-dismissed-v1";
 
 export const GITHUB_ISSUES_URL = "https://github.com/cantcurecancer/bonsAI/issues";

@@ -23,6 +23,20 @@ import {
 
 export type BonsaiTabId = "main" | "ollama" | "settings" | "permissions" | "developer" | "about";
 
+/**
+ * Every tab id, including ones not always mounted (Developer).
+ * The scoped stylesheet emits one active-marker rule per id, so a new tab that is missing here
+ * renders correctly but never shows the marker.
+ */
+export const ALL_BONSAI_TAB_IDS: readonly BonsaiTabId[] = [
+  "main",
+  "ollama",
+  "settings",
+  "permissions",
+  "developer",
+  "about",
+];
+
 export function bonsaiTabIconTitle(classSuffix: BonsaiTabId, children: React.ReactNode): React.ReactElement {
   return (
     <div className="bonsai-tab-title-leaf">

@@ -32,6 +32,12 @@ export { DEFAULT_MODEL_POLICY_TIER };
 
 export type UnifiedInputPersistenceMode = "persist_all" | "persist_search_only" | "no_persist";
 export type DesktopAppLogLevel = "off" | "default" | "verbose";
+/**
+ * Which tab a reopen lands on. One stop per option in roadmap **D15**, so the three can be
+ * compared on-device without another code change:
+ * `always_main` = A, `resume` = B (locked default), `resume_recent` = C.
+ */
+export type TabResumeMode = "always_main" | "resume" | "resume_recent";
 export type PresetChipAnimation = "fade" | "carousel" | "static";
 /** Legacy; migration maps to ScreenshotAttachmentPreset. */
 export type ScreenshotMaxDimension = 1280 | 1920 | 3160;
@@ -121,6 +127,8 @@ export type BonsaiSettings = {
    * `SESSION_RAG_CHIP_PROBABILITY`. Makes SESSION-RAG-CHIPS-01 deterministic; not a user feature.
    */
   dev_force_session_rag_chips: boolean;
+  /** Which tab a reopen lands on — the three D15 options behind one Developer-tab control. */
+  tab_resume_mode: TabResumeMode;
   /** Labeled ``host:port`` presets for quick Connection switching (max 4). */
   named_ollama_hosts: NamedOllamaHost[];
   /** Local whisper.cpp model for voice Ask (tiny.en default for Deck real-time). */
@@ -173,6 +181,7 @@ export type BonsaiSettingsSnapshotInput = {
   bonsaiTokenStreamingEnabled: boolean;
   showOnscreenDebugHud: boolean;
   devForceSessionRagChips: boolean;
+  tabResumeMode: TabResumeMode;
   namedOllamaHosts: NamedOllamaHost[];
   voiceSttModel: VoiceSttModelId;
   uiScaleAutoEnabled: boolean;
@@ -206,6 +215,14 @@ export const DEFAULT_DESKTOP_ASK_VERBOSE_LOGGING = false;
 export const DEFAULT_BONSAI_TOKEN_STREAMING_ENABLED = false;
 export const DEFAULT_SHOW_ONSCREEN_DEBUG_HUD = false;
 export const DEFAULT_DEV_FORCE_SESSION_RAG_CHIPS = false;
+/** D15 option B, the locked decision — a fresh install resumes the tab you left. */
+export const DEFAULT_TAB_RESUME_MODE: TabResumeMode = "resume";
+export const TAB_RESUME_MODE_OPTIONS: TabResumeMode[] = ["always_main", "resume", "resume_recent"];
+/**
+ * D15 option C's "N minutes". Long enough to cover popping out of the QAM to check something
+ * mid-task, short enough that tomorrow's first open is a fresh start on Main.
+ */
+export const TAB_RESUME_RECENT_WINDOW_MS = 5 * 60 * 1000;
 export const MAX_NAMED_OLLAMA_HOSTS = 4;
 export const DEFAULT_DESKTOP_APP_LOG_LEVEL: DesktopAppLogLevel = "off";
 export const DESKTOP_APP_LOG_LEVEL_OPTIONS: DesktopAppLogLevel[] = ["off", "default", "verbose"];

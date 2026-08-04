@@ -128,6 +128,11 @@ _VALID_DESKTOP_APP_LOG_LEVELS = frozenset({"off", "default", "verbose"})
 
 _VALID_PRESET_CHIP_ANIMATION = frozenset({"fade", "carousel", "static"})
 
+# Which tab a reopen lands on -- one value per option in roadmap D15. Read only by the
+# frontend; the backend's job here is to let the key survive a save_settings round trip.
+_VALID_TAB_RESUME_MODES = frozenset({"always_main", "resume", "resume_recent"})
+DEFAULT_TAB_RESUME_MODE = "resume"
+
 
 def sanitize_preset_chip_animation(value: Any, legacy_fade: Any) -> str:
     """Main-tab preset chip animation mode; migrates from legacy fade boolean when unset."""
@@ -296,6 +301,9 @@ _SIMPLE_FIELDS: dict[str, Any] = {
     # QA only: forces every eligible preset-carousel slot to a session RAG chip.
     "dev_force_session_rag_chips": _bool_default_false,
     "desktop_app_log_level": _enum(_VALID_DESKTOP_APP_LOG_LEVELS, "off", strip=True),
+    # Defaults to "resume" rather than an off-like value: D15 option B is the locked
+    # behavior, and this control exists to compare the alternatives, not to gate it.
+    "tab_resume_mode": _enum(_VALID_TAB_RESUME_MODES, DEFAULT_TAB_RESUME_MODE, strip=True),
     # Ask behavior.
     "input_sanitizer_user_disabled": _bool_default_false,
     "latency_timeouts_custom_enabled": _bool_default_false,

@@ -46,6 +46,8 @@ export function useDeveloperTabPayload({
   setShowOnscreenDebugHud,
   devForceSessionRagChips,
   setDevForceSessionRagChips,
+  tabResumeMode,
+  setTabResumeMode,
   installSeedKnowledgeBase,
   showDeveloperTab,
 }: UseDeveloperTabPayloadArgs): React.ReactElement {
@@ -77,6 +79,8 @@ export function useDeveloperTabPayload({
         setShowOnscreenDebugHud={setShowOnscreenDebugHud}
         devForceSessionRagChips={devForceSessionRagChips}
         setDevForceSessionRagChips={setDevForceSessionRagChips}
+        tabResumeMode={tabResumeMode}
+        setTabResumeMode={setTabResumeMode}
         onInstallSeedKnowledgeBase={showDeveloperTab ? installSeedKnowledgeBase : undefined}
       />
     ),
@@ -94,6 +98,7 @@ export function useDeveloperTabPayload({
       bonsaiTokenStreamingEnabled,
       showOnscreenDebugHud,
       devForceSessionRagChips,
+      tabResumeMode,
       installSeedKnowledgeBase,
       showDeveloperTab,
     ]

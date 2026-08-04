@@ -18,6 +18,24 @@
     }
   },
   {
+    "name": "tab resume mode is trimmed before matching",
+    "input": {
+      "tab_resume_mode": " always_main "
+    },
+    "expected": {
+      "tab_resume_mode": "always_main"
+    }
+  },
+  {
+    "name": "unknown tab resume mode falls back to resume, not to a disabled state",
+    "input": {
+      "tab_resume_mode": "off"
+    },
+    "expected": {
+      "tab_resume_mode": "resume"
+    }
+  },
+  {
     "name": "corpus path rejects traversal",
     "input": {
       "rag_corpus_path": "../../etc/passwd"
