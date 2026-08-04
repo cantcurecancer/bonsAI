@@ -16,28 +16,12 @@ export function buildGamepadFocusRingStylesheet(): string {
            GAMEPAD FOCUS RINGS (.gpfocus)
            ========================================================================== */
 
-        /* Default ring — added 2026-08-04.
-           Every other rule here targets an enumerated bonsAI class, so a plain Decky Button
-           (Browse models, Install options, Test connection) fell through to the browser's
-           \`:focus-visible\` heuristics — a ring that was sometimes yellow, sometimes absent,
-           while classed neighbours drew white. Matching the element instead of a class list means
-           a new control is styled by default rather than by remembering to add one.
-           Specific rules below still win on specificity, so the inset variants are unaffected.
-           This reaches modal content too, but only where the modal is wrapped in
-           \`BonsaiModalScope\` — that wrapper is what puts \`.bonsai-scope\` on portalled content
-           and injects this sheet. A modal without it gets no bonsAI focus styling at all. */
-        .bonsai-scope button.gpfocus,
-        .bonsai-scope button:focus-visible,
-        .bonsai-scope [role="button"].gpfocus,
-        .bonsai-scope [role="button"]:focus-visible,
-        /* Spoiler fences are Decky Focusable divs, not buttons, so the rules above miss them.
-           Without a ring the fence can be focused and still look inert. */
-        .bonsai-scope .bonsai-spoiler-reveal-target.gpfocus,
-        .bonsai-scope .bonsai-spoiler-reveal-target:focus-visible,
-        .bonsai-scope .bonsai-spoiler-collapse-target.gpfocus,
-        .bonsai-scope .bonsai-spoiler-collapse-target:focus-visible {
-          ${ring}
-        }
+        /* Reverted 2026-08-04: a blanket \`button.gpfocus\` / \`:focus-visible\` rule was added here
+           to make unclassed buttons consistent, but it painted bonsAI's thick rounded ring onto
+           controls that SteamOS already outlines with a faint white rectangle — not the look the
+           maintainer wants. Consistency is still the goal; the way to get it is for controls to be
+           real Decky \`Focusable\`s so SteamOS styles them natively, NOT to spread this ring wider.
+           Do not re-add a catch-all ring rule here. */
 
         .bonsai-scope .bonsai-attach-menu-surface .bonsai-attach-menu-item.gpfocus,
         .bonsai-scope .bonsai-attach-menu-surface .bonsai-attach-menu-item:focus-visible,

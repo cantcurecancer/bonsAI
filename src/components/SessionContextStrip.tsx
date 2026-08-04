@@ -72,24 +72,35 @@ export function SessionContextStrip({
         return false;
       }}
     >
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        style={{
-          width: "100%",
-          textAlign: "left",
-          background: "none",
-          border: "none",
-          color: "#b8cce0",
-          fontSize: 12,
-          fontWeight: 700,
-          padding: 0,
-          cursor: "pointer",
-          font: "inherit",
+      {/* Decky's gamepad navigation only visits `Focusable`s — a bare <button> is touch-only, which
+          is what made this header unreachable from a D-pad (reported 2026-08-04). Same wrapper the
+          turn rows below already use; the native button stays for click and keeps the styling. */}
+      <Focusable
+        onActivate={() => setOpen((o) => !o)}
+        onButtonDown={() => {
+          setOpen((o) => !o);
+          return true;
         }}
       >
-        Session context ({rows.length} turn{rows.length === 1 ? "" : "s"}) {open ? "▾" : "▸"}
-      </button>
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          style={{
+            width: "100%",
+            textAlign: "left",
+            background: "none",
+            border: "none",
+            color: "#b8cce0",
+            fontSize: 12,
+            fontWeight: 700,
+            padding: 0,
+            cursor: "pointer",
+            font: "inherit",
+          }}
+        >
+          Session context ({rows.length} turn{rows.length === 1 ? "" : "s"}) {open ? "▾" : "▸"}
+        </button>
+      </Focusable>
       {open ? (
         <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 6 }}>
           {rows.map((row) => (
