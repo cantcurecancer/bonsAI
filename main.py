@@ -701,6 +701,25 @@ class Plugin:
                 await self._stop_voice_transcription_internal()
             return saved
 
+    async def _reset_voice_install_after_clear(self) -> None:
+        """Cancel any in-flight voice-engine install and reset its state to the default.
+
+        The reset is **unconditional**, matching the background-Ask and local-Ollama teardowns
+        above it. Until 2026-08-04 these three lines sat inside the "task still running" guard, so
+        a voice install that had already *finished* survived Clear-all-plugin-data and
+        ``get_voice_install_status`` kept serving that stale result after the files it described
+        were deleted.
+        """
+        vit = getattr(self, "_voice_install_task", None)
+        if vit is not None and not vit.done():
+            ce_voice = getattr(self, "_voice_install_cancel", None)
+            if isinstance(ce_voice, threading.Event):
+                ce_voice.set()
+            await cancel_and_await(vit)
+        self._voice_install_task = None
+        self._voice_install_cancel = None
+        self._voice_install_state = new_voice_install_state()
+
     async def clear_plugin_data(self):
         """Remove persisted settings/runtime/logs and return fresh defaults (new-install behavior)."""
         async with self._background_lock:
@@ -721,19 +740,7 @@ class Plugin:
 
         await self._stop_voice_transcription_internal()
 
-        # Asymmetry preserved from before the extraction, not endorsed: the three resets below sit
-        # *inside* the `not vit.done()` guard, so a voice install that already finished leaves
-        # `_voice_install_state` reporting that old result after a data clear. The background and
-        # local-Ollama blocks above reset unconditionally. Filed under roadmap Bugs.
-        vit = getattr(self, "_voice_install_task", None)
-        if vit is not None and not vit.done():
-            ce_voice = getattr(self, "_voice_install_cancel", None)
-            if isinstance(ce_voice, threading.Event):
-                ce_voice.set()
-            await cancel_and_await(vit)
-            self._voice_install_task = None
-            self._voice_install_cancel = None
-            self._voice_install_state = new_voice_install_state()
+        await self._reset_voice_install_after_clear()
 
         current = await self.load_settings()
         rag_path = str((current or {}).get("rag_corpus_path") or "").strip()
