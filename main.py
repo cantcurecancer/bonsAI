@@ -17,8 +17,6 @@ import shutil
 import sys
 import threading
 import time
-import urllib.request
-import urllib.error
 from typing import Any, Optional, Tuple
 
 import decky
@@ -31,6 +29,7 @@ from backend.services.ollama_service import (
     append_deck_tdp_sysfs_grounding,
     best_effort_abort_ollama_inference,
     build_system_prompt,
+    probe_ollama_health,
 )
 from backend.services.background_request_state import (
     OMIT as _OMIT_SHORTCUT_SETUP_FIELD,
@@ -994,45 +993,7 @@ class Plugin:
             return out
 
         def _test_connection_sync() -> dict:
-            deadline = started_at + safe_timeout_seconds
-            ver_timeout = max(0.25, deadline - time.time())
-            ver_req = urllib.request.Request(f"{base}/api/version", method="GET")
-            ver_resp = urllib.request.urlopen(ver_req, timeout=ver_timeout)
-            ver_data = json.loads(ver_resp.read().decode("utf-8"))
-            version_local = ver_data.get("version", "unknown")
-
-            tags_timeout = max(0.25, deadline - time.time())
-            tags_req = urllib.request.Request(f"{base}/api/tags", method="GET")
-            tags_resp = urllib.request.urlopen(tags_req, timeout=tags_timeout)
-            tags_data = json.loads(tags_resp.read().decode("utf-8"))
-            models_local = [m.get("name", "?") for m in tags_data.get("models", [])]
-
-            # /api/ps: currently loaded models + size_vram vs size (approximate GPU-visible weight share).
-            ps_snapshots: list[dict[str, Any]] = []
-            ps_timeout = max(0.25, deadline - time.time())
-            try:
-                ps_req = urllib.request.Request(f"{base}/api/ps", method="GET")
-                ps_resp = urllib.request.urlopen(ps_req, timeout=ps_timeout)
-                ps_data = json.loads(ps_resp.read().decode("utf-8"))
-                for m in ps_data.get("models", []) or []:
-                    name_m = str(m.get("name") or m.get("model") or "?")
-                    sz_b = int(m.get("size") or 0)
-                    vram_b = int(m.get("size_vram") or 0)
-                    ratio = None
-                    if sz_b > 0 and vram_b >= 0:
-                        ratio = round(100.0 * min(vram_b, sz_b) / sz_b, 1)
-                    ps_snapshots.append(
-                        {
-                            "name": name_m,
-                            "size_bytes": sz_b,
-                            "size_vram_bytes": vram_b,
-                            "vram_weight_share_pct_appx": ratio,
-                        }
-                    )
-            except Exception:
-                ps_snapshots = []
-
-            return {"version": version_local, "models": models_local, "ps_loaded": ps_snapshots}
+            return probe_ollama_health(base, started_at + safe_timeout_seconds)
 
         recovery_attempted = False
         recovery_succeeded_before_retry: bool | None = None

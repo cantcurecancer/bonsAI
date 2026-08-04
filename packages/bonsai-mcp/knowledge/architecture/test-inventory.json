@@ -77,6 +77,7 @@
     "tests/test_ollama_ask_service.py",
     "tests/test_ollama_catalog_service.py",
     "tests/test_ollama_embed_service.py",
+    "tests/test_ollama_health_probe.py",
     "tests/test_ollama_mdns_discovery_service.py",
     "tests/test_ollama_prompts_stream_instruction.py",
     "tests/test_ollama_pull_registry.py",
