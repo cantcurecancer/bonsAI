@@ -19,7 +19,11 @@ import {
   captureOllamaTabLocalSnapshot,
 } from "../utils/ollamaTabLocalSurvival";
 import { loadLastTab, saveLastTab } from "../features/plugin-shell/pluginStorage";
-import { restoreModalReturnFocus } from "../features/plugin-shell/modalReturnFocusRegistry";
+import { call } from "@decky/api";
+import {
+  peekModalReturnFocus,
+  restoreModalReturnFocus,
+} from "../features/plugin-shell/modalReturnFocusRegistry";
 
 /**
  * If Decky unmounts plugin `Content` when `showModal` closes, React state resets to defaults; this
@@ -92,8 +96,19 @@ export function useBonsaiPluginShell({ getSessionSnapshot }: UseBonsaiPluginShel
         // Focus last: the tab has to be active and its controls mounted before the opener can be
         // focused, and after a Content remount the ref callbacks only re-register on that mount.
         // A miss is a no-op, which is exactly the behavior this had before.
+        const armedId = peekModalReturnFocus();
         window.requestAnimationFrame(() => {
-          restoreModalReturnFocus();
+          const claimed = restoreModalReturnFocus();
+          // TEMPORARY instrumentation (2026-08-04) for PICKER-FOCUS-01. Two of three modals return
+          // focus to the tab strip instead of their opener, and `claimed` is the one thing that
+          // separates "never ran" from "ran and was overridden" — the focus-graph rules forbid
+          // settling it with an activeElement check. Lands in the Deck plugin log via dbg_fe_log.
+          // Remove once the fix is chosen.
+          void call("dbg_fe_log", "picker-focus", {
+            armedId,
+            claimed,
+            backTab: back,
+          }).catch(() => {});
         });
       }, 80);
     },

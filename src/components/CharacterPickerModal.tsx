@@ -53,6 +53,7 @@ export function CharacterPickerModal(props: CharacterPickerModalProps) {
   const { initialDraft, onCancel, onOK } = props;
   const [draft, setDraft] = useState<AiCharacterPickerDraft>(() => ({ ...initialDraft }));
   const pickerShellRef = useRef<HTMLDivElement | null>(null);
+  const randomRowRef = useRef<HTMLDivElement | null>(null);
   const customCharacterShellRef = useRef<HTMLDivElement | null>(null);
   const columnButtonRefs = useRef<Array<Array<HTMLElement | null>>>(
     Array.from({ length: PICKER_COL_COUNT }, () => [])
@@ -190,14 +191,45 @@ export function CharacterPickerModal(props: CharacterPickerModalProps) {
   }, []);
 
   const focusRandomToggle = useCallback(() => {
-    const shell = pickerShellRef.current;
-    if (!shell) return false;
-    const box = shell.querySelector(".bonsai-ai-char-random");
-    const el = box?.querySelector<HTMLElement>(
+    // Scoped to a ref'd container rather than found by class from the shell: a registered mounted
+    // owner is what .cursor/rules/decky-focus-graph.mdc asks for, and the class lookup was one of
+    // the DOM queries that made this screen unnavigable on Deck.
+    const box = randomRowRef.current;
+    if (!box) return false;
+    const el = box.querySelector<HTMLElement>(
       "button, [href], input, select, textarea, [tabindex]:not([tabindex=\"-1\"])"
     );
     el?.focus();
     return !!el;
+  }, []);
+
+  /**
+   * Claim focus for the Random toggle when the picker opens with Random already on.
+   *
+   * With `randomLocked` every other control in the body is `disabled` / `focusable={false}` /
+   * `inert` — the character grid, the suggestions, the custom field. The toggle is then the **only**
+   * focusable control, and the only way to unlock the rest. If nothing claims it on open, the screen
+   * reads as dead on a Deck: no visible focus ring anywhere, D-pad does nothing, and the user cannot
+   * reach the one control that would let them pick a character. That is the 2026-08-04 report
+   * ("select a character, it stays on random") — the selection never moved because it could not.
+   *
+   * Two frames: one for ConfirmModal to mount its body, one for Decky to finish its own focus pass,
+   * so this claim lands last rather than being overwritten.
+   */
+  useEffect(() => {
+    if (!initialDraft.random) return;
+    let inner = 0;
+    const outer = requestAnimationFrame(() => {
+      inner = requestAnimationFrame(() => {
+        focusRandomToggle();
+      });
+    });
+    return () => {
+      cancelAnimationFrame(outer);
+      if (inner) cancelAnimationFrame(inner);
+    };
+    // Mount-only: re-running on later draft changes would yank focus mid-interaction.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const focusCustomCharacterField = useCallback((): boolean => {
@@ -412,6 +444,7 @@ export function CharacterPickerModal(props: CharacterPickerModalProps) {
           }}
         >
           <div
+            ref={randomRowRef}
             className="bonsai-ai-char-random"
             style={{
               display: "flex",

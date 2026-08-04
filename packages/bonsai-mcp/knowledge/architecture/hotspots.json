@@ -66,13 +66,13 @@
       "role": "Prompt build, Ollama HTTP, streaming"
     },
     {
-      "path": "py_modules/backend/services/bonsai_stream_tags.py",
-      "lines": 693,
+      "path": "src/components/CharacterPickerModal.tsx",
+      "lines": 705,
       "role": ""
     },
     {
-      "path": "src/components/CharacterPickerModal.tsx",
-      "lines": 672,
+      "path": "py_modules/backend/services/bonsai_stream_tags.py",
+      "lines": 693,
       "role": ""
     },
     {
