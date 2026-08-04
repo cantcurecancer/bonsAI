@@ -181,13 +181,17 @@ Still asking the global `document`, same root cause, not yet swept — tracked i
 | File | Line | Shape |
 |---|---|---|
 | `src/utils/chatPanelScroll.ts` | 80 | `document.activeElement` as scroll anchor |
-| `src/utils/focusNavigation.ts` | 71 | `getFocusableWithin` root query |
+| `src/utils/focusNavigation.ts` | 130 | `getFocusableWithin` root query |
 | `src/utils/settingsPanelScroll.ts` | 21 | `.bonsai-scope` fallback query |
-| `src/components/MainTabChatTranscript.tsx` | 203, 214, 215 | header query + `activeElement` |
+| `src/components/MainTabChatTranscript.tsx` | 211, 222, 223 | header query + `activeElement` |
 | `src/components/MainTabUnifiedAskBar.tsx` | 737 | `activeElement` |
 | `src/components/MainTabPresetAnimatedChips.tsx` | 157 | `contains(document.activeElement)` |
 | `src/components/AboutTab.tsx` | 99 | dropdown query |
 | `src/hooks/useBonsaiAskOrchestration.ts` | 730 | `instanceof HTMLElement` + `blur()` |
+
+Line numbers re-derived 2026-08-04 after the fixes landed. Tracked in `docs/roadmap.md`, together
+with a second sweep for `onButtonDown` handlers that act on every button or test a direction with a
+string predicate.
 
 The `CharacterPickerModal` focus graph (roadmap ★★★) is the same bug in a modal: it drives
 D-pad focus with `shell.querySelector(...)`. Modals portal to yet another root, so confirm
