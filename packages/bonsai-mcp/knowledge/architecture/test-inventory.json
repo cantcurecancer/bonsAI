@@ -52,6 +52,7 @@
   "pytest": [
     "tests/test_accent_intensity_parity.py",
     "tests/test_ai_character_service.py",
+    "tests/test_async_task_lifecycle.py",
     "tests/test_backend_helpers.py",
     "tests/test_background_abort_busy.py",
     "tests/test_background_partial_state.py",

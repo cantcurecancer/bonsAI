@@ -31,6 +31,7 @@ from backend.services.ollama_service import (
     build_system_prompt,
     probe_ollama_health,
 )
+from backend.services.async_task_lifecycle import cancel_and_await
 from backend.services.background_request_state import (
     OMIT as _OMIT_SHORTCUT_SETUP_FIELD,
     completed_local_command_state,
@@ -314,24 +315,14 @@ class Plugin:
         ce = getattr(self, "_local_ollama_cancel_event", None)
         if isinstance(ce, asyncio.Event):
             ce.set()
-        lt = getattr(self, "_local_ollama_setup_task", None)
-        if lt is not None and not lt.done():
-            lt.cancel()
-            try:
-                await lt
-            except asyncio.CancelledError:
-                pass
+        await cancel_and_await(getattr(self, "_local_ollama_setup_task", None))
         await self._stop_voice_transcription_internal()
         vit = getattr(self, "_voice_install_task", None)
         if vit is not None and not vit.done():
             ce_voice = getattr(self, "_voice_install_cancel", None)
             if isinstance(ce_voice, threading.Event):
                 ce_voice.set()
-            vit.cancel()
-            try:
-                await vit
-            except asyncio.CancelledError:
-                pass
+            await cancel_and_await(vit)
         logger.info("bonsAI plugin unloaded!")
 
     def _new_background_state(self) -> dict:
@@ -714,12 +705,7 @@ class Plugin:
         async with self._background_lock:
             task = self._background_task
             self._background_task = None
-            if task is not None and not task.done():
-                task.cancel()
-                try:
-                    await task
-                except asyncio.CancelledError:
-                    pass
+            await cancel_and_await(task)
             self._background_state = self._new_background_state()
             self._background_request_seq += 1
         self._last_input_transparency = None
@@ -727,29 +713,23 @@ class Plugin:
         async with self._local_ollama_setup_lock:
             if self._local_ollama_cancel_event is not None:
                 self._local_ollama_cancel_event.set()
-            lst = self._local_ollama_setup_task
-            if lst is not None and not lst.done():
-                lst.cancel()
-                try:
-                    await lst
-                except asyncio.CancelledError:
-                    pass
+            await cancel_and_await(self._local_ollama_setup_task)
             self._local_ollama_setup_task = None
             self._local_ollama_cancel_event = None
             self._local_ollama_setup_state = new_local_ollama_setup_state()
 
         await self._stop_voice_transcription_internal()
 
+        # Asymmetry preserved from before the extraction, not endorsed: the three resets below sit
+        # *inside* the `not vit.done()` guard, so a voice install that already finished leaves
+        # `_voice_install_state` reporting that old result after a data clear. The background and
+        # local-Ollama blocks above reset unconditionally. Filed under roadmap Bugs.
         vit = getattr(self, "_voice_install_task", None)
         if vit is not None and not vit.done():
             ce_voice = getattr(self, "_voice_install_cancel", None)
             if isinstance(ce_voice, threading.Event):
                 ce_voice.set()
-            vit.cancel()
-            try:
-                await vit
-            except asyncio.CancelledError:
-                pass
+            await cancel_and_await(vit)
             self._voice_install_task = None
             self._voice_install_cancel = None
             self._voice_install_state = new_voice_install_state()
