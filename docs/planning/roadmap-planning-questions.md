@@ -16,11 +16,11 @@ Prepared prompts for a future AI planning session. Each section has a short summ
 | 6 | Thinking blurbs evaluation | [06-thinking-blurbs-review.md](06-thinking-blurbs-review.md) |
 | 7 | Named chat slots | [07-named-chat-slots-postmortem.md](07-named-chat-slots-postmortem.md) |
 | 8 | Kids master lock feasibility | [08-kids-master-lock-feasibility.md](08-kids-master-lock-feasibility.md) |
-| 9 | Steam Frame companion UX feasibility | *not yet written* |
+| 9 | Steam Frame companion UX feasibility | [09-steam-frame-companion-feasibility.md](09-steam-frame-companion-feasibility.md) |
 | 10 | Wake-word listening feasibility and cost | *not yet written* |
 | 11 | Native QAM shortcut tile / decouple from Decky | *not yet written* |
-| 12 | Deep mod AI hints feasibility | *not yet written* |
-| 13 | Feature ideas for roadmap.md (star-rated) | *not yet written* |
+| 12 | Deep mod AI hints feasibility | [12-deep-mod-ai-hints-feasibility.md](12-deep-mod-ai-hints-feasibility.md) |
+| 13 | Feature ideas for roadmap.md (star-rated) | [13-roadmap-feature-ideas.md](13-roadmap-feature-ideas.md) |
 
 ---
 
