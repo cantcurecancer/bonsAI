@@ -16,6 +16,7 @@ import {
   normalizeAiCharacterPresetId,
 } from "../../data/bonsaiSettingsNormalizers";
 import type { BonsaiSettings } from "../../data/bonsaiSettingsSchema";
+import { patchPendingSessionSettingsSnapshot } from "../../utils/bonsaiSessionSurvival";
 
 export type UseCharacterPickerModalArgs = {
   aiCharacterRandom: boolean;
@@ -80,6 +81,16 @@ export function useCharacterPickerModal({
               ]
             );
             hydrateFromSettings(saved);
+            // The session snapshot captured before this modal opened still holds the OLD character
+            // settings. Decky remounts Content when the modal closes, and that restore re-hydrates
+            // settings from the snapshot — overwriting the save that just succeeded, which is why
+            // picking a character appeared to do nothing and the picker reopened on Random.
+            // `useOllamaModelsHubModal` already patches the snapshot after its save; this one did not.
+            patchPendingSessionSettingsSnapshot({
+              aiCharacterRandom: next.random,
+              aiCharacterPresetId: pid,
+              aiCharacterCustomText: ctxt,
+            });
             finalizeShowModalAndRestoreActiveTab(() => handle.Close());
           } catch (err: unknown) {
             console.error("save_settings failed (character picker OK)", err);

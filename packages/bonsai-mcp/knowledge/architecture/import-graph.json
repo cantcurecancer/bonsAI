@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
   "fileCount": 246,
-  "edgeCount": 561,
+  "edgeCount": 562,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -1007,6 +1007,7 @@
         "src/components/CharacterPickerModal.tsx",
         "src/data/bonsaiSettingsNormalizers.ts",
         "src/data/bonsaiSettingsSchema.ts",
+        "src/utils/bonsaiSessionSurvival.ts",
         "src/utils/deckyCall.ts"
       ],
       "importedBy": [
@@ -1898,6 +1899,7 @@
         "src/utils/inputTransparency.ts"
       ],
       "importedBy": [
+        "src/features/plugin-shell/useCharacterPickerModal.tsx",
         "src/features/plugin-shell/useOllamaConnectionState.ts",
         "src/features/plugin-shell/useOllamaModelsHubModal.tsx",
         "src/features/plugin-shell/usePluginHelpModal.tsx",

@@ -19,11 +19,7 @@ import {
   captureOllamaTabLocalSnapshot,
 } from "../utils/ollamaTabLocalSurvival";
 import { loadLastTab, saveLastTab } from "../features/plugin-shell/pluginStorage";
-import { call } from "@decky/api";
-import {
-  peekModalReturnFocus,
-  restoreModalReturnFocusWithRetry,
-} from "../features/plugin-shell/modalReturnFocusRegistry";
+import { restoreModalReturnFocusWithRetry } from "../features/plugin-shell/modalReturnFocusRegistry";
 
 /**
  * If Decky unmounts plugin `Content` when `showModal` closes, React state resets to defaults; this
@@ -96,20 +92,8 @@ export function useBonsaiPluginShell({ getSessionSnapshot }: UseBonsaiPluginShel
         // Focus last: the tab has to be active and its controls mounted before the opener can be
         // focused, and after a Content remount the ref callbacks only re-register on that mount.
         // A miss is a no-op, which is exactly the behavior this had before.
-        const armedId = peekModalReturnFocus();
         window.requestAnimationFrame(() => {
-          restoreModalReturnFocusWithRetry((claimed, attempts) => {
-            // Instrumentation kept while PICKER-FOCUS-01 is open: `claimed` is what separated
-            // "never armed" (models hub, wrong button wired) from "armed but not mounted yet"
-            // (desktop note). The focus-graph rules forbid settling that with an activeElement
-            // check, so this is the evidence channel. Lands in the Deck plugin log.
-            void call("dbg_fe_log", "picker-focus", {
-              armedId,
-              claimed,
-              attempts,
-              backTab: back,
-            }).catch(() => {});
-          });
+          restoreModalReturnFocusWithRetry();
         });
       }, 80);
     },

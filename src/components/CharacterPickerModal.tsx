@@ -7,7 +7,6 @@
  */
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button, ConfirmModal, Focusable, Router, TextField, ToggleField } from "@decky/ui";
-import { call } from "@decky/api";
 import {
   AI_CHARACTER_CUSTOM_TEXT_MAX,
   CHARACTER_PICKER_COLUMNS,
@@ -218,24 +217,26 @@ export function CharacterPickerModal(props: CharacterPickerModalProps) {
    * Two frames: one for ConfirmModal to mount its body, one for Decky to finish its own focus pass,
    * so this claim lands last rather than being overwritten.
    */
+  /**
+   * Claim the Random toggle on open **only when it locks everything else**.
+   *
+   * With `randomLocked` the grid, the suggestions and the custom field are all `disabled` /
+   * `focusable={false}` / `inert`, so the toggle is the only focusable control and the only way to
+   * unlock the rest. Unlocked, the grid is navigable on its own and Decky picks the starting
+   * control — claiming one here would only fight it.
+   *
+   * Kept deliberately narrow after 2026-08-04: two earlier versions of this effect (locked-only,
+   * then unconditional) were both written on the theory that nothing was claiming focus. The real
+   * cause of "no focus ring, D-pad dead" was that this modal rendered outside `.bonsai-scope`, so
+   * none of the ring CSS could match it. `BonsaiModalScope` fixed that. Do not widen this again
+   * without evidence that a claim, rather than the styling, is what is missing.
+   */
   useEffect(() => {
+    if (!initialDraft.random) return;
     let inner = 0;
     const outer = requestAnimationFrame(() => {
       inner = requestAnimationFrame(() => {
-        // Unconditional as of 2026-08-04. The first version only claimed focus when Random was on,
-        // reasoning that an unlocked grid is already navigable. The Deck recording disproved that:
-        // with Random *off* and the grid fully enabled, no control had a focus ring and the D-pad
-        // did nothing. Decky does not adopt this modal's body on its own, so the picker has to
-        // claim a starting point in both states.
-        const target = randomLocked ? "random-toggle" : "first-character";
-        const claimed = randomLocked
-          ? focusRandomToggle()
-          : focusButtonAtColumnIndex(0, 0) || focusRandomToggle();
-        void call("dbg_fe_log", "char-picker-focus", {
-          randomLocked,
-          target,
-          claimed,
-        }).catch(() => {});
+        focusRandomToggle();
       });
     });
     return () => {
