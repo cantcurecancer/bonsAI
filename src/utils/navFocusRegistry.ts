@@ -50,12 +50,6 @@ export function takeNavFocus(id: NavFocusId): boolean {
   }
 }
 
-/** Whether a target is registered and ready — useful for ordering a focus ladder. */
-export function hasNavFocusTarget(id: NavFocusId): boolean {
-  const node = navRefs.get(id)?.current;
-  return Boolean(node && typeof node.TakeFocus === "function");
-}
-
 /** Test-only reset. */
 export function resetNavFocusRegistry(): void {
   navRefs.clear();

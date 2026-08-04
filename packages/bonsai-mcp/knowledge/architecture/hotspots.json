@@ -191,13 +191,13 @@
       "role": ""
     },
     {
-      "path": "src/utils/buildReplyActionsElement.tsx",
-      "lines": 370,
+      "path": "src/components/DeveloperTab.tsx",
+      "lines": 369,
       "role": ""
     },
     {
-      "path": "src/components/DeveloperTab.tsx",
-      "lines": 369,
+      "path": "py_modules/backend/services/voice_whisper_daemon.py",
+      "lines": 367,
       "role": ""
     }
   ]

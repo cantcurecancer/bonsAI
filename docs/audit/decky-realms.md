@@ -9,9 +9,13 @@ documents**. Decky runs plugin code in SteamOS's `SharedJSContext`, whose `docum
 14-element shell. The QAM UI is rendered into a *separate* popup document. So inside plugin
 code the global `document` describes a page that contains none of our markup.
 
-`element.focus()` was never the broken part. It works, and Steam's gamepad ring follows it.
-What was broken is everything the code did *around* the focus call: finding the element,
-and checking whether the move landed.
+The document split is the first of two findings here. What was broken around every focus call
+was finding the element and checking whether the move landed — both asked the wrong document.
+
+**Read the second finding below before concluding anything about `focus()`.** A plain
+`element.focus()` works *within* one navigation container and Steam's ring follows it; it does
+**not** transfer gamepad focus to a different container. Treating the first half of that sentence
+as the whole truth is what sent three further attempts down the wrong path.
 
 ---
 
@@ -107,6 +111,64 @@ Also load-bearing: do not overwrite an existing `tabindex`. Decky sets `0` on th
 navigates; forcing `-1` removes them from Steam's graph for later presses.
 
 ---
+
+## Second finding: DOM focus does not cross navigation containers
+
+The realm fix above made focus helpers *reach* their targets. It did not make every focus move
+land, and the difference cost three more attempts on one bug — nothing below the reply row was
+reachable by D-pad.
+
+`element.focus()` sets `document.activeElement`. It does **not** transfer Steam's gamepad focus
+ownership when the target is in a different navigation container. Measured 2026-08-04 with the
+reply row focused, running exactly what `focusSessionContextStrip` ran:
+
+| after focusing the session context strip | |
+|---|---|
+| `document.activeElement` | the strip |
+| `gpfocus` (Steam's ring) | still on **Retry** |
+| `gpfocus` 250 ms later | **gone entirely** |
+
+Steam kept routing every press to the reply row, and `elementHasFocus` — correct about the
+document — reported success, because `activeElement` really had moved. Instrumentation confirmed
+the loop: `onButtonDown` arrived with `button: 10` (`DIR_DOWN`), the handler ran, it reported
+`moved: true`, and the next press was delivered to the same row again.
+
+**This is why the spoiler fence worked and this did not**, and taking the fence as proof that a DOM
+focus is sufficient is what sent the next three attempts down the wrong path. The fence sits inside
+the container that already held focus, so Steam's focus-within tracking follows a plain `focus()`.
+A container's sibling does not.
+
+The transfer Steam uses on itself is `navRef.current.TakeFocus()` → `BTakeFocus` — 166 uses of
+`TakeFocus` and 200 of `navRef` in SteamUI's bundle. `navRef` is a real prop that Decky's types
+omit (it is declared only on `Toggle`), so it needs the same cast as `onMoveDown`.
+See `src/utils/navFocusRegistry.ts`.
+
+## Which handler actually fires
+
+Three separate bugs came from wiring a handler that is never called, or one that is called far more
+often than intended:
+
+| Prop | On a Decky `Focusable` | On a Decky `Button` | Argument |
+|---|---|---|---|
+| `onMoveUp` / `onMoveDown` | fires (answer bubble) | **never fires** — not forwarded | — |
+| `onButtonDown` | fires for **every** button | fires for **every** button | `GamepadEvent`, id at `evt.detail.button` |
+| `onActivate` | A only | A only | `CustomEvent` |
+
+`onMove*` is absent from Decky's `FooterLegendProps` and `DialogButtonProps` but real in SteamUI —
+the types are incomplete, not the API. Button ids: `OK = 1`, `CANCEL = 2`, `DIR_UP = 9`,
+`DIR_DOWN = 10`.
+
+Because `onButtonDown` fires for everything, a state-changing handler **must** whitelist its button.
+Three controls — the masked spoiler fence, its collapse control, and the session context header —
+toggled themselves on any press, including the D-pad press meant to move past them.
+
+## The tabindex rule
+
+`tabindex="-1"` removes an element from Steam's navigation graph. Four copies of the same focus
+ladder in this repo stamped it on every element they touched. For the reply row that meant
+navigating *onto* Retry is what stopped Retry responding to the next press. Never overwrite an
+existing `tabindex` — Decky sets `0` on the nodes it navigates — and never add one to an element
+that is natively focusable.
 
 ## Remaining call sites
 

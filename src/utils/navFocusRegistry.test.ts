@@ -1,7 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
-  hasNavFocusTarget,
   registerNavFocus,
   resetNavFocusRegistry,
   takeNavFocus,
@@ -29,7 +28,6 @@ describe("nav focus registry", () => {
 
   it("reports false for a target that was never registered", () => {
     expect(takeNavFocus("ask-diagnostics")).toBe(false);
-    expect(hasNavFocusTarget("ask-diagnostics")).toBe(false);
   });
 
   /*
@@ -42,7 +40,6 @@ describe("nav focus registry", () => {
     registerNavFocus("session-context-strip", { current: null });
 
     expect(takeNavFocus("session-context-strip")).toBe(false);
-    expect(hasNavFocusTarget("session-context-strip")).toBe(false);
   });
 
   it("reports false when the ref holds something without TakeFocus", () => {
@@ -71,11 +68,10 @@ describe("nav focus registry", () => {
 
   it("forgets a target on unmount", () => {
     registerNavFocus("ask-diagnostics", steamNavRef(() => true));
-    expect(hasNavFocusTarget("ask-diagnostics")).toBe(true);
+    expect(takeNavFocus("ask-diagnostics")).toBe(true);
 
     registerNavFocus("ask-diagnostics", null);
 
-    expect(hasNavFocusTarget("ask-diagnostics")).toBe(false);
     expect(takeNavFocus("ask-diagnostics")).toBe(false);
   });
 });
