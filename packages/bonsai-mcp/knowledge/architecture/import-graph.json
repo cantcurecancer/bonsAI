@@ -318,7 +318,6 @@
         "src/data/bonsaiSettingsSchema.ts",
         "src/data/modelPolicy.ts",
         "src/data/replyVerbosity.ts",
-        "src/features/plugin-shell/modalReturnFocusRegistry.ts",
         "src/styles/settingsGlassButton.ts"
       ],
       "importedBy": [
@@ -331,6 +330,7 @@
         "src/data/bonsaiSettingsSchema.ts",
         "src/data/deckEssentialsTags.ts",
         "src/data/modelPolicy.ts",
+        "src/features/plugin-shell/modalReturnFocusRegistry.ts",
         "src/utils/deckyCall.ts",
         "src/utils/ollamaTabLocalSurvival.ts",
         "src/utils/pullModelCatalogRefresh.ts",
@@ -914,7 +914,7 @@
       "importedBy": [
         "src/components/MainTabChatTranscript.tsx",
         "src/components/MainTabPresetRow.tsx",
-        "src/components/OllamaTab.tsx",
+        "src/components/OllamaWhereAiRunsSection.tsx",
         "src/components/SettingsTab.tsx",
         "src/features/plugin-shell/modalReturnFocusRegistry.test.ts",
         "src/hooks/useBonsaiPluginShell.ts"

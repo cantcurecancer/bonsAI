@@ -33,6 +33,10 @@ import {
 } from "../data/deckEssentialsTags";
 import { tryMoveUpWithPanelScroll } from "../utils/settingsPanelScroll";
 import { disclosureSummaryForSourceClass } from "../data/modelPolicy";
+import {
+  registerModalReturnFocusOwner,
+  rememberModalReturnFocus,
+} from "../features/plugin-shell/modalReturnFocusRegistry";
 
 const TEST_CONNECTION_TIMEOUT_SECONDS = 10;
 /** Loopback probes may start systemd / ``ollama serve``; Decky RPC must outlive nested waits. */
@@ -699,9 +703,14 @@ export const OllamaWhereAiRunsSection: React.FC<OllamaWhereAiRunsSectionProps> =
                 <Button
                   ref={(el) => {
                     browseModelsBtnRef.current = el as HTMLButtonElement | null;
+                    // This is the button users actually press to reach the models hub; the one on
+                    // OllamaTab is a second, less-used entry point. Wiring only that one is why
+                    // the 2026-08-04 focus log showed armedId: null for this modal.
+                    registerModalReturnFocusOwner("ollama-models-hub", el as HTMLElement | null);
                   }}
                   disabled={localSetupBusy}
                   onClick={() => {
+                    rememberModalReturnFocus("ollama-models-hub");
                     onBeforeDeckyModal();
                     onOpenOllamaModelsHub({ initialSection: "browse" });
                   }}

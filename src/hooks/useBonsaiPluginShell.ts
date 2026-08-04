@@ -22,7 +22,7 @@ import { loadLastTab, saveLastTab } from "../features/plugin-shell/pluginStorage
 import { call } from "@decky/api";
 import {
   peekModalReturnFocus,
-  restoreModalReturnFocus,
+  restoreModalReturnFocusWithRetry,
 } from "../features/plugin-shell/modalReturnFocusRegistry";
 
 /**
@@ -98,17 +98,18 @@ export function useBonsaiPluginShell({ getSessionSnapshot }: UseBonsaiPluginShel
         // A miss is a no-op, which is exactly the behavior this had before.
         const armedId = peekModalReturnFocus();
         window.requestAnimationFrame(() => {
-          const claimed = restoreModalReturnFocus();
-          // TEMPORARY instrumentation (2026-08-04) for PICKER-FOCUS-01. Two of three modals return
-          // focus to the tab strip instead of their opener, and `claimed` is the one thing that
-          // separates "never ran" from "ran and was overridden" — the focus-graph rules forbid
-          // settling it with an activeElement check. Lands in the Deck plugin log via dbg_fe_log.
-          // Remove once the fix is chosen.
-          void call("dbg_fe_log", "picker-focus", {
-            armedId,
-            claimed,
-            backTab: back,
-          }).catch(() => {});
+          restoreModalReturnFocusWithRetry((claimed, attempts) => {
+            // Instrumentation kept while PICKER-FOCUS-01 is open: `claimed` is what separated
+            // "never armed" (models hub, wrong button wired) from "armed but not mounted yet"
+            // (desktop note). The focus-graph rules forbid settling that with an activeElement
+            // check, so this is the evidence channel. Lands in the Deck plugin log.
+            void call("dbg_fe_log", "picker-focus", {
+              armedId,
+              claimed,
+              attempts,
+              backTab: back,
+            }).catch(() => {});
+          });
         });
       }, 80);
     },

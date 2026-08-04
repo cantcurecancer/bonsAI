@@ -7,6 +7,7 @@
  */
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button, ConfirmModal, Focusable, Router, TextField, ToggleField } from "@decky/ui";
+import { call } from "@decky/api";
 import {
   AI_CHARACTER_CUSTOM_TEXT_MAX,
   CHARACTER_PICKER_COLUMNS,
@@ -217,11 +218,23 @@ export function CharacterPickerModal(props: CharacterPickerModalProps) {
    * so this claim lands last rather than being overwritten.
    */
   useEffect(() => {
-    if (!initialDraft.random) return;
     let inner = 0;
     const outer = requestAnimationFrame(() => {
       inner = requestAnimationFrame(() => {
-        focusRandomToggle();
+        // Unconditional as of 2026-08-04. The first version only claimed focus when Random was on,
+        // reasoning that an unlocked grid is already navigable. The Deck recording disproved that:
+        // with Random *off* and the grid fully enabled, no control had a focus ring and the D-pad
+        // did nothing. Decky does not adopt this modal's body on its own, so the picker has to
+        // claim a starting point in both states.
+        const target = randomLocked ? "random-toggle" : "first-character";
+        const claimed = randomLocked
+          ? focusRandomToggle()
+          : focusButtonAtColumnIndex(0, 0) || focusRandomToggle();
+        void call("dbg_fe_log", "char-picker-focus", {
+          randomLocked,
+          target,
+          claimed,
+        }).catch(() => {});
       });
     });
     return () => {

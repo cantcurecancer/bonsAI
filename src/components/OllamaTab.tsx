@@ -18,10 +18,6 @@ import { OllamaReplyVerbositySlider } from "./OllamaReplyVerbositySlider";
 import type { ReplyVerbosityId } from "../data/replyVerbosity";
 import type { NamedOllamaHost } from "../data/bonsaiSettingsSchema";
 import { SETTINGS_GLASS_BTN } from "../styles/settingsGlassButton";
-import {
-  registerModalReturnFocusOwner,
-  rememberModalReturnFocus,
-} from "../features/plugin-shell/modalReturnFocusRegistry";
 
 export type OllamaTabProps = {
   ollamaIp: string;
@@ -288,13 +284,7 @@ export const OllamaTab: React.FC<OllamaTabProps> = ({
               ) : null}
             </div>
             <Button
-              ref={(el: HTMLElement | null) =>
-                registerModalReturnFocusOwner("ollama-models-hub", el)
-              }
-              onClick={() => {
-                rememberModalReturnFocus("ollama-models-hub");
-                onOpenOllamaModelsHub({ initialSection: "policy" });
-              }}
+              onClick={() => onOpenOllamaModelsHub({ initialSection: "policy" })}
               style={{
                 ...SETTINGS_GLASS_BTN,
                 width: "100%",

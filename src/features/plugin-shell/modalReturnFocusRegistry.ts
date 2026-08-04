@@ -50,6 +50,47 @@ export function restoreModalReturnFocus(): boolean {
   const id = pendingReturn;
   pendingReturn = null;
   if (!id) return false;
+  return focusOwnerById(id);
+}
+
+/**
+ * Retry the restore across a few frames before giving up.
+ *
+ * Measured on-device 2026-08-04: the desktop-note opener reported `claimed: false` because the
+ * control had not re-registered yet — after a Content remount the tab body mounts on its own
+ * schedule, and a single attempt one frame after the tab switch can land before the button exists.
+ * Each attempt is cheap (a Map lookup), and the armed id survives until one succeeds or the
+ * attempts run out, so a late-mounting control still gets its focus back.
+ */
+export function restoreModalReturnFocusWithRetry(
+  onResult?: (claimed: boolean, attempts: number) => void,
+  delaysMs: number[] = [0, 120, 320],
+): void {
+  const id = pendingReturn;
+  if (!id) {
+    onResult?.(false, 0);
+    return;
+  }
+  let index = 0;
+  const attempt = () => {
+    if (pendingReturn !== id) return; // something else armed or cleared it meanwhile
+    if (owners.has(id)) {
+      pendingReturn = null;
+      onResult?.(focusOwnerById(id), index + 1);
+      return;
+    }
+    index += 1;
+    if (index >= delaysMs.length) {
+      pendingReturn = null;
+      onResult?.(false, index);
+      return;
+    }
+    window.setTimeout(attempt, delaysMs[index]);
+  };
+  window.setTimeout(attempt, delaysMs[0]);
+}
+
+function focusOwnerById(id: ModalReturnFocusId): boolean {
   const el = owners.get(id);
   if (!el) return false;
 
