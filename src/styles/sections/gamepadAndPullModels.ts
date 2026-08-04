@@ -29,7 +29,13 @@ export function buildGamepadFocusRingStylesheet(): string {
         .bonsai-scope button.gpfocus,
         .bonsai-scope button:focus-visible,
         .bonsai-scope [role="button"].gpfocus,
-        .bonsai-scope [role="button"]:focus-visible {
+        .bonsai-scope [role="button"]:focus-visible,
+        /* Spoiler fences are Decky Focusable divs, not buttons, so the rules above miss them.
+           Without a ring the fence can be focused and still look inert. */
+        .bonsai-scope .bonsai-spoiler-reveal-target.gpfocus,
+        .bonsai-scope .bonsai-spoiler-reveal-target:focus-visible,
+        .bonsai-scope .bonsai-spoiler-collapse-target.gpfocus,
+        .bonsai-scope .bonsai-spoiler-collapse-target:focus-visible {
           ${ring}
         }
 

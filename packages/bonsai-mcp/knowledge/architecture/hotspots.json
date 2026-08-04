@@ -121,13 +121,13 @@
       "role": "Load/save/merge settings.json"
     },
     {
-      "path": "src/utils/settingsContracts.test.ts",
-      "lines": 471,
+      "path": "src/styles/sections/gamepadAndPullModels.ts",
+      "lines": 472,
       "role": ""
     },
     {
-      "path": "src/styles/sections/gamepadAndPullModels.ts",
-      "lines": 466,
+      "path": "src/utils/settingsContracts.test.ts",
+      "lines": 471,
       "role": ""
     },
     {

@@ -6,9 +6,14 @@
  * Does not: Stream tokens or parse strategy branches — parent supplies source string and mask flags.
  */
 import type { Components } from "react-markdown";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { Focusable } from "@decky/ui";
+
+import { registerSpoilerFence } from "../utils/spoilerFenceRegistry";
+
+/** Per-mount counter for spoiler fence ids; only needs to be unique among mounted fences. */
+let spoilerFenceSeq = 0;
 
 export type MainTabBonsaiAiMarkdownChunkProps = {
   source: string;
@@ -101,14 +106,31 @@ function BonsaiSpoilerFence(props: {
 }) {
   const { body, defaultExpanded, innerComponents } = props;
   const [open, setOpen] = useState(defaultExpanded);
+  // Stable per-mount id so this fence can be registered and de-registered without a DOM lookup.
+  const fenceIdRef = useRef<string>("");
+  if (!fenceIdRef.current) {
+    spoilerFenceSeq += 1;
+    fenceIdRef.current = `spoiler-${spoilerFenceSeq}`;
+  }
+  useEffect(
+    () => () => registerSpoilerFence(fenceIdRef.current, null),
+    [],
+  );
 
   if (!open) {
     // Mirror ContextChipLadder: Deck Focusable owns A / D-pad; native button is click-only.
     return (
       <Focusable
         className="bonsai-spoiler-reveal-target"
-        onActivate={() => setOpen(true)}
+        // Registered only while masked: once revealed there is nothing left to navigate to, and a
+        // stale entry would make D-pad Down park on a fence that no longer hides anything.
+        ref={(el: HTMLElement | null) => registerSpoilerFence(fenceIdRef.current, el)}
+        onActivate={() => {
+          registerSpoilerFence(fenceIdRef.current, null);
+          setOpen(true);
+        }}
         onButtonDown={() => {
+          registerSpoilerFence(fenceIdRef.current, null);
           setOpen(true);
           return true;
         }}

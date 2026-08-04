@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 246,
-  "edgeCount": 562,
+  "fileCount": 248,
+  "edgeCount": 565,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -173,7 +173,9 @@
       ]
     },
     "src/components/MainTabBonsaiAiMarkdownChunk.tsx": {
-      "imports": [],
+      "imports": [
+        "src/utils/spoilerFenceRegistry.ts"
+      ],
       "importedBy": [
         "src/utils/buildAnswerBubbleElement.tsx"
       ]
@@ -1752,7 +1754,8 @@
       "imports": [
         "src/utils/answerBubbleElRegistry.ts",
         "src/utils/answerBubbleNavRegistry.ts",
-        "src/utils/chatPanelScroll.ts"
+        "src/utils/chatPanelScroll.ts",
+        "src/utils/spoilerFenceRegistry.ts"
       ],
       "importedBy": [
         "src/components/MainTabChatTranscript.tsx",
@@ -2378,6 +2381,20 @@
         "src/utils/answerBubbleNavigation.test.ts",
         "src/utils/buildAnswerBubbleElement.tsx",
         "src/utils/splitResponseIntoChunks.test.ts"
+      ]
+    },
+    "src/utils/spoilerFenceRegistry.test.ts": {
+      "imports": [
+        "src/utils/spoilerFenceRegistry.ts"
+      ],
+      "importedBy": []
+    },
+    "src/utils/spoilerFenceRegistry.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/components/MainTabBonsaiAiMarkdownChunk.tsx",
+        "src/utils/answerBubbleNavigation.ts",
+        "src/utils/spoilerFenceRegistry.test.ts"
       ]
     },
     "src/utils/steamInputJump.ts": {

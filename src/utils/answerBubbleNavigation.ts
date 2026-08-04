@@ -19,6 +19,17 @@ import {
   registerAnswerBubbleEl,
   resolveFocusedAnswerBubble,
 } from "./answerBubbleElRegistry";
+import {
+  findUnvisitedSpoilerFenceInView,
+  focusSpoilerFence,
+} from "./spoilerFenceRegistry";
+
+/** True when `el` overlaps the visible band of its scroll container. */
+export function elementIsWithinViewportOf(el: HTMLElement, scroll: HTMLElement): boolean {
+  const elRect = el.getBoundingClientRect();
+  const scrollRect = scroll.getBoundingClientRect();
+  return elRect.bottom > scrollRect.top && elRect.top < scrollRect.bottom;
+}
 
 /** Walk turn slots — document.querySelector cannot pierce Decky shadow roots. */
 export function findAnswerBubbleByKey(answerKey: string): HTMLElement | null {
@@ -150,6 +161,25 @@ export function handleAnswerBubbleMoveDown(
 
   const scroll = findScrollablePanel(bubble);
   if (!scroll) return false;
+
+  /*
+   * Park on a masked spoiler before scrolling past it.
+   *
+   * The bubble is a single Focusable and the chunks inside are plain divs, so the fence's own
+   * Focusable never received focus — masked strategy text was unreachable without a touchscreen
+   * (reported 2026-08-04). Diverting here rather than restructuring the bubble keeps the scroll-step
+   * logic intact, which the roadmap explicitly says not to disturb without on-Deck proof.
+   *
+   * Only fences already on screen are eligible, and each is offered once: press A to reveal, or
+   * press Down again to scroll on. Without the visited flag a fence you chose not to open would
+   * trap Down forever.
+   */
+  const fence = findUnvisitedSpoilerFenceInView(bubble, (el) =>
+    elementIsWithinViewportOf(el, scroll),
+  );
+  if (fence && focusSpoilerFence(fence)) {
+    return true;
+  }
 
   /*
    * Only scroll while THIS bubble still extends below the viewport.

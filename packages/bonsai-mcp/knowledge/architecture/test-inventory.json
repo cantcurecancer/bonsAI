@@ -45,6 +45,7 @@
     "src/utils/runningGameCharacterSuggestions.test.ts",
     "src/utils/settingsContracts.test.ts",
     "src/utils/splitResponseIntoChunks.test.ts",
+    "src/utils/spoilerFenceRegistry.test.ts",
     "src/utils/strategyChecklist.test.ts",
     "src/utils/streamMarkdownPrepare.test.ts",
     "src/utils/stripAssistantDisplayTags.test.ts",
