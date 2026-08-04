@@ -13,6 +13,7 @@ import signal
 import socket
 import sys
 import subprocess
+import threading
 import time
 import urllib.error
 import urllib.request
@@ -134,6 +135,50 @@ def probe_ollama_health(base: str, deadline: float) -> dict[str, Any]:
         ps_snapshots = []
 
     return {"version": version_local, "models": models_local, "ps_loaded": ps_snapshots}
+
+
+def close_ollama_chat_response(response: Any, logger: Any) -> bool:
+    """Close a live /api/chat response from another thread to unblock its blocking `read()`.
+
+    This is how Stop actually stops: the streaming read sits in `read()` on the worker thread and
+    nothing else will wake it. Closing the handle from the RPC thread makes that read raise, which
+    is the intended path — hence the broad except. Returns True if the close succeeded.
+    """
+    if response is None:
+        return False
+    try:
+        response.close()
+        logger.info("closed active urllib HTTP response (cross-thread unblock read)")
+        return True
+    except Exception as exc:
+        logger.warning("close active HTTP response failed: %s", exc)
+        return False
+
+
+def spawn_ollama_stop_thread(
+    pc_ip_field: str,
+    model_name: Optional[str],
+    logger: Any,
+) -> threading.Thread:
+    """Ask Ollama to stop and unload, off the event loop and without waiting for it.
+
+    Deliberately fire-and-forget: Stop must return to the UI immediately, and the unload can take
+    seconds. Returns the thread so callers (and tests) can join it; production ignores it.
+    """
+
+    def _stop_bg() -> None:
+        try:
+            best_effort_abort_ollama_inference(
+                pc_ip_field=pc_ip_field,
+                model_name=model_name if isinstance(model_name, str) else None,
+                logger=logger,
+            )
+        except Exception:
+            logger.exception("kill/unload helper failed")
+
+    thread = threading.Thread(target=_stop_bg, name="bonsai-ollama-stop", daemon=True)
+    thread.start()
+    return thread
 
 
 def request_ollama_stop_model_via_api(

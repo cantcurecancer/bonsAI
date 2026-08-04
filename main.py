@@ -27,9 +27,10 @@ if PLUGIN_ROOT not in sys.path:
 
 from backend.services.ollama_service import (
     append_deck_tdp_sysfs_grounding,
-    best_effort_abort_ollama_inference,
     build_system_prompt,
+    close_ollama_chat_response,
     probe_ollama_health,
+    spawn_ollama_stop_thread,
 )
 from backend.services.async_task_lifecycle import cancel_and_await
 from backend.services.background_request_state import (
@@ -2417,29 +2418,13 @@ class Plugin:
             if isinstance(ev, threading.Event):
                 ev.wait(timeout=1.5)
                 wre = getattr(self, "_active_ollama_chat_http_response", None)
-        if wre is not None:
-            try:
-                wre.close()
-                logger.info(
-                    "abort_background_game_ai: closed active urllib HTTP response (cross-thread unblock read)"
-                )
-            except Exception as exc:
-                logger.warning("abort_background_game_ai: close active HTTP response failed: %s", exc)
+        close_ollama_chat_response(wre, logger)
 
-        ipc = str(getattr(self, "_active_ollama_chat_pc_ip", None) or "").strip()
-        imodel = getattr(self, "_active_ollama_chat_model", None)
-
-        def _stop_bg() -> None:
-            try:
-                best_effort_abort_ollama_inference(
-                    pc_ip_field=ipc,
-                    model_name=imodel if isinstance(imodel, str) else None,
-                    logger=logger,
-                )
-            except Exception:
-                logger.exception("abort_background_game_ai: kill/unload helper failed")
-
-        threading.Thread(target=_stop_bg, name="bonsai-ollama-stop", daemon=True).start()
+        spawn_ollama_stop_thread(
+            str(getattr(self, "_active_ollama_chat_pc_ip", None) or "").strip(),
+            getattr(self, "_active_ollama_chat_model", None),
+            logger,
+        )
         with self._partial_response_lock:
             snap = self._partial_stream_snapshot
             if snap.get("request_id") == self._background_state.get("request_id"):

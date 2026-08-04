@@ -2,7 +2,7 @@
   "hotspots": [
     {
       "path": "main.py",
-      "lines": 2759,
+      "lines": 2744,
       "role": "Decky RPC entrypoints and orchestration"
     },
     {
@@ -61,14 +61,14 @@
       "role": ""
     },
     {
+      "path": "py_modules/backend/services/ollama_service.py",
+      "lines": 718,
+      "role": "Prompt build, Ollama HTTP, streaming"
+    },
+    {
       "path": "py_modules/backend/services/bonsai_stream_tags.py",
       "lines": 675,
       "role": ""
-    },
-    {
-      "path": "py_modules/backend/services/ollama_service.py",
-      "lines": 673,
-      "role": "Prompt build, Ollama HTTP, streaming"
     },
     {
       "path": "src/components/CharacterPickerModal.tsx",
