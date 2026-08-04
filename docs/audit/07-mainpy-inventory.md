@@ -254,6 +254,23 @@ Items 1-2 are worth doing before **step 7**. Item 6 is done — it was pulled ah
 place in this order precisely because it interacts with step 7, which touches instance
 lifetime. Items 3-5 can wait until after **step 8**.
 
+> **Executed 2026-08-03 as roadmap step 12 — items 1, 2, 4 and 5.** `main.py` 2865 → 2743,
+> with 60 new tests (`test_background_request_state.py`, `test_ollama_health_probe.py`,
+> `test_async_task_lifecycle.py`, `test_ollama_abort_transport.py`), each mutation-checked.
+> Item 2 removed the last `urllib` use from `main.py`, so §2's contract violation is closed.
+>
+> **The sequencing note above lapsed and is worth learning from.** "Items 1-2 before step 7"
+> was written into this doc and nowhere else; step 7 shipped without them because the
+> execution order in `roadmap.md` never referenced this list. Advice that lives only in an
+> audit document does not survive contact with the next session — it has to become a
+> numbered step.
+>
+> **Item 3 was examined and rejected**, see roadmap step 12 for the reasoning: the three
+> dispatch blocks differ in the *kind* of their `shortcut_setup` argument (omitted / from the
+> handler / explicit None), so a table needs a three-way mode enum with one mode per row. That
+> relocates the difference instead of collapsing it, and puts an indirection on the Ask
+> admission path to save ~17 lines. Recommendation is to drop it from this list.
+
 ---
 
 ## 9. Coverage reality (corrects §2.3)
