@@ -7,6 +7,7 @@
  */
 import React from "react";
 import { Focusable } from "@decky/ui";
+import { call } from "@decky/api";
 import { BonsaiChatSecondaryButton } from "../components/BonsaiChatSecondaryButton";
 import {
   RefreshArrowIcon,
@@ -26,6 +27,26 @@ import {
 } from "./liveTurnFocusGraph";
 import { getReplyStop, REPLY_STOP_ORDER, type ReplyStopId } from "./replyStopRegistry";
 import { elementHasFocus } from "./uiDocument";
+import { isDeckDirectionDownEvent, isDeckDirectionUpEvent } from "./focusNavigation";
+
+/*
+ * TEMPORARY instrumentation (2026-08-04) — remove once REPLY-DOWN-01 passes.
+ *
+ * Two structural fixes for this row changed nothing on device, and the open question is which
+ * handler Decky actually delivers for a D-pad press here. This answers it from the Deck log
+ * (`~/homebrew/logs/bonsAI/`) instead of another guess. Raw `call` on purpose: fire-and-forget debug
+ * logging with no UI consequence, so the `callDeckyWithTimeout` deadline would only add noise.
+ */
+function probe(where: string, data: Record<string, unknown>): void {
+  void call("dbg_fe_log", "reply-nav", { where, ...data }).catch(() => {});
+}
+
+/** The raw button id as delivered, for the probe — tells us if the event shape is what we assume. */
+function rawButtonId(evt: unknown): unknown {
+  const detail = (evt as { detail?: { button?: unknown } } | null | undefined)?.detail;
+  if (detail && "button" in detail) return detail.button;
+  return typeof evt === "number" ? evt : String(evt ?? "").slice(0, 24);
+}
 
 const CHIP_ROW_REFINE: ReplyMicroActionId[] = ["bad_information", "misidentified_game"];
 const CHIP_ROW_LENGTH: ReplyMicroActionId[] = ["too_long", "too_short"];
@@ -144,6 +165,44 @@ export function buildReplyActionsElement(
     focusedStop() === "show-details" ? upFromShowDetails() : upFromRetry();
 
   /*
+   * Row elements, captured at mount so a press handler can ask "is focus still mine?".
+   *
+   * `buildReplyActionsElement` is a plain function called during render, so a fresh holder per
+   * render is the ref equivalent here — there are no hooks to use.
+   */
+  const thumbsRowEl: { current: HTMLElement | null } = { current: null };
+  const utilityRowEl: { current: HTMLElement | null } = { current: null };
+
+  /*
+   * D-pad handling goes through `onButtonDown`, not `onMoveDown`.
+   *
+   * `onButtonDown` is in Decky's documented prop contract and is demonstrably delivered for
+   * directional presses — it is what was revealing the masked spoiler fence on D-pad Down before
+   * that handler learned to ignore directions. `onMoveDown` is left in place below but has never
+   * been observed to fire for these rows, and moving it onto the row Focusable did not change the
+   * behaviour on device.
+   *
+   * The focus guard makes the pair safe: whichever handler runs first moves focus off the row, and
+   * the second one sees that focus has left and yields instead of moving again.
+   */
+  const pressHandler = (
+    row: string,
+    rowEl: { current: HTMLElement | null },
+    onDown: () => boolean,
+    onUp: () => boolean
+  ) => (evt: unknown): boolean => {
+    const isDown = isDeckDirectionDownEvent(evt);
+    const isUp = isDeckDirectionUpEvent(evt);
+    probe("buttonDown", { row, btn: rawButtonId(evt), isDown, isUp });
+    if (!isDown && !isUp) return false;
+    const el = rowEl.current;
+    if (el && !elementHasFocus(el)) return false;
+    const moved = isDown ? onDown() : onUp();
+    probe("buttonDown:result", { row, dir: isDown ? "down" : "up", moved });
+    return moved;
+  };
+
+  /*
    * Column-preserving vertical hops when thumbs sit directly above utility
    * (no refinement chips): Helpful↔Retry, Not really↔Show details.
    * With chips between, yield (return false) so Decky advances to the chip row.
@@ -191,9 +250,13 @@ export function buildReplyActionsElement(
           <Focusable
             className="bonsai-chat-reply-actions-row"
             flow-children="horizontal"
+            ref={(el: HTMLElement | null) => {
+              thumbsRowEl.current = el;
+            }}
             {...({
               onMoveUp: moveUpFromReply,
               onMoveDown: downFromThumbsRow,
+              onButtonDown: pressHandler("thumbs", thumbsRowEl, downFromThumbsRow, moveUpFromReply),
             } as Record<string, unknown>)}
           >
             <BonsaiChatSecondaryButton
@@ -258,9 +321,13 @@ export function buildReplyActionsElement(
            * DialogButton wrapper and never reaches one. So nothing below Retry / Show details was
            * reachable by D-pad: the handler that would have moved focus was never called.
            */
+          ref={(el: HTMLElement | null) => {
+            utilityRowEl.current = el;
+          }}
           {...({
             onMoveUp: upFromUtilityRow,
             onMoveDown: downFromUtility,
+            onButtonDown: pressHandler("utility", utilityRowEl, downFromUtility, upFromUtilityRow),
           } as Record<string, unknown>)}
           style={{ display: "flex", flexDirection: "row", flexWrap: "nowrap", gap: 8, alignItems: "center" }}
         >

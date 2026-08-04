@@ -80,6 +80,8 @@ export function isUpDeckButtonEvent(button: unknown): boolean {
  * the enum is a Steam input protocol, not a library detail.
  */
 const DECK_BUTTON_OK = 1;
+const DECK_BUTTON_DIR_UP = 9;
+const DECK_BUTTON_DIR_DOWN = 10;
 
 /** The numeric button id, from whichever shape the caller was handed. */
 function deckButtonId(button: unknown): number | null {
@@ -101,6 +103,26 @@ export function isOkDeckButtonEvent(button: unknown): boolean {
   if (id !== null) return id === DECK_BUTTON_OK;
   const key = String(button ?? "").toLowerCase();
   return key === "enter" || key === "a" || key === "gamepada";
+}
+
+/*
+ * Direction predicates that understand a `GamepadEvent`.
+ *
+ * Deliberately separate from `isDownDeckButtonEvent` / `isUpDeckButtonEvent` above, which stay
+ * string-only: those are wired into `onButtonDown` handlers that sit alongside an `onMoveDown`, and
+ * teaching them to match events would make both fire for one press. Use these only where
+ * `onButtonDown` is the sole handler for the direction.
+ */
+export function isDeckDirectionDownEvent(button: unknown): boolean {
+  const id = deckButtonId(button);
+  if (id !== null) return id === DECK_BUTTON_DIR_DOWN;
+  return isDownDeckButtonEvent(button);
+}
+
+export function isDeckDirectionUpEvent(button: unknown): boolean {
+  const id = deckButtonId(button);
+  if (id !== null) return id === DECK_BUTTON_DIR_UP;
+  return isUpDeckButtonEvent(button);
 }
 
 /** Find a visible focusable descendant to support controller-first keyboard navigation. */
