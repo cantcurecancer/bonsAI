@@ -83,23 +83,24 @@ describe("liveTurnFocusGraph", () => {
   });
 
   it("column helpers focus Not really / Show details / Retry / Helpful", () => {
+    /*
+     * The shape Decky actually renders, verified on device: a Decky `Button` is a single
+     * `<button class="… Focusable">` and the registered stop IS that button — there is no
+     * `.Panel.Focusable` wrapper per stop, only the row. The previous fixture wrapped each button
+     * in one, which made the row the first focus candidate and hid the fact that a wrapper-first
+     * ladder lands focus on the whole row instead of the button.
+     */
     mountLiveTurn(`
       <div class="bonsai-chat-turn-slot">
         <div class="bonsai-chat-turn-row-header bonsai-chat-turn-row-header--live"></div>
-        <div class="bonsai-chat-reply-actions">
-          <div class="Panel Focusable" tabindex="-1" id="stop-helpful">
-            <button class="bonsai-chat-secondary-btn">Helpful</button>
+        <div class="bonsai-chat-reply-actions Panel Focusable">
+          <div class="bonsai-chat-reply-actions-row Panel Focusable">
+            <button class="bonsai-chat-secondary-btn Focusable" id="stop-helpful">Helpful</button>
+            <button class="bonsai-chat-secondary-btn Focusable" id="stop-not-really">Not really</button>
           </div>
-          <div class="Panel Focusable" tabindex="-1" id="stop-not-really">
-            <button class="bonsai-chat-secondary-btn">Not really</button>
-          </div>
-          <div class="bonsai-chat-reply-actions-row--utility">
-            <div class="Panel Focusable" tabindex="-1" id="stop-retry">
-              <button class="bonsai-chat-secondary-btn">Retry</button>
-            </div>
-            <div class="Panel Focusable" tabindex="-1" id="stop-show-details">
-              <button class="bonsai-chat-secondary-btn">Show details</button>
-            </div>
+          <div class="bonsai-chat-reply-actions-row--utility Panel Focusable">
+            <button class="bonsai-chat-secondary-btn Focusable" id="stop-retry">Retry</button>
+            <button class="bonsai-chat-secondary-btn Focusable" id="stop-show-details">Show details</button>
           </div>
         </div>
       </div>

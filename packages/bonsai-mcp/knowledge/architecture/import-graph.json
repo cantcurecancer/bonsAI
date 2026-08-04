@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 252,
-  "edgeCount": 574,
+  "fileCount": 253,
+  "edgeCount": 578,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -1951,7 +1951,9 @@
         "src/components/BonsaiChatSecondaryButton.tsx",
         "src/components/icons.tsx",
         "src/data/replyMicroActions.ts",
-        "src/utils/liveTurnFocusGraph.ts"
+        "src/utils/liveTurnFocusGraph.ts",
+        "src/utils/replyStopRegistry.ts",
+        "src/utils/uiDocument.ts"
       ],
       "importedBy": [
         "src/components/MainTabChatTranscript.tsx"
@@ -2318,12 +2320,22 @@
         "src/utils/pullModelRecommendations.test.ts"
       ]
     },
+    "src/utils/replyStopRegistry.test.ts": {
+      "imports": [
+        "src/utils/replyStopRegistry.ts"
+      ],
+      "importedBy": []
+    },
     "src/utils/replyStopRegistry.ts": {
-      "imports": [],
+      "imports": [
+        "src/utils/uiDocument.ts"
+      ],
       "importedBy": [
         "src/components/BonsaiChatSecondaryButton.tsx",
+        "src/utils/buildReplyActionsElement.tsx",
         "src/utils/liveTurnFocusGraph.test.ts",
-        "src/utils/liveTurnFocusGraph.ts"
+        "src/utils/liveTurnFocusGraph.ts",
+        "src/utils/replyStopRegistry.test.ts"
       ]
     },
     "src/utils/runningGameCharacterSuggestions.test.ts": {
@@ -2515,7 +2527,9 @@
         "src/utils/answerBubbleElRegistry.ts",
         "src/utils/answerBubbleNavigation.ts",
         "src/utils/buildAnswerBubbleElement.tsx",
+        "src/utils/buildReplyActionsElement.tsx",
         "src/utils/liveTurnFocusGraph.ts",
+        "src/utils/replyStopRegistry.ts",
         "src/utils/spoilerFenceRegistry.ts",
         "src/utils/uiDocument.test.ts"
       ]

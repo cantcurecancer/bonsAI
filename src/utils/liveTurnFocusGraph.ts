@@ -197,10 +197,21 @@ export function focusSessionContextStrip(): boolean {
   return focusDeckOwner(strip);
 }
 
-/** Down from utility row (Retry / Show details): inline ladder → collapsed hint → session strip. */
+/**
+ * Dev-only Ask diagnostics block — present only with desktop verbose logging on, so a miss here is
+ * the normal case rather than a failure.
+ */
+export function focusAskDiagnostics(): boolean {
+  const host = getUiDocument().querySelector<HTMLElement>(".bonsai-ask-diagnostics");
+  if (!host) return false;
+  return focusDeckOwner(host.querySelector<HTMLElement>("button") ?? host);
+}
+
+/** Down from utility row: inline ladder → collapsed hint → Ask diagnostics → session strip. */
 export function focusDownFromReplyUtilityRow(liveSlot: HTMLElement | null): boolean {
   if (focusContextChipLadder(liveSlot)) return true;
   if (focusContextHint(liveSlot)) return true;
+  if (focusAskDiagnostics()) return true;
   return focusSessionContextStrip();
 }
 

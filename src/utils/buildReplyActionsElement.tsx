@@ -24,6 +24,8 @@ import {
   focusReplyShowDetails,
   queryLiveTurnSlot,
 } from "./liveTurnFocusGraph";
+import { getReplyStop, REPLY_STOP_ORDER, type ReplyStopId } from "./replyStopRegistry";
+import { elementHasFocus } from "./uiDocument";
 
 const CHIP_ROW_REFINE: ReplyMicroActionId[] = ["bad_information", "misidentified_game"];
 const CHIP_ROW_LENGTH: ReplyMicroActionId[] = ["too_long", "too_short"];
@@ -122,6 +124,26 @@ export function buildReplyActionsElement(
   };
 
   /*
+   * Which of the four stops currently holds focus.
+   *
+   * The row handlers below need this because `onMove*` has to sit on the row `Focusable`, not on the
+   * individual buttons — see the comment on the utility row — so a single handler serves both
+   * columns and has to work out which one it was called for.
+   */
+  const focusedStop = (): ReplyStopId | null => {
+    for (const id of REPLY_STOP_ORDER) {
+      const el = getReplyStop(id);
+      if (el && elementHasFocus(el)) return id;
+    }
+    return null;
+  };
+
+  const downFromThumbsRow = () =>
+    focusedStop() === "not-really" ? downFromNotReally() : downFromHelpful();
+  const upFromUtilityRow = () =>
+    focusedStop() === "show-details" ? upFromShowDetails() : upFromRetry();
+
+  /*
    * Column-preserving vertical hops when thumbs sit directly above utility
    * (no refinement chips): Helpful↔Retry, Not really↔Show details.
    * With chips between, yield (return false) so Decky advances to the chip row.
@@ -171,6 +193,7 @@ export function buildReplyActionsElement(
             flow-children="horizontal"
             {...({
               onMoveUp: moveUpFromReply,
+              onMoveDown: downFromThumbsRow,
             } as Record<string, unknown>)}
           >
             <BonsaiChatSecondaryButton
@@ -178,10 +201,6 @@ export function buildReplyActionsElement(
               onClick={() => onRate("up")}
               aria-label="Mark reply helpful"
               replyStop="helpful"
-              deckNav={{
-                onMoveUp: moveUpFromReply,
-                onMoveDown: downFromHelpful,
-              }}
             >
               <ThumbUpOutlineIcon size={14} />
               Helpful
@@ -191,10 +210,6 @@ export function buildReplyActionsElement(
               onClick={() => onRate("down")}
               aria-label="Mark reply not helpful"
               replyStop="not-really"
-              deckNav={{
-                onMoveUp: moveUpFromReply,
-                onMoveDown: downFromNotReally,
-              }}
             >
               <ThumbDownOutlineIcon size={14} />
               Not really
@@ -233,6 +248,20 @@ export function buildReplyActionsElement(
         <Focusable
           className="bonsai-chat-reply-actions-row bonsai-chat-reply-actions-row--utility"
           flow-children="horizontal"
+          /*
+           * The move handlers belong here, on the row, not on the two buttons.
+           *
+           * `onMoveUp` / `onMoveDown` are SteamUI `Focusable` props. Passing them to a Decky
+           * `Button` puts them on a `DialogButton`, which does not forward them to any Focusable —
+           * verified on device by walking the fibers: the answer bubble's `Focusable` carries
+           * `onMoveDown` on Steam's own component, while the Retry button's copy stops at the
+           * DialogButton wrapper and never reaches one. So nothing below Retry / Show details was
+           * reachable by D-pad: the handler that would have moved focus was never called.
+           */
+          {...({
+            onMoveUp: upFromUtilityRow,
+            onMoveDown: downFromUtility,
+          } as Record<string, unknown>)}
           style={{ display: "flex", flexDirection: "row", flexWrap: "nowrap", gap: 8, alignItems: "center" }}
         >
           {onRetry ? (
@@ -241,10 +270,6 @@ export function buildReplyActionsElement(
               onClick={onRetry}
               aria-label="Retry same prompt"
               replyStop="retry"
-              deckNav={{
-                onMoveUp: upFromRetry,
-                onMoveDown: downFromUtility,
-              }}
             >
               <RefreshArrowIcon size={14} />
               Retry
@@ -257,10 +282,6 @@ export function buildReplyActionsElement(
               aria-expanded={transparencyOpen}
               aria-label={transparencyOpen ? "Hide details" : "Show details"}
               replyStop="show-details"
-              deckNav={{
-                onMoveUp: upFromShowDetails,
-                onMoveDown: downFromUtility,
-              }}
             >
               {transparencyOpen ? "Hide details" : "Show details"}
             </BonsaiChatSecondaryButton>

@@ -575,7 +575,9 @@ questionLooksLikeTroubleshootingAsk(unifiedInput) ? (
 )}
 {desktopAskVerboseLogging && transparencySnapshot?.ask_diagnostics ? (
   <PanelSectionRow>
-    <Focusable style={{ width: "100%" }}>
+    {/* Classed so the reply-row Down chain can reach it — it sits between Retry and the session
+        context strip, and a hop straight to the strip would step over it. */}
+    <Focusable className="bonsai-ask-diagnostics" style={{ width: "100%" }}>
       <div style={{ fontSize: 12, fontWeight: 700, color: "#b8c9dc", marginBottom: 6 }}>
         Ask diagnostics
       </div>

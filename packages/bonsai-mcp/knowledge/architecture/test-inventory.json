@@ -44,6 +44,7 @@
     "src/utils/mergePullModelCatalog.test.ts",
     "src/utils/persistOllamaIp.test.ts",
     "src/utils/pullModelRecommendations.test.ts",
+    "src/utils/replyStopRegistry.test.ts",
     "src/utils/runningGameCharacterSuggestions.test.ts",
     "src/utils/settingsContracts.test.ts",
     "src/utils/splitResponseIntoChunks.test.ts",
