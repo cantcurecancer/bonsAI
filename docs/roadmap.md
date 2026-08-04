@@ -22,7 +22,7 @@ Status tags: **OPEN** · **PARTIAL** · **FOLDED** (tracked in linked plan) · *
 
 - ★ **Static seed tells you to enable the knowledge base when it is already on** — **OPEN.** `"Enable local knowledge base for better game tips"` ([presets.ts:66](../src/data/presets.ts)) is an ordinary static seed with **no gate on `use_local_knowledge_base`**, so it appears in the carousel for users who already have the KB enabled. Spotted by the maintainer during the 2026-08-03 RAG chip pass — a fair thing to find suspicious, since it implies the KB is off while the backend reports it on. **Fix lean:** filter KB-advice seeds out when the setting is on; needs the KB flag threaded into `getRandomPresets` / `getContextualPresets`, which currently take no settings context.
 - ★ **Install voice engine button is actionable when the engine is already ready** — **OPEN.** Settings → Voice input offers **Install voice engine** even when `engine_readiness` reports `binary_ready` and `model_ready`; pressing it re-runs the full install, including a podman pull of `ghcr.io/ggml-org/whisper.cpp`. Observed 2026-08-03 while troubleshooting the voice `status()` bug — the user pressed it precisely because the Main tab claimed voice was broken while Settings said ready, so the misleading state came from that bug, but the button being live regardless is its own issue. **Fix lean:** when ready, show the state and offer *Reinstall* as a distinct, clearly-labelled secondary action rather than the primary one. Needs a focus-graph entry if the control count changes (`.cursor/rules/decky-focus-graph.mdc`).
-- ★ **Strategy spoiler false-positive:** **OPEN.** Genre-aware spoiler policy + KB entity match (DRG Survivor boss names); verify **STRAT-SPOIL-DRG-01** on Deck.
+- ★ **Strategy spoiler false-positive:** **OPEN.** Genre-aware spoiler policy + KB entity match (DRG Survivor boss names); verify **STRAT-SPOIL-DRG-01** on Deck. **Recon + decisions:** [04-strategy-spoiler-false-positive.md](planning/04-strategy-spoiler-false-positive.md) — ship options **1+2+4**; acceptance = **no fence rendered for the entity named in the question**; mid-stream unwrap = extra credit; option 3 = Deck-fail fallback only. Product rulebook (separate): [spoiler-constitution.md](planning/spoiler-constitution.md).
 - ★ **Question Overlay Alignment Drift:** **OPEN.** The 3-line question overlay has minor horizontal spacing mismatch vs native `TextField` internals.
 - ★ **Token streaming stutters once at the start, then runs smoothly** — **FOLDED** into [05-token-streaming-review.md](planning/05-token-streaming-review.md). Maintainer call 2026-08-04: chase the initial hitch there, not as a standalone bug fix. Verify **STREAM-REVEAL-01** ([testing.md](testing.md)) before any memo-deps change.
 
@@ -98,7 +98,7 @@ Within this section: ascending stars (★ → ★★★★).
   - **Goal:** Concise Show details context-chip estimate of topic spoiler likelihood on **all Ask modes** — chip label `Spoiler risk: med` (bands `low` / `med` / `high`; keep ≤ ~18 chars).
   - **Status:** Decisions locked; ready to implement (standalone). Distinct from hybrid retrieval.
   - **Discovery locked (2026-07-29):** bands only; score from genre + intent + KB `section_type` + entity match + optional model tag `<bonsai-spoiler-risk>` (~60% when parsed); always show under Show details; v1 transparency-only (no fencing change); heuristic ASAP while streaming; no parallel rater Ask.
-  - **Related:** **User-adjustable spoiler fencing**; **Unfenced spoiler feedback**.
+  - **Related:** **User-adjustable spoiler fencing**; **Unfenced spoiler feedback**; **Spoiler constitution**.
   - **Not in scope (v1):** Calibrated ML probability; percent chip copy; parallel rater Ask; changing fencing from this chip.
 - ★★ **Unfenced spoiler feedback** (thumbs-down category)
   - **Goal:** After thumbs-down, refinement chip for **unfenced spoilers** (and optional over-fenced sibling). Improves future Asks — does not fix the current turn.
@@ -106,6 +106,7 @@ Within this section: ascending stars (★ → ★★★★).
 - ★★ **User-adjustable spoiler fencing** (hide by risk band)
   - **Goal:** Settings control for when to apply tap-to-reveal / fence masking from estimated risk — e.g. hide when risk ≥ **high** / **med** / **low**, or **never hide**.
   - **Depends on:** **Spoiler confidence chip**; shipped `strategy_spoiler_masking_enabled`.
+  - **Related:** **Spoiler constitution** (when risk bands should drive mask vs soft-omit).
 - ★★ **Thinking effort control** (Settings Off / Low / Medium / High)
   - **Goal:** User-adjustable Ollama thinking effort mapped to `think: false | "low" | "medium" | "high"` (global v1).
   - **Depends on:** **Soft** `num_predict` **+ thinking budget** (Bugs).
@@ -127,6 +128,12 @@ Within this section: ascending stars (★ → ★★★★).
   - **Goal:** Optional visual strategy maps in KB-grounded replies — light prelim discovery only until closer to implementation.
   - **Depends on:** mature strategy corpus + Phase 3/4 retrieval quality.
   - **Note:** Separate roadmap row — not folded into RAG Phase 4–8.
+- ★★★★ **Spoiler constitution** (product rules → runtime encoding)
+  - **Goal:** Encode the living spoiler rulebook into prompts, title/risk signals, and (later) mask-vs-omit behavior so Strategy guidance matches product intent across narrative vs low-narrative games — not genre substring alone.
+  - **Draft:** [planning/spoiler-constitution.md](planning/spoiler-constitution.md) (rules 1–13; commonality; omit+soft-invite parked).
+  - **Status:** Draft locked 2026-08-04 from maintainer planning chat. False-positive bug ([04](planning/04-strategy-spoiler-false-positive.md)) ships only the **named-entity display slice** (options 1+2+4); this row owns the rest.
+  - **Depends on / feeds:** **Spoiler confidence chip** (rule 9 lean); **User-adjustable spoiler fencing**; optional soft-omit follow-on; STRAT-SPOIL false-positive fix for the enforceable named-entity contract.
+  - **Not in scope (this row alone):** Closing STRAT-SPOIL-DRG-01; calibrated ML spoiler judgment; expanding genre allowlists as the primary policy.
 - ★★★★ **Llama.cpp provider spike** (Deck perf / replacement eval)
   - **Goal:** Research-only: can Deck-local llama.cpp beat Deck-local Ollama enough to justify a possible long-term replacement? **No code** in this spike. Supersedes the 2026-05-20 go/no-go in [llama-cpp-provider.md](archive/spikes/llama-cpp-provider.md).
   - **Discovery locked (2026-07-17):** Baseline Deck-local Ollama **gemma4 E2B**; go bar must win **both** game FPS hitch **and** peak GPU memory; load = DRG Survivor. Write `docs/archive/spikes/llama-cpp-provider-eval.md` (the spike's deliverable — does not exist yet).
@@ -310,7 +317,7 @@ Coverage for shipped work: [testing.md](testing.md).
 - **Capability Permission Center** → gates filesystem, Steam/Proton log + screenshot reads, mic, Steam Web API; web/Steam jumps always allowed; TDP/GPU suggestions read-only (no apply); → planned **Web permission** (Ask live search; Kids Lock forces off).
 - **Llama.cpp provider spike** → research-only; related **Dynamic keep-alive / smart unload**.
 - **Preset carousel (shipped)** → incremental **Preset chip expansion**; **Session RAG preset chips (shipped)**.
-- **RAG / offline KB** → Phase 2–3 shipped → **retrieval quality remediation** (PR1/PR2, docs locked) → Phase 4–8 Planned (4 extended retrieval, 5 corpus expansion remaining after remediation seed depth, 6 public publish, 7 infra — ANN/nomic/RRF extensions/vision→KB/demote/delta-packs/named hit, 8 catalog corpus); **KB visual maps** separate; **Spoiler confidence chip** → fencing + unfenced feedback (distinct from Phase 7 retrieval thumbs); **Web permission** may eventually replace zip download with HF AppID card stream (open decision vs Phases 4–8).
+- **RAG / offline KB** → Phase 2–3 shipped → **retrieval quality remediation** (PR1/PR2, docs locked) → Phase 4–8 Planned (4 extended retrieval, 5 corpus expansion remaining after remediation seed depth, 6 public publish, 7 infra — ANN/nomic/RRF extensions/vision→KB/demote/delta-packs/named hit, 8 catalog corpus); **KB visual maps** separate; **Spoiler confidence chip** → fencing + unfenced feedback (distinct from Phase 7 retrieval thumbs); **Spoiler constitution** (product rules → later encoding; named-entity slice via STRAT-SPOIL bug); **Web permission** may eventually replace zip download with HF AppID card stream (open decision vs Phases 4–8).
 - **Web permission** → citations / allowlist / freshness chip; HF stream + catalog refresh are dependents/follow-ons (catalog not in this bullet).
 - **Soft** `num_predict` **+ thinking budget** (Bugs) → **Thinking effort control**.
 - **Native QAM shortcut tile** → shorter path than Guide-chord macro docs (§5).

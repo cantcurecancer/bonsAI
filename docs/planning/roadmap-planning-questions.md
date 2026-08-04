@@ -190,7 +190,7 @@ In **Strategy mode**, the model sometimes wraps **routine boss/enemy tactics** i
 
 **Your questions:** What is best practice here? Can bonsAI **confidently** eliminate false positives, or only reduce them?
 
-**Related planned work (not shipped):** **Spoiler confidence chip** (transparency estimate only), **user-adjustable spoiler fencing**, **unfenced spoiler feedback** thumb — see `docs/roadmap.md` Planned. Phase 4 KB track (**S1**) also calls for unfenced replies when the user named the entity.
+**Related planned work (not shipped):** **Spoiler confidence chip** (transparency estimate only), **user-adjustable spoiler fencing**, **unfenced spoiler feedback** thumb, **Spoiler constitution** (★★★★) — see `docs/roadmap.md` Planned and [spoiler-constitution.md](spoiler-constitution.md). Phase 4 KB track (**S1**) also calls for unfenced replies when the user named the entity. **Recon + maintainer decisions:** [04-strategy-spoiler-false-positive.md](04-strategy-spoiler-false-positive.md) §7.
 
 ### Prompt for planning agent
 

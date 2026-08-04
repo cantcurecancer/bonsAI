@@ -300,3 +300,78 @@ Recommend rewording the roadmap acceptance criterion from "no spoiler fence for
 boss tactics" to **"no spoiler fence is rendered for the entity named in the
 question"** — a display-level invariant the code can actually guarantee and a
 test can actually assert, rather than a claim about model behaviour.
+
+---
+
+## 7. Decisions (maintainer planning chat 2026-08-04)
+
+Locked before implementation plan draft. Constitution lives separately:
+[spoiler-constitution.md](spoiler-constitution.md). This bug ships **one
+enforceable slice** of that rulebook, not the whole thing.
+
+### Scope
+
+| Topic | Decision |
+|---|---|
+| Primary fix | Recon options **1 + 2 + 4** only (thread `question`/`appId` on every turn; subtractive low-risk prompt; entity-only low-risk when genres/KB unavailable) |
+| Option 3 (server-side strip) | **Fallback only** if on-Deck still fails after 1+2+4 — not committed in the same ship |
+| Option 5 (widen genre/AppID allowlist) | **Do not** as primary fix (recon §2; Hades counterexample) |
+| Option 7 / R4 mid-stream chip | **Extra credit** after 1+2+4 — shippable without it; target “no spoiler wait-chip while streaming for named entity / low-risk AppID” |
+| Omit + soft invite | **Parked** in constitution / roadmap — out of this bug’s code |
+| Shared TS/Python entity extraction (option 6) | Out of scope for this bug |
+
+### Product / UX
+
+| Topic | Decision |
+|---|---|
+| Acceptance criterion | **"No spoiler fence is rendered for the entity named in the question"** (display-level; not a claim about model behavior) |
+| Honest user-facing line | Tactics for a boss you asked about by name are never hidden; broader story detail may still be masked |
+| Named entity (incl. Hades / Megaera) | If the user asks by name → **plain text**, not fenced |
+| Genre over-relax guard | Separate from named row: Hades (or similar) question that does **not** name the boss → story detail should **still** fence |
+| Constitution | Long-term rulebook; ★★★★ Planned to encode later; referenced from this doc |
+
+### Verification (ship gate — short subset)
+
+Full recon matrix in §5 is coverage debt, not the minimum to close the bug.
+
+**Automated (required)**
+
+- Vitest: non-live turn still unwraps named-entity / low-risk AppID fences (R1)
+- Python: low-risk addendum fires with empty `game_genres` + non-empty `asked_entity` (R2 / option 4)
+
+**On-Deck (required)**
+
+1. **DRG-01** — Glyphid Dreadnought by name → plain text
+2. **DRG-01d** — second question → first answer stays unfenced (R1)
+3. **DRG-01b or DRG-01c** — KB off or corpus absent → still plain text (R2)
+
+**On-Deck (recommended if time)**
+
+4. Hades, **named** Megaera → plain text (decision above; supersedes recon HADES-01 “fence expected” for the named case)
+5. Hades, **not named** → story-adjacent detail still fenced (true genre over-relax guard)
+
+**Not required to close:** stream off, follow-up prefix, OOT, CONSENT, MASK-OFF, mid-stream chip (extra credit).
+
+### Related docs
+
+- Constitution draft: [spoiler-constitution.md](spoiler-constitution.md)
+- Roadmap bug + Planned constitution feature: [roadmap.md](../roadmap.md)
+
+---
+
+## NEEDS VERIFICATION
+
+All decisions in §7 were locked in chat from recon in this file. Before treating
+them as implementation gospel, verify against current code and on-Deck behavior:
+
+- [ ] R1 still reproduces (historical / non-`live` turns re-fence) on current HEAD
+- [ ] R2 still reproduces (corpus-optional / empty genres → empty addendum) on current HEAD
+- [ ] Option 4 (entity-only low-risk) does not over-relax narrative titles when the user did **not** name an entity
+- [ ] Subtractive prompt change (option 2) does not drop needed fences for OOT-class progression secrets
+- [ ] Ship-gate Deck rows DRG-01 + 01d + (01b\|01c) after 1+2+4
+- [ ] Hades named vs unnamed expectations match §7 (recon HADES-01 row is partially superseded)
+- [ ] Mid-stream extra credit only after primary ship; do not block STRAT-SPOIL-DRG-01 on R4
+- [ ] Constitution ★★★★ roadmap item exists and links here / to [spoiler-constitution.md](spoiler-constitution.md) — encoding work is **not** part of this bug fix
+- [ ] Option 3 only reconsidered if Deck still fails after 1+2+4
+
+**NEEDS VERIFICATION**
