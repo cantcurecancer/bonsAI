@@ -55,6 +55,7 @@
     "tests/test_backend_helpers.py",
     "tests/test_background_abort_busy.py",
     "tests/test_background_partial_state.py",
+    "tests/test_background_request_state.py",
     "tests/test_bonsai_stream_tags.py",
     "tests/test_capabilities.py",
     "tests/test_character_catalog_parity.py",

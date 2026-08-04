@@ -32,6 +32,13 @@ from backend.services.ollama_service import (
     best_effort_abort_ollama_inference,
     build_system_prompt,
 )
+from backend.services.background_request_state import (
+    OMIT as _OMIT_SHORTCUT_SETUP_FIELD,
+    completed_local_command_state,
+    new_background_state,
+    new_partial_stream_snapshot,
+    pending_background_state,
+)
 from backend.services.plugin_data_reset import reset_plugin_disk_and_defaults
 from backend.services.strategy_checklist_session_service import (
     clear_session_entry,
@@ -179,7 +186,7 @@ _BACKGROUND_TASK_FAILED_USER_MESSAGE = (
 )
 
 # Sentinel: sanitizer immediate-complete path omits ``shortcut_setup`` from state/response; VAC sets state only.
-_OMIT_SHORTCUT_SETUP_FIELD = object()
+# Imported from background_request_state so the state builder and this file agree on one object identity.
 
 
 class Plugin:
@@ -330,49 +337,18 @@ class Plugin:
 
     def _new_background_state(self) -> dict:
         """Build a default background request state payload used by status polling paths."""
-        return {
-            "status": "idle",
-            "request_id": None,
-            "question": "",
-            "app_id": "",
-            "app_context": "none",
-            "success": None,
-            "response": "",
-            "applied": None,
-            "elapsed_seconds": 0,
-            "error": None,
-            "started_at": None,
-            "completed_at": None,
-            "strategy_guide_branches": None,
-            "model_policy_disclosure": None,
-            "preset_carousel_inject": None,
-            "partial_response": None,
-            "streaming": False,
-            "thinking_summary": None,
-        }
+        return new_background_state()
 
     def _new_partial_stream_snapshot(self, request_id: int) -> dict:
-        return {
-            "request_id": request_id,
-            "partial_response": None,
-            "thinking_summary": None,
-            "streaming": False,
-            "last_flush_monotonic": 0.0,
-        }
+        return new_partial_stream_snapshot(request_id)
 
     def _reset_partial_stream_snapshot(self, request_id: int) -> None:
         with self._partial_response_lock:
-            self._partial_stream_snapshot = self._new_partial_stream_snapshot(request_id)
+            self._partial_stream_snapshot = new_partial_stream_snapshot(request_id)
 
     def _clear_partial_stream_snapshot(self) -> None:
         with self._partial_response_lock:
-            self._partial_stream_snapshot = {
-                "request_id": None,
-                "partial_response": None,
-                "thinking_summary": None,
-                "streaming": False,
-                "last_flush_monotonic": 0.0,
-            }
+            self._partial_stream_snapshot = new_partial_stream_snapshot(None)
 
     def _update_partial_response(
         self,
@@ -1992,26 +1968,15 @@ class Plugin:
                 pc_ip=pc_ip,
             )
         )
-        state: dict[str, Any] = {
-            "status": "completed",
-            "request_id": request_id,
-            "question": state_question,
-            "app_id": app_id,
-            "app_context": app_context,
-            "success": True,
-            "response": resp,
-            "applied": None,
-            "elapsed_seconds": 0.0,
-            "error": None,
-            "started_at": now,
-            "completed_at": now,
-            "strategy_guide_branches": None,
-            "model_policy_disclosure": None,
-            "preset_carousel_inject": None,
-        }
-        if shortcut_setup_for_state is not _OMIT_SHORTCUT_SETUP_FIELD:
-            state["shortcut_setup"] = shortcut_setup_for_state
-        self._background_state = state
+        self._background_state = completed_local_command_state(
+            request_id=request_id,
+            question=state_question,
+            app_id=app_id,
+            app_context=app_context,
+            response=resp,
+            now=now,
+            shortcut_setup=shortcut_setup_for_state,
+        )
         self._background_task = None
         out: dict[str, Any] = {
             "accepted": True,
@@ -2405,26 +2370,13 @@ class Plugin:
             self._background_request_seq += 1
             request_id = self._background_request_seq
             self._reset_partial_stream_snapshot(request_id)
-            self._background_state = {
-                "status": "pending",
-                "request_id": request_id,
-                "question": parsed_question,
-                "app_id": app_id,
-                "app_context": app_context,
-                "success": None,
-                "response": "Thinking...",
-                "applied": None,
-                "elapsed_seconds": 0,
-                "error": None,
-                "started_at": time.time(),
-                "completed_at": None,
-                "strategy_guide_branches": None,
-                "model_policy_disclosure": None,
-                "preset_carousel_inject": None,
-                "partial_response": None,
-                "streaming": False,
-                "thinking_summary": None,
-            }
+            self._background_state = pending_background_state(
+                request_id=request_id,
+                question=parsed_question,
+                app_id=app_id,
+                app_context=app_context,
+                started_at=time.time(),
+            )
             self._background_task = asyncio.create_task(
                 self._run_background_request(
                     request_id,

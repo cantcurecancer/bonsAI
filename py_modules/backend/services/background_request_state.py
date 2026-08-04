@@ -1,0 +1,112 @@
+"""Title: Background request state shape
+
+Purpose: Own the background-request status dict and the partial-stream snapshot the poller reads.
+Used for: main.py — every place that builds or resets `_background_state` / `_partial_stream_snapshot`.
+Solves: One declaration of a shape that was written out by hand in four places, one of which omitted three keys.
+Does not: Own the locks, the task handles or the merge policy — those stay with the Plugin instance.
+"""
+
+from typing import Any, Optional
+
+# Sentinel for "do not add this key at all", distinct from an explicit None value.
+# `shortcut_setup` is absent from most states and the frontend distinguishes absent from null.
+OMIT = object()
+
+
+def new_background_state() -> dict[str, Any]:
+    """The idle default. Every other state in this module carries exactly these keys."""
+    return {
+        "status": "idle",
+        "request_id": None,
+        "question": "",
+        "app_id": "",
+        "app_context": "none",
+        "success": None,
+        "response": "",
+        "applied": None,
+        "elapsed_seconds": 0,
+        "error": None,
+        "started_at": None,
+        "completed_at": None,
+        "strategy_guide_branches": None,
+        "model_policy_disclosure": None,
+        "preset_carousel_inject": None,
+        "partial_response": None,
+        "streaming": False,
+        "thinking_summary": None,
+    }
+
+
+def pending_background_state(
+    *,
+    request_id: int,
+    question: str,
+    app_id: str,
+    app_context: str,
+    started_at: float,
+    response: str = "Thinking...",
+) -> dict[str, Any]:
+    """State published when an Ask is admitted and a background task is about to run."""
+    state = new_background_state()
+    state.update(
+        {
+            "status": "pending",
+            "request_id": request_id,
+            "question": question,
+            "app_id": app_id,
+            "app_context": app_context,
+            "response": response,
+            "started_at": started_at,
+        }
+    )
+    return state
+
+
+def completed_local_command_state(
+    *,
+    request_id: int,
+    question: str,
+    app_id: str,
+    app_context: str,
+    response: str,
+    now: float,
+    shortcut_setup: Any = OMIT,
+) -> dict[str, Any]:
+    """Terminal state for a local keyword branch (sanitizer / shortcut / VAC).
+
+    These never spawn a background task, so they publish `completed` directly. `started_at` and
+    `completed_at` are both `now` because no work was awaited.
+    """
+    state = new_background_state()
+    state.update(
+        {
+            "status": "completed",
+            "request_id": request_id,
+            "question": question,
+            "app_id": app_id,
+            "app_context": app_context,
+            "success": True,
+            "response": response,
+            "elapsed_seconds": 0.0,
+            "started_at": now,
+            "completed_at": now,
+        }
+    )
+    if shortcut_setup is not OMIT:
+        state["shortcut_setup"] = shortcut_setup
+    return state
+
+
+def new_partial_stream_snapshot(request_id: Optional[int]) -> dict[str, Any]:
+    """Per-request streaming scratch state, written from the executor thread under a lock.
+
+    `request_id=None` is the cleared form — it matches no live request, so
+    `_merge_partial_into_background_status` will not graft it onto any status.
+    """
+    return {
+        "request_id": request_id,
+        "partial_response": None,
+        "thinking_summary": None,
+        "streaming": False,
+        "last_flush_monotonic": 0.0,
+    }
