@@ -30,6 +30,7 @@ import { buildTurnHeaderElement } from "../utils/buildTurnHeaderElement";
 import { buildCollapsedTurnTitle } from "../utils/chatTurnTitle";
 import { ContextChipLadder } from "./ContextChipLadder";
 import { SessionContextStrip } from "./SessionContextStrip";
+import { registerNavFocus, type NavRefHolder } from "../utils/navFocusRegistry";
 import { chipsFromSnapshot, transparencyUiAvailable } from "../utils/contextChipsFromSnapshot";
 import type {
   AppliedResult,
@@ -152,6 +153,13 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
   } = props;
 
   const [diagnosticsOpen, setDiagnosticsOpen] = useState(false);
+
+  /* Steam fills this in for the dev-only Ask diagnostics block; see navFocusRegistry. */
+  const askDiagnosticsNavRef = useRef<NavRefHolder["current"]>(null);
+  useEffect(() => {
+    registerNavFocus("ask-diagnostics", askDiagnosticsNavRef);
+    return () => registerNavFocus("ask-diagnostics", null);
+  }, []);
   const [sessionHighlightTurnId, setSessionHighlightTurnId] = useState<string | null>(null);
   const [transparencyDetailsOpen, setTransparencyDetailsOpen] = useState(false);
   const [troubleshootingPermHintDismissed, setTroubleshootingPermHintDismissed] = useState(false);
@@ -576,8 +584,14 @@ questionLooksLikeTroubleshootingAsk(unifiedInput) ? (
 {desktopAskVerboseLogging && transparencySnapshot?.ask_diagnostics ? (
   <PanelSectionRow>
     {/* Classed so the reply-row Down chain can reach it — it sits between Retry and the session
-        context strip, and a hop straight to the strip would step over it. */}
-    <Focusable className="bonsai-ask-diagnostics" style={{ width: "100%" }}>
+        context strip, and a hop straight to the strip would step over it. `navRef` is what actually
+        transfers gamepad focus here: this block is its own navigation container, and a DOM focus()
+        would move `activeElement` without moving Steam's ring. */}
+    <Focusable
+      {...({ navRef: askDiagnosticsNavRef } as Record<string, unknown>)}
+      className="bonsai-ask-diagnostics"
+      style={{ width: "100%" }}
+    >
       <div style={{ fontSize: 12, fontWeight: 700, color: "#b8c9dc", marginBottom: 6 }}>
         Ask diagnostics
       </div>

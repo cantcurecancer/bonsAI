@@ -5,12 +5,14 @@
  * Solves: Collapsed hint + expandable ladder so users can audit what context reached the model.
  * Does not: Build snapshots or fetch RPC data — receives turns from orchestration hooks.
  */
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Focusable } from "@decky/ui";
 import type { AskThreadCollapsedTurn } from "../types/bonsaiUi";
 import type { TransparencySnapshot } from "../utils/inputTransparency";
 import { ContextChipLadder } from "./ContextChipLadder";
 import { chipsFromSnapshot } from "../utils/contextChipsFromSnapshot";
+import { registerNavFocus, type NavRefHolder } from "../utils/navFocusRegistry";
+import { isOkDeckButtonEvent } from "../utils/focusNavigation";
 
 export type SessionContextTurn = {
   id: string;
@@ -34,6 +36,17 @@ export function SessionContextStrip({
   const [open, setOpen] = useState(false);
   const [activeId, setActiveId] = useState<string>("live");
 
+  /*
+   * Steam populates this with the nav node for the strip. It is how D-pad Down out of the reply row
+   * hands focus over: a plain `focus()` moves `activeElement` but leaves Steam's gamepad focus
+   * behind, so presses keep going to the row you were trying to leave (measured 2026-08-04).
+   */
+  const navRef = useRef<NavRefHolder["current"]>(null);
+  useEffect(() => {
+    registerNavFocus("session-context-strip", navRef);
+    return () => registerNavFocus("session-context-strip", null);
+  }, []);
+
   const rows: SessionContextTurn[] = [
     ...archivedTurns
       .filter((t) => t.transparency && chipsFromSnapshot(t.transparency).length > 0)
@@ -54,6 +67,9 @@ export function SessionContextStrip({
 
   return (
     <Focusable
+      /* `navRef` is a real Steam Focusable prop that Decky's types omit — the same gap as
+         `onMoveDown`, so it goes through the cast the repo already uses for those. */
+      {...({ navRef } as Record<string, unknown>)}
       className="bonsai-session-context-strip"
       style={{
         marginTop: 12,
@@ -77,7 +93,11 @@ export function SessionContextStrip({
           turn rows below already use; the native button stays for click and keeps the styling. */}
       <Focusable
         onActivate={() => setOpen((o) => !o)}
-        onButtonDown={() => {
+        onButtonDown={(evt: unknown) => {
+          /* A only. `onButtonDown` fires for every button, so toggling on all of them meant a
+             D-pad press aimed at moving past this header collapsed or expanded it instead — the
+             same bug the spoiler fence had. */
+          if (!isOkDeckButtonEvent(evt)) return false;
           setOpen((o) => !o);
           return true;
         }}

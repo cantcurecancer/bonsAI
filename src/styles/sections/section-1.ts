@@ -222,7 +222,6 @@ export function buildSection1Section(): string {
         .bonsai-scope .bonsai-decky-tabs-root .DialogButton.Active:not(:focus-within) .bonsai-tab-title-icon,
         .bonsai-scope .bonsai-decky-tabs-root .DialogButton.active:not(:focus-within) .bonsai-tab-title-icon,
         .bonsai-scope .bonsai-decky-tabs-root .Focusable.Active:not(:focus-within) .bonsai-tab-title-icon {
-          color: rgba(252, 252, 252, 1) !important;
           filter:
             drop-shadow(0 0 2px var(--bonsai-ui-tab-icon-ds-1, rgba(82, 216, 138, 0.22)))
             drop-shadow(0 0 6px var(--bonsai-ui-tab-icon-ds-2, rgba(34, 100, 65, 0.16))) !important;
@@ -241,6 +240,28 @@ export function buildSection1Section(): string {
             drop-shadow(0 0 6px var(--bonsai-ui-tab-icon-ds-3, rgba(82, 216, 138, 0.95)))
             drop-shadow(0 0 14px var(--bonsai-ui-tab-icon-ds-4, rgba(34, 100, 65, 0.62)))
             drop-shadow(0 0 24px var(--bonsai-ui-tab-icon-ds-5, rgba(82, 216, 138, 0.45))) !important;
+        }
+
+        /*
+          Persistent active-tab marker. Keyed on .Active with no focus qualifier, so the accent
+          survives focus moving deep into the tab body and survives reopening the plugin mid-tab —
+          the two cases where the strip previously showed nothing and you had to D-pad up to find out
+          which tab you were on. Colour only: no box is drawn, so this cannot change leaf geometry
+          and cannot move the strip out of the 48-56px stable window useTabStripBodyOffset measures.
+
+          Specificity walks the real leaf > shell > icon nesting (see bonsaiTabIconTitle) so this
+          outranks both white-icon rules above whichever one Decky's class nesting happens to match.
+          Those keep their job: grey = another tab, white = the non-active tab the strip is pointing
+          at, accent = the tab you are on.
+
+          Follows the AI character accent like the strip rings above, and unlike the gamepad focus
+          rings, which are deliberately white literals (see gamepadAndPullModels.ts).
+        */
+        .bonsai-scope .bonsai-decky-tabs-root .Panel.Focusable.Active .bonsai-tab-title-leaf .bonsai-tab-title-shell .bonsai-tab-title-icon,
+        .bonsai-scope .bonsai-decky-tabs-root .DialogButton.Active .bonsai-tab-title-leaf .bonsai-tab-title-shell .bonsai-tab-title-icon,
+        .bonsai-scope .bonsai-decky-tabs-root .DialogButton.active .bonsai-tab-title-leaf .bonsai-tab-title-shell .bonsai-tab-title-icon,
+        .bonsai-scope .bonsai-decky-tabs-root .Focusable.Active .bonsai-tab-title-leaf .bonsai-tab-title-shell .bonsai-tab-title-icon {
+          color: var(--bonsai-ui-tab-active-icon, rgba(82, 216, 138, 0.98)) !important;
         }
 
         .bonsai-scope [class*="TabContentsScroll"] {

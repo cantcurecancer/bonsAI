@@ -57,6 +57,7 @@ BPM (Desktop → Big Picture → QAM → bonsAI). Ollama reachable.
 
 - [ ] Open plugin; no crash on first paint
 - [ ] LB/RB cycles Main → Ollama → Settings → Permissions → (Developer) → About
+- [ ] **TAB-MARKER-01** — active tab icon is accent-coloured while focus is deep in the tab body (D-pad down into the panel, then look at the strip without moving focus back up); other icons stay grey. Close and reopen the plugin — the restored tab is still marked. With an AI character selected the marker takes that character's colour, not green.
 - [ ] Ollama → Test connection — success or stable unreachable (no traceback)
 - [ ] Short Ask; reply in focusable chunks; D-pad through chunks
 - [ ] **Show details** / context chips when available (see bug CONTEXT-LADDER)

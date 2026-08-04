@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { ALL_PRESET_IDS } from "./characterCatalog";
 import {
+  buildBonsaiScopeAccentInlineStyle,
   CHARACTER_UI_ACCENT_MAIN_BY_PRESET,
   deriveSubtleHexFromMain,
   resolveUiAccentFromCharacterSettings,
@@ -55,5 +56,18 @@ describe("characterUiAccent", () => {
     });
     expect(on?.main).toMatch(/^#/);
     expect(on?.subtle).toMatch(/^#/);
+  });
+
+  it("active-tab icon accent tracks the character main, and falls back when no character applies", () => {
+    const style = buildBonsaiScopeAccentInlineStyle({ main: "#6c3483", subtle: "#3a1c47" }) as Record<
+      string,
+      string
+    >;
+    // 108/52/131 is #6c3483; the marker must be the character's own tone, not a fixed green.
+    expect(style["--bonsai-ui-tab-active-icon"]).toBe("rgba(108, 52, 131, 0.98)");
+
+    // No character selected: the var is absent so the stylesheet literal in section-1 applies.
+    const noAccent = buildBonsaiScopeAccentInlineStyle(null) as Record<string, string>;
+    expect(noAccent["--bonsai-ui-tab-active-icon"]).toBeUndefined();
   });
 });

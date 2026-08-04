@@ -28,6 +28,7 @@ import {
 import { getReplyStop, REPLY_STOP_ORDER, type ReplyStopId } from "./replyStopRegistry";
 import { elementHasFocus } from "./uiDocument";
 import { isDeckDirectionDownEvent, isDeckDirectionUpEvent } from "./focusNavigation";
+import { hasNavFocusTarget } from "./navFocusRegistry";
 
 /*
  * TEMPORARY instrumentation (2026-08-04) — remove once REPLY-DOWN-01 passes.
@@ -198,7 +199,15 @@ export function buildReplyActionsElement(
     const el = rowEl.current;
     if (el && !elementHasFocus(el)) return false;
     const moved = isDown ? onDown() : onUp();
-    probe("buttonDown:result", { row, dir: isDown ? "down" : "up", moved });
+    probe("buttonDown:result", {
+      row,
+      dir: isDown ? "down" : "up",
+      moved,
+      // Which mechanism was available. A "move" that reports true while these are false was a DOM
+      // focus that Steam ignored — the failure mode this round is meant to end.
+      navStrip: hasNavFocusTarget("session-context-strip"),
+      navDiag: hasNavFocusTarget("ask-diagnostics"),
+    });
     return moved;
   };
 

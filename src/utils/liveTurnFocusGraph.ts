@@ -8,6 +8,7 @@
 
 import { focusRegisteredReplyStop } from "./replyStopRegistry";
 import { elementHasFocus, getUiDocument } from "./uiDocument";
+import { takeNavFocus } from "./navFocusRegistry";
 
 const FOCUSABLE_SELECTOR =
   'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -189,7 +190,15 @@ export function focusContextHint(liveSlot: HTMLElement | null): boolean {
   return focusDeckOwner(hint);
 }
 
+/**
+ * The session context strip lives outside the reply row's navigation container, so it needs Steam's
+ * own transfer rather than a DOM focus — see navFocusRegistry for the measurement. The `focusDeckOwner`
+ * fallback stays for the case where Decky has not populated the nav ref yet; it moves
+ * `activeElement` even when it cannot move the gamepad ring, which is still better than nothing for
+ * the mouse and touch paths.
+ */
 export function focusSessionContextStrip(): boolean {
+  if (takeNavFocus("session-context-strip")) return true;
   const doc = getUiDocument();
   const strip =
     doc.querySelector<HTMLElement>(".bonsai-session-context-strip") ??
@@ -202,6 +211,7 @@ export function focusSessionContextStrip(): boolean {
  * the normal case rather than a failure.
  */
 export function focusAskDiagnostics(): boolean {
+  if (takeNavFocus("ask-diagnostics")) return true;
   const host = getUiDocument().querySelector<HTMLElement>(".bonsai-ask-diagnostics");
   if (!host) return false;
   return focusDeckOwner(host.querySelector<HTMLElement>("button") ?? host);

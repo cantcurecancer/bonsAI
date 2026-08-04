@@ -152,6 +152,7 @@ export function buildBonsaiScopeAccentInlineStyle(accent: UiAccentPair | null): 
     ["--bonsai-ui-tab-bright-3" as string]: r(m, 0.32),
     ["--bonsai-ui-tab-focus-1" as string]: r(m, 0.92),
     ["--bonsai-ui-tab-focus-2" as string]: r(m, 0.18),
+    ["--bonsai-ui-tab-active-icon" as string]: r(m, 0.98),
     ["--bonsai-ui-tab-icon-ds-1" as string]: r(m, 0.22),
     ["--bonsai-ui-tab-icon-ds-2" as string]: r(d, 0.16),
     ["--bonsai-ui-tab-icon-ds-3" as string]: r(m, 0.95),

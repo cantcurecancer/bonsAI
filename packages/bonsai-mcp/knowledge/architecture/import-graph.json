@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 253,
-  "edgeCount": 579,
+  "fileCount": 255,
+  "edgeCount": 585,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -208,6 +208,7 @@
         "src/utils/focusNavigation.ts",
         "src/utils/inputTransparency.ts",
         "src/utils/liveTurnFocusGraph.ts",
+        "src/utils/navFocusRegistry.ts",
         "src/utils/troubleshootingAskHeuristic.ts"
       ],
       "importedBy": [
@@ -387,7 +388,9 @@
         "src/components/ContextChipLadder.tsx",
         "src/types/bonsaiUi.ts",
         "src/utils/contextChipsFromSnapshot.ts",
-        "src/utils/inputTransparency.ts"
+        "src/utils/focusNavigation.ts",
+        "src/utils/inputTransparency.ts",
+        "src/utils/navFocusRegistry.ts"
       ],
       "importedBy": [
         "src/components/MainTabChatTranscript.tsx"
@@ -1953,6 +1956,7 @@
         "src/data/replyMicroActions.ts",
         "src/utils/focusNavigation.ts",
         "src/utils/liveTurnFocusGraph.ts",
+        "src/utils/navFocusRegistry.ts",
         "src/utils/replyStopRegistry.ts",
         "src/utils/uiDocument.ts"
       ],
@@ -2128,6 +2132,7 @@
         "src/components/MainTabBonsaiAiMarkdownChunk.tsx",
         "src/components/MainTabChatTranscript.tsx",
         "src/components/MainTabUnifiedAskBar.tsx",
+        "src/components/SessionContextStrip.tsx",
         "src/utils/buildAnswerBubbleElement.tsx",
         "src/utils/buildReplyActionsElement.tsx",
         "src/utils/buildTurnHeaderElement.tsx",
@@ -2208,6 +2213,7 @@
     },
     "src/utils/liveTurnFocusGraph.ts": {
       "imports": [
+        "src/utils/navFocusRegistry.ts",
         "src/utils/replyStopRegistry.ts",
         "src/utils/uiDocument.ts"
       ],
@@ -2265,6 +2271,22 @@
       ],
       "importedBy": [
         "src/components/ModelRoutingOrderModal.tsx"
+      ]
+    },
+    "src/utils/navFocusRegistry.test.ts": {
+      "imports": [
+        "src/utils/navFocusRegistry.ts"
+      ],
+      "importedBy": []
+    },
+    "src/utils/navFocusRegistry.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/components/MainTabChatTranscript.tsx",
+        "src/components/SessionContextStrip.tsx",
+        "src/utils/buildReplyActionsElement.tsx",
+        "src/utils/liveTurnFocusGraph.ts",
+        "src/utils/navFocusRegistry.test.ts"
       ]
     },
     "src/utils/ollamaTabLocalSurvival.ts": {

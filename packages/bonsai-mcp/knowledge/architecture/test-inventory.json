@@ -42,6 +42,7 @@
     "src/utils/liveTurnFocusGraph.test.ts",
     "src/utils/localOnlyAskCommands.test.ts",
     "src/utils/mergePullModelCatalog.test.ts",
+    "src/utils/navFocusRegistry.test.ts",
     "src/utils/persistOllamaIp.test.ts",
     "src/utils/pullModelRecommendations.test.ts",
     "src/utils/replyStopRegistry.test.ts",
