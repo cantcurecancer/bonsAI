@@ -2,7 +2,7 @@
   "hotspots": [
     {
       "path": "main.py",
-      "lines": 2751,
+      "lines": 2756,
       "role": "Decky RPC entrypoints and orchestration"
     },
     {
@@ -67,7 +67,7 @@
     },
     {
       "path": "py_modules/backend/services/bonsai_stream_tags.py",
-      "lines": 675,
+      "lines": 693,
       "role": ""
     },
     {

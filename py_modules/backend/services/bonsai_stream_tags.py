@@ -98,9 +98,27 @@ def _strip_incomplete_bonsai_status_open(raw: str) -> str:
             return raw[:lt].rstrip()
         return raw
     # Exhausted input while still matching an incomplete opener (`<bons`, `<bonsai-stat`, …).
-    if matched > 0:
-        return raw[:lt].rstrip()
-    return raw
+    # Reaching here means every character after the `<` matched the opener, because any divergence
+    # returns inside the loop above. `matched == 0` therefore means nothing followed the `<` at all
+    # — a bare trailing `<`, which is the first token of a tag far more often than it is content.
+    # Hiding it costs nothing when it is real: the next token reveals the divergence and the `<`
+    # comes straight back. Leaving it visible is what put a one-character `<` in the reply bubble
+    # when Stop landed within the first second of a stream.
+    return raw[:lt].rstrip()
+
+
+def partial_stream_has_content(text: Optional[str]) -> bool:
+    """True when a streamed partial is worth keeping as an answer rather than discarding.
+
+    Stop can land on the first frame of a reply, when all that has arrived is the opening of some
+    markup — a status tag (`<`), a code fence (```` ``` ````), a list bullet. Publishing that as
+    the answer shows the user punctuation debris where a reply should be; the abort path already
+    has a better string for the empty case ("Request cancelled.").
+
+    One alphanumeric character is enough. Short real answers ("42", "Yes") must survive, so this
+    deliberately does not impose a minimum length.
+    """
+    return any(ch.isalnum() for ch in (text or ""))
 
 
 def extract_bonsai_status(text: str) -> Tuple[Optional[str], str]:

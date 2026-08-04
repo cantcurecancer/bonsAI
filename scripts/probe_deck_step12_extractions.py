@@ -187,6 +187,13 @@ async def probe_stop(plugin, host: str) -> None:
         bool(kept.strip()),
         f"{len(kept)} chars: {kept[:40]!r}",
     )
+    # Regression guard for the 2026-08-04 '<' bug: an early Stop used to keep the first character
+    # of a status tag as the whole answer. Whatever is kept must read as text, not as markup debris.
+    check(
+        "12.4 kept text is not a tag fragment",
+        any(c.isalnum() for c in kept),
+        f"{kept[:40]!r}",
+    )
 
     # The task must actually be gone, not merely marked cancelled - 12.3's cancel_and_await.
     check("12.3 background task released", plugin._background_task is None)

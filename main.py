@@ -2441,6 +2441,8 @@ class Plugin:
             if task is not None and not task.done():
                 task.cancel()
             self._background_task = None
+            from backend.services.bonsai_stream_tags import partial_stream_has_content
+
             rid = self._background_state.get("request_id")
             if rid is not None and self._background_state.get("status") == "pending":
                 partial_text = None
@@ -2448,7 +2450,10 @@ class Plugin:
                     snap = self._partial_stream_snapshot
                     if snap.get("request_id") == rid:
                         partial = snap.get("partial_response")
-                        if isinstance(partial, str) and partial.strip():
+                        # Not just "non-empty": Stop can land on the first frame, when all that
+                        # has arrived is markup debris (`<` from a status tag, ``` from a fence).
+                        # "Request cancelled." beats showing the user a stray bracket.
+                        if isinstance(partial, str) and partial_stream_has_content(partial):
                             partial_text = partial.strip()
                 cancel_response = partial_text if partial_text else "Request cancelled."
                 self._background_state = {

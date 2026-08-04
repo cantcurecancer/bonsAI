@@ -9,6 +9,7 @@ from backend.services.bonsai_stream_tags import (
     extract_bonsai_status,
     extract_question_snippet,
     format_thinking_phase,
+    partial_stream_has_content,
     sanitize_thinking_summary,
 )
 
@@ -64,6 +65,50 @@ class BonsaiStreamTagsTests(unittest.TestCase):
         summary, stripped = extract_bonsai_status("Hi\n<bonsai-stat")
         self.assertIsNone(summary)
         self.assertEqual(stripped, "Hi")
+
+    def test_bare_trailing_angle_bracket_hidden(self):
+        """Deck 2026-08-04: Stop within the first second kept a one-character '<' as the answer.
+
+        `<bons` was already hidden but a lone `<` was not, so the very first streamed token of a
+        status tag leaked — into the live bubble for one frame, and permanently into the reply if
+        the user pressed Stop on that frame.
+        """
+        summary, stripped = extract_bonsai_status("<")
+        self.assertIsNone(summary)
+        self.assertEqual(stripped, "")
+
+        summary, stripped = extract_bonsai_status("Here is the answer so far <")
+        self.assertIsNone(summary)
+        self.assertEqual(stripped, "Here is the answer so far")
+
+    def test_real_less_than_in_prose_is_kept(self):
+        """The guard that makes hiding a bare '<' safe: anything after it that is not the opener."""
+        for raw in (
+            "set it if a < b",
+            "use a value < 60 for battery",
+            "compare x <= y",
+            "a < b and c < d",
+        ):
+            summary, stripped = extract_bonsai_status(raw)
+            self.assertIsNone(summary, raw)
+            self.assertEqual(stripped, raw, raw)
+
+    def test_hidden_bracket_returns_once_the_next_token_diverges(self):
+        """Streaming a real '<': hidden for one token, then back. No content is lost."""
+        self.assertEqual(extract_bonsai_status("if a <")[1], "if a")
+        self.assertEqual(extract_bonsai_status("if a < ")[1], "if a <")
+        self.assertEqual(extract_bonsai_status("if a < b")[1], "if a < b")
+
+    def test_partial_stream_has_content_rejects_markup_debris(self):
+        """Deck 2026-08-04: an early Stop kept '<', then '```', as the whole answer."""
+        for debris in ("", "   ", "<", "```", "```\n", "- ", "**", "#", "\n\n", "<<<", "|"):
+            self.assertFalse(partial_stream_has_content(debris), repr(debris))
+        self.assertFalse(partial_stream_has_content(None))
+
+    def test_partial_stream_has_content_keeps_short_real_answers(self):
+        """No minimum length: '42' and 'Yes' are complete answers to plenty of questions."""
+        for real in ("42", "Yes", "a", "```python\nx = 1", "Here is the answer so far"):
+            self.assertTrue(partial_stream_has_content(real), repr(real))
 
     def test_broken_open_prefix_with_prose_hidden(self):
         """Deck: model emits '<bons you're asking…' then corrects once the tag completes."""
