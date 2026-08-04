@@ -9,7 +9,7 @@
 ## Quick start
 
 1. Install **[Decky Loader](https://github.com/SteamDeckHomebrew/decky-loader)** on your Steam Deck
-2. Install **bonsAI** from the **[latest GitHub Release](https://github.com/cantcurecancer/bonsAI/releases)** — open **Decky** from QAM → Settings → Developer → install plugin from URL: [https://github.com/qd313/bonsAI/releases/latest/download/bonsAI.zip](https://github.com/qd313/bonsAI/releases/latest/download/bonsAI.zip)
+2. Install **bonsAI** from the **[latest GitHub Release](https://github.com/cantcurecancer/bonsAI/releases)** — open **Decky** from QAM → Settings → Developer → install plugin from URL: [https://github.com/cantcurecancer/bonsAI/releases/latest/download/bonsAI.zip](https://github.com/cantcurecancer/bonsAI/releases/latest/download/bonsAI.zip)
 3. **Install Ollama and a model**
   - **Deck**: **bonsAI → Ollama** → enable **Ollama on this Deck** → **Install Tier 1 essentials** `qwen2.5vl:3b` for chat + screenshots). Optional: **Install Tier 2 one-model multimodal** `gemma4:e2b-it-qat`)
   - **LAN PC:** Install **[Ollama](https://ollama.com/download)**, then `ollama pull qwen2.5vl:3b` (optional: `ollama pull gemma4:e2b-it-qat`)
