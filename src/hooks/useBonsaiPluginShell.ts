@@ -18,6 +18,8 @@ import {
 import {
   captureOllamaTabLocalSnapshot,
 } from "../utils/ollamaTabLocalSurvival";
+import { loadLastTab, saveLastTab } from "../features/plugin-shell/pluginStorage";
+import { restoreModalReturnFocus } from "../features/plugin-shell/modalReturnFocusRegistry";
 
 /**
  * If Decky unmounts plugin `Content` when `showModal` closes, React state resets to defaults; this
@@ -29,7 +31,9 @@ function resolveInitialTab(): string {
   const snap = peekBonsaiSessionPendingRestore();
   if (snap?.currentTab) return snap.currentTab;
   if (__bonsaiTabRestoreAfterModal != null) return __bonsaiTabRestoreAfterModal;
-  return "main";
+  // D15 option B: the two sources above are modal round-trip machinery and are empty on a normal
+  // open, which is why every reopen used to land on Main. Resume the last tab instead.
+  return loadLastTab() ?? "main";
 }
 
 export type UseBonsaiPluginShellOptions = {
@@ -60,6 +64,12 @@ export function useBonsaiPluginShell({ getSessionSnapshot }: UseBonsaiPluginShel
     }
   }, []);
 
+  // D15 option B. Written on every change rather than on close: Decky gives the plugin no
+  // reliable "closing" hook, so there is no later moment guaranteed to run.
+  useEffect(() => {
+    saveLastTab(currentTab);
+  }, [currentTab]);
+
   const armPostPickerTabLock = useCallback((back: string) => {
     if (back === "main") {
       postPickerTabLockRef.current = null;
@@ -79,6 +89,12 @@ export function useBonsaiPluginShell({ getSessionSnapshot }: UseBonsaiPluginShel
       window.setTimeout(() => {
         setCurrentTab(back);
         __bonsaiTabRestoreAfterModal = null;
+        // Focus last: the tab has to be active and its controls mounted before the opener can be
+        // focused, and after a Content remount the ref callbacks only re-register on that mount.
+        // A miss is a no-op, which is exactly the behavior this had before.
+        window.requestAnimationFrame(() => {
+          restoreModalReturnFocus();
+        });
       }, 80);
     },
     [armPostPickerTabLock],

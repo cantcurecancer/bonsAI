@@ -10,6 +10,8 @@ export const IP_STORAGE_KEY = "bonsai:pc-ip";
 export const IP_DEFAULT = "192.168.1.";
 export const DISCLAIMER_STORAGE_KEY = "bonsai:disclaimer-accepted";
 export const PLUGIN_HELP_DISMISSED_STORAGE_KEY = "bonsai:plugin-help-dismissed";
+/** Last tab the user was on, so reopening the plugin resumes there instead of Main (D15 option B). */
+export const LAST_TAB_STORAGE_KEY = "bonsai:last-tab";
 export const LOCAL_RUNTIME_BETA_DISMISSED_STORAGE_KEY = "bonsai:local-runtime-beta-dismissed-v1";
 
 export const GITHUB_ISSUES_URL = "https://github.com/cantcurecancer/bonsAI/issues";

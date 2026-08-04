@@ -8,6 +8,7 @@
 import {
   IP_DEFAULT,
   IP_STORAGE_KEY,
+  LAST_TAB_STORAGE_KEY,
   PLUGIN_HELP_DISMISSED_STORAGE_KEY,
   UNIFIED_INPUT_STORAGE_KEY,
 } from "../../data/storageKeys";
@@ -49,6 +50,32 @@ export function saveIp(ip: string): void {
   if (typeof window === "undefined") return;
   try {
     window.localStorage.setItem(IP_STORAGE_KEY, ip);
+  } catch {}
+}
+
+/**
+ * Load the tab to open on, per D15 option B — reopening resumes where you left off.
+ * Returns null when nothing is stored, so the caller keeps its own default.
+ */
+export function loadLastTab(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(LAST_TAB_STORAGE_KEY);
+    return raw && raw.trim() ? raw.trim() : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Remember the active tab so the next open resumes there. Called on every tab change. */
+export function saveLastTab(tabId: string): void {
+  if (typeof window === "undefined") return;
+  try {
+    if (tabId && tabId.trim()) {
+      window.localStorage.setItem(LAST_TAB_STORAGE_KEY, tabId.trim());
+    } else {
+      window.localStorage.removeItem(LAST_TAB_STORAGE_KEY);
+    }
   } catch {}
 }
 

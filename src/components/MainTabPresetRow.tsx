@@ -11,6 +11,10 @@ import type { PresetPrompt } from "../data/presets";
 import type { AskModeId } from "../data/askMode";
 import { MainTabPresetAnimatedChips } from "./MainTabPresetAnimatedChips";
 import { joinPresetWithRunningGame } from "../utils/joinPresetWithRunningGame";
+import {
+  registerModalReturnFocusOwner,
+  rememberModalReturnFocus,
+} from "../features/plugin-shell/modalReturnFocusRegistry";
 
 export type MainTabPresetRowProps = {
   suggestedPrompts: PresetPrompt[];
@@ -67,10 +71,14 @@ export function MainTabPresetRow({
       {showPluginHelpChip && (
         <Button
           className="bonsai-preset-glass bonsai-preset-help-chip"
+          ref={(el: HTMLElement | null) => registerModalReturnFocusOwner("plugin-help", el)}
           {...({
             onMoveDown: () => focusUnifiedTextField(),
           } as Record<string, unknown>)}
-          onClick={() => onOpenPluginHelp()}
+          onClick={() => {
+            rememberModalReturnFocus("plugin-help");
+            onOpenPluginHelp();
+          }}
           style={{
             width: "100%",
             minHeight: 34,

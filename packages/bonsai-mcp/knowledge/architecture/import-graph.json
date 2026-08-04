@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 243,
-  "edgeCount": 547,
+  "fileCount": 246,
+  "edgeCount": 558,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -182,6 +182,7 @@
         "src/data/askMode.ts",
         "src/data/modelPolicy.ts",
         "src/data/replyMicroActions.ts",
+        "src/features/plugin-shell/modalReturnFocusRegistry.ts",
         "src/features/unified-input/constants.ts",
         "src/hooks/useStreamScrollPin.ts",
         "src/types/backgroundAsk.ts",
@@ -221,6 +222,7 @@
         "src/components/MainTabPresetAnimatedChips.tsx",
         "src/data/askMode.ts",
         "src/data/presets.ts",
+        "src/features/plugin-shell/modalReturnFocusRegistry.ts",
         "src/utils/joinPresetWithRunningGame.ts"
       ],
       "importedBy": [
@@ -316,6 +318,7 @@
         "src/data/bonsaiSettingsSchema.ts",
         "src/data/modelPolicy.ts",
         "src/data/replyVerbosity.ts",
+        "src/features/plugin-shell/modalReturnFocusRegistry.ts",
         "src/styles/settingsGlassButton.ts"
       ],
       "importedBy": [
@@ -395,6 +398,7 @@
         "src/data/bonsaiSettingsSchema.ts",
         "src/data/characterCatalog.ts",
         "src/data/uiScaleProfile.ts",
+        "src/features/plugin-shell/modalReturnFocusRegistry.ts",
         "src/features/unified-input/constants.ts",
         "src/utils/settingsTabLocalSurvival.ts"
       ],
@@ -842,6 +846,7 @@
       "importedBy": [
         "src/features/plugin-shell/pluginStorage.ts",
         "src/features/plugin-shell/tabs/useAboutTabPayload.tsx",
+        "src/hooks/useBonsaiPluginShell.test.ts",
         "src/index.tsx"
       ]
     },
@@ -898,6 +903,23 @@
         "src/index.tsx"
       ]
     },
+    "src/features/plugin-shell/modalReturnFocusRegistry.test.ts": {
+      "imports": [
+        "src/features/plugin-shell/modalReturnFocusRegistry.ts"
+      ],
+      "importedBy": []
+    },
+    "src/features/plugin-shell/modalReturnFocusRegistry.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/components/MainTabChatTranscript.tsx",
+        "src/components/MainTabPresetRow.tsx",
+        "src/components/OllamaTab.tsx",
+        "src/components/SettingsTab.tsx",
+        "src/features/plugin-shell/modalReturnFocusRegistry.test.ts",
+        "src/hooks/useBonsaiPluginShell.ts"
+      ]
+    },
     "src/features/plugin-shell/pluginStorage.ts": {
       "imports": [
         "src/data/storageKeys.ts"
@@ -906,6 +928,8 @@
         "src/features/plugin-shell/tabs/useOllamaTabPayload.tsx",
         "src/features/plugin-shell/useOllamaConnectionState.ts",
         "src/features/plugin-shell/usePluginHelpModal.tsx",
+        "src/hooks/useBonsaiPluginShell.test.ts",
+        "src/hooks/useBonsaiPluginShell.ts",
         "src/index.tsx"
       ]
     },
@@ -1177,14 +1201,26 @@
         "src/index.tsx"
       ]
     },
+    "src/hooks/useBonsaiPluginShell.test.ts": {
+      "imports": [
+        "src/data/storageKeys.ts",
+        "src/features/plugin-shell/pluginStorage.ts",
+        "src/hooks/useBonsaiPluginShell.ts",
+        "src/utils/bonsaiSessionSurvival.ts"
+      ],
+      "importedBy": []
+    },
     "src/hooks/useBonsaiPluginShell.ts": {
       "imports": [
+        "src/features/plugin-shell/modalReturnFocusRegistry.ts",
+        "src/features/plugin-shell/pluginStorage.ts",
         "src/utils/bonsaiDebugIngest.ts",
         "src/utils/bonsaiSessionSurvival.ts",
         "src/utils/ollamaTabLocalSurvival.ts",
         "src/utils/settingsTabLocalSurvival.ts"
       ],
       "importedBy": [
+        "src/hooks/useBonsaiPluginShell.test.ts",
         "src/index.tsx"
       ]
     },
@@ -1859,6 +1895,7 @@
         "src/features/plugin-shell/useOllamaModelsHubModal.tsx",
         "src/features/plugin-shell/usePluginHelpModal.tsx",
         "src/hooks/useBonsaiAskOrchestration.ts",
+        "src/hooks/useBonsaiPluginShell.test.ts",
         "src/hooks/useBonsaiPluginShell.ts",
         "src/hooks/usePluginSettings.ts",
         "src/hooks/useScreenshotBrowser.ts",

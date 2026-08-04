@@ -33,6 +33,10 @@ import { VoiceInputSettingsSection } from "./VoiceInputSettingsSection";
 import { SettingsTabUiScaleSection } from "./SettingsTabUiScaleSection";
 import type { UiScaleProfileId } from "../data/uiScaleProfile";
 import type { VoiceSttModelId } from "../data/bonsaiSettingsSchema";
+import {
+  registerModalReturnFocusOwner,
+  rememberModalReturnFocus,
+} from "../features/plugin-shell/modalReturnFocusRegistry";
 const persistenceModeLabel: Record<UnifiedInputPersistenceMode, string> = {
   persist_all: "Remember everything",
   persist_search_only: "Remember search only",
@@ -335,7 +339,13 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
               <>
                 <Button
                   className="bonsai-ai-character-picker-open"
-                  onClick={() => onOpenCharacterPicker()}
+                  ref={(el: HTMLElement | null) =>
+                    registerModalReturnFocusOwner("character-picker-settings", el)
+                  }
+                  onClick={() => {
+                    rememberModalReturnFocus("character-picker-settings");
+                    onOpenCharacterPicker();
+                  }}
                   style={{
                     width: "100%",
                     marginTop: 10,

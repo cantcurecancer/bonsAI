@@ -52,6 +52,10 @@ import {
   queryLiveTurnSlot,
 } from "../utils/liveTurnFocusGraph";
 import { questionLooksLikeTroubleshootingAsk } from "../utils/troubleshootingAskHeuristic";
+import {
+  registerModalReturnFocusOwner,
+  rememberModalReturnFocus,
+} from "../features/plugin-shell/modalReturnFocusRegistry";
 
 const BONSAI_CHAT_AI_MAX_WIDTH_CSS = `min(${Math.round(BONSAI_CHAT_AI_BUBBLE_MAX_FRAC * 100)}%, 100%)`;
 
@@ -621,7 +625,11 @@ questionLooksLikeTroubleshootingAsk(unifiedInput) ? (
   <PanelSectionRow>
     <div className="bonsai-save-chat-desktop-row">
       <Button
-        onClick={() => onOpenDesktopNoteSave()}
+        ref={(el: HTMLElement | null) => registerModalReturnFocusOwner("desktop-note-save", el)}
+        onClick={() => {
+          rememberModalReturnFocus("desktop-note-save");
+          onOpenDesktopNoteSave();
+        }}
         style={{
           width: "100%",
           minHeight: 38,
