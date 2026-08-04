@@ -11,7 +11,7 @@ import ReactMarkdown from "react-markdown";
 import { Focusable } from "@decky/ui";
 
 import { registerSpoilerFence } from "../utils/spoilerFenceRegistry";
-import { isDownDeckButtonEvent, isUpDeckButtonEvent } from "../utils/focusNavigation";
+import { isOkDeckButtonEvent } from "../utils/focusNavigation";
 
 /** Per-mount counter for spoiler fence ids; only needs to be unique among mounted fences. */
 let spoilerFenceSeq = 0;
@@ -130,11 +130,12 @@ function BonsaiSpoilerFence(props: {
           registerSpoilerFence(fenceIdRef.current, null);
           setOpen(true);
         }}
-        onButtonDown={(button: unknown) => {
-          /* Let D-pad up/down through. `onButtonDown` fires for every button, so revealing on all
-             of them meant the press that should have moved focus past a fence opened it instead —
-             there was no way to skip a spoiler once focus landed on it. */
-          if (isDownDeckButtonEvent(button) || isUpDeckButtonEvent(button)) return false;
+        onButtonDown={(evt: unknown) => {
+          /* A only. `onButtonDown` fires for every button, so anything else has to fall through to
+             navigation — otherwise the press meant to move focus past a spoiler reveals it, and a
+             spoiler you did not want to see cannot be skipped. Blacklisting the directions was not
+             enough: the argument is a GamepadEvent, so the direction predicates never matched it. */
+          if (!isOkDeckButtonEvent(evt)) return false;
           registerSpoilerFence(fenceIdRef.current, null);
           setOpen(true);
           return true;
@@ -199,9 +200,9 @@ function BonsaiSpoilerFence(props: {
       <Focusable
         className="bonsai-spoiler-collapse-target"
         onActivate={() => setOpen(false)}
-        onButtonDown={(button: unknown) => {
-          /* Same rule as the masked fence: directional presses navigate, they do not collapse. */
-          if (isDownDeckButtonEvent(button) || isUpDeckButtonEvent(button)) return false;
+        onButtonDown={(evt: unknown) => {
+          /* Same rule as the masked fence: A collapses, every other button navigates. */
+          if (!isOkDeckButtonEvent(evt)) return false;
           setOpen(false);
           return true;
         }}

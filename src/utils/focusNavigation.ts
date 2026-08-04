@@ -66,6 +66,43 @@ export function isUpDeckButtonEvent(button: unknown): boolean {
   return isUpDeckButton(String(button ?? ""));
 }
 
+/*
+ * `onButtonDown` does not receive a key string.
+ *
+ * Decky hands it a `GamepadEvent` — a `CustomEvent` whose `detail.button` is a numeric
+ * `GamepadButton` (`@decky/ui`, `components/FooterLegend.d.ts`: `OK = 1`, `DIR_UP = 9`,
+ * `DIR_DOWN = 10`). The predicates above stringify their argument, so a gamepad event arrives as
+ * "[object CustomEvent]" and matches nothing. That is why the masked spoiler fence revealed itself
+ * on D-pad Down: its handler tested for a direction, got false, and fell through to the reveal on
+ * every button (reported on device 2026-08-04).
+ *
+ * The value is duplicated rather than imported so this stays a leaf module with no UI dependency —
+ * the enum is a Steam input protocol, not a library detail.
+ */
+const DECK_BUTTON_OK = 1;
+
+/** The numeric button id, from whichever shape the caller was handed. */
+function deckButtonId(button: unknown): number | null {
+  if (typeof button === "number") return button;
+  const detail = (button as { detail?: { button?: unknown } } | null | undefined)?.detail;
+  if (detail && typeof detail.button === "number") return detail.button;
+  return null;
+}
+
+/**
+ * True only for A / OK.
+ *
+ * Gate anything that changes state on this rather than on "not a direction". `onButtonDown` fires
+ * for *every* button, so a handler that does not whitelist will also act on B, the bumpers and the
+ * stick clicks.
+ */
+export function isOkDeckButtonEvent(button: unknown): boolean {
+  const id = deckButtonId(button);
+  if (id !== null) return id === DECK_BUTTON_OK;
+  const key = String(button ?? "").toLowerCase();
+  return key === "enter" || key === "a" || key === "gamepada";
+}
+
 /** Find a visible focusable descendant to support controller-first keyboard navigation. */
 export function getFocusableWithin(selector: string): HTMLElement | null {
   const root = document.querySelector(selector) as HTMLElement | null;

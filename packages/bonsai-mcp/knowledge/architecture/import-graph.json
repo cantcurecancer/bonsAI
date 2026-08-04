@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 251,
-  "edgeCount": 573,
+  "fileCount": 252,
+  "edgeCount": 574,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -2113,6 +2113,12 @@
         "src/hooks/useBonsaiAskOrchestration.ts"
       ]
     },
+    "src/utils/focusNavigation.test.ts": {
+      "imports": [
+        "src/utils/focusNavigation.ts"
+      ],
+      "importedBy": []
+    },
     "src/utils/focusNavigation.ts": {
       "imports": [],
       "importedBy": [
@@ -2121,7 +2127,8 @@
         "src/components/MainTabUnifiedAskBar.tsx",
         "src/utils/buildAnswerBubbleElement.tsx",
         "src/utils/buildTurnHeaderElement.tsx",
-        "src/utils/deckSliderMath.ts"
+        "src/utils/deckSliderMath.ts",
+        "src/utils/focusNavigation.test.ts"
       ]
     },
     "src/utils/i18n.test.ts": {
