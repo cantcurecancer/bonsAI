@@ -363,5 +363,5 @@ holding RAG remediation PR1/PR2 docs-locked.
 - No proposal adds a new capability key. **A3** and **B3** only navigate to
   existing toggles; **C2** writes through the existing `filesystem_write` gate.
 - Housekeeping, unrelated to this question:
-  [09-wake-word-listening-feasibility.md](09-wake-word-listening-feasibility.md)
-  answers **Q10** but is numbered `09`, colliding with the Steam Frame doc.
+  [10-wake-word-listening-feasibility.md](10-wake-word-listening-feasibility.md)
+  answers **Q10**.

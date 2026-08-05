@@ -1,4 +1,4 @@
-# 09 — Wake-word listening — feasibility (2026-08-03)
+# 10 — Wake-word listening — feasibility (2026-08-03)
 
 Research only. No code, no roadmap edits, no implementation. Answers the six
 questions raised against the Planned item at

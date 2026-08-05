@@ -100,7 +100,7 @@ So SD-card libraries and second internal libraries — routine on Deck — are
 invisible today. Any tier B2/C needs:
 
 1. a real `libraryfolders.vdf` parser. The backend is stdlib-only (see
-   [09-wake-word-listening-feasibility.md §2.1](09-wake-word-listening-feasibility.md));
+   [10-wake-word-listening-feasibility.md §2.1](10-wake-word-listening-feasibility.md));
    there is no `vdf` package and the only existing "VDF parsing" is a ±2200-char
    regex window over `screenshots.vdf`
    ([screenshot_media.py:450-474](../../py_modules/backend/services/screenshot_media.py));
