@@ -605,7 +605,7 @@ current tree (especially **D1b** and parts of **D2** / **D4**).
 | **D1** | **Finish both missing RPCs** — `merge_pulled_tags_into_routing_orders` and `get_session_rag_chip_candidates` | Both are wiring gaps, not greenfield features. Routing merge reuses `merge_pulled_tag` / `sanitize_model_routing_order` for `text_model_routing_order` and `vision_model_routing_order`. Session RAG already has `suggest_chip_candidates` + tests in `knowledge_base_service.py`; only the public RPC adapter on `class Plugin` is missing. Restores intended UX without reopening Phase 4 visibility / Phase 5 vector ranking. |
 | **D2** | **Targeted dead-code cleanup** — delete confirmed orphans; **archive** tiny-model thinking code; keep active Ask, debug, and KB-cancel paths | Proton journal RPCs + service, `apply_tdp` (+ its test-only caller), `log_navigation`, and legacy `capture_screenshot` are safe to remove after preview-suite grep. **`ask_game_ai`** stays — preview suite drives it. **`ask_ollama`** stays — every Ask calls it internally. **`dbg_fe_log`** stays — intentional on-Deck debug bridge. **`cancel_rag_corpus_download`** stays — backend cancel path exists; UI Cancel is planned (**D2 follow-up**). ***Follow-up shipped 2026-08-05 as execution-order step 9** — keeping it was the right call; the button was missing, not the code.* **`thinking_tiny_model_service.py`** is **deleted outright** in `c8ed045`; git history is the archive. To restore the tiny-model thinking blurbs: `git show c8ed045^:py_modules/backend/services/thinking_tiny_model_service.py`. An in-tree archive folder was rejected — the file would still surface in greps and still need explaining, which defeats the point of the cleanup. |
 | **D3** | **Option A — characterization tests first, then refactor** | `index.tsx` and `useBonsaiAskOrchestration.ts` have zero automated coverage; `npm test` would pass if every component were deleted. `fakeDeckyRpc.ts` + existing hook tests prove the pattern. Preview and on-Deck QA still required for D-pad and layout. |
-| **D4** | **Prune by policy, not by folder count** | Keep evidence linked from current or archived QA docs; keep the latest useful pass per tier and meaningful failure runs. Audit links before deleting anything. Remove only duplicate, incomplete, or truly unreferenced generated runs. Add a retention rule so future `--write` runs do not grow `docs/test-evidence/` without bound. |
+| **D4** | **Prune by policy, not by folder count** | Keep evidence linked from current or archived QA docs; keep the latest useful pass per tier and meaningful failure runs. Audit links before deleting anything. Remove only duplicate, incomplete, or truly unreferenced generated runs. Add a retention rule so future `--write` runs do not grow `docs/test-evidence/` without bound. **Executed as step 10, 2026-08-05 — and "prune by policy, not by folder count" is exactly what saved it.** The link audit the decision demanded found the audit's own premise wrong: 10 of 13 **runs** were referenced, not 3 of 9 folders, so a folder-count prune would have deleted cited evidence and a 4-failure run. 3 runs / 9 files removed; retention now lives in `run-preview-suite.mjs`. |
 | **D5** | **Option A — keep the built-in import graph** | Fast, no dependency, runs on every commit, and matches today's relative-import-only `tsconfig`. Revisit only if path aliases land, unresolved internal imports appear, or a parser-based tool finds real discrepancies. |
 | **D6** | **Sequencing below** | Fix real user-visible gaps before shrinking/refactoring; build the safety net before the risky split; measure handoff friction on the improved tree. |
 | **D7** | **Delete both screenshot helpers** | `_reencode_oversized_capture` and `_mirror_capture_to_plugin_dir` have no production callers; `_mirror_capture_to_plugin_dir` is an explicit deprecated no-op. One unit test still calls `_reencode` — remove it with the function. Consistent with D2 cleanup; module has behavioral coverage via `_finalize_steam_capture_file`. |
@@ -983,7 +983,43 @@ for the same reason — its RPC probe passed, its UI pass did not run.
    rendering Cancel, dropping the double-press guard, and treating a cancel as an error each turn
    the suite red. Gates: `tsc`, **366** frontend tests (57 files), 497 Python, `npm run build`,
    preview `preGate` 2/2. **On-Deck QA is what remains** — **KB-CANCEL-01**.
-10. **D4 — evidence hygiene** — link audit, prune orphans only. The retention rule must live **in the script that writes evidence**, not in a doc — a rule that depends on remembering is not a mechanism.
+10. **D4 — evidence hygiene — done 2026-08-05.** Link audit first, as D4 required, and it
+    **overturned the premise the decision was written on.**
+
+    **The audit ([06-doc-triage.md](06-doc-triage.md) § Prune stale evidence) searched
+    `testing.md` only.** The archived QA docs cite evidence heavily, at individual
+    case-manifest level. Counting whole **runs** (`tier/date-sha`) rather than tier folders:
+    **10 of 13 runs referenced, 0 broken links** — not "96% unreferenced". The unit that is
+    cited is the run, and the folder count was never the right denominator.
+
+    **Pruned: 3 runs, 9 files.** All unreferenced *and* carrying no signal — the two tests D4
+    asked for, applied together. `hookSmoke/2026-05-26-9e20a82` and
+    `hookSmoke/2026-06-09-a9237e4` both failed with `Error: IPC timeout for callTestHook`,
+    which is the preview harness being unavailable headlessly — the same limitation step 8
+    recorded — so they are not the "meaningful failure runs" D4 protects.
+    `deckOnly/2026-06-09-9e20a82` skipped all three cases. **What that deletion would have
+    destroyed is now written down** in [testing.md](../testing.md#evidence-retention):
+    `HOOK-smoke-setTab` has never produced a real result in this tree. Kept, explicitly:
+    `tier2Deep/2026-06-09-9e20a82`, 7 pass / **4 fail** — a meaningful failure run whose cases
+    no doc names, which a naive orphan sweep would have taken.
+
+    **Retention is now a mechanism, in `scripts/run-preview-suite.mjs`.** Keeps the 3 newest
+    runs per batch; never deletes a run cited by any `docs/**/*.md`, since evidence is linked
+    by path and deleting a cited run turns a link into a lie; never deletes the run the current
+    invocation just wrote. All three branches were exercised against planted folders — delete,
+    keep-because-cited, keep-because-current — not just the happy path.
+
+    **Found while doing it — the batch summaries lie, and two in the tree prove it.** The run
+    folder is keyed by date + sha only, so a `--filter` re-run on the same day and commit lands
+    in an earlier full run's folder and `writeBatchSummary` replaced the roll-up wholesale.
+    `tier2/2026-05-26-9e20a82` records **1** result beside **8** case directories — and
+    [archive/testing-failures-2026.md](../archive/testing-failures-2026.md) independently calls
+    that batch *tier2 (8/8)*, which is the corroboration; `tier2Deep/2026-06-09-a9237e4` records
+    1 beside 11. Summaries now merge per scenario id and report `ranThisInvocation` /
+    `carriedFromEarlierRun` so a filtered run is legible as one. Mutation-checked by restoring
+    the replace-wholesale line: the bug reproduces exactly (`total=1`), and the fix restores
+    `total=2`. **The historical summaries were left as they are** — rewriting recorded QA output
+    to match a later theory is not evidence hygiene; the caveat is documented instead.
 11. **Deferred friction test** — run Phase 2c newcomer task on the post-refactor tree; file `docs/audit/03-friction.md`.
 12. **`main.py` extractions — COMPLETE.** Items 1, 2, 4 and 5 executed 2026-08-03; item 3
     **dropped** 2026-08-04 by maintainer call (reasoning below). `main.py` **2865 → 2750**, with

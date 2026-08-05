@@ -444,26 +444,129 @@ function writeResultsReport(results, meta) {
   return outPath;
 }
 
+/**
+ * The run folder is keyed by date + sha only, so a `--filter` re-run on the same
+ * day and commit lands in the folder an earlier full run already wrote. Replacing
+ * the summary wholesale made it claim the batch was one scenario while the other
+ * scenarios' case directories sat beside it untouched — two runs in the tree said
+ * exactly that (`tier2/2026-05-26-9e20a82`, 8 case dirs and 1 recorded result;
+ * `tier2Deep/2026-06-09-a9237e4`, 11 and 1). Merge per scenario id instead: this
+ * run's results win for the ids it actually ran, and earlier ids survive.
+ */
 function writeBatchSummary(batchRunDir, results, meta) {
-  const passed = results.filter((r) => r.status === "pass").length;
-  const failed = results.filter((r) => r.status === "fail").length;
-  const skipped = results.filter((r) => r.status === "skipped").length;
-  writeJson(path.join(batchRunDir, "batch-summary.json"), {
-    batch: meta.batchKey,
-    runDate: meta.runDate,
-    gitSha: meta.gitSha,
-    passed,
-    failed,
-    skipped,
-    total: results.length,
-    evidenceRoot: relRepoPath(batchRunDir),
-    results: results.map((r) => ({
+  const summaryPath = path.join(batchRunDir, "batch-summary.json");
+  const rows = new Map();
+
+  let carried = 0;
+  try {
+    const prior = JSON.parse(fs.readFileSync(summaryPath, "utf8"));
+    for (const r of prior.results ?? []) {
+      if (r?.id) {
+        rows.set(r.id, r);
+        carried++;
+      }
+    }
+  } catch {
+    // No prior summary, or it is unreadable — either way this run is the record.
+  }
+
+  for (const r of results) {
+    if (rows.has(r.id)) carried--;
+    rows.set(r.id, {
       id: r.id,
       status: r.status,
       error: r.error ?? null,
       evidenceDir: r.evidenceDir ? relRepoPath(r.evidenceDir) : null,
-    })),
+    });
+  }
+
+  const merged = [...rows.values()];
+  const count = (status) => merged.filter((r) => r.status === status).length;
+  writeJson(summaryPath, {
+    batch: meta.batchKey,
+    runDate: meta.runDate,
+    gitSha: meta.gitSha,
+    passed: count("pass"),
+    failed: count("fail"),
+    skipped: count("skipped"),
+    total: merged.length,
+    // How many rows this run did not produce, so a reader can tell a full run
+    // from a filtered one that inherited the rest.
+    carriedFromEarlierRun: carried,
+    ranThisInvocation: results.length,
+    evidenceRoot: relRepoPath(batchRunDir),
+    results: merged,
   });
+}
+
+/** Run folders kept per batch. Older ones are deleted after a successful write. */
+const EVIDENCE_RUNS_KEPT_PER_BATCH = 3;
+
+/**
+ * D4's retention rule, in the script that writes evidence rather than in a doc —
+ * a rule that depends on someone remembering is not a mechanism.
+ *
+ * Keeps the newest N run folders per batch and deletes the rest, except any run
+ * a document still points at: evidence is cited by path from `docs/testing.md`
+ * and the archived QA docs, and deleting a cited run turns a link into a lie.
+ * That check is why this can prune automatically without a review step.
+ */
+function pruneOldEvidenceRuns(batchKey, currentRunFolder) {
+  const batchDir = path.join(evidenceRoot, batchKey);
+  let runs;
+  try {
+    runs = fs
+      .readdirSync(batchDir, { withFileTypes: true })
+      .filter((e) => e.isDirectory())
+      .map((e) => e.name)
+      .sort(); // `YYYY-MM-DD-<sha>` sorts oldest first by date
+  } catch {
+    return;
+  }
+  if (runs.length <= EVIDENCE_RUNS_KEPT_PER_BATCH) return;
+
+  const cited = collectCitedEvidencePaths();
+  const stale = runs.slice(0, runs.length - EVIDENCE_RUNS_KEPT_PER_BATCH);
+  for (const run of stale) {
+    // Sorting is by folder name, so a folder dated in the future — clock skew, or
+    // one made by hand — would sort above the run this invocation just wrote and
+    // push it into the stale window. Never delete our own output.
+    if (run === currentRunFolder) continue;
+    if (cited.has(`${batchKey}/${run}`)) {
+      console.log(`Evidence retention: keeping ${batchKey}/${run} — cited by a doc`);
+      continue;
+    }
+    fs.rmSync(path.join(batchDir, run), { recursive: true, force: true });
+    console.log(`Evidence retention: removed ${batchKey}/${run}`);
+  }
+}
+
+/** Every `test-evidence/<batch>/<run>` path named anywhere under `docs/`. */
+function collectCitedEvidencePaths() {
+  const cited = new Set();
+  const docsDir = path.join(repoRoot, "docs");
+  const walk = (dir) => {
+    let entries;
+    try {
+      entries = fs.readdirSync(dir, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const e of entries) {
+      const full = path.join(dir, e.name);
+      if (e.isDirectory()) {
+        if (full === evidenceRoot) continue; // a run citing itself proves nothing
+        walk(full);
+      } else if (e.name.endsWith(".md")) {
+        const text = fs.readFileSync(full, "utf8");
+        for (const m of text.matchAll(/test-evidence\/([A-Za-z0-9]+)\/(\d{4}-\d{2}-\d{2}-[0-9a-f]+)/g)) {
+          cited.add(`${m[1]}/${m[2]}`);
+        }
+      }
+    }
+  };
+  walk(docsDir);
+  return cited;
 }
 
 function nextTestResultsRowNumber(md) {
@@ -862,6 +965,7 @@ async function main() {
 
   if (evidenceFlag) {
     writeBatchSummary(batchRunDir, results, meta);
+    pruneOldEvidenceRuns(batchKey, runFolder);
   }
 
   writeResultsReport(results, meta);

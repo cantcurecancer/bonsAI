@@ -7,9 +7,43 @@
 | **This file** | Everyone | Overview, PR gates summary, coverage index, QA backlog pointer |
 | [testing-automated.md](testing-automated.md) | Agents / CI | Commands that can run without a human on the Deck |
 | [testing-manual.md](testing-manual.md) | Maintainers | On-Deck smokes, Tier 0–4 runbook, Deck-only checklists |
-| [test-evidence/](test-evidence/) | CI / agents | Preview-suite artifacts (`--write`) |
+| [test-evidence/](test-evidence/) | CI / agents | Preview-suite artifacts (`--write` / `--evidence`) — see [retention](#evidence-retention) |
 
 Related: [roadmap.md](roadmap.md) (bugs + QA backlog + Planned), [development.md](development.md) (build/deploy), [troubleshooting.md](troubleshooting.md).
+
+### Evidence retention
+
+`scripts/run-preview-suite.mjs` prunes its own output. It keeps the **3 newest run
+folders per batch** and deletes older ones after each evidence run, with two
+exemptions: a run **cited by any `docs/**/*.md`** is never deleted, because
+evidence is linked by path from the archived QA docs and deleting a cited run
+turns a link into a lie; and the run the current invocation just wrote is never
+deleted, in case a future-dated folder sorts above it. The rule lives in the
+script rather than in this file on purpose — a retention rule that depends on
+someone remembering is not a mechanism.
+
+**Reading a `batch-summary.json`: check `ranThisInvocation`.** The run folder is
+keyed by date + commit only, so a `--filter` re-run on the same day and commit
+writes into the folder an earlier full run already made. Summaries are merged per
+scenario id, and `carriedFromEarlierRun` / `ranThisInvocation` say how much of the
+row set this invocation actually produced. **Two summaries written before that fix
+(2026-08-05) under-report and cannot be trusted for a total:**
+`tier2/2026-05-26-9e20a82` says 1 result with 8 case directories beside it — the
+archived failures doc independently records that batch as *tier2 (8/8)* — and
+`tier2Deep/2026-06-09-a9237e4` says 1 with 11. In both, the per-case
+`manifest.json` files are correct; only the batch roll-up is wrong.
+
+**Pruned 2026-08-05 (step 10, D4).** Three runs, all unreferenced and all
+carrying no signal: `hookSmoke/2026-05-26-9e20a82` and
+`hookSmoke/2026-06-09-a9237e4`, which both failed with
+`Error: IPC timeout for callTestHook` — the preview harness being unavailable
+headlessly, not a product defect, so **`HOOK-smoke-setTab` has never produced a
+real result in this tree** — and `deckOnly/2026-06-09-9e20a82`, whose three cases
+all skipped as deck-only. Recoverable with
+`git show <commit>^:docs/test-evidence/...`. Everything else was kept: the link
+audit found **10 of 13 runs referenced and 0 broken links**, so the earlier
+"96% unreferenced" reading in [audit/06-doc-triage.md](audit/06-doc-triage.md) was
+an artifact of searching only this file and not the archive.
 
 ---
 

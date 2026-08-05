@@ -134,6 +134,18 @@ link in the implementation plan.
 
 ### Prune stale evidence
 
+> **Corrected 2026-08-05 by the step 10 link audit. The claim below was wrong, and
+> the reason is worth keeping: it searched `testing.md` only.** The archived QA
+> docs — `archive/testing-results-2026.md` and `archive/testing-full-pre-2026-07-30.md`
+> — cite evidence heavily, at the individual case-manifest level. Counting whole
+> **runs** (`tier/date-sha`) rather than tier folders, the real numbers were
+> **10 of 13 runs referenced, 0 broken links**, not "96% unreferenced". Only three
+> runs were genuinely orphaned, and all three carried no signal: two `hookSmoke`
+> runs that both failed with `IPC timeout for callTestHook` (the preview harness
+> being unavailable, not a product defect) and one `deckOnly` run whose three cases
+> all skipped. Those were pruned; everything else stayed. **The lesson for the next
+> audit: grep the archive too, and count the unit that is actually cited.**
+
 `docs/test-evidence/` holds **263 files across 9 trees**. Only 3 are linked from
 any doc (`testing.md`): `tier0/2026-05-26-9e20a82`,
 `tier1Core/2026-05-26-9e20a82`, `tier2Deep/2026-06-09-a9237e4`. The other six
