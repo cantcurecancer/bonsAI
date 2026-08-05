@@ -1,6 +1,6 @@
 # bonsAI Roadmap
 
-**Next session:** refactor handoff is at [execution order](audit/maintainer-decisions-locked.md#execution-order-locked-amended-2026-08-03) step **8** complete (`index.tsx` **1291** lines). Follow-ups: on-Deck QA in [Needs verification](#needs-verification), open [Bugs](#bugs), and `main.py` / settings SSOT items in the decisions doc. Reorg commit: `ba2e5c5` (`git show ba2e5c5`).
+**Next session:** refactor handoff is at [execution order](audit/maintainer-decisions-locked.md#execution-order-locked-amended-2026-08-03) — steps **1–9 and 12 are complete**. Step 12 (`main.py` extractions) ran *after* step 8, and step 9 (KB download Cancel) landed 2026-08-05. **Next unstarted: step 10** (evidence hygiene / **D4**), then **11** (deferred friction test). Sizes verified 2026-08-04: `index.tsx` closed step 8 at **1291** and is **1308** today after the tab-resume feature; `main.py` closed step 12 at **2743** and is **2755**. Refactor QA still owed: **SHELL-PAYLOAD-01** and **KB-CANCEL-01** ([testing.md](testing.md)) — the step 8 modal batch (**MODAL-EXTRACT-01…04**) and the step 12 extractions (**MAINPY-EXTRACT-01**) are Verified on-Deck. Other follow-ups: [Needs verification](#needs-verification), open [Bugs](#bugs). Reorg commit: `ba2e5c5` (`git show ba2e5c5`).
 
 **Moved (same commit):** locked maintainer decisions, execution order, and cleanup candidates → [audit/maintainer-decisions-locked.md](audit/maintainer-decisions-locked.md). Fixed-bug writeups → [archive/roadmap-bugs-fixed.md](archive/roadmap-bugs-fixed.md). Web permission discovery → [planning/web-permission-discovery.md](planning/web-permission-discovery.md).
 
@@ -278,6 +278,8 @@ Code-fixed or shipped; on-Deck / qualitative QA still owed. Detail: [testing.md]
 - **Reply-language snapshot RPC (2026-08-03 fix)** — verified on-device via `probe_deck_rpc_surface.py`; UI translation path spot-check optional.
 - **Session RAG / routing merge RPCs (2026-08-02)** — **SESSION-RAG-CHIPS-01** Verified; **ROUTING-MERGE-01** Open ([testing.md](testing.md)).
 - **D11 legacy-loader shim removal** — **D11-SHIM-01** Partial (RPC probe ok; Main-tab Ask UI pass open).
+- **Shell state + tab payload extractions (step 8)** — **SHELL-PAYLOAD-01** Open ([testing.md](testing.md)). No new D-pad surface, so it needs a smoke, not a full pass: open each of the six tabs, confirm controls respond, run one Ask end to end, and look specifically at the **Ollama tab after Clear all plugin data** (its remount key moved into `useOllamaTabPayload`).
+- **KB download Cancel (step 9)** — **KB-CANCEL-01** Open ([testing.md](testing.md)). Shipped 2026-08-05 with 6 mutation-checked tests. The D-pad half is what needs a Deck: while a download runs, Cancel is the action row's **only** enabled stop, so if it is not reachable the row is a dead end exactly as it was before the fix.
 
 ---
 

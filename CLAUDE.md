@@ -17,25 +17,27 @@ Decky Loader imports directly.
 
 | Path | Contents |
 |---|---|
-| `src/` | Frontend, 225 `.ts`/`.tsx` files. Bundled to `dist/index.js` |
+| `src/` | Frontend, 256 `.ts`/`.tsx` files (57 of them `*.test.*`). Bundled to `dist/index.js` |
 | `src/features/` | Vertical feature slices (`preset-carousel`, `unified-input`, `voice`) |
 | `src/hooks/`, `src/components/`, `src/utils/`, `src/data/` | Type-bucket directories (most of the code lives here) |
 | `src/test-harness/` | Vitest setup + `fakeDeckyRpc.ts` |
-| `main.py` | The Decky `Plugin` class — RPC surface. 2971 lines |
-| `py_modules/backend/services/` | 41 service modules; the bulk of backend logic |
-| `tests/` | Python `unittest` suites (51 files) |
+| `main.py` | The Decky `Plugin` class — RPC surface. 2755 lines |
+| `py_modules/backend/services/` | 43 service modules; the bulk of backend logic |
+| `tests/` | Python `unittest` suites (61 files) |
 | `packages/bonsai-mcp/` | In-repo MCP server + generated architecture snapshots |
 | `scripts/` | Build, deploy, Deck capture, RAG tooling |
 | `docs/audit/` | Refactor recon output — read before re-deriving anything |
 
 ## Entry points
 
-- **Frontend:** `src/index.tsx` (1960 lines) — plugin root, tabs, scoped CSS, RPC
-  wiring. Rollup config is one line delegating to `@decky/rollup`.
+- **Frontend:** `src/index.tsx` (1308 lines) — plugin root, tabs, scoped CSS, RPC
+  wiring. Rollup config is one line delegating to `@decky/rollup`. Modals, tab
+  payloads and shell state were extracted to `src/features/plugin-shell/` in
+  refactor step 8; the file is a composition root now, not a god file.
 - **Backend:** `main.py`, declared by `plugin.json` (`"main": "main.py"`,
-  `api_version: 1`). `class Plugin` at `main.py:198`; lifecycle hooks
-  `_main` (`main.py:319`) and `_unload` (`main.py:325`).
-- `main.py:26-28` inserts the plugin root onto `sys.path`, which is why backend
+  `api_version: 1`). `class Plugin` at `main.py:193`; lifecycle hooks
+  `_main` (`main.py:308`) and `_unload` (`main.py:313`).
+- `main.py:24-26` inserts the plugin root onto `sys.path`, which is why backend
   imports are `from backend.services.X import ...` rather than
   `py_modules.backend.services.X`. `scripts/run_python_tests.py` reproduces that
   path setup so tests match the loader.
@@ -62,30 +64,44 @@ This is the only way the two sides talk. There is no HTTP server between them.
 
 Call sites are concentrated in `src/hooks/` plus `src/index.tsx`.
 
-There is no compile-time check that a called name exists in `main.py`. Two
-frontend calls currently target methods that exist nowhere in Python; they now
-log to the console instead of failing silently, and are tracked under
-`docs/roadmap.md` "Bugs". Evidence:
+There is no compile-time check that a called name exists in `main.py`, so a typo
+in an RPC name is a runtime failure. Two frontend calls once targeted methods
+that existed nowhere in Python; both were wired 2026-08-02 under decision **D1**
+(`get_session_rag_chip_candidates` at `main.py:1440`,
+`merge_pulled_tags_into_routing_orders` at `main.py:1563`). How they went
+unnoticed — both call sites swallowed the error — is the lesson worth keeping:
 [docs/audit/phase1-map-verification.md](docs/audit/phase1-map-verification.md).
 
 ## Where settings live
 
-`settings.json` under `decky.DECKY_PLUGIN_SETTINGS_DIR` (`main.py:221`, `:274`).
+`settings.json` under `decky.DECKY_PLUGIN_SETTINGS_DIR` (`main.py:263`, `:276`).
 
-Adding one user-facing setting touches six files across two languages:
-`SettingsTab.tsx` (UI) → `usePluginSettings.ts` (state + debounced save) → RPC
-`load_settings`/`save_settings` → `settings_service.py` (28 hand-written
-`sanitize_*` fns), plus `src/data/bonsaiSettingsSchema.ts`,
-`bonsaiSettingsNormalizers.ts` and both test files.
+Adding one user-facing setting touches `SettingsTab.tsx` (UI) →
+`usePluginSettings.ts` (state + debounced save) → RPC `load_settings` /
+`save_settings` → `settings_service.py`, plus `src/data/bonsaiSettingsSchema.ts`
+and `bonsaiSettingsNormalizers.ts`.
 
-TS and Python each declare the setting shape independently. This is known and is
-the top-ranked item in [REFACTOR-PLAN.md](REFACTOR-PLAN.md) Phase 3.1.
+TS and Python still declare the setting shape independently, but **refactor step
+7 (Phase 3.1) is complete** and changed what that costs:
+
+- A setting whose rule is one of the plain shapes is **one row per language** —
+  `_SIMPLE_FIELDS` in `settings_service.py` (19 rows) and `SIMPLE_FIELDS` in
+  `bonsaiSettingsNormalizers.ts` (26 rows). Only genuinely custom rules
+  (migrations, cross-field reconciliation, feature gates) stay as functions, and
+  each one is annotated with why it is exempt.
+- Drift is caught by two shared contracts asserted from both languages:
+  `tests/contracts/settings-defaults.json` (fresh-install payload plus an
+  idempotency check) and `tests/contracts/settings-hostile-inputs.json` (19
+  cases). An incomplete two-language edit fails a test rather than shipping.
+- **Python is authoritative** where the two disagree (decision **D13**):
+  `save_settings` decides what reaches disk. One deliberate exception is
+  documented there.
 
 ## Commands
 
 ```bash
-npm test                 # vitest, src/**/*.test.{ts,tsx} — 46 files, 239 tests
-npm run test:py          # python unittest via scripts/run_python_tests.py — 413 tests
+npm test                 # vitest, src/**/*.test.{ts,tsx} — 57 files, 366 tests
+npm run test:py          # python unittest via scripts/run_python_tests.py — 497 tests
 npx tsc --noEmit         # typecheck (build does not typecheck)
 npm run build            # rollup -> dist/index.js
 npm run test:preview     # in-IDE QAM preview suite (see AGENTS.md)
@@ -121,7 +137,7 @@ Deploy to a Deck (needs `.env`, copy from `.env.example`):
   `.githooks/pre-commit` on every commit (installed via npm `prepare`). Change
   `packages/bonsai-mcp/scripts/generate-architecture.mjs` instead.
 - **`import-graph.json` answers "who imports this?"** — full `imports` /
-  `importedBy` sets for all 223 TS files under `src/`, plus cycle and orphan
+  `importedBy` sets for all 256 TS files under `src/`, plus cycle and orphan
   detection. Check it before moving a symbol; it is more reliable than grep,
   which misses specifiers that differ by relative depth. `hotspots.json` is a
   size ranking, not a dependency graph.

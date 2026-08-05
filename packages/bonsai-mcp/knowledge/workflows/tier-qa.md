@@ -7,7 +7,7 @@ description: Tier QA
 
 ## When to use
 
-- Closing a runbook tier ([testing.md](../../docs/testing.md))
+- Closing a runbook tier ([testing.md](../../../../docs/testing.md))
 - After changes to `src/`, `main.py`, preview scenarios, or RPC paths
 - User asks for preview-suite / tier QA / evidence writeback
 
@@ -26,16 +26,16 @@ Companion workflows: `bonsai://workflow/decky-preview`, `bonsai://workflow/deck-
 3. **Sidecar** — Confirm RPC works:
    - `preview.status` or read `~/.decky-plugin-studio/preview-state.json` for `url` + `httpPort`
    - If tier0 RPC steps fail with `fetch failed`, restart preview or start sidecar manually (see decky-plugin-studio sidecar docs).
-4. **Ollama** — Required for `tier1Core`, `tier1Boundaries`, `tier2` (`requiresOllama` in [tier-manifest.json](../../tests/preview-suite/tier-manifest.json)).
+4. **Ollama** — Required for `tier1Core`, `tier1Boundaries`, `tier2` (`requiresOllama` in [tier-manifest.json](../../../../tests/preview-suite/tier-manifest.json)).
 5. **Build parity** — After `src/` / `main.py` / `plugin.json` edits: `plugin.build` or `./scripts/build.ps1` before on-device QA.
 
-Record environment in [testing.md](../../docs/testing.md) **Environment matrix** before Tier 1+.
+Record environment in [testing.md](../../../../docs/testing.md) **Environment matrix** before Tier 1+.
 
 ---
 
 ## Tier loop
 
-Batches and order: [tests/preview-suite/tier-manifest.json](../../tests/preview-suite/tier-manifest.json) → `executionOrder`.
+Batches and order: [tests/preview-suite/tier-manifest.json](../../../../tests/preview-suite/tier-manifest.json) → `executionOrder`.
 
 ```bash
 # Full tier with evidence + doc writeback (PASS/FAIL → testing.md)
@@ -57,8 +57,8 @@ pnpm run test:preview:tier -- --tier=tier0 --evidence
 After each batch:
 
 1. Read `docs/test-evidence/<batch>/<date>-<sha>/batch-summary.json`
-2. Review FAIL rows in [testing.md](../../docs/testing.md#failures-and-retries)
-3. Update [testing.md](../../docs/testing.md) progress tracker (auto via `--write`)
+2. Review FAIL rows in [testing.md](../../../../docs/testing.md#failures-and-retries)
+3. Update [testing.md](../../../../docs/testing.md) progress tracker (auto via `--write`)
 4. **Do not proceed** to next tier if core smokes FAIL without triage
 
 ---
@@ -85,7 +85,7 @@ Fix root cause, re-run **only** the failed ID, then re-run the full tier batch o
 
 ## E-bucket (deck-only)
 
-Scenarios in [deck-only-e-bucket.json](../../tests/preview-suite/deck-only-e-bucket.json) are **not runnable in preview**. Runner marks them `skipped` and writes stub manifests.
+Scenarios in [deck-only-e-bucket.json](../../../../tests/preview-suite/deck-only-e-bucket.json) are **not runnable in preview**. Runner marks them `skipped` and writes stub manifests.
 
 **On-Deck path:**
 
@@ -93,7 +93,7 @@ Scenarios in [deck-only-e-bucket.json](../../tests/preview-suite/deck-only-e-buc
 2. `plugin.build` → `deck.deploy`
 3. Optional: `deck.startTunnel` → `deck.probeIngest` / `deck.tailIngest`
 4. Manual runbook steps for **QAMP-DECK-***, CEF/CORS, clean install
-5. Record PASS/FAIL in [testing.md](../../docs/testing.md) with build + SteamOS version
+5. Record PASS/FAIL in [testing.md](../../../../docs/testing.md) with build + SteamOS version
 
 Use `bonsai://workflow/screenshot-ingest` for layout/focus evidence.
 
@@ -114,6 +114,6 @@ Use `bonsai://workflow/screenshot-ingest` for layout/focus evidence.
 |-------|---------|
 | Focus / layout / ingest | **master-debugger** |
 | RPC / logging / permissions | **security-auditor** |
-| Ship scope / tier priority | Maintainer + [roadmap.md](../../../docs/roadmap.md) priority; escalate domain specialists as needed |
+| Ship scope / tier priority | Maintainer + [roadmap.md](../../../../docs/roadmap.md) priority; escalate domain specialists as needed |
 
-Archive substantive runs via **`bonsai.report.archive`** or [SUBAGENT_REPORTS.md](../../../.cursor/agents/SUBAGENT_REPORTS.md).
+Archive substantive runs via **`bonsai.report.archive`** or [SUBAGENT_REPORTS.md](../../../../.cursor/agents/SUBAGENT_REPORTS.md).

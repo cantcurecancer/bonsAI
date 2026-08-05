@@ -603,9 +603,9 @@ You want **new feature ideas** to add to `docs/roadmap.md` — not answers yet, 
 - **Horizons:** Near-term (incremental / bounded spikes) → Medium-term (larger in-plugin) → Long-term (★★★★★★ or broad surface).
 - **Planned bullet format:** Short **noun-first** title (3–6 words) + optional parenthetical; then **Goal**, **Depends on**, **Not in scope**, **Status** when relevant.
 - **In Progress** = bugs only; deferred QA under **QA backlog**; shipped work in `docs/archive/roadmap-completed.md`.
-- **Do not duplicate** what is already Planned (spoiler chip chain, RAG Phases 4–8, Web permission, named chat slots, wake-word, deep mod hints, native QAM tile, etc.) — see full [Planned](roadmap.md#planned) section.
+- **Do not duplicate** what is already Planned (spoiler chip chain, RAG Phases 4–8, Web permission, named chat slots, wake-word, deep mod hints, native QAM tile, etc.) — see full [Planned](../roadmap.md#planned) section.
 
-**Ground ideas in real gaps:** D3 entry-point split still in progress (`index.tsx` ~1709 lines, `useBonsaiAskOrchestration.ts` ~1222 lines per `roadmap.md`); open bugs (soft `num_predict`, KB phrase gate, LB/RB flicker); permission model (`capabilities.py`); shipped building blocks (session RAG chips, Proton log attach, voice STT, reply-ready toast, transparency ladder).
+**Ground ideas in real gaps:** D3 entry-point split **complete** — `index.tsx` closed step 8 at 1291 lines and is ~1308 today; the deferred follow-ups per **D9** are `useBonsaiAskOrchestration.ts` (~1260 lines) and `MainTab.tsx` (187, pure prop-threading tax); open bugs (soft `num_predict`, KB phrase gate, LB/RB flicker); permission model (`capabilities.py`); shipped building blocks (session RAG chips, Proton log attach, voice STT, reply-ready toast, transparency ladder).
 
 ### Prompt for planning agent
 

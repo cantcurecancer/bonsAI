@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 255,
-  "edgeCount": 588,
+  "fileCount": 256,
+  "edgeCount": 590,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -127,6 +127,13 @@
         "src/utils/ollamaTabLocalSurvival.ts"
       ]
     },
+    "src/components/KnowledgeBaseSection.test.tsx": {
+      "imports": [
+        "src/components/KnowledgeBaseSection.tsx",
+        "src/test-harness/fakeDeckyRpc.ts"
+      ],
+      "importedBy": []
+    },
     "src/components/KnowledgeBaseSection.tsx": {
       "imports": [
         "src/styles/settingsGlassButton.ts",
@@ -134,6 +141,7 @@
         "src/utils/settingsPanelScroll.ts"
       ],
       "importedBy": [
+        "src/components/KnowledgeBaseSection.test.tsx",
         "src/components/OllamaTab.tsx"
       ]
     },
@@ -1651,6 +1659,7 @@
         "src/types/backgroundAsk.ts"
       ],
       "importedBy": [
+        "src/components/KnowledgeBaseSection.test.tsx",
         "src/components/SettingsTab.mdns.test.ts",
         "src/hooks/useBackgroundGameAi.test.ts",
         "src/hooks/useBonsaiAskOrchestration.test.ts",

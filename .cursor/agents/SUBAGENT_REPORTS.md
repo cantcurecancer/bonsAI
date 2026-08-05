@@ -177,7 +177,7 @@ Red-team / blue-team: N/A.
 
 **security-auditor** — Triaged. `prepareStreamMarkdown` S1 masks open `bonsai-spoiler` fences (no body in render model); unit test asserts no leak in JSON snapshot. No new RPC fields or secrets; partial text same sensitivity class as terminal reply.
 
-**master-debugger** — Deferred to on-Deck QA ([testing.md](../docs/testing.md) § Token streaming STREAM-08/09): T3 preview→terminal focus handoff and D-pad stream bubble.
+**master-debugger** — Deferred to on-Deck QA ([testing.md](../../docs/testing.md) § Token streaming STREAM-08/09): T3 preview→terminal focus handoff and D-pad stream bubble.
 
 **refactor-specialist** — Triaged. Stream partition logic in `streamMarkdownPrepare.ts`; bubble wiring in `buildAnswerBubbleElement.tsx` only.
 
@@ -197,7 +197,7 @@ Tests: `streamMarkdownPrepare.test.ts`, `useSmoothStreamReveal.test.ts`; `test_b
 
 **foss-advocate** — N/A (no new runtime/provider).
 
-**master-debugger** — Deferred to on-device QA ([testing.md](../docs/testing.md) § Token streaming (experimental)); escalate if D-pad focus drops on preview→chunk finalize.
+**master-debugger** — Deferred to on-device QA ([testing.md](../../docs/testing.md) § Token streaming (experimental)); escalate if D-pad focus drops on preview→chunk finalize.
 
 ### 2026-06-11 - Living Pull Models catalog (overlay merge + refresh triggers)
 

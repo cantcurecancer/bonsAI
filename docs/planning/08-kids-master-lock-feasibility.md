@@ -8,7 +8,7 @@ Steam reports a restricted kids account"* — whose stated dependency is
 
 **Verdict: GO.** The Steam signal exists, is stable, and is already in this
 repo's dependency tree. Confidence **high** on the signal, **medium** on one
-semantic detail (see [Open risk](#open-risk-the-one-thing-i-could-not-verify)).
+semantic detail (see [Open risk](#open-risk--the-one-thing-i-could-not-verify)).
 Recommended v1 scope is option **A** (all five `CAPABILITY_KEYS` forced off,
 plus Web when it lands), which is behaviourally identical to option **D** and
 avoids the false promise baked into **B** and **C**.
@@ -87,7 +87,7 @@ need, and its comments record two hard-won details worth stealing verbatim:
    returns `undefined` on missing API / non-SharedJSContext / timeout.
 
 That second rule is right for their threat model. **bonsAI must invert it** — see
-[§3, fail-open](#unknown-must-fail-open-and-that-must-be-documented).
+[§3, fail-open](#unknown-must-fail-open--and-that-must-be-documented).
 
 ### What a Decky plugin cannot read
 

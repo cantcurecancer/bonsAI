@@ -190,7 +190,7 @@ Also: `tests/test_ollama_embed_service.py` prefix helpers; `tests/test_settings_
 
 ## Documentation (with each PR’s change set)
 
-- `docs/roadmap.md` — active index; remediation row under [Planned](../roadmap.md#planned); fixed-bug detail in [archive/roadmap-bugs-fixed.md](archive/roadmap-bugs-fixed.md)
+- `docs/roadmap.md` — active index; remediation row under [Planned](roadmap.md#planned); fixed-bug detail in [archive/roadmap-bugs-fixed.md](archive/roadmap-bugs-fixed.md)
 - `docs/knowledge-base.md` — correct Phase 2/3 hybrid claim; prefixes, variant, schema v3, floor, kill-switch
 - `docs/testing.md` — RRF, floor, follow-up, variant mismatch, KB-EVAL-01 re-run; Deck rows **Open** until on-device
 - `docs/troubleshooting.md` — rebuild after schema bump; Dev toggle

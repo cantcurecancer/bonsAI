@@ -46,6 +46,11 @@ export const FRONTEND_RPC_METHODS = [
   "get_strategy_checklist_session",
   "save_strategy_checklist_session",
   "clear_strategy_checklist_session",
+  "get_rag_corpus_status",
+  "start_rag_corpus_download",
+  "cancel_rag_corpus_download",
+  "update_rag_corpus",
+  "remove_rag_corpus",
 ] as const;
 
 export type FrontendRpcMethod = (typeof FRONTEND_RPC_METHODS)[number];
@@ -206,6 +211,33 @@ function defaultHandlers(): Record<string, RpcHandler> {
     get_strategy_checklist_session: () => null,
     save_strategy_checklist_session: () => ({ ok: true }),
     clear_strategy_checklist_session: () => ({ ok: true }),
+    // Knowledge base. The real `get_rag_corpus_status` spreads the backend's
+    // download state over the installed/version fields, so a test that wants a
+    // running or cancelled download overrides this whole object.
+    get_rag_corpus_status: () => ragCorpusStatusFixture(),
+    start_rag_corpus_download: () => ({ accepted: true, install_path: "~/.bonsai/rag" }),
+    cancel_rag_corpus_download: () => ({ cancel_requested: true }),
+    update_rag_corpus: () => ({ ok: true }),
+    remove_rag_corpus: () => ({ ok: true }),
+  };
+}
+
+export function ragCorpusStatusFixture(overrides: Record<string, unknown> = {}) {
+  return {
+    phase: "idle",
+    stage: "",
+    done: true,
+    installed: false,
+    corpus_path: "",
+    corpus_version: "",
+    use_local_knowledge_base: false,
+    embeddings_populated: false,
+    embed_model_available: true,
+    storage_options: {
+      internal: { id: "internal", label: "Internal storage", install_path: "~/.bonsai/rag", free_bytes: 64 * 1024 ** 3 },
+      sd_card: null,
+    },
+    ...overrides,
   };
 }
 

@@ -188,7 +188,7 @@ make the simple version unreliable.
 ### D6 — Sequencing: what should I do next?
 
 Not a hard decision, just a checkpoint. The audit produced a ranked plan in
-[05-plan.md](audit/05-plan.md). The first four items are all low-risk, mechanical,
+[05-plan.md](05-plan.md). The first four items are all low-risk, mechanical,
 and verifiable by the compiler and existing tests:
 
 1. Delete the unused backend code (needs **D2**)
@@ -262,7 +262,7 @@ successful while the Deck is running something else:
 plugin files that are no longer in the manifest) — a contained change to
 `build.ps1` (and `watch-deploy.ps1` by inheritance) that removes a whole class
 of false-pass. Or leave them and rely on the manual check now written into
-[05-plan.md](audit/05-plan.md) §1.3, accepting that it depends on someone
+[05-plan.md](05-plan.md) §1.3, accepting that it depends on someone
 remembering.
 
 The second option is the one Phase 5's prevention pass would reject on
@@ -285,7 +285,7 @@ measured). Two bigger files were never in scope for step 8:
   It now has 13 characterization tests, so it is the best-protected large file
   in the repo; it is also where a subtle polling or cancel regression would hurt
   most on-device.
-- **`MainTab.tsx`** — 187 lines, churn 42, and [05-plan.md](audit/05-plan.md)
+- **`MainTab.tsx`** — 187 lines, churn 42, and [05-plan.md](05-plan.md)
   calls it the cheapest entry point because its churn is pure prop-threading
   tax. It gets cheaper still after the state extractions above.
 
@@ -324,7 +324,7 @@ not write focus-graph tests upfront.
 ### D11 — `main.py` carries a compatibility shim for a loader you may never use. Remove it?
 
 **What's going on.** Found during the step 6 inventory
-([07-mainpy-inventory.md](audit/07-mainpy-inventory.md) §3). Every RPC in `main.py` starts
+([07-mainpy-inventory.md](07-mainpy-inventory.md) §3). Every RPC in `main.py` starts
 by calling `_coerce_instance(self)` — **55 call sites**. Its whole job is to cope with an
 older Decky loader that passes the *class* instead of an instance. `plugin.json:6` declares
 `"api_version": 1`, and that loader passes an instance, so on your Deck this call does
@@ -430,7 +430,7 @@ Confirmed by running both sanitizers over 31 hostile inputs:
 
 **Correction (2026-08-03):** the `ui_scale_manual_profile` row is **not drift** and was
 mis-diagnosed here as case-sensitivity. `normalizeUiScaleProfileId`
-([uiScaleProfile.ts:117](../src/data/uiScaleProfile.ts)) already trims *and* lowercases; the
+([uiScaleProfile.ts:117](../../src/data/uiScaleProfile.ts)) already trims *and* lowercases; the
 downgrade comes from `SHOW_IMMERSIVE_UI_SCALE = false` two lines later — a deliberate feature
 gate on a profile the UI never offers. Aligning it to Python would have re-enabled a hidden
 profile. So the count is **five settings** (six diverging cases — `preset_chip_animation`
@@ -481,7 +481,7 @@ store is the broken combination.
 the deprecated key independently produces a self-contradictory payload —
 `preset_chip_animation: "carousel"` with `fade_animation_enabled: True` claims fades are on
 while a non-fade animation is selected — and TypeScript already derived it on **both** its
-normalize and save paths ([settingsPayload.ts:29](../src/utils/settingsPayload.ts)), so Python
+normalize and save paths ([settingsPayload.ts:29](../../src/utils/settingsPayload.ts)), so Python
 was the outlier. Safe where it is read: `MainTabPresetRow` gates on
 `presetChipAnimation === "fade" && presetChipFadeAnimationEnabled`, so the flag is only
 consulted when the animation is already `fade`. This is the row flagged up front as a genuine
@@ -603,7 +603,7 @@ current tree (especially **D1b** and parts of **D2** / **D4**).
 | Id | Locked decision | Why |
 |----|-----------------|-----|
 | **D1** | **Finish both missing RPCs** — `merge_pulled_tags_into_routing_orders` and `get_session_rag_chip_candidates` | Both are wiring gaps, not greenfield features. Routing merge reuses `merge_pulled_tag` / `sanitize_model_routing_order` for `text_model_routing_order` and `vision_model_routing_order`. Session RAG already has `suggest_chip_candidates` + tests in `knowledge_base_service.py`; only the public RPC adapter on `class Plugin` is missing. Restores intended UX without reopening Phase 4 visibility / Phase 5 vector ranking. |
-| **D2** | **Targeted dead-code cleanup** — delete confirmed orphans; **archive** tiny-model thinking code; keep active Ask, debug, and KB-cancel paths | Proton journal RPCs + service, `apply_tdp` (+ its test-only caller), `log_navigation`, and legacy `capture_screenshot` are safe to remove after preview-suite grep. **`ask_game_ai`** stays — preview suite drives it. **`ask_ollama`** stays — every Ask calls it internally. **`dbg_fe_log`** stays — intentional on-Deck debug bridge. **`cancel_rag_corpus_download`** stays — backend cancel path exists; UI Cancel is planned (**D2 follow-up**). **`thinking_tiny_model_service.py`** is **deleted outright** in `c8ed045`; git history is the archive. To restore the tiny-model thinking blurbs: `git show c8ed045^:py_modules/backend/services/thinking_tiny_model_service.py`. An in-tree archive folder was rejected — the file would still surface in greps and still need explaining, which defeats the point of the cleanup. |
+| **D2** | **Targeted dead-code cleanup** — delete confirmed orphans; **archive** tiny-model thinking code; keep active Ask, debug, and KB-cancel paths | Proton journal RPCs + service, `apply_tdp` (+ its test-only caller), `log_navigation`, and legacy `capture_screenshot` are safe to remove after preview-suite grep. **`ask_game_ai`** stays — preview suite drives it. **`ask_ollama`** stays — every Ask calls it internally. **`dbg_fe_log`** stays — intentional on-Deck debug bridge. **`cancel_rag_corpus_download`** stays — backend cancel path exists; UI Cancel is planned (**D2 follow-up**). ***Follow-up shipped 2026-08-05 as execution-order step 9** — keeping it was the right call; the button was missing, not the code.* **`thinking_tiny_model_service.py`** is **deleted outright** in `c8ed045`; git history is the archive. To restore the tiny-model thinking blurbs: `git show c8ed045^:py_modules/backend/services/thinking_tiny_model_service.py`. An in-tree archive folder was rejected — the file would still surface in greps and still need explaining, which defeats the point of the cleanup. |
 | **D3** | **Option A — characterization tests first, then refactor** | `index.tsx` and `useBonsaiAskOrchestration.ts` have zero automated coverage; `npm test` would pass if every component were deleted. `fakeDeckyRpc.ts` + existing hook tests prove the pattern. Preview and on-Deck QA still required for D-pad and layout. |
 | **D4** | **Prune by policy, not by folder count** | Keep evidence linked from current or archived QA docs; keep the latest useful pass per tier and meaningful failure runs. Audit links before deleting anything. Remove only duplicate, incomplete, or truly unreferenced generated runs. Add a retention rule so future `--write` runs do not grow `docs/test-evidence/` without bound. |
 | **D5** | **Option A — keep the built-in import graph** | Fast, no dependency, runs on every commit, and matches today's relative-import-only `tsconfig`. Revisit only if path aliases land, unresolved internal imports appear, or a parser-based tool finds real discrepancies. |
@@ -632,17 +632,17 @@ verbatim in commit subjects, and keep one label to one commit series.
 > (Q1–Q8) now live under `docs/planning/` with question-number prefixes; refactor recon stays in
 > `docs/audit/`.
 
-**Execution order (locked, amended 2026-08-03):**
+#### Execution order (locked, amended 2026-08-03)
 
 1. **Record decisions** — this section; turn accepted work into implementation rows as work ships. *(done — `dcbcccf`, `e2111f9`, plus this amendment)*
-2. **D1 — wire both RPCs** — **done 2026-08-02**, see Bugs § *Fixed*. D1a routing merge (`510139d`) and D1b session RAG adapter, 13 new unit tests between them. On-Deck QA still open: **ROUTING-MERGE-01** and **SESSION-RAG-CHIPS-01** in [testing.md](testing.md). **This is feature work, not refactor** — separate commits, not labeled behavior-preserving, and it changes what `useBonsaiAskOrchestration.ts` does at runtime. Sequenced before step 5 on purpose so the characterization tests capture intended behavior rather than the silent-fallback bug.
-3. **D2 — targeted cleanup** — **done 2026-08-02** (`309c386`, `ebdc0f2`, `c8ed045`, `45cb0ff`, `d93027b`, `36f34cd`). Removed: 5 Proton-journal RPCs + their service, `thinking_tiny_model_service.py`, `log_navigation`, `capture_screenshot`, and the TDP sysfs write path. Kept per D2: `ask_game_ai`, `ask_ollama`, `dbg_fe_log`, `cancel_rag_corpus_download`. RPC surface 57 → 50. Two things the audit got wrong are recorded in [05-plan.md](audit/05-plan.md) §1.1: the journal service was not dead (`clear_plugin_data` needed its file wipe) and `find_amdgpu_hwmon` was not apply-only (`read_current_tdp_watts` calls it). The kmsgrab orphans this pass left behind were cleared later the same day under **Cleanup candidates** (`4a26cfa`).
+2. **D1 — wire both RPCs** — **done 2026-08-02**, see Bugs § *Fixed*. D1a routing merge (`510139d`) and D1b session RAG adapter, 13 new unit tests between them. On-Deck QA still open: **ROUTING-MERGE-01** and **SESSION-RAG-CHIPS-01** in [testing.md](../testing.md). **This is feature work, not refactor** — separate commits, not labeled behavior-preserving, and it changes what `useBonsaiAskOrchestration.ts` does at runtime. Sequenced before step 5 on purpose so the characterization tests capture intended behavior rather than the silent-fallback bug.
+3. **D2 — targeted cleanup** — **done 2026-08-02** (`309c386`, `ebdc0f2`, `c8ed045`, `45cb0ff`, `d93027b`, `36f34cd`). Removed: 5 Proton-journal RPCs + their service, `thinking_tiny_model_service.py`, `log_navigation`, `capture_screenshot`, and the TDP sysfs write path. Kept per D2: `ask_game_ai`, `ask_ollama`, `dbg_fe_log`, `cancel_rag_corpus_download`. RPC surface 57 → 50. Two things the audit got wrong are recorded in [05-plan.md](05-plan.md) §1.1: the journal service was not dead (`clear_plugin_data` needed its file wipe) and `find_amdgpu_hwmon` was not apply-only (`read_current_tdp_watts` calls it). The kmsgrab orphans this pass left behind were cleared later the same day under **Cleanup candidates** (`4a26cfa`).
 
    **Preview-suite gate — first pass was incomplete.** Grepping `tests/preview-suite/` and `scripts/` for *symbol* names returns zero hits for `proton_experiment`, `apply_tdp`, `log_navigation`, `capture_screenshot`, `dbg_fe_log`, `cancel_rag_corpus_download`, `thinking_tiny`, and 22 hits for `ask_game_ai` across five tiers (keep, per D2). **That grep missed file-level references.** `tests/preview-suite/unit-gates.json:25` runs `tests/test_tdp_sandbox_sysfs.py` by filename under a gate tagged `TDP-APPLY`, and `tier-manifest.json:96` advertises "sysfs TDP apply + clamp asserts" in the Tier 2 description. Only two test files are referenced this way — the other is `test_capabilities.py` — so no other deletion in this pass was affected. **When checking whether a deletion is preview-safe, grep the preview suite for the test filename as well as the symbol.**
 4. **Mechanical refactors** — **done 2026-08-02** (`3813764`, `666e3e3`, `2156441`, `ef65f8e`), one behavior-preserving commit each, all gates green between. Four stale doc claims fixed and the self-declared-archived RAG analysis moved to `archive/`; `refactor_helpers.py` shim deleted and its 9 importers repointed; `settingsAndResponse.ts` barrel deleted and its 22 importers repointed (`tsc --noEmit` is the safety net here); `settingsPayload.ts` split, with reply-text formatting moved to `appliedTuningText.ts`.
 
-   **Deploy gate — passed, and it mattered.** The shim was referenced by `build.sh`, `build.ps1` and `verify-decky-plugin-zip.sh`, none of which any test covers. Deployed to the Deck and confirmed `bonsAI plugin loaded!`. **The first load proved nothing**: the deploy scripts copy without pruning, so the deleted shim was still sitting on the Deck from an earlier deploy and would have satisfied any import that had been missed. Deleting it plus `__pycache__` on-device and restarting `plugin_loader` is what made the check real. See [05-plan.md](audit/05-plan.md) §1.3 — **any future deletion of a Deck-facing Python file needs the same step.**
-5. **D3 — safety net** — **done 2026-08-02.** 22 new tests (suite 217 → 239): `useBonsaiAskOrchestration.test.ts` covers submit guards, request payload, the invalid / blocked / completed / thrown-error branches, polling, cancel, and thread archiving; `index.test.tsx` covers the Decky contract, a real mount, settings wiring, the tab set, and error containment. Both **mutation-checked** — three deliberate breaks in each turn the suite red — because a characterization test that cannot fail is worse than none. Three harness defects had to be fixed first and are recorded in [04-coverage.md](audit/04-coverage.md): vitest collected only `*.test.ts` so **a `.tsx` test could never run**, jsdom lacks `ResizeObserver` so the tree silently rendered the ErrorBoundary fallback, and `globals: false` left renders leaking between tests.
+   **Deploy gate — passed, and it mattered.** The shim was referenced by `build.sh`, `build.ps1` and `verify-decky-plugin-zip.sh`, none of which any test covers. Deployed to the Deck and confirmed `bonsAI plugin loaded!`. **The first load proved nothing**: the deploy scripts copy without pruning, so the deleted shim was still sitting on the Deck from an earlier deploy and would have satisfied any import that had been missed. Deleting it plus `__pycache__` on-device and restarting `plugin_loader` is what made the check real. See [05-plan.md](05-plan.md) §1.3 — **any future deletion of a Deck-facing Python file needs the same step.**
+5. **D3 — safety net** — **done 2026-08-02.** 22 new tests (suite 217 → 239): `useBonsaiAskOrchestration.test.ts` covers submit guards, request payload, the invalid / blocked / completed / thrown-error branches, polling, cancel, and thread archiving; `index.test.tsx` covers the Decky contract, a real mount, settings wiring, the tab set, and error containment. Both **mutation-checked** — three deliberate breaks in each turn the suite red — because a characterization test that cannot fail is worse than none. Three harness defects had to be fixed first and are recorded in [04-coverage.md](04-coverage.md): vitest collected only `*.test.ts` so **a `.tsx` test could never run**, jsdom lacks `ResizeObserver` so the tree silently rendered the ErrorBoundary fallback, and `globals: false` left renders leaking between tests.
 5b. **D3 — entry-point split, in progress 2026-08-02.** `index.tsx` 1955 → 1709 across three commits: `984498e` moved the stateless shell pieces (error boundary, localStorage helpers, tab titles) to `src/features/plugin-shell/`; `26c67e6` moved voice Ask input to `src/features/voice/`; `fda8051` moved the try-order modal to `src/features/model-routing/`. Destination follows REFACTOR-PLAN §3.4 (vertical slices), not the type-buckets.
 
    **Measured finding that redirected the work:** extracting the tab JSX — the obvious first move — is a *lateral* change. The six tab payloads thread 94 (`mainTab`), ~30 (`ollamaTab`), 27 (`settingsTab`) and 21 (`developerTab`) props out of `Content`'s scope, so moving one to its own module means declaring those props a second time as an args type. `index.tsx` would shrink while the codebase got worse. The threading is a *symptom* of state living in `Content`; each state extraction deletes props instead of copying them, and the tab JSX becomes cheap to move only afterwards. **Do the state first.**
@@ -708,14 +708,14 @@ verbatim in commit subjects, and keep one label to one commit series.
 
    **Remaining gap:** the `STALE` branch of the hash compare is still simulation-tested only —
    it needs a deploy where files land but with stale content, which has not happened naturally.
-   **DEPLOY-VERIFY-01…03** in [testing.md](testing.md).
+   **DEPLOY-VERIFY-01…03** in [testing.md](../testing.md).
 
 5d. **D7 — delete screenshot helpers** — **done 2026-08-03.** `_reencode_oversized_capture`
    and `_mirror_capture_to_plugin_dir` removed from `screenshot_media.py`. Preview gate run
    on **symbols and the test filename** per the step-3 lesson: clean. The `_reencode` unit
    test asserted "a file that needs no work is returned untouched"; that assertion is folded
    into `test_finalize_steam_capture_file_passes_through_missing_file`, which covers the
-   equivalent guard on the live function ([screenshot_media.py:245](../py_modules/backend/services/screenshot_media.py))
+   equivalent guard on the live function ([screenshot_media.py:245](../../py_modules/backend/services/screenshot_media.py))
    and was previously untested. Python suite stays at 413.
 
    **Left alone deliberately:** `take_steam_game_screenshot` still declares a
@@ -724,7 +724,7 @@ verbatim in commit subjects, and keep one label to one commit series.
    it belongs with the step-6 `main.py` inventory pass.
 
 6. **2.3 — `main.py` extraction investigation** — **done 2026-08-03**, read-only, no code
-   changed. Inventory: [07-mainpy-inventory.md](audit/07-mainpy-inventory.md).
+   changed. Inventory: [07-mainpy-inventory.md](07-mainpy-inventory.md).
 
    **Answer to §2.3's question ("thin facade or logic in both layers?"): both, and not where
    the file claims.** By count it reads as a facade — 27 of 96 methods are ≤8 lines. By
@@ -733,7 +733,7 @@ verbatim in commit subjects, and keep one label to one commit series.
    the 50 public RPCs, 895 across 46 private helpers, ~210 in imports and class constants.
 
    **One outright contract violation.** `main.py:6` says the file *"Does not: Own Ollama
-   HTTP"*. `test_ollama_connection` ([main.py:1038](../main.py), 178 lines) is the only
+   HTTP"*. `test_ollama_connection` ([main.py:1038](../../main.py), 178 lines) is the only
    `urllib` consumer in the file — it opens `/api/version`, `/api/tags` and `/api/ps`
    directly and derives a VRAM-share ratio from the response. About 70 lines of transport
    belong in `ollama_service.py`; the loopback-recovery policy and logging stay.
@@ -761,8 +761,8 @@ verbatim in commit subjects, and keep one label to one commit series.
    53 `plugin = Plugin._coerce_instance(self)` aliases became direct `self` use, not
    `plugin = self`, so no vestigial indirection is left behind.
 
-   **The shim had a service-side half** that [07-mainpy-inventory.md](audit/07-mainpy-inventory.md)
-   had not found: [ollama_ask_service.py:81](../py_modules/backend/services/ollama_ask_service.py)
+   **The shim had a service-side half** that [07-mainpy-inventory.md](07-mainpy-inventory.md)
+   had not found: [ollama_ask_service.py:81](../../py_modules/backend/services/ollama_ask_service.py)
    called `plugin_inst._ensure_background_state()` before touching `_active_request_id()`,
    and `tests/test_ollama_ask_service.py` carried a matching no-op on its `_FakePlugin`.
    Deleting only the `main.py` side would have raised `AttributeError` on **every Ask** with
@@ -776,10 +776,12 @@ verbatim in commit subjects, and keep one label to one commit series.
    `"plugin.lifecycle"` / `"plugin.data_clear"` log event names and docstring prose. Then
    413 Python tests, then a deploy: `bonsAI plugin loaded!`, zero `Traceback`/`ERROR`,
    deployed `main.py` at 2865 lines. **On-Deck functional QA of the Ask, voice and
-   knowledge-base paths is still open** — **D11-SHIM-01** in [testing.md](testing.md).
+   knowledge-base paths is still open** — **D11-SHIM-01** in [testing.md](../testing.md).
+
+7. **Settings single source of truth — COMPLETE 2026-08-03** — REFACTOR-PLAN §3.1, the highest-value item in the audit and the best-covered by existing tests (`tests/test_settings_service.py` asserts per-setting round-trips). Expect that suite to break on shape, not behavior — rewrite the assertions, do not contort the design. Shipped as **7a–7d** below. *(This header was reconstructed 2026-08-04: the reorg dropped the numbered `7.` entry and left its tail glued to the end of 7d.)*
 
 7a. **2.2 — settings recon + drift guard** — **done 2026-08-03.** The audit deferred this
-   design deliberately ([05-plan.md](audit/05-plan.md) §2.2: *"Do not design the shared-schema
+   design deliberately ([05-plan.md](05-plan.md) §2.2: *"Do not design the shared-schema
    mechanism from this document"*), so the first move was measuring rather than building.
 
    **Baseline: there is no drift.** Both sides were executed and their outputs diffed —
@@ -861,10 +863,10 @@ verbatim in commit subjects, and keep one label to one commit series.
    `src/data/bonsaiSettingsHostileContract.test.ts`. Each case pins only the keys it is about,
    so a failure names the broken rule instead of dumping a 40-key diff. Python 416 → 418,
    frontend 242 → 263. Re-running the 31-input probe after the fixes: **1 divergence left**, the
-   intentional immersive gate, documented in [tests/contracts/README.md](../tests/contracts/README.md).
+   intentional immersive gate, documented in [tests/contracts/README.md](../../tests/contracts/README.md).
 
 7d. **D12 — TypeScript field table** — **done 2026-08-03.** The mirror of step 7b.
-   `SIMPLE_FIELDS` in [bonsaiSettingsNormalizers.ts](../src/data/bonsaiSettingsNormalizers.ts)
+   `SIMPLE_FIELDS` in [bonsaiSettingsNormalizers.ts](../../src/data/bonsaiSettingsNormalizers.ts)
    now declares **26 settings** in one row each; 15 hand-written normalizers collapsed into
    them. Exported functions **36 → 16**, file 457 → 441 lines. Same honest caveat as 7b: the
    value is the per-setting edit cost, not the line count.
@@ -897,16 +899,25 @@ verbatim in commit subjects, and keep one label to one commit series.
 **Step 7 is complete.** Both languages now declare their simple settings as tables, the shape
 is pinned by two shared contracts, and the five D13 divergences are resolved.
 
-**Not yet deployed.** Steps 7a–7d are verified by `tsc`, 263 frontend tests, 418 Python tests,
-`npm run build`, and two differential tests — but the Deck was asleep when the deploy was
-attempted, so this work has **not run on-device**. Settings load on every plugin start
-(`_main` → `_maybe_app_log` → `load_settings` → `sanitize_settings`), so a deploy plus a
-`bonsAI plugin loaded!` check is a real smoke of it. Do that before step 8, together with the
-still-open **D11-SHIM-01** pass. — REFACTOR-PLAN §3.1, the highest-value item in the audit and the best-covered by existing tests (`tests/test_settings_service.py` asserts per-setting round-trips). Expect that suite to break on shape, not behavior — rewrite the assertions, do not contort the design.
+~~**Not yet deployed.**~~ **Smoked on-device 2026-08-04.** Steps 7a–7d were verified by `tsc`,
+263 frontend tests, 418 Python tests, `npm run build`, and two differential tests, and the Deck
+was asleep when the deploy was first attempted. The step 12 deploys on 2026-08-04 carried this
+code and logged `bonsAI plugin loaded!` with zero `Traceback`/`ERROR` — and settings load on
+every plugin start (`_main` → `_maybe_app_log` → `load_settings` → `sanitize_settings`), which is
+exactly the smoke this note asked for. **Not covered by that:** no on-device pass has exercised
+*changing* a setting and reading it back through the new tables. **D11-SHIM-01** remains Partial
+for the same reason — its RPC probe passed, its UI pass did not run.
 8. **D3 — entry-point split — COMPLETE 2026-08-03** (`index.tsx` **1955 → 1291**, closed at
    Option A of **D14**). Everything below shipped behavior-preserving with gates green between
    commits. **Remaining work is on-Deck QA, not code**: the four-modal D-pad batch
    (**MODAL-EXTRACT-01…04**) and the **SHELL-PAYLOAD-01** smoke.
+
+   **QA status update 2026-08-04.** The modal batch is **Verified** — all four reached by D-pad,
+   **B** closes cleanly, each returns to the tab it was opened from, and LB/RB kept focus in the
+   same pass ([testing.md](../testing.md) **MODAL-EXTRACT-01…04**). It also surfaced the two gaps
+   now filed under Bugs: focus is not restored *within* a tab after a picker closes, and the tab
+   itself was not remembered across a reopen (**D15**). **SHELL-PAYLOAD-01 is still Open** and is
+   the only refactor QA left; the paragraphs below still read as if neither had been run.
 
    **Modals done 2026-08-03**, `index.tsx` **1718 → 1522** across four gated commits (`e7728fa`, `6cd0b93`, `fdc669a`, `5cb7707`). All four now live in `src/features/plugin-shell/` as hooks: plugin-help, desktop-note save, character picker, Ollama models hub. **`index.tsx` no longer references `showModal` at all** — the shell opens no Decky modal directly. **On-Deck D-pad pass for the four modals is due in one batch** per **D10**; deployed and loading clean, so it can be run against real code.
 
@@ -946,7 +957,32 @@ still-open **D11-SHIM-01** pass. — REFACTOR-PLAN §3.1, the highest-value item
    **SHELL-PAYLOAD-01** smoke rather than a full pass. **Found while extracting:** a pre-existing
    token-streaming defect, filed under Bugs — the Main tab memo never sees the smooth-reveal
    frames, and its premise contradicts audit item W4.
-9. **KB download Cancel button** — wire `cancel_rag_corpus_download` in `KnowledgeBaseSection.tsx`; D-pad row in `testing.md` / `testing-manual.md`.
+9. **KB download Cancel button — done 2026-08-05.** `cancel_rag_corpus_download` is wired in
+   `KnowledgeBaseSection.tsx`; **KB-CANCEL-01** rows added to [testing.md](../testing.md) and
+   [testing-manual.md](../testing-manual.md). This is the **D2 follow-up** the cleanup pass
+   deliberately kept the RPC for — D2 called it *"a missing feature rather than dead code"*, and
+   that reading was right.
+
+   **It closed a focus dead end, not just a missing button.** While a download runs the primary
+   button is `disabled` and Remove is not rendered, so the action row held **no focusable control
+   at all** — the D-pad could not enter it, and the only escape from a ~5 GB download was closing
+   the plugin. Cancel takes the row's second slot for the duration, which gives it exactly one
+   stop. The parent's up-path (`focusKbUpFromReplyVerbosity` in `OllamaTab.tsx`) now tries Cancel
+   **first**, because during a download a ref to either of the other two buttons focuses nothing.
+
+   **A wart the wiring exposed, fixed here.** The backend writes the unwinding exception into
+   `error` even when the user asked for the stop
+   ([rag_corpus_download_service.py:344](../../py_modules/backend/services/rag_corpus_download_service.py)),
+   and `get_rag_corpus_status` spreads that state, so a cancel would have rendered raw exception
+   text in failure red. The section now shows a neutral cancelled line and keeps red for real
+   failures. Frontend-only — the backend was not touched.
+
+   **6 tests** in `KnowledgeBaseSection.test.tsx`, the first automated coverage this component has
+   had, plus the five KB methods added to `fakeDeckyRpc`'s registry (they were invoked from `src/`
+   but missing from a list that claims to track exactly that). **Mutation-checked**: never
+   rendering Cancel, dropping the double-press guard, and treating a cancel as an error each turn
+   the suite red. Gates: `tsc`, **366** frontend tests (57 files), 497 Python, `npm run build`,
+   preview `preGate` 2/2. **On-Deck QA is what remains** — **KB-CANCEL-01**.
 10. **D4 — evidence hygiene** — link audit, prune orphans only. The retention rule must live **in the script that writes evidence**, not in a doc — a rule that depends on remembering is not a mechanism.
 11. **Deferred friction test** — run Phase 2c newcomer task on the post-refactor tree; file `docs/audit/03-friction.md`.
 12. **`main.py` extractions — COMPLETE.** Items 1, 2, 4 and 5 executed 2026-08-03; item 3
@@ -984,12 +1020,19 @@ still-open **D11-SHIM-01** pass. — REFACTOR-PLAN §3.1, the highest-value item
     hardened `/api/ps` parsing per-row; that was reverted for the same reason and the original
     all-or-nothing behavior is now pinned by a test.
 
-    **Not yet deployed.** All four extractions plus the voice fix are verified by 492 Python
-    tests only; none has run on-device. Item 5 changes the Stop path, item 4 changes plugin
-    unload, and the voice fix changes *Clear all plugin data* — all three want a real on-Deck
-    check (**MAINPY-EXTRACT-01** and **VOICE-CLEAR-01** in [testing.md](testing.md)).
+    ~~**Not yet deployed.**~~ **Deployed and verified 2026-08-04**, superseding the note below.
+    **MAINPY-EXTRACT-01 is Verified**: 54 files hash-verified on the Deck, `bonsAI plugin loaded!`
+    with zero `Traceback`/`ERROR`, `probe_deck_rpc_surface.py` 21/21 and a new
+    `probe_deck_step12_extractions.py` 14/14 — including the moved Ollama probe against the real
+    on-Deck runtime and a **real streaming Ask aborted mid-flight**, which is the path item 12.4
+    moved. **VOICE-CLEAR-01 stays Partial**: the backend reset is verified on-device, the UI half
+    (Settings → Voice input after a real *Clear all plugin data*) is not. See
+    [testing.md](../testing.md). Original note, kept for the record: *All four extractions plus the
+    voice fix are verified by 492 Python tests only; none has run on-device. Item 5 changes the
+    Stop path, item 4 changes plugin unload, and the voice fix changes* Clear all plugin data *— all
+    three want a real on-Deck check.*
 
-    Original entry: the ranked list in [07-mainpy-inventory.md](audit/07-mainpy-inventory.md) §8, **identified 2026-08-03**. Item 6 (the D11 shim) was pulled ahead and is done; 1–5 are not: background-request state shape (~60 lines, LOW), `test_ollama_connection` transport → `ollama_service.py` (~70, LOW-MED — the only outright contradiction of `main.py`'s own header), local-command dispatch table (~40, MED), `cancel_and_reset` for `clear_plugin_data` (~45, MED), `abort_background_game_ai` transport (~25, MED). ~240 lines against a 2865-line file that is still the #1 hotspot by nearly 3×.
+    Original entry: the ranked list in [07-mainpy-inventory.md](07-mainpy-inventory.md) §8, **identified 2026-08-03**. Item 6 (the D11 shim) was pulled ahead and is done; 1–5 are not: background-request state shape (~60 lines, LOW), `test_ollama_connection` transport → `ollama_service.py` (~70, LOW-MED — the only outright contradiction of `main.py`'s own header), local-command dispatch table (~40, MED), `cancel_and_reset` for `clear_plugin_data` (~45, MED), `abort_background_game_ai` transport (~25, MED). ~240 lines against a 2865-line file that is still the #1 hotspot by nearly 3×.
 
     **Sequencing needs a call.** §8 said items 1–2 were *"worth doing before step 7"* — step 7 shipped without them, so that guidance already lapsed once; items 3–5 were gated on *"after step 8"*, which is now. Nothing here is blocked, and nothing above is blocked on it. **Note the coverage cost before starting:** none of the ten largest `main.py` methods has a behavioral test (§9), so unlike step 8 there is no safety net — `test_merge_pulled_tags_rpc.py` and `test_session_rag_chip_candidates_rpc.py` are the only worked examples of testing a `class Plugin` RPC directly and are the pattern to copy. Expect *write the test first* to be most of the work for items 2–5.
 
@@ -1030,21 +1073,21 @@ so they are not rediscovered:
 2. `find_amdgpu_hwmon` was **not** apply-only — `read_current_tdp_watts` calls
    it, so removing it would have killed the current-TDP read Ask uses.
 3. The preview-suite gate grep searched **symbols only**; the suite also names
-   test *files*. Grep both. ([05-plan.md](audit/05-plan.md) §1.1)
+   test *files*. Grep both. ([05-plan.md](05-plan.md) §1.1)
 4. `vitest.config.ts` collected only `*.test.ts`, so a `.tsx` test **could never
    run**. The 44 untested component files were a tooling gap, not a discipline
-   gap. ([04-coverage.md](audit/04-coverage.md))
+   gap. ([04-coverage.md](04-coverage.md))
 
 **Outstanding on-Deck QA from this session:** **ROUTING-MERGE-01** in
-[testing.md](testing.md) — implemented and unit-tested but never exercised on a
+[testing.md](../testing.md) — implemented and unit-tested but never exercised on a
 Deck. **SESSION-RAG-CHIPS-01** closed 2026-08-03: verified end-to-end in the UI
-once the `settingsLoaded` race was fixed (see [Bugs](#bugs)).
+once the `settingsLoaded` race was fixed (see [Bugs](../roadmap.md#bugs)).
 
 **Corrections to audit premises (for implementers):**
 
-- **D1b:** `suggest_chip_candidates` ([knowledge_base_service.py:685](../py_modules/backend/services/knowledge_base_service.py)) and `session_rag_chip_candidates_to_rpc` (`:744`) already exist with four tests in `tests/test_knowledge_base_service.py`. **`main.py:163-164` already imports both and never calls them** — the work was interrupted between the import and the method. The frontend sends `[appId, appName, shortcutName]` ([sessionRagChipCandidates.ts:55](../src/utils/sessionRagChipCandidates.ts)), which matches the service signature exactly. This is an adapter of roughly ten lines. Do not redesign ranking before wiring it.
+- **D1b:** `suggest_chip_candidates` ([knowledge_base_service.py:685](../../py_modules/backend/services/knowledge_base_service.py)) and `session_rag_chip_candidates_to_rpc` (`:744`) already exist with four tests in `tests/test_knowledge_base_service.py`. **`main.py:163-164` already imports both and never calls them** — the work was interrupted between the import and the method. The frontend sends `[appId, appName, shortcutName]` ([sessionRagChipCandidates.ts:55](../../src/utils/sessionRagChipCandidates.ts)), which matches the service signature exactly. This is an adapter of roughly ten lines. Do not redesign ranking before wiring it.
 - **D2:** `ask_game_ai` is not dead — `tests/preview-suite/` calls it extensively. `ask_ollama` is the internal Ask engine, not an orphan RPC.
-- **D4:** Six of nine evidence folders are not all unreferenced — several are cited from [archive/testing-results-2026.md](archive/testing-results-2026.md) and [archive/testing-failures-2026.md](archive/testing-failures-2026.md). Prune only after a link audit.
+- **D4:** Six of nine evidence folders are not all unreferenced — several are cited from [archive/testing-results-2026.md](../archive/testing-results-2026.md) and [archive/testing-failures-2026.md](../archive/testing-failures-2026.md). Prune only after a link audit.
 
 ---
 
@@ -1060,7 +1103,7 @@ Nothing here changed product behavior.
 | 2 | **Delete the orphaned kmsgrab capture sub-tree** | `4a26cfa` — six functions, not the four enumerated. `_build_kmsgrab_argv` was called only by `try_kmsgrab_screenshot`, and `gamescope_session_active` only by `_desktop_session_active`, so stopping at four would have left the same problem one node deeper. Preview gate run on **symbols and filenames** both, per the TDP lesson: clean. Live capture paths untouched |
 | 3 | **Remove the `journal_text` plumbing** | `a029c2d` — parameter dropped from `stack_context_blocks`, caller stopped passing `""`. Its ordering test asserted a three-block arrangement that can no longer occur and was replaced with one covering what the stacker still guarantees. The duplicate roadmap note under Planned is collapsed |
 | 4 | **Remove the `sysfs_writes` reader and field; keep the preview hook empty** | `a9353cc` — `read_sandbox_sysfs_writes` and the `get_input_transparency` field gone; `sandbox_sysfs_root` stays because `find_amdgpu_hwmon` needs it. `getSysfsWrites` kept returning `[]`: the in-repo runner never calls it, but `__bonsaiTestHooks` is consumed by DPS scenarios outside this repo, so the contract stands |
-| 5 | **Defer the `docs/archive/` broken links to D4** | Not actionable here by decision. 272 relative links in historical files point at a `docs/` layout that no longer exists; fixing them is evidence hygiene, not code legibility. Folded into **D4** — see [06-doc-triage.md](audit/06-doc-triage.md) § Link audit. Live docs are already link-clean |
+| 5 | **Defer the `docs/archive/` broken links to D4** | Not actionable here by decision. 272 relative links in historical files point at a `docs/` layout that no longer exists; fixing them is evidence hygiene, not code legibility. Folded into **D4** — see [06-doc-triage.md](06-doc-triage.md) § Link audit. Live docs are already link-clean |
 
 **Found while executing, deferred to D7 (locked 2026-08-03, executed same day):**
 `_reencode_oversized_capture` and `_mirror_capture_to_plugin_dir` in

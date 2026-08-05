@@ -90,6 +90,7 @@ export const OllamaTab: React.FC<OllamaTabProps> = ({
   const kbToggleHostRef = useRef<HTMLDivElement>(null);
   const kbDownloadBtnRef = useRef<HTMLButtonElement>(null);
   const kbRemoveBtnRef = useRef<HTMLButtonElement>(null);
+  const kbCancelBtnRef = useRef<HTMLButtonElement>(null);
   const connectionTestBtnRef = useRef<HTMLButtonElement>(null);
   const replyVerbosityThumbHostRef = useRef<HTMLDivElement>(null);
 
@@ -131,6 +132,12 @@ export const OllamaTab: React.FC<OllamaTabProps> = ({
   }, []);
 
   const focusKbUpFromReplyVerbosity = useCallback((): boolean => {
+    // Cancel is checked first because it only exists while a download runs, and during
+    // one both of the buttons below it are disabled — focusing either would be a no-op.
+    if (kbCancelBtnRef.current) {
+      kbCancelBtnRef.current.focus();
+      return true;
+    }
     if (kbDownloadBtnRef.current) {
       kbDownloadBtnRef.current.focus();
       return true;
@@ -181,6 +188,7 @@ export const OllamaTab: React.FC<OllamaTabProps> = ({
         toggleHostRef={kbToggleHostRef}
         downloadBtnRef={kbDownloadBtnRef}
         removeBtnRef={kbRemoveBtnRef}
+        cancelBtnRef={kbCancelBtnRef}
         onMoveUpToConnection={focusConnectionTestBtn}
         onMoveDownFromRemove={focusReplyVerbosityThumb}
       />

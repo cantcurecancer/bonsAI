@@ -246,7 +246,13 @@ its name?** Twelve honestly-named files beat four named `utils`, `helpers`, `com
 
 ### Ordered work items
 
-**3.1 — Settings single source of truth** *(highest value; do first)*
+**3.1 — Settings single source of truth** *(highest value; do first)* — **done
+2026-08-03** as execution-order steps 7a–7d. Both languages now declare their
+simple settings as one-row tables and two shared fixtures fail the build on
+drift. See
+[docs/audit/maintainer-decisions-locked.md](docs/audit/maintainer-decisions-locked.md)
+**D12** / **D13**. Codegen (one spec generating both sides) was considered and
+deliberately not taken.
 
 > Trace the full path of adding one new user-facing setting, end to end: TS UI → hook
 > → RPC → Python service → persistence → read-back. List every file that must change
@@ -257,7 +263,9 @@ The target isn't reorganization — it's making "add a setting" a one-or-two-fil
 If TS and Python each independently declare the setting shape, every addition is a
 synchronized two-language edit. Generate or mirror from one schema.
 
-**3.2 — Split `settingsAndResponse.ts`**
+**3.2 — Split `settingsAndResponse.ts`** — **done 2026-08-02** as execution-order
+step 4. The barrel was deleted and its 22 importers repointed (`2156441`); the
+reply-text formatting came out into `appliedTuningText.ts` (`ef65f8e`).
 
 Settings-schema changes and response-handling changes are different reasons to change.
 Split into `settings/` and `response/` with separate tests. Expect the 42-churn test
@@ -279,7 +287,13 @@ lines — 24% of the file. `test_ollama_connection` ([main.py:1038](main.py)) ow
 Ollama HTTP that `main.py:6` explicitly disclaims. The inventory names a destination and
 a risk level for each piece, in a recommended order.
 
-**3.4 — Split the entry points by feature, not by type**
+**3.4 — Split the entry points by feature, not by type** — **done** as
+execution-order steps 8 (`index.tsx` 1955 → 1291, into `src/features/plugin-shell/`)
+and 12 (`main.py` 2865 → 2743, into four backend service modules). Scope was
+narrowed by **D9**: `useBonsaiAskOrchestration.ts` and `MainTab.tsx` are
+follow-ups, not part of "done", and **D14** withdrew the unmeasured 700–800 line
+target for `index.tsx`. What remains in `index.tsx` is prop threading that only a
+rewrite would shrink.
 
 Extract vertically from `index.tsx` and `main.py`. Everything about ask-orchestration
 together; everything about settings together. **Resist** `components/`, `handlers/`,

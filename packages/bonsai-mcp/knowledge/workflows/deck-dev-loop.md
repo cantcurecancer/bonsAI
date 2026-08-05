@@ -13,7 +13,7 @@ description: Deck dev loop
 
 ## One-time setup
 
-From repo root (see [docs/development.md](../../docs/development.md)):
+From repo root (see [docs/development.md](../../../../docs/development.md)):
 
 ```bash
 cp .env.example .env   # DECK_IP, PC_IP, DECK_USER
@@ -47,13 +47,13 @@ Python/RPC changes still need a full deploy (watch-deploy copies `py_modules/` +
 
 | Track | When | Runbook |
 |-------|------|---------|
-| **A — BPM (Desktop)** | Daily UI, Settings, Ask, Ollama RPC, D-pad focus | [testing.md](../../docs/testing.md) **Tier 0** (SMOKE-A, C, F) |
+| **A — BPM (Desktop)** | Daily UI, Settings, Ask, Ollama RPC, D-pad focus | [testing.md](../../../../docs/testing.md) **Tier 0** (SMOKE-A, C, F) |
 | **B — Gaming Mode** | Steam Input, TDP, in-game overlay, gamescope screenshots | **Tier 1** (SMOKE-B, E, H) after Tier 0 |
 
 Track A: Steam Desktop → View → Big Picture → QAM → bonsAI.  
 Track B: Return to Gaming Mode → QAM → bonsAI.
 
-Scenario detail and coverage: [testing.md](../../docs/testing.md). Automated gates: [testing-automated.md](../../docs/testing-automated.md). Deck smokes: [testing-manual.md](../../docs/testing-manual.md).
+Scenario detail and coverage: [testing.md](../../../../docs/testing.md). Automated gates: [testing-automated.md](../../../../docs/testing-automated.md). Deck smokes: [testing-manual.md](../../../../docs/testing-manual.md).
 
 ## New focusable controls (D-pad)
 
@@ -61,7 +61,7 @@ When adding Settings/QAM toggles, buttons, sliders, or chip rows:
 
 1. Design the **section-level focus graph** before coding UI polish — see `bonsai://architecture/focus-graph-patterns`.
 2. For `DeckFocusSlider`: add a parent **Focusable bridge** (or Ollama-style parent refs); never rely on thumb-only props.
-3. On-Deck QA: [testing.md](../../docs/testing.md) **FOCUS-GRAPH-01…05** + feature-specific row (e.g. UI-SCALE-05).
+3. On-Deck QA: [testing.md](../../../../docs/testing.md) **FOCUS-GRAPH-01…05** + feature-specific row (e.g. UI-SCALE-05).
 4. Policy gate: `bonsai://policy/decky-ui-focus` § **New controls & settings rows**.
 
 **Focus bugs:** main agent runs the checklist in `.cursor/rules/decky-focus-graph.mdc` (screenshots → name graph → one evidence-backed fix). Task **master-debugger** only for a real debug loop (still broken after that, or instrumentation/log proof). Preview mocks do **not** validate Deck focus graphs — deploy + on-Deck pass required.
@@ -97,7 +97,7 @@ For motion/focus repros or multi-step UI flows:
 2. `.\scripts\record-deck.ps1 -Seconds 20` or `./scripts/record-deck.sh --seconds 20` (prefer `game` mode in Gaming Mode).
 3. Clips land in `recordings/DeckRecord_*.mkv` — confirm bonsAI chrome is readable in the video.
 
-See [docs/archive/spikes/deck-screen-recording.md](../../docs/archive/spikes/deck-screen-recording.md). On-Deck: `bonsai-record --seconds 20` after `-InstallDeckHelper`.
+See [docs/archive/spikes/deck-screen-recording.md](../../../../docs/archive/spikes/deck-screen-recording.md). On-Deck: `bonsai-record --seconds 20` after `-InstallDeckHelper`.
 
 ## Optional debug log tunnel
 
@@ -126,7 +126,7 @@ git push origin vX.Y.Z   # triggers CI plugin zip
 
 ## Related docs
 
-- [docs/archive/spikes/cursor-deck-visibility.md](../../docs/archive/spikes/cursor-deck-visibility.md)
-- [docs/development.md](../../docs/development.md)
-- [docs/testing.md](../../docs/testing.md)
+- [docs/archive/spikes/cursor-deck-visibility.md](../../../../docs/archive/spikes/cursor-deck-visibility.md)
+- [docs/development.md](../../../../docs/development.md)
+- [docs/testing.md](../../../../docs/testing.md)
 - `bonsai://workflow/screenshot-ingest` (screenshot ingest workflow)

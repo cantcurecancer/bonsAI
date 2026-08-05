@@ -51,6 +51,12 @@ type Props = {
   toggleHostRef?: React.RefObject<HTMLDivElement | null>;
   downloadBtnRef?: React.RefObject<HTMLButtonElement | null>;
   removeBtnRef?: React.RefObject<HTMLButtonElement | null>;
+  /**
+   * Cancel shares the action row's second slot with Remove and only exists while a
+   * download runs. The parent needs its own handle because both other buttons are
+   * disabled then, so a ref to either one focuses nothing.
+   */
+  cancelBtnRef?: React.RefObject<HTMLButtonElement | null>;
   onMoveUpToConnection?: () => boolean;
   onMoveDownFromRemove?: () => boolean;
 };
@@ -137,13 +143,16 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
   toggleHostRef,
   downloadBtnRef: downloadBtnRefProp,
   removeBtnRef: removeBtnRefProp,
+  cancelBtnRef: cancelBtnRefProp,
   onMoveUpToConnection,
   onMoveDownFromRemove,
 }) => {
   const [status, setStatus] = useState<RagCorpusStatus | null>(null);
   const [downloadBusy, setDownloadBusy] = useState(false);
+  const [cancelBusy, setCancelBusy] = useState(false);
   const primaryBtnRefLocal = useRef<HTMLButtonElement | null>(null);
   const removeBtnRef = useRef<HTMLButtonElement | null>(null);
+  const cancelBtnRef = useRef<HTMLButtonElement | null>(null);
   const toggleHostRefLocal = useRef<HTMLDivElement | null>(null);
   const toggleHost = toggleHostRef ?? toggleHostRefLocal;
 
@@ -165,6 +174,20 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
     removeBtnRef.current?.focus();
     return Boolean(removeBtnRef.current);
   }, []);
+
+  const focusCancelBtn = useCallback((): boolean => {
+    cancelBtnRef.current?.focus();
+    return Boolean(cancelBtnRef.current);
+  }, []);
+
+  /**
+   * Down from the toggle: while a download runs the primary button is disabled and
+   * Remove is not rendered, so Cancel is the only stop the row has.
+   */
+  const focusActionRow = useCallback((): boolean => {
+    if (downloadBusy && focusCancelBtn()) return true;
+    return focusPrimaryBtn();
+  }, [downloadBusy, focusCancelBtn, focusPrimaryBtn]);
 
   const handleMoveUpFromToggle = useCallback((): boolean => {
     return tryMoveUpWithPanelScroll(toggleHost.current, () => onMoveUpToConnection?.() ?? false);
@@ -250,6 +273,11 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
     return () => window.clearInterval(id);
   }, [downloadBusy, refreshStatus, ollamaIp]);
 
+  /** The download ending is what clears Cancel's own pending state, however it ended. */
+  useEffect(() => {
+    if (!downloadBusy) setCancelBusy(false);
+  }, [downloadBusy]);
+
   const startDownload = async (installPath: string, storage: string) => {
     setDownloadBusy(true);
     try {
@@ -276,6 +304,32 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
       const msg = formatDeckyRpcError(e);
       toaster.toast({ title: "Download failed", body: msg, duration: 8000 });
     }
+  };
+
+  /**
+   * Asks the backend to set its cancel event. The download does not stop here — the
+   * poll above sees `phase: "cancelled"` a beat later and clears `downloadBusy`, which
+   * is also what returns this button to Remove (or to nothing, if nothing is installed).
+   */
+  const cancelDownload = () => {
+    if (cancelBusy) return;
+    setCancelBusy(true);
+    void callDeckyWithTimeout<[], { cancel_requested?: boolean }>(
+      "cancel_rag_corpus_download",
+      [],
+      DECKY_RPC_TIMEOUT_MS,
+    )
+      .then(() => {
+        toaster.toast({
+          title: "Cancelling download",
+          body: "Stopping the knowledge base download. Partial files are discarded.",
+          duration: 5000,
+        });
+      })
+      .catch((e) => {
+        setCancelBusy(false);
+        toaster.toast({ title: "Cancel failed", body: formatDeckyRpcError(e), duration: 8000 });
+      });
   };
 
   const openStoragePicker = () => {
@@ -356,6 +410,13 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
     status?.embed_model_available === false;
 
   const onPrimaryClick = installed ? runUpdate : openStoragePicker;
+  /**
+   * A cancelled download still sets `error` on the backend state — it is the text of
+   * the exception that unwound the transfer. Showing that in red reads as a failure the
+   * user did not cause, so a cancel gets its own neutral line instead.
+   */
+  const wasCancelled = status?.phase === "cancelled";
+  const errorText = wasCancelled ? "" : (status?.error ?? "").trim();
 
   return (
     <PanelSection title="Knowledge base (offline)">
@@ -368,7 +429,7 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
             onChange={(checked) => setUseLocalKnowledgeBase(checked)}
             {...deckNav({
               onMoveUp: () => handleMoveUpFromToggle(),
-              onMoveDown: () => focusPrimaryBtn(),
+              onMoveDown: () => focusActionRow(),
             })}
           />
         </div>
@@ -399,8 +460,13 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
             </span>
           ) : null}
           {progress ? <span style={{ display: "block", marginTop: 6 }}>{progress}</span> : null}
-          {(status?.error ?? "").trim() ? (
-            <span style={{ display: "block", marginTop: 6, color: "#ff9b9b" }}>{status?.error}</span>
+          {wasCancelled && !downloadBusy ? (
+            <span style={{ display: "block", marginTop: 6, color: "#9fb7d5" }}>
+              Download cancelled. Nothing was installed — start it again whenever you like.
+            </span>
+          ) : null}
+          {errorText ? (
+            <span style={{ display: "block", marginTop: 6, color: "#ff9b9b" }}>{errorText}</span>
           ) : null}
         </div>
       </PanelSectionRow>
@@ -441,7 +507,8 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
                 {...deckNav({
                   onMoveUp: () => focusKbToggle(),
                   onMoveDown: () => onMoveDownFromRemove?.() ?? false,
-                  onMoveRight: () => (installed ? focusRemoveBtn() : false),
+                  onMoveRight: () =>
+                    downloadBusy ? focusCancelBtn() : installed ? focusRemoveBtn() : false,
                 })}
               >
                 {downloadBusy
@@ -452,7 +519,53 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
               </Button>
             </Focusable>
           </div>
-          {installed ? (
+          {/*
+            Second slot, one of three states. While a download runs it is Cancel, and that
+            matters for more than the feature: the primary button is disabled then, so
+            without Cancel the whole row has no focusable stop and the D-pad cannot enter
+            it at all.
+          */}
+          {downloadBusy ? (
+            <div
+              className="bonsai-settings-focus-btn-host"
+              style={{ flex: "0.9 1 0", minWidth: 72, display: "flex", alignItems: "stretch" }}
+            >
+              <Focusable onOKButton={cancelDownload} style={{ width: "100%", display: "flex", alignItems: "stretch" }}>
+                <Button
+                  ref={(el) => {
+                    const btn = el as HTMLButtonElement | null;
+                    cancelBtnRef.current = btn;
+                    if (cancelBtnRefProp) {
+                      cancelBtnRefProp.current = btn;
+                    }
+                  }}
+                  className="bonsai-settings-focus-btn"
+                  onClick={cancelDownload}
+                  disabled={cancelBusy}
+                  style={{
+                    ...SETTINGS_GLASS_BTN_DANGER,
+                    flex: "1 1 auto",
+                    width: "100%",
+                    minHeight: KB_ACTION_ROW_MIN_HEIGHT,
+                    height: KB_ACTION_ROW_MIN_HEIGHT,
+                    boxSizing: "border-box",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                  {...deckNav({
+                    onMoveUp: () => focusKbToggle(),
+                    onMoveDown: () => onMoveDownFromRemove?.() ?? false,
+                    // Left goes nowhere on purpose: the primary button is disabled while
+                    // downloading, so yielding would drop focus out of the section.
+                    onMoveLeft: () => true,
+                  })}
+                >
+                  {cancelBusy ? "Cancelling…" : "Cancel"}
+                </Button>
+              </Focusable>
+            </div>
+          ) : installed ? (
             <div
               className="bonsai-settings-focus-btn-host"
               style={{ flex: "0.9 1 0", minWidth: 72, display: "flex", alignItems: "stretch" }}

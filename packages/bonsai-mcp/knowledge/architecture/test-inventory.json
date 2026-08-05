@@ -1,5 +1,6 @@
 {
   "vitest": [
+    "src/components/KnowledgeBaseSection.test.tsx",
     "src/components/SettingsTab.mdns.test.ts",
     "src/data/bonsaiSettingsContract.test.ts",
     "src/data/bonsaiSettingsHostileContract.test.ts",
