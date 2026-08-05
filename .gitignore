@@ -28,6 +28,15 @@ bower_components
 .idea
 *.iml
 
+# Agent / IDE local instruction files (not part of the plugin bundle)
+CLAUDE.md
+AGENTS.md
+.claude/
+.cursorrules
+
+# Session-only SSH helper — prints deck_pass from .env; never commit
+.cursor/tmp-ssh-askpass.sh
+
 # OS metadata
 .DS_Store
 Thumbs.db
