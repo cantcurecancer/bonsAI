@@ -1,10 +1,8 @@
-> **Spike** — see [archive README](README.md). Active docs: [roadmap.md](../../roadmap.md) · [troubleshooting.md](../../troubleshooting.md)
-
-# Native QAM shortcut tile + Decky decoupling — feasibility
+# 11 — Native QAM shortcut tile + Decky decoupling — feasibility (2026-08-04)
 
 **Status:** Research only (2026-08-04). **No implementation, no fork, no install-doc change.**
-**Roadmap item:** ★★★★★★ **Native QAM shortcut tile** ([roadmap.md](../../roadmap.md) → Planned, "under Decky; upstream research").
-**Related:** [troubleshooting.md](../../troubleshooting.md) §5 (Guide-chord macro, `bonsai:shortcut-setup-deck`).
+**Roadmap item:** ★★★★★★ **Native QAM shortcut tile** ([roadmap.md](../roadmap.md) → Planned, "under Decky; upstream research").
+**Related:** [troubleshooting.md](../troubleshooting.md) §5 (Guide-chord macro, `bonsai:shortcut-setup-deck`).
 
 ---
 
@@ -29,7 +27,7 @@
 | Decky adds exactly **one** tab, its own: `this.tabsHook.add({ id: QuickAccessTab.Decky, … })` (`QuickAccessTab.Decky` = **999**) | `frontend/src/plugin-loader.tsx:107-115` |
 | The API object given to plugins exposes `routerHook`, `toaster`, `openFilePicker`, `executeInTab`, `fetchNoCors`, `injectCssIntoTab`, `removeCssFromTab`, `getExternalResourceURL`, `useQuickAccessVisible` (v2) — **`tabsHook` is absent from both the modern and legacy API objects** | `frontend/src/plugin-loader.tsx:700-790` |
 
-So plugins render **inside** Decky's single tab (`PluginView`), one level down. `plugin.json` has no flag for this either — bonsAI's own [plugin.json](../../../plugin.json) carries `"icon"` and `"flags": []`, both consumed by the Decky plugin *list*, not by the QAM rail.
+So plugins render **inside** Decky's single tab (`PluginView`), one level down. `plugin.json` has no flag for this either — bonsAI's own [plugin.json](../../plugin.json) carries `"icon"` and `"flags": []`, both consumed by the Decky plugin *list*, not by the QAM rail.
 
 ### What upstream would have to ship
 
@@ -83,7 +81,7 @@ Measured on this tree, not assumed.
 | `Navigation` | — | `NavigateToExternalWeb`, `OpenQuickAccessMenu` |
 | `toaster` | ~20 | Reply-ready toast is a **shipped, roadmap-tracked dependency** for hands-free wake when QAM is closed |
 | `useQuickAccessVisible` | 1 | `src/index.tsx:145` — drives `setReplySurfaceVisible` |
-| `call` | 1 | wrapped once in [deckyCall.ts](../../../src/utils/deckyCall.ts) |
+| `call` | 1 | wrapped once in [deckyCall.ts](../../src/utils/deckyCall.ts) |
 
 77 imports from `@decky/api` / `@decky/ui` across 61 files.
 
@@ -96,7 +94,7 @@ Only **3 of 51** Python files import `decky`, and only for paths and logging:
 - `decky.DECKY_PLUGIN_SETTINGS_DIR` ×16, `decky.HOME` ×5, `decky.logger` ×3, `decky.DECKY_PLUGIN_RUNTIME_DIR` ×2, `decky.DECKY_PLUGIN_LOG_DIR` ×1.
 - `main.py:22`, `py_modules/backend/services/game_ai_request.py:18`, `py_modules/backend/services/ollama_ask_service.py:18`.
 
-The 50-module service layer under `py_modules/backend/services/` has **zero** Decky knowledge. The real coupling is the **RPC contract**: 50 public `async def` at indent 4 on `class Plugin` ([CLAUDE.md](../../../CLAUDE.md) — "indentation is the contract"), consumed via `callDeckyWithTimeout()`.
+The 50-module service layer under `py_modules/backend/services/` has **zero** Decky knowledge. The real coupling is the **RPC contract**: 50 public `async def` at indent 4 on `class Plugin` ([CLAUDE.md](../../CLAUDE.md) — "indentation is the contract"), consumed via `callDeckyWithTimeout()`.
 
 **Conclusion:** the backend is already ~95% decoupled by accident of good layering. Extracting it is cheap. It is also **the half that buys nothing**, because the user-facing value is entirely on the frontend side.
 
@@ -123,7 +121,7 @@ The 50-module service layer under `py_modules/backend/services/` has **zero** De
 
 ## 5. Risks and policy
 
-- **Security model.** Decky plugins are not sandboxed from each other in any meaningful sense; the backend runs as a normal Python process under `plugin_loader.service`. The barrier to a sibling tab is API surface (`private tabsHook`), not a privilege boundary. bonsAI's own capability gating ([PermissionsTab](../../../src/components/PermissionsTab.tsx), Capability Permission Center) is bonsAI's, not Decky's.
+- **Security model.** Decky plugins are not sandboxed from each other in any meaningful sense; the backend runs as a normal Python process under `plugin_loader.service`. The barrier to a sibling tab is API surface (`private tabsHook`), not a privilege boundary. bonsAI's own capability gating ([PermissionsTab](../../src/components/PermissionsTab.tsx), Capability Permission Center) is bonsAI's, not Decky's.
 - **Valve / ToS.** Decky is unofficial homebrew; Valve neither supports nor blocks it. Shipping a **forked Steam client** or undocumented client patches is out of scope by roadmap decision and should stay that way — it would make bonsAI responsible for every Steam client update, and it is not defensible to recommend to end users.
 - **Why "undocumented injection" stays out of scope.** bonsAI could technically reach `window.__TABS_HOOK_INSTANCE` (set in `tabs-hook.tsx`) and call `add()` on Decky's private hook from plugin code. **Do not.** It would (a) depend on a private field with no compatibility promise, (b) break silently on any Decky refactor, (c) leave an orphan tab when bonsAI unloads unless removal is also hooked, and (d) be exactly the kind of thing that gets a plugin pulled from the store. Naming it here so nobody re-derives it and thinks it is clever.
 - **FOSS / transparency.** decky-loader is GPL-2.0 with 249 forks, so a fork is *licensed*. It is not *advisable*: it would fork the plugin store, the update channel, and the Steam-beta break-fix treadmill onto bonsAI. Upstream contribution or nothing.
@@ -161,7 +159,7 @@ Nothing to ask Valve. There is no channel and no product surface to ask about.
 
 **Do (bonsAI-only, unblocked, ★):**
 1. Keep the roadmap item at ★★★★★★ but re-label it **`upstream-blocked`**, not `planned`. Link #887 and #909 so the next session does not re-derive this.
-2. Document what *does* work today: Decky's plugin list is **drag-reorderable**, so putting bonsAI at position 1 removes every D-pad step after the Decky tab opens. That is the single highest-value, zero-code discoverability win and it belongs in [troubleshooting.md](../../troubleshooting.md) §5 as step 0, ahead of the macro recipe.
+2. Document what *does* work today: Decky's plugin list is **drag-reorderable**, so putting bonsAI at position 1 removes every D-pad step after the Decky tab opens. That is the single highest-value, zero-code discoverability win and it belongs in [troubleshooting.md](../troubleshooting.md) §5 as step 0, ahead of the macro recipe.
 3. Fix the §5 wording (below).
 
 **Do not:**

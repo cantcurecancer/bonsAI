@@ -18,7 +18,7 @@ Prepared prompts for a future AI planning session. Each section has a short summ
 | 8 | Kids master lock feasibility | [08-kids-master-lock-feasibility.md](08-kids-master-lock-feasibility.md) |
 | 9 | Steam Frame companion UX feasibility | [09-steam-frame-companion-feasibility.md](09-steam-frame-companion-feasibility.md) |
 | 10 | Wake-word listening feasibility and cost | [10-wake-word-listening-feasibility.md](10-wake-word-listening-feasibility.md) |
-| 11 | Native QAM shortcut tile / decouple from Decky | *not yet written* |
+| 11 | Native QAM shortcut tile / decouple from Decky | [11-native-qam-tile-feasibility.md](11-native-qam-tile-feasibility.md) |
 | 12 | Deep mod AI hints feasibility | [12-deep-mod-ai-hints-feasibility.md](12-deep-mod-ai-hints-feasibility.md) |
 | 13 | Feature ideas for roadmap.md (star-rated) | [13-roadmap-feature-ideas.md](13-roadmap-feature-ideas.md) |
 
@@ -527,7 +527,7 @@ You want **research-only** answers to two related questions: Can bonsAI get its 
 >    For each: feasibility, what breaks (`Router.MainRunningApp`, `call()` RPC, QAM focus, deploy zip), ★ effort.
 > 3. **Why Decky today:** List concrete dependencies bonsAI has on Decky (`@decky/api` RPC, `Navigation`/`Tabs`, `toaster`, `useQuickAccessVisible`, gamepadui CSS). What would a decoupled v1 still need from Steam?
 > 4. **Risks / policy:** Security model of QAM plugins; Valve ToS; why “undocumented injection” is roadmap out-of-scope. FOSS / transparency angle for upstream proposal vs fork.
-> 5. **Recommendation:** Research memo outline for `docs/archive/spikes/native-qam-tile.md` — **pursue upstream Decky feature** vs **accept Decky hub** vs **invest in macro docs only**. Realistic timeline (blocked on Valve/Decky vs bonsAI-only work).
+> 5. **Recommendation:** Research memo outline for `docs/planning/11-native-qam-tile-feasibility.md` — **pursue upstream Decky feature** vs **accept Decky hub** vs **invest in macro docs only**. Realistic timeline (blocked on Valve/Decky vs bonsAI-only work).
 >
 > **Deliverable:** Feasibility matrix (QAM tile vs partial decouple vs full standalone), upstream ask template (what to request from Decky/Valve), and honest answer: **is full decoupling realistic** for a self-hosted AI QAM tool on Steam Deck?
 >
