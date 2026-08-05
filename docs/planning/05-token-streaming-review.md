@@ -316,3 +316,50 @@ Open question for the maintainer — see [roadmap.md § Bugs](../roadmap.md#bugs
 > Yes → STREAM-08 is deleted, the T3 discontinuity disappears, but streamed turns and history turns
 > navigate differently under D-pad unless `splitResponseIntoChunks` is retired everywhere.
 > No → STREAM-08/09 stay as on-Deck blockers and the dual render path (W6) is permanent.
+
+## Maintainer decisions (planning session 2026-08-04)
+
+Status: locked for implementation planning. Items marked **open / later** are intentional.
+
+### Navigation / layout
+- **V1 goal:** true multi-stop D-pad navigation — closed sections, live tail, and wait chip are stops while streaming.
+- **History:** must use the same multi-stop model in v1 (not deferred).
+- **Finish (v1):** rebuild stops with `splitResponseIntoChunks` (option C). Focus may jump at T3.
+- **Extra credit (later):** keep stream section stops as final layout (option A) — no chunk rebuild.
+- **New stop appears:** stay put on current focus (v1). **Notate:** auto-jump / pin-to-latest as possible later switch.
+- **Spoiler inside a stop:** Down parks on spoiler reveal before leaving the section.
+- **Spoiler wait chip (fence open):** A does **not** early-unmask; keep no spoiler body until fence closes (STREAM-03 safety).
+- **Code wait chip:** A does nothing.
+- **Scroll:** near-bottom follow for D-pad and touch — follow new text only near bottom; unpin when scrolled up.
+
+### Stop (STREAM-04)
+- Keep partial body; show small “Stopped” (or similar) status — do not replace body with cancel literal.
+- If no visible answer text yet: no thinking blurb; restore the user’s question into the ask field for edit/resend.
+
+### Scope in this v1 plan
+- **Include:** multi-stop (stream + history), P1 memo, P2 gate delta when off, P3 fast poll only while streaming, P4 un-cap/scale reveal rate, P5 Stop-keeps-partial.
+- **Flag:** stay Developer toggle, default off. No P8/P9 in this plan.
+- **Defer:** nested-fence spoiler leak fix (P7); R8 wait-chip label flash; thinking-blurb vs streaming copy (decide later / Q6).
+- **Push (P10):** spike only (`decky.emit` on-device); no product push.
+- **Soft `num_predict` / `think: False`:** spike + options in plan; implement only after mid-plan maintainer nod. **Not** a hard gate for merging experimental multi-stop.
+- **STREAM-11** (stream while gaming): nice-to-have, not a done blocker.
+
+### Done bar
+- Code + required on-Deck: STREAM-03 (without nested-fence unit fix), STREAM-04, STREAM-06, STREAM-09, re-run STREAM-01/02 after P2/P3.
+- Remains experimental until a later promotion decision.
+
+### Corrections to analysis (evidence)
+- Claim that `chunkTotal` 1→N changes D-pad Down behavior is **not** supported by current code: `_focusedChunkRef` unused; `chunkTotal` only checked `<= 0` in `answerBubbleNavigation.ts`. Multi-stop is net-new.
+
+---
+
+## NEEDS VERIFICATION
+
+- On-Deck: whether true nested Focusables (or equivalent multi-stop) survives Steam/Decky focus under QAM remount and mid-stream height growth.
+- On-Deck: T3 focus jump under finish rule C is acceptable in practice.
+- On-Deck: near-bottom scroll follow with touch + D-pad does not fight multi-stop stay-put.
+- Nested-fence mid-stream spoiler leak (R2) still **PLAUSIBLE** — deferred fix; STREAM-03 on-Deck may still fail on nested samples.
+- `decky.emit` availability on target Deck loader (push spike).
+- Soft-budget spike outcomes before any implement nod.
+- STREAM-09 rewritten for multi-stop (stream + history), not “one Focusable then chunk chain.”
+- Preview vs Deck: multi-stop focus cannot be signed off in preview alone.
