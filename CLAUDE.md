@@ -81,17 +81,30 @@ Adding one user-facing setting touches `SettingsTab.tsx` (UI) →
 `save_settings` → `settings_service.py`, plus `src/data/bonsaiSettingsSchema.ts`
 and `bonsaiSettingsNormalizers.ts`.
 
+**That list is the normalization layer only, and it is the cheap half.** Measured
+2026-08-05 by the step 11 friction test: one boolean is **~18 files and ~30 edit
+points** end to end. The cost is not normalization — it is *plumbing*.
+`usePluginSettings.ts` repeats the field list in **7** places (state, snapshot,
+hydrate, load-failure reset, debounce deps, the returned object, the save
+snapshot); `index.tsx` in **5**; each tab payload hook in **3**. None of that
+duplication is caught by a type or a test, and `BonsaiSettingsSnapshotInput` has
+no optional fields, so four full snapshot literals in `settingsContracts.test.ts`
+and `bonsaiSessionSurvival.test.ts` must gain the key or `tsc` fails. Budget for
+the plumbing, not the tables. See [docs/audit/03-friction.md](docs/audit/03-friction.md).
+
 TS and Python still declare the setting shape independently, but **refactor step
 7 (Phase 3.1) is complete** and changed what that costs:
 
 - A setting whose rule is one of the plain shapes is **one row per language** —
-  `_SIMPLE_FIELDS` in `settings_service.py` (19 rows) and `SIMPLE_FIELDS` in
-  `bonsaiSettingsNormalizers.ts` (26 rows). Only genuinely custom rules
+  `_SIMPLE_FIELDS` in `settings_service.py` (20 rows) and `SIMPLE_FIELDS` in
+  `bonsaiSettingsNormalizers.ts` (28 rows). The two counts differ on purpose —
+  Python keeps fields out of its table when they need caller-supplied options or
+  live in another service. Only genuinely custom rules
   (migrations, cross-field reconciliation, feature gates) stay as functions, and
   each one is annotated with why it is exempt.
 - Drift is caught by two shared contracts asserted from both languages:
   `tests/contracts/settings-defaults.json` (fresh-install payload plus an
-  idempotency check) and `tests/contracts/settings-hostile-inputs.json` (19
+  idempotency check) and `tests/contracts/settings-hostile-inputs.json` (21
   cases). An incomplete two-language edit fails a test rather than shipping.
 - **Python is authoritative** where the two disagree (decision **D13**):
   `save_settings` decides what reaches disk. One deliberate exception is
@@ -149,7 +162,10 @@ Deploy to a Deck (needs `.env`, copy from `.env.example`):
 
 The repo is mid-refactor; see [REFACTOR-PLAN.md](REFACTOR-PLAN.md) for phases and
 [docs/audit/](docs/audit/) for completed recon. Questions that need a maintainer
-call go in `docs/roadmap.md` § **Decisions needed** (plain language, with
+call go in
+[docs/audit/maintainer-decisions-locked.md](docs/audit/maintainer-decisions-locked.md)
+— which also holds the locked D1–D15 calls and the authoritative execution order
+— (plain language, with
 options) — not into chat, where they get lost.
 
 1. **One refactor per commit**, behavior-preserving, tests green between commits.

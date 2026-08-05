@@ -1020,7 +1020,43 @@ for the same reason — its RPC probe passed, its UI pass did not run.
     the replace-wholesale line: the bug reproduces exactly (`total=1`), and the fix restores
     `total=2`. **The historical summaries were left as they are** — rewriting recorded QA output
     to match a later theory is not evidence hygiene; the caveat is documented instead.
-11. **Deferred friction test** — run Phase 2c newcomer task on the post-refactor tree; file `docs/audit/03-friction.md`.
+11. **Deferred friction test — done 2026-08-05. [03-friction.md](03-friction.md).**
+    Three cold readers, one task each, chosen to probe step 7 (settings), step 8 (feature
+    slices) and step 12 (the RPC boundary). Two completed their plan; **one was blocked** —
+    `docs/glossary.md` never defines "card", which turns out to be a column name on three
+    different tables that the docs and UI use inconsistently.
+
+    **The overlap is the work list, and the top item confirms D14 from the outside.** Two of
+    three runs put hand-maintained field and prop lists first, at HIGH cost, in different
+    subsystems: one boolean setting is **~18 files and ~30 edit points** — the normalization
+    tables really are one row per language, but `usePluginSettings.ts` restates the field list
+    **7** times, `index.tsx` **5**, each payload hook **3** — and threading one flag to a
+    component passes two silent gates (`presetChipsPropsEqual`, a `useMemo` dep array) where a
+    miss compiles, passes tests, and does nothing on device. D14 called this *"prop threading
+    that only a rewrite would shrink"* and closed step 8 on it; readers who had never seen D14
+    independently ranked it the single largest cost. **The D14 Option B/C collapse now has
+    evidence behind it rather than taste.**
+
+    **It also found live defects.** `docs/roadmap.md:23`'s fix lean for the preset/KB bug was
+    incomplete in a way that would have shipped a *worse* bug — it names two samplers and misses
+    `getRandomPresetExcluding`, which re-draws chips on a 60-second timer, so the fix would have
+    regressed within seconds of mount. Verified in code and corrected. `CLAUDE.md` was still
+    routing maintainer questions to `docs/roadmap.md` § *Decisions needed*, moved out of that
+    file by the reorg — **the link audit two steps earlier reported zero broken links because it
+    checked markdown links and heading anchors, not prose references to section names.**
+
+    **And it caught the same-day work.** CLAUDE.md's settings counts — 19 / 26 / 19 — were
+    written hours earlier during a pass whose purpose was fixing stale numbers. They were copied
+    from this file, accurate on 2026-08-03, and never counted against the tree; the real values
+    are **20 / 28 / 21**. The staleness-fixing pass reproduced the failure it was fixing. That is
+    the strongest argument the exercise made for itself.
+
+    **Kept, explicitly:** all three runs praised the module header convention unprompted and used
+    it to skip reading bodies; run A called the shared two-language settings contracts *"the best
+    thing in this repo"*, which is step 7a's payoff confirmed by someone who did not know it
+    existed. Recommended next actions are ranked at the end of
+    [03-friction.md](03-friction.md); items 3–5 are one-line doc edits that clear the blocking
+    failure and two MEDIUM findings.
 12. **`main.py` extractions — COMPLETE.** Items 1, 2, 4 and 5 executed 2026-08-03; item 3
     **dropped** 2026-08-04 by maintainer call (reasoning below). `main.py` **2865 → 2750**, with
     **66 new Python tests** where these paths had almost none. One commit each, suite green
