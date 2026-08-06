@@ -1,0 +1,168 @@
+{
+  "version": "v1-sample",
+  "description": "Calibration sample: Left 4 Dead 2 re-authored under docs/audit/rag-eval-query-style.md. Terse controller input, proper nouns where the game shows them, three skill levels, versus coverage. Not scored — this exists for the maintainer to check the feel before the other 10 titles are rewritten. Several power_user rows deliberately target content the corpus does not have yet (versus, tier lists, map callouts); they stay in so the gap shows up as a miss rather than being hidden by only asking what we can answer.",
+  "app_id": "550",
+  "queries": [
+    {
+      "id": "S-L4D2-01",
+      "query": "how to beat tank",
+      "intent": "Survive the heavy special: kite, focused fire, avoid cornering",
+      "topic_hint": "Tank",
+      "skill_level": "beginner",
+      "input_style": "terse",
+      "withheld_card_terms": ["kite", "focused fire", "choke point"],
+      "note": "Name is known — characters shout it. Withholding 'Tank' would be unrealistic."
+    },
+    {
+      "id": "S-L4D2-02",
+      "query": "witch how to not startle",
+      "intent": "Avoid vs crown decision, and what startles her",
+      "topic_hint": "Witch",
+      "skill_level": "beginner",
+      "input_style": "terse",
+      "withheld_card_terms": ["crown", "startle radius"]
+    },
+    {
+      "id": "S-L4D2-03",
+      "query": "kill boomer without getting bile",
+      "intent": "Kill at range; bile pulls the horde",
+      "topic_hint": "Boomer",
+      "skill_level": "beginner",
+      "input_style": "terse",
+      "withheld_card_terms": ["at distance", "horde magnet"]
+    },
+    {
+      "id": "S-L4D2-04",
+      "query": "charger keeps splitting us up",
+      "intent": "Spacing and formation against the ram special",
+      "topic_hint": "Charger",
+      "skill_level": "beginner",
+      "input_style": "terse",
+      "withheld_card_terms": ["spacing", "stagger"]
+    },
+    {
+      "id": "S-L4D2-05",
+      "query": "smoker grabbing me off roofs",
+      "intent": "Line-of-sight breaking and teammate rescue",
+      "topic_hint": "Smoker",
+      "skill_level": "beginner",
+      "input_style": "terse",
+      "withheld_card_terms": ["line of sight", "tongue"]
+    },
+    {
+      "id": "S-L4D2-06",
+      "query": "my team keeps wiping on the bridge at the end of the parish, what are we doing wrong",
+      "intent": "Finale pacing on that campaign",
+      "topic_hint": "The Parish",
+      "skill_level": "beginner",
+      "input_style": "voice",
+      "withheld_card_terms": ["crescendo", "choke point"],
+      "note": "Voice register — longer and more sentence-like on purpose. Campaign named, chapter not."
+    },
+    {
+      "id": "S-L4D2-07",
+      "query": "rank melee weapons",
+      "intent": "Tier list across melee options",
+      "topic_hint": "Melee weapon tier list",
+      "skill_level": "familiar",
+      "input_style": "terse",
+      "withheld_card_terms": [],
+      "note": "Maintainer example. Needs a ranking card shape the corpus does not have."
+    },
+    {
+      "id": "S-L4D2-08",
+      "query": "what rooms usually have good loot in dead center burning building",
+      "intent": "Item spawn locations in a named chapter",
+      "topic_hint": "Dead Center — hotel/burning building item spawns",
+      "skill_level": "familiar",
+      "input_style": "terse",
+      "withheld_card_terms": [],
+      "note": "Maintainer example. Chapter-level detail; corpus is campaign-level today."
+    },
+    {
+      "id": "S-L4D2-09",
+      "query": "expert friendly fire keeps killing us",
+      "intent": "Formation and fire discipline at the top difficulty",
+      "topic_hint": "Expert difficulty tactics",
+      "skill_level": "familiar",
+      "input_style": "terse",
+      "withheld_card_terms": ["fire discipline", "formation"]
+    },
+    {
+      "id": "S-L4D2-10",
+      "query": "hard rain best time to move",
+      "intent": "Routing around the storm cycle",
+      "topic_hint": "Hard Rain",
+      "skill_level": "familiar",
+      "input_style": "terse",
+      "withheld_card_terms": ["storm cycle", "visibility"]
+    },
+    {
+      "id": "S-L4D2-11",
+      "query": "pills or medkit before finale",
+      "intent": "Health item economy going into the last stand",
+      "topic_hint": "Health items and safe rooms",
+      "skill_level": "familiar",
+      "input_style": "terse",
+      "withheld_card_terms": ["item economy"]
+    },
+    {
+      "id": "S-L4D2-12",
+      "query": "death charge spots on the roof of no mercy",
+      "intent": "Map-specific instant-kill charger positions, playing infected",
+      "topic_hint": "No Mercy — death charge positions",
+      "skill_level": "power_user",
+      "input_style": "terse",
+      "withheld_card_terms": [],
+      "note": "Maintainer example. Versus content and a map-callout card shape; corpus has neither."
+    },
+    {
+      "id": "S-L4D2-13",
+      "query": "dark carn best infected coordination spots",
+      "intent": "Where an infected team should stack an ambush on that campaign",
+      "topic_hint": "Dark Carnival — infected ambush positions",
+      "skill_level": "power_user",
+      "input_style": "terse",
+      "withheld_card_terms": [],
+      "note": "Maintainer example. Note the abbreviation — 'dark carn' is how it gets typed."
+    },
+    {
+      "id": "S-L4D2-14",
+      "query": "tank rock aim versus",
+      "intent": "Leading the throw as the tank player",
+      "topic_hint": "Tank rock throwing (versus)",
+      "skill_level": "power_user",
+      "input_style": "terse",
+      "withheld_card_terms": []
+    },
+    {
+      "id": "S-L4D2-15",
+      "query": "hunter pounce spots for full damage",
+      "intent": "Height requirement and map positions for a max-damage pounce",
+      "topic_hint": "Hunter pounce damage and positions",
+      "skill_level": "power_user",
+      "input_style": "terse",
+      "withheld_card_terms": []
+    },
+    {
+      "id": "S-L4D2-16",
+      "query": "rush or slow for versus points",
+      "intent": "How distance scoring rewards pace",
+      "topic_hint": "Versus scoring and pacing",
+      "skill_level": "power_user",
+      "input_style": "terse",
+      "withheld_card_terms": ["distance bonus"]
+    },
+    {
+      "id": "S-L4D2-17",
+      "query": "best spot to hold",
+      "intent": "Unanswerable as written — depends entirely on campaign and chapter",
+      "topic_hint": "",
+      "skill_level": "familiar",
+      "input_style": "terse",
+      "withheld_card_terms": [],
+      "needs_clarification": "which campaign and chapter",
+      "note": "The class the gold-spider question exposed. Right behaviour is a follow-up question, not a wall of cards. Whether retrieval or the model handles that is undecided."
+    }
+  ]
+}
