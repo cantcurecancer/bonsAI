@@ -184,6 +184,10 @@ def kb_retrieval_detail_label(retrieval_method: str) -> str:
         return "Keyword + meaning"
     if retrieval_method == "keyword_embed_unavailable":
         return "Keyword search (embed unavailable)"
+    # Deliberately not the same string as embed-unavailable (Decision 5): this one is a
+    # setting someone chose, and reads as a bug if it is reported as a missing model.
+    if retrieval_method == "keyword_hybrid_disabled":
+        return "Keyword search (hybrid disabled)"
     return "Keyword search"
 
 

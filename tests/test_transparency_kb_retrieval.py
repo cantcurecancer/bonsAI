@@ -17,6 +17,19 @@ class TransparencyKbRetrievalTests(unittest.TestCase):
             "Keyword search (embed unavailable)",
         )
 
+    def test_hybrid_disabled_reads_differently_from_embed_unavailable(self):
+        """Decision 5: a chosen setting must not read as a broken install.
+
+        Someone who flipped the Developer toggle should not go looking for a missing Ollama
+        model, so these two strings stay distinct.
+        """
+        disabled = kb_retrieval_detail_label("keyword_hybrid_disabled")
+        unavailable = kb_retrieval_detail_label("keyword_embed_unavailable")
+        self.assertEqual(disabled, "Keyword search (hybrid disabled)")
+        self.assertNotEqual(disabled, unavailable)
+        # The compact chip stays generic for every keyword variant.
+        self.assertEqual(kb_retrieval_chip_label("keyword_hybrid_disabled"), "Keyword search")
+
     def test_compat_transparency_source_bullet(self):
         snapshot = {
             **build_knowledge_base_transparency(

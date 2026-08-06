@@ -39,7 +39,17 @@ from backend.services.ollama_embed_service import (
 from backend.services.ollama_prompts import question_matches_troubleshooting_log_context
 
 HYBRID_FTS_SHORTLIST_K = 30
-RetrievalMethod = Literal["keyword", "hybrid", "keyword_embed_unavailable"]
+# "keyword_hybrid_disabled" is distinct from "keyword_embed_unavailable" on purpose
+# (Decision 5): one means the maintainer turned hybrid off, the other means the embed model
+# or the corpus could not support it. Collapsing them would send someone hunting for a broken
+# Ollama install when they had flipped a Developer toggle. The literal and its labels land
+# here in PR1; the setting that produces it is PR2 Stage 6.
+RetrievalMethod = Literal[
+    "keyword",
+    "hybrid",
+    "keyword_embed_unavailable",
+    "keyword_hybrid_disabled",
+]
 _CONN_LOCK = threading.Lock()
 _CONN_BY_PATH: dict[str, sqlite3.Connection] = {}
 
@@ -528,6 +538,43 @@ def _compat_fallback(conn: sqlite3.Connection, question: str) -> Optional[str]:
     return None
 
 
+# Weakest first. The block header states one tier for everything inside it, so it has to be
+# the weakest claim present, not the strongest.
+_TRUST_TIER_RANK = {
+    TRUST_TIER_FALLBACK: 0,
+    TRUST_TIER_WIKI_NO_PATCH: 1,
+    TRUST_TIER_WIKI_VERIFIED: 2,
+}
+
+_BLOCK_HEADER = "--- Local knowledge base (bonsAI; offline corpus; may be truncated) ---"
+_BLOCK_SENTINEL = "--- End local knowledge base ---"
+
+
+def _lowest_trust_tier(cards: list[KnowledgeCard]) -> str:
+    """Weakest tier among ``cards``.
+
+    Was ``cards[0].trust_tier``, so a block holding one wiki_verified card and two
+    fallback_no_source cards was labelled wiki_verified — the label overstated two thirds of
+    its own contents, and the model was told to trust them accordingly.
+    """
+    if not cards:
+        return TRUST_TIER_FALLBACK
+    return min(cards, key=lambda c: _TRUST_TIER_RANK.get(c.trust_tier, 0)).trust_tier
+
+
+def _omitted_note(count: int) -> str:
+    return f"\n[{count} more card(s) omitted to fit budget]"
+
+
+def _card_lines(card: KnowledgeCard, *, domain: str) -> str:
+    if domain == "compat":
+        return f"\n[Tip: {card.name}] (trust: {card.trust_tier})\n{card.card}"
+    return (
+        f"\n[{card.game_title} / {card.section_type}: {card.name}] "
+        f"(trust: {card.trust_tier})\n{card.card}"
+    )
+
+
 def _format_block(
     cards: list[KnowledgeCard],
     *,
@@ -535,42 +582,69 @@ def _format_block(
     domain: str,
     max_bytes: int,
 ) -> tuple[str, str, list[dict[str, str]]]:
-    lines: list[str] = [
-        "--- Local knowledge base (bonsAI; offline corpus; may be truncated) ---",
-        f"Domain: {domain}",
-    ]
-    sources: list[dict[str, str]] = []
-    trust = TRUST_TIER_FALLBACK
-    if cards:
-        trust = cards[0].trust_tier
-        for c in cards:
-            tier = c.trust_tier
-            if domain == "compat":
-                lines.append(f"\n[Tip: {c.name}] (trust: {tier})\n{c.card}")
-            else:
-                lines.append(
-                    f"\n[{c.game_title} / {c.section_type}: {c.name}] (trust: {tier})\n{c.card}"
-                )
-            if c.source_url:
-                sources.append(
-                    {
-                        "title": f"{c.game_title} — {c.name}",
-                        "url": c.source_url,
-                        "license": c.source_license or "",
-                    }
-                )
-    elif fallback_text:
-        lines.append(f"\n[Genre/compat fallback] (trust: {TRUST_TIER_FALLBACK})\n{fallback_text}")
-        trust = TRUST_TIER_FALLBACK
-    else:
-        return "", trust, sources
+    """Render the KB block, dropping whole cards to fit ``max_bytes``.
 
-    lines.append("\n--- End local knowledge base ---")
-    text = "\n".join(lines)
-    if len(text.encode("utf-8")) > max_bytes:
-        text = text.encode("utf-8")[:max_bytes].decode("utf-8", errors="ignore")
-        text += "\n[…truncated to byte budget]"
-    return text, trust, sources
+    The predecessor byte-sliced the finished string. That cut the last card mid-sentence,
+    threw away the end sentinel so the model could not tell where the corpus stopped and the
+    conversation resumed, and still reported the truncated card in ``sources`` — a citation
+    for text that was no longer there.
+    """
+    header = [_BLOCK_HEADER, f"Domain: {domain}"]
+
+    def _encoded_len(parts: list[str]) -> int:
+        return len("\n".join(parts).encode("utf-8"))
+
+    def _fit(reserve_note: bool) -> list[KnowledgeCard]:
+        """Longest prefix of ``cards`` that fits alongside the header, sentinel and note."""
+        tail = ["\n" + _BLOCK_SENTINEL]
+        if reserve_note:
+            tail = [_omitted_note(len(cards))] + tail
+        kept: list[KnowledgeCard] = []
+        body: list[str] = []
+        for card in cards:
+            candidate = body + [_card_lines(card, domain=domain)]
+            if _encoded_len(header + candidate + tail) > max_bytes:
+                break
+            body = candidate
+            kept.append(card)
+        return kept
+
+    if cards:
+        kept = _fit(reserve_note=False)
+        if len(kept) < len(cards):
+            # Something is being dropped, so the note is going in and has to fit too.
+            kept = _fit(reserve_note=True)
+        if not kept:
+            # Not even one card fits the mode's budget; say nothing rather than a fragment.
+            return "", TRUST_TIER_FALLBACK, []
+        lines = header + [_card_lines(c, domain=domain) for c in kept]
+        trust = _lowest_trust_tier(kept)
+        # Sources describe surviving cards only — a citation for text the model never saw is
+        # worse than no citation.
+        sources = [
+            {
+                "title": f"{c.game_title} — {c.name}",
+                "url": c.source_url,
+                "license": c.source_license or "",
+            }
+            for c in kept
+            if c.source_url
+        ]
+        if len(kept) < len(cards):
+            lines.append(_omitted_note(len(cards) - len(kept)))
+    elif fallback_text:
+        lines = header + [
+            f"\n[Genre/compat fallback] (trust: {TRUST_TIER_FALLBACK})\n{fallback_text}"
+        ]
+        trust = TRUST_TIER_FALLBACK
+        sources = []
+        if _encoded_len(lines + ["\n" + _BLOCK_SENTINEL]) > max_bytes:
+            return "", TRUST_TIER_FALLBACK, []
+    else:
+        return "", TRUST_TIER_FALLBACK, []
+
+    lines.append("\n" + _BLOCK_SENTINEL)
+    return "\n".join(lines), trust, sources
 
 
 def lookup_game_genres(settings: dict, app_id: str) -> str:
@@ -940,13 +1014,32 @@ def session_rag_chip_candidates_to_rpc(result: SessionRagChipCandidatesResult) -
     }
 
 
+@dataclass
+class StackedContext:
+    text: str = ""
+    # Which blocks actually reached the model. Proton logs take budget first and can be
+    # capped at 96 KiB against a 100 KiB ceiling, so the knowledge block can be starved down
+    # to a fragment or to nothing at all.
+    proton_attached: bool = False
+    knowledge_attached: bool = False
+
+
 def stack_context_blocks(
     *,
     proton_text: str,
     knowledge_text: str,
     max_total_bytes: int = 100 * 1024,
-) -> str:
-    """Stack Proton logs then knowledge cards under a shared byte budget."""
+) -> StackedContext:
+    """Stack Proton logs then knowledge cards under a shared byte budget.
+
+    Returns what survived, not just the text. Callers were recording ``kb_attached=True`` from
+    the retrieval result and then stacking, so transparency could claim the knowledge base was
+    attached and cite its sources when stacking had dropped the block entirely.
+
+    A block is reported attached only if it went in whole. A truncated block is a fragment
+    whose sources no longer describe its contents, which is the same lie in a smaller form.
+    """
+    result = StackedContext()
     parts: list[str] = []
     budget = max_total_bytes
     for label, block in (
@@ -958,11 +1051,18 @@ def stack_context_blocks(
             continue
         encoded = chunk.encode("utf-8")
         if len(encoded) > budget:
+            if budget <= 0:
+                break
             chunk = encoded[:budget].decode("utf-8", errors="ignore") + "\n[…truncated]"
-            encoded = chunk.encode("utf-8")
+            parts.append(chunk)
+            break
         parts.append(chunk)
         budget -= len(encoded)
+        if label == "proton":
+            result.proton_attached = True
+        else:
+            result.knowledge_attached = True
         if budget <= 0:
             break
-        _ = label
-    return "\n\n".join(parts)
+    result.text = "\n\n".join(parts)
+    return result

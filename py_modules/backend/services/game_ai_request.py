@@ -273,6 +273,7 @@ async def run_game_ai_request(
             kb_domain="",
         )
         kb_text = ""
+        kb_result = None
         should_kb, kb_domain = should_retrieve_knowledge(
             use_local_knowledge_base=settings.get("use_local_knowledge_base") is True,
             ask_mode=ask_mode,
@@ -306,23 +307,32 @@ async def run_game_ai_request(
 
             _loop_kb = asyncio.get_running_loop()
             kb_result = await _loop_kb.run_in_executor(None, _retrieve_kb)
+            if kb_result.attached:
+                kb_text = kb_result.text_block
+
+        stacked = stack_context_blocks(
+            proton_text=proton_attachment_text,
+            knowledge_text=kb_text,
+        )
+        early_context_combined = stacked.text
+
+        # Built *after* stacking, deliberately. Proton logs take budget first and can be
+        # capped at 96 KiB against a 100 KiB ceiling, so recording attached=True straight off
+        # the retrieval result let transparency claim the knowledge base was attached — and
+        # cite its sources — on turns where the block never reached the model at all.
+        if kb_result is not None:
+            kb_survived = kb_result.attached and stacked.knowledge_attached
+            starved = kb_result.attached and not stacked.knowledge_attached
             kb_transparency = build_knowledge_base_transparency(
-                attached=kb_result.attached,
-                trust_tier=kb_result.trust_tier,
-                sources=kb_result.sources,
-                notes=kb_result.notes,
+                attached=kb_survived,
+                trust_tier=kb_result.trust_tier if kb_survived else "",
+                sources=kb_result.sources if kb_survived else [],
+                notes="dropped_by_context_budget" if starved else kb_result.notes,
                 timing_ms=kb_result.timing_ms,
                 unavailable_reason=kb_result.unavailable_reason,
                 retrieval_method=kb_result.retrieval_method,
                 kb_domain=kb_domain,
             )
-            if kb_result.attached:
-                kb_text = kb_result.text_block
-
-        early_context_combined = stack_context_blocks(
-            proton_text=proton_attachment_text,
-            knowledge_text=kb_text,
-        )
 
         read_tdp = is_current_tdp_read_intent(question_for_model)
         wants_grounding = user_wants_power_or_performance_topic(question_for_model)

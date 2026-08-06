@@ -20,6 +20,7 @@ from backend.services.knowledge_base_service import (
     suggest_chip_candidates,
     _COMPAT_CHIP_TEMPLATES,
     _expand_query,
+    _format_block,
     _fts_match_query,
     _fuse_cards_by_rrf,
 )
@@ -132,7 +133,9 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
       knowledge_text="--- Local knowledge base ---\ncard1",
       max_total_bytes=10_000,
     )
-    self.assertLess(stacked.index("Proton"), stacked.index("Local knowledge"))
+    self.assertLess(stacked.text.index("Proton"), stacked.text.index("Local knowledge"))
+    self.assertTrue(stacked.proton_attached)
+    self.assertTrue(stacked.knowledge_attached)
 
   def test_stack_context_skips_empty_blocks(self):
     stacked = stack_context_blocks(
@@ -140,7 +143,9 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
       knowledge_text="--- Local knowledge base ---\ncard1",
       max_total_bytes=10_000,
     )
-    self.assertTrue(stacked.startswith("--- Local knowledge base ---"))
+    self.assertTrue(stacked.text.startswith("--- Local knowledge base ---"))
+    self.assertFalse(stacked.proton_attached)
+    self.assertTrue(stacked.knowledge_attached)
 
   def test_stack_context_byte_budget(self):
     stacked = stack_context_blocks(
@@ -148,7 +153,32 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
       knowledge_text="K" * 5000,
       max_total_bytes=6000,
     )
-    self.assertLessEqual(len(stacked.encode("utf-8")), 6200)
+    self.assertLessEqual(len(stacked.text.encode("utf-8")), 6200)
+
+  def test_stack_context_reports_a_starved_knowledge_block(self):
+    """Proton logs take budget first, so the KB block can be truncated or dropped outright.
+
+    Transparency is built from these flags, so a starved block must not be reportable as
+    attached — that was the bug: kb_attached=True with sources cited for text the model
+    never received.
+    """
+    stacked = stack_context_blocks(
+      proton_text="P" * 5900,
+      knowledge_text="--- Local knowledge base ---\n" + "K" * 5000,
+      max_total_bytes=6000,
+    )
+    self.assertTrue(stacked.proton_attached)
+    self.assertFalse(stacked.knowledge_attached)
+
+  def test_stack_context_drops_knowledge_entirely_when_no_budget_remains(self):
+    stacked = stack_context_blocks(
+      proton_text="P" * 6000,
+      knowledge_text="--- Local knowledge base ---\ncard1",
+      max_total_bytes=6000,
+    )
+    self.assertTrue(stacked.proton_attached)
+    self.assertFalse(stacked.knowledge_attached)
+    self.assertNotIn("Local knowledge", stacked.text)
 
   def test_suggest_chip_candidates_kb_off(self):
     settings = {
@@ -367,6 +397,194 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
       _expand_query("How do I beat King Dodongo", "Ocarina of Time", game_resolved=False),
       "Ocarina of Time How do I beat King Dodongo",
     )
+
+  def _tiered_card(self, section_id: int, name: str, tier: str, body: str = "body") -> KnowledgeCard:
+    return KnowledgeCard(
+      section_id, 2, "Game", "boss", name, body, "https://example.test/x", "CC BY-SA", None, None, tier
+    )
+
+  def test_block_trust_tier_is_the_lowest_present(self):
+    """A block states one tier for everything in it, so it must be the weakest claim.
+
+    Was cards[0].trust_tier, so one wiki_verified card at the front labelled two
+    fallback_no_source cards behind it as verified.
+    """
+    cards = [
+      self._tiered_card(1, "A", "wiki_verified"),
+      self._tiered_card(2, "B", "fallback_no_source"),
+      self._tiered_card(3, "C", "wiki_no_patch"),
+    ]
+    _text, trust, _sources = _format_block(
+      cards, fallback_text=None, domain="strategy", max_bytes=10_000
+    )
+    self.assertEqual(trust, "fallback_no_source")
+
+  def test_block_drops_whole_cards_and_keeps_the_end_sentinel(self):
+    """Byte-slicing cut the last card mid-sentence and took the sentinel with it."""
+    cards = [self._tiered_card(i, f"Card{i}", "wiki_verified", body="X" * 400) for i in range(1, 6)]
+    text, _trust, sources = _format_block(
+      cards, fallback_text=None, domain="strategy", max_bytes=1_200
+    )
+    self.assertTrue(text.endswith("--- End local knowledge base ---"))
+    self.assertLessEqual(len(text.encode("utf-8")), 1_200)
+    # Whole cards only: every card named in the block is present in full.
+    for i in range(1, 6):
+      if f"Card{i}" in text:
+        self.assertIn("X" * 400, text)
+    # Sources describe surviving cards only.
+    self.assertLess(len(sources), len(cards))
+    self.assertEqual(len(sources), text.count("[Game / boss:"))
+    self.assertIn("omitted to fit budget", text)
+
+  def test_block_returns_nothing_when_not_even_one_card_fits(self):
+    cards = [self._tiered_card(1, "Huge", "wiki_verified", body="X" * 5_000)]
+    text, _trust, sources = _format_block(
+      cards, fallback_text=None, domain="strategy", max_bytes=200
+    )
+    self.assertEqual(text, "")
+    self.assertEqual(sources, [])
+
+  def test_v2_corpus_refuses_hybrid_and_says_why(self):
+    """A pre-v3 corpus baked bare documents; querying it with a prefixed vector is garbage.
+
+    Nothing in the file distinguishes the two — same model, same dimension — so the manifest's
+    embedding_variant is the only signal, and its absence has to fail closed.
+    """
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    v2_manifest = {"version": "1", "embedding_model": "nomic-embed-text"}  # no embedding_variant
+    with mock.patch(
+      "backend.services.knowledge_base_service.nomic_embed_available",
+      return_value=True,
+    ), mock.patch(
+      "backend.services.knowledge_base_service._load_corpus_manifest",
+      return_value=v2_manifest,
+    ), mock.patch(
+      "backend.services.knowledge_base_service.corpus_has_usable_section_vectors",
+      return_value=True,
+    ), mock.patch(
+      "backend.services.knowledge_base_service.embed_texts",
+      side_effect=AssertionError("must not embed against an incompatible corpus"),
+    ):
+      result = retrieve_knowledge_context(
+        settings,
+        ask_mode="strategy",
+        question="Glyphid Dreadnought weak point",
+        app_id="2321470",
+        app_name="Deep Rock Galactic: Survivor",
+        domain="strategy",
+        pc_ip="127.0.0.1:11434",
+      )
+    self.assertTrue(result.attached)
+    self.assertEqual(result.retrieval_method, "keyword_embed_unavailable")
+
+  def test_mismatched_embedding_model_refuses_hybrid(self):
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    other_model = {
+      "version": "1",
+      "embedding_variant": "nomic-prefixed-v1",
+      "embedding_model": "bge-m3",
+    }
+    with mock.patch(
+      "backend.services.knowledge_base_service.nomic_embed_available",
+      return_value=True,
+    ), mock.patch(
+      "backend.services.knowledge_base_service._load_corpus_manifest",
+      return_value=other_model,
+    ), mock.patch(
+      "backend.services.knowledge_base_service.corpus_has_usable_section_vectors",
+      return_value=True,
+    ):
+      result = retrieve_knowledge_context(
+        settings,
+        ask_mode="strategy",
+        question="Glyphid Dreadnought weak point",
+        app_id="2321470",
+        app_name="Deep Rock Galactic: Survivor",
+        domain="strategy",
+        pc_ip="127.0.0.1:11434",
+      )
+    self.assertEqual(result.retrieval_method, "keyword_embed_unavailable")
+
+  def test_query_embedding_carries_the_search_query_prefix(self):
+    """Runtime must prefix queries the same way the builder prefixed documents."""
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    with mock.patch(
+      "backend.services.knowledge_base_service.nomic_embed_available",
+      return_value=True,
+    ), mock.patch(
+      "backend.services.knowledge_base_service.corpus_has_usable_section_vectors",
+      return_value=True,
+    ), mock.patch(
+      "backend.services.knowledge_base_service.embed_texts",
+      return_value=[[1.0, 0.0] + [0.0] * 766],
+    ) as embed:
+      retrieve_knowledge_context(
+        settings,
+        ask_mode="strategy",
+        question="Glyphid Dreadnought weak point",
+        app_id="2321470",
+        app_name="Deep Rock Galactic: Survivor",
+        domain="strategy",
+        pc_ip="127.0.0.1:11434",
+      )
+    sent = embed.call_args[0][1]
+    self.assertEqual(len(sent), 1)
+    self.assertTrue(sent[0].startswith("search_query: "))
+
+  def test_relevance_floor_leaves_a_junk_compat_ask_unattached(self):
+    """Off-topic Asks used to attach a card anyway, and the prompt cites what it attaches.
+
+    Compat has no genre fallback, so the floor is visible end to end here: every candidate is
+    below it, _compat_fallback finds nothing either, and the block is not built.
+    """
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    with mock.patch(
+      "backend.services.knowledge_base_service.nomic_embed_available",
+      return_value=False,
+    ):
+      result = retrieve_knowledge_context(
+        settings,
+        ask_mode="speed",
+        question="how do i cook pasta for dinner tonight",
+        app_id="",
+        app_name="",
+        domain="compat",
+        pc_ip="127.0.0.1:11434",
+      )
+    self.assertFalse(result.attached)
+    self.assertEqual(result.text_block, "")
+
+  def test_followup_header_swamps_the_query_it_is_prepended_to(self):
+    """Why game_ai_request retrieves on question_for_retrieval, not question_for_model.
+
+    The header is byte-for-byte identical on every follow-up, and it is long. Prepended to the
+    question and passed through the token cap, it displaces the user's own words — so every
+    follow-up Ask in the product searched the same boilerplate. This pins the mechanism; that
+    the two call sites now pass lane.text is covered on device (testing.md KB rows).
+    """
+    from backend.services.ollama_prompts import build_reply_followup_context_block
+
+    question = "what about the second phase"
+    header = build_reply_followup_context_block("shorter", "How do I beat King Dodongo?", "Roll.")
+
+    polluted = _fts_match_query(f"{header}\n{question}")
+    clean = _fts_match_query(question)
+
+    self.assertIn("REPLY", polluted)
+    self.assertNotIn("phase", polluted)  # the actual question never reaches the index
+    self.assertEqual(clean, '"about" OR "second" OR "phase"')
 
   def test_rrf_without_any_vectors_preserves_keyword_order(self):
     cards = [self._card(i, n) for i, n in enumerate("ABCDE", start=1)]
