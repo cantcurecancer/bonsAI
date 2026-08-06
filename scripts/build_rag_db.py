@@ -67,6 +67,11 @@ def _list_installed_ollama_tags(base_http: str, timeout_seconds: float = 5.0) ->
 
 DEFAULT_BUILD_OLLAMA_BASE = "http://127.0.0.1:11434"
 
+# One request per 16 rows rather than one request for the entire corpus. A single request
+# scales badly with corpus depth (Phase 5 takes the seed from 22 sections to ~100+), gives no
+# progress, and cannot resume.
+EMBED_BATCH_SIZE = 16
+
 
 class _BuildEmbedError(Exception):
     pass
@@ -334,35 +339,59 @@ def _populate_vectors_for_table(
     if not rows:
         return 0
 
-    conn.execute(f"DELETE FROM {table}")
-    # Document task prefix — must stay paired with format_embed_query() at retrieval time.
-    # The pairing is what EMBEDDING_VARIANT in the manifest records.
-    texts = [format_embed_document(f"{row[1]}\n{row[2]}", model=model) for row in rows]
-    try:
-        vectors = _embed_texts_build(
-            ollama_base,
-            texts,
-            model=model,
-            timeout_s=timeout_s,
-        )
-    except (_BuildEmbedError, OSError, urllib.error.URLError) as exc:
-        print(f"Skipping {table} embeddings: {exc}", file=sys.stderr)
-        return 0
-
+    total = len(rows)
     populated = 0
-    for row, vector in zip(rows, vectors):
-        if len(vector) != DEFAULT_EMBEDDING_DIM:
+    cleared = False
+    print(f"Embedding {total} rows for {table} (batch {EMBED_BATCH_SIZE})...", file=sys.stderr)
+
+    for start in range(0, total, EMBED_BATCH_SIZE):
+        batch = rows[start : start + EMBED_BATCH_SIZE]
+        # Document task prefix — must stay paired with format_embed_query() at retrieval
+        # time. The pairing is what EMBEDDING_VARIANT in the manifest records.
+        texts = [format_embed_document(f"{row[1]}\n{row[2]}", model=model) for row in batch]
+        try:
+            vectors = _embed_texts_build(
+                ollama_base,
+                texts,
+                model=model,
+                timeout_s=timeout_s,
+            )
+        except (_BuildEmbedError, OSError, urllib.error.URLError) as exc:
+            if not cleared:
+                # Nothing has been deleted yet, so the corpus keeps whatever vectors it had.
+                print(f"Skipping {table} embeddings: {exc}", file=sys.stderr)
+                return 0
             print(
-                f"Skipping {table} {row[0]}: expected dim {DEFAULT_EMBEDDING_DIM}, got {len(vector)}",
+                f"WARNING: {table} embeddings stopped after {populated}/{total} rows: {exc}\n"
+                f"         The table is now partially populated. Re-run the build.",
                 file=sys.stderr,
             )
-            continue
-        conn.execute(
-            f"INSERT INTO {table}({id_column}, embedding) VALUES (?, ?)",
-            (int(row[0]), pack_embedding_vector(vector)),
-        )
-        populated += 1
-    conn.commit()
+            conn.commit()
+            return populated
+
+        # Clear only once the host has actually answered. The previous code deleted the whole
+        # table before the single embed request, so any failure wiped existing vectors and
+        # left nothing to fall back on.
+        if not cleared:
+            conn.execute(f"DELETE FROM {table}")
+            cleared = True
+
+        for row, vector in zip(batch, vectors):
+            if len(vector) != DEFAULT_EMBEDDING_DIM:
+                print(
+                    f"Skipping {table} {row[0]}: expected dim {DEFAULT_EMBEDDING_DIM}, "
+                    f"got {len(vector)}",
+                    file=sys.stderr,
+                )
+                continue
+            conn.execute(
+                f"INSERT INTO {table}({id_column}, embedding) VALUES (?, ?)",
+                (int(row[0]), pack_embedding_vector(vector)),
+            )
+            populated += 1
+        conn.commit()
+        print(f"  {table}: {min(start + EMBED_BATCH_SIZE, total)}/{total}", file=sys.stderr)
+
     return populated
 
 
@@ -423,6 +452,13 @@ def build_corpus(out_dir: Path, *, seed: bool) -> dict:
         compat_populated, embedding_compat_count = populate_compat_vectors(conn)
         embeddings_populated = section_populated or compat_populated
         conn.commit()
+        # Ship a single self-contained file. The schema opens WAL, so without this the tail of
+        # the corpus can sit in a -wal that is not part of the release, and the Deck now opens
+        # the DB with immutable=1, which ignores a WAL outright. DELETE mode folds it back in;
+        # VACUUM then reclaims the space the build churned.
+        conn.execute("PRAGMA journal_mode=DELETE")
+        conn.isolation_level = None  # VACUUM cannot run inside sqlite3's implicit transaction
+        conn.execute("VACUUM")
     finally:
         conn.close()
 

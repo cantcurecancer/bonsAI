@@ -377,14 +377,29 @@ def corpus_manifest_path(install_root: str) -> Optional[str]:
     return manifest if os.path.isfile(manifest) else None
 
 
-def _vector_table_count(conn: Any, table: str) -> int:
+def _vector_table_has_rows(conn: Any, table: str) -> bool:
+    """True when ``table`` holds at least one embedding.
+
+    ``SELECT 1 ... LIMIT 1``, not ``COUNT(*)``. The question is only ever "any?", and the
+    count form scanned every row of a multi-KB BLOB table on every single Ask.
+    """
     try:
         row = conn.execute(
-            f"SELECT COUNT(*) AS c FROM {table} WHERE embedding IS NOT NULL"
+            f"SELECT 1 FROM {table} WHERE embedding IS NOT NULL LIMIT 1"
         ).fetchone()
     except Exception:
-        return 0
-    return int(row["c"] if hasattr(row, "keys") else row[0])
+        return False
+    return row is not None
+
+
+def _manifest_vector_count(manifest: Optional[dict[str, Any]], key: str) -> Optional[int]:
+    """Read a vector count the builder already recorded, when it is present and sane."""
+    if not isinstance(manifest, dict):
+        return None
+    value = manifest.get(key)
+    if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+        return None
+    return value
 
 
 def corpus_has_usable_section_vectors(
@@ -393,7 +408,10 @@ def corpus_has_usable_section_vectors(
     """True when strategy section vectors exist for hybrid retrieval."""
     if isinstance(manifest, dict) and manifest.get("embeddings_populated") is False:
         return False
-    return _vector_table_count(conn, "section_vectors") > 0
+    count = _manifest_vector_count(manifest, "embedding_section_count")
+    if count is not None:
+        return count > 0
+    return _vector_table_has_rows(conn, "section_vectors")
 
 
 def corpus_has_usable_compat_vectors(
@@ -402,10 +420,10 @@ def corpus_has_usable_compat_vectors(
     """True when compat tip vectors exist for troubleshooting hybrid retrieval."""
     if isinstance(manifest, dict) and manifest.get("embeddings_populated") is False:
         return False
-    compat_count = _vector_table_count(conn, "compat_pattern_vectors")
-    if compat_count > 0:
-        return True
-    return False
+    count = _manifest_vector_count(manifest, "embedding_compat_count")
+    if count is not None:
+        return count > 0
+    return _vector_table_has_rows(conn, "compat_pattern_vectors")
 
 
 def _base_model_tag(model: str) -> str:
@@ -440,7 +458,6 @@ def corpus_has_usable_vectors(conn: Any, manifest: Optional[dict[str, Any]] = No
     """True when the corpus ships any populated vectors (section or compat) for hybrid UI hints."""
     if isinstance(manifest, dict) and manifest.get("embeddings_populated") is False:
         return False
-    return (
-        _vector_table_count(conn, "section_vectors") > 0
-        or _vector_table_count(conn, "compat_pattern_vectors") > 0
-    )
+    return corpus_has_usable_section_vectors(
+        conn, manifest
+    ) or corpus_has_usable_compat_vectors(conn, manifest)

@@ -10,6 +10,8 @@ Does not: Store vectors or query SQLite — only produces embedding arrays for c
 from __future__ import annotations
 
 import json
+import threading
+import time
 import urllib.error
 import urllib.request
 from typing import Any
@@ -80,6 +82,22 @@ def _model_tag_matches(tags: list[str], model: str) -> bool:
     return False
 
 
+# Availability is asked once per Ask and answered by an uncached /api/tags round trip with a
+# 3s timeout — on a LAN host that is a visible stall before the model has been called at all.
+# The answer only changes when someone installs or removes a model, so a short TTL costs
+# nothing and a stale True is already handled: the embed call fails and retrieval degrades to
+# keyword_embed_unavailable. Kept short so a fresh `ollama pull` is picked up quickly.
+_AVAILABILITY_TTL_SECONDS = 30.0
+_AVAILABILITY_LOCK = threading.Lock()
+_AVAILABILITY_CACHE: dict[tuple[str, str], tuple[float, bool]] = {}
+
+
+def reset_embed_availability_cache() -> None:
+    """Drop cached availability. For tests and for paths that just changed installed models."""
+    with _AVAILABILITY_LOCK:
+        _AVAILABILITY_CACHE.clear()
+
+
 def nomic_embed_available(
     pc_ip: str,
     *,
@@ -88,8 +106,19 @@ def nomic_embed_available(
 ) -> bool:
     """Return True when ``model`` is installed on the Ask Ollama host (no pull)."""
     base = ollama_http_base_from_pc_ip_field(pc_ip)
+    key = (base, str(model or ""))
+    now = time.monotonic()
+    with _AVAILABILITY_LOCK:
+        cached = _AVAILABILITY_CACHE.get(key)
+        if cached is not None and now - cached[0] < _AVAILABILITY_TTL_SECONDS:
+            return cached[1]
+
     tags = list_installed_ollama_tags(base, timeout_seconds=timeout_seconds)
-    return _model_tag_matches(tags, model)
+    available = _model_tag_matches(tags, model)
+
+    with _AVAILABILITY_LOCK:
+        _AVAILABILITY_CACHE[key] = (time.monotonic(), available)
+    return available
 
 
 def embed_texts(

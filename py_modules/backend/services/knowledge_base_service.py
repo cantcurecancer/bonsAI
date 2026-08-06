@@ -138,7 +138,14 @@ def _get_connection(db_path: str) -> sqlite3.Connection:
     with _CONN_LOCK:
         conn = _CONN_BY_PATH.get(db_path)
         if conn is None:
-            conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True, check_same_thread=False)
+            # immutable=1, not just mode=ro: the shipped corpus is written once on the
+            # maintainer PC and never mutated on device. It tells SQLite to skip WAL/locking
+            # machinery entirely, which is what makes reads safe on an exFAT SD card where
+            # lock files are unreliable. The builder now checkpoints and VACUUMs before
+            # shipping, so there is no -wal alongside the file to ignore.
+            conn = sqlite3.connect(
+                f"file:{db_path}?mode=ro&immutable=1", uri=True, check_same_thread=False
+            )
             conn.row_factory = sqlite3.Row
             _CONN_BY_PATH[db_path] = conn
         return conn
