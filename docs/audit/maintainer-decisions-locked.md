@@ -15,7 +15,19 @@ choices are, and what happens either way. **Locked calls (2026-08-02 for D1–D6
 [Maintainer decisions locked](#maintainer-decisions-locked--2026-08-02); implement
 from that section when it disagrees with an option above.
 
-**None currently open.** D1–D13 are all locked; see the table below for each call.
+**One open, 2026-08-06: D16 — the compat knowledge base is unreachable for most of its
+content.** Full write-up and the two options in
+[rag-pr2-signoff.md](rag-pr2-signoff.md) § 2. In short: routing an Ask to the troubleshooting
+knowledge base requires the literal word `deck` or `proton` in the question, so **3 of 40**
+drafted compat queries reach it and **0 of 19** phrased the way a player types. About 24 of
+the corpus's 27 compat topics — storage, Steam Input, anti-cheat, streaming, VR, Wine,
+emulation — cannot be retrieved by anything a user would plausibly write. This was decision
+**Q8**, deferred as a nicety; it is now measured and it blocks PR2 stage 6d, because the
+compat half of the bake-off would otherwise score cards production never fetches. Choose:
+keep Q8 deferred and tune fusion on strategy evidence alone, or widen the gate now as a
+scoped product change with its own on-Deck QA.
+
+D1–D13 are all locked; see the table below for each call.
 
 Evidence for all of these lives in [docs/audit/](.), especially
 [05-plan.md](05-plan.md).

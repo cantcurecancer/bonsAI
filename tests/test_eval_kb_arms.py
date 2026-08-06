@@ -9,6 +9,8 @@ Does not: Run any embedding or touch Ollama — every test here is pure scoring 
 """
 
 import importlib.util
+import json
+import re
 import sys
 import unittest
 from pathlib import Path
@@ -116,6 +118,35 @@ class EvalArmsTests(unittest.TestCase):
         self.assertTrue(cases)
         # Every current case is tune by design (R1); a holdout has to be written blind.
         self.assertEqual({c.split for c in cases}, {"tune"})
+
+    def test_v1_intents_do_not_echo_the_cards_they_will_match(self):
+        """R1's sign-off checklist item, as a test rather than a manual read.
+
+        Each v1 intent carries the phrases its eventual card title will use. If a query
+        contains one verbatim, the eval would be measuring "can we find the card we wrote the
+        query from" -- the exact inflation R1 exists to prevent. Adding a card whose title
+        leaks into its own query must fail here, not pass review.
+        """
+        path = REPO_ROOT / "tests" / "fixtures" / "kb_eval_v1.json"
+        data = json.loads(path.read_text(encoding="utf-8"))
+        leaks = []
+        for row in data["queries"]:
+            normalized = re.sub(r"[^a-z0-9 ]+", " ", row["query"].lower())
+            haystack = f" {' '.join(normalized.split())} "
+            for banned in row.get("ban_verbatim", []):
+                if f" {banned.lower()} " in haystack:
+                    leaks.append((row["id"], banned))
+        self.assertEqual(leaks, [], f"queries echo their target card title: {leaks}")
+
+    def test_v1_intents_are_not_yet_a_scoring_fixture(self):
+        """Labels stay empty until cards exist and the maintainer signs off."""
+        path = REPO_ROOT / "tests" / "fixtures" / "kb_eval_v1.json"
+        data = json.loads(path.read_text(encoding="utf-8"))
+        self.assertEqual(data["status"], "awaiting_maintainer_signoff")
+        labelled = [
+            r["id"] for r in data["queries"] if r.get("expect_section") or r.get("expect_topic")
+        ]
+        self.assertEqual(labelled, [], "labels were filled before sign-off")
 
     def test_slice_keeps_arms_aligned(self):
         mod = self.mod

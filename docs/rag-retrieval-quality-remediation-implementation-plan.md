@@ -149,6 +149,9 @@ Do **not** compare new hybrid/RRF numbers to the 2026-07-31 keyword 92.5%. Re-ru
 
 ## Maintainer sign-off checklist (PR2)
 
+**Live sign-off packet: [audit/rag-pr2-signoff.md](audit/rag-pr2-signoff.md)** — 147 drafted
+intents, the measured Q8 numbers, and the open question that blocks stage 6d.
+
 Before rebuild / bake-off:
 
 - [ ] Eval query intents drafted **before** (or independently of) card text — not card→query echo
