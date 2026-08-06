@@ -67,6 +67,10 @@ from backend.services.knowledge_base_service import (  # noqa: E402
     _search_compat_patterns,
     _search_sections,
 )
+from backend.services.ollama_embed_service import (  # noqa: E402
+    format_embed_document,
+    format_embed_query,
+)
 
 PromptMode = Literal["bare", "prompted"]
 EVAL_MIN_TOP_K = 3  # fixtures often use speed (top_k=1); bake-off needs top-3 signal
@@ -186,35 +190,20 @@ def _load_corpus_docs(conn: sqlite3.Connection) -> list[CorpusDoc]:
     return docs
 
 
+# "prompted" delegates to the production helpers on purpose. These used to be private copies
+# here, and the copies are how the eval drifted from what shipped — it measured prefixed
+# retrieval while production embedded bare text. "bare" stays local because it exists only to
+# measure the no-prefix arm; production has no such mode.
 def _format_query(model: str, query: str, mode: PromptMode) -> str:
     if mode == "bare":
         return query
-    m = model.lower()
-    if "nomic" in m:
-        return f"search_query: {query}"
-    if "mxbai" in m:
-        return f"Represent this sentence for searching relevant passages: {query}"
-    if "qwen3-embedding" in m:
-        return (
-            "Instruct: Given a web search query, retrieve relevant passages that answer the query\n"
-            f"Query:{query}"
-        )
-    if "arctic" in m or "snowflake" in m:
-        return f"query: {query}"
-    if "bge" in m:
-        return f"Represent this sentence for searching relevant passages: {query}"
-    return query
+    return format_embed_query(query, model=model)
 
 
 def _format_document(model: str, bare_text: str, mode: PromptMode) -> str:
     if mode == "bare":
         return bare_text
-    m = model.lower()
-    if "nomic" in m:
-        return f"search_document: {bare_text}"
-    if "arctic" in m or "snowflake" in m:
-        return f"passage: {bare_text}"
-    return bare_text
+    return format_embed_document(bare_text, model=model)
 
 
 def _embed_batch(

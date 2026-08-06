@@ -51,13 +51,13 @@
       "role": ""
     },
     {
-      "path": "py_modules/backend/services/screenshot_media.py",
-      "lines": 804,
+      "path": "py_modules/backend/services/knowledge_base_service.py",
+      "lines": 840,
       "role": ""
     },
     {
-      "path": "py_modules/backend/services/knowledge_base_service.py",
-      "lines": 802,
+      "path": "py_modules/backend/services/screenshot_media.py",
+      "lines": 804,
       "role": ""
     },
     {
@@ -141,6 +141,11 @@
       "role": ""
     },
     {
+      "path": "py_modules/backend/services/knowledge_base_schema.py",
+      "lines": 447,
+      "role": ""
+    },
+    {
       "path": "src/components/DeveloperTab.tsx",
       "lines": 444,
       "role": ""
@@ -173,11 +178,6 @@
     {
       "path": "src/components/deck/DeckFocusSlider.tsx",
       "lines": 416,
-      "role": ""
-    },
-    {
-      "path": "py_modules/backend/services/knowledge_base_schema.py",
-      "lines": 412,
       "role": ""
     },
     {

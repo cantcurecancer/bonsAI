@@ -22,6 +22,7 @@ from backend.services.knowledge_base_schema import (
     TRUST_TIER_FALLBACK,
     TRUST_TIER_WIKI_NO_PATCH,
     TRUST_TIER_WIKI_VERIFIED,
+    corpus_embedding_compatible,
     corpus_has_usable_compat_vectors,
     corpus_has_usable_section_vectors,
     load_manifest_from_path,
@@ -29,7 +30,12 @@ from backend.services.knowledge_base_schema import (
     resolve_corpus_db_path,
     unpack_embedding_vector,
 )
-from backend.services.ollama_embed_service import OllamaEmbedError, embed_texts, nomic_embed_available
+from backend.services.ollama_embed_service import (
+    OllamaEmbedError,
+    embed_texts,
+    format_embed_query,
+    nomic_embed_available,
+)
 from backend.services.ollama_prompts import question_matches_troubleshooting_log_context
 
 HYBRID_FTS_SHORTLIST_K = 30
@@ -201,8 +207,22 @@ def _load_corpus_manifest(settings: dict) -> Optional[dict[str, Any]]:
         return None
 
 
+class EmbeddingDimensionMismatch(ValueError):
+    """Raised when a stored vector's length does not match the query vector's."""
+
+
 def _dot_similarity(a: list[float], b: list[float]) -> float:
-    """Cosine similarity for L2-normalized Ollama embeddings (dot product)."""
+    """Cosine similarity for L2-normalized Ollama embeddings (dot product).
+
+    Length is checked rather than zipped. ``zip`` truncates to the shorter sequence, so a
+    corpus baked at a different dimension used to yield a plausible-looking score computed
+    over a prefix of two unrelated spaces — wrong answers with no error anywhere. Callers
+    treat the raise as "disable hybrid for this request".
+    """
+    if len(a) != len(b):
+        raise EmbeddingDimensionMismatch(
+            f"embedding dimension mismatch: query {len(a)} vs corpus {len(b)}"
+        )
     return sum(x * y for x, y in zip(a, b))
 
 
@@ -484,9 +504,18 @@ def retrieve_knowledge_context(
         expanded = _expand_query(question, app_name)
         manifest = _load_corpus_manifest(settings)
 
+        # Compatibility gate. A pre-v3 corpus baked bare documents; querying it with a
+        # prefixed vector compares two different spaces and silently degrades ranking, so
+        # refuse hybrid outright and say why in the retrieval method.
+        variant_ok = corpus_embedding_compatible(manifest, model=DEFAULT_EMBEDDING_MODEL)
+
         if domain == "compat":
             has_vectors = corpus_has_usable_compat_vectors(conn, manifest)
-            nomic_ready = has_vectors and nomic_embed_available(pc_ip, model=DEFAULT_EMBEDDING_MODEL)
+            nomic_ready = (
+                has_vectors
+                and variant_ok
+                and nomic_embed_available(pc_ip, model=DEFAULT_EMBEDDING_MODEL)
+            )
             t_fts = time.perf_counter()
             fts_k = HYBRID_FTS_SHORTLIST_K if nomic_ready else top_k
             cards = _search_compat_patterns(conn, query=expanded, top_k=fts_k)
@@ -495,18 +524,27 @@ def retrieve_knowledge_context(
         else:
             hybrid_eligible = domain == "strategy" and game_id is not None
             has_vectors = hybrid_eligible and corpus_has_usable_section_vectors(conn, manifest)
-            nomic_ready = has_vectors and nomic_embed_available(pc_ip, model=DEFAULT_EMBEDDING_MODEL)
+            nomic_ready = (
+                has_vectors
+                and variant_ok
+                and nomic_embed_available(pc_ip, model=DEFAULT_EMBEDDING_MODEL)
+            )
             t_fts = time.perf_counter()
             fts_k = HYBRID_FTS_SHORTLIST_K if nomic_ready else top_k
             cards = _search_sections(conn, game_id=game_id, query=expanded, top_k=fts_k)
             fts_ms = round((time.perf_counter() - t_fts) * 1000, 2)
+
+        # Vectors exist but cannot be used: the user installed a corpus, so "keyword" alone
+        # would misreport this as a corpus that never shipped embeddings.
+        if has_vectors and not variant_ok:
+            retrieval_method = "keyword_embed_unavailable"
 
         if nomic_ready and cards:
             t_embed = time.perf_counter()
             try:
                 query_vectors = embed_texts(
                     pc_ip,
-                    [expanded],
+                    [format_embed_query(expanded, model=DEFAULT_EMBEDDING_MODEL)],
                     model=DEFAULT_EMBEDDING_MODEL,
                     timeout_s=3.0,
                 )
@@ -525,7 +563,7 @@ def retrieve_knowledge_context(
                 )
                 rerank_ms = round((time.perf_counter() - t_rerank) * 1000, 2)
                 retrieval_method = "hybrid"
-            except (OllamaEmbedError, IndexError, ValueError):
+            except (OllamaEmbedError, EmbeddingDimensionMismatch, IndexError, ValueError):
                 embed_ms = round((time.perf_counter() - t_embed) * 1000, 2)
                 cards = cards[:top_k]
                 retrieval_method = "keyword_embed_unavailable"

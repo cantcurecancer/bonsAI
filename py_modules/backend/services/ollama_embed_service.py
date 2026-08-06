@@ -2,7 +2,8 @@
 
 Purpose: Call Ollama /api/embed for knowledge-base hybrid retrieval vectors.
 Used for: knowledge_base_service when nomic-embed-text or configured embed model is needed.
-Solves: Model availability checks, HTTP embed requests, and structured OllamaEmbedError raises.
+Solves: Model availability checks, HTTP embed requests, task-prefix formatting, and structured
+    OllamaEmbedError raises.
 Does not: Store vectors or query SQLite — only produces embedding arrays for callers.
 """
 
@@ -21,6 +22,51 @@ from backend.services.local_ollama_setup_service import list_installed_ollama_ta
 
 class OllamaEmbedError(Exception):
     """Raised when Ollama embedding fails or returns an invalid payload."""
+
+
+# --- Task prefixes -------------------------------------------------------------------------
+#
+# nomic-embed-text is trained asymmetric: queries and documents go into different regions of
+# the space unless each carries its task prefix. Omitting them is not a small quality loss —
+# it is measuring a configuration the model was not trained for.
+#
+# This module is the ONLY owner of prefix logic. scripts/eval_kb_embed_models.py imports these
+# rather than keeping its own copies: the eval applying prefixes while production did not is
+# exactly how the 2026-07-31 bake-off ended up measuring something that was never shipped.
+# Branching is by model family so the eval can sweep non-nomic models through one code path.
+
+
+def format_embed_query(query: str, *, model: str = DEFAULT_EMBEDDING_MODEL) -> str:
+    """Prefix a search query for ``model``'s query task. Empty input stays empty."""
+    text = str(query or "")
+    if not text.strip():
+        return text
+    m = str(model or "").strip().lower()
+    if "nomic" in m:
+        return f"search_query: {text}"
+    if "mxbai" in m or "bge" in m:
+        return f"Represent this sentence for searching relevant passages: {text}"
+    if "qwen3-embedding" in m:
+        return (
+            "Instruct: Given a web search query, retrieve relevant passages that answer the query\n"
+            f"Query:{text}"
+        )
+    if "arctic" in m or "snowflake" in m:
+        return f"query: {text}"
+    return text
+
+
+def format_embed_document(text: str, *, model: str = DEFAULT_EMBEDDING_MODEL) -> str:
+    """Prefix a corpus card for ``model``'s document task. Empty input stays empty."""
+    body = str(text or "")
+    if not body.strip():
+        return body
+    m = str(model or "").strip().lower()
+    if "nomic" in m:
+        return f"search_document: {body}"
+    if "arctic" in m or "snowflake" in m:
+        return f"passage: {body}"
+    return body
 
 
 def _model_tag_matches(tags: list[str], model: str) -> bool:

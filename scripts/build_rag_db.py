@@ -36,11 +36,13 @@ from backend.services.knowledge_base_schema import (  # noqa: E402
     CORPUS_SCHEMA_VERSION,
     DEFAULT_EMBEDDING_DIM,
     DEFAULT_EMBEDDING_MODEL,
+    EMBEDDING_VARIANT,
     apply_schema,
     normalize_alias,
     pack_embedding_vector,
     write_manifest,
 )
+from backend.services.ollama_embed_service import format_embed_document  # noqa: E402
 
 
 def _list_installed_ollama_tags(base_http: str, timeout_seconds: float = 5.0) -> list[str]:
@@ -333,7 +335,9 @@ def _populate_vectors_for_table(
         return 0
 
     conn.execute(f"DELETE FROM {table}")
-    texts = [f"{row[1]}\n{row[2]}" for row in rows]
+    # Document task prefix — must stay paired with format_embed_query() at retrieval time.
+    # The pairing is what EMBEDDING_VARIANT in the manifest records.
+    texts = [format_embed_document(f"{row[1]}\n{row[2]}", model=model) for row in rows]
     try:
         vectors = _embed_texts_build(
             ollama_base,
@@ -432,6 +436,7 @@ def build_corpus(out_dir: Path, *, seed: bool) -> dict:
         "schema_version": CORPUS_SCHEMA_VERSION,
         "embedding_model": DEFAULT_EMBEDDING_MODEL,
         "embedding_dim": DEFAULT_EMBEDDING_DIM,
+        "embedding_variant": EMBEDDING_VARIANT,
         "embeddings_populated": embeddings_populated,
         "embedding_section_count": embedding_section_count,
         "embedding_compat_count": embedding_compat_count,

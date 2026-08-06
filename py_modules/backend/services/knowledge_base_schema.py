@@ -15,12 +15,19 @@ import struct
 from pathlib import Path
 from typing import Any, Iterable, Optional
 
-CORPUS_SCHEMA_VERSION = 2
+CORPUS_SCHEMA_VERSION = 3
 CORPUS_MANIFEST_FILENAME = "corpus-manifest.json"
 CORPUS_DB_FILENAME = "corpus.db"
 CORPUS_ATTRIBUTIONS_FILENAME = "ATTRIBUTIONS.md"
 DEFAULT_EMBEDDING_MODEL = "nomic-embed-text"
 DEFAULT_EMBEDDING_DIM = 768
+
+# Identifies the *format* of the baked vectors, not the model that produced them. Schema v3
+# embeds documents as "search_document: <text>" and queries as "search_query: <text>"; a v2
+# corpus baked bare text with the same model and the same dimension, so nothing but this
+# string can tell the two apart. Retrieval refuses hybrid when it does not match — mixing a
+# prefixed query against unprefixed documents returns plausible garbage rather than an error.
+EMBEDDING_VARIANT = "nomic-prefixed-v1"
 
 # Manifest URL placeholders — maintainer publishes assets; plugin fetches at runtime.
 DEFAULT_MANIFEST_HF_URL = (
@@ -399,6 +406,34 @@ def corpus_has_usable_compat_vectors(
     if compat_count > 0:
         return True
     return False
+
+
+def _base_model_tag(model: str) -> str:
+    """Strip an Ollama ``:tag`` suffix so ``nomic-embed-text:latest`` == ``nomic-embed-text``."""
+    return str(model or "").strip().lower().split(":", 1)[0]
+
+
+def corpus_embedding_compatible(
+    manifest: Optional[dict[str, Any]],
+    *,
+    model: str = DEFAULT_EMBEDDING_MODEL,
+    variant: str = EMBEDDING_VARIANT,
+) -> bool:
+    """True when the corpus's baked vectors can be searched with runtime-format query vectors.
+
+    Deliberately fails closed. A corpus with no manifest, or one written before
+    ``embedding_variant`` existed (schema v2), cannot prove its vectors were baked with the
+    document prefix, so hybrid is refused and the caller degrades to keyword. There is no
+    migration path by design — rebuild the corpus.
+    """
+    if not isinstance(manifest, dict):
+        return False
+    if str(manifest.get("embedding_variant") or "").strip() != str(variant or "").strip():
+        return False
+    baked_model = str(manifest.get("embedding_model") or "").strip()
+    if not baked_model:
+        return False
+    return _base_model_tag(baked_model) == _base_model_tag(model)
 
 
 def corpus_has_usable_vectors(conn: Any, manifest: Optional[dict[str, Any]] = None) -> bool:
