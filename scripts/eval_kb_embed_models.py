@@ -1165,7 +1165,12 @@ def run_bakeoff(
 
     winner, recommendation = _pick_winner(english_prompted_scores)
     today = date.today().isoformat()
-    json_path = REPO_ROOT / "docs" / "archive" / "research" / f"kb-embed-bakeoff-{today}.json"
+    # An arms-only run is a partial. Naming it like the full bake-off leaves a dated file in
+    # the research folder that reads as the real thing and is missing the model sweep.
+    suffix = "-arms" if arms_only else ""
+    json_path = (
+        REPO_ROOT / "docs" / "archive" / "research" / f"kb-embed-bakeoff-{today}{suffix}.json"
+    )
 
     payload: dict[str, Any] = {
         "date": today,
