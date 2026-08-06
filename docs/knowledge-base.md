@@ -271,7 +271,7 @@ Replies should use existing `bonsai-cite` markers; spoilery cards obey `bonsai-s
 | **Keyword + meaning** | Hybrid ran successfully |
 | **Keyword search** | Vectors unused, missing, or corpus has no embeddings |
 | **Keyword search (embed unavailable)** | Hybrid attempted but could not run: embed failed/timeout, or the corpus vectors are an incompatible format (`embedding_variant` / `embedding_model` mismatch, dimension mismatch) |
-| **Keyword search (hybrid disabled)** | The Developer hybrid kill-switch is off. **Deliberately a different string** from embed-unavailable (Decision 5) — a chosen setting must not read as a broken install. Label ships in PR1; the setting is PR2. |
+| **Keyword search (hybrid disabled)** | The Developer hybrid kill-switch (`rag_hybrid_retrieval_enabled`, default on) is off. **Deliberately a different string** from embed-unavailable (Decision 5) — a chosen setting must not read as a broken install. Label shipped in PR1; the setting shipped in PR2 stage 6a. Checked before the corpus-format gate, so the switch reports itself even when the corpus could not have run hybrid either. |
 
 Chip stays **Keyword search** for every non-hybrid variant; the parenthetical is Show details only.
 

@@ -15,7 +15,7 @@ import {
   shouldIgnoreRestoredSettingsSnapshot,
   takeRestoredSettingsSnapshot,
 } from "../utils/bonsaiSessionSurvival";
-import { DEFAULT_AI_CHARACTER_ACCENT_INTENSITY, DEFAULT_AI_CHARACTER_CUSTOM_TEXT, DEFAULT_AI_CHARACTER_ENABLED, DEFAULT_AI_CHARACTER_PRESET_ID, DEFAULT_AI_CHARACTER_RANDOM, DEFAULT_ASK_MODE, DEFAULT_CAPABILITIES, DEFAULT_DESKTOP_ASK_VERBOSE_LOGGING, DEFAULT_DESKTOP_DEBUG_NOTE_AUTO_SAVE, DEFAULT_DESKTOP_APP_LOG_LEVEL, DEFAULT_INPUT_SANITIZER_USER_DISABLED, DEFAULT_LATENCY_WARNING_SECONDS, DEFAULT_MODEL_ALLOW_HIGH_VRAM_FALLBACKS, DEFAULT_MODEL_POLICY_TIER, DEFAULT_OLLAMA_KEEP_ALIVE, DEFAULT_REPLY_VERBOSITY, DEFAULT_REPLY_LANGUAGE, DEFAULT_OLLAMA_LOCAL_ON_DECK, DEFAULT_PRESET_CHIP_ANIMATION, DEFAULT_PRESET_CHIP_FADE_ANIMATION_ENABLED, DEFAULT_REQUEST_TIMEOUT_SECONDS, DEFAULT_SCREENSHOT_ATTACHMENT_PRESET, DEFAULT_SHOW_DEVELOPER_TAB, DEFAULT_BONSAI_TOKEN_STREAMING_ENABLED, DEFAULT_SHOW_ONSCREEN_DEBUG_HUD, DEFAULT_DEV_FORCE_SESSION_RAG_CHIPS, DEFAULT_TAB_RESUME_MODE, type TabResumeMode, type NamedOllamaHost, DEFAULT_STRATEGY_SPOILER_MASKING_ENABLED, DEFAULT_STRATEGY_SPOILER_AUTO_REVEAL_AFTER_CONSENT, DEFAULT_UNIFIED_INPUT_PERSISTENCE_MODE, DEFAULT_VOICE_STT_MODEL, type AskModeId, type BonsaiCapabilities, type BonsaiSettings, type BonsaiSettingsSnapshotInput, type DesktopAppLogLevel, type OllamaKeepAliveDuration, type ReplyVerbosityId, type ReplyLanguageId, type PresetChipAnimation, type ScreenshotAttachmentPreset, type UnifiedInputPersistenceMode, type VoiceSttModelId, type UiScaleProfileId, DEFAULT_UI_SCALE_AUTO_ENABLED, DEFAULT_UI_SCALE_MANUAL_PROFILE, DEFAULT_USE_LOCAL_KNOWLEDGE_BASE, DEFAULT_RAG_CORPUS_PATH, DEFAULT_RAG_CORPUS_VERSION } from "../data/bonsaiSettingsSchema";
+import { DEFAULT_AI_CHARACTER_ACCENT_INTENSITY, DEFAULT_AI_CHARACTER_CUSTOM_TEXT, DEFAULT_AI_CHARACTER_ENABLED, DEFAULT_AI_CHARACTER_PRESET_ID, DEFAULT_AI_CHARACTER_RANDOM, DEFAULT_ASK_MODE, DEFAULT_CAPABILITIES, DEFAULT_DESKTOP_ASK_VERBOSE_LOGGING, DEFAULT_DESKTOP_DEBUG_NOTE_AUTO_SAVE, DEFAULT_DESKTOP_APP_LOG_LEVEL, DEFAULT_INPUT_SANITIZER_USER_DISABLED, DEFAULT_LATENCY_WARNING_SECONDS, DEFAULT_MODEL_ALLOW_HIGH_VRAM_FALLBACKS, DEFAULT_MODEL_POLICY_TIER, DEFAULT_OLLAMA_KEEP_ALIVE, DEFAULT_REPLY_VERBOSITY, DEFAULT_REPLY_LANGUAGE, DEFAULT_OLLAMA_LOCAL_ON_DECK, DEFAULT_PRESET_CHIP_ANIMATION, DEFAULT_PRESET_CHIP_FADE_ANIMATION_ENABLED, DEFAULT_REQUEST_TIMEOUT_SECONDS, DEFAULT_SCREENSHOT_ATTACHMENT_PRESET, DEFAULT_SHOW_DEVELOPER_TAB, DEFAULT_BONSAI_TOKEN_STREAMING_ENABLED, DEFAULT_SHOW_ONSCREEN_DEBUG_HUD, DEFAULT_DEV_FORCE_SESSION_RAG_CHIPS, DEFAULT_TAB_RESUME_MODE, type TabResumeMode, type NamedOllamaHost, DEFAULT_STRATEGY_SPOILER_MASKING_ENABLED, DEFAULT_STRATEGY_SPOILER_AUTO_REVEAL_AFTER_CONSENT, DEFAULT_UNIFIED_INPUT_PERSISTENCE_MODE, DEFAULT_VOICE_STT_MODEL, type AskModeId, type BonsaiCapabilities, type BonsaiSettings, type BonsaiSettingsSnapshotInput, type DesktopAppLogLevel, type OllamaKeepAliveDuration, type ReplyVerbosityId, type ReplyLanguageId, type PresetChipAnimation, type ScreenshotAttachmentPreset, type UnifiedInputPersistenceMode, type VoiceSttModelId, type UiScaleProfileId, DEFAULT_UI_SCALE_AUTO_ENABLED, DEFAULT_UI_SCALE_MANUAL_PROFILE, DEFAULT_USE_LOCAL_KNOWLEDGE_BASE, DEFAULT_RAG_HYBRID_RETRIEVAL_ENABLED, DEFAULT_RAG_CORPUS_PATH, DEFAULT_RAG_CORPUS_VERSION } from "../data/bonsaiSettingsSchema";
 import { normalizeLatencyWarningSeconds, normalizeRequestTimeoutSeconds, normalizeSettings } from "../data/bonsaiSettingsNormalizers";
 import { toBonsaiSettingsPayload } from "../utils/settingsPayload";
 import { saveTabResumeMode } from "../features/plugin-shell/pluginStorage";
@@ -61,6 +61,7 @@ function snapshotFromBonsaiSettings(normalized: BonsaiSettings): BonsaiSettingsS
     uiScaleAutoEnabled: normalized.ui_scale_auto_enabled,
     uiScaleManualProfile: normalized.ui_scale_manual_profile,
     useLocalKnowledgeBase: normalized.use_local_knowledge_base,
+    ragHybridRetrievalEnabled: normalized.rag_hybrid_retrieval_enabled,
     ragCorpusPath: normalized.rag_corpus_path,
     ragCorpusVersion: normalized.rag_corpus_version,
   };
@@ -149,6 +150,9 @@ export function usePluginSettings() {
   const [useLocalKnowledgeBase, setUseLocalKnowledgeBase] = useState<boolean>(
     DEFAULT_USE_LOCAL_KNOWLEDGE_BASE
   );
+  const [ragHybridRetrievalEnabled, setRagHybridRetrievalEnabled] = useState<boolean>(
+    DEFAULT_RAG_HYBRID_RETRIEVAL_ENABLED
+  );
   const [ragCorpusPath, setRagCorpusPath] = useState<string>(DEFAULT_RAG_CORPUS_PATH);
   const [ragCorpusVersion, setRagCorpusVersion] = useState<string>(DEFAULT_RAG_CORPUS_VERSION);
   const [settingsLoaded, setSettingsLoaded] = useState(false);
@@ -201,6 +205,7 @@ export function usePluginSettings() {
     uiScaleAutoEnabled,
     uiScaleManualProfile,
     useLocalKnowledgeBase,
+    ragHybridRetrievalEnabled,
     ragCorpusPath,
     ragCorpusVersion,
   };
@@ -258,6 +263,7 @@ export function usePluginSettings() {
     setUiScaleAutoEnabled(normalized.ui_scale_auto_enabled);
     setUiScaleManualProfile(normalized.ui_scale_manual_profile);
     setUseLocalKnowledgeBase(normalized.use_local_knowledge_base);
+    setRagHybridRetrievalEnabled(normalized.rag_hybrid_retrieval_enabled);
     setRagCorpusPath(normalized.rag_corpus_path);
     setRagCorpusVersion(normalized.rag_corpus_version);
     settingsSnapshotForDebouncedSaveRef.current = snapshotFromBonsaiSettings(normalized);
@@ -348,6 +354,7 @@ export function usePluginSettings() {
         setUiScaleAutoEnabled(DEFAULT_UI_SCALE_AUTO_ENABLED);
         setUiScaleManualProfile(DEFAULT_UI_SCALE_MANUAL_PROFILE);
         setUseLocalKnowledgeBase(DEFAULT_USE_LOCAL_KNOWLEDGE_BASE);
+        setRagHybridRetrievalEnabled(DEFAULT_RAG_HYBRID_RETRIEVAL_ENABLED);
         setRagCorpusPath(DEFAULT_RAG_CORPUS_PATH);
         setRagCorpusVersion(DEFAULT_RAG_CORPUS_VERSION);
       })
@@ -417,6 +424,7 @@ export function usePluginSettings() {
     uiScaleAutoEnabled,
     uiScaleManualProfile,
     useLocalKnowledgeBase,
+    ragHybridRetrievalEnabled,
     ragCorpusPath,
     ragCorpusVersion,
     settingsPersistEnabled,
@@ -494,6 +502,8 @@ export function usePluginSettings() {
     setUiScaleManualProfile,
     useLocalKnowledgeBase,
     setUseLocalKnowledgeBase,
+    ragHybridRetrievalEnabled,
+    setRagHybridRetrievalEnabled,
     ragCorpusPath,
     setRagCorpusPath,
     ragCorpusVersion,

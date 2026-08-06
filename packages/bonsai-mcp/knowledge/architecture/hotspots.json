@@ -12,7 +12,7 @@
     },
     {
       "path": "src/index.tsx",
-      "lines": 1309,
+      "lines": 1315,
       "role": "Plugin root: tabs, scoped CSS, RPC wiring, Settings"
     },
     {
@@ -32,7 +32,7 @@
     },
     {
       "path": "py_modules/backend/services/knowledge_base_service.py",
-      "lines": 1069,
+      "lines": 1078,
       "role": ""
     },
     {
@@ -102,7 +102,7 @@
     },
     {
       "path": "src/hooks/usePluginSettings.ts",
-      "lines": 517,
+      "lines": 527,
       "role": ""
     },
     {
@@ -117,12 +117,12 @@
     },
     {
       "path": "src/utils/settingsContracts.test.ts",
-      "lines": 487,
+      "lines": 490,
       "role": ""
     },
     {
       "path": "py_modules/backend/services/settings_service.py",
-      "lines": 482,
+      "lines": 485,
       "role": "Load/save/merge settings.json"
     },
     {
@@ -136,18 +136,18 @@
       "role": ""
     },
     {
-      "path": "src/components/MainTabPresetAnimatedChips.tsx",
-      "lines": 451,
+      "path": "src/components/DeveloperTab.tsx",
+      "lines": 458,
       "role": ""
     },
     {
       "path": "src/data/bonsaiSettingsNormalizers.ts",
-      "lines": 451,
+      "lines": 453,
       "role": ""
     },
     {
-      "path": "src/components/DeveloperTab.tsx",
-      "lines": 444,
+      "path": "src/components/MainTabPresetAnimatedChips.tsx",
+      "lines": 451,
       "role": ""
     },
     {

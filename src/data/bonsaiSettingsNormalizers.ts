@@ -390,6 +390,8 @@ const SIMPLE_FIELDS = {
   ),
   // Knowledge base.
   use_local_knowledge_base: boolDefaultFalse,
+  // Defaults on: only an explicit `false` drops retrieval back to keyword-only.
+  rag_hybrid_retrieval_enabled: boolDefaultTrue,
   rag_corpus_version: (value: unknown) => coerceScalarToTrimmedString(value).slice(0, 64),
   // Voice and credentials.
   voice_stt_model: enumOf<VoiceSttModelId>(VOICE_STT_MODEL_OPTIONS, DEFAULT_VOICE_STT_MODEL, {

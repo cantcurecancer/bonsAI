@@ -213,6 +213,24 @@
     }
   },
   {
+    "name": "hybrid retrieval stays on unless explicitly false",
+    "input": {
+      "rag_hybrid_retrieval_enabled": "off"
+    },
+    "expected": {
+      "rag_hybrid_retrieval_enabled": true
+    }
+  },
+  {
+    "name": "hybrid retrieval honours an explicit false",
+    "input": {
+      "rag_hybrid_retrieval_enabled": false
+    },
+    "expected": {
+      "rag_hybrid_retrieval_enabled": false
+    }
+  },
+  {
     "name": "api key rejects a non-string",
     "input": {
       "steam_web_api_key": 12345

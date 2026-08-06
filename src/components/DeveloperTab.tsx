@@ -94,6 +94,8 @@ export type DeveloperTabProps = {
   setShowOnscreenDebugHud: (v: boolean) => void;
   devForceSessionRagChips: boolean;
   setDevForceSessionRagChips: (v: boolean) => void;
+  ragHybridRetrievalEnabled: boolean;
+  setRagHybridRetrievalEnabled: (v: boolean) => void;
   tabResumeMode: TabResumeMode;
   setTabResumeMode: (v: TabResumeMode) => void;
   /** Dev/QA: install seed KB from Deck path (build.ps1 deploy). */
@@ -126,6 +128,8 @@ export const DeveloperTab: React.FC<DeveloperTabProps> = ({
   setShowOnscreenDebugHud,
   devForceSessionRagChips,
   setDevForceSessionRagChips,
+  ragHybridRetrievalEnabled,
+  setRagHybridRetrievalEnabled,
   tabResumeMode,
   setTabResumeMode,
   onInstallSeedKnowledgeBase,
@@ -162,6 +166,16 @@ export const DeveloperTab: React.FC<DeveloperTabProps> = ({
             <ButtonItem layout="below" disabled={seedKbBusy} onClick={runInstallSeedKb}>
               {seedKbBusy ? "Installing seed knowledge base…" : "Install seed knowledge base"}
             </ButtonItem>
+          </PanelSectionRow>
+          <PanelSectionRow>
+            <div className="bonsai-settings-bleed" style={{ width: "100%" }}>
+              <ToggleField
+                label="Hybrid retrieval (meaning search)"
+                description="On, the knowledge base ranks cards by keyword match and meaning together. Off, it uses keyword match only — cards still attach, and Show details says Keyword search (hybrid disabled). Turn it off to tell a retrieval problem apart from an embedding one."
+                checked={ragHybridRetrievalEnabled}
+                onChange={(checked) => setRagHybridRetrievalEnabled(checked)}
+              />
+            </div>
           </PanelSectionRow>
         </PanelSection>
       ) : null}

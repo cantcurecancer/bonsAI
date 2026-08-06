@@ -321,6 +321,9 @@ _SIMPLE_FIELDS: dict[str, Any] = {
     ),
     # Knowledge base.
     "use_local_knowledge_base": _bool_default_false,
+    # Kill-switch for the vector half of retrieval. Defaults on: only an explicit ``False``
+    # turns it off, and turning it off leaves keyword search fully working.
+    "rag_hybrid_retrieval_enabled": _bool_default_true,
     "rag_corpus_version": _coerced_str(64),
     # Credentials.
     "steam_web_api_key": _bounded_str(STEAM_WEB_API_KEY_MAX_LEN),

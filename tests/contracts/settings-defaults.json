@@ -30,6 +30,7 @@
   "preset_chip_fade_animation_enabled": true,
   "rag_corpus_path": "",
   "rag_corpus_version": "",
+  "rag_hybrid_retrieval_enabled": true,
   "reply_language": "follow_system",
   "reply_verbosity": "balanced",
   "request_timeout_seconds": 180,

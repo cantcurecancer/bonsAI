@@ -711,11 +711,15 @@ def retrieve_knowledge_context(
         # prefixed vector compares two different spaces and silently degrades ranking, so
         # refuse hybrid outright and say why in the retrieval method.
         variant_ok = corpus_embedding_compatible(manifest, model=DEFAULT_EMBEDDING_MODEL)
+        # Maintainer kill-switch. Mirrors `_bool_default_true` in settings_service: a missing
+        # key means on, so an older settings.json keeps hybrid rather than silently losing it.
+        hybrid_enabled = settings.get("rag_hybrid_retrieval_enabled") is not False
 
         if domain == "compat":
             has_vectors = corpus_has_usable_compat_vectors(conn, manifest)
             nomic_ready = (
-                has_vectors
+                hybrid_enabled
+                and has_vectors
                 and variant_ok
                 and nomic_embed_available(pc_ip, model=DEFAULT_EMBEDDING_MODEL)
             )
@@ -728,7 +732,8 @@ def retrieve_knowledge_context(
             hybrid_eligible = domain == "strategy" and game_id is not None
             has_vectors = hybrid_eligible and corpus_has_usable_section_vectors(conn, manifest)
             nomic_ready = (
-                has_vectors
+                hybrid_enabled
+                and has_vectors
                 and variant_ok
                 and nomic_embed_available(pc_ip, model=DEFAULT_EMBEDDING_MODEL)
             )
@@ -737,9 +742,13 @@ def retrieve_knowledge_context(
             cards = _search_sections(conn, game_id=game_id, query=expanded, top_k=fts_k)
             fts_ms = round((time.perf_counter() - t_fts) * 1000, 2)
 
-        # Vectors exist but cannot be used: the user installed a corpus, so "keyword" alone
-        # would misreport this as a corpus that never shipped embeddings.
-        if has_vectors and not variant_ok:
+        # Vectors exist but were not used: the user installed a corpus, so "keyword" alone
+        # would misreport this as a corpus that never shipped embeddings. The kill-switch is
+        # checked first on purpose -- when the maintainer turned hybrid off, saying "embed
+        # unavailable" sends them hunting for an Ollama fault that is not there.
+        if has_vectors and not hybrid_enabled:
+            retrieval_method = "keyword_hybrid_disabled"
+        elif has_vectors and not variant_ok:
             retrieval_method = "keyword_embed_unavailable"
 
         if nomic_ready and cards:

@@ -778,6 +778,69 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
     self.assertTrue(result.attached)
     self.assertEqual(result.retrieval_method, "keyword_embed_unavailable")
 
+  def test_kill_switch_leaves_keyword_search_working_and_says_so(self):
+    """Hybrid off is a diagnosis aid, not a way to turn the knowledge base off.
+
+    ``embed_texts`` is patched to explode: if the switch were only advisory the call would
+    happen anyway and the test would error rather than fail on the assertion.
+    """
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+      "rag_hybrid_retrieval_enabled": False,
+    }
+    with mock.patch(
+      "backend.services.knowledge_base_service.nomic_embed_available",
+      return_value=True,
+    ), mock.patch(
+      "backend.services.knowledge_base_service.corpus_has_usable_compat_vectors",
+      return_value=True,
+    ), mock.patch(
+      "backend.services.knowledge_base_service.embed_texts",
+      side_effect=AssertionError("query must not be embedded while hybrid is off"),
+    ):
+      result = retrieve_knowledge_context(
+        settings,
+        ask_mode="expert",
+        question="why is my game crashing proton issue",
+        app_id="",
+        app_name="",
+        domain="compat",
+        pc_ip="127.0.0.1:11434",
+      )
+    self.assertTrue(result.attached)
+    self.assertEqual(result.retrieval_method, "keyword_hybrid_disabled")
+
+  def test_hybrid_stays_on_when_the_setting_was_never_saved(self):
+    """An older settings.json has no such key. Missing must read as on, not off."""
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    with mock.patch(
+      "backend.services.knowledge_base_service.nomic_embed_available",
+      return_value=True,
+    ), mock.patch(
+      "backend.services.knowledge_base_service.corpus_has_usable_compat_vectors",
+      return_value=True,
+    ), mock.patch(
+      "backend.services.knowledge_base_service.embed_texts",
+      return_value=[[1.0, 0.0] + [0.0] * 766],
+    ), mock.patch(
+      "backend.services.knowledge_base_service._load_compat_vectors",
+      return_value={1: [1.0, 0.0] + [0.0] * 766},
+    ):
+      result = retrieve_knowledge_context(
+        settings,
+        ask_mode="expert",
+        question="why is my game crashing proton issue",
+        app_id="",
+        app_name="",
+        domain="compat",
+        pc_ip="127.0.0.1:11434",
+      )
+    self.assertEqual(result.retrieval_method, "hybrid")
+
   def test_vector_pack_unpack_roundtrip(self):
     vec = [0.1, -0.2, 0.3]
     blob = pack_embedding_vector(vec)

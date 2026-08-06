@@ -139,6 +139,11 @@ export type BonsaiSettings = {
   ui_scale_manual_profile: UiScaleProfileId;
   /** When true, inject retrieved offline strategy/compat cards into Strategy/troubleshooting Asks. */
   use_local_knowledge_base: boolean;
+  /**
+   * When false, knowledge retrieval runs keyword-only — no query embedding, no vector fusion.
+   * Defaults on; the off state is a diagnosis aid, not a way to disable the knowledge base.
+   */
+  rag_hybrid_retrieval_enabled: boolean;
   /** Absolute path to installed corpus directory (contains corpus.db). */
   rag_corpus_path: string;
   /** Installed corpus manifest version string. */
@@ -187,6 +192,7 @@ export type BonsaiSettingsSnapshotInput = {
   uiScaleAutoEnabled: boolean;
   uiScaleManualProfile: UiScaleProfileId;
   useLocalKnowledgeBase: boolean;
+  ragHybridRetrievalEnabled: boolean;
   ragCorpusPath: string;
   ragCorpusVersion: string;
 };
@@ -256,6 +262,7 @@ export const VOICE_STT_MODEL_OPTIONS: VoiceSttModelId[] = ["tiny.en", "base.en"]
 export const DEFAULT_UI_SCALE_AUTO_ENABLED = true;
 export const DEFAULT_UI_SCALE_MANUAL_PROFILE: UiScaleProfileId = "handheld";
 export const DEFAULT_USE_LOCAL_KNOWLEDGE_BASE = false;
+export const DEFAULT_RAG_HYBRID_RETRIEVAL_ENABLED = true;
 export const DEFAULT_RAG_CORPUS_PATH = "";
 export const DEFAULT_RAG_CORPUS_VERSION = "";
 
