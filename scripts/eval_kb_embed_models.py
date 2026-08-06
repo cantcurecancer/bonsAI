@@ -1,18 +1,34 @@
 #!/usr/bin/env python3
-"""KB embed model bake-off — maintainer eval against seed corpus hybrid path.
+"""KB retrieval eval — maintainer bake-off against the seed corpus.
 
-Mirrors production FTS shortlist (N=30) → query embed → cosine re-rank.
-Scores bare vs prompted columns per model; writes JSON + markdown report.
+Two independent questions, both answered here:
+
+1. **Which embed model?** Bare vs prompted columns per model, over the English fixtures.
+2. **Does fusion beat its parts?** keyword / vector-only / RRF at the baseline model, on the
+   *same* corpus, with bootstrap confidence intervals. Same-corpus only (R4): numbers from a
+   different corpus are not comparable and must not be quoted against each other.
+
+Two honesty rules are enforced in code rather than left to the reader:
+
+- **Splits.** Weights and the relevance floor are tuned on ``tune`` cases. ``holdout`` is the
+  ship gate and must not be looked at while tuning (R1).
+- **Gate reachability.** A fixture's ``domain`` says what we *want* retrieval to do. Production
+  decides for itself via ``should_retrieve_knowledge``, and today a natural-language
+  troubleshooting Ask never reaches the compat path (deferred Q8). Every case is checked
+  against the live gate and compat is reported twice — overall, and gate-reachable-only — so
+  tuning cannot be driven by traffic production never routes (R2).
 
 Usage:
   python scripts/eval_kb_embed_models.py
   python scripts/eval_kb_embed_models.py --ollama http://127.0.0.1:11434 --write-report
+  python scripts/eval_kb_embed_models.py --arms-only     # skip the 6-model sweep
 """
 
 from __future__ import annotations
 
 import argparse
 import json
+import random
 import sqlite3
 import subprocess
 import sys
@@ -67,13 +83,24 @@ from backend.services.knowledge_base_service import (  # noqa: E402
     _search_compat_patterns,
     _search_sections,
 )
+from backend.services.knowledge_base_service import (  # noqa: E402
+    should_retrieve_knowledge,
+)
 from backend.services.ollama_embed_service import (  # noqa: E402
     format_embed_document,
     format_embed_query,
 )
 
 PromptMode = Literal["bare", "prompted"]
+RetrievalArm = Literal["keyword", "vector_only", "rrf"]
+Split = Literal["tune", "holdout"]
 EVAL_MIN_TOP_K = 3  # fixtures often use speed (top_k=1); bake-off needs top-3 signal
+
+# Percentile bootstrap over per-case hits. Seeded so two runs of the same fixtures report the
+# same interval -- an eval whose confidence bounds move on their own cannot settle an argument.
+BOOTSTRAP_RESAMPLES = 2000
+BOOTSTRAP_SEED = 20260806
+CI_PERCENTILES = (2.5, 97.5)
 
 
 @dataclass
@@ -82,6 +109,7 @@ class CorpusDoc:
     domain: Literal["compat", "strategy"]
     label: str
     bare_text: str
+    game_id: int = 0
 
 
 @dataclass
@@ -95,6 +123,11 @@ class QueryCase:
     expect_topic: str
     expect_section: str
     suite: str
+    split: Split = "tune"
+    # Computed from the live gate, never read from the fixture. A baked boolean goes stale the
+    # first time the phrase list changes and then lies quietly.
+    gate_reachable: bool = False
+    gate_domain: str = ""
 
 
 @dataclass
@@ -122,21 +155,53 @@ class EmbedError(Exception):
     pass
 
 
+def _gate_verdict(
+    *, ask_mode: str, question: str, app_id: str, app_name: str
+) -> tuple[bool, str]:
+    """Ask the production gate what it would do with this query.
+
+    Returns ``(should_run, domain)``. ``domain`` is what production *chooses*, which is not
+    always the domain the fixture wants -- that mismatch is the point of the R2 reporting.
+    """
+    should_run, domain = should_retrieve_knowledge(
+        use_local_knowledge_base=True,
+        ask_mode=ask_mode,
+        question=question,
+        app_id=app_id,
+        app_name=app_name,
+    )
+    return bool(should_run), str(domain or "")
+
+
 def _load_fixture(path: Path, suite: str) -> list[QueryCase]:
     data = json.loads(path.read_text(encoding="utf-8"))
+    default_split: Split = data.get("default_split") if data.get("default_split") in ("tune", "holdout") else "tune"
     out: list[QueryCase] = []
     for row in data.get("queries", []):
+        split = row.get("split") if row.get("split") in ("tune", "holdout") else default_split
+        ask_mode = str(row.get("ask_mode") or "speed")
+        query = str(row["query"])
+        app_id = str(row.get("app_id") or "")
+        shortcut = str(row.get("shortcut") or "")
+        # Strategy routing keys off the running app, which the fixture models as app_id or a
+        # shortcut name -- pass the shortcut as the app name so the gate sees what Ask sees.
+        gate_ok, gate_domain = _gate_verdict(
+            ask_mode=ask_mode, question=query, app_id=app_id, app_name=shortcut
+        )
         out.append(
             QueryCase(
                 case_id=str(row["id"]),
-                query=str(row["query"]),
-                ask_mode=str(row.get("ask_mode") or "speed"),
+                query=query,
+                ask_mode=ask_mode,
                 domain=row["domain"],
-                app_id=str(row.get("app_id") or ""),
-                shortcut=str(row.get("shortcut") or ""),
+                app_id=app_id,
+                shortcut=shortcut,
                 expect_topic=str(row.get("expect_topic") or ""),
                 expect_section=str(row.get("expect_section") or ""),
                 suite=suite,
+                split=split,
+                gate_reachable=gate_ok and gate_domain == row["domain"],
+                gate_domain=gate_domain,
             )
         )
     return out
@@ -176,7 +241,9 @@ def _load_corpus_docs(conn: sqlite3.Connection) -> list[CorpusDoc]:
                 bare_text=f"{topic}\n{card}",
             )
         )
-    for row in conn.execute("SELECT section_id, name, card FROM sections ORDER BY section_id"):
+    for row in conn.execute(
+        "SELECT section_id, name, card, game_id FROM sections ORDER BY section_id"
+    ):
         name = str(row[1] or "")
         card = str(row[2] or "")
         docs.append(
@@ -185,6 +252,7 @@ def _load_corpus_docs(conn: sqlite3.Connection) -> list[CorpusDoc]:
                 domain="strategy",
                 label=name,
                 bare_text=f"{name}\n{card}",
+                game_id=int(row[3] or 0),
             )
         )
     return docs
@@ -320,30 +388,34 @@ def _hybrid_retrieve(
     )
 
 
-def _vector_only_compat(
-    case: QueryCase,
+def _vector_only(
+    docs: list[CorpusDoc],
     *,
     query_vector: list[float],
-    compat_docs: list[CorpusDoc],
-    compat_vectors: dict[int, list[float]],
+    vectors: dict[int, list[float]],
     top_k: int,
 ) -> list[KnowledgeCard]:
+    """Rank the whole candidate set by cosine alone -- no FTS shortlist in front of it.
+
+    This is the arm that answers "is the keyword half pulling its weight?". It scans every
+    doc, which production never does; it exists to bound the comparison, not to ship.
+    """
     scored: list[tuple[float, CorpusDoc]] = []
-    for doc in compat_docs:
-        vec = compat_vectors.get(doc.doc_id)
+    for doc in docs:
+        vec = vectors.get(doc.doc_id)
         if vec:
             scored.append((_dot_similarity(query_vector, vec), doc))
     scored.sort(key=lambda item: item[0], reverse=True)
     out: list[KnowledgeCard] = []
     for _, doc in scored[:top_k]:
-        topic, _, card = doc.bare_text.partition("\n")
+        name, _, card = doc.bare_text.partition("\n")
         out.append(
             KnowledgeCard(
                 section_id=doc.doc_id,
-                game_id=0,
-                game_title="Shared troubleshooting",
-                section_type="tip",
-                name=topic,
+                game_id=doc.game_id,
+                game_title="Shared troubleshooting" if doc.domain == "compat" else "",
+                section_type="tip" if doc.domain == "compat" else "section",
+                name=name,
                 card=card,
                 source_url="",
                 source_license="bonsAI-maintainer",
@@ -353,6 +425,28 @@ def _vector_only_compat(
             )
         )
     return out
+
+
+def _vector_only_for_case(
+    case: QueryCase,
+    conn: sqlite3.Connection,
+    *,
+    query_vector: list[float],
+    docs: list[CorpusDoc],
+    vectors: dict[int, list[float]],
+    top_k: int,
+) -> list[KnowledgeCard]:
+    """Domain-scoped vector-only retrieval, matching what the keyword arm is allowed to see."""
+    if case.domain == "compat":
+        pool = [d for d in docs if d.domain == "compat"]
+    else:
+        game_id, _ = _resolve_game_id(
+            conn, app_id=case.app_id, app_name="", shortcut_name=case.shortcut
+        )
+        if game_id is None:
+            return []
+        pool = [d for d in docs if d.domain == "strategy" and d.game_id == game_id]
+    return _vector_only(pool, query_vector=query_vector, vectors=vectors, top_k=top_k)
 
 
 def _build_vectors(
@@ -460,11 +554,10 @@ def _evaluate_spanish_probe(
             q_vec, embed_ms = _embed_one(ollama_base, model, q_text)
             embed_times.append(embed_ms)
             if vector_only:
-                cards = _vector_only_compat(
-                    case,
+                cards = _vector_only(
+                    compat_docs,
                     query_vector=q_vec,
-                    compat_docs=compat_docs,
-                    compat_vectors=vectors,
+                    vectors=vectors,
                     top_k=top_k,
                 )
             else:
@@ -526,7 +619,193 @@ def _aggregate_english(scores: list[ModelScores]) -> ModelScores:
     )
 
 
+# --- retrieval arms: keyword vs vector-only vs RRF, same corpus, same cases ----------------
+
+
+@dataclass
+class ArmScores:
+    arm: RetrievalArm
+    n: int
+    top1_pct: float
+    top3_pct: float
+    top1_ci: tuple[float, float]
+    top3_ci: tuple[float, float]
+
+
+def _bootstrap_ci(hits: list[bool]) -> tuple[float, float]:
+    """Percentile bootstrap CI for a hit rate, in percentage points.
+
+    An empty or single-case slice has no interval worth quoting, so it reports the full range
+    rather than a falsely tight one -- a slice too small to measure should look too small.
+    """
+    n = len(hits)
+    if n == 0:
+        return (0.0, 100.0)
+    if n == 1:
+        return (0.0, 100.0)
+    rng = random.Random(BOOTSTRAP_SEED)
+    values = [1.0 if h else 0.0 for h in hits]
+    means: list[float] = []
+    for _ in range(BOOTSTRAP_RESAMPLES):
+        total = 0.0
+        for _ in range(n):
+            total += values[rng.randrange(n)]
+        means.append(100.0 * total / n)
+    means.sort()
+    lo = means[max(0, int(CI_PERCENTILES[0] / 100.0 * BOOTSTRAP_RESAMPLES) - 1)]
+    hi = means[min(BOOTSTRAP_RESAMPLES - 1, int(CI_PERCENTILES[1] / 100.0 * BOOTSTRAP_RESAMPLES))]
+    return (round(lo, 1), round(hi, 1))
+
+
+def _arm_scores(arm: RetrievalArm, results: list[QueryResult]) -> ArmScores:
+    n = len(results)
+    top1 = [r.hit_at_1 for r in results]
+    top3 = [r.hit_at_3 for r in results]
+    return ArmScores(
+        arm=arm,
+        n=n,
+        top1_pct=round(100.0 * sum(top1) / n, 1) if n else 0.0,
+        top3_pct=round(100.0 * sum(top3) / n, 1) if n else 0.0,
+        top1_ci=_bootstrap_ci(top1),
+        top3_ci=_bootstrap_ci(top3),
+    )
+
+
+def _run_retrieval_arms(
+    conn: sqlite3.Connection,
+    ollama_base: str,
+    model: str,
+    docs: list[CorpusDoc],
+    cases: list[QueryCase],
+    *,
+    vectors_by_id: dict[int, list[float]],
+) -> dict[str, list[QueryResult]]:
+    """Run all three arms per case off one query embedding.
+
+    Embedding once and reusing it is not just a speed trick: it removes embedding nondeterminism
+    as a source of difference between the arms, so a gap between them is a ranking difference.
+    """
+    out: dict[str, list[QueryResult]] = {"keyword": [], "vector_only": [], "rrf": []}
+    for case in cases:
+        top_k = _eval_top_k(case.ask_mode)
+        expanded = _expand_query(case.query, "")
+        q_vec, embed_ms = _embed_one(
+            ollama_base, model, _format_query(model, expanded, "prompted")
+        )
+
+        keyword_cards = _keyword_retrieve(conn, case, fts_k=top_k, top_k=top_k)
+        vector_cards = _vector_only_for_case(
+            case, conn, query_vector=q_vec, docs=docs, vectors=vectors_by_id, top_k=top_k
+        )
+        rrf_cards = _hybrid_retrieve(
+            conn,
+            case,
+            query_vector=q_vec,
+            vectors_by_id=vectors_by_id,
+            fts_k=HYBRID_FTS_SHORTLIST_K,
+            top_k=top_k,
+        )
+
+        for arm, cards in (
+            ("keyword", keyword_cards),
+            ("vector_only", vector_cards),
+            ("rrf", rrf_cards),
+        ):
+            hit_at_1, hit_at_3 = _score_cards(cards, case, top_k)
+            out[arm].append(
+                QueryResult(
+                    case_id=case.case_id,
+                    hit_at_1=hit_at_1,
+                    hit_at_3=hit_at_3,
+                    fts_empty=not cards,
+                    embed_ms=embed_ms if arm != "keyword" else 0.0,
+                    top_names=[c.name for c in cards[:3]],
+                )
+            )
+    return out
+
+
+def _slice_results(
+    results: dict[str, list[QueryResult]], cases: list[QueryCase], keep: Any
+) -> dict[str, list[QueryResult]]:
+    """Filter every arm's results by a predicate over the matching case, keeping arms aligned."""
+    indices = [i for i, case in enumerate(cases) if keep(case)]
+    return {arm: [rows[i] for i in indices] for arm, rows in results.items()}
+
+
+def _arms_table(results: dict[str, list[QueryResult]]) -> dict[str, Any]:
+    table: dict[str, Any] = {}
+    for arm, rows in results.items():
+        scores = _arm_scores(arm, rows)  # type: ignore[arg-type]
+        table[arm] = {
+            "arm": scores.arm,
+            "n": scores.n,
+            "top1_pct": scores.top1_pct,
+            "top3_pct": scores.top3_pct,
+            "top1_ci": list(scores.top1_ci),
+            "top3_ci": list(scores.top3_ci),
+        }
+    return table
+
+
+def _arms_verdict(table: dict[str, Any]) -> str:
+    """Apply the locked non-overlapping-CI rule to holdout top-3.
+
+    Overlapping intervals mean the fixtures cannot tell the arms apart. That is a real result
+    and must be reported as one -- not rounded up to "RRF wins" because its point estimate is
+    higher.
+    """
+    rrf = table.get("rrf") or {}
+    keyword = table.get("keyword") or {}
+    if not rrf or not keyword:
+        return "No verdict: an arm is missing from the holdout run."
+    if not rrf.get("n"):
+        return (
+            "No verdict: the holdout split is empty. Every current fixture is marked `tune` "
+            "because all of them were written from the cards they match, which is the "
+            "self-referential pattern R1 forbids as a gate. The holdout has to be written "
+            "blind before it can gate anything."
+        )
+    rrf_lo, rrf_hi = rrf["top3_ci"]
+    kw_lo, kw_hi = keyword["top3_ci"]
+    if rrf_lo > kw_hi:
+        return (
+            f"RRF beats keyword on holdout top-3: {rrf['top3_pct']}% [{rrf_lo}, {rrf_hi}] vs "
+            f"{keyword['top3_pct']}% [{kw_lo}, {kw_hi}] — intervals do not overlap."
+        )
+    if kw_lo > rrf_hi:
+        return (
+            f"Keyword beats RRF on holdout top-3: {keyword['top3_pct']}% [{kw_lo}, {kw_hi}] vs "
+            f"{rrf['top3_pct']}% [{rrf_lo}, {rrf_hi}] — intervals do not overlap. "
+            "Fusion is not earning its embed cost on this corpus."
+        )
+    return (
+        f"No separation on holdout top-3: RRF {rrf['top3_pct']}% [{rrf_lo}, {rrf_hi}] vs "
+        f"keyword {keyword['top3_pct']}% [{kw_lo}, {kw_hi}] — intervals overlap, so these "
+        f"fixtures (n={rrf['n']}) cannot tell the arms apart. Not a tie; an unresolved question."
+    )
+
+
+def _gate_summary(cases: list[QueryCase]) -> dict[str, Any]:
+    """What the production gate would actually route, per domain (R2)."""
+    out: dict[str, Any] = {}
+    for domain in ("compat", "strategy"):
+        rows = [c for c in cases if c.domain == domain]
+        reachable = [c for c in rows if c.gate_reachable]
+        out[domain] = {
+            "total": len(rows),
+            "gate_reachable": len(reachable),
+            "unreachable_ids": [c.case_id for c in rows if not c.gate_reachable][:20],
+        }
+    return out
+
+
 def _pick_winner(english_prompted: dict[str, ModelScores]) -> tuple[str, str]:
+    if not english_prompted:
+        return BASELINE_MODEL, (
+            f"No model sweep in this run (`--arms-only`); `{BASELINE_MODEL}` stands unchallenged "
+            "by default, not by measurement."
+        )
     baseline = english_prompted.get(BASELINE_MODEL)
     baseline_top3 = baseline.top3_pct if baseline else 0.0
 
@@ -580,6 +859,14 @@ def _scores_to_dict(scores: ModelScores) -> dict[str, Any]:
     }
 
 
+def _best_prompted_line(payload: dict[str, Any]) -> str:
+    prompted = payload.get("english", {}).get("prompted") or {}
+    if not prompted:
+        return "not measured in this run (`--arms-only`)."
+    model, scores = max(prompted.items(), key=lambda item: item[1].get("top3_pct", 0.0))
+    return f"**{scores.get('top3_pct')}%** (`{model}`; see table below)."
+
+
 def _write_report(
     report_path: Path,
     *,
@@ -603,7 +890,8 @@ def _write_report(
         "## Key findings",
         "",
         f"- Keyword-only baseline: **{payload['keyword_baseline']['top1_pct']}%** top-1 / **{payload['keyword_baseline']['top3_pct']}%** top-3.",
-        f"- Best hybrid prompted top-3: **{max((m, payload['english']['prompted'][m]['top3_pct']) for m in payload['models'])}%** (see table below).",
+        f"- Best hybrid prompted top-3: {_best_prompted_line(payload)}",
+        f"- Holdout arm verdict: {(payload.get('arms') or {}).get('verdict', 'not run')}",
         "- Re-run: `python scripts/eval_kb_embed_models.py --write-report`",
         "",
         "## English aggregate (kb_eval_v0 + paraphrases)",
@@ -621,6 +909,88 @@ def _write_report(
             f"{prompted.get('top1_pct', '—')}% | {prompted.get('top3_pct', '—')}% | "
             f"{prompted.get('mean_embed_ms', '—')} | {prompted.get('fts_empty_pct', '—')}% |"
         )
+
+    arms = payload.get("arms") or {}
+    if arms:
+        lines.extend(
+            [
+                "",
+                "## Retrieval arms — keyword vs vector-only vs RRF",
+                "",
+                f"Baseline model `{arms['model']}`, prompted, **same corpus for every arm** (R4). "
+                "Confidence intervals are a seeded percentile bootstrap "
+                f"({BOOTSTRAP_RESAMPLES} resamples) over per-case hits.",
+                "",
+                "**Weights and the floor are tuned on `tune` only. `holdout` is the ship gate — "
+                "reading it before tuning is finished invalidates it.**",
+                "",
+            ]
+        )
+        for split in ("tune", "holdout"):
+            table = arms["splits"].get(split) or {}
+            if not table:
+                continue
+            lines.extend(
+                [
+                    f"### {split} (n={table.get('rrf', {}).get('n', 0)})",
+                    "",
+                    "| Arm | top-1 | top-1 CI | top-3 | top-3 CI |",
+                    "|-----|-------|----------|-------|----------|",
+                ]
+            )
+            for arm in ("keyword", "vector_only", "rrf"):
+                row = table.get(arm)
+                if not row:
+                    continue
+                lines.append(
+                    f"| {arm} | {row['top1_pct']}% | [{row['top1_ci'][0]}, {row['top1_ci'][1]}] | "
+                    f"{row['top3_pct']}% | [{row['top3_ci'][0]}, {row['top3_ci'][1]}] |"
+                )
+            lines.append("")
+        lines.extend(["**Holdout verdict:** " + arms["verdict"], ""])
+
+        lines.extend(
+            [
+                "## Gate reachability (R2 — deferred Q8 made visible)",
+                "",
+                "A fixture's `domain` is what we want retrieval to do. `should_retrieve_knowledge` "
+                "decides what production *actually* does. Cases where those disagree are not "
+                "retrieval failures — they are traffic that never reaches retrieval at all, and "
+                "they must not drive weight tuning.",
+                "",
+                "| Domain | Cases | Gate-reachable | Unreachable |",
+                "|--------|-------|----------------|-------------|",
+            ]
+        )
+        for domain, row in (payload.get("gate") or {}).items():
+            unreachable = row["total"] - row["gate_reachable"]
+            lines.append(
+                f"| {domain} | {row['total']} | {row['gate_reachable']} | {unreachable} |"
+            )
+        compat_only = arms.get("compat_gate_reachable")
+        compat_all = arms.get("compat_all")
+        if compat_all:
+            lines.extend(
+                [
+                    "",
+                    "### Compat scored twice",
+                    "",
+                    "| Slice | Arm | top-3 | top-3 CI | n |",
+                    "|-------|-----|-------|----------|---|",
+                ]
+            )
+            for label, table in (("overall", compat_all), ("gate-reachable only", compat_only)):
+                if not table:
+                    continue
+                for arm in ("keyword", "vector_only", "rrf"):
+                    row = table.get(arm)
+                    if not row:
+                        continue
+                    lines.append(
+                        f"| {label} | {arm} | {row['top3_pct']}% | "
+                        f"[{row['top3_ci'][0]}, {row['top3_ci'][1]}] | {row['n']} |"
+                    )
+            lines.append("")
 
     lines.extend(
         [
@@ -668,6 +1038,7 @@ def run_bakeoff(
     out_dir: Path,
     models: list[str],
     write_report: bool,
+    arms_only: bool = False,
 ) -> dict[str, Any]:
     db_path = _ensure_seed_db(out_dir)
     conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
@@ -686,6 +1057,42 @@ def run_bakeoff(
         conn, ollama_base, "keyword", docs, english_cases, prompt_mode="bare", hybrid=False
     )
 
+    gate = _gate_summary(english_cases)
+    for domain, row in gate.items():
+        unreachable = row["total"] - row["gate_reachable"]
+        if unreachable:
+            print(
+                f"gate: {unreachable}/{row['total']} {domain} cases never reach retrieval in "
+                f"production (deferred Q8) — scored, but reported separately",
+                file=sys.stderr,
+            )
+
+    # The arm comparison runs at the baseline model only. Crossing three arms with six models
+    # would multiply cost without answering the question the arms exist to answer.
+    print(f"Embedding corpus for {BASELINE_MODEL} (arms)...", file=sys.stderr)
+    arm_vectors = _build_vectors(ollama_base, BASELINE_MODEL, docs, "prompted")
+    print(f"Running retrieval arms on {len(english_cases)} cases...", file=sys.stderr)
+    arm_results = _run_retrieval_arms(
+        conn, ollama_base, BASELINE_MODEL, docs, english_cases, vectors_by_id=arm_vectors
+    )
+    arms: dict[str, Any] = {
+        "model": BASELINE_MODEL,
+        "splits": {
+            split: _arms_table(_slice_results(arm_results, english_cases, lambda c, s=split: c.split == s))
+            for split in ("tune", "holdout")
+        },
+        "compat_all": _arms_table(
+            _slice_results(arm_results, english_cases, lambda c: c.domain == "compat")
+        ),
+        "compat_gate_reachable": _arms_table(
+            _slice_results(
+                arm_results, english_cases, lambda c: c.domain == "compat" and c.gate_reachable
+            )
+        ),
+    }
+    arms["verdict"] = _arms_verdict(arms["splits"].get("holdout") or {})
+    print(arms["verdict"], file=sys.stderr)
+
     eval_v0 = _load_fixture(FIXTURES / "kb_eval_v0.json", "kb_eval_v0")
     eval_para = _load_fixture(FIXTURES / "kb_eval_paraphrase_v0.json", "paraphrase")
 
@@ -693,7 +1100,7 @@ def run_bakeoff(
     english_prompted: dict[str, dict[str, Any]] = {}
     english_prompted_scores: dict[str, ModelScores] = {}
 
-    for model in models:
+    for model in [] if arms_only else models:
         print(f"Embedding corpus for {model} (bare)...", file=sys.stderr)
         bare_vectors = _build_vectors(ollama_base, model, docs, "bare")
         print(f"Evaluating {model} (bare)...", file=sys.stderr)
@@ -734,7 +1141,7 @@ def run_bakeoff(
         english_prompted_scores[model] = prompted_agg
 
     spanish_probe: dict[str, Any] = {}
-    for model in models:
+    for model in [] if arms_only else models:
         print(f"Spanish probe {model}...", file=sys.stderr)
         bare_cv = _build_vectors(ollama_base, model, compat_docs, "bare")
         prompted_cv = _build_vectors(ollama_base, model, compat_docs, "prompted")
@@ -767,6 +1174,8 @@ def run_bakeoff(
         "models": models,
         "keyword_baseline": _scores_to_dict(keyword_scores),
         "english": {"bare": english_bare, "prompted": english_prompted},
+        "arms": arms,
+        "gate": gate,
         "spanish_probe": spanish_probe,
         "winner": winner,
         "recommendation": recommendation,
@@ -798,6 +1207,11 @@ def main() -> int:
     )
     parser.add_argument("--write-report", action="store_true", default=True)
     parser.add_argument("--no-write-report", action="store_false", dest="write_report")
+    parser.add_argument(
+        "--arms-only",
+        action="store_true",
+        help="Run only the keyword/vector-only/RRF comparison, skipping the model sweep",
+    )
     args = parser.parse_args()
 
     try:
@@ -806,6 +1220,7 @@ def main() -> int:
             out_dir=args.out,
             models=args.models,
             write_report=args.write_report,
+            arms_only=args.arms_only,
         )
     except EmbedError as exc:
         print(f"embed error: {exc}", file=sys.stderr)

@@ -1,7 +1,24 @@
 # RAG retrieval quality remediation — implementation plan
 
-**Status:** **PR1 (Stages 1–5) shipped 2026-08-05**, commits `d111491`…`82d379f`. **PR2 (Stage 6) not started.**  
+**Status:** **PR1 (Stages 1–5) shipped 2026-08-05**, commits `d111491`…`82d379f`. **PR2 (Stage 6) in progress since 2026-08-06** — corpus rebuilt at schema v3 and verified on the live hybrid path; **6a** (kill-switch) and **6b** (eval arms, splits, CIs, gate reachability) landed. Next: **6c** query intents, then the maintainer sign-off gate.  
 **Analysis source (do not edit as ship plan):** [archive/rag-retrieval-quality-remediation-plan.md](archive/rag-retrieval-quality-remediation-plan.md)
+
+> **PR2 build notes (running)** — what the work has turned up so far:
+>
+> 1. **The Q8 gap is bigger than "some natural-language asks".** Measured 2026-08-06 by the new
+>    live gate check: **3 of 18** compat fixtures pass `should_retrieve_knowledge`. Strategy is
+>    22/22. So 83% of the compat eval set — including *every* paraphrase case — scores traffic
+>    production never routes to retrieval. This is not new breakage; it is the deferred Q8
+>    decision, now with a number. It also means the 2026-07-31 bake-off's compat half measured
+>    nothing about shipped behaviour, and that report now carries a correction banner.
+> 2. **The holdout split is empty, and saying so is the honest output.** Every existing fixture
+>    was written from the card it matches. Marking any of them `holdout` would launder a
+>    self-referential set into a ship gate, so the eval reports "no verdict, the holdout is
+>    empty" instead of a tie.
+> 3. **First arm run gives fusion no advantage — and must not be acted on.** On the tune split
+>    at the current shallow corpus: keyword 90.0% top-3, vector-only 90.0%, RRF 85.0%, every
+>    interval overlapping. With 22 sections against a 30-card shortlist the shortlist swallows
+>    the corpus, so this measures the harness. Deepen first (6d), then read it again.
 
 > **PR1 build notes** — three things found while implementing that this plan did not say, all
 > now in code comments and in [knowledge-base.md](knowledge-base.md) § Retrieval quality remediation:

@@ -1,5 +1,18 @@
 # KB embed model bake-off
 
+> **Correction, 2026-08-06 — do not cite the conclusions below.** Three defects were found in
+> what this run measured. (1) **The hybrid arm was not the shipped code.** The eval applied
+> `search_query:` / `search_document:` task prefixes; production embedded bare text. So "hybrid"
+> here and "hybrid" on device were different systems, and the headline *keyword beat hybrid*
+> compared keyword against something users never ran. (2) **Ranking was cosine-only re-rank,
+> not fusion** — replaced in remediation PR1 by RRF, so no number here describes current
+> ranking. (3) **83% of the compat cases were unroutable.** Measured 2026-08-06: only **3 of 18**
+> compat fixtures pass `should_retrieve_knowledge`, so the compat half of this report scored
+> traffic production never sends to retrieval (deferred decision Q8). The **latency** column and
+> the *models are indistinguishable at this corpus size* observation still stand. A superseding
+> report lands with remediation PR2; until then treat this file as history.
+> See [rag-retrieval-quality-remediation-implementation-plan.md](../../rag-retrieval-quality-remediation-implementation-plan.md).
+
 Date: 2026-07-31
 Ollama: `http://127.0.0.1:11434`
 Corpus: `C:\Users\still\Documents\BonsAI\dist\knowledge-base-embed-bakeoff\corpus.db`
