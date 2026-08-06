@@ -778,6 +778,48 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
     self.assertTrue(result.attached)
     self.assertEqual(result.retrieval_method, "keyword_embed_unavailable")
 
+  def test_uncovered_game_does_not_get_another_games_cards(self):
+    """Strategy search is scoped to the resolved game, or it does not run.
+
+    "Tank" is a Left 4 Dead 2 section. Asked while playing something the corpus has never
+    heard of, an unscoped search returned it as the best keyword match in the corpus --
+    confidently answering a question about the wrong game. The genre fallback covers the
+    unresolved case instead.
+    """
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    result = retrieve_knowledge_context(
+      settings,
+      ask_mode="strategy",
+      question="how do I beat the tank",
+      app_id="999999",
+      app_name="A Game The Corpus Has Never Heard Of",
+      domain="strategy",
+      pc_ip="",
+    )
+    self.assertNotIn("Left 4 Dead 2", result.text_block)
+    self.assertNotIn("Tank", result.text_block)
+
+  def test_covered_game_still_gets_its_own_cards(self):
+    """The scoping fix must not cost the case it was protecting."""
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    result = retrieve_knowledge_context(
+      settings,
+      ask_mode="strategy",
+      question="how do I beat the tank",
+      app_id="550",
+      app_name="Left 4 Dead 2",
+      domain="strategy",
+      pc_ip="",
+    )
+    self.assertTrue(result.attached)
+    self.assertIn("Tank", result.text_block)
+
   def test_kill_switch_leaves_keyword_search_working_and_says_so(self):
     """Hybrid off is a diagnosis aid, not a way to turn the knowledge base off.
 

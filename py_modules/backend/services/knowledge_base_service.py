@@ -748,7 +748,16 @@ def retrieve_knowledge_context(
             )
             t_fts = time.perf_counter()
             fts_k = HYBRID_FTS_SHORTLIST_K if nomic_ready else top_k
-            cards = _search_sections(conn, game_id=game_id, query=expanded, top_k=fts_k)
+            # Only ever search within the resolved game. An unscoped search returns the best
+            # keyword match in the whole corpus, which for an uncovered game means another
+            # game's cards -- "how do I beat the tank" while playing something unrelated
+            # answered with Left 4 Dead 2's Tank card. Wrong-game advice is worse than none,
+            # and the genre fallback below already covers the unresolved case.
+            cards = (
+                _search_sections(conn, game_id=game_id, query=expanded, top_k=fts_k)
+                if game_id is not None
+                else []
+            )
             fts_ms = round((time.perf_counter() - t_fts) * 1000, 2)
 
         # Vectors exist but were not used: the user installed a corpus, so "keyword" alone
