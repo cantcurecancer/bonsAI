@@ -175,6 +175,12 @@ async def run_game_ai_request(
                 "strategy_spoiler_consent_effective": False,
             }
         question_for_model = lane.text
+        # Retrieval searches the user's actual words. question_for_model grows a follow-up
+        # header below, and _fts_match_query keeps only a bounded number of tokens, so a
+        # follow-up Ask used to be searched as "REPLY FOLLOW UP CONTEXT The user is refining
+        # their previous Ask ..." — boilerplate identical on every follow-up, and nothing of
+        # what was asked. The model still receives the header; the index does not.
+        question_for_retrieval = lane.text
 
         if reply_followup:
             followup_block = build_reply_followup_context_block(
@@ -270,7 +276,7 @@ async def run_game_ai_request(
         should_kb, kb_domain = should_retrieve_knowledge(
             use_local_knowledge_base=settings.get("use_local_knowledge_base") is True,
             ask_mode=ask_mode,
-            question=question_for_model,
+            question=question_for_retrieval,
             app_id=app_id,
             app_name=app_name,
         )
@@ -290,7 +296,7 @@ async def run_game_ai_request(
                 return retrieve_knowledge_context(
                     settings,
                     ask_mode=ask_mode,
-                    question=question_for_model,
+                    question=question_for_retrieval,
                     app_id=app_id,
                     app_name=app_name,
                     shortcut_name=shortcut_name,

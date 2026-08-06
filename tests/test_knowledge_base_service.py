@@ -19,6 +19,8 @@ from backend.services.knowledge_base_service import (
     stack_context_blocks,
     suggest_chip_candidates,
     _COMPAT_CHIP_TEMPLATES,
+    _expand_query,
+    _fts_match_query,
     _fuse_cards_by_rrf,
 )
 from backend.services.ollama_embed_service import OllamaEmbedError
@@ -322,6 +324,50 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
     fused = _fuse_cards_by_rrf(cards, [1.0, 0.0], vectors, top_k=5)
     self.assertEqual(fused[0].name, "A")
 
+  def test_fts_query_drops_function_words(self):
+    self.assertEqual(
+      _fts_match_query("How do I beat King Dodongo"),
+      '"beat" OR "King" OR "Dodongo"',
+    )
+
+  def test_fts_query_is_empty_when_only_function_words(self):
+    """No match beats a junk match.
+
+    Every one of these terms appears in nearly every card, so an OR over them used to return
+    eight seed cards scoring 1.9-5.2 — above several genuine compat hits. Returning "" sends
+    the caller to the genre/compat fallback instead.
+    """
+    self.assertEqual(_fts_match_query("the a of and to it is"), "")
+    self.assertEqual(_fts_match_query("how do i"), "")
+
+  def test_fts_query_keeps_weak_but_meaningful_words(self):
+    """The stopword list is function words only, and stays that way.
+
+    "best" reads like filler in "the best thing to do", and like the whole question in "best
+    build for this boss". A term wrongly added to the list fails invisibly — it just quietly
+    stops matching — so the list is not grown to catch marginal queries. The relevance floor
+    and the vector half of fusion handle those.
+    """
+    self.assertEqual(
+      _fts_match_query("what is the best thing to do here"),
+      '"best" OR "thing" OR "here"',
+    )
+
+  def test_expand_query_drops_app_name_once_the_game_is_resolved(self):
+    # Already scoped by game_id, so the title is pure BM25 noise that favours cards
+    # repeating it.
+    self.assertEqual(
+      _expand_query("How do I beat King Dodongo", "Ocarina of Time", game_resolved=True),
+      "How do I beat King Dodongo",
+    )
+
+  def test_expand_query_prepends_app_name_when_the_game_is_unresolved(self):
+    # Prepended, not appended: past the token cap it was silently discarded.
+    self.assertEqual(
+      _expand_query("How do I beat King Dodongo", "Ocarina of Time", game_resolved=False),
+      "Ocarina of Time How do I beat King Dodongo",
+    )
+
   def test_rrf_without_any_vectors_preserves_keyword_order(self):
     cards = [self._card(i, n) for i, n in enumerate("ABCDE", start=1)]
     fused = _fuse_cards_by_rrf(cards, [1.0, 0.0], {}, top_k=5)
@@ -440,9 +486,15 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
         2: [0.0, 1.0] + [0.0] * 766,
       },
     ):
+      # Expert mode (top_k=5), not speed (top_k=1), on purpose. Under the cosine-only
+      # reranker a single mocked vector took the top slot outright, because vectorless cards
+      # were exiled behind every scored one — so a top_k=1 assertion was really asserting
+      # that exile. Fusion instead lets the vector-favoured tip climb from keyword rank 6
+      # into the shortlist while the two strongest keyword hits keep their places, which is
+      # the behaviour worth pinning.
       result = retrieve_knowledge_context(
         settings,
-        ask_mode="speed",
+        ask_mode="expert",
         question="why is my game crashing proton issue",
         app_id="",
         app_name="",
@@ -452,6 +504,10 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
     self.assertTrue(result.attached)
     self.assertEqual(result.retrieval_method, "hybrid")
     self.assertIn("Proton", result.text_block)
+    topics = [line for line in result.text_block.splitlines() if line.startswith("[Tip:")]
+    self.assertEqual(len(topics), 5)
+    # Strongest keyword hits survive fusion rather than being displaced by the vectors.
+    self.assertTrue(topics[0].startswith("[Tip: crash]"))
 
   def test_compat_keyword_when_nomic_missing(self):
     settings = {

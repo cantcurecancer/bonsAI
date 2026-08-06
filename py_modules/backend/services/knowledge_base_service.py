@@ -154,12 +154,20 @@ def close_connection(db_path: str) -> None:
                 pass
 
 
-def _expand_query(question: str, app_name: str) -> str:
-    """Rule-based query expansion (no LLM)."""
-    parts = [question or ""]
-    if app_name:
-        parts.append(app_name)
-    return " ".join(p.strip() for p in parts if p.strip())
+def _expand_query(question: str, app_name: str, *, game_resolved: bool = False) -> str:
+    """Rule-based query expansion (no LLM).
+
+    The app name is dropped once ``game_resolved`` — the search is already scoped by
+    ``game_id``, so the title contributes nothing but BM25 noise, and it inflates exactly the
+    cards that happen to repeat the title in their text. On the unresolved path it is the only
+    signal narrowing the search, so it goes *first*: appending it put it past the token cap on
+    any question of ordinary length, which silently discarded it.
+    """
+    q = (question or "").strip()
+    name = (app_name or "").strip()
+    if game_resolved or not name:
+        return q
+    return " ".join(p for p in (name, q) if p)
 
 
 def _resolve_game_id(
@@ -208,11 +216,42 @@ def _trust_tier_for_compat_row(row: sqlite3.Row) -> str:
     return TRUST_TIER_FALLBACK
 
 
+# Function words only. Every one of these matches somewhere in almost every card, so under an
+# OR query they do not narrow anything — they just hand a score to whatever card repeats them
+# most. Measured on the seed corpus: the query "the a of and to it is" returned eight cards
+# scoring 1.9-5.2, above several genuine compat hits, which is why the relevance floor alone
+# cannot fix this.
+#
+# Deliberately excludes words that carry meaning on a Deck: run, boot, load, save, off, out,
+# down, up, no, not, crash, fix, work. Grow this list only with evidence — a wrongly-dropped
+# term is invisible, it just quietly stops matching.
+_FTS_STOPWORDS = frozenset(
+    """
+    a an and are as at be been being but by can could did do does doing for from had has have
+    how i if in into is it its just me my of on or our so some such than that the their them
+    then there these they this those to was we were what when where which while who why will
+    with would you your
+    """.split()
+)
+
+# Raised from 12. With function words gone, 12 was cutting into the content of an ordinary
+# two-sentence question; the tail of a long question is now searched rather than dropped.
+_FTS_MAX_TOKENS = 24
+
+
 def _fts_match_query(query: str) -> str:
+    """Build the FTS5 OR expression, keeping only discriminative terms.
+
+    Returns "" when the question is nothing but function words. That is deliberate: there is
+    no such thing as a good match for "what is the best thing to do here", and returning
+    nothing sends the caller to the genre/compat fallback instead of injecting whichever
+    cards happened to repeat "the" most often.
+    """
     q = (query or "").strip()
     if not q:
         return ""
-    tokens = re.findall(r"\w+", q)[:12]
+    tokens = [t for t in re.findall(r"\w+", q) if t.lower() not in _FTS_STOPWORDS]
+    tokens = tokens[:_FTS_MAX_TOKENS]
     if not tokens:
         return ""
     return " OR ".join(f'"{tok}"' for tok in tokens)
@@ -584,7 +623,7 @@ def retrieve_knowledge_context(
         )
         resolve_ms = round((time.perf_counter() - t_resolve) * 1000, 2)
 
-        expanded = _expand_query(question, app_name)
+        expanded = _expand_query(question, app_name, game_resolved=game_id is not None)
         manifest = _load_corpus_manifest(settings)
 
         # Compatibility gate. A pre-v3 corpus baked bare documents; querying it with a
