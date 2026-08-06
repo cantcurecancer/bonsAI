@@ -10,6 +10,7 @@ from backend.services.knowledge_base_schema import (
     unpack_embedding_vector,
 )
 from backend.services.knowledge_base_service import (
+    EmbeddingDimensionMismatch,
     KnowledgeCard,
     close_connection,
     retrieve_knowledge_context,
@@ -18,7 +19,7 @@ from backend.services.knowledge_base_service import (
     stack_context_blocks,
     suggest_chip_candidates,
     _COMPAT_CHIP_TEMPLATES,
-    _rerank_cards_by_vector,
+    _fuse_cards_by_rrf,
 )
 from backend.services.ollama_embed_service import OllamaEmbedError
 
@@ -287,14 +288,51 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
     self.assertIn("text", payload["candidates"][0])
     self.assertIn("category", payload["candidates"][0])
 
-  def test_rerank_cards_by_vector_orders_by_similarity(self):
+  @staticmethod
+  def _card(section_id: int, name: str) -> KnowledgeCard:
+    return KnowledgeCard(
+      section_id, 2, "Game", "boss", name, f"card {name}", "", "", None, None, "fallback_no_source"
+    )
+
+  def test_rrf_promotes_a_card_the_vectors_favour(self):
+    """A weak keyword hit that the vectors love climbs, without simply taking over.
+
+    Rewritten from test_rerank_cards_by_vector_orders_by_similarity (R5), which asserted the
+    cosine-only sort this replaces. Fusion is consensus, not override: D is 4th on keywords
+    and 1st on vectors, so it lands 2nd overall rather than 1st.
+    """
+    cards = [self._card(i, n) for i, n in enumerate("ABCDE", start=1)]
+    # Query [1, 0]; dot product orders the vector list D > A > B > C > E.
+    vectors = {4: [1.0, 0.0], 1: [0.9, 0.0], 2: [0.8, 0.0], 3: [0.7, 0.0], 5: [0.6, 0.0]}
+    fused = _fuse_cards_by_rrf(cards, [1.0, 0.0], vectors, top_k=5)
+    self.assertEqual([c.name for c in fused], ["A", "D", "B", "C", "E"])
+
+  def test_rrf_keeps_top_keyword_hit_when_its_vector_is_missing(self):
+    """Direct regression on the cosine-only reranker, and on naive RRF.
+
+    The old code appended vectorless cards after every vector-scored card, so the #1 keyword
+    hit lost to a marginal cosine match purely for lacking a vector. Textbook RRF rebuilds
+    that same exile by omission — a card absent from the vector list scores 0 from it, and on
+    a 30-card shortlist even the worst vectored card then outranks the best keyword hit.
+    Backfilling the missing rank is what keeps A on top here.
+    """
+    cards = [self._card(i, n) for i, n in enumerate("ABCDE", start=1)]
+    # A is the best keyword hit and the only card whose vector never got baked.
+    vectors = {2: [0.5, 0.0], 3: [0.6, 0.0], 4: [0.7, 0.0], 5: [0.8, 0.0]}
+    fused = _fuse_cards_by_rrf(cards, [1.0, 0.0], vectors, top_k=5)
+    self.assertEqual(fused[0].name, "A")
+
+  def test_rrf_without_any_vectors_preserves_keyword_order(self):
+    cards = [self._card(i, n) for i, n in enumerate("ABCDE", start=1)]
+    fused = _fuse_cards_by_rrf(cards, [1.0, 0.0], {}, top_k=5)
+    self.assertEqual([c.name for c in fused], ["A", "B", "C", "D", "E"])
+
+  def test_rrf_dimension_mismatch_raises_rather_than_truncating(self):
     cards = [
-      KnowledgeCard(1, 2, "Game", "boss", "Low", "card low", "", "", None, None, "fallback_no_source"),
-      KnowledgeCard(2, 2, "Game", "boss", "High", "card high", "", "", None, None, "fallback_no_source"),
+      KnowledgeCard(1, 2, "Game", "boss", "A", "c", "", "", None, None, "fallback_no_source"),
     ]
-    vectors = {1: [0.0, 1.0], 2: [1.0, 0.0]}
-    reranked = _rerank_cards_by_vector(cards, [1.0, 0.0], vectors, top_k=1)
-    self.assertEqual(reranked[0].name, "High")
+    with self.assertRaises(EmbeddingDimensionMismatch):
+      _fuse_cards_by_rrf(cards, [1.0, 0.0, 0.0], {1: [1.0, 0.0]}, top_k=1)
 
   def test_hybrid_retrieval_uses_keyword_when_nomic_missing(self):
     settings = {

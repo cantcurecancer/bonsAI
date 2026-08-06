@@ -43,6 +43,35 @@ RetrievalMethod = Literal["keyword", "hybrid", "keyword_embed_unavailable"]
 _CONN_LOCK = threading.Lock()
 _CONN_BY_PATH: dict[str, sqlite3.Connection] = {}
 
+# --- Fusion and floor constants ------------------------------------------------------------
+#
+# PROVISIONAL — every value below is a PR1 placeholder. The final numbers come from the PR2
+# bake-off, tuned on the *tune* split and gated on *holdout*; see R1/R3 in
+# docs/rag-retrieval-quality-remediation-implementation-plan.md. Do not tune them against the
+# current 22-section seed corpus: it is smaller than HYBRID_FTS_SHORTLIST_K, so the shortlist
+# swallows it whole and any number derived from it measures the harness, not the ranking.
+RRF_K = 60
+RRF_W_FTS = 1.0
+RRF_W_VEC = 1.0
+
+# Relevance is -bm25(...), so bigger is a better match (FTS5's bm25 is negative, and more
+# negative means better; flipping the sign once here keeps every comparison downstream the
+# obvious direction).
+#
+# Deliberately LOOSE (R3): it drops near-certain junk and nothing else. Measured on the seed
+# corpus 2026-08-05 — a wholly off-topic Ask ("how do I cook pasta for dinner") scores at most
+# 0.75, while genuine hits score 10+. It does NOT catch the stopword-only query, which scores
+# 1.9-5.2 because common words match everywhere; that is _fts_match_query's job, not the
+# floor's. Too strict here and the KB silently stops attaching, which degrades cleanly but
+# invisibly, so PR1 errs toward no-op.
+BM25_RELEVANCE_FLOOR = 1.0
+
+# Column weights, highest first. sections_fts is (name, card); compat_patterns_fts is
+# (topic, platforms, card). A card whose *title* matches the Ask is a better hit than one
+# that mentions the words somewhere in its body.
+_SECTIONS_BM25 = "bm25(sections_fts, 10.0, 1.0)"
+_COMPAT_BM25 = "bm25(compat_patterns_fts, 5.0, 2.0, 1.0)"
+
 
 @dataclass
 class KnowledgeCard:
@@ -57,6 +86,9 @@ class KnowledgeCard:
     source_version: Optional[str]
     crawled_at: Optional[str]
     trust_tier: str
+    # -bm25(...) at retrieval time; bigger is a better keyword match. Defaulted so callers
+    # that build a card outside a search (tests, fallbacks) need not supply one.
+    bm25_score: float = 0.0
 
 
 @dataclass
@@ -243,6 +275,14 @@ def _load_compat_vectors(conn: sqlite3.Connection, pattern_ids: list[int]) -> di
     return out
 
 
+def _row_relevance(row: sqlite3.Row) -> float:
+    """Read the selected ``relevance`` column when the query supplied one."""
+    try:
+        return float(row["relevance"])
+    except (IndexError, KeyError, TypeError, ValueError):
+        return 0.0
+
+
 def _compat_row_to_card(row: sqlite3.Row) -> KnowledgeCard:
     return KnowledgeCard(
         section_id=int(row["pattern_id"]),
@@ -256,6 +296,7 @@ def _compat_row_to_card(row: sqlite3.Row) -> KnowledgeCard:
         source_version=None,
         crawled_at=None,
         trust_tier=_trust_tier_for_compat_row(row),
+        bm25_score=_row_relevance(row),
     )
 
 
@@ -268,18 +309,26 @@ def _search_compat_patterns(
     fts_q = _fts_match_query(query)
     if not fts_q:
         return []
+    # ORDER BY the *same* weighted expression that is selected. "ORDER BY rank" is the
+    # unweighted bm25, so ordering by it would leave the column weights affecting the floor
+    # only and silently do nothing to ranking.
     sql = (
-        "SELECT p.pattern_id, p.topic, p.platforms, p.card, p.source_url, p.source_license "
+        "SELECT p.pattern_id, p.topic, p.platforms, p.card, p.source_url, p.source_license, "
+        f"-{_COMPAT_BM25} AS relevance "
         "FROM compat_patterns_fts f "
         "JOIN compat_patterns p ON p.pattern_id = f.rowid "
         "WHERE compat_patterns_fts MATCH ? "
-        "ORDER BY rank LIMIT ?"
+        f"ORDER BY {_COMPAT_BM25} LIMIT ?"
     )
     try:
         rows = conn.execute(sql, (fts_q, top_k)).fetchall()
     except sqlite3.Error:
         return []
-    return [_compat_row_to_card(row) for row in rows]
+    return [
+        _compat_row_to_card(row)
+        for row in rows
+        if float(row["relevance"]) >= BM25_RELEVANCE_FLOOR
+    ]
 
 
 def _load_section_vectors(conn: sqlite3.Connection, section_ids: list[int]) -> dict[int, list[float]]:
@@ -299,24 +348,59 @@ def _load_section_vectors(conn: sqlite3.Connection, section_ids: list[int]) -> d
     return out
 
 
-def _rerank_cards_by_vector(
+def _fuse_cards_by_rrf(
     cards: list[KnowledgeCard],
     query_vector: list[float],
     vectors_by_id: dict[int, list[float]],
     *,
     top_k: int,
 ) -> list[KnowledgeCard]:
-    scored: list[tuple[float, KnowledgeCard]] = []
-    unscored: list[KnowledgeCard] = []
-    for card in cards:
+    """Reciprocal-rank fusion of the keyword ordering with the vector ordering.
+
+    ``cards`` arrives in BM25 order, so a card's index is its FTS rank. Each list contributes
+    ``w / (RRF_K + rank)``.
+
+    Rank fusion replaces a cosine-only sort that appended vectorless cards *after* every
+    vector-scored one, so the best keyword hit in the corpus sank below a marginal cosine
+    match whenever its vector happened to be missing. Fusion also sidesteps the scale problem
+    that made that sort fragile: cosine similarities bunch into a narrow band, so tiny gaps
+    between near-identical scores decided the order outright.
+
+    **Cards with no vector are given a rank one past the end of the vector list rather than
+    being dropped from it.** Textbook RRF omits absent documents, and omission here would
+    quietly rebuild the exile it is supposed to remove: with a 30-card shortlist, the worst
+    possible vectored card scores 1/90 + 1/90 = 0.0222 while the #1 keyword hit with no vector
+    scores 1/61 = 0.0164, so *having* a vector would outrank *being the best match*. Backfill
+    makes the penalty for a missing vector one rank step instead of the whole list.
+
+    Raises ``EmbeddingDimensionMismatch`` via ``_dot_similarity`` when the corpus was baked at
+    a different dimension; the caller treats that as "disable hybrid for this request".
+    """
+    if not cards:
+        return []
+
+    scores = [RRF_W_FTS / (RRF_K + rank) for rank in range(1, len(cards) + 1)]
+
+    by_similarity: list[tuple[float, int]] = []
+    vectorless: list[int] = []
+    for index, card in enumerate(cards):
         vec = vectors_by_id.get(card.section_id)
         if vec:
-            scored.append((_dot_similarity(query_vector, vec), card))
+            by_similarity.append((_dot_similarity(query_vector, vec), index))
         else:
-            unscored.append(card)
-    scored.sort(key=lambda item: item[0], reverse=True)
-    ordered = [card for _, card in scored] + unscored
-    return ordered[:top_k]
+            vectorless.append(index)
+
+    # Ties broken by FTS position so the fused order is deterministic run to run.
+    by_similarity.sort(key=lambda item: (-item[0], item[1]))
+    for vec_rank, (_, index) in enumerate(by_similarity, start=1):
+        scores[index] += RRF_W_VEC / (RRF_K + vec_rank)
+
+    missing_rank = len(by_similarity) + 1
+    for index in vectorless:
+        scores[index] += RRF_W_VEC / (RRF_K + missing_rank)
+
+    order = sorted(range(len(cards)), key=lambda i: (-scores[i], i))
+    return [cards[i] for i in order[:top_k]]
 
 
 def _search_sections(
@@ -329,31 +413,29 @@ def _search_sections(
     fts_q = _fts_match_query(query)
     if not fts_q:
         return []
+    # See _search_compat_patterns on why ORDER BY repeats the weighted expression.
+    select_cols = (
+        "SELECT s.section_id, s.game_id, g.canonical_title, s.section_type, s.name, s.card, "
+        "s.source_url, s.source_license, s.source_version, s.crawled_at, "
+        f"-{_SECTIONS_BM25} AS relevance "
+        "FROM sections_fts f "
+        "JOIN sections s ON s.section_id = f.rowid "
+        "JOIN games g ON g.game_id = s.game_id "
+    )
     if game_id is not None:
-        sql = (
-            "SELECT s.section_id, s.game_id, g.canonical_title, s.section_type, s.name, s.card, "
-            "s.source_url, s.source_license, s.source_version, s.crawled_at "
-            "FROM sections_fts f "
-            "JOIN sections s ON s.section_id = f.rowid "
-            "JOIN games g ON g.game_id = s.game_id "
-            "WHERE sections_fts MATCH ? AND s.game_id = ? "
-            "ORDER BY rank LIMIT ?"
+        sql = select_cols + (
+            "WHERE sections_fts MATCH ? AND s.game_id = ? " f"ORDER BY {_SECTIONS_BM25} LIMIT ?"
         )
         rows = conn.execute(sql, (fts_q, game_id, top_k)).fetchall()
     else:
-        sql = (
-            "SELECT s.section_id, s.game_id, g.canonical_title, s.section_type, s.name, s.card, "
-            "s.source_url, s.source_license, s.source_version, s.crawled_at "
-            "FROM sections_fts f "
-            "JOIN sections s ON s.section_id = f.rowid "
-            "JOIN games g ON g.game_id = s.game_id "
-            "WHERE sections_fts MATCH ? "
-            "ORDER BY rank LIMIT ?"
-        )
+        sql = select_cols + ("WHERE sections_fts MATCH ? " f"ORDER BY {_SECTIONS_BM25} LIMIT ?")
         rows = conn.execute(sql, (fts_q, top_k)).fetchall()
 
     out: list[KnowledgeCard] = []
     for row in rows:
+        relevance = _row_relevance(row)
+        if relevance < BM25_RELEVANCE_FLOOR:
+            continue
         out.append(
             KnowledgeCard(
                 section_id=int(row["section_id"]),
@@ -367,6 +449,7 @@ def _search_sections(
                 source_version=row["source_version"],
                 crawled_at=row["crawled_at"],
                 trust_tier=_trust_tier_for_row(row),
+                bm25_score=relevance,
             )
         )
     return out
@@ -555,7 +638,7 @@ def retrieve_knowledge_context(
                     vectors_by_id = _load_compat_vectors(conn, [c.section_id for c in cards])
                 else:
                     vectors_by_id = _load_section_vectors(conn, [c.section_id for c in cards])
-                cards = _rerank_cards_by_vector(
+                cards = _fuse_cards_by_rrf(
                     cards,
                     query_vector,
                     vectors_by_id,

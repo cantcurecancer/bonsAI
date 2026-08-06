@@ -62,7 +62,7 @@ from backend.services.knowledge_base_service import (  # noqa: E402
     _budget_for_mode,
     _dot_similarity,
     _expand_query,
-    _rerank_cards_by_vector,
+    _fuse_cards_by_rrf,
     _resolve_game_id,
     _search_compat_patterns,
     _search_sections,
@@ -312,7 +312,7 @@ def _hybrid_retrieve(
         cards = _search_sections(conn, game_id=game_id, query=expanded, top_k=fts_k)
     if not cards:
         return []
-    return _rerank_cards_by_vector(
+    return _fuse_cards_by_rrf(
         cards,
         query_vector,
         vectors_by_id,
