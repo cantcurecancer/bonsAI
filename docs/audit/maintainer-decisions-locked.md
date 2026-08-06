@@ -15,19 +15,50 @@ choices are, and what happens either way. **Locked calls (2026-08-02 for D1–D6
 [Maintainer decisions locked](#maintainer-decisions-locked--2026-08-02); implement
 from that section when it disagrees with an option above.
 
-**One open, 2026-08-06: D16 — the compat knowledge base is unreachable for most of its
-content.** Full write-up and the two options in
-[rag-pr2-signoff.md](rag-pr2-signoff.md) § 2. In short: routing an Ask to the troubleshooting
-knowledge base requires the literal word `deck` or `proton` in the question, so **3 of 40**
-drafted compat queries reach it and **0 of 19** phrased the way a player types. About 24 of
-the corpus's 27 compat topics — storage, Steam Input, anti-cheat, streaming, VR, Wine,
-emulation — cannot be retrieved by anything a user would plausibly write. This was decision
-**Q8**, deferred as a nicety; it is now measured and it blocks PR2 stage 6d, because the
-compat half of the bake-off would otherwise score cards production never fetches. Choose:
-keep Q8 deferred and tune fusion on strategy evidence alone, or widen the gate now as a
-scoped product change with its own on-Deck QA.
+**None currently open.** D1–D16 are all locked; see the table below for D1–D15 and the section
+below for D16.
 
-D1–D13 are all locked; see the table below for each call.
+---
+
+### D16 — The compat knowledge base was unreachable for most of its content
+
+**Raised and locked 2026-08-06. Choice: widen the gate now.** Shipped the same day.
+
+**What was going on.** Routing an Ask to the troubleshooting knowledge base required the
+literal word `deck` or `proton` in the question, or one of about six preset phrases. Measured
+against 40 freshly drafted troubleshooting questions: **3 reached it**. Of the 19 phrased the
+way a player actually types, **zero** did — and 18 of the 21 written deliberately to match the
+gate also missed. That left roughly 24 of the corpus's 27 topics — storage, Steam Input,
+anti-cheat, streaming, VR, Wine, emulation — unreachable, each with 6–10 tips shipped behind
+it. This was decision **Q8**, deferred as "natural-language asks skip KB"; the measurement
+showed it was not a nicety but the feature being mostly off.
+
+**The options were:** keep Q8 deferred and tune fusion on strategy evidence alone, accepting
+that the compat arm of the bake-off would score cards production never fetches; or widen the
+gate as a scoped product change. Maintainer chose to widen.
+
+**How it was done, and the constraint that shaped it.** `question_matches_troubleshooting_log_context`
+has **five** consumers — knowledge base routing, Proton log attachment, system-prompt framing,
+stream tags, and the client-side permission hint. Widening it would have changed four
+behaviours to fix one. So the fix is a **separate, additive** predicate,
+[compat_topic_router.py](../../py_modules/backend/services/compat_topic_router.py), that only
+the knowledge base reads; `should_retrieve_knowledge` runs the compat path when either matches.
+The phrase gate and the frontend heuristic that mirrors it are untouched.
+
+**Result:** reachability 3/40 → **39/40**, **13/13** on a blind holdout split whose queries were
+not read while the rules were written, and **0/107** strategy false positives. Old fixtures
+3/18 → 18/18.
+
+**Two things found while building it, both now pinned by test.** Substring matching had `lan`
+firing inside *plants*, *plane* and *island*, routing three strategy questions to
+troubleshooting; terms now match at a word boundary. And normalizing apostrophes to spaces
+turned `can't see` into `can t see`, silently killing two rules that read as though they
+worked; apostrophes are dropped instead. A third test asserts every topic in
+`data/kb/compat_patterns.json` has a routing rule, so shipping content nobody can reach fails
+rather than repeats.
+
+Full measurement and the options as presented: [rag-pr2-signoff.md](rag-pr2-signoff.md) § 2.
+On-Deck QA: **KB-ROUTER-01**.
 
 Evidence for all of these lives in [docs/audit/](.), especially
 [05-plan.md](05-plan.md).

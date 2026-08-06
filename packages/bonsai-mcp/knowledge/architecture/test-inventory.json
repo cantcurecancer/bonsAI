@@ -70,6 +70,7 @@
     "tests/test_capabilities.py",
     "tests/test_character_catalog_parity.py",
     "tests/test_clear_plugin_data_voice_reset.py",
+    "tests/test_compat_topic_router.py",
     "tests/test_desktop_note_service.py",
     "tests/test_eval_kb_arms.py",
     "tests/test_feedback_service.py",

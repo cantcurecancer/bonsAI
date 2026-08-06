@@ -116,6 +116,15 @@ still attach while it is off; only the meaning half of the ranking stops. The sw
 checked **before** the corpus-format gate, so an off switch reports itself even on a corpus
 that could not have run hybrid anyway.
 
+**Troubleshooting tips now attach to plain-English Asks (2026-08-06).** Until this change, the
+shared tip sheet was only searched when your question contained the literal word **deck** or
+**proton** — so questions about SD card storage, Steam Input, anti-cheat, streaming, VR, Wine
+or emulation attached nothing, even though tips for all of those shipped. An Ask now reaches
+the tip sheet when it *names a topic the corpus covers*, however you phrase it. Strategy Asks
+are unaffected: they still route by running game and Ask mode. If a troubleshooting Ask still
+attaches nothing, the tips exist but nothing scored above the relevance floor — try naming the
+component ("SD card", "controller layout", "remote play") rather than only the symptom.
+
 **Troubleshooting hybrid (Phase 3 — shipped 2026-07-29):** The same hybrid path runs on **troubleshooting** Asks over the shared `compat_patterns` tip sheet (~124 maintainer tips in the Dev-tab seed). Show details adds **Source: shared troubleshooting tips** when compat tips attach. Rebuild the seed corpus after pulling (`python scripts/build_rag_db.py --seed --out dist/knowledge-base`) and reinstall via Developer tab. See [knowledge-base.md](knowledge-base.md) § Phasing.
 
 **SD card:** When a microSD is mounted under `/run/media/deck/…`, the download picker offers **Download to SD card** (install path `{mount}/.bonsai/rag`). Internal default remains `~/.bonsai/rag`.

@@ -99,12 +99,23 @@ class EvalArmsTests(unittest.TestCase):
         self.assertTrue(reachable)
         self.assertEqual(domain, "compat")
 
-        # The deferred Q8 gap, asserted rather than described. This is PARA-C01 verbatim: a
-        # plain-English restatement of the case above, which the phrase list does not match.
-        # 15 of 18 compat fixtures fail this way, which is why compat is reported twice.
+        # PARA-C01 verbatim. This used to be the demonstration of the Q8 gap -- a
+        # plain-English restatement that the phrase list did not match, one of 15 such
+        # misses out of 18. Decision D16 added the topic router and it reaches compat now.
+        # Kept as a regression pin: if the router is weakened, this goes back to unreachable.
         reachable, domain = self.mod._gate_verdict(
             ask_mode="speed",
             question="linux game keeps closing right after launch compatibility layer",
+            app_id="",
+            app_name="",
+        )
+        self.assertTrue(reachable)
+        self.assertEqual(domain, "compat")
+
+        # Still unreachable, and correctly so: a strategy question is not troubleshooting.
+        reachable, domain = self.mod._gate_verdict(
+            ask_mode="speed",
+            question="the big lizard in the cave rolls into a ball and I cannot hurt it",
             app_id="",
             app_name="",
         )

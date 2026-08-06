@@ -4,6 +4,10 @@
  * Used for: MainTabChatTranscript when Ask text looks like Proton/compat troubleshooting.
  * Solves: Hint users to enable Read game & screenshot context without auto-enabling it.
  * Does not: Replace backend `question_matches_troubleshooting_log_context` — keep phrases aligned.
+ * Does not: Decide whether the knowledge base runs. That moved to `compat_topic_router.py`
+ *           under decision D16 and is deliberately much wider than this. This gate is about
+ *           reading Proton logs, which needs a permission; matching it to KB routing would
+ *           show the permission hint on every troubleshooting-shaped Ask.
  */
 export function questionLooksLikeTroubleshootingAsk(question: string): boolean {
   const s = (question || "").toLowerCase();

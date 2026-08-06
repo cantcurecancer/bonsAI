@@ -87,11 +87,13 @@ PR1 ships placeholder fusion weights and a **loose** relevance floor (R3). Final
 | 9 | Phase 5 / Phase 7 | **Partial content depth** ships in PR2; Phase 5 keeps chip vector ranking, heavier wiki ingest, full content bar. **RRF (FTS+vector)** moves out of Phase 7 into this work. Trust-tier-in-RRF, ANN, demote, etc. stay Phase 7. |
 | 10 | Plain talk | Short `.cursorrules` note only — plain language + sign-off gates |
 
-### Open decision (Q8) — compat phrase gate
+### ~~Open decision (Q8)~~ — compat phrase gate: **CLOSED 2026-08-06 as D16, gate widened**
 
-Troubleshooting KB only runs when `question_matches_troubleshooting_log_context` matches a hardcoded phrase list. Natural-language asks (e.g. `deck sleep resume proton black screen`) skip KB in production. Roadmap Bugs row: **KB compat retrieval phrase gate**.
+Troubleshooting KB only ran when `question_matches_troubleshooting_log_context` matched a hardcoded phrase list. Natural-language asks skipped KB in production. Roadmap Bugs row: **KB compat retrieval phrase gate**.
 
-**Defer the product fix** for this remediation. **Must** make the gap visible in eval (R2) so we do not tune RRF on traffic production never routes.
+The plan said **defer the product fix** and make the gap visible in eval (R2). R2 shipped in stage 6b, and the number it produced changed the decision: **3 of 40** drafted troubleshooting questions reached retrieval, **0 of 19** phrased naturally, leaving ~24 of 27 corpus topics unreachable. Deferring would have meant tuning fusion with no usable compat evidence at all.
+
+Maintainer locked **D16: widen now.** New `compat_topic_router.py` routes on corpus topics; the phrase gate is untouched because its other four consumers (Proton logs, prompt framing, stream tags, permission hint) must not move. Reachability **3/40 → 39/40**, **13/13** blind holdout, **0/107** strategy false positives. The compat arm of the bake-off now measures cards production would actually fetch. See [audit/maintainer-decisions-locked.md](audit/maintainer-decisions-locked.md) § D16.
 
 ---
 

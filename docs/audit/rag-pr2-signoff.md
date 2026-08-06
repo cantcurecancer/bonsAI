@@ -1,6 +1,7 @@
 # RAG remediation PR2 — maintainer sign-off
 
-**Status: awaiting sign-off. No cards written, no corpus rebuilt for eval, no bake-off run.**
+**Status: § 2 decided (D16, gate widened). Still awaiting sign-off on the intents and cards —
+no cards written, no corpus rebuilt for eval, no bake-off run.**
 
 This is the R1 gate from
 [rag-retrieval-quality-remediation-implementation-plan.md](../rag-retrieval-quality-remediation-implementation-plan.md).
@@ -40,7 +41,18 @@ query, so holdout tests generalisation to intents that were never tuned against.
 
 ---
 
-## 2. The thing you need to decide about, before cards
+## 2. ~~The thing you need to decide about, before cards~~ — DECIDED 2026-08-06: widen the gate
+
+> **Locked as D16 and shipped the same day.** The section below is the case as it was put; it
+> is kept because the measurement is the reason the call went the way it did. What changed:
+> a separate `compat_topic_router.py` routes on corpus topics rather than on the literal words
+> `deck` / `proton`, and only the knowledge base reads it — the phrase gate's other four
+> consumers are untouched. **Reachability 3/40 → 39/40, 13/13 on the blind holdout, 0/107
+> strategy false positives.** Decision record in
+> [maintainer-decisions-locked.md](maintainer-decisions-locked.md) § D16; on-Deck **KB-ROUTER-01**.
+>
+> This unblocks the compat arm of the bake-off: it now measures cards production would
+> actually fetch, so fusion constants can be tuned on compat evidence as well as strategy.
 
 **The compat knowledge base is unreachable for most of its content in production.**
 
@@ -118,7 +130,7 @@ exist.
 - [x] No query reuses distinctive noun phrases from its target card verbatim *(enforced by test)*
 - [ ] Strategy cards reviewed — **not written yet; blocked on this sign-off**
 - [ ] Eval fixtures + labels reviewed — labels are empty until cards exist
-- [x] Compat `gate_reachable` reporting understood; Q8 still open — **see §2, needs your call**
+- [x] Compat `gate_reachable` reporting understood; **Q8 closed as D16 — gate widened 2026-08-06**
 - [x] Tune/holdout split recorded — 102 / 45
 - [ ] Explicit sign-off: "approved for rebuild and bake-off"
 

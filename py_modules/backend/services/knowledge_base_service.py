@@ -36,6 +36,7 @@ from backend.services.ollama_embed_service import (
     format_embed_query,
     nomic_embed_available,
 )
+from backend.services.compat_topic_router import question_targets_compat_corpus
 from backend.services.ollama_prompts import question_matches_troubleshooting_log_context
 
 HYBRID_FTS_SHORTLIST_K = 30
@@ -139,7 +140,15 @@ def should_retrieve_knowledge(
     mode = (ask_mode or "speed").strip().lower()
     if mode == "strategy" and (aid or aname):
         return True, "strategy"
-    if question_matches_troubleshooting_log_context(question):
+    # Two gates, deliberately. The prompt-side phrase gate needs the literal word "deck" or
+    # "proton", which left 24 of the corpus's 27 topics unreachable by anything a user would
+    # type -- measured at 3 of 40 drafted compat questions. The topic router closes that
+    # (decision D16). It is kept separate rather than folded into the phrase gate because
+    # that gate also drives Proton log attachment, prompt framing and stream tags; widening
+    # it would change four behaviours to fix one.
+    if question_matches_troubleshooting_log_context(question) or question_targets_compat_corpus(
+        question
+    ):
         return True, "compat"
     return False, ""
 

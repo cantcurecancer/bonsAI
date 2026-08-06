@@ -170,7 +170,7 @@ Replies should use existing `bonsai-cite` markers; spoilery cards obey `bonsai-s
 | Track 3 retrieval (P1) | Prefer per-game AppID tips first; fall back to shared `compat_patterns` |
 | Tip volume (T1) | ~3–5 tips each for the sample titles |
 | Per-game hybrid | Same FTS→vector hybrid as shared tips |
-| Phrase gate (B1) | Lean fix for **KB compat retrieval phrase gate** ships with Phase 4 so natural-language troubleshooting can hit tips |
+| Phrase gate (B1) | **Superseded — shipped early, 2026-08-06, as decision D16 in remediation PR2.** Did not wait for Phase 4: measurement showed only 3 of 40 troubleshooting questions reached the tip sheet at all. See § Compat routing below |
 | No running game (N1) | Shared tips only |
 | Settings (U1) | No new Settings — existing **Use local knowledge base** + corpus install |
 | Out of Phase 4 | Chip vector ranking; broad per-game tips beyond T1; structured cards beyond DRG+OoT; custom UI cards / KB visual maps; public publish (→ Phase 6); sqlite-vss/ANN / auto-pull nomic (→ Phase 7) |
@@ -275,9 +275,47 @@ Replies should use existing `bonsai-cite` markers; spoilery cards obey `bonsai-s
 
 Chip stays **Keyword search** for every non-hybrid variant; the parenthetical is Show details only.
 
+## Compat routing — which Asks reach the tip sheet (D16, 2026-08-06)
+
+Two independent gates decide whether a troubleshooting Ask searches the shared tip sheet, and
+they are deliberately not the same function.
+
+| Gate | Lives in | Also drives | Reach |
+|---|---|---|---|
+| Phrase gate | `question_matches_troubleshooting_log_context` ([ollama_prompts.py:386](../py_modules/backend/services/ollama_prompts.py)) | Proton log attachment, system-prompt framing, stream tags, the client permission hint | Needs the literal word `deck` or `proton`, or one of ~6 preset phrases |
+| Topic router | [compat_topic_router.py](../py_modules/backend/services/compat_topic_router.py) | **Knowledge base routing only** | Any Ask naming a topic the corpus covers |
+
+`should_retrieve_knowledge` runs the compat path when **either** matches.
+
+**Why two.** The phrase gate has five consumers. Widening it to fix retrieval would also start
+attaching Proton logs, re-framing the prompt, changing stream tags and showing a permission
+hint on Asks that never asked for any of that — four behaviour changes to fix one. The router
+is additive and only the knowledge base reads it.
+
+**What it fixed.** Before D16, 24 of the corpus's 27 topics — storage, Steam Input, anti-cheat,
+streaming, VR, Wine, emulation — could not be reached by anything a user would plausibly type,
+despite 6–10 tips shipped behind each. Measured on 40 drafted troubleshooting questions:
+
+| | Before | After |
+|---|---|---|
+| Reaches the tip sheet | 3 / 40 | **39 / 40** |
+| …of those phrased as a player types | 0 / 19 | **19 / 19** |
+| Blind holdout split (rules written without reading it) | — | **13 / 13** |
+| Strategy questions wrongly routed | 0 / 107 | **0 / 107** |
+
+**The trade is asymmetric on purpose.** A missed topic is silent — no tip, no sign one existed.
+A false positive is caught downstream, because retrieval still has to clear
+`BM25_RELEVANCE_FLOOR` and a question with no real match attaches nothing. So the rules lean
+toward firing. Two guards keep that honest: weak topics (`deck`, `linux`, `crash`) never route
+on their own, since they are ordinary words in a game question; and terms match at a word
+boundary, after `lan` was found firing inside *plants*, *plane* and *island*.
+
+A test asserts every topic in `data/kb/compat_patterns.json` has a routing rule, so adding
+corpus content with no way to reach it fails rather than ships.
+
 ## Retrieval quality remediation (PR1, 2026-08-05)
 
-Plan: [rag-retrieval-quality-remediation-implementation-plan.md](rag-retrieval-quality-remediation-implementation-plan.md). PR1 is Stages 1–5 (ranking + correctness infra); **PR2** is Stage 6 (corpus depth, eval, kill-switch, bake-off).
+Plan: [rag-retrieval-quality-remediation-implementation-plan.md](rag-retrieval-quality-remediation-implementation-plan.md). PR1 is Stages 1–5 (ranking + correctness infra); **PR2** is Stage 6 (corpus depth, eval, kill-switch, bake-off) plus **D16** above.
 
 ### What changed
 

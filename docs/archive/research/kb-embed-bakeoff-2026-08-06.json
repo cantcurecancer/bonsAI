@@ -1,0 +1,656 @@
+{
+  "date": "2026-08-06",
+  "ollama_base": "http://127.0.0.1:11434",
+  "corpus_db": "C:\\Users\\still\\Documents\\BonsAI\\dist\\knowledge-base-embed-bakeoff\\corpus.db",
+  "models": [
+    "nomic-embed-text",
+    "nomic-embed-text-v2-moe",
+    "qwen3-embedding:0.6b",
+    "mxbai-embed-large",
+    "snowflake-arctic-embed2",
+    "bge-m3"
+  ],
+  "keyword_baseline": {
+    "model": "keyword",
+    "prompt_mode": "bare",
+    "top1_pct": 82.5,
+    "top3_pct": 90.0,
+    "mean_embed_ms": 0.0,
+    "fts_empty_pct": 7.5,
+    "query_results": [
+      {
+        "case_id": "EVAL-C01",
+        "hit_at_1": false,
+        "hit_at_3": true,
+        "fts_empty": false,
+        "embed_ms": 0.0,
+        "top_names": [
+          "crash",
+          "crash",
+          "proton"
+        ]
+      },
+      {
+        "case_id": "EVAL-C02",
+        "hit_at_1": true,
+        "hit_at_3": true,
+        "fts_empty": false,
+        "embed_ms": 0.0,
+        "top_names": [
+          "proton",
+          "steamvr",
+          "bpm"
+        ]
+      },
+      {
+        "case_id": "EVAL-C03",
+        "hit_at_1": true,
+        "hit_at_3": true,
+        "fts_empty": false,
+        "embed_ms": 0.0,
+        "top_names": [
+          "steamvr",
+          "steamvr",
+          "steamvr"
+        ]
+      },
+      {
+        "case_id": "EVAL-C04",
+        "hit_at_1": true,
+        "hit_at_3": true,
+        "fts_empty": false,
+        "embed_ms": 0.0,
+        "top_names": [
+          "gamescope",
+          "gamescope",
+          "gamescope"
+        ]
+      },
+      {
+        "case_id": "EVAL-C05",
+        "hit_at_1": true,
+        "hit_at_3": true,
+        "fts_empty": false,
+        "embed_ms": 0.0,
+        "top_names": [
+          "anticheat",
+          "anticheat",
+          "anticheat"
+        ]
+      },
+      {
+        "case_id": "EVAL-C06",
+        "hit_at_1": true,
+        "hit_at_3": true,
+        "fts_empty": false,
+        "embed_ms": 0.0,
+        "top_names": [
+          "streaming",
+          "streaming",
+          "performance"
+        ]
+      },
+      {
+        "case_id": "EVAL-C07",
+        "hit_at_1": true,
+        "hit_at_3": true,
+        "fts_empty": false,
+        "embed_ms": 0.0,
+        "top_names": [
+          "storage",
+          "deck",
+          "storage"
+        ]
+      },
+      {
+        "case_id": "EVAL-C08",
+        "hit_at_1": true,
+        "hit_at_3": true,
+        "fts_empty": false,
+        "embed_ms": 0.0,
+        "top_names": [
+          "steam_input",
+          "steam_input",
+          "gyro"
+        ]
+      },
+      {
+        "case_id": "EVAL-C09",
+        "hit_at_1": true,
+        "hit_at_3": true,
+        "fts_empty": false,
+        "embed_ms": 0.0,
+        "top_names": [
+          "emudeck",
+          "emudeck",
+          "gamescope"
+        ]
+      },
+      {
+        "case_id": "EVAL-C10",
+        "hit_at_1": true,
+        "hit_at_3": true,
+        "fts_empty": false,
+        "embed_ms": 0.0,
+        "top_names": [
+          "updates",
+          "updates",
+          "deck"
+        ]
+      },
+      {
+        "case_id": "EVAL-S01",
+        "hit_at_1": true,
+        "hit_at_3": true,
+        "fts_empty": false,
+        "embed_ms": 0.0,
+        "top_names": [
+          "Glyphid Dreadnought"
+        ]
+      },
+      {
+        "case_id": "EVAL-S02",
+        "hit_at_1": true,
+        "hit_at_3": true,
+        "fts_empty": false,
+        "embed_ms": 0.0,
+        "top_names": [
+          "King Dodongo"
+        ]
+      },
+      {
+        "case_id": "EVAL-S03",
+        "hit_at_1": true,
+        "hit_at_3": true,
+        "fts_empty": false,
+        "embed_ms": 0.0,
+        "top_names": [
+          "Tank"
+        ]
+      },
+      {
+        "case_id": "EVAL-S04",
+        "hit_at_1": true,
+        "hit_at_3": true,
+        "fts_empty": false,
+        "embed_ms": 0.0,
+        "top_names": [
+          "Mind Flayer"
+        ]
+      },
+      {
+        "case_id": "EVAL-S05",
+        "hit_at_1": true,
+        "hit_at_3": true,
+        "fts_empty": false,
+        "embed_ms": 0.0,
+        "top_names": [
+          "Deathclaw"
+        ]
+      },
+      {
+        "case_id": "EVAL-S06",
+        "hit_at_1": true,
+        "hit_at_3": true,
+        "fts_empty": false,
+        "embed_ms": 0.0,
+        "top_names": [
+          "Downtown"
+        ]
+      },
+      {
+        "case_id": "EVAL-S07",
+        "hit_at_1": true,
+        "hit_at_3": true,
+        "fts_empty": false,
+        "embed_ms": 0.0,
+        "top_names": [
+          "Megara"
+        ]
+      },
+      {
+        "case_id": "EVAL-S08",
+        "hit_at_1": true,
+        "hit_at_3": true,
+        "fts_empty": false,
+        "embed_ms": 0.0,
+        "top_names": [
+          "Adam Smasher"
+        ]
+      },
+      {
+        "case_id": "EVAL-S09",
+        "hit_at_1": true,
+        "hit_at_3": true,
+        "fts_empty": false,
+        "embed_ms": 0.0,
+        "top_names": [
+          "Big Smoke"
+        ]
+      },
+      {
+        "case_id": "EVAL-S10",
+        "hit_at_1": true,
+        "hit_at_3": true,
+        "fts_empty": false,
+        "embed_ms": 0.0,
+        "top_names": [
+          "Starter Lot",
+          "Get a Job"
+        ]
+      },
+      {
+        "case_id": "EVAL-S11",
+        "hit_at_1": true,
+        "hit_at_3": true,
+        "fts_empty": false,
+        "embed_ms": 0.0,
+        "top_names": [
+          "Bear"
+        ]
+      },
+      {
+        "case_id": "EVAL-S12",
+        "hit_at_1": true,
+        "hit_at_3": true,
+        "fts_empty": false,
+        "embed_ms": 0.0,
+        "top_names": [
+          "Water Temple"
+        ]
+      },
+      {
+        "case_id": "EVAL-S13",
+        "hit_at_1": true,
+        "hit_at_3": true,
+        "fts_empty": false,
+        "embed_ms": 0.0,
+        "top_names": [
+          "Hollow Bough"
+        ]
+      },
+      {
+        "case_id": "EVAL-S14",
+        "hit_at_1": true,
+        "hit_at_3": true,
+        "fts_empty": false,
+        "embed_ms": 0.0,
+        "top_names": [
+          "Valentine"
+        ]
+      },
+      {
+        "case_id": "EVAL-S15",
+        "hit_at_1": true,
+        "hit_at_3": true,
+        "fts_empty": false,
+        "embed_ms": 0.0,
+        "top_names": [
+          "All Foods Plant"
+        ]
+      },
+      {
+        "case_id": "PARA-C01",
+        "hit_at_1": true,
+        "hit_at_3": true,
+        "fts_empty": false,
+        "embed_ms": 0.0,
+        "top_names": [
+          "proton",
+          "gamescope",
+          "proton"
+        ]
+      },
+      {
+        "case_id": "PARA-C02",
+        "hit_at_1": false,
+        "hit_at_3": false,
+        "fts_empty": false,
+        "embed_ms": 0.0,
+        "top_names": [
+          "steamvr",
+          "audio",
+          "windows_steam"
+        ]
+      },
+      {
+        "case_id": "PARA-C03",
+        "hit_at_1": true,
+        "hit_at_3": true,
+        "fts_empty": false,
+        "embed_ms": 0.0,
+        "top_names": [
+          "steamvr",
+          "controller",
+          "proton"
+        ]
+      },
+      {
+        "case_id": "PARA-C04",
+        "hit_at_1": false,
+        "hit_at_3": true,
+        "fts_empty": false,
+        "embed_ms": 0.0,
+        "top_names": [
+          "display",
+          "streaming",
+          "gamescope"
+        ]
+      },
+      {
+        "case_id": "PARA-C05",
+        "hit_at_1": true,
+        "hit_at_3": true,
+        "fts_empty": false,
+        "embed_ms": 0.0,
+        "top_names": [
+          "anticheat",
+          "anticheat",
+          "anticheat"
+        ]
+      },
+      {
+        "case_id": "PARA-C06",
+        "hit_at_1": true,
+        "hit_at_3": true,
+        "fts_empty": false,
+        "embed_ms": 0.0,
+        "top_names": [
+          "streaming",
+          "steam_frame",
+          "steam_frame"
+        ]
+      },
+      {
+        "case_id": "PARA-C07",
+        "hit_at_1": false,
+        "hit_at_3": true,
+        "fts_empty": false,
+        "embed_ms": 0.0,
+        "top_names": [
+          "anticheat",
+          "storage",
+          "storage"
+        ]
+      },
+      {
+        "case_id": "PARA-C08",
+        "hit_at_1": true,
+        "hit_at_3": true,
+        "fts_empty": false,
+        "embed_ms": 0.0,
+        "top_names": [
+          "steam_input",
+          "gyro",
+          "controller"
+        ]
+      },
+      {
+        "case_id": "PARA-S01",
+        "hit_at_1": true,
+        "hit_at_3": true,
+        "fts_empty": false,
+        "embed_ms": 0.0,
+        "top_names": [
+          "Glyphid Dreadnought"
+        ]
+      },
+      {
+        "case_id": "PARA-S02",
+        "hit_at_1": true,
+        "hit_at_3": true,
+        "fts_empty": false,
+        "embed_ms": 0.0,
+        "top_names": [
+          "King Dodongo"
+        ]
+      },
+      {
+        "case_id": "PARA-S03",
+        "hit_at_1": true,
+        "hit_at_3": true,
+        "fts_empty": false,
+        "embed_ms": 0.0,
+        "top_names": [
+          "Tank"
+        ]
+      },
+      {
+        "case_id": "PARA-S04",
+        "hit_at_1": false,
+        "hit_at_3": false,
+        "fts_empty": true,
+        "embed_ms": 0.0,
+        "top_names": []
+      },
+      {
+        "case_id": "PARA-S07",
+        "hit_at_1": false,
+        "hit_at_3": false,
+        "fts_empty": true,
+        "embed_ms": 0.0,
+        "top_names": []
+      },
+      {
+        "case_id": "PARA-S08",
+        "hit_at_1": false,
+        "hit_at_3": false,
+        "fts_empty": true,
+        "embed_ms": 0.0,
+        "top_names": []
+      },
+      {
+        "case_id": "PARA-S12",
+        "hit_at_1": true,
+        "hit_at_3": true,
+        "fts_empty": false,
+        "embed_ms": 0.0,
+        "top_names": [
+          "Water Temple"
+        ]
+      }
+    ]
+  },
+  "english": {
+    "bare": {},
+    "prompted": {}
+  },
+  "arms": {
+    "model": "nomic-embed-text",
+    "splits": {
+      "tune": {
+        "keyword": {
+          "arm": "keyword",
+          "n": 40,
+          "top1_pct": 82.5,
+          "top3_pct": 90.0,
+          "top1_ci": [
+            70.0,
+            92.5
+          ],
+          "top3_ci": [
+            80.0,
+            97.5
+          ]
+        },
+        "vector_only": {
+          "arm": "vector_only",
+          "n": 40,
+          "top1_pct": 85.0,
+          "top3_pct": 90.0,
+          "top1_ci": [
+            72.5,
+            95.0
+          ],
+          "top3_ci": [
+            80.0,
+            97.5
+          ]
+        },
+        "rrf": {
+          "arm": "rrf",
+          "n": 40,
+          "top1_pct": 77.5,
+          "top3_pct": 85.0,
+          "top1_ci": [
+            65.0,
+            90.0
+          ],
+          "top3_ci": [
+            72.5,
+            95.0
+          ]
+        }
+      },
+      "holdout": {
+        "keyword": {
+          "arm": "keyword",
+          "n": 0,
+          "top1_pct": 0.0,
+          "top3_pct": 0.0,
+          "top1_ci": [
+            0.0,
+            100.0
+          ],
+          "top3_ci": [
+            0.0,
+            100.0
+          ]
+        },
+        "vector_only": {
+          "arm": "vector_only",
+          "n": 0,
+          "top1_pct": 0.0,
+          "top3_pct": 0.0,
+          "top1_ci": [
+            0.0,
+            100.0
+          ],
+          "top3_ci": [
+            0.0,
+            100.0
+          ]
+        },
+        "rrf": {
+          "arm": "rrf",
+          "n": 0,
+          "top1_pct": 0.0,
+          "top3_pct": 0.0,
+          "top1_ci": [
+            0.0,
+            100.0
+          ],
+          "top3_ci": [
+            0.0,
+            100.0
+          ]
+        }
+      }
+    },
+    "compat_all": {
+      "keyword": {
+        "arm": "keyword",
+        "n": 18,
+        "top1_pct": 77.8,
+        "top3_pct": 94.4,
+        "top1_ci": [
+          55.6,
+          94.4
+        ],
+        "top3_ci": [
+          83.3,
+          100.0
+        ]
+      },
+      "vector_only": {
+        "arm": "vector_only",
+        "n": 18,
+        "top1_pct": 77.8,
+        "top3_pct": 77.8,
+        "top1_ci": [
+          55.6,
+          94.4
+        ],
+        "top3_ci": [
+          55.6,
+          94.4
+        ]
+      },
+      "rrf": {
+        "arm": "rrf",
+        "n": 18,
+        "top1_pct": 66.7,
+        "top3_pct": 83.3,
+        "top1_ci": [
+          44.4,
+          88.9
+        ],
+        "top3_ci": [
+          66.7,
+          100.0
+        ]
+      }
+    },
+    "compat_gate_reachable": {
+      "keyword": {
+        "arm": "keyword",
+        "n": 18,
+        "top1_pct": 77.8,
+        "top3_pct": 94.4,
+        "top1_ci": [
+          55.6,
+          94.4
+        ],
+        "top3_ci": [
+          83.3,
+          100.0
+        ]
+      },
+      "vector_only": {
+        "arm": "vector_only",
+        "n": 18,
+        "top1_pct": 77.8,
+        "top3_pct": 77.8,
+        "top1_ci": [
+          55.6,
+          94.4
+        ],
+        "top3_ci": [
+          55.6,
+          94.4
+        ]
+      },
+      "rrf": {
+        "arm": "rrf",
+        "n": 18,
+        "top1_pct": 66.7,
+        "top3_pct": 83.3,
+        "top1_ci": [
+          44.4,
+          88.9
+        ],
+        "top3_ci": [
+          66.7,
+          100.0
+        ]
+      }
+    },
+    "verdict": "No verdict: the holdout split is empty. Every current fixture is marked `tune` because all of them were written from the cards they match, which is the self-referential pattern R1 forbids as a gate. The holdout has to be written blind before it can gate anything."
+  },
+  "gate": {
+    "compat": {
+      "total": 18,
+      "gate_reachable": 18,
+      "unreachable_ids": []
+    },
+    "strategy": {
+      "total": 22,
+      "gate_reachable": 22,
+      "unreachable_ids": []
+    }
+  },
+  "spanish_probe": {},
+  "winner": "nomic-embed-text",
+  "recommendation": "No model sweep in this run (`--arms-only`); `nomic-embed-text` stands unchallenged by default, not by measurement.",
+  "json_path": "docs/archive/research/kb-embed-bakeoff-2026-08-06.json"
+}
