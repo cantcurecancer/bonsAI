@@ -4,7 +4,14 @@ Maintainer architecture for the **on-Deck offline strategy + compat knowledge ba
 
 ## Overview
 
-v1 grounds Strategy and troubleshooting Asks by **pre-retrieval prompt-splice** into `early_context_suffix` (not model-facing tools). The corpus is **maintainer-built**, **manifest-driven**, and **downloaded on demand** (Hugging Face primary, GitHub Releases mirror). Retrieval is **FTS5 + rule-based query expansion**; **Phase 2** adds optional **hybrid re-rank** (FTS shortlist → `nomic-embed-text` cosine sort) for Strategy when vectors and the embed model are available.
+v1 grounds Strategy and troubleshooting Asks by **pre-retrieval prompt-splice** into `early_context_suffix` (not model-facing tools). The corpus is **maintainer-built**, **manifest-driven**, and **downloaded on demand** (Hugging Face primary, GitHub Releases mirror). Retrieval is **FTS5 + rule-based query expansion**, plus optional **hybrid ranking** with `nomic-embed-text` when vectors and the embed model are both available.
+
+> **Corrected 2026-08-05 (remediation PR1).** Phases 2 and 3 shipped what this document
+> called hybrid, but was a **cosine-only re-rank**: the vector sort replaced the keyword
+> order outright instead of combining with it. Retrieval is genuinely hybrid as of PR1 —
+> see [§ Retrieval quality remediation](#retrieval-quality-remediation-pr1-2026-08-05).
+> Any Phase 2/3/4/5 wording below that says "FTS shortlist → cosine re-rank" describes what
+> those phases shipped at the time, not current behaviour.
 
 ## Retrieval flow
 
@@ -15,7 +22,7 @@ flowchart TD
   gate -->|yes| resolve["Resolve title:<br/>AppID -> IGDB via alias table"]
   resolve --> ambiguous{"Ambiguous edition/<br/>non-Steam?"}
   ambiguous -->|yes| clarifier["strategy-branches clarifier"]
-  ambiguous -->|no| retrieve["FTS5 query + expansion<br/>optional hybrid re-rank (Phase 2)"]
+  ambiguous -->|no| retrieve["FTS5 query + expansion<br/>relevance floor<br/>optional RRF fusion w/ vectors"]
   retrieve --> hit{"Hit?"}
   hit -->|yes| cards["Top-k cards + trust tier"]
   hit -->|no| genre["Genre/compat pattern<br/>(fallback tier)"]
@@ -257,13 +264,56 @@ Replies should use existing `bonsai-cite` markers; spoilery cards obey `bonsai-s
 
 **Not** a thin redefinition of Phase 6 publish — Phase 6 ships the matured 11 first.
 
-### Transparency retrieval labels (Phase 2)
+### Transparency retrieval labels
 
 | User-facing (chip / Show details) | When |
 |-----------------------------------|------|
 | **Keyword + meaning** | Hybrid ran successfully |
 | **Keyword search** | Vectors unused, missing, or corpus has no embeddings |
-| **Keyword search (embed unavailable)** | Hybrid attempted; embed failed/timeout — prefer Show details for the parenthetical; chip may stay **Keyword search** |
+| **Keyword search (embed unavailable)** | Hybrid attempted but could not run: embed failed/timeout, or the corpus vectors are an incompatible format (`embedding_variant` / `embedding_model` mismatch, dimension mismatch) |
+| **Keyword search (hybrid disabled)** | The Developer hybrid kill-switch is off. **Deliberately a different string** from embed-unavailable (Decision 5) — a chosen setting must not read as a broken install. Label ships in PR1; the setting is PR2. |
+
+Chip stays **Keyword search** for every non-hybrid variant; the parenthetical is Show details only.
+
+## Retrieval quality remediation (PR1, 2026-08-05)
+
+Plan: [rag-retrieval-quality-remediation-implementation-plan.md](rag-retrieval-quality-remediation-implementation-plan.md). PR1 is Stages 1–5 (ranking + correctness infra); **PR2** is Stage 6 (corpus depth, eval, kill-switch, bake-off).
+
+### What changed
+
+| Area | Before | After (PR1) |
+|---|---|---|
+| Task prefixes | Eval applied `search_query:` / `search_document:`; **production applied neither** | `ollama_embed_service.format_embed_query` / `format_embed_document` are the only owner; the eval imports them |
+| Corpus schema | v2 | **v3** + manifest `embedding_variant: "nomic-prefixed-v1"` |
+| Incompatible corpus | Prefixed query silently searched unprefixed vectors | Fails closed → keyword, `retrieval_method="keyword_embed_unavailable"` |
+| Dimension mismatch | `zip()` truncated and returned a plausible score | Raises; hybrid disabled for that request |
+| Ranking | Cosine-only sort; vectorless cards exiled behind every scored card | **RRF** over the FTS and vector rankings, both strategy and compat |
+| Relevance | Every OR-matched card injected | **BM25 floor**, column weighting (`name` 10× `card`; compat `topic` 5× / `platforms` 2× / `card` 1×) |
+| Query text | Follow-up header + app name displaced the question | Retrieval searches the user's words; app name only on the unresolved path |
+| Stopwords | OR'd, including `how` / `do` / `i` | Function words filtered; token cap 12 → 24; all-stopword question returns no match |
+| Block trust tier | `cards[0]` | **Lowest** tier present |
+| Budget overflow | Byte-sliced mid-sentence, sentinel lost, sources over-claimed | Whole cards dropped, sentinel kept, sources = survivors |
+| Transparency | `kb_attached` recorded before stacking | Built after stacking; starved block reports `attached=false` |
+
+### Corpus rebuild is mandatory
+
+Schema v3 changes what the baked vectors *mean*, not just the file layout. A v2 corpus has the same model and the same dimension, so only the manifest can tell them apart — and there is **no migration** (Decision 6). Existing corpora keep working in keyword mode and report **Keyword search (embed unavailable)** until rebuilt:
+
+```bash
+python scripts/build_rag_db.py --seed --out ./dist/knowledge-base
+```
+
+The builder now embeds in batches of 16 with progress, clears the vector table only after the host answers (a failure no longer wipes existing vectors), and checkpoints + `VACUUM`s so the shipped `corpus.db` is a single self-contained file. The Deck opens it `?mode=ro&immutable=1`.
+
+### Constants are provisional
+
+`RRF_K`, `RRF_W_FTS`, `RRF_W_VEC` and `BM25_RELEVANCE_FLOOR` in `knowledge_base_service.py` are **PR1 placeholders**, tagged as such in code. The floor is deliberately loose (R3): measured on the seed corpus, a wholly off-topic Ask scores ≤ 0.75 and genuine hits score 10+, so `1.0` drops near-certain junk and nothing else.
+
+**Do not tune them on the current seed corpus.** It holds 22 sections against `HYBRID_FTS_SHORTLIST_K = 30`, so the shortlist swallows it whole and any number derived from it measures the harness. PR2 sets them from the **tune** split and gates on **holdout**.
+
+### One deviation from the plan's formula
+
+The plan specifies `score = w_fts/(k + rank_fts) + w_vec/(k + rank_vec)`, which is undefined for a card missing from the vector list. Textbook RRF omits such documents — and omission **rebuilds the exile it is meant to remove**: on a 30-card shortlist the worst possible vectored card scores `1/90 + 1/90 = 0.0222` while the best keyword hit with no vector scores `1/61 = 0.0164`, so *having* a vector would beat *being the best match*. Missing entries are therefore backfilled at one rank past the end of the vector list, which implements the plan's stated intent ("cards without a vector retain their FTS rank contribution"). The backfill rank is another knob for PR2.
 
 ### Related (not Phase 2–8 code by default)
 

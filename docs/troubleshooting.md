@@ -91,7 +91,26 @@ Optional on-Deck corpus for Strategy and troubleshooting Asks. Full architecture
 
 When the knowledge base is enabled and installed, Main-tab preset chips may occasionally show game-specific tips (boss/compat curtailed from the offline corpus) mixed with static suggestions.
 
-**Better search (Phase 2 — shipped):** Optional Ollama model `nomic-embed-text` enables **Keyword + meaning** retrieval for **Strategy** tips. Without it, **Keyword search** still works. The plugin may show a soft install hint — it will **not** auto-pull the embed model or block Asks. Show details may label the path as **Keyword + meaning**, **Keyword search**, or **Keyword search (embed unavailable)**.
+**Better search:** Optional Ollama model `nomic-embed-text` enables **Keyword + meaning** retrieval for **Strategy** tips. Without it, **Keyword search** still works. The plugin may show a soft install hint — it will **not** auto-pull the embed model or block Asks. Show details may label the path as **Keyword + meaning**, **Keyword search**, **Keyword search (embed unavailable)**, or **Keyword search (hybrid disabled)**.
+
+**Show details says "Keyword search (embed unavailable)" and `nomic-embed-text` is installed.**
+Your corpus predates schema v3 (remediation PR1, 2026-08-05). v3 embeds documents with a task
+prefix; a v2 corpus baked bare text with the *same* model at the *same* dimension, so nothing
+in the file distinguishes them and only the manifest's `embedding_variant` can. Searching one
+with the other's queries returns plausible-looking nonsense, so the plugin refuses and falls
+back to keyword rather than degrading silently. **There is no migration — rebuild:**
+
+```bash
+python scripts/build_rag_db.py --seed --out dist/knowledge-base
+```
+
+then reinstall via Developer tab → **Install seed knowledge base**. Retrieval keeps working in
+keyword mode throughout; only the hybrid half is off. Confirm the fix by checking the manifest
+reports `"schema_version": 3` and `"embedding_variant": "nomic-prefixed-v1"`.
+
+**Show details says "Keyword search (hybrid disabled)".** That is a setting, not a fault — the
+Developer-tab hybrid kill-switch is off. Deliberately worded differently from *embed
+unavailable* so it does not send you looking for a broken Ollama install. (Ships in PR2.)
 
 **Troubleshooting hybrid (Phase 3 — shipped 2026-07-29):** The same hybrid path runs on **troubleshooting** Asks over the shared `compat_patterns` tip sheet (~124 maintainer tips in the Dev-tab seed). Show details adds **Source: shared troubleshooting tips** when compat tips attach. Rebuild the seed corpus after pulling (`python scripts/build_rag_db.py --seed --out dist/knowledge-base`) and reinstall via Developer tab. See [knowledge-base.md](knowledge-base.md) § Phasing.
 

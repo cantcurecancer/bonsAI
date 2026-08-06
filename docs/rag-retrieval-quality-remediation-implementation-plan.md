@@ -1,7 +1,30 @@
 # RAG retrieval quality remediation — implementation plan
 
-**Status:** Decisions locked (discovery 2026-08-02). **Docs only until PR1 starts.**  
+**Status:** **PR1 (Stages 1–5) shipped 2026-08-05**, commits `d111491`…`82d379f`. **PR2 (Stage 6) not started.**  
 **Analysis source (do not edit as ship plan):** [archive/rag-retrieval-quality-remediation-plan.md](archive/rag-retrieval-quality-remediation-plan.md)
+
+> **PR1 build notes** — three things found while implementing that this plan did not say, all
+> now in code comments and in [knowledge-base.md](knowledge-base.md) § Retrieval quality remediation:
+>
+> 1. **Naive RRF re-creates the exile it removes.** The formula in Stage 2 is undefined for a
+>    card missing from the vector list, and textbook RRF omits such documents. Omission means
+>    a card absent from the vector list scores 0 from it — on a 30-card shortlist the worst
+>    possible vectored card then scores `1/90 + 1/90 = 0.0222` against `1/61 = 0.0164` for the
+>    best keyword hit with no vector, so *having* a vector beats *being the best match*.
+>    Missing entries are backfilled one rank past the end of the vector list, which is what
+>    delivers this plan's stated intent. **The backfill rank is a PR2 knob** alongside the
+>    weights.
+> 2. **`ORDER BY rank` is the unweighted bm25.** Selecting a weighted score while ordering by
+>    `rank` leaves the Stage 2 column weights affecting the floor and doing nothing to
+>    ranking. Both queries now order by the same weighted expression.
+> 3. **The floor cannot fix stopword queries, and should not try.** Measured on the seed
+>    corpus: `"the a of and to it is"` returns eight cards scoring 1.9–5.2, above several
+>    genuine compat hits, while a wholly off-topic Ask tops out at 0.75. The floor sits at
+>    1.0 and catches the latter only; the former is Stage 3's stopword filter.
+>
+> PR1 also re-aimed `test_compat_hybrid_reranks_when_nomic_available`, which is **not** in the
+> R5 list but is the same class of problem: it asserted `top_k=1` under a single mocked
+> vector, which was really asserting the exile Stage 2 removes.
 
 This is the **active ship plan**. It copies the technical stages from the analysis doc, then overlays maintainer-locked decisions and reconciliation items (R1–R5). Where this plan and the analysis disagree, **this plan wins**.
 
