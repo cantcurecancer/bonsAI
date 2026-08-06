@@ -77,6 +77,19 @@ RRF_W_VEC = 1.0
 # invisibly, so PR1 errs toward no-op.
 BM25_RELEVANCE_FLOOR = 1.0
 
+# PROVISIONAL (PR2 6d owns the final value). A higher bar for the D17 implicit route -- an Ask
+# made while a game happens to be running, which never declared itself to be about that game.
+#
+# The evidence is genuinely weaker there, so it should have to clear more. Measured on the seed
+# corpus 2026-08-06, per-game scoped: "what time do the shops close on a sunday" scores 2.72
+# against Left 4 Dead 2 (FTS5 runs the porter stemmer, so "time" matches "timing" in an
+# unrelated card), while "how do I beat the tank" scores 5.28 and a named boss scores 10+.
+#
+# Two data points on a two-card-per-game corpus is not a tuning basis and this number will
+# move once the seed is deepened. It is here because shipping D17 with a known noise source
+# is worse than shipping a constant that says out loud it is a guess.
+IMPLICIT_ROUTE_RELEVANCE_FLOOR = 4.0
+
 # Column weights, highest first. sections_fts is (name, card); compat_patterns_fts is
 # (topic, platforms, card). A card whose *title* matches the Ask is a better hit than one
 # that mentions the words somewhere in its body.
@@ -138,6 +151,7 @@ def should_retrieve_knowledge(
     aid = str(app_id or "").strip()
     aname = str(app_name or "").strip()
     mode = (ask_mode or "speed").strip().lower()
+    # An explicit Strategy Ask about a running game is unambiguous and wins outright.
     if mode == "strategy" and (aid or aname):
         return True, "strategy"
     # Two gates, deliberately. The prompt-side phrase gate needs the literal word "deck" or
@@ -150,6 +164,19 @@ def should_retrieve_knowledge(
         question
     ):
         return True, "compat"
+    # D17: game knowledge is not a property of the Ask mode. Strategy cards used to require
+    # Strategy mode, so the same question about the same running game got cards in one mode
+    # and nothing in Speed or Expert -- Expert being where somebody stuck on a hard fight is
+    # most likely to be. Ask mode still decides how *many* cards attach (_budget_for_mode);
+    # it no longer decides whether the corpus is consulted at all.
+    #
+    # Safe to be permissive here for the same reason D16 was: retrieval is scoped to the
+    # resolved game and still has to clear BM25_RELEVANCE_FLOOR, so an Ask that is not about
+    # the game attaches nothing. An unresolved game attaches nothing either -- see the
+    # implicit-route check in retrieve_knowledge_context, which suppresses the generic genre
+    # fallback so this does not staple a boilerplate card to every Ask.
+    if aid or aname:
+        return True, "strategy"
     return False, ""
 
 
@@ -474,6 +501,7 @@ def _search_sections(
     game_id: Optional[int],
     query: str,
     top_k: int,
+    min_relevance: float = BM25_RELEVANCE_FLOOR,
 ) -> list[KnowledgeCard]:
     fts_q = _fts_match_query(query)
     if not fts_q:
@@ -499,7 +527,7 @@ def _search_sections(
     out: list[KnowledgeCard] = []
     for row in rows:
         relevance = _row_relevance(row)
-        if relevance < BM25_RELEVANCE_FLOOR:
+        if relevance < min_relevance:
             continue
         out.append(
             KnowledgeCard(
@@ -723,6 +751,11 @@ def retrieve_knowledge_context(
         # Maintainer kill-switch. Mirrors `_bool_default_true` in settings_service: a missing
         # key means on, so an older settings.json keeps hybrid rather than silently losing it.
         hybrid_enabled = settings.get("rag_hybrid_retrieval_enabled") is not False
+        # D17: strategy cards now attach in any Ask mode, so most strategy retrieval arrives
+        # without the user having declared the Ask to be about the game. That weaker evidence
+        # gets a higher relevance bar and no genre-card consolation prize -- see
+        # IMPLICIT_ROUTE_RELEVANCE_FLOOR and the fallback branch below.
+        implicit_route = (ask_mode or "").strip().lower() != "strategy"
 
         if domain == "compat":
             has_vectors = corpus_has_usable_compat_vectors(conn, manifest)
@@ -738,6 +771,9 @@ def retrieve_knowledge_context(
             fts_ms = round((time.perf_counter() - t_fts) * 1000, 2)
             resolution = "compat_tips"
         else:
+            section_floor = (
+                IMPLICIT_ROUTE_RELEVANCE_FLOOR if implicit_route else BM25_RELEVANCE_FLOOR
+            )
             hybrid_eligible = domain == "strategy" and game_id is not None
             has_vectors = hybrid_eligible and corpus_has_usable_section_vectors(conn, manifest)
             nomic_ready = (
@@ -754,7 +790,13 @@ def retrieve_knowledge_context(
             # answered with Left 4 Dead 2's Tank card. Wrong-game advice is worse than none,
             # and the genre fallback below already covers the unresolved case.
             cards = (
-                _search_sections(conn, game_id=game_id, query=expanded, top_k=fts_k)
+                _search_sections(
+                    conn,
+                    game_id=game_id,
+                    query=expanded,
+                    top_k=fts_k,
+                    min_relevance=section_floor,
+                )
                 if game_id is not None
                 else []
             )
@@ -800,11 +842,18 @@ def retrieve_knowledge_context(
         elif cards and fts_k != top_k:
             cards = cards[:top_k]
 
+        # D17 routes every Ask made while a covered game runs, not just Strategy-mode ones.
+        # The genre fallback is a generic card with no relation to the question, which is a
+        # reasonable consolation for "I explicitly asked for strategy and we had nothing" and
+        # pure noise stapled to an ordinary Ask that merely happened while a game was open.
+        # So the fallback stays for the explicit route only.
+        implicit_strategy_route = domain != "compat" and implicit_route
+
         fallback_text: Optional[str] = None
         if not cards:
             if domain == "compat":
                 fallback_text = _compat_fallback(conn, question)
-            else:
+            elif not implicit_strategy_route:
                 fallback_text = _genre_fallback(conn, game_id)
 
         text_block, trust, sources = _format_block(

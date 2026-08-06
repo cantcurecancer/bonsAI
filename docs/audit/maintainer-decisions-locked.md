@@ -15,8 +15,56 @@ choices are, and what happens either way. **Locked calls (2026-08-02 for D1–D6
 [Maintainer decisions locked](#maintainer-decisions-locked--2026-08-02); implement
 from that section when it disagrees with an option above.
 
-**None currently open.** D1–D16 are all locked; see the table below for D1–D15 and the section
-below for D16.
+**None currently open.** D1–D17 are all locked; see the table below for D1–D15 and the sections
+below for D16 and D17.
+
+---
+
+### D17 — Game knowledge was gated on the Ask mode toggle
+
+**Raised and locked 2026-08-06. Choice: ungate it.** Shipped the same day.
+
+**What was going on.** Strategy cards only attached when the Ask mode toggle was set to
+*Strategy*. The same question, about the same running game, got cards in one mode and nothing
+in the other two:
+
+| Ask mode | "how do I beat the tank", Left 4 Dead 2 running |
+|---|---|
+| Speed | nothing |
+| Strategy | cards |
+| Expert | nothing |
+
+Expert is where somebody stuck on a hard fight is most likely to be, and it got no game
+knowledge at all. This is D16's shape on the other side of the corpus: the content existed,
+and reaching it depended on something unrelated to the question.
+
+**The call.** Ask mode still decides **how many** cards attach (`_budget_for_mode`: Speed 1,
+Strategy 3, Expert 5). It no longer decides **whether** the corpus is consulted. Explicit
+Strategy mode still wins outright; a troubleshooting-shaped question still routes to compat
+even with a game open.
+
+**Two guards, because the new route is permissive by design.** An Ask that never declared
+itself to be about the game is weaker evidence than one that did, so on that route: the
+relevance bar is higher (`IMPLICIT_ROUTE_RELEVANCE_FLOOR`, provisional — see below), and the
+generic genre fallback is suppressed, so an ordinary Ask made while a game happens to be open
+does not grow a boilerplate strategy block that answers nothing.
+
+**Two things found while shipping it.**
+
+*Cross-game leak, fixed first in its own commit.* Strategy search fell back to an unscoped
+corpus-wide query when the running game could not be resolved, so "how do I beat the tank"
+while playing an uncovered game returned Left 4 Dead 2's card. Wrong-game advice, delivered
+confidently. D17 would have routed far more traffic through it. Search is now scoped to a
+resolved game or does not run.
+
+*The relevance floor is looser than it looked.* FTS5 runs the porter stemmer, so "what time do
+the shops close on a sunday" matched "crescendo **timing**" in an unrelated card and scored
+2.72 — above the 1.0 floor. Named-boss questions score 10+, a plain "how do I beat the tank"
+scores 5.28. `IMPLICIT_ROUTE_RELEVANCE_FLOOR = 4.0` sits between them. **That is two data
+points on a two-card-per-game corpus and will move in stage 6d** — it is in the code because
+shipping a known noise source is worse than shipping a constant that admits it is a guess.
+
+On-Deck QA: **KB-ASKMODE-01**.
 
 ---
 

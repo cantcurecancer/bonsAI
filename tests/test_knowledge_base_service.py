@@ -778,6 +778,102 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
     self.assertTrue(result.attached)
     self.assertEqual(result.retrieval_method, "keyword_embed_unavailable")
 
+  def test_game_knowledge_is_not_gated_on_ask_mode(self):
+    """D17. The same question about the same running game, in each mode.
+
+    Strategy cards used to require Strategy mode, so Speed and Expert got nothing at all --
+    Expert being the mode somebody stuck on a hard fight is most likely to be in.
+    """
+    for mode in ("speed", "strategy", "expert"):
+      with self.subTest(ask_mode=mode):
+        should_run, domain = should_retrieve_knowledge(
+          use_local_knowledge_base=True,
+          ask_mode=mode,
+          question="how do I beat the tank",
+          app_id="550",
+          app_name="Left 4 Dead 2",
+        )
+        self.assertTrue(should_run)
+        self.assertEqual(domain, "strategy")
+
+  def test_ask_mode_still_decides_how_many_cards(self):
+    """D17 changed whether the corpus is consulted, not how much of it is attached."""
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    counts = {}
+    for mode in ("speed", "expert"):
+      result = retrieve_knowledge_context(
+        settings,
+        ask_mode=mode,
+        question="proton crash shader deck steam input storage",
+        app_id="",
+        app_name="",
+        domain="compat",
+        pc_ip="",
+      )
+      counts[mode] = len([ln for ln in result.text_block.splitlines() if ln.startswith("[Tip:")])
+    self.assertEqual(counts["speed"], 1)
+    self.assertGreater(counts["expert"], counts["speed"])
+
+  def test_troubleshooting_still_wins_over_an_open_game(self):
+    """A crash question asked mid-game is a crash question, not a boss question."""
+    should_run, domain = should_retrieve_knowledge(
+      use_local_knowledge_base=True,
+      ask_mode="speed",
+      question="proton crash on launch",
+      app_id="550",
+      app_name="Left 4 Dead 2",
+    )
+    self.assertTrue(should_run)
+    self.assertEqual(domain, "compat")
+
+  def test_no_running_game_means_no_strategy_route(self):
+    should_run, domain = should_retrieve_knowledge(
+      use_local_knowledge_base=True,
+      ask_mode="expert",
+      question="how do I beat the tank",
+      app_id="",
+      app_name="",
+    )
+    self.assertFalse(should_run)
+    self.assertEqual(domain, "")
+
+  def test_implicit_route_attaches_nothing_rather_than_a_generic_card(self):
+    """The cost of D17 being permissive, contained.
+
+    An explicit Strategy Ask with no hit still gets the genre card as a consolation. An
+    ordinary Ask that merely happened while a game was open must not -- otherwise every
+    Speed Ask on the Deck grows a boilerplate strategy block that answers nothing.
+    """
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    off_topic = "what time do the shops close on a sunday"
+    implicit = retrieve_knowledge_context(
+      settings,
+      ask_mode="speed",
+      question=off_topic,
+      app_id="550",
+      app_name="Left 4 Dead 2",
+      domain="strategy",
+      pc_ip="",
+    )
+    self.assertFalse(implicit.attached)
+
+    explicit = retrieve_knowledge_context(
+      settings,
+      ask_mode="strategy",
+      question=off_topic,
+      app_id="550",
+      app_name="Left 4 Dead 2",
+      domain="strategy",
+      pc_ip="",
+    )
+    self.assertTrue(explicit.attached)
+
   def test_uncovered_game_does_not_get_another_games_cards(self):
     """Strategy search is scoped to the resolved game, or it does not run.
 
