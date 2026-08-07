@@ -2,7 +2,9 @@ import json
 import unittest
 from unittest.mock import MagicMock, patch
 
+from backend.services import ollama_service
 from backend.services.ollama_service import (
+    OLLAMA_DELTA_PARSE_INTERVAL_S,
     append_deck_tdp_sysfs_grounding,
     build_system_prompt,
     format_ai_response,
@@ -109,6 +111,91 @@ class OllamaServiceTests(unittest.TestCase):
         self.assertEqual(out.get("assistant_raw"), "Hello")
         self.assertTrue(any(t == "Hell" and not done for t, done in deltas_seen))
         self.assertEqual(deltas_seen[-1], ("Hello", True))
+
+    @staticmethod
+    def _ndjson_response(lines: list[str]):
+        """Fake urlopen response replaying NDJSON through the same chunked read the real one uses."""
+        body = ("\n".join(lines) + "\n").encode("utf-8")
+        idx = {"i": 0}
+
+        class _Rsp:
+            def read(self, n: int):
+                chunk = body[idx["i"] : idx["i"] + n]
+                idx["i"] += len(chunk)
+                return chunk
+
+            def close(self) -> None:
+                pass
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *_):
+                pass
+
+        return _Rsp()
+
+    def _run_chat_collecting_deltas(self, lines: list[str]) -> list[tuple[str, bool]]:
+        seen: list[tuple[str, bool]] = []
+        post_ollama_chat(
+            "http://127.0.0.1:11434/api/chat",
+            "vision:test",
+            [{"role": "system", "content": "x"}],
+            60,
+            [],
+            [],
+            [],
+            [],
+            MagicMock(),
+            "speed",
+            "5m",
+            cancel_requested=lambda: False,
+            on_delta=lambda text, done, _thinking=None: seen.append((text, done)),
+        )
+        return seen
+
+    @patch("backend.services.ollama_service.urllib.request.urlopen")
+    def test_post_ollama_chat_throttles_partial_parses_during_a_burst(
+        self, mock_urlopen: MagicMock
+    ) -> None:
+        """A fast burst parses once, not once per token — the per-delta cost grew with the answer."""
+        lines = [
+            '{"message":{"role":"assistant","content":"tok%d "}}' % i for i in range(20)
+        ]
+        lines.append('{"message":{"role":"assistant","content":"end"},"done":true}')
+        mock_urlopen.return_value = self._ndjson_response(lines)
+
+        seen = self._run_chat_collecting_deltas(lines)
+
+        partials = [d for d in seen if not d[1]]
+        terminal = [d for d in seen if d[1]]
+        # 20 in-memory deltas land well inside one 0.1s window, so only the first one parses.
+        self.assertEqual(len(partials), 1, partials)
+        self.assertEqual(partials[0][0], "tok0")
+        # Throttling partials must not cost the final answer: it comes from its own call site.
+        self.assertEqual(len(terminal), 1)
+        self.assertEqual(terminal[0][0], "".join(f"tok{i} " for i in range(20)) + "end")
+
+    @patch("backend.services.ollama_service.urllib.request.urlopen")
+    def test_post_ollama_chat_parses_again_once_the_interval_elapses(
+        self, mock_urlopen: MagicMock
+    ) -> None:
+        """The throttle is a rate limit, not a one-shot: a delta past the interval parses again."""
+        lines = [
+            '{"message":{"role":"assistant","content":"a"}}',
+            '{"message":{"role":"assistant","content":"b"}}',
+            '{"message":{"role":"assistant","content":"c"},"done":true}',
+        ]
+        mock_urlopen.return_value = self._ndjson_response(lines)
+
+        # One monotonic call per content delta: inside the window, then past it.
+        clock = [1000.0, 1000.05, 1000.0 + (OLLAMA_DELTA_PARSE_INTERVAL_S * 2)]
+        with patch.object(ollama_service.time, "monotonic", side_effect=clock):
+            seen = self._run_chat_collecting_deltas(lines)
+
+        partials = [text for text, done in seen if not done]
+        self.assertEqual(partials, ["a", "abc"])
+        self.assertEqual([d for d in seen if d[1]], [("abc", True)])
 
     @patch("backend.services.ollama_service.urllib.request.urlopen")
     def test_post_ollama_chat_fails_when_stream_eof_without_done(
@@ -657,6 +744,31 @@ class OllamaServiceTests(unittest.TestCase):
         self.assertIn("STRATEGY SPOILER POLICY (user opted in)", prompt)
         self.assertNotIn("STRATEGY SPOILER POLICY (default)", prompt)
 
+    def _strategy_prompt_with_kb(self, app_id: str) -> str:
+        """Strategy prompt carrying attached KB cards, which is what gates the KB spoiler clause."""
+        return build_system_prompt(
+            question="How do I beat Glyphid Dreadnought?",
+            app_id=app_id,
+            app_name="",
+            normalized_attachments=[],
+            prepared_images=[],
+            lookup_app_name=lambda _app_id: "",
+            lookup_screenshot_vdf_metadata=lambda _path: {},
+            ask_mode="strategy",
+            early_context_suffix="--- Local knowledge base ---\nFocus the weak points.",
+            strategy_spoiler_asked_entity="Glyphid Dreadnought",
+        )
+
+    def test_build_system_prompt_low_risk_drops_kb_spoiler_clause(self):
+        """The KB clause fires only when cards attach — exactly where over-fencing is worst."""
+        prompt = self._strategy_prompt_with_kb("2321470")
+        self.assertIn("KNOWLEDGE BASE (offline corpus)", prompt)
+        self.assertNotIn("Put spoilery walkthrough detail inside", prompt)
+
+    def test_build_system_prompt_narrative_game_keeps_kb_spoiler_clause(self):
+        prompt = self._strategy_prompt_with_kb("413150")
+        self.assertIn("Put spoilery walkthrough detail inside", prompt)
+
     def test_user_consents_strategy_spoilers_phrases(self):
         self.assertTrue(user_consents_strategy_spoilers("full spoilers please"))
         self.assertTrue(user_consents_strategy_spoilers("Spoilers are okay"))
@@ -707,6 +819,44 @@ class OllamaServiceTests(unittest.TestCase):
         )
         self.assertIn("LOW-SPOILER-RISK CONTEXT", block)
         self.assertIn("Glyphid Dreadnought", block)
+
+    def test_strategy_spoiler_policy_low_risk_drops_boss_name_prohibition(self):
+        """The addendum must REPLACE the boss-name clause, not argue with it in the same block."""
+        low = _strategy_spoiler_policy_block(
+            False,
+            False,
+            game_genres="",
+            asked_entity="Glyphid Dreadnought",
+            kb_entity_match=False,
+            app_id="2321470",
+        )
+        self.assertNotIn("late-game boss names", low)
+        self.assertIn("LOW-SPOILER-RISK CONTEXT", low)
+        # Story spoilers stay off-limits — only the boss-name clause is subtracted.
+        self.assertIn("story endings", low)
+        self.assertIn("major twists", low)
+
+    def test_strategy_spoiler_policy_without_low_risk_keeps_boss_name_prohibition(self):
+        block = _strategy_spoiler_policy_block(
+            False,
+            False,
+            game_genres="Adventure",
+            asked_entity="King Dodongo",
+            kb_entity_match=False,
+        )
+        self.assertIn("late-game boss names", block)
+
+    def test_strategy_spoiler_policy_low_risk_followup_drops_boss_clause(self):
+        low = _strategy_spoiler_policy_block(
+            False,
+            True,
+            game_genres="",
+            asked_entity="Glyphid Dreadnought",
+            kb_entity_match=False,
+            app_id="2321470",
+        )
+        self.assertNotIn("boss spoilers", low)
+        self.assertIn("story endings", low)
 
     def test_strategy_spoiler_policy_narrative_app_id_stays_fenced(self):
         block = _strategy_spoiler_policy_block(

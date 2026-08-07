@@ -47,6 +47,18 @@ from backend.services.ollama_prompts import (
 # Smaller than 64KiB so Stop re-checks ``cancel_requested`` more often while ``read()`` blocks on slow streams.
 OLLAMA_CHAT_READ_CHUNK = 4096
 
+# Minimum gap between partial-text parses while a stream is running.
+#
+# Every content delta used to re-join the whole answer and re-run two regex passes over it, so the
+# per-token cost grew with the answer — and it was paid whether or not token streaming was enabled,
+# because the same hook also carries model-emitted ``<bonsai-status>`` thinking blurbs.
+#
+# 0.1s composes with the two cadences downstream: the snapshot store throttles at
+# ``Plugin.PARTIAL_RESPONSE_FLUSH_INTERVAL_S`` (0.12s) and the frontend polls at 150ms, so parsing
+# faster than this produces text nobody reads. The terminal parse is a separate call site and is
+# never throttled — the final answer must not depend on timing.
+OLLAMA_DELTA_PARSE_INTERVAL_S = 0.1
+
 
 def _ollama_http_base_from_pc_ip_field(pc_ip: str) -> str:
     return ollama_http_base_from_pc_ip_field(pc_ip)
@@ -485,9 +497,12 @@ def post_ollama_chat(
                 stream_err_txt: Optional[str] = None
                 done_flag = False
                 done_meta: dict = {}
+                # 0.0 so the first delta always parses: it is what flips the snapshot's ``streaming``
+                # flag, which is the frontend's only cue to switch to the fast poll.
+                last_delta_parse = 0.0
 
                 def _apply_stream_obj(jo: dict) -> None:
-                    nonlocal stream_err_txt, done_flag
+                    nonlocal stream_err_txt, done_flag, last_delta_parse
                     err_any = jo.get("error")
                     if err_any is not None:
                         if isinstance(err_any, dict):
@@ -500,7 +515,9 @@ def post_ollama_chat(
                     mc = msg_blk.get("content")
                     if isinstance(mc, str) and mc:
                         deltas.append(mc)
-                        if on_delta:
+                        _now = time.monotonic() if on_delta else 0.0
+                        if on_delta and (_now - last_delta_parse) >= OLLAMA_DELTA_PARSE_INTERVAL_S:
+                            last_delta_parse = _now
                             try:
                                 _joined = "".join(deltas)
                                 _thinking, _visible = extract_bonsai_status(_joined)
