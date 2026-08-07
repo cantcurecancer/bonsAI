@@ -123,11 +123,16 @@ export const VoiceInputSettingsSection: React.FC<Props> = ({
     }
   };
 
-  const ready = Boolean(engineStatus?.ready);
   const binaryReady = Boolean(engineStatus?.binary_ready);
   const modelReady = Boolean(engineStatus?.model_ready);
+  const engineReady = binaryReady && modelReady;
   const install = engineStatus?.install;
   const progress = install?.progress_pct ?? 0;
+  const installActionLabel = installBusy
+    ? "Installing…"
+    : engineReady
+      ? "Reinstall voice engine"
+      : "Install voice engine";
 
   return (
     <PanelSection title="Voice input">
@@ -174,7 +179,13 @@ export const VoiceInputSettingsSection: React.FC<Props> = ({
           Engine: {binaryReady ? "whisper-cli ready" : "whisper-cli not installed"}
           <br />
           Model: {modelReady ? `${voiceSttModel} ready` : `${voiceSttModel} not downloaded`}
-          {!ready && !installBusy ? (
+          {engineReady && !installBusy ? (
+            <>
+              <br />
+              Voice engine is ready for on-device transcription.
+            </>
+          ) : null}
+          {!engineReady && !installBusy ? (
             <>
               <br />
               Tap Install voice engine below (uses podman on SteamOS).
@@ -201,7 +212,7 @@ export const VoiceInputSettingsSection: React.FC<Props> = ({
             <Button
               className="bonsai-settings-focus-btn"
               onClick={() => void onDownloadModel()}
-            disabled={installBusy || ready}
+              disabled={installBusy}
             style={{
               minHeight: 38,
               fontSize: 12,
@@ -213,7 +224,7 @@ export const VoiceInputSettingsSection: React.FC<Props> = ({
               color: "#e8eef5",
             }}
           >
-            {ready ? "Voice engine ready" : installBusy ? "Installing…" : "Install voice engine"}
+            {installActionLabel}
           </Button>
         </Focusable>
         </div>
