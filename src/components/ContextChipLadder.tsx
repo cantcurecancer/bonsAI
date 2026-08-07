@@ -19,6 +19,7 @@ import {
   tierBorderColor,
   windowRange,
 } from "../utils/contextChipsFromSnapshot";
+import { isOkDeckButtonEvent } from "../utils/focusNavigation";
 
 const deckNav = (handlers: Record<string, () => boolean | void>) =>
   handlers as unknown as Record<string, unknown>;
@@ -76,7 +77,11 @@ export function ContextChipLadder({
       <Focusable
         className="bonsai-context-hint"
         onActivate={() => setExpandedBoth(true)}
-        onButtonDown={() => setExpandedBoth(true)}
+        onButtonDown={(evt) => {
+          if (!isOkDeckButtonEvent(evt)) return false;
+          setExpandedBoth(true);
+          return true;
+        }}
         {...deckNav({
           ...(onMoveDownFromHint ? { onMoveDown: () => onMoveDownFromHint() ?? false } : {}),
         })}

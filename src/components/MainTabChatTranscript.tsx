@@ -17,6 +17,7 @@ import {
 import { focusAnswerBubbleAfterHeader } from "../utils/answerBubbleNavigation";
 import {
   isDownNavigationEvent,
+  isOkDeckButtonEvent,
   isUpNavigationEvent,
 } from "../utils/focusNavigation";
 import { formatAppliedTuningBannerText } from "../utils/appliedTuningText";
@@ -334,7 +335,8 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
                   <Focusable
                     style={{ maxWidth: BONSAI_CHAT_AI_MAX_WIDTH_CSS, marginTop: 8 }}
                     onActivate={() => setSessionHighlightTurnId(turn.id)}
-                    onButtonDown={() => {
+                    onButtonDown={(evt) => {
+                      if (!isOkDeckButtonEvent(evt)) return false;
                       setSessionHighlightTurnId(turn.id);
                       return true;
                     }}

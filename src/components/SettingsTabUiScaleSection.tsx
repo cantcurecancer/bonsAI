@@ -15,7 +15,10 @@ import {
   UI_SCALE_PROFILE_LABEL,
 } from "../data/uiScaleProfile";
 import { SettingsTabUiScaleSlider } from "./SettingsTabUiScaleSlider";
-import { isLeftDeckButton, isRightDeckButton } from "../utils/deckSliderMath";
+import {
+  isDeckDirectionLeftEvent,
+  isDeckDirectionRightEvent,
+} from "../utils/focusNavigation";
 
 export type SettingsTabUiScaleSectionProps = {
   uiScaleAutoEnabled: boolean;
@@ -118,12 +121,9 @@ export const SettingsTabUiScaleSection: React.FC<SettingsTabUiScaleSectionProps>
   const bridgeSliderNav = useMemo(
     () =>
       ({
-        onMoveLeft: () => stepManualProfile(-1),
-        onMoveRight: () => stepManualProfile(1),
         onButtonDown: (button: unknown) => {
-          const key = String(button ?? "unknown");
-          if (isLeftDeckButton(key)) return stepManualProfile(-1);
-          if (isRightDeckButton(key)) return stepManualProfile(1);
+          if (isDeckDirectionLeftEvent(button)) return stepManualProfile(-1);
+          if (isDeckDirectionRightEvent(button)) return stepManualProfile(1);
           return false;
         },
         onActivate: () => {

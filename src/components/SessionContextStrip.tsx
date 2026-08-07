@@ -130,7 +130,8 @@ export function SessionContextStrip({
                 setActiveId(row.id);
                 onHighlightClear?.();
               }}
-              onButtonDown={() => {
+              onButtonDown={(evt) => {
+                if (!isOkDeckButtonEvent(evt)) return false;
                 setActiveId(row.id);
                 onHighlightClear?.();
                 return true;

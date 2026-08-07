@@ -7,7 +7,7 @@
  */
 import React, { useCallback, useMemo, useRef, useState } from "react";
 import { Focusable } from "@decky/ui";
-import { isLeftDeckButton, isRightDeckButton } from "../../utils/deckSliderMath";
+import { isDeckDirectionLeftEvent, isDeckDirectionRightEvent } from "../../utils/focusNavigation";
 
 export type DeckSliderThumbVisualState = {
   focused: boolean;
@@ -38,14 +38,11 @@ export function assignDeckSliderThumbHostRef(
 
 export function buildDeckThumbNavHandlers(nav: DeckFocusSliderThumbNavProps): Record<string, unknown> {
   return {
-    onMoveLeft: () => nav.onMoveLeft() ?? true,
-    onMoveRight: () => nav.onMoveRight() ?? true,
     onMoveUp: () => nav.onMoveUp?.() ?? false,
     onMoveDown: () => nav.onMoveDown?.() ?? false,
     onButtonDown: (button: unknown) => {
-      const buttonKey = String(button ?? "unknown");
-      if (isLeftDeckButton(buttonKey)) return nav.onMoveLeft() ?? true;
-      if (isRightDeckButton(buttonKey)) return nav.onMoveRight() ?? true;
+      if (isDeckDirectionLeftEvent(button)) return nav.onMoveLeft() ?? true;
+      if (isDeckDirectionRightEvent(button)) return nav.onMoveRight() ?? true;
       return false;
     },
   };

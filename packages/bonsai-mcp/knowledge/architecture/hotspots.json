@@ -62,7 +62,7 @@
     },
     {
       "path": "src/components/MainTabChatTranscript.tsx",
-      "lines": 737,
+      "lines": 739,
       "role": ""
     },
     {
@@ -177,7 +177,7 @@
     },
     {
       "path": "src/components/deck/DeckFocusSlider.tsx",
-      "lines": 416,
+      "lines": 413,
       "role": ""
     },
     {

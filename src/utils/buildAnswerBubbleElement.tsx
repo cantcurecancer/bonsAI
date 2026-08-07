@@ -25,8 +25,6 @@ import { uiActiveElement } from "./uiDocument";
 import {
   isDeckDirectionDownEvent,
   isDeckDirectionUpEvent,
-  isDownDeckButtonEvent,
-  isUpDeckButtonEvent,
 } from "./focusNavigation";
 import { prepareStreamMarkdown } from "./streamMarkdownPrepare";
 import { splitResponseIntoChunks } from "./splitResponseIntoChunks";
@@ -236,14 +234,12 @@ export function buildAnswerBubbleElement(
       captureBubble(answerKey);
       registerAnswerBubbleNav({ moveDown, moveUp, resetChunkIndex: () => {} });
     },
-    onMoveDown: () => moveDown(),
-    onMoveUp: () => moveUp(),
     onActivate: () => {
       captureBubble(answerKey);
     },
     onButtonDown: (button: unknown) => {
-      if (isDownDeckButtonEvent(button)) return moveDown();
-      if (isUpDeckButtonEvent(button)) return moveUp();
+      if (isDeckDirectionDownEvent(button)) return moveDown();
+      if (isDeckDirectionUpEvent(button)) return moveUp();
       return false;
     },
   } as Record<string, unknown>;

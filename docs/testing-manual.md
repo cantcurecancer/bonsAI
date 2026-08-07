@@ -82,6 +82,16 @@ Capability off for each row; trigger the deny surface; D-pad to **Open Permissio
 
 - [ ] D-pad: deny **Open Permissions** → Permissions toggle → **Back** without losing modal tab-restore behavior elsewhere
 
+### ONBUTTONDOWN-AUDIT-01 — onButtonDown whitelist + direction handlers (P1)
+
+Wave 4 G — confirm D-pad directions do not trigger A-only actions; direction handlers fire on device.
+
+- [ ] Collapsed **Context used · tap for details** hint: D-pad **Down** past it does **not** expand; **A** expands
+- [ ] Session context strip open: D-pad **Down** through turn rows does **not** change active row; **A** selects row
+- [ ] Expanded turn **Show details** link: D-pad past without **A** does not change session highlight
+- [ ] Collapsed turn header: **Down** enters answer bubble (section walk)
+- [ ] Settings → UI scale manual profile bridge: **Left/Right** steps profile when focused on slider thumb
+
 ### SMOKE-F — Deterministic commands (P2)
 
 - [ ] `bonsai:disable-sanitize` / `bonsai:enable-sanitize` — confirmation; no Ollama call

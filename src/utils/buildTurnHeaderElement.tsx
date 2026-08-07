@@ -8,7 +8,7 @@
 import React from "react";
 import { Focusable } from "@decky/ui";
 import { focusFirstAnswerChunk } from "./answerBubbleNavigation";
-import { isDownDeckButtonEvent } from "./focusNavigation";
+import { isDeckDirectionDownEvent } from "./focusNavigation";
 
 export type BuildTurnHeaderElementArgs = {
   turnId: string;
@@ -45,9 +45,8 @@ export function buildTurnHeaderElement(args: BuildTurnHeaderElementArgs): React.
   };
 
   const headerNavHandlers = {
-    onMoveDown: () => focusAnswer(),
     onButtonDown: (button: unknown) =>
-      isDownDeckButtonEvent(button) ? focusAnswer() : false,
+      isDeckDirectionDownEvent(button) ? focusAnswer() : false,
   } as Record<string, unknown>;
 
   return (

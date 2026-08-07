@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
   "fileCount": 274,
-  "edgeCount": 642,
+  "edgeCount": 643,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -98,6 +98,7 @@
     "src/components/ContextChipLadder.tsx": {
       "imports": [
         "src/utils/contextChipsFromSnapshot.ts",
+        "src/utils/focusNavigation.ts",
         "src/utils/inputTransparency.ts"
       ],
       "importedBy": [
@@ -505,7 +506,7 @@
       "imports": [
         "src/components/SettingsTabUiScaleSlider.tsx",
         "src/data/uiScaleProfile.ts",
-        "src/utils/deckSliderMath.ts"
+        "src/utils/focusNavigation.ts"
       ],
       "importedBy": [
         "src/components/SettingsTab.tsx"
@@ -557,7 +558,7 @@
     },
     "src/components/deck/DeckFocusSlider.tsx": {
       "imports": [
-        "src/utils/deckSliderMath.ts"
+        "src/utils/focusNavigation.ts"
       ],
       "importedBy": [
         "src/components/OllamaReplyVerbositySlider.tsx",
@@ -2224,9 +2225,7 @@
         "src/components/OllamaReplyVerbositySlider.tsx",
         "src/components/SettingsTabConnectionTimeoutSlider.tsx",
         "src/components/SettingsTabOllamaKeepAliveSlider.tsx",
-        "src/components/SettingsTabUiScaleSection.tsx",
         "src/components/SettingsTabUiScaleSlider.tsx",
-        "src/components/deck/DeckFocusSlider.tsx",
         "src/utils/deckSliderMath.test.ts"
       ]
     },
@@ -2284,10 +2283,13 @@
     "src/utils/focusNavigation.ts": {
       "imports": [],
       "importedBy": [
+        "src/components/ContextChipLadder.tsx",
         "src/components/MainTabBonsaiAiMarkdownChunk.tsx",
         "src/components/MainTabChatTranscript.tsx",
         "src/components/MainTabUnifiedAskBar.tsx",
         "src/components/SessionContextStrip.tsx",
+        "src/components/SettingsTabUiScaleSection.tsx",
+        "src/components/deck/DeckFocusSlider.tsx",
         "src/utils/buildAnswerBubbleElement.tsx",
         "src/utils/buildReplyActionsElement.tsx",
         "src/utils/buildTurnHeaderElement.tsx",

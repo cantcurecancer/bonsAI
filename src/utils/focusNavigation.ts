@@ -82,6 +82,8 @@ export function isUpDeckButtonEvent(button: unknown): boolean {
 const DECK_BUTTON_OK = 1;
 const DECK_BUTTON_DIR_UP = 9;
 const DECK_BUTTON_DIR_DOWN = 10;
+const DECK_BUTTON_DIR_LEFT = 11;
+const DECK_BUTTON_DIR_RIGHT = 12;
 
 /** The numeric button id, from whichever shape the caller was handed. */
 function deckButtonId(button: unknown): number | null {
@@ -123,6 +125,28 @@ export function isDeckDirectionUpEvent(button: unknown): boolean {
   const id = deckButtonId(button);
   if (id !== null) return id === DECK_BUTTON_DIR_UP;
   return isUpDeckButtonEvent(button);
+}
+
+export function isDeckDirectionLeftEvent(button: unknown): boolean {
+  const id = deckButtonId(button);
+  if (id !== null) return id === DECK_BUTTON_DIR_LEFT;
+  const key = String(button ?? "");
+  return (
+    isLeftNavigationKey(key) ||
+    key === "GamepadLeftStickLeft" ||
+    key.toLowerCase().includes("left")
+  );
+}
+
+export function isDeckDirectionRightEvent(button: unknown): boolean {
+  const id = deckButtonId(button);
+  if (id !== null) return id === DECK_BUTTON_DIR_RIGHT;
+  const key = String(button ?? "");
+  return (
+    isRightNavigationKey(key) ||
+    key === "GamepadLeftStickRight" ||
+    key.toLowerCase().includes("right")
+  );
 }
 
 /** Find a visible focusable descendant to support controller-first keyboard navigation. */

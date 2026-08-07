@@ -1,6 +1,14 @@
 import { describe, expect, it } from "vitest";
 
-import { isDownDeckButtonEvent, isOkDeckButtonEvent, isUpDeckButtonEvent } from "./focusNavigation";
+import {
+  isDeckDirectionDownEvent,
+  isDeckDirectionLeftEvent,
+  isDeckDirectionRightEvent,
+  isDeckDirectionUpEvent,
+  isDownDeckButtonEvent,
+  isOkDeckButtonEvent,
+  isUpDeckButtonEvent,
+} from "./focusNavigation";
 
 /**
  * The shape Decky actually delivers to `onButtonDown`: a `GamepadEvent`, which is a `CustomEvent`
@@ -14,6 +22,8 @@ const OK = 1;
 const CANCEL = 2;
 const DIR_UP = 9;
 const DIR_DOWN = 10;
+const DIR_LEFT = 11;
+const DIR_RIGHT = 12;
 
 describe("isOkDeckButtonEvent", () => {
   it("accepts A from a gamepad event", () => {
@@ -66,13 +76,30 @@ describe("direction predicates parse key strings, not gamepad events", () => {
   });
 
   /*
-   * Documented, not fixed: these do not understand a GamepadEvent, so every `onButtonDown` handler
-   * in this repo that tests a direction is inert on device. Harmless where `onMoveDown`/`onMoveUp`
-   * already do the work — which is every remaining call site — but do not add a new one expecting
-   * it to fire. Tracked in docs/roadmap.md.
+   * String-only helpers stay inert on gamepad events — use isDeckDirection*Event where
+   * `onButtonDown` is the sole direction handler.
    */
-  it("does not match a gamepad event (known limitation)", () => {
+  it("does not match a gamepad event (string helpers only)", () => {
     expect(isDownDeckButtonEvent(gamepadEvent(DIR_DOWN))).toBe(false);
     expect(isUpDeckButtonEvent(gamepadEvent(DIR_UP))).toBe(false);
+  });
+});
+
+describe("isDeckDirection*Event", () => {
+  it("reads direction ids from a gamepad event", () => {
+    expect(isDeckDirectionDownEvent(gamepadEvent(DIR_DOWN))).toBe(true);
+    expect(isDeckDirectionUpEvent(gamepadEvent(DIR_UP))).toBe(true);
+    expect(isDeckDirectionLeftEvent(gamepadEvent(DIR_LEFT))).toBe(true);
+    expect(isDeckDirectionRightEvent(gamepadEvent(DIR_RIGHT))).toBe(true);
+  });
+
+  it("rejects non-direction buttons", () => {
+    expect(isDeckDirectionDownEvent(gamepadEvent(OK))).toBe(false);
+    expect(isDeckDirectionLeftEvent(gamepadEvent(CANCEL))).toBe(false);
+  });
+
+  it("still accepts key-string fallbacks for tests and keyboard nav", () => {
+    expect(isDeckDirectionDownEvent("ArrowDown")).toBe(true);
+    expect(isDeckDirectionLeftEvent("ArrowLeft")).toBe(true);
   });
 });
