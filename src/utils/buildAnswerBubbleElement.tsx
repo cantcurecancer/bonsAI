@@ -86,6 +86,20 @@ function stopNavProps(moveDown: () => boolean, moveUp: () => boolean): Record<st
   };
 }
 
+/* Cast for the same reason `navHandlers` below is cast: `data-*` is only structurally typed on
+   intrinsic elements, and Decky's Focusable props do not carry an index signature. */
+function stopAttrs(
+  stopNav: Record<string, unknown>,
+  index: number,
+  extra?: Record<string, unknown>
+): Record<string, unknown> {
+  return {
+    ...stopNav,
+    ...extra,
+    "data-bonsai-chunk-index": String(index),
+  } as Record<string, unknown>;
+}
+
 function renderStreamMarkdownStack(
   body: string,
   spoilerMaskingEnabled: boolean,
@@ -96,22 +110,13 @@ function renderStreamMarkdownStack(
   const prepared = prepareStreamMarkdown(body);
   const nodes: React.ReactNode[] = [];
 
-  /* Cast for the same reason `navHandlers` below is cast: `data-*` is only structurally typed on
-     intrinsic elements, and Decky's Focusable props do not carry an index signature. */
-  const stopProps = (index: number, extra?: Record<string, unknown>) =>
-    ({
-      ...stopNav,
-      ...extra,
-      "data-bonsai-chunk-index": String(index),
-    }) as Record<string, unknown>;
-
   prepared.closedBlocks.forEach((block, i) => {
     nodes.push(
       <Focusable
         key={`${answerKey}-closed-${i}`}
         className={`${STOP_CLASS} bonsai-ai-response-chunk--stream-closed`}
         ref={(el: HTMLElement | null) => registerAnswerStop(answerKey, i, el)}
-        {...stopProps(i)}
+        {...stopAttrs(stopNav, i)}
       >
         <MainTabBonsaiAiMarkdownChunk
           source={block}
@@ -129,7 +134,7 @@ function renderStreamMarkdownStack(
         key={`${answerKey}-wait`}
         className={`${STOP_CLASS} bonsai-ai-response-chunk--stream-wait`}
         ref={(el: HTMLElement | null) => registerAnswerStop(answerKey, waitIndex, el)}
-        {...stopProps(waitIndex)}
+        {...stopAttrs(stopNav, waitIndex)}
       >
         <StreamFenceWaitChip label={prepared.waitChip.label} kind={prepared.waitChip.kind} />
       </Focusable>
@@ -145,7 +150,7 @@ function renderStreamMarkdownStack(
         key={`${answerKey}-tail`}
         className={STOP_CLASS}
         ref={(el: HTMLElement | null) => registerAnswerStop(answerKey, tailIndex, el)}
-        {...stopProps(tailIndex, { "data-bonsai-stream-preview": "true" })}
+        {...stopAttrs(stopNav, tailIndex, { "data-bonsai-stream-preview": "true" })}
       >
         <MainTabBonsaiAiMarkdownChunk
           source={prepared.liveTail}
@@ -271,18 +276,22 @@ export function buildAnswerBubbleElement(
                 answerKey,
                 stopNav
               )
-            : displayChunks.map((chunk, i) => (
-                <div
+            : /* Same stop treatment as the streaming stack, so navigating a turn feels the same
+                 whether or not it streamed — and so a turn does not change shape under the user at
+                 T3, when the layout switches from stream sections to these chunks. */
+              displayChunks.map((chunk, i) => (
+                <Focusable
                   key={`${answerKey}-chunk-${i}`}
-                  className="bonsai-ai-response-chunk bonsai-ai-response-chunk--in-bubble"
-                  data-bonsai-chunk-index={String(i)}
+                  className={STOP_CLASS}
+                  ref={(el: HTMLElement | null) => registerAnswerStop(answerKey, i, el)}
+                  {...stopAttrs(stopNav, i)}
                 >
                   <MainTabBonsaiAiMarkdownChunk
                     source={chunk}
                     spoilerMaskingEnabled={spoilerMaskingEnabled}
                     spoilerDefaultExpanded={spoilerDefaultExpanded}
                   />
-                </div>
+                </Focusable>
               ))}
         </div>
       </div>

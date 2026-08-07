@@ -32,6 +32,7 @@
     "src/utils/bonsaiPhaseToast.test.ts",
     "src/utils/bonsaiReplyReadyToast.test.ts",
     "src/utils/bonsaiSessionSurvival.test.ts",
+    "src/utils/buildAnswerBubbleElement.test.tsx",
     "src/utils/chatPanelScroll.test.ts",
     "src/utils/chatTurnTitle.test.ts",
     "src/utils/clearBonsaiBrowserStorage.test.ts",

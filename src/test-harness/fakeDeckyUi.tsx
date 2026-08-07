@@ -3,14 +3,60 @@ import { vi } from "vitest";
 
 type StubProps = Record<string, unknown> & { children?: React.ReactNode };
 
+/**
+ * Steam navigation props the real components consume themselves. The stub has to drop them rather
+ * than spread them: React does not recognise them as event handlers, so every one reaching a plain
+ * `div` prints a warning, and the answer bubble alone now carries a set of them per section.
+ */
+const STEAM_NAV_PROPS = new Set([
+  "onActivate",
+  "onButtonDown",
+  "onButtonUp",
+  "onCancel",
+  "onGamepadBlur",
+  "onGamepadDirection",
+  "onGamepadFocus",
+  "onMoveDown",
+  "onMoveLeft",
+  "onMoveRight",
+  "onMoveUp",
+  "onOKActionDescription",
+  "onOKButton",
+  "onOptionsActionDescription",
+  "onOptionsButton",
+  "onSecondaryActionDescription",
+  "onSecondaryButton",
+  "onShowTab",
+  "navRef",
+]);
+
+function withoutSteamNavProps(props: StubProps): StubProps {
+  const out: StubProps = {};
+  for (const [key, value] of Object.entries(props)) {
+    if (!STEAM_NAV_PROPS.has(key)) out[key] = value;
+  }
+  return out;
+}
+
+/**
+ * Ref-forwarding, because the real components do and plugin code depends on it: the answer bubble
+ * and every section stop inside it reach their registries through a `ref` callback on a `Focusable`.
+ * A plain function component silently hands those callbacks null, so anything ref-driven would test
+ * as broken here while working on device.
+ */
 function stub(name: string) {
-  return function DeckyUiStub({ children, ...rest }: StubProps) {
+  return React.forwardRef<HTMLDivElement, StubProps>(function DeckyUiStub(
+    { children, ...rest },
+    ref
+  ) {
+    /* `forwardRef` runs StubProps through `Omit`, which collapses the declared `children` into the
+       index signature and leaves it `unknown`; the cast restores what it always was. */
     return (
-      <div data-decky-ui={name} {...rest}>
-        {children}
+      <div ref={ref} data-decky-ui={name} {...withoutSteamNavProps(rest)}>
+        {children as React.ReactNode}
       </div>
     );
-  };
+  });
 }
 
 export const PanelSection = stub("PanelSection");
@@ -40,7 +86,11 @@ export function Tabs({
   const rows = Array.isArray(tabs) ? tabs : [];
   const active = rows.find((t) => t.id === activeTab) ?? rows[0];
   return (
-    <div data-decky-ui="Tabs" data-active-tab={activeTab} {...(rest as StubProps)}>
+    <div
+      data-decky-ui="Tabs"
+      data-active-tab={activeTab}
+      {...(withoutSteamNavProps(rest) as StubProps)}
+    >
       <div data-decky-ui="TabTitles">
         {rows.map((t) => (
           <div key={t.id} data-tab-id={t.id}>
