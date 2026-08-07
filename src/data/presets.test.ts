@@ -22,6 +22,10 @@ describe("presets", () => {
     expect(detectPromptCategory("Diagnose a slow Ollama response")).toBe("ollama");
     expect(detectPromptCategory("How do I find Ollama on my LAN?")).toBe("ollama");
     expect(detectPromptCategory("What should I do if Ask times out?")).toBe("ollama");
+    expect(detectPromptCategory("How do I use Find LAN on the Ollama tab?")).toBe("ollama");
+    expect(detectPromptCategory("How do I bind a BonsAI quick-launch chord?")).toBe("controls");
+    expect(detectPromptCategory("How do I enable token streaming?")).toBe("general");
+    expect(detectPromptCategory("What should I expect while answers stream in?")).toBe("general");
   });
 
   it("returns contextual presets with requested length", () => {

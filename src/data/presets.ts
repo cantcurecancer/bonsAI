@@ -47,6 +47,7 @@ const PRESET_PROMPTS: PresetPrompt[] = [
   { text: "How can I reduce input lag?", category: "controls" },
   { text: "Open Steam Input config", category: "controls" },
   { text: "How do I fix Steam Input for this game?", category: "controls" },
+  { text: "How do I bind a BonsAI quick-launch chord?", category: "controls" },
   { text: "Why is my game crashing?", category: "troubleshooting" },
   { text: "How do I fix stuttering?", category: "troubleshooting" },
   { text: "Help me troubleshoot a Proton issue", category: "troubleshooting" },
@@ -54,6 +55,7 @@ const PRESET_PROMPTS: PresetPrompt[] = [
   { text: "bonsai:vac-check", category: "troubleshooting" },
   { text: "Diagnose a slow Ollama response", category: "ollama" },
   { text: "How do I find Ollama on my LAN?", category: "ollama" },
+  { text: "How do I use Find LAN on the Ollama tab?", category: "ollama" },
   { text: "Why can't bonsAI reach my PC Ollama host?", category: "ollama" },
   { text: "What should I do if Ask times out?", category: "ollama" },
   { text: "What settings should I use?", category: "general" },
@@ -72,6 +74,8 @@ const PRESET_PROMPTS: PresetPrompt[] = [
   { text: "How do I use strategy mode?", category: "strategy", preferAskMode: "strategy" },
   { text: "What's ahead (without spoilers)?", category: "strategy", preferAskMode: "strategy" },
   // Roadmap previews (honest beta; click only fills input).
+  { text: "How do I enable token streaming?", category: "general", beta: true },
+  { text: "What should I expect while answers stream in?", category: "general", beta: true },
   { text: "Can you set a quiet fan profile?", category: "thermal", beta: true },
   { text: "What does my Proton log say about the last crash?", category: "troubleshooting", beta: true },
   { text: "Are there issues with my Steam Input layout?", category: "controls", beta: true },
@@ -114,9 +118,9 @@ const CATEGORY_KEYWORDS: [string, string[]][] = [
   ],
   ["performance", ["fps", "performance", "speed", "framerate", "frame rate", "fsr", "resolution"]],
   ["thermal", ["fan", "thermal", "temp", "heat", "cool", "noise", "long session"]],
-  ["controls", ["controller", "layout", "input", "button", "joystick", "trackpad", "steam input"]],
+  ["controls", ["controller", "layout", "input", "button", "joystick", "trackpad", "steam input", "chord", "quick-launch"]],
   ["troubleshooting", ["crash", "stutter", "fix", "error", "bug", "issue", "problem", "lag", "proton", "launch", "won't"]],
-  ["general", ["compatibility", "verified", "run on deck", "voice input", "expert mode"]],
+  ["general", ["compatibility", "verified", "run on deck", "voice input", "expert mode", "token streaming", "stream in"]],
   [
     "strategy",
     [
