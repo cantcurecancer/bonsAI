@@ -11,14 +11,14 @@
       "role": ""
     },
     {
-      "path": "src/hooks/useBonsaiAskOrchestration.ts",
-      "lines": 1320,
-      "role": ""
+      "path": "src/index.tsx",
+      "lines": 1314,
+      "role": "Plugin root: tabs, scoped CSS, RPC wiring, Settings"
     },
     {
-      "path": "src/index.tsx",
-      "lines": 1316,
-      "role": "Plugin root: tabs, scoped CSS, RPC wiring, Settings"
+      "path": "src/hooks/useBonsaiAskOrchestration.ts",
+      "lines": 1256,
+      "role": ""
     },
     {
       "path": "src/components/OllamaWhereAiRunsSection.tsx",
@@ -106,11 +106,6 @@
       "role": ""
     },
     {
-      "path": "src/hooks/useBonsaiAskOrchestration.test.ts",
-      "lines": 524,
-      "role": ""
-    },
-    {
       "path": "py_modules/backend/services/game_ai_request.py",
       "lines": 508,
       "role": ""
@@ -153,6 +148,11 @@
     {
       "path": "src/data/bonsaiSettingsNormalizers.ts",
       "lines": 453,
+      "role": ""
+    },
+    {
+      "path": "src/hooks/useBonsaiAskOrchestration.test.ts",
+      "lines": 439,
       "role": ""
     },
     {

@@ -14,11 +14,6 @@ export const BACKGROUND_STATUS_POLL_MS = 1200;
 /** Faster poll while token streaming exposes partial_response on pending asks. */
 export const BACKGROUND_STREAM_POLL_MS = 150;
 
-export type UseBackgroundGameAiOptions = {
-  /** When true, poll at BACKGROUND_STREAM_POLL_MS for the whole pending ask (not only when status.streaming). */
-  tokenStreamingEnabledRef?: React.MutableRefObject<boolean>;
-};
-
 /**
  * Background ask lifecycle: invalidates stale polls when the user submits again or unmounts,
  * and fans out ``get_background_game_ai_status`` until a terminal state.
@@ -26,7 +21,6 @@ export type UseBackgroundGameAiOptions = {
 export function useBackgroundGameAi(
   applyBackgroundStatusToUi: (status: BackgroundRequestStatus, fallbackQuestion?: string) => void,
   onPollError: (error: unknown) => void,
-  options?: UseBackgroundGameAiOptions,
 ) {
   const askRequestSeqRef = useRef(0);
   const isMountedRef = useRef(true);
@@ -68,9 +62,14 @@ export function useBackgroundGameAi(
           applyBackgroundStatusToUi(status, fallbackQuestion);
 
           if (status.status === "pending") {
-            const fastPoll =
-              status.streaming === true || options?.tokenStreamingEnabledRef?.current === true;
-            const delayMs = fastPoll ? BACKGROUND_STREAM_POLL_MS : BACKGROUND_STATUS_POLL_MS;
+            /*
+             * Only while tokens are actually arriving. Keying this on the *setting* instead meant a
+             * 150ms poll for the whole pending window — including prep phases (KB search, Proton
+             * logs, screenshot prep) that publish no partial text, so the extra ~8 RPCs/sec bought
+             * nothing while a game was running.
+             */
+            const delayMs =
+              status.streaming === true ? BACKGROUND_STREAM_POLL_MS : BACKGROUND_STATUS_POLL_MS;
             backgroundPollTimerRef.current = window.setTimeout(() => {
               void pollOnce();
             }, delayMs);
@@ -83,7 +82,7 @@ export function useBackgroundGameAi(
 
       void pollOnce();
     },
-    [applyBackgroundStatusToUi, clearBackgroundPollTimer, isRequestActive, onPollError, options?.tokenStreamingEnabledRef],
+    [applyBackgroundStatusToUi, clearBackgroundPollTimer, isRequestActive, onPollError],
   );
 
   useEffect(() => {

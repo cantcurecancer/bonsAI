@@ -421,7 +421,6 @@ const Content: React.FC = () => {
     useLocalKnowledgeBase,
     settingsLoaded,
     devForceSessionRagChips,
-    bonsaiTokenStreamingEnabled,
   });
 
   isAskingRef.current = isAsking;

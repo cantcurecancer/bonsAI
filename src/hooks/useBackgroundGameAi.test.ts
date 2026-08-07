@@ -97,4 +97,60 @@ describe("useBackgroundGameAi", () => {
     expect(applied.length).toBe(countAfterInvalidate);
     vi.useRealTimers();
   });
+
+  /**
+   * The cadence follows ``streaming``, not the setting: prep phases (KB search, Proton logs,
+   * screenshot prep) publish no partial text, so polling them at 150ms only costs RPCs.
+   */
+  it("polls slowly while pending without tokens, and fast once streaming starts", async () => {
+    vi.useFakeTimers();
+    let streaming = false;
+    let polls = 0;
+    setRpcHandler("get_background_game_ai_status", () => {
+      polls += 1;
+      return {
+        ...idleBackgroundStatusFixture(),
+        status: "pending",
+        question: "q",
+        request_id: 3,
+        streaming,
+        partial_response: streaming ? "partial" : null,
+      } as BackgroundRequestStatus;
+    });
+
+    const { result } = renderHook(() =>
+      useBackgroundGameAi(
+        () => {},
+        () => {}
+      )
+    );
+
+    act(() => {
+      const seq = result.current.startNextRequest();
+      result.current.startBackgroundStatusPolling(seq, "q");
+    });
+
+    // Prep phase: one immediate poll plus one per 1200ms.
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(2500);
+    });
+    const slowPolls = polls;
+    expect(slowPolls).toBeLessThanOrEqual(4);
+
+    streaming = true;
+    // Let the in-flight slow timer deliver the first streaming status, then measure the fast phase.
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1200);
+    });
+    const atStreamStart = polls;
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1500);
+    });
+    // ~10 polls per 1500ms at 150ms, versus at most 2 at the slow cadence.
+    expect(polls - atStreamStart).toBeGreaterThan(5);
+
+    result.current.invalidateRequests();
+    vi.useRealTimers();
+  });
 });

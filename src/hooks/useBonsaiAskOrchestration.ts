@@ -120,7 +120,6 @@ export type UseBonsaiAskOrchestrationArgs = {
   settingsLoaded?: boolean;
   /** QA override (Developer tab): force every eligible carousel slot to a session RAG chip. */
   devForceSessionRagChips?: boolean;
-  bonsaiTokenStreamingEnabled?: boolean;
 };
 
 export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
@@ -362,8 +361,6 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
 
   const streamRevealActive = isStreamingPreview || isStreamSettling;
   const streamPreviewActiveRef = useRef(false);
-  const tokenStreamingEnabledRef = useRef(a.bonsaiTokenStreamingEnabled === true);
-  tokenStreamingEnabledRef.current = a.bonsaiTokenStreamingEnabled === true;
   useEffect(() => {
     streamPreviewActiveRef.current = streamRevealActive;
   }, [streamRevealActive]);
@@ -641,9 +638,7 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
     invalidateRequests,
     startBackgroundStatusPolling,
     isRequestActive,
-  } = useBackgroundGameAi(applyBackgroundStatusToUi, onBackgroundPollError, {
-    tokenStreamingEnabledRef,
-  });
+  } = useBackgroundGameAi(applyBackgroundStatusToUi, onBackgroundPollError);
 
   // --- Mount restore: resume pending Ask after plugin remount ---
   /**
