@@ -136,7 +136,13 @@ BPM (Desktop → Big Picture → QAM → bonsAI). Ollama reachable.
 - [ ] **CONTEXT-LADDER-03** D-pad: Show details / Retry **Down** → ladder focus (not session strip skip); **Left/Right** cycles chips; all chips visible when ≤6; **Up** from first chip → utility row; **Down** from last chip → session strip; **Developer details** chip reachable
 - [ ] **MICRO-04** Strategy live-turn D-pad: branches → feedback → utilities
 - [ ] **D-PAD-SCROLL-02** Strategy reply: ~one readable step per D-pad Down
-- [ ] **STRAT-SPOIL-DRG-01** DRG Survivor boss names not false-positive spoilers
+- [ ] **STRAT-SPOIL-DRG-01** DRG Survivor boss names not false-positive spoilers — ship gate is the three **required** rows below; acceptance is *no spoiler fence rendered for the entity named in the question* (display-level, not a claim about model behavior)
+  - [ ] **DRG-01** `2321470`, *"How do I beat Glyphid Dreadnought?"*, no consent phrase, masking on → boss tactics in plain text, no tap-to-reveal
+  - [ ] **DRG-01d** As DRG-01, **then ask a second question** → the first answer stays unfenced after it leaves the live turn *(the D1 regression: history turns used to re-fence)*
+  - [ ] **DRG-01b/c** As DRG-01 with KB **off**, or corpus **absent** → still plain text *(D2: the low-risk signal used to be reachable only through the corpus)*
+  - [ ] *(recommended)* **HADES-NAMED-01** Hades `1145360`, *"How do I beat Megaera?"* → plain text. Naming the boss is consent for that boss on any title (spoiler-constitution rule 7)
+  - [ ] *(recommended)* **HADES-UNNAMED-01** Hades, a question that does **not** name a boss → story-adjacent detail **still fenced**. This is the genre over-relax guard: Hades shares the `roguelike` genre with DRG Survivor
+  - [ ] *(extra credit, does not block)* **DRG-01e** Streaming off → plain text; **DRG-01f** `[Strategy follow-up]` turn → plain text; mid-stream spoiler wait-chip suppressed for the named entity (R4)
 - [ ] **KB-FOCUS-01** Ollama KB Update/Remove: Left/Right between pair; both Up → KB toggle; both Down → Reply style; **equal row height** (Update not taller than Remove)
 - [ ] **KB-CANCEL-01** Ollama KB **while a download runs**: **Cancel** replaces Remove and is the row's only enabled stop (the primary reads *Downloading…* and is disabled). Down from **Use local knowledge base** → Cancel; Up from **Reply verbosity** → Cancel; **A** → *Cancelling…*, second press does nothing; row returns to Update/Download + Remove within a few seconds; status line reads *Download cancelled* in grey, **not** the raw backend error in red; a fresh download still starts afterwards
 - [ ] **OLLAMA-FOCUS-01** Ollama tab open (no prior Test): with Ollama reachable, primary button shows **Update AI & models** (quiet auto-probe)

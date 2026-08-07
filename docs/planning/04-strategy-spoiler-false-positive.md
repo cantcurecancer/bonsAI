@@ -364,10 +364,10 @@ Full recon matrix in §5 is coverage debt, not the minimum to close the bug.
 All decisions in §7 were locked in chat from recon in this file. Before treating
 them as implementation gospel, verify against current code and on-Deck behavior:
 
-- [ ] R1 still reproduces (historical / non-`live` turns re-fence) on current HEAD
-- [ ] R2 still reproduces (corpus-optional / empty genres → empty addendum) on current HEAD
-- [ ] Option 4 (entity-only low-risk) does not over-relax narrative titles when the user did **not** name an entity
-- [ ] Subtractive prompt change (option 2) does not drop needed fences for OOT-class progression secrets
+- [x] R1 still reproduces (historical / non-`live` turns re-fence) on current HEAD — **confirmed 2026-08-07** at `MainTabChatTranscript.tsx` `renderAnswerBubble`, which passed `askQuestion: ""` / `appId: null` for any `answerKey !== "live"`, and `buildAnswerBubbleElement` gates the unwrap on exactly those. **Fixed** — both now threaded per turn, AppID stamped onto the turn at completion
+- [x] R2 still reproduces (corpus-optional / empty genres → empty addendum) on current HEAD — **confirmed 2026-08-07**: `_strategy_spoiler_low_risk_addendum` returned `""` and the rendered block contained nothing about the asked entity. **Fixed** via the named-entity arm plus a Python AppID allowlist mirroring the TS one
+- [x] Option 4 (entity-only low-risk) does not over-relax narrative titles when the user did **not** name an entity — **covered by unit test** `test_strategy_spoiler_policy_narrative_app_id_without_entity_stays_fenced` and `test_strategy_spoiler_policy_story_game_keeps_default_fence`. When an entity **is** named, relaxation is scoped to it: the addendum says so explicitly and the avoid-clause reads *"late-game boss names other than X"* (`test_strategy_spoiler_policy_named_entity_does_not_relax_the_rest`). Still wants the on-Deck Hades pair to confirm the model honours the scoping
+- [ ] Subtractive prompt change (option 2) does not drop needed fences for OOT-class progression secrets — **unit-level only so far**; the unnamed-ask path keeps the full avoid-clause, but whether the model still fences progression secrets is on-Deck behavior
 - [ ] Ship-gate Deck rows DRG-01 + 01d + (01b\|01c) after 1+2+4
 - [ ] Hades named vs unnamed expectations match §7 (recon HADES-01 row is partially superseded)
 - [ ] Mid-stream extra credit only after primary ship; do not block STRAT-SPOIL-DRG-01 on R4
