@@ -42,6 +42,7 @@ from backend.services.knowledge_base_service import (
     summarize_kb_coverage,
 )
 from backend.services.screenshot_media import lookup_screenshot_vdf_metadata
+from backend.services.spoiler_risk_service import build_spoiler_risk_signals
 from backend.services.transparency_service import (
     build_capability_denied_snapshot,
     build_error_route_snapshot,
@@ -369,16 +370,25 @@ async def run_game_ai_request(
             pre_cap = await _loop.run_in_executor(None, _read_cap)
 
         strategy_spoiler_consent_effective = False
-        strategy_spoiler_game_genres = ""
-        strategy_spoiler_asked_entity = ""
-        strategy_spoiler_kb_entity_match = False
+        strategy_spoiler_game_genres = lookup_game_genres(settings, app_id)
+        strategy_spoiler_asked_entity = extract_strategy_asked_entity(question_for_model)
+        strategy_spoiler_kb_entity_match = kb_text_covers_asked_entity(
+            kb_text, strategy_spoiler_asked_entity
+        )
         if ask_mode == "strategy":
             strategy_spoiler_consent_effective = bool(spoiler_consent) or user_consents_strategy_spoilers(
                 question_for_model
             )
-            strategy_spoiler_game_genres = lookup_game_genres(settings, app_id)
-            strategy_spoiler_asked_entity = extract_strategy_asked_entity(question_for_model)
-            strategy_spoiler_kb_entity_match = kb_text_covers_asked_entity(kb_text, strategy_spoiler_asked_entity)
+
+        spoiler_risk_signals = build_spoiler_risk_signals(
+            ask_mode=ask_mode,
+            app_id=app_id,
+            question=question_for_model,
+            game_genres=strategy_spoiler_game_genres,
+            kb_text=kb_text,
+            asked_entity=strategy_spoiler_asked_entity,
+            kb_entity_match=strategy_spoiler_kb_entity_match,
+        )
 
         ollama_result = await plugin.ask_ollama(
             question_for_model,
@@ -456,6 +466,8 @@ async def run_game_ai_request(
                     **kb_transparency,
                     **kb_coverage_transparency,
                     "tdp_cap_watts": pre_cap if tdp_grounding_requested else None,
+                    "ask_mode": ask_mode,
+                    "spoiler_risk_signals": spoiler_risk_signals,
                 },
                 base_response_text=base_response_text,
                 response_text=response_text,

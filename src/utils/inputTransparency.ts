@@ -77,6 +77,17 @@ export type TransparencySnapshot = {
   } | null;
   /** Global reply prose style active for this Ask (short / balanced / detailed). */
   reply_verbosity?: string;
+  /** Ask mode active for the last transparency snapshot (speed / strategy / expert). */
+  ask_mode?: string;
+  /** Backend spoiler-risk scoring inputs for the confidence chip. */
+  spoiler_risk_signals?: {
+    ask_mode?: string;
+    app_id?: string;
+    game_genres?: string;
+    asked_entity?: string;
+    kb_entity_match?: boolean;
+    kb_section_types?: string[];
+  };
 };
 
 export type AskDiagnosticsSnapshot = {

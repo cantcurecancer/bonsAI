@@ -76,13 +76,13 @@
       "role": ""
     },
     {
-      "path": "py_modules/backend/services/bonsai_stream_tags.py",
-      "lines": 693,
+      "path": "py_modules/backend/services/transparency_service.py",
+      "lines": 695,
       "role": ""
     },
     {
-      "path": "py_modules/backend/services/transparency_service.py",
-      "lines": 660,
+      "path": "py_modules/backend/services/bonsai_stream_tags.py",
+      "lines": 693,
       "role": ""
     },
     {
@@ -106,13 +106,13 @@
       "role": ""
     },
     {
-      "path": "src/hooks/usePluginSettings.ts",
-      "lines": 527,
+      "path": "py_modules/backend/services/game_ai_request.py",
+      "lines": 532,
       "role": ""
     },
     {
-      "path": "py_modules/backend/services/game_ai_request.py",
-      "lines": 520,
+      "path": "src/hooks/usePluginSettings.ts",
+      "lines": 527,
       "role": ""
     },
     {

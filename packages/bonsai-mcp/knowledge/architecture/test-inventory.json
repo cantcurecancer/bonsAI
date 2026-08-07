@@ -119,6 +119,7 @@
     "tests/test_settings_save_lock.py",
     "tests/test_settings_service.py",
     "tests/test_shortcut_setup_commands.py",
+    "tests/test_spoiler_risk_service.py",
     "tests/test_steam_vac_service.py",
     "tests/test_strategy_checklist_session_service.py",
     "tests/test_strategy_checklist_store_lock.py",

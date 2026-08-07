@@ -10,6 +10,14 @@ from __future__ import annotations
 
 from typing import Any, Optional
 
+from backend.services.spoiler_risk_service import (
+    compute_spoiler_risk_band,
+    parse_bonsai_spoiler_risk_tag,
+    spoiler_risk_chip_label,
+    spoiler_risk_detail_bullets,
+    spoiler_risk_signals_from_snapshot,
+)
+
 
 def _base_snapshot_fields() -> dict[str, Any]:
     return {
@@ -488,6 +496,31 @@ def build_context_chips_manifest(
         )
         rank += 1
 
+    spoiler_signals = spoiler_risk_signals_from_snapshot(snapshot)
+    assistant_for_tag = str(
+        snapshot.get("assistant_raw") or snapshot.get("final_response") or ""
+    )
+    model_band = parse_bonsai_spoiler_risk_tag(assistant_for_tag)
+    spoiler_band = compute_spoiler_risk_band(spoiler_signals, assistant_text=assistant_for_tag)
+    chips.append(
+        {
+            "id": "spoiler_risk",
+            "rank": rank,
+            "label": spoiler_risk_chip_label(spoiler_band),
+            "attached": True,
+            "tier_class": "",
+            "body": _chip_body(
+                title="Spoiler likelihood estimate",
+                bullets=spoiler_risk_detail_bullets(
+                    spoiler_band,
+                    spoiler_signals,
+                    model_band=model_band,
+                ),
+            ),
+        }
+    )
+    rank += 1
+
     disclosure = snapshot.get("model_policy_disclosure")
     model_name = str(snapshot.get("ollama_model") or "").strip()
     if isinstance(disclosure, dict) or model_name:
@@ -602,6 +635,8 @@ def build_ollama_route_snapshot(
         "ask_diagnostics": ollama_result.get("ask_diagnostics"),
         "response_verify": verify_result,
         "reply_verbosity": str(ollama_result.get("reply_verbosity") or "balanced"),
+        "ask_mode": str(ollama_result.get("ask_mode") or "speed"),
+        "spoiler_risk_signals": ollama_result.get("spoiler_risk_signals"),
     }
     chip_manifest = build_context_chips_manifest(
         snapshot=base,
