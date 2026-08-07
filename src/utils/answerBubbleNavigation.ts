@@ -26,6 +26,12 @@ import {
   focusSpoilerFence,
 } from "./spoilerFenceRegistry";
 
+import {
+  focusAnswerStop,
+  focusedAnswerStopIndex,
+  orderedAnswerStops,
+} from "./answerStopRegistry";
+
 /** True when `el` overlaps the visible band of its scroll container. */
 export function elementIsWithinViewportOf(el: HTMLElement, scroll: HTMLElement): boolean {
   const elRect = el.getBoundingClientRect();
@@ -194,6 +200,26 @@ export function handleAnswerBubbleMoveDown(
   if (fence && focusSpoilerFence(fence)) return true;
 
   /*
+   * Then step section by section, before scrolling.
+   *
+   * Only a stop that is already on screen is eligible, which is the same rule the fence diversion
+   * uses and it is what keeps the two composable: when the next section is below the fold this falls
+   * through to the scroll below, and the press after that lands on it. Chasing an off-screen stop
+   * instead would scroll and focus in one press and lose the intervening text.
+   *
+   * With focus still on the bubble itself there is no current section, so Down enters the chain at
+   * the first stop *in view* rather than at stop 0 — after the user has scrolled down, stop 0 is
+   * above the fold and would never become eligible, leaving the chain permanently unreachable.
+   */
+  if (answerKey) {
+    const stops = orderedAnswerStops(answerKey, bubble);
+    const inView = (el: HTMLElement) => elementIsWithinViewportOf(el, scroll);
+    const at = focusedAnswerStopIndex(stops);
+    const next = at >= 0 ? stops[at + 1] : stops.find(inView);
+    if (next && inView(next) && focusAnswerStop(next)) return true;
+  }
+
+  /*
    * Only scroll while THIS bubble still extends below the viewport.
    * Previously we scrolled TabContentsScroll until max (past branches/thumbs to Save chat),
    * so D-pad Down never yielded to live-turn focus peers (MICRO-04).
@@ -220,6 +246,22 @@ export function handleAnswerBubbleMoveUp(
 
   const scroll = findScrollablePanel(bubble);
   if (!scroll) return false;
+
+  /*
+   * Step back through the sections, and note the asymmetry with Down: Up walks only when a stop
+   * already holds focus. Down enters the chain from the bubble because that is how you arrive —
+   * header, then bubble, then into the answer. Up arriving at the bubble means the user is on their
+   * way out to the header, so diving into the last visible section would trap them one press short.
+   *
+   * `at > 0` rather than `at >= 0`: from the first section, Up falls through to the scroll below and
+   * then yields, which is what hands focus back to the turn header.
+   */
+  if (answerKey) {
+    const stops = orderedAnswerStops(answerKey, bubble);
+    const at = focusedAnswerStopIndex(stops);
+    const prev = at > 0 ? stops[at - 1] : undefined;
+    if (prev && elementIsWithinViewportOf(prev, scroll) && focusAnswerStop(prev)) return true;
+  }
 
   /* Mirror down: only scroll while bubble content remains above the viewport. */
   if (!chunkHasContentAboveViewport(bubble, scroll)) {

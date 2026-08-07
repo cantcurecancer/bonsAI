@@ -20,6 +20,7 @@ import {
   handleAnswerBubbleMoveDown,
   handleAnswerBubbleMoveUp,
 } from "./answerBubbleNavigation";
+import { registerAnswerStop } from "./answerStopRegistry";
 import { uiActiveElement } from "./uiDocument";
 import {
   isDownDeckButtonEvent,
@@ -59,57 +60,99 @@ function captureBubble(answerKey: string): HTMLElement | null {
   return bubble;
 }
 
+const STOP_CLASS = "bonsai-ai-response-chunk bonsai-ai-response-chunk--in-bubble bonsai-answer-stop";
+
+/**
+ * Props every section stop carries.
+ *
+ * Once focus sits on a stop it is the stop, not the bubble, that receives the press, so each one has
+ * to continue the walk. Both moves delegate to the bubble's own handlers rather than reimplementing
+ * anything — the bubble stays the single owner of what Down and Up mean inside an answer.
+ *
+ * There is deliberately no `onActivate` behaviour beyond claiming the press: the wait chips are
+ * status, not controls, and a press that early-revealed a spoiler mask from its holding chip would
+ * defeat the point of masking it (STREAM-03).
+ */
+function stopNavProps(moveDown: () => boolean, moveUp: () => boolean): Record<string, unknown> {
+  return {
+    onMoveDown: () => moveDown(),
+    onMoveUp: () => moveUp(),
+    onActivate: () => {},
+    onButtonDown: (button: unknown) => {
+      if (isDownDeckButtonEvent(button)) return moveDown();
+      if (isUpDeckButtonEvent(button)) return moveUp();
+      return false;
+    },
+  };
+}
+
 function renderStreamMarkdownStack(
   body: string,
   spoilerMaskingEnabled: boolean,
   spoilerDefaultExpanded: boolean,
-  answerKey: string
+  answerKey: string,
+  stopNav: Record<string, unknown>
 ): React.ReactNode {
   const prepared = prepareStreamMarkdown(body);
   const nodes: React.ReactNode[] = [];
 
+  /* Cast for the same reason `navHandlers` below is cast: `data-*` is only structurally typed on
+     intrinsic elements, and Decky's Focusable props do not carry an index signature. */
+  const stopProps = (index: number, extra?: Record<string, unknown>) =>
+    ({
+      ...stopNav,
+      ...extra,
+      "data-bonsai-chunk-index": String(index),
+    }) as Record<string, unknown>;
+
   prepared.closedBlocks.forEach((block, i) => {
     nodes.push(
-      <div
+      <Focusable
         key={`${answerKey}-closed-${i}`}
-        className="bonsai-ai-response-chunk bonsai-ai-response-chunk--in-bubble bonsai-ai-response-chunk--stream-closed"
-        data-bonsai-chunk-index={String(i)}
+        className={`${STOP_CLASS} bonsai-ai-response-chunk--stream-closed`}
+        ref={(el: HTMLElement | null) => registerAnswerStop(answerKey, i, el)}
+        {...stopProps(i)}
       >
         <MainTabBonsaiAiMarkdownChunk
           source={block}
           spoilerMaskingEnabled={spoilerMaskingEnabled}
           spoilerDefaultExpanded={spoilerDefaultExpanded}
         />
-      </div>
+      </Focusable>
     );
   });
 
   if (prepared.waitChip) {
+    const waitIndex = prepared.closedBlocks.length;
     nodes.push(
-      <div
+      <Focusable
         key={`${answerKey}-wait`}
-        className="bonsai-ai-response-chunk bonsai-ai-response-chunk--in-bubble bonsai-ai-response-chunk--stream-wait"
+        className={`${STOP_CLASS} bonsai-ai-response-chunk--stream-wait`}
+        ref={(el: HTMLElement | null) => registerAnswerStop(answerKey, waitIndex, el)}
+        {...stopProps(waitIndex)}
       >
         <StreamFenceWaitChip label={prepared.waitChip.label} kind={prepared.waitChip.kind} />
-      </div>
+      </Focusable>
     );
   }
 
   if (prepared.liveTail) {
+    /* prepareStreamMarkdown returns a tail or a chip, never both; the term is defensive so the
+       indices stay contiguous if that ever changes. */
     const tailIndex = prepared.closedBlocks.length + (prepared.waitChip ? 1 : 0);
     nodes.push(
-      <div
+      <Focusable
         key={`${answerKey}-tail`}
-        className="bonsai-ai-response-chunk bonsai-ai-response-chunk--in-bubble"
-        data-bonsai-chunk-index={String(tailIndex)}
-        data-bonsai-stream-preview="true"
+        className={STOP_CLASS}
+        ref={(el: HTMLElement | null) => registerAnswerStop(answerKey, tailIndex, el)}
+        {...stopProps(tailIndex, { "data-bonsai-stream-preview": "true" })}
       >
         <MainTabBonsaiAiMarkdownChunk
           source={prepared.liveTail}
           spoilerMaskingEnabled={spoilerMaskingEnabled}
           spoilerDefaultExpanded={spoilerDefaultExpanded}
         />
-      </div>
+      </Focusable>
     );
   }
 
@@ -117,7 +160,7 @@ function renderStreamMarkdownStack(
 }
 
 /**
- * One Focusable answer bubble per turn (display chunks are non-focusable divs inside).
+ * One Focusable answer bubble per turn, with each rendered section a nested Focusable stop inside it.
  * Parent turn-slot Focusable uses flow-children="vertical" for header → answer → reply.
  */
 export function buildAnswerBubbleElement(
@@ -171,6 +214,8 @@ export function buildAnswerBubbleElement(
     return false;
   };
 
+  const stopNav = stopNavProps(moveDown, moveUp);
+
   const navHandlers = {
     onFocus: () => {
       captureBubble(answerKey);
@@ -223,7 +268,8 @@ export function buildAnswerBubbleElement(
                 displayBody,
                 spoilerMaskingEnabled,
                 spoilerDefaultExpanded,
-                answerKey
+                answerKey,
+                stopNav
               )
             : displayChunks.map((chunk, i) => (
                 <div

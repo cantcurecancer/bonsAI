@@ -25,6 +25,7 @@
     "src/test-harness/fakeDeckyRpc.test.ts",
     "src/utils/answerBubbleElRegistry.test.ts",
     "src/utils/answerBubbleNavigation.test.ts",
+    "src/utils/answerStopRegistry.test.ts",
     "src/utils/appDesktopLog.test.ts",
     "src/utils/askThinkingPhases.test.ts",
     "src/utils/bonsaiAskCompletionWatch.test.ts",

@@ -282,6 +282,21 @@ export function buildSection6Section(): string {
           padding: 0 !important;
           margin: 0 !important;
         }
+        /* Each answer section is its own D-pad stop. The reset directly above strips both of the
+           properties Steam draws its ring with (outline and box-shadow, each !important), so a stop
+           has to draw its own marker or the user cannot see where they are. Comes after that reset
+           deliberately: same specificity, so source order decides. The transparent border is always
+           present, otherwise focusing a section would shift the text sideways. */
+        .bonsai-scope .bonsai-chat-ai-bubble .bonsai-answer-stop {
+          border-left: 2px solid transparent !important;
+          padding-left: 6px !important;
+          border-radius: 4px !important;
+        }
+        .bonsai-scope .bonsai-chat-ai-bubble .bonsai-answer-stop.gpfocus,
+        .bonsai-scope .bonsai-chat-ai-bubble .bonsai-answer-stop:focus {
+          border-left-color: rgba(150, 187, 223, 0.9) !important;
+          background: rgba(64, 93, 124, 0.22) !important;
+        }
         .bonsai-scope .bonsai-spoiler-reveal-target {
           background: #0a0a0a !important;
           border-color: rgba(80, 80, 80, 0.55) !important;
