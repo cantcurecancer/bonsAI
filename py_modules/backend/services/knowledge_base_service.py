@@ -934,6 +934,64 @@ class SessionRagChipCandidatesResult:
     candidates: list[SessionRagChipCandidate] = field(default_factory=list)
 
 
+@dataclass
+class KbCoverageSummary:
+    """Corpus coverage for the running game — distinct from Ask-turn KB attachment."""
+
+    status: str
+    section_count: int = 0
+    reason: str = ""
+
+
+def _count_game_sections(conn: sqlite3.Connection, game_id: int) -> int:
+    row = conn.execute(
+        "SELECT COUNT(*) AS n FROM sections WHERE game_id = ?",
+        (game_id,),
+    ).fetchone()
+    return int(row["n"] or 0)
+
+
+def summarize_kb_coverage(
+    settings: dict,
+    *,
+    app_id: str,
+    app_name: str,
+    shortcut_name: str = "",
+) -> KbCoverageSummary:
+    """Return how many strategy sections the offline corpus has for this game."""
+    if settings.get("use_local_knowledge_base") is not True:
+        return KbCoverageSummary(status="kb_off")
+
+    db_path = resolve_corpus_db_path(settings)
+    if not db_path:
+        return KbCoverageSummary(status="corpus_missing")
+
+    try:
+        conn = _get_connection(db_path)
+        game_id, _ = _resolve_game_id(
+            conn,
+            app_id=app_id,
+            app_name=app_name,
+            shortcut_name=shortcut_name,
+        )
+        if game_id is None:
+            return KbCoverageSummary(status="app_unresolved")
+        count = _count_game_sections(conn, game_id)
+        if count <= 0:
+            return KbCoverageSummary(status="no_sections", section_count=0)
+        return KbCoverageSummary(status="sections", section_count=count)
+    except sqlite3.Error as exc:
+        return KbCoverageSummary(status="corpus_error", reason=str(exc))
+
+
+def kb_coverage_to_transparency(summary: KbCoverageSummary) -> dict[str, Any]:
+    return {
+        "kb_coverage_status": summary.status,
+        "kb_coverage_section_count": int(summary.section_count or 0),
+        "kb_coverage_reason": summary.reason or "",
+    }
+
+
 def _truncate_chip_text(text: str, max_len: int = _CHIP_TEXT_MAX_LEN) -> str:
     t = " ".join((text or "").split())
     if len(t) <= max_len:

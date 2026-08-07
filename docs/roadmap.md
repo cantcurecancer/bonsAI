@@ -96,15 +96,6 @@ Within this section: ascending stars (★ → ★★★★).
   - **Goal:** Decide whether the quiet intent-pack search aliases should be deleted, left quiet, or revived under Developer.
   - **Proton journal half closed 2026-08-02.** The 5 journal RPCs and `proton_experiment_journal_service.py` are gone (`309c386`, `ebdc0f2`); only the file wipe survived, relocated into `plugin_data_reset.py` because **Clear all data** still needs it. The last of the plumbing — the `journal_text` parameter on `stack_context_blocks` — was removed on the Ask path in the cleanup pass. Reviving the feature now means rebuilding the store, not re-enabling a flag.
   - **Not in scope:** rewriting unified search ranking; re-shipping journal inject without a redesign.
-- ★ **KB coverage chip** (Show details — corpus honesty; proposed 2026-08-07)
-  - **Goal:** Say in one Show-details chip whether the local knowledge base had anything for the game being asked about — e.g. `KB: 2 sections` / `KB: none for this game` / `KB: off`.
-  - **The signal already exists and is discarded.** `get_session_rag_chip_candidates` returns `{ok: false, reason: "no_sections" | "app_unresolved"}` and the frontend deliberately treats that as *use static seeds* without logging — right for the carousel, invisible to the user. Today "KB off", "no corpus installed", "corpus has nothing for this title" and "the KB actually helped" are indistinguishable in the UI, so a thin corpus reads as a broken feature. The ceiling is content, not retrieval: DRG Survivor has **2 sections against a per-game cap of 6** ([archive/roadmap-bugs-fixed.md](archive/roadmap-bugs-fixed.md)).
-  - **Depends on:** shipped — session RAG chip candidates RPC ([main.py:1440](../main.py)), Show details context ladder (`ensure_context_chips_on_snapshot`), existing context-chip rendering.
-  - **Blocked for QA** by the open ★★ **Live-turn transparency UI missing after successful Ask** bug — the chip cannot be verified on-Deck until Show details reliably appears (**CONTEXT-LADDER-01**).
-  - **Related:** **RAG Phase 4** Track 1 (chip visibility V1/V3/V4). Fine standalone or folded into that track; it is transparency, not retrieval, so it must not slip to Phase 5+.
-  - **Not in scope (v1):** per-topic section counts; a KB browser (out of scope in **Phase 7**); changing retrieval, ranking or chip policy; new Settings.
-  - **★ justification:** one chip string over one existing RPC field. No new permission, no new focusable control (chips already live under Show details, so no focus-graph entry), QA rides **CONTEXT-LADDER-01**.
-  - **Source:** [13-roadmap-feature-ideas.md](planning/13-roadmap-feature-ideas.md) § A1.
 - ★★ **Preset chip expansion** (streaming / LAN / Steam Input — incremental)
   - **Baseline shipped:** `PRESET_PROMPTS` in [`src/data/presets.ts`](../src/data/presets.ts).
   - **Wave 1 landed 2026-08-07:** four prompts — Find LAN, quick-launch chord, two token-streaming beta strings. Unit coverage in `presets.test.ts`; on-Deck **PRESET-EXPAND-W1-01** open. Detail: [wave1.md](wave1.md).
@@ -419,7 +410,7 @@ Coverage for shipped work: [testing.md](testing.md).
 - **Steam Input jump Phase 1 (shipped)** → **Steam Input layout parse**.
 - **Offline intent packs (quiet)** → **Proton journal / intent packs later review**.
 - **Deck health snapshot** → `steam_logs_read` + Proton log helpers; Desktop save needs `filesystem_write`; **shares its probe set with Connection doctor** (candidate) — decide one probe stack, two presentations, before either is built.
-- **Session RAG chip candidates RPC (shipped)** → **KB coverage chip** (reuses the `ok` / `reason` payload the frontend currently discards); adjacent to **RAG Phase 4** Track 1 visibility.
+- **Session RAG chip candidates RPC (shipped)** → shipped **KB coverage chip** (Show details `kb_coverage` chip); adjacent to **RAG Phase 4** Track 1 visibility.
 - **User-owned model routing pickers (shipped)** → **On-Deck model benchmark** (measured order); overlaps **Dynamic keep-alive / smart unload** on Deck measurement.
 - **RAG Phase 6 publish** → **Community tip contribution** (no inbound path is meaningful before there is a published corpus); reuses shipped Desktop notes + thumbs feedback.
 - **Permission jump** → shares its tab deep-link mechanism with **Connection doctor**.

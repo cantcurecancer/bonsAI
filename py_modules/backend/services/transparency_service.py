@@ -191,6 +191,43 @@ def kb_retrieval_detail_label(retrieval_method: str) -> str:
     return "Keyword search"
 
 
+def kb_coverage_chip_label(*, status: str, section_count: int = 0) -> str:
+    """Short Show-details chip for offline corpus coverage (distinct from Ask-turn kb chip)."""
+    if status == "kb_off":
+        return "KB: off"
+    if status == "corpus_missing":
+        return "KB: no corpus"
+    if status in ("no_sections", "app_unresolved"):
+        return "KB: none for this game"
+    if status == "corpus_error":
+        return "KB: unreadable"
+    if status == "sections":
+        count = max(0, int(section_count or 0))
+        if count == 1:
+            return "KB: 1 section"
+        return f"KB: {count} sections"
+    return "KB: ?"
+
+
+def kb_coverage_detail_bullets(*, status: str, section_count: int = 0, reason: str = "") -> list[str]:
+    if status == "kb_off":
+        return ["Local knowledge base is disabled in Settings."]
+    if status == "corpus_missing":
+        return ["No knowledge-base corpus is installed."]
+    if status == "app_unresolved":
+        return ["Running game could not be matched to corpus entries."]
+    if status == "no_sections":
+        return ["Corpus has no strategy sections for this game."]
+    if status == "corpus_error":
+        detail = str(reason or "").strip()
+        return [detail or "Corpus could not be read."]
+    if status == "sections":
+        count = max(0, int(section_count or 0))
+        noun = "section" if count == 1 else "sections"
+        return [f"{count} strategy {noun} in corpus for this game."]
+    return []
+
+
 def build_proton_log_transparency(
     *,
     excerpt_attached: bool,
@@ -391,6 +428,32 @@ def build_context_chips_manifest(
         )
         rank += 1
 
+    kb_coverage_status = str(snapshot.get("kb_coverage_status") or "").strip()
+    if kb_coverage_status:
+        kb_section_count = int(snapshot.get("kb_coverage_section_count") or 0)
+        kb_coverage_reason = str(snapshot.get("kb_coverage_reason") or "").strip()
+        chips.append(
+            {
+                "id": "kb_coverage",
+                "rank": rank,
+                "label": kb_coverage_chip_label(
+                    status=kb_coverage_status,
+                    section_count=kb_section_count,
+                ),
+                "attached": kb_coverage_status == "sections" and kb_section_count > 0,
+                "tier_class": "",
+                "body": _chip_body(
+                    title="Knowledge base coverage",
+                    bullets=kb_coverage_detail_bullets(
+                        status=kb_coverage_status,
+                        section_count=kb_section_count,
+                        reason=kb_coverage_reason,
+                    ),
+                ),
+            }
+        )
+        rank += 1
+
     tdp_w = snapshot.get("tdp_cap_watts")
     if tdp_w is not None:
         chips.append(
@@ -533,6 +596,9 @@ def build_ollama_route_snapshot(
         "kb_unavailable_reason": str(ollama_result.get("kb_unavailable_reason") or ""),
         "kb_retrieval_method": str(ollama_result.get("kb_retrieval_method") or "keyword"),
         "kb_domain": str(ollama_result.get("kb_domain") or ""),
+        "kb_coverage_status": str(ollama_result.get("kb_coverage_status") or ""),
+        "kb_coverage_section_count": int(ollama_result.get("kb_coverage_section_count") or 0),
+        "kb_coverage_reason": str(ollama_result.get("kb_coverage_reason") or ""),
         "ask_diagnostics": ollama_result.get("ask_diagnostics"),
         "response_verify": verify_result,
         "reply_verbosity": str(ollama_result.get("reply_verbosity") or "balanced"),

@@ -21,6 +21,11 @@
       "role": "Plugin root: tabs, scoped CSS, RPC wiring, Settings"
     },
     {
+      "path": "py_modules/backend/services/knowledge_base_service.py",
+      "lines": 1203,
+      "role": ""
+    },
+    {
       "path": "src/components/OllamaWhereAiRunsSection.tsx",
       "lines": 1174,
       "role": ""
@@ -28,11 +33,6 @@
     {
       "path": "py_modules/backend/services/ollama_prompts.py",
       "lines": 1170,
-      "role": ""
-    },
-    {
-      "path": "py_modules/backend/services/knowledge_base_service.py",
-      "lines": 1145,
       "role": ""
     },
     {
@@ -81,13 +81,13 @@
       "role": ""
     },
     {
-      "path": "src/components/KnowledgeBaseSection.tsx",
-      "lines": 612,
+      "path": "py_modules/backend/services/transparency_service.py",
+      "lines": 660,
       "role": ""
     },
     {
-      "path": "py_modules/backend/services/transparency_service.py",
-      "lines": 594,
+      "path": "src/components/KnowledgeBaseSection.tsx",
+      "lines": 612,
       "role": ""
     },
     {
@@ -111,13 +111,13 @@
       "role": ""
     },
     {
-      "path": "src/styles/sections/section-6.ts",
-      "lines": 518,
+      "path": "py_modules/backend/services/game_ai_request.py",
+      "lines": 520,
       "role": ""
     },
     {
-      "path": "py_modules/backend/services/game_ai_request.py",
-      "lines": 508,
+      "path": "src/styles/sections/section-6.ts",
+      "lines": 518,
       "role": ""
     },
     {

@@ -63,6 +63,9 @@ export type TransparencySnapshot = {
   kb_retrieval_method?: string;
   kb_domain?: string;
   kb_timing_ms?: Record<string, number>;
+  kb_coverage_status?: string;
+  kb_coverage_section_count?: number;
+  kb_coverage_reason?: string;
   tdp_cap_watts?: number | null;
   context_chips?: ContextChip[];
   overflow_skips?: string[];

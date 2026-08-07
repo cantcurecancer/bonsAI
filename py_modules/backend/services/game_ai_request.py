@@ -34,10 +34,12 @@ from backend.services.ollama_service import (
 )
 from backend.services.proton_troubleshooting_logs import collect_proton_troubleshooting_logs
 from backend.services.knowledge_base_service import (
+    kb_coverage_to_transparency,
     lookup_game_genres,
     retrieve_knowledge_context,
     should_retrieve_knowledge,
     stack_context_blocks,
+    summarize_kb_coverage,
 )
 from backend.services.screenshot_media import lookup_screenshot_vdf_metadata
 from backend.services.transparency_service import (
@@ -264,6 +266,15 @@ async def run_game_ai_request(
                     shortcut_name = sn
                     break
 
+        kb_coverage_transparency = kb_coverage_to_transparency(
+            summarize_kb_coverage(
+                settings,
+                app_id=app_id,
+                app_name=app_name,
+                shortcut_name=shortcut_name,
+            )
+        )
+
         kb_transparency = build_knowledge_base_transparency(
             attached=False,
             trust_tier="",
@@ -443,6 +454,7 @@ async def run_game_ai_request(
                 ollama_result={
                     **ollama_result,
                     **kb_transparency,
+                    **kb_coverage_transparency,
                     "tdp_cap_watts": pre_cap if tdp_grounding_requested else None,
                 },
                 base_response_text=base_response_text,

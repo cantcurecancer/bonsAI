@@ -13,11 +13,13 @@ from backend.services.knowledge_base_service import (
     EmbeddingDimensionMismatch,
     KnowledgeCard,
     close_connection,
+    kb_coverage_to_transparency,
     retrieve_knowledge_context,
     session_rag_chip_candidates_to_rpc,
     should_retrieve_knowledge,
     stack_context_blocks,
     suggest_chip_candidates,
+    summarize_kb_coverage,
     _COMPAT_CHIP_TEMPLATES,
     _expand_query,
     _format_block,
@@ -195,6 +197,36 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
     self.assertFalse(result.ok)
     self.assertEqual(result.reason, "kb_off")
     self.assertEqual(result.candidates, [])
+
+  def test_summarize_kb_coverage_kb_off(self):
+    summary = summarize_kb_coverage(
+      {"use_local_knowledge_base": False},
+      app_id="2321470",
+      app_name="Deep Rock Galactic: Survivor",
+    )
+    self.assertEqual(summary.status, "kb_off")
+    self.assertEqual(kb_coverage_to_transparency(summary)["kb_coverage_status"], "kb_off")
+
+  def test_summarize_kb_coverage_sections_for_covered_game(self):
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    summary = summarize_kb_coverage(
+      settings,
+      app_id="2321470",
+      app_name="Deep Rock Galactic: Survivor",
+    )
+    self.assertEqual(summary.status, "sections")
+    self.assertGreater(summary.section_count, 0)
+
+  def test_summarize_kb_coverage_missing_corpus(self):
+    summary = summarize_kb_coverage(
+      {"use_local_knowledge_base": True, "rag_corpus_path": "/nonexistent/path"},
+      app_id="2321470",
+      app_name="Deep Rock Galactic: Survivor",
+    )
+    self.assertEqual(summary.status, "corpus_missing")
 
   def test_suggest_chip_candidates_missing_corpus(self):
     result = suggest_chip_candidates(

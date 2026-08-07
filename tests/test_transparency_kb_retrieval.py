@@ -3,6 +3,7 @@ import unittest
 from backend.services.transparency_service import (
     build_context_chips_manifest,
     build_knowledge_base_transparency,
+    kb_coverage_chip_label,
     kb_retrieval_chip_label,
     kb_retrieval_detail_label,
 )
@@ -102,6 +103,63 @@ class TransparencyKbRetrievalTests(unittest.TestCase):
         self.assertEqual(snapshot.get("kb_domain"), "compat")
         kb_chip = next(c for c in snapshot["context_chips"] if c["id"] == "kb")
         self.assertIn("Source: shared troubleshooting tips", kb_chip["body"]["bullets"])
+
+
+class TransparencyKbCoverageTests(unittest.TestCase):
+    def test_kb_coverage_chip_labels(self):
+        self.assertEqual(kb_coverage_chip_label(status="kb_off"), "KB: off")
+        self.assertEqual(kb_coverage_chip_label(status="corpus_missing"), "KB: no corpus")
+        self.assertEqual(
+            kb_coverage_chip_label(status="no_sections"),
+            "KB: none for this game",
+        )
+        self.assertEqual(
+            kb_coverage_chip_label(status="app_unresolved"),
+            "KB: none for this game",
+        )
+        self.assertEqual(kb_coverage_chip_label(status="sections", section_count=1), "KB: 1 section")
+        self.assertEqual(kb_coverage_chip_label(status="sections", section_count=2), "KB: 2 sections")
+        self.assertEqual(kb_coverage_chip_label(status="corpus_error"), "KB: unreadable")
+
+    def test_kb_coverage_chip_in_manifest(self):
+        snapshot = {
+            "kb_coverage_status": "sections",
+            "kb_coverage_section_count": 2,
+            "kb_coverage_reason": "",
+            "proton_log_excerpt_attached": False,
+            "proton_log_sources": [],
+            "proton_log_notes": "",
+        }
+        manifest = build_context_chips_manifest(snapshot=snapshot)
+        chip = next(c for c in manifest["context_chips"] if c["id"] == "kb_coverage")
+        self.assertEqual(chip["label"], "KB: 2 sections")
+        self.assertTrue(chip["attached"])
+        self.assertIn("2 strategy sections", chip["body"]["bullets"][0])
+
+    def test_kb_coverage_distinct_from_kb_retrieval_chip(self):
+        snapshot = {
+            **build_knowledge_base_transparency(
+                attached=True,
+                trust_tier="wiki_verified",
+                sources=["sections/1"],
+                notes="app_id:2321470",
+                timing_ms={},
+                retrieval_method="hybrid",
+            ),
+            "kb_coverage_status": "sections",
+            "kb_coverage_section_count": 2,
+            "proton_log_excerpt_attached": False,
+            "proton_log_sources": [],
+            "proton_log_notes": "",
+        }
+        manifest = build_context_chips_manifest(snapshot=snapshot)
+        ids = [c["id"] for c in manifest["context_chips"]]
+        self.assertIn("kb", ids)
+        self.assertIn("kb_coverage", ids)
+        kb_chip = next(c for c in manifest["context_chips"] if c["id"] == "kb")
+        coverage_chip = next(c for c in manifest["context_chips"] if c["id"] == "kb_coverage")
+        self.assertEqual(kb_chip["label"], "Keyword + meaning")
+        self.assertEqual(coverage_chip["label"], "KB: 2 sections")
 
 
 if __name__ == "__main__":
