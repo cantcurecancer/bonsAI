@@ -3,252 +3,252 @@
     {
       "name": "load_settings",
       "domain": "settings",
-      "line": 669
+      "line": 692
     },
     {
       "name": "save_settings",
       "domain": "settings",
-      "line": 674
+      "line": 697
     },
     {
       "name": "clear_plugin_data",
       "domain": "settings",
-      "line": 723
+      "line": 746
     },
     {
       "name": "get_strategy_checklist_session",
       "domain": "strategy",
-      "line": 803
+      "line": 826
     },
     {
       "name": "save_strategy_checklist_session",
       "domain": "strategy",
-      "line": 818
+      "line": 841
     },
     {
       "name": "clear_strategy_checklist_session",
       "domain": "strategy",
-      "line": 847
+      "line": 870
     },
     {
       "name": "get_intent_packs",
       "domain": "intent_packs",
-      "line": 863
+      "line": 886
     },
     {
       "name": "set_intent_pack_enabled",
       "domain": "intent_packs",
-      "line": 872
+      "line": 895
     },
     {
       "name": "export_intent_pack",
       "domain": "intent_packs",
-      "line": 888
+      "line": 911
     },
     {
       "name": "import_intent_pack",
       "domain": "intent_packs",
-      "line": 893
+      "line": 916
     },
     {
       "name": "remove_intent_pack",
       "domain": "intent_packs",
-      "line": 916
+      "line": 939
     },
     {
       "name": "get_deck_ip",
       "domain": "capabilities",
-      "line": 937
+      "line": 960
     },
     {
       "name": "test_ollama_connection",
       "domain": "ollama",
-      "line": 943
+      "line": 966
     },
     {
       "name": "discover_mdns_ollama_hosts",
       "domain": "ollama",
-      "line": 1084
+      "line": 1107
     },
     {
       "name": "start_local_ollama_setup",
       "domain": "ollama",
-      "line": 1129
+      "line": 1152
     },
     {
       "name": "get_local_ollama_setup_status",
       "domain": "ollama",
-      "line": 1207
+      "line": 1230
     },
     {
       "name": "cancel_local_ollama_setup",
       "domain": "ollama",
-      "line": 1211
+      "line": 1234
     },
     {
       "name": "get_rag_corpus_status",
       "domain": "rag",
-      "line": 1220
+      "line": 1243
     },
     {
       "name": "start_rag_corpus_download",
       "domain": "rag",
-      "line": 1274
+      "line": 1297
     },
     {
       "name": "cancel_rag_corpus_download",
       "domain": "rag",
-      "line": 1339
+      "line": 1362
     },
     {
       "name": "update_rag_corpus",
       "domain": "rag",
-      "line": 1348
+      "line": 1371
     },
     {
       "name": "remove_rag_corpus",
       "domain": "rag",
-      "line": 1364
+      "line": 1387
     },
     {
       "name": "install_rag_corpus_local",
       "domain": "rag",
-      "line": 1380
+      "line": 1403
     },
     {
       "name": "get_session_rag_chip_candidates",
       "domain": "other",
-      "line": 1440
+      "line": 1463
     },
     {
       "name": "pull_ollama_models",
       "domain": "ollama",
-      "line": 1558
+      "line": 1581
     },
     {
       "name": "merge_pulled_tags_into_routing_orders",
       "domain": "other",
-      "line": 1563
+      "line": 1586
     },
     {
       "name": "delete_ollama_model",
       "domain": "ollama",
-      "line": 1622
+      "line": 1645
     },
     {
       "name": "fetch_ollama_catalog_metadata",
       "domain": "ollama",
-      "line": 1657
+      "line": 1680
     },
     {
       "name": "fetch_pull_model_catalog",
       "domain": "ollama",
-      "line": 1674
+      "line": 1697
     },
     {
       "name": "list_recent_screenshots",
       "domain": "screenshots",
-      "line": 1710
+      "line": 1733
     },
     {
       "name": "append_desktop_debug_note",
       "domain": "debug",
-      "line": 1747
+      "line": 1770
     },
     {
       "name": "append_desktop_chat_event",
       "domain": "debug",
-      "line": 1775
+      "line": 1798
     },
     {
       "name": "append_app_log",
       "domain": "debug",
-      "line": 1808
+      "line": 1831
     },
     {
       "name": "get_input_transparency",
       "domain": "ask",
-      "line": 1948
+      "line": 1971
     },
     {
       "name": "get_reply_language_snapshot",
       "domain": "language",
-      "line": 1958
+      "line": 1981
     },
     {
       "name": "save_ask_feedback",
       "domain": "ask",
-      "line": 1963
+      "line": 1986
     },
     {
       "name": "read_host_clipboard_text",
       "domain": "capabilities",
-      "line": 1976
+      "line": 1999
     },
     {
       "name": "take_steam_screenshot",
       "domain": "screenshots",
-      "line": 1982
+      "line": 2005
     },
     {
       "name": "ask_game_ai",
       "domain": "ask",
-      "line": 2053
+      "line": 2076
     },
     {
       "name": "start_background_game_ai",
       "domain": "ask",
-      "line": 2179
+      "line": 2206
     },
     {
       "name": "dbg_fe_log",
       "domain": "debug",
-      "line": 2375
+      "line": 2402
     },
     {
       "name": "get_background_game_ai_status",
       "domain": "ask",
-      "line": 2388
+      "line": 2415
     },
     {
       "name": "abort_background_game_ai",
       "domain": "ask",
-      "line": 2413
+      "line": 2440
     },
     {
       "name": "ask_ollama",
       "domain": "ollama",
-      "line": 2522
+      "line": 2538
     },
     {
       "name": "get_voice_engine_status",
       "domain": "voice",
-      "line": 2589
+      "line": 2605
     },
     {
       "name": "install_voice_engine",
       "domain": "voice",
-      "line": 2597
+      "line": 2613
     },
     {
       "name": "get_voice_install_status",
       "domain": "voice",
-      "line": 2647
+      "line": 2663
     },
     {
       "name": "start_voice_transcription",
       "domain": "voice",
-      "line": 2651
+      "line": 2667
     },
     {
       "name": "stop_voice_transcription",
       "domain": "voice",
-      "line": 2710
+      "line": 2726
     },
     {
       "name": "get_voice_transcription_status",
       "domain": "voice",
-      "line": 2730
+      "line": 2746
     }
   ]
 }

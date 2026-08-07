@@ -2,7 +2,7 @@
   "hotspots": [
     {
       "path": "main.py",
-      "lines": 2756,
+      "lines": 2772,
       "role": "Decky RPC entrypoints and orchestration"
     },
     {
@@ -11,14 +11,14 @@
       "role": ""
     },
     {
-      "path": "src/index.tsx",
-      "lines": 1315,
-      "role": "Plugin root: tabs, scoped CSS, RPC wiring, Settings"
+      "path": "src/hooks/useBonsaiAskOrchestration.ts",
+      "lines": 1320,
+      "role": ""
     },
     {
-      "path": "src/hooks/useBonsaiAskOrchestration.ts",
-      "lines": 1261,
-      "role": ""
+      "path": "src/index.tsx",
+      "lines": 1316,
+      "role": "Plugin root: tabs, scoped CSS, RPC wiring, Settings"
     },
     {
       "path": "src/components/OllamaWhereAiRunsSection.tsx",
@@ -31,13 +31,13 @@
       "role": ""
     },
     {
-      "path": "src/components/PullModelsModal.tsx",
-      "lines": 1104,
+      "path": "py_modules/backend/services/ollama_prompts.py",
+      "lines": 1114,
       "role": ""
     },
     {
-      "path": "py_modules/backend/services/ollama_prompts.py",
-      "lines": 1083,
+      "path": "src/components/PullModelsModal.tsx",
+      "lines": 1104,
       "role": ""
     },
     {
@@ -71,13 +71,13 @@
       "role": ""
     },
     {
-      "path": "py_modules/backend/services/bonsai_stream_tags.py",
-      "lines": 693,
+      "path": "src/components/MainTabChatTranscript.tsx",
+      "lines": 704,
       "role": ""
     },
     {
-      "path": "src/components/MainTabChatTranscript.tsx",
-      "lines": 683,
+      "path": "py_modules/backend/services/bonsai_stream_tags.py",
+      "lines": 693,
       "role": ""
     },
     {
@@ -103,6 +103,11 @@
     {
       "path": "src/hooks/usePluginSettings.ts",
       "lines": 527,
+      "role": ""
+    },
+    {
+      "path": "src/hooks/useBonsaiAskOrchestration.test.ts",
+      "lines": 524,
       "role": ""
     },
     {
@@ -148,11 +153,6 @@
     {
       "path": "src/data/bonsaiSettingsNormalizers.ts",
       "lines": 453,
-      "role": ""
-    },
-    {
-      "path": "src/hooks/useBonsaiAskOrchestration.test.ts",
-      "lines": 439,
       "role": ""
     },
     {

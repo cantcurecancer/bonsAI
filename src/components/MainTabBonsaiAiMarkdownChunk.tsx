@@ -6,7 +6,7 @@
  * Does not: Stream tokens or parse strategy branches — parent supplies source string and mask flags.
  */
 import type { Components } from "react-markdown";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { Focusable } from "@decky/ui";
 
@@ -231,7 +231,16 @@ function BonsaiSpoilerFence(props: {
   );
 }
 
-export function MainTabBonsaiAiMarkdownChunk(props: MainTabBonsaiAiMarkdownChunkProps) {
+/**
+ * Memoised because `ReactMarkdown` parses in render and the streaming reveal re-renders its parent
+ * on every RAF tick: without this, each tick re-parses every already-closed block in the bubble,
+ * not just the growing tail. Every prop is a primitive, so the default shallow compare is correct —
+ * a closed block's `source` string is stable, so it re-renders only when its own text changes.
+ * `BonsaiSpoilerFence` keeps its open/closed `useState` either way; skipping a render cannot reset it.
+ */
+export const MainTabBonsaiAiMarkdownChunk = memo(function MainTabBonsaiAiMarkdownChunk(
+  props: MainTabBonsaiAiMarkdownChunkProps
+) {
   const masking = props.spoilerMaskingEnabled !== false;
   const defaultEx = props.spoilerDefaultExpanded === true;
   const components = useMemo(
@@ -245,4 +254,4 @@ export function MainTabBonsaiAiMarkdownChunk(props: MainTabBonsaiAiMarkdownChunk
   );
 
   return <ReactMarkdown components={components}>{props.source}</ReactMarkdown>;
-}
+});
