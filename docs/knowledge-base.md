@@ -43,6 +43,16 @@ flowchart TD
 | System prompt | `py_modules/backend/services/ollama_prompts.py` | `bonsai-cite` + spoiler instructions when KB block present |
 | Transparency | `py_modules/backend/services/transparency_service.py` | KB slice (sources, bytes, tier) on last Ask |
 | UI | `src/components/KnowledgeBaseSection.tsx`, `OllamaTab.tsx` | Download/update/**cancel**/remove, toggle, availability indicator. Cancel shares the action row's second slot with Remove and only exists while a download runs — see **KB-CANCEL-01** in [testing.md](testing.md) |
+
+> **Two names, one feature — grepping either one finds only half of it.** Everything
+> user-facing says **knowledge base**: the strings, this file, `KnowledgeBaseSection.tsx`,
+> `knowledge_base_service.py`. Everything machine-facing says **`rag_corpus`**: every RPC
+> (`get_rag_corpus_status`, `start_rag_corpus_download`, …), every setting key
+> (`rag_corpus_path`, `rag_corpus_version`), and the install path. The one exception in
+> each direction is `use_local_knowledge_base`, a setting that uses the human name, and
+> `get_session_rag_chip_candidates`, an RPC that uses neither convention cleanly. **Search
+> both terms.** A step 11 friction reader grepped "knowledge base", got 60 files, and missed
+> all five RPCs that manage the corpus.
 | RPC | `main.py` | `start_rag_corpus_download`, `get_rag_corpus_status`, `cancel_rag_corpus_download`, `update_rag_corpus`, `remove_rag_corpus` |
 
 ## Maintainer build pipeline

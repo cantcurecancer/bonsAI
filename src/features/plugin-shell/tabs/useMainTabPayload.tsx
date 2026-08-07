@@ -290,6 +290,12 @@ export function useMainTabPayload({
         lastExchange={lastExchange}
       />
     ),
+    // ANY NEW PROP MUST BE ADDED TO THIS LIST. It is hand-maintained and nothing
+    // checks it against the JSX above: a prop left out does not fail `tsc` or any
+    // test, the memoized element just goes stale and the feature silently does
+    // nothing on device. Its twin is `presetChipsPropsEqual` in
+    // `components/MainTabPresetAnimatedChips.tsx` — a change threaded to the preset
+    // chips has to clear both gates.
     [
       suggestedPrompts,
       showPluginHelpChip,

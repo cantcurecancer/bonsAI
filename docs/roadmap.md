@@ -62,7 +62,7 @@ Status tags: **OPEN** · **PARTIAL** · **FOLDED** (tracked in linked plan) · *
 
 ---
 
-> **Decisions needed / locked / execution order / cleanup candidates** moved to [audit/maintainer-decisions-locked.md](audit/maintainer-decisions-locked.md) (commit `ba2e5c5`). **No decisions are open** — D1–D15 locked; implement from that file.
+> **Decisions needed / locked / execution order / cleanup candidates** moved to [audit/maintainer-decisions-locked.md](audit/maintainer-decisions-locked.md) (commit `ba2e5c5`). **One decision is open — [D18](audit/maintainer-decisions-locked.md#d18--when-loading-settings-fails-four-values-keep-whatever-was-on-screen-bug-or-intent)** (a failed `load_settings` leaves four values unreset; raised 2026-08-05 by the step 11 friction test). D1–D17 locked; implement from that file.
 
 ---
 

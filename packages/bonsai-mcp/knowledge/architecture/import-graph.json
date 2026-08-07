@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 256,
-  "edgeCount": 590,
+  "fileCount": 257,
+  "edgeCount": 593,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -223,6 +223,14 @@
         "src/components/MainTab.tsx"
       ]
     },
+    "src/components/MainTabPresetAnimatedChips.test.tsx": {
+      "imports": [
+        "src/components/MainTabPresetAnimatedChips.tsx",
+        "src/data/presets.ts",
+        "src/test-harness/fakeDeckyRpc.ts"
+      ],
+      "importedBy": []
+    },
     "src/components/MainTabPresetAnimatedChips.tsx": {
       "imports": [
         "src/data/askMode.ts",
@@ -232,6 +240,7 @@
         "src/utils/joinPresetWithRunningGame.ts"
       ],
       "importedBy": [
+        "src/components/MainTabPresetAnimatedChips.test.tsx",
         "src/components/MainTabPresetRow.tsx"
       ]
     },
@@ -756,6 +765,7 @@
       ],
       "importedBy": [
         "src/components/MainTab.tsx",
+        "src/components/MainTabPresetAnimatedChips.test.tsx",
         "src/components/MainTabPresetAnimatedChips.tsx",
         "src/components/MainTabPresetRow.tsx",
         "src/data/presets.test.ts",
@@ -1660,6 +1670,7 @@
       ],
       "importedBy": [
         "src/components/KnowledgeBaseSection.test.tsx",
+        "src/components/MainTabPresetAnimatedChips.test.tsx",
         "src/components/SettingsTab.mdns.test.ts",
         "src/hooks/useBackgroundGameAi.test.ts",
         "src/hooks/useBonsaiAskOrchestration.test.ts",

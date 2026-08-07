@@ -136,6 +136,11 @@
       "role": ""
     },
     {
+      "path": "src/components/MainTabPresetAnimatedChips.tsx",
+      "lines": 462,
+      "role": ""
+    },
+    {
       "path": "src/components/DeveloperTab.tsx",
       "lines": 458,
       "role": ""
@@ -143,11 +148,6 @@
     {
       "path": "src/data/bonsaiSettingsNormalizers.ts",
       "lines": 453,
-      "role": ""
-    },
-    {
-      "path": "src/components/MainTabPresetAnimatedChips.tsx",
-      "lines": 451,
       "role": ""
     },
     {

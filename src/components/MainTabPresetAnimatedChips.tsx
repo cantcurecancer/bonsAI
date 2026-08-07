@@ -434,6 +434,17 @@ function MainTabPresetAnimatedChipsInner(props: MainTabPresetAnimatedChipsProps)
   );
 }
 
+/**
+ * ANY NEW PROP MUST BE ADDED HERE, and to the `useMemo` deps in
+ * `features/plugin-shell/tabs/useMainTabPayload.tsx`.
+ *
+ * This list is hand-maintained and nothing type-checks it against the props type.
+ * A prop missing here does not fail `tsc` and does not fail a test — the component
+ * simply never re-renders when that prop changes, so a feature threaded down from
+ * settings appears to do nothing on device with no error anywhere. The step 11
+ * friction test ranked this among the highest costs in the repo for exactly that
+ * reason: the failure is silent and the gate is invisible from the call site.
+ */
 function presetChipsPropsEqual(
   prev: MainTabPresetAnimatedChipsProps,
   next: MainTabPresetAnimatedChipsProps,

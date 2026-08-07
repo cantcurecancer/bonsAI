@@ -47,7 +47,9 @@ function generateRpcMap() {
     const m = lines[i].match(/^ {4}async def ([a-z_][a-z0-9_]*)\s*\(/);
     if (!m) continue;
     const name = m[1];
-    if (name.startsWith("_") && name !== "_main" && name !== "_unload") continue;
+    // `_main` / `_unload` are Decky lifecycle hooks, not RPCs, so every underscore
+    // name is dropped. (An earlier version tried to keep those two here; the line
+    // below made that unreachable, so the map has never contained them.)
     if (name.startsWith("_")) continue;
     methods.push({
       name,

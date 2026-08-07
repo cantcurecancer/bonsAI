@@ -3,7 +3,15 @@ import { defaultSettingsFixture, idleBackgroundStatusFixture } from "./rpcFixtur
 
 export type RpcHandler = (...args: unknown[]) => unknown | Promise<unknown>;
 
-/** Frontend RPC methods invoked from `src/` (keep in sync with grep / main.py). */
+/**
+ * Frontend RPC methods invoked from `src/`.
+ *
+ * **Hand-maintained, and nothing verifies it.** `assertAllFrontendRpcMethodsRegistered`
+ * only checks list → handler; it never checks call-site → list or list → `main.py`,
+ * so this can silently drift from both. Adding a name here is not what makes a test
+ * pass — adding the *handler* below is. Keep it in sync by grepping `src/` for
+ * `callDeckyWithTimeout(` and `call<` when you add an RPC.
+ */
 export const FRONTEND_RPC_METHODS = [
   "load_settings",
   "save_settings",

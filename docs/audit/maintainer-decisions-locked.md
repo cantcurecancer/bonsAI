@@ -15,8 +15,9 @@ choices are, and what happens either way. **Locked calls (2026-08-02 for D1–D6
 [Maintainer decisions locked](#maintainer-decisions-locked--2026-08-02); implement
 from that section when it disagrees with an option above.
 
-**None currently open.** D1–D17 are all locked; see the table below for D1–D15 and the sections
-below for D16 and D17.
+**One open: [D18](#d18--when-loading-settings-fails-four-values-keep-whatever-was-on-screen-bug-or-intent)**
+(raised 2026-08-05 by the step 11 friction test). D1–D17 are locked; see the table below for
+D1–D15 and the sections below for D16 and D17.
 
 ---
 
@@ -681,6 +682,45 @@ out: with a stop for each, the answer comes from a week of use rather than anoth
 **Close this out when there is a verdict** — if nobody moves off B, delete the control and the
 setting rather than leaving three modes to maintain forever. See the **Bugs** entry for the
 mechanism and **TAB-RESUME-MODE-01** for how to test it.
+
+---
+
+### D18 — When loading settings fails, four values keep whatever was on screen. Bug or intent?
+
+**OPEN — raised 2026-08-05 by the step 11 friction test.**
+
+**What's going on.** If `load_settings` fails, `usePluginSettings.ts` resets state to
+defaults so the UI does not show values it could not actually read. That reset lists **40**
+setters. Five other lists in the same file enumerate all of them. Four are missing from this
+one and nothing says why:
+
+- `setReplyLanguage`
+- `setTextModelRoutingOrder`
+- `setVisionModelRoutingOrder`
+- `setStrategySpoilerAutoRevealAfterConsent`
+
+**Why it matters, and why it probably has not bitten.** The branch only runs when the backend
+read fails, which on a healthy Deck is never. When it does run, those four keep whatever was
+already in state — on a first open that is their default anyway, so the visible effect is
+limited to a failure *after* a successful load, e.g. a backend restart mid-session. Then the
+UI would show a reply language or try-order it can no longer confirm is saved. **No test
+covers this branch at all**, in either direction.
+
+**Option A — add the four, and a test.** *(my recommendation)* Makes the branch mean one
+thing: a failed load shows defaults, full stop. Cheap, and the test is what stops the list
+drifting again.
+
+**Option B — leave them out and say why.** Legitimate if the omission is deliberate — e.g.
+routing orders are expensive to re-derive and a stale one is better than an empty one. Needs
+a comment naming the reason, or the next reader files this again.
+
+**Option C — delete the reset branch.** Honest if the answer is "a failed load should change
+nothing." Biggest behavior change of the three and the least likely to be what you want.
+
+**This is a symptom of the D14 item, not a separate problem.** Six hand-maintained copies of
+one field list in a single file is exactly what the friction test ranked first; fixing the
+plumbing removes the *class*. Answer this one anyway — it is live behavior, and the collapse
+is not scheduled.
 
 ---
 
