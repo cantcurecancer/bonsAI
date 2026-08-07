@@ -103,6 +103,15 @@ Wave 4 H — confirm each path works on-Deck (SharedJSContext vs QAM popup docum
 - [ ] Settings/Ollama: **Up** at panel top returns to active tab strip
 - [ ] Expand collapsed history turn: header scrolls into view
 
+### PRESET-STREAM-ANIM-01 — stream preset chip animation (P1)
+
+Wave 4 J — Developer tab → Preset suggestions → **stream**.
+
+- [ ] Three chips cascade with staggered typewriter reveal and blinking block caret
+- [ ] Chips stay D-pad focusable while text is still typing (A selects full prompt, not partial)
+- [ ] After hold, chip clears and samples a new prompt
+- [ ] With OS **prefers-reduced-motion: reduce**, chips swap instantly (no per-char reveal)
+
 ### SMOKE-F — Deterministic commands (P2)
 
 - [ ] `bonsai:disable-sanitize` / `bonsai:enable-sanitize` — confirmation; no Ollama call

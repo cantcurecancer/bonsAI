@@ -66,6 +66,18 @@ export function buildSection4Section(): string {
           text-overflow: ellipsis !important;
           white-space: nowrap !important;
         }
+        .bonsai-scope button.bonsai-preset-glass--stream .bonsai-preset-chip-label--stream-caret::after {
+          content: "▋" !important;
+          display: inline !important;
+          margin-left: 2px !important;
+          opacity: 0.85 !important;
+          animation: bonsai-stream-caret-blink 0.9s step-end infinite !important;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .bonsai-scope button.bonsai-preset-glass--stream .bonsai-preset-chip-label--stream-caret::after {
+            animation: none !important;
+          }
+        }
 
         .bonsai-scope .bonsai-chat-response-stack {
           margin-top: ${uiScalePx(BONSAI_CHAT_RESPONSE_STACK_MARGIN_TOP_PX)} !important;

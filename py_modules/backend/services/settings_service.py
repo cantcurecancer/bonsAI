@@ -126,7 +126,7 @@ def sanitize_ask_mode(
 
 _VALID_DESKTOP_APP_LOG_LEVELS = frozenset({"off", "default", "verbose"})
 
-_VALID_PRESET_CHIP_ANIMATION = frozenset({"fade", "carousel", "static"})
+_VALID_PRESET_CHIP_ANIMATION = frozenset({"fade", "carousel", "static", "stream"})
 
 # Which tab a reopen lands on -- one value per option in roadmap D15. Read only by the
 # frontend; the backend's job here is to let the key survive a save_settings round trip.

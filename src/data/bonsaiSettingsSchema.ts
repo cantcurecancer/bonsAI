@@ -38,7 +38,7 @@ export type DesktopAppLogLevel = "off" | "default" | "verbose";
  * `always_main` = A, `resume` = B (locked default), `resume_recent` = C.
  */
 export type TabResumeMode = "always_main" | "resume" | "resume_recent";
-export type PresetChipAnimation = "fade" | "carousel" | "static";
+export type PresetChipAnimation = "fade" | "carousel" | "static" | "stream";
 /** Legacy; migration maps to ScreenshotAttachmentPreset. */
 export type ScreenshotMaxDimension = 1280 | 1920 | 3160;
 export type ScreenshotAttachmentPreset = "low" | "mid" | "max";
@@ -234,7 +234,7 @@ export const DEFAULT_DESKTOP_APP_LOG_LEVEL: DesktopAppLogLevel = "off";
 export const DESKTOP_APP_LOG_LEVEL_OPTIONS: DesktopAppLogLevel[] = ["off", "default", "verbose"];
 export const DEFAULT_PRESET_CHIP_FADE_ANIMATION_ENABLED = true;
 export const DEFAULT_PRESET_CHIP_ANIMATION: PresetChipAnimation = "fade";
-export const PRESET_CHIP_ANIMATION_OPTIONS: PresetChipAnimation[] = ["fade", "carousel", "static"];
+export const PRESET_CHIP_ANIMATION_OPTIONS: PresetChipAnimation[] = ["fade", "carousel", "static", "stream"];
 export const DEFAULT_INPUT_SANITIZER_USER_DISABLED = false;
 export const DEFAULT_SHOW_DEVELOPER_TAB = false;
 /** Persisted routing: off = LAN PC IP text field applies; when on, Ask uses localhost Ollama on the Deck only. */

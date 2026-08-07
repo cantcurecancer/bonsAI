@@ -18,6 +18,7 @@ import {
 import { toaster } from "@decky/api";
 import {
   DESKTOP_APP_LOG_LEVEL_OPTIONS,
+  PRESET_CHIP_ANIMATION_OPTIONS,
   STEAM_WEB_API_KEY_MAX_LEN,
   TAB_RESUME_MODE_OPTIONS,
   TAB_RESUME_RECENT_WINDOW_MS,
@@ -400,7 +401,7 @@ export const DeveloperTab: React.FC<DeveloperTabProps> = ({
           <div className="bonsai-settings-bleed" style={{ width: "100%" }}>
             <div style={{ color: "#d9d9d9", fontWeight: 600, fontSize: 13, marginBottom: 4 }}>Preset suggestions</div>
             <Focusable flow-children="horizontal" style={{ display: "flex", gap: 6, width: "100%" }}>
-              {(["fade", "carousel", "static"] as const).map((mode) => (
+              {PRESET_CHIP_ANIMATION_OPTIONS.map((mode) => (
                 <Button
                   key={mode}
                   onClick={() => {

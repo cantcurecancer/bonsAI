@@ -72,6 +72,12 @@ describe("MainTabPresetAnimatedChips memo gate", () => {
     expect(screen.queryByText("alpha")).toBeTruthy();
   });
 
+  it("keeps stream-mode chips focusable while text is still typing", () => {
+    const { container } = renderChips({ animationMode: "stream" });
+    const slots = container.querySelectorAll('[data-bonsai-preset-visible="true"]');
+    expect(slots).toHaveLength(3);
+  });
+
   it("every prop in the props type is compared by presetChipsPropsEqual", () => {
     // The real guard. `presetChipsPropsEqual` is hand-maintained; this asserts the
     // set of props it reads matches the set the component declares, so adding a

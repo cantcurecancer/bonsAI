@@ -5,6 +5,7 @@ from pathlib import Path
 
 from backend.services.settings_service import (
     load_settings,
+    sanitize_preset_chip_animation,
     sanitize_settings,
     save_settings,
 )
@@ -263,6 +264,9 @@ class SettingsServiceTests(unittest.TestCase):
             default_ask_mode="speed",
         )
         self.assertEqual(sanitized["ask_mode"], "expert")
+
+    def test_sanitize_preset_chip_animation_accepts_stream(self):
+        self.assertEqual(sanitize_preset_chip_animation("stream", True), "stream")
 
     def test_sanitize_preset_chip_fade_animation_enabled_false_only_for_literal_false(self):
         """Preset chip fades stay enabled unless JSON false is stored."""

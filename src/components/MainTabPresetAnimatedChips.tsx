@@ -1,7 +1,7 @@
 /**
  * Title: Preset animated chips
  * Purpose: Fade or carousel preset prompt chips with running-game contextual seeding.
- * Used for: MainTabPresetRow when presetChipAnimation is fade, carousel, or static.
+ * Used for: MainTabPresetRow when presetChipAnimation is fade, carousel, static, or stream.
  * Solves: Timed slot fades, carousel track motion, and Deck-focusable chip buttons in one module.
  * Does not: Persist selected presets or submit asks — parent setUnifiedInput handles composer text.
  */
@@ -36,6 +36,9 @@ export const PRESET_CAROUSEL_FADE_OUT_MS = 2000;
 /** Carousel schedules new preset cycles for this long after mount/re-seed; in-flight fades still complete, then no more swaps until remount. */
 export const PRESET_CAROUSEL_ACTIVE_MS = 60_000;
 
+/** Milliseconds between revealed characters in stream mode (must feel close to live answer streaming). */
+export const PRESET_STREAM_CHAR_MS = 42;
+
 type SlotFade = { opacity: number; transitionMs: number };
 
 const initialSlotFade = (): [SlotFade, SlotFade, SlotFade] => [
@@ -59,7 +62,7 @@ function normalizeThreeSeeds(
   ];
 }
 
-export type PresetChipAnimationMode = "fade" | "carousel" | "static";
+export type PresetChipAnimationMode = "fade" | "carousel" | "static" | "stream";
 
 export type MainTabPresetAnimatedChipsProps = {
   /** When upstream presets change (e.g. after ask), carousel re-seeds from this list. */
@@ -67,7 +70,7 @@ export type MainTabPresetAnimatedChipsProps = {
   setUnifiedInput: React.Dispatch<React.SetStateAction<string>>;
   /** When false, chips stay fully opaque and prompts rotate after hold without opacity transitions. */
   fadeAnimationEnabled?: boolean;
-  /** fade = opacity crossfade; carousel = vertical stack with middle focus; static = no opacity animation. */
+  /** fade = opacity crossfade; carousel = vertical stack with middle focus; static = no opacity animation; stream = typewriter reveal. */
   animationMode?: PresetChipAnimationMode;
   /** If a preset declares `preferAskMode`, apply it when the chip is chosen. */
   onPreferAskMode?: (mode: AskModeId) => void;
@@ -122,6 +125,187 @@ function PresetChipButton(props: {
         ) : null}
       </span>
     </Button>
+  );
+}
+
+function prefersReducedMotion(): boolean {
+  if (typeof window === "undefined" || typeof window.matchMedia !== "function") return false;
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
+function StreamPresetChipButton(props: {
+  preset: PresetPrompt;
+  displayedText: string;
+  showCaret: boolean;
+  setUnifiedInput: React.Dispatch<React.SetStateAction<string>>;
+  onPreferAskMode?: (mode: AskModeId) => void;
+}) {
+  const { preset: p, displayedText, showCaret, setUnifiedInput, onPreferAskMode } = props;
+  return (
+    <Button
+      className="bonsai-preset-glass bonsai-preset-glass--stream"
+      focusable
+      onClick={() => {
+        setUnifiedInput(joinPresetWithRunningGame(p.text));
+        if (p.preferAskMode && onPreferAskMode) {
+          onPreferAskMode(p.preferAskMode);
+        }
+      }}
+      style={{
+        width: "100%",
+        minHeight: 34,
+        fontSize: 12,
+        color: "#c4d3e2",
+      }}
+    >
+      <span
+        className={
+          "bonsai-preset-chip-label" + (showCaret ? " bonsai-preset-chip-label--stream-caret" : "")
+        }
+      >
+        {displayedText || "\u00a0"}
+        {p.beta ? (
+          <span
+            style={{
+              marginLeft: 6,
+              fontSize: 10,
+              fontStyle: "italic",
+              color: `var(--bonsai-ui-accent-main, ${BONSAI_FOREST_GREEN})`,
+              fontWeight: 600,
+            }}
+          >
+            [beta]
+          </span>
+        ) : null}
+      </span>
+    </Button>
+  );
+}
+
+function MainTabPresetStreamSlots(
+  props: Omit<MainTabPresetAnimatedChipsProps, "fadeAnimationEnabled" | "animationMode">,
+) {
+  const { seeds, setUnifiedInput, onPreferAskMode, useLocalKnowledgeBase = false } = props;
+  const samplerOptions = { useLocalKnowledgeBase };
+  const seedsKey = seedsKeyFrom(seeds);
+  const reducedMotion = prefersReducedMotion();
+
+  const [slots, setSlots] = useState<[PresetPrompt, PresetPrompt, PresetPrompt]>(() =>
+    normalizeThreeSeeds(seeds, samplerOptions),
+  );
+  const [displayed, setDisplayed] = useState<[string, string, string]>(["", "", ""]);
+  const [showCaret, setShowCaret] = useState<[boolean, boolean, boolean]>([true, true, true]);
+  const slotsRef = useRef(slots);
+  slotsRef.current = slots;
+
+  useEffect(() => {
+    const initial = normalizeThreeSeeds(seeds, samplerOptions);
+    setSlots(initial);
+    slotsRef.current = initial;
+    setDisplayed(["", "", ""]);
+    setShowCaret([true, true, true]);
+
+    const sessionEnd = performance.now() + PRESET_CAROUSEL_ACTIVE_MS;
+    const timeouts: number[] = [];
+    let cancelled = false;
+
+    const mayStartNextCycle = (): boolean => !cancelled && performance.now() < sessionEnd;
+
+    const pushTimeout = (fn: () => void, ms: number) => {
+      const id = window.setTimeout(() => {
+        if (cancelled) return;
+        fn();
+      }, ms);
+      timeouts.push(id);
+    };
+
+    const pickNextForSlot = (slotIndex: number, current: PresetPrompt): PresetPrompt => {
+      const otherTexts = slotsRef.current.filter((_, j) => j !== slotIndex).map((s) => s.text);
+      return getRandomPresetExcluding(new Set([...otherTexts, current.text]), samplerOptions);
+    };
+
+    const setSlotDisplayed = (slotIndex: 0 | 1 | 2, text: string, caret: boolean) => {
+      setDisplayed((prev) => {
+        const next = [...prev] as [string, string, string];
+        next[slotIndex] = text;
+        return next;
+      });
+      setShowCaret((prev) => {
+        const next = [...prev] as [boolean, boolean, boolean];
+        next[slotIndex] = caret;
+        return next;
+      });
+    };
+
+    const runStreamSlot = (slotIndex: 0 | 1 | 2, prompt: PresetPrompt, firstDelay: number) => {
+      const charMs = reducedMotion ? 0 : PRESET_STREAM_CHAR_MS;
+
+      const beginPrompt = () => {
+        slotsRef.current = [...slotsRef.current];
+        slotsRef.current[slotIndex] = prompt;
+        setSlots([slotsRef.current[0]!, slotsRef.current[1]!, slotsRef.current[2]!]);
+        setSlotDisplayed(slotIndex, "", true);
+
+        const afterHold = () => {
+          pushTimeout(() => {
+            if (!mayStartNextCycle()) return;
+            setSlotDisplayed(slotIndex, "", false);
+            const nextPrompt = pickNextForSlot(slotIndex, prompt);
+            runStreamSlot(slotIndex, nextPrompt, reducedMotion ? 0 : 120);
+          }, holdMsForPresetText(prompt.text));
+        };
+
+        if (reducedMotion) {
+          setSlotDisplayed(slotIndex, prompt.text, false);
+          afterHold();
+          return;
+        }
+
+        let index = 0;
+        const revealNext = () => {
+          index += 1;
+          const partial = prompt.text.slice(0, index);
+          setSlotDisplayed(slotIndex, partial, index < prompt.text.length);
+          if (index < prompt.text.length) {
+            pushTimeout(revealNext, charMs);
+          } else {
+            afterHold();
+          }
+        };
+        pushTimeout(revealNext, charMs);
+      };
+
+      pushTimeout(beginPrompt, firstDelay);
+    };
+
+    runStreamSlot(0, initial[0]!, PRESET_SLOT_STAGGER_MS[0]);
+    runStreamSlot(1, initial[1]!, PRESET_SLOT_STAGGER_MS[1]);
+    runStreamSlot(2, initial[2]!, PRESET_SLOT_STAGGER_MS[2]);
+
+    return () => {
+      cancelled = true;
+      timeouts.forEach((id) => window.clearTimeout(id));
+    };
+  }, [seedsKey, seeds, reducedMotion, useLocalKnowledgeBase]);
+
+  return (
+    <>
+      {slots.map((p, i) => (
+        <div
+          key={`preset-stream-slot-${i}`}
+          className="bonsai-preset-carousel-slot"
+          data-bonsai-preset-visible="true"
+        >
+          <StreamPresetChipButton
+            preset={p}
+            displayedText={displayed[i] ?? ""}
+            showCaret={showCaret[i] ?? false}
+            setUnifiedInput={setUnifiedInput}
+            onPreferAskMode={onPreferAskMode}
+          />
+        </div>
+      ))}
+    </>
   );
 }
 
@@ -267,6 +451,17 @@ function MainTabPresetAnimatedChipsInner(props: MainTabPresetAnimatedChipsProps)
   if (animationMode === "carousel") {
     return (
       <MainTabPresetVerticalCarousel
+        seeds={seeds}
+        setUnifiedInput={setUnifiedInput}
+        onPreferAskMode={onPreferAskMode}
+        onCarouselExitDown={onCarouselExitDown}
+        useLocalKnowledgeBase={useLocalKnowledgeBase}
+      />
+    );
+  }
+  if (animationMode === "stream") {
+    return (
+      <MainTabPresetStreamSlots
         seeds={seeds}
         setUnifiedInput={setUnifiedInput}
         onPreferAskMode={onPreferAskMode}
