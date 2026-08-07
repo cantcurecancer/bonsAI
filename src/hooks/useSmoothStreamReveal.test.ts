@@ -69,6 +69,56 @@ describe("useSmoothStreamReveal", () => {
     expect(result.current.length).toBeGreaterThan(before);
   });
 
+  /**
+   * The old fixed 160 chars/s ceiling sat below real generation speed, so a fast host left the
+   * reveal permanently behind and T3 dumped the remainder in one frame.
+   */
+  it("drains a large backlog in about one poll interval instead of at a fixed cap", () => {
+    const callbacks: FrameRequestCallback[] = [];
+    vi.spyOn(window, "requestAnimationFrame").mockImplementation((cb) => {
+      callbacks.push(cb);
+      return callbacks.length;
+    });
+    vi.spyOn(window, "cancelAnimationFrame").mockImplementation(() => {});
+
+    const long = "x".repeat(1000);
+    const { result } = renderHook(() =>
+      useSmoothStreamReveal({ targetText: long, enabled: true, done: false })
+    );
+
+    act(() => {
+      callbacks.pop()?.(0);
+    });
+    act(() => {
+      callbacks.pop()?.(180);
+    });
+
+    // At the old cap this frame could only move ~28 characters.
+    expect(result.current.length).toBe(1000);
+  });
+
+  it("keeps the frame loop alive after catching up so the next partial starts immediately", () => {
+    const callbacks: FrameRequestCallback[] = [];
+    vi.spyOn(window, "requestAnimationFrame").mockImplementation((cb) => {
+      callbacks.push(cb);
+      return callbacks.length;
+    });
+    vi.spyOn(window, "cancelAnimationFrame").mockImplementation(() => {});
+
+    const { result } = renderHook(() =>
+      useSmoothStreamReveal({ targetText: "ab", enabled: true, done: false })
+    );
+
+    for (let i = 0; i < 5; i++) {
+      act(() => {
+        callbacks.pop()?.(16 * (i + 1));
+      });
+    }
+    expect(result.current).toBe("ab");
+    // Caught up, but still scheduled: an idle frame must not tear the loop down.
+    expect(callbacks.length).toBeGreaterThan(0);
+  });
+
   it("returns target immediately when disabled", () => {
     const { result } = renderHook(() =>
       useSmoothStreamReveal({ targetText: "full text", enabled: false, done: false })

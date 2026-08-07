@@ -14,15 +14,30 @@ type UseSmoothStreamRevealArgs = {
   done: boolean;
 };
 
-/** Prose chars/sec caps for RAF smooth reveal (may tune). */
+/** Slowest reveal, so a couple of trailing characters still animate rather than snapping. */
 const PROSE_RATE_MIN = 40;
-const PROSE_RATE_MAX = 160;
+/**
+ * Spend about one poll interval draining whatever has arrived.
+ *
+ * Replaces a hard 160 chars/s ceiling, which was below what a LAN GPU actually produces (~40 tok/s):
+ * the reveal fell permanently behind and the remainder landed in one frame at T3. Deriving the rate
+ * from the backlog instead makes it self-scaling — a fast host drains a big backlog quickly, a slow
+ * one trickles — and pacing it *just over* `BACKGROUND_STREAM_POLL_MS` (150ms) keeps the reveal from
+ * sprinting to the end of a partial and then idling until the next poll, which is the startup hitch
+ * STREAM-REVEAL-01 saw on Deck after the first ~6-7 words.
+ */
+const TARGET_DRAIN_SECONDS = 0.18;
+/**
+ * Frames to keep the loop alive after catching up — about one poll interval at 60fps, so a partial
+ * that drains early is still animating when the next one lands. Bounded on purpose: an
+ * unconditional reschedule never terminates, which spins forever under test fake timers.
+ */
+const IDLE_COAST_FRAMES = 12;
 /** After a non-spoiler fence closes, reveal backlog at this multiple (C2; may change). */
 const FENCE_BURST_RATE_MULTIPLIER = 3;
 
 function proseRevealRate(backlog: number): number {
-  // Catch up faster on large poll chunks so streaming feels continuous, not blocky.
-  return Math.min(PROSE_RATE_MAX, Math.max(PROSE_RATE_MIN, backlog * 3));
+  return Math.max(PROSE_RATE_MIN, backlog / TARGET_DRAIN_SECONDS);
 }
 
 /**
@@ -41,12 +56,14 @@ export function useSmoothStreamReveal({
   const rafRef = useRef<number | null>(null);
   const lastTsRef = useRef<number | null>(null);
   const burstTicksRef = useRef(0);
+  const idleTicksRef = useRef(0);
 
   const ensureRaf = () => {
     if (!enabled || done) return;
     if (rafRef.current != null) return;
     if (targetRef.current.length <= displayRef.current.length) return;
     lastTsRef.current = null;
+    idleTicksRef.current = 0;
     const tick = (ts: number) => {
       const prev = lastTsRef.current ?? ts;
       lastTsRef.current = ts;
@@ -55,9 +72,22 @@ export function useSmoothStreamReveal({
       const cur = displayRef.current;
       const backlog = target.length - cur.length;
       if (backlog <= 0) {
-        rafRef.current = null;
+        /*
+         * Coast briefly instead of tearing the loop down on the first caught-up frame. Exiting
+         * immediately meant the next partial had to wait for a React round trip before any
+         * character moved, so draining a partial faster than the 150ms poll showed a visible pause
+         * — the other half of the startup hitch. Coasting spans that gap; parking after it keeps
+         * the loop finite, which an unconditional reschedule was not.
+         */
+        idleTicksRef.current += 1;
+        if (idleTicksRef.current > IDLE_COAST_FRAMES) {
+          rafRef.current = null;
+          return;
+        }
+        rafRef.current = requestAnimationFrame(tick);
         return;
       }
+      idleTicksRef.current = 0;
       const baseRate = proseRevealRate(backlog);
       const bursting = burstTicksRef.current > 0;
       const rate = bursting ? baseRate * FENCE_BURST_RATE_MULTIPLIER : baseRate;
