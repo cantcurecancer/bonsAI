@@ -9,7 +9,11 @@ Does not: Post HTTP to Ollama — see post_ollama_chat in ollama_service.
 import re
 from typing import Callable, Optional, Any
 
-from backend.constants import DEFAULT_OLLAMA_BASE_URL, OLLAMA_TAB_WHERE_AI_RUNS
+from backend.constants import (
+    DEFAULT_OLLAMA_BASE_URL,
+    LOW_SPOILER_RISK_APP_IDS,
+    OLLAMA_TAB_WHERE_AI_RUNS,
+)
 from backend.tdp_intent import is_current_tdp_read_intent
 from backend.services.strategy_guide_parse import (
     STRATEGY_FOLLOWUP_PREFIX,
@@ -63,6 +67,25 @@ def _game_genres_are_low_spoiler_risk(genres: str) -> bool:
     return any(marker in g for marker in _BULLET_HEAVEN_GENRE_MARKERS)
 
 
+def _strategy_low_risk_active(
+    *,
+    app_id: str = "",
+    game_genres: str = "",
+    kb_entity_match: bool = False,
+) -> bool:
+    """True when named bosses/enemies in this title are routine gameplay, not story spoilers.
+
+    The AppID arm exists because the genre arm reads `games.genres` out of the KB corpus
+    (lookup_game_genres), so it is silently unavailable on a Deck with no corpus installed —
+    which is exactly the configuration STRAT-SPOIL-DRG-01 reproduces in.
+    """
+    return (
+        str(app_id or "").strip() in LOW_SPOILER_RISK_APP_IDS
+        or _game_genres_are_low_spoiler_risk(game_genres)
+        or bool(kb_entity_match)
+    )
+
+
 def extract_strategy_asked_entity(question: str) -> str:
     """Pull the boss/enemy/entity name from common Strategy Ask phrasing."""
     raw = (question or "").strip()
@@ -99,9 +122,14 @@ def _strategy_spoiler_low_risk_addendum(
     game_genres: str,
     asked_entity: str,
     kb_entity_match: bool,
+    app_id: str = "",
 ) -> str:
     """Extra policy when boss/enemy tactics are routine gameplay, not narrative spoilers."""
-    if not _game_genres_are_low_spoiler_risk(game_genres) and not kb_entity_match:
+    if not _strategy_low_risk_active(
+        app_id=app_id,
+        game_genres=game_genres,
+        kb_entity_match=kb_entity_match,
+    ):
         return ""
     lines = [
         "LOW-SPOILER-RISK CONTEXT: This title treats named bosses/enemies/waves as routine gameplay beats, "
@@ -136,12 +164,14 @@ def _strategy_spoiler_policy_block(
     game_genres: str = "",
     asked_entity: str = "",
     kb_entity_match: bool = False,
+    app_id: str = "",
 ) -> str:
     """Injected after STRATEGY GUIDE MODE header; defines ```bonsai-spoiler fences and ordering."""
     low_risk = _strategy_spoiler_low_risk_addendum(
         game_genres=game_genres,
         asked_entity=asked_entity,
         kb_entity_match=kb_entity_match,
+        app_id=app_id,
     )
     if consent:
         lines = (
@@ -880,6 +910,7 @@ def build_system_prompt(
         game_genres=strategy_spoiler_game_genres,
         asked_entity=strategy_spoiler_asked_entity,
         kb_entity_match=strategy_spoiler_kb_entity_match,
+        app_id=app_id,
     )
     if followup:
         strategy_block = (

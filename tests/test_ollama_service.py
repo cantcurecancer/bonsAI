@@ -695,6 +695,31 @@ class OllamaServiceTests(unittest.TestCase):
         self.assertNotIn("LOW-SPOILER-RISK CONTEXT", block)
         self.assertIn("```bonsai-spoiler", block)
 
+    def test_strategy_spoiler_policy_low_risk_app_id_without_corpus_signals(self):
+        """AppID alone must carry the signal: lookup_game_genres is empty with no KB corpus."""
+        block = _strategy_spoiler_policy_block(
+            False,
+            False,
+            game_genres="",
+            asked_entity="Glyphid Dreadnought",
+            kb_entity_match=False,
+            app_id="2321470",
+        )
+        self.assertIn("LOW-SPOILER-RISK CONTEXT", block)
+        self.assertIn("Glyphid Dreadnought", block)
+
+    def test_strategy_spoiler_policy_narrative_app_id_stays_fenced(self):
+        block = _strategy_spoiler_policy_block(
+            False,
+            False,
+            game_genres="",
+            asked_entity="King Dodongo",
+            kb_entity_match=False,
+            app_id="413150",
+        )
+        self.assertNotIn("LOW-SPOILER-RISK CONTEXT", block)
+        self.assertIn("```bonsai-spoiler", block)
+
     def _verbosity_lookup_helpers(self):
         def lookup_app_name(_app_id: str) -> str:
             return ""
