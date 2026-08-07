@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, renderHook } from "@testing-library/react";
 
 import { useStreamScrollPin } from "./useStreamScrollPin";
@@ -39,13 +39,18 @@ function makeTranscript(opts: { contentBottom: number; scrollHeight?: number }) 
   anchor.className = "bonsai-chat-main-column";
   /* Document-space bottom minus how far we have scrolled — i.e. where it actually appears. */
   anchor.getBoundingClientRect = () => rect(0 - scrollTop, contentBottom - scrollTop);
-  anchor.scrollIntoView = () => {};
+  const scrollIntoView = vi.fn();
+  anchor.scrollIntoView = scrollIntoView;
   scroll.appendChild(anchor);
   document.body.appendChild(scroll);
 
   return {
     anchorRef: { current: anchor },
     scroll,
+    scrollIntoView,
+    /* A scroll event delivered after the fact, carrying a position nobody moved to since. Real
+       scroll events are asynchronous; this is what one looks like arriving late. */
+    emitScroll: () => scroll.dispatchEvent(new Event("scroll")),
     /** More tokens arrived: the transcript got taller. */
     grow: (by: number) => {
       contentBottom += by;
@@ -160,6 +165,69 @@ describe("stream scroll follow", () => {
     act(() => rerender({ text: "first second" }));
 
     expect(t.scrollTop).toBe(250);
+  });
+
+  /*
+   * Reported on device 2026-08-07: following worked, then locked a paragraph short of the tail.
+   *
+   * `scroll` events are asynchronous, so one caused by the follow itself lands a frame or more
+   * later — by which time the reveal has added text and the tail is below the fold again. Read as
+   * "the user scrolled up", that pins the view at the position the follow just set, and nothing
+   * moves for the rest of the answer.
+   */
+  it("does not mistake its own scroll for the user's when it arrives late", () => {
+    const t = makeTranscript({ contentBottom: 400 });
+    const { rerender } = mount(t);
+    act(() => rerender({ text: "first" }));
+    expect(t.scrollTop).toBe(150);
+
+    t.grow(200);
+    act(() => t.emitScroll());
+
+    act(() => rerender({ text: "first second" }));
+    expect(t.scrollTop).toBe(350);
+  });
+
+  /*
+   * On device the answer ran past the bottom edge while the panel reported itself fully scrolled —
+   * the QAM's scroll range does not always cover its own content. Assigning scrollTop cannot go
+   * further, so the browser is asked to move whichever ancestor can.
+   */
+  it("hands off to the browser when the panel will not scroll far enough", () => {
+    const t = makeTranscript({ contentBottom: 400, scrollHeight: 300 });
+    const { rerender } = mount(t);
+
+    act(() => rerender({ text: "first" }));
+
+    expect(t.scrollTop).toBe(50); // clamped at the container's maximum
+    expect(t.scrollIntoView).toHaveBeenCalledWith({ block: "end", behavior: "auto" });
+  });
+
+  it("does not hand off when the panel got there on its own", () => {
+    const t = makeTranscript({ contentBottom: 400 });
+    const { rerender } = mount(t);
+
+    act(() => rerender({ text: "first" }));
+
+    expect(t.scrollIntoView).not.toHaveBeenCalled();
+  });
+
+  /* A pin taken during the previous answer, or by the scrollIntoView that fires as a turn opens,
+     must not freeze the next one before a token has arrived. */
+  it("starts each answer following again", () => {
+    const t = makeTranscript({ contentBottom: 400 });
+    const { rerender } = renderHook(
+      ({ text, on }: { text: string; on: boolean }) => useStreamScrollPin(t.anchorRef, text, on),
+      { initialProps: { text: "", on: true } }
+    );
+    act(() => t.userScrollTo(0));
+    act(() => rerender({ text: "first", on: true }));
+    expect(t.scrollTop).toBe(0); // pinned, as it should be
+
+    act(() => rerender({ text: "first", on: false })); // the answer finished
+    act(() => rerender({ text: "new answer", on: true })); // the next one starts
+
+    expect(t.scrollTop).toBe(150);
   });
 
   it("stays out of the way when streaming is off", () => {
