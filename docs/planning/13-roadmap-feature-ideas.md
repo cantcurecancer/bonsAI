@@ -1,8 +1,23 @@
 # 13 — New Planned feature ideas (star-rated)
 
-Proposal only. **No roadmap rows were added, removed, or re-rated** — everything
-below is a stub for the maintainer to accept, merge, or reject. Answers question
-13 in [roadmap-planning-questions.md](roadmap-planning-questions.md).
+Answers question 13 in [roadmap-planning-questions.md](roadmap-planning-questions.md).
+Nothing here re-rates or removes an existing roadmap row.
+
+**Filed to [roadmap.md](../roadmap.md) § Planned on 2026-08-07** (docs only — no
+implementation):
+
+| Stub | Star | Horizon | Roadmap status |
+|---|---|---|---|
+| **A1** KB coverage chip | ★ | Near | Filed |
+| **A3** Permission jump | ★★ | Near | Filed |
+| **B3** Connection doctor | ★★★★ | Medium | Filed **as a candidate** — merge-vs-standalone against **Deck health snapshot** still undecided |
+| **C1** On-Deck model benchmark | ★★★★★ | Long | Filed |
+| **C2** Community tip contribution | ★★★★★ | Long | Filed |
+| **C3** In-game answer surface | ★★★★★★ | Long | Filed, with the ★★ toast-snippet slice called out inside it |
+
+**Not filed, still proposals:** **A2** copy reply to clipboard (wants the
+`wl-copy` ownership spike first), **B1** RPC contract gate, **B2** per-game
+preference memory.
 
 Stars follow the roadmap's GTA scale (`★` easiest … `★★★★★` very high;
 `★★★★★★` extreme scope or upstream-gated) and are **effort/risk, not value**.

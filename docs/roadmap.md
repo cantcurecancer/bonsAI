@@ -97,6 +97,15 @@ Within this section: ascending stars (★ → ★★★★).
   - **Goal:** Decide whether the quiet intent-pack search aliases should be deleted, left quiet, or revived under Developer.
   - **Proton journal half closed 2026-08-02.** The 5 journal RPCs and `proton_experiment_journal_service.py` are gone (`309c386`, `ebdc0f2`); only the file wipe survived, relocated into `plugin_data_reset.py` because **Clear all data** still needs it. The last of the plumbing — the `journal_text` parameter on `stack_context_blocks` — was removed on the Ask path in the cleanup pass. Reviving the feature now means rebuilding the store, not re-enabling a flag.
   - **Not in scope:** rewriting unified search ranking; re-shipping journal inject without a redesign.
+- ★ **KB coverage chip** (Show details — corpus honesty; proposed 2026-08-07)
+  - **Goal:** Say in one Show-details chip whether the local knowledge base had anything for the game being asked about — e.g. `KB: 2 sections` / `KB: none for this game` / `KB: off`.
+  - **The signal already exists and is discarded.** `get_session_rag_chip_candidates` returns `{ok: false, reason: "no_sections" | "app_unresolved"}` and the frontend deliberately treats that as *use static seeds* without logging — right for the carousel, invisible to the user. Today "KB off", "no corpus installed", "corpus has nothing for this title" and "the KB actually helped" are indistinguishable in the UI, so a thin corpus reads as a broken feature. The ceiling is content, not retrieval: DRG Survivor has **2 sections against a per-game cap of 6** ([archive/roadmap-bugs-fixed.md](archive/roadmap-bugs-fixed.md)).
+  - **Depends on:** shipped — session RAG chip candidates RPC ([main.py:1440](../main.py)), Show details context ladder (`ensure_context_chips_on_snapshot`), existing context-chip rendering.
+  - **Blocked for QA** by the open ★★ **Live-turn transparency UI missing after successful Ask** bug — the chip cannot be verified on-Deck until Show details reliably appears (**CONTEXT-LADDER-01**).
+  - **Related:** **RAG Phase 4** Track 1 (chip visibility V1/V3/V4). Fine standalone or folded into that track; it is transparency, not retrieval, so it must not slip to Phase 5+.
+  - **Not in scope (v1):** per-topic section counts; a KB browser (out of scope in **Phase 7**); changing retrieval, ranking or chip policy; new Settings.
+  - **★ justification:** one chip string over one existing RPC field. No new permission, no new focusable control (chips already live under Show details, so no focus-graph entry), QA rides **CONTEXT-LADDER-01**.
+  - **Source:** [13-roadmap-feature-ideas.md](planning/13-roadmap-feature-ideas.md) § A1.
 - ★★ **Preset chip expansion** (streaming / LAN / Steam Input — incremental)
   - **Baseline shipped:** `PRESET_PROMPTS` in [`src/data/presets.ts`](../src/data/presets.ts).
   - **Goal:** Add or refresh preset strings as related features land — content tuning only.
@@ -125,6 +134,14 @@ Within this section: ascending stars (★ → ★★★★).
   - **Goal:** User-adjustable Ollama thinking effort mapped to `think: false | "low" | "medium" | "high"` (global v1).
   - **Depends on:** **Soft** `num_predict` **+ thinking budget** (Bugs).
   - **Not in scope:** shipping Settings before the soft-budget bug fix.
+- ★★ **Permission jump** (denial → the toggle that fixes it; proposed 2026-08-07)
+  - **Goal:** One press from "bonsAI can't do that" to the exact Permissions toggle that unblocks it.
+  - **Today a denial is a dead end.** Blocked actions print copy like *"enable Media library access in Permissions"* ([MainTabScreenshotBrowser.tsx:123](../src/components/MainTabScreenshotBrowser.tsx)) but nothing navigates there — even though the shell already owns `setCurrentTab` ([useBonsaiPluginShell.ts:50](../src/hooks/useBonsaiPluginShell.ts)). Five capabilities can deny (`filesystem_write`, `media_library_access`, `steam_logs_read`, `steam_web_api`, `microphone_access` — [capabilities.py:12](../py_modules/backend/services/capabilities.py)); none of them points anywhere, so the recovery path is "read the copy, find the tab yourself".
+  - **Depends on:** shipped — Capability Permission Center, `setCurrentTab`, existing deny toasts and inline deny copy.
+  - **Related:** shares its deep-link mechanism with **Connection doctor** (Medium-term) — build it once.
+  - **Not in scope (v1):** per-capability first-use consent modals (deferred — [archive/roadmap-completed.md](archive/roadmap-completed.md) § Capability Permission Center); auto-enabling anything; changing the default-off policy; new capability keys.
+  - **★★ justification:** no backend change and no new capability, but it touches every deny site (screenshot attach, Desktop note, Proton log read, mic, VAC), needs a return-tab story that coexists with the modal tab-restore locks in `useBonsaiPluginShell`, and adds one focusable control per deny surface → focus-graph entries (`.cursor/rules/decky-focus-graph.mdc`).
+  - **Source:** [13-roadmap-feature-ideas.md](planning/13-roadmap-feature-ideas.md) § A3.
 - ★★★ **Dynamic keep-alive / smart unload** (research spike — discovery locked 2026-07-29)
   - **Goal:** Research-only: hold models loaded vs unload when a game takes focus, safely on Deck APU shared memory? Spike decides go/no-go. No ship commitment until spike writes outcome.
   - **Not in scope:** promising true per-game VRAM detection; production unload before spike doc.
@@ -227,6 +244,16 @@ Within this section: ascending stars (★★★★ → ★★★★★★).
   - **Status:** Discovery locked 2026-07-30; **docs only** — not implementing yet. Full discovery: [web-permission-discovery.md](planning/web-permission-discovery.md).
   - **Depends on:** Capability Permission Center; Kids Master Lock; Show details / Source patterns.
   - **Not in scope:** shipping search/HF stream code in v1.
+- ★★★★ **Connection doctor** (guided first-Ask repair — candidate, proposed 2026-08-07)
+  - **Status:** **Candidate, not accepted.** Decide first whether this is a standalone row or **Phase 1 of Deck health snapshot** — the two share a probe set, and building both means maintaining two probe stacks.
+  - **Goal:** When the first Ask fails, walk the user to a working Ollama instead of handing them a toast and a docs link.
+  - **v1 shape:** a **Fix this** action on Ask failure that runs the probes the backend already has, in order — host reachable? (`test_ollama_connection`, [main.py:943](../main.py)) → anything advertising on LAN? (`discover_mdns_ollama_hosts`, [:1084](../main.py)) → is local Ollama installed and running? (`get_local_ollama_setup_status`, [:1207](../main.py)) → is any model pulled? — then state exactly one next action per outcome, deep-linking to the Ollama-tab control that performs it.
+  - **Why now:** the probes are all shipped and each is separately reachable, but a new user whose first Ask fails gets a toast ([bonsaiReplyReadyToast.ts:59-73](../src/utils/bonsaiReplyReadyToast.ts)) and a docs link. [Q2 README redesign](planning/02-readme-redesign-plan.md) found the same new-user cliff from the docs side; this is the in-plugin half.
+  - **Depends on:** those four shipped probes; Ollama tab controls; named hosts; compat KB troubleshooting tips. Shares the deep-link mechanism with **Permission jump** (Near-term).
+  - **Related:** **Deck health snapshot** (read-only dump). If both ship: the doctor is the interactive front end, the snapshot is the dump — one probe stack, two presentations.
+  - **Not in scope (v1):** editing firewall or network config; running installs without consent; a read-only diagnostics dump; anything web (→ **Web permission**).
+  - **★★★★ justification:** no new capability, but a stateful multi-step flow on the Deck's hardest surface (D-pad through a decision tree), sitting on the Ask lifecycle mid-**D3**, and every branch needs on-Deck QA against a *deliberately broken* setup — a QA fixture that does not exist yet.
+  - **Source:** [13-roadmap-feature-ideas.md](planning/13-roadmap-feature-ideas.md) § B3.
 
 - ★★★★★ **Named chat slots** (labeled threads — redesign only)
   - **GitHub (tracking placeholder):** [bonsAI Issues](https://github.com/cantcurecancer/bonsAI/issues) — dedicated issue TBD.
@@ -281,6 +308,24 @@ Within this section: ascending stars (★★★★ → ★★★★★★).
   - **Status:** Phase 1 complete; on-device QA still in [QA backlog](#qa-backlog).
   - **Goal:** When metadata allows, surface live opponent Steam identities for ban checks. Research spike first; if no stable API → enhanced manual flow.
   - **Not in scope:** automated reporting or punitive automation.
+- ★★★★★ **On-Deck model benchmark** (measured routing order; proposed 2026-08-07)
+  - **GitHub (tracking placeholder):** [bonsAI Issues](https://github.com/cantcurecancer/bonsAI/issues) — dedicated issue TBD.
+  - **Goal:** Rank the models actually installed on *this* Deck by measured speed and completion, and offer that ranking as the try order instead of a hand-sorted list.
+  - **The numbers already exist and go straight to the log.** `eval_count` / `prompt_eval_count` / `done_reason` are read off every stream ([ollama_service.py:610](../py_modules/backend/services/ollama_service.py)) and `elapsed_seconds` already reaches the UI. Routing order is user-owned (**Set text/vision model try order…**, `resolve_routing_order`) but users have no data with which to order it.
+  - **Go/no-go gate:** a spike proving run-to-run variance is small enough that the ranking is stable. A bench run while a game holds the APU, on battery, or thermally throttled gives a different answer than one on the dock, and the Deck has no stable idle state to measure from. **If variance wins, descope** to a one-shot "how fast is this model here?" readout and stop.
+  - **Depends on:** shipped user-owned routing pickers + `ollama_routing.py`; keep-alive. Overlaps **Dynamic keep-alive / smart unload** — run that spike first, or share its measurements.
+  - **Not in scope:** benchmarking LAN hosts; any quality or "which model is smarter" scoring — speed and completion only; auto-applying a new order without confirmation; publishing results anywhere.
+  - **★★★★★ justification:** measurement validity is the real cost, not the code. Also minutes of model loading (needs cancel + progress UI), interaction with keep-alive, and it writes a setting the user owns.
+  - **Source:** [13-roadmap-feature-ideas.md](planning/13-roadmap-feature-ideas.md) § C1.
+- ★★★★★ **Community tip contribution** (corpus inbound path; proposed 2026-08-07)
+  - **GitHub (tracking placeholder):** [bonsAI Issues](https://github.com/cantcurecancer/bonsAI/issues) — dedicated issue TBD.
+  - **Goal:** Let a user who knows a fix turn it into a KB tip card the project can actually accept — without bonsAI running a server or collecting anything.
+  - **v1 shape:** a reply → **Suggest as a tip** action that writes a schema-valid card (the corpus's own section format, plus AppID and source attribution) to `~/Desktop/bonsAI_logs/` and shows the GitHub URL to attach it to. Entirely local; the transport is the user's own browser on their own machine.
+  - **Why it belongs to the corpus track:** the KB ceiling is content, not retrieval, and the one signal users already give is discarded — `save_ask_feedback` ([main.py:1963](../main.py)) appends JSONL that nothing reads back (`feedback_service.py` exposes only `feedback_log_path` and `append_ask_feedback`).
+  - **Depends on:** **RAG Phase 6** (public corpus + ATTRIBUTIONS + legal scrub) — there is no point accepting contributions before there is a published corpus to contribute to. Shipped: Desktop notes + `filesystem_write`, thumbs feedback, corpus schema.
+  - **Not in scope:** any upload from the plugin; telemetry; auto-merge; writing unreviewed cards into the local corpus; wiki scraping (→ Phase 5/7).
+  - **★★★★★ justification:** the cost is not the code — it is moderation, licensing and attribution of user-submitted text, and a review pipeline the maintainer runs forever. A PII scrub cannot be fully guaranteed, so the copy must say plainly *"you are publishing this."*
+  - **Source:** [13-roadmap-feature-ideas.md](planning/13-roadmap-feature-ideas.md) § C2.
 - ★★★★★★ **Deep mod AI hints** (install paths + compatdata)
   - **GitHub (tracking placeholder):** [bonsAI Issues](https://github.com/cantcurecancer/bonsAI/issues) — dedicated issue TBD.
   - **Goal:** Detect mod frameworks/files; mod-aware AI guidance.
@@ -296,6 +341,15 @@ Within this section: ascending stars (★★★★ → ★★★★★★).
   - **Goal:** Separate QAM left-rail entry for bonsAI beneath the Decky Loader icon (fewer steps than Decky plugin list). Requires upstream Steam/Decky support — plugins cannot register sibling QAM icons from `plugin.json` alone.
   - **Related:** Guide-chord macro docs remain in [troubleshooting.md](troubleshooting.md) §5 for power users; not a casual-user priority (archived from Planned).
   - **Not in scope:** Shipping a forked Steam client or undocumented UI injection as default.
+- ★★★★★★ **In-game answer surface** (no-QAM reply; overlay research — proposed 2026-08-07)
+  - **GitHub (tracking placeholder):** [bonsAI Issues](https://github.com/cantcurecancer/bonsAI/issues) — dedicated issue TBD.
+  - **Goal:** Read an answer without leaving the game.
+  - **What already works, and its ceiling.** The shipped **Reply ready toast** proves bonsAI can put something on screen with the QAM closed — and it is capped at a title plus *"Tap to open"* ([bonsaiReplyReadyToast.ts:44](../src/utils/bonsaiReplyReadyToast.ts)). Anything past that (a persistent, scrollable, dismissible overlay over gameplay) needs a surface Decky plugins do not have: Steam's in-game overlay is closed, and gamescope layer injection is not a supported plugin API. **Native QAM shortcut tile** is the adjacent upstream ask and only shortens the path *into* the QAM — it does not remove the need to open it.
+  - **The slice that is not blocked (★★):** extend the toast to carry the first ~2 lines of the reply. One hard guardrail — **spoiler fencing does not exist in a toast**, so a snippet must be suppressed for Strategy mode and for any reply containing a fence; same leak class as **STREAM-03**. Worth splitting out as its own Near-term row rather than leaving a cheap win buried in a ★★★★★★ item.
+  - **Depends on:** shipped Reply ready toast, background Ask, spoiler fence detection. **Blocked** beyond the snippet on an upstream overlay surface.
+  - **Not in scope:** a forked Steam client or undocumented UI injection (the same line **Native QAM shortcut tile** draws); rendering into the game process; input capture during gameplay.
+  - **★★★★★★ justification:** the full form is upstream-gated with no known API, and the guardrail — spoilers on a surface that cannot mask — is a product problem, not plumbing.
+  - **Source:** [13-roadmap-feature-ideas.md](planning/13-roadmap-feature-ideas.md) § C3.
 
 ---
 
@@ -349,8 +403,8 @@ Coverage for shipped work: [testing.md](testing.md).
 - **Mode selector (shipped)** → **Per-mode latency timeouts**; Strategy Guide path shipped as `strategy` Ask mode.
 - **Character voice roleplay (shipped)** → accent intensity, avatars, UI accent theme, Random “?”, running-game suggestions, Pyro easter egg (all shipped); → **Local reply TTS** Phase 2.
 - **Whisper voice Ask (shipped)** + mic → **Wake-word listening**.
-- **Reply ready toast (shipped)** → required for hands-free wake when QAM closed.
-- **Capability Permission Center** → gates filesystem, Steam/Proton log + screenshot reads, mic, Steam Web API; web/Steam jumps always allowed; TDP/GPU suggestions read-only (no apply); → planned **Web permission** (Ask live search; Kids Lock forces off).
+- **Reply ready toast (shipped)** → required for hands-free wake when QAM closed; → **In-game answer surface** (the toast is the only non-QAM surface that exists — its ★★ snippet slice is the unblocked part of that item).
+- **Capability Permission Center** → gates filesystem, Steam/Proton log + screenshot reads, mic, Steam Web API; web/Steam jumps always allowed; TDP/GPU suggestions read-only (no apply); → planned **Web permission** (Ask live search; Kids Lock forces off); → **Permission jump** (navigate to the denying toggle; no new keys).
 - **Llama.cpp provider spike** → research-only; related **Dynamic keep-alive / smart unload**.
 - **Preset carousel (shipped)** → incremental **Preset chip expansion**; **Session RAG preset chips (shipped)**.
 - **RAG / offline KB** → Phase 2–3 shipped → **retrieval quality remediation** (PR1/PR2, docs locked) → Phase 4–8 Planned (4 extended retrieval, 5 corpus expansion remaining after remediation seed depth, 6 public publish, 7 infra — ANN/nomic/RRF extensions/vision→KB/demote/delta-packs/named hit, 8 catalog corpus); **KB visual maps** separate; **Spoiler confidence chip** → fencing + unfenced feedback (distinct from Phase 7 retrieval thumbs); **Spoiler constitution** (product rules → later encoding; named-entity slice via STRAT-SPOIL bug); **Web permission** may eventually replace zip download with HF AppID card stream (open decision vs Phases 4–8).
@@ -359,7 +413,11 @@ Coverage for shipped work: [testing.md](testing.md).
 - **Native QAM shortcut tile** → shorter path than Guide-chord macro docs (§5).
 - **Steam Input jump Phase 1 (shipped)** → **Steam Input layout parse**.
 - **Offline intent packs (quiet)** → **Proton journal / intent packs later review**.
-- **Deck health snapshot** → `steam_logs_read` + Proton log helpers; Desktop save needs `filesystem_write`.
+- **Deck health snapshot** → `steam_logs_read` + Proton log helpers; Desktop save needs `filesystem_write`; **shares its probe set with Connection doctor** (candidate) — decide one probe stack, two presentations, before either is built.
+- **Session RAG chip candidates RPC (shipped)** → **KB coverage chip** (reuses the `ok` / `reason` payload the frontend currently discards); adjacent to **RAG Phase 4** Track 1 visibility.
+- **User-owned model routing pickers (shipped)** → **On-Deck model benchmark** (measured order); overlaps **Dynamic keep-alive / smart unload** on Deck measurement.
+- **RAG Phase 6 publish** → **Community tip contribution** (no inbound path is meaningful before there is a published corpus); reuses shipped Desktop notes + thumbs feedback.
+- **Permission jump** → shares its tab deep-link mechanism with **Connection doctor**.
 
 ```mermaid
 flowchart TD
@@ -382,6 +440,14 @@ flowchart TD
   ragPhase6 --> ragPhase8[RagPhase8Catalog]
   ragPhase7 -.->|helps scale| ragPhase8
   softBudget[SoftNumPredictBug] --> thinkingEffort[ThinkingEffortControl]
+  capabilityPermission --> permissionJump[PermissionJump]
+  permissionJump -.->|shared deep link| connectionDoctor[ConnectionDoctorCandidate]
+  deckHealth[DeckHealthSnapshot] -.->|shared probe set| connectionDoctor
+  ragChipRpc[SessionRagChipRpcShipped] --> kbCoverageChip[KbCoverageChip]
+  ragPhase4 -.->|may absorb| kbCoverageChip
+  routingPickers[RoutingPickersShipped] --> modelBenchmark[OnDeckModelBenchmark]
+  ragPhase6 --> tipContribution[CommunityTipContribution]
+  replyToast[ReplyReadyToastShipped] --> inGameSurface[InGameAnswerSurface]
 ```
 
 ### Implementation notes
