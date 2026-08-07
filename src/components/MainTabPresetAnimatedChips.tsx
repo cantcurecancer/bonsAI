@@ -13,6 +13,7 @@ import {
   getRandomPresets,
   holdMsForPresetText,
   type PresetPrompt,
+  type PresetSamplerOptions,
 } from "../data/presets";
 import {
   advanceCarouselFocus,
@@ -45,8 +46,11 @@ const initialSlotFade = (): [SlotFade, SlotFade, SlotFade] => [
 /** Stagger first fade-in start per slot so chips animate at different times. */
 const PRESET_SLOT_STAGGER_MS: readonly [number, number, number] = [750, 1300, 1700];
 
-function normalizeThreeSeeds(seeds: PresetPrompt[]): [PresetPrompt, PresetPrompt, PresetPrompt] {
-  const fallback = getRandomPresets(3);
+function normalizeThreeSeeds(
+  seeds: PresetPrompt[],
+  samplerOptions?: PresetSamplerOptions,
+): [PresetPrompt, PresetPrompt, PresetPrompt] {
+  const fallback = getRandomPresets(3, samplerOptions);
   return [
     seeds[0] ?? fallback[0]!,
     seeds[1] ?? fallback[1]!,
@@ -68,6 +72,8 @@ export type MainTabPresetAnimatedChipsProps = {
   onPreferAskMode?: (mode: AskModeId) => void;
   /** Carousel mode: D-pad Down at end of history moves focus to the Ask field. */
   onCarouselExitDown?: () => void;
+  /** When true, KB-advice static seeds are excluded from timer-driven re-samples. */
+  useLocalKnowledgeBase?: boolean;
 };
 
 function PresetChipButton(props: {
@@ -121,13 +127,14 @@ function PresetChipButton(props: {
 function MainTabPresetVerticalCarousel(
   props: Omit<MainTabPresetAnimatedChipsProps, "fadeAnimationEnabled" | "animationMode">,
 ) {
-  const { seeds, setUnifiedInput, onPreferAskMode } = props;
+  const { seeds, setUnifiedInput, onPreferAskMode, useLocalKnowledgeBase = false } = props;
+  const samplerOptions = { useLocalKnowledgeBase };
   const seedsKey = seedsKeyFrom(seeds);
-  const contextualRef = useRef(normalizeThreeSeeds(seeds));
-  contextualRef.current = normalizeThreeSeeds(seeds);
+  const contextualRef = useRef(normalizeThreeSeeds(seeds, samplerOptions));
+  contextualRef.current = normalizeThreeSeeds(seeds, samplerOptions);
 
   const [{ history, focusIndex }, setCarousel] = useState(() =>
-    buildInitialCarouselState(normalizeThreeSeeds(seeds)),
+    buildInitialCarouselState(normalizeThreeSeeds(seeds, samplerOptions)),
   );
 
   const autoPausedUntilRef = useRef(0);
@@ -161,7 +168,7 @@ function MainTabPresetVerticalCarousel(
 
       setCarousel((prev) => {
         const texts = new Set(prev.history.map((s) => s.text));
-        const nextPreset = getRandomPresetExcluding(texts);
+        const nextPreset = getRandomPresetExcluding(texts, samplerOptions);
         const advanced = advanceCarouselFocus(prev.history, prev.focusIndex, nextPreset);
         return advanced;
       });
@@ -174,7 +181,7 @@ function MainTabPresetVerticalCarousel(
       cancelled = true;
       window.clearTimeout(timeoutId);
     };
-  }, [seedsKey]);
+  }, [seedsKey, useLocalKnowledgeBase]);
 
   /**
    * Focus model: the Steam DOM focus (white ring) is the single source of truth. Every chip is
@@ -253,7 +260,9 @@ function MainTabPresetAnimatedChipsInner(props: MainTabPresetAnimatedChipsProps)
     animationMode = "fade",
     onPreferAskMode,
     onCarouselExitDown,
+    useLocalKnowledgeBase = false,
   } = props;
+  const samplerOptions = { useLocalKnowledgeBase };
   if (animationMode === "carousel") {
     return (
       <MainTabPresetVerticalCarousel
@@ -261,19 +270,22 @@ function MainTabPresetAnimatedChipsInner(props: MainTabPresetAnimatedChipsProps)
         setUnifiedInput={setUnifiedInput}
         onPreferAskMode={onPreferAskMode}
         onCarouselExitDown={onCarouselExitDown}
+        useLocalKnowledgeBase={useLocalKnowledgeBase}
       />
     );
   }
   const staticMode = animationMode === "static" || !fadeAnimationEnabled;
   const seedsKey = seedsKeyFrom(seeds);
 
-  const [slots, setSlots] = useState<[PresetPrompt, PresetPrompt, PresetPrompt]>(() => normalizeThreeSeeds(seeds));
+  const [slots, setSlots] = useState<[PresetPrompt, PresetPrompt, PresetPrompt]>(() =>
+    normalizeThreeSeeds(seeds, samplerOptions),
+  );
   const [slotFade, setSlotFade] = useState<[SlotFade, SlotFade, SlotFade]>(initialSlotFade);
   const slotsRef = useRef(slots);
   slotsRef.current = slots;
 
   useEffect(() => {
-    const initial = normalizeThreeSeeds(seeds);
+    const initial = normalizeThreeSeeds(seeds, samplerOptions);
     setSlots(initial);
     slotsRef.current = initial;
 
@@ -294,7 +306,7 @@ function MainTabPresetAnimatedChipsInner(props: MainTabPresetAnimatedChipsProps)
 
     const pickNextForSlot = (slotIndex: number, current: PresetPrompt): PresetPrompt => {
       const otherTexts = slotsRef.current.filter((_, j) => j !== slotIndex).map((s) => s.text);
-      return getRandomPresetExcluding(new Set([...otherTexts, current.text]));
+      return getRandomPresetExcluding(new Set([...otherTexts, current.text]), samplerOptions);
     };
 
     if (staticMode) {
@@ -376,7 +388,7 @@ function MainTabPresetAnimatedChipsInner(props: MainTabPresetAnimatedChipsProps)
       cancelled = true;
       timeouts.forEach((id) => window.clearTimeout(id));
     };
-  }, [seedsKey, seeds, staticMode]);
+  }, [seedsKey, seeds, staticMode, useLocalKnowledgeBase]);
 
   return (
     <>
@@ -454,7 +466,8 @@ function presetChipsPropsEqual(
     prev.animationMode === next.animationMode &&
     prev.fadeAnimationEnabled === next.fadeAnimationEnabled &&
     prev.onPreferAskMode === next.onPreferAskMode &&
-    prev.onCarouselExitDown === next.onCarouselExitDown
+    prev.onCarouselExitDown === next.onCarouselExitDown &&
+    prev.useLocalKnowledgeBase === next.useLocalKnowledgeBase
   );
 }
 

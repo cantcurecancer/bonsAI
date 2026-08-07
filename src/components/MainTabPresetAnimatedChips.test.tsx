@@ -88,6 +88,7 @@ describe("MainTabPresetAnimatedChips memo gate", () => {
       "animationMode",
       "onPreferAskMode",
       "onCarouselExitDown",
+      "useLocalKnowledgeBase",
     ];
 
     // `setUnifiedInput` is deliberately not compared — it is a setState identity

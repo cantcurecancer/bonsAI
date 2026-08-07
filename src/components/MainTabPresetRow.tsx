@@ -28,6 +28,7 @@ export type MainTabPresetRowProps = {
   isAsking: boolean;
   focusUnifiedTextField: () => boolean;
   presetCarouselHostRef: React.RefObject<HTMLDivElement | null>;
+  useLocalKnowledgeBase?: boolean;
 };
 
 export function MainTabPresetRow({
@@ -42,6 +43,7 @@ export function MainTabPresetRow({
   isAsking,
   focusUnifiedTextField,
   presetCarouselHostRef,
+  useLocalKnowledgeBase = false,
 }: MainTabPresetRowProps) {
   const hadInjectChipRef = useRef(false);
   useEffect(() => {
@@ -96,6 +98,7 @@ export function MainTabPresetRow({
         animationMode={presetChipAnimation}
         onPreferAskMode={onPresetPreferAskMode}
         onCarouselExitDown={focusUnifiedTextField}
+        useLocalKnowledgeBase={useLocalKnowledgeBase}
       />
       {presetCarouselInject?.text?.trim() ? (
         <Button

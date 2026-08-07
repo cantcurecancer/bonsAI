@@ -12,12 +12,12 @@
     },
     {
       "path": "src/hooks/useBonsaiAskOrchestration.ts",
-      "lines": 1331,
+      "lines": 1332,
       "role": ""
     },
     {
       "path": "src/index.tsx",
-      "lines": 1316,
+      "lines": 1317,
       "role": "Plugin root: tabs, scoped CSS, RPC wiring, Settings"
     },
     {
@@ -131,6 +131,11 @@
       "role": "Load/save/merge settings.json"
     },
     {
+      "path": "src/components/MainTabPresetAnimatedChips.tsx",
+      "lines": 475,
+      "role": ""
+    },
+    {
       "path": "src/styles/sections/gamepadAndPullModels.ts",
       "lines": 470,
       "role": ""
@@ -138,11 +143,6 @@
     {
       "path": "py_modules/backend/services/knowledge_base_schema.py",
       "lines": 464,
-      "role": ""
-    },
-    {
-      "path": "src/components/MainTabPresetAnimatedChips.tsx",
-      "lines": 462,
       "role": ""
     },
     {

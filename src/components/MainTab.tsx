@@ -33,6 +33,7 @@ export type MainTabProps = {
   presetButtonSurface: React.CSSProperties;
   suggestedPrompts: PresetPrompt[];
   showPluginHelpChip: boolean;
+  useLocalKnowledgeBase?: boolean;
   onOpenPluginHelp: () => void;
   presetChipFadeAnimationEnabled?: boolean;
   presetChipAnimation?: "fade" | "carousel" | "static";
@@ -138,6 +139,7 @@ export function MainTab(props: MainTabProps) {
           <MainTabPresetRow
             suggestedPrompts={props.suggestedPrompts}
             showPluginHelpChip={props.showPluginHelpChip}
+            useLocalKnowledgeBase={props.useLocalKnowledgeBase}
             onOpenPluginHelp={props.onOpenPluginHelp}
             presetChipFadeAnimationEnabled={props.presetChipFadeAnimationEnabled}
             presetChipAnimation={props.presetChipAnimation}

@@ -937,6 +937,7 @@ const Content: React.FC = () => {
   const mainTab = useMainTabPayload({
     suggestedPrompts,
     showPluginHelpChip: !pluginHelpDismissed,
+    useLocalKnowledgeBase,
     onOpenPluginHelp: openPluginHelpModal,
     presetChipFadeAnimationEnabled,
     presetChipAnimation,

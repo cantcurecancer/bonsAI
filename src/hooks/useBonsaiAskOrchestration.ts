@@ -244,7 +244,7 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
     () => survivalPeek?.lastApplied ?? null
   );
   const [suggestedPrompts, setSuggestedPrompts] = useState<PresetPrompt[]>(
-    () => survivalPeek?.suggestedPrompts ?? getRandomPresets(3)
+    () => survivalPeek?.suggestedPrompts ?? getRandomPresets(3, { useLocalKnowledgeBase: a.useLocalKnowledgeBase }),
   );
   const ragCandidatesCacheRef = useRef<{ appId: string; candidates: SessionRagChipCandidate[] }>({
     appId: "",
@@ -307,10 +307,11 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
     async (mode: "random" | "contextual", category?: string, forceRefresh = false) => {
       const appId = Router.MainRunningApp?.appid?.toString() ?? "";
       const appName = Router.MainRunningApp?.display_name ?? "";
+      const samplerOptions = { useLocalKnowledgeBase: a.useLocalKnowledgeBase };
       const staticSeeds =
         mode === "contextual" && category
-          ? getContextualPresets(category, 3)
-          : getRandomPresets(3);
+          ? getContextualPresets(category, 3, samplerOptions)
+          : getRandomPresets(3, samplerOptions);
       if (!a.useLocalKnowledgeBase) {
         setSuggestedPrompts(staticSeeds);
         return;

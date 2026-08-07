@@ -99,6 +99,7 @@ export function useMainTabPayload({
   const {
     suggestedPrompts,
     showPluginHelpChip,
+    useLocalKnowledgeBase,
     onOpenPluginHelp,
     presetChipFadeAnimationEnabled,
     presetChipAnimation,
@@ -198,6 +199,7 @@ export function useMainTabPayload({
         presetButtonSurface={PRESET_BUTTON_SURFACE}
         suggestedPrompts={suggestedPrompts}
         showPluginHelpChip={showPluginHelpChip}
+        useLocalKnowledgeBase={useLocalKnowledgeBase}
         onOpenPluginHelp={onOpenPluginHelp}
         presetChipFadeAnimationEnabled={presetChipFadeAnimationEnabled}
         presetChipAnimation={presetChipAnimation}
@@ -299,6 +301,7 @@ export function useMainTabPayload({
     [
       suggestedPrompts,
       showPluginHelpChip,
+      useLocalKnowledgeBase,
       presetChipFadeAnimationEnabled,
       presetChipAnimation,
       unifiedInput,

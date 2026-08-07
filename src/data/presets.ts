@@ -33,6 +33,23 @@ export const TEMP_CAROUSEL_FROZEN_TEXTS: readonly [string, string, string] = [
   "When should I use Expert mode instead of Speed?",
 ] as const;
 
+/** Static seed nudging users to turn on the KB; excluded from sampling when the setting is on. */
+export const LOCAL_KNOWLEDGE_BASE_ADVICE_PRESET_TEXT =
+  "Enable local knowledge base for better game tips";
+
+export type PresetSamplerOptions = {
+  /**
+   * When true, KB-advice static seeds are excluded. Gates on `use_local_knowledge_base`
+   * only — corpus installed state is not visible on this path.
+   */
+  useLocalKnowledgeBase?: boolean;
+};
+
+function samplerPool(options?: PresetSamplerOptions): PresetPrompt[] {
+  if (!options?.useLocalKnowledgeBase) return PRESET_PROMPTS;
+  return PRESET_PROMPTS.filter((p) => p.text !== LOCAL_KNOWLEDGE_BASE_ADVICE_PRESET_TEXT);
+}
+
 const PRESET_PROMPTS: PresetPrompt[] = [
   // Shipped — advice-first questions (TDP/GPU guidance); action only for strong shipped surfaces.
   { text: "How can I optimize for battery life?", category: "battery" },
@@ -65,7 +82,7 @@ const PRESET_PROMPTS: PresetPrompt[] = [
   { text: "What do the model policy tiers mean?", category: "general" },
   { text: "Which Ollama model fits my Deck setup?", category: "general" },
   { text: "Which Ollama essentials should I pull for this Deck?", category: "general" },
-  { text: "Enable local knowledge base for better game tips", category: "general" },
+  { text: LOCAL_KNOWLEDGE_BASE_ADVICE_PRESET_TEXT, category: "general" },
   { text: "When should I use Expert mode instead of Speed?", category: "general", preferAskMode: "expert" },
   { text: "How do I set up voice input on the Deck?", category: "general" },
   { text: "How do I get past this part?", category: "strategy", preferAskMode: "strategy" },
@@ -160,9 +177,9 @@ function applyTempFrozenCarousel(picked: PresetPrompt[], count: number): PresetP
   return picked;
 }
 
-export function getRandomPresets(count: number): PresetPrompt[] {
+export function getRandomPresets(count: number, options?: PresetSamplerOptions): PresetPrompt[] {
   /** Shuffle and return a bounded random subset of starter prompts. */
-  const pool = [...PRESET_PROMPTS];
+  const pool = [...samplerPool(options)];
   for (let i = pool.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [pool[i], pool[j]] = [pool[j], pool[i]];
@@ -187,21 +204,30 @@ export function holdMsForPresetText(text: string): number {
  * Pick a random preset whose `text` is not in `exclude`.
  * If every prompt is excluded (unlikely), falls back to a random prompt from the full list.
  */
-export function getRandomPresetExcluding(exclude: Set<string>): PresetPrompt {
-  const candidates = PRESET_PROMPTS.filter((p) => !exclude.has(p.text));
-  const pool = candidates.length > 0 ? candidates : PRESET_PROMPTS;
+export function getRandomPresetExcluding(
+  exclude: Set<string>,
+  options?: PresetSamplerOptions,
+): PresetPrompt {
+  const base = samplerPool(options);
+  const candidates = base.filter((p) => !exclude.has(p.text));
+  const pool = candidates.length > 0 ? candidates : base;
   return pool[Math.floor(Math.random() * pool.length)]!;
 }
 
-export function getContextualPresets(lastCategory: string, count: number): PresetPrompt[] {
+export function getContextualPresets(
+  lastCategory: string,
+  count: number,
+  options?: PresetSamplerOptions,
+): PresetPrompt[] {
   /** Prioritize follow-up prompts related to the previous category, then backfill from remaining prompts. */
+  const pool = samplerPool(options);
   const related = FOLLOW_UP_CATEGORIES[lastCategory] ?? Object.keys(FOLLOW_UP_CATEGORIES);
   const picked: PresetPrompt[] = [];
   const used = new Set<string>();
 
   for (const cat of related) {
     if (picked.length >= count) break;
-    const candidates = PRESET_PROMPTS.filter((p) => p.category === cat && !used.has(p.text));
+    const candidates = pool.filter((p) => p.category === cat && !used.has(p.text));
     if (candidates.length === 0) continue;
     const choice = candidates[Math.floor(Math.random() * candidates.length)];
     picked.push(choice);
@@ -209,7 +235,7 @@ export function getContextualPresets(lastCategory: string, count: number): Prese
   }
 
   while (picked.length < count) {
-    const remaining = PRESET_PROMPTS.filter((p) => !used.has(p.text));
+    const remaining = pool.filter((p) => !used.has(p.text));
     if (remaining.length === 0) break;
     const choice = remaining[Math.floor(Math.random() * remaining.length)];
     picked.push(choice);

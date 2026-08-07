@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  LOCAL_KNOWLEDGE_BASE_ADVICE_PRESET_TEXT,
   TEMP_CAROUSEL_FROZEN_TEXTS,
   TEMP_PRESET_CAROUSEL_FROZEN,
   detectPromptCategory,
@@ -66,5 +67,21 @@ describe("presets", () => {
     const exclude = new Set(all.slice(0, all.length - 1));
     const one = getRandomPresetExcluding(exclude);
     expect(exclude.has(one.text)).toBe(false);
+  });
+
+  it("excludes KB-advice static seed when useLocalKnowledgeBase is on (all samplers)", () => {
+    for (let i = 0; i < 40; i++) {
+      const random = getRandomPresets(50, { useLocalKnowledgeBase: true });
+      expect(random.some((p) => p.text === LOCAL_KNOWLEDGE_BASE_ADVICE_PRESET_TEXT)).toBe(false);
+      const contextual = getContextualPresets("performance", 50, { useLocalKnowledgeBase: true });
+      expect(contextual.some((p) => p.text === LOCAL_KNOWLEDGE_BASE_ADVICE_PRESET_TEXT)).toBe(false);
+      const excluding = getRandomPresetExcluding(new Set(), { useLocalKnowledgeBase: true });
+      expect(excluding.text).not.toBe(LOCAL_KNOWLEDGE_BASE_ADVICE_PRESET_TEXT);
+    }
+  });
+
+  it("includes KB-advice static seed when useLocalKnowledgeBase is off", () => {
+    const all = getRandomPresets(50, { useLocalKnowledgeBase: false });
+    expect(all.some((p) => p.text === LOCAL_KNOWLEDGE_BASE_ADVICE_PRESET_TEXT)).toBe(true);
   });
 });
