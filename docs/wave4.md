@@ -6,10 +6,10 @@ Serialized focus/preset work landed in one worktree (`wave4-b9f60dca`) as three 
 
 | ID | Item | Type | Worktree path | Worktree commit | `experimental` commit |
 |----|------|------|---------------|-----------------|------------------------|
-| G | `onButtonDown` audit | Bug fix | `C:\Users\still\.cursor\worktrees\wave4-b9f60dca` | `9b270ab` | *(after cherry-pick)* |
-| H | Global `document` sweep (8 sites) | Bug fix | same | `88f000f` | *(after cherry-pick)* |
-| J | Stream preset chip animation | Feature | same | `b1ad573` | *(after cherry-pick)* |
-| - | This report | Docs | - | - | *(after cherry-pick)* |
+| G | `onButtonDown` audit | Bug fix | `C:\Users\still\.cursor\worktrees\wave4-b9f60dca` | `9b270ab` | `16e49db` |
+| H | Global `document` sweep (8 sites) | Bug fix | same | `88f000f` | `a619320` |
+| J | Stream preset chip animation | Feature | same | `b1ad573` | `a03b5f6` |
+| - | This report | Docs | - | - | `ef83cb5` |
 
 **Base:** `60b6d14` (`experimental` after Wave 3 results doc).
 
@@ -65,7 +65,7 @@ Serialized focus/preset work landed in one worktree (`wave4-b9f60dca`) as three 
 
 - **Order:** G → H → J (shared transcript / ask bar / preset chips).
 - **Conflicts expected:** Low — touch sets are mostly disjoint except `MainTabChatTranscript.tsx` / `MainTabPresetAnimatedChips.tsx` (serialized in worktree).
-- **Merge-back:** `git cherry-pick 9b270ab 88f000f b1ad573` (+ wave4.md commit) onto `experimental`.
+- **Merge-back:** Cherry-picked onto `experimental` as `16e49db` (G), `a619320` (H), `a03b5f6` (J), `ef83cb5` (this doc). Clean — no conflicts.
 
 ## Maintainer attention
 
