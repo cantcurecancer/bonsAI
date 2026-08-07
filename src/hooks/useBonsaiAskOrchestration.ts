@@ -32,6 +32,7 @@ import {
   scheduleStrategyChecklistSessionSave,
 } from "../utils/strategyChecklistPersistence";
 import { callDeckyWithTimeout, DECKY_RPC_TIMEOUT_MS, formatDeckyRpcError } from "../utils/deckyCall";
+import { uiActiveElement } from "../utils/uiDocument";
 import { useBackgroundGameAi } from "./useBackgroundGameAi";
 import type {
   AppendDesktopChatEventPayload,
@@ -794,8 +795,9 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
 
   const onAskOllama = useCallback(
     async (overrideQuestion?: string, opts?: { threadQuestionDisplay?: string }) => {
-      if (document.activeElement instanceof HTMLElement) {
-        document.activeElement.blur();
+      const active = uiActiveElement();
+      if (active) {
+        active.blur();
       }
       await new Promise((r) => setTimeout(r, 50));
 

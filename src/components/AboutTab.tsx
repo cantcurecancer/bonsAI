@@ -54,6 +54,7 @@ export const AboutTab: React.FC<Props> = ({
 }) => {
   const githubBtnHostRef = useRef<HTMLDivElement | null>(null);
   const paypalBtnHostRef = useRef<HTMLDivElement | null>(null);
+  const languageDropdownHostRef = useRef<HTMLDivElement | null>(null);
 
   const focusGithubBtn = () => {
     githubBtnHostRef.current?.focus();
@@ -85,6 +86,7 @@ export const AboutTab: React.FC<Props> = ({
         onReplyLanguageChange={onReplyLanguageChange}
         effectiveLang={effectiveLang}
         steamClientLanguageLabel={steamClientLanguageLabel}
+        dropdownHostRef={languageDropdownHostRef}
         onMoveUp={() => false}
         onMoveDown={focusGithubBtn}
       />
@@ -96,8 +98,7 @@ export const AboutTab: React.FC<Props> = ({
             style={{ width: "100%" }}
             {...deckNav({
               onMoveUp: () => {
-                const el = document.querySelector<HTMLElement>("[data-bonsai-about-language-dropdown='1']");
-                el?.focus();
+                languageDropdownHostRef.current?.focus();
                 return true;
               },
               onMoveDown: () => {

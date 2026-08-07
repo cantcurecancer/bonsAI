@@ -20,6 +20,7 @@ import {
   isOkDeckButtonEvent,
   isUpNavigationEvent,
 } from "../utils/focusNavigation";
+import { getUiDocument, uiActiveElement } from "../utils/uiDocument";
 import { formatAppliedTuningBannerText } from "../utils/appliedTuningText";
 import type { ModelPolicyDisclosurePayload } from "../data/modelPolicy";
 import { StrategyChecklistPanel } from "./StrategyChecklistPanel";
@@ -216,7 +217,7 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
   useEffect(() => {
     if (!expandedTurnKey) return;
     window.requestAnimationFrame(() => {
-      const header = document.querySelector(
+      const header = getUiDocument().querySelector(
         `[data-bonsai-turn-id="${expandedTurnKey}"]`
       ) as HTMLElement | null;
       header?.scrollIntoView?.({ block: "nearest", behavior: "auto" });
@@ -227,8 +228,8 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
     const col = chatMainColumnRef.current;
     if (!col) return;
     const onKeyDown = (ev: KeyboardEvent) => {
-      if (!col.contains(document.activeElement)) return;
-      const active = document.activeElement as HTMLElement | null;
+      const active = uiActiveElement();
+      if (!active || !col.contains(active)) return;
       const onAnswer = Boolean(active?.closest(".bonsai-chat-ai-bubble"));
       const inHeader = Boolean(active?.closest(".bonsai-chat-turn-row-header"));
       if (isDownNavigationEvent(ev)) {

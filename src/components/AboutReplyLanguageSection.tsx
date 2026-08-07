@@ -25,6 +25,7 @@ type Props = {
   steamClientLanguageLabel: string;
   onMoveUp?: () => boolean;
   onMoveDown?: () => boolean;
+  dropdownHostRef?: React.Ref<HTMLDivElement>;
 };
 
 export const AboutReplyLanguageSection: React.FC<Props> = ({
@@ -34,8 +35,9 @@ export const AboutReplyLanguageSection: React.FC<Props> = ({
   steamClientLanguageLabel,
   onMoveUp,
   onMoveDown,
+  dropdownHostRef,
 }) => {
-  const dropdownHostRef = useRef<HTMLDivElement | null>(null);
+  const dropdownHostRefLocal = useRef<HTMLDivElement | null>(null);
   const options = useMemo(() => buildReplyLanguageDropdownOptions(), []);
   // Decky Dropdown matches selectedOption against each option's `.data`, not the full option object.
   const selectedOption = replyLanguage;
@@ -54,7 +56,11 @@ export const AboutReplyLanguageSection: React.FC<Props> = ({
     <PanelSection title={sectionTitle}>
       <PanelSectionRow>
         <Focusable
-          ref={dropdownHostRef}
+          ref={(el: HTMLDivElement | null) => {
+            dropdownHostRefLocal.current = el;
+            if (typeof dropdownHostRef === "function") dropdownHostRef(el);
+            else if (dropdownHostRef) (dropdownHostRef as React.MutableRefObject<HTMLDivElement | null>).current = el;
+          }}
           style={{ width: "100%" }}
           data-bonsai-about-language-dropdown="1"
           {...deckNav({

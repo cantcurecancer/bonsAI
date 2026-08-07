@@ -92,6 +92,17 @@ Wave 4 G — confirm D-pad directions do not trigger A-only actions; direction h
 - [ ] Collapsed turn header: **Down** enters answer bubble (section walk)
 - [ ] Settings → UI scale manual profile bridge: **Left/Right** steps profile when focused on slider thumb
 
+### DOC-SWEEP-01 — global document realm fixes (P1)
+
+Wave 4 H — confirm each path works on-Deck (SharedJSContext vs QAM popup document).
+
+- [ ] Submit Ask: focused field blurs before send (keyboard focus does not stick mid-Ask)
+- [ ] Attachment row: **Right** from preview → remove button; **Left** back
+- [ ] Preset carousel: auto-advance pauses while a chip has D-pad focus
+- [ ] About → GitHub link: **Up** focuses reply-language dropdown
+- [ ] Settings/Ollama: **Up** at panel top returns to active tab strip
+- [ ] Expand collapsed history turn: header scrolls into view
+
 ### SMOKE-F — Deterministic commands (P2)
 
 - [ ] `bonsai:disable-sanitize` / `bonsai:enable-sanitize` — confirmation; no Ollama call

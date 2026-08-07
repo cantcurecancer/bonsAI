@@ -1,6 +1,7 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 
 import {
+  getFocusableWithin,
   isDeckDirectionDownEvent,
   isDeckDirectionLeftEvent,
   isDeckDirectionRightEvent,
@@ -9,6 +10,7 @@ import {
   isOkDeckButtonEvent,
   isUpDeckButtonEvent,
 } from "./focusNavigation";
+import { rememberUiDocument, resetUiDocument } from "./uiDocument";
 
 /**
  * The shape Decky actually delivers to `onButtonDown`: a `GamepadEvent`, which is a `CustomEvent`
@@ -101,5 +103,24 @@ describe("isDeckDirection*Event", () => {
   it("still accepts key-string fallbacks for tests and keyboard nav", () => {
     expect(isDeckDirectionDownEvent("ArrowDown")).toBe(true);
     expect(isDeckDirectionLeftEvent("ArrowLeft")).toBe(true);
+  });
+});
+
+describe("getFocusableWithin", () => {
+  beforeEach(() => {
+    resetUiDocument();
+  });
+
+  it("queries the remembered UI document, not the global shell", () => {
+    const doc = document.implementation.createHTMLDocument("qam");
+    const host = doc.createElement("div");
+    host.className = "bonsai-attachment-remove-target";
+    const btn = doc.createElement("button");
+    host.appendChild(btn);
+    doc.body.appendChild(host);
+    rememberUiDocument(host);
+
+    expect(getFocusableWithin(".bonsai-attachment-remove-target")).toBe(btn);
+    expect(document.querySelector(".bonsai-attachment-remove-target")).toBeNull();
   });
 });

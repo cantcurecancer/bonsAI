@@ -5,6 +5,7 @@
  * Solves: Reliable scroll targets inside Decky tab panels without assuming a single overflow ancestor.
  * Does not: Manage focus graph — see liveTurnFocusGraph and focusNavigation.
  */
+import { uiActiveElement } from "./uiDocument";
 /** QAM tab scroll container used by Decky plugin panels. */
 export function findTabContentsScroll(anchor: HTMLElement | null): HTMLElement | null {
   return anchor?.closest('[class*="TabContentsScroll"]') as HTMLElement | null;
@@ -77,7 +78,7 @@ export function tryScrollPanelFromAnchor(
 
 /** Scroll QAM panel from current focus; true when scroll position changed. */
 export function tryScrollPanelFromFocus(direction: "up" | "down", stepPx?: number): boolean {
-  return tryScrollPanelFromAnchor(document.activeElement as HTMLElement | null, direction, stepPx);
+  return tryScrollPanelFromAnchor(uiActiveElement(), direction, stepPx);
 }
 
 /** Step the plugin tab scroll area; returns true when scroll position changed. */

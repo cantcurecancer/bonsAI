@@ -27,6 +27,7 @@ import {
 } from "../features/preset-carousel/carouselState";
 import { BONSAI_FOREST_GREEN } from "../features/unified-input/constants";
 import { joinPresetWithRunningGame } from "../utils/joinPresetWithRunningGame";
+import { elementHasFocus } from "../utils/uiDocument";
 
 /** Fade-in duration (ms); must match the slot wrapper transition when opacity increases. */
 export const PRESET_CAROUSEL_FADE_IN_MS = 1000;
@@ -161,7 +162,7 @@ function MainTabPresetVerticalCarousel(
       }
       /* Never auto-advance while the user is browsing the carousel: focusIndex follows DOM
          focus, so moving it under the user would desync the white Steam ring from the blue row. */
-      if (verticalRef.current?.contains(document.activeElement)) {
+      if (elementHasFocus(verticalRef.current)) {
         timeoutId = window.setTimeout(tick, CAROUSEL_STEP_MS);
         return;
       }

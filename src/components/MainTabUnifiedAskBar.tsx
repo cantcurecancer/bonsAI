@@ -20,6 +20,7 @@ import {
   isLeftNavigationEvent,
   isRightNavigationEvent,
 } from "../utils/focusNavigation";
+import { uiActiveElement } from "../utils/uiDocument";
 import { formatBytes, toFileUri } from "../utils/mediaFormat";
 import type { AskAttachment } from "../types/bonsaiUi";
 import {
@@ -778,7 +779,7 @@ export function MainTabUnifiedAskBar(props: MainTabUnifiedAskBarProps) {
     <div
       className="bonsai-full-bleed-row"
       onKeyDownCapture={(ev: React.KeyboardEvent<HTMLDivElement>) => {
-        const activeEl = document.activeElement as HTMLElement | null;
+        const activeEl = uiActiveElement();
         const previewActive = Boolean(activeEl?.closest(".bonsai-attachment-preview-target"));
         const removeActive = Boolean(activeEl?.closest(".bonsai-attachment-remove-target"));
         if (isRightNavigationEvent(ev) && previewActive) {

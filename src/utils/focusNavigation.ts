@@ -5,6 +5,7 @@
  * Solves: Reliable left/right/up/down detection when Steam CEF leaves key empty or Unidentified.
  * Does not: Implement focus graphs — section parents wire onMove* using these predicates.
  */
+import { getUiDocument } from "./uiDocument";
 export function isRightNavigationKey(key: string): boolean {
   return key === "ArrowRight" || key === "Right" || key === "DPadRight" || key === "GamepadDPadRight";
 }
@@ -151,7 +152,7 @@ export function isDeckDirectionRightEvent(button: unknown): boolean {
 
 /** Find a visible focusable descendant to support controller-first keyboard navigation. */
 export function getFocusableWithin(selector: string): HTMLElement | null {
-  const root = document.querySelector(selector) as HTMLElement | null;
+  const root = getUiDocument().querySelector(selector) as HTMLElement | null;
   if (!root) return null;
   const candidate = root.matches("[tabindex],button,a,input,select,textarea")
     ? root

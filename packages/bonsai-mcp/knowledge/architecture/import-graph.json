@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
   "fileCount": 274,
-  "edgeCount": 643,
+  "edgeCount": 651,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -225,7 +225,8 @@
         "src/utils/liveTurnFocusGraph.ts",
         "src/utils/navFocusRegistry.ts",
         "src/utils/permissionDeepLink.ts",
-        "src/utils/troubleshootingAskHeuristic.ts"
+        "src/utils/troubleshootingAskHeuristic.ts",
+        "src/utils/uiDocument.ts"
       ],
       "importedBy": [
         "src/components/MainTab.tsx"
@@ -245,7 +246,8 @@
         "src/data/presets.ts",
         "src/features/preset-carousel/carouselState.ts",
         "src/features/unified-input/constants.ts",
-        "src/utils/joinPresetWithRunningGame.ts"
+        "src/utils/joinPresetWithRunningGame.ts",
+        "src/utils/uiDocument.ts"
       ],
       "importedBy": [
         "src/components/MainTabPresetAnimatedChips.test.tsx",
@@ -291,7 +293,8 @@
         "src/types/bonsaiUi.ts",
         "src/utils/focusNavigation.ts",
         "src/utils/mediaFormat.ts",
-        "src/utils/permissionDeepLink.ts"
+        "src/utils/permissionDeepLink.ts",
+        "src/utils/uiDocument.ts"
       ],
       "importedBy": [
         "src/components/MainTab.tsx"
@@ -1287,7 +1290,8 @@
         "src/utils/sessionRagChipCandidates.ts",
         "src/utils/strategyChecklist.ts",
         "src/utils/strategyChecklistPersistence.ts",
-        "src/utils/strategyGuideBranches.ts"
+        "src/utils/strategyGuideBranches.ts",
+        "src/utils/uiDocument.ts"
       ],
       "importedBy": [
         "src/hooks/useBonsaiAskOrchestration.test.ts",
@@ -2136,7 +2140,9 @@
       "importedBy": []
     },
     "src/utils/chatPanelScroll.ts": {
-      "imports": [],
+      "imports": [
+        "src/utils/uiDocument.ts"
+      ],
       "importedBy": [
         "src/hooks/useStreamScrollPin.ts",
         "src/utils/answerBubbleNavigation.ts",
@@ -2276,12 +2282,15 @@
     },
     "src/utils/focusNavigation.test.ts": {
       "imports": [
-        "src/utils/focusNavigation.ts"
+        "src/utils/focusNavigation.ts",
+        "src/utils/uiDocument.ts"
       ],
       "importedBy": []
     },
     "src/utils/focusNavigation.ts": {
-      "imports": [],
+      "imports": [
+        "src/utils/uiDocument.ts"
+      ],
       "importedBy": [
         "src/components/ContextChipLadder.tsx",
         "src/components/MainTabBonsaiAiMarkdownChunk.tsx",
@@ -2597,7 +2606,8 @@
     },
     "src/utils/settingsPanelScroll.ts": {
       "imports": [
-        "src/utils/chatPanelScroll.ts"
+        "src/utils/chatPanelScroll.ts",
+        "src/utils/uiDocument.ts"
       ],
       "importedBy": [
         "src/components/KnowledgeBaseSection.tsx",
@@ -2761,6 +2771,10 @@
     "src/utils/uiDocument.ts": {
       "imports": [],
       "importedBy": [
+        "src/components/MainTabChatTranscript.tsx",
+        "src/components/MainTabPresetAnimatedChips.tsx",
+        "src/components/MainTabUnifiedAskBar.tsx",
+        "src/hooks/useBonsaiAskOrchestration.ts",
         "src/utils/answerBubbleElRegistry.test.ts",
         "src/utils/answerBubbleElRegistry.ts",
         "src/utils/answerBubbleNavigation.test.ts",
@@ -2769,8 +2783,12 @@
         "src/utils/answerStopRegistry.ts",
         "src/utils/buildAnswerBubbleElement.tsx",
         "src/utils/buildReplyActionsElement.tsx",
+        "src/utils/chatPanelScroll.ts",
+        "src/utils/focusNavigation.test.ts",
+        "src/utils/focusNavigation.ts",
         "src/utils/liveTurnFocusGraph.ts",
         "src/utils/replyStopRegistry.ts",
+        "src/utils/settingsPanelScroll.ts",
         "src/utils/spoilerFenceRegistry.ts",
         "src/utils/uiDocument.test.ts"
       ]

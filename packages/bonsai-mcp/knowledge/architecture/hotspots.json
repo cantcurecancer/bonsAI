@@ -12,7 +12,7 @@
     },
     {
       "path": "src/hooks/useBonsaiAskOrchestration.ts",
-      "lines": 1332,
+      "lines": 1334,
       "role": ""
     },
     {
@@ -42,7 +42,7 @@
     },
     {
       "path": "src/components/MainTabUnifiedAskBar.tsx",
-      "lines": 1055,
+      "lines": 1056,
       "role": ""
     },
     {
@@ -62,7 +62,7 @@
     },
     {
       "path": "src/components/MainTabChatTranscript.tsx",
-      "lines": 739,
+      "lines": 740,
       "role": ""
     },
     {
@@ -132,7 +132,7 @@
     },
     {
       "path": "src/components/MainTabPresetAnimatedChips.tsx",
-      "lines": 475,
+      "lines": 476,
       "role": ""
     },
     {

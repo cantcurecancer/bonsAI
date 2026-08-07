@@ -6,6 +6,7 @@
  * Does not: Define per-row focus graphs — section parents list explicit focus stops.
  */
 import { findScrollablePanel, tryScrollPanelFromAnchor } from "./chatPanelScroll";
+import { getUiDocument } from "./uiDocument";
 
 /** Snap the tab scroll container to the top (reveals content directly under the LB/RB strip). */
 export function tryScrollPanelToTop(anchor: HTMLElement | null): boolean {
@@ -18,7 +19,7 @@ export function tryScrollPanelToTop(anchor: HTMLElement | null): boolean {
 
 /** Move focus to the active tab title in the LB/RB strip when scroll is already at top. */
 export function tryFocusActiveTabStrip(anchor: HTMLElement | null): boolean {
-  const scope = anchor?.closest(".bonsai-scope") ?? document.querySelector(".bonsai-scope");
+  const scope = anchor?.closest(".bonsai-scope") ?? getUiDocument().querySelector(".bonsai-scope");
   const activeTab = scope?.querySelector<HTMLElement>(
     '.bonsai-decky-tabs-root .Panel.Focusable.Active, .bonsai-decky-tabs-root .DialogButton.Active, .bonsai-decky-tabs-root .DialogButton.active',
   );
