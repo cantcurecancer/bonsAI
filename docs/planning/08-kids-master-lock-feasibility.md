@@ -13,9 +13,14 @@ Recommended v1 scope is option **A** (all five `CAPABILITY_KEYS` forced off,
 plus Web when it lands), which is behaviourally identical to option **D** and
 avoids the false promise baked into **B** and **C**.
 
-Implementation effort, separate from this research: **★★★** (roadmap currently
-says ★★★★★; that rating priced in "is there even a signal?", which this
-document closes).
+Implementation effort, separate from this research: **★★★**. The roadmap said
+★★★★★; that rating priced in "is there even a signal?", which this document
+closes. **Re-starred ★★★ and moved Medium-term → Near-term on 2026-08-07.**
+
+> **Ship plan: [14-kids-master-lock-implementation-plan.md](14-kids-master-lock-implementation-plan.md).**
+> This file stays the research record — edit the plan, not this, when scope moves.
+> The one thing the plan needs back from here is the **Stage 0 spike results**,
+> which get appended to [§ 6](#6-spike-steps-on-deck-before-any-implementation) below.
 
 ---
 

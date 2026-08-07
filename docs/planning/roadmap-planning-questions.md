@@ -15,7 +15,7 @@ Prepared prompts for a future AI planning session. Each section has a short summ
 | 5 | Token streaming evaluation | [05-token-streaming-review.md](05-token-streaming-review.md) |
 | 6 | Thinking blurbs evaluation | [06-thinking-blurbs-review.md](06-thinking-blurbs-review.md) |
 | 7 | Named chat slots | [07-named-chat-slots-postmortem.md](07-named-chat-slots-postmortem.md) |
-| 8 | Kids master lock feasibility | [08-kids-master-lock-feasibility.md](08-kids-master-lock-feasibility.md) |
+| 8 | Kids master lock feasibility | [08-kids-master-lock-feasibility.md](08-kids-master-lock-feasibility.md) → ship plan [14-kids-master-lock-implementation-plan.md](14-kids-master-lock-implementation-plan.md) |
 | 9 | Steam Frame companion UX feasibility | [09-steam-frame-companion-feasibility.md](09-steam-frame-companion-feasibility.md) |
 | 10 | Wake-word listening feasibility and cost | [10-wake-word-listening-feasibility.md](10-wake-word-listening-feasibility.md) |
 | 11 | Native QAM shortcut tile / decouple from Decky | [11-native-qam-tile-feasibility.md](11-native-qam-tile-feasibility.md) |

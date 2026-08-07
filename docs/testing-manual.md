@@ -113,7 +113,7 @@ BPM (Desktop → Big Picture → QAM → bonsAI). Ollama reachable.
 | **Voice STT** | VOICE-01…07 (mic required) |
 | **UI scale** | UI-SCALE-01…05 on handheld / dock / TV |
 | **Context ladder / micro-actions** | CONTEXT-LADDER-01…03; MICRO-01…05 (open bugs) |
-| **D-pad scroll** | D-PAD-SCROLL-02 (choppy Strategy scroll bug) |
+| **D-pad scroll / tabs** | D-PAD-SCROLL-02 (choppy Strategy scroll bug); TAB-SWITCH-01 (LB/RB strip shuffle) |
 | **Data clear** | DATA-CLEAR-01 (permissions/settings wipe survives reopen) |
 | **Reply language** | LANG-01…03 (**LANG-01** Follow system on load — code fix Jul 2026; on-Deck confirm) |
 
@@ -146,6 +146,7 @@ BPM (Desktop → Big Picture → QAM → bonsAI). Ollama reachable.
 - [ ] **ROUTING-FOCUS-01** Try-order modal D-pad + chrome match Pull Models / Character picker (deferred bug)
 - [ ] **TAB-RESUME-MODE-01** Developer → **Navigation → Tab to open on (D15)**: each stop changes where the *next* open lands — **A · Main** always Main, **B · Resume** the tab you left, **C · 5 min** the tab you left only within five minutes. Re-check the control after a reopen to confirm the choice persisted
 - [ ] **TAB-RESUME-FOCUS-01** D-pad the same row: Down from **On-screen debug HUD** reaches the three buttons, **Left/Right** moves between A/B/C, **Down** leaves the row for **App activity logging** below, **Up** returns to Diagnostics — no stop skipped and no button acting on a direction press
+- [ ] **TAB-SWITCH-01** LB/RB with focus **deep in a scrolled** Settings or Ollama panel: the content pane does not flash or jump, and the **icon strip does not shuffle or re-flow**. Then the two **no-op** presses — **LB on Main** (leftmost) and **RB on About** (rightmost): a press that cannot change tab must leave the strip completely still. Repeat both with focus parked **on the tab icons** (must also be clean). Re-scoped 2026-08-04: the severe whole-frame judder is gone and focus retention across a normal switch was confirmed working — the strip is the remaining symptom, and the no-op press is where it reproduces most reliably, so do not skip it. Recon + corrections: [planning/03-lbrb-tab-flicker.md](planning/03-lbrb-tab-flicker.md) § 9
 
 ---
 

@@ -388,3 +388,109 @@ single decidable question (§2 Probe P0) plus one strong mechanism (H1).
 
 D-PAD-SCROLL-02 (choppy Strategy answer scroll), MICRO-04 (live-turn graph).
 No fix implemented in this pass.
+
+---
+
+## 9. Corrections — 2026-08-07
+
+Sections 1–8 were written **2026-08-03 from static reading only**. Three later sources
+supersede parts of them. **Read this section before acting on anything above**, and re-derive any
+`file:line` before trusting it — `src/index.tsx` was 1709 lines when §1 was written and is 1314
+now, so most citations in the table are off.
+
+### 9.1 H1 is falsified, and F7/F8 with it
+
+[audit/decky-tab-strip-classes.md](../audit/decky-tab-strip-classes.md), **measured on device
+2026-08-04**: SteamOS never applies `.Active` or `.active` to the tab buttons. It marks the
+active one with a build-hashed CSS-module class (`_3Gp1bACHx__POxmy6Gd3kG`) that changes with
+every Steam client build.
+
+Every rule behind H1 is keyed on `.Active` — the dim ring, the bright ring, and both
+`drop-shadow` blocks. **They have never fired.** So:
+
+- **F7 and F8 describe dead CSS.** There is no dim→bright ring swap on a tab switch, because
+  there is no ring at all. The tab strip currently has **no working focus ring of its own**.
+- **H1's mechanism cannot happen**, and with it the §3 ranking's top entry and the §6
+  recommendation ("pin the active chip's ring to the bright state") both fall. Track A as
+  written suppresses a transition that does not exist.
+
+What *is* live on device, and is the better-founded successor to H1: the
+`.gpfocuswithin:not(.Active)` rule paints `#fcfcfc` on **all six glyphs at once**, because
+`:not(.Active)` is satisfied for every one of them and the `gpfocuswithin` container is a common
+ancestor. Glyph colour is therefore all-six-white while Steam has that class on the ancestor and
+all-six-grey the moment it does not. **This is a hypothesis, not a measurement** — see 9.4.
+
+Two further strip rules ([section-1.ts:154-155, 190-193](../../src/styles/sections/section-1.ts))
+use `:has()`, which **Deck CEF does not support**
+([section-8.ts:42-43](../../src/styles/sections/section-8.ts)); an unsupported selector in a
+comma-separated list drops the whole rule. They are dead for a second, independent reason. **Any
+new strip CSS must avoid `:has()`.**
+
+### 9.2 Probe P1 and Track B step 2 are no-ops on device
+
+[audit/decky-realms.md](../audit/decky-realms.md), **measured on device 2026-08-04**: plugin JS
+runs in SteamOS's `SharedJSContext`, whose `document` is a 14-element shell, while the QAM UI is
+rendered into a separate popup document. From plugin code, `document.querySelector('.bonsai-…')`
+is always null and `document.activeElement` is always that shell's `<body>`.
+
+- **Probe P1** ("log `document.activeElement` at switch time") would have logged the shell body
+  three times and proved nothing.
+- **Track B step 2** reads the scroll pane with
+  `document.querySelector('.bonsai-scope … [class*="TabContentsScroll"]')`. That returns null on
+  device, so the capture would silently store nothing and the feature would look like it worked
+  in preview and do nothing on the Deck.
+
+If Track B is ever revived, the pane must come from a **ref** (`bonsaiScopeRef.current`, then an
+element-scoped `.querySelector`) or from `getUiDocument()`
+([uiDocument.ts](../../src/utils/uiDocument.ts)). Note also that a cross-container focus move
+needs `TakeFocus` ([navFocusRegistry.ts](../../src/utils/navFocusRegistry.ts)), not `.focus()` —
+which is a further reason §5's "focus snapshot: no" call was right, for a reason it did not know.
+
+### 9.3 The bug itself was re-scoped on 2026-08-04
+
+Per [roadmap.md § Bugs](../roadmap.md#bugs), from a fresh on-Deck pass:
+
+- the **severe symptom is gone** — no whole-frame judder, none of the jarring effect that made
+  this ★★★ (it is ★★ now);
+- **focus retention across a normal LB/RB switch was confirmed working**;
+- what remains is the **tab icon strip looking busy and the icons shuffling**, most reproducibly
+  on **LB at the leftmost tab or RB at the rightmost** — a press that cannot change tab;
+- it was **not** caused by refactor step 8; `DECKY_TAB_TITLES` was not touched.
+
+Consequences for §7: repro rows 1–3 describe a symptom that no longer presents, and the matrix
+**omits the no-op press**, which is now the important case. The `scrollTop == 0` control (row 2)
+is still worth running, but as a check on whether scroll depth matters at all rather than as
+H1's falsifier.
+
+A no-op press is the sharpest clue in the whole file. `DECKY_TAB_TITLES` is a module-level const
+([tabTitles.tsx:50-57](../../src/features/plugin-shell/tabTitles.tsx)) and `setCurrentTab(sameId)`
+makes React bail out, so **bonsAI renders nothing at all on that press**. Anything that moves is
+either Steam's own carousel or our CSS reacting to a class Steam toggled.
+
+### 9.4 F10 is right about the effect bodies and incomplete about the pointer path
+
+F10 is correct that the layout hooks' `useLayoutEffect` bodies do not re-run on a tab change.
+But `pointerenter` / `pointermove` call `apply(SETTLE_MAX_ATTEMPTS)`
+([useTabStripBodyOffset.ts:86-91](../../src/hooks/useTabStripBodyOffset.ts)), and **at that
+attempt count the `stripStable` early-return at `:48-50` no longer guards** — the reserve is
+measured and written even from mid-carousel geometry. The Deck's right trackpad is a mouse, so a
+resting thumb generates `pointermove`. A press and a pointer event coinciding is a live path
+that §3's H5 dismissed as "narrow".
+
+### 9.5 What is measured and what is still guesswork
+
+**Measured:** `.Active` never matches (9.1); the realm split (9.2); the re-scoped symptom (9.3).
+
+**Not measured — every mechanism for the remaining symptom.** The colour-churn story in 9.1 is
+inferred from CSS plus a measurement taken for a different purpose; `decky-realms.md` observed
+`gpfocus` vanishing after a *programmatic cross-container `focus()`*, which is **not** the same
+event as a shoulder press. Whether "shuffle" is movement, repaint order, colour, or Steam's
+carousel is unknown, and the negative `TAB_TITLE_TAB_GAP_PX = -6`
+([constants.ts:94](../../src/features/unified-input/constants.ts)) means the 40px chips overlap
+their neighbours by 6px per side, so a stacking-order change could read as movement without
+anything moving.
+
+**Next step is a probe, not another fix attempt:** `scripts/probe_deck_tab_switch.py` samples
+every frame across a press and reports which of those changed. Its output maps to the fix tracks
+T1–T4 in the 2026-08-07 plan. On-Deck row: **TAB-SWITCH-01**
+([testing-manual.md](../testing-manual.md)).
