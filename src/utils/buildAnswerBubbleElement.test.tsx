@@ -1,7 +1,7 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { cleanup, render } from "@testing-library/react";
 
-import { buildAnswerBubbleElement } from "./buildAnswerBubbleElement";
+import { buildAnswerBubbleElement, stopNavProps } from "./buildAnswerBubbleElement";
 import { orderedAnswerStops, resetAnswerStopRegistry } from "./answerStopRegistry";
 import { registerAnswerBubbleEl } from "./answerBubbleElRegistry";
 import { splitResponseIntoChunks } from "./splitResponseIntoChunks";
@@ -92,6 +92,53 @@ describe("answer bubble section stops", () => {
     const stops = stopsIn(container);
     expect(stops).toHaveLength(2);
     expect(stops[1]!.className).toContain("bonsai-ai-response-chunk--stream-wait");
+  });
+
+  /*
+   * Decky hands `onButtonDown` a GamepadEvent, not a key string, and a stop's `onButtonDown` is its
+   * only direction handler. The string predicates the bubble uses alongside its own `onMoveDown`
+   * stringify to "[object Object]" and match nothing — wiring those here would have shipped a stop
+   * that looks correct and never moves. Same failure that made the spoiler fence reveal itself on a
+   * D-pad press (focusNavigation.ts:69-77).
+   */
+  describe("what a section does with a press", () => {
+    const gamepad = (button: number) => ({ type: "gamepadbuttondown", detail: { button } });
+    const DIR_UP = 9;
+    const DIR_DOWN = 10;
+    const OK = 1;
+
+    it("walks on a real gamepad direction event", () => {
+      const down = vi.fn(() => true);
+      const up = vi.fn(() => true);
+      const onButtonDown = stopNavProps(down, up).onButtonDown as (b: unknown) => boolean;
+
+      expect(onButtonDown(gamepad(DIR_DOWN))).toBe(true);
+      expect(down).toHaveBeenCalledTimes(1);
+
+      expect(onButtonDown(gamepad(DIR_UP))).toBe(true);
+      expect(up).toHaveBeenCalledTimes(1);
+    });
+
+    /* A on a section must not act — a spoiler wait chip is the section that makes this matter. */
+    it("ignores A", () => {
+      const down = vi.fn(() => true);
+      const up = vi.fn(() => true);
+      const onButtonDown = stopNavProps(down, up).onButtonDown as (b: unknown) => boolean;
+
+      expect(onButtonDown(gamepad(OK))).toBe(false);
+      expect(down).not.toHaveBeenCalled();
+      expect(up).not.toHaveBeenCalled();
+    });
+
+    /* Returning false is what lets the press fall through and leave the bubble at either end. */
+    it("reports the walk's own answer, so an exhausted walk yields", () => {
+      const onButtonDown = stopNavProps(
+        () => false,
+        () => false
+      ).onButtonDown as (b: unknown) => boolean;
+
+      expect(onButtonDown(gamepad(DIR_DOWN))).toBe(false);
+    });
   });
 
   it("drops every stop when the bubble unmounts", () => {

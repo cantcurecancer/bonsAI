@@ -23,6 +23,8 @@ import {
 import { registerAnswerStop } from "./answerStopRegistry";
 import { uiActiveElement } from "./uiDocument";
 import {
+  isDeckDirectionDownEvent,
+  isDeckDirectionUpEvent,
   isDownDeckButtonEvent,
   isUpDeckButtonEvent,
 } from "./focusNavigation";
@@ -66,21 +68,29 @@ const STOP_CLASS = "bonsai-ai-response-chunk bonsai-ai-response-chunk--in-bubble
  * Props every section stop carries.
  *
  * Once focus sits on a stop it is the stop, not the bubble, that receives the press, so each one has
- * to continue the walk. Both moves delegate to the bubble's own handlers rather than reimplementing
- * anything — the bubble stays the single owner of what Down and Up mean inside an answer.
+ * to continue the walk. Both directions delegate to the bubble's own handlers rather than
+ * reimplementing anything — the bubble stays the single owner of what Down and Up mean in an answer.
+ *
+ * `onButtonDown` is the sole direction handler here, which is why it uses the event-aware predicates
+ * rather than the string ones the bubble pairs with its `onMoveDown`. Two reasons, in order:
+ * `onButtonDown` fires on every Decky component for every button, where `onMoveUp`/`onMoveDown` are
+ * `Focusable`-only — and whether Steam routes a press to a *nested* Focusable's `onMove*` is the one
+ * thing about this design that is unproven on device. Wiring both would risk firing twice for one
+ * press, which is exactly what the string predicates exist to prevent.
  *
  * There is deliberately no `onActivate` behaviour beyond claiming the press: the wait chips are
  * status, not controls, and a press that early-revealed a spoiler mask from its holding chip would
  * defeat the point of masking it (STREAM-03).
  */
-function stopNavProps(moveDown: () => boolean, moveUp: () => boolean): Record<string, unknown> {
+export function stopNavProps(
+  moveDown: () => boolean,
+  moveUp: () => boolean
+): Record<string, unknown> {
   return {
-    onMoveDown: () => moveDown(),
-    onMoveUp: () => moveUp(),
     onActivate: () => {},
     onButtonDown: (button: unknown) => {
-      if (isDownDeckButtonEvent(button)) return moveDown();
-      if (isUpDeckButtonEvent(button)) return moveUp();
+      if (isDeckDirectionDownEvent(button)) return moveDown();
+      if (isDeckDirectionUpEvent(button)) return moveUp();
       return false;
     },
   };
