@@ -173,6 +173,25 @@ def _strategy_spoiler_policy_block(
         kb_entity_match=kb_entity_match,
         app_id=app_id,
     )
+    # Subtractive, not additive: when the addendum fires it must REPLACE the boss-name
+    # prohibition rather than argue with it in the same block. A 2B-class local model
+    # resolves a contradiction toward the prohibitive reading — fencing satisfies both
+    # instructions at once, so it is the cheaper error for the model to make.
+    if low_risk:
+        followup_avoid = "Avoid story endings, major twists, and precise puzzle solutions in plain text. "
+        first_turn_avoid = (
+            "Avoid story endings, major twists, and exact puzzle solutions in plain text unless "
+            "essential for branching.\n"
+        )
+    else:
+        followup_avoid = (
+            "Avoid story endings, major twists, and precise puzzle or boss spoilers in plain text. "
+        )
+        first_turn_avoid = (
+            "Avoid story endings, major twists, late-game boss names, and exact puzzle solutions in "
+            "plain text unless essential for branching; prefer vague labels until the player picks a "
+            "branch.\n"
+        )
     if consent:
         lines = (
             "STRATEGY SPOILER POLICY (user opted in): The user explicitly consented to spoilers for this turn "
@@ -191,7 +210,7 @@ def _strategy_spoiler_policy_block(
     if followup:
         return (
             "STRATEGY SPOILER POLICY (default): Coaching is spoiler-minimized unless the user opted in. "
-            "Avoid story endings, major twists, and precise puzzle or boss spoilers in plain text. "
+            f"{followup_avoid}"
             "Put spoilery narrative only inside ```bonsai-spoiler ... ``` fences "
             "(opening line exactly ```bonsai-spoiler, closing ``` on its own line). "
             "These fences may appear anywhere in this reply. "
@@ -201,8 +220,7 @@ def _strategy_spoiler_policy_block(
         )
     return (
         "STRATEGY SPOILER POLICY (default): Coaching is spoiler-minimized by default; say so briefly in your opening. "
-        "Avoid story endings, major twists, late-game boss names, and exact puzzle solutions in plain text unless "
-        "essential for branching; prefer vague labels until the player picks a branch.\n"
+        f"{first_turn_avoid}"
         "Put unavoidably spoilery detail only inside ```bonsai-spoiler ... ``` fences "
         "(opening line exactly ```bonsai-spoiler).\n"
         "On this first turn, every ```bonsai-spoiler block must appear **above** the opening ```bonsai-strategy-branches line; "
@@ -841,11 +859,24 @@ def build_system_prompt(
             character_roleplay_on=character_roleplay_on,
         )
     )
+    # Second of the three _strategy_low_risk_active call sites. The KB clause below is the most
+    # dangerous of the competing directives: it fires only when cards are attached — i.e. exactly
+    # when kb_entity_match is strongest — and it sits adjacent to the cards the model is grounding
+    # in, so it binds tightly to the text it is about to write.
+    strategy_low_risk = ask_mode == "strategy" and _strategy_low_risk_active(
+        app_id=app_id,
+        game_genres=strategy_spoiler_game_genres,
+        kb_entity_match=strategy_spoiler_kb_entity_match,
+    )
     early_stripped = (early_context_suffix or "").strip()
     early_block = f"\n\n{early_stripped}" if early_stripped else ""
     if early_stripped and "Local knowledge base" in early_stripped:
         early_block += (
             "\n\nKNOWLEDGE BASE (offline corpus): Ground answers in the attached strategy/compat "
+            "cards when relevant. Wrap source-backed claims in ```bonsai-cite ... ``` fences with "
+            "trust tier (wiki_verified / wiki_no_patch / fallback_no_source).\n"
+            if strategy_low_risk
+            else "\n\nKNOWLEDGE BASE (offline corpus): Ground answers in the attached strategy/compat "
             "cards when relevant. Wrap source-backed claims in ```bonsai-cite ... ``` fences with "
             "trust tier (wiki_verified / wiki_no_patch / fallback_no_source). "
             "Put spoilery walkthrough detail inside ```bonsai-spoiler``` when the user has not opted in.\n"
