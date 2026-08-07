@@ -77,7 +77,7 @@ export const BonsaiTreeTabIcon: React.FC<{ size?: number }> = ({ size = 14 }) =>
         strokeLinejoin="round"
       />
       <path
-        d="M12 14.5v3.2m-4.8 0h9.6l-1.1 2.3H8.3l-1.1-2.3Z"
+        d="M11.5 14.5v3.2m-4.8 0h9.6l-1.1 2.3H7.8l-1.1-2.3Z"
         stroke="currentColor"
         strokeWidth={size > 22 ? 1.02 : 0.95}
         strokeLinecap="round"
@@ -322,7 +322,7 @@ export const BonsaiSvgIcon: React.FC<{ size?: number }> = ({ size = 24 }) => {
         fill="currentColor"
       />
       <path
-        d="M12 14.5v3.2m-4.8 0h9.6l-1.1 2.3H8.3l-1.1-2.3Z"
+        d="M11.5 14.5v3.2m-4.8 0h9.6l-1.1 2.3H7.8l-1.1-2.3Z"
         stroke="currentColor"
         strokeWidth="1.2"
         strokeLinecap="round"
