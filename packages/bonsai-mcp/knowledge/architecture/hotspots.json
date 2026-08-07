@@ -26,13 +26,13 @@
       "role": ""
     },
     {
-      "path": "py_modules/backend/services/knowledge_base_service.py",
-      "lines": 1145,
+      "path": "py_modules/backend/services/ollama_prompts.py",
+      "lines": 1170,
       "role": ""
     },
     {
-      "path": "py_modules/backend/services/ollama_prompts.py",
-      "lines": 1114,
+      "path": "py_modules/backend/services/knowledge_base_service.py",
+      "lines": 1145,
       "role": ""
     },
     {

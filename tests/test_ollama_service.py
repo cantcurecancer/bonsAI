@@ -744,10 +744,10 @@ class OllamaServiceTests(unittest.TestCase):
         self.assertIn("STRATEGY SPOILER POLICY (user opted in)", prompt)
         self.assertNotIn("STRATEGY SPOILER POLICY (default)", prompt)
 
-    def _strategy_prompt_with_kb(self, app_id: str) -> str:
+    def _strategy_prompt_with_kb(self, app_id: str, asked_entity: str = "") -> str:
         """Strategy prompt carrying attached KB cards, which is what gates the KB spoiler clause."""
         return build_system_prompt(
-            question="How do I beat Glyphid Dreadnought?",
+            question="Where do I go next?",
             app_id=app_id,
             app_name="",
             normalized_attachments=[],
@@ -756,13 +756,17 @@ class OllamaServiceTests(unittest.TestCase):
             lookup_screenshot_vdf_metadata=lambda _path: {},
             ask_mode="strategy",
             early_context_suffix="--- Local knowledge base ---\nFocus the weak points.",
-            strategy_spoiler_asked_entity="Glyphid Dreadnought",
+            strategy_spoiler_asked_entity=asked_entity,
         )
 
     def test_build_system_prompt_low_risk_drops_kb_spoiler_clause(self):
         """The KB clause fires only when cards attach — exactly where over-fencing is worst."""
         prompt = self._strategy_prompt_with_kb("2321470")
         self.assertIn("KNOWLEDGE BASE (offline corpus)", prompt)
+        self.assertNotIn("Put spoilery walkthrough detail inside", prompt)
+
+    def test_build_system_prompt_named_entity_drops_kb_spoiler_clause(self):
+        prompt = self._strategy_prompt_with_kb("413150", asked_entity="King Dodongo")
         self.assertNotIn("Put spoilery walkthrough detail inside", prompt)
 
     def test_build_system_prompt_narrative_game_keeps_kb_spoiler_clause(self):
@@ -797,15 +801,18 @@ class OllamaServiceTests(unittest.TestCase):
         self.assertIn("do NOT wrap routine boss/enemy guidance", block)
 
     def test_strategy_spoiler_policy_story_game_keeps_default_fence(self):
+        """No named entity on a story title — the conservative default has to survive intact."""
         block = _strategy_spoiler_policy_block(
             False,
             False,
             game_genres="Adventure",
-            asked_entity="King Dodongo",
+            asked_entity="",
             kb_entity_match=False,
         )
         self.assertNotIn("LOW-SPOILER-RISK CONTEXT", block)
+        self.assertNotIn("NAMED-ENTITY CONSENT", block)
         self.assertIn("```bonsai-spoiler", block)
+        self.assertIn("late-game boss names", block)
 
     def test_strategy_spoiler_policy_low_risk_app_id_without_corpus_signals(self):
         """AppID alone must carry the signal: lookup_game_genres is empty with no KB corpus."""
@@ -841,10 +848,43 @@ class OllamaServiceTests(unittest.TestCase):
             False,
             False,
             game_genres="Adventure",
-            asked_entity="King Dodongo",
+            asked_entity="",
             kb_entity_match=False,
         )
         self.assertIn("late-game boss names", block)
+
+    def test_strategy_spoiler_policy_named_entity_alone_fires_on_story_title(self):
+        """spoiler-constitution rule 7: naming the boss is consent-in-fact for that boss.
+
+        Required ship-gate case from 04-strategy-spoiler-false-positive.md §7: empty genres,
+        no KB, no allowlisted AppID — the named entity alone has to carry the signal.
+        """
+        block = _strategy_spoiler_policy_block(
+            False,
+            False,
+            game_genres="",
+            asked_entity="Megaera",
+            kb_entity_match=False,
+            app_id="1145360",  # Hades — narrative roguelike
+        )
+        self.assertIn("NAMED-ENTITY CONSENT", block)
+        self.assertIn("Megaera", block)
+
+    def test_strategy_spoiler_policy_named_entity_does_not_relax_the_rest(self):
+        """The genre over-relax guard: consent is scoped to the named thing, nothing else."""
+        block = _strategy_spoiler_policy_block(
+            False,
+            False,
+            game_genres="",
+            asked_entity="Megaera",
+            kb_entity_match=False,
+            app_id="1145360",
+        )
+        # Not the title-level wording — that would license every other Hades boss.
+        self.assertNotIn("LOW-SPOILER-RISK CONTEXT", block)
+        self.assertIn("keeps the default spoiler treatment", block)
+        # The boss prohibition stays, carved out for the named entity only.
+        self.assertIn("late-game boss names other than", block)
 
     def test_strategy_spoiler_policy_low_risk_followup_drops_boss_clause(self):
         low = _strategy_spoiler_policy_block(
@@ -858,16 +898,18 @@ class OllamaServiceTests(unittest.TestCase):
         self.assertNotIn("boss spoilers", low)
         self.assertIn("story endings", low)
 
-    def test_strategy_spoiler_policy_narrative_app_id_stays_fenced(self):
+    def test_strategy_spoiler_policy_narrative_app_id_without_entity_stays_fenced(self):
+        """An unnamed ask on OoT gets neither arm — no AppID entry, no genres, no entity."""
         block = _strategy_spoiler_policy_block(
             False,
             False,
             game_genres="",
-            asked_entity="King Dodongo",
+            asked_entity="",
             kb_entity_match=False,
             app_id="413150",
         )
         self.assertNotIn("LOW-SPOILER-RISK CONTEXT", block)
+        self.assertNotIn("NAMED-ENTITY CONSENT", block)
         self.assertIn("```bonsai-spoiler", block)
 
     def _verbosity_lookup_helpers(self):

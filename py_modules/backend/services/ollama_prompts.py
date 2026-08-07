@@ -67,13 +67,13 @@ def _game_genres_are_low_spoiler_risk(genres: str) -> bool:
     return any(marker in g for marker in _BULLET_HEAVEN_GENRE_MARKERS)
 
 
-def _strategy_low_risk_active(
+def _strategy_title_is_low_spoiler_risk(
     *,
     app_id: str = "",
     game_genres: str = "",
     kb_entity_match: bool = False,
 ) -> bool:
-    """True when named bosses/enemies in this title are routine gameplay, not story spoilers.
+    """True when this *title* treats named bosses/enemies as routine gameplay, not story spoilers.
 
     The AppID arm exists because the genre arm reads `games.genres` out of the KB corpus
     (lookup_game_genres), so it is silently unavailable on a Deck with no corpus installed —
@@ -83,6 +83,29 @@ def _strategy_low_risk_active(
         str(app_id or "").strip() in LOW_SPOILER_RISK_APP_IDS
         or _game_genres_are_low_spoiler_risk(game_genres)
         or bool(kb_entity_match)
+    )
+
+
+def _strategy_low_risk_active(
+    *,
+    app_id: str = "",
+    game_genres: str = "",
+    kb_entity_match: bool = False,
+    asked_entity: str = "",
+) -> bool:
+    """True when some signal says this turn's boss/enemy guidance should stay in plain text.
+
+    Two different signals, deliberately kept distinct downstream (see the addendum):
+
+    - **Title-level** — the game itself has no progressive story secrets. Relaxes the whole reply.
+    - **Named entity** — the user named the beat, which is consent-in-fact for *that thing only*
+      (spoiler-constitution.md rule 7). It relaxes nothing else, so it holds on story titles too:
+      asking "how do I beat Megaera" gets tactics, while Hades' adjacent secrets stay fenced.
+    """
+    return bool(asked_entity.strip()) or _strategy_title_is_low_spoiler_risk(
+        app_id=app_id,
+        game_genres=game_genres,
+        kb_entity_match=kb_entity_match,
     )
 
 
@@ -125,19 +148,31 @@ def _strategy_spoiler_low_risk_addendum(
     app_id: str = "",
 ) -> str:
     """Extra policy when boss/enemy tactics are routine gameplay, not narrative spoilers."""
-    if not _strategy_low_risk_active(
+    title_low_risk = _strategy_title_is_low_spoiler_risk(
         app_id=app_id,
         game_genres=game_genres,
         kb_entity_match=kb_entity_match,
-    ):
+    )
+    entity = (asked_entity or "").strip()
+    if not title_low_risk and not entity:
         return ""
+    if not title_low_risk:
+        # Named-entity consent only. Scoped hard to the thing the user named: this arm fires on
+        # story titles, where relaxing anything else would spoil the game we are trying to protect.
+        return (
+            f"NAMED-ENTITY CONSENT: The user asked about “{entity}” by name, so they have already "
+            "chosen to know about it. Keep direct tactics for that entity in plain text — do NOT wrap "
+            "them in ```bonsai-spoiler``` fences.\n"
+            "This applies to that entity ONLY. Everything the user did not name — story beats, later "
+            "areas, adjacent secrets, endings, and other bosses — keeps the default spoiler treatment.\n\n"
+        )
     lines = [
         "LOW-SPOILER-RISK CONTEXT: This title treats named bosses/enemies/waves as routine gameplay beats, "
         "not story spoilers.",
     ]
-    if asked_entity:
+    if entity:
         lines.append(
-            f"The user asked about “{asked_entity}”. Keep direct tactics for that entity in plain text; "
+            f"The user asked about “{entity}”. Keep direct tactics for that entity in plain text; "
             "do NOT wrap routine boss/enemy guidance in ```bonsai-spoiler``` fences."
         )
     elif kb_entity_match:
@@ -177,11 +212,31 @@ def _strategy_spoiler_policy_block(
     # prohibition rather than argue with it in the same block. A 2B-class local model
     # resolves a contradiction toward the prohibitive reading — fencing satisfies both
     # instructions at once, so it is the cheaper error for the model to make.
-    if low_risk:
+    #
+    # Three states, not two. Named-entity consent on a *story* title must carve out only the
+    # entity the user named; dropping the boss clause wholesale there would relax every other
+    # boss in the game, which is the over-relax failure the Hades row guards against.
+    title_low_risk = _strategy_title_is_low_spoiler_risk(
+        app_id=app_id,
+        game_genres=game_genres,
+        kb_entity_match=kb_entity_match,
+    )
+    entity = (asked_entity or "").strip()
+    if title_low_risk:
         followup_avoid = "Avoid story endings, major twists, and precise puzzle solutions in plain text. "
         first_turn_avoid = (
             "Avoid story endings, major twists, and exact puzzle solutions in plain text unless "
             "essential for branching.\n"
+        )
+    elif entity:
+        followup_avoid = (
+            "Avoid story endings, major twists, and precise puzzle or boss spoilers in plain text — "
+            f"except for “{entity}”, which the user named and asked about directly. "
+        )
+        first_turn_avoid = (
+            f"Avoid story endings, major twists, late-game boss names other than “{entity}”, and exact "
+            "puzzle solutions in plain text unless essential for branching; prefer vague labels until "
+            "the player picks a branch.\n"
         )
     else:
         followup_avoid = (
@@ -867,6 +922,7 @@ def build_system_prompt(
         app_id=app_id,
         game_genres=strategy_spoiler_game_genres,
         kb_entity_match=strategy_spoiler_kb_entity_match,
+        asked_entity=strategy_spoiler_asked_entity,
     )
     early_stripped = (early_context_suffix or "").strip()
     early_block = f"\n\n{early_stripped}" if early_stripped else ""
