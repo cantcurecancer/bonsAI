@@ -4,18 +4,19 @@ Four parallel implementation workers landed in the shared workspace. This report
 
 ## Scope
 
-| ID | Item | Type |
-|----|------|------|
-| A | Thinking blurb emoji styling | Bug fix |
-| B | Voice ready / reinstall affordance | Bug fix |
-| D | Bonsai icon trunk/pot geometry | Bug fix |
-| L | Preset chip expansion (four prompts) | Incremental content ship |
+| ID | Item | Type | Commit |
+|----|------|------|--------|
+| A | Thinking blurb emoji styling | Bug fix | `e05637c` |
+| B | Voice ready / reinstall affordance | Bug fix | `e4fb6fa` |
+| D | Bonsai icon trunk/pot geometry | Bug fix | `8469f14` |
+| L | Preset chip expansion (four prompts) | Incremental content ship | `c1fe1e7` |
+| — | Docs (this report + roadmap/testing) | Docs | `68f2ae7` |
 
 No shared files between items — clean composition, no integration defects found.
 
 ## Per-item implementation
 
-### A — Thinking blurb emoji styling
+### A — Thinking blurb emoji styling (`e05637c`)
 
 **Problem:** Parent-row `fontStyle: italic` on the live Ask thinking line slanted emoji-only and inline-emoji blurbs.
 
@@ -28,7 +29,7 @@ No shared files between items — clean composition, no integration defects foun
 
 **On-Deck QA:** **THINKING-EMOJI-01** — emoji-only and mixed emoji/prose blurbs during a live Ask.
 
-### B — Voice ready / reinstall
+### B — Voice ready / reinstall (`e4fb6fa`)
 
 **Problem:** Settings → Voice input showed **Install voice engine** (disabled when `ready`) even when `binary_ready` and `model_ready` were both true.
 
@@ -41,7 +42,7 @@ No shared files between items — clean composition, no integration defects foun
 
 **Focus graph:** One existing button in an existing `PanelSection` — no new focus owner.
 
-### D — Bonsai icon geometry
+### D — Bonsai icon geometry (`8469f14`)
 
 **Problem:** Trunk/pot path centered at x=12.0 while canopy bbox center is 11.5 (both `BonsaiTreeTabIcon` and `BonsaiSvgIcon`).
 
@@ -52,7 +53,7 @@ No shared files between items — clean composition, no integration defects foun
 
 **On-Deck QA:** **BONSAI-ICON-GEOM-01** — tab strip icon (36px) and plugin-list icon (26px); watch for whole glyph appearing half-unit left and canopy ink asymmetry (canopy lobes are internally asymmetric).
 
-### L — Preset chip expansion
+### L — Preset chip expansion (`c1fe1e7`)
 
 **Shipped prompts** (`src/data/presets.ts`):
 - `How do I use Find LAN on the Ollama tab?` (ollama)
@@ -69,6 +70,8 @@ No shared files between items — clean composition, no integration defects foun
 **On-Deck QA:** **PRESET-EXPAND-W1-01** — chips appear in carousel; chip → Ask inject; streaming prompts marked beta.
 
 ## Combined verification (integration owner)
+
+**Commits (implementation order):** `e05637c` → `e4fb6fa` → `8469f14` → `c1fe1e7` → `68f2ae7` (docs).
 
 **Git working tree (Wave 1 only):**
 - Modified: `MainTabChatTranscript.tsx`, `VoiceInputSettingsSection.tsx`, `icons.tsx`, `presets.ts`, `presets.test.ts`
