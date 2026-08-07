@@ -37,15 +37,28 @@ export function buildSection5Section(): string {
           overflow: hidden !important;
         }
 
-        .bonsai-scope .bonsai-unified-input-host.bonsai-unified-input--ai-character textarea,
-        .bonsai-scope .bonsai-unified-input-host.bonsai-unified-input--ai-character input {
-          padding-left: 26px !important;
+        /* Avatar sits in a flex column beside the text box — not inside the field — so the native caret aligns with typed text. */
+        .bonsai-scope .bonsai-unified-input-text-row {
+          display: flex;
+          flex-direction: row;
+          align-items: flex-start;
+          width: 100%;
+          box-sizing: border-box;
         }
-
-        .bonsai-scope .bonsai-unified-input-host.bonsai-unified-input--ai-character .bonsai-unified-input-measure,
-        .bonsai-scope .bonsai-unified-input-host.bonsai-unified-input--ai-character .bonsai-unified-input-text-overlay {
-          padding-left: 26px !important;
-          box-sizing: border-box !important;
+        .bonsai-scope .bonsai-ai-character-avatar-slot {
+          position: relative;
+          flex: 0 0 auto;
+          width: 18px;
+          height: 18px;
+          margin: 2px 4px 0 2px;
+          z-index: 6;
+        }
+        .bonsai-scope .bonsai-unified-input-text-box {
+          position: relative;
+          flex: 1 1 auto;
+          min-width: 0;
+          width: 100%;
+          box-sizing: border-box;
         }
 
         .bonsai-scope .bonsai-ai-character-avatar {

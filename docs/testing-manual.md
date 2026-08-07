@@ -132,6 +132,7 @@ BPM (Desktop → Big Picture → QAM → bonsAI). Ollama reachable.
 
 - [ ] **PRESET-GAME-01** With a game running, tap a preset chip — Ask field shows chip text only (no `— {Game}` append; “this game” unchanged)
 - [ ] **STRATEGY-PLACEHOLDER-01** Strategy mode, empty Ask — focus field; italic placeholder does not shift when fake caret appears
+- [ ] **ASK-CARET-CHAR-01** AI character on — focus empty Ask field; native caret aligns with placeholder/text (not left of `?` badge); D-pad Up from paperclip → avatar, Right → field; character-off path unchanged
 - [ ] **CONTEXT-LADDER-01** Live turn Show details reveals inline chip ladder
 - [ ] **CONTEXT-LADDER-03** D-pad: Show details / Retry **Down** → ladder focus (not session strip skip); **Left/Right** cycles chips; all chips visible when ≤6; **Up** from first chip → utility row; **Down** from last chip → session strip; **Developer details** chip reachable
 - [ ] **MICRO-04** Strategy live-turn D-pad: branches → feedback → utilities

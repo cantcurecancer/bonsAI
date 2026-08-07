@@ -213,38 +213,8 @@ export function MainTabUnifiedAskBar(props: MainTabUnifiedAskBarProps) {
     return () => scope.classList.remove("bonsai-ask-menu-open-scope");
   }, [askModeMenuOpen, attachMenuOpen, unifiedInputHostRef]);
 
-  return (
+  const unifiedTextFieldBody = (
     <>
-<PanelSectionRow>
-  <div
-    ref={unifiedInputHostRef}
-    className={
-      "bonsai-unified-input-host bonsai-glass-panel bonsai-full-bleed-row" +
-      (aiCharacterPadClass ? " bonsai-unified-input--ai-character" : "") +
-      (isAsking ? " bonsai-unified-input--asking" : "") +
-      (isCapturingScreenshot ? " bonsai-unified-input--capturing" : "") +
-      (askModeMenuOpen ? " bonsai-ask-mode-menu-open" : "") +
-      (attachMenuOpen ? " bonsai-attach-menu-open" : "")
-    }
-    style={{
-      ...fullBleedRowStyle,
-      "--bonsai-ask-mode-accent": ASK_MODE_ACCENT[askMode],
-      "--bonsai-ask-mode-fill": ASK_MODE_FILL[askMode],
-      "--bonsai-ask-breathe-low": ASK_MODE_ACCENT_BREATHE_LOW[askMode],
-      "--bonsai-ask-breathe-high": ASK_MODE_ACCENT_BREATHE_HIGH[askMode],
-      "--bonsai-ask-glow-low": ASK_MODE_ACCENT_GLOW_LOW[askMode],
-      "--bonsai-ask-glow-high": ASK_MODE_ACCENT_GLOW_HIGH[askMode],
-    } as React.CSSProperties}
-  >
-    <div
-      ref={unifiedInputFieldLayerRef}
-      style={{
-        position: "relative",
-        width: "100%",
-        minHeight: unifiedInputSurfacePx + UNIFIED_INPUT_ICON_STRIP_PX,
-        overflow: askModeMenuOpen || attachMenuOpen ? "visible" : undefined,
-      }}
-    >
       <div
         ref={unifiedInputMeasureRef}
         className="bonsai-unified-input-measure"
@@ -261,77 +231,6 @@ export function MainTabUnifiedAskBar(props: MainTabUnifiedAskBarProps) {
       >
         {unifiedInput || "\u00a0"}
       </div>
-      {showAiCharacterChrome && (
-        <div
-          style={{ position: "absolute", top: 2, left: 2, zIndex: 6, width: 18, height: 18 }}
-          onKeyDownCapture={(ev) => {
-            if (!isRightNavigationEvent(ev)) return;
-            if (!(ev.target as HTMLElement).closest?.(".bonsai-ai-character-avatar")) return;
-            ev.preventDefault();
-            ev.stopPropagation();
-            focusUnifiedTextField();
-          }}
-        >
-          <Focusable
-            className="bonsai-ai-character-avatar"
-            aria-label={
-              aiCharacterAvatarBadgeLetter
-                ? `Choose AI character, ${aiCharacterAvatarBadgeLetter}`
-                : "Choose AI character"
-            }
-            {...avatarDeckNavHandlers}
-            onClick={() => onOpenCharacterPicker?.()}
-            onActivate={() => {
-              onOpenCharacterPicker?.();
-            }}
-            style={{
-              width: "100%",
-              height: "100%",
-              minWidth: 18,
-              minHeight: 18,
-              margin: 0,
-              padding: 0,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              borderRadius: 4,
-              border: "none",
-              outline: "none",
-              background: "transparent",
-              boxShadow: "none",
-              backdropFilter: "none",
-              boxSizing: "border-box",
-            }}
-          >
-            <CharacterRoleplayEmoticon
-              key={aiCharacterAvatarPresetId ?? "__custom__"}
-              presetId={aiCharacterAvatarPresetId ?? "__custom__"}
-              size={18}
-              badgeLetter={aiCharacterAvatarBadgeLetter}
-            />
-          </Focusable>
-        </div>
-      )}
-      {showAiCharacterChrome && aiCharacterDebugLine ? (
-        <div
-          className="bonsai-ai-character-debug"
-          style={{
-            position: "absolute",
-            left: -5,
-            top: 16,
-            zIndex: 6,
-            maxWidth: "min(100vw - 48px, 280px)",
-            fontSize: 9,
-            lineHeight: 1.15,
-            color: "rgba(160, 220, 180, 0.95)",
-            wordBreak: "break-word",
-            pointerEvents: "none",
-            fontFamily: "monospace",
-          }}
-        >
-          {aiCharacterDebugLine}
-        </div>
-      ) : null}
       <TextField
         label=""
         value={unifiedInput}
@@ -422,6 +321,119 @@ export function MainTabUnifiedAskBar(props: MainTabUnifiedAskBarProps) {
             </>
           )}
         </div>
+      )}
+    </>
+  );
+
+  return (
+    <>
+<PanelSectionRow>
+  <div
+    ref={unifiedInputHostRef}
+    className={
+      "bonsai-unified-input-host bonsai-glass-panel bonsai-full-bleed-row" +
+      (aiCharacterPadClass ? " bonsai-unified-input--ai-character" : "") +
+      (isAsking ? " bonsai-unified-input--asking" : "") +
+      (isCapturingScreenshot ? " bonsai-unified-input--capturing" : "") +
+      (askModeMenuOpen ? " bonsai-ask-mode-menu-open" : "") +
+      (attachMenuOpen ? " bonsai-attach-menu-open" : "")
+    }
+    style={{
+      ...fullBleedRowStyle,
+      "--bonsai-ask-mode-accent": ASK_MODE_ACCENT[askMode],
+      "--bonsai-ask-mode-fill": ASK_MODE_FILL[askMode],
+      "--bonsai-ask-breathe-low": ASK_MODE_ACCENT_BREATHE_LOW[askMode],
+      "--bonsai-ask-breathe-high": ASK_MODE_ACCENT_BREATHE_HIGH[askMode],
+      "--bonsai-ask-glow-low": ASK_MODE_ACCENT_GLOW_LOW[askMode],
+      "--bonsai-ask-glow-high": ASK_MODE_ACCENT_GLOW_HIGH[askMode],
+    } as React.CSSProperties}
+  >
+    <div
+      ref={unifiedInputFieldLayerRef}
+      style={{
+        position: "relative",
+        width: "100%",
+        minHeight: unifiedInputSurfacePx + UNIFIED_INPUT_ICON_STRIP_PX,
+        overflow: askModeMenuOpen || attachMenuOpen ? "visible" : undefined,
+      }}
+    >
+      {showAiCharacterChrome ? (
+        <div className="bonsai-unified-input-text-row">
+          <div
+            className="bonsai-ai-character-avatar-slot"
+            onKeyDownCapture={(ev) => {
+              if (!isRightNavigationEvent(ev)) return;
+              if (!(ev.target as HTMLElement).closest?.(".bonsai-ai-character-avatar")) return;
+              ev.preventDefault();
+              ev.stopPropagation();
+              focusUnifiedTextField();
+            }}
+          >
+            <Focusable
+              className="bonsai-ai-character-avatar"
+              aria-label={
+                aiCharacterAvatarBadgeLetter
+                  ? `Choose AI character, ${aiCharacterAvatarBadgeLetter}`
+                  : "Choose AI character"
+              }
+              {...avatarDeckNavHandlers}
+              onClick={() => onOpenCharacterPicker?.()}
+              onActivate={() => {
+                onOpenCharacterPicker?.();
+              }}
+              style={{
+                width: "100%",
+                height: "100%",
+                minWidth: 18,
+                minHeight: 18,
+                margin: 0,
+                padding: 0,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                borderRadius: 4,
+                border: "none",
+                outline: "none",
+                background: "transparent",
+                boxShadow: "none",
+                backdropFilter: "none",
+                boxSizing: "border-box",
+              }}
+            >
+              <CharacterRoleplayEmoticon
+                key={aiCharacterAvatarPresetId ?? "__custom__"}
+                presetId={aiCharacterAvatarPresetId ?? "__custom__"}
+                size={18}
+                badgeLetter={aiCharacterAvatarBadgeLetter}
+              />
+            </Focusable>
+            {aiCharacterDebugLine ? (
+              <div
+                className="bonsai-ai-character-debug"
+                style={{
+                  position: "absolute",
+                  left: -5,
+                  top: 16,
+                  zIndex: 6,
+                  maxWidth: "min(100vw - 48px, 280px)",
+                  fontSize: 9,
+                  lineHeight: 1.15,
+                  color: "rgba(160, 220, 180, 0.95)",
+                  wordBreak: "break-word",
+                  pointerEvents: "none",
+                  fontFamily: "monospace",
+                }}
+              >
+                {aiCharacterDebugLine}
+              </div>
+            ) : null}
+          </div>
+          <div className="bonsai-unified-input-text-box">
+            {unifiedTextFieldBody}
+          </div>
+        </div>
+      ) : (
+        unifiedTextFieldBody
       )}
       <div
         ref={attachActionHostRef}
