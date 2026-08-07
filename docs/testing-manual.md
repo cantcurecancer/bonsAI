@@ -105,7 +105,7 @@ BPM (Desktop → Big Picture → QAM → bonsAI). Ollama reachable.
 | **VAC matrix** | VAC-02…06 below (preview PASS; on-Deck still in QA backlog) |
 | **Proton logs** | PROTON-LOG-01…03 — auto-attach when **Read game & screenshot context** is on (troubleshooting Ask + AppID) |
 | **Permissions cleanup** | PERMS-CLEAN-01…06 — About/Steam links no gate; no Open web links / Adjust power limits toggles; no journal / intent-pack / Response verification UI; troubleshoot hint dismissible |
-| **Token streaming** | STREAM-01…05 spot; Strategy spoiler stream if flag on |
+| **Token streaming** | STREAM-01…05 spot; Strategy spoiler stream if flag on. **After Phase A (2026-08-07):** re-run STREAM-01/02 (P2/P3 changed the flag-off path), and STOP-PARTIAL-01 with real streamed text — Stop must keep the drafted answer under a *"Stopped — partial answer kept."* line, and must return the question to the ask field when nothing readable had arrived |
 | **Strategy depth** | Spoiler policy, checklist persist, cheat gating |
 | **KB** | KB-SMOKE-03, 05–10; KB-EVAL-01 before Phase 6 |
 | **Character / Pyro** | One preset Ask; Pyro easter egg if touching character |

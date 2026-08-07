@@ -1,10 +1,16 @@
 # 05 — Token streaming: architecture review, risks, ship readiness
 
-Status: **analysis only, no fix implemented.** Answers `docs/planning/roadmap-planning-questions.md` § 5.
+Status: **Phase A implemented 2026-08-07** (P1–P5); Phase B (multi-stop navigation) not started.
 Written 2026-08-03 from static reading of `main.py`, `py_modules/backend/services/`, `src/`.
-No on-Deck run backs this document. Every claim is a `file:line` citation or marked **UNKNOWN**.
+Every claim is a `file:line` citation or marked **UNKNOWN**.
 
 Feature shipped 2026-07-15 as **Token streaming (experimental)**, Developer tab, default off.
+
+> **Read §4.1 and R3 before trusting §1–§3.** Two load-bearing claims were corrected on 2026-08-07
+> against the live tree: the backend never discarded the stopped draft (the frontend did), and the
+> reveal was measured *smooth* on Deck rather than chunky. **Every `main.py` line number in §1 is
+> ~85–90 lines high** — that file shrank during step 12, and these citations were taken before it.
+> The `src/` and `py_modules/` citations spot-check clean.
 
 ---
 
@@ -212,6 +218,30 @@ Sequencing: **P1 → P2 → P3 → P4** are independent, each a single commit, a
 P4's tuning. **P5** next as a bug. Then decide **P6** before any further handoff polish, because P6 deletes
 the handoff. **P8/P9** are ship decisions, not code. **P10** is a later spike.
 
+### 3.1 Phase A — implemented 2026-08-07
+
+P1–P5 landed. Gates green throughout: `npx tsc --noEmit`, 376 frontend tests, 563 Python tests,
+`npm run build`.
+
+| # | What shipped | Where |
+|---|---|---|
+| P1 | `React.memo` on the markdown chunk — reveal ticks no longer re-parse every closed block. All props are primitives, so the default shallow compare is correct. | [MainTabBonsaiAiMarkdownChunk.tsx](../../src/components/MainTabBonsaiAiMarkdownChunk.tsx) |
+| P2 | **Not** the gate the review proposed. Gating `_on_delta` on the setting would have killed model-emitted `<bonsai-status>` blurbs, which ride the same hook with the flag off. Throttled the *parse* instead — `OLLAMA_DELTA_PARSE_INTERVAL_S = 0.1`, so cost is ≤10 parses/sec regardless of flag. Terminal parse deliberately un-throttled. | [ollama_service.py:50-61, 518-520](../../py_modules/backend/services/ollama_service.py) |
+| P3 | `fastPoll` now follows `status.streaming` only; the setting ref and its option type are gone, along with the dead `bonsaiTokenStreamingEnabled` arg on the orchestration hook. | [useBackgroundGameAi.ts](../../src/hooks/useBackgroundGameAi.ts) |
+| P4 | Rate derives from backlog (`TARGET_DRAIN_SECONDS`), no ceiling. Plus the startup hitch: the loop now coasts `IDLE_COAST_FRAMES` after catching up instead of parking on the first idle frame and waiting for a React round trip. | [useSmoothStreamReveal.ts](../../src/hooks/useSmoothStreamReveal.ts) |
+| P5 | See §4.1. Shared `_cancelled_response_text` closes the race; `onCancelAsk` keeps the draft; `stopRequestedRef` blocks late terminal results; new `askStopped` notice renders beside the kept text. | [main.py:344-367](../../main.py), [useBonsaiAskOrchestration.ts](../../src/hooks/useBonsaiAskOrchestration.ts), [MainTabChatTranscript.tsx](../../src/components/MainTabChatTranscript.tsx) |
+
+Two things worth knowing before the on-Deck pass:
+
+- **P3 costs first-paint latency.** Between request start and the first token the poll is now 1200ms,
+  so the UI can take up to ~1.2s *after* the first token to switch to the fast cadence. Watch for it
+  when running STREAM-02 — if it reads as sluggish, the cheap answer is a medium cadence once
+  `thinking_summary` starts moving, not a return to setting-keyed fast polling.
+- **An unconditional RAF reschedule does not terminate.** The first cut of P4's coast spun forever
+  under vitest fake timers. Bounded to `IDLE_COAST_FRAMES`. Related: the orchestration suite had no
+  `afterEach(vi.useRealTimers)`, so one failing fake-timer test hung the *next* test for 20s and
+  reported two failures for one cause. Guard added.
+
 ---
 
 ## 4. Risk register
@@ -220,9 +250,9 @@ Severity = user-visible harm if it fires. Likelihood = with the flag on, on a De
 
 | # | Risk | Sev | Lik | Evidence / note |
 |---|---|---|---|---|
-| R1 | **Stop discards the streamed partial** (STREAM-04) | **High** | **Certain** | See §4.1 — three independent code paths each drop it. |
+| R1 | ~~**Stop discards the streamed partial**~~ (STREAM-04) | **High** | **Was certain — FIXED (A5)** | §4.1, corrected. The backend always kept the draft; the frontend discarded it, and the two cancel paths raced. Both fixed. |
 | R2 | **Nested code fence inside `bonsai-spoiler` leaks the rest of the spoiler body mid-stream** (STREAM-03) | **High** | Low–Med | [streamMarkdownPrepare.ts:115](../../src/utils/streamMarkdownPrepare.ts). PLAUSIBLE, unverified. |
-| R3 | **Reveal stutter / dropped frames on Deck APU while gaming** | Med | **High** | W4 + W5. Full markdown re-parse at RAF rate, reveal capped under generation speed. |
+| R3 | **Reveal stutter / dropped frames on Deck APU while gaming** | Med | ~~High~~ **Low** | **Downgraded by measurement.** STREAM-REVEAL-01 (2026-08-04, on-Deck) found the reveal *smooth* apart from one split-second hitch after the first ~6-7 words — the opposite of what W4+W5 predicted. Both causes addressed in A1/A4 anyway; the frame-cost theory remains unverified under game load (→ STREAM-11). |
 | R4 | **T3 layout + focus + scroll discontinuity** (STREAM-08/09, echo of D-PAD-SCROLL-01) | Med | Med–High | W6 + W7; `chunkTotal` 1→N at [buildAnswerBubbleElement.tsx:135](../../src/utils/buildAnswerBubbleElement.tsx). |
 | R5 | **RPC load on Deck** — 150 ms polls across the entire pending window, full-text payload each time | Med | Med | W1 + W2. Worst with Strategy (`num_predict` 900) plus a running game. |
 | R6 | **Backend per-token CPU paid even with the flag off** | Med | **Certain** | W3. Notable because it undermines "off is safe". |
@@ -231,30 +261,38 @@ Severity = user-visible harm if it fires. Likelihood = with the flag on, on a De
 | R9 | **Dual render paths drift** (stream partition vs chunk split) | Low | Med | W6. A maintenance tax that P6 removes entirely. |
 | R10 | **Experimental support burden** | Low | Low | Contained today: one Developer toggle, default off, documented in `troubleshooting.md:584-605`. Rises sharply at P8/P9. |
 
-### 4.1 R1 in detail — STREAM-04 cannot pass as written
+### 4.1 R1 in detail — STREAM-04 — **corrected 2026-08-07, then fixed**
 
-The row asks: *"Stop mid-stream: partial reply kept (including wait chip if fence still open); no stale
-overwrite."* Three separate places drop the partial:
+> **Correction.** The original text below claimed three code paths drop the partial. Two of those
+> claims were wrong, and the citations were read against a stale tree. What follows is the corrected
+> account; the fix landed in Phase A (A5).
 
-1. **Frontend Stop** invalidates polling and hard-writes `"Request cancelled."`
-   ([useBonsaiAskOrchestration.ts:670-688](../../src/hooks/useBonsaiAskOrchestration.ts)) — the drafted text
-   the user was reading is replaced immediately.
-2. **Backend cancel** returns `"Request stopped (connection closed)."` and discards the accumulated `deltas`
-   ([ollama_service.py:403-407, 420-424, 442-446](../../py_modules/backend/services/ollama_service.py)).
-3. **Terminal state write** sets `"partial_response": None` and clears the snapshot
-   ([main.py:2247-2250](../../main.py)); the merge only runs for `pending`
-   ([main.py:467](../../main.py)).
+**The backend already kept the draft.** `abort_background_game_ai` reads the snapshot and writes the
+partial into `_background_state["response"]`, guarded by `partial_stream_has_content` so an early Stop
+does not show markup debris ([main.py:2472-2494](../../main.py)). It has a test:
+`tests/test_background_abort_busy.py::test_abort_preserves_partial_in_cancelled_response`.
 
-So the one piece of code written to preserve it — the `cancelled` branch's `partialKeep`
-([useBonsaiAskOrchestration.ts:439-448](../../src/hooks/useBonsaiAskOrchestration.ts)) — is unreachable:
-polling is already invalidated, and even a mount-restore poll would receive `partial_response: null`.
-The existing unit tests assert the *current* behaviour
-([useBonsaiAskOrchestration.test.ts:299, 335](../../src/hooks/useBonsaiAskOrchestration.test.ts) expect
-`"Request cancelled."`), so they will need to change with the fix — this is the
-`docs/audit/00-phase0.md` failure mode in advance: tests asserting shape, not intent.
+Two real defects, not three:
 
-Minimum fix shape (not implemented): backend returns accumulated visible text on cancel; terminal cancelled
-state carries it in `response`; frontend Stop stops writing a literal and lets the cancelled branch render.
+1. **The frontend threw the kept draft away.** `onCancelAsk` invalidated the poll *and* hard-wrote
+   `"Request cancelled."` over the body, so the `cancelled` status carrying the text never arrived and
+   the `partialKeep` branch was unreachable. Frontend-only — the backend half was already correct.
+2. **A genuine race between the two cancel paths.** `abort_background_game_ai` only preserves the draft
+   when it wins `_background_lock` while the status is still `pending` ([main.py:2483](../../main.py)).
+   If `_run_background_request`'s terminal write landed first it wrote the executor's transport message
+   (`"Request stopped (connection closed)."`) and cleared the snapshot, so whether the user kept their
+   answer depended on lock ordering.
+
+**Why STOP-PARTIAL-01 passed anyway.** It was verified by seeing *"Request cancelled."* in the reply
+bubble — but the frontend produced that literal unconditionally, so the pass only ever proved the
+markup-debris case. It cannot distinguish a kept draft from a discarded one and needs re-running with
+real streamed text.
+
+**Fixed in Phase A (A5):** both cancel paths now share `Plugin._cancelled_response_text`
+([main.py:344-367](../../main.py)) so lock ordering cannot change the answer; `onCancelAsk` no longer
+writes a literal or tears the poll down, and a `stopRequestedRef` guard stops a late `completed` from
+resurrecting the stopped turn. The old unit tests asserted the literal and were rewritten to assert
+intent — the `docs/audit/00-phase0.md` failure mode, caught in advance.
 
 ---
 
