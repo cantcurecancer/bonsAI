@@ -57,7 +57,7 @@ import { questionBypassesOllamaPcIpRequirement } from "../utils/localOnlyAskComm
 import { normalizePresetCarouselInject } from "../utils/presetCarouselInject";
 import type { InputTransparencyRpcResult, TransparencySnapshot } from "../utils/inputTransparency";
 import { composeThinkingBlurb, sanitizeThinkingSummary } from "../utils/composeThinkingBlurb";
-import { isPendingPlaceholderResponse } from "../utils/askThinkingPhases";
+import { isPendingPlaceholderResponse, isStopNoticeResponse } from "../utils/askThinkingPhases";
 import { useSmoothStreamReveal } from "./useSmoothStreamReveal";
 import {
   peekBonsaiSessionPendingRestore,
@@ -73,6 +73,13 @@ import { fetchSessionRagChipCandidates } from "../utils/sessionRagChipCandidates
 import { useStrategyChecklistSession } from "./useStrategyChecklistSession";
 
 export type { AskThreadExpandedTurnKey } from "../types/bonsaiUi";
+
+/**
+ * How long Stop keeps polling for the `cancelled` status that carries the kept draft, before
+ * giving up and tearing the poll down. Generous next to the 150ms/1200ms cadences — this is the
+ * "abort never landed" path, not the normal one.
+ */
+const STOP_STATUS_GRACE_MS = 4000;
 
 function initialExpandedTurnKeyFromSurvival(): AskThreadExpandedTurnKey {
   const peek = peekBonsaiSessionPendingRestore();
@@ -197,6 +204,16 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
     () => survivalPeek?.askThreadDisplayQuestion ?? ""
   );
   const [isAsking, setIsAsking] = useState(false);
+  /** Stop was pressed: show a small notice beside the kept answer instead of replacing it. */
+  const [askStopped, setAskStopped] = useState(false);
+  /** Set on Stop until the `cancelled` status lands, so a late terminal result cannot overwrite it. */
+  const stopRequestedRef = useRef(false);
+
+  // Read inside onCancelAsk without making the callback churn on every keystroke.
+  const ollamaResponseRef = useRef(ollamaResponse);
+  ollamaResponseRef.current = ollamaResponse;
+  const askThreadDisplayQuestionRef = useRef(askThreadDisplayQuestion);
+  askThreadDisplayQuestionRef.current = askThreadDisplayQuestion;
 
   // --- Running game context (Ollama app_id chip) ---
   const syncOllamaContextFromRunningApp = useCallback(() => {
@@ -429,6 +446,16 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
       const appId = status.app_id ?? "";
       const appContext = status.app_context === "active" ? "active" : "none";
 
+      /*
+       * After Stop, only `cancelled` may still touch this turn. The poll is left running on purpose
+       * so the kept draft can arrive, but a `completed`/`failed` result that was already in flight
+       * must not resurrect the answer the user just stopped — and a `pending` one must not put the
+       * spinner back. The loop re-arms only while pending, so terminal statuses end it either way.
+       */
+      if (stopRequestedRef.current && status.status !== "cancelled") {
+        return;
+      }
+
       if (status.status === "pending") {
         setOllamaContext({ app_id: appId, app_context: appContext });
         setIsAsking(true);
@@ -470,19 +497,22 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
       }
 
       if (status.status === "cancelled") {
+        stopRequestedRef.current = false;
         setThinkingSummary(null);
         const partialKeep =
           typeof status.partial_response === "string" && status.partial_response.trim()
             ? status.partial_response.trim()
             : "";
-        const cancelledBody =
+        // `response` carries the kept draft (Plugin._cancelled_response_text); it falls back to a
+        // stop status only when nothing readable had arrived, and that belongs in the notice.
+        const cancelledText =
           partialKeep && !isPendingPlaceholderResponse(partialKeep)
             ? partialKeep
-            : status.response?.trim()
-              ? status.response.trim()
-              : "Stopped.";
+            : (status.response ?? "").trim();
+        const cancelledBody = isStopNoticeResponse(cancelledText) ? "" : cancelledText;
         setIsStreamSettling(false);
         setIsStreamingPreview(false);
+        setAskStopped(true);
         setOllamaContext({ app_id: appId, app_context: appContext });
         setIsAsking(false);
         setShortcutSetupVariant(null);
@@ -684,6 +714,7 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
     a.setSelectedIndex(-1);
     a.setNavigationMessage("");
     setOllamaResponse("");
+    setAskStopped(false);
     syncOllamaContextFromRunningApp();
     setLastApplied(null);
     setLastExchange(null);
@@ -704,12 +735,42 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
     void callDeckyWithTimeout<[], { ok?: boolean }>("abort_background_game_ai", []).catch(() => {
       /* best-effort RPC */
     });
-    invalidateRequests();
+    /*
+     * Deliberately does NOT invalidate the poll, and does NOT write a cancel literal over the body.
+     *
+     * Both of those together are what made STREAM-04 impossible: the backend keeps the drafted text
+     * and publishes it on the `cancelled` status, but the poll was torn down before it could arrive
+     * and the answer the user was reading had already been replaced. The poll stops on its own once
+     * a terminal status lands (`startBackgroundStatusPolling` only re-arms while `pending`).
+     *
+     * The body needs no assignment here: `ollamaResponse` already holds the last streamed partial,
+     * so leaving it alone *is* keeping it. The cancelled status then confirms or refines it.
+     */
     stopAskCompletionWatch();
+    stopRequestedRef.current = true;
+    /*
+     * Bounded fallback: if the cancelled status never arrives (abort RPC lost, backend wedged),
+     * stop polling anyway rather than leaving a poll running against a turn the user ended.
+     */
+    window.setTimeout(() => {
+      if (!stopRequestedRef.current) return;
+      stopRequestedRef.current = false;
+      invalidateRequests();
+    }, STOP_STATUS_GRACE_MS);
+    const drafted = ollamaResponseRef.current.trim();
+    const keptDraft = Boolean(drafted) && !isPendingPlaceholderResponse(drafted);
     setIsAsking(false);
     setThinkingSummary(null);
     setIsStreamingPreview(false);
-    setOllamaResponse("Request cancelled.");
+    setIsStreamSettling(false);
+    setAskStopped(true);
+    if (!keptDraft) {
+      // Nothing readable arrived yet. A bare "Stopped" notice is not worth a turn — clear it and
+      // hand the question back so it can be edited and resent.
+      setOllamaResponse("");
+      const pendingQuestion = askThreadDisplayQuestionRef.current.trim();
+      if (pendingQuestion) a.setUnifiedInput(pendingQuestion);
+    }
     syncOllamaContextFromRunningApp();
     setLastApplied(null);
     setElapsedSeconds(null);
@@ -718,7 +779,7 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
     setModelPolicyDisclosure(null);
     setPresetCarouselInject(null);
     setShortcutSetupVariant(null);
-  }, [invalidateRequests, syncOllamaContextFromRunningApp]);
+  }, [a, invalidateRequests, syncOllamaContextFromRunningApp]);
 
   const onAskOllama = useCallback(
     async (overrideQuestion?: string, opts?: { threadQuestionDisplay?: string }) => {
@@ -762,6 +823,8 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
       }
       pendingArchiveTurnRef.current = null;
       setExpandedTurnKey("live");
+      setAskStopped(false);
+      stopRequestedRef.current = false;
       pendingThreadQuestionDisplayRef.current = opts?.threadQuestionDisplay?.trim() || null;
       setAskThreadDisplayQuestion(pendingThreadQuestionDisplayRef.current ?? q);
 
@@ -1227,6 +1290,7 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
     onTurnActivate,
     askThreadDisplayQuestion,
     isAsking,
+    askStopped,
     isStreamingPreview,
     isStreamSettling,
     streamDisplayText,

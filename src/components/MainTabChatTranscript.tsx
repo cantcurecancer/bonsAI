@@ -92,6 +92,8 @@ export type MainTabChatTranscriptProps = {
   strategySpoilerAutoRevealAfterConsent?: boolean;
   isStreamingPreview?: boolean;
   streamDisplayText?: string;
+  /** Stop was pressed on this turn: show the Stopped notice beside whatever text was kept. */
+  askStopped?: boolean;
   thinkingSummary?: string | null;
   desktopAskVerboseLogging?: boolean;
   lastRequestId?: number | null;
@@ -138,6 +140,7 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
     strategySpoilerAutoRevealAfterConsent = false,
     isStreamingPreview = false,
     streamDisplayText = "",
+    askStopped = false,
     thinkingSummary = null,
     desktopAskVerboseLogging = false,
     lastExchange = null,
@@ -368,6 +371,24 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
               >
                 <ThinkingSpinnerIcon size={14} className="bonsai-thinking-spinner" />
                 {thinkingSummary}
+              </div>
+            ) : null}
+            {expandedTurnKey === "live" && askStopped ? (
+              /*
+               * A status, not an answer. The drafted text stays in the bubble below — replacing it
+               * with a cancel literal is what STREAM-04 was reported for.
+               */
+              <div
+                className="bonsai-chat-status-line bonsai-chat-stopped-line"
+                role="status"
+                style={{
+                  color: "#9fb7d5",
+                  fontSize: 12,
+                  lineHeight: 1.35,
+                  marginBottom: 8,
+                }}
+              >
+                {showLiveResponse ? "Stopped — partial answer kept." : "Stopped."}
               </div>
             ) : null}
             {expandedTurnKey === "live" && showLiveResponse

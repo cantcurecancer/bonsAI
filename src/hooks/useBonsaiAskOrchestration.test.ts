@@ -8,7 +8,7 @@
  * that is exactly what the refactor is allowed to change.
  */
 import { renderHook, act } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { toaster } from "@decky/api";
 import { useBonsaiAskOrchestration, type UseBonsaiAskOrchestrationArgs } from "./useBonsaiAskOrchestration";
 import { getRpcCallLog, resetFakeDeckyRpc, setRpcHandler } from "../test-harness/fakeDeckyRpc";
@@ -68,6 +68,16 @@ function keepRequestPending(requestId: number, question = "q") {
 describe("useBonsaiAskOrchestration", () => {
   beforeEach(() => {
     resetFakeDeckyRpc();
+  });
+
+  /*
+   * Fake timers are restored here, not only at the end of each test that installs them: a test that
+   * fails before its own `useRealTimers()` used to leave them installed, and the next test to await
+   * a real `setTimeout` then hung until the 20s vitest timeout — one assertion failure reported as
+   * two, with the second pointing at innocent code.
+   */
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   describe("submit guards", () => {
@@ -282,7 +292,7 @@ describe("useBonsaiAskOrchestration", () => {
   });
 
   describe("cancel", () => {
-    it("aborts the backend request and reports the cancellation", async () => {
+    it("aborts the backend request and clears the spinner without a cancel literal", async () => {
       keepRequestPending(4, "long question");
       const { result } = renderHook(() => useBonsaiAskOrchestration(makeArgs()));
 
@@ -296,21 +306,94 @@ describe("useBonsaiAskOrchestration", () => {
       });
 
       expect(getRpcCallLog().some((c) => c.method === "abort_background_game_ai")).toBe(true);
-      expect(result.current.ollamaResponse).toBe("Request cancelled.");
       expect(result.current.isAsking).toBe(false);
+      // Nothing readable had streamed, so the body stays empty and the Stopped notice carries it.
+      expect(result.current.ollamaResponse).toBe("");
+      expect(result.current.askStopped).toBe(true);
+    });
+
+    /**
+     * STREAM-04. Stop used to overwrite the body with "Request cancelled." and tear the poll down,
+     * so the text the user was reading vanished on the press meant to keep it.
+     */
+    it("keeps the streamed partial when Stop lands mid-answer", async () => {
+      vi.useFakeTimers();
+      setRpcHandler("start_background_game_ai", () => ({ accepted: true, status: "pending", request_id: 6 }));
+      let stopped = false;
+      setRpcHandler("get_background_game_ai_status", () =>
+        stopped
+          ? {
+              ...idleBackgroundStatusFixture(),
+              status: "cancelled",
+              question: "q",
+              request_id: 6,
+              cancelled: true,
+              // What Plugin._cancelled_response_text kept.
+              response: "Half an answer about the boss",
+            }
+          : {
+              ...idleBackgroundStatusFixture(),
+              status: "pending",
+              question: "q",
+              request_id: 6,
+              streaming: true,
+              partial_response: "Half an answer about the boss",
+            }
+      );
+      setRpcHandler("abort_background_game_ai", () => {
+        stopped = true;
+        return { ok: true };
+      });
+
+      const { result } = renderHook(() => useBonsaiAskOrchestration(makeArgs()));
+
+      let pending: Promise<void> | undefined;
+      act(() => {
+        pending = result.current.onAskOllama("q");
+      });
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(200);
+      });
+      await act(async () => {
+        await pending;
+      });
+      expect(result.current.ollamaResponse).toBe("Half an answer about the boss");
+
+      act(() => {
+        result.current.onCancelAsk();
+      });
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(2000);
+      });
+
+      expect(result.current.isAsking).toBe(false);
+      expect(result.current.askStopped).toBe(true);
+      expect(result.current.ollamaResponse).toBe("Half an answer about the boss");
+      vi.useRealTimers();
     });
 
     it("stops applying poll results after cancelling", async () => {
       vi.useFakeTimers();
       setRpcHandler("start_background_game_ai", () => ({ accepted: true, status: "pending", request_id: 5 }));
-      setRpcHandler("get_background_game_ai_status", () => ({
-        ...idleBackgroundStatusFixture(),
-        status: "completed",
-        question: "q",
-        request_id: 5,
-        success: true,
-        response: "answer that arrived too late",
-      }));
+      // Completes only *after* Stop, which is the case this guards: a terminal result already in
+      // flight when the user pressed Stop must not land on the turn they ended.
+      let stopped = false;
+      setRpcHandler("get_background_game_ai_status", () =>
+        stopped
+          ? {
+              ...idleBackgroundStatusFixture(),
+              status: "completed",
+              question: "q",
+              request_id: 5,
+              success: true,
+              response: "answer that arrived too late",
+            }
+          : { ...idleBackgroundStatusFixture(), status: "pending", question: "q", request_id: 5 }
+      );
+      setRpcHandler("abort_background_game_ai", () => {
+        stopped = true;
+        return { ok: true };
+      });
 
       const { result } = renderHook(() => useBonsaiAskOrchestration(makeArgs()));
 
@@ -332,7 +415,9 @@ describe("useBonsaiAskOrchestration", () => {
         await vi.advanceTimersByTimeAsync(5000);
       });
 
-      expect(result.current.ollamaResponse).toBe("Request cancelled.");
+      // A completed result already in flight must not resurrect the answer the user stopped.
+      expect(result.current.ollamaResponse).not.toContain("arrived too late");
+      expect(result.current.askStopped).toBe(true);
       vi.useRealTimers();
     });
   });

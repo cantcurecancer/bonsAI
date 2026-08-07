@@ -117,6 +117,8 @@ export type MainTabProps = {
   presetCarouselInject?: { text: string } | null;
   isStreamingPreview?: boolean;
   streamDisplayText?: string;
+  /** Stop was pressed on this turn: show the Stopped notice beside whatever text was kept. */
+  askStopped?: boolean;
   thinkingSummary?: string | null;
   desktopAskVerboseLogging?: boolean;
   lastRequestId?: number | null;

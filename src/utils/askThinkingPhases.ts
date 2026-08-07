@@ -24,3 +24,22 @@ export function isPendingPlaceholderResponse(text: string): boolean {
   if (!raw) return true;
   return PENDING_PLACEHOLDER_RE.test(raw);
 }
+
+/**
+ * Statuses the backend sends in the ``response`` field of a stopped Ask when it had no readable
+ * draft to keep — ``Plugin._cancelled_response_text``'s fallback, plus the executor's transport
+ * message. They are statuses, not answers, so the UI shows them as a Stopped notice instead of
+ * rendering them as the assistant's reply.
+ */
+const STOP_NOTICE_RESPONSES = new Set([
+  "request cancelled.",
+  "request stopped (connection closed).",
+  "stopped.",
+]);
+
+/** True when a cancelled Ask's text is a stop status rather than a kept partial answer. */
+export function isStopNoticeResponse(text: string): boolean {
+  const raw = (text || "").trim().toLowerCase();
+  if (!raw) return true;
+  return STOP_NOTICE_RESPONSES.has(raw);
+}

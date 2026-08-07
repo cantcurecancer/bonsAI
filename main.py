@@ -341,6 +341,29 @@ class Plugin:
         with self._partial_response_lock:
             self._partial_stream_snapshot = new_partial_stream_snapshot(None)
 
+    def _cancelled_response_text(self, request_id: Any, fallback: str) -> str:
+        """
+        What a stopped Ask should show: the text drafted so far, else ``fallback``.
+
+        Two call sites reach a cancelled terminal state and they race — ``abort_background_game_ai``
+        and ``_run_background_request`` both take ``_background_lock`` and whichever wins writes the
+        answer. They must not disagree about it, so the rule lives here rather than being spelled out
+        twice.
+
+        Not just "non-empty": Stop can land on the first frame, when all that has arrived is markup
+        debris (``<`` from a status tag, ``` from a fence) — see ``partial_stream_has_content``.
+        """
+        from backend.services.bonsai_stream_tags import partial_stream_has_content
+
+        with self._partial_response_lock:
+            snap = self._partial_stream_snapshot
+            if snap.get("request_id") != request_id:
+                return fallback
+            partial = snap.get("partial_response")
+        if isinstance(partial, str) and partial_stream_has_content(partial):
+            return partial.strip()
+        return fallback
+
     def _update_partial_response(
         self,
         request_id: int,
@@ -2138,6 +2161,10 @@ class Plugin:
             response_text = str(result.get("response", "") or "No response text.")
             if cancelled_rq:
                 terminal = "cancelled"
+                # The executor returns a transport message ("Request stopped (connection closed).")
+                # and drops the text it had already streamed. Whether the user keeps that text must
+                # not depend on which of the two cancel paths won the lock.
+                response_text = self._cancelled_response_text(request_id, "Request cancelled.")
             elif success:
                 terminal = "completed"
             else:
@@ -2441,21 +2468,10 @@ class Plugin:
             if task is not None and not task.done():
                 task.cancel()
             self._background_task = None
-            from backend.services.bonsai_stream_tags import partial_stream_has_content
 
             rid = self._background_state.get("request_id")
             if rid is not None and self._background_state.get("status") == "pending":
-                partial_text = None
-                with self._partial_response_lock:
-                    snap = self._partial_stream_snapshot
-                    if snap.get("request_id") == rid:
-                        partial = snap.get("partial_response")
-                        # Not just "non-empty": Stop can land on the first frame, when all that
-                        # has arrived is markup debris (`<` from a status tag, ``` from a fence).
-                        # "Request cancelled." beats showing the user a stray bracket.
-                        if isinstance(partial, str) and partial_stream_has_content(partial):
-                            partial_text = partial.strip()
-                cancel_response = partial_text if partial_text else "Request cancelled."
+                cancel_response = self._cancelled_response_text(rid, "Request cancelled.")
                 self._background_state = {
                     **self._background_state,
                     "status": "cancelled",
