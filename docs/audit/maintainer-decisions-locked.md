@@ -1239,6 +1239,35 @@ for the same reason — its RPC probe passed, its UI pass did not run.
 
     **Sequencing needs a call.** §8 said items 1–2 were *"worth doing before step 7"* — step 7 shipped without them, so that guidance already lapsed once; items 3–5 were gated on *"after step 8"*, which is now. Nothing here is blocked, and nothing above is blocked on it. **Note the coverage cost before starting:** none of the ten largest `main.py` methods has a behavioral test (§9), so unlike step 8 there is no safety net — `test_merge_pulled_tags_rpc.py` and `test_session_rag_chip_candidates_rpc.py` are the only worked examples of testing a `class Plugin` RPC directly and are the pattern to copy. Expect *write the test first* to be most of the work for items 2–5.
 
+**Phase 5 — done 2026-08-07.** [08-postmortem.md](08-postmortem.md) and
+[09-prevention.md](09-prevention.md), written as two passes because folding them together
+makes the mechanisms go vague. **Numbered 08/09, not the 07/08 REFACTOR-PLAN specifies** —
+`07-mainpy-inventory.md` already held that ordinal.
+
+The postmortem dates each structural problem from git rather than asserting it: the two
+backend-less RPCs were live for **15 and 16 days** (`8b4be92` / `ac2c738` → `510139d` /
+`a6213b8`), and `vitest.config.ts` shipped `include: ["src/**/*.test.ts"]` **at creation**
+(`da028a6`, 2026-05-23), so a `.tsx` test could never run for **71 days**. The workflow
+section names multi-concern commits as upstream of both — `da028a6` bundled that config
+with jarring-redraw fixes, a recording prototype and an easter egg.
+
+**Prevention adopts 7 checks and rejects 4**, ranked by problems-prevented ÷
+friction-added. Top three: RPC-name cross-check (the only one that would have stopped a
+user-visible defect, and `rpc-map.json` already supplies the data), test-collection
+completeness (a dozen lines), and doc link/anchor validation. **Rejected on principle:**
+enforcing one concern per commit — the strongest signal in the postmortem and the one
+with no honest mechanism; enforcing vocabulary; and turning on the React dep-array lint,
+which would make the duplication permanent by making it safe when the real fix is
+derivation. Also rejected: doc "last reviewed" stamps, which are discipline wearing a
+mechanism's clothes.
+
+**Two findings landed on this refactor's own work.** Correcting CLAUDE.md's stale counts
+introduced three fresh wrong ones (19/26/19 for 20/28/21) by copying a doc accurate four
+days earlier — which is why prevention item 6 is *generate the numbers*, not *check them*.
+And the first run of the link checker produced **38 false positives** from one file by not
+stripping `:NNN` line citations; that calibration requirement is now written into the
+proposal, because a gate that fires 38 times on day one is switched off on day one.
+
 **Amendment rationale (2026-08-02):** steps 6 and 7 were missing from the original
 order. As first written it ran the riskiest, least-covered work (entry-point
 split) while skipping the highest-value, best-covered work (settings SSOT), and
