@@ -59,6 +59,8 @@ export type AskThreadCollapsedTurn = {
    * another game's answer after the player switches titles.
    */
   appId?: string;
+  /** True when the user consented to spoilers for this turn (unwrap all fences in history). */
+  spoilerConsentEffective?: boolean;
 };
 
 /** Accordion key for the Ask transcript: archived turn id, live turn, or all collapsed. */

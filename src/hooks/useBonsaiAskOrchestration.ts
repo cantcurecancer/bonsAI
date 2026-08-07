@@ -187,6 +187,7 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
     answer: string;
     transparency?: TransparencySnapshot | null;
     appId?: string;
+    spoilerConsentEffective?: boolean;
   } | null>(null);
   const pendingThreadQuestionDisplayRef = useRef<string | null>(null);
   /** Last request_id whose completion already re-seeded suggested prompts (reseed is randomized). */
@@ -425,6 +426,7 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
       question: lastExchange.question,
       answer: lastExchange.answer,
       appId: ollamaContext?.app_id || undefined,
+      spoilerConsentEffective: lastExchange.spoilerConsentEffective === true,
     };
   }, [lastExchange, ollamaContext?.app_id]);
 
@@ -831,6 +833,7 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
             answer: arch.answer,
             transparency: arch.transparency ?? null,
             appId: arch.appId,
+            spoilerConsentEffective: arch.spoilerConsentEffective === true,
           },
         ]);
         lastFlushedExchangeQuestionRef.current = arch.question.trim();

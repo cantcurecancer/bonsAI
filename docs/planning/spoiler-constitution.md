@@ -1,14 +1,48 @@
 # Spoiler constitution (product rules)
 
 Living product rulebook for when bonsAI should fence, unwrap, or (later) omit
-spoiler-sensitive Strategy guidance. **Not** an implementation plan.
+spoiler-sensitive Strategy guidance.
 
 - Bug slice that enforces named-entity display: [04-strategy-spoiler-false-positive.md](04-strategy-spoiler-false-positive.md)
-- Roadmap feature to encode this into prompts/signals over time: [roadmap.md § Planned](../roadmap.md#planned) (**Spoiler constitution**)
-- Related Planned: **Spoiler confidence chip**, **User-adjustable spoiler fencing**, **Unfenced spoiler feedback**
+- **Runtime encoding (shipped 2026-08-07):** built-in title profiles, subtractive prompt policy, display unwrap — see **Runtime encoding** below.
+- Related Planned: **User-adjustable spoiler fencing**, **Unfenced spoiler feedback** (soft-omit parked)
 
-Draft locked from maintainer planning chat 2026-08-04. Encoding into runtime
-behavior is ★★★★ Planned work — do not treat this file as shipped policy in code.
+Draft locked from maintainer planning chat 2026-08-04. Rules 1–13 remain the product contract; the **Runtime encoding** section describes what code enforces today.
+
+---
+
+## Runtime encoding (shipped 2026-08-07)
+
+**Scope:** strategy-domain guidance — Strategy mode, and Speed/Expert when strategy KB cards attach.
+
+**Risk chip:** inherent title sensitivity only (`low_narrative` lowers the band). Consent and named-entity display overrides do **not** change the chip.
+
+**Explicit consent:** unwraps **all** closed `bonsai-spoiler` fences for that turn, including collapsed history (`spoilerConsentEffective` stamped per turn).
+
+**Title profiles** (built-in; unknown stays conservative):
+
+| Profile | Titles (Steam AppID) |
+|---|---|
+| `low_narrative` | DRG Survivor `2321470`, L4D2 `550`, Sims 4 `1222670`, State of Emergency (title fallback when no AppID) |
+| `protect_progression` | OoT `413150`, BG3 `1086940`, Fallout 4 `377160`, Hades `1145360`, Cyberpunk `1091500`, GTA SA `1547000`, RDR2 `1174180` |
+| `unknown` | everything else |
+
+**Prompt policy (subtractive):**
+
+- `low_narrative` → open routine boss/wave tactics; fence twists/endings/secret unlocks only.
+- `protect_progression` / `unknown` → conservative avoid-clause; named-entity carve-out only (rule 7).
+- KB *"Put spoilery walkthrough…"* clause suppressed when title is `low_narrative` **or** a named entity is active.
+- Genre tags (`roguelike`, `action rpg`) are **not** title-level open signals (Hades stays protect).
+
+**Display unwrap** (`unwrapAskedEntitySpoilerFences`):
+
+1. `spoilerConsentEffective` → all fences.
+2. Else `low_narrative` profile → all fences.
+3. Else named entity in question → fences mentioning that entity only.
+
+Code: `spoiler_title_profiles.py` / `spoilerTitleProfiles.ts`, `ollama_prompts.py`, `spoiler_risk_service.py`.
+
+**Parked (not this ship):** soft-omit + soft-invite; Settings hide-by-risk-band; mid-stream open-fence unwrap.
 
 ---
 
@@ -93,6 +127,4 @@ adjustable fencing — not the false-positive bug fix.
 ## Relationship to the false-positive bug
 
 [04-strategy-spoiler-false-positive.md](04-strategy-spoiler-false-positive.md)
-ships one **enforceable slice**: display invariant + prompt steering for the
-entity named in the question (recon options 1+2+4). It does **not** encode this
-whole constitution into runtime.
+ships the **named-entity display slice** (options 1+2+4). Constitution runtime encoding (profiles, consent history unwrap, Speed+KB inject) landed separately 2026-08-07; **STRAT-SPOIL-DRG-01** on-Deck QA remains its own gate.

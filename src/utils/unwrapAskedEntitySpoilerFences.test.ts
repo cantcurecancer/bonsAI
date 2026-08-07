@@ -49,4 +49,30 @@ describe("unwrapAskedEntitySpoilerFences", () => {
     expect(out).not.toContain("```bonsai-spoiler");
     expect(out).toContain("Dodge the charge and focus the crystal.");
   });
+
+  it("unwraps all fences when spoiler consent is effective", () => {
+    const raw = [
+      "```bonsai-spoiler",
+      "The true ending is that the dwarf retires.",
+      "```",
+    ].join("\n");
+    const out = unwrapAskedEntitySpoilerFences(raw, {
+      question: "Where should I go?",
+      appId: "413150",
+      spoilerConsentEffective: true,
+    });
+    expect(out).not.toContain("```bonsai-spoiler");
+    expect(out).toContain("The true ending is that the dwarf retires.");
+  });
+
+  it("unwraps all fences for L4D2 low-narrative AppID", () => {
+    const raw = [
+      "```bonsai-spoiler",
+      "Hold the choke point and watch the rear.",
+      "```",
+    ].join("\n");
+    const out = unwrapAskedEntitySpoilerFences(raw, { appId: "550" });
+    expect(out).not.toContain("```bonsai-spoiler");
+    expect(out).toContain("Hold the choke point and watch the rear.");
+  });
 });

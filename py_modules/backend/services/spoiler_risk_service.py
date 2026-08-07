@@ -11,9 +11,11 @@ from __future__ import annotations
 import re
 from typing import Any, Literal, Optional
 
-from backend.constants import LOW_SPOILER_RISK_APP_IDS
+from backend.services.spoiler_title_profiles import (
+    resolve_title_spoiler_profile,
+    title_profile_is_low_narrative,
+)
 from backend.services.ollama_prompts import (
-    _game_genres_are_low_spoiler_risk,
     extract_strategy_asked_entity,
     kb_text_covers_asked_entity,
 )
@@ -79,10 +81,12 @@ def build_spoiler_risk_signals(
     kb_text: str = "",
     asked_entity: str = "",
     kb_entity_match: bool = False,
+    title_profile: str = "",
 ) -> dict[str, Any]:
     """Collect inputs for band scoring before or after the model reply."""
     entity = (asked_entity or "").strip() or extract_strategy_asked_entity(question)
     kb_match = bool(kb_entity_match) or kb_text_covers_asked_entity(kb_text, entity)
+    profile = (title_profile or "").strip() or resolve_title_spoiler_profile(app_id)
     return {
         "ask_mode": str(ask_mode or "speed").strip().lower(),
         "app_id": str(app_id or "").strip(),
@@ -90,6 +94,7 @@ def build_spoiler_risk_signals(
         "asked_entity": entity,
         "kb_entity_match": kb_match,
         "kb_section_types": extract_kb_section_types_from_text(kb_text),
+        "title_profile": profile,
     }
 
 
@@ -122,10 +127,12 @@ def compute_heuristic_spoiler_risk_score(signals: dict[str, Any]) -> float:
         score += 8.0
 
     app_id = str(signals.get("app_id") or "").strip()
-    genres = str(signals.get("game_genres") or "")
-    if app_id in LOW_SPOILER_RISK_APP_IDS or _game_genres_are_low_spoiler_risk(genres):
+    profile = str(signals.get("title_profile") or "").strip() or resolve_title_spoiler_profile(app_id)
+    if title_profile_is_low_narrative(app_id) or profile == "low_narrative":
         score -= 28.0
-    elif genres.strip():
+    elif profile == "protect_progression":
+        score += 10.0
+    elif str(signals.get("game_genres") or "").strip():
         score += 10.0
 
     section_types = [str(s).strip().lower() for s in (signals.get("kb_section_types") or []) if s]
@@ -172,6 +179,9 @@ def spoiler_risk_detail_bullets(
     genres = str(signals.get("game_genres") or "").strip()
     if genres:
         bullets.append(f"Genres: {genres}")
+    profile = str(signals.get("title_profile") or "").strip()
+    if profile:
+        bullets.append(f"Title profile: {profile}")
     section_types = signals.get("kb_section_types") or []
     if section_types:
         bullets.append("KB sections: " + ", ".join(str(s) for s in section_types))

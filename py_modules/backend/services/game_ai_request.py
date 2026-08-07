@@ -43,6 +43,7 @@ from backend.services.knowledge_base_service import (
 )
 from backend.services.screenshot_media import lookup_screenshot_vdf_metadata
 from backend.services.spoiler_risk_service import build_spoiler_risk_signals
+from backend.services.spoiler_title_profiles import resolve_title_spoiler_profile
 from backend.services.transparency_service import (
     build_capability_denied_snapshot,
     build_error_route_snapshot,
@@ -286,6 +287,7 @@ async def run_game_ai_request(
         )
         kb_text = ""
         kb_result = None
+        kb_survived = False
         should_kb, kb_domain = should_retrieve_knowledge(
             use_local_knowledge_base=settings.get("use_local_knowledge_base") is True,
             ask_mode=ask_mode,
@@ -375,7 +377,11 @@ async def run_game_ai_request(
         strategy_spoiler_kb_entity_match = kb_text_covers_asked_entity(
             kb_text, strategy_spoiler_asked_entity
         )
-        if ask_mode == "strategy":
+        kb_survived = kb_result is not None and kb_result.attached and stacked.knowledge_attached
+        strategy_domain_guidance = ask_mode == "strategy" or (
+            kb_domain == "strategy" and kb_survived
+        )
+        if strategy_domain_guidance:
             strategy_spoiler_consent_effective = bool(spoiler_consent) or user_consents_strategy_spoilers(
                 question_for_model
             )
@@ -388,6 +394,7 @@ async def run_game_ai_request(
             kb_text=kb_text,
             asked_entity=strategy_spoiler_asked_entity,
             kb_entity_match=strategy_spoiler_kb_entity_match,
+            title_profile=resolve_title_spoiler_profile(app_id, app_name),
         )
 
         ollama_result = await plugin.ask_ollama(
@@ -404,9 +411,9 @@ async def run_game_ai_request(
             proton_log_attachment=early_context_combined or None,
             proton_log_transparency=proton_log_transparency,
             strategy_spoiler_consent=strategy_spoiler_consent_effective,
-            strategy_spoiler_game_genres=strategy_spoiler_game_genres,
             strategy_spoiler_asked_entity=strategy_spoiler_asked_entity,
             strategy_spoiler_kb_entity_match=strategy_spoiler_kb_entity_match,
+            strategy_domain_guidance=strategy_domain_guidance,
             token_stream_request_id=token_stream_request_id,
             strategy_checklist_state=strategy_checklist_state,
             preferred_model=preferred_model,

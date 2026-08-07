@@ -277,7 +277,8 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
     streaming: boolean,
     answerKey: string,
     askQuestion: string,
-    appId: string | null
+    appId: string | null,
+    spoilerConsentEffective = false
   ) =>
     buildAnswerBubbleElement({
       body,
@@ -286,11 +287,12 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
       spoilerDefaultExpanded:
         answerKey === "live" &&
         strategySpoilerAutoRevealAfterConsent &&
-        lastExchange?.spoilerConsentEffective === true,
+        spoilerConsentEffective,
       maxWidthCss: BONSAI_CHAT_AI_MAX_WIDTH_CSS,
       answerKey,
       askQuestion,
       appId,
+      spoilerConsentEffective,
     });
 
   const showTransparencyUi = transparencyUiAvailable(transparencySnapshot);
@@ -331,7 +333,14 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
             })}
             {expandedTurnKey === turn.id ? (
               <>
-                {renderAnswerBubble(turn.answer, false, turn.id, turn.question, turn.appId ?? null)}
+                {renderAnswerBubble(
+                  turn.answer,
+                  false,
+                  turn.id,
+                  turn.question,
+                  turn.appId ?? null,
+                  turn.spoilerConsentEffective === true
+                )}
                 {turn.transparency && chipsFromSnapshot(turn.transparency).length > 0 ? (
                   <Focusable
                     style={{ maxWidth: BONSAI_CHAT_AI_MAX_WIDTH_CSS, marginTop: 8 }}
@@ -416,7 +425,8 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
                   isStreamingPreview,
                   "live",
                   liveQuestion || lastExchange?.question || "",
-                  ollamaContext?.app_id ?? null
+                  ollamaContext?.app_id ?? null,
+                  lastExchange?.spoilerConsentEffective === true
                 )
               : null}
             {showLiveStrategyBranches && strategyGuideBranches && onStrategyBranchPick ? (

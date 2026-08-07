@@ -1,17 +1,14 @@
 /**
  * Title: Asked-entity spoiler unwrap
- * Purpose: Display-time unwrap of bonsai-spoiler fences when the user already named the entity.
+ * Purpose: Display-time unwrap of bonsai-spoiler fences per spoiler constitution rules.
  * Used for: buildAnswerBubbleElement before markdown render.
- * Solves: Redundant spoiler hiding for boss-fight questions the user explicitly asked about.
+ * Solves: Redundant spoiler hiding for consented, low-narrative, or named-entity turns.
  * Does not: Change backend spoiler policy — prompt and sanitizer remain authoritative.
  */
 
-const SPOILER_FENCE_RE = /```bonsai-spoiler\s*\n([\s\S]*?)```/gi;
+import { titleProfileIsLowNarrative } from "../data/spoilerTitleProfiles";
 
-/** AppIDs where named bosses/waves are routine gameplay, not narrative spoilers. */
-const LOW_SPOILER_RISK_APP_IDS = new Set([
-  "2321470", // Deep Rock Galactic: Survivor
-]);
+const SPOILER_FENCE_RE = /```bonsai-spoiler\s*\n([\s\S]*?)```/gi;
 
 export function extractAskedBeatEntity(question: string): string {
   const raw = (question || "").trim();
@@ -42,12 +39,15 @@ function entityMentioned(haystack: string, entity: string): boolean {
 export type UnwrapSpoilerOpts = {
   question?: string;
   appId?: string | null;
+  /** When true, unwrap every spoiler fence for this turn (explicit consent). */
+  spoilerConsentEffective?: boolean;
 };
 
 /**
  * Convert ```bonsai-spoiler fences into plain prose when:
- * - the fence body mentions the asked beat entity, or
- * - the active AppID is a known low-spoiler-risk title (bullet-heaven / survivor).
+ * - the user consented to spoilers for this turn,
+ * - the title profile is low-narrative (routine boss/tactics), or
+ * - the fence body mentions the asked beat entity.
  */
 export function unwrapAskedEntitySpoilerFences(
   text: string,
@@ -57,11 +57,13 @@ export function unwrapAskedEntitySpoilerFences(
     typeof questionOrOpts === "string" ? { question: questionOrOpts } : questionOrOpts;
   const question = opts.question || "";
   const appId = String(opts.appId || "").trim();
-  const lowRiskApp = Boolean(appId && LOW_SPOILER_RISK_APP_IDS.has(appId));
+  const consent = opts.spoilerConsentEffective === true;
+  const lowNarrativeTitle = titleProfileIsLowNarrative(appId);
   const entity = extractAskedBeatEntity(question);
-  if ((!entity && !lowRiskApp) || !text) return text;
+  if (!text) return text;
+  if (!consent && !lowNarrativeTitle && !entity) return text;
   return text.replace(SPOILER_FENCE_RE, (full, body: string) => {
-    if (lowRiskApp) return String(body).replace(/\n$/, "");
+    if (consent || lowNarrativeTitle) return String(body).replace(/\n$/, "");
     if (entity && (entityMentioned(body, entity) || entityMentioned(full, entity))) {
       return String(body).replace(/\n$/, "");
     }

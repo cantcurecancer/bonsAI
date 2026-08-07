@@ -150,4 +150,25 @@ describe("answer bubble section stops", () => {
 
     expect(orderedAnswerStops(ANSWER_KEY, bubble)).toHaveLength(0);
   });
+
+  it("unwraps spoiler fences when consent is effective even if masking is off", () => {
+    const body = [
+      "Intro.",
+      "",
+      "```bonsai-spoiler",
+      "Secret boss pattern.",
+      "```",
+    ].join("\n");
+    const el = buildAnswerBubbleElement({
+      body,
+      streaming: false,
+      spoilerMaskingEnabled: false,
+      maxWidthCss: "100%",
+      answerKey: ANSWER_KEY,
+      spoilerConsentEffective: true,
+    });
+    const { container } = render(el!);
+    expect(container.textContent).toContain("Secret boss pattern.");
+    expect(container.textContent).not.toContain("bonsai-spoiler");
+  });
 });

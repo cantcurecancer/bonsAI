@@ -31,7 +31,7 @@ class SpoilerRiskServiceTests(unittest.TestCase):
     def test_incomplete_model_tag_ignored(self):
         self.assertIsNone(parse_bonsai_spoiler_risk_tag("Still streaming <bonsai-spoiler-risk>med"))
 
-    def test_low_risk_genre_scores_low(self):
+    def test_low_narrative_profile_scores_low(self):
         signals = build_spoiler_risk_signals(
             ask_mode="strategy",
             app_id="2321470",
@@ -39,9 +39,23 @@ class SpoilerRiskServiceTests(unittest.TestCase):
             game_genres="Action Roguelike",
             kb_text="",
             asked_entity="Glyphid Dreadnought",
+            title_profile="low_narrative",
         )
         band = compute_spoiler_risk_band(signals)
         self.assertEqual(band, "low")
+
+    def test_hades_roguelike_genres_do_not_score_low(self):
+        signals = build_spoiler_risk_signals(
+            ask_mode="strategy",
+            app_id="1145360",
+            question="Where should I go next?",
+            game_genres="Roguelike, Action RPG",
+            kb_text="",
+            asked_entity="",
+            title_profile="protect_progression",
+        )
+        band = compute_spoiler_risk_band(signals)
+        self.assertIn(band, ("med", "high"))
 
     def test_story_strategy_without_entity_scores_higher(self):
         signals = build_spoiler_risk_signals(

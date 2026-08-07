@@ -40,8 +40,10 @@ export type BuildAnswerBubbleElementArgs = {
   answerKey: string;
   /** Live Ask question — used to unwrap false-positive spoilers for the named entity. */
   askQuestion?: string;
-  /** Active game AppID — used with low-spoiler-risk unwrap. */
+  /** Active game AppID — used with title spoiler profile for unwrap. */
   appId?: string | null;
+  /** When true, unwrap every spoiler fence for this turn (explicit consent). */
+  spoilerConsentEffective?: boolean;
 };
 
 const noopChunkRef = { current: 0 };
@@ -188,10 +190,18 @@ export function buildAnswerBubbleElement(
     answerKey,
     askQuestion = "",
     appId = null,
+    spoilerConsentEffective = false,
   } = args;
   let displayBody = stripAssistantDisplayTags(body);
-  if (spoilerMaskingEnabled && (askQuestion.trim() || appId)) {
-    displayBody = unwrapAskedEntitySpoilerFences(displayBody, { question: askQuestion, appId });
+  if (
+    spoilerConsentEffective ||
+    (spoilerMaskingEnabled && (askQuestion.trim() || appId))
+  ) {
+    displayBody = unwrapAskedEntitySpoilerFences(displayBody, {
+      question: askQuestion,
+      appId,
+      spoilerConsentEffective,
+    });
   }
   if (!displayBody.trim()) return null;
 

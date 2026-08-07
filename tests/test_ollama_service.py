@@ -792,9 +792,9 @@ class OllamaServiceTests(unittest.TestCase):
         block = _strategy_spoiler_policy_block(
             False,
             False,
-            game_genres="Action Roguelike, Bullet Heaven",
             asked_entity="Glyphid Dreadnought",
             kb_entity_match=False,
+            app_id="2321470",
         )
         self.assertIn("LOW-SPOILER-RISK CONTEXT", block)
         self.assertIn("Glyphid Dreadnought", block)
@@ -805,9 +805,9 @@ class OllamaServiceTests(unittest.TestCase):
         block = _strategy_spoiler_policy_block(
             False,
             False,
-            game_genres="Adventure",
             asked_entity="",
             kb_entity_match=False,
+            app_id="1145360",
         )
         self.assertNotIn("LOW-SPOILER-RISK CONTEXT", block)
         self.assertNotIn("NAMED-ENTITY CONSENT", block)
@@ -819,7 +819,6 @@ class OllamaServiceTests(unittest.TestCase):
         block = _strategy_spoiler_policy_block(
             False,
             False,
-            game_genres="",
             asked_entity="Glyphid Dreadnought",
             kb_entity_match=False,
             app_id="2321470",
@@ -832,7 +831,6 @@ class OllamaServiceTests(unittest.TestCase):
         low = _strategy_spoiler_policy_block(
             False,
             False,
-            game_genres="",
             asked_entity="Glyphid Dreadnought",
             kb_entity_match=False,
             app_id="2321470",
@@ -847,9 +845,9 @@ class OllamaServiceTests(unittest.TestCase):
         block = _strategy_spoiler_policy_block(
             False,
             False,
-            game_genres="Adventure",
             asked_entity="",
             kb_entity_match=False,
+            app_id="413150",
         )
         self.assertIn("late-game boss names", block)
 
@@ -862,7 +860,6 @@ class OllamaServiceTests(unittest.TestCase):
         block = _strategy_spoiler_policy_block(
             False,
             False,
-            game_genres="",
             asked_entity="Megaera",
             kb_entity_match=False,
             app_id="1145360",  # Hades — narrative roguelike
@@ -875,7 +872,6 @@ class OllamaServiceTests(unittest.TestCase):
         block = _strategy_spoiler_policy_block(
             False,
             False,
-            game_genres="",
             asked_entity="Megaera",
             kb_entity_match=False,
             app_id="1145360",
@@ -890,7 +886,6 @@ class OllamaServiceTests(unittest.TestCase):
         low = _strategy_spoiler_policy_block(
             False,
             True,
-            game_genres="",
             asked_entity="Glyphid Dreadnought",
             kb_entity_match=False,
             app_id="2321470",
@@ -903,7 +898,6 @@ class OllamaServiceTests(unittest.TestCase):
         block = _strategy_spoiler_policy_block(
             False,
             False,
-            game_genres="",
             asked_entity="",
             kb_entity_match=False,
             app_id="413150",
@@ -911,6 +905,45 @@ class OllamaServiceTests(unittest.TestCase):
         self.assertNotIn("LOW-SPOILER-RISK CONTEXT", block)
         self.assertNotIn("NAMED-ENTITY CONSENT", block)
         self.assertIn("```bonsai-spoiler", block)
+
+    def test_strategy_spoiler_policy_hades_without_entity_stays_conservative(self):
+        block = _strategy_spoiler_policy_block(
+            False,
+            False,
+            asked_entity="",
+            kb_entity_match=False,
+            app_id="1145360",
+        )
+        self.assertNotIn("LOW-SPOILER-RISK CONTEXT", block)
+        self.assertIn("late-game boss names", block)
+
+    def test_strategy_spoiler_policy_kb_entity_match_does_not_title_relax(self):
+        block = _strategy_spoiler_policy_block(
+            False,
+            False,
+            asked_entity="",
+            kb_entity_match=True,
+            app_id="1145360",
+        )
+        self.assertNotIn("LOW-SPOILER-RISK CONTEXT", block)
+        self.assertNotIn("NAMED-ENTITY CONSENT", block)
+
+    def test_build_system_prompt_speed_strategy_domain_injects_compact_constitution(self):
+        lookup_app_name, lookup_vdf = self._verbosity_lookup_helpers()
+        prompt = build_system_prompt(
+            question="Where should I go?",
+            app_id="1145360",
+            app_name="",
+            normalized_attachments=[],
+            prepared_images=[],
+            lookup_app_name=lookup_app_name,
+            lookup_screenshot_vdf_metadata=lookup_vdf,
+            ask_mode="speed",
+            strategy_domain_guidance=True,
+            early_context_suffix="--- Local knowledge base ---\nWalk north.",
+        )
+        self.assertIn("STRATEGY SPOILER CONSTITUTION (knowledge-base coaching)", prompt)
+        self.assertIn("This is not a Strategy Guide branch turn", prompt)
 
     def _verbosity_lookup_helpers(self):
         def lookup_app_name(_app_id: str) -> str:

@@ -11,9 +11,9 @@ from typing import Callable, Optional, Any
 
 from backend.constants import (
     DEFAULT_OLLAMA_BASE_URL,
-    LOW_SPOILER_RISK_APP_IDS,
     OLLAMA_TAB_WHERE_AI_RUNS,
 )
+from backend.services.spoiler_title_profiles import title_profile_is_low_narrative
 from backend.tdp_intent import is_current_tdp_read_intent
 from backend.services.strategy_guide_parse import (
     STRATEGY_FOLLOWUP_PREFIX,
@@ -48,65 +48,23 @@ def user_consents_strategy_spoilers(question: str) -> bool:
     return any(n in s for n in needles)
 
 
-_BULLET_HEAVEN_GENRE_MARKERS = (
-    "roguelike",
-    "rogue-like",
-    "bullet heaven",
-    "bullet-heaven",
-    "survivor",
-    "twin stick",
-    "twin-stick",
-    "horde",
-    "arena shooter",
-    "action rpg",
-)
-
-
-def _game_genres_are_low_spoiler_risk(genres: str) -> bool:
-    g = (genres or "").lower()
-    return any(marker in g for marker in _BULLET_HEAVEN_GENRE_MARKERS)
-
-
 def _strategy_title_is_low_spoiler_risk(
     *,
     app_id: str = "",
-    game_genres: str = "",
-    kb_entity_match: bool = False,
+    app_name: str = "",
 ) -> bool:
-    """True when this *title* treats named bosses/enemies as routine gameplay, not story spoilers.
-
-    The AppID arm exists because the genre arm reads `games.genres` out of the KB corpus
-    (lookup_game_genres), so it is silently unavailable on a Deck with no corpus installed —
-    which is exactly the configuration STRAT-SPOIL-DRG-01 reproduces in.
-    """
-    return (
-        str(app_id or "").strip() in LOW_SPOILER_RISK_APP_IDS
-        or _game_genres_are_low_spoiler_risk(game_genres)
-        or bool(kb_entity_match)
-    )
+    """True when this title treats named bosses/enemies as routine gameplay, not story spoilers."""
+    return title_profile_is_low_narrative(app_id, app_name=app_name)
 
 
-def _strategy_low_risk_active(
+def _strategy_kb_spoiler_clause_suppressed(
     *,
     app_id: str = "",
-    game_genres: str = "",
-    kb_entity_match: bool = False,
+    app_name: str = "",
     asked_entity: str = "",
 ) -> bool:
-    """True when some signal says this turn's boss/enemy guidance should stay in plain text.
-
-    Two different signals, deliberately kept distinct downstream (see the addendum):
-
-    - **Title-level** — the game itself has no progressive story secrets. Relaxes the whole reply.
-    - **Named entity** — the user named the beat, which is consent-in-fact for *that thing only*
-      (spoiler-constitution.md rule 7). It relaxes nothing else, so it holds on story titles too:
-      asking "how do I beat Megaera" gets tactics, while Hades' adjacent secrets stay fenced.
-    """
-    return bool(asked_entity.strip()) or _strategy_title_is_low_spoiler_risk(
-        app_id=app_id,
-        game_genres=game_genres,
-        kb_entity_match=kb_entity_match,
-    )
+    """True when the KB spoiler clause should be dropped for this turn."""
+    return title_profile_is_low_narrative(app_id, app_name=app_name) or bool((asked_entity or "").strip())
 
 
 def extract_strategy_asked_entity(question: str) -> str:
@@ -142,17 +100,13 @@ def kb_text_covers_asked_entity(kb_text: str, entity: str) -> bool:
 
 def _strategy_spoiler_low_risk_addendum(
     *,
-    game_genres: str,
     asked_entity: str,
     kb_entity_match: bool,
     app_id: str = "",
+    app_name: str = "",
 ) -> str:
     """Extra policy when boss/enemy tactics are routine gameplay, not narrative spoilers."""
-    title_low_risk = _strategy_title_is_low_spoiler_risk(
-        app_id=app_id,
-        game_genres=game_genres,
-        kb_entity_match=kb_entity_match,
-    )
+    title_low_risk = _strategy_title_is_low_spoiler_risk(app_id=app_id, app_name=app_name)
     entity = (asked_entity or "").strip()
     if not title_low_risk and not entity:
         return ""
@@ -196,17 +150,18 @@ def _strategy_spoiler_policy_block(
     consent: bool,
     followup: bool,
     *,
-    game_genres: str = "",
     asked_entity: str = "",
     kb_entity_match: bool = False,
     app_id: str = "",
+    app_name: str = "",
+    include_strategy_ui_fences: bool = True,
 ) -> str:
     """Injected after STRATEGY GUIDE MODE header; defines ```bonsai-spoiler fences and ordering."""
     low_risk = _strategy_spoiler_low_risk_addendum(
-        game_genres=game_genres,
         asked_entity=asked_entity,
         kb_entity_match=kb_entity_match,
         app_id=app_id,
+        app_name=app_name,
     )
     # Subtractive, not additive: when the addendum fires it must REPLACE the boss-name
     # prohibition rather than argue with it in the same block. A 2B-class local model
@@ -216,11 +171,7 @@ def _strategy_spoiler_policy_block(
     # Three states, not two. Named-entity consent on a *story* title must carve out only the
     # entity the user named; dropping the boss clause wholesale there would relax every other
     # boss in the game, which is the over-relax failure the Hades row guards against.
-    title_low_risk = _strategy_title_is_low_spoiler_risk(
-        app_id=app_id,
-        game_genres=game_genres,
-        kb_entity_match=kb_entity_match,
-    )
+    title_low_risk = _strategy_title_is_low_spoiler_risk(app_id=app_id, app_name=app_name)
     entity = (asked_entity or "").strip()
     if title_low_risk:
         followup_avoid = "Avoid story endings, major twists, and precise puzzle solutions in plain text. "
@@ -254,7 +205,7 @@ def _strategy_spoiler_policy_block(
             "You may still wrap optional ultra-sensitive notes in ```bonsai-spoiler ... ``` fences, "
             "but it is not required for normal tactics.\n"
         )
-        if not followup:
+        if include_strategy_ui_fences and not followup:
             lines += (
                 "On this first turn, the ```bonsai-strategy-branches fence remains the last characters of the reply; "
                 "place any optional ```bonsai-spoiler blocks above it only.\n\n"
@@ -278,9 +229,39 @@ def _strategy_spoiler_policy_block(
         f"{first_turn_avoid}"
         "Put unavoidably spoilery detail only inside ```bonsai-spoiler ... ``` fences "
         "(opening line exactly ```bonsai-spoiler).\n"
-        "On this first turn, every ```bonsai-spoiler block must appear **above** the opening ```bonsai-strategy-branches line; "
-        "the branch fence must still close the reply — no characters after its closing ```.\n"
-        f"{low_risk}\n"
+        + (
+            "On this first turn, every ```bonsai-spoiler block must appear **above** the opening ```bonsai-strategy-branches line; "
+            "the branch fence must still close the reply — no characters after its closing ```.\n"
+            if include_strategy_ui_fences
+            else ""
+        )
+        + f"{low_risk}\n"
+    )
+
+
+def _strategy_spoiler_constitution_compact_block(
+    consent: bool,
+    *,
+    asked_entity: str = "",
+    kb_entity_match: bool = False,
+    app_id: str = "",
+    app_name: str = "",
+) -> str:
+    """Short constitution inject for Speed/Expert turns with strategy KB cards attached."""
+    policy = _strategy_spoiler_policy_block(
+        consent,
+        followup=False,
+        asked_entity=asked_entity,
+        kb_entity_match=kb_entity_match,
+        app_id=app_id,
+        app_name=app_name,
+        include_strategy_ui_fences=False,
+    )
+    return (
+        "\n\nSTRATEGY SPOILER CONSTITUTION (knowledge-base coaching):\n"
+        f"{policy}"
+        "This is not a Strategy Guide branch turn — do not emit ```bonsai-strategy-branches``` "
+        "or ```bonsai-strategy-checklist``` fences.\n"
     )
 
 def user_wants_power_or_performance_topic(question: str) -> bool:
@@ -803,9 +784,9 @@ def build_system_prompt(
     ask_mode: str = "speed",
     early_context_suffix: str = "",
     strategy_spoiler_consent: bool = False,
-    strategy_spoiler_game_genres: str = "",
     strategy_spoiler_asked_entity: str = "",
     strategy_spoiler_kb_entity_match: bool = False,
+    strategy_domain_guidance: bool = False,
     character_roleplay_on: bool = False,
     strategy_checklist_state: Optional[dict] = None,
     reply_verbosity: str = "balanced",
@@ -914,14 +895,10 @@ def build_system_prompt(
             character_roleplay_on=character_roleplay_on,
         )
     )
-    # Second of the three _strategy_low_risk_active call sites. The KB clause below is the most
-    # dangerous of the competing directives: it fires only when cards are attached — i.e. exactly
-    # when kb_entity_match is strongest — and it sits adjacent to the cards the model is grounding
-    # in, so it binds tightly to the text it is about to write.
-    strategy_low_risk = ask_mode == "strategy" and _strategy_low_risk_active(
+    strategy_domain = strategy_domain_guidance or ask_mode == "strategy"
+    strategy_kb_relaxed = strategy_domain and _strategy_kb_spoiler_clause_suppressed(
         app_id=app_id,
-        game_genres=strategy_spoiler_game_genres,
-        kb_entity_match=strategy_spoiler_kb_entity_match,
+        app_name=app_name,
         asked_entity=strategy_spoiler_asked_entity,
     )
     early_stripped = (early_context_suffix or "").strip()
@@ -931,7 +908,7 @@ def build_system_prompt(
             "\n\nKNOWLEDGE BASE (offline corpus): Ground answers in the attached strategy/compat "
             "cards when relevant. Wrap source-backed claims in ```bonsai-cite ... ``` fences with "
             "trust tier (wiki_verified / wiki_no_patch / fallback_no_source).\n"
-            if strategy_low_risk
+            if strategy_kb_relaxed
             else "\n\nKNOWLEDGE BASE (offline corpus): Ground answers in the attached strategy/compat "
             "cards when relevant. Wrap source-backed claims in ```bonsai-cite ... ``` fences with "
             "trust tier (wiki_verified / wiki_no_patch / fallback_no_source). "
@@ -985,6 +962,14 @@ def build_system_prompt(
             character_roleplay_on=character_roleplay_on,
         )
         language_block = build_reply_language_block(reply_language)
+        if strategy_domain and ask_mode != "strategy":
+            middle += _strategy_spoiler_constitution_compact_block(
+                strategy_spoiler_consent,
+                asked_entity=strategy_spoiler_asked_entity,
+                kb_entity_match=strategy_spoiler_kb_entity_match,
+                app_id=app_id,
+                app_name=app_name,
+            )
         return dynamic_block + general_block + early_block + middle + language_block + verbosity_block + tail
 
     ollama_q = user_asks_ollama_bonsai_host_or_latency(question)
@@ -994,10 +979,10 @@ def build_system_prompt(
     spoiler_policy = _strategy_spoiler_policy_block(
         strategy_spoiler_consent,
         followup,
-        game_genres=strategy_spoiler_game_genres,
         asked_entity=strategy_spoiler_asked_entity,
         kb_entity_match=strategy_spoiler_kb_entity_match,
         app_id=app_id,
+        app_name=app_name,
     )
     if followup:
         strategy_block = (
