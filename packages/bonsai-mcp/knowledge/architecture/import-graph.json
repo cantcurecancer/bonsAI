@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 260,
-  "edgeCount": 607,
+  "fileCount": 261,
+  "edgeCount": 608,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -1395,12 +1395,19 @@
         "src/hooks/useBonsaiAskOrchestration.ts"
       ]
     },
+    "src/hooks/useStreamScrollPin.test.ts": {
+      "imports": [
+        "src/hooks/useStreamScrollPin.ts"
+      ],
+      "importedBy": []
+    },
     "src/hooks/useStreamScrollPin.ts": {
       "imports": [
         "src/utils/chatPanelScroll.ts"
       ],
       "importedBy": [
-        "src/components/MainTabChatTranscript.tsx"
+        "src/components/MainTabChatTranscript.tsx",
+        "src/hooks/useStreamScrollPin.test.ts"
       ]
     },
     "src/hooks/useTabStripBodyOffset.ts": {
