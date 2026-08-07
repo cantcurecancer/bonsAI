@@ -185,6 +185,7 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
     question: string;
     answer: string;
     transparency?: TransparencySnapshot | null;
+    appId?: string;
   } | null>(null);
   const pendingThreadQuestionDisplayRef = useRef<string | null>(null);
   /** Last request_id whose completion already re-seeded suggested prompts (reseed is randomized). */
@@ -413,8 +414,17 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
     if (!lastExchange?.question?.trim()) return;
     const qn = lastExchange.question.trim();
     if (lastFlushedExchangeQuestionRef.current === qn) return;
-    pendingArchiveTurnRef.current = { question: lastExchange.question, answer: lastExchange.answer };
-  }, [lastExchange]);
+    /*
+     * Stamp the AppID here, at completion, not at flush time. The flush runs inside the *next*
+     * Ask, by which point the running game may already be a different title — and "named bosses
+     * are not spoilers" is a per-game rule the display-time unwrap reads back off this turn.
+     */
+    pendingArchiveTurnRef.current = {
+      question: lastExchange.question,
+      answer: lastExchange.answer,
+      appId: ollamaContext?.app_id || undefined,
+    };
+  }, [lastExchange, ollamaContext?.app_id]);
 
   // --- Input transparency (Show details chip) ---
   const refreshInputTransparency = useCallback(async () => {
@@ -817,6 +827,7 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
             question: arch.question,
             answer: arch.answer,
             transparency: arch.transparency ?? null,
+            appId: arch.appId,
           },
         ]);
         lastFlushedExchangeQuestionRef.current = arch.question.trim();

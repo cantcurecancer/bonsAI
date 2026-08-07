@@ -52,6 +52,13 @@ export type AskThreadCollapsedTurn = {
   question: string;
   answer: string;
   transparency?: TransparencySnapshot | null;
+  /**
+   * AppID this turn was asked against. Optional so older session-survival snapshots still parse.
+   * Stored per turn rather than read from live context because "named bosses are not spoilers"
+   * is a per-game rule — reusing the current AppID would apply one game's allowlist entry to
+   * another game's answer after the player switches titles.
+   */
+  appId?: string;
 };
 
 /** Accordion key for the Ask transcript: archived turn id, live turn, or all collapsed. */

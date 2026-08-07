@@ -260,7 +260,19 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
     return () => col.removeEventListener("keydown", onKeyDown, true);
   }, [askThreadCollapsed.length, expandedTurnKey]);
 
-  const renderAnswerBubble = (body: string, streaming: boolean, answerKey: string) =>
+  /*
+   * askQuestion/appId are the inputs the asked-entity spoiler unwrap runs on, so they must be
+   * supplied for history turns too — not just "live". Deriving them from answerKey === "live"
+   * meant an answer rendered unfenced while it was live and then re-fenced itself the moment
+   * the next Ask pushed it into the collapsed thread.
+   */
+  const renderAnswerBubble = (
+    body: string,
+    streaming: boolean,
+    answerKey: string,
+    askQuestion: string,
+    appId: string | null
+  ) =>
     buildAnswerBubbleElement({
       body,
       streaming,
@@ -271,8 +283,8 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
         lastExchange?.spoilerConsentEffective === true,
       maxWidthCss: BONSAI_CHAT_AI_MAX_WIDTH_CSS,
       answerKey,
-      askQuestion: answerKey === "live" ? liveQuestion || lastExchange?.question || "" : "",
-      appId: answerKey === "live" ? ollamaContext?.app_id ?? null : null,
+      askQuestion,
+      appId,
     });
 
   const showTransparencyUi = transparencyUiAvailable(transparencySnapshot);
@@ -313,7 +325,7 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
             })}
             {expandedTurnKey === turn.id ? (
               <>
-                {renderAnswerBubble(turn.answer, false, turn.id)}
+                {renderAnswerBubble(turn.answer, false, turn.id, turn.question, turn.appId ?? null)}
                 {turn.transparency && chipsFromSnapshot(turn.transparency).length > 0 ? (
                   <Focusable
                     style={{ maxWidth: BONSAI_CHAT_AI_MAX_WIDTH_CSS, marginTop: 8 }}
@@ -392,7 +404,13 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
               </div>
             ) : null}
             {expandedTurnKey === "live" && showLiveResponse
-              ? renderAnswerBubble(liveResponseBody, isStreamingPreview, "live")
+              ? renderAnswerBubble(
+                  liveResponseBody,
+                  isStreamingPreview,
+                  "live",
+                  liveQuestion || lastExchange?.question || "",
+                  ollamaContext?.app_id ?? null
+                )
               : null}
             {showLiveStrategyBranches && strategyGuideBranches && onStrategyBranchPick ? (
               <Focusable

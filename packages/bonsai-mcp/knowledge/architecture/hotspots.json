@@ -12,7 +12,7 @@
     },
     {
       "path": "src/hooks/useBonsaiAskOrchestration.ts",
-      "lines": 1320,
+      "lines": 1331,
       "role": ""
     },
     {
@@ -66,13 +66,13 @@
       "role": "Prompt build, Ollama HTTP, streaming"
     },
     {
-      "path": "src/components/CharacterPickerModal.tsx",
-      "lines": 721,
+      "path": "src/components/MainTabChatTranscript.tsx",
+      "lines": 722,
       "role": ""
     },
     {
-      "path": "src/components/MainTabChatTranscript.tsx",
-      "lines": 704,
+      "path": "src/components/CharacterPickerModal.tsx",
+      "lines": 721,
       "role": ""
     },
     {
@@ -96,6 +96,11 @@
       "role": ""
     },
     {
+      "path": "src/hooks/useBonsaiAskOrchestration.test.ts",
+      "lines": 553,
+      "role": ""
+    },
+    {
       "path": "src/components/SettingsTab.tsx",
       "lines": 545,
       "role": ""
@@ -103,11 +108,6 @@
     {
       "path": "src/hooks/usePluginSettings.ts",
       "lines": 527,
-      "role": ""
-    },
-    {
-      "path": "src/hooks/useBonsaiAskOrchestration.test.ts",
-      "lines": 524,
       "role": ""
     },
     {

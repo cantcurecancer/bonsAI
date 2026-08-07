@@ -519,5 +519,34 @@ describe("useBonsaiAskOrchestration", () => {
       });
       expect(result.current.askThreadDisplayQuestion).toBe("second question");
     });
+
+    it("stamps the archived turn with the AppID it was asked against", async () => {
+      /*
+       * The display-time spoiler unwrap reads this back off the turn. Without it, a history turn
+       * has no AppID and re-fences boss tactics the user named — STRAT-SPOIL-DRG-01.
+       */
+      setRpcHandler("start_background_game_ai", () => ({
+        accepted: true,
+        status: "completed",
+        success: true,
+        response: "Focus the weak points.",
+        request_id: 9,
+        app_id: "2321470",
+      }));
+
+      const { result } = renderHook(() => useBonsaiAskOrchestration(makeArgs()));
+
+      await act(async () => {
+        await result.current.onAskOllama("How do I beat Glyphid Dreadnought?");
+      });
+      await act(async () => {
+        await result.current.onAskOllama("second question");
+      });
+
+      expect(result.current.askThreadCollapsed[0]).toMatchObject({
+        question: "How do I beat Glyphid Dreadnought?",
+        appId: "2321470",
+      });
+    });
   });
 });
