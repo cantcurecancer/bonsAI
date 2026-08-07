@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 266,
-  "edgeCount": 614,
+  "fileCount": 274,
+  "edgeCount": 642,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -115,8 +115,10 @@
     },
     "src/components/DeveloperTab.tsx": {
       "imports": [
+        "src/components/PermissionDenyAction.tsx",
         "src/data/bonsaiSettingsSchema.ts",
-        "src/utils/deckyCall.ts"
+        "src/utils/deckyCall.ts",
+        "src/utils/permissionDeepLink.ts"
       ],
       "importedBy": [
         "src/components/OllamaTab.tsx",
@@ -151,13 +153,15 @@
         "src/components/MainTabPresetRow.tsx",
         "src/components/MainTabScreenshotBrowser.tsx",
         "src/components/MainTabUnifiedAskBar.tsx",
+        "src/components/PermissionDenyAction.tsx",
         "src/data/askMode.ts",
         "src/data/modelPolicy.ts",
         "src/data/presets.ts",
         "src/data/replyMicroActions.ts",
         "src/types/backgroundAsk.ts",
         "src/types/bonsaiUi.ts",
-        "src/utils/inputTransparency.ts"
+        "src/utils/inputTransparency.ts",
+        "src/utils/permissionDeepLink.ts"
       ],
       "importedBy": [
         "src/features/plugin-shell/tabs/useMainTabPayload.tsx"
@@ -193,6 +197,7 @@
       "imports": [
         "src/components/BonsaiChatSecondaryButton.tsx",
         "src/components/ContextChipLadder.tsx",
+        "src/components/PermissionDenyAction.tsx",
         "src/components/SessionContextStrip.tsx",
         "src/components/StrategyChecklistPanel.tsx",
         "src/components/icons.tsx",
@@ -218,6 +223,7 @@
         "src/utils/inputTransparency.ts",
         "src/utils/liveTurnFocusGraph.ts",
         "src/utils/navFocusRegistry.ts",
+        "src/utils/permissionDeepLink.ts",
         "src/utils/troubleshootingAskHeuristic.ts"
       ],
       "importedBy": [
@@ -259,11 +265,13 @@
     },
     "src/components/MainTabScreenshotBrowser.tsx": {
       "imports": [
+        "src/components/PermissionDenyAction.tsx",
         "src/components/icons.tsx",
         "src/types/bonsaiUi.ts",
         "src/utils/clipboardStash.ts",
         "src/utils/deckyCall.ts",
-        "src/utils/mediaFormat.ts"
+        "src/utils/mediaFormat.ts",
+        "src/utils/permissionDeepLink.ts"
       ],
       "importedBy": [
         "src/components/MainTab.tsx"
@@ -274,13 +282,15 @@
         "src/components/CharacterRoleplayEmoticon.tsx",
         "src/components/MainTabAskModeMenuPopover.tsx",
         "src/components/MainTabAttachMenuPopover.tsx",
+        "src/components/PermissionDenyAction.tsx",
         "src/components/icons.tsx",
         "src/data/askMode.ts",
         "src/features/unified-input/constants.ts",
         "src/hooks/useMainTabAskBarFocus.ts",
         "src/types/bonsaiUi.ts",
         "src/utils/focusNavigation.ts",
-        "src/utils/mediaFormat.ts"
+        "src/utils/mediaFormat.ts",
+        "src/utils/permissionDeepLink.ts"
       ],
       "importedBy": [
         "src/components/MainTab.tsx"
@@ -368,9 +378,32 @@
         "src/components/OllamaTab.tsx"
       ]
     },
+    "src/components/PermissionDenyAction.test.tsx": {
+      "imports": [
+        "src/components/PermissionDenyAction.tsx"
+      ],
+      "importedBy": []
+    },
+    "src/components/PermissionDenyAction.tsx": {
+      "imports": [
+        "src/utils/permissionDeepLink.ts"
+      ],
+      "importedBy": [
+        "src/components/DeveloperTab.tsx",
+        "src/components/MainTab.tsx",
+        "src/components/MainTabChatTranscript.tsx",
+        "src/components/MainTabScreenshotBrowser.tsx",
+        "src/components/MainTabUnifiedAskBar.tsx",
+        "src/components/PermissionDenyAction.test.tsx",
+        "src/components/VoiceInputSettingsSection.tsx",
+        "src/features/plugin-shell/useDesktopNoteSaveModal.tsx"
+      ]
+    },
     "src/components/PermissionsTab.tsx": {
       "imports": [
-        "src/data/bonsaiSettingsSchema.ts"
+        "src/data/bonsaiSettingsSchema.ts",
+        "src/utils/permissionDeepLink.ts",
+        "src/utils/permissionJumpRegistry.ts"
       ],
       "importedBy": [
         "src/features/plugin-shell/tabs/usePermissionsTabPayload.tsx"
@@ -431,6 +464,7 @@
         "src/data/uiScaleProfile.ts",
         "src/features/plugin-shell/modalReturnFocusRegistry.ts",
         "src/features/unified-input/constants.ts",
+        "src/utils/permissionDeepLink.ts",
         "src/utils/settingsTabLocalSurvival.ts"
       ],
       "importedBy": [
@@ -511,8 +545,10 @@
     },
     "src/components/VoiceInputSettingsSection.tsx": {
       "imports": [
+        "src/components/PermissionDenyAction.tsx",
         "src/data/bonsaiSettingsSchema.ts",
-        "src/utils/deckyCall.ts"
+        "src/utils/deckyCall.ts",
+        "src/utils/permissionDeepLink.ts"
       ],
       "importedBy": [
         "src/components/SettingsTab.tsx",
@@ -656,6 +692,7 @@
         "src/utils/bonsaiSessionSurvival.test.ts",
         "src/utils/bonsaiSessionSurvival.ts",
         "src/utils/composeThinkingBlurb.ts",
+        "src/utils/permissionDeepLink.ts",
         "src/utils/settingsContracts.test.ts",
         "src/utils/settingsPayload.ts",
         "src/utils/unifiedInputPersistenceMode.ts"
@@ -1062,7 +1099,9 @@
     "src/features/plugin-shell/useDesktopNoteSaveModal.tsx": {
       "imports": [
         "src/components/DesktopNoteSaveModal.tsx",
-        "src/utils/deckyCall.ts"
+        "src/components/PermissionDenyAction.tsx",
+        "src/utils/deckyCall.ts",
+        "src/utils/permissionDeepLink.ts"
       ],
       "importedBy": [
         "src/index.tsx"
@@ -1309,6 +1348,23 @@
         "src/components/MainTabUnifiedAskBar.tsx"
       ]
     },
+    "src/hooks/usePermissionJump.test.ts": {
+      "imports": [
+        "src/hooks/usePermissionJump.ts",
+        "src/utils/permissionJumpRegistry.ts"
+      ],
+      "importedBy": []
+    },
+    "src/hooks/usePermissionJump.ts": {
+      "imports": [
+        "src/utils/permissionDeepLink.ts",
+        "src/utils/permissionJumpRegistry.ts"
+      ],
+      "importedBy": [
+        "src/hooks/usePermissionJump.test.ts",
+        "src/index.tsx"
+      ]
+    },
     "src/hooks/usePluginSettings.test.ts": {
       "imports": [
         "src/data/bonsaiSettingsSchema.ts",
@@ -1519,6 +1575,7 @@
         "src/hooks/useCapturedFrontendErrors.ts",
         "src/hooks/useDisclaimerAndLocalRuntimeGates.tsx",
         "src/hooks/useIntentPacks.ts",
+        "src/hooks/usePermissionJump.ts",
         "src/hooks/usePluginSettings.ts",
         "src/hooks/useQamPanelHeightGuard.ts",
         "src/hooks/useReplyLanguage.ts",
@@ -2395,6 +2452,49 @@
         "src/components/OllamaWhereAiRunsSection.tsx",
         "src/hooks/useBonsaiPluginShell.ts",
         "src/index.tsx"
+      ]
+    },
+    "src/utils/permissionDeepLink.test.ts": {
+      "imports": [
+        "src/utils/permissionDeepLink.ts"
+      ],
+      "importedBy": []
+    },
+    "src/utils/permissionDeepLink.ts": {
+      "imports": [
+        "src/data/bonsaiSettingsSchema.ts"
+      ],
+      "importedBy": [
+        "src/components/DeveloperTab.tsx",
+        "src/components/MainTab.tsx",
+        "src/components/MainTabChatTranscript.tsx",
+        "src/components/MainTabScreenshotBrowser.tsx",
+        "src/components/MainTabUnifiedAskBar.tsx",
+        "src/components/PermissionDenyAction.tsx",
+        "src/components/PermissionsTab.tsx",
+        "src/components/SettingsTab.tsx",
+        "src/components/VoiceInputSettingsSection.tsx",
+        "src/features/plugin-shell/useDesktopNoteSaveModal.tsx",
+        "src/hooks/usePermissionJump.ts",
+        "src/utils/permissionDeepLink.test.ts",
+        "src/utils/permissionJumpRegistry.ts"
+      ]
+    },
+    "src/utils/permissionJumpRegistry.test.ts": {
+      "imports": [
+        "src/utils/permissionJumpRegistry.ts"
+      ],
+      "importedBy": []
+    },
+    "src/utils/permissionJumpRegistry.ts": {
+      "imports": [
+        "src/utils/permissionDeepLink.ts"
+      ],
+      "importedBy": [
+        "src/components/PermissionsTab.tsx",
+        "src/hooks/usePermissionJump.test.ts",
+        "src/hooks/usePermissionJump.ts",
+        "src/utils/permissionJumpRegistry.test.ts"
       ]
     },
     "src/utils/persistOllamaIp.test.ts": {

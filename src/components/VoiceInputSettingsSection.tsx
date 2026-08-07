@@ -10,6 +10,8 @@ import { PanelSection, PanelSectionRow, Button, Focusable } from "@decky/ui";
 import { toaster } from "@decky/api";
 import { VOICE_STT_MODEL_OPTIONS, type VoiceSttModelId } from "../data/bonsaiSettingsSchema";
 import { callDeckyWithTimeout, DECKY_RPC_TIMEOUT_MS, formatDeckyRpcError } from "../utils/deckyCall";
+import { PermissionDenyAction } from "./PermissionDenyAction";
+import type { BonsaiCapabilityKey } from "../utils/permissionDeepLink";
 
 type VoiceEngineStatus = {
   model_id?: string;
@@ -34,12 +36,14 @@ type Props = {
   voiceSttModel: VoiceSttModelId;
   setVoiceSttModel: (v: VoiceSttModelId) => void;
   microphoneAccessEnabled: boolean;
+  onJumpToPermission?: (capability: BonsaiCapabilityKey) => void;
 };
 
 export const VoiceInputSettingsSection: React.FC<Props> = ({
   voiceSttModel,
   setVoiceSttModel,
   microphoneAccessEnabled,
+  onJumpToPermission,
 }) => {
   const [engineStatus, setEngineStatus] = useState<VoiceEngineStatus | null>(null);
   const [installBusy, setInstallBusy] = useState(false);
@@ -85,6 +89,10 @@ export const VoiceInputSettingsSection: React.FC<Props> = ({
 
   const onDownloadModel = async () => {
     if (!microphoneAccessEnabled) {
+      if (onJumpToPermission) {
+        onJumpToPermission("microphone_access");
+        return;
+      }
       toaster.toast({
         title: "Permission required",
         body: "Enable Voice input (microphone) in the Permissions tab first.",
@@ -142,6 +150,15 @@ export const VoiceInputSettingsSection: React.FC<Props> = ({
           first. Audio is processed on-device and never saved.
         </div>
       </PanelSectionRow>
+      {!microphoneAccessEnabled && onJumpToPermission ? (
+        <PanelSectionRow>
+          <PermissionDenyAction
+            capability="microphone_access"
+            onJump={onJumpToPermission}
+            compact
+          />
+        </PanelSectionRow>
+      ) : null}
       <PanelSectionRow>
         <div className="bonsai-settings-bleed" style={{ width: "100%" }}>
           <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 6, color: "#dce8f4" }}>STT model</div>

@@ -30,6 +30,7 @@ import {
   unregisterSettingsTabLocalGetter,
 } from "../utils/settingsTabLocalSurvival";
 import { VoiceInputSettingsSection } from "./VoiceInputSettingsSection";
+import type { BonsaiCapabilityKey } from "../utils/permissionDeepLink";
 import { SettingsTabUiScaleSection } from "./SettingsTabUiScaleSection";
 import type { UiScaleProfileId } from "../data/uiScaleProfile";
 import type { VoiceSttModelId } from "../data/bonsaiSettingsSchema";
@@ -94,6 +95,7 @@ export type SettingsTabProps = {
   voiceSttModel: VoiceSttModelId;
   setVoiceSttModel: (v: VoiceSttModelId) => void;
   microphoneAccessEnabled: boolean;
+  onJumpToPermission?: (capability: BonsaiCapabilityKey) => void;
 
   uiScaleAutoEnabled: boolean;
   uiScaleManualProfile: UiScaleProfileId;
@@ -128,6 +130,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
   voiceSttModel,
   setVoiceSttModel,
   microphoneAccessEnabled,
+  onJumpToPermission,
   uiScaleAutoEnabled,
   uiScaleManualProfile,
   appliedUiScaleProfileId,
@@ -317,6 +320,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
         voiceSttModel={voiceSttModel}
         setVoiceSttModel={setVoiceSttModel}
         microphoneAccessEnabled={microphoneAccessEnabled}
+        onJumpToPermission={onJumpToPermission}
       />
       <PanelSection title="AI voice & personality">
         <PanelSectionRow>

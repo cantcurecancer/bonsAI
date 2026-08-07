@@ -17,7 +17,7 @@
     },
     {
       "path": "src/index.tsx",
-      "lines": 1317,
+      "lines": 1327,
       "role": "Plugin root: tabs, scoped CSS, RPC wiring, Settings"
     },
     {
@@ -41,13 +41,13 @@
       "role": ""
     },
     {
-      "path": "src/data/characterPlaceholderEmoticonGrids.ts",
-      "lines": 1024,
+      "path": "src/components/MainTabUnifiedAskBar.tsx",
+      "lines": 1055,
       "role": ""
     },
     {
-      "path": "src/components/MainTabUnifiedAskBar.tsx",
-      "lines": 1023,
+      "path": "src/data/characterPlaceholderEmoticonGrids.ts",
+      "lines": 1024,
       "role": ""
     },
     {
@@ -61,14 +61,14 @@
       "role": ""
     },
     {
+      "path": "src/components/MainTabChatTranscript.tsx",
+      "lines": 737,
+      "role": ""
+    },
+    {
       "path": "py_modules/backend/services/ollama_service.py",
       "lines": 735,
       "role": "Prompt build, Ollama HTTP, streaming"
-    },
-    {
-      "path": "src/components/MainTabChatTranscript.tsx",
-      "lines": 723,
-      "role": ""
     },
     {
       "path": "src/components/CharacterPickerModal.tsx",
@@ -102,7 +102,7 @@
     },
     {
       "path": "src/components/SettingsTab.tsx",
-      "lines": 545,
+      "lines": 549,
       "role": ""
     },
     {
@@ -136,6 +136,11 @@
       "role": ""
     },
     {
+      "path": "src/components/DeveloperTab.tsx",
+      "lines": 473,
+      "role": ""
+    },
+    {
       "path": "src/styles/sections/gamepadAndPullModels.ts",
       "lines": 470,
       "role": ""
@@ -143,11 +148,6 @@
     {
       "path": "py_modules/backend/services/knowledge_base_schema.py",
       "lines": 464,
-      "role": ""
-    },
-    {
-      "path": "src/components/DeveloperTab.tsx",
-      "lines": 458,
       "role": ""
     },
     {

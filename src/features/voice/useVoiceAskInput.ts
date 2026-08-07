@@ -22,14 +22,13 @@ export type UseVoiceAskInputArgs = {
   microphoneAccess: boolean;
   /** The mic is inert while an Ask is running. */
   isAsking: boolean;
-  /** Send the user somewhere they can grant the permission they just hit. */
-  goToPermissionsTab: () => void;
   /** Localised copy for the transcription-failure toast. */
   uiT: (key: UiStringKey, vars?: UiStringVars) => string;
 };
 
 export function useVoiceAskInput(a: UseVoiceAskInputArgs) {
   const [voiceRecording, setVoiceRecording] = useState(false);
+  const [micPermissionDenied, setMicPermissionDenied] = useState(false);
 
   const onVoiceError = useCallback(
     (e: unknown) => {
@@ -57,6 +56,16 @@ export function useVoiceAskInput(a: UseVoiceAskInputArgs) {
     }
   }, [a.microphoneAccess, voiceRecording, stopVoiceTranscription, invalidateVoice]);
 
+  useEffect(() => {
+    if (a.microphoneAccess) {
+      setMicPermissionDenied(false);
+    }
+  }, [a.microphoneAccess]);
+
+  const dismissMicPermissionDeny = useCallback(() => {
+    setMicPermissionDenied(false);
+  }, []);
+
   const onMicInput = useCallback(() => {
     if (a.isAsking) return;
     if (voiceRecording) {
@@ -65,14 +74,15 @@ export function useVoiceAskInput(a: UseVoiceAskInputArgs) {
       return;
     }
     if (!a.microphoneAccess) {
+      setMicPermissionDenied(true);
       toaster.toast({
         title: "Permission required",
         body: "Enable Voice input (microphone) in the Permissions tab to use speech-to-text.",
         duration: 4500,
       });
-      a.goToPermissionsTab();
       return;
     }
+    setMicPermissionDenied(false);
     void startVoiceTranscription(a.unifiedInput)
       .then(() => setVoiceRecording(true))
       .catch((e: unknown) => {
@@ -87,11 +97,17 @@ export function useVoiceAskInput(a: UseVoiceAskInputArgs) {
     a.isAsking,
     voiceRecording,
     a.microphoneAccess,
-    a.goToPermissionsTab,
     startVoiceTranscription,
     stopVoiceTranscription,
     a.unifiedInput,
   ]);
 
-  return { voiceRecording, onMicInput, stopVoiceTranscription, invalidateVoice };
+  return {
+    voiceRecording,
+    onMicInput,
+    stopVoiceTranscription,
+    invalidateVoice,
+    micPermissionDenied,
+    dismissMicPermissionDeny,
+  };
 }

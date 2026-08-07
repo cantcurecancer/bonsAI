@@ -6,7 +6,7 @@
  * Does not: Submit Asks, poll RPC, or own focus graphs — see MainTabUnifiedAskBar and MainTabChatTranscript.
  */
 import React, { useRef, useState } from "react";
-import { PanelSection, PanelSectionRow } from "@decky/ui";
+import { PanelSection, PanelSectionRow, Button } from "@decky/ui";
 import type { PresetPrompt } from "../data/presets";
 import type {
   AppliedResult,
@@ -27,6 +27,8 @@ import { MainTabPresetRow } from "./MainTabPresetRow";
 import { MainTabUnifiedAskBar } from "./MainTabUnifiedAskBar";
 import { MainTabScreenshotBrowser } from "./MainTabScreenshotBrowser";
 import { MainTabChatTranscript } from "./MainTabChatTranscript";
+import { PermissionDenyAction } from "./PermissionDenyAction";
+import type { BonsaiCapabilityKey } from "../utils/permissionDeepLink";
 
 export type MainTabProps = {
   fullBleedRowStyle: React.CSSProperties;
@@ -125,7 +127,9 @@ export type MainTabProps = {
   lastRequestId?: number | null;
   lastExchange?: LastExchangeSnapshot | null;
   gameContextReadEnabled?: boolean;
-  onNavigateToPermissions?: () => void;
+  onNavigateToPermissions?: (capability: BonsaiCapabilityKey) => void;
+  micPermissionDenied?: boolean;
+  onDismissMicPermissionDeny?: () => void;
 };
 
 export function MainTab(props: MainTabProps) {
@@ -160,6 +164,26 @@ export function MainTab(props: MainTabProps) {
           }}
         />
 
+        {props.micPermissionDenied && props.onNavigateToPermissions ? (
+          <PanelSectionRow>
+            <div className="bonsai-full-bleed-row" style={props.fullBleedRowStyle}>
+              <PermissionDenyAction
+                capability="microphone_access"
+                onJump={props.onNavigateToPermissions}
+                compact
+              />
+              {props.onDismissMicPermissionDeny ? (
+                <Button
+                  onClick={props.onDismissMicPermissionDeny}
+                  style={{ marginTop: 6, fontSize: 11, padding: "4px 10px", minHeight: 34 }}
+                >
+                  Dismiss
+                </Button>
+              ) : null}
+            </div>
+          </PanelSectionRow>
+        ) : null}
+
         {props.isScreenshotBrowserOpen && (
           <PanelSectionRow>
             <MainTabScreenshotBrowser
@@ -174,6 +198,7 @@ export function MainTab(props: MainTabProps) {
               isLoadingRecentScreenshots={props.isLoadingRecentScreenshots}
               onSelectRecentScreenshot={props.onSelectRecentScreenshot}
               setUnifiedInput={props.setUnifiedInput}
+              onNavigateToPermissions={props.onNavigateToPermissions}
             />
           </PanelSectionRow>
         )}

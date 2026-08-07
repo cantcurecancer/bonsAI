@@ -22,6 +22,9 @@ import {
 import { formatAppliedTuningBannerText } from "../utils/appliedTuningText";
 import type { ModelPolicyDisclosurePayload } from "../data/modelPolicy";
 import { StrategyChecklistPanel } from "./StrategyChecklistPanel";
+import { PermissionDenyAction } from "./PermissionDenyAction";
+import { isVacCheckCapabilityDenyResponse } from "../utils/permissionDeepLink";
+import type { BonsaiCapabilityKey } from "../utils/permissionDeepLink";
 import { isPendingPlaceholderResponse } from "../utils/askThinkingPhases";
 import { BonsaiChatSecondaryButton } from "./BonsaiChatSecondaryButton";
 import { buildReplyActionsElement } from "../utils/buildReplyActionsElement";
@@ -108,7 +111,7 @@ export type MainTabChatTranscriptProps = {
   askMode: AskModeId;
   /** When false, troubleshooting-shaped Asks show a dismissible hint to enable game-context permission. */
   gameContextReadEnabled?: boolean;
-  onNavigateToPermissions?: () => void;
+  onNavigateToPermissions?: (capability: BonsaiCapabilityKey) => void;
 };
 
 export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
@@ -584,19 +587,30 @@ questionLooksLikeTroubleshootingAsk(unifiedInput) ? (
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
         {onNavigateToPermissions ? (
           <Button
-            onClick={() => onNavigateToPermissions()}
-            style={{ fontSize: 11, padding: "4px 10px" }}
+            onClick={() => onNavigateToPermissions("steam_logs_read")}
+            style={{ fontSize: 11, padding: "4px 10px", minHeight: 34 }}
           >
             Open Permissions
           </Button>
         ) : null}
         <Button
           onClick={() => setTroubleshootingPermHintDismissed(true)}
-          style={{ fontSize: 11, padding: "4px 10px" }}
+          style={{ fontSize: 11, padding: "4px 10px", minHeight: 34 }}
         >
           Dismiss
         </Button>
       </div>
+    </div>
+  </PanelSectionRow>
+) : null}
+{!isAsking && onNavigateToPermissions && isVacCheckCapabilityDenyResponse(ollamaResponse) ? (
+  <PanelSectionRow>
+    <div className="bonsai-full-bleed-row" style={fullBleedRowStyle}>
+      <PermissionDenyAction
+        capability="steam_web_api"
+        onJump={onNavigateToPermissions}
+        compact
+      />
     </div>
   </PanelSectionRow>
 ) : null}

@@ -13,6 +13,8 @@ import { formatBytes, formatScreenshotTimestamp, toFileUri } from "../utils/medi
 import { readClipboardText, sanitizeClipboardStashText } from "../utils/clipboardStash";
 import { formatDeckyRpcError } from "../utils/deckyCall";
 import { BackChevronIcon, RefreshArrowIcon } from "./icons";
+import { PermissionDenyAction } from "./PermissionDenyAction";
+import type { BonsaiCapabilityKey } from "../utils/permissionDeepLink";
 
 export type MainTabScreenshotBrowserProps = {
   fullBleedRowStyle: React.CSSProperties;
@@ -26,6 +28,7 @@ export type MainTabScreenshotBrowserProps = {
   isLoadingRecentScreenshots: boolean;
   onSelectRecentScreenshot: (item: ScreenshotItem) => void;
   setUnifiedInput: React.Dispatch<React.SetStateAction<string>>;
+  onNavigateToPermissions?: (capability: BonsaiCapabilityKey) => void;
 };
 
 export function MainTabScreenshotBrowser({
@@ -40,6 +43,7 @@ export function MainTabScreenshotBrowser({
   isLoadingRecentScreenshots,
   onSelectRecentScreenshot,
   setUnifiedInput,
+  onNavigateToPermissions,
 }: MainTabScreenshotBrowserProps) {
   const onPasteClipboardStash = useCallback(async () => {
     try {
@@ -112,16 +116,32 @@ export function MainTabScreenshotBrowser({
         </Button>
       </Focusable>
 
-      {mediaError && (
+      {mediaError && onNavigateToPermissions ? (
+        <PermissionDenyAction
+          capability="media_library_access"
+          message={mediaError}
+          onJump={onNavigateToPermissions}
+          compact
+        />
+      ) : mediaError ? (
         <div style={{ color: "#f09a8d", fontSize: 11, lineHeight: 1.35 }}>{mediaError}</div>
-      )}
+      ) : null}
 
       {recentScreenshots.length === 0 && !isLoadingRecentScreenshots ? (
+        !mediaLibraryEnabled && onNavigateToPermissions ? (
+          <PermissionDenyAction
+            capability="media_library_access"
+            message="Paste clipboard into Ask, or enable Media library access in Permissions to attach screenshots."
+            onJump={onNavigateToPermissions}
+            compact
+          />
+        ) : (
         <div style={{ color: "#9cb0c6", fontSize: 12, lineHeight: 1.4 }}>
           {mediaLibraryEnabled
             ? "No recent screenshots found. Open Steam Media and take a screenshot, then refresh — or use Paste clipboard."
             : "Paste clipboard into Ask, or enable Media library access in Permissions to attach screenshots."}
         </div>
+        )
       ) : (
         <div
           style={{

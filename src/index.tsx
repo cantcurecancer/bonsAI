@@ -69,6 +69,7 @@ import { useIntentPacks } from "./hooks/useIntentPacks";
 import { useScreenshotBrowser } from "./hooks/useScreenshotBrowser";
 import { useSteamSettingsSearch } from "./hooks/useSteamSettingsSearch";
 import { useBonsaiPluginShell } from "./hooks/useBonsaiPluginShell";
+import { usePermissionJump } from "./hooks/usePermissionJump";
 import { useVoiceAskInput } from "./features/voice/useVoiceAskInput";
 import { useRoutingOrderModal } from "./features/model-routing/useRoutingOrderModal";
 import { useOllamaModelsHubModal } from "./features/plugin-shell/useOllamaModelsHubModal";
@@ -506,9 +507,10 @@ const Content: React.FC = () => {
     }
   }, [askMode, setStrategyGuideBranches]);
 
-  const goToPermissionsTab = useCallback(() => {
-    setCurrentTab("permissions");
-  }, []);
+  const { jumpToPermission, returnFromPermissionJump, permissionJumpReturnTab } = usePermissionJump({
+    currentTab,
+    setCurrentTab,
+  });
 
   const goToOllamaTab = useCallback(() => {
     setCurrentTab("ollama");
@@ -855,12 +857,11 @@ const Content: React.FC = () => {
     uiT,
   ]);
 
-  const { voiceRecording, onMicInput } = useVoiceAskInput({
+  const { voiceRecording, onMicInput, micPermissionDenied, dismissMicPermissionDeny } = useVoiceAskInput({
     setUnifiedInput,
     unifiedInput,
     microphoneAccess: capabilities.microphone_access,
     isAsking,
-    goToPermissionsTab,
     uiT,
   });
 
@@ -869,7 +870,7 @@ const Content: React.FC = () => {
   const openDesktopNoteSaveModal = useDesktopNoteSaveModal({
     filesystemWrite: capabilities.filesystem_write,
     lastExchange,
-    goToPermissionsTab,
+    jumpToPermission,
     currentTab,
     finalizeShowModalAndRestoreActiveTab,
     returnTabRef: characterPickerReturnTabRef,
@@ -994,7 +995,9 @@ const Content: React.FC = () => {
     onOpenDesktopNoteSave: openDesktopNoteSaveModal,
     mediaLibraryEnabled: capabilities.media_library_access,
     gameContextReadEnabled: capabilities.media_library_access && capabilities.steam_logs_read,
-    onNavigateToPermissions: goToPermissionsTab,
+    onNavigateToPermissions: jumpToPermission,
+    micPermissionDenied,
+    onDismissMicPermissionDeny: dismissMicPermissionDeny,
     desktopNoteSaveEnabled: capabilities.filesystem_write,
     aiCharacterEnabled,
     aiCharacterRandom,
@@ -1056,6 +1059,7 @@ const Content: React.FC = () => {
     voiceSttModel,
     setVoiceSttModel,
     microphoneAccessEnabled: capabilities.microphone_access,
+    onJumpToPermission: jumpToPermission,
     uiScaleAutoEnabled,
     uiScaleManualProfile,
     appliedUiScaleProfileId: uiScale.appliedProfileId,
@@ -1098,7 +1102,12 @@ const Content: React.FC = () => {
     ragCorpusVersion,
   });
 
-  const permissionsTab = usePermissionsTabPayload({ capabilities, setCapabilities });
+  const permissionsTab = usePermissionsTabPayload({
+    capabilities,
+    setCapabilities,
+    permissionJumpReturnTab,
+    onReturnFromPermissionJump: returnFromPermissionJump,
+  });
 
   const onSteamInputPhase1Jump = useCallback(() => {
     const entry = getSteamInputLexiconEntry("phase1_per_game_controller_config");
@@ -1154,6 +1163,7 @@ const Content: React.FC = () => {
     desktopAppLogLevel,
     setDesktopAppLogLevel,
     filesystemWrite: capabilities.filesystem_write,
+    onJumpToPermission: jumpToPermission,
     presetChipFadeAnimationEnabled,
     setPresetChipFadeAnimationEnabled,
     presetChipAnimation,

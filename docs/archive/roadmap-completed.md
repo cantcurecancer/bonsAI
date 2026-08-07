@@ -216,6 +216,15 @@ Headings group related work. Star counts match the historical list.
 
 **Shipped** — see **Completed** and baseline index. Ollama/LAN ask traffic is not gated as “web.”
 
+#### Permission jump (denial → focused toggle)
+
+★★
+
+**Shipped 2026-08-07 (Wave 3 K).** `permissionDeepLink.ts` maps each capability key to a Permissions-tab focus target; `usePermissionJump` arms return-tab + focus; deny surfaces render `PermissionDenyAction` (**Open Permissions**). Permissions tab shows **Back to …** after a jump. Unit: `permissionDeepLink.test.ts`, `permissionJumpRegistry.test.ts`, `usePermissionJump.test.ts`, `PermissionDenyAction.test.tsx`. On-Deck: **PERM-JUMP-01** in [testing-manual.md](../testing-manual.md).
+
+- **Not in scope (v1):** per-capability first-use consent modals; auto-enabling capabilities; new capability keys.
+- **Related:** Connection doctor reuses the same deep-link registry.
+
 - **Not in scope (future):** first-use modals per capability beyond blocked-action toasts; separate toggles for sudo vs direct sysfs (currently under Hardware control).
 - **Planned extension (not shipped):** `**network_web_access`** — Permission Center toggle (default TBD) covering outbound HTTP/HTTPS from the Deck plugin; ties to **RAG knowledge base** in **Planned** → Backlog.
 

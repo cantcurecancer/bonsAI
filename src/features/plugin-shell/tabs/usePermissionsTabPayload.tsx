@@ -14,9 +14,18 @@ export type UsePermissionsTabPayloadArgs = React.ComponentProps<typeof Permissio
 export function usePermissionsTabPayload({
   capabilities,
   setCapabilities,
+  permissionJumpReturnTab,
+  onReturnFromPermissionJump,
 }: UsePermissionsTabPayloadArgs): React.ReactElement {
   return useMemo(
-    () => <PermissionsTab capabilities={capabilities} setCapabilities={setCapabilities} />,
-    [capabilities, setCapabilities]
+    () => (
+      <PermissionsTab
+        capabilities={capabilities}
+        setCapabilities={setCapabilities}
+        permissionJumpReturnTab={permissionJumpReturnTab}
+        onReturnFromPermissionJump={onReturnFromPermissionJump}
+      />
+    ),
+    [capabilities, setCapabilities, permissionJumpReturnTab, onReturnFromPermissionJump],
   );
 }

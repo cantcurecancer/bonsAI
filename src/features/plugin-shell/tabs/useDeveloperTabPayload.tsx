@@ -52,6 +52,7 @@ export function useDeveloperTabPayload({
   setTabResumeMode,
   installSeedKnowledgeBase,
   showDeveloperTab,
+  onJumpToPermission,
 }: UseDeveloperTabPayloadArgs): React.ReactElement {
   // Dependency list preserved verbatim from index.tsx: the settings setters are stable
   // identities from usePluginSettings and were deliberately left out.
@@ -69,6 +70,7 @@ export function useDeveloperTabPayload({
         desktopAppLogLevel={desktopAppLogLevel}
         setDesktopAppLogLevel={setDesktopAppLogLevel}
         filesystemWrite={filesystemWrite}
+        onJumpToPermission={onJumpToPermission}
         presetChipFadeAnimationEnabled={presetChipFadeAnimationEnabled}
         setPresetChipFadeAnimationEnabled={setPresetChipFadeAnimationEnabled}
         presetChipAnimation={presetChipAnimation}
@@ -106,6 +108,7 @@ export function useDeveloperTabPayload({
       tabResumeMode,
       installSeedKnowledgeBase,
       showDeveloperTab,
+      onJumpToPermission,
     ]
   );
 }

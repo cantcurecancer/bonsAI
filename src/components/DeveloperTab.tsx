@@ -25,6 +25,8 @@ import {
   type TabResumeMode,
 } from "../data/bonsaiSettingsSchema";
 import { formatDeckyRpcError } from "../utils/deckyCall";
+import { PermissionDenyAction } from "./PermissionDenyAction";
+import type { BonsaiCapabilityKey } from "../utils/permissionDeepLink";
 
 const desktopAppLogLevelLabel: Record<DesktopAppLogLevel, string> = {
   off: "Off",
@@ -79,6 +81,7 @@ export type DeveloperTabProps = {
   desktopAppLogLevel: DesktopAppLogLevel;
   setDesktopAppLogLevel: (v: DesktopAppLogLevel) => void;
   filesystemWrite: boolean;
+  onJumpToPermission?: (capability: BonsaiCapabilityKey) => void;
 
   presetChipFadeAnimationEnabled: boolean;
   setPresetChipFadeAnimationEnabled: (v: boolean) => void;
@@ -117,6 +120,7 @@ export const DeveloperTab: React.FC<DeveloperTabProps> = ({
   desktopAppLogLevel,
   setDesktopAppLogLevel,
   filesystemWrite,
+  onJumpToPermission,
   setPresetChipFadeAnimationEnabled,
   presetChipAnimation,
   setPresetChipAnimation,
@@ -324,9 +328,20 @@ export const DeveloperTab: React.FC<DeveloperTabProps> = ({
               {desktopAppLogLevelDescription[desktopAppLogLevel]} Writes{" "}
               <span style={{ color: "#9ce7ff" }}>bonsai-app-YYYY-MM-DD.log</span> under Desktop/bonsAI_logs/.
               {!filesystemWrite ? (
+                onJumpToPermission ? (
+                  <div style={{ marginTop: 6 }}>
+                    <PermissionDenyAction
+                      capability="filesystem_write"
+                      message="Enable Save files to Desktop in Permissions to save logs."
+                      onJump={onJumpToPermission}
+                      compact
+                    />
+                  </div>
+                ) : (
                 <span style={{ display: "block", marginTop: 6, color: "#fbbf24" }}>
                   Enable Save files to Desktop in Permissions to save logs.
                 </span>
+                )
               ) : null}
             </div>
             <Focusable

@@ -65,8 +65,22 @@ BPM (Desktop → Big Picture → QAM → bonsAI). Ollama reachable.
 
 ### SMOKE-C — Permission gate (P0)
 
-- [ ] Turn a capability **off** → blocked action → toast to Permissions → no crash
+- [ ] Turn a capability **off** → blocked action → **Open Permissions** (or troubleshooting hint button) → lands on matching toggle → **Back to …** returns → no crash
 - [ ] Re-enable before Tier 1
+
+### PERM-JUMP-01 — Permission jump D-pad (P0)
+
+Capability off for each row; trigger the deny surface; D-pad to **Open Permissions** → Permissions tab → matching toggle focused → **Back to …** → prior tab.
+
+| Capability | Deny surface | Expected toggle |
+|------------|--------------|-----------------|
+| `media_library_access` | Attach recent screenshot (browser empty / error) | Read game & screenshot context |
+| `steam_logs_read` | Troubleshooting Ask hint on Main | Read game & screenshot context |
+| `filesystem_write` | Save note to Desktop / Developer app-log row | Save files to Desktop |
+| `microphone_access` | Ask bar mic / Settings → Voice install | Voice input (microphone) |
+| `steam_web_api` | `bonsai:vac-check` reply banner | Steam ban lookup |
+
+- [ ] D-pad: deny **Open Permissions** → Permissions toggle → **Back** without losing modal tab-restore behavior elsewhere
 
 ### SMOKE-F — Deterministic commands (P2)
 

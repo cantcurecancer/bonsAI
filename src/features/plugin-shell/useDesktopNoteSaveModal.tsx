@@ -10,7 +10,9 @@ import { showModal } from "@decky/ui";
 import { toaster } from "@decky/api";
 
 import { DesktopNoteSaveModal } from "../../components/DesktopNoteSaveModal";
+import { PermissionDenyAction } from "../../components/PermissionDenyAction";
 import { callDeckyWithTimeout, formatDeckyRpcError } from "../../utils/deckyCall";
+import type { BonsaiCapabilityKey } from "../../utils/permissionDeepLink";
 
 type AppendDesktopNoteResult = {
   success: boolean;
@@ -29,7 +31,7 @@ export type UseDesktopNoteSaveModalArgs = {
   filesystemWrite: boolean;
   /** Most recent question/answer pair, or null when there is nothing to save. */
   lastExchange: DesktopNoteExchange | null;
-  goToPermissionsTab: () => void;
+  jumpToPermission: (capability: BonsaiCapabilityKey) => void;
   currentTab: string;
   finalizeShowModalAndRestoreActiveTab: (close: () => void) => void;
   returnTabRef: React.MutableRefObject<string>;
@@ -38,19 +40,26 @@ export type UseDesktopNoteSaveModalArgs = {
 export function useDesktopNoteSaveModal({
   filesystemWrite,
   lastExchange,
-  goToPermissionsTab,
+  jumpToPermission,
   currentTab,
   finalizeShowModalAndRestoreActiveTab,
   returnTabRef,
 }: UseDesktopNoteSaveModalArgs): () => void {
   return useCallback(() => {
     if (!filesystemWrite) {
-      toaster.toast({
-        title: "Permission required",
-        body: "Enable Filesystem writes in the Permissions tab to save notes to Desktop.",
-        duration: 4500,
-      });
-      goToPermissionsTab();
+      returnTabRef.current = currentTab;
+      const handle = showModal(
+        <div style={{ padding: 16, maxWidth: 420 }}>
+          <PermissionDenyAction
+            capability="filesystem_write"
+            message="Enable Save files to Desktop in the Permissions tab to save notes to Desktop."
+            onJump={(capability) => {
+              jumpToPermission(capability);
+              finalizeShowModalAndRestoreActiveTab(() => handle.Close());
+            }}
+          />
+        </div>,
+      );
       return;
     }
     if (!lastExchange) {
@@ -91,12 +100,12 @@ export function useDesktopNoteSaveModal({
             toaster.toast({ title: "Save failed", body: formatDeckyRpcError(e), duration: 5000 });
           }
         }}
-      />
+      />,
     );
   }, [
     lastExchange,
     filesystemWrite,
-    goToPermissionsTab,
+    jumpToPermission,
     currentTab,
     finalizeShowModalAndRestoreActiveTab,
     returnTabRef,

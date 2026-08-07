@@ -39,6 +39,7 @@ export function useSettingsTabPayload({
   onCompleteDeckyModalClose,
   onResetSession,
   onClearAllPluginData,
+  onJumpToPermission,
 }: UseSettingsTabPayloadArgs): React.ReactElement {
   // Dependency list preserved verbatim from index.tsx: the settings setters are stable
   // identities from usePluginSettings and were deliberately left out.
@@ -72,6 +73,7 @@ export function useSettingsTabPayload({
         onCompleteDeckyModalClose={onCompleteDeckyModalClose}
         onResetSession={onResetSession}
         onClearAllPluginData={onClearAllPluginData}
+        onJumpToPermission={onJumpToPermission}
       />
     ),
     [
@@ -95,6 +97,7 @@ export function useSettingsTabPayload({
       onOpenCharacterPicker,
       onResetSession,
       onClearAllPluginData,
+      onJumpToPermission,
     ]
   );
 }

@@ -157,6 +157,8 @@ export function useMainTabPayload({
     mediaLibraryEnabled,
     gameContextReadEnabled,
     onNavigateToPermissions,
+    micPermissionDenied,
+    onDismissMicPermissionDeny,
     desktopNoteSaveEnabled,
     transparencySnapshot,
     onRunOriginalAsk,
@@ -258,6 +260,8 @@ export function useMainTabPayload({
         mediaLibraryEnabled={mediaLibraryEnabled}
         gameContextReadEnabled={gameContextReadEnabled}
         onNavigateToPermissions={onNavigateToPermissions}
+        micPermissionDenied={micPermissionDenied}
+        onDismissMicPermissionDeny={onDismissMicPermissionDeny}
         desktopNoteSaveEnabled={desktopNoteSaveEnabled}
         aiCharacterPadClass={aiCharacterEnabled}
         aiCharacterAvatarPresetId={mainTabAvatarPresetId}
@@ -330,6 +334,8 @@ export function useMainTabPayload({
       mediaLibraryEnabled,
       gameContextReadEnabled,
       onNavigateToPermissions,
+      micPermissionDenied,
+      onDismissMicPermissionDeny,
       aiCharacterEnabled,
       mainTabAvatarPresetId,
       mainTabAvatarBadgeLetter,

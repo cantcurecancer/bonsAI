@@ -45,6 +45,8 @@ import {
   MainTabAttachMenuPopover,
   type AttachMenuActionId,
 } from "./MainTabAttachMenuPopover";
+import { PermissionDenyAction } from "./PermissionDenyAction";
+import type { BonsaiCapabilityKey } from "../utils/permissionDeepLink";
 import { useMainTabAskBarFocus } from "../hooks/useMainTabAskBarFocus";
 
 export type MainTabUnifiedAskBarProps = {
@@ -89,7 +91,13 @@ export type MainTabUnifiedAskBarProps = {
   onAskModeChange: (mode: AskModeId) => void;
   isQamSetting: (settingPath: string) => boolean;
   onFocusHandlersReady?: (handlers: { focusUnifiedTextField: () => boolean }) => void;
+  onNavigateToPermissions?: (capability: BonsaiCapabilityKey) => void;
 };
+
+function screenshotMediaErrorCapability(message: string): BonsaiCapabilityKey {
+  if (message.includes("Read game & screenshot context")) return "steam_logs_read";
+  return "media_library_access";
+}
 
 export function MainTabUnifiedAskBar(props: MainTabUnifiedAskBarProps) {
   const {
@@ -134,6 +142,7 @@ export function MainTabUnifiedAskBar(props: MainTabUnifiedAskBarProps) {
     onAskModeChange,
     isQamSetting,
     onFocusHandlersReady,
+    onNavigateToPermissions,
   } = props;
 
   const askModeMenuAnchorRef = useRef<HTMLDivElement | null>(null);
@@ -724,21 +733,44 @@ export function MainTabUnifiedAskBar(props: MainTabUnifiedAskBarProps) {
 </PanelSectionRow>
 {(isCapturingScreenshot || mediaError) && (
   <PanelSectionRow>
-    <div
-      className="bonsai-full-bleed-row"
-      role="status"
-      aria-live="polite"
-      style={{
-        ...fullBleedRowStyle,
-        fontSize: 11,
-        lineHeight: 1.4,
-        color: isCapturingScreenshot ? "#9cb0c6" : "#f09a8d",
-      }}
-    >
-      {isCapturingScreenshot
-        ? "Closing this menu and capturing a game screenshot…"
-        : mediaError}
-    </div>
+    {isCapturingScreenshot ? (
+      <div
+        className="bonsai-full-bleed-row"
+        role="status"
+        aria-live="polite"
+        style={{
+          ...fullBleedRowStyle,
+          fontSize: 11,
+          lineHeight: 1.4,
+          color: "#9cb0c6",
+        }}
+      >
+        Closing this menu and capturing a game screenshot…
+      </div>
+    ) : mediaError && onNavigateToPermissions ? (
+      <div className="bonsai-full-bleed-row" style={fullBleedRowStyle}>
+        <PermissionDenyAction
+          capability={screenshotMediaErrorCapability(mediaError)}
+          message={mediaError}
+          onJump={onNavigateToPermissions}
+          compact
+        />
+      </div>
+    ) : (
+      <div
+        className="bonsai-full-bleed-row"
+        role="status"
+        aria-live="polite"
+        style={{
+          ...fullBleedRowStyle,
+          fontSize: 11,
+          lineHeight: 1.4,
+          color: "#f09a8d",
+        }}
+      >
+        {mediaError}
+      </div>
+    )}
   </PanelSectionRow>
 )}
 {selectedAttachment && (

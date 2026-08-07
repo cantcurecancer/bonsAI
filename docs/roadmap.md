@@ -119,14 +119,6 @@ Within this section: ascending stars (★ → ★★★★).
   - **Goal:** User-adjustable Ollama thinking effort mapped to `think: false | "low" | "medium" | "high"` (global v1).
   - **Depends on:** **Soft** `num_predict` **+ thinking budget** (Bugs).
   - **Not in scope:** shipping Settings before the soft-budget bug fix.
-- ★★ **Permission jump** (denial → the toggle that fixes it; proposed 2026-08-07)
-  - **Goal:** One press from "bonsAI can't do that" to the exact Permissions toggle that unblocks it.
-  - **Today a denial is a dead end.** Blocked actions print copy like *"enable Media library access in Permissions"* ([MainTabScreenshotBrowser.tsx:123](../src/components/MainTabScreenshotBrowser.tsx)) but nothing navigates there — even though the shell already owns `setCurrentTab` ([useBonsaiPluginShell.ts:50](../src/hooks/useBonsaiPluginShell.ts)). Five capabilities can deny (`filesystem_write`, `media_library_access`, `steam_logs_read`, `steam_web_api`, `microphone_access` — [capabilities.py:12](../py_modules/backend/services/capabilities.py)); none of them points anywhere, so the recovery path is "read the copy, find the tab yourself".
-  - **Depends on:** shipped — Capability Permission Center, `setCurrentTab`, existing deny toasts and inline deny copy.
-  - **Related:** shares its deep-link mechanism with **Connection doctor** (Medium-term) — build it once.
-  - **Not in scope (v1):** per-capability first-use consent modals (deferred — [archive/roadmap-completed.md](archive/roadmap-completed.md) § Capability Permission Center); auto-enabling anything; changing the default-off policy; new capability keys.
-  - **★★ justification:** no backend change and no new capability, but it touches every deny site (screenshot attach, Desktop note, Proton log read, mic, VAC), needs a return-tab story that coexists with the modal tab-restore locks in `useBonsaiPluginShell`, and adds one focusable control per deny surface → focus-graph entries (`.cursor/rules/decky-focus-graph.mdc`).
-  - **Source:** [13-roadmap-feature-ideas.md](planning/13-roadmap-feature-ideas.md) § A3.
 - ★★★ **Dynamic keep-alive / smart unload** (research spike — discovery locked 2026-07-29)
   - **Goal:** Research-only: hold models loaded vs unload when a game takes focus, safely on Deck APU shared memory? Spike decides go/no-go. No ship commitment until spike writes outcome.
   - **Not in scope:** promising true per-game VRAM detection; production unload before spike doc.
@@ -242,7 +234,7 @@ Within this section: ascending stars (★★★★ → ★★★★★★).
   - **Goal:** When the first Ask fails, walk the user to a working Ollama instead of handing them a toast and a docs link.
   - **v1 shape:** a **Fix this** action on Ask failure that runs the probes the backend already has, in order — host reachable? (`test_ollama_connection`, [main.py:943](../main.py)) → anything advertising on LAN? (`discover_mdns_ollama_hosts`, [:1084](../main.py)) → is local Ollama installed and running? (`get_local_ollama_setup_status`, [:1207](../main.py)) → is any model pulled? — then state exactly one next action per outcome, deep-linking to the Ollama-tab control that performs it.
   - **Why now:** the probes are all shipped and each is separately reachable, but a new user whose first Ask fails gets a toast ([bonsaiReplyReadyToast.ts:59-73](../src/utils/bonsaiReplyReadyToast.ts)) and a docs link. [Q2 README redesign](planning/02-readme-redesign-plan.md) found the same new-user cliff from the docs side; this is the in-plugin half.
-  - **Depends on:** those four shipped probes; Ollama tab controls; named hosts; compat KB troubleshooting tips. Shares the deep-link mechanism with **Permission jump** (Near-term).
+  - **Depends on:** those four shipped probes; Ollama tab controls; named hosts; compat KB troubleshooting tips. Shares the deep-link mechanism with shipped **Permission jump** (see [archive/roadmap-completed.md](archive/roadmap-completed.md)).
   - **Related:** **Deck health snapshot** (read-only dump). If both ship: the doctor is the interactive front end, the snapshot is the dump — one probe stack, two presentations.
   - **Not in scope (v1):** editing firewall or network config; running installs without consent; a read-only diagnostics dump; anything web (→ **Web permission**).
   - **★★★★ justification:** no new capability, but a stateful multi-step flow on the Deck's hardest surface (D-pad through a decision tree), sitting on the Ask lifecycle mid-**D3**, and every branch needs on-Deck QA against a *deliberately broken* setup — a QA fixture that does not exist yet.
@@ -394,7 +386,7 @@ Coverage for shipped work: [testing.md](testing.md).
 - **Character voice roleplay (shipped)** → accent intensity, avatars, UI accent theme, Random “?”, running-game suggestions, Pyro easter egg (all shipped); → **Local reply TTS** Phase 2.
 - **Whisper voice Ask (shipped)** + mic → **Wake-word listening**.
 - **Reply ready toast (shipped)** → required for hands-free wake when QAM closed; → **In-game answer surface** (the toast is the only non-QAM surface that exists — its ★★ snippet slice is the unblocked part of that item).
-- **Capability Permission Center** → gates filesystem, Steam/Proton log + screenshot reads, mic, Steam Web API; web/Steam jumps always allowed; TDP/GPU suggestions read-only (no apply); → planned **Web permission** (Ask live search; Kids Lock forces off); → **Permission jump** (navigate to the denying toggle; no new keys).
+- **Capability Permission Center** → gates filesystem, Steam/Proton log + screenshot reads, mic, Steam Web API; web/Steam jumps always allowed; TDP/GPU suggestions read-only (no apply); → planned **Web permission** (Ask live search; Kids Lock forces off); → **Permission jump** shipped (deny → Open Permissions → focused toggle + Back).
 - **Llama.cpp provider spike** → research-only; related **Dynamic keep-alive / smart unload**.
 - **Preset carousel (shipped)** → incremental **Preset chip expansion**; **Session RAG preset chips (shipped)**.
 - **RAG / offline KB** → Phase 2–3 shipped → **retrieval quality remediation** (PR1/PR2, docs locked) → Phase 4–8 Planned (4 extended retrieval, 5 corpus expansion remaining after remediation seed depth, 6 public publish, 7 infra — ANN/nomic/RRF extensions/vision→KB/demote/delta-packs/named hit, 8 catalog corpus); **KB visual maps** separate; **Spoiler confidence chip** → fencing + unfenced feedback (distinct from Phase 7 retrieval thumbs); **Spoiler constitution** (product rules → later encoding; named-entity slice via STRAT-SPOIL bug); **Web permission** may eventually replace zip download with HF AppID card stream (open decision vs Phases 4–8).
@@ -407,7 +399,7 @@ Coverage for shipped work: [testing.md](testing.md).
 - **Session RAG chip candidates RPC (shipped)** → shipped **KB coverage chip** (Show details `kb_coverage` chip); adjacent to **RAG Phase 4** Track 1 visibility.
 - **User-owned model routing pickers (shipped)** → **On-Deck model benchmark** (measured order); overlaps **Dynamic keep-alive / smart unload** on Deck measurement.
 - **RAG Phase 6 publish** → **Community tip contribution** (no inbound path is meaningful before there is a published corpus); reuses shipped Desktop notes + thumbs feedback.
-- **Permission jump** → shares its tab deep-link mechanism with **Connection doctor**.
+- **Permission jump** (shipped) → shared tab deep-link in `permissionDeepLink.ts` / `permissionJumpRegistry.ts` for **Connection doctor** (Medium-term).
 
 ```mermaid
 flowchart TD
