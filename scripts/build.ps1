@@ -60,7 +60,7 @@ pnpm run build
 Assert-LastExit "pnpm run build"
 
 Write-Host "Building seed knowledge base for Deck QA..."
-python scripts/build_rag_db.py --seed --out dist/knowledge-base-seed
+python scripts/build_rag_db.py --seed --out build/knowledge-base-seed
 Assert-LastExit "Seed knowledge base build"
 
 Write-Host "Uploading to temporary Deck directory..."
@@ -91,7 +91,7 @@ if (Test-Path "dist\assets") {
 $SeedRemoteDir = "/home/$User/homebrew/settings/bonsAI/seed-knowledge-base"
 ssh "$User@$HostIp" "mkdir -p $SeedRemoteDir"
 Assert-LastExit "Creating remote seed knowledge base directory"
-scp dist/knowledge-base-seed/* "${User}@${HostIp}:$SeedRemoteDir/"
+scp build/knowledge-base-seed/* "${User}@${HostIp}:$SeedRemoteDir/"
 Assert-LastExit "Uploading seed knowledge base"
 
 Write-Host "Overwriting system files and restarting Decky Loader..."

@@ -27,7 +27,9 @@ from backend.services.knowledge_base_service import (
 from backend.services.ollama_embed_service import OllamaEmbedError
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-SEED_DB = REPO_ROOT / "dist" / "knowledge-base-test" / "corpus.db"
+# Under build/, not dist/: `npm run build` clears dist/, so the test corpus was being deleted
+# and rebuilt (a ~40s Ollama round trip) after every plugin build.
+SEED_DB = REPO_ROOT / "build" / "knowledge-base-test" / "corpus.db"
 
 
 def _ensure_seed_db() -> None:

@@ -247,7 +247,7 @@ Also: `tests/test_ollama_embed_service.py` prefix helpers; `tests/test_settings_
 
 1. `python scripts/run_python_tests.py`
 2. `pnpm vitest run` (settings / related suites)
-3. `python scripts/build_rag_db.py --seed --out ./dist/knowledge-base` — manifest `embedding_variant`, schema 3, batch progress
+3. `python scripts/build_rag_db.py --seed --out ./build/knowledge-base` — manifest `embedding_variant`, schema 3, batch progress
 4. After maintainer sign-off: `python scripts/eval_kb_embed_models.py --write-report` — three-way on deepened corpus; **holdout** gate; compat overall vs gate-reachable
 5. Point `rag_corpus_path` at pre-bump corpus → keyword fallback
 6. On-Deck QA (`deck.deploy`, ingest): Strategy, troubleshooting, follow-up, hybrid off, corpus removed

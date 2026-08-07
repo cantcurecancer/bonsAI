@@ -48,7 +48,7 @@ flowchart TD
 ## Maintainer build pipeline
 
 ```bash
-python scripts/build_rag_db.py --seed --out ./dist/knowledge-base
+python scripts/build_rag_db.py --seed --out ./build/knowledge-base
 ```
 
 - **Never commit** the corpus to git.
@@ -338,7 +338,7 @@ Plan: [rag-retrieval-quality-remediation-implementation-plan.md](rag-retrieval-q
 Schema v3 changes what the baked vectors *mean*, not just the file layout. A v2 corpus has the same model and the same dimension, so only the manifest can tell them apart — and there is **no migration** (Decision 6). Existing corpora keep working in keyword mode and report **Keyword search (embed unavailable)** until rebuilt:
 
 ```bash
-python scripts/build_rag_db.py --seed --out ./dist/knowledge-base
+python scripts/build_rag_db.py --seed --out ./build/knowledge-base
 ```
 
 The builder now embeds in batches of 16 with progress, clears the vector table only after the host answers (a failure no longer wipes existing vectors), and checkpoints + `VACUUM`s so the shipped `corpus.db` is a single self-contained file. The Deck opens it `?mode=ro&immutable=1`.

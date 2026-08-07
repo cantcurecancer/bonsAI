@@ -43,7 +43,8 @@ from typing import Any, Literal
 REPO_ROOT = Path(__file__).resolve().parents[1]
 PY_MODULES = REPO_ROOT / "py_modules"
 FIXTURES = REPO_ROOT / "tests" / "fixtures"
-DEFAULT_OUT_DIR = REPO_ROOT / "dist" / "knowledge-base-embed-bakeoff"
+# Under build/, not dist/: `npm run build` clears dist/ and would delete the eval corpus.
+DEFAULT_OUT_DIR = REPO_ROOT / "build" / "knowledge-base-embed-bakeoff"
 DEFAULT_OLLAMA = "http://127.0.0.1:11434"
 
 DEFAULT_MODELS = [

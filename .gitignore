@@ -44,6 +44,10 @@ Thumbs.db
 # Ignore built ts files
 dist/
 
+# Corpus build output. Deliberately NOT under dist/ — `npm run build` clears that directory,
+# so a corpus built there was silently deleted by the next plugin build.
+build/
+
 # Generated config (IPs injected at build time)
 src/config.ts
 

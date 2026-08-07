@@ -5,8 +5,11 @@ Creates SQLite + FTS5 (+ optional vector placeholders), compresses for distribut
 and emits corpus-manifest.json + ATTRIBUTIONS.md. Corpus is never committed to git.
 
 Usage:
-  python scripts/build_rag_db.py --seed --out ./dist/knowledge-base
-  python scripts/build_rag_db.py --out ./dist/knowledge-base   # scaffold only (no crawl in v1)
+  python scripts/build_rag_db.py --seed --out ./build/knowledge-base
+  python scripts/build_rag_db.py --out ./build/knowledge-base   # scaffold only (no crawl in v1)
+
+Output goes under ``build/``, not ``dist/``: ``npm run build`` clears ``dist/``, so a corpus
+built there was deleted by the next plugin build with no warning.
 """
 
 from __future__ import annotations
@@ -504,7 +507,8 @@ def build_corpus(out_dir: Path, *, seed: bool) -> dict:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Build bonsAI knowledge base corpus")
-    parser.add_argument("--out", type=Path, default=Path("dist/knowledge-base"), help="Output directory")
+    # Not under dist/ -- `npm run build` clears that directory and would delete the corpus.
+    parser.add_argument("--out", type=Path, default=Path("build/knowledge-base"), help="Output directory")
     parser.add_argument("--seed", action="store_true", help="Include sample games/sections for dev QA")
     args = parser.parse_args()
     manifest = build_corpus(args.out, seed=args.seed)

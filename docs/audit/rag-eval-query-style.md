@@ -124,7 +124,30 @@ is a budget question the eval covers separately, not a property of a question.
 
 ---
 
-## 7. What "good" looks like
+## 7. Cover both sides of a multiplayer game
+
+A title with an online mode has two populations asking about the same subject from opposite
+ends. "Smoker" means *how do I not get grabbed* to one and *how do I grab people* to the other,
+and the wording barely differs:
+
+| Survivor side | Infected side |
+|---|---|
+| "smoker grabbing me off roofs" | "how to use smoker" |
+| "charger keeps splitting us up" | "charger best angle to charge" |
+| "how to break a jockey ride" | "what are jockeys advantages" |
+| "counter boomer smoker combo" | "charger then boomer then spitter?" |
+
+Write these as **pairs on purpose**. They are the hardest retrieval case in the set — one
+discriminating word ("use", "counter", "best angle") has to pull a different card. If one card
+answers both, the card is wrong, not the search.
+
+Beyond the per-special pairs, the infected side has whole subjects the survivor side has no
+equivalent for — spawn positioning in ghost mode, when to hold the tank, goo placement,
+where to steer a ride. Those have no survivor mirror and no cards today.
+
+---
+
+## 8. What "good" looks like
 
 Maintainer-supplied examples, kept verbatim as the bar for power-user content:
 

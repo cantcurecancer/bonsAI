@@ -10,7 +10,11 @@
       "topic_hint": "Tank",
       "skill_level": "beginner",
       "input_style": "terse",
-      "withheld_card_terms": ["kite", "focused fire", "choke point"],
+      "withheld_card_terms": [
+        "kite",
+        "focused fire",
+        "choke point"
+      ],
       "note": "Name is known — characters shout it. Withholding 'Tank' would be unrealistic."
     },
     {
@@ -20,7 +24,10 @@
       "topic_hint": "Witch",
       "skill_level": "beginner",
       "input_style": "terse",
-      "withheld_card_terms": ["crown", "startle radius"]
+      "withheld_card_terms": [
+        "crown",
+        "startle radius"
+      ]
     },
     {
       "id": "S-L4D2-03",
@@ -29,7 +36,10 @@
       "topic_hint": "Boomer",
       "skill_level": "beginner",
       "input_style": "terse",
-      "withheld_card_terms": ["at distance", "horde magnet"]
+      "withheld_card_terms": [
+        "at distance",
+        "horde magnet"
+      ]
     },
     {
       "id": "S-L4D2-04",
@@ -38,7 +48,10 @@
       "topic_hint": "Charger",
       "skill_level": "beginner",
       "input_style": "terse",
-      "withheld_card_terms": ["spacing", "stagger"]
+      "withheld_card_terms": [
+        "spacing",
+        "stagger"
+      ]
     },
     {
       "id": "S-L4D2-05",
@@ -47,7 +60,10 @@
       "topic_hint": "Smoker",
       "skill_level": "beginner",
       "input_style": "terse",
-      "withheld_card_terms": ["line of sight", "tongue"]
+      "withheld_card_terms": [
+        "line of sight",
+        "tongue"
+      ]
     },
     {
       "id": "S-L4D2-06",
@@ -56,7 +72,10 @@
       "topic_hint": "The Parish",
       "skill_level": "beginner",
       "input_style": "voice",
-      "withheld_card_terms": ["crescendo", "choke point"],
+      "withheld_card_terms": [
+        "crescendo",
+        "choke point"
+      ],
       "note": "Voice register — longer and more sentence-like on purpose. Campaign named, chapter not."
     },
     {
@@ -86,7 +105,10 @@
       "topic_hint": "Expert difficulty tactics",
       "skill_level": "familiar",
       "input_style": "terse",
-      "withheld_card_terms": ["fire discipline", "formation"]
+      "withheld_card_terms": [
+        "fire discipline",
+        "formation"
+      ]
     },
     {
       "id": "S-L4D2-10",
@@ -95,7 +117,10 @@
       "topic_hint": "Hard Rain",
       "skill_level": "familiar",
       "input_style": "terse",
-      "withheld_card_terms": ["storm cycle", "visibility"]
+      "withheld_card_terms": [
+        "storm cycle",
+        "visibility"
+      ]
     },
     {
       "id": "S-L4D2-11",
@@ -104,7 +129,9 @@
       "topic_hint": "Health items and safe rooms",
       "skill_level": "familiar",
       "input_style": "terse",
-      "withheld_card_terms": ["item economy"]
+      "withheld_card_terms": [
+        "item economy"
+      ]
     },
     {
       "id": "S-L4D2-12",
@@ -151,7 +178,143 @@
       "topic_hint": "Versus scoring and pacing",
       "skill_level": "power_user",
       "input_style": "terse",
-      "withheld_card_terms": ["distance bonus"]
+      "withheld_card_terms": [
+        "distance bonus"
+      ]
+    },
+    {
+      "id": "S-L4D2-18",
+      "query": "how to use smoker",
+      "intent": "Playing as the special, not fighting it — positioning, when to pull, how to survive after",
+      "topic_hint": "Smoker (playing as infected)",
+      "skill_level": "familiar",
+      "input_style": "terse",
+      "withheld_card_terms": [
+        "line of sight",
+        "tongue"
+      ],
+      "note": "Near-identical wording to S-L4D2-05 but the opposite perspective. Retrieval has to tell 'smoker grabbing me off roofs' from 'how to use smoker' — the discriminating word is 'use'. If one card serves both, it is the wrong card."
+    },
+    {
+      "id": "S-L4D2-19",
+      "query": "what are jockeys advantages",
+      "intent": "When to pick the jockey over other specials, and what it is good at",
+      "topic_hint": "Jockey (playing as infected)",
+      "skill_level": "familiar",
+      "input_style": "terse",
+      "withheld_card_terms": [],
+      "note": "'ride' and 'steer' were withheld and should not have been: they are the ordinary words a player uses for what a jockey does, like 'tank' for the tank. Withholding shared vocabulary makes the query unrealistic. Only distinctive card phrasing belongs here."
+    },
+    {
+      "id": "S-L4D2-20",
+      "query": "charger then boomer then spitter?",
+      "intent": "Whether that spawn order is a good coordinated push",
+      "topic_hint": "Special infected combo ordering",
+      "skill_level": "power_user",
+      "input_style": "terse",
+      "withheld_card_terms": [],
+      "note": "Maintainer example. Three proper nouns and one question mark — no verb at all. Retrieval has to read this as 'is this ordering good' rather than as three separate lookups."
+    },
+    {
+      "id": "S-L4D2-21",
+      "query": "spitter goo placement",
+      "intent": "Where the acid actually denies ground",
+      "topic_hint": "Spitter (playing as infected)",
+      "skill_level": "power_user",
+      "input_style": "terse",
+      "withheld_card_terms": [
+        "area denial"
+      ]
+    },
+    {
+      "id": "S-L4D2-22",
+      "query": "when to spawn as tank vs save it",
+      "intent": "Tank timing as the infected team",
+      "topic_hint": "Tank (playing as infected)",
+      "skill_level": "power_user",
+      "input_style": "terse",
+      "withheld_card_terms": []
+    },
+    {
+      "id": "S-L4D2-23",
+      "query": "boomer best time to explode",
+      "intent": "Suicide timing and horde placement as the boomer",
+      "topic_hint": "Boomer (playing as infected)",
+      "skill_level": "familiar",
+      "input_style": "terse",
+      "withheld_card_terms": [
+        "at distance",
+        "horde magnet"
+      ],
+      "note": "Pairs with S-L4D2-03 the same way 18 pairs with 05 — same special, opposite side."
+    },
+    {
+      "id": "S-L4D2-24",
+      "query": "where to spawn infected without getting shot",
+      "intent": "Ghost-mode positioning: spawn out of sight and in range of the survivors' path",
+      "topic_hint": "Infected spawn positioning (ghost mode)",
+      "skill_level": "power_user",
+      "input_style": "terse",
+      "withheld_card_terms": [
+        "ghost mode",
+        "spawn zone"
+      ],
+      "note": "The first thing a versus player has to learn and the corpus has nothing on it."
+    },
+    {
+      "id": "S-L4D2-25",
+      "query": "how to break a jockey ride",
+      "intent": "Survivor-side counter: shoot it off, and what happens if you shove instead",
+      "topic_hint": "Jockey (countering as survivor)",
+      "skill_level": "familiar",
+      "input_style": "terse",
+      "withheld_card_terms": [],
+      "note": "Pairs with S-L4D2-19. Same special, opposite side; two different cards or the split is wrong. 'ride' and 'steer' were withheld and should not have been: they are the ordinary words a player uses for what a jockey does, like 'tank' for the tank. Withholding shared vocabulary makes the query unrealistic. Only distinctive card phrasing belongs here."
+    },
+    {
+      "id": "S-L4D2-26",
+      "query": "charger best angle to charge",
+      "intent": "Playing the charger: approach line that takes one survivor away rather than bouncing the group",
+      "topic_hint": "Charger (playing as infected)",
+      "skill_level": "familiar",
+      "input_style": "terse",
+      "withheld_card_terms": [
+        "spacing",
+        "stagger"
+      ],
+      "note": "Pairs with S-L4D2-04."
+    },
+    {
+      "id": "S-L4D2-27",
+      "query": "jockey where to drag them",
+      "intent": "Steering a ride into hazards, drops, or away from the team",
+      "topic_hint": "Jockey steering destinations",
+      "skill_level": "power_user",
+      "input_style": "terse",
+      "withheld_card_terms": []
+    },
+    {
+      "id": "S-L4D2-28",
+      "query": "use witch against survivors",
+      "intent": "Whether the witch can be turned into a weapon by the infected team, and how",
+      "topic_hint": "Witch as an infected-team asset",
+      "skill_level": "power_user",
+      "input_style": "terse",
+      "withheld_card_terms": [
+        "crown",
+        "startle radius"
+      ],
+      "note": "Third sense of 'witch' after S-L4D2-02. Avoid, crown, or exploit are three different answers."
+    },
+    {
+      "id": "S-L4D2-29",
+      "query": "counter boomer smoker combo",
+      "intent": "Survivor response when specials attack in a coordinated order",
+      "topic_hint": "Countering coordinated special infected",
+      "skill_level": "familiar",
+      "input_style": "terse",
+      "withheld_card_terms": [],
+      "note": "Survivor-side mirror of S-L4D2-20. The sample had counters to single specials but none to a coordinated push."
     },
     {
       "id": "S-L4D2-17",
