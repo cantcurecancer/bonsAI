@@ -242,6 +242,57 @@ Two things worth knowing before the on-Deck pass:
   `afterEach(vi.useRealTimers)`, so one failing fake-timer test hung the *next* test for 20s and
   reported two failures for one cause. Guard added.
 
+### 3.2 Phase B — implemented 2026-08-07
+
+Multi-stop navigation and near-bottom follow, per the locked decisions under *Navigation / layout*.
+Gates green throughout: `npx tsc --noEmit`, 415 frontend tests, 563 Python tests, `npm run build`.
+
+| # | What shipped | Where |
+|---|---|---|
+| B1 | Every rendered section of a streaming answer — each closed block, the wait chip, the live tail — is a nested `Focusable` registered in a new stop registry, and `handleAnswerBubbleMove{Down,Up}` walk those stops before falling through to the existing scroll-step logic, which is untouched. | [answerStopRegistry.ts](../../src/utils/answerStopRegistry.ts), [answerBubbleNavigation.ts](../../src/utils/answerBubbleNavigation.ts), [buildAnswerBubbleElement.tsx](../../src/utils/buildAnswerBubbleElement.tsx) |
+| B2 | History and finished turns register the same stops from `splitResponseIntoChunks`, so navigation does not depend on whether you watched the answer arrive. | [buildAnswerBubbleElement.tsx](../../src/utils/buildAnswerBubbleElement.tsx) |
+| B3 | Option C, and it needed no code: the terminal render rebuilds the stops with the chunks. What was verified instead is that no stream-layout entry survives the swap — React detaches every ref in a commit before attaching any. | [buildAnswerBubbleElement.test.tsx](../../src/utils/buildAnswerBubbleElement.test.tsx) |
+| B4 | Follow the transcript tail while it is on screen; hold position once the user scrolls up. Both halves run off one scroll listener, so touch and D-pad need no separate handling. | [useStreamScrollPin.ts](../../src/hooks/useStreamScrollPin.ts) |
+
+Three decisions inside B1 that the tests pin down, because none is obvious from the outside:
+
+- **Only a stop already on screen is eligible.** Same rule the masked-spoiler diversion uses, which is
+  what lets the two compose: an off-screen section falls through to a scroll, and the next press lands
+  on it. Chasing it would scroll and focus in one press and skip the text in between.
+- **Down enters the chain at the first stop *in view*, not at stop 0.** After the user has scrolled,
+  stop 0 is above the fold and pressing Down can never bring it back — entering at 0 would leave the
+  whole chain unreachable.
+- **Up walks only when a stop already holds focus.** Arriving at the bubble on the way up means the
+  user is leaving for the turn header; diving into the last visible section would trap them one press
+  short of it.
+
+Two things worth knowing before the on-Deck pass:
+
+- **The nesting count is the open risk, and it is the first thing to check.** The spoiler fence proved
+  *one* nested `Focusable` inside the bubble on device (2026-08-04). B1 creates one per section, and a
+  section holding a masked spoiler now nests three deep. If Steam's graph does not survive it under a
+  QAM remount or mid-stream height growth, the fallback is this same registry driven by imperative
+  focus, without the nested `Focusable`s — no other part of Phase B depends on the nesting.
+- **A stop handles direction through `onButtonDown` alone**, using the event-aware predicates, with no
+  `onMove*` twin. Whether Steam routes a press to a *nested* `Focusable`'s `onMove*` is unproven, and
+  `onButtonDown` is documented as firing on every Decky component for every button, so it is the safer
+  of the two; wiring both would risk firing twice for one press. Adding `onMoveDown` back is a
+  one-line change if the device disagrees. This shipped wrong first: the stops carried a copy of the
+  bubble's *string* predicates, which stringify a `GamepadEvent` to `"[object CustomEvent]"` and match
+  nothing — the same defect that once made the spoiler fence reveal itself on a D-pad press
+  ([focusNavigation.ts:69-77](../../src/utils/focusNavigation.ts)). Fixed a commit later, and the
+  roadmap's `onButtonDown` audit gained it as a third instance.
+- **Stops draw their own focus marker.** `.bonsai-ai-response-chunk--in-bubble` resets `outline` and
+  `box-shadow` to `none !important`, and those are the two properties Steam's ring uses, so `gpfocus`
+  landed on the stops invisibly until [section-6.ts](../../src/styles/sections/section-6.ts) gained a
+  rule after that reset.
+
+B4 changed what "near the bottom" is measured against, and that is a behaviour change worth stating:
+it was the panel's scroll maximum, and the panel extends past the transcript (session context strip,
+Save chat), so the old test read false as soon as the newest text was on screen but those rows were
+not. Pin-only that cost a stale pin nobody noticed; with following it would have latched the pin one
+frame after the first follow. It now measures the anchor's own tail against the viewport.
+
 ---
 
 ## 4. Risk register
@@ -393,9 +444,9 @@ Status: locked for implementation planning. Items marked **open / later** are in
 
 ## NEEDS VERIFICATION
 
-- On-Deck: whether true nested Focusables (or equivalent multi-stop) survives Steam/Decky focus under QAM remount and mid-stream height growth.
-- On-Deck: T3 focus jump under finish rule C is acceptable in practice.
-- On-Deck: near-bottom scroll follow with touch + D-pad does not fight multi-stop stay-put.
+- On-Deck: whether true nested Focusables (or equivalent multi-stop) survives Steam/Decky focus under QAM remount and mid-stream height growth. **Built in B1 (2026-08-07) and still the top unknown** — the fence proved one nested Focusable, B1 creates one per section and three levels deep where a section holds a masked spoiler.
+- On-Deck: T3 focus jump under finish rule C is acceptable in practice. **B3 shipped the rebuild; only the felt experience of the jump is unverified.**
+- On-Deck: near-bottom scroll follow with touch + D-pad does not fight multi-stop stay-put. **B4 shipped.** The two are coupled through one scroll listener rather than by agreement — `panelStepDown` fires `scroll`, so walking down the answer pins and walking to the bottom resumes the follow — so what needs checking is whether that reads right, not whether it is wired.
 - Nested-fence mid-stream spoiler leak (R2) still **PLAUSIBLE** — deferred fix; STREAM-03 on-Deck may still fail on nested samples.
 - `decky.emit` availability on target Deck loader (push spike).
 - Soft-budget spike outcomes before any implement nod.
