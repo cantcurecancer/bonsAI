@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 261,
-  "edgeCount": 608,
+  "fileCount": 266,
+  "edgeCount": 614,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -210,6 +210,7 @@
         "src/utils/askThinkingPhases.ts",
         "src/utils/buildAnswerBubbleElement.tsx",
         "src/utils/buildReplyActionsElement.tsx",
+        "src/utils/buildThinkingBlurbTextElement.tsx",
         "src/utils/buildTurnHeaderElement.tsx",
         "src/utils/chatTurnTitle.ts",
         "src/utils/contextChipsFromSnapshot.ts",
@@ -501,13 +502,21 @@
         "src/utils/buildAnswerBubbleElement.tsx"
       ]
     },
+    "src/components/VoiceInputSettingsSection.test.tsx": {
+      "imports": [
+        "src/components/VoiceInputSettingsSection.tsx",
+        "src/test-harness/fakeDeckyRpc.ts"
+      ],
+      "importedBy": []
+    },
     "src/components/VoiceInputSettingsSection.tsx": {
       "imports": [
         "src/data/bonsaiSettingsSchema.ts",
         "src/utils/deckyCall.ts"
       ],
       "importedBy": [
-        "src/components/SettingsTab.tsx"
+        "src/components/SettingsTab.tsx",
+        "src/components/VoiceInputSettingsSection.test.tsx"
       ]
     },
     "src/components/deck/DeckFocusSlider.tsx": {
@@ -521,12 +530,19 @@
         "src/components/SettingsTabUiScaleSlider.tsx"
       ]
     },
+    "src/components/icons.bonsaiGeometry.test.tsx": {
+      "imports": [
+        "src/components/icons.tsx"
+      ],
+      "importedBy": []
+    },
     "src/components/icons.tsx": {
       "imports": [],
       "importedBy": [
         "src/components/MainTabChatTranscript.tsx",
         "src/components/MainTabScreenshotBrowser.tsx",
         "src/components/MainTabUnifiedAskBar.tsx",
+        "src/components/icons.bonsaiGeometry.test.tsx",
         "src/features/plugin-shell/tabTitles.tsx",
         "src/index.tsx",
         "src/utils/buildReplyActionsElement.tsx"
@@ -1679,6 +1695,7 @@
         "src/components/KnowledgeBaseSection.test.tsx",
         "src/components/MainTabPresetAnimatedChips.test.tsx",
         "src/components/SettingsTab.mdns.test.ts",
+        "src/components/VoiceInputSettingsSection.test.tsx",
         "src/hooks/useBackgroundGameAi.test.ts",
         "src/hooks/useBonsaiAskOrchestration.test.ts",
         "src/hooks/usePluginSettings.test.ts",
@@ -2032,6 +2049,14 @@
         "src/utils/liveTurnFocusGraph.ts",
         "src/utils/replyStopRegistry.ts",
         "src/utils/uiDocument.ts"
+      ],
+      "importedBy": [
+        "src/components/MainTabChatTranscript.tsx"
+      ]
+    },
+    "src/utils/buildThinkingBlurbTextElement.tsx": {
+      "imports": [
+        "src/utils/splitThinkingBlurbItalicSegments.ts"
       ],
       "importedBy": [
         "src/components/MainTabChatTranscript.tsx"
@@ -2510,6 +2535,19 @@
         "src/utils/buildAnswerBubbleElement.test.tsx",
         "src/utils/buildAnswerBubbleElement.tsx",
         "src/utils/splitResponseIntoChunks.test.ts"
+      ]
+    },
+    "src/utils/splitThinkingBlurbItalicSegments.test.ts": {
+      "imports": [
+        "src/utils/splitThinkingBlurbItalicSegments.ts"
+      ],
+      "importedBy": []
+    },
+    "src/utils/splitThinkingBlurbItalicSegments.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/utils/buildThinkingBlurbTextElement.tsx",
+        "src/utils/splitThinkingBlurbItalicSegments.test.ts"
       ]
     },
     "src/utils/spoilerFenceRegistry.test.ts": {

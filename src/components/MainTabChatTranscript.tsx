@@ -26,6 +26,7 @@ import { isPendingPlaceholderResponse } from "../utils/askThinkingPhases";
 import { BonsaiChatSecondaryButton } from "./BonsaiChatSecondaryButton";
 import { buildReplyActionsElement } from "../utils/buildReplyActionsElement";
 import { buildAnswerBubbleElement } from "../utils/buildAnswerBubbleElement";
+import { buildThinkingBlurbTextElement } from "../utils/buildThinkingBlurbTextElement";
 import { buildTurnHeaderElement } from "../utils/buildTurnHeaderElement";
 import { buildCollapsedTurnTitle } from "../utils/chatTurnTitle";
 import { ContextChipLadder } from "./ContextChipLadder";
@@ -370,6 +371,7 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
             {expandedTurnKey === "live" && isAsking && thinkingSummary ? (
               <div
                 className="bonsai-chat-status-line bonsai-chat-thinking-line"
+                role="status"
                 style={{
                   display: "flex",
                   alignItems: "center",
@@ -377,12 +379,11 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
                   color: "#9fb7d5",
                   fontSize: 12,
                   lineHeight: 1.35,
-                  fontStyle: "italic",
                   marginBottom: 8,
                 }}
               >
                 <ThinkingSpinnerIcon size={14} className="bonsai-thinking-spinner" />
-                {thinkingSummary}
+                {buildThinkingBlurbTextElement(thinkingSummary)}
               </div>
             ) : null}
             {expandedTurnKey === "live" && askStopped ? (
