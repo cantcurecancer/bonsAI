@@ -5,8 +5,8 @@
  * Solves: Groups non-settings informational content away from Settings and Ollama configuration tabs.
  * Does not: Change inference settings or model policy — see SettingsTab and OllamaTab for configuration.
  */
-import React, { useRef } from "react";
-import { ButtonItem, Focusable, Navigation, PanelSection, PanelSectionRow } from "@decky/ui";
+import React from "react";
+import { ButtonItem, Navigation, PanelSection, PanelSectionRow } from "@decky/ui";
 import { toaster } from "@decky/api";
 import { BONSAI_FOREST_GREEN } from "../features/unified-input/constants";
 import supportPaypalQr from "../assets/qrcode.png";
@@ -39,9 +39,6 @@ function openExternal(url: string, toastTitle: string) {
   }
 }
 
-const deckNav = (handlers: Record<string, () => boolean | void>) =>
-  handlers as unknown as Record<string, unknown>;
-
 export const AboutTab: React.FC<Props> = ({
   githubRepoUrl,
   ollamaRepoUrl,
@@ -52,15 +49,6 @@ export const AboutTab: React.FC<Props> = ({
   steamClientLanguageLabel,
   t: _t,
 }) => {
-  const githubBtnHostRef = useRef<HTMLDivElement | null>(null);
-  const paypalBtnHostRef = useRef<HTMLDivElement | null>(null);
-  const languageDropdownHostRef = useRef<HTMLDivElement | null>(null);
-
-  const focusGithubBtn = () => {
-    githubBtnHostRef.current?.focus();
-    return true;
-  };
-
   return (
     <>
       <PanelSection title="About bonsAI">
@@ -86,31 +74,23 @@ export const AboutTab: React.FC<Props> = ({
         onReplyLanguageChange={onReplyLanguageChange}
         effectiveLang={effectiveLang}
         steamClientLanguageLabel={steamClientLanguageLabel}
-        dropdownHostRef={languageDropdownHostRef}
-        onMoveUp={() => false}
-        onMoveDown={focusGithubBtn}
       />
 
+      {/*
+        Plain ButtonItem rows, no Focusable wrappers and no onMoveUp/onMoveDown handlers.
+        The wrappers used to hand-roll the D-pad chain as dropdown -> GitHub -> PayPal, which
+        broke link access two ways: the handlers returned true (telling Steam the press was
+        handled, so default navigation was skipped) while moving focus with a plain DOM
+        `.focus()`, which does not transfer Steam's gamepad focus across nav containers — see
+        navFocusRegistry.ts, measured 2026-08-04 — so presses were consumed and focus never
+        moved. The chain also skipped the two middle links entirely, since they were never in it.
+        DeveloperTab uses bare ButtonItems this way and navigates correctly.
+      */}
       <PanelSection title="Links">
         <PanelSectionRow>
-          <Focusable
-            ref={githubBtnHostRef}
-            style={{ width: "100%" }}
-            {...deckNav({
-              onMoveUp: () => {
-                languageDropdownHostRef.current?.focus();
-                return true;
-              },
-              onMoveDown: () => {
-                paypalBtnHostRef.current?.focus();
-                return true;
-              },
-            })}
-          >
-            <ButtonItem layout="below" onClick={() => openExternal(githubRepoUrl, "GitHub")}>
-              <span style={{ fontSize: 13 }}>GitHub</span>
-            </ButtonItem>
-          </Focusable>
+          <ButtonItem layout="below" onClick={() => openExternal(githubRepoUrl, "GitHub")}>
+            <span style={{ fontSize: 13 }}>GitHub</span>
+          </ButtonItem>
         </PanelSectionRow>
         <PanelSectionRow>
           <ButtonItem layout="below" onClick={() => openExternal(ollamaRepoUrl, "Ollama")}>
@@ -141,34 +121,32 @@ export const AboutTab: React.FC<Props> = ({
                 boxSizing: "border-box",
               }}
             >
-              <Focusable ref={paypalBtnHostRef} style={{ width: "100%" }}>
-                <ButtonItem layout="below" onClick={() => openExternal(PAYPAL_SUPPORT_URL, "PayPal")}>
-                  <div
+              <ButtonItem layout="below" onClick={() => openExternal(PAYPAL_SUPPORT_URL, "PayPal")}>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: 6,
+                    textAlign: "center",
+                    width: "100%",
+                    boxSizing: "border-box",
+                  }}
+                >
+                  <span style={{ fontSize: 14, lineHeight: 1.2 }}>Support my Steam Sale habit</span>
+                  <img
+                    src={supportPaypalQr}
+                    alt="Support on PayPal — Support my Steam Sale habit"
                     style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      gap: 6,
-                      textAlign: "center",
-                      width: "100%",
-                      boxSizing: "border-box",
+                      display: "block",
+                      width: 132,
+                      maxWidth: "100%",
+                      height: "auto",
+                      margin: "0 auto",
                     }}
-                  >
-                    <span style={{ fontSize: 14, lineHeight: 1.2 }}>Support my Steam Sale habit</span>
-                    <img
-                      src={supportPaypalQr}
-                      alt="Support on PayPal — Support my Steam Sale habit"
-                      style={{
-                        display: "block",
-                        width: 132,
-                        maxWidth: "100%",
-                        height: "auto",
-                        margin: "0 auto",
-                      }}
-                    />
-                  </div>
-                </ButtonItem>
-              </Focusable>
+                  />
+                </div>
+              </ButtonItem>
             </div>
           </div>
         </PanelSectionRow>
