@@ -92,6 +92,21 @@ Wave 4 G — confirm D-pad directions do not trigger A-only actions; direction h
 - [ ] Collapsed turn header: **Down** enters answer bubble (section walk)
 - [ ] Settings → UI scale manual profile bridge: **Left/Right** steps profile when focused on slider thumb
 
+**This row decides an open question, so record what happens rather than just pass/fail.** Wave 4 G
+removed `onMoveLeft`/`onMoveRight` from `buildDeckThumbNavHandlers` and the UI-scale bridge, leaving
+`onButtonDown` as the only horizontal path — while *keeping* `onMoveUp`/`onMoveDown` on the same
+object. Both cannot be right: the old string predicates provably never matched a `GamepadEvent`
+(`focusNavigation.test.ts` asserts it), so before Wave 4 the `onMove*` handlers were doing all of the
+work, and "redundant twins" was the one thing they could not have been. Watch for two distinct
+failures:
+
+- [ ] **Nothing happens** on Left/Right → `onButtonDown` is not reaching the thumb; restore the
+      `onMove*` handlers and drop the direction branch of `onButtonDown` (not both — they double-step)
+- [ ] **Two steps per press**, or the profile steps *and* focus jumps off the slider → `onButtonDown`
+      fires but does not consume the direction the way `onMoveLeft` did; the bridge needs to swallow it
+- [ ] All four `DeckFocusSlider` users, not just UI scale — **Ollama keep-alive**, **Reply verbosity**,
+      **Connection timeout** share `buildDeckThumbNavHandlers` and changed with it
+
 ### DOC-SWEEP-01 — global document realm fixes (P1)
 
 Wave 4 H — confirm each path works on-Deck (SharedJSContext vs QAM popup document).
@@ -101,6 +116,11 @@ Wave 4 H — confirm each path works on-Deck (SharedJSContext vs QAM popup docum
 - [ ] Preset carousel: auto-advance pauses while a chip has D-pad focus
 - [ ] About → GitHub link: **Up** focuses reply-language dropdown
 - [ ] Settings/Ollama: **Up** at panel top returns to active tab strip
+- [ ] **Do the blur and attachment-row checks on the very first Ask of a fresh plugin open**, before
+      any answer has rendered. Until 2026-08-07 the document was learned only from the answer-bubble /
+      answer-stop / spoiler-fence registries, so everything above worked from the second Ask onward
+      and silently used the wrong document on the first. `BonsaiPluginShell` now seeds it at mount;
+      this is the check that proves it.
 - [ ] Expand collapsed history turn: header scrolls into view
 
 ### PRESET-STREAM-ANIM-01 — stream preset chip animation (P1)

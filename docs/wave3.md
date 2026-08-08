@@ -39,6 +39,16 @@ Wave 3 adds **transparency chips** (KB corpus honesty + spoiler-risk band), plus
 
 **Approach:** New `spoiler_risk_service.py` scores low/med/high from signals + optional `<bonsai-spoiler-risk>` model tag; manifest chip `spoiler_risk` appended at Ask end (not mid-stream).
 
+**The model-tag half is unreachable today — noted 2026-08-07 during review.** `parse_bonsai_spoiler_risk_tag`
+and the 60/40 blend in `compute_spoiler_risk_band` are implemented and unit-tested, but **no prompt in
+`ollama_prompts.py` ever asks a model to emit `<bonsai-spoiler-risk>`**, so in production every band
+comes from `compute_heuristic_spoiler_risk_score` alone. Nothing is broken — the tag is documented as
+optional and the parser correctly ignores incomplete tags — but the tests make the blend look
+exercised when the only live path is the heuristic. Two consequences for whoever picks this up:
+tuning the band means tuning the heuristic weights, not the blend; and because nothing strips the
+tag from displayed text, wiring the prompt instruction requires adding a stripper in the same change
+or the literal markup renders in the answer.
+
 **Files (representative):** `spoiler_risk_service.py`, `game_ai_request.py`, `transparency_service.py`, `inputTransparency.ts`, `tests/test_spoiler_risk_service.py` (8 cases), roadmap/testing docs, architecture snapshots.
 
 **Tests:** `tests/test_spoiler_risk_service.py` — band scoring, tag blend, manifest wiring.

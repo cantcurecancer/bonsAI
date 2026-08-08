@@ -31,7 +31,28 @@ No shared files between items — clean composition, no integration defects foun
 
 ### B — Voice ready / reinstall (`e4fb6fa`)
 
-**Problem:** Settings → Voice input showed **Install voice engine** (disabled when `ready`) even when `binary_ready` and `model_ready` were both true.
+**Problem (as reported):** the Voice input install action still reads as something to press once the engine is installed.
+
+**The stated cause was wrong — corrected 2026-08-07 during review.** This report originally said the
+UI showed **Install voice engine** "even when `binary_ready` and `model_ready` were both true",
+implying the aggregate `ready` flag disagreed with the two component flags. It cannot: `ready` is
+*defined* as `whisper_bin is not None and model_ready`
+([voice_transcription_service.py:1170](../py_modules/backend/services/voice_transcription_service.py)),
+and `get_voice_engine_status` returns it unchanged ([main.py:2611](../main.py)). The three values are
+the same by construction, so no divergence between them can have produced the report. The old code
+disabled the button and labelled it *Voice engine ready* when installed — the opposite of an enabled
+Install action.
+
+**What actually shipped, and it is worth keeping:** the installed state is now an explicit
+**Reinstall voice engine** affordance rather than a disabled dead control — enabled button, ready
+copy above it. That is a real improvement to a state that previously offered no way to repair a
+broken install. But the underlying report was never root-caused, so if the symptom recurs on device,
+**do not look at the readiness flags again** — look at whether `engineStatus` is populated at all
+(`refreshStatus` swallows RPC failures into `setEngineStatus(null)`, which renders exactly the
+"not installed, press to install" state regardless of what is on disk).
+
+**Consequence to watch:** the button is now enabled unconditionally, so one **A** press on a focused
+control starts a podman pull plus model download with no confirm step.
 
 **Files:**
 - `src/components/VoiceInputSettingsSection.tsx` — `engineReady = binaryReady && modelReady`; ready message; **Reinstall voice engine** label; button stays enabled when ready

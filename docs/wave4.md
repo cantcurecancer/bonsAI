@@ -24,6 +24,20 @@ Serialized focus/preset work landed in one worktree (`wave4-b9f60dca`) as three 
 - Switch load-bearing direction handlers to `isDeckDirection*Event`; drop redundant `onMove*` twins on turn header, answer bubble, UI-scale bridge, slider thumb.
 - Add `isDeckDirectionLeftEvent` / `isDeckDirectionRightEvent`.
 
+**Correction 2026-08-07 — "redundant" was wrong, and the item is not settled.** The dropped `onMove*`
+handlers could not have been duplicates: the predicates they sat next to stringified their argument
+and never matched a `GamepadEvent`, which `focusNavigation.test.ts` asserts outright. So `onMove*`
+was doing all of the direction work and this commit removed it in favour of a path that has never
+run on a device. The internal contradiction makes the uncertainty visible —
+`buildDeckThumbNavHandlers` **kept** `onMoveUp`/`onMoveDown` on the same object it stripped
+`onMoveLeft`/`onMoveRight` from; whichever handler Steam delivers, one of those is wrong. It also
+runs against `.cursor/rules/decky-focus-graph.mdc`, which requires slider bridges to carry vertical
+*and* horizontal handlers and cites `SettingsTabUiScaleSection.tsx` as the pattern.
+
+Left in place rather than reverted, because restoring both paths double-steps if `onButtonDown` does
+fire. **ONBUTTONDOWN-AUDIT-01** now records *which* failure appears (nothing happens vs two steps /
+focus escape) and covers all four `DeckFocusSlider` users, not UI scale alone.
+
 **Tests:** `focusNavigation.test.ts` (14), `buildAnswerBubbleElement.test.tsx` (8).
 
 **On-Deck QA:** **ONBUTTONDOWN-AUDIT-01** (`docs/testing-manual.md`).
@@ -38,7 +52,20 @@ Serialized focus/preset work landed in one worktree (`wave4-b9f60dca`) as three 
 
 **Deferred:** None — full batch shipped.
 
-**Tests:** `focusNavigation.test.ts` (`getFocusableWithin`), `uiDocument.test.ts` (9).
+**Gap found and closed 2026-08-07 (review follow-up):** all eight conversions were correct, but
+`rememberUiDocument` was only ever called from the answer-bubble, answer-stop and spoiler-fence
+registries — each of which mounts only once a reply renders. Before the first answer of a session
+`getUiDocument()` therefore still returned the SharedJSContext shell, so `useBonsaiAskOrchestration`'s
+blur-on-submit (a **first**-Ask path by definition), the Ask-bar keydown capture,
+`tryScrollPanelFromFocus` and `getFocusableWithin` all kept the behaviour this batch was written to
+fix until an answer existed. `BonsaiPluginShell` now seeds the document from its root ref — the
+earliest node the plugin owns. `elementHasFocus` was never affected, since it asks
+`el.ownerDocument` rather than the module cache, which is why the preset-carousel site worked
+throughout.
+
+**Tests:** `focusNavigation.test.ts` (`getFocusableWithin`), `uiDocument.test.ts` (9),
+`BonsaiPluginShell.test.tsx` (3 — rendered into a non-global document, so the seeding is observable
+rather than trivially true).
 
 **On-Deck QA:** **DOC-SWEEP-01** (`docs/testing-manual.md`).
 

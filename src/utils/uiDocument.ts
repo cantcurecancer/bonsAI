@@ -21,13 +21,18 @@ let uiDocument: Document | null = null;
  *
  * Ref callbacks are the reliable source: the node they hand back belongs to the popup document,
  * so `ownerDocument` is the one every later `activeElement` / query has to be asked about.
+ *
+ * Seeded from `BonsaiPluginShell`'s root ref, which is the earliest node the plugin owns. The
+ * answer-bubble, answer-stop and spoiler-fence registries call this too, but each only runs once a
+ * reply has rendered — relying on those alone left every caller below on the shell document for
+ * the whole pre-first-answer session. A null element is ignored, so unmount does not clear it.
  */
 export function rememberUiDocument(el: Node | null | undefined): void {
   const doc = el?.ownerDocument ?? null;
   if (doc) uiDocument = doc;
 }
 
-/** The document the UI lives in; the global one until the first element mounts. */
+/** The document the UI lives in; the global one until the shell mounts. */
 export function getUiDocument(): Document {
   return uiDocument ?? document;
 }

@@ -5,7 +5,7 @@
  * Solves: Exposes follow-system vs fixed-language choices with live effective-language helper text.
  * Does not: Translate plugin chrome — see i18n keys and steamLanguages re-exports.
  */
-import React, { useMemo, useRef } from "react";
+import React, { useMemo } from "react";
 import { Dropdown, Focusable, PanelSection, PanelSectionRow } from "@decky/ui";
 import {
   buildReplyLanguageDropdownOptions,
@@ -37,7 +37,6 @@ export const AboutReplyLanguageSection: React.FC<Props> = ({
   onMoveDown,
   dropdownHostRef,
 }) => {
-  const dropdownHostRefLocal = useRef<HTMLDivElement | null>(null);
   const options = useMemo(() => buildReplyLanguageDropdownOptions(), []);
   // Decky Dropdown matches selectedOption against each option's `.data`, not the full option object.
   const selectedOption = replyLanguage;
@@ -57,7 +56,6 @@ export const AboutReplyLanguageSection: React.FC<Props> = ({
       <PanelSectionRow>
         <Focusable
           ref={(el: HTMLDivElement | null) => {
-            dropdownHostRefLocal.current = el;
             if (typeof dropdownHostRef === "function") dropdownHostRef(el);
             else if (dropdownHostRef) (dropdownHostRef as React.MutableRefObject<HTMLDivElement | null>).current = el;
           }}
