@@ -1,6 +1,6 @@
 # 06 — Thinking blurbs: implementation review, best practice, confidence bounds
 
-Status: **§ 7 items 1–3 landed 2026-08-08; items 4–6 and 8 are decided and queued.** See
+Status: **§ 7 items 1–6 and 8 all landed 2026-08-08.** Item 7 was declined; 9–12 remain optional. See
 [§ 10 Implementation log](#10-implementation-log) for what shipped and what the maintainer chose.
 Everything above § 10 is the original 2026-08-03 analysis and is left unedited except this header —
 where it disagrees with the code now, § 10 is right.
@@ -477,3 +477,47 @@ Recorded here rather than in chat, per the repo's refactor rules.
 | §2.7 — model tag on a spoiler-masked surface | **Mask it, do not suppress it.** Render the block-glyph treatment inline: `working out how to beat ████ ██████ dance` | Keeps the specificity the model tag exists for. Needs the masker to reach the thinking line, which today only `buildAnswerBubbleElement` calls |
 | §2.6 — static line for the whole generation | **Fix it — named as a major annoyance.** Accept later `<bonsai-status>` tags instead of freezing on the first | Prompt + `extract_bonsai_status` change. §7 #8 warns this risks flicker; that is now a thing to tune, not a reason to skip |
 | §7 #7 — fast-poll during prep | **Leave at 1200 ms** | Already tried and reverted once for battery cost — see the comment at [useBackgroundGameAi.ts:65-70](../../src/hooks/useBackgroundGameAi.ts) |
+
+### 10.3 Landed 2026-08-08 — § 7 items 4–6 and 8
+
+| § 7 | Commit | What changed |
+|---|---|---|
+| 4 | `068374f` | `start_background_game_ai` composes the opener at accept time, publishes it, and returns it. Client renders it behind a constant placeholder for the round trip; the poll path no longer recomposes. Duplicate compose in `run_game_ai_request` deleted (§2.1, §2.2) |
+| 5 | `57ff67c`, `f6a2812` | `composeThinkingBlurb.ts` gutted to the sanitizer and the placeholder, then renamed `thinkingSummaryText.ts` |
+| 3 (rest) | `3fe6e1d` | `building_context` and `connecting_model` emitters wired; both pools rewritten to be encouraging (§2.5) |
+| 6, 8 | `aa0bb05` | `extract_bonsai_status` reports the last *complete* tag; Strategy prompts teach `[[spoiler]]…[[/spoiler]]`; the client redacts marked spans to blocks (§2.6, §2.7) |
+
+Three findings worth carrying forward:
+
+- **`ai_character_random` defaults to *on*.** The blurb tone and the reply's character voice both come
+  from `build_roleplay_system_suffix_meta`, which calls `random.choice`. Moving the opener to accept
+  time would have meant two independent rolls — a deadpan blurb in front of a witty reply — so the
+  resolved meta is threaded from accept into the request task and the character is picked exactly
+  once per Ask. The first version of the test for this was itself flaky for the same reason, which is
+  how the default was noticed.
+- **Redaction needed a new mechanism, not the existing masker.** The answer bubble hides spoilers by
+  collapsing a ```` ```bonsai-spoiler ```` fence, which needs somewhere to collapse to; a one-line
+  status has nowhere. So the model marks a span and the client blocks it out in place. "Do not spoil"
+  is still the first instruction — this is the fallback for when a 3B model does it anyway, and the
+  unclosed-span case masks to end of line rather than printing what was flagged.
+- **Flicker is held off by completeness, not by rate-limiting.** A `<bonsai-status>` still arriving has
+  no closing marker, so it does not match and the previous line stays up. That is why §7 #8's flicker
+  warning did not need a debounce.
+
+### 10.4 Still open
+
+- **§2.8 — `deterministic_thinking_phase_fallback` is now further from reach**, not closer: the opener
+  is published before the task starts, so the sub-second window it covered is gone. Its
+  "Drafting your masterpiece…" branch was already unreachable. Left in place; a deletion is a
+  separate call.
+- **The `still_building` pool is still unreachable.** `building_context` publishes once, at
+  `elapsed_seconds=0`, so the `_BUILDING_CONTEXT_MAX_SECONDS` ladder never fires. Making it reachable
+  needs a watchdog that re-publishes while the phase is still running — deliberately not built,
+  because the long wait it would serve is the model load, and item 8 now covers that with real
+  model-authored updates.
+- **`[[spoiler]]` markers in the answer *body* are not handled.** They are only taught inside the
+  status tag, and the body has its own fence mechanism, but a model that leaks the marker into prose
+  would render it literally. Not seen; worth knowing.
+- **§2.8 — `extract_bonsai_status` is still O(n²) over the stream**, and item 6 slightly raised the
+  constant (the loop no longer short-circuits once a summary is found). Still noise at Deck reply
+  sizes; still scales with reply length.

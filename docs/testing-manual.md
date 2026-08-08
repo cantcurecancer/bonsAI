@@ -18,6 +18,26 @@ Historical full checklist (pre–2026-07-30 split): [archive/testing-full-pre-20
 
 ---
 
+## Test title pool
+
+The games QA rows reach for, and what each one is actually covering. Rows below name these by
+AppID; keep new rows inside this pool unless a title is the thing under test, so a Deck session
+does not need a different library every week.
+
+| Title | AppID | Covers | Why this one |
+|---|---|---|---|
+| Deep Rock Galactic: Survivor | `2321470` | KB corpus hit, session RAG chips, `low_narrative` spoiler profile | The only title the seed corpus covers by entity (`Glyphid Dreadnought`, `Hollow Bough`) |
+| Hades | `1145360` | `protect_progression`, named-entity consent | Shares the `roguelike` genre with DRG Survivor, so it is the genre over-relax guard |
+| Left 4 Dead 2 | `550` | `low_narrative`, KB compat routing | Cheap to install, always in the library |
+| **Black Mesa** | `362890` | **`unknown` spoiler profile**, Proton/Source compat, cold-model thinking phases | **The gap the pool had.** Every other title above is classified in `spoiler_title_profiles.py`; most of a real user's library is not, and `unknown` was untested on device. Also a Source-engine title with real Proton behaviour, so it exercises `proton_logs` without contriving a crash |
+
+**Black Mesa is deliberately not added to `spoiler_title_profiles.py`.** Adding it would defeat the
+reason it is in the pool — it is here to exercise the unclassified path a real library mostly hits.
+It is a linear story campaign, so if a QA pass shows the `unknown` default is too loose for
+story-shaped titles, that is a finding about the default, not a reason to special-case this AppID.
+
+---
+
 ## Focus graph (mandatory before shipping new controls)
 
 Policy: `bonsai://policy/decky-ui-focus`. Patterns: `bonsai://architecture/focus-graph-patterns`.
@@ -209,6 +229,11 @@ Wave 4 J — Developer tab → Preset suggestions → **stream**.
   - [ ] *(recommended)* **HADES-NAMED-01** Hades `1145360`, *"How do I beat Megaera?"* → plain text. Naming the boss is consent for that boss on any title (spoiler-constitution rule 7)
   - [ ] *(recommended)* **HADES-UNNAMED-01** Hades, a question that does **not** name a boss → story-adjacent detail **still fenced**. This is the genre over-relax guard: Hades shares the `roguelike` genre with DRG Survivor
   - [ ] *(extra credit, does not block)* **DRG-01e** Streaming off → plain text; **DRG-01f** `[Strategy follow-up]` turn → plain text; mid-stream spoiler wait-chip suppressed for the named entity (R4)
+- [ ] **THINKING-COPY-01** Same Ask, no phase boundary crossed → the italic line does **not** change. Specifically: the opener that appears on submit must be the *only* opener — watch the first ~2s for a rewrite from one generic line to another. That rewrite was the bug; if you see it, the client is composing again
+- [ ] **THINKING-OPENER-01** Submit an Ask and watch the first frame: a constant *Thinking…* appears immediately, then is replaced **once** by a line quoting your question. **Judgement call for the maintainer:** if that swap is slow enough to read as two separate lines rather than one settling, the round trip is too long on real hardware and the fallback (client owns the opener, backend opener deleted instead) is the fix — see [06 § 10.2](planning/06-thinking-blurbs-review.md)
+- [ ] **THINKING-SLOW-01** Black Mesa `362890`, cold model (first Ask after a reboot, or after `ollama stop`): the line must report **building context** and then **connecting/waking the model** before any answer text. The point is that the longest silence now says something — and says it encouragingly, not with a sigh
+- [ ] **THINKING-LIVE-01** During a long answer (Expert mode, or a 30s+ reply): the line **updates at least once** mid-generation from a later `<bonsai-status>`, rather than freezing on the first. Small models will not always comply — a frozen line is a model miss, not a regression; a line that flickers rapidly or shows half-written text **is** a regression
+- [ ] **THINKING-SPOILER-01** Strategy mode, masking on, a title with real spoilers: if the model names something spoilery in the thinking line it must render as blocks (`beat ████ ██████ dance`), never as plain words and never as literal `[[spoiler]]` markup. Watch for the failure direction too — a line that is *entirely* blocks means the model opened the marker and never closed it, which masks to end of line by design
 - [ ] **KB-FOCUS-01** Ollama KB Update/Remove: Left/Right between pair; both Up → KB toggle; both Down → Reply style; **equal row height** (Update not taller than Remove)
 - [ ] **KB-CANCEL-01** Ollama KB **while a download runs**: **Cancel** replaces Remove and is the row's only enabled stop (the primary reads *Downloading…* and is disabled). Down from **Use local knowledge base** → Cancel; Up from **Reply verbosity** → Cancel; **A** → *Cancelling…*, second press does nothing; row returns to Update/Download + Remove within a few seconds; status line reads *Download cancelled* in grey, **not** the raw backend error in red; a fresh download still starts afterwards
 - [ ] **OLLAMA-FOCUS-01** Ollama tab open (no prior Test): with Ollama reachable, primary button shows **Update AI & models** (quiet auto-probe)
