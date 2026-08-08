@@ -28,7 +28,7 @@
       "captureSteps": [1],
       "steps": [
         { "action": "callRpc", "method": "load_settings" },
-        { "action": "assert", "type": "rpcResult", "expect": "hardware_control" }
+        { "action": "assert", "type": "rpcResult", "expect": "microphone_access" }
       ]
     },
     {
