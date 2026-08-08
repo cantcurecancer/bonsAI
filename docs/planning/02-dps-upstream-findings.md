@@ -1,0 +1,252 @@
+# 02 — Decky Plugin Studio: upstream findings draft
+
+Draft notes for [qd313/decky-plugin-studio](https://github.com/qd313/decky-plugin-studio),
+written from the DPS source at `e7af320` (v0.3.6) plus live IPC probing against a running
+preview on 2026-08-08.
+
+**Why this file exists.** Per [AGENTS.md](../../AGENTS.md) § DPS, bonsAI must not fork or
+locally patch DPS. These are consumer-facing defects found while repairing bonsAI's preview
+suite; each is stated so it can be pasted into an upstream issue with no bonsAI context.
+Index row for each: [mcp-setup.md](../mcp-setup.md) § DPS findings log.
+
+Severity is from a consumer's point of view: **P1** silently reports success for work that
+did not happen, **P2** blocks automation, **P3** friction.
+
+---
+
+## P1-1 — `snapshotDom` truncates at 8000 characters with no marker
+
+`preview-server/src/sandbox-host.tsx:35-39`
+
+```ts
+function captureDomSnapshot(selector?: string): { html: string; activeElement: string } {
+  const target = selector ? document.querySelector(selector) : document.getElementById("root");
+  const html = (target ?? document.body).innerHTML.slice(0, 8000);
+  return { html, activeElement: getActiveFocusSelector() };
+}
+```
+
+The `.slice(0, 8000)` is silent. The result carries no `truncated` flag, no ellipsis, and no
+original length, so a consumer cannot tell a complete snapshot from a clipped one. Our stored
+artifacts end mid-CSS-declaration at `background-color: transparent !i`.
+
+**Why this is P1 rather than a limit to document.** A plugin that injects a `<style>` block
+as an early child of the snapshotted node gets a snapshot that is *entirely CSS* and never
+reaches rendered markup. Every `domContains` assert then matches selector text inside that
+stylesheet rather than anything the user would see, and every `domNotContains` passes
+unconditionally. bonsAI's shell injects ~110 KB of scoped CSS, so this consumed the whole
+budget with 8000 characters to spare — the assertions passed for two months while checking
+nothing.
+
+**Requested:**
+1. Return `{ html, truncated: boolean, originalLength: number }`. The flag alone fixes the
+   silent half; a consumer can then fail loudly.
+2. Make the cap configurable per command (`maxChars`), with the current 8000 as default.
+3. Offer `skipNodes: ["style", "script"]` (or strip them by default). Style content is never
+   what a DOM assertion is looking for and it is the single biggest consumer of the budget.
+
+**Also worth considering:** `innerHTML` excludes the selected element's own tag and
+attributes. Selecting `[data-my-panel="x"]` returns the panel's *contents*, so the attribute
+you selected on is not in the snapshot and cannot be asserted. `outerHTML`, or an added
+`matchedOuter` field, would remove a surprising footgun.
+
+---
+
+## P1-2 — `runSequence`'s no-op fallback is byte-identical to a successful trace
+
+`preview-server/src/sandbox-host.tsx:107-113`
+
+```ts
+const result = {
+  focusPath: getFocusEventLog().length ? getFocusEventLog() : inputs.map((d) => `onMove(${d})`),
+  ...
+};
+```
+
+When the focus log is empty — nothing focusable found, no handler matched, plugin not
+mounted — `focusPath` is synthesized from the inputs that were *requested*. The real log
+entries are pushed as `` `${handlerKey}(${direction})` `` (`shim/focusManager.ts:137,147`),
+which for a `Down` input produces exactly `onMove(Down)`.
+
+So the success value and the failure value are the same string. A consumer asserting on
+`focusPath` gets a pass whether navigation worked or nothing happened at all, and there is
+no field that distinguishes them.
+
+This is worse than returning an empty array. An empty `focusPath` is honest and a consumer
+can fail on it; a fabricated one cannot be detected.
+
+**Requested:**
+1. Drop the fallback — return the real log, empty if empty.
+2. If a fallback must stay for compatibility, mark it: `focusPathSynthesized: true`.
+3. Consider a richer per-input trace (`{input, handlerKey, matchedSelector, moved}`) so
+   consumers can assert *which element* handled each press. Today `focusPath` cannot express
+   "Down moved from A to B", which is the assertion focus-graph QA actually needs.
+
+bonsAI has deleted its only assertion over this field rather than keep a check that could
+not fail.
+
+---
+
+## P1-3 — `captureScreenshot` returns a drawn placeholder that looks like a capture
+
+`preview-server/src/sandbox-host.tsx:60-76`
+
+When `html2canvas` throws, the fallback path draws a rectangle and returns it as
+`pngBase64`:
+
+```ts
+ctx.fillText("Decky preview snapshot (placeholder)", 12, 24);
+ctx.fillText(`${canvas.width}x${canvas.height}`, 12, 44);
+```
+
+The consumer receives the same `{ pngBase64 }` shape as a real capture and has no way to
+tell them apart without decoding the image and reading the text. Ours were stored as
+evidence for months; they are byte-identical within a batch, which is the only reason it
+was noticed.
+
+**Requested:** set a discriminator on the result — `{ placeholder: true, reason }` — or
+return `{ ok: false, error }` and let the consumer decide. Drawing a fake image into the
+field named for the real one is the part worth changing; the fallback itself is reasonable.
+
+---
+
+## P2-1 — The IPC bridge stops permanently the first time the preview is not open, and never restarts
+
+`extension/src/preview/ipcBridge.ts:144-151`
+
+```ts
+const interval = setInterval(() => {
+  if (!preview.isOpen()) {
+    stopPreviewIpcBridge();
+    return;
+  }
+  void drainCommands(preview);
+}, 250);
+```
+
+`startPreviewIpcBridge` is called from exactly one place — `PreviewManager.start()`
+(`manager.ts:78`). So once this tick fires with the panel closed, the watcher and the
+interval are both torn down and nothing re-arms them until the preview is started again.
+Reopening the panel through a path that does not call `start()` leaves a live preview with a
+dead bridge, and every queued command sits in `~/.decky-plugin-studio/preview-ipc/`
+unconsumed until its client times out.
+
+**Requested:** keep the interval running and make it idempotent — skip draining while
+closed rather than tearing down — or re-arm the bridge from wherever the panel is restored.
+
+---
+
+## P2-2 — One unresponsive command stalls every later command for 120 s, including ones that never touch the webview
+
+`extension/src/preview/ipcBridge.ts:121-131` and `manager.ts:320-336`
+
+`drainCommands` holds a `processing` mutex and awaits each command in turn. Every
+webview-bound command resolves through `waitForWebviewMessage`, whose timeout is **120
+seconds**. So a single command the webview cannot answer blocks the entire queue for two
+minutes per command, serially.
+
+Measured today: a `callTestHook` sent at 13:51:5x wrote its result at 13:53:40, and the six
+commands behind it were still unconsumed minutes later. `callRpc` is affected too even
+though it talks to the HTTP sidecar and not the webview — it simply waits its turn.
+
+**Requested:**
+1. A per-command `timeoutMs` in the command file, defaulting far below 120 s.
+2. Do not serialize commands that do not need the webview (`callRpc`).
+3. Fail fast when the webview is known-unreachable rather than waiting out the full timeout.
+
+---
+
+## P2-3 — A dead Vite child leaves `isOpen()` true and `preview-state.json` advertising a port nothing is listening on
+
+`extension/src/preview/manager.ts:82-84`, `:70-75`, `:339-347`
+
+```ts
+isOpen(): boolean {
+  return this.panel !== undefined;
+}
+```
+
+`isOpen()` reports on the *VS Code panel object*, not on whether the preview is actually
+serving. `stop()` does correctly unlink `preview-state.json` (`:346`) — but only when the
+panel is disposed. If the Vite child process dies on its own, the panel stays open,
+`isOpen()` stays `true`, `preview-state.json` keeps advertising the old URL, the IPC bridge
+keeps accepting commands, and every one of them times out at 120 s.
+
+That is the state we hit today: `preview-state.json` named `http://127.0.0.1:5290` while
+that port refused connections and the sidecar on `8766` answered nothing, yet commands were
+still being consumed from the queue.
+
+**Requested:** watch the Vite child's exit, and on exit either restart it or mark the
+preview down — clear `preview-state.json` and answer commands with a clear
+`preview backend not running` instead of a timeout. A health field in `preview-state.json`
+(pid, or a `/healthz` the consumer can poll) would let harnesses fail in seconds with an
+accurate message rather than in minutes with a misleading one.
+
+---
+
+## P3-1 — Unknown commands are read, deleted, and silently dropped
+
+`extension/src/preview/ipcBridge.ts:41-110`
+
+`processCommand` is a chain of `if (command.cmd === ...)` blocks with no final `else`. An
+unrecognised or misspelled `cmd` is read, `unlinkSync`'d, and then nothing is written — so
+the client waits out its full timeout and reports a transport failure for what is actually
+a typo. There is no log line either.
+
+**Requested:** `writeResult(command.id, { ok: false, error: \`Unknown command: ${cmd}\` })`.
+
+*(bonsAI hit the same class of bug in its own runner — `assertStep` had no default branch,
+so a misspelled assert type passed silently. Fixed on our side 2026-08-08; mentioning it
+only because the shape is identical and the fix is one line in both.)*
+
+---
+
+## P3-2 — Result files accumulate forever
+
+`~/.decky-plugin-studio/preview-ipc/` currently holds **57** `result-*.json` files, the
+oldest from 2026-05-26. Consumers unlink results they successfully read, so every timed-out
+command leaves an orphan behind permanently. Nothing GCs the directory, and there is no
+stale-result check — a `result-<id>.json` left from a previous run is indistinguishable
+from a fresh one if an id ever repeated.
+
+**Requested:** delete results older than some age on bridge start, and delete `cmd-*.json`
+older than the max command timeout so a crashed client cannot poison the next run.
+
+---
+
+## P3-3 — Test-hook discovery is fine; the failure mode is a timeout rather than the error it already computes
+
+`preview-server/src/sandbox-host.tsx:20-26`, `:129-138`
+
+Credit where due: `getPreviewTestHooks()` reads
+`window.__deckyPreviewTestHooks ?? window.__bonsaiTestHooks`, so the legacy bonsAI name is
+still honoured, and `window.__DECKY_PREVIEW__ = true` is set at `:29` before the plugin
+renders — a plugin registering hooks from a mount effect sees the flag correctly.
+
+When a hook is missing, `:132-137` already posts a precise
+`Unknown preview hook: ${method}` result. That is the right behaviour. The problem is that
+consumers rarely see it: if the sandbox host itself is not running (P2-3), the message never
+comes back and the client reports `callTestHookResult timeout` instead — an infrastructure
+message for what may be a plugin-side registration bug, or vice versa. Fixing P2-3 and P2-2
+makes this error reachable, at which point it is genuinely useful.
+
+**No change requested to the hook lookup itself.**
+
+---
+
+## Suggested priority
+
+| Order | Item | Why first |
+|-------|------|-----------|
+| 1 | **P2-3** dead-backend detection | Everything else is unobservable while a dead preview reports healthy. Turns a 120 s mystery into an instant, accurate error |
+| 2 | **P2-1** bridge restart | Cheap, and without it a harness silently stops working mid-session |
+| 3 | **P1-1** truncation flag | One added field retroactively makes every consumer's DOM assertions honest |
+| 4 | **P1-2** / **P1-3** fabricated success values | Same class as P1-1: a synthesized value in the field that means success |
+| 5 | **P2-2**, **P3-1**, **P3-2** | Ergonomics — real, but nothing depends on them |
+
+The common thread in every P1 is worth stating on its own: **when DPS cannot do the thing,
+it returns something shaped like success.** Truncated HTML looks like HTML, a synthesized
+`focusPath` looks like a trace, a drawn placeholder looks like a screenshot. Each one
+individually is a small fallback; together they let a test suite report green for two months
+while asserting nothing. A single convention — *never populate a success field with
+substitute data; add a flag instead* — would prevent all three.
