@@ -22,7 +22,6 @@ from backend.tdp_intent import is_current_tdp_read_intent
 AskThinkingPhase = Literal[
     "starting",
     "proton_logs",
-    "experiment_journal",
     "tdp_read",
     "screenshot_prep",
     "searching_kb",
@@ -453,23 +452,6 @@ def _phase_pool(
             "😮‍💨",
         ]
 
-    if phase == "experiment_journal":
-        if tone == "deadpan":
-            return [
-                f"Proton journal: {quote}{game_bit}. Loading.",
-                f"Experiment log for {quote}. Retrieved.",
-                f"Historical Proton data: {quote}{game_bit}.",
-                f"Prior experiments for {quote}.",
-                "🌳",
-            ]
-        return [
-            f"Your Proton diary and {quote}{game_bit} — page turner.",
-            f"Experiment history meet {quote}{game_bit}…",
-            f"Prior Proton swings at {quote}{game_bit}.",
-            f"Flashback montage for {quote}…",
-            "🙄",
-        ]
-
     if phase == "tdp_read":
         if tone == "deadpan":
             return [
@@ -665,8 +647,6 @@ def format_thinking_phase(
         text = "Starting…"
     elif phase == "proton_logs":
         text = f"Reading Proton logs{game_clause}…" if game else "Reading Proton logs…"
-    elif phase == "experiment_journal":
-        text = f"Loading Proton journal{game_clause}…" if game else "Loading Proton journal…"
     elif phase == "tdp_read":
         text = "Checking current power limits…"
     elif phase == "searching_kb":
