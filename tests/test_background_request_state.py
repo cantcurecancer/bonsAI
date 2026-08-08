@@ -204,11 +204,21 @@ class TestPartialStreamSnapshot(unittest.TestCase):
         snap = new_partial_stream_snapshot(5)
         self.assertEqual(
             set(snap),
-            {"request_id", "partial_response", "thinking_summary", "streaming", "last_flush_monotonic"},
+            {
+                "request_id",
+                "partial_response",
+                "thinking_summary",
+                "thinking_summary_monotonic",
+                "thinking_tone",
+                "streaming",
+                "last_flush_monotonic",
+            },
         )
         self.assertEqual(snap["request_id"], 5)
         self.assertIsNone(snap["partial_response"])
         self.assertIsNone(snap["thinking_summary"])
+        self.assertEqual(snap["thinking_summary_monotonic"], 0.0)
+        self.assertEqual(snap["thinking_tone"], "witty")
         self.assertIs(snap["streaming"], False)
         self.assertEqual(snap["last_flush_monotonic"], 0.0)
 

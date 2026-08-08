@@ -380,7 +380,12 @@ class Plugin:
                 return
             now = time.monotonic()
             if thinking_summary:
-                snap["thinking_summary"] = thinking_summary
+                # Stamp only on a real change. A phase that re-publishes the same string on every
+                # delta would otherwise keep resetting the clock, and the line would never be
+                # recognised as stale no matter how long it sat there.
+                if thinking_summary != snap.get("thinking_summary"):
+                    snap["thinking_summary"] = thinking_summary
+                    snap["thinking_summary_monotonic"] = now
             if not update_partial:
                 if done:
                     snap["streaming"] = False
@@ -436,20 +441,30 @@ class Plugin:
         meta is handed to the request task so ``ai_character_random`` picks a character exactly
         once per Ask, rather than once for the blurb's tone and again for the reply's voice.
         """
-        from backend.services.ai_character_service import build_roleplay_system_suffix_meta
+        from backend.services.ai_character_service import (
+            build_roleplay_system_suffix_meta,
+            thinking_status_tone_for_preset,
+        )
         from backend.services.bonsai_stream_tags import compose_thinking_blurb
 
         cfg = settings if isinstance(settings, dict) else {}
         meta = build_roleplay_system_suffix_meta(cfg, ask_mode)
+        character_on = bool(cfg.get("ai_character_enabled"))
         blurb = compose_thinking_blurb(
             question,
             app_name=app_name,
             attachment_count=attachment_count,
             ask_mode=ask_mode,
             request_id=request_id,
-            character_enabled=bool(cfg.get("ai_character_enabled")),
+            character_enabled=character_on,
             character_preset_id=meta.resolved_preset_id,
         )
+        # Stashed so the poll path can escalate a stale line in the right voice. It runs on every
+        # poll and must not load settings to do it.
+        tone = thinking_status_tone_for_preset(meta.resolved_preset_id) if character_on else "witty"
+        with self._partial_response_lock:
+            if self._partial_stream_snapshot.get("request_id") == request_id:
+                self._partial_stream_snapshot["thinking_tone"] = tone
         return blurb, meta
 
     def _publish_thinking_phase_key(
@@ -483,7 +498,10 @@ class Plugin:
         )
 
     def _merge_partial_into_background_status(self, state: dict) -> dict:
-        from backend.services.bonsai_stream_tags import deterministic_thinking_phase_fallback
+        from backend.services.bonsai_stream_tags import (
+            deterministic_thinking_phase_fallback,
+            escalate_static_thinking_line,
+        )
 
         out = dict(state)
         with self._partial_response_lock:
@@ -494,7 +512,17 @@ class Plugin:
             out["streaming"] = bool(snap.get("streaming"))
             thinking = snap.get("thinking_summary")
             if isinstance(thinking, str) and thinking.strip():
-                out["thinking_summary"] = thinking.strip()
+                # Escalate a line that has gone stale. Once the last prep phase publishes, nothing
+                # else fires unless the model emits a <bonsai-status> tag, and small models often
+                # do not -- so this is what stops the line freezing for a whole generation.
+                set_at = float(snap.get("thinking_summary_monotonic") or 0.0)
+                static_for = max(0.0, time.monotonic() - set_at) if set_at else 0.0
+                out["thinking_summary"] = escalate_static_thinking_line(
+                    thinking,
+                    static_seconds=static_for,
+                    request_id=rid if isinstance(rid, int) else 0,
+                    tone=str(snap.get("thinking_tone") or "witty"),  # type: ignore[arg-type]
+                )
             else:
                 started = float(out.get("started_at") or 0.0)
                 elapsed = max(0.0, time.time() - started) if started else 0.0

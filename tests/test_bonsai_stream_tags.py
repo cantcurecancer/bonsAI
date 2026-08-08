@@ -4,8 +4,11 @@ import re
 import unittest
 
 from backend.services.bonsai_stream_tags import (
+    _STATIC_LINE_GRACE_SECONDS,
+    _STATIC_LINE_STEP_SECONDS,
     compose_thinking_blurb,
     deterministic_thinking_phase_fallback,
+    escalate_static_thinking_line,
     extract_bonsai_status,
     extract_question_snippet,
     format_thinking_phase,
@@ -423,6 +426,86 @@ class BonsaiStreamTagsTests(unittest.TestCase):
                 all(line in _EMOJI_ONLY_LINES for line in lines),
                 msg=f"request_id={rid} rendered emoji-only for every phase: {lines}",
             )
+
+    def test_static_line_is_left_alone_inside_the_grace_window(self):
+        base = "Model's warming up for “how well does this run”. Hang in there…"
+        for static in (0.0, 3.0, 6.9):
+            self.assertEqual(
+                escalate_static_thinking_line(base, static_seconds=static, request_id=4),
+                base,
+            )
+
+    def test_static_line_starts_cycling_once_it_goes_stale(self):
+        """The reported bug: one line for a whole 40-second generation.
+
+        Walks the clock the way the poll loop does and requires the line to keep moving.
+        """
+        base = "Model's warming up. Hang in there…"
+        seen = [
+            escalate_static_thinking_line(base, static_seconds=float(t), request_id=4)
+            for t in range(0, 60, 2)
+        ]
+        self.assertEqual(seen[0], base)
+        after_grace = seen[5:]
+        self.assertNotIn(base, after_grace)
+        # Not one replacement that then sticks -- it has to keep changing.
+        self.assertGreaterEqual(len(set(after_grace)), 4)
+
+    def test_static_line_never_repeats_on_consecutive_steps(self):
+        """Additive stepping, not hashing: two steps in a row must not land on the same line."""
+        base = "Still connecting…"
+        for rid in range(1, 12):
+            steps = [
+                escalate_static_thinking_line(
+                    base,
+                    static_seconds=_STATIC_LINE_GRACE_SECONDS + (i * _STATIC_LINE_STEP_SECONDS),
+                    request_id=rid,
+                )
+                for i in range(8)
+            ]
+            for a, b in zip(steps, steps[1:]):
+                self.assertNotEqual(a, b, msg=f"rid={rid}: {steps}")
+
+    def test_static_line_never_predicts_how_much_longer(self):
+        """Duration is unknown here. A "nearly done" followed by another 40s is worse than less."""
+        forbidden = ("nearly there", "almost done", "any second", "just about", "finishing up")
+        for tone in ("witty", "deadpan"):
+            for rid in range(1, 8):
+                for t in range(7, 90, 3):
+                    out = escalate_static_thinking_line(
+                        "base", static_seconds=float(t), request_id=rid, tone=tone
+                    ).lower()
+                    for phrase in forbidden:
+                        self.assertNotIn(phrase, out)
+
+    def test_static_line_acknowledges_a_long_wait_more_openly_over_time(self):
+        base = "Still connecting…"
+        early = escalate_static_thinking_line(base, static_seconds=9.0, request_id=3)
+        late = escalate_static_thinking_line(base, static_seconds=55.0, request_id=3)
+        self.assertNotEqual(early, late)
+        self.assertTrue(
+            any(word in late.lower() for word in ("not stuck", "long", "marathon", "time")),
+            msg=late,
+        )
+
+    def test_static_line_follows_the_deadpan_tone(self):
+        base = "Still connecting…"
+        witty = escalate_static_thinking_line(base, static_seconds=30.0, request_id=3, tone="witty")
+        deadpan = escalate_static_thinking_line(
+            base, static_seconds=30.0, request_id=3, tone="deadpan"
+        )
+        self.assertNotEqual(witty, deadpan)
+
+    def test_generating_phase_replaces_the_connecting_claim(self):
+        """Once tokens arrive, "waking the model up" is not merely static — it is false."""
+        connecting = format_thinking_phase(
+            "connecting_model", question="how does this run", app_name="Hades", request_id=2
+        )
+        generating = format_thinking_phase(
+            "generating", question="how does this run", app_name="Hades", request_id=2
+        )
+        self.assertNotEqual(connecting, generating)
+        self.assertEqual(format_thinking_phase("generating"), "Writing your answer…")
 
     def test_slow_phase_copy_stays_encouraging(self):
         """building_context and connecting_model cover the stretches that look like a hang.

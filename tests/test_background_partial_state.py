@@ -233,6 +233,92 @@ class BackgroundPartialStateTests(unittest.TestCase):
             "hard" in late_summary.lower() or "passable" in late_summary.lower(),
         )
 
+    def test_repeated_identical_publishes_do_not_reset_the_stale_clock(self) -> None:
+        """A phase that re-publishes the same string must not look perpetually fresh.
+
+        Without this the escalation never fires: every delta re-stamps the clock and the line is
+        judged to have just changed, no matter how long it has actually been on screen.
+        """
+        import time as _time
+
+        self.plugin._reset_partial_stream_snapshot(41)
+        self.plugin._publish_thinking_phase(41, "Model's warming up. Hang in there…")
+        with self.plugin._partial_response_lock:
+            first = self.plugin._partial_stream_snapshot["thinking_summary_monotonic"]
+        self.assertGreater(first, 0.0)
+
+        # Long enough to clear the Windows monotonic clock granularity (~16ms), so a stamp that
+        # did move is unambiguous.
+        _time.sleep(0.05)
+        self.plugin._publish_thinking_phase(41, "Model's warming up. Hang in there…")
+        with self.plugin._partial_response_lock:
+            self.assertEqual(self.plugin._partial_stream_snapshot["thinking_summary_monotonic"], first)
+
+        _time.sleep(0.05)
+        self.plugin._publish_thinking_phase(41, "Writing your answer…")
+        with self.plugin._partial_response_lock:
+            self.assertGreater(
+                self.plugin._partial_stream_snapshot["thinking_summary_monotonic"], first
+            )
+
+    def test_a_line_that_goes_quiet_is_escalated_on_later_polls(self) -> None:
+        """The reported bug, end to end through the read path the client actually polls."""
+        import time as _time
+
+        self.plugin._background_state = {
+            "status": "pending",
+            "request_id": 42,
+            "response": "Thinking...",
+            "started_at": _time.time(),
+        }
+        self.plugin._reset_partial_stream_snapshot(42)
+        stuck = "Model's warming up for “how well does this run”. Hang in there…"
+        self.plugin._publish_thinking_phase(42, stuck)
+
+        fresh = self.plugin._merge_partial_into_background_status(self.plugin._background_state)
+        self.assertEqual(fresh.get("thinking_summary"), stuck)
+
+        # Backdate the stamp instead of sleeping: the grace window is seconds long.
+        seen = set()
+        for aged in (10.0, 20.0, 30.0, 45.0, 60.0):
+            with self.plugin._partial_response_lock:
+                self.plugin._partial_stream_snapshot["thinking_summary_monotonic"] = (
+                    _time.monotonic() - aged
+                )
+            merged = self.plugin._merge_partial_into_background_status(self.plugin._background_state)
+            summary = merged.get("thinking_summary") or ""
+            self.assertTrue(summary.strip())
+            self.assertNotEqual(summary, stuck)
+            seen.add(summary)
+        self.assertGreaterEqual(len(seen), 3, msg=seen)
+
+    def test_a_model_tag_arriving_resets_the_escalation(self) -> None:
+        """Real news outranks a duration line, and restarts the clock."""
+        import time as _time
+
+        self.plugin._background_state = {
+            "status": "pending",
+            "request_id": 43,
+            "response": "Thinking...",
+            "started_at": _time.time(),
+        }
+        self.plugin._reset_partial_stream_snapshot(43)
+        self.plugin._publish_thinking_phase(43, "Model's warming up. Hang in there…")
+        with self.plugin._partial_response_lock:
+            self.plugin._partial_stream_snapshot["thinking_summary_monotonic"] = (
+                _time.monotonic() - 40.0
+            )
+        self.assertNotEqual(
+            self.plugin._merge_partial_into_background_status(self.plugin._background_state).get(
+                "thinking_summary"
+            ),
+            "Checking your GPU driver",
+        )
+
+        self.plugin._publish_thinking_phase(43, "Checking your GPU driver")
+        merged = self.plugin._merge_partial_into_background_status(self.plugin._background_state)
+        self.assertEqual(merged.get("thinking_summary"), "Checking your GPU driver")
+
     def test_merge_omits_partial_when_not_pending(self) -> None:
         self.plugin._background_state = {"status": "completed", "request_id": 7}
         self.plugin._reset_partial_stream_snapshot(7)

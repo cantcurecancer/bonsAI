@@ -244,8 +244,29 @@ async def run_ask_ollama(
     on_delta_cb = None
     if isinstance(token_stream_request_id, int):
         stream_rid = token_stream_request_id
+        announced_generating = False
 
         def _on_delta(text: str, done: bool, thinking_summary: Optional[str] = None) -> None:
+            nonlocal announced_generating
+            # First real token: the model is writing, not connecting. Publishing here is what
+            # retires the "waking the model up" line, which otherwise stayed on screen for the
+            # whole generation and stopped being true the moment tokens started.
+            #
+            # Skipped when the model emitted its own status tag, because that is strictly better
+            # copy and _update_partial_response is about to write it. Runs whether or not token
+            # streaming is on: with it off the user sees no text at all, so this is the only
+            # signal that generation started.
+            if not announced_generating and not done and not thinking_summary and (text or "").strip():
+                announced_generating = True
+                plugin_inst._publish_thinking_phase_key(
+                    stream_rid,
+                    "generating",
+                    app_name=app_name,
+                    ask_mode=ask_mode,
+                    question=question,
+                    character_enabled=bool(settings.get("ai_character_enabled")),
+                    character_preset_id=rp_meta.resolved_preset_id,
+                )
             plugin_inst._update_partial_response(
                 stream_rid,
                 text,

@@ -107,6 +107,13 @@ def new_partial_stream_snapshot(request_id: Optional[int]) -> dict[str, Any]:
         "request_id": request_id,
         "partial_response": None,
         "thinking_summary": None,
+        # When thinking_summary last *changed*, not when it was last written. Repeated identical
+        # publishes must not reset it, because this is what tells the read path how long one line
+        # has been sitting on screen unchanged.
+        "thinking_summary_monotonic": 0.0,
+        # Stashed at accept so the read path can escalate a stale line in the right voice without
+        # loading settings on every poll.
+        "thinking_tone": "witty",
         "streaming": False,
         "last_flush_monotonic": 0.0,
     }

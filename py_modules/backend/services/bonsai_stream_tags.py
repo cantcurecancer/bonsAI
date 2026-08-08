@@ -28,6 +28,7 @@ AskThinkingPhase = Literal[
     "building_context",
     "connecting_model",
     "model_retry",
+    "generating",
 ]
 
 _PHASE_MAX_LEN = 240
@@ -570,6 +571,25 @@ def _phase_pool(
             "🌳",
         ]
 
+    # Fires on the first content token. Without it "waking the model up" stayed on screen for the
+    # whole generation, which is not just static — by then it is false.
+    if phase == "generating":
+        if tone == "deadpan":
+            return [
+                f"Writing the answer for {quote}{game_bit}.",
+                f"Reply in progress: {quote}.",
+                f"Answer forming for {quote}{game_bit}.",
+                f"Composing on {quote}.",
+                "🌳",
+            ]
+        return [
+            f"Writing your answer on {quote}{game_bit}…",
+            f"Words are happening for {quote}…",
+            f"Answer taking shape for {quote}{game_bit}…",
+            f"Drafting the reply to {quote}…",
+            "🌳",
+        ]
+
     if phase == "model_retry":
         if tone == "deadpan":
             return [
@@ -677,12 +697,100 @@ def format_thinking_phase(
         text = f"Building context{game_clause}…" if game else "Building context…"
     elif phase == "connecting_model":
         text = "Connecting to model…"
+    elif phase == "generating":
+        text = "Writing your answer…"
     elif phase == "model_retry":
         text = "Trying another model…"
     else:
         text = "Working…"
 
     return text[:_PHASE_MAX_LEN]
+
+
+# How long one unchanged line may sit on screen before the read path starts escalating it, and
+# how often it moves after that.
+_STATIC_LINE_GRACE_SECONDS = 7.0
+_STATIC_LINE_STEP_SECONDS = 7.0
+# Tier boundaries, in seconds of *unchanged* line. Later tiers acknowledge the wait more openly.
+_STATIC_LINE_TIER_SECONDS = (21.0, 40.0)
+
+
+def _still_working_pool(tone: _THINKING_TONE, tier: int) -> list[str]:
+    """Lines that stay true no matter which phase went quiet — the work is simply still running."""
+    if tone == "deadpan":
+        if tier >= 2:
+            return [
+                "Still running. Local models take their time.",
+                "Not stuck. Still generating.",
+                "Long reply. Still going.",
+                "Still working. This is normal for a handheld.",
+            ]
+        if tier == 1:
+            return [
+                "Still going.",
+                "Still generating.",
+                "Still working on it.",
+                "In progress.",
+            ]
+        return [
+            "Working on it…",
+            "Still here…",
+            "Processing…",
+            "Thinking it through…",
+        ]
+    if tier >= 2:
+        return [
+            "Still going — long answers take a while on a handheld.",
+            "Not stuck, just slow silicon. Still writing.",
+            "Still here. This one's a marathon.",
+            "Taking its time. Local models do that.",
+        ]
+    if tier == 1:
+        return [
+            "Still working on it…",
+            "Still going — hang in there…",
+            "Not forgotten, still thinking…",
+            "Give it a moment longer…",
+        ]
+    return [
+        "Still on it…",
+        "Working…",
+        "Still thinking…",
+        # Nothing here may predict how much longer. The duration is unknown at this point, and a
+        # "nearly there" that is followed by another 40 seconds is worse than saying less.
+        "Still chewing on it…",
+    ]
+
+
+def escalate_static_thinking_line(
+    base: str,
+    *,
+    static_seconds: float,
+    request_id: int = 0,
+    tone: _THINKING_TONE = "witty",
+) -> str:
+    """Replace a line that has not changed in a while with a rotating "still working" line.
+
+    This is the one deliberate exception to the rule that copy changes only on a phase key or a
+    model tag (THINKING-COPY-01). That rule exists because rotating *interchangeable* copy on a
+    timer felt random and fake. This is the opposite failure: after the last prep phase publishes,
+    nothing else fires unless the model emits a ``<bonsai-status>`` tag, and small models often do
+    not -- so the line sat on "Model's warming up…" for a whole 40-second generation. Static there
+    reads as crashed, and by then the line is also no longer true.
+
+    What rotates is a statement about *duration*, which is real information the user does not
+    otherwise have, not a reshuffle of the same joke. The step is additive rather than hashed, so
+    consecutive steps cannot land on the same line twice in a row.
+    """
+    text = (base or "").strip()
+    if static_seconds < _STATIC_LINE_GRACE_SECONDS:
+        return text
+    since_grace = static_seconds - _STATIC_LINE_GRACE_SECONDS
+    tier = sum(1 for bound in _STATIC_LINE_TIER_SECONDS if static_seconds >= bound)
+    pool = _still_working_pool(tone, tier)
+    step = int(since_grace // _STATIC_LINE_STEP_SECONDS)
+    idx = (_stable_bucket(request_id, salt="still_working") + step) % len(pool)
+    return pool[idx][:_PHASE_MAX_LEN]
 
 
 def deterministic_thinking_phase_fallback(

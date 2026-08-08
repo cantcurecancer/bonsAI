@@ -177,6 +177,101 @@ class OllamaAskServiceTests(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(plugin.published_phases, ["connecting_model"])
 
+    async def test_first_token_retires_the_connecting_line(self) -> None:
+        """Reported on device: "Model's warming up…" stayed up for the whole generation.
+
+        It is not only static by then, it is false — the model is writing. Published once, not
+        per delta, and skipped when the model supplied its own status tag.
+        """
+        plugin = _FakePlugin(active_request_id=6)
+
+        def fake_post_ollama_chat(*_args: Any, **kwargs: Any) -> dict[str, Any]:
+            on_delta = kwargs.get("on_delta")
+            if callable(on_delta):
+                on_delta("", False, None)
+                on_delta("Here", False, None)
+                on_delta("Here is the", False, None)
+                on_delta("Here is the answer.", True, None)
+            return {
+                "success": True,
+                "status": 200,
+                "model": "qwen2.5:3b",
+                "response": "Here is the answer.",
+                "assistant_raw": "Here is the answer.",
+            }
+
+        with (
+            patch(
+                "backend.services.ollama_ask_service.list_installed_ollama_tags",
+                return_value=["qwen2.5:3b"],
+            ),
+            patch("backend.services.ollama_ask_service.probe_ollama_http_ok", return_value=True),
+            patch(
+                "backend.services.screenshot_media.prepare_attachment_images",
+                return_value=([], [], []),
+            ),
+            patch(
+                "backend.services.ollama_ask_service.post_ollama_chat",
+                side_effect=fake_post_ollama_chat,
+            ),
+        ):
+            await run_ask_ollama(
+                plugin,
+                "hello",
+                "127.0.0.1:11434",
+                "",
+                "",
+                request_timeout_seconds=30,
+                # The delta callback only exists for a background Ask, which is the only path
+                # that passes this. Without it there is no stream to react to.
+                token_stream_request_id=6,
+            )
+
+        self.assertEqual(plugin.published_phases, ["connecting_model", "generating"])
+
+    async def test_a_model_status_tag_wins_over_the_generating_phase(self) -> None:
+        plugin = _FakePlugin(active_request_id=7)
+
+        def fake_post_ollama_chat(*_args: Any, **kwargs: Any) -> dict[str, Any]:
+            on_delta = kwargs.get("on_delta")
+            if callable(on_delta):
+                on_delta("Here", False, "Reading your screenshot")
+                on_delta("Here is the answer.", True, "Reading your screenshot")
+            return {
+                "success": True,
+                "status": 200,
+                "model": "qwen2.5:3b",
+                "response": "Here is the answer.",
+                "assistant_raw": "Here is the answer.",
+            }
+
+        with (
+            patch(
+                "backend.services.ollama_ask_service.list_installed_ollama_tags",
+                return_value=["qwen2.5:3b"],
+            ),
+            patch("backend.services.ollama_ask_service.probe_ollama_http_ok", return_value=True),
+            patch(
+                "backend.services.screenshot_media.prepare_attachment_images",
+                return_value=([], [], []),
+            ),
+            patch(
+                "backend.services.ollama_ask_service.post_ollama_chat",
+                side_effect=fake_post_ollama_chat,
+            ),
+        ):
+            await run_ask_ollama(
+                plugin,
+                "hello",
+                "127.0.0.1:11434",
+                "",
+                "",
+                request_timeout_seconds=30,
+                token_stream_request_id=7,
+            )
+
+        self.assertEqual(plugin.published_phases, ["connecting_model"])
+
     async def test_second_model_attempt_reports_retry_not_connecting(self) -> None:
         plugin = _FakePlugin(active_request_id=5)
 
