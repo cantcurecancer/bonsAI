@@ -228,46 +228,87 @@ async function writeScenarioManifest(evidenceDir, scenario, outcome) {
   return manifest;
 }
 
+// Every assert must fail closed. A scenario that cannot be evaluated is a scenario that
+// did not run, and reporting that as PASS is worse than reporting nothing: it is the
+// shape of every defect recorded in docs/testing.md § Preview-suite evidence invalidated.
+// Two ways that happened here, both fixed below:
+//   - the type dispatch was a flat run of `if` blocks with no default, so a typo
+//     (`domContain`, `rpcResults`) matched nothing and the step passed;
+//   - `rpcResult` and `hookResult` guarded their comparison on `expect &&`, so an assert
+//     with a missing or empty `expect` passed unconditionally.
+// All 42 asserts in tests/preview-suite carry a non-empty `expect` and a known type, so
+// this is behaviour-preserving for the suite as it stands. It is the next mistake it stops.
 function assertStep(step, context) {
   const { type, expect } = step;
-  if (type === "domContains") {
-    const html = context.lastDom ?? "";
-    if (!html.includes(expect)) {
-      throw new Error(`domContains failed: expected "${expect}" in DOM`);
+
+  const requireExpect = () => {
+    const empty =
+      expect === undefined ||
+      expect === null ||
+      expect === "" ||
+      (Array.isArray(expect) && (expect.length === 0 || expect.some((x) => !String(x ?? ""))));
+    if (empty) {
+      throw new Error(
+        `${type} assert is missing a usable "expect" (got ${JSON.stringify(expect)}) — ` +
+          `an assert with nothing to compare against cannot pass or fail honestly`
+      );
     }
-  }
-  if (type === "domNotContains") {
-    const html = context.lastDom ?? "";
-    if (html.includes(expect)) {
-      throw new Error(`domNotContains failed: "${expect}" found in DOM`);
+  };
+
+  switch (type) {
+    case "domContains": {
+      requireExpect();
+      const html = context.lastDom ?? "";
+      if (!html.includes(expect)) {
+        throw new Error(`domContains failed: expected "${expect}" in DOM`);
+      }
+      return;
     }
-  }
-  if (type === "rpcResult") {
-    const rpc = context.lastRpc ?? "";
-    const texts = [JSON.stringify(rpc)];
-    if (rpc && typeof rpc.response === "string") texts.push(rpc.response);
-    if (expect && !texts.some((t) => t.includes(expect))) {
-      throw new Error(`rpcResult failed: expected "${expect}" in ${texts[0].slice(0, 200)}`);
+    case "domNotContains": {
+      requireExpect();
+      const html = context.lastDom ?? "";
+      if (html.includes(expect)) {
+        throw new Error(`domNotContains failed: "${expect}" found in DOM`);
+      }
+      return;
     }
-  }
-  if (type === "hookResult") {
-    const val = JSON.stringify(context.lastHook ?? "");
-    if (expect && !val.includes(expect)) {
-      throw new Error(`hookResult failed: expected "${expect}" in ${val.slice(0, 200)}`);
+    case "rpcResult": {
+      requireExpect();
+      const rpc = context.lastRpc ?? "";
+      const texts = [JSON.stringify(rpc)];
+      if (rpc && typeof rpc.response === "string") texts.push(rpc.response);
+      if (!texts.some((t) => t.includes(expect))) {
+        throw new Error(`rpcResult failed: expected "${expect}" in ${texts[0].slice(0, 200)}`);
+      }
+      return;
     }
-  }
-  if (type === "domContainsAny") {
-    const html = context.lastDom ?? "";
-    const needles = Array.isArray(expect) ? expect : [expect];
-    if (!needles.some((n) => html.includes(String(n)))) {
-      throw new Error(`domContainsAny failed: expected one of ${JSON.stringify(needles)} in DOM`);
+    case "hookResult": {
+      requireExpect();
+      const val = JSON.stringify(context.lastHook ?? "");
+      if (!val.includes(expect)) {
+        throw new Error(`hookResult failed: expected "${expect}" in ${val.slice(0, 200)}`);
+      }
+      return;
     }
-  }
-  if (type === "focusPathIncludes") {
-    const fp = context.lastFocusPath ?? [];
-    if (!fp.some((x) => String(x).includes(expect))) {
-      throw new Error(`focusPathIncludes failed: ${JSON.stringify(fp)}`);
+    case "domContainsAny": {
+      requireExpect();
+      const html = context.lastDom ?? "";
+      const needles = Array.isArray(expect) ? expect : [expect];
+      if (!needles.some((n) => html.includes(String(n)))) {
+        throw new Error(`domContainsAny failed: expected one of ${JSON.stringify(needles)} in DOM`);
+      }
+      return;
     }
+    case "focusPathIncludes": {
+      requireExpect();
+      const fp = context.lastFocusPath ?? [];
+      if (!fp.some((x) => String(x).includes(expect))) {
+        throw new Error(`focusPathIncludes failed: ${JSON.stringify(fp)}`);
+      }
+      return;
+    }
+    default:
+      throw new Error(`Unknown assert type: ${JSON.stringify(type)}`);
   }
 }
 
