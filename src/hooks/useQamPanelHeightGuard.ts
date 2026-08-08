@@ -2,7 +2,9 @@
  * Title: QAM panel height guard
  * Purpose: Pin Steam QAM tab pane height and flex column chain to prevent gamescope panel sag on hover.
  * Used for: index.tsx `.bonsai-scope` alongside useTabStripBodyOffset.
- * Solves: Shrinking or jumping QAM content area when pointer enters the plugin panel.
+ * Solves: Shrinking or jumping QAM content area when pointer enters the plugin panel. Also keeps
+ *         the ResizeObserver pointed at the live TabContentsScroll, which Steam replaces on every
+ *         tab switch.
  * Does not: Measure tab strip reserve — see useTabStripBodyOffset and tabBodyViewport.
  */
 import { useLayoutEffect, useRef } from "react";
@@ -12,6 +14,8 @@ const QAM_HOST_MIN_PX = 320;
 const QAM_HOST_MAX_PX = 1200;
 const CRUSHED_SCOPE_MAX_PX = 160;
 const LOCK_SAG_TOLERANCE_PX = 8;
+
+const TAB_CONTENTS_SELECTOR = '.bonsai-decky-tabs-root [class*="TabContentsScroll"]';
 
 function isTabPaneHost(el: HTMLElement): boolean {
   return (el.className?.toString() ?? "").includes("tab_");
@@ -112,22 +116,71 @@ export function useQamPanelHeightGuard(scopeRef: React.RefObject<HTMLDivElement 
     let raf = 0;
     let settleRaf = 0;
 
-    const scheduleSettle = () => {
-      cancelAnimationFrame(settleRaf);
-      settleRaf = requestAnimationFrame(() => {
-        settleRaf = requestAnimationFrame(() => applyLock());
-      });
-    };
-
-    applyLock();
-    scheduleSettle();
-
     const ro = new ResizeObserver(() => {
       syncTabBodyViewportHeight(scope);
     });
     ro.observe(scope);
-    const tabContents = scope.querySelector('[class*="TabContentsScroll"]');
-    if (tabContents) ro.observe(tabContents);
+
+    /*
+      Steam replaces the TabContentsScroll node on every tab switch — measured on device
+      2026-08-07, node identity changed on all five captured transitions. Observing whatever
+      node happened to exist at mount meant the ResizeObserver watched a detached element from
+      the first switch onward, so `--bonsai-tab-body-height` stopped tracking content and
+      section-3 pinned the pane to a stale pixel value. Re-resolve instead of assuming.
+    */
+    let observedContents: Element | null = null;
+    const structureObserver = new MutationObserver(() => {
+      // O(1) guard: the node is only re-resolved when the one we hold actually went away,
+      // so ordinary DOM churn costs a boolean read.
+      if (observedContents?.isConnected) return;
+      resyncTabContents();
+    });
+
+    function resyncTabContents(): void {
+      const next = scope!.querySelector(TAB_CONTENTS_SELECTOR);
+      if (next !== observedContents) {
+        if (observedContents) ro.unobserve(observedContents);
+        observedContents = next;
+        if (next) {
+          ro.observe(next);
+          syncTabBodyViewportHeight(scope!);
+        }
+      }
+
+      /*
+        Watch the ancestor chain for the replacement, childList only and deliberately WITHOUT
+        subtree. The swap shows up as a childList mutation on whichever ancestor owns the
+        replaced node, and every ancestor between the tabs root and the pane is covered — while
+        nothing inside TabContentsScroll is, so a streaming transcript does not generate a
+        mutation record per token just to keep this observer honest.
+      */
+      structureObserver.disconnect();
+      const tabsRoot = scope!.querySelector(".bonsai-decky-tabs-root");
+      if (!tabsRoot) return;
+      structureObserver.observe(tabsRoot, { childList: true });
+      let node: Element | null = observedContents;
+      while (node && node !== tabsRoot) {
+        const parent: Element | null = node.parentElement;
+        if (!parent) break;
+        structureObserver.observe(parent, { childList: true });
+        node = parent;
+      }
+    }
+
+    const scheduleSettle = () => {
+      cancelAnimationFrame(settleRaf);
+      settleRaf = requestAnimationFrame(() => {
+        settleRaf = requestAnimationFrame(() => {
+          applyLock();
+          // The tabs subtree may not exist yet at mount; this is the catch-up pass.
+          resyncTabContents();
+        });
+      });
+    };
+
+    applyLock();
+    resyncTabContents();
+    scheduleSettle();
 
     const onPointer = () => {
       cancelAnimationFrame(raf);
@@ -140,6 +193,7 @@ export function useQamPanelHeightGuard(scopeRef: React.RefObject<HTMLDivElement 
       cancelAnimationFrame(raf);
       cancelAnimationFrame(settleRaf);
       ro.disconnect();
+      structureObserver.disconnect();
       scope.removeEventListener("pointerenter", onPointer);
       scope.removeEventListener("pointermove", onPointer);
     };
