@@ -504,7 +504,53 @@ Three findings worth carrying forward:
   no closing marker, so it does not match and the previous line stays up. That is why §7 #8's flicker
   warning did not need a debounce.
 
-### 10.4 Still open
+### 10.4 On-Deck round 1, 2026-08-08 — the line still froze
+
+First device pass on the § 10.3 build. Two reports, one non-issue and one real.
+
+**"I did not see a Thinking…"** — working as intended, and it answers the
+THINKING-OPENER-01 judgement call in the best available way. The placeholder is set, then replaced
+when the RPC returns; the maintainer never saw it because that round trip is imperceptible on
+device. The documented fallback (client owns the opener) is therefore **not needed** — the
+backend-authoritative design stands.
+
+**"Stuck on `Model's warming up for …` for the entire time"** on an Expert Ask with a screenshot.
+Real, and § 10.3's item-8 fix did not cover it. The mistake in that fix was treating
+mid-generation updates as a *model* problem: the prompt now invites later `<bonsai-status>` tags,
+but a vision model on a screenshot Ask emitted none, and **every other publisher had already
+finished**. All phases fire during prep. Once `ask_ollama` is called, the model tag was the only
+remaining writer — so with no tag, the last prep line stayed up for the whole generation.
+
+It was also *false* by then, which the original review missed: `connecting_model` claims the model
+is warming up, and it had long since started writing.
+
+Fixed in `67d4ad5` with two independent mechanisms, neither depending on model compliance:
+
+- **A `generating` phase**, published on the first content token, whether or not token streaming is
+  on. With streaming off there is no visible text at all, so this is the only signal that
+  generation began. Skipped when the model did supply a tag.
+- **`escalate_static_thinking_line`**, applied at merge time: a line that has not *changed* in 7
+  seconds is replaced by a rotating duration line, stepping every 7s across three escalating tiers.
+  A real phase change or model tag outranks it and resets the clock.
+
+**This is a deliberate, narrow reversal of THINKING-COPY-01.** That rule forbids time-based
+rotation, and it was right about what it was aimed at — reshuffling interchangeable jokes on a
+timer felt random. What rotates here is a statement about *duration*, which is real information the
+user has no other way to get, and only after a line has visibly gone quiet. The row is amended
+rather than dropped: **copy may not change while the work has not, and may not predict how much
+longer** — the second half is asserted, since an "almost done" followed by another 40 seconds is
+worse than saying less.
+
+One implementation note worth keeping: the stale clock stamps on *change*, not on write. A phase
+re-publishing the same string every delta would otherwise keep resetting it, and the line would
+never be recognised as stale however long it sat there.
+
+Found in passing and fixed separately (`b8f8ded`): `run_ask_ollama` resolved the AI character
+**twice** — once for the `screenshot_prep` blurb, once for the reply's voice — so with
+`ai_character_random` on (the default) a screenshot Ask could pair a deadpan status line with a
+witty answer. Same defect the background opener was guarded against in `068374f`, one layer down.
+
+### 10.5 Still open
 
 - **§2.8 — `deterministic_thinking_phase_fallback` is now further from reach**, not closer: the opener
   is published before the task starts, so the sub-second window it covered is gone. Its
