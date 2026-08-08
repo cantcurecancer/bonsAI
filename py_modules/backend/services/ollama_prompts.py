@@ -589,16 +589,6 @@ GENERAL_PURPOSE_ASSISTANT_CLAUSE = (
     "run shell commands or code, browse the web, perform real-time search, or read files beyond what appears in this system message.\n\n"
 )
 
-BONSAI_STATUS_STREAM_INSTRUCTION = (
-    "STATUS LINE (required): As the very first characters of your assistant reply, emit exactly one line "
-    "<bonsai-status>short plain-English status for the user</bonsai-status> "
-    "(under ~120 characters; no markdown inside the tag; disgruntled or dry-deadpan wit is fine — "
-    "no lazy openers like Yeah/Fine/Sure). "
-    "Then continue with your normal answer on the following lines. "
-    "The status tag is stripped before the user sees the final reply.\n\n"
-)
-
-
 def extract_question_snippet_for_prompt(question: str, max_len: int = 56) -> str:
     """Short user-topic snippet for status-line instructions (avoid circular import with stream tags)."""
     raw = re.sub(r"\s+", " ", (question or "").strip())
