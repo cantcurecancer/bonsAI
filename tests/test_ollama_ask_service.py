@@ -23,6 +23,7 @@ if "pwd" not in sys.modules:
     _pwd.getpwuid = lambda _uid: types.SimpleNamespace(pw_dir="/tmp")
     sys.modules["pwd"] = _pwd
 
+from backend.services.ai_character_service import build_roleplay_system_suffix_meta
 from backend.services.ollama_ask_service import run_ask_ollama
 
 
@@ -176,6 +177,58 @@ class OllamaAskServiceTests(unittest.IsolatedAsyncioTestCase):
             await run_ask_ollama(plugin, "hello", "127.0.0.1:11434", "", "", request_timeout_seconds=30)
 
         self.assertEqual(plugin.published_phases, ["connecting_model"])
+
+    async def test_the_ai_character_is_rolled_once_per_ask(self) -> None:
+        """ai_character_random defaults on and calls random.choice.
+
+        This function used to resolve it twice -- once for the screenshot_prep blurb's tone and
+        once for the reply's actual voice -- so a random character could put a deadpan status line
+        in front of a witty answer. Nothing else catches this: both calls succeed, and the two
+        results only differ some of the time.
+        """
+        plugin = _FakePlugin(active_request_id=8)
+        plugin._settings["ai_character_enabled"] = True
+        plugin._settings["ai_character_random"] = True
+
+        def fake_post_ollama_chat(*_args: Any, **_kwargs: Any) -> dict[str, Any]:
+            return {
+                "success": True,
+                "status": 200,
+                "model": "qwen2.5:3b",
+                "response": "ok",
+                "assistant_raw": "ok",
+            }
+
+        with (
+            patch(
+                "backend.services.ollama_ask_service.list_installed_ollama_tags",
+                return_value=["qwen2.5:3b"],
+            ),
+            patch("backend.services.ollama_ask_service.probe_ollama_http_ok", return_value=True),
+            patch(
+                "backend.services.screenshot_media.prepare_attachment_images",
+                return_value=([], [], []),
+            ),
+            patch(
+                "backend.services.ollama_ask_service.post_ollama_chat",
+                side_effect=fake_post_ollama_chat,
+            ),
+            patch(
+                "backend.services.ollama_ask_service.build_roleplay_system_suffix_meta",
+                wraps=build_roleplay_system_suffix_meta,
+            ) as spy,
+        ):
+            await run_ask_ollama(
+                plugin,
+                "hello",
+                "127.0.0.1:11434",
+                "",
+                "",
+                attachments=[{"path": "/home/deck/shot.png", "name": "shot.png"}],
+                request_timeout_seconds=30,
+            )
+
+        self.assertEqual(spy.call_count, 1)
 
     async def test_first_token_retires_the_connecting_line(self) -> None:
         """Reported on device: "Model's warming up…" stayed up for the whole generation.

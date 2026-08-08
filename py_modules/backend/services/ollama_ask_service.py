@@ -83,6 +83,10 @@ async def run_ask_ollama(
     url = plugin_inst._build_ollama_chat_url(pc_ip)
     settings = await plugin_inst.load_settings()
     pcls = type(plugin_inst)
+    # Resolved once, before anything reads it. ai_character_random defaults *on* and calls
+    # random.choice, so a second call here would roll a different character -- and this function
+    # used to make two, one for the screenshot_prep blurb and one for the reply's actual voice.
+    rp_meta = build_roleplay_system_suffix_meta(settings, ask_mode)
     normalized_attachments = pcls._sanitize_attachments(attachments or [])
     attachment_paths = [
         str(a.get("path", "") or "").strip()
@@ -90,7 +94,6 @@ async def run_ask_ollama(
         if isinstance(a, dict) and str(a.get("path", "") or "").strip()
     ]
     if normalized_attachments and isinstance(active_request_id, int):
-        rp_meta_prep = build_roleplay_system_suffix_meta(settings, ask_mode)
         plugin_inst._publish_thinking_phase_key(
             active_request_id,
             "screenshot_prep",
@@ -99,7 +102,7 @@ async def run_ask_ollama(
             ask_mode=ask_mode,
             question=question,
             character_enabled=bool(settings.get("ai_character_enabled")),
-            character_preset_id=rp_meta_prep.resolved_preset_id,
+            character_preset_id=rp_meta.resolved_preset_id,
         )
     keep_alive = sanitize_ollama_keep_alive(settings.get("ollama_keep_alive"))
     reply_verbosity = sanitize_reply_verbosity(settings.get("reply_verbosity"))
@@ -133,7 +136,6 @@ async def run_ask_ollama(
         reply_verbosity=reply_verbosity,
         reply_language=reply_language,
     )
-    rp_meta = build_roleplay_system_suffix_meta(settings, ask_mode)
     roleplay = rp_meta.suffix
     pyro_asshole = pyro_asshole_mode_active(settings, rp_meta.resolved_preset_id)
     preset_carousel_inject = None
