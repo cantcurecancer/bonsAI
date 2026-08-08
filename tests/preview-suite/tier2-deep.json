@@ -239,11 +239,10 @@
             {
               "capabilities": {
                 "filesystem_write": true,
-                "hardware_control": true,
                 "media_library_access": true,
                 "steam_logs_read": true,
                 "steam_web_api": true,
-                "external_navigation": true
+                "microphone_access": false
               },
               "steam_web_api_key": "preview-test-key-00000000000000000000"
             }
@@ -290,11 +289,10 @@
             {
               "capabilities": {
                 "filesystem_write": true,
-                "hardware_control": true,
                 "media_library_access": true,
                 "steam_logs_read": true,
                 "steam_web_api": true,
-                "external_navigation": true
+                "microphone_access": false
               },
               "steam_web_api_key": "preview-test-key-00000000000000000000"
             }
@@ -341,11 +339,10 @@
             {
               "capabilities": {
                 "filesystem_write": true,
-                "hardware_control": true,
                 "media_library_access": true,
                 "steam_logs_read": true,
                 "steam_web_api": true,
-                "external_navigation": true
+                "microphone_access": false
               },
               "steam_web_api_key": "preview-test-key-00000000000000000000"
             }
@@ -392,11 +389,10 @@
             {
               "capabilities": {
                 "filesystem_write": true,
-                "hardware_control": true,
                 "media_library_access": true,
                 "steam_logs_read": true,
                 "steam_web_api": false,
-                "external_navigation": true
+                "microphone_access": false
               },
               "steam_web_api_key": "preview-test-key-00000000000000000000"
             }
@@ -500,11 +496,10 @@
             {
               "capabilities": {
                 "filesystem_write": true,
-                "hardware_control": true,
                 "media_library_access": true,
                 "steam_logs_read": true,
                 "steam_web_api": false,
-                "external_navigation": true
+                "microphone_access": false
               }
             }
           ]
@@ -566,11 +561,10 @@
             {
               "capabilities": {
                 "filesystem_write": true,
-                "hardware_control": true,
                 "media_library_access": true,
                 "steam_logs_read": true,
                 "steam_web_api": false,
-                "external_navigation": true
+                "microphone_access": false
               }
             }
           ]
