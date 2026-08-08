@@ -156,7 +156,10 @@ export const DeveloperTab: React.FC<DeveloperTabProps> = ({
   };
 
   return (
-    <div className="bonsai-tab-panel-shell bonsai-tab-panel-shell--tight bonsai-settings-section-stack">
+    <div
+      className="bonsai-tab-panel-shell bonsai-tab-panel-shell--tight bonsai-settings-section-stack"
+      data-bonsai-tab-panel="developer"
+    >
       {onInstallSeedKnowledgeBase ? (
         <PanelSection title="Knowledge base (dev QA)">
           <PanelSectionRow>

@@ -1198,7 +1198,16 @@ const Content: React.FC = () => {
         {
           id: "main",
           title: DECKY_TAB_TITLES.main,
-          content: mainTab,
+          // `display: contents` rather than the panel shell the other tabs use. Main lays out
+          // with `bonsai-full-bleed-row` and negative margins, and the `--tight` modifier sets
+          // `overflow-x: hidden` (styles/sections/scopeBase.ts), which would clip it. A
+          // contents box generates no box at all, so this is queryable with provably zero
+          // layout effect — it exists only so `snapshotDom` can scope to this panel.
+          content: (
+            <div data-bonsai-tab-panel="main" style={{ display: "contents" }}>
+              {mainTab}
+            </div>
+          ),
         },
         {
           id: "ollama",
@@ -1214,7 +1223,10 @@ const Content: React.FC = () => {
           id: "permissions",
           title: DECKY_TAB_TITLES.permissions,
           content: (
-            <div className="bonsai-tab-panel-shell bonsai-tab-panel-shell--tight bonsai-settings-section-stack">
+            <div
+              className="bonsai-tab-panel-shell bonsai-tab-panel-shell--tight bonsai-settings-section-stack"
+              data-bonsai-tab-panel="permissions"
+            >
               {permissionsTab}
             </div>
           ),
@@ -1230,7 +1242,14 @@ const Content: React.FC = () => {
       rows.push({
         id: "about",
         title: DECKY_TAB_TITLES.about,
-        content: <div className="bonsai-tab-panel-shell bonsai-tab-panel-shell--tight">{aboutTab}</div>,
+        content: (
+          <div
+            className="bonsai-tab-panel-shell bonsai-tab-panel-shell--tight"
+            data-bonsai-tab-panel="about"
+          >
+            {aboutTab}
+          </div>
+        ),
       });
       return rows;
     },

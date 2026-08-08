@@ -115,6 +115,45 @@ describe("plugin root", () => {
       expect(ids).not.toContain("developer");
     });
 
+    // The preview suite scopes its DOM snapshots to one tab panel, because a snapshot of
+    // `.bonsai-scope` is 8000 characters of the stylesheet BonsaiPluginShell injects as its
+    // first child and never reaches rendered markup. These anchors are the only thing making
+    // that scoping possible, and nothing else in the product reads them — so without a test
+    // they are invisible to every gate and a tidy-up would silently re-break the suite.
+    // See docs/testing.md § Preview-suite evidence invalidated (D1).
+    it("gives the rendered tab panel a snapshot anchor matching its tab id", async () => {
+      const plugin = await freshPlugin();
+      const { container } = render(plugin.content as ReactElement);
+
+      await waitFor(() => {
+        expect(container.querySelectorAll("[data-bonsai-tab-panel]").length).toBeGreaterThan(0);
+      });
+
+      const panels = Array.from(container.querySelectorAll("[data-bonsai-tab-panel]"));
+      expect(panels.map((el) => el.getAttribute("data-bonsai-tab-panel"))).toEqual(["main"]);
+
+      // The stylesheet must be outside the panel subtree, or scoping the snapshot buys
+      // nothing. This is the assertion that actually pins D1's fix.
+      expect(panels[0].querySelector("style")).toBeNull();
+      expect(container.querySelector(".bonsai-scope > style")).not.toBeNull();
+    });
+
+    it("keeps the Main panel anchor layout-neutral", async () => {
+      const plugin = await freshPlugin();
+      const { container } = render(plugin.content as ReactElement);
+
+      await waitFor(() => {
+        expect(container.querySelector('[data-bonsai-tab-panel="main"]')).not.toBeNull();
+      });
+
+      // Main lays out with negative-margin full-bleed rows, so it cannot take the panel
+      // shell the other five tabs use — `--tight` sets overflow-x: hidden and would clip it.
+      // `display: contents` generates no box, which is what makes this anchor free.
+      const main = container.querySelector('[data-bonsai-tab-panel="main"]') as HTMLElement;
+      expect(main.style.display).toBe("contents");
+      expect(main.className).toBe("");
+    });
+
     it("applies a saved setting rather than always using defaults", async () => {
       setRpcHandler("load_settings", () => ({
         ...defaultSettingsFixture(),

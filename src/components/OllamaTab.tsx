@@ -160,7 +160,10 @@ export const OllamaTab: React.FC<OllamaTabProps> = ({
       : null;
 
   return (
-    <div className="bonsai-tab-panel-shell bonsai-tab-panel-shell--tight bonsai-settings-section-stack">
+    <div
+      className="bonsai-tab-panel-shell bonsai-tab-panel-shell--tight bonsai-settings-section-stack"
+      data-bonsai-tab-panel="ollama"
+    >
       <OllamaWhereAiRunsSection
         ollamaIp={ollamaIp}
         onOllamaIpChange={onOllamaIpChange}
