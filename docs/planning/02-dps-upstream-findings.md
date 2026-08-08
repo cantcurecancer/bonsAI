@@ -14,6 +14,65 @@ did not happen, **P2** blocks automation, **P3** friction.
 
 ---
 
+## P0-1 — The `@decky/api` shim is missing `useQuickAccessVisible`, and one missing export kills the entire preview silently
+
+`preview-server/src/shim/api.ts` (mapped from `@decky/api` by
+`vite-plugin-decky-shim.ts:13`)
+
+**This is the finding that blocks everything else.** The shim exports 10 names.
+`useQuickAccessVisible` — a documented Decky Loader hook — is not among them. bonsAI imports
+it at `src/index.tsx:9`, so the sandbox module throws while evaluating its imports:
+
+```
+SyntaxError: The requested module '/@fs/.../shim/api.ts'
+             does not provide an export named 'useQuickAccessVisible'
+```
+
+**The failure mode is what makes this P0, not the missing export itself.** The throw happens
+at module scope in `sandbox-host.tsx`, *before* `mount()` is reached — and `mount()` is where
+the `window.addEventListener("message", …)` handler is registered (`:99`). So the sandbox
+never listens for `snapshotDom`, `runSequence`, `captureScreenshot` or `callTestHook`. Every
+IPC command is accepted by the bridge, dispatched into a webview that will never answer, and
+times out after 120 s (P2-2), serially.
+
+Nothing surfaces the cause. The error appears only in the *iframe's* console, which no
+harness reads and which the VS Code panel does not display. From the outside it is
+indistinguishable from a hung preview, a dead backend, or a broken plugin — I attributed it
+to all three in turn before loading the page in a browser and reading the console.
+
+bonsAI has imported this hook since **2026-07-17** (`ebd9ca7`), so **the preview has been
+unable to mount this plugin for three weeks** while continuing to accept commands and report
+timeouts.
+
+**Requested, in priority order:**
+1. **Add the missing export.** A stub matching the real signature is enough for preview
+   purposes — the hook returns whether the QAM panel is visible, and `() => true` is the
+   correct preview default since the panel is always on screen:
+   ```ts
+   export function useQuickAccessVisible(): boolean {
+     return true;
+   }
+   ```
+2. **Fail loudly when the sandbox module throws.** Wrap the entry evaluation so a module-level
+   error is posted to the parent (`decky-log` already exists for this) *and* rendered into the
+   panel. A blank iframe with a console error is the worst possible presentation of a
+   one-line fix.
+3. **Answer IPC commands with an error while the sandbox is not listening.** If the host knows
+   the iframe failed to initialise, every command should return
+   `{ ok: false, error: "sandbox failed to load: …" }` immediately rather than timing out at
+   120 s. This is the same principle as P2-3.
+4. **Audit the shim against the real `@decky/api` surface.** A checked-in list of exports with
+   a test that the shim provides all of them would have caught this at DPS build time rather
+   than in a consumer three weeks later.
+
+**Checked for siblings so this is fixed once:** bonsAI imports 6 names from `@decky/api` and
+14 from `@decky/ui`. `@decky/ui` is complete. The only other two absent from the API shim are
+`ToastData` and `ToastNotification`, both imported by bonsAI as `import { type … }`
+(`src/utils/bonsaiPhaseToast.ts:8`) and therefore erased at build time — harmless, though
+adding them as exported types would let plugins import them either way.
+
+---
+
 ## P1-1 — `snapshotDom` truncates at 8000 characters with no marker
 
 `preview-server/src/sandbox-host.tsx:35-39`
@@ -316,6 +375,7 @@ makes this error reachable, at which point it is genuinely useful.
 
 | Order | Item | Why first |
 |-------|------|-----------|
+| 0 | **P0-1** missing `useQuickAccessVisible` | Blocks everything. One line of shim restores a preview that has been unable to mount bonsAI since 2026-07-17. Items 2–4 of that entry matter almost as much as the export: a module-level throw currently presents as an unexplained 120 s timeout |
 | 1 | **P1-4** workspace isolation | The only finding that can attribute one workspace's results to another. Also the one whose symptoms are actively misleading — option 3 (stamp `workspaceRoot` on commands) is cheap and removes the cross-talk on its own |
 | 2 | **P2-3** dead-backend detection | Everything else is unobservable while a dead preview reports healthy. Turns a 120 s mystery into an instant, accurate error |
 | 3 | **P2-1** bridge restart | Cheap, and without it a harness silently stops working mid-session |
