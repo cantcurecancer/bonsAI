@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 274,
-  "edgeCount": 651,
+  "fileCount": 277,
+  "edgeCount": 656,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -67,11 +67,20 @@
         "src/components/PullModelsModal.tsx"
       ]
     },
+    "src/components/BonsaiPluginShell.test.tsx": {
+      "imports": [
+        "src/components/BonsaiPluginShell.tsx",
+        "src/utils/uiDocument.ts"
+      ],
+      "importedBy": []
+    },
     "src/components/BonsaiPluginShell.tsx": {
       "imports": [
-        "src/styles/bonsaiScopeStylesheet.ts"
+        "src/styles/bonsaiScopeStylesheet.ts",
+        "src/utils/uiDocument.ts"
       ],
       "importedBy": [
+        "src/components/BonsaiPluginShell.test.tsx",
         "src/index.tsx"
       ]
     },
@@ -900,6 +909,19 @@
       "importedBy": [
         "src/hooks/useSteamSettingsSearch.ts"
       ]
+    },
+    "src/data/spoilerTitleProfiles.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/data/spoilerTitleProfilesContract.test.ts",
+        "src/utils/unwrapAskedEntitySpoilerFences.ts"
+      ]
+    },
+    "src/data/spoilerTitleProfilesContract.test.ts": {
+      "imports": [
+        "src/data/spoilerTitleProfiles.ts"
+      ],
+      "importedBy": []
     },
     "src/data/steam-input-lexicon.test.ts": {
       "imports": [
@@ -2771,6 +2793,8 @@
     "src/utils/uiDocument.ts": {
       "imports": [],
       "importedBy": [
+        "src/components/BonsaiPluginShell.test.tsx",
+        "src/components/BonsaiPluginShell.tsx",
         "src/components/MainTabChatTranscript.tsx",
         "src/components/MainTabPresetAnimatedChips.tsx",
         "src/components/MainTabUnifiedAskBar.tsx",
@@ -2822,7 +2846,9 @@
       "importedBy": []
     },
     "src/utils/unwrapAskedEntitySpoilerFences.ts": {
-      "imports": [],
+      "imports": [
+        "src/data/spoilerTitleProfiles.ts"
+      ],
       "importedBy": [
         "src/utils/buildAnswerBubbleElement.tsx",
         "src/utils/unwrapAskedEntitySpoilerFences.test.ts"

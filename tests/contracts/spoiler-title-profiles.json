@@ -1,0 +1,99 @@
+{
+  "note": "Built-in spoiler title profiles. Asserted from both languages — see tests/contracts/README.md.",
+  "low_narrative_app_ids": ["2321470", "550", "1222670"],
+  "protect_progression_app_ids": [
+    "413150",
+    "1086940",
+    "377160",
+    "1145360",
+    "1091500",
+    "1547000",
+    "1174180"
+  ],
+  "cases": [
+    {
+      "name": "drg survivor appid is low narrative",
+      "app_id": "2321470",
+      "app_name": "",
+      "expected": "low_narrative"
+    },
+    {
+      "name": "l4d2 appid is low narrative",
+      "app_id": "550",
+      "app_name": "",
+      "expected": "low_narrative"
+    },
+    {
+      "name": "sims 4 appid is low narrative",
+      "app_id": "1222670",
+      "app_name": "",
+      "expected": "low_narrative"
+    },
+    {
+      "name": "hades appid protects progression",
+      "app_id": "1145360",
+      "app_name": "",
+      "expected": "protect_progression"
+    },
+    {
+      "name": "ocarina of time appid protects progression",
+      "app_id": "413150",
+      "app_name": "",
+      "expected": "protect_progression"
+    },
+    {
+      "name": "rdr2 appid protects progression",
+      "app_id": "1174180",
+      "app_name": "",
+      "expected": "protect_progression"
+    },
+    {
+      "name": "unlisted appid is unknown",
+      "app_id": "9999999",
+      "app_name": "Some Unlisted Game",
+      "expected": "unknown"
+    },
+    {
+      "name": "no appid and no title is unknown",
+      "app_id": "",
+      "app_name": "",
+      "expected": "unknown"
+    },
+    {
+      "name": "appid is trimmed before lookup",
+      "app_id": "  2321470  ",
+      "app_name": "",
+      "expected": "low_narrative"
+    },
+    {
+      "name": "state of emergency title fallback when no appid",
+      "app_id": "",
+      "app_name": "State of Emergency",
+      "expected": "low_narrative"
+    },
+    {
+      "name": "title fallback ignores case and inner whitespace",
+      "app_id": "",
+      "app_name": "  STATE   OF   Emergency  ",
+      "expected": "low_narrative"
+    },
+    {
+      "name": "title fallback matches inside a longer title",
+      "app_id": "",
+      "app_name": "State of Emergency 2",
+      "expected": "low_narrative"
+    },
+    {
+      "name": "appid outranks a low-narrative title fallback",
+      "app_id": "1145360",
+      "app_name": "State of Emergency",
+      "expected": "protect_progression"
+    },
+    {
+      "name": "unknown title name does not fall back to low narrative",
+      "app_id": "",
+      "app_name": "Baldur's Gate 3",
+      "expected": "unknown"
+    }
+  ]
+}

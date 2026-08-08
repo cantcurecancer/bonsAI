@@ -12,7 +12,7 @@
     },
     {
       "path": "src/hooks/useBonsaiAskOrchestration.ts",
-      "lines": 1334,
+      "lines": 1337,
       "role": ""
     },
     {
@@ -32,7 +32,7 @@
     },
     {
       "path": "py_modules/backend/services/ollama_prompts.py",
-      "lines": 1170,
+      "lines": 1155,
       "role": ""
     },
     {
@@ -62,7 +62,7 @@
     },
     {
       "path": "src/components/MainTabChatTranscript.tsx",
-      "lines": 740,
+      "lines": 750,
       "role": ""
     },
     {
@@ -112,7 +112,7 @@
     },
     {
       "path": "py_modules/backend/services/game_ai_request.py",
-      "lines": 532,
+      "lines": 539,
       "role": ""
     },
     {
@@ -182,7 +182,7 @@
     },
     {
       "path": "py_modules/backend/services/ollama_ask_service.py",
-      "lines": 386,
+      "lines": 388,
       "role": ""
     },
     {

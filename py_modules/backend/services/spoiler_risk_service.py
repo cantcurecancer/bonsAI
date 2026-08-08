@@ -11,10 +11,7 @@ from __future__ import annotations
 import re
 from typing import Any, Literal, Optional
 
-from backend.services.spoiler_title_profiles import (
-    resolve_title_spoiler_profile,
-    title_profile_is_low_narrative,
-)
+from backend.services.spoiler_title_profiles import resolve_title_spoiler_profile
 from backend.services.ollama_prompts import (
     extract_strategy_asked_entity,
     kb_text_covers_asked_entity,
@@ -128,7 +125,10 @@ def compute_heuristic_spoiler_risk_score(signals: dict[str, Any]) -> float:
 
     app_id = str(signals.get("app_id") or "").strip()
     profile = str(signals.get("title_profile") or "").strip() or resolve_title_spoiler_profile(app_id)
-    if title_profile_is_low_narrative(app_id) or profile == "low_narrative":
+    # One source of truth: an explicitly supplied title_profile wins, and only when the caller
+    # supplies none does the AppID table decide. Re-checking the table here as well made an
+    # explicit profile unoverridable.
+    if profile == "low_narrative":
         score -= 28.0
     elif profile == "protect_progression":
         score += 10.0

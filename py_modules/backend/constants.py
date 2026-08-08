@@ -16,10 +16,9 @@ LOOPBACK_HOSTNAMES = frozenset({"127.0.0.1", "localhost", "::1", "[::1]"})
 DECK_HOME = "/home/deck"
 DECK_OLLAMA_CLI_PATH = f"{DECK_HOME}/.local/bin/ollama"
 
-# Low-narrative title AppIDs — authoritative list in spoiler_title_profiles.py.
-from backend.services.spoiler_title_profiles import LOW_NARRATIVE_APP_IDS
-
-LOW_SPOILER_RISK_APP_IDS = LOW_NARRATIVE_APP_IDS
+# Spoiler title profiles live in backend/services/spoiler_title_profiles.py. They are not
+# re-exported here: constants is the leaf module services import, so importing a service
+# back into it inverts the layering and invites a cycle.
 
 # UI navigation paths (keep aligned with src/ tab labels)
 OLLAMA_TAB_WHERE_AI_RUNS = "Ollama → Where AI runs"

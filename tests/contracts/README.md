@@ -10,6 +10,7 @@ cross-runtime plumbing: neither test shells out to the other toolchain.
 |---|---|---|
 | `settings-defaults.json` | `tests/test_settings_contract.py` | `src/data/bonsaiSettingsContract.test.ts` |
 | `settings-hostile-inputs.json` | `tests/test_settings_hostile_contract.py` | `src/data/bonsaiSettingsHostileContract.test.ts` |
+| `spoiler-title-profiles.json` | `tests/test_spoiler_title_profiles_contract.py` | `src/data/spoilerTitleProfilesContract.test.ts` |
 
 ## `settings-defaults.json`
 
@@ -63,3 +64,28 @@ Related trap worth knowing: `ui_scale_manual_profile: " Handheld "` *does* match
 languages, but only because each lands on `handheld` by a different route — one by trimming
 and lowercasing, the other by falling back to the default. Agreement by coincidence is not
 agreement, so do not read that case as evidence the rules match.
+
+## `spoiler-title-profiles.json`
+
+The built-in spoiler sensitivity tables from the constitution runtime — which AppIDs are
+`low_narrative`, which are `protect_progression`, and what a given AppID plus title name
+resolves to. `resolve_title_spoiler_profile` (Python) and `resolveTitleSpoilerProfile`
+(TypeScript) must agree on every case.
+
+**Why it exists.** The two tables are hand-maintained copies of the same ten AppIDs, held in
+sync by a comment. The Python side steers the prompt; the TypeScript side decides display
+unwrap. A title added to one and not the other produces the worst possible split — a backend
+that answers openly and a frontend that keeps the answer masked, or the reverse — with no
+type, no test, and no build step catching it.
+
+`cases` pins the resolution rules, not just the tables: AppID beats title-name fallback, the
+AppID is trimmed, and the name fallback is case- and whitespace-insensitive. Adding a title
+means adding it to both tables *and* the fixture.
+
+### Known asymmetry, deliberately not in the fixture
+
+The title-name fallback (`State of Emergency`) is reachable in Python but not in TypeScript:
+[unwrapAskedEntitySpoilerFences.ts](../../src/utils/unwrapAskedEntitySpoilerFences.ts) never
+passes an `app_name`, so at display time only the AppID arm runs. The two `resolve*` functions
+themselves agree — which is what this fixture checks — but the *callers* do not yet. Thread
+`app_name` through the answer bubble and this note goes away.

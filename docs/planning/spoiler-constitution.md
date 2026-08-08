@@ -15,7 +15,10 @@ Draft locked from maintainer planning chat 2026-08-04. Rules 1–13 remain the p
 
 **Scope:** strategy-domain guidance — Strategy mode, and Speed/Expert when strategy KB cards attach.
 
-**Risk chip:** inherent title sensitivity only (`low_narrative` lowers the band). Consent and named-entity display overrides do **not** change the chip.
+**Risk chip:** scored in `compute_heuristic_spoiler_risk_score` from ask mode, title profile (`low_narrative` −28 at `spoiler_risk_service.py:132`, `protect_progression` +10 at `:133`), KB section types, and entity signals (`asked_entity` **or** `kb_entity_match` → −18 at `:149`).
+
+- Explicit consent is **not** a chip signal — it never reaches `build_spoiler_risk_signals`.
+- Naming an entity **does** lower the band, even though it relaxes no title-level prompt policy. The two are answering different questions: the chip reports how spoilery the turn looks, while the named-entity carve-out (rule 7) governs what may be said in plain text about that one thing.
 
 **Explicit consent:** unwraps **all** closed `bonsai-spoiler` fences for that turn, including collapsed history (`spoilerConsentEffective` stamped per turn).
 
@@ -23,7 +26,7 @@ Draft locked from maintainer planning chat 2026-08-04. Rules 1–13 remain the p
 
 | Profile | Titles (Steam AppID) |
 |---|---|
-| `low_narrative` | DRG Survivor `2321470`, L4D2 `550`, Sims 4 `1222670`, State of Emergency (title fallback when no AppID) |
+| `low_narrative` | DRG Survivor `2321470`, L4D2 `550`, Sims 4 `1222670`, State of Emergency (title-name fallback when no AppID — **prompt side only**, see Display unwrap) |
 | `protect_progression` | OoT `413150`, BG3 `1086940`, Fallout 4 `377160`, Hades `1145360`, Cyberpunk `1091500`, GTA SA `1547000`, RDR2 `1174180` |
 | `unknown` | everything else |
 
@@ -37,8 +40,15 @@ Draft locked from maintainer planning chat 2026-08-04. Rules 1–13 remain the p
 **Display unwrap** (`unwrapAskedEntitySpoilerFences`):
 
 1. `spoilerConsentEffective` → all fences.
-2. Else `low_narrative` profile → all fences.
+2. Else `low_narrative` **by AppID** → all fences.
 3. Else named entity in question → fences mentioning that entity only.
+
+Rule 2 is AppID-only: `unwrapAskedEntitySpoilerFences.ts` calls
+`titleProfileIsLowNarrative(appId)` with no `app_name`, so the title-name fallback is
+unreachable at display time. State of Emergency therefore gets the relaxed *prompt* but not the
+relaxed *display* — a fence the model emits anyway stays masked. Threading `app_name` through
+`buildAnswerBubbleElement` closes it; `tests/contracts/spoiler-title-profiles.json` pins the two
+`resolve*` functions to each other in the meantime, and its README records this caller gap.
 
 Code: `spoiler_title_profiles.py` / `spoilerTitleProfiles.ts`, `ollama_prompts.py`, `spoiler_risk_service.py`.
 

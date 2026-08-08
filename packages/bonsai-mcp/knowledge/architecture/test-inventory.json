@@ -1,5 +1,6 @@
 {
   "vitest": [
+    "src/components/BonsaiPluginShell.test.tsx",
     "src/components/KnowledgeBaseSection.test.tsx",
     "src/components/MainTabPresetAnimatedChips.test.tsx",
     "src/components/PermissionDenyAction.test.tsx",
@@ -13,6 +14,7 @@
     "src/data/presets.test.ts",
     "src/data/replyLanguage.test.ts",
     "src/data/replyMicroActions.test.ts",
+    "src/data/spoilerTitleProfilesContract.test.ts",
     "src/data/steam-input-lexicon.test.ts",
     "src/data/strategyGuideFollowup.test.ts",
     "src/data/uiScaleProfile.test.ts",
@@ -124,6 +126,8 @@
     "tests/test_settings_service.py",
     "tests/test_shortcut_setup_commands.py",
     "tests/test_spoiler_risk_service.py",
+    "tests/test_spoiler_title_profiles.py",
+    "tests/test_spoiler_title_profiles_contract.py",
     "tests/test_steam_vac_service.py",
     "tests/test_strategy_checklist_session_service.py",
     "tests/test_strategy_checklist_store_lock.py",
