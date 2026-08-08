@@ -1,6 +1,11 @@
 # 06 — Thinking blurbs: implementation review, best practice, confidence bounds
 
-Status: **analysis only, no fix implemented.** Answers `docs/planning/roadmap-planning-questions.md` § 6.
+Status: **§ 7 items 1–3 landed 2026-08-08; items 4–6 and 8 are decided and queued.** See
+[§ 10 Implementation log](#10-implementation-log) for what shipped and what the maintainer chose.
+Everything above § 10 is the original 2026-08-03 analysis and is left unedited except this header —
+where it disagrees with the code now, § 10 is right.
+
+Answers `docs/planning/roadmap-planning-questions.md` § 6.
 Written 2026-08-03 from static reading of `main.py`, `py_modules/backend/services/`, `src/`, plus two
 local probe runs against `bonsai_stream_tags.py` (recorded inline where they back a number).
 No on-Deck run backs this document. Every claim is a `file:line` citation or marked **UNKNOWN**.
@@ -432,3 +437,43 @@ Keep those as manual rows and say so.
 **Maintainer-facing:** the architecture is sound and cheap. Everything in §2 is a bug or a duplication,
 not a design flaw. Fixing §2.1–§2.4 is four small commits and moves the feature from "feels random" to
 "feels deliberate" without touching a single line of the copy pools.
+
+---
+
+## 10. Implementation log
+
+### 10.1 Landed 2026-08-08 — § 7 items 1–3
+
+All four gates green after each commit (`npm test` 485, `npm run test:py` 601, `tsc --noEmit`, `build`).
+Nothing here is confirmed on-Deck yet; QA rows are in [testing.md](../testing.md).
+
+| § 7 | Commit | What changed | Verified by |
+|---|---|---|---|
+| 1 | `22c4dc3` | TS `sanitizeThinkingSummary` gained Python's `cleaned or raw` fallback, and stopped reusing its `raw` binding as the strip accumulator — which is why the original was not available to fall back to (§2.3) | Parity table + idempotency case in both suites (§8.2c) |
+| 2 | `151c990` | `_stable_bucket` takes a salt; `format_thinking_phase` passes the phase key (§2.4) | New test sweeps rid 1…50 × 5 phases and asserts no all-emoji Ask |
+| 3a | `120980e` | `experiment_journal` phase deleted — literal, pool, and plain-text branch (§2.5) | Existing suite; the phase had no test of its own |
+| 3b | `4e6d000` | `BONSAI_STATUS_STREAM_INSTRUCTION` deleted (§2.5) | Grep: zero call sites before and after |
+
+Two notes worth keeping:
+
+- **The §2.3 bug needed both halves.** Python already falls back, so the backend sends `"Sure."`
+  correctly. The line vanished because the client sanitizes *again* on every poll — the sanitizers run
+  in series, not in parallel, so a divergence that looks cosmetic compounds into an empty string. The
+  new idempotency test pins the series behaviour, not just the single-pass output.
+- **Two tests failed on the item-2 pick and were rewritten, not accommodated.**
+  `test_format_thinking_phase_woven_tdp_read` and `..._model_retry` pinned one hardcoded `request_id`
+  and asserted a specific template came back — implementation shape, the failure mode
+  [audit/00-phase0.md](../audit/00-phase0.md) flags. They now sample a range of ids and assert what the
+  pool actually promises: prose lines weave the question snippet, emoji-only lines are allowed.
+
+### 10.2 Maintainer decisions, 2026-08-08
+
+Recorded here rather than in chat, per the repo's refactor rules.
+
+| Q | Decision | Consequence |
+|---|---|---|
+| §2.1/§2.2 — who writes the opener | **Backend owns it** (§7 #4 + #5). Return the composed opener from `start_background_game_ai`; the client renders and never composes. Fall back to *client owns the opener* (delete the backend opener at `game_ai_request.py:205-215`) only if the RPC round-trip is visibly late on-Deck | Unblocks deleting the TS pools and classifier mirrors. §8.2a's shared fixture becomes a Python-only regression suite |
+| §2.5 — the two remaining silent phases | **Wire `building_context` and `connecting_model`.** Target the slowest stretch where nothing appears to happen. Constraint from the maintainer: the copy must stay honest *and* read as encouraging — it reacts to the user's prompt, it does not flatter it | `experiment_journal` was deleted instead; the journal left the Ask path on 2026-07-30 |
+| §2.7 — model tag on a spoiler-masked surface | **Mask it, do not suppress it.** Render the block-glyph treatment inline: `working out how to beat ████ ██████ dance` | Keeps the specificity the model tag exists for. Needs the masker to reach the thinking line, which today only `buildAnswerBubbleElement` calls |
+| §2.6 — static line for the whole generation | **Fix it — named as a major annoyance.** Accept later `<bonsai-status>` tags instead of freezing on the first | Prompt + `extract_bonsai_status` change. §7 #8 warns this risks flicker; that is now a thing to tune, not a reason to skip |
+| §7 #7 — fast-poll during prep | **Leave at 1200 ms** | Already tried and reverted once for battery cost — see the comment at [useBackgroundGameAi.ts:65-70](../../src/hooks/useBackgroundGameAi.ts) |
