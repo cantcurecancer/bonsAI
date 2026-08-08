@@ -8,6 +8,23 @@ tier definitions, [tier-manifest.json](../../tests/preview-suite/tier-manifest.j
 [run-preview-suite.mjs](../../scripts/run-preview-suite.mjs),
 [AGENTS.md](../../AGENTS.md) § Preview limitations.
 
+> **Corrections, 2026-08-08.** This document was written against a stale working
+> tree — `docs/testing.md` at 102 lines and `main.py` at 2771, where the committed
+> values were 197 and 2829. **Every `main.py:NNN` citation below is offset and has
+> been corrected in place** (`dbg_fe_log` was cited at `:2565`, it is `main.py:2460`).
+> Two claims were also wrong and are struck where they appear:
+> **DEPLOY-VERIFY-02 is Verified, not Partial** — proved on 2026-08-03 by a real
+> deploy against a sleeping Deck, not a staged one; and
+> `scripts/probe_deck_rpc_surface.py` **is documented**, as a Verified row at
+> `docs/testing.md` § Deployed RPC surface probe. Its problem is not obscurity —
+> it is that running it depends on someone remembering, which is what the
+> implementation plan fixes by wiring it into the deploy scripts.
+>
+> Separately, recon after this document found **five defects in the preview
+> harness** that mean parts of §§ 2–3 rest on assertions that never ran. Read
+> [testing.md § Preview-suite evidence invalidated](../testing.md#preview-suite-evidence-invalidated-2026-08-08)
+> alongside this file.
+
 ---
 
 ## 0. Findings that bound everything below
@@ -20,8 +37,8 @@ come before the plan.
 | **F1** | **There is no input injection on the Deck.** No `xdotool` / `ydotool` / `uinput` / `evdev` anywhere in `scripts/`. On-device tooling is capture-only (`grim`, `gamescope-atom`, `pipewiresrc`, `wf-recorder`). "Scripted input + capture oracle" on-device is **two** missing pieces, not one. | [bonsai-capture.sh](../../scripts/deck/bonsai-capture.sh), [bonsai-capture-common.sh](../../scripts/deck/bonsai-capture-common.sh) |
 | **F2** | **`assertStep` silently passes unknown assert types.** It is a flat run of `if (type === …)` blocks with **no default branch**. A typo (`domContain`, `rpcResults`) throws nothing → the scenario reports PASS. Contrast `runStep`, which does throw on an unknown action. | [run-preview-suite.mjs:231-271](../../scripts/run-preview-suite.mjs) vs [:348](../../scripts/run-preview-suite.mjs) |
 | **F3** | **Every assertion is a substring match on stringified output.** `rpcResult` does `JSON.stringify(rpc).includes(expect)` — it cannot target a field, cannot negate, cannot regex. `"Steam Web API is off"` passing proves the phrase appears *somewhere* in the envelope, not that it is the reply. | [run-preview-suite.mjs:245-252](../../scripts/run-preview-suite.mjs) |
-| **F4** | **An on-device oracle channel already exists and is underused.** `dbg_fe_log` bridges frontend → plugin log; the log lives at `~/homebrew/logs/bonsAI/` and is SSH-readable **with no tunnel**. Today it is used only for ad-hoc debug sessions. | [main.py:2565-2575](../../main.py), [troubleshooting.md:222](../troubleshooting.md) |
-| **F5** | **A second on-device oracle exists for prompt testing.** `desktop_ask_verbose_logging` appends full system prompt, user prompt, model name and reply to `~/Desktop/bonsAI_logs/bonsai-ask-trace-YYYY-MM-DD.md` per Ask. Machine-readable, already shipped, SSH-pullable. | [troubleshooting.md:275](../troubleshooting.md) |
+| **F4** | **An on-device oracle channel already exists and is underused.** `dbg_fe_log` bridges frontend → plugin log; the log lives at `~/homebrew/logs/bonsAI/` and is SSH-readable **with no tunnel**. Today it is used only for ad-hoc debug sessions. | [main.py:2460-2470](../../main.py), [troubleshooting.md:254](../troubleshooting.md) |
+| **F5** | **A second on-device oracle exists for prompt testing.** `desktop_ask_verbose_logging` appends full system prompt, user prompt, model name and reply to `~/Desktop/bonsAI_logs/bonsai-ask-trace-YYYY-MM-DD.md` per Ask. Machine-readable, already shipped, SSH-pullable. | [troubleshooting.md:305-307](../troubleshooting.md) |
 | **F6** | **The `deckOnly` E-bucket is bookkeeping, not tests.** All three scenarios have `"steps": []` and emit stub evidence. Nothing executes. | [deck-only-e-bucket.json](../../tests/preview-suite/deck-only-e-bucket.json) |
 | **F7** | **Preview hooks cannot be reused on-device.** `registerPreviewTestHooks` returns early unless `isDeckyPreviewRuntime()`, so the 8 hooks (`getState`, `setGame`, `triggerAsk`, `attachScreenshot`, `getTransparencyJson`, `getSysfsWrites`, `setTab`, `resetDisclaimer`) do not exist in a Deck build. Anything on-Deck must go through **RPC or the log**. | [previewTestHooks.ts:8-37](../../src/preview/previewTestHooks.ts) |
 
@@ -64,7 +81,7 @@ manual or permanently vision-gated — no amount of DOM assertion reaches it.
 | **Tier 1 — SMOKE-B** | TDP suggestions | `tier1Boundaries` clamp matrix + `getSysfsWrites` (now returns `[]` by design) | **Automated for suggestion text**; QAMP banner rendering = on-Deck |
 | **SMOKE-E** | Strategy + spoilers | `SMOKE-E-strategy-mode`, `STREAM-03-strategy-spoiler` | **Partly automated**; spoiler *mask correctness* is qualitative (see §4) |
 | **SMOKE-H** | Background Ask reopen | `BG-ASK-reopen-status`, `BG-ASK-lifecycle` — RPC status polling | **Automated**; "close QAM" is simulated, not real |
-| **VAC-02…06** | VAC matrix | `tier2Deep` — already preview PASS per [testing-manual.md:124](../testing-manual.md) | **Already automated.** Remaining gap is *on-Deck network egress*, not logic |
+| **VAC-02…06** | VAC matrix | `tier2Deep` — already preview PASS per [testing-manual.md:189, 208-212](../testing-manual.md) | **Already automated.** Remaining gap is *on-Deck network egress*, not logic |
 | **QAMP matrix** | QAMP-DECK-01…05 | `E-QAMP-DECK-01` is an empty stub (**F6**) | **Manual, permanently.** Steam restart, full reboot, QAM Performance reopen — no preview surface, no RPC surface |
 | **Prompt-testing pass** | — | `ask_game_ai` envelope asserts (SMOKE-F pattern) | **Split** — see §4 |
 | **PERMS-CLEAN-01…06** | Permissions cleanup | *None yet.* Mostly **negative** assertions ("no Adjust power limits toggle", "no Response verification section") | **Cheapest unclaimed win** — `domNotContains` is already implemented |
@@ -76,7 +93,7 @@ manual or permanently vision-gated — no amount of DOM assertion reaches it.
 | **VOICE-01…07** | Voice STT | — | **Manual.** Mic hardware |
 | **UI-SCALE-01…05** | UI scale | Reachability automatable | **Half.** "handheld / dock / TV" is three physical displays |
 | **Tier 4 clean install** | Release gate | `verify-decky-plugin-zip.sh` proves zip shape | **Manual.** "Ollama not yet installed → README path" is a one-shot machine state |
-| **DEPLOY-VERIFY-01…03** | Deploy prune | `build.ps1` SHA-256 compares 52 files; **01/03 Verified** | **Already automated.** 02 needs a staged sleep-mid-deploy |
+| **DEPLOY-VERIFY-01…03** | Deploy prune | `build.ps1` SHA-256 compares every shipped code file (**computed**, 57 today — this doc originally said 52, a fixed count that was already stale); **01, 02 and 03 all Verified** | **Already automated.** ~~02 needs a staged sleep-mid-deploy~~ — **corrected 2026-08-08:** 02 was Verified on 2026-08-03 by a real failure, a deploy attempted while the Deck was asleep, which is stronger than the staged version this row asked for |
 
 **Permanently manual after any plan ships:** Gaming Mode / BPM rendering, CEF focus and
 paint, QAMP OS-level persistence (Steam restart, reboot), voice mic, physical display
@@ -132,7 +149,8 @@ node identity contract (today it is an opaque array `focusPathIncludes` substrin
 
 The highest-value **unclaimed** tier, and it needs no new device capability — **F4**.
 
-After `build.ps1` / `build.sh` (which already verifies 52 file hashes):
+After `build.ps1` / `build.sh` (`build.ps1` already hash-verifies every shipped code
+file; **`build.sh` has no deploy verification at all** — D8 landed in PowerShell only):
 
 1. SSH, truncate `~/homebrew/logs/bonsAI/`.
 2. Assert `bonsAI plugin loaded!` within N seconds — a real on-Deck load gate.
@@ -238,10 +256,12 @@ and even there, treat a FAIL as a maintainer callout, never an auto-filed regres
 
 **Deterministic (automatable now).** The SMOKE-F pattern is the model: local commands
 `bonsai:disable-sanitize`, `bonsai:shortcut-setup-deck`, `bonsai:vac-check` short-circuit
-**before** any Ollama call ([main.py:2243-2255](../../main.py)) — byte-identical output every
+**before** any Ollama call — `_try_handle_sanitizer_keyword_command`
+([main.py:672](../../main.py)), called from both Ask entry points at
+[main.py:2131](../../main.py) and [:2334](../../main.py) — byte-identical output every
 run. Also deterministic:
 
-- **Envelope shape.** `_reject_ask_request` ([main.py:682-691](../../main.py)) fixes
+- **Envelope shape.** `_reject_ask_request` ([main.py:661-670](../../main.py)) fixes
   `success` / `response` / `app_id` / `app_context` / `applied` / `elapsed_seconds`.
 - **Rejection paths.** Empty question, empty `pc_ip` — exact strings.
 - **Routing.** Which model was selected for a mode, given installed tags.
@@ -297,7 +317,7 @@ free.
 |---|------|---|-----------|-------|
 | **1** | **A0** — assert-type default throw + field-targeted asserts | ★ | *none* (may move some **backwards**) | Prerequisite for every row below. Existing PASS evidence is unverified until this lands |
 | **2** | **A1** — six cheap preview scenarios | ★★ | PERMS-CLEAN Open→Partial · PRESET-GAME-01 Open→Partial · SESSION-RAG-CHIPS-01 Open→Partial · ROUTING-MERGE-01 Open→Partial · RPC-TIMEOUT-01 Open→Partial · Permissions gate Partial→Verified(preview) | Best lift per unit effort. All mechanisms already exist |
-| **3** | **A3** — post-deploy log gate | ★★★ | DEPLOY-VERIFY-02 Partial→Verified · `E-*` stubs → real | First genuine *on-hardware* automation. No new device capability needed (**F4**) |
+| **3** | **A3** — post-deploy log gate | ★★★ | ~~DEPLOY-VERIFY-02 Partial→Verified~~ (already Verified) · `E-*` stubs → real | First genuine *on-hardware* automation. No new device capability needed (**F4**) |
 | **4** | **A5** — nightly loop | ★★ | keeps rows fresh; no new rows | Gate on A0. Restrict `--write` scope |
 | **5** | **§4 matrix** — nightly prompt tests | ★★★ | Prompt-testing backlog item → Partial · SMOKE-F Partial→Verified | 12/15 need no judge |
 | **6** | **A2** — `focusWalk` scenario type | ★★★ | CONTEXT-LADDER-03 · MICRO-04 · OLLAMA-FOCUS-02/03 · UI-SCALE-02/03 → Open→Partial (reachability half only) | Verbose until DPS adds a per-input trace. File upstream |

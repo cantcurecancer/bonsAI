@@ -2,6 +2,16 @@
 
 Live coverage: [testing.md](../testing.md). Evidence: [test-evidence/](../test-evidence/). Failures: [testing-failures-2026.md](testing-failures-2026.md).
 
+> **† Two preview PASS rows were withdrawn 2026-08-08 — annotated, not rewritten.**
+> Five defects in the preview harness meant DOM, focus-path and screenshot
+> assertions never checked what they claimed; full statement and evidence in
+> [testing.md § Preview-suite evidence invalidated](../testing.md#preview-suite-evidence-invalidated-2026-08-08).
+> Rows whose PASS rested **only** on those assert types are marked `†` below and
+> should be read as *not run*. Every other row stands — `rpcResult`, `hookResult`,
+> `shellVitest` and `shellPytest` steps were unaffected. **Nothing here is deleted
+> and no linked evidence was pruned**; the stored `final.png` files, however, are a
+> placeholder image rather than a screenshot and are not evidence of anything.
+
 ## Test Results
 
 On-Deck and preview-suite **PASS** rows only. FAIL / retry queue: [testing-failures-2026.md](testing-failures-2026.md).
@@ -14,7 +24,7 @@ On-Deck and preview-suite **PASS** rows only. FAIL / retry queue: [testing-failu
 | 6 | — | *(session title)* | "Recommended TDP for this game?" | JSON 3–15W clamp | *record* | PASS | → TDP-REC |
 | 7 | 2026-05-26 / 9e20a82 | preview | UNIT-A-vitest-gates | MAINT-HARNESS | preview-suite | PASS | [manifest](../test-evidence/preGate/2026-05-26-9e20a82/UNIT-A-vitest-gates/manifest.json) |
 | 8 | 2026-05-26 / 9e20a82 | preview | UNIT-B-pytest-sandbox-tdp | TDP-APPLY | preview-suite | PASS | [manifest](../test-evidence/preGate/2026-05-26-9e20a82/UNIT-B-pytest-sandbox-tdp/manifest.json) |
-| 9 | 2026-05-26 / 9e20a82 | preview | SMOKE-A-golden-path | SMOKE-A, CORE-UI, CORE-ASK, CONN-TEST, TRANSPΓÇª | preview-suite | PASS | [manifest](../test-evidence/tier0/2026-05-26-9e20a82/SMOKE-A-golden-path/manifest.json) |
+| 9 | 2026-05-26 / 9e20a82 | preview | SMOKE-A-golden-path | SMOKE-A, CORE-UI, CORE-ASK, CONN-TEST, TRANSPΓÇª | preview-suite | PASS † | [manifest](../test-evidence/tier0/2026-05-26-9e20a82/SMOKE-A-golden-path/manifest.json) — **† withdrawn 2026-08-08:** both asserts were DOM/focus-path, so this PASS checked nothing |
 | 10 | 2026-05-26 / 9e20a82 | preview | SMOKE-C-perms-gate | SMOKE-C, PERMS-GATE | preview-suite | PASS | [manifest](../test-evidence/tier0/2026-05-26-9e20a82/SMOKE-C-perms-gate/manifest.json) |
 | 11 | 2026-05-26 / 9e20a82 | preview | SMOKE-F-disable-sanitize | SMOKE-F, SANITIZER | preview-suite | PASS | [manifest](../test-evidence/tier0/2026-05-26-9e20a82/SMOKE-F-disable-sanitize/manifest.json) |
 | 12 | 2026-05-26 / 9e20a82 | preview | SMOKE-F-shortcut-deck | SMOKE-F, SHORTCUT-KW | preview-suite | PASS | [manifest](../test-evidence/tier0/2026-05-26-9e20a82/SMOKE-F-shortcut-deck/manifest.json) |
@@ -34,7 +44,7 @@ On-Deck and preview-suite **PASS** rows only. FAIL / retry queue: [testing-failu
 | 26 | 2026-05-26 / 9e20a82 | preview | VAC-02-empty-key | VAC-02 | preview-suite | PASS | [manifest](../test-evidence/tier2/2026-05-26-9e20a82/VAC-02-empty-key/manifest.json) |
 | 27 | 2026-05-26 / 9e20a82 | preview | DESKTOP-NOTES-rpc | DESKTOP-NOTES | preview-suite | PASS | [manifest](../test-evidence/tier2/2026-05-26-9e20a82/DESKTOP-NOTES-rpc/manifest.json) |
 | 28 | 2026-05-26 / 9e20a82 | preview | STEAM-JUMP-shim | STEAM-JUMP | preview-suite | PASS | [manifest](../test-evidence/tier2/2026-05-26-9e20a82/STEAM-JUMP-shim/manifest.json) |
-| 29 | 2026-05-26 / 9e20a82 | preview | VISION-V1-spot-dom | VISION-V1, SMOKE-G | preview-suite | PASS | [manifest](../test-evidence/tier2/2026-05-26-9e20a82/VISION-V1-spot-dom/manifest.json) |
+| 29 | 2026-05-26 / 9e20a82 | preview | VISION-V1-spot-dom | VISION-V1, SMOKE-G | preview-suite | PASS † | [manifest](../test-evidence/tier2/2026-05-26-9e20a82/VISION-V1-spot-dom/manifest.json) — **† withdrawn 2026-08-08:** single DOM assert, no other check. SMOKE-G's Verified status is unaffected; it rests on the April 2026 on-Deck sweep |
 | 30 | 2026-06-09 / a9237e4 | preview | STREAM-02-flag-on-speed | STREAM-02 | preview-suite | PASS | [manifest](../test-evidence/tier2Deep/2026-06-09-a9237e4/STREAM-02-flag-on-speed/manifest.json) |
 | 31 | 2026-06-09 / a9237e4 | preview | STREAM-03-strategy-spoiler | STREAM-03, STRATEGY-SPOILER | preview-suite | PASS | [manifest](../test-evidence/tier2Deep/2026-06-09-a9237e4/STREAM-03-strategy-spoiler/manifest.json) |
 | 32 | 2026-06-09 / a9237e4 | preview | STREAM-04-stop-mid-stream | STREAM-04 | preview-suite | PASS | [manifest](../test-evidence/tier2Deep/2026-06-09-a9237e4/STREAM-04-stop-mid-stream/manifest.json) |

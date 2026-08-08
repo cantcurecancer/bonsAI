@@ -293,8 +293,8 @@ Wave 4 J — Developer tab → Preset suggestions → **stream**.
 
 | Tier | Status | Last run | Notes |
 |------|--------|----------|-------|
-| 0 | Preview Pass | 2026-05-26 / 9e20a82 | Formal on-Deck Pass → QA backlog |
-| 1 | Preview Pass | 2026-05-26 / 9e20a82 | |
+| 0 | Preview Pass — **DOM/focus asserts invalidated 2026-08-08** | 2026-05-26 / 9e20a82 | Re-baseline pending. The RPC and shell steps stand; the DOM, focus-path and screenshot evidence does not — see [testing.md § Preview-suite evidence invalidated](testing.md#preview-suite-evidence-invalidated-2026-08-08). **SMOKE-A's PASS was purely vacuous.** Formal on-Deck Pass → QA backlog |
+| 1 | Preview Pass — **DOM/focus asserts invalidated 2026-08-08** | 2026-05-26 / 9e20a82 | Re-baseline pending; same scope as Tier 0 above |
 | 2 | Partial | 2026-06-09 / a9237e4 | |
 | 3 | Open | | QAMP matrix deferred |
 | 4 | Deferred | | Clean install before tag |

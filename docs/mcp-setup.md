@@ -27,7 +27,11 @@ Record consumer-facing notes below so maintainers can sync upstream. Newest firs
 
 | Date | Finding | Documented in bonsAI | Upstream (issue/PR) | Status |
 |------|---------|----------------------|---------------------|--------|
-| — | *(none yet)* | — | — | — |
+| 2026-08-08 | **D1 — `snapshotDom` truncates at 8183 bytes with no marker.** The cap is silent: the stored HTML has no ellipsis, no `truncated` flag, and ends mid-declaration. Because a plugin's injected `<style>` block can be the first child of the snapshotted node, the entire snapshot can be CSS and never reach rendered markup — which is exactly what happened to every bonsAI DOM assert. Ask: a configurable cap, a `truncated: true` field on the result, and an option to skip `<style>`/`<script>` nodes. | [testing.md](testing.md#preview-suite-evidence-invalidated-2026-08-08) | *pending* | Open |
+| 2026-08-08 | **D4 — `final.png` is a placeholder, not a capture.** Byte-identical within a batch (11202 B / 10220 B); the image is a flat dark rectangle reading `Decky preview snapshot` and the viewport size. It is stored under the name of a screenshot, so consumers archive it as evidence. Ask: real capture, or `ok: false` so callers stop storing fiction. | same | *pending* | Open |
+| 2026-08-08 | **D3 — `focusPath` echoes the injected inputs.** Every run records `["onMove(Down)","onMove(Down)"]` and `active-element.txt` reads `document.body`, so any assert over it is a tautology. Ask: a per-input trace with node identity, or document explicitly that it is an input echo and not a focus oracle. | same | *pending* | Open |
+| 2026-08-08 | **D2 — `callTestHook` IPC times out.** 8/8 scenarios fail with `Error: IPC timeout for callTestHook`. **Cause not yet established** — bonsAI's own registration gate (`src/preview/previewTestHooks.ts`) depends on `import.meta.env`, which Rollup does not provide, so this may be ours. File upstream only if E1 shows the hooks are defined in the page. | same | *not filed — pending E1* | Investigating |
+| 2026-08-08 | **No way to reset preview backend state between scenarios.** Settings written by one scenario persist into the next in the same batch. Worked example: `tests/preview-suite/tier2-deep.json` sent partial `capabilities` blocks, and because the backend merge is shallow, an omitted key silently disabled that capability for the rest of the batch. Ask: a per-scenario state reset, or a documented teardown hook. | same | *pending* | Open |
 
 ## Prerequisites
 
