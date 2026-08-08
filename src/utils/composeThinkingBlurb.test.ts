@@ -1,102 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { composeThinkingBlurb, extractQuestionSnippet, sanitizeThinkingSummary } from "./composeThinkingBlurb";
+import { THINKING_BLURB_PLACEHOLDER, sanitizeThinkingSummary } from "./composeThinkingBlurb";
 
-const BANNED_PREFIXES = [/^yeah\b/i, /^fine\./i, /^sure\./i, /^oh joy/i, /^right\./i];
-
-function assertNoBannedPrefixes(text: string) {
-  for (const re of BANNED_PREFIXES) {
-    expect(text).not.toMatch(re);
-  }
-  expect(text).not.toContain("🙄🔥");
-}
-
-describe("composeThinkingBlurb", () => {
-  it("weaves question snippet without banned lazy prefixes", () => {
-    const out = composeThinkingBlurb("why is my fps low in elden ring", {
-      appName: "Elden Ring",
-      requestId: 7,
-    });
-    expect(out.toLowerCase()).toContain("fps");
-    expect(out.length).toBeLessThanOrEqual(240);
-    assertNoBannedPrefixes(out);
-  });
-
-  it("extractQuestionSnippet matches backend clause split", () => {
-    expect(extractQuestionSnippet("stuck on the shrine puzzle? help")).toContain("shrine");
-    expect(extractQuestionSnippet("")).toBe("");
-  });
-
-  it("stable pick matches backend for same request id", () => {
-    const a = composeThinkingBlurb("help with stuttering", { requestId: 11 });
-    const b = composeThinkingBlurb("help with stuttering", { requestId: 11 });
-    expect(a).toBe(b);
-  });
-
-  it("does not rotate copy on elapsed alone", () => {
-    const a = composeThinkingBlurb("help with stuttering", { requestId: 11, elapsedSeconds: 0 });
-    const b = composeThinkingBlurb("help with stuttering", { requestId: 11, elapsedSeconds: 12 });
-    expect(a).toBe(b);
-  });
-
-  it("omits game-title-only lines when no running game", () => {
-    const out = composeThinkingBlurb("generic question here", { requestId: 1 });
-    expect(out).not.toMatch(/again\? alright/i);
-    expect(out).not.toMatch(/still struggling with/i);
-  });
-
-  it("includes game-title lines when app name is set", () => {
-    const samples = Array.from({ length: 20 }, (_, i) =>
-      composeThinkingBlurb("generic question here", { appName: "Elden Ring", requestId: i }),
-    );
-    const hasGameTitleLine = samples.some(
-      (s) =>
-        s.includes("Elden Ring again?") ||
-        s.includes("Still struggling with Elden Ring") ||
-        s.includes("Back to wrestling with Elden Ring"),
-    );
-    expect(hasGameTitleLine).toBe(true);
-  });
-
-  it("uses deadpan pools for deadpan character presets", () => {
-    const samples = Array.from({ length: 12 }, (_, i) =>
-      composeThinkingBlurb("how do I beat this shrine puzzle", {
-        requestId: i,
-        characterEnabled: true,
-        characterPresetId: "portal_glados",
-      }),
-    );
-    for (const out of samples) assertNoBannedPrefixes(out);
-    const hasDeadpanLine = samples.some((s) =>
-      /acknowledged|no enthusiasm|inevitably|results pending|logged/i.test(s),
-    );
-    const hasEmojiOnly = samples.some((s) => ["🙄", "😮‍💨", "🫠", "🌳"].includes(s));
-    expect(hasDeadpanLine || hasEmojiOnly).toBe(true);
-  });
-
-  it("uses witty screenshot pool when attachment present", () => {
-    const samples = Array.from({ length: 12 }, (_, i) =>
-      composeThinkingBlurb("what is this UI element", {
-        requestId: i,
-        attachmentCount: 1,
-      }),
-    );
-    for (const out of samples) assertNoBannedPrefixes(out);
-    const hasScreenshotLine = samples.some((s) => /screenshot|pixels|capture|decode/i.test(s));
-    const hasEmojiOnly = samples.some((s) => ["🙄", "😮‍💨", "🫠", "🌳"].includes(s));
-    expect(hasScreenshotLine || hasEmojiOnly).toBe(true);
-  });
-
-  it("uses troubleshooting pool for proton crash questions", () => {
-    const samples = Array.from({ length: 12 }, (_, i) =>
-      composeThinkingBlurb("game crashes on launch with proton", { requestId: i }),
-    );
-    for (const out of samples) assertNoBannedPrefixes(out);
-    const hasTroubleshootLine = samples.some((s) => /log|proton|crash|wreckage/i.test(s));
-    const hasEmojiOnly = samples.some((s) => ["🙄", "😮‍💨", "🫠", "🌳"].includes(s));
-    expect(hasTroubleshootLine || hasEmojiOnly).toBe(true);
-  });
-
-  it("sanitizeThinkingSummary strips Yeah openers", () => {
+/*
+ * The pool, tone and intent-classification tests that used to live here went with the client-side
+ * composer they covered. Their Python equivalents in tests/test_bonsai_stream_tags.py are the same
+ * assertions against the only implementation that remains, so nothing is now unverified — and they
+ * can no longer pass while disagreeing with each other, which is what the TS copies were doing.
+ */
+describe("thinking summary text", () => {
+  it("strips lazy sarcastic openers", () => {
     expect(sanitizeThinkingSummary("Yeah, checking GPU")).toBe("checking GPU");
     expect(sanitizeThinkingSummary("Yeah — another crisis")).toBe("another crisis");
     expect(sanitizeThinkingSummary("Fine. Sure. Working")).toBe("Working");
@@ -107,7 +19,7 @@ describe("composeThinkingBlurb", () => {
    * The two sanitizers run in series on the same string — Python on the model tag, TS again on
    * the polled result — so a divergence here does not merely differ, it blanks the line.
    */
-  it("sanitizeThinkingSummary keeps an all-opener summary rather than blanking it", () => {
+  it("keeps an all-opener summary rather than blanking it", () => {
     expect(sanitizeThinkingSummary("Sure.")).toBe("Sure.");
     expect(sanitizeThinkingSummary("Yeah")).toBe("Yeah");
     expect(sanitizeThinkingSummary("Fine. Sure.")).toBe("Fine. Sure.");
@@ -115,11 +27,15 @@ describe("composeThinkingBlurb", () => {
     expect(sanitizeThinkingSummary("   ")).toBe("");
   });
 
-  it("sanitizeThinkingSummary is idempotent, so a second pass cannot blank the line", () => {
+  it("is idempotent, so a second pass cannot blank the line", () => {
     for (const input of ["Sure.", "Yeah, checking GPU", "Fine. Sure. Working", "Working"]) {
       const once = sanitizeThinkingSummary(input);
       expect(sanitizeThinkingSummary(once)).toBe(once);
       expect(once).not.toBe("");
     }
+  });
+
+  it("survives its own placeholder", () => {
+    expect(sanitizeThinkingSummary(THINKING_BLURB_PLACEHOLDER)).toBe(THINKING_BLURB_PLACEHOLDER);
   });
 });

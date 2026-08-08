@@ -156,11 +156,6 @@
       "role": ""
     },
     {
-      "path": "src/utils/composeThinkingBlurb.ts",
-      "lines": 435,
-      "role": ""
-    },
-    {
       "path": "py_modules/backend/services/desktop_note_service.py",
       "lines": 432,
       "role": ""
@@ -197,6 +192,11 @@
     },
     {
       "path": "py_modules/backend/services/voice_whisper_daemon.py",
+      "lines": 367,
+      "role": ""
+    },
+    {
+      "path": "src/features/plugin-shell/tabs/useMainTabPayload.tsx",
       "lines": 367,
       "role": ""
     }

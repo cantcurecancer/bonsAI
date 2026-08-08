@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
   "fileCount": 278,
-  "edgeCount": 658,
+  "edgeCount": 657,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -704,7 +704,6 @@
         "src/utils/appliedTuningText.ts",
         "src/utils/bonsaiSessionSurvival.test.ts",
         "src/utils/bonsaiSessionSurvival.ts",
-        "src/utils/composeThinkingBlurb.ts",
         "src/utils/permissionDeepLink.ts",
         "src/utils/settingsContracts.test.ts",
         "src/utils/settingsPayload.ts",
@@ -2221,9 +2220,7 @@
       "importedBy": []
     },
     "src/utils/composeThinkingBlurb.ts": {
-      "imports": [
-        "src/data/bonsaiSettingsSchema.ts"
-      ],
+      "imports": [],
       "importedBy": [
         "src/hooks/useBonsaiAskOrchestration.test.ts",
         "src/hooks/useBonsaiAskOrchestration.ts",
