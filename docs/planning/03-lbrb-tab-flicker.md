@@ -1,9 +1,27 @@
 # 03 — LB/RB tab-switch flicker when scrolled (root-cause recon)
 
-Status: **analysis only, no fix implemented.** Discovery locked 2026-07-29
-(`docs/roadmap.md` [§ Bugs](../roadmap.md#bugs)).
-Written 2026-08-03 from static reading of `src/` + `node_modules/@decky/ui`.
-No on-Deck run backs this document; every claim is either a `file:line` citation
+> **Superseded — read this before acting on anything below.** The bug is **fixed
+> and confirmed on device**: the flicker itself 2026-08-07, and the stale
+> `ResizeObserver` found alongside it 2026-08-08 ([roadmap § Bugs](../roadmap.md#bugs)).
+>
+> **Sections 1–8 are superseded.** They were written 2026-08-03 from static
+> reading with no on-Deck run behind them, and the device work falsified them:
+> H1 was disproved outright and the surviving suspects were each measured *not*
+> to fire. Their `file:line` citations are stale as well — `src/index.tsx` was
+> 1709 lines when § 1 was written.
+> [§ 9](#9-corrections--2026-08-07) records the corrections and **stands**;
+> [§ 10](#10-resolution--2026-08-07) records the measured root cause and the fix.
+>
+> The probe-first plan that drove the device work is
+> [tab_flicker.md](tab_flicker.md).
+>
+> This file is kept as the recon record. **Why it was wrong is the useful part** —
+> it is the in-tree case for probing before ranking hypotheses off static reading.
+
+Status: **analysis only (2026-08-03), superseded by §§ 9–10.** Discovery locked
+2026-07-29 (`docs/roadmap.md` [§ Bugs](../roadmap.md#bugs)).
+Written from static reading of `src/` + `node_modules/@decky/ui`.
+No on-Deck run backs §§ 1–8; every claim there is either a `file:line` citation
 or marked **UNKNOWN**.
 
 Bug text: *"Switching tabs with shoulder buttons while focus is deep in a scrolled
