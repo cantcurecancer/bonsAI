@@ -388,14 +388,23 @@ function intentPool(intent: ComposeIntent, tone: ThinkingTone, bits: WeaveBits):
 }
 
 export function sanitizeThinkingSummary(text: string): string {
-  let raw = (text || "").trim();
+  const raw = (text || "").trim();
   if (!raw) return raw;
+  let cleaned = raw;
   for (let i = 0; i < 3; i += 1) {
-    const next = raw.replace(LAZY_THINKING_OPENER_RE, "").trim();
-    if (next === raw) break;
-    raw = next;
+    const next = cleaned.replace(LAZY_THINKING_OPENER_RE, "").trim();
+    if (next === cleaned) break;
+    cleaned = next;
   }
-  return raw;
+  /*
+   * Mirrors `sanitize_thinking_summary`'s `return cleaned if cleaned else raw`
+   * (bonsai_stream_tags.py). A summary that is *entirely* a lazy opener — the model emitting
+   * `<bonsai-status>Sure.</bonsai-status>`, which is exactly what the prompt warns against and
+   * therefore exactly what happens — strips to "". Returning that blanked the thinking line
+   * mid-Ask, because the render gate in MainTabChatTranscript is a truthiness check.
+   * A lazy opener on screen beats no line at all.
+   */
+  return cleaned || raw;
 }
 
 export function composeThinkingBlurb(question: string, opts: ComposeThinkingBlurbOptions = {}): string {

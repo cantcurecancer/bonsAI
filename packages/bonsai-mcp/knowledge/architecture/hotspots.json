@@ -166,13 +166,13 @@
       "role": ""
     },
     {
-      "path": "py_modules/backend/services/ai_character_service.py",
-      "lines": 426,
+      "path": "src/utils/composeThinkingBlurb.ts",
+      "lines": 427,
       "role": ""
     },
     {
-      "path": "src/utils/composeThinkingBlurb.ts",
-      "lines": 418,
+      "path": "py_modules/backend/services/ai_character_service.py",
+      "lines": 426,
       "role": ""
     },
     {

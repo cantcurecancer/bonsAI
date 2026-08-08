@@ -101,4 +101,25 @@ describe("composeThinkingBlurb", () => {
     expect(sanitizeThinkingSummary("Yeah — another crisis")).toBe("another crisis");
     expect(sanitizeThinkingSummary("Fine. Sure. Working")).toBe("Working");
   });
+
+  /*
+   * Same table as test_sanitize_thinking_summary_parity in tests/test_bonsai_stream_tags.py.
+   * The two sanitizers run in series on the same string — Python on the model tag, TS again on
+   * the polled result — so a divergence here does not merely differ, it blanks the line.
+   */
+  it("sanitizeThinkingSummary keeps an all-opener summary rather than blanking it", () => {
+    expect(sanitizeThinkingSummary("Sure.")).toBe("Sure.");
+    expect(sanitizeThinkingSummary("Yeah")).toBe("Yeah");
+    expect(sanitizeThinkingSummary("Fine. Sure.")).toBe("Fine. Sure.");
+    expect(sanitizeThinkingSummary("")).toBe("");
+    expect(sanitizeThinkingSummary("   ")).toBe("");
+  });
+
+  it("sanitizeThinkingSummary is idempotent, so a second pass cannot blank the line", () => {
+    for (const input of ["Sure.", "Yeah, checking GPU", "Fine. Sure. Working", "Working"]) {
+      const once = sanitizeThinkingSummary(input);
+      expect(sanitizeThinkingSummary(once)).toBe(once);
+      expect(once).not.toBe("");
+    }
+  });
 });

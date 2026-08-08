@@ -45,6 +45,24 @@ class BonsaiStreamTagsTests(unittest.TestCase):
         self.assertEqual(sanitize_thinking_summary("Yeah — another crisis"), "another crisis")
         self.assertEqual(sanitize_thinking_summary("Fine. Sure. Working"), "Working")
 
+    def test_sanitize_thinking_summary_parity(self):
+        """Same table as composeThinkingBlurb.test.ts.
+
+        Both sanitizers run on the same string in series — Python on the model tag, TS again on
+        the polled result — so a divergence does not merely differ, it blanks the thinking line.
+        """
+        self.assertEqual(sanitize_thinking_summary("Sure."), "Sure.")
+        self.assertEqual(sanitize_thinking_summary("Yeah"), "Yeah")
+        self.assertEqual(sanitize_thinking_summary("Fine. Sure."), "Fine. Sure.")
+        self.assertEqual(sanitize_thinking_summary(""), "")
+        self.assertEqual(sanitize_thinking_summary("   "), "")
+
+    def test_sanitize_thinking_summary_is_idempotent(self):
+        for text in ("Sure.", "Yeah, checking GPU", "Fine. Sure. Working", "Working"):
+            once = sanitize_thinking_summary(text)
+            self.assertEqual(sanitize_thinking_summary(once), once)
+            self.assertNotEqual(once, "")
+
     def test_no_tag_passthrough(self):
         raw = "Plain answer."
         summary, stripped = extract_bonsai_status(raw)
