@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 278,
-  "edgeCount": 657,
+  "fileCount": 280,
+  "edgeCount": 659,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -2147,6 +2147,7 @@
     },
     "src/utils/buildThinkingBlurbTextElement.tsx": {
       "imports": [
+        "src/utils/redactThinkingBlurbSpoilers.ts",
         "src/utils/splitThinkingBlurbItalicSegments.ts"
       ],
       "importedBy": [
@@ -2564,6 +2565,19 @@
       "importedBy": [
         "src/components/PullModelsModal.tsx",
         "src/utils/pullModelRecommendations.test.ts"
+      ]
+    },
+    "src/utils/redactThinkingBlurbSpoilers.test.ts": {
+      "imports": [
+        "src/utils/redactThinkingBlurbSpoilers.ts"
+      ],
+      "importedBy": []
+    },
+    "src/utils/redactThinkingBlurbSpoilers.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/utils/buildThinkingBlurbTextElement.tsx",
+        "src/utils/redactThinkingBlurbSpoilers.test.ts"
       ]
     },
     "src/utils/replyStopRegistry.test.ts": {

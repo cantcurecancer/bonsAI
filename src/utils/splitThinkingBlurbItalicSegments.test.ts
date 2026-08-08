@@ -27,6 +27,14 @@ describe("splitThinkingBlurbItalicSegments", () => {
     expect(splitThinkingBlurbItalicSegments("😮‍💨")).toEqual([{ text: "😮‍💨", italic: false }]);
   });
 
+  it("keeps redaction blocks upright, so a hidden span does not lean", () => {
+    expect(splitThinkingBlurbItalicSegments("Beating ███████ now")).toEqual([
+      { text: "Beating ", italic: true },
+      { text: "███████", italic: false },
+      { text: " now", italic: true },
+    ]);
+  });
+
   it("returns no segments for empty input", () => {
     expect(splitThinkingBlurbItalicSegments("")).toEqual([]);
     expect(splitThinkingBlurbItalicSegments("   ")).toEqual([{ text: "   ", italic: true }]);

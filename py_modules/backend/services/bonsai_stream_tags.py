@@ -121,7 +121,17 @@ def partial_stream_has_content(text: Optional[str]) -> bool:
 
 
 def extract_bonsai_status(text: str) -> Tuple[Optional[str], str]:
-    """Return (status_summary, text_with_status_tags_removed)."""
+    """Return (status_summary, text_with_status_tags_removed).
+
+    The summary is the **last** complete tag in the text, not the first. This runs against the
+    full joined stream on every delta, so keeping the first meant the thinking line froze the
+    moment the opening tag closed and stayed frozen for the whole generation -- the longest part
+    of a Deck Ask, and the part where a static line reads as a hang.
+
+    Only complete tags count. A tag still arriving has no closing marker, does not match, and
+    therefore cannot flicker a half-written status onto the line; the previous one stays up until
+    the new one finishes.
+    """
     raw = text or ""
     summary: Optional[str] = None
     stripped = raw
@@ -129,10 +139,9 @@ def extract_bonsai_status(text: str) -> Tuple[Optional[str], str]:
         match = _BONSAI_STATUS_RE.search(stripped)
         if not match:
             break
-        if summary is None:
-            candidate = sanitize_thinking_summary((match.group(1) or "").strip())
-            if candidate:
-                summary = candidate[:240]
+        candidate = sanitize_thinking_summary((match.group(1) or "").strip())
+        if candidate:
+            summary = candidate[:240]
         stripped = _BONSAI_STATUS_RE.sub("", stripped, count=1).lstrip()
     stripped = _strip_incomplete_bonsai_status_open(stripped)
     stripped = re.sub(r"\n{3,}", "\n\n", stripped).strip()

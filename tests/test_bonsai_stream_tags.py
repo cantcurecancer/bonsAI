@@ -137,11 +137,47 @@ class BonsaiStreamTagsTests(unittest.TestCase):
         self.assertIsNone(summary)
         self.assertEqual(stripped, "Hi")
 
-    def test_extract_strips_multiple_status_tags(self):
+    def test_extract_strips_multiple_status_tags_and_reports_the_latest(self):
+        """The newest complete tag wins; every tag is still stripped from the reply body.
+
+        This used to return "One". Keeping the first meant the thinking line froze as soon as the
+        opening tag closed and stayed frozen for the rest of the generation.
+        """
         raw = "<bonsai-status>One</bonsai-status>\n\nBody\n\n<bonsai-status>Two</bonsai-status>\n\nTail."
         summary, stripped = extract_bonsai_status(raw)
-        self.assertEqual(summary, "One")
+        self.assertEqual(summary, "Two")
         self.assertEqual(stripped, "Body\n\nTail.")
+
+    def test_incomplete_later_tag_does_not_replace_the_live_summary(self):
+        """A half-arrived tag must not flicker onto the line -- the previous one stays up."""
+        settled = "<bonsai-status>One</bonsai-status>\n\nBody"
+        mid_tag = settled + "\n\n<bonsai-status>Tw"
+        self.assertEqual(extract_bonsai_status(settled)[0], "One")
+        self.assertEqual(extract_bonsai_status(mid_tag)[0], "One")
+        # ...and the partial markup is hidden from the reply body while it arrives.
+        self.assertEqual(extract_bonsai_status(mid_tag)[1], "Body")
+
+    def test_summary_advances_delta_by_delta_over_a_stream(self):
+        """Replays a stream the way ollama_service does: re-extract from the full joined text."""
+        deltas = [
+            "<bonsai-status>Reading the logs</bonsai-status>",
+            "\n\nFirst part of the answer.",
+            "\n\n<bonsai-status>Now checking your settings</bonsai-status>",
+            "\n\nSecond part.",
+        ]
+        seen: list[str] = []
+        joined = ""
+        for delta in deltas:
+            joined += delta
+            summary, _ = extract_bonsai_status(joined)
+            if summary:
+                seen.append(summary)
+        self.assertEqual(seen[0], "Reading the logs")
+        self.assertEqual(seen[-1], "Now checking your settings")
+        self.assertEqual(
+            extract_bonsai_status(joined)[1],
+            "First part of the answer.\n\nSecond part.",
+        )
 
     def test_deterministic_phase_fallback(self):
         self.assertIn(

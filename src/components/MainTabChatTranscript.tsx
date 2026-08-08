@@ -398,7 +398,7 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
                 }}
               >
                 <ThinkingSpinnerIcon size={14} className="bonsai-thinking-spinner" />
-                {buildThinkingBlurbTextElement(thinkingSummary)}
+                {buildThinkingBlurbTextElement(thinkingSummary, strategySpoilerMaskingEnabled)}
               </div>
             ) : null}
             {expandedTurnKey === "live" && askStopped ? (

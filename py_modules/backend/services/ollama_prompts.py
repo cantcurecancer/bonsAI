@@ -635,10 +635,17 @@ def build_bonsai_status_stream_instruction(
         )
     strategy_hint = ""
     if ask_mode == "strategy":
+        # Two instructions, not one, because the model will sometimes name the boss anyway. The
+        # first asks it not to; the second gives it somewhere safe to put the name when it does,
+        # which the client renders as a block redaction. Belt and braces on a surface where a
+        # leak is unrecoverable — the user has already read it.
         strategy_hint = (
             " In Strategy Guide mode, the status line must NEVER spoil story beats, boss names, "
             "puzzle solutions, or hidden secrets — describe your investigative focus only "
-            "(e.g. 'Reviewing the shrine layout in your screenshot').\n"
+            "(e.g. 'Reviewing the shrine layout in your screenshot'). "
+            "If you cannot avoid naming something spoilery inside the status line, wrap just that "
+            "word or phrase in [[spoiler]]…[[/spoiler]] so it can be hidden "
+            "(e.g. 'Working out how to beat [[spoiler]]Malenia's waterfowl dance[[/spoiler]]').\n"
         )
     if has_images:
         example = (
@@ -649,11 +656,13 @@ def build_bonsai_status_stream_instruction(
             f"<bonsai-status>Checking {example_game or 'your question'}{topic_bit}</bonsai-status>"
         )
     return (
-        "STATUS LINE (required): As the very first characters of your assistant reply, emit exactly one line "
+        "STATUS LINE (required): As the very first characters of your assistant reply, emit one line "
         "<bonsai-status>short plain-English status for the user</bonsai-status> "
         "(under ~120 characters; no markdown inside the tag). Reference the user's topic when possible. "
         "Then continue with your normal answer on the following lines. "
-        "The status tag is stripped before the user sees the final reply.\n"
+        "If your focus changes partway through a long answer you may emit one more such tag on its own "
+        "line at that point — at most two or three in total, only when the work genuinely moved on. "
+        "Every status tag is stripped before the user sees the final reply.\n"
         f"Example: {example}\n"
         f"{tone_hint}"
         f"{strategy_hint}"

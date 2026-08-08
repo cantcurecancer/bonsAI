@@ -11,8 +11,13 @@ export type ThinkingBlurbItalicSegment = {
   italic: boolean;
 };
 
-const EMOJI_CLUSTER_RE =
-  /\p{Extended_Pictographic}(?:\uFE0F|\uFE0E)?(?:\u200D\p{Extended_Pictographic}(?:\uFE0F|\uFE0E)?)*/gu;
+/*
+ * Emoji clusters, plus runs of the redaction glyph. Both are drawn shapes rather than prose, and
+ * both look wrong slanted \u2014 a leaning redaction bar reads as a rendering fault rather than as
+ * something deliberately hidden.
+ */
+const UPRIGHT_RUN_RE =
+  /\u2588+|\p{Extended_Pictographic}(?:\uFE0F|\uFE0E)?(?:\u200D\p{Extended_Pictographic}(?:\uFE0F|\uFE0E)?)*/gu;
 
 function appendSegment(
   segments: ThinkingBlurbItalicSegment[],
@@ -35,9 +40,9 @@ export function splitThinkingBlurbItalicSegments(text: string): ThinkingBlurbIta
 
   const segments: ThinkingBlurbItalicSegment[] = [];
   let lastIndex = 0;
-  EMOJI_CLUSTER_RE.lastIndex = 0;
+  UPRIGHT_RUN_RE.lastIndex = 0;
 
-  for (const match of raw.matchAll(EMOJI_CLUSTER_RE)) {
+  for (const match of raw.matchAll(UPRIGHT_RUN_RE)) {
     const start = match.index ?? 0;
     appendSegment(segments, raw.slice(lastIndex, start), true);
     appendSegment(segments, match[0], false);
