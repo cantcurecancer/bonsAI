@@ -15,7 +15,8 @@
         { "action": "snapshotDom", "selector": ".bonsai-scope" },
         { "action": "assert", "type": "domContainsAny", "expect": ["bonsai-decky-tabs-root", "bonsai-tab-title-leaf"] },
         { "action": "runSequence", "inputs": ["Down", "Down"] },
-        { "action": "assert", "type": "focusPathIncludes", "expect": "onMove" }
+        { "action": "snapshotDom", "selector": ".bonsai-scope" },
+        { "action": "assert", "type": "domContainsAny", "expect": ["bonsai-decky-tabs-root", "bonsai-tab-title-leaf"] }
       ]
     },
     {

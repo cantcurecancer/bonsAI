@@ -299,14 +299,12 @@ function assertStep(step, context) {
       }
       return;
     }
-    case "focusPathIncludes": {
-      requireExpect();
-      const fp = context.lastFocusPath ?? [];
-      if (!fp.some((x) => String(x).includes(expect))) {
-        throw new Error(`focusPathIncludes failed: ${JSON.stringify(fp)}`);
-      }
-      return;
-    }
+    // No `focusPathIncludes`. It was removed 2026-08-08 because `focusPath` is an echo of
+    // the inputs runSequence was given, not a record of where focus went — every stored
+    // focus-path.json reads ["onMove(Down)","onMove(Down)"] while active-element.txt reads
+    // document.body. Asserting over it passed for any non-empty input sequence. The array
+    // is still captured as evidence and still written to focus-path.json; it is simply not
+    // something a scenario may assert on. See docs/testing.md (D3), filed upstream.
     default:
       throw new Error(`Unknown assert type: ${JSON.stringify(type)}`);
   }
