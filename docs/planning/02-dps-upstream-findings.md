@@ -242,8 +242,23 @@ report results produced against the wrong plugin entirely.
    commands addressed to another workspace. Cheap, and it removes the cross-talk even if the
    ports stay shared.
 
-**Consumer workaround until then:** only one workspace may have a preview open at a time.
-Worth stating in the DPS README — it is not discoverable from any error message.
+**Closing the intruding preview does not restore the other one — it breaks it further.**
+Observed immediately after the above: closing the DPS-repo preview ran `PreviewManager.stop()`,
+which unlinks `preview-state.json` (`manager.ts:346`). That file is global, so workspace B's
+consumers lost their state file because workspace A's panel closed. At the same moment
+workspace B's IPC bridge had already torn itself down under P2-1 and does not re-arm, and the
+sidecar on `8766` — which belonged to A — exited, leaving B with no RPC transport either.
+Net effect: closing the offending preview leaves the *innocent* workspace with no state file,
+no bridge and no sidecar, and its panel still looking open. The only recovery is to restart
+the surviving workspace's preview.
+
+This makes the isolation defect worse than "two previews conflict": the lifecycle of one
+workspace's panel mutates global state other workspaces are actively depending on. Whatever
+form the fix takes, `stop()` must only tear down resources its own workspace owns.
+
+**Consumer workaround until then:** only one workspace may have a preview open at a time, and
+after closing a second one, **restart the preview in the workspace you actually want** — it is
+not still running, whatever the panel looks like.
 
 ---
 
