@@ -22,15 +22,34 @@ export function buildSection1Section(): string {
           min-width: 0 !important;
           min-height: 0 !important;
           box-sizing: border-box !important;
-          overflow-x: clip !important;
-          overflow-y: hidden !important;
+          /* Both axes must say clip. Per spec, clip on one axis computes to hidden when the
+             other axis is hidden — measured on device 2026-08-07: this rule read back as
+             hidden/hidden for as long as it was written as overflow-x only. hidden still
+             allows *programmatic* scrolling, which is what made the strip flicker (see the
+             sibling rule below). */
+          overflow: clip !important;
           display: flex !important;
           flex-direction: column !important;
           flex: 1 1 0% !important;
           align-self: stretch !important;
         }
 
-        /* Decky Tabs host between strip and TabContentsScroll must shrink, not grow with content. */
+        /* Decky Tabs host between strip and TabContentsScroll must shrink, not grow with content.
+
+           clip, not hidden — this is the LB/RB tab-strip flicker fix (TAB-SWITCH-01).
+           Measured on device 2026-08-07: on an RB press this wrapper's scrollWidth transiently
+           inflates (300 -> 420) while the outgoing tab is still mounted, Steam scrolls it right
+           to reveal the incoming tab, and then the browser clamps scrollLeft back down frame by
+           frame as scrollWidth collapses — dragging the whole strip sideways and back over
+           ~350ms. scrollLeft tracked scrollWidth - clientWidth exactly on every frame. LB never
+           showed it because scrolling toward 0 is valid at any scrollWidth.
+
+           overflow:hidden does not prevent this: a hidden box is still a scroll container and
+           is still scrollable programmatically (measured: scrollLeft took 119.53 under hidden, 0
+           under clip). clip removes the scroll container outright, so there is no offset to
+           clamp. This element has no legitimate scroll range to lose — at rest it measures
+           scrollWidth == clientWidth == 300; the carousel's real horizontal scrolling happens on
+           a deeper Steam element (sw 362 / cw 188), which this rule does not touch. */
         .bonsai-scope .bonsai-decky-tabs-root > .Panel,
         .bonsai-scope .bonsai-decky-tabs-root > div {
           flex: 1 1 0% !important;
@@ -38,7 +57,7 @@ export function buildSection1Section(): string {
           min-width: 0 !important;
           display: flex !important;
           flex-direction: column !important;
-          overflow: hidden !important;
+          overflow: clip !important;
           align-self: stretch !important;
         }
 

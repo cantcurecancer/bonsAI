@@ -494,3 +494,97 @@ anything moving.
 every frame across a press and reports which of those changed. Its output maps to the fix tracks
 T1–T4 in the 2026-08-07 plan. On-Deck row: **TAB-SWITCH-01**
 ([testing-manual.md](../testing-manual.md)).
+
+---
+
+## 10. Resolution — 2026-08-07
+
+**Fixed and confirmed on device.** Everything below is measured via
+`scripts/probe_deck_tab_switch.py` and a scroll-axis probe against the QuickAccess CDP target.
+Sections 1–8 are superseded; § 9's corrections stand.
+
+### 10.1 The mechanism
+
+On an **RB** press:
+
+1. The tabs-root child (`.bonsai-decky-tabs-root > .Panel`) has its `scrollWidth` transiently
+   inflated — **300 → 420** — while the outgoing tab is still mounted.
+2. Steam scrolls it right (`scrollLeft` 0 → **88.28** in one frame) to reveal the incoming tab.
+3. The outgoing content unmounts, `scrollWidth` collapses 420 → 301, and the browser **clamps
+   `scrollLeft` down frame by frame** as the maximum shrinks.
+
+Captured, with `clientWidth` 300 throughout:
+
+| ms | scrollLeft | scrollWidth | max (`sw - cw`) |
+|---|---|---|---|
+| 16999 | 0 | 420 | 120 |
+| 17028 | **88.28** | 420 | 120 |
+| 17111 | 87.5 | 388 | 88 |
+| 17126 | 71.88 | 372 | 72 |
+| 17151 | 49.22 | 349 | 49 |
+| 17368 | 0.78 | 301 | 1 |
+
+`scrollLeft` equals `scrollWidth - clientWidth` on **every** frame. This is not an animation; it
+is a clamp. Net displacement is **zero** — the strip ends exactly where it started, which is why
+it reads as a flicker rather than as motion.
+
+**LB never reproduced it.** Scrolling toward 0 is valid at any `scrollWidth`, so only the
+rightward direction depends on the width that is about to vanish. That asymmetry — reported by
+the maintainer before it was explained — is what located the mechanism.
+
+### 10.2 The fix
+
+`overflow: clip` instead of `overflow: hidden` on the tabs root and its direct children
+([section-1.ts](../../src/styles/sections/section-1.ts)).
+
+- **`hidden` is not enough.** A `hidden` box is still a scroll container and is still scrollable
+  *programmatically*. Measured directly, with 900px of forced overflow: `scrollLeft` accepted
+  **119.53** under `hidden` and **0** under `clip`.
+- **Both axes must say `clip`.** Per spec, `clip` on one axis computes to `hidden` when the other
+  axis is `hidden`. The pre-existing `overflow-x: clip` on the tabs root had therefore **never
+  taken effect** — it read back as `hidden/hidden` on device. This is a trap worth remembering:
+  the declaration looks right in the source and is silently downgraded.
+- **Nothing legitimate is lost.** That element measures `scrollWidth == clientWidth == 300` at
+  rest, so it has no scroll range to give up. The carousel's real horizontal scrolling happens on
+  a deeper Steam element (`_1CJeU7…`, `sw` 362 / `cw` 188), which this rule does not touch.
+
+Deck CEF supports it: `CSS.supports('overflow','clip')` is true and the shorthand computed to
+`clip/clip` on device.
+
+**Post-fix verification.** Across the same 420 → 302 collapse, `scrollLeft` stayed pinned at **0**
+and the strip's `x` held constant at 141.92 — while the depth-3 carousel still eased smoothly
+(0 → 0.78 → 1.56 → 4.69 → 9.38 → 14.84), so the intended slide is preserved.
+
+### 10.3 What was measured *not* to be the cause
+
+Across five captured transitions, none of these ever fired — each was a candidate in §§ 3/5 or in
+the T1–T4 plan:
+
+- **Glyph colour churn (T1).** The active-tab colour swap is clean and single-frame, synchronised
+  with the `data-bonsai-active-tab` change. No dim/bright flip, no all-six-white flash.
+- **Steam focus-class churn.** `gpfocuswithin` did not drop during any switch. The § 9.1
+  colour-churn story was a plausible inference and is now retired.
+- **Layout-hook re-measure (T3).** `--bonsai-tab-strip-reserve` and `--bonsai-tab-body-height`
+  never changed across a press (hands off the trackpad — the pointer path in § 9.4 remains
+  untested, not disproven).
+- **Ancestor `transform` (T2).** Never changed; the motion was scroll, not transform. This is why
+  the first sampler, which watched transforms and glyph rects, could see *that* something moved
+  but not *what* moved it.
+
+### 10.4 Corrections to the discovery framing
+
+- **The "no-op press" is not a no-op.** Steam's `Tabs` **wraps around**: RB on the rightmost tab
+  switches to the leftmost. `data-bonsai-active-tab` went `about → main`, and the strip traversed
+  its full width (~425px in ~250ms) — the *longest* travel of any press, not the shortest. Every
+  §7 repro row built on "a press that cannot change tab" was testing something that does not
+  exist.
+- **Scroll depth was never the variable; press direction was.** The bug title says "when
+  scrolled". It reproduces on RB regardless.
+
+### 10.5 Left open
+
+`TabContentsScroll` is **replaced on every tab switch** — node identity changed on all five
+transitions (ids 4→5→6→7→8). This answers § 2's UNKNOWN in favour of the "replaced per tab"
+column, which means [useQamPanelHeightGuard](../../src/hooks/useQamPanelHeightGuard.ts) — which
+captures that node once at mount — has been observing a detached element since the first tab
+change of any session. Correctness bug, independent of the flicker, **not fixed here**.

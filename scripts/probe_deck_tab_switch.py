@@ -114,6 +114,27 @@ ARM_JS = r"""
 
   const r2 = (v) => Math.round(v * 100) / 100;
 
+  // Visibility signature of the whole ancestor chain. A bar that blinks out does it by way of
+  // opacity / visibility / display / zero height on SOME ancestor, not on the glyph span the
+  // first version of this probe watched. Recorded per depth so the culprit is identifiable
+  // rather than just "something disappeared".
+  const visSigOf = (el) => {
+    const bits = [];
+    let n = el, d = 0;
+    while (n) {
+      const cs = getComputedStyle(n);
+      const r = n.getBoundingClientRect();
+      if (cs.opacity !== '1' || cs.visibility !== 'visible' || cs.display === 'none' ||
+          r.width === 0 || r.height === 0) {
+        bits.push(d + ':o=' + cs.opacity + ',v=' + cs.visibility + ',d=' + cs.display +
+                  ',wh=' + r2(r.width) + 'x' + r2(r.height));
+      }
+      if (n.classList && n.classList.contains('bonsai-decky-tabs-root')) break;
+      n = n.parentElement; d++;
+    }
+    return bits.join('|');
+  };
+
   const sample = () => {
     const glyphs = [];
     const icons = document.querySelectorAll('.bonsai-tab-title-icon');
@@ -128,8 +149,23 @@ ARM_JS = r"""
         o: cs.opacity,
         f: focusSigOf(ic),
         t: transformSigOf(ic),
+        v: visSigOf(ic),
       });
     }
+
+    // The chips and the row that holds them - the actual "tab bar". Counts are included so a
+    // chip that unmounts and remounts registers even if the survivors do not move.
+    const leaves = document.querySelectorAll('.bonsai-tab-title-leaf');
+    const leafSig = [];
+    for (const lf of leaves) {
+      const r = lf.getBoundingClientRect();
+      const cs = getComputedStyle(lf);
+      leafSig.push([r2(r.x), r2(r.y), r2(r.width), r2(r.height), cs.opacity, cs.visibility,
+                    cs.backgroundColor, cs.boxShadow, cs.outlineStyle].join(','));
+    }
+    const stripRow = leaves.length ? leaves[0].parentElement : null;
+    const stripRect = stripRow ? stripRow.getBoundingClientRect() : null;
+    const rootRect = root.getBoundingClientRect();
     const sc = document.querySelector('.bonsai-decky-tabs-root [class*="TabContentsScroll"]');
     const scope = document.querySelector('.bonsai-scope');
     const rootCs = getComputedStyle(root);
@@ -144,6 +180,13 @@ ARM_JS = r"""
       scTop: sc ? r2(sc.scrollTop) : -1,
       scH: sc ? r2(sc.scrollHeight) : -1,
       scC: sc ? r2(sc.clientHeight) : -1,
+      nGlyph: icons.length,
+      nLeaf: leaves.length,
+      leaves: leafSig.join(' | '),
+      stripId: idOf(stripRow),
+      strip: stripRect ? [r2(stripRect.x), r2(stripRect.y), r2(stripRect.width), r2(stripRect.height)].join(',') : '',
+      stripVis: stripRow ? visSigOf(stripRow) : '',
+      rootWH: r2(rootRect.width) + 'x' + r2(rootRect.height),
       g: glyphs,
     };
   };
@@ -257,8 +300,9 @@ def evaluate(sock, msg_id, expression):
 # Diff / report
 # ---------------------------------------------------------------------------
 
-GLYPH_FIELDS = ("x", "y", "w", "h", "c", "fl", "o", "f", "t")
-FRAME_FIELDS = ("at", "reserve", "bodyH", "stable", "locked", "scId", "scTop", "scH", "scC")
+GLYPH_FIELDS = ("x", "y", "w", "h", "c", "fl", "o", "f", "t", "v")
+FRAME_FIELDS = ("at", "reserve", "bodyH", "stable", "locked", "scId", "scTop", "scH", "scC",
+                "nGlyph", "nLeaf", "leaves", "stripId", "strip", "stripVis", "rootWH")
 
 
 def frame_key(frame):
@@ -328,8 +372,9 @@ def report(frames, chains, label):
             print(line)
 
     # Verdicts, phrased as the fix-track triggers in the plan so the answer is unambiguous.
-    moved = colour = focus_churn = transform = False
+    moved = colour = focus_churn = transform = vis_churn = False
     tab_changed = reserve_changed = node_changed = False
+    count_churn = leaf_churn = strip_moved = strip_replaced = strip_vis = root_resized = False
     first = frames[0]
     for cur in frames[1:]:
         for a, b in zip(first.get("g", []), cur.get("g", [])):
@@ -341,12 +386,26 @@ def report(frames, chains, label):
                 focus_churn = True
             if a.get("t") != b.get("t"):
                 transform = True
+            if a.get("v") != b.get("v"):
+                vis_churn = True
         if cur.get("at") != first.get("at"):
             tab_changed = True
         if cur.get("reserve") != first.get("reserve") or cur.get("bodyH") != first.get("bodyH"):
             reserve_changed = True
         if cur.get("scId") != first.get("scId"):
             node_changed = True
+        if cur.get("nGlyph") != first.get("nGlyph") or cur.get("nLeaf") != first.get("nLeaf"):
+            count_churn = True
+        if cur.get("leaves") != first.get("leaves"):
+            leaf_churn = True
+        if cur.get("strip") != first.get("strip"):
+            strip_moved = True
+        if cur.get("stripId") != first.get("stripId"):
+            strip_replaced = True
+        if cur.get("stripVis") != first.get("stripVis"):
+            strip_vis = True
+        if cur.get("rootWH") != first.get("rootWH"):
+            root_resized = True
 
     def mark(v):
         return "YES" if v else "no "
@@ -359,6 +418,13 @@ def report(frames, chains, label):
     print("  T3  strip reserve / body height changed       : %s" % mark(reserve_changed))
     print("  T4  TabContentsScroll node replaced           : %s" % mark(node_changed))
     print("      Steam focus-class churn (gpfocus*)        : %s" % mark(focus_churn))
+    print("\n-- flicker-specific (bar blinking, not sliding) --")
+    print("  glyph/chip COUNT changed (unmount+remount)    : %s" % mark(count_churn))
+    print("  chip rect/opacity/bg/shadow changed           : %s" % mark(leaf_churn))
+    print("  ancestor opacity/visibility/display/0-size    : %s" % mark(vis_churn or strip_vis))
+    print("  strip ROW rect changed                        : %s" % mark(strip_moved))
+    print("  strip ROW node replaced                       : %s" % mark(strip_replaced))
+    print("  tabs root resized                             : %s" % mark(root_resized))
 
     if chains and chains.get("first"):
         print("\n-- ancestor chain, first frame (reference; compare with probe_deck_tab_strip.py) --")
@@ -376,9 +442,19 @@ def report(frames, chains, label):
             print("\n  (ancestor chain identical in the last frame)")
 
 
+def connect_qa():
+    targets = json.loads(urllib.request.urlopen("http://127.0.0.1:8080/json/list", timeout=10).read())
+    qa = [t for t in targets if "QuickAccess" in (t.get("title", "") + t.get("url", ""))]
+    print("targets:", [t.get("title") for t in targets])
+    if not qa:
+        raise SystemExit("no QuickAccess target - is the QAM open?")
+    return ws_connect(qa[0]["webSocketDebuggerUrl"])
+
+
 def main():
     seconds = 5.0
     label = ""
+    mode = "auto"  # auto | arm | read
     argv = sys.argv[1:]
     i = 0
     while i < len(argv):
@@ -386,17 +462,27 @@ def main():
             seconds = float(argv[i + 1]); i += 2
         elif argv[i] == "--label" and i + 1 < len(argv):
             label = argv[i + 1]; i += 2
+        elif argv[i] == "--arm-only":
+            mode = "arm"; i += 1
+        elif argv[i] == "--read-only":
+            mode = "read"; i += 1
         else:
-            raise SystemExit("usage: probe_deck_tab_switch.py [--seconds N] [--label NAME]")
+            raise SystemExit("usage: probe_deck_tab_switch.py [--seconds N] [--label NAME] [--arm-only | --read-only]")
 
-    targets = json.loads(urllib.request.urlopen("http://127.0.0.1:8080/json/list", timeout=10).read())
-    qa = [t for t in targets if "QuickAccess" in (t.get("title", "") + t.get("url", ""))]
-    print("targets:", [t.get("title") for t in targets])
-    if not qa:
-        raise SystemExit("no QuickAccess target - is the QAM open?")
+    # Two-phase mode avoids a blind sleep: --arm-only evaluates the installer and returns
+    # immediately (the page's own rAF loop keeps sampling after this SSH connection closes,
+    # since it is not tied to the CDP socket). A separate --read-only connection later pulls
+    # window.__bonsaiTabProbe back. This replaces guessing a sleep window that has to cover an
+    # unknown human reaction time end-to-end over a chat round trip.
+    if mode == "read":
+        sock = connect_qa()
+        data = evaluate(sock, 2, READ_JS)
+        if not data.get("done"):
+            print("(sampler still running / had not hit its deadline - reading what's buffered so far)")
+        report(data.get("frames", []), data.get("chains"), label)
+        return
 
-    sock = ws_connect(qa[0]["webSocketDebuggerUrl"])
-
+    sock = connect_qa()
     armed = evaluate(sock, 1, ARM_JS.replace("__SECONDS__", repr(seconds)))
     if not armed.get("ok"):
         raise SystemExit("ARM FAILED: %s" % armed.get("why"))
@@ -406,6 +492,9 @@ def main():
     print("ARMED - sampling for %.1fs across %d glyphs." % (seconds, armed.get("glyphs", 0)))
     print("PRESS THE SHOULDER BUTTON NOW (once), then keep your hands off the trackpad.")
     print("*" * 72)
+
+    if mode == "arm":
+        return
 
     # Sampling runs on the page's rAF clock; give it the full window plus slack for the
     # round-trip before reading the buffer back.
