@@ -4,8 +4,9 @@ import re
 import unittest
 
 from backend.services.bonsai_stream_tags import (
-    _STATIC_LINE_GRACE_SECONDS,
-    _STATIC_LINE_STEP_SECONDS,
+    _STATIC_LINE_FIRST_WINDOW_SECONDS,
+    _STATIC_LINE_STEP_WINDOW_SECONDS,
+    _static_window_seconds,
     compose_thinking_blurb,
     deterministic_thinking_phase_fallback,
     escalate_static_thinking_line,
@@ -18,6 +19,17 @@ from backend.services.bonsai_stream_tags import (
 
 _BANNED_PREFIXES = ("yeah", "fine.", "sure.", "oh joy", "right.")
 _EMOJI_ONLY_LINES = ("🙄", "😮‍💨", "🫠", "🌳")
+
+
+def _static_window_midpoints(request_id: int, count: int) -> list[float]:
+    """A time inside each successive stale-line window, for a request whose windows vary."""
+    mids: list[float] = []
+    boundary = 0.0
+    for index in range(count):
+        width = _static_window_seconds(request_id, index)
+        mids.append(boundary + (width / 2.0))
+        boundary += width
+    return mids
 
 
 def _assert_no_banned_prefixes(text: str) -> None:
@@ -446,25 +458,68 @@ class BonsaiStreamTagsTests(unittest.TestCase):
             for t in range(0, 60, 2)
         ]
         self.assertEqual(seen[0], base)
-        after_grace = seen[5:]
-        self.assertNotIn(base, after_grace)
+        # The first window is up to 13s, so only sample past its widest possible end.
+        after_first_window = seen[7:]
+        self.assertNotIn(base, after_first_window)
         # Not one replacement that then sticks -- it has to keep changing.
-        self.assertGreaterEqual(len(set(after_grace)), 4)
+        self.assertGreaterEqual(len(set(after_first_window)), 4)
 
     def test_static_line_never_repeats_on_consecutive_steps(self):
-        """Additive stepping, not hashing: two steps in a row must not land on the same line."""
+        """Additive stepping, not hashing: two windows in a row must not land on the same line.
+
+        Timing is randomised; content deliberately is not. Randomising both would let a line
+        repeat back to back, which looks like the stall this exists to disprove.
+        """
         base = "Still connecting…"
         for rid in range(1, 12):
             steps = [
-                escalate_static_thinking_line(
-                    base,
-                    static_seconds=_STATIC_LINE_GRACE_SECONDS + (i * _STATIC_LINE_STEP_SECONDS),
-                    request_id=rid,
-                )
-                for i in range(8)
+                escalate_static_thinking_line(base, static_seconds=t, request_id=rid)
+                # Window 0 holds the base line; the rotation starts at window 1.
+                for t in _static_window_midpoints(rid, 9)[1:]
             ]
             for a, b in zip(steps, steps[1:]):
                 self.assertNotEqual(a, b, msg=f"rid={rid}: {steps}")
+
+    def test_window_lengths_are_irregular_and_inside_their_range(self):
+        """A fixed beat reads as a spinner animation — the eye locks on and stops reading."""
+        first_low, first_high = _STATIC_LINE_FIRST_WINDOW_SECONDS
+        step_low, step_high = _STATIC_LINE_STEP_WINDOW_SECONDS
+        for rid in range(1, 40):
+            first = _static_window_seconds(rid, 0)
+            self.assertGreaterEqual(first, first_low)
+            self.assertLessEqual(first, first_high)
+            widths = [_static_window_seconds(rid, i) for i in range(1, 13)]
+            for width in widths:
+                self.assertGreaterEqual(width, step_low)
+                self.assertLessEqual(width, step_high)
+            # Not a metronome, and not creeping in one direction either.
+            self.assertGreater(len(set(round(w, 1) for w in widths)), 5, msg=f"rid={rid}: {widths}")
+            self.assertNotEqual(widths, sorted(widths), msg=f"rid={rid}: {widths}")
+
+    def test_window_lengths_are_stable_for_one_request(self):
+        """The poll loop re-derives this every ~1.2s; a live re-roll would strobe the line."""
+        for rid in (1, 5, 19):
+            for index in range(6):
+                self.assertEqual(
+                    _static_window_seconds(rid, index), _static_window_seconds(rid, index)
+                )
+        base = "Still connecting…"
+        # Two polls landing inside the same window must agree.
+        mid = _static_window_midpoints(6, 4)[2]
+        width = _static_window_seconds(6, 2)
+        for offset in (-width / 4.0, 0.0, width / 4.0):
+            self.assertEqual(
+                escalate_static_thinking_line(base, static_seconds=mid + offset, request_id=6),
+                escalate_static_thinking_line(base, static_seconds=mid, request_id=6),
+            )
+
+    def test_different_asks_do_not_share_a_rhythm(self):
+        """Two Asks in a row should not step at the same moments."""
+        schedules = {
+            rid: tuple(round(_static_window_seconds(rid, i), 2) for i in range(6))
+            for rid in range(1, 25)
+        }
+        self.assertGreater(len(set(schedules.values())), 20, msg=schedules)
 
     def test_static_line_never_predicts_how_much_longer(self):
         """Duration is unknown here. A "nearly done" followed by another 40s is worse than less."""

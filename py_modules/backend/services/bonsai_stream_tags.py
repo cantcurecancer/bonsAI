@@ -707,12 +707,57 @@ def format_thinking_phase(
     return text[:_PHASE_MAX_LEN]
 
 
-# How long one unchanged line may sit on screen before the read path starts escalating it, and
-# how often it moves after that.
-_STATIC_LINE_GRACE_SECONDS = 7.0
-_STATIC_LINE_STEP_SECONDS = 7.0
+# The stale-line ladder runs on irregular windows, not a fixed beat. A line changing on an exact
+# metronome reads as a spinner animation -- the eye locks onto the period and stops reading the
+# words. Each window is drawn from a range instead.
+#
+# The first window is longer: it is the one holding a *real* phase line ("Searching knowledge base
+# for X"), which is more specific than anything that replaces it, so it earns a fair showing before
+# a generic duration line takes the screen.
+_STATIC_LINE_FIRST_WINDOW_SECONDS = (7.0, 13.0)
+_STATIC_LINE_STEP_WINDOW_SECONDS = (4.0, 12.0)
+# A very long Ask cannot walk the schedule forever; 256 windows is over 17 minutes at the minimum.
+_STATIC_LINE_MAX_STEPS = 256
 # Tier boundaries, in seconds of *unchanged* line. Later tiers acknowledge the wait more openly.
 _STATIC_LINE_TIER_SECONDS = (21.0, 40.0)
+
+
+def _static_window_bucket(request_id: int, index: int) -> int:
+    """Well-mixed hash of (request_id, window index).
+
+    Deliberately not ``_stable_bucket`` with a per-index salt. That salt loop is
+    ``bucket * 31 + ord(ch)``, so two salts differing only in their last character produce buckets
+    a few apart -- which, taken modulo a window range, yields near-identical and monotonically
+    creeping durations. The whole point here is that consecutive windows are unrelated, so this
+    needs an avalanche step.
+    """
+    h = (max(0, int(request_id or 0)) * 2654435761) ^ ((index + 1) * 2246822519)
+    h &= 0xFFFFFFFF
+    h ^= h >> 15
+    h = (h * 2246822519) & 0xFFFFFFFF
+    h ^= h >> 13
+    h = (h * 3266489917) & 0xFFFFFFFF
+    h ^= h >> 16
+    return h & 0x7FFFFFFF
+
+
+def _static_window_seconds(request_id: int, index: int) -> float:
+    """How long window ``index`` holds, in seconds. Deterministic: a poll must not reshuffle it."""
+    low, high = (
+        _STATIC_LINE_FIRST_WINDOW_SECONDS if index == 0 else _STATIC_LINE_STEP_WINDOW_SECONDS
+    )
+    centis = int(round((high - low) * 100))
+    return low + (_static_window_bucket(request_id, index) % (centis + 1)) / 100.0
+
+
+def _static_step_for(request_id: int, static_seconds: float) -> int:
+    """Rotation step at ``static_seconds``, or ``-1`` while the original line still holds."""
+    boundary = 0.0
+    for index in range(_STATIC_LINE_MAX_STEPS):
+        boundary += _static_window_seconds(request_id, index)
+        if static_seconds < boundary:
+            return index - 1
+    return _STATIC_LINE_MAX_STEPS - 1
 
 
 def _still_working_pool(tone: _THINKING_TONE, tier: int) -> list[str]:
@@ -779,16 +824,19 @@ def escalate_static_thinking_line(
     reads as crashed, and by then the line is also no longer true.
 
     What rotates is a statement about *duration*, which is real information the user does not
-    otherwise have, not a reshuffle of the same joke. The step is additive rather than hashed, so
-    consecutive steps cannot land on the same line twice in a row.
+    otherwise have, not a reshuffle of the same joke.
+
+    Timing is irregular and content is not. The windows are drawn from a range so the line does not
+    tick on a metronome, but the *choice* of line steps additively through the pool, so two
+    consecutive windows can never show the same words. Randomising both would let a line repeat
+    itself back to back, which looks like a stall -- the exact impression this exists to avoid.
     """
     text = (base or "").strip()
-    if static_seconds < _STATIC_LINE_GRACE_SECONDS:
+    step = _static_step_for(request_id, static_seconds)
+    if step < 0:
         return text
-    since_grace = static_seconds - _STATIC_LINE_GRACE_SECONDS
     tier = sum(1 for bound in _STATIC_LINE_TIER_SECONDS if static_seconds >= bound)
     pool = _still_working_pool(tone, tier)
-    step = int(since_grace // _STATIC_LINE_STEP_SECONDS)
     idx = (_stable_bucket(request_id, salt="still_working") + step) % len(pool)
     return pool[idx][:_PHASE_MAX_LEN]
 

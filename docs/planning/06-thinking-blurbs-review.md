@@ -529,9 +529,9 @@ Fixed in `67d4ad5` with two independent mechanisms, neither depending on model c
 - **A `generating` phase**, published on the first content token, whether or not token streaming is
   on. With streaming off there is no visible text at all, so this is the only signal that
   generation began. Skipped when the model did supply a tag.
-- **`escalate_static_thinking_line`**, applied at merge time: a line that has not *changed* in 7
-  seconds is replaced by a rotating duration line, stepping every 7s across three escalating tiers.
-  A real phase change or model tag outranks it and resets the clock.
+- **`escalate_static_thinking_line`**, applied at merge time: a line that has not *changed* for a
+  window is replaced by a rotating duration line, across three escalating tiers. A real phase
+  change or model tag outranks it and resets the clock.
 
 **This is a deliberate, narrow reversal of THINKING-COPY-01.** That rule forbids time-based
 rotation, and it was right about what it was aimed at — reshuffling interchangeable jokes on a
@@ -541,9 +541,26 @@ rather than dropped: **copy may not change while the work has not, and may not p
 longer** — the second half is asserted, since an "almost done" followed by another 40 seconds is
 worse than saying less.
 
-One implementation note worth keeping: the stale clock stamps on *change*, not on write. A phase
-re-publishing the same string every delta would otherwise keep resetting it, and the line would
-never be recognised as stale however long it sat there.
+Two implementation notes worth keeping.
+
+The stale clock stamps on *change*, not on write. A phase re-publishing the same string every delta
+would otherwise keep resetting it, and the line would never be recognised as stale however long it
+sat there.
+
+**Timing is randomised; content is not.** The first pass stepped on a fixed 7s beat, which the
+maintainer called too rhythmic on device — an exact period reads as a spinner animation, and the eye
+locks onto it and stops reading the words. Windows are now drawn from a range: 7–13s for the first
+(it holds a real phase line, which is more specific than anything replacing it and earns a fair
+showing) and 4–12s thereafter. The *choice* of line still steps additively through the pool, so two
+consecutive windows can never show the same words — randomising both would let a line repeat back to
+back, which looks like the stall this exists to disprove.
+
+The schedule is a hash of `(request_id, window index)`, not a live roll: `_merge_partial_into_background_status`
+re-derives it on every poll, so anything non-deterministic would strobe the line at the poll rate.
+It also cannot use `_stable_bucket` with a per-index salt — that salt loop is `bucket * 31 + ord(ch)`,
+so indices differing in one character yield near-identical, monotonically creeping durations.
+`_static_window_bucket` adds an avalanche step; measured over 1995 windows the spread is
+4.00–12.00s, mean 8.01, σ 2.32.
 
 Found in passing and fixed separately (`b8f8ded`): `run_ask_ollama` resolved the AI character
 **twice** — once for the `screenshot_prep` blurb, once for the reply's voice — so with

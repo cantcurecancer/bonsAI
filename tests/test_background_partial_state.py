@@ -278,9 +278,11 @@ class BackgroundPartialStateTests(unittest.TestCase):
         fresh = self.plugin._merge_partial_into_background_status(self.plugin._background_state)
         self.assertEqual(fresh.get("thinking_summary"), stuck)
 
-        # Backdate the stamp instead of sleeping: the grace window is seconds long.
+        # Backdate the stamp instead of sleeping: the windows are seconds long. The first sample
+        # is past the widest possible first window (13s) so this does not depend on which schedule
+        # request id 42 happens to draw.
         seen = set()
-        for aged in (10.0, 20.0, 30.0, 45.0, 60.0):
+        for aged in (14.0, 25.0, 34.0, 47.0, 61.0):
             with self.plugin._partial_response_lock:
                 self.plugin._partial_stream_snapshot["thinking_summary_monotonic"] = (
                     _time.monotonic() - aged
