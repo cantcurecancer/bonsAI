@@ -417,6 +417,41 @@ class Plugin:
             return
         self._update_partial_response(request_id, "", False, text[:240], update_partial=False)
 
+    def _compose_opening_thinking_blurb(
+        self,
+        request_id: int,
+        question: str,
+        *,
+        app_name: str = "",
+        attachment_count: int = 0,
+        ask_mode: str = "speed",
+        settings: Optional[dict] = None,
+    ) -> tuple[str, Any]:
+        """Compose the opening blurb at accept time and return it with the roleplay meta.
+
+        Both halves are returned because the caller needs them together and neither is free to
+        recompute. The blurb goes back in the ``start_background_game_ai`` response so the client
+        can render it without owning a second composer -- two composers keyed on two different
+        request-id spaces is what made the line rewrite itself within the first poll. The roleplay
+        meta is handed to the request task so ``ai_character_random`` picks a character exactly
+        once per Ask, rather than once for the blurb's tone and again for the reply's voice.
+        """
+        from backend.services.ai_character_service import build_roleplay_system_suffix_meta
+        from backend.services.bonsai_stream_tags import compose_thinking_blurb
+
+        cfg = settings if isinstance(settings, dict) else {}
+        meta = build_roleplay_system_suffix_meta(cfg, ask_mode)
+        blurb = compose_thinking_blurb(
+            question,
+            app_name=app_name,
+            attachment_count=attachment_count,
+            ask_mode=ask_mode,
+            request_id=request_id,
+            character_enabled=bool(cfg.get("ai_character_enabled")),
+            character_preset_id=meta.resolved_preset_id,
+        )
+        return blurb, meta
+
     def _publish_thinking_phase_key(
         self,
         request_id: int,
@@ -2055,6 +2090,7 @@ class Plugin:
         token_stream_request_id: Optional[int] = None,
         strategy_checklist_state: Optional[dict] = None,
         reply_followup: Optional[dict] = None,
+        roleplay_meta: Any = None,
     ) -> dict:
         """Run one full ask lifecycle, including Ollama call timing and optional TDP application."""
         return await run_game_ai_request(
@@ -2069,6 +2105,7 @@ class Plugin:
             token_stream_request_id=token_stream_request_id,
             strategy_checklist_state=strategy_checklist_state,
             reply_followup=reply_followup,
+            roleplay_meta=roleplay_meta,
         )
 
     # --- Ask RPC (foreground + background lifecycle) ---
@@ -2130,6 +2167,7 @@ class Plugin:
         spoiler_consent: bool = False,
         strategy_checklist_state: Optional[dict] = None,
         reply_followup: Optional[dict] = None,
+        roleplay_meta: Any = None,
     ) -> None:
         """Execute a queued background request and publish terminal status for polling clients."""
         try:
@@ -2144,6 +2182,7 @@ class Plugin:
                 token_stream_request_id=request_id,
                 strategy_checklist_state=strategy_checklist_state,
                 reply_followup=reply_followup,
+                roleplay_meta=roleplay_meta,
             )
         except asyncio.CancelledError:
             return
@@ -2234,6 +2273,7 @@ class Plugin:
                 **Plugin._reject_ask_request("PC IP Address is required.", app_id=app_id),
             }
 
+        pre_settings: Optional[dict] = None
         if not has_local_command:
             pre_settings = await self.load_settings()
             if not bool(pre_settings.get("input_sanitizer_user_disabled")):
@@ -2263,6 +2303,11 @@ class Plugin:
                         "applied": None,
                         "elapsed_seconds": 0.0,
                     }
+
+        # Loaded outside the lock: the accept path composes the opening thinking blurb, and a disk
+        # read while holding _background_lock would stall a concurrent Cancel.
+        if pre_settings is None:
+            pre_settings = await self.load_settings()
 
         async with self._background_lock:
             if (
@@ -2346,6 +2391,15 @@ class Plugin:
             self._background_request_seq += 1
             request_id = self._background_request_seq
             self._reset_partial_stream_snapshot(request_id)
+            opening_blurb, roleplay_meta = self._compose_opening_thinking_blurb(
+                request_id,
+                parsed_question,
+                app_name=app_name,
+                attachment_count=len(attachments or []),
+                ask_mode=ask_mode,
+                settings=pre_settings,
+            )
+            self._publish_thinking_phase(request_id, opening_blurb)
             self._background_state = pending_background_state(
                 request_id=request_id,
                 question=parsed_question,
@@ -2365,6 +2419,7 @@ class Plugin:
                     spoiler_consent=spoiler_consent,
                     strategy_checklist_state=strategy_checklist_state,
                     reply_followup=reply_followup,
+                    roleplay_meta=roleplay_meta,
                 )
             )
             await self._maybe_app_log(
@@ -2397,6 +2452,9 @@ class Plugin:
             "app_id": app_id,
             "app_context": app_context,
             "response": "Thinking...",
+            # The client renders this and never composes its own. Returning it here rather than
+            # waiting for the first status poll is what lets composeThinkingBlurb.ts go away.
+            "thinking_summary": opening_blurb,
         }
 
     async def dbg_fe_log(self, tag: str = "", data=None):

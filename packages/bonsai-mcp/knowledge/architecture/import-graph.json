@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
   "fileCount": 278,
-  "edgeCount": 657,
+  "edgeCount": 658,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -1281,7 +1281,8 @@
       "imports": [
         "src/hooks/useBonsaiAskOrchestration.ts",
         "src/test-harness/fakeDeckyRpc.ts",
-        "src/test-harness/rpcFixtures.ts"
+        "src/test-harness/rpcFixtures.ts",
+        "src/utils/composeThinkingBlurb.ts"
       ],
       "importedBy": []
     },
@@ -2224,6 +2225,7 @@
         "src/data/bonsaiSettingsSchema.ts"
       ],
       "importedBy": [
+        "src/hooks/useBonsaiAskOrchestration.test.ts",
         "src/hooks/useBonsaiAskOrchestration.ts",
         "src/utils/composeThinkingBlurb.test.ts"
       ]

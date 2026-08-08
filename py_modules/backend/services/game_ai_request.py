@@ -18,7 +18,6 @@ from typing import Any, Optional
 import decky
 
 from backend.services.capabilities import capability_enabled
-from backend.services.bonsai_stream_tags import compose_thinking_blurb
 from backend.services.ai_character_service import build_roleplay_system_suffix_meta
 from backend.services.input_sanitizer_service import apply_input_sanitizer_lane
 from backend.services.ollama_prompts import (
@@ -77,8 +76,16 @@ async def run_game_ai_request(
     token_stream_request_id: Optional[int] = None,
     strategy_checklist_state: Optional[dict] = None,
     reply_followup: Optional[dict] = None,
+    roleplay_meta: Any = None,
 ) -> dict:
-    """Run one full ask lifecycle, including Ollama call timing and optional TDP application."""
+    """Run one full ask lifecycle, including Ollama call timing and optional TDP application.
+
+    ``roleplay_meta`` is a pre-resolved ``build_roleplay_system_suffix_meta`` result. The
+    background Ask path resolves it at accept time so the opening thinking blurb can be composed
+    before this task starts, and passes it here so the character is picked exactly once per Ask --
+    ``ai_character_random`` calls ``random.choice``, so resolving twice could put a deadpan blurb
+    in front of a witty reply. The foreground path passes nothing and resolves below.
+    """
     start = time.time()
     app_context = "active" if app_id else "none"
     pcls = type(plugin)
@@ -201,18 +208,10 @@ async def run_game_ai_request(
         )
 
         active_rid = plugin._active_request_id() if hasattr(plugin, "_active_request_id") else None
-        rp_meta = build_roleplay_system_suffix_meta(settings, ask_mode)
-        if isinstance(active_rid, int) and hasattr(plugin, "_publish_thinking_phase"):
-            blurb = compose_thinking_blurb(
-                question_for_model,
-                app_name=app_name,
-                attachment_count=len(atts),
-                ask_mode=ask_mode,
-                request_id=active_rid,
-                character_enabled=bool(settings.get("ai_character_enabled")),
-                character_preset_id=rp_meta.resolved_preset_id,
-            )
-            plugin._publish_thinking_phase(active_rid, blurb)
+        # The opening blurb is composed by start_background_game_ai and published before this task
+        # runs, so there is no second opener here -- a duplicate compose is what made the line
+        # rewrite itself from one generic opener to another within the first poll.
+        rp_meta = roleplay_meta or build_roleplay_system_suffix_meta(settings, ask_mode)
 
         proton_attachment_text = ""
         proton_sources: list = []

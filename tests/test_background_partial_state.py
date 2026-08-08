@@ -131,6 +131,74 @@ class BackgroundPartialStateTests(unittest.TestCase):
         self.assertIn("crash", summary.lower())
         self.assertIn("Elden Ring", summary)
 
+    def test_compose_opening_blurb_weaves_question_and_game(self) -> None:
+        blurb, meta = self.plugin._compose_opening_thinking_blurb(
+            21,
+            "why does the game crash on launch",
+            app_name="Elden Ring",
+            ask_mode="speed",
+            settings={},
+        )
+        self.assertTrue(blurb.strip())
+        self.assertIsNotNone(meta)
+        self.assertIsNone(meta.resolved_preset_id)
+
+    def test_compose_opening_blurb_matches_what_the_starting_phase_would_render(self) -> None:
+        """The client renders this string; the backend must not disagree with itself later.
+
+        format_thinking_phase("starting", ...) delegates to the same composer, so a divergence
+        here would mean the opener returned by start_background_game_ai differs from the one any
+        later "starting" publish would produce for the same Ask.
+        """
+        from backend.services.bonsai_stream_tags import format_thinking_phase
+
+        for rid in (1, 2, 7, 40):
+            blurb, _meta = self.plugin._compose_opening_thinking_blurb(
+                rid,
+                "why is my fps low",
+                app_name="Elden Ring",
+                ask_mode="speed",
+                settings={},
+            )
+            self.assertEqual(
+                blurb,
+                format_thinking_phase(
+                    "starting",
+                    question="why is my fps low",
+                    app_name="Elden Ring",
+                    request_id=rid,
+                ),
+            )
+
+    def test_opening_blurb_is_published_before_the_task_starts(self) -> None:
+        """A poll landing before any prep phase must already read the opener, not a fallback."""
+        self.plugin._reset_partial_stream_snapshot(23)
+        blurb, _meta = self.plugin._compose_opening_thinking_blurb(
+            23,
+            "why crash on launch",
+            app_name="Elden Ring",
+            settings={},
+        )
+        self.plugin._publish_thinking_phase(23, blurb)
+        merged = self.plugin._merge_partial_into_background_status(
+            {"status": "pending", "request_id": 23, "response": "Thinking...", "started_at": 0.0}
+        )
+        self.assertEqual(merged.get("thinking_summary"), blurb)
+
+    def test_compose_opening_blurb_tone_follows_a_deadpan_character(self) -> None:
+        """The returned meta is what the request task reuses, so tone and voice cannot diverge."""
+        witty, _ = self.plugin._compose_opening_thinking_blurb(
+            31, "why crash on launch", app_name="Elden Ring", settings={}
+        )
+        deadpan, meta = self.plugin._compose_opening_thinking_blurb(
+            31,
+            "why crash on launch",
+            app_name="Elden Ring",
+            settings={"ai_character_enabled": True, "ai_character_preset_id": "portal_glados"},
+        )
+        self.assertEqual(meta.resolved_preset_id, "portal_glados")
+        self.assertNotEqual(witty, deadpan)
+
     def test_merge_uses_fallback_after_prep_without_sticky_connect(self) -> None:
         """Prep phases publish thinking; Ollama wait without publish uses elapsed fallback."""
         import time

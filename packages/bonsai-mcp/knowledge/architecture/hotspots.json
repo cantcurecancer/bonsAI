@@ -2,7 +2,7 @@
   "hotspots": [
     {
       "path": "main.py",
-      "lines": 2772,
+      "lines": 2830,
       "role": "Decky RPC entrypoints and orchestration"
     },
     {
@@ -12,7 +12,7 @@
     },
     {
       "path": "src/hooks/useBonsaiAskOrchestration.ts",
-      "lines": 1337,
+      "lines": 1340,
       "role": ""
     },
     {
@@ -86,6 +86,11 @@
       "role": ""
     },
     {
+      "path": "src/hooks/useBonsaiAskOrchestration.test.ts",
+      "lines": 678,
+      "role": ""
+    },
+    {
       "path": "src/components/MainTabPresetAnimatedChips.tsx",
       "lines": 671,
       "role": ""
@@ -101,18 +106,13 @@
       "role": ""
     },
     {
-      "path": "src/hooks/useBonsaiAskOrchestration.test.ts",
-      "lines": 553,
-      "role": ""
-    },
-    {
       "path": "src/components/SettingsTab.tsx",
       "lines": 549,
       "role": ""
     },
     {
       "path": "py_modules/backend/services/game_ai_request.py",
-      "lines": 539,
+      "lines": 538,
       "role": ""
     },
     {
@@ -156,6 +156,11 @@
       "role": ""
     },
     {
+      "path": "src/utils/composeThinkingBlurb.ts",
+      "lines": 435,
+      "role": ""
+    },
+    {
       "path": "py_modules/backend/services/desktop_note_service.py",
       "lines": 432,
       "role": ""
@@ -163,11 +168,6 @@
     {
       "path": "py_modules/backend/services/strategy_guide_parse.py",
       "lines": 430,
-      "role": ""
-    },
-    {
-      "path": "src/utils/composeThinkingBlurb.ts",
-      "lines": 427,
       "role": ""
     },
     {

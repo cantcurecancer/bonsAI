@@ -57,7 +57,7 @@ import { hasResponseAutosaved, markResponseAutosaved } from "../utils/desktopCha
 import { questionBypassesOllamaPcIpRequirement } from "../utils/localOnlyAskCommands";
 import { normalizePresetCarouselInject } from "../utils/presetCarouselInject";
 import type { InputTransparencyRpcResult, TransparencySnapshot } from "../utils/inputTransparency";
-import { composeThinkingBlurb, sanitizeThinkingSummary } from "../utils/composeThinkingBlurb";
+import { THINKING_BLURB_PLACEHOLDER, sanitizeThinkingSummary } from "../utils/composeThinkingBlurb";
 import { isPendingPlaceholderResponse, isStopNoticeResponse } from "../utils/askThinkingPhases";
 import { useSmoothStreamReveal } from "./useSmoothStreamReveal";
 import {
@@ -473,23 +473,21 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
       if (status.status === "pending") {
         setOllamaContext({ app_id: appId, app_context: appContext });
         setIsAsking(true);
-        const pendingQuestion = (status.question || fallbackQuestion || "").trim();
-        const runningName = Router.MainRunningApp?.display_name ?? "";
-        const rawThinking =
-          typeof status.thinking_summary === "string" && status.thinking_summary.trim()
-            ? status.thinking_summary.trim()
-            : pendingQuestion
-              ? composeThinkingBlurb(pendingQuestion, {
-                  appName: runningName,
-                  attachmentCount: a.selectedAttachment ? 1 : 0,
-                  askMode: a.askMode,
-                  requestId: typeof status.request_id === "number" ? status.request_id : 0,
-                  characterEnabled: a.aiCharacterEnabled === true,
-                  characterPresetId: a.aiCharacterPresetId ?? null,
-                })
-              : composeThinkingBlurb("your question", { requestId: status.request_id ?? 0 });
-        const thinking = sanitizeThinkingSummary(rawThinking);
-        setThinkingSummary(thinking);
+        /*
+         * Python is the only writer. When a poll carries no summary — a remount mid-Ask, or a
+         * status read before the opener was published — keep whatever is on screen rather than
+         * composing a replacement, and fall back to the placeholder only if nothing is there.
+         * Recomposing here is what let the client disagree with the backend about both the
+         * template and the intent pool (06-thinking-blurbs-review.md § 2.1, § 2.2).
+         */
+        const polledThinking = sanitizeThinkingSummary(
+          typeof status.thinking_summary === "string" ? status.thinking_summary : "",
+        );
+        if (polledThinking) {
+          setThinkingSummary(polledThinking);
+        } else {
+          setThinkingSummary((prev) => prev || THINKING_BLURB_PLACEHOLDER);
+        }
         const partialRaw =
           typeof status.partial_response === "string" ? status.partial_response : "";
         const streamingActive = status.streaming === true;
@@ -886,16 +884,14 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
       }
 
       setIsAsking(true);
-      setThinkingSummary(
-        composeThinkingBlurb(q, {
-          appName,
-          attachmentCount: attachments.length,
-          askMode: askModeForRequest,
-          requestId: seq,
-          characterEnabled: a.aiCharacterEnabled === true,
-          characterPresetId: a.aiCharacterPresetId ?? null,
-        }),
-      );
+      /*
+       * A constant placeholder, not a composed line. The real opener arrives in the
+       * start_background_game_ai response a round-trip later, woven with the question and the
+       * running title. Composing one here instead meant the first thing the line did was replace
+       * itself with a different template from the same pool — the client counter is per-mount,
+       * the backend's is per-plugin-lifetime, so the two never agreed on which one to pick.
+       */
+      setThinkingSummary(THINKING_BLURB_PLACEHOLDER);
       setPresetCarouselInject(null);
       setStrategyGuideBranches(null);
       setModelPolicyDisclosure(null);
@@ -984,6 +980,13 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
         }
 
         startAskCompletionWatch();
+
+        // Swap the placeholder for the backend's woven opener. Absent on older backends and on
+        // the immediate-completion paths below, where the placeholder is about to be cleared.
+        const openingBlurb = sanitizeThinkingSummary(
+          typeof data.thinking_summary === "string" ? data.thinking_summary : "",
+        );
+        if (openingBlurb) setThinkingSummary(openingBlurb);
 
         a.setUnifiedInput("");
         a.setSelectedAttachment(null);

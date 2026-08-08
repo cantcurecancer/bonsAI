@@ -18,6 +18,14 @@ const DEADPAN_PRESET_IDS = new Set([
 
 const EMOJI_ONLY_LINES = ["🙄", "😮‍💨", "🫠", "🌳"];
 
+/**
+ * Shown for the one round-trip between submit and the backend's woven opener arriving in the
+ * `start_background_game_ai` response. Deliberately constant and pool-free: a placeholder giving
+ * way to a specific line reads as progress, whereas one random opener replacing another read as
+ * the line changing its mind. See docs/planning/06-thinking-blurbs-review.md § 2.1.
+ */
+export const THINKING_BLURB_PLACEHOLDER = "Thinking…";
+
 const LAZY_THINKING_OPENER_RE =
   /^\s*(?:yeah\b[,!?.\s—–-]*|fine\b[.\s—–-]*|sure\b[.\s—–-]*|oh joy\b[,!\s—–-]*|right\b[.\s—–-]*)/i;
 

@@ -13,6 +13,7 @@ import { toaster } from "@decky/api";
 import { useBonsaiAskOrchestration, type UseBonsaiAskOrchestrationArgs } from "./useBonsaiAskOrchestration";
 import { getRpcCallLog, resetFakeDeckyRpc, setRpcHandler } from "../test-harness/fakeDeckyRpc";
 import { idleBackgroundStatusFixture } from "../test-harness/rpcFixtures";
+import { THINKING_BLURB_PLACEHOLDER } from "../utils/composeThinkingBlurb";
 
 function makeArgs(overrides: Partial<UseBonsaiAskOrchestrationArgs> = {}): UseBonsaiAskOrchestrationArgs {
   return {
@@ -170,6 +171,130 @@ describe("useBonsaiAskOrchestration", () => {
       expect(startPayload()?.attachments).toEqual([
         { path: "/home/deck/shot.png", name: "shot.png", source: "recent", app_id: "570" },
       ]);
+    });
+
+    /*
+     * Python is the only writer of thinking copy. These four pin that the client renders what it
+     * is given and never invents a replacement -- the failure they guard against is not a wrong
+     * string, it is the line changing on its own within the first second of an Ask.
+     */
+    it("renders the opener the backend returned, not one of its own", async () => {
+      setRpcHandler("start_background_game_ai", () => ({
+        accepted: true,
+        status: "pending",
+        request_id: 1,
+        thinking_summary: "Log spelunking for why crash on launch. Glamorous.",
+      }));
+      setRpcHandler("get_background_game_ai_status", () => ({
+        ...idleBackgroundStatusFixture(),
+        status: "pending",
+        question: "why crash on launch",
+        request_id: 1,
+      }));
+      const { result } = renderHook(() => useBonsaiAskOrchestration(makeArgs()));
+
+      await act(async () => {
+        await result.current.onAskOllama("why crash on launch");
+      });
+
+      expect(result.current.thinkingSummary).toBe(
+        "Log spelunking for why crash on launch. Glamorous.",
+      );
+    });
+
+    /*
+     * Real timers on purpose. onAskOllama waits 50ms for the field blur to settle before it
+     * touches any state, so under fake timers the blur wait and the RPC resolve in the same flush
+     * and the intermediate frame is unobservable. Gating the RPC is the only way to see the state
+     * the user actually sees during the round trip, which is the cost decision 4(a) accepted.
+     */
+    it("shows the placeholder until the backend opener arrives, then swaps it", async () => {
+      let releaseStart = () => {};
+      const gate = new Promise<void>((resolve) => {
+        releaseStart = resolve;
+      });
+      keepRequestPending(1, "why crash on launch");
+      setRpcHandler("start_background_game_ai", async () => {
+        await gate;
+        return { accepted: true, status: "pending", request_id: 1, thinking_summary: "Woven line." };
+      });
+      const { result } = renderHook(() => useBonsaiAskOrchestration(makeArgs()));
+
+      let pending: Promise<void> | undefined;
+      act(() => {
+        pending = result.current.onAskOllama("why crash on launch");
+      });
+      await act(async () => {
+        await new Promise((r) => setTimeout(r, 80));
+      });
+      expect(result.current.thinkingSummary).toBe(THINKING_BLURB_PLACEHOLDER);
+
+      await act(async () => {
+        releaseStart();
+        await pending;
+      });
+      expect(result.current.thinkingSummary).toBe("Woven line.");
+    });
+
+    it("falls back to the placeholder when the backend returns no opener", async () => {
+      keepRequestPending(1, "why crash on launch");
+      const { result } = renderHook(() => useBonsaiAskOrchestration(makeArgs()));
+
+      await act(async () => {
+        await result.current.onAskOllama("why crash on launch");
+      });
+
+      expect(result.current.thinkingSummary).toBe(THINKING_BLURB_PLACEHOLDER);
+    });
+
+    it("keeps the current line when a poll carries no summary", async () => {
+      vi.useFakeTimers();
+      setRpcHandler("start_background_game_ai", () => ({
+        accepted: true,
+        status: "pending",
+        request_id: 1,
+        thinking_summary: "Reading crash tea leaves.",
+      }));
+      setRpcHandler("get_background_game_ai_status", () => ({
+        ...idleBackgroundStatusFixture(),
+        status: "pending",
+        question: "why crash on launch",
+        request_id: 1,
+        thinking_summary: null,
+      }));
+      const { result } = renderHook(() => useBonsaiAskOrchestration(makeArgs()));
+
+      let pending: Promise<void> | undefined;
+      act(() => {
+        pending = result.current.onAskOllama("why crash on launch");
+      });
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(100);
+      });
+      await act(async () => {
+        await pending;
+      });
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(2500);
+      });
+
+      expect(result.current.thinkingSummary).toBe("Reading crash tea leaves.");
+    });
+
+    it("keeps a lazy-opener summary visible rather than blanking the line", async () => {
+      setRpcHandler("start_background_game_ai", () => ({
+        accepted: true,
+        status: "pending",
+        request_id: 1,
+        thinking_summary: "Sure.",
+      }));
+      const { result } = renderHook(() => useBonsaiAskOrchestration(makeArgs()));
+
+      await act(async () => {
+        await result.current.onAskOllama("why crash on launch");
+      });
+
+      expect(result.current.thinkingSummary).toBe("Sure.");
     });
   });
 
