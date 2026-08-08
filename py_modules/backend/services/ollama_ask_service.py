@@ -279,10 +279,13 @@ async def run_ask_ollama(
         last_failure = {"success": False, "response": "No model attempts executed.", **ollama_extras}
 
         for model_idx, model_name in enumerate(models_to_try):
-            if isinstance(active_request_id, int) and model_idx > 0:
+            if isinstance(active_request_id, int):
+                # The first attempt is the longest silent stretch of an Ask: a cold model can sit
+                # in load for tens of seconds before the first token. Publishing here is the
+                # difference between "nothing is happening" and "the model is waking up".
                 plugin_inst._publish_thinking_phase_key(
                     active_request_id,
-                    "model_retry",
+                    "model_retry" if model_idx > 0 else "connecting_model",
                     app_name=app_name,
                     ask_mode=ask_mode,
                     question=question,

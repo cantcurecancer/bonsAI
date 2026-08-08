@@ -29,8 +29,10 @@ from backend.services.ollama_ask_service import run_ask_ollama
 class _FakePlugin:
     DEFAULT_REQUEST_TIMEOUT_SECONDS = 180
 
-    def __init__(self) -> None:
+    def __init__(self, active_request_id: Any = None) -> None:
         self._background_state: dict[str, Any] = {"request_id": None, "status": "idle"}
+        self._fake_active_request_id = active_request_id
+        self.published_phases: list[str] = []
         self._active_ollama_chat_pc_ip = None
         self._active_ollama_chat_model = None
         self._active_ollama_chat_http_response = None
@@ -45,8 +47,8 @@ class _FakePlugin:
             "ollama_keep_alive": "",
         }
 
-    def _active_request_id(self) -> None:
-        return None
+    def _active_request_id(self) -> Any:
+        return self._fake_active_request_id
 
     def _build_ollama_chat_url(self, pc_ip: str) -> str:
         return f"http://{pc_ip}/api/chat"
@@ -67,8 +69,8 @@ class _FakePlugin:
     def _abort_ollama_chat_check(self) -> bool:
         return False
 
-    def _publish_thinking_phase_key(self, *args: Any, **kwargs: Any) -> None:
-        return None
+    def _publish_thinking_phase_key(self, _request_id: Any, phase: Any, **_kwargs: Any) -> None:
+        self.published_phases.append(str(phase))
 
     def _update_partial_response(self, *args: Any, **kwargs: Any) -> None:
         return None
@@ -138,6 +140,82 @@ class OllamaAskServiceTests(unittest.IsolatedAsyncioTestCase):
         diag = out.get("ask_diagnostics") or {}
         self.assertEqual(diag.get("model_succeeded"), "qwen2.5:3b")
         self.assertEqual(diag.get("routing_strategy"), "installed_in_policy_chain")
+
+    async def test_connecting_model_publishes_before_the_first_attempt(self) -> None:
+        """The cold-model wait is the longest silent stretch of an Ask; it must say something.
+
+        model_retry stays reserved for attempts after the first, so a single-attempt Ask reports
+        connecting once and never claims to be retrying.
+        """
+        plugin = _FakePlugin(active_request_id=4)
+
+        def fake_post_ollama_chat(*_args: Any, **_kwargs: Any) -> dict[str, Any]:
+            return {
+                "success": True,
+                "status": 200,
+                "model": "qwen2.5:3b",
+                "response": "ok",
+                "assistant_raw": "ok",
+            }
+
+        with (
+            patch(
+                "backend.services.ollama_ask_service.list_installed_ollama_tags",
+                return_value=["qwen2.5:3b"],
+            ),
+            patch("backend.services.ollama_ask_service.probe_ollama_http_ok", return_value=True),
+            patch(
+                "backend.services.screenshot_media.prepare_attachment_images",
+                return_value=([], [], []),
+            ),
+            patch(
+                "backend.services.ollama_ask_service.post_ollama_chat",
+                side_effect=fake_post_ollama_chat,
+            ),
+        ):
+            await run_ask_ollama(plugin, "hello", "127.0.0.1:11434", "", "", request_timeout_seconds=30)
+
+        self.assertEqual(plugin.published_phases, ["connecting_model"])
+
+    async def test_second_model_attempt_reports_retry_not_connecting(self) -> None:
+        plugin = _FakePlugin(active_request_id=5)
+
+        def fake_post_ollama_chat(
+            _url: str, model_name: str, *_args: Any, **_kwargs: Any
+        ) -> dict[str, Any]:
+            if model_name == "qwen2.5vl:3b":
+                return {
+                    "success": False,
+                    "status": 404,
+                    "body": '{"error":"model not found"}',
+                    "response": "model missing",
+                }
+            return {
+                "success": True,
+                "status": 200,
+                "model": model_name,
+                "response": "ok",
+                "assistant_raw": "ok",
+            }
+
+        with (
+            patch(
+                "backend.services.ollama_ask_service.list_installed_ollama_tags",
+                return_value=["qwen2.5vl:3b", "qwen2.5:3b"],
+            ),
+            patch("backend.services.ollama_ask_service.probe_ollama_http_ok", return_value=True),
+            patch(
+                "backend.services.screenshot_media.prepare_attachment_images",
+                return_value=([], [], []),
+            ),
+            patch(
+                "backend.services.ollama_ask_service.post_ollama_chat",
+                side_effect=fake_post_ollama_chat,
+            ),
+        ):
+            await run_ask_ollama(plugin, "hello", "127.0.0.1:11434", "", "", request_timeout_seconds=30)
+
+        self.assertEqual(plugin.published_phases, ["connecting_model", "model_retry"])
 
 
 if __name__ == "__main__":

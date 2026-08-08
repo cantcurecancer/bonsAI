@@ -323,6 +323,22 @@ async def run_game_ai_request(
             if kb_result.attached:
                 kb_text = kb_result.text_block
 
+        # Everything from here to the ask_ollama call is context assembly: stacking the blocks
+        # against the budget, genre lookup, spoiler-risk signals, TDP grounding. None of it
+        # published anything before, so on an Ask with no Proton logs and no KB hit this was the
+        # first stretch where the line simply sat there.
+        if isinstance(active_rid, int) and hasattr(plugin, "_publish_thinking_phase_key"):
+            plugin._publish_thinking_phase_key(
+                active_rid,
+                "building_context",
+                app_name=app_name,
+                attachment_count=len(atts),
+                ask_mode=ask_mode,
+                question=question_for_model,
+                character_enabled=bool(settings.get("ai_character_enabled")),
+                character_preset_id=rp_meta.resolved_preset_id,
+            )
+
         stacked = stack_context_blocks(
             proton_text=proton_attachment_text,
             knowledge_text=kb_text,

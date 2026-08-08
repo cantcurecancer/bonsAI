@@ -520,38 +520,45 @@ def _phase_pool(
             "😮‍💨",
         ]
 
+    # building_context and connecting_model cover the two stretches where an Ask looks stalled:
+    # context assembly, and the cold-model load before the first token. Their copy is the one
+    # place in these pools that leans encouraging rather than put-upon — the user is staring at a
+    # spinner wondering whether it broke, and a line that sighs at them there reads as a fault
+    # report. Still literally true: each fires immediately before the work it names.
     if phase == "building_context":
         if tone == "deadpan":
             return [
                 f"Building context for {quote}{game_bit}.",
-                f"Context assembly: {quote}.",
-                f"Gathering facts for {quote}{game_bit}.",
-                f"Context pass on {quote}.",
+                f"Worth doing properly: gathering facts on {quote}.",
+                f"Context assembly for {quote}{game_bit}. Reasonable question.",
+                f"Collecting what I have on {quote}.",
                 "🌳",
             ]
         return [
-            f"Gathering intel on {quote}{game_bit}…",
-            f"Context assembly for {quote} — riveting{game_bit}.",
-            f"Collecting breadcrumbs for {quote}…",
-            f"Background work on {quote}{game_bit}.",
-            "🙄",
+            f"Good one — pulling together everything on {quote}{game_bit}…",
+            f"Lining up the facts for {quote}{game_bit}. Won't be long.",
+            f"Worth answering properly: gathering context on {quote}…",
+            f"Digging up what I know about {quote}{game_bit}…",
+            "🌳",
         ]
 
     if phase == "connecting_model":
         if tone == "deadpan":
             return [
-                f"Connecting for {quote}{game_bit}.",
-                f"Model connection: {quote}.",
-                f"Handshake for {quote}{game_bit}.",
-                f"Linking model to {quote}.",
+                f"Handing {quote} to the model. This part takes the longest.",
+                f"Model loading for {quote}{game_bit}. Expected.",
+                f"Connecting for {quote}. Stay put.",
+                f"{quote} is with the model now{game_bit}.",
                 "🌳",
             ]
         return [
-            f"Dialing the model about {quote}{game_bit}…",
-            f"Handshake time for {quote}. Deep breath{game_bit}.",
-            f"Waking the neurons for {quote}…",
-            f"Pinging brains for {quote}{game_bit}.",
-            "🫠",
+            f"Waking the model up for {quote}{game_bit}…",
+            f"Handed {quote}{game_bit} over — this is the slow bit, not a crash.",
+            f"Model's warming up for {quote}. Hang in there…",
+            f"{quote} is in good hands now{game_bit}…",
+            # Not the melting face the other pools use. This is the longest pause in an Ask, and a
+            # distress glyph during it reads as the thing having died.
+            "🌳",
         ]
 
     if phase == "model_retry":

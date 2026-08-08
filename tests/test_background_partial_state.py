@@ -186,18 +186,29 @@ class BackgroundPartialStateTests(unittest.TestCase):
         self.assertEqual(merged.get("thinking_summary"), blurb)
 
     def test_compose_opening_blurb_tone_follows_a_deadpan_character(self) -> None:
-        """The returned meta is what the request task reuses, so tone and voice cannot diverge."""
-        witty, _ = self.plugin._compose_opening_thinking_blurb(
-            31, "why crash on launch", app_name="Elden Ring", settings={}
-        )
-        deadpan, meta = self.plugin._compose_opening_thinking_blurb(
-            31,
-            "why crash on launch",
-            app_name="Elden Ring",
-            settings={"ai_character_enabled": True, "ai_character_preset_id": "portal_glados"},
-        )
-        self.assertEqual(meta.resolved_preset_id, "portal_glados")
-        self.assertNotEqual(witty, deadpan)
+        """The returned meta is what the request task reuses, so tone and voice cannot diverge.
+
+        ai_character_random defaults to *on*, so it is pinned off here -- and that default is
+        exactly why the meta is threaded to the task rather than resolved twice: two calls would
+        roll two different characters and put a deadpan blurb in front of a witty reply.
+        """
+        deadpan_settings = {
+            "ai_character_enabled": True,
+            "ai_character_random": False,
+            "ai_character_preset_id": "portal_glados",
+        }
+        differed = False
+        for rid in range(1, 13):
+            witty, witty_meta = self.plugin._compose_opening_thinking_blurb(
+                rid, "why crash on launch", app_name="Elden Ring", settings={}
+            )
+            deadpan, meta = self.plugin._compose_opening_thinking_blurb(
+                rid, "why crash on launch", app_name="Elden Ring", settings=deadpan_settings
+            )
+            self.assertIsNone(witty_meta.resolved_preset_id)
+            self.assertEqual(meta.resolved_preset_id, "portal_glados")
+            differed = differed or witty != deadpan
+        self.assertTrue(differed, "deadpan preset produced identical copy at every request id")
 
     def test_merge_uses_fallback_after_prep_without_sticky_connect(self) -> None:
         """Prep phases publish thinking; Ollama wait without publish uses elapsed fallback."""

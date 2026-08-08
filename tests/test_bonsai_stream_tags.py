@@ -388,6 +388,56 @@ class BonsaiStreamTagsTests(unittest.TestCase):
                 msg=f"request_id={rid} rendered emoji-only for every phase: {lines}",
             )
 
+    def test_slow_phase_copy_stays_encouraging(self):
+        """building_context and connecting_model cover the stretches that look like a hang.
+
+        Their prose must not sigh at the user, because that is the moment they are deciding
+        whether the plugin broke. The pools elsewhere are free to be put-upon; these two are not.
+        """
+        discouraging = (
+            "riveting",
+            "typical",
+            "joy",
+            "glamorous",
+            "again?",
+            "seriously",
+            "sigh",
+        )
+        for phase in ("building_context", "connecting_model"):
+            for tone_settings in ({}, {"character_enabled": True, "character_preset_id": "portal_glados"}):
+                for rid in range(1, 16):
+                    out = format_thinking_phase(
+                        phase,
+                        question="how do I beat this boss",
+                        app_name="Hades",
+                        request_id=rid,
+                        **tone_settings,
+                    )
+                    lowered = out.lower()
+                    for word in discouraging:
+                        self.assertNotIn(word, lowered, msg=f"{phase} rid={rid}: {out}")
+                    _assert_no_banned_prefixes(out)
+
+    def test_connecting_model_copy_says_the_wait_is_normal(self):
+        """At least one line has to tell the user a long pause is the model, not a crash."""
+        samples = [
+            format_thinking_phase(
+                "connecting_model",
+                question="how do I beat this boss",
+                app_name="Hades",
+                request_id=rid,
+            )
+            for rid in range(1, 16)
+        ]
+        self.assertTrue(
+            any(
+                phrase in out.lower()
+                for out in samples
+                for phrase in ("not a crash", "slow bit", "takes the longest", "hang in there")
+            ),
+            msg=samples,
+        )
+
     def test_phase_salt_leaves_the_opener_pick_unchanged(self):
         """compose_thinking_blurb has a client mirror; an empty salt must not move its pick."""
         for rid in range(1, 25):
