@@ -184,6 +184,69 @@ accurate message rather than in minutes with a misleading one.
 
 ---
 
+## P1-4 — Two workspaces with the extension installed silently share one preview, and the symptoms point nowhere near the cause
+
+Every coordination surface is a **single global path or a fixed port**, with no workspace
+discriminator:
+
+| Resource | Path / port | Keyed by workspace? |
+|---|---|---|
+| Preview state | `~/.decky-plugin-studio/preview-state.json` | **No** — one file, last writer wins |
+| IPC queue | `~/.decky-plugin-studio/preview-ipc/` | **No** — one directory, shared queue |
+| Sidecar HTTP | `8766` (`ipcBridge.ts:7`) | **No** — fixed |
+| Sidecar WS | `8765` | **No** — fixed |
+| RPC allowlist | `~/.decky-plugin-studio/sandbox/<basename>/preview-rpc.json` | **Yes** — the one thing that is |
+
+So opening a second workspace and starting its preview takes over the first one's automation
+without any warning, and the allowlist — the only workspace-keyed piece — then disagrees with
+the sidecar that is actually listening.
+
+**Worked example, observed today.** Both `Documents\BonsAI` and a checkout of DPS itself were
+open in Cursor with previews started. The sidecar holding `8766` was:
+
+```
+sidecar.py c:\Users\still\decky-plugin-studio
+```
+
+That workspace has no `main.py`, so `discoverMethods()` returned nothing and its
+`preview-rpc.json` recorded `allowed: 0`. Meanwhile `sandbox/BonsAI/preview-rpc.json`
+correctly listed all 52 methods. The result:
+
+- every `callRpc` from the bonsAI harness returned
+  `RPC method not allowlisted for preview: load_settings` — while the allowlist on disk for
+  that workspace plainly contained it;
+- every `snapshotDom` / `runSequence` was consumed from the shared queue by the *other*
+  workspace's bridge, whose webview has no bonsAI plugin mounted, so nothing ever answered
+  and each command burned the full 120 s (P2-2);
+- `preview-state.json` advertised whichever port was written last, so consumers connected to
+  a Vite instance belonging to neither run — four `vite` processes were alive across three
+  ports.
+
+None of those messages mentions a second workspace. Diagnosing it took reading the DPS source
+and enumerating processes; a harness author with only the error text would conclude their
+allowlist sync or their plugin was broken.
+
+This is **P1** rather than P2 because it does not merely block automation — a shared IPC queue
+means one workspace can silently consume and answer another workspace's commands, so a run can
+report results produced against the wrong plugin entirely.
+
+**Requested (any one of these fixes the sharp edge; the first is the real fix):**
+1. Key every path and port on the workspace: `preview-ipc/<workspaceHash>/`,
+   `preview-state-<workspaceHash>.json`, and dynamic ports recorded in that state file.
+   `sandbox/<basename>/` already establishes the convention, and `basename` alone is not
+   enough — two checkouts of the same repo name collide.
+2. Failing that, **detect and refuse**: on `start()`, if a live preview for a *different*
+   `workspaceRoot` holds the ports, show an error naming the other workspace rather than
+   silently attaching.
+3. Include `workspaceRoot` in every IPC command and result, and have the bridge ignore
+   commands addressed to another workspace. Cheap, and it removes the cross-talk even if the
+   ports stay shared.
+
+**Consumer workaround until then:** only one workspace may have a preview open at a time.
+Worth stating in the DPS README — it is not discoverable from any error message.
+
+---
+
 ## P3-1 — Unknown commands are read, deleted, and silently dropped
 
 `extension/src/preview/ipcBridge.ts:41-110`
@@ -238,11 +301,12 @@ makes this error reachable, at which point it is genuinely useful.
 
 | Order | Item | Why first |
 |-------|------|-----------|
-| 1 | **P2-3** dead-backend detection | Everything else is unobservable while a dead preview reports healthy. Turns a 120 s mystery into an instant, accurate error |
-| 2 | **P2-1** bridge restart | Cheap, and without it a harness silently stops working mid-session |
-| 3 | **P1-1** truncation flag | One added field retroactively makes every consumer's DOM assertions honest |
-| 4 | **P1-2** / **P1-3** fabricated success values | Same class as P1-1: a synthesized value in the field that means success |
-| 5 | **P2-2**, **P3-1**, **P3-2** | Ergonomics — real, but nothing depends on them |
+| 1 | **P1-4** workspace isolation | The only finding that can attribute one workspace's results to another. Also the one whose symptoms are actively misleading — option 3 (stamp `workspaceRoot` on commands) is cheap and removes the cross-talk on its own |
+| 2 | **P2-3** dead-backend detection | Everything else is unobservable while a dead preview reports healthy. Turns a 120 s mystery into an instant, accurate error |
+| 3 | **P2-1** bridge restart | Cheap, and without it a harness silently stops working mid-session |
+| 4 | **P1-1** truncation flag | One added field retroactively makes every consumer's DOM assertions honest |
+| 5 | **P1-2** / **P1-3** fabricated success values | Same class as P1-1: a synthesized value in the field that means success |
+| 6 | **P2-2**, **P3-1**, **P3-2** | Ergonomics — real, but nothing depends on them |
 
 The common thread in every P1 is worth stating on its own: **when DPS cannot do the thing,
 it returns something shaped like success.** Truncated HTML looks like HTML, a synthesized
