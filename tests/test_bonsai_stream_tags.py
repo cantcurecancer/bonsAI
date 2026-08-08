@@ -291,13 +291,19 @@ class BonsaiStreamTagsTests(unittest.TestCase):
             self.assertTrue(any("Elden Ring" in out for out in non_emoji))
 
     def test_format_thinking_phase_woven_tdp_read(self):
-        out = format_thinking_phase(
-            "tdp_read",
-            question="what is my current tdp",
-            request_id=5,
-        )
-        self.assertIn("tdp", out.lower())
-        _assert_no_banned_prefixes(out)
+        # Sampled rather than pinned to one request_id: every pool ends with an emoji-only line,
+        # so any single id may legitimately land on it. The contract is that the *prose* lines
+        # weave the question, not that a given id produces prose.
+        samples = [
+            format_thinking_phase("tdp_read", question="what is my current tdp", request_id=i)
+            for i in range(12)
+        ]
+        for out in samples:
+            _assert_no_banned_prefixes(out)
+        prose = [out for out in samples if out not in _EMOJI_ONLY_LINES]
+        self.assertTrue(prose, msg=samples)
+        for out in prose:
+            self.assertIn("tdp", out.lower())
 
     def test_format_thinking_phase_woven_screenshot_prep(self):
         out = format_thinking_phase(
@@ -319,13 +325,16 @@ class BonsaiStreamTagsTests(unittest.TestCase):
         _assert_no_banned_prefixes(out)
 
     def test_format_thinking_phase_woven_model_retry(self):
-        out = format_thinking_phase(
-            "model_retry",
-            question="help with stuttering",
-            request_id=11,
-        )
-        self.assertIn("stuttering", out.lower())
-        _assert_no_banned_prefixes(out)
+        samples = [
+            format_thinking_phase("model_retry", question="help with stuttering", request_id=i)
+            for i in range(12)
+        ]
+        for out in samples:
+            _assert_no_banned_prefixes(out)
+        prose = [out for out in samples if out not in _EMOJI_ONLY_LINES]
+        self.assertTrue(prose, msg=samples)
+        for out in prose:
+            self.assertIn("stuttering", out.lower())
 
     def test_format_thinking_phase_woven_building_context_elapsed(self):
         out = format_thinking_phase(
@@ -355,6 +364,42 @@ class BonsaiStreamTagsTests(unittest.TestCase):
             or any(out in _EMOJI_ONLY_LINES for out in samples),
             msg=samples,
         )
+
+    def test_no_ask_renders_emoji_only_for_every_phase(self):
+        """A whole Ask must never be nothing but emoji next to the spinner.
+
+        Every phase pool ends with an emoji-only line, and the pick used to key on request_id
+        alone -- so when the bucket landed on that last entry it landed there for *every* phase
+        of that Ask. Measured before the phase salt: 11 of these 50 request ids.
+        """
+        live_phases = ("proton_logs", "searching_kb", "tdp_read", "screenshot_prep", "model_retry")
+        for rid in range(1, 51):
+            lines = [
+                format_thinking_phase(
+                    phase,
+                    question="why does the game crash on launch",
+                    app_name="Elden Ring",
+                    request_id=rid,
+                )
+                for phase in live_phases
+            ]
+            self.assertFalse(
+                all(line in _EMOJI_ONLY_LINES for line in lines),
+                msg=f"request_id={rid} rendered emoji-only for every phase: {lines}",
+            )
+
+    def test_phase_salt_leaves_the_opener_pick_unchanged(self):
+        """compose_thinking_blurb has a client mirror; an empty salt must not move its pick."""
+        for rid in range(1, 25):
+            self.assertEqual(
+                compose_thinking_blurb("why is my fps low", app_name="Elden Ring", request_id=rid),
+                format_thinking_phase(
+                    "starting",
+                    question="why is my fps low",
+                    app_name="Elden Ring",
+                    request_id=rid,
+                ),
+            )
 
     def test_format_thinking_phase_searching_kb(self):
         self.assertEqual(format_thinking_phase("searching_kb"), "Searching knowledge base…")

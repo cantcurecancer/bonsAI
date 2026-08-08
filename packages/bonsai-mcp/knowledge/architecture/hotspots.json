@@ -76,13 +76,13 @@
       "role": ""
     },
     {
-      "path": "py_modules/backend/services/transparency_service.py",
-      "lines": 695,
+      "path": "py_modules/backend/services/bonsai_stream_tags.py",
+      "lines": 706,
       "role": ""
     },
     {
-      "path": "py_modules/backend/services/bonsai_stream_tags.py",
-      "lines": 693,
+      "path": "py_modules/backend/services/transparency_service.py",
+      "lines": 695,
       "role": ""
     },
     {

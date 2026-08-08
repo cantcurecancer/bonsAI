@@ -165,9 +165,22 @@ def extract_question_snippet(question: str, max_len: int = _SNIPPET_MAX_LEN) -> 
     return raw
 
 
-def _stable_bucket(request_id: int) -> int:
+def _stable_bucket(request_id: int, salt: str = "") -> int:
+    """Deterministic template index seed.
+
+    ``salt`` exists because every phase pool ends with an emoji-only line, so keying every phase
+    of one Ask on ``request_id`` alone meant one Ask in five rendered a bare 🙄 / 🌳 next to the
+    spinner for *every* transition (measured: 11 of 50 request ids). Mixing the phase key in makes
+    the pick independent per phase; the emoji lines stay, they just stop clustering.
+
+    An empty salt must reproduce the pre-salt value exactly: ``compose_thinking_blurb`` is mirrored
+    by ``composeThinkingBlurb.ts`` on the client, and the two must still pick the same opener.
+    """
     rid = max(0, int(request_id or 0))
-    return (rid * 2654435761) & 0x7FFFFFFF
+    bucket = (rid * 2654435761) & 0x7FFFFFFF
+    for ch in salt:
+        bucket = ((bucket * 31) + ord(ch)) & 0x7FFFFFFF
+    return bucket
 
 
 def _resolve_thinking_tone(
@@ -183,10 +196,10 @@ def _resolve_thinking_tone(
     return tone if tone in ("witty", "deadpan") else "witty"
 
 
-def _pick_template(templates: list[str], request_id: int) -> str:
+def _pick_template(templates: list[str], request_id: int, salt: str = "") -> str:
     if not templates:
         return "Working on your question…"
-    idx = _stable_bucket(request_id) % len(templates)
+    idx = _stable_bucket(request_id, salt) % len(templates)
     return templates[idx]
 
 
@@ -640,7 +653,7 @@ def format_thinking_phase(
             attachment_count=attachment_count,
             still_building=still_building,
         )
-        text = _pick_template(pool, request_id)
+        text = _pick_template(pool, request_id, salt=str(phase))
         return text[:_PHASE_MAX_LEN]
 
     if phase == "building_context" and elapsed_seconds > _BUILDING_CONTEXT_MAX_SECONDS:
