@@ -79,11 +79,17 @@ def build_spoiler_risk_signals(
     asked_entity: str = "",
     kb_entity_match: bool = False,
     title_profile: str = "",
+    app_name: str = "",
 ) -> dict[str, Any]:
-    """Collect inputs for band scoring before or after the model reply."""
+    """Collect inputs for band scoring before or after the model reply.
+
+    `app_name` matters only when no `title_profile` is supplied: profile resolution falls back
+    to the title name when the AppID is absent or unlisted, so omitting it silently downgrades
+    a name-matched title to `unknown`.
+    """
     entity = (asked_entity or "").strip() or extract_strategy_asked_entity(question)
     kb_match = bool(kb_entity_match) or kb_text_covers_asked_entity(kb_text, entity)
-    profile = (title_profile or "").strip() or resolve_title_spoiler_profile(app_id)
+    profile = (title_profile or "").strip() or resolve_title_spoiler_profile(app_id, app_name)
     return {
         "ask_mode": str(ask_mode or "speed").strip().lower(),
         "app_id": str(app_id or "").strip(),
@@ -197,16 +203,22 @@ def spoiler_risk_detail_bullets(
 
 
 def spoiler_risk_signals_from_snapshot(snapshot: dict[str, Any]) -> dict[str, Any]:
-    """Rebuild scoring inputs from a transparency snapshot dict."""
+    """Rebuild scoring inputs from a transparency snapshot dict.
+
+    The normal path takes the nested `spoiler_risk_signals` written by `run_game_ai_request`.
+    Everything below it is the degraded path for a snapshot that predates that key or was
+    truncated: it recovers the title profile from `app_id`/`app_name` and re-derives the asked
+    entity from the question, but cannot recover `game_genres`, `kb_entity_match`, or the KB
+    section types — no snapshot key ever carried them flat. A rebuilt band can therefore read
+    lower than the one the turn actually showed.
+    """
     nested = snapshot.get("spoiler_risk_signals")
     if isinstance(nested, dict):
         return dict(nested)
     return build_spoiler_risk_signals(
         ask_mode=str(snapshot.get("ask_mode") or "speed"),
         app_id=str(snapshot.get("app_id") or ""),
+        app_name=str(snapshot.get("app_name") or ""),
         question=str(snapshot.get("text_after_sanitizer") or snapshot.get("raw_question") or ""),
-        game_genres=str(snapshot.get("spoiler_risk_game_genres") or ""),
         kb_text="",
-        asked_entity=str(snapshot.get("spoiler_risk_asked_entity") or ""),
-        kb_entity_match=bool(snapshot.get("spoiler_risk_kb_entity_match")),
     )

@@ -7,6 +7,7 @@ from backend.services.spoiler_risk_service import (
     extract_kb_section_types_from_text,
     parse_bonsai_spoiler_risk_tag,
     spoiler_risk_chip_label,
+    spoiler_risk_signals_from_snapshot,
 )
 from backend.services.transparency_service import build_context_chips_manifest
 
@@ -108,6 +109,43 @@ class SpoilerRiskServiceTests(unittest.TestCase):
         chip = next(c for c in manifest["context_chips"] if c["id"] == "spoiler_risk")
         self.assertTrue(chip["label"].startswith("Spoiler risk: "))
         self.assertIn("Transparency only", chip["body"]["bullets"][-1])
+
+    def test_snapshot_rebuild_prefers_nested_signals(self):
+        nested = build_spoiler_risk_signals(
+            ask_mode="strategy",
+            app_id="1145360",
+            question="Where should I go next?",
+            title_profile="protect_progression",
+        )
+        rebuilt = spoiler_risk_signals_from_snapshot(
+            {"spoiler_risk_signals": nested, "app_id": "2321470"}
+        )
+        self.assertEqual(rebuilt, nested)
+        self.assertEqual(rebuilt["title_profile"], "protect_progression")
+
+    def test_snapshot_rebuild_recovers_profile_from_app_id(self):
+        signals = spoiler_risk_signals_from_snapshot(
+            {
+                "ask_mode": "strategy",
+                "app_id": "1145360",
+                "app_name": "Hades",
+                "raw_question": "Where should I go next?",
+            }
+        )
+        self.assertEqual(signals["title_profile"], "protect_progression")
+
+    def test_snapshot_rebuild_recovers_profile_from_app_name(self):
+        """Without app_name the title-name fallback is lost and the band reads too high."""
+        signals = spoiler_risk_signals_from_snapshot(
+            {
+                "ask_mode": "strategy",
+                "app_id": "",
+                "app_name": "State of Emergency",
+                "raw_question": "How do I clear the mall?",
+            }
+        )
+        self.assertEqual(signals["title_profile"], "low_narrative")
+        self.assertEqual(compute_spoiler_risk_band(signals), "low")
 
 
 if __name__ == "__main__":
