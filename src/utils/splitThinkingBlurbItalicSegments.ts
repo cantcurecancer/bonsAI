@@ -3,7 +3,7 @@
  * Purpose: Split thinking status copy so emoji graphemes stay upright while prose stays italic.
  * Used for: MainTabChatTranscript live Ask thinking line rendering.
  * Solves: Parent-row `fontStyle: italic` slants emoji-only and inline emoji blurbs.
- * Does not: Change blurb copy pools — see composeThinkingBlurb.ts.
+ * Does not: Change blurb copy pools — Python owns them, see bonsai_stream_tags.py.
  */
 
 export type ThinkingBlurbItalicSegment = {

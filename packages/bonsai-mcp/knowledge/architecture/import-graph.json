@@ -1281,7 +1281,7 @@
         "src/hooks/useBonsaiAskOrchestration.ts",
         "src/test-harness/fakeDeckyRpc.ts",
         "src/test-harness/rpcFixtures.ts",
-        "src/utils/composeThinkingBlurb.ts"
+        "src/utils/thinkingSummaryText.ts"
       ],
       "importedBy": []
     },
@@ -1303,7 +1303,6 @@
         "src/utils/askThinkingPhases.ts",
         "src/utils/bonsaiAskCompletionWatch.ts",
         "src/utils/bonsaiSessionSurvival.ts",
-        "src/utils/composeThinkingBlurb.ts",
         "src/utils/deckyCall.ts",
         "src/utils/desktopChatAutosave.ts",
         "src/utils/inputTransparency.ts",
@@ -1313,6 +1312,7 @@
         "src/utils/strategyChecklist.ts",
         "src/utils/strategyChecklistPersistence.ts",
         "src/utils/strategyGuideBranches.ts",
+        "src/utils/thinkingSummaryText.ts",
         "src/utils/uiDocument.ts"
       ],
       "importedBy": [
@@ -2213,20 +2213,6 @@
         "src/components/MainTabScreenshotBrowser.tsx"
       ]
     },
-    "src/utils/composeThinkingBlurb.test.ts": {
-      "imports": [
-        "src/utils/composeThinkingBlurb.ts"
-      ],
-      "importedBy": []
-    },
-    "src/utils/composeThinkingBlurb.ts": {
-      "imports": [],
-      "importedBy": [
-        "src/hooks/useBonsaiAskOrchestration.test.ts",
-        "src/hooks/useBonsaiAskOrchestration.ts",
-        "src/utils/composeThinkingBlurb.test.ts"
-      ]
-    },
     "src/utils/contextChipsFromSnapshot.ts": {
       "imports": [
         "src/utils/inputTransparency.ts"
@@ -2782,6 +2768,20 @@
       "importedBy": [
         "src/hooks/useQamPanelHeightGuard.ts",
         "src/hooks/useTabStripBodyOffset.ts"
+      ]
+    },
+    "src/utils/thinkingSummaryText.test.ts": {
+      "imports": [
+        "src/utils/thinkingSummaryText.ts"
+      ],
+      "importedBy": []
+    },
+    "src/utils/thinkingSummaryText.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/hooks/useBonsaiAskOrchestration.test.ts",
+        "src/hooks/useBonsaiAskOrchestration.ts",
+        "src/utils/thinkingSummaryText.test.ts"
       ]
     },
     "src/utils/troubleshootingAskHeuristic.ts": {

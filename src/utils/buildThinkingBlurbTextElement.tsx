@@ -3,7 +3,7 @@
  * Purpose: Render thinking status copy with italic prose and upright emoji glyphs.
  * Used for: MainTabChatTranscript live Ask thinking line.
  * Solves: Keeps witty/deadpan tone on prose without slanting emoji blurbs.
- * Does not: Compose blurb copy — see composeThinkingBlurb.ts.
+ * Does not: Compose blurb copy — Python owns it, see bonsai_stream_tags.py.
  */
 import React from "react";
 import { splitThinkingBlurbItalicSegments } from "./splitThinkingBlurbItalicSegments";

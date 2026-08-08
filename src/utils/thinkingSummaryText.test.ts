@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { THINKING_BLURB_PLACEHOLDER, sanitizeThinkingSummary } from "./composeThinkingBlurb";
+import { THINKING_BLURB_PLACEHOLDER, sanitizeThinkingSummary } from "./thinkingSummaryText";
 
 /*
  * The pool, tone and intent-classification tests that used to live here went with the client-side

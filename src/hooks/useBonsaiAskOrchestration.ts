@@ -57,7 +57,7 @@ import { hasResponseAutosaved, markResponseAutosaved } from "../utils/desktopCha
 import { questionBypassesOllamaPcIpRequirement } from "../utils/localOnlyAskCommands";
 import { normalizePresetCarouselInject } from "../utils/presetCarouselInject";
 import type { InputTransparencyRpcResult, TransparencySnapshot } from "../utils/inputTransparency";
-import { THINKING_BLURB_PLACEHOLDER, sanitizeThinkingSummary } from "../utils/composeThinkingBlurb";
+import { THINKING_BLURB_PLACEHOLDER, sanitizeThinkingSummary } from "../utils/thinkingSummaryText";
 import { isPendingPlaceholderResponse, isStopNoticeResponse } from "../utils/askThinkingPhases";
 import { useSmoothStreamReveal } from "./useSmoothStreamReveal";
 import {

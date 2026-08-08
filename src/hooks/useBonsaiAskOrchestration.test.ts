@@ -13,7 +13,7 @@ import { toaster } from "@decky/api";
 import { useBonsaiAskOrchestration, type UseBonsaiAskOrchestrationArgs } from "./useBonsaiAskOrchestration";
 import { getRpcCallLog, resetFakeDeckyRpc, setRpcHandler } from "../test-harness/fakeDeckyRpc";
 import { idleBackgroundStatusFixture } from "../test-harness/rpcFixtures";
-import { THINKING_BLURB_PLACEHOLDER } from "../utils/composeThinkingBlurb";
+import { THINKING_BLURB_PLACEHOLDER } from "../utils/thinkingSummaryText";
 
 function makeArgs(overrides: Partial<UseBonsaiAskOrchestrationArgs> = {}): UseBonsaiAskOrchestrationArgs {
   return {

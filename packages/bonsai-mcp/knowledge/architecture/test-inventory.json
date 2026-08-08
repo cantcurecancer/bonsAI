@@ -44,7 +44,6 @@
     "src/utils/chatPanelScroll.test.ts",
     "src/utils/chatTurnTitle.test.ts",
     "src/utils/clearBonsaiBrowserStorage.test.ts",
-    "src/utils/composeThinkingBlurb.test.ts",
     "src/utils/deckSliderMath.test.ts",
     "src/utils/deckyCall.test.ts",
     "src/utils/focusNavigation.test.ts",
@@ -68,6 +67,7 @@
     "src/utils/strategyChecklist.test.ts",
     "src/utils/streamMarkdownPrepare.test.ts",
     "src/utils/stripAssistantDisplayTags.test.ts",
+    "src/utils/thinkingSummaryText.test.ts",
     "src/utils/uiDocument.test.ts",
     "src/utils/unifiedInputPersistenceMode.test.ts",
     "src/utils/unwrapAskedEntitySpoilerFences.test.ts"
