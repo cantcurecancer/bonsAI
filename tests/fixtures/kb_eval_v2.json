@@ -1106,7 +1106,7 @@
       "skill_level": "beginner",
       "input_style": "terse",
       "note": "Name is displayed above the enemy.",
-      "expect_section": ""
+      "expect_section": "Deathclaw"
     },
     {
       "id": "V2-S-FO4-02",
@@ -1122,7 +1122,7 @@
       ],
       "skill_level": "beginner",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "Settlement happiness"
     },
     {
       "id": "V2-S-FO4-03",
@@ -1150,7 +1150,7 @@
       "withheld_card_terms": [],
       "skill_level": "beginner",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "Mirelurk queen"
     },
     {
       "id": "V2-S-FO4-05",
@@ -1164,7 +1164,7 @@
       "withheld_card_terms": [],
       "skill_level": "familiar",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "Perks"
     },
     {
       "id": "V2-S-FO4-06",
@@ -1178,7 +1178,7 @@
       "withheld_card_terms": [],
       "skill_level": "familiar",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "Power armor and fusion cores"
     },
     {
       "id": "V2-S-FO4-07",
@@ -1208,7 +1208,7 @@
       "skill_level": "familiar",
       "input_style": "voice",
       "note": "Voice register.",
-      "expect_section": ""
+      "expect_section": "Settlement defense and attacks"
     },
     {
       "id": "V2-S-FO4-09",
@@ -1607,7 +1607,7 @@
       "withheld_card_terms": [],
       "skill_level": "beginner",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "Lifepath"
     },
     {
       "id": "V2-S-CP77-02",
@@ -1621,7 +1621,7 @@
       "withheld_card_terms": [],
       "skill_level": "beginner",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "Street Cred"
     },
     {
       "id": "V2-S-CP77-03",
@@ -1807,7 +1807,7 @@
       "withheld_card_terms": [],
       "skill_level": "beginner",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "Muscle"
     },
     {
       "id": "V2-S-GTASA-03",
@@ -1864,7 +1864,7 @@
       "withheld_card_terms": [],
       "skill_level": "familiar",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "Girlfriends"
     },
     {
       "id": "V2-S-GTASA-07",
@@ -1966,7 +1966,7 @@
       "skill_level": "beginner",
       "input_style": "terse",
       "needs_clarification": "which city, or whether you want the reward list instead",
-      "expect_section": ""
+      "expect_section": "Horseshoes"
     },
     {
       "id": "V2-S-SIMS4-01",
