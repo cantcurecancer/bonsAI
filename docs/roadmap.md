@@ -96,9 +96,11 @@ Stars are **effort/risk**. Grouped by **theme**; within each lane sorted ascendi
 - ★★ **Unfenced spoiler feedback** (thumbs-down category)
   - **Goal:** Thumbs-down refinement chip for unfenced spoilers (and optional over-fenced sibling).
   - **Depends on:** reply micro-actions; spoiler confidence chip (shipped).
+  - **Related:** [spoiler-constitution.md](planning/spoiler-constitution.md).
 - ★★ **User-adjustable spoiler fencing** (hide by risk band)
   - **Goal:** Settings control for tap-to-reveal / fence masking by estimated risk band.
   - **Depends on:** spoiler confidence chip; shipped `strategy_spoiler_masking_enabled`.
+  - **Related:** [spoiler-constitution.md](planning/spoiler-constitution.md).
 - ★★★ **Custom model in Pull Models picker** (custom pull + Ask pin + New badges)
   - **Goal:** Pull any valid Ollama-library tag; **Use for Ask** pin; **New** badge (≤30 days).
   - **Depends on:** shipped Pull Models picker + living overlay merge.
@@ -174,6 +176,7 @@ Stars are **effort/risk**. Grouped by **theme**; within each lane sorted ascendi
 - ★★★★★★ **RAG Deck query — catalog corpus (Phase 8)**
   - **GitHub:** [bonsAI Issues](https://github.com/cantcurecancer/bonsAI/issues) — issue TBD.
   - **Goal:** Large offline catalog after Phase 6 publish (~top 1000 Steam, ~100 Deck, emulated slice).
+  - **Status:** Locked intent only. [knowledge-base.md](knowledge-base.md) § Phase 8.
   - **Depends on:** Phase 6 + likely Phase 7 infra.
 
 ### Permissions / safety (v0.5.0 — permission jump, spoiler constitution / named-entity consent, …)
@@ -219,9 +222,11 @@ Stars are **effort/risk**. Grouped by **theme**; within each lane sorted ascendi
 - ★★★★★★ **Native QAM shortcut tile** (under Decky; upstream research)
   - **GitHub:** [bonsAI Issues](https://github.com/cantcurecancer/bonsAI/issues) — issue TBD.
   - **Goal:** Separate QAM left-rail entry beneath Decky Loader icon.
+  - **Feasibility:** [11-native-qam-tile-feasibility.md](planning/11-native-qam-tile-feasibility.md).
 - ★★★★★★ **Remote Play diagnostics layer** (streaming host/client)
   - **GitHub:** [bonsAI Issues](https://github.com/cantcurecancer/bonsAI/issues) — issue TBD.
   - **Goal:** Streamed gameplay answers weight encode latency and host-vs-client fixes.
+  - **Related:** noted (not folded) in [09-steam-frame-companion-feasibility.md](planning/09-steam-frame-companion-feasibility.md) § B8.
 - ★★★★★★ **Steam Frame companion UX** (VR / LAN Deck)
   - **GitHub:** [bonsAI Issues](https://github.com/cantcurecancer/bonsAI/issues) — issue TBD.
   - **Goal:** Research-first companion workflows for Steam Frame. [09-steam-frame-companion-feasibility.md](planning/09-steam-frame-companion-feasibility.md).
