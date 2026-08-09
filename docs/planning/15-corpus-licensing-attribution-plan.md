@@ -21,7 +21,7 @@ written — and that is cheaper to discover before 181 cards exist than after.
 
 | Task | Title | State |
 |---|---|---|
-| ATTR-1.1…1.4 | Confirm each source's licence, at the source | ☐ Not started |
+| ATTR-1.1…1.4 | Confirm each source's licence, at the source | ☑ Done 2026-08-09 — three sources excluded by the gate |
 | ATTR-2.1…2.3 | Generate `ATTRIBUTIONS.md` from the corpus | ☐ Not started |
 | ATTR-3.1…3.2 | State the corpus licence and the ShareAlike obligation | ☐ Not started |
 | ATTR-4.1…4.2 | Repo-side `NOTICE` and the Apache/CC separation | ☐ Not started |
@@ -72,7 +72,7 @@ does not casually bundle the corpus into the plugin zip and collapse the distinc
 Do this **before** writing cards from a source, not after. A source that turns out to be
 unusable costs nothing today and costs a rewrite later.
 
-- [ ] **ATTR-1.1** — For every source that will contribute cards, record: exact licence name
+- [x] **ATTR-1.1** — For every source that will contribute cards, record: exact licence name
       **and version**, the licence URL, where the statement was read, and the date.
       Machine-readable `rightsinfo` from the wiki's own `api.php` beats a page footer; a
       footer beats an assumption. Current state, measured 2026-08-09:
@@ -80,22 +80,32 @@ unusable costs nothing today and costs a rewrite later.
       | Source | Licence | How it was read |
       |---|---|---|
       | `theportalwiki.com` | CC BY 4.0 | `api.php` `rightsinfo` |
-      | `combineoverwiki.net` | CC BY-SA, version from the footer badge (4.0) | `api.php` gave no version — **confirm the version** |
+      | `combineoverwiki.net` | CC BY-SA 4.0 | footer badge; `api.php` gave no version — **version confirmed 2026-08-09** |
       | `zelda.fandom.com` | CC-BY-SA-3.0 | already in the seed, recorded per card |
-      | `left4dead.fandom.com` | CC BY-SA 3.0 | WikiTeam dump `licenseurl` at snapshot date |
+      | `left4dead.fandom.com` | CC BY-SA 3.0 | snapshot `siteinfo` (`CC-BY-SA`) + `fandom.com/licensing` (3.0 Unported) |
+      | `fallout.fandom.com` | CC BY-SA 3.0 | snapshot `siteinfo` + `fandom.com/licensing` |
+      | `cyberpunk.fandom.com` | CC BY-SA 3.0 | snapshot `siteinfo` + `fandom.com/licensing` |
+      | `gta.fandom.com` | CC BY-SA 3.0 | dump carries no `siteinfo`; page footer links `fandom.com/licensing`, read via Wayback at the snapshot date |
       | `liquipedia.net` | CC-BY-SA | `api.php` `rightsinfo` |
       | `wiki.teamfortress.com` | **none published** | **excluded** — Valve ToU grants other users personal use only |
       | `developer.valvesoftware.com` | CC BY-NC-SA | **excluded** — NonCommercial is non-free |
+      | `hades.fandom.com` | **CC BY-NC-SA 3.0** | **excluded** — snapshot `siteinfo`, which contradicts the archive.org item's `licenseurl` of CC BY-SA 3.0 |
+      | `bg3.wiki` | CC BY-SA 4.0 **or** CC BY-NC-SA 4.0, per contributor | **excluded** — pre-2024-07-20 content is NonCommercial-only unless that contributor consented, and no page says which |
+      | `reddead.fandom.com`, `sims.fandom.com` | CC BY-SA 3.0 | licence fine, **not used** — the only snapshots are 2020-02-23 and their pages for our titles are stubs |
 
       *Acceptance:* every row that will produce a card has a version and a URL. No row says
       "assumed" or inherits a version from a different wiki.
 
-- [ ] **ATTR-1.2** — For a source ingested from an **archive.org WikiTeam dump**, record the
+- [x] **ATTR-1.2** — For a source ingested from an **archive.org WikiTeam dump**, record the
       snapshot identifier and its date, and re-read `dumpMeta/siteinfo.json` from *that*
       snapshot rather than carrying a licence forward from this document. A licence is a fact
       as of a date.
       *Acceptance:* the recorded licence for a dump-sourced card matches that dump's own
-      `siteinfo`.
+      `siteinfo`. **Done 2026-08-09.** The check is not academic: `wiki-hadesfandomcom` claims
+      CC BY-SA 3.0 in its item metadata and CC BY-NC-SA 3.0 in its own `siteinfo`, and the
+      snapshot wins. [scripts/fetch_wiki_dump_pages.py](../../scripts/fetch_wiki_dump_pages.py)
+      prints both. The snapshot date is recorded per card as `crawled_at` and shown on the
+      chip as *"as of YYYY-MM-DD"*; the identifier lives in the roadmap's 6d entry.
 
 - [ ] **ATTR-1.3** — Decide and write down whether **CC BY 4.0** and **CC BY-SA 3.0/4.0**
       cards may coexist in one corpus file. They can — ShareAlike binds each work, and

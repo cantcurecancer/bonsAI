@@ -279,11 +279,17 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
       [
         "How do I beat Glyphid Dreadnought?",
         "Tips for Hollow Bough in this game?",
+        "What should I know about Mining and the run timer?",
+        "What should I know about Classes?",
+        "What should I know about Upgrades and overclocks?",
         "Any known Proton issues for this game?",
         "Any Steam Input issues for this game?",
       ],
     )
-    self.assertEqual([c.domain for c in result.candidates], ["strategy", "strategy", "compat", "compat"])
+    self.assertEqual(
+      [c.domain for c in result.candidates],
+      ["strategy", "strategy", "strategy", "strategy", "strategy", "compat", "compat"],
+    )
 
   def test_suggest_chip_candidates_caps_generic_compat_chips(self):
     """Generic compat chips are bounded so they cannot crowd out entity-named ones."""

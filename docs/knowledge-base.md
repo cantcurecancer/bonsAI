@@ -109,6 +109,19 @@ citation for text the model never saw is worse than none. `build_attribution_ent
 groups those into one credit per `(source, licence)`, keeping the card titles, so a block of
 three cards from one wiki reads as one credit line rather than three.
 
+**A credit also says when the text was read.** A seed row may carry `crawled_at`; the build
+falls back to its own timestamp only for rows that do not. This matters because four corpus
+sources are archive.org snapshots between one and six years old, and without a per-row date
+every rebuild would relabel 2022 wiki text with today's. The chip reads
+`left4dead.fandom.com · CC-BY-SA-3.0 · as of 2025-04-05`, and cards grouped under one wiki
+report the **oldest** capture in the group rather than the newest.
+
+**Read the licence from the snapshot, not from the archive.org item.** The two disagree.
+`wiki-hadesfandomcom` advertises `licenseurl` CC BY-SA 3.0 at the item level while its own
+`dumpMeta/siteinfo.json` says **CC BY-NC-SA 3.0** — NonCommercial, which this corpus cannot
+carry. [scripts/fetch_wiki_dump_pages.py](../scripts/fetch_wiki_dump_pages.py) prints both and
+prefers the snapshot.
+
 Two UI constraints, both measured rather than assumed:
 
 - The accent must **not** reuse `tier_class`. That is the *model*-licensing axis and its

@@ -490,7 +490,7 @@
       "skill_level": "beginner",
       "input_style": "terse",
       "note": "Name is known -- the dungeon is called Dodongo's Cavern.",
-      "expect_section": ""
+      "expect_section": "King Dodongo"
     },
     {
       "id": "V2-S-OOT-02",
@@ -508,7 +508,7 @@
       "skill_level": "beginner",
       "input_style": "terse",
       "note": "Gohma is named once on a title card. Players describe it instead.",
-      "expect_section": ""
+      "expect_section": "Queen Gohma"
     },
     {
       "id": "V2-S-OOT-03",
@@ -522,7 +522,7 @@
       "withheld_card_terms": [],
       "skill_level": "beginner",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "Epona"
     },
     {
       "id": "V2-S-OOT-04",
@@ -557,7 +557,7 @@
       ],
       "skill_level": "familiar",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "Water Temple"
     },
     {
       "id": "V2-S-OOT-06",
@@ -572,7 +572,7 @@
       "skill_level": "familiar",
       "input_style": "terse",
       "note": "Maintainer called this the right register for Volvagia. No proper noun on purpose.",
-      "expect_section": ""
+      "expect_section": "Volvagia"
     },
     {
       "id": "V2-S-OOT-07",
@@ -587,7 +587,7 @@
       "skill_level": "familiar",
       "input_style": "terse",
       "note": "Same reasoning as Volvagia.",
-      "expect_section": ""
+      "expect_section": "Twinrova"
     },
     {
       "id": "V2-S-OOT-08",
@@ -601,7 +601,7 @@
       "withheld_card_terms": [],
       "skill_level": "familiar",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "Adult dungeon order"
     },
     {
       "id": "V2-S-OOT-09",
@@ -631,7 +631,7 @@
       ],
       "skill_level": "familiar",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "Shadow Temple invisible floors"
     },
     {
       "id": "V2-S-OOT-11",
@@ -645,7 +645,7 @@
       "withheld_card_terms": [],
       "skill_level": "power_user",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "Biggoron's Sword"
     },
     {
       "id": "V2-S-OOT-12",
@@ -689,7 +689,7 @@
       "withheld_card_terms": [],
       "skill_level": "familiar",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "Gold Skulltulas"
     },
     {
       "id": "V2-S-OOT-15",
@@ -719,7 +719,7 @@
       "withheld_card_terms": [],
       "skill_level": "beginner",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "Classes"
     },
     {
       "id": "V2-S-DRG-02",
@@ -780,7 +780,7 @@
       "skill_level": "familiar",
       "input_style": "terse",
       "note": "Verbatim from the style guide's 'do' column.",
-      "expect_section": ""
+      "expect_section": "Upgrades and overclocks"
     },
     {
       "id": "V2-S-DRG-06",
@@ -808,7 +808,7 @@
       "withheld_card_terms": [],
       "skill_level": "familiar",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "Upgrades and overclocks"
     },
     {
       "id": "V2-S-DRG-08",
@@ -909,7 +909,7 @@
       "withheld_card_terms": [],
       "skill_level": "beginner",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "Inspiration"
     },
     {
       "id": "V2-S-BG3-03",
@@ -926,7 +926,7 @@
       ],
       "skill_level": "beginner",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "Sneak Attack"
     },
     {
       "id": "V2-S-BG3-04",
@@ -941,7 +941,7 @@
       "skill_level": "beginner",
       "input_style": "terse",
       "note": "Companion names are on the portrait bar all game.",
-      "expect_section": ""
+      "expect_section": "Companion approval"
     },
     {
       "id": "V2-S-BG3-05",
@@ -955,7 +955,7 @@
       "withheld_card_terms": [],
       "skill_level": "familiar",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "Long rest"
     },
     {
       "id": "V2-S-BG3-06",
@@ -969,7 +969,7 @@
       "withheld_card_terms": [],
       "skill_level": "familiar",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "Party composition"
     },
     {
       "id": "V2-S-BG3-07",
@@ -1001,7 +1001,7 @@
       "skill_level": "familiar",
       "input_style": "voice",
       "note": "Voice register.",
-      "expect_section": ""
+      "expect_section": "Dialogue checks"
     },
     {
       "id": "V2-S-BG3-09",
@@ -1293,7 +1293,7 @@
       "withheld_card_terms": [],
       "skill_level": "beginner",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "Kaos mode and Revolution mode"
     },
     {
       "id": "V2-S-SOE-02",
@@ -1307,7 +1307,7 @@
       "withheld_card_terms": [],
       "skill_level": "beginner",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "Kaos mode and Revolution mode"
     },
     {
       "id": "V2-S-SOE-03",
@@ -1321,7 +1321,7 @@
       "withheld_card_terms": [],
       "skill_level": "beginner",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "Kaos mode and Revolution mode"
     },
     {
       "id": "V2-S-SOE-04",
@@ -1349,7 +1349,7 @@
       "withheld_card_terms": [],
       "skill_level": "beginner",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "Fighting the Corporation"
     },
     {
       "id": "V2-S-SOE-06",
@@ -1378,7 +1378,7 @@
       "skill_level": "beginner",
       "input_style": "voice",
       "note": "Voice register.",
-      "expect_section": ""
+      "expect_section": "Kaos mode and Revolution mode"
     },
     {
       "id": "V2-S-SOE-08",
@@ -1392,7 +1392,7 @@
       "withheld_card_terms": [],
       "skill_level": "familiar",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "Unlocking characters"
     },
     {
       "id": "V2-S-SOE-09",
@@ -1420,7 +1420,7 @@
       "withheld_card_terms": [],
       "skill_level": "familiar",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "Unlocking characters"
     },
     {
       "id": "V2-S-HADES-01",
@@ -1448,7 +1448,7 @@
       "withheld_card_terms": [],
       "skill_level": "beginner",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "Starting weapons"
     },
     {
       "id": "V2-S-HADES-03",
@@ -1462,7 +1462,7 @@
       "withheld_card_terms": [],
       "skill_level": "beginner",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "Mirror of Night"
     },
     {
       "id": "V2-S-HADES-04",
@@ -1493,7 +1493,7 @@
       "skill_level": "familiar",
       "input_style": "terse",
       "note": "Both are named on the arena banner.",
-      "expect_section": ""
+      "expect_section": "Theseus and Asterius"
     },
     {
       "id": "V2-S-HADES-06",
@@ -1507,7 +1507,7 @@
       "withheld_card_terms": [],
       "skill_level": "familiar",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "Darkness, keys and gems"
     },
     {
       "id": "V2-S-HADES-07",
@@ -1521,7 +1521,7 @@
       "withheld_card_terms": [],
       "skill_level": "familiar",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "Boons and duo boons"
     },
     {
       "id": "V2-S-HADES-08",
@@ -1536,7 +1536,7 @@
       "skill_level": "familiar",
       "input_style": "voice",
       "note": "Voice register. Deliberately does not name him.",
-      "expect_section": ""
+      "expect_section": "Heat and the Pact of Punishment"
     },
     {
       "id": "V2-S-HADES-09",
@@ -1981,7 +1981,7 @@
       "skill_level": "beginner",
       "input_style": "terse",
       "note": "Verbatim from the style guide's 'do' column.",
-      "expect_section": ""
+      "expect_section": "Promotions"
     },
     {
       "id": "V2-S-SIMS4-02",
@@ -1997,7 +1997,7 @@
       ],
       "skill_level": "beginner",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "Sad moodlets"
     },
     {
       "id": "V2-S-SIMS4-03",
@@ -2053,7 +2053,7 @@
       "withheld_card_terms": [],
       "skill_level": "familiar",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "Making money"
     },
     {
       "id": "V2-S-SIMS4-07",
@@ -2067,7 +2067,7 @@
       "withheld_card_terms": [],
       "skill_level": "familiar",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "Raising a skill quickly"
     },
     {
       "id": "V2-S-SIMS4-08",
@@ -2081,7 +2081,7 @@
       "withheld_card_terms": [],
       "skill_level": "familiar",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "moveobjects"
     },
     {
       "id": "V2-S-SIMS4-09",
@@ -2096,7 +2096,7 @@
       "skill_level": "familiar",
       "input_style": "voice",
       "note": "Voice register.",
-      "expect_section": ""
+      "expect_section": "Fires"
     },
     {
       "id": "V2-S-SIMS4-10",
@@ -2155,7 +2155,7 @@
       "withheld_card_terms": [],
       "skill_level": "beginner",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "Honor"
     },
     {
       "id": "V2-S-RDR2-02",
@@ -2215,7 +2215,7 @@
       "skill_level": "familiar",
       "input_style": "terse",
       "note": "'Perfect' is the pelt grade the game prints on screen, so it is a game fact and not withholdable -- same call as 'ride' on the L4D2 jockey rows. 'Clean kill' is our phrasing and stays withheld.",
-      "expect_section": ""
+      "expect_section": "Perfect pelts"
     },
     {
       "id": "V2-S-RDR2-06",
@@ -2243,7 +2243,7 @@
       "withheld_card_terms": [],
       "skill_level": "familiar",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "Bounties"
     },
     {
       "id": "V2-S-RDR2-08",
@@ -2258,7 +2258,7 @@
       "skill_level": "familiar",
       "input_style": "voice",
       "note": "Voice register.",
-      "expect_section": ""
+      "expect_section": "Camp donations"
     },
     {
       "id": "V2-S-RDR2-09",
@@ -2300,7 +2300,7 @@
       "withheld_card_terms": [],
       "skill_level": "power_user",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "Dead Eye"
     },
     {
       "id": "V2-S-RDR2-12",
