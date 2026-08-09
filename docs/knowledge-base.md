@@ -116,9 +116,11 @@ Two UI constraints, both measured rather than assumed:
 - The accent must sit on the chip **outline**, not the fill. `ContextChipLadder` paints
   `tierBackground` only on the active chip; the border always renders.
 
-This covers the credit **on the reply**. Credit on *distribution* — `ATTRIBUTIONS.md` and the
-corpus NOTICE, generated from `attributions_markdown` in `build_rag_db.py` — is Phase 6, and
-ShareAlike obligations on adaptations still need stating there before first public publish.
+This covers the credit **on the reply**. Credit on *distribution* — `ATTRIBUTIONS.md`, the
+corpus NOTICE, and the ShareAlike obligation on adaptations — is Phase 6 and has its own plan:
+[15-corpus-licensing-attribution-plan.md](planning/15-corpus-licensing-attribution-plan.md).
+Note before relying on the current file: `write_attributions` is a hardcoded literal that does
+not read the corpus, and is already out of date.
 
 ## Phasing
 
