@@ -21,7 +21,7 @@
       "skill_level": "beginner",
       "input_style": "terse",
       "note": "Name is known — characters shout it. Withholding 'Tank' would be unrealistic.",
-      "expect_section": ""
+      "expect_section": "Tank"
     },
     {
       "id": "V2-S-L4D2-02",
@@ -38,7 +38,7 @@
       ],
       "skill_level": "beginner",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "The Witch"
     },
     {
       "id": "V2-S-L4D2-03",
@@ -55,7 +55,7 @@
       ],
       "skill_level": "beginner",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "Boomer"
     },
     {
       "id": "V2-S-L4D2-04",
@@ -72,7 +72,7 @@
       ],
       "skill_level": "beginner",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "Charger"
     },
     {
       "id": "V2-S-L4D2-05",
@@ -89,7 +89,7 @@
       ],
       "skill_level": "beginner",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "Smoker"
     },
     {
       "id": "V2-S-L4D2-06",
@@ -107,7 +107,7 @@
       "skill_level": "beginner",
       "input_style": "voice",
       "note": "Voice register — longer and more sentence-like on purpose. Campaign named, chapter not.",
-      "expect_section": ""
+      "expect_section": "The Parish"
     },
     {
       "id": "V2-S-L4D2-07",
@@ -187,7 +187,7 @@
       ],
       "skill_level": "familiar",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "Going down and black and white"
     },
     {
       "id": "V2-S-L4D2-12",
@@ -231,7 +231,7 @@
       "withheld_card_terms": [],
       "skill_level": "power_user",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "Playing as the Tank"
     },
     {
       "id": "V2-S-L4D2-15",
@@ -245,7 +245,7 @@
       "withheld_card_terms": [],
       "skill_level": "power_user",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "Playing as the Hunter"
     },
     {
       "id": "V2-S-L4D2-16",
@@ -279,7 +279,7 @@
       "skill_level": "familiar",
       "input_style": "terse",
       "note": "Near-identical wording to S-L4D2-05 but the opposite perspective. Retrieval has to tell 'smoker grabbing me off roofs' from 'how to use smoker' — the discriminating word is 'use'. If one card serves both, it is the wrong card.",
-      "expect_section": ""
+      "expect_section": "Playing as the Smoker"
     },
     {
       "id": "V2-S-L4D2-19",
@@ -294,7 +294,7 @@
       "skill_level": "familiar",
       "input_style": "terse",
       "note": "'ride' and 'steer' were withheld and should not have been: they are the ordinary words a player uses for what a jockey does, like 'tank' for the tank. Withholding shared vocabulary makes the query unrealistic. Only distinctive card phrasing belongs here.",
-      "expect_section": ""
+      "expect_section": "Playing as the Jockey"
     },
     {
       "id": "V2-S-L4D2-20",
@@ -325,7 +325,7 @@
       ],
       "skill_level": "power_user",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "Playing as the Spitter"
     },
     {
       "id": "V2-S-L4D2-22",
@@ -339,7 +339,7 @@
       "withheld_card_terms": [],
       "skill_level": "power_user",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "Playing as the Tank"
     },
     {
       "id": "V2-S-L4D2-23",
@@ -357,7 +357,7 @@
       "skill_level": "familiar",
       "input_style": "terse",
       "note": "Pairs with S-L4D2-03 the same way 18 pairs with 05 — same special, opposite side.",
-      "expect_section": ""
+      "expect_section": "Playing as the Boomer"
     },
     {
       "id": "V2-S-L4D2-24",
@@ -390,7 +390,7 @@
       "skill_level": "familiar",
       "input_style": "terse",
       "note": "Pairs with S-L4D2-19. Same special, opposite side; two different cards or the split is wrong. 'ride' and 'steer' were withheld and should not have been: they are the ordinary words a player uses for what a jockey does, like 'tank' for the tank. Withholding shared vocabulary makes the query unrealistic. Only distinctive card phrasing belongs here.",
-      "expect_section": ""
+      "expect_section": "Jockey"
     },
     {
       "id": "V2-S-L4D2-26",
@@ -408,7 +408,7 @@
       "skill_level": "familiar",
       "input_style": "terse",
       "note": "Pairs with S-L4D2-04.",
-      "expect_section": ""
+      "expect_section": "Playing as the Charger"
     },
     {
       "id": "V2-S-L4D2-27",
@@ -422,7 +422,7 @@
       "withheld_card_terms": [],
       "skill_level": "power_user",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "Playing as the Jockey"
     },
     {
       "id": "V2-S-L4D2-28",
