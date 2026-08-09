@@ -130,6 +130,7 @@ Stars are **effort/risk**. Grouped by **theme**; within each lane sorted ascendi
 - ★★★★★ **Named chat slots** (labeled threads — redesign only)
   - **GitHub:** [bonsAI Issues](https://github.com/cantcurecancer/bonsAI/issues) — issue TBD.
   - **Goal:** Multiple labeled threads — only if redesigned; do not re-ship old mini-list picker. [07-named-chat-slots-postmortem.md](planning/07-named-chat-slots-postmortem.md).
+  - **Design + path:** [major-redesign.md](major-redesign.md) — LB/RB slot carousel, decisions R1–R5. **Gated on the P-0 bumper spike**; nothing else starts until it answers.
 - ★★★★★ **On-Deck model benchmark** (measured routing order)
   - **GitHub:** [bonsAI Issues](https://github.com/cantcurecancer/bonsAI/issues) — issue TBD.
   - **Goal:** Rank installed models by measured speed/completion; offer as try order (with confirmation).
