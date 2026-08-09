@@ -1,7 +1,7 @@
 # 15 — Corpus licensing and attribution — executable plan
 
 **Status:** `NOT STARTED` — **blocks first public corpus publish, nothing else.**
-**Roadmap:** [Planned § Near-term — RAG Deck query — public publish (Phase 6)](../roadmap.md#near-term) (★★★★)
+**Roadmap:** [Backlog § Knowledge base — RAG Deck query — public publish (Phase 6)](../roadmap.md#knowledge-base) (★★★★)
 **Already shipped and out of scope here:** per-reply credit on the knowledge chip and the
 per-card `source_url` rule — landed 2026-08-09, see
 [knowledge-base.md § Source attribution](../knowledge-base.md).
@@ -200,7 +200,7 @@ unusable costs nothing today and costs a rewrite later.
 - Per-sentence citation in replies, or linking out to a wiki from the Deck (no browser).
 - Relicensing the plugin. Apache-2.0 stays; the separation is the mechanism.
 - Ingestion tooling itself — see the sourcing notes on
-  [KB online / versus strategy content](../roadmap.md#near-term).
+  [KB online / versus strategy content](../roadmap.md#knowledge-base).
 - User-submitted content, which has its own moderation and licensing problem — see
   **Community tip contribution** in the roadmap.
 

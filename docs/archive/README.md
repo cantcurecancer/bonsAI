@@ -7,7 +7,7 @@ Historical planning, research, sweeps, and superseded doc layouts. **Active docu
 | [README.md](../../README.md) | Install and quick start |
 | [development.md](../development.md) | Contributor setup, architecture, hotspots |
 | [troubleshooting.md](../troubleshooting.md) | Power-user setup and fixes |
-| [roadmap.md](../roadmap.md) | Bugs, QA backlog, planned |
+| [roadmap.md](../roadmap.md) | Bugs, Verify, Backlog |
 | [testing.md](../testing.md) | Testing hub |
 | [testing-automated.md](../testing-automated.md) | Agent/CI gates |
 | [testing-manual.md](../testing-manual.md) | Deck runbook |

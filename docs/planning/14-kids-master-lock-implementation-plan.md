@@ -2,7 +2,7 @@
 
 **Status:** `NOT STARTED` — **blocked on Stage 0.**
 **Research source (do not edit as ship plan):** [08-kids-master-lock-feasibility.md](08-kids-master-lock-feasibility.md)
-**Roadmap:** [Planned § Near-term — Kids master lock](../roadmap.md#near-term) (★★★)
+**Roadmap:** [Backlog § Knowledge base — Kids master lock](../roadmap.md#permissions--safety) (★★★)
 
 ## How to use this file
 

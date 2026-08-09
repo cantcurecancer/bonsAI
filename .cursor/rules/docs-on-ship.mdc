@@ -8,8 +8,8 @@ alwaysApply: true
 Before marking Deck-facing work **done** (feature implementation, plan execution, or bug fix):
 
 1. **`docs/roadmap.md`**
-   - **Feature shipped:** remove from **Planned** / **In Progress**; add a line to **`docs/archive/roadmap-completed.md`**; update **Appendix** dependency bullets if needed.
-   - **Bug fixed:** remove or resolve the **In Progress → Bugs** row; note fix in completed archive if user-visible.
+   - **Feature shipped:** remove from **Backlog**; add a line to **`docs/archive/roadmap-completed.md`**; update **Appendix** dependency bullets if needed.
+   - **Bug fixed:** remove or resolve the **Bugs** row; note fix in completed archive if user-visible.
    - **Partial ship:** move completed scope to **Completed**; leave a smaller **Planned** follow-up.
 
 2. **`docs/testing.md`**

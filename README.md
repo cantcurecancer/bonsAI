@@ -145,7 +145,7 @@ More docs: [development.md](docs/development.md) · [testing.md](docs/testing.md
 | [troubleshooting.md](docs/troubleshooting.md) | Power users | GPU, network, vision, permissions, QAM, deploy edge cases |
 | [development.md](docs/development.md) | Contributors | Deck-first setup, build/deploy, architecture, hotspots |
 | [testing.md](docs/testing.md) | QA / contributors | Testing hub — automated vs manual Deck QA |
-| [roadmap.md](docs/roadmap.md) | Planning | Bugs, QA backlog, planned backlog |
+| [roadmap.md](docs/roadmap.md) | Planning | Bugs, Verify, themed Backlog |
 | [archive/reports/](docs/archive/reports/) | Maintainers | Security / FOSS review snapshots |
 | [archive/](docs/archive/) | — | Historical research, plans, completed-feature detail |
 

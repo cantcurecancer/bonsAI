@@ -1,6 +1,6 @@
 # bonsAI testing — manual (Deck / maintainer)
 
-On-device QA only. Automated gates: [testing-automated.md](testing-automated.md). Hub + slim coverage: [testing.md](testing.md). Roadmap QA backlog: [roadmap.md](roadmap.md#qa-backlog).
+On-device QA only. Automated gates: [testing-automated.md](testing-automated.md). Hub + slim coverage: [testing.md](testing.md). Roadmap Verify: [roadmap.md](roadmap.md#verify).
 
 Record **build id / git SHA** and **SteamOS** when marking Pass / Partial / Fail.
 
@@ -255,7 +255,7 @@ Wave 4 J — Developer tab → Preset suggestions → **stream**.
 
 | Block | Notes |
 |-------|-------|
-| **QAMP on-Deck** | See § QAMP below — [QA backlog](roadmap.md#qa-backlog) |
+| **QAMP on-Deck** | See § QAMP below — [Verify](roadmap.md#verify) |
 | **TDP boundary clamps** | 1W/3W/15W/20W + GPU-800 advisory (many preview PASS) |
 | **Background Ask full lifecycle** | Timeout, error, busy guard |
 | **Multi-game matrix** | Title-specific behavior |
@@ -303,4 +303,4 @@ Wave 4 J — Developer tab → Preset suggestions → **stream**.
 
 ## Prompt-testing (qualitative)
 
-Broader matrices beyond Tier 0–1 smokes are **deferred** ([QA backlog](roadmap.md#qa-backlog)). Prefer: one smoke per area over long prompt lists. Old Tier 1 prompt checkboxes: [archive/testing-full-pre-2026-07-30.md](archive/testing-full-pre-2026-07-30.md).
+Broader matrices beyond Tier 0–1 smokes are **deferred** ([Verify](roadmap.md#verify)). Prefer: one smoke per area over long prompt lists. Old Tier 1 prompt checkboxes: [archive/testing-full-pre-2026-07-30.md](archive/testing-full-pre-2026-07-30.md).

@@ -47,7 +47,7 @@ You want to cut down manual maintainer work on the **QA backlog** — especially
 
 > **Topic:** Automating Device QA and prompt testing — what can agents realistically own?
 >
-> **Context:** bonsAI splits testing into automated gates (`docs/testing-automated.md`: Vitest, pytest, preview-suite tiers) and manual Deck QA (`docs/testing-manual.md`, `roadmap.md` § QA backlog). The backlog prioritizes **Device QA Tier 0–1** (SMOKE-A/C/F then B/E/H with Pass/Partial/Fail + build id) and a **broader prompt-testing pass** beyond shipped MVP matrices. We already deploy via `deck.deploy` / `scripts/build.sh`, run preview with `preview.injectFocusEvent` / `preview.runSequence` / `callRpc`, and capture Deck UI via `screenshot-deck` scripts and `deck.captureScreenshot`. Maintainer video recording exists (`record-deck.sh` spike) but is not wired into any test oracle.
+> **Context:** bonsAI splits testing into automated gates (`docs/testing-automated.md`: Vitest, pytest, preview-suite tiers) and manual Deck QA (`docs/testing-manual.md`, `roadmap.md` § Verify). The Verify list prioritizes **Device QA Tier 0–1** (SMOKE-A/C/F then B/E/H with Pass/Partial/Fail + build id) and a **broader prompt-testing pass** beyond shipped MVP matrices. We already deploy via `deck.deploy` / `scripts/build.sh`, run preview with `preview.injectFocusEvent` / `preview.runSequence` / `callRpc`, and capture Deck UI via `screenshot-deck` scripts and `deck.captureScreenshot`. Maintainer video recording exists (`record-deck.sh` spike) but is not wired into any test oracle.
 >
 > **Ask:**
 > 1. Map the **QA backlog items** (Tier 0–1 smokes, VAC-02…06, QAMP matrix, prompt-testing pass) to the **closest existing automation** (preview scenario, RPC-only check, unit test) vs **must remain manual** (Gaming Mode, CEF focus, qualitative reply judgment). Use `testing.md` coverage rows and `testing-manual.md` tier definitions as the source list.
@@ -600,9 +600,9 @@ You want **new feature ideas** to add to `docs/roadmap.md` — not answers yet, 
 **How the roadmap works today:**
 
 - Stars = **effort/risk**, not user value. `★` easiest … `★★★★★` very high; `★★★★★★` extreme scope or upstream-gated.
-- **Horizons:** Near-term (incremental / bounded spikes) → Medium-term (larger in-plugin) → Long-term (★★★★★★ or broad surface).
+- **Horizons:** Backlog grouped by theme (Ask/reply, Focus/Deck UI, Knowledge base, Permissions/safety, Platform/upstream); sorted ascending by ★ within each lane.
 - **Planned bullet format:** Short **noun-first** title (3–6 words) + optional parenthetical; then **Goal**, **Depends on**, **Not in scope**, **Status** when relevant.
-- **In Progress** = bugs only; deferred QA under **QA backlog**; shipped work in `docs/archive/roadmap-completed.md`.
+- **Bugs** = open defects; on-Deck confirmation under **Verify**; shipped work in `docs/archive/roadmap-completed.md`.
 - **Do not duplicate** what is already Planned (spoiler chip chain, RAG Phases 4–8, Web permission, named chat slots, wake-word, deep mod hints, native QAM tile, etc.) — see full [Planned](../roadmap.md#planned) section.
 
 **Ground ideas in real gaps:** D3 entry-point split **complete** — `index.tsx` closed step 8 at 1291 lines and is ~1308 today; the deferred follow-ups per **D9** are `useBonsaiAskOrchestration.ts` (~1260 lines) and `MainTab.tsx` (187, pure prop-threading tax); open bugs (soft `num_predict`, KB phrase gate, LB/RB flicker); permission model (`capabilities.py`); shipped building blocks (session RAG chips, Proton log attach, voice STT, reply-ready toast, transparency ladder).

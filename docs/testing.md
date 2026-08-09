@@ -4,12 +4,12 @@
 
 | Doc | Audience | Contents |
 |-----|----------|----------|
-| **This file** | Everyone | Overview, PR gates summary, coverage index, QA backlog pointer |
+| **This file** | Everyone | Overview, PR gates summary, coverage index, Verify pointer |
 | [testing-automated.md](testing-automated.md) | Agents / CI | Commands that can run without a human on the Deck |
 | [testing-manual.md](testing-manual.md) | Maintainers | On-Deck smokes, Tier 0–4 runbook, Deck-only checklists |
 | [test-evidence/](test-evidence/) | CI / agents | Preview-suite artifacts (`--write` / `--evidence`) — see [retention](#evidence-retention) |
 
-Related: [roadmap.md](roadmap.md) (bugs + QA backlog + Planned), [development.md](development.md) (build/deploy), [troubleshooting.md](troubleshooting.md).
+Related: [roadmap.md](roadmap.md) ([Bugs](roadmap.md#bugs), [Verify](roadmap.md#verify), [Backlog](roadmap.md#planned)), [development.md](development.md) (build/deploy), [troubleshooting.md](troubleshooting.md).
 
 ### Evidence retention
 
@@ -132,7 +132,7 @@ One smoke often covers many features. Status: **Verified** / **Partial** / **Ope
 
 | Area | Covered by | Status | Notes |
 |------|------------|--------|-------|
-| Plugin shell / tabs / Ask / connection test | SMOKE-A | Open | **Demoted from Partial 2026-08-08.** The May 2026 preview PASS was vacuous: SMOKE-A's asserts were entirely DOM and focus-path, so D1 and D3 above mean nothing about the shell was actually checked. It is the only tier0 scenario in that position. Recovers once the scenario asserts real rendered copy; on-Deck Tier 0 remains in the [QA backlog](roadmap.md#qa-backlog) |
+| Plugin shell / tabs / Ask / connection test | SMOKE-A | Open | **Demoted from Partial 2026-08-08.** The May 2026 preview PASS was vacuous: SMOKE-A's asserts were entirely DOM and focus-path, so D1 and D3 above mean nothing about the shell was actually checked. It is the only tier0 scenario in that position. Recovers once the scenario asserts real rendered copy; on-Deck Tier 0 remains in [Verify](roadmap.md#verify) |
 | Permissions gate | SMOKE-C | Open | **Demoted from Partial 2026-08-08.** Two reasons. The preview PASS rested on DOM asserts (D1), and separately the scenario's one `rpcResult` assert expects the capability key `hardware_control`, **removed 2026-07-30** — tier0 has not run since, so SMOKE-C will fail on the next run. Fixed in the scenario JSON; recovers with an end-to-end capability gate test through `class Plugin`, which does not exist yet (`tests/test_capabilities.py` is service-level only) |
 | Permission jump (deny → Open Permissions → toggle + Back) | PERM-JUMP-01 | Open | Unit 2026-08-07: `permissionDeepLink.test.ts`, `permissionJumpRegistry.test.ts`, `usePermissionJump.test.ts`, `PermissionDenyAction.test.tsx`. **On-Deck:** each capability off → deny surface shows **Open Permissions** → lands on matching toggle → **Back to …** returns to prior tab. D-pad: PERM-JUMP-01 in [testing-manual.md](testing-manual.md). |
 | Permissions cleanup batch (web links always-on; troubleshoot hint) | PERMS-CLEAN-02, 05, 06 | Open | **Narrowed from 01…06 on 2026-08-08 — not demoted, scoped.** Only three of the six are provable by a preview scenario, and only in the positive direction. **05** (About links present with all five capabilities off) and **06** (troubleshooting hint appears, then is gone after Dismiss) assert visible copy, so they cannot false-pass; **02** is checkable only as copy-staleness. **01 / 03 / 04 struck as unprovable** — each was written as "this UI is gone", i.e. a `domNotContains`, and the strings they name do not exist anywhere in the tree, so the assert passes whether or not the code is right. That is true even after D1 is fixed. Those three need an on-Deck look or a source-level test, not a preview row. Remaining on-Deck: About links, Steam Input jump, troubleshooting Ask with game-context on/off + dismiss hint, no power-limits toggle, no Response verification section |
@@ -230,7 +230,7 @@ One smoke often covers many features. Status: **Verified** / **Partial** / **Ope
 
 ---
 
-## QA backlog (from roadmap)
+## Verify (from roadmap)
 
 These are **not** missing features — deferred maintainer testing:
 
@@ -239,7 +239,7 @@ These are **not** missing features — deferred maintainer testing:
 3. QAMP verification matrix
 4. Broader prompt-testing pass
 
-See [roadmap.md § QA backlog](roadmap.md#qa-backlog) and [testing-manual.md](testing-manual.md).
+See [roadmap.md § Verify](roadmap.md#verify) and [testing-manual.md](testing-manual.md).
 
 ---
 
