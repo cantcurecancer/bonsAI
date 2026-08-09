@@ -1,4 +1,6 @@
+import json
 import unittest
+from pathlib import Path
 
 from backend.services.spoiler_title_profiles import (
     LOW_NARRATIVE_APP_IDS,
@@ -6,6 +8,8 @@ from backend.services.spoiler_title_profiles import (
     resolve_title_spoiler_profile,
     title_profile_is_low_narrative,
 )
+
+SEED_PATH = Path(__file__).resolve().parent.parent / "data" / "kb" / "strategy_seed.json"
 
 
 class SpoilerTitleProfilesTests(unittest.TestCase):
@@ -31,7 +35,31 @@ class SpoilerTitleProfilesTests(unittest.TestCase):
 
     def test_matrix_counts(self):
         self.assertEqual(len(LOW_NARRATIVE_APP_IDS), 3)
-        self.assertEqual(len(PROTECT_PROGRESSION_APP_IDS), 7)
+        self.assertEqual(len(PROTECT_PROGRESSION_APP_IDS), 9)
+
+    def test_every_corpus_title_has_a_spoiler_profile(self):
+        """A game in the corpus with no profile silently resolves to ``unknown``.
+
+        ``unknown`` is not a neutral default here: it skips both the -28 low-narrative
+        discount and the +10 protect bump, so a story game added to the seed and forgotten
+        here scores like a party game. Nothing else fails when that happens — the same
+        shape of gap that left eight anti-cheat tips unroutable before D16, so it gets the
+        same kind of drift guard.
+        """
+        seed = json.loads(SEED_PATH.read_text(encoding="utf-8"))
+        missing = []
+        for game in seed["games"]:
+            app_id = str(game.get("app_id") or "").strip()
+            title = str(game.get("canonical_title") or "")
+            if resolve_title_spoiler_profile(app_id, title) == "unknown":
+                missing.append(f"{title} (app_id={app_id or 'none'})")
+        self.assertEqual(
+            missing,
+            [],
+            "corpus titles with no spoiler profile — add them to spoiler_title_profiles.py, "
+            "its src/data/spoilerTitleProfiles.ts mirror, and "
+            "tests/contracts/spoiler-title-profiles.json: " + ", ".join(missing),
+        )
 
 
 if __name__ == "__main__":

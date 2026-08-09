@@ -10,7 +10,9 @@
     {"game_id": 8, "app_id": "1091500", "igdb_id": null, "canonical_title": "Cyberpunk 2077", "edition": null, "platform": "Steam", "genres": ["rpg", "open-world", "fps"]},
     {"game_id": 9, "app_id": "1547000", "igdb_id": null, "canonical_title": "Grand Theft Auto: San Andreas - The Definitive Edition", "edition": "DE", "platform": "Steam", "genres": ["action-adventure", "open-world"]},
     {"game_id": 10, "app_id": "1222670", "igdb_id": null, "canonical_title": "The Sims 4", "edition": null, "platform": "Steam", "genres": ["simulation", "life"]},
-    {"game_id": 11, "app_id": "1174180", "igdb_id": null, "canonical_title": "Red Dead Redemption 2", "edition": null, "platform": "Steam", "genres": ["action-adventure", "open-world"]}
+    {"game_id": 11, "app_id": "1174180", "igdb_id": null, "canonical_title": "Red Dead Redemption 2", "edition": null, "platform": "Steam", "genres": ["action-adventure", "open-world"]},
+    {"game_id": 12, "app_id": "620", "igdb_id": null, "canonical_title": "Portal 2", "edition": null, "platform": "Steam", "genres": ["puzzle", "first-person", "co-op"]},
+    {"game_id": 13, "app_id": "220", "igdb_id": null, "canonical_title": "Half-Life 2", "edition": null, "platform": "Steam", "genres": ["fps", "action", "single-player"]}
   ],
   "aliases": [
     {"alias": "ocarina of time", "game_id": 1},
@@ -36,7 +38,12 @@
     {"alias": "the sims 4", "game_id": 10},
     {"alias": "sims 4", "game_id": 10},
     {"alias": "red dead redemption 2", "game_id": 11},
-    {"alias": "rdr2", "game_id": 11}
+    {"alias": "rdr2", "game_id": 11},
+    {"alias": "portal 2", "game_id": 12},
+    {"alias": "portal2", "game_id": 12},
+    {"alias": "half-life 2", "game_id": 13},
+    {"alias": "halflife 2", "game_id": 13},
+    {"alias": "hl2", "game_id": 13}
   ],
   "sections": [
     {"section_id": 1, "game_id": 1, "section_type": "boss", "name": "King Dodongo", "card": "Weak point: tail when he rolls. Toss bombs into his mouth when he inhales. Stay near the arena edge and roll through fire breath.", "source_url": "https://zelda.fandom.com/wiki/King_Dodongo", "source_license": "CC-BY-SA-3.0", "source_version": "1.0"},

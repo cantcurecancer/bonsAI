@@ -8,7 +8,9 @@
     "1145360",
     "1091500",
     "1547000",
-    "1174180"
+    "1174180",
+    "220",
+    "620"
   ],
   "cases": [
     {
@@ -44,6 +46,18 @@
     {
       "name": "rdr2 appid protects progression",
       "app_id": "1174180",
+      "app_name": "",
+      "expected": "protect_progression"
+    },
+    {
+      "name": "half-life 2 appid protects progression",
+      "app_id": "220",
+      "app_name": "",
+      "expected": "protect_progression"
+    },
+    {
+      "name": "portal 2 appid protects progression",
+      "app_id": "620",
       "app_name": "",
       "expected": "protect_progression"
     },

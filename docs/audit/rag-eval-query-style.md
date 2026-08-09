@@ -1,6 +1,6 @@
 # How to write KB eval queries
 
-Authoring rules for `tests/fixtures/kb_eval_v1.json` and anything that replaces it. Written
+Authoring rules for `tests/fixtures/kb_eval_v2.json` and anything that replaces it. Written
 from maintainer review of the first 147-query draft, 2026-08-06. That draft got the style
 wrong in two ways that mattered, and both corrections are below.
 
@@ -90,6 +90,8 @@ Maintainer read of the first draft, title by title:
 | **GTA: San Andreas** | Places known (Los Santos). **Mechanics** questions skew beginner, **story** questions skew specific. |
 | **The Sims 4** | Draft was good. |
 | **RDR2** | Draft was fine. |
+| **Portal 2** *(added 2026-08-09)* | The stuck player usually **cannot name the chamber they are in**, so lean on description and colour ("the blue gel", "the one with the laser"). Gel names are ours until the game teaches them. Story names — Wheatley, GLaDOS — are known only by having got there, which makes them the sharpest spoiler test in the set. Co-op is cooperative, so §7 pairing does not apply: there is no opposing side. |
+| **Half-Life 2** *(added 2026-08-09)* | Split naming. **Ravenholm** is known by nearly everyone; almost nobody recalls that the sand chapter is called Sandtraps, so that one gets described. Enemy names (Strider, Combine, antlion) are shouted in dialogue and are fair. |
 
 ---
 
@@ -118,9 +120,23 @@ the class does not exist is how it ships broken.
 | `split` | `tune` (weights are fitted on these) or `holdout` (the ship gate — never read while tuning) |
 | `expect_section` / `expect_topic` | The exact card title that should come back. Filled only after cards exist and sign-off happens. |
 
-`ask_mode` was in the first draft and is **being removed as a query-level field**: after decision
-D17, retrieval no longer depends on the Ask mode. Mode still sets how many cards attach, which
-is a budget question the eval covers separately, not a property of a question.
+`ask_mode` was in the first draft and is **removed as a query-level field** as of `kb_eval_v2.json`:
+after decision D17, retrieval no longer depends on the Ask mode. Mode still sets how many cards
+attach, which is a budget question the eval covers separately, not a property of a question.
+
+### `withheld_card_terms` is narrower than it looks
+
+Three times now a term has been withheld that turned out to be **ordinary player vocabulary**
+rather than card phrasing, which makes the query fake instead of honest:
+
+| Withheld in error | Why it was wrong |
+|---|---|
+| `ride`, `steer` (L4D2 jockey) | What a jockey does, in the words any player uses — like "tank" for the Tank. |
+| `perfect pelt` (RDR2) | "Perfect" is the pelt grade **the game prints on screen**. A game fact. |
+| `momentum` (Portal 2) | Plain physics vocabulary a player reaches for unprompted. `fling`, the community's term for the technique, is the one worth withholding. |
+
+The test is not "did we also write this word." It is **"would a player have produced this word
+without reading our card."** If yes, it stays in the query.
 
 ---
 

@@ -129,7 +129,7 @@ class CompatTopicRouterTests(unittest.TestCase):
             with self.subTest(question=question):
                 self.assertFalse(question_targets_compat_corpus(question))
 
-    def test_measured_reach_on_the_v1_intents(self):
+    def test_measured_reach_on_the_drafted_intents(self):
         """The number D16 was decided on, pinned so a rule edit cannot quietly undo it.
 
         Holdout compat intents were not read while the rules were written — they are the
@@ -137,7 +137,7 @@ class CompatTopicRouterTests(unittest.TestCase):
         for: it describes a symptom without naming any troubleshooting term.
         """
         data = json.loads(
-            (REPO_ROOT / "tests" / "fixtures" / "kb_eval_v1.json").read_text(encoding="utf-8")
+            (REPO_ROOT / "tests" / "fixtures" / "kb_eval_v2.json").read_text(encoding="utf-8")
         )
         compat = [q for q in data["queries"] if q["domain"] == "compat"]
         strategy = [q for q in data["queries"] if q["domain"] == "strategy"]
@@ -151,7 +151,7 @@ class CompatTopicRouterTests(unittest.TestCase):
             for q in compat
             if q["split"] == "tune" and not question_targets_compat_corpus(q["query"])
         ]
-        self.assertEqual(missed_tune, ["V1-C-04"])
+        self.assertEqual(missed_tune, ["V2-C-04"])
 
         false_positives = [
             q["id"] for q in strategy if question_targets_compat_corpus(q["query"])

@@ -32,7 +32,7 @@ import re
 # "my controller" alone does not route a strategy question into troubleshooting.
 #
 # Rules were written from the corpus's own topic list plus the `tune` compat intents in
-# tests/fixtures/kb_eval_v1.json. The `holdout` intents were not read while writing them --
+# tests/fixtures/kb_eval_v2.json. The `holdout` intents were not read while writing them --
 # they are the blind check, and the misses are recorded rather than patched away.
 _TOPIC_RULES: dict[str, tuple[tuple[str, ...], ...]] = {
     "proton": (

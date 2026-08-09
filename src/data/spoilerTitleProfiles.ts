@@ -24,6 +24,8 @@ export const PROTECT_PROGRESSION_APP_IDS = new Set([
   "1091500", // Cyberpunk 2077
   "1547000", // GTA: San Andreas DE
   "1174180", // Red Dead Redemption 2
+  "220", // Half-Life 2
+  "620", // Portal 2 — puzzles spoil nothing, the late reveal does; see the Python table
 ]);
 
 function normalizeTitle(name: string): string {

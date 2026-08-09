@@ -17,8 +17,15 @@ blocked on your answer.
 
 ## 1. What is ready for review
 
-[tests/fixtures/kb_eval_v1.json](../../tests/fixtures/kb_eval_v1.json) — **147 queries**,
-tune 102 / holdout 45, strategy 107 / compat 40.
+> **Superseded 2026-08-09.** The 147-query v1 draft described below was **rejected on style**
+> and has been deleted; git holds it. The live file is
+> [tests/fixtures/kb_eval_v2.json](../../tests/fixtures/kb_eval_v2.json) — **221 queries**,
+> tune 157 / holdout 64, strategy 181 / compat 40, across **13** titles (Portal 2 and
+> Half-Life 2 added). Authoring rules: [rag-eval-query-style.md](rag-eval-query-style.md).
+> What changed and why is in § 1a. Everything from § 2 down still stands.
+
+[tests/fixtures/kb_eval_v2.json](../../tests/fixtures/kb_eval_v2.json) — **221 queries**,
+tune 157 / holdout 64, strategy 181 / compat 40.
 
 Each row carries:
 
@@ -27,17 +34,41 @@ Each row carries:
 | `query` | How a player would type it. No card exists for it yet. |
 | `intent` | What they want, in one line. This is what a card has to answer. |
 | `topic_hint` | The **game entity** a card must cover — a fact about the game, not about our corpus. |
-| `ban_verbatim` | Phrases the eventual card title will use. The query is checked not to contain them. |
+| `withheld_card_terms` | Phrases the eventual card title will use. The query is checked not to contain them. Renamed from `ban_verbatim`, which read as though naming a boss were disallowed. |
+| `skill_level` | `beginner` / `familiar` / `power_user` — the v1 draft was uniformly beginner. |
+| `input_style` | `terse` (default) or `voice`. |
+| `needs_clarification` | Set on the 12 rows that no single card can answer. |
 | `expect_section` / `expect_topic` | **Empty.** Labels are filled after sign-off, not before. |
 
-The `ban_verbatim` rule is enforced by a test, not by a reviewer's eye:
-`test_v1_intents_do_not_echo_the_cards_they_will_match`. Four drafts tripped it and were
-rewritten. A second test refuses to let the labels be filled while the file is still marked
-`awaiting_maintainer_signoff`.
+The no-echo rule is enforced by a test, not by a reviewer's eye:
+`test_drafted_intents_do_not_echo_the_cards_they_will_match`. A second test refuses to let the
+labels be filled while the file is still marked `awaiting_maintainer_signoff`.
 
-Coverage is 10 topics per title across the existing 11 titles — no net-new titles, matching
-the plan's scope. Per title, seven topics carry a `tune` query and three carry a `holdout`
-query, so holdout tests generalisation to intents that were never tuned against.
+### 1a. What the rewrite changed
+
+The v1 draft was wrong in two ways the maintainer named, and a third found while fixing them.
+
+1. **It wrote sentences.** Users are on a controller; typing is expensive. Median query is now
+   **5 words**, with 12 deliberately longer voice-register rows kept and marked.
+2. **It assumed players describe rather than name.** They do — the game puts the names on
+   screen. Proper nouns are now expected wherever the game supplies them, and reserved
+   vagueness for genuinely hard recall (Volvagia, Sandtraps) and unfamiliar jargon.
+3. **It was uniformly beginner.** Now 63 beginner / 78 familiar / 40 power-user. Power-user
+   rows deliberately target content the corpus does not have — versus, tier lists, map
+   callouts, speedrun routing — so the gap reports as a miss instead of being hidden.
+
+Also: both sides of a multiplayer title are covered as deliberate pairs (L4D2 survivor vs
+infected, 29 rows), `ask_mode` is gone as a query-level field after D17, and the 40 compat rows
+are carried across **unchanged** — they are the exact set D16's reachability numbers were
+measured against, and re-wording them would invalidate that for nothing.
+
+Re-checked against the live router: **0 of 181** strategy rows misroute to troubleshooting, and
+compat still reaches **39/40** with the same known miss.
+
+**The rewrite immediately found a production bug.** `extract_strategy_asked_entity` only parses
+verb-first sentences, so of the 100 queries that visibly name their subject it recognises 8 —
+and four capture a filler word instead, which drops the most spoiler-heavy BG3 row from *high*
+to *med*. Filed as its own bugs row in [roadmap.md](../roadmap.md); not fixed here.
 
 ---
 

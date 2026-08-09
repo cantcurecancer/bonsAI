@@ -31,6 +31,12 @@ PROTECT_PROGRESSION_APP_IDS = frozenset(
         "1091500",  # Cyberpunk 2077
         "1547000",  # GTA: San Andreas — The Definitive Edition
         "1174180",  # Red Dead Redemption 2
+        "220",  # Half-Life 2
+        # Portal 2 is the first title the two-profile split does not really fit: chamber
+        # solutions spoil nothing, but the story is built on a late reveal. Protect, because
+        # the cost of being wrong is asymmetric — over-fencing a puzzle hint annoys, and
+        # under-fencing the ending cannot be taken back. Section type carries the rest.
+        "620",  # Portal 2
     }
 )
 
