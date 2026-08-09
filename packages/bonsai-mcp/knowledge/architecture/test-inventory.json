@@ -76,6 +76,7 @@
   "pytest": [
     "tests/test_accent_intensity_parity.py",
     "tests/test_ai_character_service.py",
+    "tests/test_asked_entity_extraction.py",
     "tests/test_async_task_lifecycle.py",
     "tests/test_backend_helpers.py",
     "tests/test_background_abort_busy.py",

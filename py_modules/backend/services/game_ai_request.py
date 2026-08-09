@@ -23,6 +23,7 @@ from backend.services.input_sanitizer_service import apply_input_sanitizer_lane
 from backend.services.ollama_prompts import (
     build_reply_followup_context_block,
     extract_strategy_asked_entity,
+    kb_card_names,
     kb_text_covers_asked_entity,
     user_consents_strategy_spoilers,
     user_wants_power_or_performance_topic,
@@ -388,7 +389,12 @@ async def run_game_ai_request(
 
         strategy_spoiler_consent_effective = False
         strategy_spoiler_game_genres = lookup_game_genres(settings, app_id)
-        strategy_spoiler_asked_entity = extract_strategy_asked_entity(question_for_model)
+        # Card titles from the attached block are a gazetteer, so a question that names one is
+        # resolved as a fact rather than guessed from phrasing. Empty when nothing attached,
+        # which just falls the extractor back to its patterns.
+        strategy_spoiler_asked_entity = extract_strategy_asked_entity(
+            question_for_model, known_entities=kb_card_names(kb_text)
+        )
         strategy_spoiler_kb_entity_match = kb_text_covers_asked_entity(
             kb_text, strategy_spoiler_asked_entity
         )

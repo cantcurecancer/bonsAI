@@ -159,18 +159,24 @@ exist.
 
 - [x] Eval query intents drafted **before** card text — not card → query echo
 - [x] No query reuses distinctive noun phrases from its target card verbatim *(enforced by test)*
-- [ ] Strategy cards reviewed — **not written yet; blocked on this sign-off**
+- [x] **Query intents approved by the maintainer, 2026-08-09** — *"queries look good"*, on the v2 rewrite
+- [x] **Portal 2 and Half-Life 2 are in scope for cards** (maintainer, 2026-08-09) — 13 titles, not 11
+- [ ] Strategy cards reviewed — **not written yet**
 - [ ] Eval fixtures + labels reviewed — labels are empty until cards exist
 - [x] Compat `gate_reachable` reporting understood; **Q8 closed as D16 — gate widened 2026-08-06**
-- [x] Tune/holdout split recorded — 102 / 45
+- [x] Tune/holdout split recorded — 157 / 64
+- [ ] **`source_url` rule decided before the cards are written** — see the side note below; still open
 - [ ] Explicit sign-off: "approved for rebuild and bake-off"
 
 ---
 
 ## 5. What happens after you sign off
 
-1. Write ~8–12 sections per title covering the 107 strategy intents, `bonsAI-maintainer` trust
-   tier, keeping `write_attributions` in step.
+1. Write ~8–12 sections per title covering the **181** strategy intents across **13** titles,
+   `bonsAI-maintainer` trust tier, keeping `write_attributions` in step. Portal 2 and Half-Life 2
+   are included and have the cleanest sources available (`theportalwiki.com` at CC BY 4.0,
+   `combineoverwiki.net` at CC BY-SA) — see the Valve source table in
+   [roadmap.md](../roadmap.md) § *KB online / versus strategy content*.
 2. Fill `expect_section` / `expect_topic`, flip the fixture out of
    `awaiting_maintainer_signoff`.
 3. Rebuild the corpus, re-run the three-way bake-off on the deepened corpus.
