@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 280,
-  "edgeCount": 659,
+  "fileCount": 281,
+  "edgeCount": 661,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -2214,6 +2214,13 @@
         "src/components/MainTabScreenshotBrowser.tsx"
       ]
     },
+    "src/utils/contextChipsFromSnapshot.test.ts": {
+      "imports": [
+        "src/utils/contextChipsFromSnapshot.ts",
+        "src/utils/inputTransparency.ts"
+      ],
+      "importedBy": []
+    },
     "src/utils/contextChipsFromSnapshot.ts": {
       "imports": [
         "src/utils/inputTransparency.ts"
@@ -2221,7 +2228,8 @@
       "importedBy": [
         "src/components/ContextChipLadder.tsx",
         "src/components/MainTabChatTranscript.tsx",
-        "src/components/SessionContextStrip.tsx"
+        "src/components/SessionContextStrip.tsx",
+        "src/utils/contextChipsFromSnapshot.test.ts"
       ]
     },
     "src/utils/createTabLocalSurvival.ts": {
@@ -2352,6 +2360,7 @@
         "src/hooks/useBonsaiAskOrchestration.ts",
         "src/types/bonsaiUi.ts",
         "src/utils/bonsaiSessionSurvival.ts",
+        "src/utils/contextChipsFromSnapshot.test.ts",
         "src/utils/contextChipsFromSnapshot.ts"
       ]
     },

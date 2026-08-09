@@ -8,6 +8,7 @@ Does not: Persist snapshots to disk or render frontend UI — returns plain dict
 
 from __future__ import annotations
 
+import re
 from typing import Any, Optional
 
 from backend.services.spoiler_risk_service import (
@@ -297,12 +298,60 @@ def _chip_body(
     title: str,
     paths: Optional[list[str]] = None,
     bullets: Optional[list[str]] = None,
+    attribution: Optional[list[dict[str, Any]]] = None,
     dev_json: Any = None,
 ) -> dict[str, Any]:
     body: dict[str, Any] = {"title": title, "paths": list(paths or []), "bullets": list(bullets or [])}
+    if attribution:
+        body["attribution"] = list(attribution)
     if dev_json is not None:
         body["dev_json"] = dev_json
     return body
+
+
+def source_display_name(url: str) -> str:
+    """Host a reader would recognise as the author: ``zelda.fandom.com``.
+
+    Deliberately the host and not the page title. Credit has to be legible at a glance on a
+    handheld, and every CC BY / BY-SA source in scope is a wiki whose host *is* its name.
+    """
+    raw = str(url or "").strip()
+    if not raw:
+        return ""
+    match = re.match(r"^[a-z][a-z0-9+.\-]*://([^/?#]+)", raw, flags=re.IGNORECASE)
+    host = (match.group(1) if match else raw.split("/", 1)[0]).strip().lower()
+    host = host.rsplit("@", 1)[-1].split(":", 1)[0]
+    return host[4:] if host.startswith("www.") else host
+
+
+def build_attribution_entries(sources: Any) -> list[dict[str, Any]]:
+    """Group per-card sources into one credit line per (source, licence).
+
+    One entry per card would print the same wiki three times for a three-card block, which
+    reads as noise and gets skipped -- the opposite of crediting anyone. Grouping keeps the
+    card titles, so the per-work part of a ShareAlike attribution survives.
+
+    Cards with no ``source_url`` are skipped rather than credited to nobody: those are
+    maintainer-authored and have no third party to name.
+    """
+    grouped: dict[tuple[str, str], dict[str, Any]] = {}
+    for item in sources or []:
+        if not isinstance(item, dict):
+            continue
+        url = str(item.get("url") or "").strip()
+        if not url:
+            continue
+        source = source_display_name(url)
+        if not source:
+            continue
+        key = (source, str(item.get("license") or "").strip())
+        entry = grouped.setdefault(
+            key, {"source": source, "license": key[1], "url": url, "cards": []}
+        )
+        title = str(item.get("title") or "").strip()
+        if title and title not in entry["cards"]:
+            entry["cards"].append(title)
+    return list(grouped.values())
 
 
 def _tier_class_from_source_class(source_class: str) -> str:
@@ -430,7 +479,12 @@ def build_context_chips_manifest(
                 "body": _chip_body(
                     title="Local knowledge base",
                     bullets=kb_bullets,
+                    # `paths` only ever held plain strings, and retrieval has always emitted
+                    # dicts, so every source was filtered out here and no card was ever
+                    # credited in the UI. Structured attribution now has its own field; the
+                    # string branch stays for any caller still passing bare paths.
                     paths=[str(s) for s in kb_sources if isinstance(s, str)],
+                    attribution=build_attribution_entries(kb_sources),
                 ),
             }
         )

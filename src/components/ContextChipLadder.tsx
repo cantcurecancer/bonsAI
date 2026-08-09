@@ -9,10 +9,14 @@ import { useCallback, useState } from "react";
 import { Focusable } from "@decky/ui";
 import type { ContextChip, TransparencySnapshot } from "../utils/inputTransparency";
 import {
+  ATTRIBUTION_ACCENT,
+  ATTRIBUTION_ACCENT_SOFT,
+  chipAttribution,
   chipBodyBullets,
   chipBodyPaths,
   chipBodyTitle,
   chipDevJson,
+  chipHasAttribution,
   chipsFromSnapshot,
   CONTEXT_CHIP_SHOW_ALL_MAX,
   tierBackground,
@@ -181,6 +185,9 @@ export function ContextChipLadder({
           const isActive = idx === safeIndex;
           const truncated = !isActive && !showAllChips;
           const far = truncated && Math.abs(idx - safeIndex) >= 2;
+          // Credit has to be visible without selecting the chip, and the fill below only
+          // paints on the active one — so the accent goes on the border, which always renders.
+          const credited = chipHasAttribution(chip);
           return (
             <span
               key={chip.id}
@@ -193,8 +200,12 @@ export function ContextChipLadder({
                 fontSize: isActive ? 11 : 10,
                 padding: "4px 10px",
                 borderRadius: 999,
-                border: `1px solid ${tierBorderColor(chip.tier_class)}`,
-                background: isActive ? tierBackground(chip.tier_class) : "rgba(26, 34, 44, 0.88)",
+                border: `1px solid ${credited ? ATTRIBUTION_ACCENT : tierBorderColor(chip.tier_class)}`,
+                background: isActive
+                  ? tierBackground(chip.tier_class)
+                  : credited
+                    ? ATTRIBUTION_ACCENT_SOFT
+                    : "rgba(26, 34, 44, 0.88)",
                 color: "#e2e8f0",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
@@ -215,6 +226,7 @@ export function ContextChipLadder({
 function ChipExpandedBody({ chip }: { chip: ContextChip }) {
   const bullets = chipBodyBullets(chip);
   const paths = chipBodyPaths(chip);
+  const attribution = chipAttribution(chip);
   const devJson = chipDevJson(chip);
   return (
     <div
@@ -231,6 +243,29 @@ function ChipExpandedBody({ chip }: { chip: ContextChip }) {
       }}
     >
       <div style={{ fontWeight: 700, marginBottom: 6 }}>{chipBodyTitle(chip)}</div>
+      {attribution.length > 0 ? (
+        <div
+          style={{
+            marginBottom: 8,
+            padding: "6px 8px",
+            borderRadius: 6,
+            borderLeft: `3px solid ${ATTRIBUTION_ACCENT}`,
+            background: ATTRIBUTION_ACCENT_SOFT,
+          }}
+        >
+          {attribution.map((entry) => (
+            <div key={`${entry.source}|${entry.license}`} style={{ marginBottom: 2 }}>
+              <span style={{ fontWeight: 700, color: ATTRIBUTION_ACCENT }}>{entry.source}</span>
+              {entry.license ? (
+                <span style={{ fontSize: 10, color: "#c9b892" }}> · {entry.license}</span>
+              ) : null}
+              {entry.cards.length > 0 ? (
+                <div style={{ fontSize: 10, color: "#9fb7d5" }}>{entry.cards.join(", ")}</div>
+              ) : null}
+            </div>
+          ))}
+        </div>
+      ) : null}
       {paths.map((p) => (
         <div key={p} style={{ fontSize: 10, color: "#9fb7d5", wordBreak: "break-all", marginBottom: 4 }}>
           {p}

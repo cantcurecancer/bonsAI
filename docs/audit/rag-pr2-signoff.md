@@ -165,7 +165,7 @@ exist.
 - [ ] Eval fixtures + labels reviewed — labels are empty until cards exist
 - [x] Compat `gate_reachable` reporting understood; **Q8 closed as D16 — gate widened 2026-08-06**
 - [x] Tune/holdout split recorded — 157 / 64
-- [ ] **`source_url` rule decided before the cards are written** — see the side note below; still open
+- [x] **`source_url` rule decided and enforced, 2026-08-09** — a third-party licence requires a `source_url`; a `source_url` requires a declared licence; maintainer-authored cards carry neither. Both seed files already complied. Locked by `tests/test_source_attribution.py`, so an incomplete card fails a test rather than shipping uncredited.
 - [ ] Explicit sign-off: "approved for rebuild and bake-off"
 
 ---

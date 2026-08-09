@@ -94,6 +94,32 @@ Settings: `rag_corpus_path`, `rag_corpus_version`, `use_local_knowledge_base`.
 
 Replies should use existing `bonsai-cite` markers; spoilery cards obey `bonsai-spoiler` policy.
 
+## Source attribution (2026-08-09)
+
+**The rule, enforced by `tests/test_source_attribution.py`:**
+
+- A card claiming a **third-party licence must carry a `source_url`**. Claiming CC BY or
+  CC BY-SA and naming nobody does not satisfy the licence.
+- A card carrying a **`source_url` must declare a `source_license`**. Terms that were never
+  written down cannot be honoured downstream.
+- **Maintainer-authored cards carry neither** and are not pushed into inventing a citation.
+
+`_format_block` builds one source record per card that **survived the context budget** — a
+citation for text the model never saw is worse than none. `build_attribution_entries` then
+groups those into one credit per `(source, licence)`, keeping the card titles, so a block of
+three cards from one wiki reads as one credit line rather than three.
+
+Two UI constraints, both measured rather than assumed:
+
+- The accent must **not** reuse `tier_class`. That is the *model*-licensing axis and its
+  `open_weight` value already paints amber, so a knowledge chip would read as a model chip.
+- The accent must sit on the chip **outline**, not the fill. `ContextChipLadder` paints
+  `tierBackground` only on the active chip; the border always renders.
+
+This covers the credit **on the reply**. Credit on *distribution* — `ATTRIBUTIONS.md` and the
+corpus NOTICE, generated from `attributions_markdown` in `build_rag_db.py` — is Phase 6, and
+ShareAlike obligations on adaptations still need stating there before first public publish.
+
 ## Phasing
 
 | Phase | Scope |

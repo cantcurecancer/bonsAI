@@ -71,6 +71,11 @@
       "role": ""
     },
     {
+      "path": "py_modules/backend/services/transparency_service.py",
+      "lines": 749,
+      "role": ""
+    },
+    {
       "path": "py_modules/backend/services/ollama_service.py",
       "lines": 735,
       "role": "Prompt build, Ollama HTTP, streaming"
@@ -78,11 +83,6 @@
     {
       "path": "src/components/CharacterPickerModal.tsx",
       "lines": 721,
-      "role": ""
-    },
-    {
-      "path": "py_modules/backend/services/transparency_service.py",
-      "lines": 695,
       "role": ""
     },
     {

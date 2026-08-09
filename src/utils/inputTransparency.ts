@@ -7,10 +7,20 @@
  */
 import type { ModelPolicyDisclosurePayload } from "../data/modelPolicy";
 
+/** One credit line: a licensed source, plus the cards from it that reached the model. */
+export type ContextChipAttribution = {
+  source: string;
+  license: string;
+  url: string;
+  cards: string[];
+};
+
 export type ContextChipBody = {
   title: string;
   paths: string[];
   bullets: string[];
+  /** Absent when nothing licensed was used — most turns. */
+  attribution?: ContextChipAttribution[];
   dev_json?: unknown;
 };
 

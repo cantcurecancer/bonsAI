@@ -5,7 +5,12 @@
  * Solves: Consistent chip ordering, windowing, and gating for route/context disclosure UI.
  * Does not: Fetch transparency data — backend Ask status and inputTransparency types.
  */
-import type { TransparencySnapshot, ContextChip, ContextChipBody } from "./inputTransparency";
+import type {
+  TransparencySnapshot,
+  ContextChip,
+  ContextChipAttribution,
+  ContextChipBody,
+} from "./inputTransparency";
 
 export const CONTEXT_CHIP_WINDOW = 2;
 /** When chip count is at or below this, show every pill (no sliding window). */
@@ -43,6 +48,24 @@ export function chipBodyPaths(chip: ContextChip): string[] {
 export function chipDevJson(chip: ContextChip): unknown {
   return chip.body?.dev_json;
 }
+
+export function chipAttribution(chip: ContextChip): ContextChipAttribution[] {
+  return chip.body?.attribution ?? [];
+}
+
+/**
+ * True when this chip carries a licensed third-party credit.
+ *
+ * Kept off `tier_class`, which is the *model* licensing axis — its `open_weight` value already
+ * paints amber, so reusing it would make a knowledge chip read as a model chip.
+ */
+export function chipHasAttribution(chip: ContextChip): boolean {
+  return chipAttribution(chip).length > 0;
+}
+
+/** Warm parchment, distinct from every tier colour. Reads as a citation, not a warning. */
+export const ATTRIBUTION_ACCENT = "rgba(214, 174, 116, 0.95)";
+export const ATTRIBUTION_ACCENT_SOFT = "rgba(214, 174, 116, 0.14)";
 
 export function tierBorderColor(tierClass: string): string {
   if (tierClass === "foss") return "rgba(74, 222, 128, 0.9)";
