@@ -9,15 +9,15 @@ implementation):
 | Stub | Star | Horizon | Roadmap status |
 |---|---|---|---|
 | **A1** KB coverage chip | ★ | Near | Filed |
+| **A2** Copy reply to clipboard | ★★ | Near | Filed 2026-08-09 |
 | **A3** Permission jump | ★★ | Near | Filed |
 | **B3** Connection doctor | ★★★★ | Medium | Filed **as a candidate** — merge-vs-standalone against **Deck health snapshot** still undecided |
 | **C1** On-Deck model benchmark | ★★★★★ | Long | Filed |
 | **C2** Community tip contribution | ★★★★★ | Long | Filed |
 | **C3** In-game answer surface | ★★★★★★ | Long | Filed, with the ★★ toast-snippet slice called out inside it |
 
-**Not filed, still proposals:** **A2** copy reply to clipboard (wants the
-`wl-copy` ownership spike first), **B1** RPC contract gate, **B2** per-game
-preference memory.
+**Not filed, still proposals:** **B1** RPC contract gate, **B2** per-game
+preference memory. (**A2** filed 2026-08-09 — spike-before-build still on the row.)
 
 Stars follow the roadmap's GTA scale (`★` easiest … `★★★★★` very high;
 `★★★★★★` extreme scope or upstream-gated) and are **effort/risk, not value**.

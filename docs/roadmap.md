@@ -116,6 +116,12 @@ Within this section: ascending stars (★ → ★★★★).
   - **Goal:** Add or refresh preset strings as related features land — content tuning only.
   - **Not in scope:** treating each string batch as a versioned feature ship. AppID/session RAG chips → shipped (**Session RAG preset chips**).
   - **Not in scope:** replacing `fade` as the default (`DEFAULT_PRESET_CHIP_ANIMATION`); changing which prompts are sampled; the other four styles considered in the same pass (`odometer` per-slot roll, `settle` scale-in, `sweep` mask wipe, `sprout` clip-path unfurl) — `sweep` in particular needs an on-Deck measurement first, since animating `mask-position` is not reliably compositor-accelerated there.
+- ★★ **Copy reply to clipboard** (reply micro-action)
+  - **Goal:** One action under an AI reply copies visible answer text to the host clipboard — paste into Konsole, Discord, or a phone without retyping.
+  - **Primary work:** New write RPC + `write_host_clipboard.sh` (`wl-copy` / `xclip -i`); button on the reply action row (`buildReplyActionsElement` / `replyStopRegistry`); focus-graph grow 2×2 → 2×3; toast on success/fail. **Spike first (Gaming Mode + BPM):** `wl-copy` must stay Wayland selection owner — fire-and-forget subprocess drops the clip on exit; if ownership cannot be held, fallback is a selectable text surface (different, smaller feature).
+  - **Depends on:** shipped reply micro-actions + host clipboard read pattern (`read_host_clipboard.sh` / `clipboard_service.py` — read-only today).
+  - **Not in scope (v1):** images/screenshots; clipboard history; whole-transcript copy (→ Named chat slots / Desktop notes); new capability key unless spike proves one is required.
+  - **Filed from:** [13-roadmap-feature-ideas.md](planning/13-roadmap-feature-ideas.md) **A2** (2026-08-09).
 - ★★ **Unfenced spoiler feedback** (thumbs-down category)
   - **Goal:** After thumbs-down, refinement chip for **unfenced spoilers** (and optional over-fenced sibling). Improves future Asks — does not fix the current turn.
   - **Depends on:** reply micro-actions; **Spoiler confidence chip** signals useful later.
