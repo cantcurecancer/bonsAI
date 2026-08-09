@@ -106,6 +106,10 @@ Within this section: ascending stars (★ → ★★★★).
   - **Goal:** Decide whether the quiet intent-pack search aliases should be deleted, left quiet, or revived under Developer.
   - **Proton journal half closed 2026-08-02.** The 5 journal RPCs and `proton_experiment_journal_service.py` are gone (`309c386`, `ebdc0f2`); only the file wipe survived, relocated into `plugin_data_reset.py` because **Clear all data** still needs it. The last of the plumbing — the `journal_text` parameter on `stack_context_blocks` — was removed on the Ask path in the cleanup pass. Reviving the feature now means rebuilding the store, not re-enabling a flag.
   - **Not in scope:** rewriting unified search ranking; re-shipping journal inject without a redesign.
+- ★ **Caveman reply style** (replace Short — Ollama Reply style)
+  - **Goal:** Rename Short → Caveman. Slider = Caveman / Balanced / Detailed. Model prose uses caveman-skill **full** (drop filler/articles, fragments OK, keep technical accuracy). Structural fences unchanged (strategy branches, TDP json, cites, status tags).
+  - **Primary work:** Persist id `caveman` (migrate legacy `short`); rewrite `build_reply_verbosity_block` Short branch → full caveman coaching; labels in `replyVerbosity.ts` + Ollama Reply style section; section one-liner **Caveman talk short. Balanced normal. Detailed go long.**; when AI character on, **character voice wins** — caveman only trims length/filler, does not flatten persona. Unit prompt tests + settings migration; transparency chip label update.
+  - **Not in scope:** ultra/lite intensity control; separate caveman toggle; lowering `num_predict`; rewriting thinking blurbs; changing Balanced/Detailed.
 - ★★ **Preset chip expansion** (streaming / LAN / Steam Input — incremental)
   - **Baseline shipped:** `PRESET_PROMPTS` in [`src/data/presets.ts`](../src/data/presets.ts).
   - **Wave 1 landed 2026-08-07:** four prompts — Find LAN, quick-launch chord, two token-streaming beta strings. Unit coverage in `presets.test.ts`; on-Deck **PRESET-EXPAND-W1-01** open. Detail: [wave1.md](wave1.md).
