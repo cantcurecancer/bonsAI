@@ -1,6 +1,6 @@
 {
   "version": "v2",
-  "description": "Query intents re-authored 2026-08-09 under docs/audit/rag-eval-query-style.md, after maintainer review of the v1 draft rejected its style on two counts: it wrote full sentences for users who are typing on a controller, and it assumed players describe rather than name. Both are fixed here. Written BEFORE the cards they will match (R1), so no row was authored from a card. `withheld_card_terms` lists card *phrasing* a query must not contain -- proper nouns never belong there, because a player reading a name off the screen is not cheating. Renamed from `ban_verbatim`, which read as though naming a boss were disallowed. `ask_mode` is gone as a query-level field: after D17 retrieval no longer depends on it. `expect_section` / `expect_topic` stay empty until cards exist and the maintainer signs off; this is not a scoring fixture until then. Two new titles, Portal 2 and Half-Life 2, are present here with no seed cards behind them yet -- their rows will score as misses, which is the honest reading and not a bug. Several power-user rows across every title target content the corpus does not have (versus, tier lists, map callouts, speedrun routing); they stay in so the gap shows as a miss rather than being hidden by only asking what we can already answer. Spoiler note: rows tagged in `note` as spoiler-relevant are deliberate. A player who types 'adam smasher fight' or 'wheatley fight' has already reached that point, so the question is not itself a spoiler risk -- but a card answering it must not volunteer what comes after. These rows exist so that behaviour is measurable.",
+  "description": "Query intents re-authored 2026-08-09 under docs/audit/rag-eval-query-style.md, after maintainer review of the v1 draft rejected its style on two counts: it wrote full sentences for users who are typing on a controller, and it assumed players describe rather than name. Both are fixed here. Written BEFORE the cards they will match (R1), so no row was authored from a card. `withheld_card_terms` lists card *phrasing* a query must not contain -- proper nouns never belong there, because a player reading a name off the screen is not cheating. Renamed from `ban_verbatim`, which read as though naming a boss were disallowed. `ask_mode` is gone as a query-level field: after D17 retrieval no longer depends on it. `expect_section` / `expect_topic` stay empty until cards exist and the maintainer signs off; this is not a scoring fixture until then. Two new titles, Portal 2 and Half-Life 2, are present here with no seed cards behind them yet -- their rows will score as misses, which is the honest reading and not a bug. Several power-user rows across every title target content the corpus does not have (versus, tier lists, map callouts, speedrun routing); they stay in so the gap shows as a miss rather than being hidden by only asking what we can already answer. Spoiler note: rows tagged in `note` as spoiler-relevant are deliberate. A player who types 'adam smasher fight' or 'wheatley fight' has already reached that point, so the question is not itself a spoiler risk -- but a card answering it must not volunteer what comes after. These rows exist so that behaviour is measurable. Labels: Portal 2 and Half-Life 2 rows carry `expect_section` as of 2026-08-09, the first two titles with wiki-sourced cards behind them. Rows left blank are deliberate content gaps (speedrun routing, Nova Prospekt, cross-game ammo economy) and are expected to miss. Every other title is still unlabelled, so the file stays `awaiting_maintainer_signoff`.",
   "default_split": "tune",
   "status": "awaiting_maintainer_signoff",
   "queries": [
@@ -2349,7 +2349,7 @@
       "skill_level": "beginner",
       "input_style": "terse",
       "note": "Players say 'gel' or 'goo'; the specific gel names are ours until the game teaches them.",
-      "expect_section": ""
+      "expect_section": "Gels"
     },
     {
       "id": "V2-S-PORTAL2-02",
@@ -2380,7 +2380,7 @@
       "skill_level": "beginner",
       "input_style": "terse",
       "note": "Colour is how a player identifies it -- the name is not on screen during play.",
-      "expect_section": ""
+      "expect_section": "Repulsion Gel"
     },
     {
       "id": "V2-S-PORTAL2-04",
@@ -2395,7 +2395,7 @@
       "skill_level": "beginner",
       "input_style": "voice",
       "note": "Voice register. This is the characteristic Portal 2 question and it names nothing.",
-      "expect_section": ""
+      "expect_section": "Thermal Discouragement Beam"
     },
     {
       "id": "V2-S-PORTAL2-05",
@@ -2412,7 +2412,7 @@
       "skill_level": "familiar",
       "input_style": "terse",
       "note": "'Momentum' is ordinary vocabulary a player reaches for unprompted. 'Fling' is the community's term for the technique and is the one worth withholding.",
-      "expect_section": ""
+      "expect_section": "Aerial Faith Plate"
     },
     {
       "id": "V2-S-PORTAL2-06",
@@ -2426,7 +2426,7 @@
       "withheld_card_terms": [],
       "skill_level": "familiar",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "Hard Light Bridge"
     },
     {
       "id": "V2-S-PORTAL2-07",
@@ -2440,7 +2440,7 @@
       "withheld_card_terms": [],
       "skill_level": "familiar",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "Excursion Funnel"
     },
     {
       "id": "V2-S-PORTAL2-08",
@@ -2455,7 +2455,7 @@
       "skill_level": "familiar",
       "input_style": "terse",
       "note": "Highest spoiler exposure in this title. The name is only knowable by having played that far.",
-      "expect_section": ""
+      "expect_section": "Wheatley"
     },
     {
       "id": "V2-S-PORTAL2-09",
@@ -2470,7 +2470,7 @@
       "skill_level": "familiar",
       "input_style": "terse",
       "note": "Co-op, not versus -- there is no opposing side to pair against, unlike L4D2.",
-      "expect_section": ""
+      "expect_section": "Co-op portals and pinging"
     },
     {
       "id": "V2-S-PORTAL2-10",
@@ -2484,7 +2484,7 @@
       "withheld_card_terms": [],
       "skill_level": "familiar",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "Co-op portals and pinging"
     },
     {
       "id": "V2-S-PORTAL2-11",
@@ -2512,7 +2512,7 @@
       "withheld_card_terms": [],
       "skill_level": "power_user",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "Co-op courses"
     },
     {
       "id": "V2-S-PORTAL2-13",
@@ -2546,7 +2546,7 @@
       "skill_level": "beginner",
       "input_style": "terse",
       "note": "One of the few chapter names nearly every player knows.",
-      "expect_section": ""
+      "expect_section": "Ravenholm"
     },
     {
       "id": "V2-S-HL2-02",
@@ -2560,7 +2560,7 @@
       "withheld_card_terms": [],
       "skill_level": "beginner",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "Gravity Gun"
     },
     {
       "id": "V2-S-HL2-03",
@@ -2574,7 +2574,7 @@
       "withheld_card_terms": [],
       "skill_level": "beginner",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "Hunter-Chopper (helicopter)"
     },
     {
       "id": "V2-S-HL2-04",
@@ -2603,7 +2603,7 @@
       "skill_level": "familiar",
       "input_style": "terse",
       "note": "Named in dialogue repeatedly.",
-      "expect_section": ""
+      "expect_section": "Strider"
     },
     {
       "id": "V2-S-HL2-06",
@@ -2618,7 +2618,7 @@
       "skill_level": "familiar",
       "input_style": "voice",
       "note": "Voice register. The chapter is called Sandtraps and almost nobody recalls that.",
-      "expect_section": ""
+      "expect_section": "Antlions and the sand"
     },
     {
       "id": "V2-S-HL2-07",
@@ -2632,7 +2632,7 @@
       "withheld_card_terms": [],
       "skill_level": "familiar",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "Hunter-Chopper (helicopter)"
     },
     {
       "id": "V2-S-HL2-08",
@@ -2649,7 +2649,7 @@
       ],
       "skill_level": "familiar",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "Antlions and the sand"
     },
     {
       "id": "V2-S-HL2-09",
@@ -2663,7 +2663,7 @@
       "withheld_card_terms": [],
       "skill_level": "familiar",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "Combine soldiers"
     },
     {
       "id": "V2-S-HL2-10",

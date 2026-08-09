@@ -149,15 +149,46 @@ class EvalArmsTests(unittest.TestCase):
                     leaks.append((row["id"], banned))
         self.assertEqual(leaks, [], f"queries echo their target card title: {leaks}")
 
-    def test_drafted_intents_are_not_yet_a_scoring_fixture(self):
-        """Labels stay empty until cards exist and the maintainer signs off."""
-        path = REPO_ROOT / "tests" / "fixtures" / "kb_eval_v2.json"
-        data = json.loads(path.read_text(encoding="utf-8"))
-        self.assertEqual(data["status"], "awaiting_maintainer_signoff")
-        labelled = [
-            r["id"] for r in data["queries"] if r.get("expect_section") or r.get("expect_topic")
+    def test_every_label_names_a_card_that_exists(self):
+        """A label may only be written once its card is written.
+
+        This started life as "no labels at all until sign-off". That was the right rule while
+        no cards existed, and became wrong when 6d began carding titles one at a time --
+        Portal 2 and Half-Life 2 have cards and labels; the other eleven have neither. The
+        rule worth keeping is the one underneath it: **a label must name a real card**. A
+        label written from imagination turns the eval into a measure of our expectations
+        rather than of retrieval, which is the same self-referential trap as R1.
+        """
+        data = json.loads(
+            (REPO_ROOT / "tests" / "fixtures" / "kb_eval_v2.json").read_text(encoding="utf-8")
+        )
+        seed = json.loads(
+            (REPO_ROOT / "data" / "kb" / "strategy_seed.json").read_text(encoding="utf-8")
+        )
+        card_names = {s["name"] for s in seed["sections"]}
+        phantom = [
+            (r["id"], r["expect_section"])
+            for r in data["queries"]
+            if r.get("expect_section") and r["expect_section"] not in card_names
         ]
-        self.assertEqual(labelled, [], "labels were filled before sign-off")
+        self.assertEqual(phantom, [], f"labels naming no card in the seed: {phantom}")
+
+    def test_fixture_is_still_marked_unsigned_while_titles_lack_cards(self):
+        """The status flag has to stay honest until every title is carded."""
+        data = json.loads(
+            (REPO_ROOT / "tests" / "fixtures" / "kb_eval_v2.json").read_text(encoding="utf-8")
+        )
+        seed = json.loads(
+            (REPO_ROOT / "data" / "kb" / "strategy_seed.json").read_text(encoding="utf-8")
+        )
+        carded = {s["game_id"] for s in seed["sections"]}
+        uncarded = [g["canonical_title"] for g in seed["games"] if g["game_id"] not in carded]
+        if uncarded:
+            self.assertEqual(
+                data["status"],
+                "awaiting_maintainer_signoff",
+                f"fixture claims sign-off while these titles have no cards: {uncarded}",
+            )
 
     def test_slice_keeps_arms_aligned(self):
         mod = self.mod
