@@ -2,7 +2,7 @@
   "hotspots": [
     {
       "path": "main.py",
-      "lines": 2858,
+      "lines": 2862,
       "role": "Decky RPC entrypoints and orchestration"
     },
     {
@@ -11,14 +11,14 @@
       "role": ""
     },
     {
-      "path": "src/index.tsx",
-      "lines": 1346,
-      "role": "Plugin root: tabs, scoped CSS, RPC wiring, Settings"
+      "path": "src/hooks/useBonsaiAskOrchestration.ts",
+      "lines": 1349,
+      "role": ""
     },
     {
-      "path": "src/hooks/useBonsaiAskOrchestration.ts",
-      "lines": 1340,
-      "role": ""
+      "path": "src/index.tsx",
+      "lines": 1348,
+      "role": "Plugin root: tabs, scoped CSS, RPC wiring, Settings"
     },
     {
       "path": "py_modules/backend/services/ollama_prompts.py",
@@ -97,7 +97,7 @@
     },
     {
       "path": "src/components/KnowledgeBaseSection.tsx",
-      "lines": 612,
+      "lines": 630,
       "role": ""
     },
     {
@@ -181,6 +181,11 @@
       "role": ""
     },
     {
+      "path": "src/utils/unwrapAskedEntitySpoilerFences.ts",
+      "lines": 409,
+      "role": ""
+    },
+    {
       "path": "src/styles/sections/section-8.ts",
       "lines": 383,
       "role": ""
@@ -192,11 +197,6 @@
     },
     {
       "path": "py_modules/backend/services/voice_whisper_daemon.py",
-      "lines": 367,
-      "role": ""
-    },
-    {
-      "path": "src/features/plugin-shell/tabs/useMainTabPayload.tsx",
       "lines": 367,
       "role": ""
     }
