@@ -1100,6 +1100,8 @@ const Content: React.FC = () => {
     useLocalKnowledgeBase,
     setUseLocalKnowledgeBase,
     ragCorpusVersion,
+    pauseDebouncedSettingsSave,
+    syncSettingsFromDisk,
   });
 
   const permissionsTab = usePermissionsTabPayload({

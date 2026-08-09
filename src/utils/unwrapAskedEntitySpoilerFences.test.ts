@@ -75,4 +75,37 @@ describe("unwrapAskedEntitySpoilerFences", () => {
     expect(out).not.toContain("```bonsai-spoiler");
     expect(out).toContain("Hold the choke point and watch the rear.");
   });
+
+  it("extracts entity-first phrasing used on controller", () => {
+    expect(extractAskedBeatEntity("wheatley fight")).toBe("wheatley");
+    expect(extractAskedBeatEntity("raphael fight strategy")).toBe("raphael");
+  });
+
+  it("unwraps fences for entity-first questions on protect_progression titles", () => {
+    const q = "wheatley fight";
+    const raw = [
+      "```bonsai-spoiler",
+      "Shoot the orange portal at Wheatley while he is vulnerable.",
+      "```",
+    ].join("\n");
+    const out = unwrapAskedEntitySpoilerFences(raw, { question: q, appId: "620" });
+    expect(out).not.toContain("```bonsai-spoiler");
+    expect(out).toContain("Shoot the orange portal at Wheatley while he is vulnerable.");
+  });
+
+  it("does not unwrap unrelated fences via substring token match", () => {
+    const q = "how to beat theseus and the bull";
+    const raw = [
+      "```bonsai-spoiler",
+      "The bullet ricocheted off the wall.",
+      "```",
+    ].join("\n");
+    expect(unwrapAskedEntitySpoilerFences(raw, { question: q, appId: "413150" })).toContain(
+      "```bonsai-spoiler"
+    );
+  });
+
+  it("rejects entity-first captures when the qualifier is not at end of question", () => {
+    expect(extractAskedBeatEntity("fire boss that flies out of holes")).toBe("");
+  });
 });

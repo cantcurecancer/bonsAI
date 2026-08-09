@@ -31,7 +31,12 @@ import {
   clearStrategyChecklistSession,
   scheduleStrategyChecklistSessionSave,
 } from "../utils/strategyChecklistPersistence";
-import { callDeckyWithTimeout, DECKY_RPC_TIMEOUT_MS, formatDeckyRpcError } from "../utils/deckyCall";
+import {
+  callDeckyWithTimeout,
+  DECKY_ASK_START_RPC_TIMEOUT_MS,
+  DECKY_RPC_TIMEOUT_MS,
+  formatDeckyRpcError,
+} from "../utils/deckyCall";
 import { uiActiveElement } from "../utils/uiDocument";
 import { useBackgroundGameAi } from "./useBackgroundGameAi";
 import type {
@@ -927,30 +932,34 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
             },
           ],
           BackgroundStartResponse
-        >("start_background_game_ai", [
-          {
-            question: q,
-            PcIp: ip,
-            appId,
-            appName,
-            attachments: attachments as AskAttachment[],
-            ask_mode: askModeForRequest,
-            spoiler_consent: spoilerConsentForRequest,
-            ...(followUpPending
-              ? {
-                  reply_followup: {
-                    chip_id: followUpPending.chipId,
-                    parent_question: followUpPending.parentQuestion,
-                    parent_answer: followUpPending.parentAnswer,
-                    preferred_model: followUpPending.preferredModel,
-                  },
-                }
-              : {}),
-            ...(askModeForRequest === "strategy" && !isStrategyFirstTurn && strategyChecklistRef.current
-              ? { strategy_checklist_state: strategyChecklistToAskPayload(strategyChecklistRef.current) }
-              : {}),
-          },
-        ]);
+        >(
+          "start_background_game_ai",
+          [
+            {
+              question: q,
+              PcIp: ip,
+              appId,
+              appName,
+              attachments: attachments as AskAttachment[],
+              ask_mode: askModeForRequest,
+              spoiler_consent: spoilerConsentForRequest,
+              ...(followUpPending
+                ? {
+                    reply_followup: {
+                      chip_id: followUpPending.chipId,
+                      parent_question: followUpPending.parentQuestion,
+                      parent_answer: followUpPending.parentAnswer,
+                      preferred_model: followUpPending.preferredModel,
+                    },
+                  }
+                : {}),
+              ...(askModeForRequest === "strategy" && !isStrategyFirstTurn && strategyChecklistRef.current
+                ? { strategy_checklist_state: strategyChecklistToAskPayload(strategyChecklistRef.current) }
+                : {}),
+            },
+          ],
+          DECKY_ASK_START_RPC_TIMEOUT_MS,
+        );
 
         if (!isRequestActive(seq)) return;
 
