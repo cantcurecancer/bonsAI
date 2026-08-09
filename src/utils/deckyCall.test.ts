@@ -1,6 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { call } from "@decky/api";
-import { callDeckyWithTimeout, DECKY_RPC_TIMEOUT_MS, formatDeckyRpcError } from "./deckyCall";
+import {
+  callDeckyWithTimeout,
+  DECKY_ASK_START_RPC_TIMEOUT_MS,
+  DECKY_RPC_TIMEOUT_MS,
+  formatDeckyRpcError,
+} from "./deckyCall";
 import { dispatchFakeRpc, resetFakeDeckyRpc, setRpcHandler } from "../test-harness/fakeDeckyRpc";
 
 describe("deckyCall", () => {
@@ -44,5 +49,10 @@ describe("deckyCall", () => {
 
   it("exports default RPC timeout constant", () => {
     expect(DECKY_RPC_TIMEOUT_MS).toBe(15_000);
+  });
+
+  it("Ask start timeout exceeds default and Steam VAC HTTP deadline", () => {
+    expect(DECKY_ASK_START_RPC_TIMEOUT_MS).toBeGreaterThan(DECKY_RPC_TIMEOUT_MS);
+    expect(DECKY_ASK_START_RPC_TIMEOUT_MS).toBeGreaterThanOrEqual(30_000);
   });
 });

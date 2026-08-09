@@ -46,6 +46,8 @@ export function useOllamaTabPayload({
   useLocalKnowledgeBase,
   setUseLocalKnowledgeBase,
   ragCorpusVersion,
+  pauseDebouncedSettingsSave,
+  syncSettingsFromDisk,
 }: UseOllamaTabPayloadArgs): React.ReactElement {
   // Dependency list preserved verbatim from index.tsx: the settings setters are stable
   // identities from usePluginSettings and were deliberately left out.
@@ -81,6 +83,8 @@ export function useOllamaTabPayload({
         useLocalKnowledgeBase={useLocalKnowledgeBase}
         setUseLocalKnowledgeBase={setUseLocalKnowledgeBase}
         ragCorpusVersion={ragCorpusVersion}
+        pauseDebouncedSettingsSave={pauseDebouncedSettingsSave}
+        syncSettingsFromDisk={syncSettingsFromDisk}
       />
     ),
     [
@@ -98,6 +102,8 @@ export function useOllamaTabPayload({
       onApplyTier2MultimodalPolicy,
       useLocalKnowledgeBase,
       ragCorpusVersion,
+      pauseDebouncedSettingsSave,
+      syncSettingsFromDisk,
       onBeforeDeckyModal,
       onCompleteDeckyModalClose,
       onOpenOllamaModelsHub,

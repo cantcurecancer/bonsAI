@@ -11,6 +11,13 @@ import { call } from "@decky/api";
 export const DECKY_RPC_TIMEOUT_MS = 15000;
 
 /**
+ * Ask submit RPC deadline — longer than {@link DECKY_RPC_TIMEOUT_MS} because
+ * `start_background_game_ai` can block on local commands (e.g. Steam VAC check
+ * uses up to 18s HTTP timeout) before returning.
+ */
+export const DECKY_ASK_START_RPC_TIMEOUT_MS = 30_000;
+
+/**
  * Feature: Decky RPC with timeout.
  * Input: method name, args, optional timeout ms. Output: RPC result or timeout Error.
  */

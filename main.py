@@ -739,7 +739,11 @@ class Plugin:
         settings = await self.load_settings()
         ok = capability_enabled(settings, "steam_web_api")
         key = str(settings.get("steam_web_api_key") or "")
-        response = response_for_vac_check(parsed_arg, api_key=key, capability_ok=ok)
+        loop = asyncio.get_running_loop()
+        response = await loop.run_in_executor(
+            None,
+            lambda: response_for_vac_check(parsed_arg, api_key=key, capability_ok=ok),
+        )
         app_context = "active" if app_id else "none"
         return {
             "success": True,
