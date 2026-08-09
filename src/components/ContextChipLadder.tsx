@@ -259,6 +259,9 @@ function ChipExpandedBody({ chip }: { chip: ContextChip }) {
               {entry.license ? (
                 <span style={{ fontSize: 10, color: "#c9b892" }}> · {entry.license}</span>
               ) : null}
+              {entry.captured ? (
+                <span style={{ fontSize: 10, color: "#c9b892" }}> · as of {entry.captured}</span>
+              ) : null}
               {entry.cards.length > 0 ? (
                 <div style={{ fontSize: 10, color: "#9fb7d5" }}>{entry.cards.join(", ")}</div>
               ) : null}

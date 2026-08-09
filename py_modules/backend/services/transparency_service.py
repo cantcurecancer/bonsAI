@@ -324,6 +324,17 @@ def source_display_name(url: str) -> str:
     return host[4:] if host.startswith("www.") else host
 
 
+def _captured_date(value: Any) -> str:
+    """Reduce a capture stamp to ``YYYY-MM-DD``.
+
+    Seed rows carry a snapshot date; rows that never stated one inherit the build's ISO
+    timestamp. Both are useful to a reader only down to the day.
+    """
+    raw = str(value or "").strip()
+    match = re.match(r"^(\d{4}-\d{2}-\d{2})", raw)
+    return match.group(1) if match else ""
+
+
 def build_attribution_entries(sources: Any) -> list[dict[str, Any]]:
     """Group per-card sources into one credit line per (source, licence).
 
@@ -346,11 +357,16 @@ def build_attribution_entries(sources: Any) -> list[dict[str, Any]]:
             continue
         key = (source, str(item.get("license") or "").strip())
         entry = grouped.setdefault(
-            key, {"source": source, "license": key[1], "url": url, "cards": []}
+            key, {"source": source, "license": key[1], "url": url, "cards": [], "captured": ""}
         )
         title = str(item.get("title") or "").strip()
         if title and title not in entry["cards"]:
             entry["cards"].append(title)
+        captured = _captured_date(item.get("captured"))
+        # Cards grouped under one wiki can come from different snapshots. Show the oldest --
+        # it is the honest bound on how current the credited text is.
+        if captured and (not entry["captured"] or captured < entry["captured"]):
+            entry["captured"] = captured
     return list(grouped.values())
 
 

@@ -13,6 +13,8 @@ export type ContextChipAttribution = {
   license: string;
   url: string;
   cards: string[];
+  /** YYYY-MM-DD the credited text was captured. Empty when the backend did not say. */
+  captured?: string;
 };
 
 export type ContextChipBody = {

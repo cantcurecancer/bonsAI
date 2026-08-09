@@ -27,7 +27,7 @@
     },
     {
       "path": "py_modules/backend/services/knowledge_base_service.py",
-      "lines": 1203,
+      "lines": 1207,
       "role": ""
     },
     {
@@ -66,13 +66,13 @@
       "role": ""
     },
     {
-      "path": "src/components/MainTabChatTranscript.tsx",
-      "lines": 750,
+      "path": "py_modules/backend/services/transparency_service.py",
+      "lines": 765,
       "role": ""
     },
     {
-      "path": "py_modules/backend/services/transparency_service.py",
-      "lines": 749,
+      "path": "src/components/MainTabChatTranscript.tsx",
+      "lines": 750,
       "role": ""
     },
     {

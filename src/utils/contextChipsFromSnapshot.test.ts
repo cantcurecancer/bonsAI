@@ -49,6 +49,27 @@ describe("chip attribution", () => {
     expect(chipAttribution(c)[0].source).toBe("theportalwiki.com");
   });
 
+  it("carries the capture date when the backend supplies one", () => {
+    // Corpus cards distilled from archive.org snapshots can be years old; the chip says so.
+    const c = chip({
+      body: {
+        title: "Local knowledge base",
+        paths: [],
+        bullets: [],
+        attribution: [
+          {
+            source: "reddead.fandom.com",
+            license: "CC-BY-SA-3.0",
+            url: "https://reddead.fandom.com/wiki/Dead_Eye",
+            cards: ["RDR2 — Dead Eye"],
+            captured: "2020-02-23",
+          },
+        ],
+      },
+    });
+    expect(chipAttribution(c)[0].captured).toBe("2020-02-23");
+  });
+
   it("treats a chip with no attribution key as uncredited", () => {
     expect(chipHasAttribution(chip())).toBe(false);
     expect(chipAttribution(chip())).toEqual([]);

@@ -663,6 +663,10 @@ def _format_block(
                 "title": f"{c.game_title} — {c.name}",
                 "url": c.source_url,
                 "license": c.source_license or "",
+                # When the wiki text behind this card was captured. Several corpus sources
+                # are archive.org snapshots years old; a credit that hides that reads as
+                # current advice.
+                "captured": str(c.crawled_at or ""),
             }
             for c in kept
             if c.source_url

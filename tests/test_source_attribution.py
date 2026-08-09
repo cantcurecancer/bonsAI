@@ -13,6 +13,7 @@ quietly break it.
 """
 
 import json
+import re
 import unittest
 from pathlib import Path
 
@@ -77,6 +78,22 @@ class CorpusLicensingRuleTests(unittest.TestCase):
         rows = [{"name": "x", "source_license": MAINTAINER_LICENSE, "source_url": ""}]
         self._assert_third_party_cards_cite_a_source(rows, "synthetic")
 
+    def test_every_cited_card_says_when_its_text_was_captured(self):
+        """Several corpus sources are archive.org snapshots years old.
+
+        Without a per-row date the build stamps its own timestamp, so 2020 wiki text would
+        be relabelled with today's date on every rebuild -- exactly the staleness a reader
+        needs to see. A card that names a wiki must also say when that wiki was read.
+        """
+        rows = _rows(DATA / "strategy_seed.json", "sections")
+        undated = [
+            row.get("name")
+            for row in rows
+            if str(row.get("source_url") or "").strip()
+            and not re.match(r"^\d{4}-\d{2}-\d{2}", str(row.get("crawled_at") or ""))
+        ]
+        self.assertEqual(undated, [], f"wiki-sourced cards with no capture date: {undated}")
+
 
 class SourceDisplayNameTests(unittest.TestCase):
     def test_host_is_the_credit(self):
@@ -134,6 +151,30 @@ class AttributionEntryTests(unittest.TestCase):
     def test_junk_input_is_ignored(self):
         self.assertEqual(build_attribution_entries(None), [])
         self.assertEqual(build_attribution_entries(["a string", 7, {}]), [])
+
+    def test_capture_date_is_reported_and_trimmed_to_the_day(self):
+        entries = build_attribution_entries(
+            [{"title": "A", "url": "https://x.example/wiki/A", "license": "CC-BY-SA-3.0",
+              "captured": "2025-04-05T11:22:33Z"}]
+        )
+        self.assertEqual(entries[0]["captured"], "2025-04-05")
+
+    def test_grouped_cards_report_the_oldest_capture(self):
+        """One credit line covers several cards; claiming the newest date oversells the rest."""
+        entries = build_attribution_entries(
+            [
+                {"title": "A", "url": "https://x.example/wiki/A", "license": "L", "captured": "2026-06-18"},
+                {"title": "B", "url": "https://x.example/wiki/B", "license": "L", "captured": "2020-02-23"},
+            ]
+        )
+        self.assertEqual(len(entries), 1)
+        self.assertEqual(entries[0]["captured"], "2020-02-23")
+
+    def test_a_source_that_never_said_reports_nothing_rather_than_guessing(self):
+        entries = build_attribution_entries(
+            [{"title": "A", "url": "https://x.example/wiki/A", "license": "L"}]
+        )
+        self.assertEqual(entries[0]["captured"], "")
 
 
 class AttributionReachesTheChipTests(unittest.TestCase):

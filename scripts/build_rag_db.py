@@ -187,7 +187,12 @@ def _seed_strategy_corpus(conn: sqlite3.Connection, crawled: str) -> None:
                 str(s.get("source_url") or ""),
                 str(s.get("source_license") or ""),
                 s.get("source_version"),
-                crawled,
+                # A seed row may state when its text was captured -- the snapshot date of the
+                # archive.org dump it was distilled from, or the day the live wiki was read.
+                # Falling back to build time is only right for rows that never say; using it
+                # for a wiki card would relabel 2020 wiki text with today's date on every
+                # rebuild, which is the staleness the reader most needs to see.
+                str(s.get("crawled_at") or crawled),
             )
             for s in sections
         ],
