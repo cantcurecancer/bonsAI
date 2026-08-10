@@ -1,6 +1,6 @@
 # RAG retrieval quality remediation — implementation plan
 
-**Status:** **PR1 (Stages 1–5) shipped 2026-08-05**, commits `d111491`…`82d379f`. **PR2 (Stage 6) in progress since 2026-08-06** — corpus rebuilt at schema v3 and verified on the live hybrid path; **6a** (kill-switch) and **6b** (eval arms, splits, CIs, gate reachability) landed. Next: **6c** query intents, then the maintainer sign-off gate.  
+**Status:** **CLOSED 2026-08-09.** PR1 (Stages 1–5) shipped 2026-08-05. PR2 (Stage 6) complete: kill-switch, D16 router, `kb_eval_v2` (221 / 140 labeled), 13-title / 119-section seed, schema-v3 rebuild, arms bake-off, equal RRF weights locked on holdout **no separation**. Report: [archive/research/kb-retrieval-pr2-bakeoff-2026-08-09.md](archive/research/kb-retrieval-pr2-bakeoff-2026-08-09.md). Sign-off packet: [audit/rag-pr2-signoff.md](audit/rag-pr2-signoff.md).  
 **Analysis source (do not edit as ship plan):** [archive/rag-retrieval-quality-remediation-plan.md](archive/rag-retrieval-quality-remediation-plan.md)
 
 > **PR2 build notes (running)** — what the work has turned up so far:
@@ -154,15 +154,15 @@ Do **not** compare new hybrid/RRF numbers to the 2026-07-31 keyword 92.5%. Re-ru
 **Live sign-off packet: [audit/rag-pr2-signoff.md](audit/rag-pr2-signoff.md)** — 147 drafted
 intents, the measured Q8 numbers, and the open question that blocks stage 6d.
 
-Before rebuild / bake-off:
+Before rebuild / bake-off — **all checked 2026-08-09** (see [audit/rag-pr2-signoff.md](audit/rag-pr2-signoff.md)):
 
-- [ ] Eval query intents drafted **before** (or independently of) card text — not card→query echo
-- [ ] No query reuses distinctive noun phrases from its target card verbatim
-- [ ] Strategy cards reviewed (best-effort correctness + distinctness)
-- [ ] Eval fixtures + labels reviewed
-- [ ] Compat `gate_reachable` reporting understood; Q8 still open
-- [ ] Tune/holdout split recorded
-- [ ] Explicit sign-off: “approved for rebuild and bake-off”
+- [x] Eval query intents drafted **before** (or independently of) card text — not card→query echo
+- [x] No query reuses distinctive noun phrases from its target card verbatim
+- [x] Strategy cards reviewed (best-effort correctness + distinctness)
+- [x] Eval fixtures + labels reviewed
+- [x] Compat `gate_reachable` reporting understood; Q8 closed as D16
+- [x] Tune/holdout split recorded
+- [x] Explicit sign-off: “approved for rebuild and bake-off”
 
 ---
 

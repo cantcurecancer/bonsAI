@@ -86,7 +86,7 @@ class EvalArmsTests(unittest.TestCase):
 
     def test_empty_holdout_is_reported_as_ungated_not_as_a_tie(self):
         table = self._table([], [])
-        self.assertIn("holdout split is empty", self.mod._arms_verdict(table))
+        self.assertIn("holdout split has no labeled cases", self.mod._arms_verdict(table))
 
     def test_gate_reachability_comes_from_the_live_gate(self):
         """A phrase-list change must move this number, not leave a stale fixture boolean."""
@@ -173,8 +173,8 @@ class EvalArmsTests(unittest.TestCase):
         ]
         self.assertEqual(phantom, [], f"labels naming no card in the seed: {phantom}")
 
-    def test_fixture_is_still_marked_unsigned_while_titles_lack_cards(self):
-        """The status flag has to stay honest until every title is carded."""
+    def test_fixture_status_tracks_whether_every_title_is_carded(self):
+        """Unsigned while any title lacks cards; approved once the 13-title seed is complete."""
         data = json.loads(
             (REPO_ROOT / "tests" / "fixtures" / "kb_eval_v2.json").read_text(encoding="utf-8")
         )
@@ -189,6 +189,20 @@ class EvalArmsTests(unittest.TestCase):
                 "awaiting_maintainer_signoff",
                 f"fixture claims sign-off while these titles have no cards: {uncarded}",
             )
+        else:
+            self.assertEqual(
+                data["status"],
+                "approved_for_rebuild_and_bakeoff",
+                "every title is carded — fixture must be approved before PR2 bake-off",
+            )
+
+    def test_v2_fixture_has_tune_and_holdout_labeled_cases(self):
+        cases = self.mod._load_fixture(
+            REPO_ROOT / "tests" / "fixtures" / "kb_eval_v2.json", "kb_eval_v2"
+        )
+        labeled = [c for c in cases if self.mod._case_is_labeled(c)]
+        self.assertTrue(any(c.split == "tune" for c in labeled))
+        self.assertTrue(any(c.split == "holdout" for c in labeled))
 
     def test_slice_keeps_arms_aligned(self):
         mod = self.mod

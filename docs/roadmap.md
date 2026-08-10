@@ -169,9 +169,6 @@ Stars are **effort/risk**. Grouped by **theme**; within each lane sorted ascendi
 - ★★★★ **RAG Deck query — retrieval infra (Phase 7)**
   - **Goal:** Optional sqlite-vss/ANN, auto-pull nomic, RRF extensions, vision→KB, demote, packs, intent retrieval.
   - **Status:** FTS+vector shipped in remediation; remainder docs only. [knowledge-base.md](knowledge-base.md) § Phase 7.
-- ★★★★ **RAG retrieval quality remediation** (hybrid fix + eval honesty)
-  - **Goal:** Fix hybrid defects; deepen seed; honest tune/holdout eval.
-  - **Status:** PR1 shipped 2026-08-05; PR2 stages 6a–6d largely landed — **open:** fusion tuning on deepened corpus, maintainer sign-off on `kb_eval_v2.json`, superseding bake-off report. Plan: [rag-retrieval-quality-remediation-implementation-plan.md](rag-retrieval-quality-remediation-implementation-plan.md).
 - ★★★★★ **Community tip contribution** (corpus inbound path)
   - **GitHub:** [bonsAI Issues](https://github.com/cantcurecancer/bonsAI/issues) — issue TBD.
   - **Goal:** Reply → **Suggest as a tip** writes schema-valid card to Desktop + GitHub attach URL.
@@ -248,7 +245,7 @@ Stars are **effort/risk**. Grouped by **theme**; within each lane sorted ascendi
 - **Capability Permission Center** → gates filesystem, Steam/Proton log + screenshot reads, mic, Steam Web API; → planned **Web permission** (Kids Lock forces off); → **Permission jump** shipped.
 - **Llama.cpp provider spike** → research-only; related **Dynamic keep-alive / smart unload**.
 - **Preset carousel (shipped)** → **Preset chip expansion**; **Session RAG preset chips** (shipped).
-- **RAG / offline KB** → Phase 2–3 shipped → **retrieval quality remediation** (PR1/PR2) → Phase 4–8 Backlog; **KB visual maps** separate; **Spoiler constitution** runtime encoding shipped 2026-08-07; **Spoiler confidence chip** → fencing + unfenced feedback.
+- **RAG / offline KB** → Phase 2–3 shipped → **retrieval quality remediation** (PR1/PR2 closed 2026-08-09) → Phase 4–8 Backlog; **KB visual maps** separate; **Spoiler constitution** runtime encoding shipped 2026-08-07; **Spoiler confidence chip** → fencing + unfenced feedback.
 - **Web permission** → citations / allowlist / freshness chip.
 - **Soft** `num_predict` **+ thinking budget** ([Bugs](#bugs)) → **Thinking effort control** (Phase 1 effort UI; Phase 2 blurb one-liners).
 - **Native QAM shortcut tile** → shorter path than Guide-chord macro docs ([troubleshooting.md](troubleshooting.md) §5).

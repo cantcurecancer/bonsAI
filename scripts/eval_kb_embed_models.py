@@ -208,11 +208,16 @@ def _load_fixture(path: Path, suite: str) -> list[QueryCase]:
     return out
 
 
-def _ensure_seed_db(out_dir: Path) -> Path:
+def _ensure_seed_db(out_dir: Path, *, force_rebuild: bool = False) -> Path:
     db_path = out_dir / "corpus.db"
-    if db_path.is_file():
+    if db_path.is_file() and not force_rebuild:
         return db_path
     out_dir.mkdir(parents=True, exist_ok=True)
+    if force_rebuild:
+        for name in ("corpus.db", "corpus.db.zlib", "corpus-manifest.json", "ATTRIBUTIONS.md"):
+            path = out_dir / name
+            if path.is_file():
+                path.unlink()
     subprocess.run(
         [
             sys.executable,
@@ -749,6 +754,13 @@ def _arms_table(results: dict[str, list[QueryResult]]) -> dict[str, Any]:
     return table
 
 
+def _case_is_labeled(case: QueryCase) -> bool:
+    """Blank expect_* rows are deliberate corpus gaps and always miss; exclude them from ship-gate math."""
+    if case.domain == "compat":
+        return bool(case.expect_topic.strip())
+    return bool(case.expect_section.strip())
+
+
 def _arms_verdict(table: dict[str, Any]) -> str:
     """Apply the locked non-overlapping-CI rule to holdout top-3.
 
@@ -762,10 +774,8 @@ def _arms_verdict(table: dict[str, Any]) -> str:
         return "No verdict: an arm is missing from the holdout run."
     if not rrf.get("n"):
         return (
-            "No verdict: the holdout split is empty. Every current fixture is marked `tune` "
-            "because all of them were written from the cards they match, which is the "
-            "self-referential pattern R1 forbids as a gate. The holdout has to be written "
-            "blind before it can gate anything."
+            "No verdict: the holdout split has no labeled cases. Blind holdout rows must carry "
+            "`expect_section` / `expect_topic` before they can gate fusion."
         )
     rrf_lo, rrf_hi = rrf["top3_ci"]
     kw_lo, kw_hi = keyword["top3_ci"]
@@ -895,9 +905,10 @@ def _write_report(
         f"- Holdout arm verdict: {(payload.get('arms') or {}).get('verdict', 'not run')}",
         "- Re-run: `python scripts/eval_kb_embed_models.py --write-report`",
         "",
-        "## English aggregate (kb_eval_v0 + paraphrases)",
+        "## English aggregate (kb_eval_v2, labeled rows)",
         "",
-        f"Scoring uses `max(ask_mode top_k, {EVAL_MIN_TOP_K})` so top-3 is meaningful when fixtures use speed mode.",
+        f"Scoring uses `max(ask_mode top_k, {EVAL_MIN_TOP_K})` so top-3 is meaningful when fixtures use speed mode. "
+        "Blank-label gap rows are excluded from model and arm ship-gate math.",
         "",
         "| Model | Bare top-1 | Bare top-3 | Prompted top-1 | Prompted top-3 | Mean embed ms | FTS empty % |",
         "|-------|------------|------------|----------------|----------------|---------------|-------------|",
@@ -952,12 +963,13 @@ def _write_report(
 
         lines.extend(
             [
-                "## Gate reachability (R2 — deferred Q8 made visible)",
+                "## Gate reachability (R2)",
                 "",
                 "A fixture's `domain` is what we want retrieval to do. `should_retrieve_knowledge` "
                 "decides what production *actually* does. Cases where those disagree are not "
                 "retrieval failures — they are traffic that never reaches retrieval at all, and "
-                "they must not drive weight tuning.",
+                "they must not drive weight tuning. (Q8 / D16 widened the compat gate; remaining "
+                "unreachable rows are expected misses, not a deferred product bug.)",
                 "",
                 "| Domain | Cases | Gate-reachable | Unreachable |",
                 "|--------|-------|----------------|-------------|",
@@ -1040,22 +1052,23 @@ def run_bakeoff(
     models: list[str],
     write_report: bool,
     arms_only: bool = False,
+    force_rebuild: bool = False,
 ) -> dict[str, Any]:
-    db_path = _ensure_seed_db(out_dir)
+    db_path = _ensure_seed_db(out_dir, force_rebuild=force_rebuild)
     conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
     conn.row_factory = sqlite3.Row
 
     docs = _load_corpus_docs(conn)
     compat_docs = [d for d in docs if d.domain == "compat"]
 
-    english_cases = (
-        _load_fixture(FIXTURES / "kb_eval_v0.json", "kb_eval_v0")
-        + _load_fixture(FIXTURES / "kb_eval_paraphrase_v0.json", "paraphrase")
-    )
+    # PR2 ship gate: v2 intents + deepened seed. Legacy v0/paraphrase stay available for
+    # historical comparison but no longer drive the arm verdict or model recommendation.
+    english_cases = _load_fixture(FIXTURES / "kb_eval_v2.json", "kb_eval_v2")
+    labeled_cases = [c for c in english_cases if _case_is_labeled(c)]
     spanish_cases = _load_fixture(FIXTURES / "kb_eval_es_probe_v0.json", "spanish_probe")
 
     keyword_scores = _evaluate_model(
-        conn, ollama_base, "keyword", docs, english_cases, prompt_mode="bare", hybrid=False
+        conn, ollama_base, "keyword", docs, labeled_cases, prompt_mode="bare", hybrid=False
     )
 
     gate = _gate_summary(english_cases)
@@ -1064,7 +1077,7 @@ def run_bakeoff(
         if unreachable:
             print(
                 f"gate: {unreachable}/{row['total']} {domain} cases never reach retrieval in "
-                f"production (deferred Q8) — scored, but reported separately",
+                f"production — scored, but reported separately",
                 file=sys.stderr,
             )
 
@@ -1072,14 +1085,34 @@ def run_bakeoff(
     # would multiply cost without answering the question the arms exist to answer.
     print(f"Embedding corpus for {BASELINE_MODEL} (arms)...", file=sys.stderr)
     arm_vectors = _build_vectors(ollama_base, BASELINE_MODEL, docs, "prompted")
-    print(f"Running retrieval arms on {len(english_cases)} cases...", file=sys.stderr)
+    print(
+        f"Running retrieval arms on {len(english_cases)} v2 cases "
+        f"({len(labeled_cases)} labeled)...",
+        file=sys.stderr,
+    )
     arm_results = _run_retrieval_arms(
         conn, ollama_base, BASELINE_MODEL, docs, english_cases, vectors_by_id=arm_vectors
     )
     arms: dict[str, Any] = {
         "model": BASELINE_MODEL,
+        "fixture": "kb_eval_v2",
+        "n_all": len(english_cases),
+        "n_labeled": len(labeled_cases),
+        "splits_all": {
+            split: _arms_table(
+                _slice_results(arm_results, english_cases, lambda c, s=split: c.split == s)
+            )
+            for split in ("tune", "holdout")
+        },
+        # Ship-gate numbers ignore blank-label gaps so automatic misses do not drown the arms.
         "splits": {
-            split: _arms_table(_slice_results(arm_results, english_cases, lambda c, s=split: c.split == s))
+            split: _arms_table(
+                _slice_results(
+                    arm_results,
+                    english_cases,
+                    lambda c, s=split: c.split == s and _case_is_labeled(c),
+                )
+            )
             for split in ("tune", "holdout")
         },
         "compat_all": _arms_table(
@@ -1094,9 +1127,6 @@ def run_bakeoff(
     arms["verdict"] = _arms_verdict(arms["splits"].get("holdout") or {})
     print(arms["verdict"], file=sys.stderr)
 
-    eval_v0 = _load_fixture(FIXTURES / "kb_eval_v0.json", "kb_eval_v0")
-    eval_para = _load_fixture(FIXTURES / "kb_eval_paraphrase_v0.json", "paraphrase")
-
     english_bare: dict[str, dict[str, Any]] = {}
     english_prompted: dict[str, dict[str, Any]] = {}
     english_prompted_scores: dict[str, ModelScores] = {}
@@ -1104,40 +1134,32 @@ def run_bakeoff(
     for model in [] if arms_only else models:
         print(f"Embedding corpus for {model} (bare)...", file=sys.stderr)
         bare_vectors = _build_vectors(ollama_base, model, docs, "bare")
-        print(f"Evaluating {model} (bare)...", file=sys.stderr)
-        bare_v0 = _evaluate_model(
-            conn, ollama_base, model, docs, eval_v0, prompt_mode="bare", hybrid=True, vectors_by_id=bare_vectors
+        print(f"Evaluating {model} (bare) on labeled v2...", file=sys.stderr)
+        bare_agg = _evaluate_model(
+            conn,
+            ollama_base,
+            model,
+            docs,
+            labeled_cases,
+            prompt_mode="bare",
+            hybrid=True,
+            vectors_by_id=bare_vectors,
         )
-        bare_para = _evaluate_model(
-            conn, ollama_base, model, docs, eval_para, prompt_mode="bare", hybrid=True, vectors_by_id=bare_vectors
-        )
-        bare_agg = _aggregate_english([bare_v0, bare_para])
         english_bare[model] = _scores_to_dict(bare_agg)
 
         print(f"Embedding corpus for {model} (prompted)...", file=sys.stderr)
         prompted_vectors = _build_vectors(ollama_base, model, docs, "prompted")
-        print(f"Evaluating {model} (prompted)...", file=sys.stderr)
-        prompted_v0 = _evaluate_model(
+        print(f"Evaluating {model} (prompted) on labeled v2...", file=sys.stderr)
+        prompted_agg = _evaluate_model(
             conn,
             ollama_base,
             model,
             docs,
-            eval_v0,
+            labeled_cases,
             prompt_mode="prompted",
             hybrid=True,
             vectors_by_id=prompted_vectors,
         )
-        prompted_para = _evaluate_model(
-            conn,
-            ollama_base,
-            model,
-            docs,
-            eval_para,
-            prompt_mode="prompted",
-            hybrid=True,
-            vectors_by_id=prompted_vectors,
-        )
-        prompted_agg = _aggregate_english([prompted_v0, prompted_para])
         english_prompted[model] = _scores_to_dict(prompted_agg)
         english_prompted_scores[model] = prompted_agg
 
@@ -1192,7 +1214,9 @@ def run_bakeoff(
     json_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
 
     if write_report:
-        report_path = REPO_ROOT / "docs" / "archive" / "research" / f"kb-embed-bakeoff-{today}.md"
+        report_path = (
+            REPO_ROOT / "docs" / "archive" / "research" / f"kb-embed-bakeoff-{today}{suffix}.md"
+        )
         _write_report(report_path, payload=payload, recommendation=recommendation, winner=winner)
         print(f"Wrote {report_path}", file=sys.stderr)
 
@@ -1218,6 +1242,11 @@ def main() -> int:
         action="store_true",
         help="Run only the keyword/vector-only/RRF comparison, skipping the model sweep",
     )
+    parser.add_argument(
+        "--force-rebuild",
+        action="store_true",
+        help="Rebuild the seed corpus even if corpus.db already exists under --out",
+    )
     args = parser.parse_args()
 
     try:
@@ -1227,6 +1256,7 @@ def main() -> int:
             models=args.models,
             write_report=args.write_report,
             arms_only=args.arms_only,
+            force_rebuild=args.force_rebuild,
         )
     except EmbedError as exc:
         print(f"embed error: {exc}", file=sys.stderr)

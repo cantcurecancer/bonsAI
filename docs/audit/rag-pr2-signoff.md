@@ -1,197 +1,68 @@
 # RAG remediation PR2 — maintainer sign-off
 
-**Status: § 2 decided (D16, gate widened). Still awaiting sign-off on the intents and cards —
-no cards written, no corpus rebuilt for eval, no bake-off run.**
+**Status: CLOSED 2026-08-09.** Queries approved, 13-title / 119-section seed carded, labels
+filled for covered intents, corpus rebuilt at schema v3, three-way bake-off run, fusion
+constants locked, superseding report written.
 
-This is the R1 gate from
+Live bake-off: [kb-retrieval-pr2-bakeoff-2026-08-09.md](../archive/research/kb-retrieval-pr2-bakeoff-2026-08-09.md).
+
+This was the R1 gate from
 [rag-retrieval-quality-remediation-implementation-plan.md](../rag-retrieval-quality-remediation-implementation-plan.md).
-The order is deliberate: **query intents first, then the cards that answer them, then sign-off
-on both, then rebuild, then measure.** Writing cards first and questions second measures
-whether we can find the card we wrote the question from, which inflates every arm and settles
-nothing.
-
-Drafted 2026-08-06. Stages 6a and 6b are already committed; 6c is the file below; 6d is
-blocked on your answer.
 
 ---
 
-## 1. What is ready for review
+## 1. Fixture
 
-> **Superseded 2026-08-09.** The 147-query v1 draft described below was **rejected on style**
-> and has been deleted; git holds it. The live file is
-> [tests/fixtures/kb_eval_v2.json](../../tests/fixtures/kb_eval_v2.json) — **221 queries**,
-> tune 157 / holdout 64, strategy 181 / compat 40, across **13** titles (Portal 2 and
-> Half-Life 2 added). Authoring rules: [rag-eval-query-style.md](rag-eval-query-style.md).
-> What changed and why is in § 1a. Everything from § 2 down still stands.
+[tests/fixtures/kb_eval_v2.json](../../tests/fixtures/kb_eval_v2.json) — **221** queries,
+tune 157 / holdout 64, strategy 181 / compat 40, **140 labeled**. Status:
+`approved_for_rebuild_and_bakeoff`. Blank `expect_*` rows are deliberate content gaps
+(power-user / needs_clarification / no covering card) and are expected misses.
 
-[tests/fixtures/kb_eval_v2.json](../../tests/fixtures/kb_eval_v2.json) — **221 queries**,
-tune 157 / holdout 64, strategy 181 / compat 40.
-
-Each row carries:
-
-| Field | What it is |
-|---|---|
-| `query` | How a player would type it. No card exists for it yet. |
-| `intent` | What they want, in one line. This is what a card has to answer. |
-| `topic_hint` | The **game entity** a card must cover — a fact about the game, not about our corpus. |
-| `withheld_card_terms` | Phrases the eventual card title will use. The query is checked not to contain them. Renamed from `ban_verbatim`, which read as though naming a boss were disallowed. |
-| `skill_level` | `beginner` / `familiar` / `power_user` — the v1 draft was uniformly beginner. |
-| `input_style` | `terse` (default) or `voice`. |
-| `needs_clarification` | Set on the 12 rows that no single card can answer. |
-| `expect_section` / `expect_topic` | **Empty.** Labels are filled after sign-off, not before. |
-
-The no-echo rule is enforced by a test, not by a reviewer's eye:
-`test_drafted_intents_do_not_echo_the_cards_they_will_match`. A second test refuses to let the
-labels be filled while the file is still marked `awaiting_maintainer_signoff`.
-
-### 1a. What the rewrite changed
-
-The v1 draft was wrong in two ways the maintainer named, and a third found while fixing them.
-
-1. **It wrote sentences.** Users are on a controller; typing is expensive. Median query is now
-   **5 words**, with 12 deliberately longer voice-register rows kept and marked.
-2. **It assumed players describe rather than name.** They do — the game puts the names on
-   screen. Proper nouns are now expected wherever the game supplies them, and reserved
-   vagueness for genuinely hard recall (Volvagia, Sandtraps) and unfamiliar jargon.
-3. **It was uniformly beginner.** Now 63 beginner / 78 familiar / 40 power-user. Power-user
-   rows deliberately target content the corpus does not have — versus, tier lists, map
-   callouts, speedrun routing — so the gap reports as a miss instead of being hidden.
-
-Also: both sides of a multiplayer title are covered as deliberate pairs (L4D2 survivor vs
-infected, 29 rows), `ask_mode` is gone as a query-level field after D17, and the 40 compat rows
-are carried across **unchanged** — they are the exact set D16's reachability numbers were
-measured against, and re-wording them would invalidate that for nothing.
-
-Re-checked against the live router: **0 of 181** strategy rows misroute to troubleshooting, and
-compat still reaches **39/40** with the same known miss.
-
-**The rewrite immediately found a production bug.** `extract_strategy_asked_entity` only parses
-verb-first sentences, so of the 100 queries that visibly name their subject it recognises 8 —
-and four capture a filler word instead, which drops the most spoiler-heavy BG3 row from *high*
-to *med*. Filed as its own bugs row in [roadmap.md](../roadmap.md); not fixed here.
+Authoring rules: [rag-eval-query-style.md](rag-eval-query-style.md).
 
 ---
 
-## 2. ~~The thing you need to decide about, before cards~~ — DECIDED 2026-08-06: widen the gate
+## 2. D16 (compat gate) — closed 2026-08-06
 
-> **Locked as D16 and shipped the same day.** The section below is the case as it was put; it
-> is kept because the measurement is the reason the call went the way it did. What changed:
-> a separate `compat_topic_router.py` routes on corpus topics rather than on the literal words
-> `deck` / `proton`, and only the knowledge base reads it — the phrase gate's other four
-> consumers are untouched. **Reachability 3/40 → 39/40, 13/13 on the blind holdout, 0/107
-> strategy false positives.** Decision record in
-> [maintainer-decisions-locked.md](maintainer-decisions-locked.md) § D16; on-Deck **KB-ROUTER-01**.
->
-> This unblocks the compat arm of the bake-off: it now measures cards production would
-> actually fetch, so fusion constants can be tuned on compat evidence as well as strategy.
-
-**The compat knowledge base is unreachable for most of its content in production.**
-
-This is decision **Q8**, which the plan deferred as "natural-language asks skip KB". It is
-worse than that phrasing suggests, and now measured rather than asserted.
-
-`question_matches_troubleshooting_log_context` requires the literal word **`proton`** or
-**`deck`** (plus a co-keyword), or one of about six exact preset phrases
-([ollama_prompts.py:386](../../py_modules/backend/services/ollama_prompts.py)). Anything else
-never reaches the compat path at all.
-
-Measured against the new intents:
-
-| Slice | Reaches retrieval |
-|---|---|
-| Strategy (107 queries) | **107 / 107** |
-| Compat, phrased the way the gate expects (21) | **3 / 21** |
-| Compat, phrased the way a player types (19) | **0 / 19** |
-
-Against the *old* fixtures the number is 3 of 18. Both sets agree.
-
-The three that pass are proton-crash, deck-sleep-resume, and gamescope-on-deck. The corpus
-holds **27 topics**. So roughly 24 of them can be retrieved by essentially nothing a user
-would type — including storage, Steam Input, anti-cheat, streaming, VR, Wine, and emulation,
-each of which has 6–10 tips written and shipped.
-
-**Two consequences for this work:**
-
-1. Any compat number from the eval is measuring cards production would not have fetched. The
-   eval now reports compat twice — overall and gate-reachable-only — so this cannot silently
-   drive tuning. Gate-reachable-only is n=3, which is too small to conclude anything from.
-2. The 2026-07-31 bake-off's compat half measured the same unreachable traffic. That report
-   now carries a correction banner.
-
-**What I need from you:** does Q8 stay deferred for PR2, or does the gate get widened now?
-
-- **Stays deferred** (plan as written): I proceed to cards, and the compat arm of the bake-off
-  is reported as informational with n=3 gate-reachable. Fusion weights get tuned on strategy
-  evidence alone. That is defensible, but it means we ship tuned constants without compat
-  evidence behind them.
-- **Widen the gate now**: a scoped change — route to compat when the Ask names a topic the
-  corpus covers, rather than when it happens to contain "deck" or "proton". This is a product
-  behaviour change (more Asks get KB context attached), it needs its own on-Deck QA, and it
-  would grow PR2. It is also the only path that makes the compat arm mean anything.
-
-I have not touched the gate. It is a product decision, not a retrieval one.
+Reachability **3/40 → 39/40**, **13/13** blind holdout, **0/107** strategy false positives.
+Decision record: [maintainer-decisions-locked.md](maintainer-decisions-locked.md) § D16.
 
 ---
 
-## 3. First arm numbers, and why they are not evidence yet
+## 3. Bake-off result (2026-08-09)
 
-Ran on the current shallow corpus, tune split, `nomic-embed-text`:
-
-| Arm | top-1 | top-3 | top-3 CI |
+| Slice | keyword top-3 | RRF top-3 | Verdict |
 |---|---|---|---|
-| keyword | 82.5% | 90.0% | [80.0, 97.5] |
-| vector-only | 85.0% | 90.0% | [80.0, 97.5] |
-| RRF | 77.5% | 85.0% | [72.5, 95.0] |
+| labeled tune (n=104) | 88.5% | 86.5% | locking evidence only |
+| labeled holdout (n=36) | 83.3% [69.4, 94.4] | 80.6% [66.7, 91.7] | **no separation** |
+| compat gate-reachable (n=39) | 66.7% | 59.0% | keyword leans ahead |
 
-**Do not read this as "fusion loses."** The corpus has 22 sections and the shortlist pulls 30,
-so the keyword stage returns everything, every time — there is no shortlist for fusion to
-improve on. This measures the harness. It is recorded because hiding an unflattering
-intermediate number is how the 2026-07-31 conclusion happened in the first place.
-
-The holdout split is **empty** by design. Every pre-existing fixture was written from the card
-it matches, so none of them can gate anything; the eval prints "no verdict, the holdout is
-empty" rather than reporting a tie. The v1 holdout above becomes the real gate once its cards
-exist.
+Locked constants: `RRF_K=60`, `RRF_W_FTS=1.0`, `RRF_W_VEC=1.0`, `BM25_RELEVANCE_FLOOR=1.0`.
+Hybrid stays on by default; kill-switch unchanged.
 
 ---
 
-## 4. Checklist (from the implementation plan)
+## 4. Checklist
 
 - [x] Eval query intents drafted **before** card text — not card → query echo
 - [x] No query reuses distinctive noun phrases from its target card verbatim *(enforced by test)*
-- [x] **Query intents approved by the maintainer, 2026-08-09** — *"queries look good"*, on the v2 rewrite
-- [x] **Portal 2 and Half-Life 2 are in scope for cards** (maintainer, 2026-08-09) — 13 titles, not 11
-- [ ] Strategy cards reviewed — **not written yet**
-- [ ] Eval fixtures + labels reviewed — labels are empty until cards exist
-- [x] Compat `gate_reachable` reporting understood; **Q8 closed as D16 — gate widened 2026-08-06**
-- [x] Tune/holdout split recorded — 157 / 64
-- [x] **`source_url` rule decided and enforced, 2026-08-09** — a third-party licence requires a `source_url`; a `source_url` requires a declared licence; maintainer-authored cards carry neither. Both seed files already complied. Locked by `tests/test_source_attribution.py`, so an incomplete card fails a test rather than shipping uncredited.
-- [ ] Explicit sign-off: "approved for rebuild and bake-off"
+- [x] Query intents approved by the maintainer, 2026-08-09
+- [x] Portal 2 and Half-Life 2 in scope for cards — 13 titles
+- [x] Strategy cards reviewed — 119 sections across 13 titles
+- [x] Eval fixtures + labels reviewed — 140 labeled; blanks are deliberate gaps
+- [x] Compat `gate_reachable` reporting; Q8 closed as D16
+- [x] Tune/holdout split recorded — 157 / 64 (140 labeled: 104 / 36)
+- [x] `source_url` rule decided and enforced, 2026-08-09
+- [x] Explicit sign-off: **approved for rebuild and bake-off** (2026-08-09)
+- [x] Corpus rebuilt, three-way bake-off run, constants locked, superseding report written
 
 ---
 
-## 5. What happens after you sign off
+## 5. What shipped after sign-off
 
-1. Write ~8–12 sections per title covering the **181** strategy intents across **13** titles,
-   `bonsAI-maintainer` trust tier, keeping `write_attributions` in step. Portal 2 and Half-Life 2
-   are included and have the cleanest sources available (`theportalwiki.com` at CC BY 4.0,
-   `combineoverwiki.net` at CC BY-SA) — see the Valve source table in
-   [roadmap.md](../roadmap.md) § *KB online / versus strategy content*.
-2. Fill `expect_section` / `expect_topic`, flip the fixture out of
-   `awaiting_maintainer_signoff`.
-3. Rebuild the corpus, re-run the three-way bake-off on the deepened corpus.
-4. Lock fusion weights, the RRF backfill rank, and the relevance floor from the **tune** split
-   only.
-5. Report **holdout** as the ship gate, under the non-overlapping-CI rule.
-6. Write the superseding research report.
-
-Nothing in steps 1–6 starts before "approved for rebuild and bake-off".
-
----
-
-## Side note: attribution is thin in the current corpus
-
-Unrelated to the gate, found while verifying the rebuild: **0 of 124** compat tips and **2 of
-22** strategy sections carry a `source_url`. Maintainer-authored cards legitimately have none,
-but any wiki-derived card needs one for the CC BY-SA obligation the corpus assumes. Worth
-deciding the rule before 107 new cards are written, not after.
+1. Cards covering strategy intents across 13 titles (wiki-sourced where licences allow).
+2. Labels filled for covered intents; fixture flipped out of `awaiting_maintainer_signoff`.
+3. Schema-v3 rebuild with `nomic-embed-text` prefixes.
+4. Arms bake-off on the deepened corpus; holdout gate under the non-overlapping-CI rule.
+5. Fusion weights / floor locked equal (no separation).
+6. Superseding research report under `docs/archive/research/`.

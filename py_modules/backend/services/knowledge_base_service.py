@@ -56,11 +56,10 @@ _CONN_BY_PATH: dict[str, sqlite3.Connection] = {}
 
 # --- Fusion and floor constants ------------------------------------------------------------
 #
-# PROVISIONAL — every value below is a PR1 placeholder. The final numbers come from the PR2
-# bake-off, tuned on the *tune* split and gated on *holdout*; see R1/R3 in
-# docs/rag-retrieval-quality-remediation-implementation-plan.md. Do not tune them against the
-# current 22-section seed corpus: it is smaller than HYBRID_FTS_SHORTLIST_K, so the shortlist
-# swallows it whole and any number derived from it measures the harness, not the ranking.
+# Locked 2026-08-09 by PR2 bake-off on the deepened 119-section / 124-tip seed against
+# kb_eval_v2 (140 labeled rows; tune 104 / holdout 36). Holdout top-3 could not separate RRF
+# from keyword (overlapping CIs). Equal weights stay; do not "tune" from a later peek at
+# holdout. Report: docs/archive/research/kb-retrieval-pr2-bakeoff-2026-08-09.md
 RRF_K = 60
 RRF_W_FTS = 1.0
 RRF_W_VEC = 1.0
@@ -69,12 +68,9 @@ RRF_W_VEC = 1.0
 # negative means better; flipping the sign once here keeps every comparison downstream the
 # obvious direction).
 #
-# Deliberately LOOSE (R3): it drops near-certain junk and nothing else. Measured on the seed
-# corpus 2026-08-05 — a wholly off-topic Ask ("how do I cook pasta for dinner") scores at most
-# 0.75, while genuine hits score 10+. It does NOT catch the stopword-only query, which scores
-# 1.9-5.2 because common words match everywhere; that is _fts_match_query's job, not the
-# floor's. Too strict here and the KB silently stops attaching, which degrades cleanly but
-# invisibly, so PR1 errs toward no-op.
+# Kept LOOSE after PR2: the holdout gate did not justify tightening. Off-topic Asks still
+# score ≤0.75 on the seed; genuine hits remain well above 1.0. Stopword-only queries are
+# _fts_match_query's job, not the floor's.
 BM25_RELEVANCE_FLOOR = 1.0
 
 # PROVISIONAL (PR2 6d owns the final value). A higher bar for the D17 implicit route -- an Ask

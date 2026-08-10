@@ -1,8 +1,8 @@
 {
   "version": "v2",
-  "description": "Query intents re-authored 2026-08-09 under docs/audit/rag-eval-query-style.md, after maintainer review of the v1 draft rejected its style on two counts: it wrote full sentences for users who are typing on a controller, and it assumed players describe rather than name. Both are fixed here. Written BEFORE the cards they will match (R1), so no row was authored from a card. `withheld_card_terms` lists card *phrasing* a query must not contain -- proper nouns never belong there, because a player reading a name off the screen is not cheating. Renamed from `ban_verbatim`, which read as though naming a boss were disallowed. `ask_mode` is gone as a query-level field: after D17 retrieval no longer depends on it. `expect_section` / `expect_topic` stay empty until cards exist and the maintainer signs off; this is not a scoring fixture until then. Two new titles, Portal 2 and Half-Life 2, are present here with no seed cards behind them yet -- their rows will score as misses, which is the honest reading and not a bug. Several power-user rows across every title target content the corpus does not have (versus, tier lists, map callouts, speedrun routing); they stay in so the gap shows as a miss rather than being hidden by only asking what we can already answer. Spoiler note: rows tagged in `note` as spoiler-relevant are deliberate. A player who types 'adam smasher fight' or 'wheatley fight' has already reached that point, so the question is not itself a spoiler risk -- but a card answering it must not volunteer what comes after. These rows exist so that behaviour is measurable. Labels: Portal 2 and Half-Life 2 rows carry `expect_section` as of 2026-08-09, the first two titles with wiki-sourced cards behind them. Rows left blank are deliberate content gaps (speedrun routing, Nova Prospekt, cross-game ammo economy) and are expected to miss. Every other title is still unlabelled, so the file stays `awaiting_maintainer_signoff`.",
+  "description": "Query intents re-authored 2026-08-09 under docs/audit/rag-eval-query-style.md, after maintainer review of the v1 draft. Written BEFORE the cards they match (R1). Maintainer approved queries 2026-08-09; 13-title / 119-section seed cards landed; labels filled for covered intents. Blank expect_section / expect_topic rows are deliberate content gaps (power-user / needs_clarification / no covering card) and are expected misses. Status: approved_for_rebuild_and_bakeoff (PR2 stage 6d).",
   "default_split": "tune",
-  "status": "awaiting_maintainer_signoff",
+  "status": "approved_for_rebuild_and_bakeoff",
   "queries": [
     {
       "id": "V2-S-L4D2-01",
@@ -154,7 +154,7 @@
       ],
       "skill_level": "familiar",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "Expert and Realism"
     },
     {
       "id": "V2-S-L4D2-10",
@@ -794,7 +794,7 @@
       "withheld_card_terms": [],
       "skill_level": "familiar",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "Classes"
     },
     {
       "id": "V2-S-DRG-07",
@@ -824,7 +824,7 @@
       ],
       "skill_level": "familiar",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "Mining and the run timer"
     },
     {
       "id": "V2-S-DRG-09",
@@ -895,7 +895,7 @@
       "withheld_card_terms": [],
       "skill_level": "beginner",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "Party composition"
     },
     {
       "id": "V2-S-BG3-02",
@@ -1136,7 +1136,7 @@
       "withheld_card_terms": [],
       "skill_level": "beginner",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "Crafting and junk"
     },
     {
       "id": "V2-S-FO4-04",
@@ -1406,7 +1406,7 @@
       "withheld_card_terms": [],
       "skill_level": "familiar",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "Kaos mode and Revolution mode"
     },
     {
       "id": "V2-S-SOE-10",
@@ -1550,7 +1550,7 @@
       "withheld_card_terms": [],
       "skill_level": "power_user",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "Heat and the Pact of Punishment"
     },
     {
       "id": "V2-S-HADES-10",
@@ -1750,7 +1750,7 @@
       "skill_level": "power_user",
       "input_style": "terse",
       "note": "Highest spoiler exposure in this title's set.",
-      "expect_section": ""
+      "expect_section": "Adam Smasher"
     },
     {
       "id": "V2-S-CP77-12",
@@ -2169,7 +2169,7 @@
       "withheld_card_terms": [],
       "skill_level": "beginner",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "Horse bonding"
     },
     {
       "id": "V2-S-RDR2-03",
@@ -2198,7 +2198,7 @@
       "skill_level": "beginner",
       "input_style": "terse",
       "note": "Town names are on screen and on the map.",
-      "expect_section": ""
+      "expect_section": "Valentine"
     },
     {
       "id": "V2-S-RDR2-05",
@@ -2229,7 +2229,7 @@
       "withheld_card_terms": [],
       "skill_level": "familiar",
       "input_style": "terse",
-      "expect_section": ""
+      "expect_section": "Horse bonding"
     },
     {
       "id": "V2-S-RDR2-07",
@@ -2719,7 +2719,7 @@
       "intent": "Game stops starting after a Proton update",
       "topic_hint": "proton",
       "gate_style": "keyword",
-      "expect_topic": "",
+      "expect_topic": "proton",
       "withheld_card_terms": []
     },
     {
@@ -2732,7 +2732,7 @@
       "intent": "Same failure, player wording",
       "topic_hint": "proton",
       "gate_style": "natural",
-      "expect_topic": "",
+      "expect_topic": "proton",
       "withheld_card_terms": []
     },
     {
@@ -2745,7 +2745,7 @@
       "intent": "Display dead after suspend",
       "topic_hint": "proton",
       "gate_style": "keyword",
-      "expect_topic": "",
+      "expect_topic": "proton",
       "withheld_card_terms": []
     },
     {
@@ -2758,7 +2758,7 @@
       "intent": "Same failure, player wording",
       "topic_hint": "proton",
       "gate_style": "natural",
-      "expect_topic": "",
+      "expect_topic": "proton",
       "withheld_card_terms": []
     },
     {
@@ -2771,7 +2771,7 @@
       "intent": "Pre-cache stalls before launch",
       "topic_hint": "shader",
       "gate_style": "keyword",
-      "expect_topic": "",
+      "expect_topic": "shader",
       "withheld_card_terms": []
     },
     {
@@ -2784,7 +2784,7 @@
       "intent": "Same failure, player wording",
       "topic_hint": "shader",
       "gate_style": "natural",
-      "expect_topic": "",
+      "expect_topic": "shader",
       "withheld_card_terms": []
     },
     {
@@ -2797,7 +2797,7 @@
       "intent": "Kernel anti-cheat refuses the session",
       "topic_hint": "anticheat",
       "gate_style": "keyword",
-      "expect_topic": "",
+      "expect_topic": "anticheat",
       "withheld_card_terms": []
     },
     {
@@ -2810,7 +2810,7 @@
       "intent": "Same failure, player wording",
       "topic_hint": "anticheat",
       "gate_style": "natural",
-      "expect_topic": "",
+      "expect_topic": "anticheat",
       "withheld_card_terms": []
     },
     {
@@ -2823,7 +2823,7 @@
       "intent": "Upscaler configured wrong",
       "topic_hint": "gamescope",
       "gate_style": "keyword",
-      "expect_topic": "",
+      "expect_topic": "gamescope",
       "withheld_card_terms": []
     },
     {
@@ -2836,7 +2836,7 @@
       "intent": "Same failure, player wording",
       "topic_hint": "gamescope",
       "gate_style": "natural",
-      "expect_topic": "",
+      "expect_topic": "gamescope",
       "withheld_card_terms": []
     },
     {
@@ -2849,7 +2849,7 @@
       "intent": "Controller invisible to the title",
       "topic_hint": "steam_input",
       "gate_style": "keyword",
-      "expect_topic": "",
+      "expect_topic": "steam_input",
       "withheld_card_terms": []
     },
     {
@@ -2862,7 +2862,7 @@
       "intent": "Same failure, player wording",
       "topic_hint": "steam_input",
       "gate_style": "natural",
-      "expect_topic": "",
+      "expect_topic": "steam_input",
       "withheld_card_terms": []
     },
     {
@@ -2875,7 +2875,7 @@
       "intent": "Relocating installs",
       "topic_hint": "storage",
       "gate_style": "keyword",
-      "expect_topic": "",
+      "expect_topic": "storage",
       "withheld_card_terms": []
     },
     {
@@ -2888,7 +2888,7 @@
       "intent": "Same intent, player wording",
       "topic_hint": "storage",
       "gate_style": "natural",
-      "expect_topic": "",
+      "expect_topic": "storage",
       "withheld_card_terms": []
     },
     {
@@ -2901,7 +2901,7 @@
       "intent": "Streaming frame drops",
       "topic_hint": "streaming",
       "gate_style": "keyword",
-      "expect_topic": "",
+      "expect_topic": "streaming",
       "withheld_card_terms": []
     },
     {
@@ -2914,7 +2914,7 @@
       "intent": "Same failure, player wording",
       "topic_hint": "streaming",
       "gate_style": "natural",
-      "expect_topic": "",
+      "expect_topic": "streaming",
       "withheld_card_terms": []
     },
     {
@@ -2927,7 +2927,7 @@
       "intent": "Update fails to complete",
       "topic_hint": "updates",
       "gate_style": "keyword",
-      "expect_topic": "",
+      "expect_topic": "updates",
       "withheld_card_terms": []
     },
     {
@@ -2940,7 +2940,7 @@
       "intent": "Same failure, player wording",
       "topic_hint": "updates",
       "gate_style": "natural",
-      "expect_topic": "",
+      "expect_topic": "updates",
       "withheld_card_terms": []
     },
     {
@@ -2953,7 +2953,7 @@
       "intent": "Motion controls inactive",
       "topic_hint": "gyro",
       "gate_style": "keyword",
-      "expect_topic": "",
+      "expect_topic": "gyro",
       "withheld_card_terms": []
     },
     {
@@ -2966,7 +2966,7 @@
       "intent": "Same failure, player wording",
       "topic_hint": "gyro",
       "gate_style": "natural",
-      "expect_topic": "",
+      "expect_topic": "gyro",
       "withheld_card_terms": []
     },
     {
@@ -2979,7 +2979,7 @@
       "intent": "Prefix corruption recovery",
       "topic_hint": "wine",
       "gate_style": "keyword",
-      "expect_topic": "",
+      "expect_topic": "wine",
       "withheld_card_terms": []
     },
     {
@@ -2992,7 +2992,7 @@
       "intent": "Same intent, player wording",
       "topic_hint": "wine",
       "gate_style": "natural",
-      "expect_topic": "",
+      "expect_topic": "wine",
       "withheld_card_terms": []
     },
     {
@@ -3005,7 +3005,7 @@
       "intent": "Emulator configuration",
       "topic_hint": "emudeck",
       "gate_style": "keyword",
-      "expect_topic": "",
+      "expect_topic": "emudeck",
       "withheld_card_terms": []
     },
     {
@@ -3018,7 +3018,7 @@
       "intent": "Same failure, player wording",
       "topic_hint": "emudeck",
       "gate_style": "natural",
-      "expect_topic": "",
+      "expect_topic": "emudeck",
       "withheld_card_terms": []
     },
     {
@@ -3031,7 +3031,7 @@
       "intent": "Headset bandwidth ceiling",
       "topic_hint": "steamvr",
       "gate_style": "keyword",
-      "expect_topic": "",
+      "expect_topic": "steamvr",
       "withheld_card_terms": []
     },
     {
@@ -3044,7 +3044,7 @@
       "intent": "Same failure, player wording",
       "topic_hint": "steamvr",
       "gate_style": "natural",
-      "expect_topic": "",
+      "expect_topic": "steamvr",
       "withheld_card_terms": []
     },
     {
@@ -3057,7 +3057,7 @@
       "intent": "Audio sink missing outside game mode",
       "topic_hint": "desktop_mode",
       "gate_style": "keyword",
-      "expect_topic": "",
+      "expect_topic": "desktop_mode",
       "withheld_card_terms": []
     },
     {
@@ -3070,7 +3070,7 @@
       "intent": "Translation layer overhead",
       "topic_hint": "fex",
       "gate_style": "keyword",
-      "expect_topic": "",
+      "expect_topic": "fex",
       "withheld_card_terms": []
     },
     {
@@ -3083,7 +3083,7 @@
       "intent": "Same topic, player wording",
       "topic_hint": "fex",
       "gate_style": "natural",
-      "expect_topic": "",
+      "expect_topic": "fex",
       "withheld_card_terms": []
     },
     {
@@ -3096,7 +3096,7 @@
       "intent": "TV-mode navigation failure",
       "topic_hint": "bpm",
       "gate_style": "keyword",
-      "expect_topic": "",
+      "expect_topic": "bpm",
       "withheld_card_terms": []
     },
     {
@@ -3109,7 +3109,7 @@
       "intent": "Same failure, player wording",
       "topic_hint": "bpm",
       "gate_style": "natural",
-      "expect_topic": "",
+      "expect_topic": "bpm",
       "withheld_card_terms": []
     },
     {
@@ -3122,7 +3122,7 @@
       "intent": "Shared library across boots",
       "topic_hint": "windows_steam",
       "gate_style": "keyword",
-      "expect_topic": "",
+      "expect_topic": "windows_steam",
       "withheld_card_terms": []
     },
     {
@@ -3135,7 +3135,7 @@
       "intent": "Same intent, player wording",
       "topic_hint": "windows_steam",
       "gate_style": "natural",
-      "expect_topic": "",
+      "expect_topic": "windows_steam",
       "withheld_card_terms": []
     },
     {
@@ -3148,7 +3148,7 @@
       "intent": "LAN reachability",
       "topic_hint": "network",
       "gate_style": "keyword",
-      "expect_topic": "",
+      "expect_topic": "network",
       "withheld_card_terms": []
     },
     {
@@ -3161,7 +3161,7 @@
       "intent": "Same failure, player wording",
       "topic_hint": "network",
       "gate_style": "natural",
-      "expect_topic": "",
+      "expect_topic": "network",
       "withheld_card_terms": []
     },
     {
@@ -3174,7 +3174,7 @@
       "intent": "Frame pacing and power",
       "topic_hint": "performance",
       "gate_style": "keyword",
-      "expect_topic": "",
+      "expect_topic": "performance",
       "withheld_card_terms": []
     },
     {
@@ -3187,7 +3187,7 @@
       "intent": "Same problem, player wording",
       "topic_hint": "performance",
       "gate_style": "natural",
-      "expect_topic": "",
+      "expect_topic": "performance",
       "withheld_card_terms": []
     },
     {
@@ -3200,7 +3200,7 @@
       "intent": "Pairing the newer controller",
       "topic_hint": "steam_frame",
       "gate_style": "keyword",
-      "expect_topic": "",
+      "expect_topic": "steam_frame",
       "withheld_card_terms": []
     },
     {
@@ -3213,7 +3213,7 @@
       "intent": "Refresh mismatch artefacts",
       "topic_hint": "display",
       "gate_style": "keyword",
-      "expect_topic": "",
+      "expect_topic": "display",
       "withheld_card_terms": []
     },
     {
@@ -3226,7 +3226,7 @@
       "intent": "Same failure, player wording",
       "topic_hint": "display",
       "gate_style": "natural",
-      "expect_topic": "",
+      "expect_topic": "display",
       "withheld_card_terms": []
     }
   ]

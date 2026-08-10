@@ -366,7 +366,10 @@ corpus content with no way to reach it fails rather than ships.
 
 ## Retrieval quality remediation (PR1, 2026-08-05)
 
-Plan: [rag-retrieval-quality-remediation-implementation-plan.md](rag-retrieval-quality-remediation-implementation-plan.md). PR1 is Stages 1–5 (ranking + correctness infra); **PR2** is Stage 6 (corpus depth, eval, kill-switch, bake-off) plus **D16** above.
+Plan: [rag-retrieval-quality-remediation-implementation-plan.md](rag-retrieval-quality-remediation-implementation-plan.md).
+PR1 (Stages 1–5) and **PR2 (Stage 6 + D16) are closed 2026-08-09** — see
+[archive/research/kb-retrieval-pr2-bakeoff-2026-08-09.md](archive/research/kb-retrieval-pr2-bakeoff-2026-08-09.md).
+Equal RRF weights and a loose BM25 floor are locked; holdout could not separate keyword from RRF.
 
 ### What changed
 
@@ -394,11 +397,9 @@ python scripts/build_rag_db.py --seed --out ./build/knowledge-base
 
 The builder now embeds in batches of 16 with progress, clears the vector table only after the host answers (a failure no longer wipes existing vectors), and checkpoints + `VACUUM`s so the shipped `corpus.db` is a single self-contained file. The Deck opens it `?mode=ro&immutable=1`.
 
-### Constants are provisional
+### Constants (locked PR2, 2026-08-09)
 
-`RRF_K`, `RRF_W_FTS`, `RRF_W_VEC` and `BM25_RELEVANCE_FLOOR` in `knowledge_base_service.py` are **PR1 placeholders**, tagged as such in code. The floor is deliberately loose (R3): measured on the seed corpus, a wholly off-topic Ask scores ≤ 0.75 and genuine hits score 10+, so `1.0` drops near-certain junk and nothing else.
-
-**Do not tune them on the current seed corpus.** It holds 22 sections against `HYBRID_FTS_SHORTLIST_K = 30`, so the shortlist swallows it whole and any number derived from it measures the harness. PR2 sets them from the **tune** split and gates on **holdout**.
+`RRF_K=60`, `RRF_W_FTS=1.0`, `RRF_W_VEC=1.0`, `BM25_RELEVANCE_FLOOR=1.0` in `knowledge_base_service.py`. Holdout top-3 could not separate RRF from keyword on the deepened seed (overlapping CIs); equal weights stay. The floor remains loose: off-topic Asks score ≤ 0.75 and genuine hits score well above 1.0. Report: [kb-retrieval-pr2-bakeoff-2026-08-09.md](archive/research/kb-retrieval-pr2-bakeoff-2026-08-09.md).
 
 ### One deviation from the plan's formula
 
