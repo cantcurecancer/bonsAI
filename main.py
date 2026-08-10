@@ -68,6 +68,17 @@ from backend.services.intent_pack_service import (
     save_intent_packs,
     set_pack_enabled,
 )
+from backend.services.chat_slot_service import (
+    append_turn as chat_append_turn,
+    create_slot as chat_create_slot,
+    delete_slot as chat_delete_slot,
+    ensure_slot as chat_ensure_slot,
+    list_slot_summaries,
+    load_slot as chat_load_slot,
+    slot_to_rpc_payload,
+    update_slot_label as chat_update_slot_label,
+    wipe_all_slots,
+)
 from backend.services.reply_language_service import reply_language_snapshot
 from backend.services.settings_service import (
     clamp_int,
@@ -253,6 +264,8 @@ class Plugin:
         self._rag_corpus_download_task: Optional[asyncio.Task] = None
         self._rag_corpus_cancel_event: Optional[asyncio.Event] = None
         self._rag_corpus_download_state: dict = new_rag_corpus_download_state()
+        self._chat_slots_store_lock = asyncio.Lock()
+        self._chat_slot_by_request: dict[int, str] = {}
 
     def _abort_ollama_chat_check(self) -> bool:
         """True when frontend requested Stop mid-generation (closes HTTP quickly; executor thread exits)."""
@@ -872,6 +885,8 @@ class Plugin:
             decky.DECKY_PLUGIN_SETTINGS_DIR,
             logger=logger,
         )
+        self._chat_slot_by_request.clear()
+        await asyncio.to_thread(wipe_all_slots, decky.DECKY_PLUGIN_SETTINGS_DIR, logger)
         await self._maybe_app_log(
             "plugin.data_clear",
             "plugin data cleared",
@@ -883,6 +898,174 @@ class Plugin:
             },
         )
         return defaults
+
+    # --- Chat slots RPC ---
+
+    @staticmethod
+    def _chat_slots_settings_dir() -> str:
+        return decky.DECKY_PLUGIN_SETTINGS_DIR
+
+    @staticmethod
+    def _parse_chat_slot_id(question: Any) -> str:
+        if isinstance(question, dict):
+            return str(question.get("chat_slot_id") or question.get("chatSlotId") or "").strip()
+        return ""
+
+    async def _chat_slots_record_user_turn(
+        self,
+        *,
+        slot_id: str,
+        question: str,
+        request_id: int,
+        attachments: list,
+        app_id: str,
+        app_name: str,
+    ) -> None:
+        sid = str(slot_id or "").strip()
+        if not sid or not str(question or "").strip():
+            return
+        settings_dir = Plugin._chat_slots_settings_dir()
+        refs = [
+            {
+                "path": str(a.get("path", "") or ""),
+                "name": str(a.get("name", "") or ""),
+                "source": str(a.get("source", "unknown") or "unknown"),
+            }
+            for a in (attachments or [])
+            if isinstance(a, dict) and str(a.get("path", "") or "").strip()
+        ]
+
+        def _run() -> None:
+            chat_ensure_slot(
+                settings_dir,
+                sid,
+                origin_app_id=app_id,
+                first_question=question,
+                app_name=app_name,
+                logger=logger,
+            )
+            chat_append_turn(
+                settings_dir,
+                sid,
+                role="user",
+                text=question,
+                request_id=request_id,
+                attachment_refs=refs,
+                logger=logger,
+            )
+
+        async with self._chat_slots_store_lock:
+            await asyncio.to_thread(_run)
+
+    async def _chat_slots_record_assistant_turn(
+        self,
+        *,
+        slot_id: str,
+        response_text: str,
+    ) -> None:
+        sid = str(slot_id or "").strip()
+        body = str(response_text or "").strip()
+        if not sid or not body:
+            return
+        settings_dir = Plugin._chat_slots_settings_dir()
+
+        def _run() -> None:
+            chat_append_turn(
+                settings_dir,
+                sid,
+                role="assistant",
+                text=body,
+                logger=logger,
+            )
+
+        async with self._chat_slots_store_lock:
+            await asyncio.to_thread(_run)
+
+    async def list_chat_slots(self):
+        """Return recent chat slot summaries (newest first)."""
+        settings_dir = Plugin._chat_slots_settings_dir()
+
+        def _run() -> list:
+            return list_slot_summaries(settings_dir, logger)
+
+        async with self._chat_slots_store_lock:
+            rows = await asyncio.to_thread(_run)
+        return {"slots": rows}
+
+    async def get_chat_slot(self, slot_id: str = ""):
+        """Load one chat slot with full turn history."""
+        sid = str(slot_id or "").strip()
+        if not sid:
+            return {"ok": False, "error": "Slot id required"}
+        settings_dir = Plugin._chat_slots_settings_dir()
+
+        def _run():
+            return chat_load_slot(settings_dir, sid, logger)
+
+        async with self._chat_slots_store_lock:
+            slot = await asyncio.to_thread(_run)
+        if slot is None:
+            return {"ok": False, "error": "Slot not found"}
+        return {"ok": True, "slot": slot_to_rpc_payload(slot)}
+
+    async def create_chat_slot(self, payload: Any = None):
+        """Create a new empty chat slot."""
+        body = payload if isinstance(payload, dict) else {}
+        settings_dir = Plugin._chat_slots_settings_dir()
+        origin_app_id = str(body.get("origin_app_id") or body.get("originAppId") or "").strip()
+        first_question = str(body.get("first_question") or body.get("firstQuestion") or "").strip()
+        app_name = str(body.get("app_name") or body.get("appName") or "").strip()
+        label = str(body.get("label") or "").strip()
+
+        def _run():
+            return chat_create_slot(
+                settings_dir,
+                label=label,
+                origin_app_id=origin_app_id,
+                first_question=first_question,
+                app_name=app_name,
+                logger=logger,
+            )
+
+        async with self._chat_slots_store_lock:
+            slot = await asyncio.to_thread(_run)
+        return {"ok": True, "slot": slot_to_rpc_payload(slot)}
+
+    async def delete_chat_slot(self, slot_id: str = "", payload: Any = None):
+        """Delete a chat slot from private store."""
+        sid = str(slot_id or "").strip()
+        if not sid and isinstance(payload, dict):
+            sid = str(payload.get("slot_id") or payload.get("slotId") or payload.get("id") or "").strip()
+        if not sid:
+            return {"ok": False, "error": "Slot id required"}
+        settings_dir = Plugin._chat_slots_settings_dir()
+
+        async with self._chat_slots_store_lock:
+            removed = await asyncio.to_thread(chat_delete_slot, settings_dir, sid, logger)
+        if not removed:
+            return {"ok": False, "error": "Slot not found"}
+        return {"ok": True}
+
+    async def rename_chat_slot(self, payload: Any = None):
+        """Rename a chat slot label."""
+        if not isinstance(payload, dict):
+            return {"ok": False, "error": "Invalid payload"}
+        sid = str(payload.get("slot_id") or payload.get("slotId") or payload.get("id") or "").strip()
+        label = str(payload.get("label") or "").strip()
+        if not sid:
+            return {"ok": False, "error": "Slot id required"}
+        if not label:
+            return {"ok": False, "error": "Label required"}
+        settings_dir = Plugin._chat_slots_settings_dir()
+
+        def _run():
+            return chat_update_slot_label(settings_dir, sid, label, logger)
+
+        async with self._chat_slots_store_lock:
+            saved = await asyncio.to_thread(_run)
+        if saved is None:
+            return {"ok": False, "error": "Slot not found"}
+        return {"ok": True, "slot": slot_to_rpc_payload(saved)}
 
     # --- Strategy checklist session RPC ---
 
@@ -2256,6 +2439,17 @@ class Plugin:
                 "streaming": False,
             }
             self._clear_partial_stream_snapshot()
+        slot_id = self._chat_slot_by_request.pop(request_id, None)
+        if slot_id is None:
+            logger.error(
+                "chat_slots: no slot for request_id=%s — assistant turn dropped",
+                request_id,
+            )
+        else:
+            await self._chat_slots_record_assistant_turn(
+                slot_id=slot_id,
+                response_text=response_text,
+            )
         await self._maybe_app_log(
             "ask.background",
             f"background ask {terminal}",
@@ -2435,6 +2629,17 @@ class Plugin:
                 app_context=app_context,
                 started_at=time.time(),
             )
+            chat_slot_id = Plugin._parse_chat_slot_id(question)
+            if chat_slot_id:
+                await self._chat_slots_record_user_turn(
+                    slot_id=chat_slot_id,
+                    question=parsed_question,
+                    request_id=request_id,
+                    attachments=attachments,
+                    app_id=app_id,
+                    app_name=app_name,
+                )
+                self._chat_slot_by_request[request_id] = chat_slot_id
             self._background_task = asyncio.create_task(
                 self._run_background_request(
                     request_id,
@@ -2568,6 +2773,13 @@ class Plugin:
                     "partial_response": None,
                     "streaming": False,
                 }
+                if isinstance(rid, int):
+                    slot_id = self._chat_slot_by_request.pop(rid, None)
+                    if slot_id is not None:
+                        await self._chat_slots_record_assistant_turn(
+                            slot_id=slot_id,
+                            response_text=cancel_response,
+                        )
         await self._maybe_app_log("ask.abort", "background ask abort requested")
         return {"ok": True}
 

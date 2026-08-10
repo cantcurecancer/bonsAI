@@ -98,6 +98,19 @@ selector matched intermediate carousel Panels and collapsed the strip. Size only
 Sits directly under the tab strip, above everything else, **always present**.
 Three cells: `LB` pill · centre column · `RB` pill.
 
+**Agreed row (2026-08-09, supersedes mockup create/delete gap):**
+
+```
+LB │  ‹ghost prev›   Elden Ring build  ×   ‹ghost next›  │ RB
+                     ● ● ○ ○ ○
+```
+
+- Carousel positions: **`[+]` leftmost**, then up to 5 slots. LB from slot 1 lands on `[+]`; **A** creates and switches.
+- **A** on title → rename modal. **D-pad Right** → `×` beside title → **A** → ConfirmModal delete. **Left** returns to title.
+- **D-pad Down** → unified input. **Up** unwired — Steam reaches tab strip.
+- Ghost neighbours: adjacent slot names, `rgba(200,214,230,0.18)`, 11px, ellipsized, non-focusable; hidden at one slot.
+- Stop at ends (no wrap): RB from last slot stops; LB from `[+]` stops.
+
 | | Unfocused (3a) | Focused (3b) |
 |---|---|---|
 | Row background | `transparent` | `linear-gradient(180deg, rgba(28,36,44,.92), rgba(18,26,34,.55))` |
@@ -320,7 +333,7 @@ in [audit/maintainer-decisions-locked.md](audit/maintainer-decisions-locked.md).
 
 | # | Question | Decision (2026-08-09) |
 |---|---|---|
-| R1 | Option C (LB/RB carousel) against the postmortem's rejection, or a sixth *Chats* tab? | **Spike first.** Nothing is committed until P-0 answers whether the bumpers can be taken. If they cannot, fall back to 2b/**g** (sixth *Chats* tab), not to the modal picker. |
+| R1 | Option C (LB/RB carousel) against the postmortem's rejection, or a sixth *Chats* tab? | **Spike pending on device.** Implementation ships with `preventDefault`/`stopPropagation` on bumpers while the row is focused; record yes/no in this cell after **CHAT-SLOTS-V2-05**. If bumpers still switch tabs, re-plan UI as sixth *Chats* tab (2b/g). |
 | R2 | Is one permanent Main focus stop acceptable (§ 4.2)? | **OPEN — decide on device at P-4.** Same call the postmortem deferred to its own P4; it cannot be made on paper. |
 | R3 | Slot cap (§ 4.3) | **Small cap, no pinning.** 5–8 slots. Dots stay dots — no numeric counter, no pinning, no hold-to-jump-5, no warning line. 1d is out of scope. |
 | R4 | Does the layout inversion ship, and separately (§ 4.4)? | **Yes, separately — after the width bug.** P-0b then P-7. Slots do not wait on it, and it can be dropped without touching P-1…P-6. |

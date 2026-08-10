@@ -513,5 +513,122 @@ export function buildSection6Section(): string {
           font-style: italic !important;
         }
 
+        /* Named chat slots row (Main tab, under tab strip) */
+        .bonsai-scope .bonsai-chat-slot-row {
+          width: 100%;
+          box-sizing: border-box;
+        }
+        .bonsai-scope .bonsai-chat-slot-row-focus {
+          width: 100%;
+        }
+        .bonsai-scope .bonsai-chat-slot-row-inner {
+          display: flex;
+          align-items: center;
+          gap: ${uiScalePx(8)}px;
+          padding: ${uiScalePx(8)}px;
+          border-top: 1px solid rgba(255, 255, 255, 0.05);
+          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .bonsai-scope .bonsai-chat-slot-row--focused .bonsai-chat-slot-row-inner {
+          padding: ${uiScalePx(12)}px ${uiScalePx(8)}px;
+          background: linear-gradient(180deg, rgba(28, 36, 44, 0.92), rgba(18, 26, 34, 0.55));
+          border-top-color: rgba(156, 231, 255, 0.22);
+          border-bottom-color: rgba(156, 231, 255, 0.22);
+        }
+        .bonsai-scope .bonsai-chat-slot-bumper-pill {
+          flex: 0 0 auto;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-width: ${uiScalePx(38)}px;
+          height: ${uiScalePx(26)}px;
+          border-radius: ${uiScalePx(8)}px;
+          border: 1px solid rgba(168, 182, 198, 0.3);
+          color: rgba(168, 182, 198, 0.62);
+          font-size: ${uiScalePx(11)}px;
+          font-weight: 700;
+          letter-spacing: 0.04em;
+        }
+        .bonsai-scope .bonsai-chat-slot-row--focused .bonsai-chat-slot-bumper-pill {
+          border-color: rgba(156, 231, 255, 0.75);
+          color: #9ce7ff;
+          background: rgba(18, 26, 34, 0.55);
+          box-shadow: 0 0 12px 1px rgba(156, 231, 255, 0.25);
+        }
+        .bonsai-scope .bonsai-chat-slot-center {
+          flex: 1 1 auto;
+          min-width: 0;
+          text-align: center;
+        }
+        .bonsai-scope .bonsai-chat-slot-eyebrow {
+          font-size: ${uiScalePx(9)}px;
+          font-weight: 700;
+          letter-spacing: 0.08em;
+          color: #9ce7ff;
+          margin-bottom: ${uiScalePx(4)}px;
+        }
+        .bonsai-scope .bonsai-chat-slot-title-row {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: ${uiScalePx(6)}px;
+          min-width: 0;
+        }
+        .bonsai-scope .bonsai-chat-slot-title {
+          font-weight: 700;
+          font-size: ${uiScalePx(12)}px;
+          line-height: 1.2;
+          color: rgba(200, 214, 230, 0.72);
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          max-width: 55%;
+        }
+        .bonsai-scope .bonsai-chat-slot-row--focused .bonsai-chat-slot-title {
+          font-size: ${uiScalePx(19)}px;
+          color: #f2f7fc;
+          text-shadow: 0 0 16px rgba(156, 231, 255, 0.3);
+        }
+        .bonsai-scope .bonsai-chat-slot-delete {
+          flex: 0 0 auto;
+          font-size: ${uiScalePx(14)}px;
+          line-height: 1;
+          color: rgba(168, 182, 198, 0.55);
+          opacity: 0.85;
+        }
+        .bonsai-scope .bonsai-chat-slot-delete--active-stop {
+          color: #9ce7ff;
+        }
+        .bonsai-scope .bonsai-chat-slot-ghost {
+          flex: 0 1 auto;
+          font-size: ${uiScalePx(11)}px;
+          color: rgba(200, 214, 230, 0.18);
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          max-width: 22%;
+          pointer-events: none;
+        }
+        .bonsai-scope .bonsai-chat-slot-dots {
+          display: flex;
+          justify-content: center;
+          gap: ${uiScalePx(6)}px;
+          margin-top: ${uiScalePx(6)}px;
+        }
+        .bonsai-scope .bonsai-chat-slot-dot {
+          width: ${uiScalePx(3)}px;
+          height: ${uiScalePx(3)}px;
+          border-radius: 50%;
+          background: rgba(143, 168, 196, 0.3);
+        }
+        .bonsai-scope .bonsai-chat-slot-dot--active {
+          width: ${uiScalePx(4)}px;
+          height: ${uiScalePx(4)}px;
+          background: rgba(200, 214, 230, 0.5);
+        }
+        .bonsai-scope .bonsai-chat-slot-row--focused .bonsai-chat-slot-dot--active {
+          background: #9ce7ff;
+        }
+
         `;
 }

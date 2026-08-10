@@ -89,6 +89,7 @@ function minimalSnapshot(overrides: Partial<BonsaiSessionSurvivalSnapshot> = {})
     showSlowWarning: false,
     lastRequestId: 7,
     thinkingSummary: null,
+    activeSlotId: null,
     ...overrides,
   };
 }

@@ -249,6 +249,15 @@ Wave 4 J — Developer tab → Preset suggestions → **stream**.
 - [ ] **ABOUT-LINKS-01** About tab: D-pad **down** from the reply-language dropdown must reach **all four** links in order — GitHub, Built on Ollama!, Bugs & Feature Requests, PayPal — with no stop skipped and no press swallowed, and **Up** must walk back the same way. Press **A** on one and confirm Steam's browser opens (it is bright). Fixed 2026-08-07: hand-rolled `Focusable` + `onMoveUp`/`onMoveDown` wrappers returned `true` (so Steam skipped default navigation) while moving focus with a plain DOM `.focus()`, which does not transfer gamepad focus across nav containers — presses were consumed and focus never moved, making every link unreachable. The same chain also skipped the two middle links outright
 - [ ] **QAM-BODY-RO-01** Switch tabs repeatedly (10+, through the taller Settings/Ollama panels), then D-pad to the **bottom** of a long panel: the pane must still reach its end and not be pinned to a stale height. Steam replaces the scroll node on every switch, so this is specifically about the 2nd switch onward — one switch proves nothing. Fixed 2026-08-08; if it regresses, `--bonsai-tab-body-height` will stop matching the live pane's `clientHeight` after a switch. **Re-run QAM-BAZZITE-01 and D-PAD-SCROLL-01 with this** — same measurement chain
 
+### CHAT-SLOTS-V2 — Named chat slots (P0)
+
+- [ ] **CHAT-SLOTS-V2-01** D-pad **Down** from tab strip (or Ask) reaches the slot row; **Down** from row reaches unified input; **Up** returns toward tabs; row is quiet at rest; with one slot, ghost neighbours hidden
+- [ ] **CHAT-SLOTS-V2-02** `[+]` creates a slot; **A** on title opens rename; **Right** → **×** → ConfirmModal deletes; focus returns to row after each modal
+- [ ] **CHAT-SLOTS-V2-03** Ask in slot A → **LB/RB** to slot B mid-Ask → reply lands in **A**; reopen A — both Q and A present
+- [ ] **CHAT-SLOTS-V2-04** Close QAM mid-Ask → reopen → pending question visible (not empty transcript)
+- [ ] **CHAT-SLOTS-V2-05** With row focused: **LB/RB** cycle slots; blur row → **LB/RB** switch tabs — repeat with a game running and without; record P-0 result in [major-redesign.md](major-redesign.md) § 7 R1
+- [ ] **CHAT-SLOTS-V2-06** Carousel stops at `[+]` and at last slot (no wrap); dots track active slot at cap of 5
+
 ---
 
 ## Tier 3 — Heavy manual

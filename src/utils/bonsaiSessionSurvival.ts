@@ -57,6 +57,8 @@ export type BonsaiSessionSurvivalSnapshot = {
   showSlowWarning: boolean;
   lastRequestId: number | null;
   thinkingSummary: string | null;
+  /** Active chat slot id only — turns reload from disk. */
+  activeSlotId: string | null;
 };
 
 const survival = createTabLocalSurvival<BonsaiSessionSurvivalSnapshot>({ consumeClears: false });

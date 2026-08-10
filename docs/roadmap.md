@@ -129,8 +129,9 @@ Stars are **effort/risk**. Grouped by **theme**; within each lane sorted ascendi
   - **Goal:** Phase 1 offline TTS play/stop; Phase 2 character-aligned read-aloud (legal gate).
 - ★★★★★ **Named chat slots** (labeled threads — redesign only)
   - **GitHub:** [bonsAI Issues](https://github.com/cantcurecancer/bonsAI/issues) — issue TBD.
-  - **Goal:** Multiple labeled threads — only if redesigned; do not re-ship old mini-list picker. [07-named-chat-slots-postmortem.md](planning/07-named-chat-slots-postmortem.md).
-  - **Design + path:** [major-redesign.md](major-redesign.md) — LB/RB slot carousel, decisions R1–R5. **Gated on the P-0 bumper spike**; nothing else starts until it answers.
+  - **Goal:** Up to 5 named, persistent chats with Main-tab LB/RB carousel (option C). Do not re-ship old mini-list picker.
+  - **Status:** Code landed 2026-08-09 (storage, RPC, row UI). **On-Deck QA open** — all **CHAT-SLOTS-V2-01…06** must pass before Completed. **P-0 bumper spike** result still pending on device ([major-redesign.md](major-redesign.md) § 7 R1).
+  - **Design:** [major-redesign.md](major-redesign.md), [07-named-chat-slots-postmortem.md](planning/07-named-chat-slots-postmortem.md).
 - ★★★★★ **On-Deck model benchmark** (measured routing order)
   - **GitHub:** [bonsAI Issues](https://github.com/cantcurecancer/bonsAI/issues) — issue TBD.
   - **Goal:** Rank installed models by measured speed/completion; offer as try order (with confirmation).

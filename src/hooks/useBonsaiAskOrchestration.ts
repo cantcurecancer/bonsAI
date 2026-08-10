@@ -128,6 +128,10 @@ export type UseBonsaiAskOrchestrationArgs = {
   settingsLoaded?: boolean;
   /** QA override (Developer tab): force every eligible carousel slot to a session RAG chip. */
   devForceSessionRagChips?: boolean;
+  /** Active chat slot id for Ask submit — ref updated synchronously in useChatSlots. */
+  activeSlotIdRef?: RefObject<string | null>;
+  /** Reload slot transcript from disk after terminal Ask completion. */
+  onSlotTurnsChanged?: () => void;
 };
 
 export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
@@ -538,6 +542,7 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
         pendingArchiveTurnRef.current = null;
         pendingThreadQuestionDisplayRef.current = null;
         void refreshInputTransparency();
+        a.onSlotTurnsChanged?.();
         return;
       }
 
@@ -640,6 +645,7 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
           pendingThreadQuestionDisplayRef.current = null;
         }
       void refreshInputTransparency();
+      a.onSlotTurnsChanged?.();
       return;
     }
 
@@ -924,6 +930,7 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
                 parent_answer: string;
                 preferred_model: string | null;
               };
+              chat_slot_id?: string;
             },
           ],
           BackgroundStartResponse
@@ -936,6 +943,9 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
             attachments: attachments as AskAttachment[],
             ask_mode: askModeForRequest,
             spoiler_consent: spoilerConsentForRequest,
+            ...(a.activeSlotIdRef?.current
+              ? { chat_slot_id: a.activeSlotIdRef.current }
+              : {}),
             ...(followUpPending
               ? {
                   reply_followup: {

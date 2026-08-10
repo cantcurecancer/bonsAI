@@ -59,6 +59,11 @@ export const FRONTEND_RPC_METHODS = [
   "cancel_rag_corpus_download",
   "update_rag_corpus",
   "remove_rag_corpus",
+  "list_chat_slots",
+  "get_chat_slot",
+  "create_chat_slot",
+  "delete_chat_slot",
+  "rename_chat_slot",
 ] as const;
 
 export type FrontendRpcMethod = (typeof FRONTEND_RPC_METHODS)[number];
@@ -227,6 +232,23 @@ function defaultHandlers(): Record<string, RpcHandler> {
     cancel_rag_corpus_download: () => ({ cancel_requested: true }),
     update_rag_corpus: () => ({ ok: true }),
     remove_rag_corpus: () => ({ ok: true }),
+    list_chat_slots: () => ({ slots: [] }),
+    get_chat_slot: () => ({ ok: false, error: "Slot not found" }),
+    create_chat_slot: () => ({
+      ok: true,
+      slot: {
+        id: "slot-test-1",
+        label: "New chat",
+        created_at: 0,
+        updated_at: 0,
+        turns: [],
+      },
+    }),
+    delete_chat_slot: () => ({ ok: true }),
+    rename_chat_slot: () => ({
+      ok: true,
+      slot: { id: "slot-test-1", label: "Renamed", created_at: 0, updated_at: 0, turns: [] },
+    }),
   };
 }
 

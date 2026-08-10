@@ -16,7 +16,8 @@ export type ModalReturnFocusId =
   | "plugin-help"
   | "desktop-note-save"
   | "character-picker-settings"
-  | "ollama-models-hub";
+  | "ollama-models-hub"
+  | "chat-slot-rename";
 
 const owners = new Map<ModalReturnFocusId, HTMLElement>();
 let pendingReturn: ModalReturnFocusId | null = null;

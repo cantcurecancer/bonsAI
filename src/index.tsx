@@ -77,6 +77,7 @@ import { useCharacterPickerModal } from "./features/plugin-shell/useCharacterPic
 import { useDesktopNoteSaveModal } from "./features/plugin-shell/useDesktopNoteSaveModal";
 import { usePluginHelpModal } from "./features/plugin-shell/usePluginHelpModal";
 import { useBonsaiAskOrchestration } from "./hooks/useBonsaiAskOrchestration";
+import { useChatSlots } from "./hooks/useChatSlots";
 import { useDisclaimerAndLocalRuntimeGates } from "./hooks/useDisclaimerAndLocalRuntimeGates";
 import { useCapturedFrontendErrors } from "./hooks/useCapturedFrontendErrors";
 import { getSteamSettingsUrl } from "./data/steamSettingsNavigation";
@@ -125,8 +126,12 @@ const Content: React.FC = () => {
       showSlowWarning: false,
       lastRequestId: null,
       thinkingSummary: null,
+      activeSlotId: null,
     } as unknown as BonsaiSessionSurvivalSnapshot;
   });
+
+  const activeSlotIdRef = useRef<string | null>(peekBonsaiSessionPendingRestore()?.activeSlotId ?? null);
+  const reloadSlotTranscriptRef = useRef<(() => Promise<void>) | null>(null);
 
   const {
     currentTab,
@@ -394,6 +399,9 @@ const Content: React.FC = () => {
     setStrategyGuideBranches,
     reseedSuggestedPrompts,
     restoreSessionSnapshot,
+    setAskThreadCollapsed,
+    setAskThreadDisplayQuestion,
+    setExpandedTurnKey,
   } = useBonsaiAskOrchestration({
     desktopDebugNoteAutoSave,
     filesystemWrite: capabilities.filesystem_write,
@@ -423,7 +431,24 @@ const Content: React.FC = () => {
     useLocalKnowledgeBase,
     settingsLoaded,
     devForceSessionRagChips,
+    activeSlotIdRef,
+    onSlotTurnsChanged: () => {
+      void reloadSlotTranscriptRef.current?.();
+    },
   });
+
+  const chatSlots = useChatSlots({
+    activeSlotIdRef,
+    initialActiveSlotId: activeSlotIdRef.current,
+    setAskThreadCollapsed,
+    setAskThreadDisplayQuestion,
+    setExpandedTurnKey,
+  });
+  reloadSlotTranscriptRef.current = chatSlots.reloadActiveSlotTranscript;
+
+  useEffect(() => {
+    void chatSlots.refreshSummaries();
+  }, [chatSlots.refreshSummaries]);
 
   isAskingRef.current = isAsking;
 
@@ -458,8 +483,12 @@ const Content: React.FC = () => {
     setOllamaIp(survived.ollamaIp);
     hydrateFromSettings(toBonsaiSettingsPayload(survived.settingsSnapshot));
     restoreSessionSnapshot(survived);
+    if (survived.activeSlotId) {
+      activeSlotIdRef.current = survived.activeSlotId;
+      void chatSlots.selectSlot(survived.activeSlotId);
+    }
     pendingSessionRestoreFinalizeRef.current = true;
-  }, [restoreSessionSnapshot, hydrateFromSettings]);
+  }, [chatSlots.selectSlot, restoreSessionSnapshot, hydrateFromSettings]);
 
   useEffect(() => {
     if (!pendingSessionRestoreFinalizeRef.current) return;
@@ -670,6 +699,7 @@ const Content: React.FC = () => {
     showSlowWarning,
     lastRequestId,
     thinkingSummary,
+    activeSlotId: chatSlots.activeSlotId,
   });
 
   const {
@@ -1037,6 +1067,14 @@ const Content: React.FC = () => {
     desktopAskVerboseLogging,
     lastRequestId,
     lastExchange,
+    chatSlotSummaries: chatSlots.summaries,
+    activeChatSlotId: chatSlots.activeSlotId,
+    onChatSlotCreate: chatSlots.createSlot,
+    onChatSlotSelect: chatSlots.selectSlot,
+    onChatSlotRename: chatSlots.renameSlot,
+    onChatSlotDelete: chatSlots.deleteSlot,
+    onBeforeNestedDeckyModal: captureSessionBeforeModal,
+    onCompleteNestedDeckyModalClose: finalizeShowModalAndRestoreActiveTab,
   });
 
 

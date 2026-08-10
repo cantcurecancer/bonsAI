@@ -85,6 +85,8 @@ const DECK_BUTTON_DIR_UP = 9;
 const DECK_BUTTON_DIR_DOWN = 10;
 const DECK_BUTTON_DIR_LEFT = 11;
 const DECK_BUTTON_DIR_RIGHT = 12;
+const DECK_BUTTON_BUMPER_LEFT = 5;
+const DECK_BUTTON_BUMPER_RIGHT = 6;
 
 /** The numeric button id, from whichever shape the caller was handed. */
 function deckButtonId(button: unknown): number | null {
@@ -106,6 +108,16 @@ export function isOkDeckButtonEvent(button: unknown): boolean {
   if (id !== null) return id === DECK_BUTTON_OK;
   const key = String(button ?? "").toLowerCase();
   return key === "enter" || key === "a" || key === "gamepada";
+}
+
+export function isBumperLeftDeckEvent(button: unknown): boolean {
+  const id = deckButtonId(button);
+  return id === DECK_BUTTON_BUMPER_LEFT;
+}
+
+export function isBumperRightDeckEvent(button: unknown): boolean {
+  const id = deckButtonId(button);
+  return id === DECK_BUTTON_BUMPER_RIGHT;
 }
 
 /*

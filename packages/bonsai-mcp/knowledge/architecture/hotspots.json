@@ -2,7 +2,7 @@
   "hotspots": [
     {
       "path": "main.py",
-      "lines": 2858,
+      "lines": 3070,
       "role": "Decky RPC entrypoints and orchestration"
     },
     {
@@ -12,12 +12,12 @@
     },
     {
       "path": "src/index.tsx",
-      "lines": 1346,
+      "lines": 1384,
       "role": "Plugin root: tabs, scoped CSS, RPC wiring, Settings"
     },
     {
       "path": "src/hooks/useBonsaiAskOrchestration.ts",
-      "lines": 1340,
+      "lines": 1350,
       "role": ""
     },
     {
@@ -96,6 +96,11 @@
       "role": ""
     },
     {
+      "path": "src/styles/sections/section-6.ts",
+      "lines": 635,
+      "role": ""
+    },
+    {
       "path": "src/components/KnowledgeBaseSection.tsx",
       "lines": 612,
       "role": ""
@@ -118,11 +123,6 @@
     {
       "path": "src/hooks/usePluginSettings.ts",
       "lines": 527,
-      "role": ""
-    },
-    {
-      "path": "src/styles/sections/section-6.ts",
-      "lines": 518,
       "role": ""
     },
     {
@@ -181,6 +181,11 @@
       "role": ""
     },
     {
+      "path": "py_modules/backend/services/chat_slot_service.py",
+      "lines": 401,
+      "role": ""
+    },
+    {
       "path": "src/styles/sections/section-8.ts",
       "lines": 383,
       "role": ""
@@ -192,11 +197,6 @@
     },
     {
       "path": "py_modules/backend/services/voice_whisper_daemon.py",
-      "lines": 367,
-      "role": ""
-    },
-    {
-      "path": "src/features/plugin-shell/tabs/useMainTabPayload.tsx",
       "lines": 367,
       "role": ""
     }

@@ -27,6 +27,7 @@ const DOMAIN_KEYWORDS = {
   intent_packs: ["intent_pack"],
   strategy: ["strategy_checklist"],
   language: ["reply_language"],
+  chat_slots: ["chat_slot"],
 };
 
 function classifyRpc(name) {

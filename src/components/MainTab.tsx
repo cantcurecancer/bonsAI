@@ -28,6 +28,8 @@ import { MainTabUnifiedAskBar } from "./MainTabUnifiedAskBar";
 import { MainTabScreenshotBrowser } from "./MainTabScreenshotBrowser";
 import { MainTabChatTranscript } from "./MainTabChatTranscript";
 import { PermissionDenyAction } from "./PermissionDenyAction";
+import { ChatSlotRow } from "../features/chat-slots/ChatSlotRow";
+import type { ChatSlotSummary } from "../utils/chatSlotsApi";
 import type { BonsaiCapabilityKey } from "../utils/permissionDeepLink";
 
 export type MainTabProps = {
@@ -130,6 +132,14 @@ export type MainTabProps = {
   onNavigateToPermissions?: (capability: BonsaiCapabilityKey) => void;
   micPermissionDenied?: boolean;
   onDismissMicPermissionDeny?: () => void;
+  chatSlotSummaries?: ChatSlotSummary[];
+  activeChatSlotId?: string | null;
+  onChatSlotCreate?: () => Promise<unknown>;
+  onChatSlotSelect?: (slotId: string | null) => Promise<void>;
+  onChatSlotRename?: (slotId: string, label: string) => Promise<boolean>;
+  onChatSlotDelete?: (slotId: string) => Promise<boolean>;
+  onBeforeNestedDeckyModal?: () => void;
+  onCompleteNestedDeckyModalClose?: (close: () => void) => void;
 };
 
 export function MainTab(props: MainTabProps) {
@@ -139,6 +149,21 @@ export function MainTab(props: MainTabProps) {
   return (
     <>
       <PanelSection>
+        {props.onChatSlotCreate && props.onChatSlotSelect && props.onChatSlotRename && props.onChatSlotDelete ? (
+          <PanelSectionRow>
+            <ChatSlotRow
+              summaries={props.chatSlotSummaries ?? []}
+              activeSlotId={props.activeChatSlotId ?? null}
+              onCreateSlot={props.onChatSlotCreate}
+              onSelectSlot={props.onChatSlotSelect}
+              onRenameSlot={props.onChatSlotRename}
+              onDeleteSlot={props.onChatSlotDelete}
+              focusUnifiedTextField={focusUnifiedTextField}
+              onBeforeNestedDeckyModal={props.onBeforeNestedDeckyModal}
+              onCompleteNestedDeckyModalClose={props.onCompleteNestedDeckyModalClose}
+            />
+          </PanelSectionRow>
+        ) : null}
         <PanelSectionRow>
           <MainTabPresetRow
             suggestedPrompts={props.suggestedPrompts}
