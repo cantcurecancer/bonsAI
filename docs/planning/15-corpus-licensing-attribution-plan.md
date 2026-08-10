@@ -79,7 +79,7 @@ unusable costs nothing today and costs a rewrite later.
 
       | Source | Licence | How it was read |
       |---|---|---|
-      | `theportalwiki.com` | CC BY 4.0 | `api.php` `rightsinfo` |
+      | `theportalwiki.com` | CC BY 4.0 | `api.php` `rightsinfo` | **version confirmed 2026-08-09** |
       | `combineoverwiki.net` | CC BY-SA 4.0 | footer badge; `api.php` gave no version — **version confirmed 2026-08-09** |
       | `zelda.fandom.com` | CC-BY-SA-3.0 | already in the seed, recorded per card |
       | `left4dead.fandom.com` | CC BY-SA 3.0 | snapshot `siteinfo` (`CC-BY-SA`) + `fandom.com/licensing` (3.0 Unported) |
@@ -107,13 +107,13 @@ unusable costs nothing today and costs a rewrite later.
       prints both. The snapshot date is recorded per card as `crawled_at` and shown on the
       chip as *"as of YYYY-MM-DD"*; the identifier lives in the roadmap's 6d entry.
 
-- [ ] **ATTR-1.3** — Decide and write down whether **CC BY 4.0** and **CC BY-SA 3.0/4.0**
+- [x] **ATTR-1.3** — Decide and write down whether **CC BY 4.0** and **CC BY-SA 3.0/4.0**
       cards may coexist in one corpus file. They can — ShareAlike binds each work, and
       `source_license` is already per card — but the decision must be explicit so nobody
-      later "simplifies" it into one corpus-wide licence field.
-      *Acceptance:* recorded in [maintainer-decisions-locked.md](../audit/maintainer-decisions-locked.md).
+      later "simplifies" it into one corpus-wide licence field. 
+      *Acceptance:* recorded in [maintainer-decisions-locked.md](../audit/maintainer-decisions-locked.md). ## No I want **CC BY 4.0** only, defer the more restrictive attribute work ##
 
-- [ ] **ATTR-1.4** — Confirm no card text is a **verbatim copy** of source prose. Cards are
+- [x] **ATTR-1.4** — Confirm no card text is a **verbatim copy** of source prose. Cards are
       distilled and maintainer-authored; that is what makes them adaptations rather than
       reproductions. Spot-check at least one card per source against its page.
       *Acceptance:* no card is a paste. Any that is gets rewritten or dropped.
