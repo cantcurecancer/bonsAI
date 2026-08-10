@@ -77,7 +77,7 @@ Stars are **effort/risk**. Grouped by **theme**; within each lane sorted ascendi
 
 **GitHub tracking:** Items rated **★★★★★** or **★★★★★★** include a placeholder link to **[bonsAI Issues](https://github.com/cantcurecancer/bonsAI/issues)** (replace with a specific issue URL when created).
 
-### Ask / reply (v0.5.0 — token streaming live markdown, spoiler confidence chip, spoiler constitution runtime, thinking blurbs, reply-language / routing merge RPCs, …)
+### Ask / reply (v0.5.0 — token streaming live markdown, spoiler confidence chip, spoiler constitution runtime, thinking blurbs, reply-language / routing merge RPCs, Caveman reply style, …)
 
 - ★ **Intent packs later review** (keep / quiet / Developer)
   - **Goal:** Decide whether quiet intent-pack search aliases should be deleted, left quiet, or revived under Developer.

@@ -63,4 +63,8 @@ if [[ ${#MISSING[@]} -gt 0 ]]; then
     exit 1
 fi
 
+# ATTR-4.2 — Apache-2.0 plugin zip must not bundle the separately licensed KB corpus.
+REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+python3 "$REPO_ROOT/scripts/plugin_zip_corpus_guard.py" --dir "$ROOT" || exit 1
+
 echo "verify-decky-plugin-zip: OK ($ROOT)"
