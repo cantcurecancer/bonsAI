@@ -165,7 +165,7 @@ Stars are **effort/risk**. Grouped by **theme**; within each lane sorted ascendi
   - **Status:** Discovery locked 2026-07-30; docs only. [knowledge-base.md](knowledge-base.md) § Phase 4.
 - ★★★★ **RAG Deck query — public publish (Phase 6)**
   - **Goal:** First public versioned corpus + manifest after Phase 5 + legal scrub.
-  - **Status:** Legal plan [15-corpus-licensing-attribution-plan.md](planning/15-corpus-licensing-attribution-plan.md) — Stages 1–3 done 2026-08-09; Stages 4–5 (NOTICE, zip guard, tests/docs) open. [knowledge-base.md](knowledge-base.md) § Phase 6.
+  - **Status:** Legal plan [15-corpus-licensing-attribution-plan.md](planning/15-corpus-licensing-attribution-plan.md) — Stages 1–4 done 2026-08-09; Stage 5 (ATTR tests + KB-ATTRIB-02) open. [knowledge-base.md](knowledge-base.md) § Phase 6.
 - ★★★★ **RAG Deck query — retrieval infra (Phase 7)**
   - **Goal:** Optional sqlite-vss/ANN, auto-pull nomic, RRF extensions, vision→KB, demote, packs, intent retrieval.
   - **Status:** FTS+vector shipped in remediation; remainder docs only. [knowledge-base.md](knowledge-base.md) § Phase 7.

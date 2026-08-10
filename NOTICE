@@ -34,3 +34,24 @@ SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
 CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+---------------------------------------------------------------------------
+
+Offline knowledge base (corpus) — separate distribution
+
+The bonsAI *plugin* (this package / release zip) is Apache-2.0 and ships **no**
+knowledge-base corpus content: no `corpus.db`, no compressed corpus chunk, no
+`corpus-manifest.json`, and no corpus `ATTRIBUTIONS.md`.
+
+The optional offline strategy / troubleshooting corpus is a **separate download**
+(Hugging Face primary, GitHub Releases mirror), installed at runtime under the
+user's knowledge-base path. That package is **not** Apache-2.0. Cards that adapt
+third-party wiki material carry their own licences (e.g. CC BY 4.0, CC BY-SA,
+GFDL) recorded per card as `source_license`; the corpus `ATTRIBUTIONS.md` lists
+sources and answers redistribution questions for that package.
+
+If you are auditing this plugin zip for CC BY-SA / GFDL material: it should not
+contain those corpus files. Look for attributions in the separately installed
+corpus package's `ATTRIBUTIONS.md`, and for the architectural separation in
+`docs/planning/15-corpus-licensing-attribution-plan.md` and
+`docs/knowledge-base.md` (Source attribution / Phase 6).

@@ -1,8 +1,8 @@
 # 15 — Corpus licensing and attribution — executable plan
 
-**Status:** `IN PROGRESS` — Stages 1–3 done 2026-08-09 (gate, generated `ATTRIBUTIONS.md`,
-redistribution/accuracy header). Stages 4–5 remain. **Blocks first public corpus publish,
-nothing else.**
+**Status:** `IN PROGRESS` — Stages 1–4 done 2026-08-09 (gate, generated `ATTRIBUTIONS.md`,
+redistribution header, NOTICE + zip corpus guard). Stage 5 (tests/docs rows) remains.
+**Blocks first public corpus publish, nothing else.**
 **Roadmap:** [Backlog § Knowledge base — RAG Deck query — public publish (Phase 6)](../roadmap.md#knowledge-base) (★★★★)
 **Already shipped and out of scope here:** per-reply credit on the knowledge chip and the
 per-card `source_url` rule — landed 2026-08-09, see
@@ -26,7 +26,7 @@ written — and that is cheaper to discover before 181 cards exist than after.
 | ATTR-1.1…1.4 | Confirm each source's licence, at the source | ☑ Done 2026-08-09 — footers confirmed for all in-seed wikis; Zelda corrected to GFDL; D19 BY-only publish |
 | ATTR-2.1…2.3 | Generate `ATTRIBUTIONS.md` from the corpus | ✅ Done 2026-08-09 |
 | ATTR-3.1…3.2 | State the corpus licence and the ShareAlike obligation | ✅ Done 2026-08-09 |
-| ATTR-4.1…4.2 | Repo-side `NOTICE` and the Apache/CC separation | ☐ Not started |
+| ATTR-4.1…4.2 | Repo-side `NOTICE` and the Apache/CC separation | ✅ Done 2026-08-09 |
 | ATTR-5.1…5.3 | Tests and docs | ☐ Not started |
 
 States: `☐ Not started` · `▶ In progress` · `✅ Done` · `⛔ Blocked` · `✖ Dropped`
@@ -177,18 +177,20 @@ unusable costs nothing today and costs a rewrite later.
 
 ## Stage 4 — Repo-side `NOTICE` and the Apache/CC separation
 
-- [ ] **ATTR-4.1** — Extend [NOTICE](../../NOTICE) to record that the plugin ships **no**
+- [x] **ATTR-4.1** — Extend [NOTICE](../../NOTICE) to record that the plugin ships **no**
       corpus content, that the corpus is a separate download under separate terms, and where
       its attributions live. Today `NOTICE` covers only the decky-plugin-template BSD
       derivation.
       *Acceptance:* someone auditing the *plugin* zip can see that no CC BY-SA material is in
-      it, and where to look for the material that is.
+      it, and where to look for the material that is. **Done 2026-08-09.**
 
-- [ ] **ATTR-4.2** — Add a guard that the release zip contains no corpus file. The separation
+- [x] **ATTR-4.2** — Add a guard that the release zip contains no corpus file. The separation
       is what keeps Apache-2.0 and CC BY-SA from colliding; it should fail a build rather than
       rely on nobody bundling it by accident. The zip verifier in `scripts/` is the place.
       *Acceptance:* a deliberately planted `corpus.db` in the staging dir fails the release
-      build.
+      build. **Done 2026-08-09** — `scripts/plugin_zip_corpus_guard.py` (dir or zip);
+      hooked from `scripts/verify-decky-plugin-zip.sh`; tests in
+      `tests/test_plugin_zip_corpus_guard.py`.
 
 ---
 
