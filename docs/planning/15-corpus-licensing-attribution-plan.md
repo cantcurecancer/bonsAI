@@ -1,8 +1,9 @@
 # 15 — Corpus licensing and attribution — executable plan
 
-**Status:** `IN PROGRESS` — Stages 1–4 done 2026-08-09 (gate, generated `ATTRIBUTIONS.md`,
-redistribution header, NOTICE + zip corpus guard). Stage 5 (tests/docs rows) remains.
-**Blocks first public corpus publish, nothing else.**
+**Status:** `DONE` 2026-08-09 — Stages 1–5 complete (licence gate, generated `ATTRIBUTIONS.md`,
+redistribution header, NOTICE + zip guard, drift/version tests + **KB-ATTRIB-02**).
+Still blocks *first public corpus publish* until Phase 6 packaging/HF land; the legal scrub
+itself is no longer open work.
 **Roadmap:** [Backlog § Knowledge base — RAG Deck query — public publish (Phase 6)](../roadmap.md#knowledge-base) (★★★★)
 **Already shipped and out of scope here:** per-reply credit on the knowledge chip and the
 per-card `source_url` rule — landed 2026-08-09, see
@@ -27,7 +28,7 @@ written — and that is cheaper to discover before 181 cards exist than after.
 | ATTR-2.1…2.3 | Generate `ATTRIBUTIONS.md` from the corpus | ✅ Done 2026-08-09 |
 | ATTR-3.1…3.2 | State the corpus licence and the ShareAlike obligation | ✅ Done 2026-08-09 |
 | ATTR-4.1…4.2 | Repo-side `NOTICE` and the Apache/CC separation | ✅ Done 2026-08-09 |
-| ATTR-5.1…5.3 | Tests and docs | ☐ Not started |
+| ATTR-5.1…5.3 | Tests and docs | ✅ Done 2026-08-09 |
 
 States: `☐ Not started` · `▶ In progress` · `✅ Done` · `⛔ Blocked` · `✖ Dropped`
 
@@ -196,19 +197,22 @@ unusable costs nothing today and costs a rewrite later.
 
 ## Stage 5 — Tests and docs
 
-- [ ] **ATTR-5.1** — Extend `tests/test_source_attribution.py`: every distinct
-      `(source_url, source_license)` in a built corpus appears in the generated
-      `ATTRIBUTIONS.md`. This is the drift guard that the hardcoded file never had.
-      *Verify:* `npm run test:py`
+- [x] **ATTR-5.1** — Extend tests so every distinct `(source_url, source_license)` in a built
+      corpus appears in the generated `ATTRIBUTIONS.md`.
+      *Verify:* `tests/test_build_rag_attributions.py` —
+      `test_every_distinct_url_license_pair_appears_in_attributions` (in-memory seed).
+      **Done 2026-08-09.**
 
-- [ ] **ATTR-5.2** — Assert the generated file names a licence **version** for every
+- [x] **ATTR-5.2** — Assert the generated file names a licence **version** for every
       third-party source. "CC BY-SA" with no version is the gap Combine OverWiki's API left,
       and it must not reach a published corpus.
+      *Done 2026-08-09* — `licence_string_includes_version` + heading scan; seed JSON check in
+      `test_source_attribution.py`.
 
-- [ ] **ATTR-5.3** — Update [knowledge-base.md § Source attribution](../knowledge-base.md) to
+- [x] **ATTR-5.3** — Update [knowledge-base.md § Source attribution](../knowledge-base.md) to
       cover distribution as well as the reply, and add an on-Deck row **KB-ATTRIB-02** to
-      [testing.md](../testing.md) for the published-corpus path (install a published corpus,
-      confirm `ATTRIBUTIONS.md` ships beside it and names every source in the database).
+      [testing.md](../testing.md) for the published-corpus path.
+      **Done 2026-08-09.**
 
 ---
 
@@ -225,8 +229,8 @@ unusable costs nothing today and costs a rewrite later.
 
 1. **Publishing target.** Phase 6 says HuggingFace primary, GitHub Releases mirror. With
    **D19** (publishable corpus = CC BY 4.0 only), the HF licence dropdown can be **CC BY 4.0**
-   rather than a mixed-licence workaround. Confirm when Stage 3/4 land, or reopen if
-   ShareAlike cards re-enter the publish set.
+   rather than a mixed-licence workaround. Confirm at first public tag, or reopen if
+   ShareAlike cards re-enter the publish set. (Stages 3–4 landed 2026-08-09.)
 2. **Attribution for the L4D2 dump.** **Locked 2026-08-09 (hybrid):** Deck chip stays
    short (wiki · licence · as-of date); WikiTeam / archive.org snapshot line lives in
    generated `ATTRIBUTIONS.md`. See

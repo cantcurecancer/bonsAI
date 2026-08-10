@@ -18,6 +18,7 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import sqlite3
 import sys
 import urllib.request
@@ -83,6 +84,26 @@ def licence_deed_url(license_name: str) -> str:
     if "GFDL" in compact or "FREE DOCUMENTATION" in key:
         return "https://www.gnu.org/licenses/fdl-1.3.html"
     return ""
+
+
+def licence_string_includes_version(license_name: str) -> bool:
+    """True when a third-party ``source_license`` names a version (ATTR-5.2).
+
+    Bare ``CC BY-SA`` / ``CC-BY-SA`` (no version) must not reach a published corpus — that was
+    the Combine OverWiki ``api.php`` gap. ``GFDL`` is accepted as a named licence (deed maps to
+    FDL 1.3). Maintainer licence is not third-party and returns True (N/A).
+    """
+    raw = str(license_name or "").strip()
+    if not raw or raw == MAINTAINER_LICENSE:
+        return True
+    if re.fullmatch(r"CC[\s\-]?BY[\s\-]?SA", raw, flags=re.IGNORECASE):
+        return False
+    if re.fullmatch(r"CC[\s\-]?BY", raw, flags=re.IGNORECASE):
+        return False
+    compact = re.sub(r"[\s_\-]+", "", raw.upper())
+    if "GFDL" in compact or "FREEDOCUMENTATION" in compact:
+        return True
+    return bool(re.search(r"\d", raw))
 
 
 def _card_title(game_title: str, section_name: str) -> str:

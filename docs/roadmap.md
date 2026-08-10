@@ -10,7 +10,7 @@ Star ratings use the GTA scale: `★` easiest … `★★★★★` very high co
 
 ---
 
-## Bugs (v0.5.0 fixes — LB/RB tab switch, thinking blurbs single-writer, streaming reveal tweaks, asked-entity extraction, KB phrase gate / D16, session RAG chip RPC, source attribution on chips, …)
+## Bugs (v0.5.0 fixes — LB/RB tab switch, thinking blurbs single-writer, streaming reveal tweaks, asked-entity extraction, KB phrase gate / D16, session RAG chip RPC, source attribution on chips, soft num_predict → Verify, …)
 
 Status tags: **OPEN** · **PARTIAL**.
 
@@ -28,7 +28,6 @@ Status tags: **OPEN** · **PARTIAL**.
 - ★★★ **AppID collision: OoT/SoH seed row uses real Stardew Valley AppID** — **OPEN.** `data/kb/strategy_seed.json` game_id 1 (OoT) carries `app_id: "413150"`, which is Valve's actual Stardew Valley AppID — confirmed as Stardew Valley in [12-deep-mod-ai-hints-feasibility.md:136](planning/12-deep-mod-ai-hints-feasibility.md). A Stardew Valley player matches the OoT row and inherits its cards, genres, and `PROTECT_PROGRESSION_APP_IDS` fencing; OoT/SoH itself never benefits, since SoH is a non-Steam shortcut and already resolves correctly through the `shortcut_name` alias path (`ship of harkinian` → `game_id:1`, independent of `app_id`). **Fix lean:** null `app_id` for game_id 1 (mirror State of Emergency's `app_id: null` + alias pattern), drop `"413150"` from `PROTECT_PROGRESSION_APP_IDS` in both [spoiler_title_profiles.py](../py_modules/backend/services/spoiler_title_profiles.py) and [spoilerTitleProfiles.ts](../src/data/spoilerTitleProfiles.ts), add an OoT/SoH name fallback so protection doesn't regress, and pass `app_name` into `spoiler_risk_service.py`'s currently AppID-only call. 18 files reference the id; `tests/fixtures/kb_eval_v2.json` rows need the same shortcut-keyed conversion already used for SoE — coordinate with maintainer before touching it, since the RAG PR2 bake-off report was measured against current ids.
 - ★★★ **Character picker: focus ring invisible, D-pad does not move** — **OPEN (selection fixed).** Modal uses `querySelector` focus helpers — fix CSS reach first, then registered-owner pattern. Blocks AI-character on Deck. [CharacterPickerModal.tsx](../src/components/CharacterPickerModal.tsx).
 - ★★★ **Fullscreen picker D-pad edge-escape (audit)** — **OPEN.** Audit Pull Models, Character picker, models hub, other `showModal` pickers for below-list / above-list escape.
-- ★★★ **Soft** `num_predict` **+ thinking budget** — **OPEN.** Hard Ollama wall (500/900) with no continue; `think: False` avoids empty replies on thinking models but caps quality. **v1 in scope:** raise per-mode caps (Speed 800 / Deep 1200 / Strategy 1600 targets); soft auto-continue on `done_reason=length` with ephemeral inline **`Continuing…`** cue stripped to one seamless reply; **C1** separate thinking-budget plumbing with **`think: false` default**; per-mode max **2** continues (timeout / Stop / empty-delta win); quiet empty-continue stop; STREAM-04 partial + “Stopped”; Strategy continues anyway; structured continue logs. **Not in scope:** Thinking effort Settings; blurb one-liner rewrite; Reply verbosity → `num_predict`; user raw `thinking` channel; new Developer toggle. → **Thinking effort control** (Backlog). Detail: [16-soft-num-predict-thinking-budget.md](planning/16-soft-num-predict-thinking-budget.md) · [05-token-streaming-review.md](planning/05-token-streaming-review.md).
 
 ---
 
@@ -36,6 +35,7 @@ Status tags: **OPEN** · **PARTIAL**.
 
 Code-fixed or shipped; on-Deck / qualitative QA still owed. Detail: [testing.md](testing.md), [testing-manual.md](testing-manual.md). Full writeups: [archive/roadmap-bugs-fixed.md](archive/roadmap-bugs-fixed.md).
 
+- ★★★ **Soft** `num_predict` **+ thinking budget** — shipped 2026-08-10; on-Deck **SOFT-PREDICT-01…05** Open. Caps Speed 800 / Deep 1200 / Strategy 1600; soft continue on `done_reason=length` (max 2) with ephemeral **`Continuing…`**; C1 budgets in `ollama_ask_budgets.py` (`think: false` default). Unblocks **Thinking effort control**. Detail: [16-soft-num-predict-thinking-budget.md](planning/16-soft-num-predict-thinking-budget.md).
 - ★★★ **Kids master lock** — shipped 2026-08-09; on-Deck **KIDS-LOCK-01**, **KIDS-FOCUS-01**, **KIDS-REGRESS-01** (and **KIDS-LOCK-02** if child account) Open. Live CEF Stage 0 confirmation still owed.
 - ★ **Developer toggle for "resume last tab" (D15 B)** — shipped 2026-08-04; **TAB-RESUME-MODE-01**, **TAB-RESUME-FOCUS-01** Open/Partial.
 - ★ **Install voice engine button when already ready** — fix landed 2026-08-07 (Wave 1 B); **VOICE-REINSTALL-01**. [wave1.md](wave1.md).
@@ -90,8 +90,8 @@ Stars are **effort/risk**. Grouped by **theme**; within each lane sorted ascendi
   - **Goal:** Add or refresh preset strings as related features land. Wave 1 shipped four prompts; **PRESET-EXPAND-W1-01** open. [wave1.md](wave1.md).
   - **Not in scope:** replacing `fade` default animation; session RAG chips (shipped).
 - ★★ **Thinking effort control** (Settings Off / Low / Medium / High)
-  - **Depends on:** **Soft** `num_predict` **+ thinking budget** ([Bugs](#bugs)).
-  - **Phase 1:** Settings Off / Low / Medium / High → `think: false | "low" | "medium" | "high"` using C1 budgets from the bug.
+  - **Depends on:** **Soft** `num_predict` **+ thinking budget** (shipped — C1 in Verify).
+  - **Phase 1:** Settings Off / Low / Medium / High → `think: false | "low" | "medium" | "high"` using C1 budgets (`resolve_ask_token_budgets`).
   - **Phase 2:** Short thinking one-liners via existing blurbs (not raw model `thinking` by default).
   - **Not in scope:** Reply verbosity → token budgets; caveman / lowering `num_predict`.
 - ★★ **Unfenced spoiler feedback** (thumbs-down category)
@@ -165,7 +165,7 @@ Stars are **effort/risk**. Grouped by **theme**; within each lane sorted ascendi
   - **Status:** Discovery locked 2026-07-30; docs only. [knowledge-base.md](knowledge-base.md) § Phase 4.
 - ★★★★ **RAG Deck query — public publish (Phase 6)**
   - **Goal:** First public versioned corpus + manifest after Phase 5 + legal scrub.
-  - **Status:** Legal plan [15-corpus-licensing-attribution-plan.md](planning/15-corpus-licensing-attribution-plan.md) — Stages 1–4 done 2026-08-09; Stage 5 (ATTR tests + KB-ATTRIB-02) open. [knowledge-base.md](knowledge-base.md) § Phase 6.
+  - **Status:** Legal scrub plan [15-corpus-licensing-attribution-plan.md](planning/15-corpus-licensing-attribution-plan.md) **DONE** 2026-08-09 (Stages 1–5). Remaining Phase 6 work is packaging/HF publish + on-Deck **KB-ATTRIB-02**. [knowledge-base.md](knowledge-base.md) § Phase 6 / Source attribution.
 - ★★★★ **RAG Deck query — retrieval infra (Phase 7)**
   - **Goal:** Optional sqlite-vss/ANN, auto-pull nomic, RRF extensions, vision→KB, demote, packs, intent retrieval.
   - **Status:** FTS+vector shipped in remediation; remainder docs only. [knowledge-base.md](knowledge-base.md) § Phase 7.
@@ -243,7 +243,7 @@ Stars are **effort/risk**. Grouped by **theme**; within each lane sorted ascendi
 - **Preset carousel (shipped)** → **Preset chip expansion**; **Session RAG preset chips** (shipped).
 - **RAG / offline KB** → Phase 2–3 shipped → **retrieval quality remediation** (PR1/PR2 closed 2026-08-09) → Phase 4–8 Backlog; **KB visual maps** separate; **Spoiler constitution** runtime encoding shipped 2026-08-07; **Spoiler confidence chip** → fencing + unfenced feedback.
 - **Web permission** → citations / allowlist / freshness chip.
-- **Soft** `num_predict` **+ thinking budget** ([Bugs](#bugs)) → **Thinking effort control** (Phase 1 effort UI; Phase 2 blurb one-liners).
+- **Soft** `num_predict` **+ thinking budget** (shipped; Verify QA) → **Thinking effort control** (Phase 1 effort UI; Phase 2 blurb one-liners).
 - **Native QAM shortcut tile** → shorter path than Guide-chord macro docs ([troubleshooting.md](troubleshooting.md) §5).
 - **Steam Input jump Phase 1 (shipped)** → **Steam Input layout parse**.
 - **Offline intent packs (quiet)** → **Intent packs later review**.

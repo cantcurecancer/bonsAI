@@ -1,9 +1,11 @@
 """Title: Ollama HTTP transport
 
-Purpose: Streaming /api/chat, unload/stop helpers, and Ollama process cleanup.
+Purpose: Streaming /api/chat (with soft continue), unload/stop helpers, and Ollama process cleanup.
 Used for: All Ollama HTTP I/O from Ask and background jobs; re-exports ollama_prompts helpers.
-Solves: Central transport, streaming tag extraction, and stable import surface for prompt builders.
-Does not: Own prompt/policy string logic — see ollama_prompts for construction and intent detectors.
+Solves: Central transport, streaming tag extraction, soft ``num_predict`` continue, and stable
+import surface for prompt builders.
+Does not: Own prompt/policy string logic — see ollama_prompts; budget constants live in
+ollama_ask_budgets.
 """
 
 import json
@@ -29,6 +31,12 @@ from backend.ollama_connectivity import (
 from backend.ollama_urls import normalize_ollama_base
 
 from backend.services.bonsai_stream_tags import extract_bonsai_status
+from backend.services.ollama_ask_budgets import (
+    SOFT_CONTINUE_CUE,
+    SOFT_CONTINUE_USER_MESSAGE,
+    resolve_ask_token_budgets,
+    strip_soft_continue_cue,
+)
 from backend.services.strategy_guide_parse import (
     extract_strategy_guide_branches,
     extract_strategy_checklist,
@@ -429,54 +437,57 @@ def best_effort_abort_ollama_inference(
         )
 
 
-def post_ollama_chat(
+def _stream_ollama_chat_once(
     url: str,
     model_name: str,
     messages: list,
     request_timeout_seconds: int,
-    normalized_attachments: list,
-    prepared_images: list,
-    attachment_warnings: list,
-    attachment_errors: list,
     logger: Any,
-    ask_mode: str = "speed",
-    keep_alive: str = "5m",
-    cancel_requested: Optional[Callable[[], bool]] = None,
-    on_http_response_opened: Optional[Callable[[Any], None]] = None,
-    on_http_response_done: Optional[Callable[[], None]] = None,
-    on_delta: Optional[Callable[..., None]] = None,
+    budgets: dict,
+    ask_mode: str,
+    keep_alive: str,
+    cancel_requested: Optional[Callable[[], bool]],
+    on_http_response_opened: Optional[Callable[[Any], None]],
+    on_http_response_done: Optional[Callable[[], None]],
+    on_delta: Optional[Callable[..., None]],
+    *,
+    raw_prefix: str = "",
+    emit_done_delta: bool = True,
 ) -> dict:
-    """Execute one Ollama chat request attempt and return a normalized success/error payload."""
+    """One streamed ``/api/chat`` POST. Returns raw/visible text; does not format the final reply.
+
+    ``raw_prefix`` is prior soft-continue assistant raw. Partial parses extract status/fence
+    over ``raw_prefix + this segment`` so leading spaces on a continue chunk are not stripped
+    away from the stitch boundary.
+    """
 
     def _should_cancel() -> bool:
         return bool(cancel_requested and cancel_requested())
 
-    # Strategy replies include branching JSON plus optional cheat section — allow more tokens than speed/deep defaults.
-    num_predict = 900 if ask_mode == "strategy" else 500
+    num_predict = int(budgets.get("num_predict") or 800)
+    think_wire = budgets.get("think", False)
     body_dict = {
         "model": model_name,
         "messages": messages,
         # stream:true returns HTTP headers + HTTPResponse promptly; stream:false buffers the full completion first.
         "stream": True,
         "keep_alive": keep_alive,
-        # Thinking models (gemma4, qwen3, ...) emit reasoning in message.thinking, which the
-        # stream reader does not surface as answer text. On-device evidence: gemma4 burned the
-        # full num_predict budget thinking (done_reason=length, eval_count=500, raw_len=0) and
-        # the user saw no response. Disable thinking so the whole budget goes to visible output;
-        # non-thinking models ignore this flag.
-        "think": False,
+        # Bug v1 default: think false so the whole num_predict budget goes to visible output.
+        # C1 reserves a separate thinking budget; effort control (Phase 1) enables think later.
+        "think": think_wire,
         "options": {
             "num_predict": num_predict,
             "temperature": 0.42 if ask_mode == "strategy" else 0.4,
         },
     }
-    # Keep transport payload shape explicit so backend/frontend contracts remain stable.
     payload = json.dumps(body_dict).encode("utf-8")
     logger.info(
-        "ask_ollama: POST %s model=%s payload_bytes=%d",
+        "ask_ollama: POST %s model=%s payload_bytes=%d num_predict=%d think=%s",
         url,
         model_name,
         len(payload),
+        num_predict,
+        think_wire,
     )
     req = urllib.request.Request(
         url,
@@ -501,6 +512,13 @@ def post_ollama_chat(
                 # flag, which is the frontend's only cue to switch to the fast poll.
                 last_delta_parse = 0.0
 
+                def _publish_partial(joined: str) -> None:
+                    if not on_delta:
+                        return
+                    _thinking, _visible = extract_bonsai_status(raw_prefix + joined)
+                    _visible = hide_incomplete_strategy_branch_fence(_visible)
+                    on_delta(_visible, False, _thinking)
+
                 def _apply_stream_obj(jo: dict) -> None:
                     nonlocal stream_err_txt, done_flag, last_delta_parse
                     err_any = jo.get("error")
@@ -519,10 +537,7 @@ def post_ollama_chat(
                         if on_delta and (_now - last_delta_parse) >= OLLAMA_DELTA_PARSE_INTERVAL_S:
                             last_delta_parse = _now
                             try:
-                                _joined = "".join(deltas)
-                                _thinking, _visible = extract_bonsai_status(_joined)
-                                _visible = hide_incomplete_strategy_branch_fence(_visible)
-                                on_delta(_visible, False, _thinking)
+                                _publish_partial("".join(deltas))
                             except Exception:
                                 logger.exception(
                                     "ask_ollama: on_delta hook failed model=%s", model_name
@@ -619,23 +634,26 @@ def post_ollama_chat(
                     logger.warning("ask_ollama: %s", msg)
                     return {"success": False, "response": msg}
                 assistant_raw = "".join(deltas)
-                thinking_summary, visible_raw = extract_bonsai_status(assistant_raw)
+                thinking_summary, visible_full = extract_bonsai_status(raw_prefix + assistant_raw)
+                visible_full = hide_incomplete_strategy_branch_fence(visible_full or "")
                 # Permanent completion telemetry: done_reason=length with raw_len=0 means the
                 # model spent the whole num_predict budget on hidden thinking (the bug behind
                 # "no response" on gemma4) — keep this line so that failure mode stays visible.
                 logger.info(
-                    "ask_ollama: stream done model=%s done_reason=%s eval_count=%s prompt_eval=%s raw_len=%d visible_len=%d num_predict=%d",
+                    "ask_ollama: stream done model=%s done_reason=%s eval_count=%s prompt_eval=%s "
+                    "raw_len=%d visible_len=%d num_predict=%d think=%s",
                     model_name,
                     done_meta.get("done_reason"),
                     done_meta.get("eval_count"),
                     done_meta.get("prompt_eval_count"),
                     len(assistant_raw),
-                    len(visible_raw or ""),
+                    len(visible_full or ""),
                     num_predict,
+                    think_wire,
                 )
-                if on_delta:
+                if on_delta and emit_done_delta:
                     try:
-                        on_delta(visible_raw, True, thinking_summary)
+                        on_delta(visible_full, True, thinking_summary)
                     except Exception:
                         logger.exception("ask_ollama: on_delta terminal hook failed model=%s", model_name)
                 if _should_cancel():
@@ -644,31 +662,14 @@ def post_ollama_chat(
                         "response": "Request stopped (connection closed).",
                         "cancelled": True,
                     }
-                text = visible_raw.strip() or "No response text."
-                strategy_guide_branches = None
-                strategy_checklist = None
-                if ask_mode == "strategy":
-                    visible, strategy_guide_branches = extract_strategy_guide_branches(text)
-                    text = visible
-                    visible, strategy_checklist = extract_strategy_checklist(text)
-                    text = visible
-                text = format_ai_response(
-                    text,
-                    normalized_attachments,
-                    prepared_images,
-                    attachment_errors,
-                )
-                if attachment_warnings:
-                    logger.info("ask_ollama: attachment warnings: %s", "; ".join(attachment_warnings))
-                logger.info("ask_ollama: OK model=%s response_len=%d", model_name, len(text))
                 return {
                     "success": True,
-                    "response": text,
-                    "model": model_name,
                     "assistant_raw": assistant_raw,
                     "thinking_summary": thinking_summary,
-                    "strategy_guide_branches": strategy_guide_branches,
-                    "strategy_checklist": strategy_checklist,
+                    "visible_raw": visible_full,
+                    "done_reason": done_meta.get("done_reason"),
+                    "eval_count": done_meta.get("eval_count"),
+                    "prompt_eval_count": done_meta.get("prompt_eval_count"),
                 }
             finally:
                 if on_http_response_done:
@@ -732,3 +733,182 @@ def post_ollama_chat(
             "success": False,
             "response": f"Ollama request failed for model '{model_name}'. Check the Deck plugin log.",
         }
+
+
+def post_ollama_chat(
+    url: str,
+    model_name: str,
+    messages: list,
+    request_timeout_seconds: int,
+    normalized_attachments: list,
+    prepared_images: list,
+    attachment_warnings: list,
+    attachment_errors: list,
+    logger: Any,
+    ask_mode: str = "speed",
+    keep_alive: str = "5m",
+    cancel_requested: Optional[Callable[[], bool]] = None,
+    on_http_response_opened: Optional[Callable[[Any], None]] = None,
+    on_http_response_done: Optional[Callable[[], None]] = None,
+    on_delta: Optional[Callable[..., None]] = None,
+    *,
+    think_effort: str = "off",
+) -> dict:
+    """Execute an Ollama chat attempt with soft continue on ``done_reason=length``.
+
+    Soft continue: up to ``max_continues`` re-issues when the model hits the visible
+    ``num_predict`` wall. An ephemeral ``Continuing…`` cue is published on the stream
+    tail between segments and stripped before the final reply is persisted.
+    """
+    budgets = resolve_ask_token_budgets(ask_mode, think_effort=think_effort)
+    mode = str(budgets.get("ask_mode") or "speed")
+    max_continues = int(budgets.get("max_continues") or 0)
+
+    stitched_raw_parts: list[str] = []
+    stitched_visible = ""
+    last_thinking: Optional[str] = None
+    continue_count = 0
+    final_done_reason: Any = None
+
+    def _visible_from_raw(raw: str) -> tuple[Optional[str], str]:
+        thinking, visible = extract_bonsai_status(raw)
+        return thinking, hide_incomplete_strategy_branch_fence(visible or "")
+
+    def _clear_continue_cue() -> None:
+        if not on_delta:
+            return
+        try:
+            on_delta(stitched_visible, False, last_thinking)
+        except Exception:
+            logger.exception("ask_ollama: failed to clear soft-continue cue model=%s", model_name)
+
+    while True:
+        raw_prefix = "".join(stitched_raw_parts)
+        result = _stream_ollama_chat_once(
+            url,
+            model_name,
+            messages if continue_count == 0 else (
+                list(messages)
+                + [
+                    {"role": "assistant", "content": stitched_visible},
+                    {"role": "user", "content": SOFT_CONTINUE_USER_MESSAGE},
+                ]
+            ),
+            request_timeout_seconds,
+            logger,
+            budgets,
+            mode,
+            keep_alive,
+            cancel_requested,
+            on_http_response_opened,
+            on_http_response_done,
+            on_delta,
+            raw_prefix=raw_prefix,
+            emit_done_delta=False,
+        )
+
+        if not result.get("success"):
+            if result.get("cancelled"):
+                _clear_continue_cue()
+            return result
+
+        part_raw = str(result.get("assistant_raw") or "")
+        if result.get("thinking_summary"):
+            last_thinking = result.get("thinking_summary")
+        final_done_reason = result.get("done_reason")
+
+        if continue_count > 0 and not part_raw.strip():
+            logger.info(
+                "ask_ollama: soft continue empty delta — stopping quietly "
+                "continue_index=%d mode=%s visible_chars=%d",
+                continue_count,
+                mode,
+                len(stitched_visible),
+            )
+            break
+
+        stitched_raw_parts.append(part_raw)
+        thinking_now, stitched_visible = _visible_from_raw("".join(stitched_raw_parts))
+        if thinking_now:
+            last_thinking = thinking_now
+
+        should_continue = (
+            final_done_reason == "length"
+            and continue_count < max_continues
+            and bool(part_raw.strip())
+        )
+        if not should_continue:
+            break
+
+        continue_count += 1
+        logger.info(
+            "ask_ollama: soft continue scheduled done_reason=length continue_index=%d "
+            "mode=%s visible_chars_before=%d num_predict=%d",
+            continue_count,
+            mode,
+            len(stitched_visible),
+            int(budgets.get("num_predict") or 0),
+        )
+        if on_delta:
+            cue_text = stitched_visible.rstrip() + "\n\n" + SOFT_CONTINUE_CUE
+            try:
+                on_delta(cue_text, False, last_thinking)
+            except Exception:
+                logger.exception("ask_ollama: soft-continue cue on_delta failed model=%s", model_name)
+
+    assistant_raw = "".join(stitched_raw_parts)
+    visible_raw = strip_soft_continue_cue(stitched_visible)
+    if on_delta:
+        try:
+            on_delta(visible_raw, True, last_thinking)
+        except Exception:
+            logger.exception("ask_ollama: on_delta terminal hook failed model=%s", model_name)
+
+    if cancel_requested and cancel_requested():
+        return {
+            "success": False,
+            "response": "Request stopped (connection closed).",
+            "cancelled": True,
+        }
+
+    text = visible_raw.strip() or "No response text."
+    strategy_guide_branches = None
+    strategy_checklist = None
+    if mode == "strategy":
+        visible, strategy_guide_branches = extract_strategy_guide_branches(text)
+        text = visible
+        visible, strategy_checklist = extract_strategy_checklist(text)
+        text = visible
+    text = format_ai_response(
+        text,
+        normalized_attachments,
+        prepared_images,
+        attachment_errors,
+    )
+    if attachment_warnings:
+        logger.info("ask_ollama: attachment warnings: %s", "; ".join(attachment_warnings))
+    logger.info(
+        "ask_ollama: OK model=%s response_len=%d soft_continues=%d done_reason=%s",
+        model_name,
+        len(text),
+        continue_count,
+        final_done_reason,
+    )
+    return {
+        "success": True,
+        "response": text,
+        "model": model_name,
+        "assistant_raw": assistant_raw,
+        "thinking_summary": last_thinking,
+        "strategy_guide_branches": strategy_guide_branches,
+        "strategy_checklist": strategy_checklist,
+        "done_reason": final_done_reason,
+        "soft_continue_count": continue_count,
+        "ask_budgets": {
+            "visible_num_predict": budgets.get("visible_num_predict"),
+            "thinking_budget": budgets.get("thinking_budget"),
+            "num_predict": budgets.get("num_predict"),
+            "think": budgets.get("think"),
+            "think_effort": budgets.get("think_effort"),
+        },
+    }

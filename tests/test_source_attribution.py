@@ -4,8 +4,8 @@ Purpose: Pin the corpus licensing rule and the path that carries a credit to the
 Used for: data/kb seed files, transparency_service attribution entries.
 Solves: Attribution was computed per surviving card and then dropped by a type filter, so no
         card was ever credited in the UI -- including the two that carry a CC BY-SA URL.
-Does not: Cover ATTRIBUTIONS.md generation in build_rag_db.py (see test_build_rag_attributions.py),
-        or chip styling.
+Does not: Cover chip styling (see frontend tests). ATTRIBUTIONS.md generation drift is in
+        test_build_rag_attributions.py (ATTR-5.1 / 5.2); seed licence *version* is pinned here too.
 
 The rule, in one line: **a card that claims a third-party licence must name its source.**
 Maintainer-authored cards have no third party to name and carry neither field. Both seed files
@@ -94,6 +94,25 @@ class CorpusLicensingRuleTests(unittest.TestCase):
             and not re.match(r"^\d{4}-\d{2}-\d{2}", str(row.get("crawled_at") or ""))
         ]
         self.assertEqual(undated, [], f"wiki-sourced cards with no capture date: {undated}")
+
+    def test_third_party_licences_in_seed_include_a_version(self):
+        """ATTR-5.2 at the seed: bare 'CC BY-SA' must not land in strategy_seed.json."""
+        import importlib.util
+
+        path = Path(__file__).resolve().parent.parent / "scripts" / "build_rag_db.py"
+        spec = importlib.util.spec_from_file_location("build_rag_db", path)
+        assert spec and spec.loader
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+
+        rows = _rows(DATA / "strategy_seed.json", "sections")
+        bare = [
+            (row.get("name"), row.get("source_license"))
+            for row in rows
+            if str(row.get("source_url") or "").strip()
+            and not mod.licence_string_includes_version(str(row.get("source_license") or ""))
+        ]
+        self.assertEqual(bare, [], f"unversioned third-party licences in strategy_seed: {bare}")
 
 
 class SourceDisplayNameTests(unittest.TestCase):

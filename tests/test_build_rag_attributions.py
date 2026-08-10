@@ -9,10 +9,14 @@ Does not: Cover NOTICE or zip guards (ATTR-4…5).
 from __future__ import annotations
 
 import importlib.util
+import re
 import sqlite3
 import tempfile
 import unittest
 from pathlib import Path
+from urllib.parse import urlparse
+
+from backend.services.transparency_service import source_display_name
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
@@ -121,6 +125,71 @@ class BuildRagAttributionsTests(unittest.TestCase):
         )
         self.assertEqual(build_rag_db.licence_deed_url("bonsAI-maintainer"), "")
 
+    def test_licence_string_includes_version(self):
+        self.assertTrue(build_rag_db.licence_string_includes_version("CC-BY-SA-3.0"))
+        self.assertTrue(build_rag_db.licence_string_includes_version("CC BY 4.0"))
+        self.assertTrue(build_rag_db.licence_string_includes_version("GFDL"))
+        self.assertTrue(build_rag_db.licence_string_includes_version("bonsAI-maintainer"))
+        self.assertFalse(build_rag_db.licence_string_includes_version("CC BY-SA"))
+        self.assertFalse(build_rag_db.licence_string_includes_version("CC-BY-SA"))
+        self.assertFalse(build_rag_db.licence_string_includes_version("CC-BY"))
+
+
+class SeedCorpusAttributionsDriftTests(unittest.TestCase):
+    """ATTR-5.1 / 5.2 — generated ATTRIBUTIONS.md tracks the DB and versions licences."""
+
+    def _seeded_conn(self) -> sqlite3.Connection:
+        conn = sqlite3.connect(":memory:")
+        build_rag_db.apply_schema(conn)
+        build_rag_db.seed_sample_corpus(conn)
+        return conn
+
+    def test_every_distinct_url_license_pair_appears_in_attributions(self):
+        conn = self._seeded_conn()
+        try:
+            text = build_rag_db.format_attributions_markdown(conn)
+            pairs = {
+                (str(url).strip(), str(lic).strip())
+                for url, lic in conn.execute(
+                    "SELECT source_url, source_license FROM sections "
+                    "WHERE TRIM(COALESCE(source_url, '')) != '' "
+                    "UNION "
+                    "SELECT source_url, source_license FROM compat_patterns "
+                    "WHERE TRIM(COALESCE(source_url, '')) != ''"
+                )
+            }
+        finally:
+            conn.close()
+
+        self.assertGreater(len(pairs), 0)
+        for url, lic in sorted(pairs):
+            host = source_display_name(url)
+            self.assertTrue(host, f"no host for {url}")
+            self.assertIn(host, text, f"ATTRIBUTIONS.md missing host for {url}")
+            self.assertIn(lic, text, f"ATTRIBUTIONS.md missing licence {lic!r} for {url}")
+            # Grouping heading used by the generator
+            self.assertIn(
+                f"### {host} · {lic}",
+                text,
+                f"expected grouped heading for ({host}, {lic})",
+            )
+
+    def test_every_third_party_licence_in_generated_file_is_versioned(self):
+        conn = self._seeded_conn()
+        try:
+            text = build_rag_db.format_attributions_markdown(conn)
+            headings = re.findall(r"^### .+ · (.+)$", text, flags=re.MULTILINE)
+        finally:
+            conn.close()
+
+        self.assertGreater(len(headings), 0)
+        bare = [h for h in headings if not build_rag_db.licence_string_includes_version(h)]
+        self.assertEqual(
+            bare,
+            [],
+            f"unversioned third-party licences in ATTRIBUTIONS.md (ATTR-5.2): {bare}",
+        )
+
 
 class SeedCorpusAttributionsIntegrationTests(unittest.TestCase):
     """Optional: full --seed build when the script is cheap enough (no Ollama required)."""
@@ -136,11 +205,12 @@ class SeedCorpusAttributionsIntegrationTests(unittest.TestCase):
             self.assertIn("theportalwiki.com", on_disk)
             self.assertIn("zelda.fandom.com", on_disk)
             self.assertIn("GFDL", on_disk)
+            self.assertIn("## May I redistribute this corpus?", on_disk)
             # Adding a card would change the file — prove the generator read the DB.
             conn = sqlite3.connect(str(out / "corpus.db"))
             try:
                 hosts = {
-                    r[0]
+                    urlparse(r[0]).netloc
                     for r in conn.execute(
                         "SELECT DISTINCT source_url FROM sections "
                         "WHERE TRIM(COALESCE(source_url, '')) != ''"
@@ -148,9 +218,8 @@ class SeedCorpusAttributionsIntegrationTests(unittest.TestCase):
                 }
             finally:
                 conn.close()
-            for url in hosts:
-                host = url.split("/")[2] if "://" in url else url
-                self.assertIn(host, on_disk, f"missing host for {url}")
+            for host in hosts:
+                self.assertIn(host, on_disk, f"missing host {host}")
 
 
 if __name__ == "__main__":

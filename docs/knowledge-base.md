@@ -129,16 +129,19 @@ Two UI constraints, both measured rather than assumed:
 - The accent must sit on the chip **outline**, not the fill. `ContextChipLadder` paints
   `tierBackground` only on the active chip; the border always renders.
 
-This covers the credit **on the reply**. Credit on *distribution* — `ATTRIBUTIONS.md`, the
-corpus NOTICE, and the ShareAlike obligation on adaptations — is Phase 6 and has its own plan:
+This covers the credit **on the reply**. Credit on *distribution* follows the same per-card
+rules and is discharged in the separately downloaded corpus package (not the plugin zip):
+
+| Surface | What it does |
+|---|---|
+| Generated `ATTRIBUTIONS.md` | Built from the corpus DB at `build_rag_db.py` time; redistribution header + per-source groups + maintainer section |
+| Plugin `NOTICE` | States the plugin ships **no** corpus; points auditors at the corpus package |
+| Zip guard | `scripts/plugin_zip_corpus_guard.py` (via `verify-decky-plugin-zip.sh`) fails release if `corpus.db` / related files are bundled |
+
+Plan (all executable stages done 2026-08-09):
 [15-corpus-licensing-attribution-plan.md](planning/15-corpus-licensing-attribution-plan.md).
-**Stage 2–4 (2026-08-09):** `ATTRIBUTIONS.md` is generated from the corpus DB at build time
-(`format_attributions_markdown` in `scripts/build_rag_db.py`), grouped like the reply chip,
-with a redistribution header (not Apache-2.0; per-card `source_license`; ShareAlike binds
-SA adaptations; D19 BY-only publish) and an accuracy note (distilled, fix forward). Plugin
-`NOTICE` states the corpus is a separate download; `scripts/plugin_zip_corpus_guard.py`
-(wired into `verify-decky-plugin-zip.sh`) fails a release if `corpus.db` / related files are
-bundled. Stage 5 (extra tests + **KB-ATTRIB-02**) remains.
+**D19:** first *public* publish is CC BY 4.0 sources only; seed may still hold BY-SA / GFDL for QA.
+On-Deck: reply credit → **KB-ATTRIB-01**; published corpus file beside DB → **KB-ATTRIB-02**.
 
 ## Phasing
 

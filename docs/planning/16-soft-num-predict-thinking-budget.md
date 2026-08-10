@@ -1,6 +1,6 @@
 # 16 — Soft `num_predict` + thinking budget (discovery lock)
 
-Planning lock only — **no implementation in this doc**. Roadmap: [roadmap.md § Bugs](../roadmap.md#bugs). Streaming context: [05-token-streaming-review.md](05-token-streaming-review.md). Blurbs context: [06-thinking-blurbs-review.md](06-thinking-blurbs-review.md).
+**Bug v1 landed 2026-08-10** — caps, soft continue, C1 budgets (`ollama_ask_budgets.py` + `post_ollama_chat`). On-Deck QA in [Verify](../roadmap.md#verify) / **SOFT-PREDICT-01…05**. This doc remains the lock; Thinking effort Settings stay Backlog. Streaming context: [05-token-streaming-review.md](05-token-streaming-review.md). Blurbs context: [06-thinking-blurbs-review.md](06-thinking-blurbs-review.md).
 
 ---
 
@@ -8,11 +8,11 @@ Planning lock only — **no implementation in this doc**. Roadmap: [roadmap.md �
 
 Ask calls hit a **hard** Ollama `num_predict` wall with no overshoot or continue. Thinking models can burn the entire budget on hidden `message.thinking`, leaving **zero visible reply** (`done_reason=length`, `raw_len=0`). Today the workaround is unconditional **`think: False`** in `ask_ollama_stream_once` — empty replies stop, but reasoning quality is capped.
 
-**Current code** ([ollama_service.py](../../py_modules/backend/services/ollama_service.py) ~455–471):
+**Shipped code** ([ollama_ask_budgets.py](../../py_modules/backend/services/ollama_ask_budgets.py), [ollama_service.py](../../py_modules/backend/services/ollama_service.py)):
 
-- `num_predict`: **500** (speed/deep) or **900** (strategy)
-- `think: False` always
-- No continuation on `done_reason=length`
+- `num_predict`: **800** (speed) / **1200** (deep) / **1600** (strategy) via C1 resolver
+- `think: false` default (`think_effort="off"`); thinking budgets reserved for Phase 1
+- Soft continue on `done_reason=length` (max 2) with ephemeral `Continuing…` cue
 
 **Product goal:** Longer, better answers in general. Short thinking one-liners ship later under **Thinking effort control** (Backlog), not in this bug.
 

@@ -3,6 +3,11 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 from backend.services import ollama_service
+from backend.services.ollama_ask_budgets import (
+    ASK_VISIBLE_NUM_PREDICT,
+    SOFT_CONTINUE_CUE,
+    SOFT_CONTINUE_USER_MESSAGE,
+)
 from backend.services.ollama_service import (
     OLLAMA_DELTA_PARSE_INTERVAL_S,
     append_deck_tdp_sysfs_grounding,
@@ -106,11 +111,149 @@ class OllamaServiceTests(unittest.TestCase):
             on_delta=_on_delta,
         )
         req = mock_urlopen.call_args[0][0]
-        self.assertTrue(json.loads(req.data.decode("utf-8")).get("stream"))
+        body = json.loads(req.data.decode("utf-8"))
+        self.assertTrue(body.get("stream"))
+        self.assertEqual(body.get("think"), False)
+        self.assertEqual(body.get("options", {}).get("num_predict"), ASK_VISIBLE_NUM_PREDICT["speed"])
         self.assertTrue(out.get("success"))
         self.assertEqual(out.get("assistant_raw"), "Hello")
+        self.assertEqual(out.get("soft_continue_count"), 0)
         self.assertTrue(any(t == "Hell" and not done for t, done in deltas_seen))
         self.assertEqual(deltas_seen[-1], ("Hello", True))
+
+    @patch("backend.services.ollama_service.urllib.request.urlopen")
+    def test_post_ollama_chat_soft_continues_on_done_reason_length(
+        self, mock_urlopen: MagicMock
+    ) -> None:
+        """done_reason=length stitches a second stream behind an ephemeral Continuing… cue."""
+        first = self._ndjson_response(
+            [
+                '{"message":{"role":"assistant","content":"Part one"}}',
+                '{"message":{"role":"assistant","content":""},"done":true,"done_reason":"length"}',
+            ]
+        )
+        second = self._ndjson_response(
+            [
+                '{"message":{"role":"assistant","content":" and two"}}',
+                '{"message":{"role":"assistant","content":""},"done":true,"done_reason":"stop"}',
+            ]
+        )
+        mock_urlopen.side_effect = [first, second]
+        deltas_seen: list[tuple[str, bool]] = []
+
+        out = post_ollama_chat(
+            "http://127.0.0.1:11434/api/chat",
+            "vision:test",
+            [{"role": "user", "content": "long please"}],
+            60,
+            [],
+            [],
+            [],
+            [],
+            MagicMock(),
+            "deep",
+            "5m",
+            cancel_requested=lambda: False,
+            on_delta=lambda text, done, _thinking=None: deltas_seen.append((text, done)),
+        )
+
+        self.assertTrue(out.get("success"))
+        self.assertEqual(out.get("soft_continue_count"), 1)
+        self.assertEqual(out.get("response"), "Part one and two")
+        self.assertNotIn(SOFT_CONTINUE_CUE, out.get("response") or "")
+        self.assertEqual(mock_urlopen.call_count, 2)
+
+        first_body = json.loads(mock_urlopen.call_args_list[0][0][0].data.decode("utf-8"))
+        second_body = json.loads(mock_urlopen.call_args_list[1][0][0].data.decode("utf-8"))
+        self.assertEqual(first_body.get("options", {}).get("num_predict"), ASK_VISIBLE_NUM_PREDICT["deep"])
+        self.assertEqual(second_body["messages"][-1]["content"], SOFT_CONTINUE_USER_MESSAGE)
+        self.assertEqual(second_body["messages"][-2]["content"], "Part one")
+
+        cue_partials = [t for t, done in deltas_seen if not done and SOFT_CONTINUE_CUE in t]
+        self.assertEqual(len(cue_partials), 1)
+        self.assertEqual(deltas_seen[-1], ("Part one and two", True))
+
+    @patch("backend.services.ollama_service.urllib.request.urlopen")
+    def test_post_ollama_chat_empty_continue_stops_quietly(
+        self, mock_urlopen: MagicMock
+    ) -> None:
+        """A continue that adds no visible tokens keeps the first partial and does not error."""
+        first = self._ndjson_response(
+            [
+                '{"message":{"role":"assistant","content":"Kept"}}',
+                '{"message":{"role":"assistant","content":""},"done":true,"done_reason":"length"}',
+            ]
+        )
+        second = self._ndjson_response(
+            [
+                '{"message":{"role":"assistant","content":""},"done":true,"done_reason":"length"}',
+            ]
+        )
+        mock_urlopen.side_effect = [first, second]
+
+        out = post_ollama_chat(
+            "http://127.0.0.1:11434/api/chat",
+            "vision:test",
+            [{"role": "user", "content": "q"}],
+            60,
+            [],
+            [],
+            [],
+            [],
+            MagicMock(),
+            "speed",
+            "5m",
+            cancel_requested=lambda: False,
+            on_delta=None,
+        )
+
+        self.assertTrue(out.get("success"))
+        self.assertEqual(out.get("response"), "Kept")
+        self.assertEqual(out.get("soft_continue_count"), 1)
+        self.assertEqual(mock_urlopen.call_count, 2)
+
+    @patch("backend.services.ollama_service.urllib.request.urlopen")
+    def test_post_ollama_chat_caps_soft_continues_at_two(
+        self, mock_urlopen: MagicMock
+    ) -> None:
+        """Per-mode max is 2 continues even if every segment still reports length."""
+        responses = []
+        for text in ("A", "B", "C"):
+            responses.append(
+                self._ndjson_response(
+                    [
+                        f'{{"message":{{"role":"assistant","content":"{text}"}}}}',
+                        '{"message":{"role":"assistant","content":""},"done":true,"done_reason":"length"}',
+                    ]
+                )
+            )
+        mock_urlopen.side_effect = responses
+
+        out = post_ollama_chat(
+            "http://127.0.0.1:11434/api/chat",
+            "vision:test",
+            [{"role": "user", "content": "q"}],
+            60,
+            [],
+            [],
+            [],
+            [],
+            MagicMock(),
+            "strategy",
+            "5m",
+            cancel_requested=lambda: False,
+            on_delta=None,
+        )
+
+        self.assertTrue(out.get("success"))
+        self.assertEqual(out.get("soft_continue_count"), 2)
+        self.assertEqual(out.get("response"), "ABC")
+        self.assertEqual(mock_urlopen.call_count, 3)
+        strategy_body = json.loads(mock_urlopen.call_args_list[0][0][0].data.decode("utf-8"))
+        self.assertEqual(
+            strategy_body.get("options", {}).get("num_predict"),
+            ASK_VISIBLE_NUM_PREDICT["strategy"],
+        )
 
     @staticmethod
     def _ndjson_response(lines: list[str]):
