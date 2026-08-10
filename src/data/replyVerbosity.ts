@@ -1,20 +1,24 @@
 /**
  * Title: Reply verbosity presets
- * Purpose: Short / Balanced / Detailed reply style ids, labels, and slider index helpers.
+ * Purpose: Caveman / Balanced / Detailed reply style ids, labels, and slider index helpers.
  * Used for: OllamaReplyVerbositySlider and bonsaiSettingsNormalizers persistence.
  * Solves: Typed verbosity enum with ordered chip labels for the three-stop settings slider.
  * Does not: Modify system prompts — backend injects verbosity guidance on ask requests.
  */
-export type ReplyVerbosityId = "short" | "balanced" | "detailed";
+export type ReplyVerbosityId = "caveman" | "balanced" | "detailed";
 
-export const REPLY_VERBOSITY_ORDER: readonly ReplyVerbosityId[] = ["short", "balanced", "detailed"] as const;
+export const REPLY_VERBOSITY_ORDER: readonly ReplyVerbosityId[] = [
+  "caveman",
+  "balanced",
+  "detailed",
+] as const;
 
 export const DEFAULT_REPLY_VERBOSITY: ReplyVerbosityId = "balanced";
 
 const _set = new Set<string>(REPLY_VERBOSITY_ORDER);
 
 export const REPLY_VERBOSITY_LABELS: Record<ReplyVerbosityId, string> = {
-  short: "Short",
+  caveman: "Caveman",
   balanced: "Balanced",
   detailed: "Detailed",
 };

@@ -125,8 +125,9 @@ describe("settings contracts", () => {
     expect(normalizeSettings({ ollama_keep_alive: "bogus" }).ollama_keep_alive).toBe(DEFAULT_OLLAMA_KEEP_ALIVE);
   });
 
-  it("normalizes reply_verbosity to short, balanced, or detailed", () => {
-    expect(normalizeSettings({ reply_verbosity: "short" }).reply_verbosity).toBe("short");
+  it("normalizes reply_verbosity to caveman, balanced, or detailed", () => {
+    expect(normalizeSettings({ reply_verbosity: "caveman" }).reply_verbosity).toBe("caveman");
+    expect(normalizeSettings({ reply_verbosity: "short" }).reply_verbosity).toBe("caveman");
     expect(normalizeSettings({ reply_verbosity: "detailed" }).reply_verbosity).toBe("detailed");
     expect(normalizeSettings({ reply_verbosity: "bogus" }).reply_verbosity).toBe(DEFAULT_REPLY_VERBOSITY);
     expect(normalizeSettings({}).reply_verbosity).toBe(DEFAULT_REPLY_VERBOSITY);

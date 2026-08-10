@@ -344,11 +344,14 @@ It does **not** delete markdown or log files under `~/Desktop/bonsAI_logs/`.
 
 ---
 
-## 1d. Reply style (Short / Balanced / Detailed)
+## 1d. Reply style (Caveman / Balanced / Detailed)
 
-**Feature:** **Ollama** tab → **Reply style** — three-stop slider for global Ask prose coaching. **Balanced** (default) matches pre-ship behavior (no extra system-prompt block). **Short** prefers bullets; **Detailed** prefers paragraphs with rationale (~500-word soft cap on visible prose). Does not change Ask mode (Speed / Strategy / Expert) or model routing. Shown in **Input handling (last Ask)** as `Reply verbosity: …`.
+**Feature:** **Ollama** tab → **Reply style** — three-stop slider for global Ask prose coaching. **Balanced** (default) matches pre-ship behavior (no extra system-prompt block). **Caveman** uses terse “smart caveman” prose (drop articles/filler; keep technical accuracy; replaces former **Short**). **Detailed** prefers paragraphs with rationale (~500-word soft cap on visible prose). Does not change Ask mode (Speed / Strategy / Expert) or model routing. Shown in **Input handling (last Ask)** as `Reply style: …`.
 
-**Note:** The required `<bonsai-status>` opening line keeps its own short length rules; verbosity applies to the visible answer body after that tag.
+**Notes:**
+- Required `<bonsai-status>` opening line keeps its own short length rules; verbosity applies to the visible answer body after that tag.
+- When **AI characters** is on, Caveman coaching is skipped so character voice wins.
+- Existing installs that had **Short** selected migrate to **Caveman** on settings load.
 
 ---
 

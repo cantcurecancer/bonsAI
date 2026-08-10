@@ -79,9 +79,6 @@ Stars are **effort/risk**. Grouped by **theme**; within each lane sorted ascendi
 
 ### Ask / reply (v0.5.0 — token streaming live markdown, spoiler confidence chip, spoiler constitution runtime, thinking blurbs, reply-language / routing merge RPCs, …)
 
-- ★ **Caveman reply style** (replace Short — Ollama Reply style)
-  - **Goal:** Rename Short → Caveman; slider Caveman / Balanced / Detailed; caveman-skill full prose coaching; character voice wins when AI character on.
-  - **Not in scope:** separate caveman toggle; lowering `num_predict`; rewriting thinking blurbs.
 - ★ **Intent packs later review** (keep / quiet / Developer)
   - **Goal:** Decide whether quiet intent-pack search aliases should be deleted, left quiet, or revived under Developer.
   - **Not in scope:** re-shipping Proton journal inject without redesign.
@@ -168,7 +165,7 @@ Stars are **effort/risk**. Grouped by **theme**; within each lane sorted ascendi
   - **Status:** Discovery locked 2026-07-30; docs only. [knowledge-base.md](knowledge-base.md) § Phase 4.
 - ★★★★ **RAG Deck query — public publish (Phase 6)**
   - **Goal:** First public versioned corpus + manifest after Phase 5 + legal scrub.
-  - **Status:** Legal plan [15-corpus-licensing-attribution-plan.md](planning/15-corpus-licensing-attribution-plan.md) — Stage 1 gate + Stage 2 generated `ATTRIBUTIONS.md` done 2026-08-09; Stages 3–5 open. [knowledge-base.md](knowledge-base.md) § Phase 6.
+  - **Status:** Legal plan [15-corpus-licensing-attribution-plan.md](planning/15-corpus-licensing-attribution-plan.md) — Stages 1–3 done 2026-08-09; Stages 4–5 (NOTICE, zip guard, tests/docs) open. [knowledge-base.md](knowledge-base.md) § Phase 6.
 - ★★★★ **RAG Deck query — retrieval infra (Phase 7)**
   - **Goal:** Optional sqlite-vss/ANN, auto-pull nomic, RRF extensions, vision→KB, demote, packs, intent retrieval.
   - **Status:** FTS+vector shipped in remediation; remainder docs only. [knowledge-base.md](knowledge-base.md) § Phase 7.

@@ -1,9 +1,9 @@
 """Title: Corpus ATTRIBUTIONS.md generation
 
-Purpose: Pin ATTR-2 — ATTRIBUTIONS.md is derived from the corpus DB, not a hardcoded blob.
+Purpose: Pin ATTR-2/3 — ATTRIBUTIONS.md is derived from the corpus DB with a redistribution header.
 Used for: scripts/build_rag_db.py format_attributions_markdown / write_attributions.
 Solves: The old literal drifted (11 titles, missing Portal/HL2 licences, no source URLs).
-Does not: Cover Stage 3 redistribution header wording, NOTICE, or zip guards (ATTR-3…5).
+Does not: Cover NOTICE or zip guards (ATTR-4…5).
 """
 
 from __future__ import annotations
@@ -73,6 +73,15 @@ class BuildRagAttributionsTests(unittest.TestCase):
         self.assertIn("Deep Rock Galactic: Survivor — Glyphid Dreadnought", text)
         self.assertIn("Shared troubleshooting tips: 1", text)
         self.assertNotIn("interim 11-title", text)
+        # ATTR-3.1 / 3.2 — redistribution + accuracy without opening the DB
+        self.assertIn("## May I redistribute this corpus?", text)
+        self.assertIn("is **not**", text)
+        self.assertIn("Apache-2.0", text)
+        self.assertIn("source_license", text)
+        self.assertIn("ShareAlike", text)
+        self.assertIn("## Accuracy", text)
+        self.assertIn("distilled, not authoritative", text)
+        self.assertIn("fix forward", text)
 
     def test_removing_wiki_card_removes_its_section(self):
         conn = sqlite3.connect(":memory:")

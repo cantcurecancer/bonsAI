@@ -141,26 +141,55 @@ def _maintainer_strategy_titles(conn: sqlite3.Connection) -> list[str]:
     return [_card_title(str(t or ""), str(n or "")) for t, n in rows if str(t or n).strip()]
 
 
-def format_attributions_markdown(conn: sqlite3.Connection) -> str:
-    """Build ATTRIBUTIONS.md body from the live corpus connection (ATTR-2.1 / 2.2)."""
-    entries = sorted(
-        build_attribution_entries(collect_third_party_attribution_sources(conn)),
-        key=lambda e: (e.get("source") or "", e.get("license") or ""),
-    )
-
-    lines: list[str] = [
+def _attributions_header_lines() -> list[str]:
+    """Redistribution / accuracy header for ATTRIBUTIONS.md (ATTR-3.1 / 3.2)."""
+    return [
         "# bonsAI Knowledge Base — Attributions",
         "",
         "This file is **generated from the corpus database** at build time. Editing it by hand",
         "will be overwritten on the next `build_rag_db.py` run.",
         "",
-        "This corpus is distributed separately from the bonsAI plugin. Third-party cards below",
-        "are adaptations; each card carries the licence of its source (`source_license` in the",
-        "database). The plugin itself remains Apache-2.0 and ships no corpus content.",
+        "## May I redistribute this corpus?",
+        "",
+        "**Yes, under the licence of each card — not under the bonsAI plugin licence.**",
+        "",
+        "- The **plugin** is Apache-2.0. This corpus is a **separate download** and is **not**",
+        "  Apache-2.0. Do not treat the plugin zip and the corpus as one combined work.",
+        "- Strategy and tip cards that name a third-party source are **adaptations** of that",
+        "  source, distilled for Deck Q&A — not verbatim wiki pages.",
+        "- **Each card carries its own licence** in the database column `source_license`",
+        "  (queryable; also listed below per source). There is no single corpus-wide licence",
+        "  that replaces those per-card terms.",
+        "- **ShareAlike (CC BY-SA / GFDL) cards:** if you adapt or redistribute those cards,",
+        "  ShareAlike (or GFDL) binds *your* adaptation of them. Attribution must name the",
+        "  source site, the licence, and a link to the material (see the groups below).",
+        "- **CC BY cards:** redistribution and adaptation are allowed with attribution under",
+        "  that BY deed (no ShareAlike obligation from that card alone).",
+        "- **Maintainer-authored** cards (`bonsAI-maintainer`, no `source_url`) credit nobody",
+        "  beyond bonsAI; they are not third-party licensed material.",
+        "- **Publish policy (D19):** the first *public* corpus is intended to ship **CC BY 4.0**",
+        "  sources only. A seed/dev build may still list BY-SA or GFDL cards below for QA;",
+        "  those are deferred from first publish until ShareAlike redistribution work is ready.",
+        "",
+        "## Accuracy",
+        "",
+        "Wiki and community sources can be wrong; so can our distillation of them. Cards are",
+        "**distilled, not authoritative.** When something is wrong, we **fix forward** in a",
+        "later corpus point release rather than treating any card as canonical game truth.",
         "",
         "## Third-party sources",
         "",
     ]
+
+
+def format_attributions_markdown(conn: sqlite3.Connection) -> str:
+    """Build ATTRIBUTIONS.md body from the live corpus connection (ATTR-2 / 3)."""
+    entries = sorted(
+        build_attribution_entries(collect_third_party_attribution_sources(conn)),
+        key=lambda e: (e.get("source") or "", e.get("license") or ""),
+    )
+
+    lines: list[str] = _attributions_header_lines()
     if not entries:
         lines.append("_No third-party sourced cards in this build._")
         lines.append("")

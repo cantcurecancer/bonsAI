@@ -185,6 +185,34 @@ class SettingsServiceTests(unittest.TestCase):
             default_ask_mode="speed",
         )
         self.assertEqual(good["reply_verbosity"], "detailed")
+        caveman = sanitize_settings(
+            data={"reply_verbosity": "caveman"},
+            default_latency_warning_seconds=15,
+            default_request_timeout_seconds=120,
+            min_latency_warning_seconds=5,
+            max_latency_warning_seconds=300,
+            min_request_timeout_seconds=10,
+            max_request_timeout_seconds=300,
+            valid_persistence_modes={"persist_all", "persist_search_only", "no_persist"},
+            default_persistence_mode="persist_all",
+            valid_ask_modes={"speed", "strategy", "expert"},
+            default_ask_mode="speed",
+        )
+        self.assertEqual(caveman["reply_verbosity"], "caveman")
+        legacy_short = sanitize_settings(
+            data={"reply_verbosity": "short"},
+            default_latency_warning_seconds=15,
+            default_request_timeout_seconds=120,
+            min_latency_warning_seconds=5,
+            max_latency_warning_seconds=300,
+            min_request_timeout_seconds=10,
+            max_request_timeout_seconds=300,
+            valid_persistence_modes={"persist_all", "persist_search_only", "no_persist"},
+            default_persistence_mode="persist_all",
+            valid_ask_modes={"speed", "strategy", "expert"},
+            default_ask_mode="speed",
+        )
+        self.assertEqual(legacy_short["reply_verbosity"], "caveman")
         bad = sanitize_settings(
             data={"reply_verbosity": "verbose"},
             default_latency_warning_seconds=15,

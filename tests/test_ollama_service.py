@@ -968,7 +968,24 @@ class OllamaServiceTests(unittest.TestCase):
         )
         self.assertNotIn("REPLY VERBOSITY", prompt)
 
-    def test_build_system_prompt_short_includes_reply_verbosity_block(self):
+    def test_build_system_prompt_caveman_includes_reply_verbosity_block(self):
+        lookup_app_name, lookup_vdf = self._verbosity_lookup_helpers()
+        prompt = build_system_prompt(
+            question="Quick tip?",
+            app_id="",
+            app_name="",
+            normalized_attachments=[],
+            prepared_images=[],
+            lookup_app_name=lookup_app_name,
+            lookup_screenshot_vdf_metadata=lookup_vdf,
+            reply_verbosity="caveman",
+        )
+        self.assertIn("REPLY VERBOSITY", prompt)
+        self.assertIn("CAVEMAN REPLY STYLE", prompt)
+        self.assertNotIn("SHORT REPLY STYLE", prompt)
+        self.assertNotIn("overrides", prompt.lower())
+
+    def test_build_system_prompt_legacy_short_aliases_to_caveman(self):
         lookup_app_name, lookup_vdf = self._verbosity_lookup_helpers()
         prompt = build_system_prompt(
             question="Quick tip?",
@@ -980,9 +997,8 @@ class OllamaServiceTests(unittest.TestCase):
             lookup_screenshot_vdf_metadata=lookup_vdf,
             reply_verbosity="short",
         )
-        self.assertIn("REPLY VERBOSITY", prompt)
-        self.assertIn("SHORT REPLY STYLE", prompt)
-        self.assertNotIn("overrides", prompt.lower())
+        self.assertIn("CAVEMAN REPLY STYLE", prompt)
+        self.assertNotIn("SHORT REPLY STYLE", prompt)
 
     def test_build_system_prompt_detailed_includes_override_clause(self):
         lookup_app_name, lookup_vdf = self._verbosity_lookup_helpers()
@@ -1015,7 +1031,7 @@ class OllamaServiceTests(unittest.TestCase):
         self.assertIn("bonsai-strategy-branches", prompt)
         self.assertIn("DETAILED REPLY STYLE", prompt)
 
-    def test_build_system_prompt_short_fps_still_has_triple_resolution(self):
+    def test_build_system_prompt_caveman_fps_still_has_triple_resolution(self):
         lookup_app_name, lookup_vdf = self._verbosity_lookup_helpers()
         prompt = build_system_prompt(
             question="What are the best settings for 60fps?",
@@ -1026,19 +1042,29 @@ class OllamaServiceTests(unittest.TestCase):
             lookup_app_name=lookup_app_name,
             lookup_screenshot_vdf_metadata=lookup_vdf,
             ask_mode="speed",
-            reply_verbosity="short",
+            reply_verbosity="caveman",
         )
         self.assertIn("DISPLAY TARGETS (Speed mode)", prompt)
-        self.assertIn("SHORT REPLY STYLE", prompt)
+        self.assertIn("CAVEMAN REPLY STYLE", prompt)
 
-    def test_user_asks_for_detail_depth_and_short_relax_clause(self):
+    def test_caveman_skipped_when_character_roleplay_on(self):
+        block = build_reply_verbosity_block(
+            "caveman",
+            question="quick fps tip?",
+            ask_mode="speed",
+            character_roleplay_on=True,
+        )
+        self.assertEqual(block, "")
+
+    def test_user_asks_for_detail_depth_and_caveman_relax_clause(self):
         self.assertTrue(user_asks_for_detail_depth("Give me a step by step walkthrough"))
         block = build_reply_verbosity_block(
-            "short",
+            "caveman",
             question="step by step please",
             ask_mode="speed",
         )
         self.assertIn("one short extra section", block)
+        self.assertIn("CAVEMAN REPLY STYLE", block)
 
     def test_user_asks_for_detail_depth_false_for_short_question(self):
         self.assertFalse(user_asks_for_detail_depth("quick fps tip?"))

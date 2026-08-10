@@ -132,9 +132,11 @@ Two UI constraints, both measured rather than assumed:
 This covers the credit **on the reply**. Credit on *distribution* — `ATTRIBUTIONS.md`, the
 corpus NOTICE, and the ShareAlike obligation on adaptations — is Phase 6 and has its own plan:
 [15-corpus-licensing-attribution-plan.md](planning/15-corpus-licensing-attribution-plan.md).
-**Stage 2 (2026-08-09):** `ATTRIBUTIONS.md` is generated from the corpus DB at build time
-(`format_attributions_markdown` in `scripts/build_rag_db.py`), grouped like the reply chip;
-Stages 3–5 (redistribution header, NOTICE, zip guard, tests/docs) remain.
+**Stage 2–3 (2026-08-09):** `ATTRIBUTIONS.md` is generated from the corpus DB at build time
+(`format_attributions_markdown` in `scripts/build_rag_db.py`), grouped like the reply chip,
+with a redistribution header (not Apache-2.0; per-card `source_license`; ShareAlike binds
+SA adaptations; D19 BY-only publish) and an accuracy note (distilled, fix forward).
+Stages 4–5 (NOTICE, zip guard, tests/docs) remain.
 
 ## Phasing
 

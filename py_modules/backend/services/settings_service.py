@@ -213,7 +213,7 @@ OLLAMA_KEEP_ALIVE_OPTIONS = frozenset(
 )
 DEFAULT_OLLAMA_KEEP_ALIVE = "5m"
 
-REPLY_VERBOSITY_OPTIONS = frozenset({"short", "balanced", "detailed"})
+REPLY_VERBOSITY_OPTIONS = frozenset({"caveman", "balanced", "detailed"})
 DEFAULT_REPLY_VERBOSITY = "balanced"
 
 
@@ -225,7 +225,9 @@ _ollama_keep_alive_field = _enum(OLLAMA_KEEP_ALIVE_OPTIONS, DEFAULT_OLLAMA_KEEP_
 # (``ollama_ask_service`` reads both straight off the settings dict), so they keep a named
 # function rather than living only as a row.
 def sanitize_reply_verbosity(value: Any) -> str:
-    """Validate global reply prose style; balanced = no verbosity inject."""
+    """Validate global reply prose style; migrate legacy short → caveman; balanced = no inject."""
+    if isinstance(value, str) and value.strip().lower() == "short":
+        value = "caveman"
     return _reply_verbosity_field(value)
 
 
@@ -307,7 +309,7 @@ _SIMPLE_FIELDS: dict[str, Any] = {
     # Ask behavior.
     "input_sanitizer_user_disabled": _bool_default_false,
     "latency_timeouts_custom_enabled": _bool_default_false,
-    "reply_verbosity": _reply_verbosity_field,
+    "reply_verbosity": sanitize_reply_verbosity,
     "ollama_keep_alive": _ollama_keep_alive_field,
     # ``None`` means "never saved", which is off -- same result as any other non-``True``.
     "ollama_local_on_deck": _bool_default_false,

@@ -281,8 +281,12 @@ export function normalizeOllamaKeepAlive(value: unknown): OllamaKeepAliveDuratio
 }
 
 export function normalizeReplyVerbosity(value: unknown): ReplyVerbosityId {
-  if (typeof value === "string" && isReplyVerbosityId(value)) {
-    return value;
+  if (typeof value === "string") {
+    // Legacy Short (pre-Caveman rename) → caveman.
+    const raw = value.trim().toLowerCase() === "short" ? "caveman" : value;
+    if (isReplyVerbosityId(raw)) {
+      return raw;
+    }
   }
   return DEFAULT_REPLY_VERBOSITY;
 }

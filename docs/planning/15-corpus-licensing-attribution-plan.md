@@ -1,7 +1,8 @@
 # 15 — Corpus licensing and attribution — executable plan
 
-**Status:** `IN PROGRESS` — Stage 1 gate + Stage 2 (generated `ATTRIBUTIONS.md`) done 2026-08-09.
-Stages 3–5 remain. **Blocks first public corpus publish, nothing else.**
+**Status:** `IN PROGRESS` — Stages 1–3 done 2026-08-09 (gate, generated `ATTRIBUTIONS.md`,
+redistribution/accuracy header). Stages 4–5 remain. **Blocks first public corpus publish,
+nothing else.**
 **Roadmap:** [Backlog § Knowledge base — RAG Deck query — public publish (Phase 6)](../roadmap.md#knowledge-base) (★★★★)
 **Already shipped and out of scope here:** per-reply credit on the knowledge chip and the
 per-card `source_url` rule — landed 2026-08-09, see
@@ -24,7 +25,7 @@ written — and that is cheaper to discover before 181 cards exist than after.
 |---|---|---|
 | ATTR-1.1…1.4 | Confirm each source's licence, at the source | ☑ Done 2026-08-09 — footers confirmed for all in-seed wikis; Zelda corrected to GFDL; D19 BY-only publish |
 | ATTR-2.1…2.3 | Generate `ATTRIBUTIONS.md` from the corpus | ✅ Done 2026-08-09 |
-| ATTR-3.1…3.2 | State the corpus licence and the ShareAlike obligation | ☐ Not started |
+| ATTR-3.1…3.2 | State the corpus licence and the ShareAlike obligation | ✅ Done 2026-08-09 |
 | ATTR-4.1…4.2 | Repo-side `NOTICE` and the Apache/CC separation | ☐ Not started |
 | ATTR-5.1…5.3 | Tests and docs | ☐ Not started |
 
@@ -157,18 +158,20 @@ unusable costs nothing today and costs a rewrite later.
 
 ## Stage 3 — State the corpus licence and the ShareAlike obligation
 
-- [ ] **ATTR-3.1** — Add a header to the generated file stating **what a downstream user may
+- [x] **ATTR-3.1** — Add a header to the generated file stating **what a downstream user may
       do with the corpus**: that cards are adaptations, that each card carries the licence of
       its source, that ShareAlike sources bind adaptations of their cards, and where the
       per-card licence lives (`source_license`, queryable). Say plainly that the corpus is
       **not** under the plugin's Apache-2.0 licence.
       *Acceptance:* the header answers "may I redistribute this?" without the reader opening
-      the database.
+      the database. **Done 2026-08-09** — `## May I redistribute this corpus?` in
+      `_attributions_header_lines()` (includes D19 BY-only publish note).
 
-- [ ] **ATTR-3.2** — Keep the existing *"sources can err → fix forward"* note from the Phase 6
+- [x] **ATTR-3.2** — Keep the existing *"sources can err → fix forward"* note from the Phase 6
       discovery lock, and add that cards are **distilled, not authoritative** — a wiki can be
       wrong and so can our distillation of it.
-      *Acceptance:* present in the generated file, not only in this plan.
+      *Acceptance:* present in the generated file, not only in this plan. **Done 2026-08-09**
+      — `## Accuracy` section in the same header.
 
 ---
 

@@ -845,7 +845,7 @@ _REPLY_VERBOSITY_SHARED = (
 
 
 def user_asks_for_detail_depth(question: str) -> bool:
-    """Phrase heuristics: user wants more depth despite Short verbosity."""
+    """Phrase heuristics: user wants more depth despite Caveman verbosity."""
     q = (question or "").lower()
     needles = (
         "step by step",
@@ -888,33 +888,45 @@ def build_reply_verbosity_block(
     ask_mode: str,
     character_roleplay_on: bool = False,
 ) -> str:
-    """Inject Short/Detailed prose coaching; balanced returns empty (shipped behavior)."""
+    """Inject Caveman/Detailed prose coaching; balanced returns empty (shipped behavior).
+
+    Caveman replaces legacy Short. When AI character roleplay is on, Caveman inject is skipped
+    so character voice wins. Legacy settings value ``short`` is treated as caveman.
+    """
     v = (reply_verbosity or "balanced").strip().lower()
-    if v == "balanced" or v not in ("short", "detailed"):
+    if v == "short":
+        v = "caveman"
+    if v == "balanced" or v not in ("caveman", "detailed"):
         return ""
 
     shared = _REPLY_VERBOSITY_SHARED
     _ = ask_mode  # reserved for per-mode overrides later
 
-    if v == "short":
+    if v == "caveman":
+        # Character voice wins: skip caveman grammar coaching entirely.
+        if character_roleplay_on:
+            return ""
         relax = ""
         if user_asks_for_detail_depth(question):
             relax = (
                 "The user asked for depth: you may add one short extra section after the direct answer, "
-                "still bullet-first.\n"
-            )
-        roleplay_note = ""
-        if character_roleplay_on:
-            roleplay_note = (
-                "When character voice conflicts with brevity, keep bullets short but stay in character; "
-                "this verbosity setting wins over character length habits for the main answer body.\n"
+                "still bullet-first and still caveman-terse.\n"
             )
         return (
             f"\n\n{shared}"
-            "SHORT REPLY STYLE: Prefer tight bullets or one-liners. Stop when the direct answer is complete. "
-            "Reinforce answering concisely (identity clause above).\n"
+            "CAVEMAN REPLY STYLE: Speak terse like smart caveman. Keep full technical accuracy. Only fluff dies.\n"
+            "Drop articles (a/an/the), filler (just/really/basically/actually/simply), pleasantries, and hedging. "
+            "Fragments OK. Prefer short synonyms (big not extensive, fix not implement a solution). "
+            "No decorative emoji. Never invent abbreviations. Technical terms stay exact "
+            "(Proton, TDP, AppID, file paths, error codes, model names). "
+            "Never drop not/never/no/only/except — meaning flips worse than any brevity. "
+            "Numbers and units exact. Code blocks and mandatory fence JSON unchanged.\n"
+            "Pattern: [thing] [action] [reason]. [next step].\n"
+            "Never name or announce this style. No self-reference like caveman mode.\n"
+            "Auto-clarity: for irreversible or destructive warnings (delete, wipe, format, remove prefix/compatdata), "
+            "use clear normal prose for that warning, then resume caveman after.\n"
+            "Stop when the direct answer is complete. Reinforce answering concisely (identity clause above).\n"
             f"{relax}"
-            f"{roleplay_note}"
         )
 
     roleplay_note = ""

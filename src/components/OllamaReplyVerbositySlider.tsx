@@ -1,6 +1,6 @@
 /**
  * Title: Reply verbosity slider
- * Purpose: Three-stop Deck slider for Short / Balanced / Detailed reply prose style.
+ * Purpose: Three-stop Deck slider for Caveman / Balanced / Detailed reply prose style.
  * Used for: Ollama tab reply settings with parent thumb ref for vertical focus hops.
  * Solves: Maps replyVerbosity ids to DeckFocusSlider with chip labels under the track.
  * Does not: Inject system prompts — backend applies verbosity modifier on ask requests.
@@ -27,7 +27,7 @@ export type OllamaReplyVerbositySliderProps = {
   onMoveDown?: () => boolean;
 };
 
-/** Three-stop track: Short / Balanced / Detailed (balanced = no prompt inject). */
+/** Three-stop track: Caveman / Balanced / Detailed (balanced = no prompt inject). */
 export function OllamaReplyVerbositySlider(props: OllamaReplyVerbositySliderProps) {
   const { value, onChange, thumbHostRef, onMoveUp, onMoveDown } = props;
   const maxIdx = REPLY_VERBOSITY_ORDER.length - 1;
