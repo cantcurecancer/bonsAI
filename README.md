@@ -2,7 +2,9 @@
 
 **bonsAI** is a [Decky Loader](https://github.com/SteamDeckHomebrew/decky-loader) plugin that brings **self-hosted** AI chat to your Steam Deck Quick Access Menu (QAM). It talks to **Ollama** on your Deck or another machine on your home network. No paid cloud AI API is required for the main workflow: prompts and responses stay on hardware you control. Models can still hallucinate: treat answers as assistant output, not authority.
 
-> **Beta software!** AI answers can be wrong or incomplete and features may break with Steam/Decky/plugin updates. Verify anything important yourself. Review **Permissions** before enabling. **Strategy** spoiler hiding and **VAC** results are best-effort but not foolproof. **Ollama on this Deck** can tax the system during games. **Power tips:** TDP suggestions are optional; applying limits via **Permissions → Adjust power limits (beta)** is advanced and may change in a future update. GPU clock lines are recommendations only. Check **QAM → Performance** before you change settings.
+> **Beta software!** AI answers can be wrong or incomplete and features may break with Steam/Decky/plugin updates. Verify anything important yourself. Review **Permissions** before enabling. **Strategy** spoiler hiding and **VAC** results are best-effort but not foolproof. When Steam reports parental controls locked, bonsAI turns high-impact **Permissions** off (Kids master lock) — **we do not filter what the AI says.** **Ollama on this Deck** can tax the system during games. **Power tips:** TDP suggestions are optional; applying limits via **Permissions → Adjust power limits (beta)** is advanced and may change in a future update. GPU clock lines are recommendations only. Check **QAM → Performance** before you change settings.
+
+**Kids master lock — cannot promise:** we do not filter AI output; this is a guardrail not a security boundary; we only know what Steam reports; if the signal fails, permissions stay as you set them; not a playtime/content/game blocker; no bonsAI PIN; only covers bonsAI.
 
 ![bonsAI v0.5.0 on Steam Deck — Main tab with preset chips and unified Ask bar](assets/readme-hero.png)
 

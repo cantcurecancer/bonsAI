@@ -16,6 +16,7 @@ export function usePermissionsTabPayload({
   setCapabilities,
   permissionJumpReturnTab,
   onReturnFromPermissionJump,
+  kidsLockActive,
 }: UsePermissionsTabPayloadArgs): React.ReactElement {
   return useMemo(
     () => (
@@ -24,8 +25,15 @@ export function usePermissionsTabPayload({
         setCapabilities={setCapabilities}
         permissionJumpReturnTab={permissionJumpReturnTab}
         onReturnFromPermissionJump={onReturnFromPermissionJump}
+        kidsLockActive={kidsLockActive}
       />
     ),
-    [capabilities, setCapabilities, permissionJumpReturnTab, onReturnFromPermissionJump],
+    [
+      capabilities,
+      setCapabilities,
+      permissionJumpReturnTab,
+      onReturnFromPermissionJump,
+      kidsLockActive,
+    ],
   );
 }

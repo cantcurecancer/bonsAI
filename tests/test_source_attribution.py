@@ -4,7 +4,8 @@ Purpose: Pin the corpus licensing rule and the path that carries a credit to the
 Used for: data/kb seed files, transparency_service attribution entries.
 Solves: Attribution was computed per surviving card and then dropped by a type filter, so no
         card was ever credited in the UI -- including the two that carry a CC BY-SA URL.
-Does not: Cover ATTRIBUTIONS.md generation in build_rag_db.py, or chip styling.
+Does not: Cover ATTRIBUTIONS.md generation in build_rag_db.py (see test_build_rag_attributions.py),
+        or chip styling.
 
 The rule, in one line: **a card that claims a third-party licence must name its source.**
 Maintainer-authored cards have no third party to name and carry neither field. Both seed files

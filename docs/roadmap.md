@@ -36,6 +36,7 @@ Status tags: **OPEN** · **PARTIAL**.
 
 Code-fixed or shipped; on-Deck / qualitative QA still owed. Detail: [testing.md](testing.md), [testing-manual.md](testing-manual.md). Full writeups: [archive/roadmap-bugs-fixed.md](archive/roadmap-bugs-fixed.md).
 
+- ★★★ **Kids master lock** — shipped 2026-08-09; on-Deck **KIDS-LOCK-01**, **KIDS-FOCUS-01**, **KIDS-REGRESS-01** (and **KIDS-LOCK-02** if child account) Open. Live CEF Stage 0 confirmation still owed.
 - ★ **Developer toggle for "resume last tab" (D15 B)** — shipped 2026-08-04; **TAB-RESUME-MODE-01**, **TAB-RESUME-FOCUS-01** Open/Partial.
 - ★ **Install voice engine button when already ready** — fix landed 2026-08-07 (Wave 1 B); **VOICE-REINSTALL-01**. [wave1.md](wave1.md).
 - ★ **Static seed tells you to enable KB when it is already on** — fixed 2026-08-07 (Wave 2 F); **PRESET-KB-SEED-01**.
@@ -167,7 +168,7 @@ Stars are **effort/risk**. Grouped by **theme**; within each lane sorted ascendi
   - **Status:** Discovery locked 2026-07-30; docs only. [knowledge-base.md](knowledge-base.md) § Phase 4.
 - ★★★★ **RAG Deck query — public publish (Phase 6)**
   - **Goal:** First public versioned corpus + manifest after Phase 5 + legal scrub.
-  - **Status:** Legal plan [15-corpus-licensing-attribution-plan.md](planning/15-corpus-licensing-attribution-plan.md). [knowledge-base.md](knowledge-base.md) § Phase 6.
+  - **Status:** Legal plan [15-corpus-licensing-attribution-plan.md](planning/15-corpus-licensing-attribution-plan.md) — Stage 1 gate + Stage 2 generated `ATTRIBUTIONS.md` done 2026-08-09; Stages 3–5 open. [knowledge-base.md](knowledge-base.md) § Phase 6.
 - ★★★★ **RAG Deck query — retrieval infra (Phase 7)**
   - **Goal:** Optional sqlite-vss/ANN, auto-pull nomic, RRF extensions, vision→KB, demote, packs, intent retrieval.
   - **Status:** FTS+vector shipped in remediation; remainder docs only. [knowledge-base.md](knowledge-base.md) § Phase 7.
@@ -184,14 +185,10 @@ Stars are **effort/risk**. Grouped by **theme**; within each lane sorted ascendi
 
 ### Permissions / safety (v0.5.0 — permission jump, spoiler constitution / named-entity consent, …)
 
-- ★★★ **Kids master lock** (Steam parental restricted)
-  - **Goal:** Disable plugin capabilities when Steam reports parental lock; Ask + local Ollama + offline KB keep working.
-  - **Plan:** [14-kids-master-lock-implementation-plan.md](planning/14-kids-master-lock-implementation-plan.md) — Stage 0 blocking on-Deck spike. Research: [08-kids-master-lock-feasibility.md](planning/08-kids-master-lock-feasibility.md).
-  - **Blocks:** **Web permission** (forced off under lock).
 - ★★★★ **Web permission** (Ask live search + online deps)
   - **Goal:** Opt-in capability for live web answers; offline Ask + local KB when off.
   - **Status:** Discovery locked; docs only. [web-permission-discovery.md](planning/web-permission-discovery.md).
-  - **Depends on:** Capability Permission Center; Kids master lock.
+  - **Depends on:** Capability Permission Center; Kids master lock (shipped — forces Web off when that key lands).
 - ★★★★★ **QAMP Phase 2 profiles** (experimental Steam opt-in)
   - **GitHub:** [bonsAI Issues](https://github.com/cantcurecancer/bonsAI/issues) — issue TBD.
   - **Status:** Backlog-only. Phase 1 verification in [Verify](#verify).

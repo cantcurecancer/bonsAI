@@ -70,6 +70,7 @@ import { useScreenshotBrowser } from "./hooks/useScreenshotBrowser";
 import { useSteamSettingsSearch } from "./hooks/useSteamSettingsSearch";
 import { useBonsaiPluginShell } from "./hooks/useBonsaiPluginShell";
 import { usePermissionJump } from "./hooks/usePermissionJump";
+import { effectiveCapabilities, useKidsLock } from "./hooks/useKidsLock";
 import { useVoiceAskInput } from "./features/voice/useVoiceAskInput";
 import { useRoutingOrderModal } from "./features/model-routing/useRoutingOrderModal";
 import { useOllamaModelsHubModal } from "./features/plugin-shell/useOllamaModelsHubModal";
@@ -285,6 +286,12 @@ const Content: React.FC = () => {
     syncSettingsFromDisk,
   } = usePluginSettings();
 
+  const kidsLockActive = useKidsLock();
+  const gatedCapabilities = useMemo(
+    () => effectiveCapabilities(capabilities, kidsLockActive),
+    [capabilities, kidsLockActive]
+  );
+
   const { effectiveLang, steamClientLanguageLabel, t: uiT } = useReplyLanguage(replyLanguage);
 
   const isAskingRef = useRef(false);
@@ -305,8 +312,8 @@ const Content: React.FC = () => {
     restoreScreenshotBrowserSnapshot,
   } = useScreenshotBrowser({
     getIsAsking: () => isAskingRef.current,
-    mediaLibraryAccess: capabilities.media_library_access,
-    filesystemWrite: capabilities.filesystem_write,
+    mediaLibraryAccess: gatedCapabilities.media_library_access,
+    filesystemWrite: gatedCapabilities.filesystem_write,
   });
 
   const [uiScaleApplyToken, setUiScaleApplyToken] = useState(0);
@@ -334,9 +341,9 @@ const Content: React.FC = () => {
   const appLogPrefs = useMemo(
     () => ({
       desktopAppLogLevel,
-      capabilities: { filesystem_write: capabilities.filesystem_write },
+      capabilities: { filesystem_write: gatedCapabilities.filesystem_write },
     }),
-    [desktopAppLogLevel, capabilities.filesystem_write]
+    [desktopAppLogLevel, gatedCapabilities.filesystem_write]
   );
   const [capturedErrors, setCapturedErrors] = useCapturedFrontendErrors(appLogPrefs);
 
@@ -404,7 +411,7 @@ const Content: React.FC = () => {
     setExpandedTurnKey,
   } = useBonsaiAskOrchestration({
     desktopDebugNoteAutoSave,
-    filesystemWrite: capabilities.filesystem_write,
+    filesystemWrite: gatedCapabilities.filesystem_write,
     strategySpoilerMaskingEnabled,
     askMode,
     unifiedInput,
@@ -890,7 +897,7 @@ const Content: React.FC = () => {
   const { voiceRecording, onMicInput, micPermissionDenied, dismissMicPermissionDeny } = useVoiceAskInput({
     setUnifiedInput,
     unifiedInput,
-    microphoneAccess: capabilities.microphone_access,
+    microphoneAccess: gatedCapabilities.microphone_access,
     isAsking,
     uiT,
   });
@@ -898,7 +905,7 @@ const Content: React.FC = () => {
   const showSearchClearButton = Boolean(unifiedInput.trim());
 
   const openDesktopNoteSaveModal = useDesktopNoteSaveModal({
-    filesystemWrite: capabilities.filesystem_write,
+    filesystemWrite: gatedCapabilities.filesystem_write,
     lastExchange,
     jumpToPermission,
     currentTab,
@@ -1023,12 +1030,12 @@ const Content: React.FC = () => {
     ollamaContext,
     canSaveDesktopNote: Boolean(lastExchange),
     onOpenDesktopNoteSave: openDesktopNoteSaveModal,
-    mediaLibraryEnabled: capabilities.media_library_access,
-    gameContextReadEnabled: capabilities.media_library_access && capabilities.steam_logs_read,
+    mediaLibraryEnabled: gatedCapabilities.media_library_access,
+    gameContextReadEnabled: gatedCapabilities.media_library_access && gatedCapabilities.steam_logs_read,
     onNavigateToPermissions: jumpToPermission,
     micPermissionDenied,
     onDismissMicPermissionDeny: dismissMicPermissionDeny,
-    desktopNoteSaveEnabled: capabilities.filesystem_write,
+    desktopNoteSaveEnabled: gatedCapabilities.filesystem_write,
     aiCharacterEnabled,
     aiCharacterRandom,
     aiCharacterPresetId,
@@ -1096,7 +1103,7 @@ const Content: React.FC = () => {
     setStrategySpoilerMaskingEnabled,
     voiceSttModel,
     setVoiceSttModel,
-    microphoneAccessEnabled: capabilities.microphone_access,
+    microphoneAccessEnabled: gatedCapabilities.microphone_access,
     onJumpToPermission: jumpToPermission,
     uiScaleAutoEnabled,
     uiScaleManualProfile,
@@ -1145,6 +1152,7 @@ const Content: React.FC = () => {
     setCapabilities,
     permissionJumpReturnTab,
     onReturnFromPermissionJump: returnFromPermissionJump,
+    kidsLockActive,
   });
 
   const onSteamInputPhase1Jump = useCallback(() => {
@@ -1200,7 +1208,7 @@ const Content: React.FC = () => {
     setDesktopAskVerboseLogging,
     desktopAppLogLevel,
     setDesktopAppLogLevel,
-    filesystemWrite: capabilities.filesystem_write,
+    filesystemWrite: gatedCapabilities.filesystem_write,
     onJumpToPermission: jumpToPermission,
     presetChipFadeAnimationEnabled,
     setPresetChipFadeAnimationEnabled,

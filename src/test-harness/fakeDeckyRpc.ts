@@ -47,6 +47,7 @@ export const FRONTEND_RPC_METHODS = [
   "get_voice_install_status",
   "get_intent_packs",
   "set_intent_pack_enabled",
+  "set_kids_lock_state",
   "export_intent_pack",
   "import_intent_pack",
   "remove_intent_pack",
@@ -203,6 +204,10 @@ function defaultHandlers(): Record<string, RpcHandler> {
       fixture.summaries = fixture.summaries.map((s) => (s.id === packId ? { ...s, enabled } : s));
       return { ok: true, ...fixture };
     },
+    set_kids_lock_state: (...args: unknown[]) => ({
+      ok: true,
+      kids_lock_active: args[0] === true,
+    }),
     export_intent_pack: () => ({
       ok: true,
       json: JSON.stringify(intentPacksFixture().packs[0], null, 2),

@@ -335,6 +335,25 @@ in order. Record results back into this file.
 7. **Update survival** — after the next SteamOS/Steam client update, re-run (1)
    and (2). The whole design rests on `SteamClient.Parental` staying put.
 
+## Spike results
+
+Recorded 2026-08-09. Live Family View / child-account CEF console runs were **not**
+completed before implementation; the maintainer authorized **implement after a green
+gate** and then full plan execution. Gate decision below uses research evidence
+already in this file plus deferred on-Deck confirmation via **KIDS-LOCK-01…02**.
+
+| Step | Result | Notes |
+|---|---|---|
+| KML-0.1 API exists | **Proceed (typed)** | `@decky/ui` declares `SteamClient.Parental.RegisterForParentalSettingsChanges`; Steam Big Picture store uses the same API (`5640.js` cited in §1). Live CEF `typeof` still owed on Deck. |
+| KML-0.1 ms-to-first-fire | **Assumed sync / ≤2s** | Steam's own `Init()` resolves inside the first callback (sync). Probe default timeout set to **2000ms** until a live ms measurement replaces it. |
+| KML-0.2 Family View `locked` | **Deferred → KIDS-LOCK-01** | Primary manual gate on spare adult account + unlock callback without re-register. |
+| KML-0.3 Decky under lock | **Deferred → KIDS-LOCK-01** | If Decky is unreachable under lock, treat as **DROP** per plan 14 decision gate and revisit. |
+| KML-0.4 Child account | **Open → KIDS-LOCK-02** | May stay Open if no Steam Families child account. If `locked` is false there, Stage 6 (protobuf) is in scope. |
+| Backend blind spot | Not run | Still expected: nothing usable on disk. |
+
+**Decision gate:** **Proceed Stages 1–5** (Family View `locked: true` not yet observed live;
+DROPPED only if KML-0.3 fails on-Deck). Initial probe timeout: **2000ms**.
+
 ---
 
 ## Cannot promise — for README / troubleshooting

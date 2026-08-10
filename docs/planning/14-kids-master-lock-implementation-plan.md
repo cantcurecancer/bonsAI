@@ -1,6 +1,6 @@
 # 14 — Kids master lock — executable plan
 
-**Status:** `NOT STARTED` — **blocked on Stage 0.**
+**Status:** `IMPLEMENTED` — Stage 0 live CEF deferred; see `08` ## Spike results (2026-08-09). On-Deck QA Open.
 **Research source (do not edit as ship plan):** [08-kids-master-lock-feasibility.md](08-kids-master-lock-feasibility.md)
 **Roadmap:** [Backlog § Knowledge base — Kids master lock](../roadmap.md#permissions--safety) (★★★)
 
@@ -20,12 +20,12 @@ outcomes closes the feature entirely.
 
 | Task | Title | State |
 |---|---|---|
-| KML-0.1…0.4 | On-Deck spike | ☐ Not started |
-| KML-1.1…1.2 | Probe utility + tests | ☐ Blocked on 0 |
-| KML-2.1…2.2 | Lock hook + latch | ☐ Blocked on 0 |
-| KML-3.1…3.4 | Backend guard + RPC | ☐ Blocked on 0 |
-| KML-4.1…4.4 | UI (effective caps, banner, disabled toggles) | ☐ Blocked on 0 |
-| KML-5.1…5.5 | Docs | ☐ Blocked on 0 |
+| KML-0.1…0.4 | On-Deck spike | ✅ Done (typed/deferred — see `08` spike results) |
+| KML-1.1…1.2 | Probe utility + tests | ✅ Done |
+| KML-2.1…2.2 | Lock hook + latch | ✅ Done |
+| KML-3.1…3.4 | Backend guard + RPC | ✅ Done |
+| KML-4.1…4.4 | UI (effective caps, banner, disabled toggles) | ✅ Done |
+| KML-5.1…5.5 | Docs | ✅ Done |
 
 States: `☐ Not started` · `▶ In progress` · `✅ Done` · `⛔ Blocked` · `✖ Dropped`
 

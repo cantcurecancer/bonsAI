@@ -88,7 +88,11 @@ from backend.services.settings_service import (
     sanitize_unified_input_persistence_mode,
     save_settings as save_settings_to_disk,
 )
-from backend.services.capabilities import capability_enabled
+from backend.services.capabilities import (
+    capability_enabled,
+    kids_lock_active,
+    set_kids_lock_active,
+)
 from backend.services.desktop_note_service import (
     append_app_log_sync,
     append_desktop_ask_transparency_sync,
@@ -320,6 +324,8 @@ class Plugin:
 
     async def _main(self):
         """Run plugin startup hooks and ensure background state exists before serving RPCs."""
+        # Kids lock is session-only; never leave a stale deny across backend restarts.
+        set_kids_lock_active(False)
         logger.info("bonsAI plugin loaded!")
         await self._maybe_app_log("plugin.lifecycle", "plugin loaded")
 
@@ -1153,6 +1159,11 @@ class Plugin:
                 "summaries": pack_summaries(saved),
                 "packs": saved.get("packs") or [],
             }
+
+    async def set_kids_lock_state(self, active: bool = False):
+        """Session Kids master lock from Steam parental `locked` (frontend assertion)."""
+        set_kids_lock_active(bool(active))
+        return {"ok": True, "kids_lock_active": kids_lock_active()}
 
     async def export_intent_pack(self, pack_id: str = ""):
         """Export one intent pack as formatted JSON."""

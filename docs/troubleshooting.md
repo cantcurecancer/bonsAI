@@ -79,6 +79,16 @@ If Windows still falls back to CPU after FIX A:
 
 **Note:** If you upgraded from an older `settings.json` that had no `capabilities` block, the plugin enables most scopes until you save settings from the Permissions tab (grandfather behavior). **Voice input (microphone)** and **Steam ban lookup** stay **off** until you enable them explicitly. Legacy **Open web links** / **Adjust power limits** toggles are ignored (removed).
 
+### Permissions greyed out (Kids master lock)
+
+**Symptom:** Every Permissions switch is off and greyed out; a yellow **Parental controls active** banner explains why.
+
+**Cause:** Steam reports that parental controls are **locked** on the signed-in account (Family View or Steam Families). bonsAI forces high-impact permissions off for that session — file writes, screenshots/game logs, microphone, Steam ban lookups. Ask with local/LAN Ollama and the offline knowledge base still work.
+
+**Fix:** Unlock parental controls in **Steam** (not in bonsAI). There is no bonsAI PIN. When Steam reports unlocked, the switches return to your saved settings by themselves.
+
+**Cannot promise:** bonsAI does **not** filter what the AI says; this is a guardrail, not a security boundary; if Steam does not report locked (or the probe fails), permissions stay as you set them.
+
 ### Knowledge base (offline strategy cards)
 
 Optional on-Deck corpus for Strategy and troubleshooting Asks. Full architecture: [knowledge-base.md](knowledge-base.md).

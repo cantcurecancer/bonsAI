@@ -1,6 +1,7 @@
 # 15 — Corpus licensing and attribution — executable plan
 
-**Status:** `NOT STARTED` — **blocks first public corpus publish, nothing else.**
+**Status:** `IN PROGRESS` — Stage 1 gate + Stage 2 (generated `ATTRIBUTIONS.md`) done 2026-08-09.
+Stages 3–5 remain. **Blocks first public corpus publish, nothing else.**
 **Roadmap:** [Backlog § Knowledge base — RAG Deck query — public publish (Phase 6)](../roadmap.md#knowledge-base) (★★★★)
 **Already shipped and out of scope here:** per-reply credit on the knowledge chip and the
 per-card `source_url` rule — landed 2026-08-09, see
@@ -22,7 +23,7 @@ written — and that is cheaper to discover before 181 cards exist than after.
 | Task | Title | State |
 |---|---|---|
 | ATTR-1.1…1.4 | Confirm each source's licence, at the source | ☑ Done 2026-08-09 — footers confirmed for all in-seed wikis; Zelda corrected to GFDL; D19 BY-only publish |
-| ATTR-2.1…2.3 | Generate `ATTRIBUTIONS.md` from the corpus | ☐ Not started |
+| ATTR-2.1…2.3 | Generate `ATTRIBUTIONS.md` from the corpus | ✅ Done 2026-08-09 |
 | ATTR-3.1…3.2 | State the corpus licence and the ShareAlike obligation | ☐ Not started |
 | ATTR-4.1…4.2 | Repo-side `NOTICE` and the Apache/CC separation | ☐ Not started |
 | ATTR-5.1…5.3 | Tests and docs | ☐ Not started |
@@ -132,23 +133,24 @@ unusable costs nothing today and costs a rewrite later.
 
 ## Stage 2 — Generate `ATTRIBUTIONS.md` from the corpus
 
-- [ ] **ATTR-2.1** — Rewrite `write_attributions` to take the **connection**, not just
+- [x] **ATTR-2.1** — Rewrite `write_attributions` to take the **connection**, not just
       `out_dir`, and build the file from `SELECT DISTINCT source_url, source_license` across
       `sections` and `compat_patterns`, joined to game titles.
-      `scripts/build_rag_db.py:292`, called at `:502`.
+      `scripts/build_rag_db.py` (`format_attributions_markdown` / `write_attributions`).
       *Acceptance:* adding a card from a new wiki changes `ATTRIBUTIONS.md` with no edit to
       the script. Removing every card from a source removes its section.
       *Verify:* `python scripts/build_rag_db.py --seed --out build/kb-attrib && cat build/kb-attrib/ATTRIBUTIONS.md`
+      — **done 2026-08-09**; unit coverage in `tests/test_build_rag_attributions.py`.
 
-- [ ] **ATTR-2.2** — Each entry names: the **source site**, the **licence with version**, a
+- [x] **ATTR-2.2** — Each entry names: the **source site**, the **licence with version**, a
       **link to the licence**, and the **cards taken from it**. Group by (source, licence),
       matching what the chip already does — `build_attribution_entries` in
       `transparency_service.py` is the same grouping and its shape is the one to mirror.
       Maintainer-authored cards get their own section and credit nobody.
       *Acceptance:* a reader can go from any card in the corpus to its source and licence.
 
-- [ ] **ATTR-2.3** — Keep `manifest["attributions_markdown"]` in step
-      (`scripts/build_rag_db.py:503`) so the manifest and the file cannot disagree.
+- [x] **ATTR-2.3** — Keep `manifest["attributions_markdown"]` in step
+      so the manifest and the file cannot disagree (same string written to both).
       *Acceptance:* they are byte-identical; a test asserts it.
 
 ---

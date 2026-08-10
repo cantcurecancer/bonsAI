@@ -3,8 +3,10 @@ import unittest
 from backend.services.capabilities import (
     CAPABILITY_KEYS,
     capability_enabled,
+    kids_lock_active,
     legacy_grandfather_capabilities,
     sanitize_capabilities,
+    set_kids_lock_active,
 )
 
 
@@ -51,6 +53,28 @@ class CapabilitiesTests(unittest.TestCase):
         )
         self.assertFalse(capability_enabled({"capabilities": {}}, "hardware_control"))
         self.assertFalse(capability_enabled({"capabilities": {"hardware_control": True}}, "hardware_control"))
+
+    def test_kids_lock_denies_all_keys_without_mutating_sanitize(self):
+        set_kids_lock_active(False)
+        self.assertFalse(kids_lock_active())
+        stored = {k: True for k in CAPABILITY_KEYS}
+        settings = {"capabilities": stored}
+        for key in CAPABILITY_KEYS:
+            self.assertTrue(capability_enabled(settings, key), msg=key)
+
+        set_kids_lock_active(True)
+        self.assertTrue(kids_lock_active())
+        for key in CAPABILITY_KEYS:
+            self.assertFalse(capability_enabled(settings, key), msg=key)
+        # sanitize_capabilities must not rewrite stored prefs because of the lock.
+        self.assertEqual(sanitize_capabilities(stored), stored)
+
+        set_kids_lock_active(False)
+        for key in CAPABILITY_KEYS:
+            self.assertTrue(capability_enabled(settings, key), msg=key)
+
+    def tearDown(self):
+        set_kids_lock_active(False)
 
 
 if __name__ == "__main__":

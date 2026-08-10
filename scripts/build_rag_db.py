@@ -46,6 +46,191 @@ from backend.services.knowledge_base_schema import (  # noqa: E402
     write_manifest,
 )
 from backend.services.ollama_embed_service import format_embed_document  # noqa: E402
+from backend.services.transparency_service import build_attribution_entries  # noqa: E402
+
+MAINTAINER_LICENSE = "bonsAI-maintainer"
+
+# Licence strings as stored on cards → deed URL (ATTR-2.2). ATTR-5.2 will later refuse an
+# unversioned "CC BY-SA" reaching a published corpus.
+_LICENSE_DEED_URLS: dict[str, str] = {
+    "CC-BY-4.0": "https://creativecommons.org/licenses/by/4.0/",
+    "CC BY 4.0": "https://creativecommons.org/licenses/by/4.0/",
+    "CC-BY-SA-3.0": "https://creativecommons.org/licenses/by-sa/3.0/",
+    "CC BY-SA 3.0": "https://creativecommons.org/licenses/by-sa/3.0/",
+    "CC-BY-SA-4.0": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "CC BY-SA 4.0": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "GFDL": "https://www.gnu.org/licenses/fdl-1.3.html",
+    "GNU Free Documentation License": "https://www.gnu.org/licenses/fdl-1.3.html",
+}
+
+
+def licence_deed_url(license_name: str) -> str:
+    """Map a per-card ``source_license`` to a human-readable deed URL."""
+    raw = str(license_name or "").strip()
+    if not raw or raw == MAINTAINER_LICENSE:
+        return ""
+    if raw in _LICENSE_DEED_URLS:
+        return _LICENSE_DEED_URLS[raw]
+    key = raw.upper().replace("_", "-")
+    compact = key.replace(" ", "")
+    for name, url in _LICENSE_DEED_URLS.items():
+        if name.upper().replace(" ", "").replace("_", "-") == compact:
+            return url
+    if "BY-SA" in compact or "BYSA" in compact:
+        return "https://creativecommons.org/licenses/by-sa/4.0/"
+    if compact.startswith("CC-BY") or compact.startswith("CCBY"):
+        return "https://creativecommons.org/licenses/by/4.0/"
+    if "GFDL" in compact or "FREE DOCUMENTATION" in key:
+        return "https://www.gnu.org/licenses/fdl-1.3.html"
+    return ""
+
+
+def _card_title(game_title: str, section_name: str) -> str:
+    game = str(game_title or "").strip()
+    name = str(section_name or "").strip()
+    if game and name:
+        return f"{game} — {name}"
+    return game or name
+
+
+def collect_third_party_attribution_sources(conn: sqlite3.Connection) -> list[dict[str, Any]]:
+    """Rows shaped for ``build_attribution_entries`` (title / url / license / captured)."""
+    sources: list[dict[str, Any]] = []
+    for title, name, url, license_name, crawled in conn.execute(
+        "SELECT g.canonical_title, s.name, s.source_url, s.source_license, s.crawled_at "
+        "FROM sections s "
+        "JOIN games g ON g.game_id = s.game_id "
+        "ORDER BY g.canonical_title, s.name"
+    ):
+        url_s = str(url or "").strip()
+        if not url_s:
+            continue
+        sources.append(
+            {
+                "title": _card_title(str(title or ""), str(name or "")),
+                "url": url_s,
+                "license": str(license_name or "").strip(),
+                "captured": crawled,
+            }
+        )
+    for topic, url, license_name in conn.execute(
+        "SELECT topic, source_url, source_license FROM compat_patterns ORDER BY topic"
+    ):
+        url_s = str(url or "").strip()
+        if not url_s:
+            continue
+        sources.append(
+            {
+                "title": f"Compat — {str(topic or '').strip() or 'tip'}",
+                "url": url_s,
+                "license": str(license_name or "").strip(),
+                "captured": "",
+            }
+        )
+    return sources
+
+
+def _maintainer_strategy_titles(conn: sqlite3.Connection) -> list[str]:
+    rows = conn.execute(
+        "SELECT g.canonical_title, s.name "
+        "FROM sections s "
+        "JOIN games g ON g.game_id = s.game_id "
+        "WHERE TRIM(COALESCE(s.source_url, '')) = '' "
+        "ORDER BY g.canonical_title, s.name"
+    ).fetchall()
+    return [_card_title(str(t or ""), str(n or "")) for t, n in rows if str(t or n).strip()]
+
+
+def format_attributions_markdown(conn: sqlite3.Connection) -> str:
+    """Build ATTRIBUTIONS.md body from the live corpus connection (ATTR-2.1 / 2.2)."""
+    entries = sorted(
+        build_attribution_entries(collect_third_party_attribution_sources(conn)),
+        key=lambda e: (e.get("source") or "", e.get("license") or ""),
+    )
+
+    lines: list[str] = [
+        "# bonsAI Knowledge Base — Attributions",
+        "",
+        "This file is **generated from the corpus database** at build time. Editing it by hand",
+        "will be overwritten on the next `build_rag_db.py` run.",
+        "",
+        "This corpus is distributed separately from the bonsAI plugin. Third-party cards below",
+        "are adaptations; each card carries the licence of its source (`source_license` in the",
+        "database). The plugin itself remains Apache-2.0 and ships no corpus content.",
+        "",
+        "## Third-party sources",
+        "",
+    ]
+    if not entries:
+        lines.append("_No third-party sourced cards in this build._")
+        lines.append("")
+    else:
+        for entry in entries:
+            source = str(entry.get("source") or "").strip()
+            license_name = str(entry.get("license") or "").strip() or "(unspecified)"
+            page_url = str(entry.get("url") or "").strip()
+            deed = licence_deed_url(license_name)
+            captured = str(entry.get("captured") or "").strip()
+            lines.append(f"### {source} · {license_name}")
+            lines.append("")
+            if deed:
+                lines.append(f"- Licence: [{license_name}]({deed})")
+            else:
+                lines.append(f"- Licence: {license_name}")
+            if page_url:
+                lines.append(f"- Example page: {page_url}")
+            if captured:
+                lines.append(f"- Oldest capture in this group: {captured}")
+            cards = entry.get("cards") or []
+            if cards:
+                lines.append("- Cards:")
+                for card in cards:
+                    lines.append(f"  - {card}")
+            lines.append("")
+
+    maintainer_titles = _maintainer_strategy_titles(conn)
+    compat_n = int(
+        conn.execute(
+            "SELECT COUNT(*) FROM compat_patterns WHERE TRIM(COALESCE(source_url, '')) = ''"
+        ).fetchone()[0]
+    )
+    genre_n = int(conn.execute("SELECT COUNT(*) FROM genre_patterns").fetchone()[0])
+
+    lines.extend(
+        [
+            "## Maintainer-authored",
+            "",
+            "These cards have no third-party `source_url` and credit nobody beyond bonsAI.",
+            "",
+        ]
+    )
+    if maintainer_titles:
+        lines.append(f"### Strategy cards ({len(maintainer_titles)})")
+        lines.append("")
+        for title in maintainer_titles:
+            lines.append(f"- {title}")
+        lines.append("")
+    if compat_n:
+        lines.append(f"- Shared troubleshooting tips: {compat_n} (`{MAINTAINER_LICENSE}`)")
+    if genre_n:
+        lines.append(f"- Genre pattern entries: {genre_n} (`{MAINTAINER_LICENSE}`)")
+    if not maintainer_titles and not compat_n and not genre_n:
+        lines.append("_None in this build._")
+    lines.append("")
+    lines.append(
+        "Per-reply attribution also appears in Input transparency when third-party cards "
+        "are injected."
+    )
+    lines.append("")
+    return "\n".join(lines)
+
+
+def write_attributions(conn: sqlite3.Connection, out_dir: Path) -> str:
+    """Write ATTRIBUTIONS.md from ``conn``; return the exact text stored (ATTR-2.3)."""
+    text = format_attributions_markdown(conn)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    (out_dir / CORPUS_ATTRIBUTIONS_FILENAME).write_text(text, encoding="utf-8")
+    return text
 
 
 def _list_installed_ollama_tags(base_http: str, timeout_seconds: float = 5.0) -> list[str]:
@@ -294,31 +479,6 @@ def seed_sample_corpus(conn: sqlite3.Connection) -> None:
     conn.commit()
 
 
-def write_attributions(out_dir: Path) -> None:
-    text = """# bonsAI Knowledge Base — Attributions
-
-This corpus is distributed separately from the bonsAI plugin. Wiki-derived strategy cards
-are adaptations of third-party content; design assumes CC BY-SA obligations apply.
-
-## Strategy cards (sample / seed build)
-
-- The Legend of Zelda: Ocarina of Time — Fandom wiki (CC BY-SA 3.0)
-- Deep Rock Galactic: Survivor — maintainer seed cards (`bonsAI-maintainer`) for Deck QA
-
-## Compat patterns (shared troubleshooting tips)
-
-- Maintainer seed tips (`bonsAI-maintainer`) — Deck, Proton, Steam Input, streaming, etc.
-
-## Maintainer-authored
-
-- Genre pattern library entries marked `bonsAI-maintainer` in the database
-- Strategy seed cards for interim 11-title QA mix (DRG Survivor, OoT, L4D2, BG3, …)
-
-Per-reply attribution also appears in Input transparency when cards are injected.
-"""
-    (out_dir / CORPUS_ATTRIBUTIONS_FILENAME).write_text(text, encoding="utf-8")
-
-
 def compress_db(db_path: Path) -> Path:
     """zlib-compress corpus.db for release chunks (stdlib; Deck decompresses with zlib)."""
     out = db_path.with_suffix(db_path.suffix + ".zlib")
@@ -450,6 +610,10 @@ def build_corpus(out_dir: Path, *, seed: bool) -> dict:
         db_path.unlink()
 
     conn = sqlite3.connect(str(db_path))
+    attributions_text = ""
+    embeddings_populated = False
+    embedding_section_count = 0
+    embedding_compat_count = 0
     try:
         apply_schema(conn)
         if seed:
@@ -460,6 +624,9 @@ def build_corpus(out_dir: Path, *, seed: bool) -> dict:
         compat_populated, embedding_compat_count = populate_compat_vectors(conn)
         embeddings_populated = section_populated or compat_populated
         conn.commit()
+        # Generate attributions while the connection is open (ATTR-2.1). Write the file after
+        # VACUUM so a failed vacuum cannot leave a half-built ATTRIBUTIONS.md beside a missing DB.
+        attributions_text = format_attributions_markdown(conn)
         # Ship a single self-contained file. The schema opens WAL, so without this the tail of
         # the corpus can sit in a -wal that is not part of the release, and the Deck now opens
         # the DB with immutable=1, which ignores a WAL outright. DELETE mode folds it back in;
@@ -469,6 +636,11 @@ def build_corpus(out_dir: Path, *, seed: bool) -> dict:
         conn.execute("VACUUM")
     finally:
         conn.close()
+
+    if not attributions_text:
+        raise RuntimeError("corpus build finished without generating ATTRIBUTIONS.md")
+
+    (out_dir / CORPUS_ATTRIBUTIONS_FILENAME).write_text(attributions_text, encoding="utf-8")
 
     compressed = compress_db(db_path)
     db_sha = _sha256_file(str(db_path))
@@ -503,9 +675,9 @@ def build_corpus(out_dir: Path, *, seed: bool) -> dict:
             "huggingface": f"https://huggingface.co/datasets/cantcurecancer/bonsai-knowledge-base/resolve/main/{compressed.name}",
             "github_release": f"https://github.com/cantcurecancer/bonsAI/releases/download/knowledge-base-{version}/{compressed.name}",
         },
+        # Same string as the file on disk (ATTR-2.3) — do not re-read and risk newline drift.
+        "attributions_markdown": attributions_text,
     }
-    write_attributions(out_dir)
-    manifest["attributions_markdown"] = (out_dir / CORPUS_ATTRIBUTIONS_FILENAME).read_text(encoding="utf-8")
     write_manifest(str(out_dir / CORPUS_MANIFEST_FILENAME), manifest)
     return manifest
 

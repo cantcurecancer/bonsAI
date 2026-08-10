@@ -6,7 +6,7 @@
  * Does not: Enforce capabilities server-side — main.py capabilities service is authoritative.
  */
 import React, { useEffect } from "react";
-import { PanelSection, PanelSectionRow, ToggleField, Button } from "@decky/ui";
+import { Focusable, PanelSection, PanelSectionRow, ToggleField, Button } from "@decky/ui";
 import type { BonsaiCapabilities } from "../data/bonsaiSettingsSchema";
 import type { PermissionFocusTargetId } from "../utils/permissionDeepLink";
 import { permissionJumpReturnTabLabel } from "../utils/permissionDeepLink";
@@ -21,6 +21,8 @@ type Props = {
   /** When set, show a Back control that returns to the tab the user jumped from. */
   permissionJumpReturnTab?: string | null;
   onReturnFromPermissionJump?: () => void;
+  /** Steam parental lock — greys toggles without mutating stored capabilities. */
+  kidsLockActive?: boolean;
 };
 
 const ROWS: {
@@ -49,6 +51,13 @@ const ROWS: {
       "Record from this device's microphone for local speech-to-text in the Ask bar. Audio stays on-device and is never saved.",
   },
 ];
+
+const KIDS_LOCK_BANNER =
+  "Parental controls active. Steam reports that parental controls are locked " +
+  "on this account, so bonsAI keeps every high-impact permission off — no file " +
+  "writes, no screenshots or game logs, no microphone, no Steam ban lookups. Ask " +
+  "still works with your local AI. These switches turn back on by themselves when " +
+  "Steam's parental controls are unlocked. bonsAI does not filter what the AI says.";
 
 function gameContextReadEnabled(caps: BonsaiCapabilities): boolean {
   return caps.media_library_access && caps.steam_logs_read;
@@ -82,6 +91,7 @@ export const PermissionsTab: React.FC<Props> = ({
   setCapabilities,
   permissionJumpReturnTab,
   onReturnFromPermissionJump,
+  kidsLockActive = false,
 }) => {
   useEffect(() => {
     restorePermissionJumpFocusWithRetry();
@@ -105,6 +115,17 @@ export const PermissionsTab: React.FC<Props> = ({
             </Button>
           </PanelSectionRow>
         ) : null}
+        {kidsLockActive ? (
+          <PanelSectionRow>
+            <Focusable
+              className="bonsai-settings-bleed"
+              style={{ fontSize: 12, color: "#f0c674", lineHeight: 1.45, marginBottom: 4 }}
+              data-bonsai-kids-lock-banner="1"
+            >
+              {KIDS_LOCK_BANNER}
+            </Focusable>
+          </PanelSectionRow>
+        ) : null}
         <PanelSectionRow>
           <div className="bonsai-settings-bleed" style={{ fontSize: 12, color: "#9fb7d5", lineHeight: 1.45, marginBottom: 4 }}>
             High-impact actions stay off until you enable them here. AI requests on your home network are not
@@ -117,8 +138,10 @@ export const PermissionsTab: React.FC<Props> = ({
             <ToggleField
               label="Read game & screenshot context"
               description="Lets bonsAI attach Steam screenshots and, on troubleshooting Asks, auto-attach local game/Proton log excerpts. One permission for screenshots and logs."
-              checked={gameContextReadEnabled(capabilities)}
+              checked={kidsLockActive ? false : gameContextReadEnabled(capabilities)}
+              disabled={kidsLockActive}
               onChange={(checked) => {
+                if (kidsLockActive) return;
                 setCapabilities((prev) => ({
                   ...prev,
                   media_library_access: checked,
@@ -134,8 +157,12 @@ export const PermissionsTab: React.FC<Props> = ({
               <ToggleField
                 label={row.title}
                 description={row.description}
-                checked={capabilities[row.key]}
-                onChange={(checked) => setCapabilities((prev) => ({ ...prev, [row.key]: checked }))}
+                checked={kidsLockActive ? false : capabilities[row.key]}
+                disabled={kidsLockActive}
+                onChange={(checked) => {
+                  if (kidsLockActive) return;
+                  setCapabilities((prev) => ({ ...prev, [row.key]: checked }));
+                }}
               />
             </PermissionToggleHost>
           </PanelSectionRow>

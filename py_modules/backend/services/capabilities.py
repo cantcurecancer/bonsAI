@@ -17,6 +17,21 @@ CAPABILITY_KEYS = (
     "microphone_access",
 )
 
+# Session Kids master lock (Steam parental). Not persisted — frontend pushes via RPC.
+# Checked first in capability_enabled so every key (including future Web) denies while active.
+_kids_lock_active: bool = False
+
+
+def set_kids_lock_active(active: bool) -> None:
+    """Set the session Kids lock flag (does not rewrite stored capabilities)."""
+    global _kids_lock_active
+    _kids_lock_active = bool(active)
+
+
+def kids_lock_active() -> bool:
+    """True when Steam parental lock is active this session."""
+    return _kids_lock_active
+
 
 def sanitize_capabilities(value: Any) -> dict[str, bool]:
     """Normalize capabilities to a full dict; missing keys default to False."""
@@ -42,7 +57,13 @@ def legacy_grandfather_capabilities() -> dict[str, bool]:
 
 
 def capability_enabled(settings: dict, key: str) -> bool:
-    """True when settings explicitly enable a capability (unknown keys are denied)."""
+    """True when settings explicitly enable a capability (unknown keys are denied).
+
+    Kids lock denies every key in CAPABILITY_KEYS while active — including any future
+    Web capability that joins the tuple — without mutating sanitize_capabilities output.
+    """
+    if _kids_lock_active:
+        return False
     if key not in CAPABILITY_KEYS:
         return False
     caps = settings.get("capabilities")
