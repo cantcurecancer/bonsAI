@@ -120,26 +120,26 @@ class AttributionEntryTests(unittest.TestCase):
         """Three cards from one wiki is one credit line, not three. Repetition gets skipped."""
         entries = build_attribution_entries(
             [
-                {"title": "OoT — King Dodongo", "url": "https://zelda.fandom.com/wiki/A", "license": "CC-BY-SA-3.0"},
-                {"title": "OoT — Water Temple", "url": "https://zelda.fandom.com/wiki/B", "license": "CC-BY-SA-3.0"},
+                {"title": "OoT — King Dodongo", "url": "https://zelda.fandom.com/wiki/A", "license": "GFDL"},
+                {"title": "OoT — Water Temple", "url": "https://zelda.fandom.com/wiki/B", "license": "GFDL"},
             ]
         )
         self.assertEqual(len(entries), 1)
         self.assertEqual(entries[0]["source"], "zelda.fandom.com")
-        self.assertEqual(entries[0]["license"], "CC-BY-SA-3.0")
+        self.assertEqual(entries[0]["license"], "GFDL")
         self.assertEqual(entries[0]["cards"], ["OoT — King Dodongo", "OoT — Water Temple"])
 
     def test_different_licences_stay_separate(self):
-        """CC BY 4.0 and CC BY-SA 3.0 carry different obligations and cannot share a line."""
+        """CC BY 4.0 and GFDL carry different obligations and cannot share a line."""
         entries = build_attribution_entries(
             [
                 {"title": "Portal 2 — Chamber 21", "url": "https://theportalwiki.com/wiki/A", "license": "CC-BY-4.0"},
-                {"title": "OoT — Dodongo", "url": "https://zelda.fandom.com/wiki/B", "license": "CC-BY-SA-3.0"},
+                {"title": "OoT — Dodongo", "url": "https://zelda.fandom.com/wiki/B", "license": "GFDL"},
             ]
         )
         self.assertEqual(
             sorted((e["source"], e["license"]) for e in entries),
-            [("theportalwiki.com", "CC-BY-4.0"), ("zelda.fandom.com", "CC-BY-SA-3.0")],
+            [("theportalwiki.com", "CC-BY-4.0"), ("zelda.fandom.com", "GFDL")],
         )
 
     def test_cards_without_a_url_credit_nobody(self):
@@ -198,7 +198,7 @@ class AttributionReachesTheChipTests(unittest.TestCase):
         """`paths` filtered on isinstance(str) while retrieval emitted dicts, so every source
         was dropped between the corpus and the screen."""
         chip = self._kb_chip(
-            [{"title": "OoT — King Dodongo", "url": "https://zelda.fandom.com/wiki/K", "license": "CC-BY-SA-3.0"}]
+            [{"title": "OoT — King Dodongo", "url": "https://zelda.fandom.com/wiki/K", "license": "GFDL"}]
         )
         self.assertEqual(len(chip["body"]["attribution"]), 1)
         self.assertEqual(chip["body"]["attribution"][0]["source"], "zelda.fandom.com")

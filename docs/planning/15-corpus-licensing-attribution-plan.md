@@ -21,7 +21,7 @@ written — and that is cheaper to discover before 181 cards exist than after.
 
 | Task | Title | State |
 |---|---|---|
-| ATTR-1.1…1.4 | Confirm each source's licence, at the source | ☑ Done 2026-08-09 — three sources excluded by the gate |
+| ATTR-1.1…1.4 | Confirm each source's licence, at the source | ☑ Done 2026-08-09 — footers confirmed for all in-seed wikis; Zelda corrected to GFDL; D19 BY-only publish |
 | ATTR-2.1…2.3 | Generate `ATTRIBUTIONS.md` from the corpus | ☐ Not started |
 | ATTR-3.1…3.2 | State the corpus licence and the ShareAlike obligation | ☐ Not started |
 | ATTR-4.1…4.2 | Repo-side `NOTICE` and the Apache/CC separation | ☐ Not started |
@@ -80,13 +80,13 @@ unusable costs nothing today and costs a rewrite later.
       | Source | Licence | How it was read |
       |---|---|---|
       | `theportalwiki.com` | CC BY 4.0 | `api.php` `rightsinfo` | **version confirmed 2026-08-09** |
-      | `combineoverwiki.net` | CC BY-SA 4.0 | footer badge; `api.php` gave no version — **version confirmed 2026-08-09** |
-      | `zelda.fandom.com` | CC-BY-SA-3.0 | already in the seed, recorded per card |
-      | `left4dead.fandom.com` | CC BY-SA 3.0 | snapshot `siteinfo` (`CC-BY-SA`) + `fandom.com/licensing` (3.0 Unported) |
-      | `fallout.fandom.com` | CC BY-SA 3.0 | snapshot `siteinfo` + `fandom.com/licensing` |
-      | `cyberpunk.fandom.com` | CC BY-SA 3.0 | snapshot `siteinfo` + `fandom.com/licensing` |
-      | `gta.fandom.com` | CC BY-SA 3.0 | dump carries no `siteinfo`; page footer links `fandom.com/licensing`, read via Wayback at the snapshot date |
+      | `combineoverwiki.net` | CC BY-SA 4.0 | footer badge; `api.php` gave no version — **version confirmed 2026-08-09**; page footer *"Content is available under Creative Commons Attribution-ShareAlike unless otherwise noted"* — **footer reconfirmed 2026-08-09** |
+      | `left4dead.fandom.com` | CC BY-SA 3.0 | snapshot `siteinfo` (`CC-BY-SA`) + `fandom.com/licensing` (3.0 Unported); page footer *"Community content is available under CC-BY-SA unless otherwise noted"* — **footer confirmed 2026-08-09** |
+      | `fallout.fandom.com` | CC BY-SA 3.0 | snapshot `siteinfo` + `fandom.com/licensing`; page footer *"Community content is available under CC-BY-SA unless otherwise noted"* — **footer confirmed 2026-08-09** |
+      | `cyberpunk.fandom.com` | CC BY-SA 3.0 | snapshot `siteinfo` + `fandom.com/licensing`; page footer *"Community content is available under CC-BY-SA unless otherwise noted"* — **footer confirmed 2026-08-09** |
+      | `gta.fandom.com` | CC BY-SA 3.0 | dump carries no `siteinfo`; page footer links `fandom.com/licensing`, read via Wayback at the snapshot date; live footer *"Community content is available under CC-BY-SA unless otherwise noted"* — **footer confirmed 2026-08-09** |
       | `liquipedia.net` | CC-BY-SA | `api.php` `rightsinfo` |
+      | `zelda.fandom.com` | **GFDL** | page footer: *"Community content is available under GNU Free Documentation License unless otherwise noted"* — **confirmed 2026-08-09**; seed had wrongly recorded `CC-BY-SA-3.0` (Fandom default assumed). **Excluded from publish** — GFDL is not CC BY 4.0 (D19); cards stay in seed for QA with corrected `source_license` |
       | `wiki.teamfortress.com` | **none published** | **excluded** — Valve ToU grants other users personal use only |
       | `developer.valvesoftware.com` | CC BY-NC-SA | **excluded** — NonCommercial is non-free |
       | `hades.fandom.com` | **CC BY-NC-SA 3.0** | **excluded** — snapshot `siteinfo`, which contradicts the archive.org item's `licenseurl` of CC BY-SA 3.0 |
@@ -108,15 +108,25 @@ unusable costs nothing today and costs a rewrite later.
       chip as *"as of YYYY-MM-DD"*; the identifier lives in the roadmap's 6d entry.
 
 - [x] **ATTR-1.3** — Decide and write down whether **CC BY 4.0** and **CC BY-SA 3.0/4.0**
-      cards may coexist in one corpus file. They can — ShareAlike binds each work, and
-      `source_license` is already per card — but the decision must be explicit so nobody
-      later "simplifies" it into one corpus-wide licence field. 
-      *Acceptance:* recorded in [maintainer-decisions-locked.md](../audit/maintainer-decisions-locked.md). ## No I want **CC BY 4.0** only, defer the more restrictive attribute work ##
+      cards may coexist in one corpus file.
+      *Decision (D19, 2026-08-09):* **CC BY 4.0 only** for the publishable corpus; defer
+      ShareAlike sources until attribution / ShareAlike redistribution work is ready. Seed may
+      still hold BY-SA cards for dev QA.
+      *Acceptance:* recorded in [maintainer-decisions-locked.md](../audit/maintainer-decisions-locked.md) § D19.
 
 - [x] **ATTR-1.4** — Confirm no card text is a **verbatim copy** of source prose. Cards are
       distilled and maintainer-authored; that is what makes them adaptations rather than
       reproductions. Spot-check at least one card per source against its page.
       *Acceptance:* no card is a paste. Any that is gets rewritten or dropped.
+      *Spot-checks 2026-08-09 (maintainer):*
+      - Portal **Gels** — pass
+      - Combine **Gravity Gun** — pass (distilled vs encyclopedia overview)
+      - L4D2 **Tank** — pass (*"the big one"* echoes Sacrifice graffiti *"one of the big ones"*;
+        not a paste of the article)
+      - Fallout **Deathclaw** — pass (wiki *"very high amount of health"* ↔ card rewrite,
+        not verbatim)
+      - GTA **Muscle** — pass (no copy/paste on Statistics)
+      - Still optional: Cyberpunk **Sandevistan**, Zelda **King Dodongo** (GFDL / D19 deferred)
 
 ---
 
@@ -206,11 +216,13 @@ unusable costs nothing today and costs a rewrite later.
 
 ## Open questions for the maintainer
 
-1. **Publishing target.** Phase 6 says HuggingFace primary, GitHub Releases mirror. HF dataset
-   cards carry their own licence dropdown, and a mixed-licence corpus does not fit one value.
-   Preference: pick the most restrictive (`CC BY-SA 4.0`), or use `other` and point at
-   `ATTRIBUTIONS.md`?
+1. **Publishing target.** Phase 6 says HuggingFace primary, GitHub Releases mirror. With
+   **D19** (publishable corpus = CC BY 4.0 only), the HF licence dropdown can be **CC BY 4.0**
+   rather than a mixed-licence workaround. Confirm when Stage 3/4 land, or reopen if
+   ShareAlike cards re-enter the publish set.
 2. **Attribution for the L4D2 dump.** **Locked 2026-08-09 (hybrid):** Deck chip stays
    short (wiki · licence · as-of date); WikiTeam / archive.org snapshot line lives in
    generated `ATTRIBUTIONS.md`. See
    [17-kb-online-versus-strategy-content.md](17-kb-online-versus-strategy-content.md).
+   *(L4D2 is BY-SA — deferred from first publish under D19; hybrid still applies when that
+   source ships.)*

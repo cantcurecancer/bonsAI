@@ -16,8 +16,30 @@ choices are, and what happens either way. **Locked calls (2026-08-02 for D1–D6
 from that section when it disagrees with an option above.
 
 **One open: [D18](#d18--when-loading-settings-fails-four-values-keep-whatever-was-on-screen-bug-or-intent)**
-(raised 2026-08-05 by the step 11 friction test). D1–D17 are locked; see the table below for
-D1–D15 and the sections below for D16 and D17.
+(raised 2026-08-05 by the step 11 friction test). D1–D17 and **D19** are locked; see the table
+below for D1–D15 and the sections below for D16, D17, and D19.
+
+---
+
+### D19 — Mixed CC BY / BY-SA cards in one corpus file?
+
+**Raised and locked 2026-08-09** (ATTR-1.3 in
+[15-corpus-licensing-attribution-plan.md](../planning/15-corpus-licensing-attribution-plan.md)).
+
+**Choice: CC BY 4.0 only for the publishable corpus.** ShareAlike sources (CC BY-SA 3.0/4.0)
+are deferred until attribution / ShareAlike redistribution work is ready. Do **not** treat
+`source_license` coexistence as the locked policy — the seed may still hold BY-SA cards for
+dev QA, but Phase 6 public publish is BY-only until that deferral lifts.
+
+**Why.** ShareAlike binds adaptations; publishing a mixed corpus needs the full
+`ATTRIBUTIONS.md` + ShareAlike path. Restricting to BY 4.0 (Portal Wiki today) keeps first
+publish simpler.
+
+**Follow-up 2026-08-09:** `zelda.fandom.com` is **GFDL**, not Fandom's usual CC-BY-SA
+(page footer confirmed). Seed `source_license` corrected; still excluded from publish under
+this decision (GFDL ≠ CC BY 4.0). See
+[15-corpus-licensing-attribution-plan.md](../planning/15-corpus-licensing-attribution-plan.md)
+ATTR-1.1.
 
 ---
 

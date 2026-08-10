@@ -250,7 +250,7 @@ def seed_sample_corpus_legacy(conn: sqlite3.Connection) -> None:
             "King Dodongo",
             "Weak point: tail when he rolls.",
             "https://zelda.fandom.com/wiki/King_Dodongo",
-            "CC-BY-SA-3.0",
+            "GFDL",
             "1.0",
             crawled,
         ),
