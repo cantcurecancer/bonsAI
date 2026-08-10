@@ -27,7 +27,7 @@ Status tags: **OPEN** · **PARTIAL**.
 - ★★ **Strategy live-turn D-pad graph skips branches/feedback** — **OPEN.** Verify **MICRO-04** on Deck.
 - ★★★ **Character picker: focus ring invisible, D-pad does not move** — **OPEN (selection fixed).** Modal uses `querySelector` focus helpers — fix CSS reach first, then registered-owner pattern. Blocks AI-character on Deck. [CharacterPickerModal.tsx](../src/components/CharacterPickerModal.tsx).
 - ★★★ **Fullscreen picker D-pad edge-escape (audit)** — **OPEN.** Audit Pull Models, Character picker, models hub, other `showModal` pickers for below-list / above-list escape.
-- ★★★ **Soft** `num_predict` **+ thinking budget** — **OPEN.** Hard Ollama wall with no overshoot/continue; `think: False` avoids empty replies but caps quality. **Fix lean:** raise caps, continuation on `done_reason=length`, optional Reply verbosity → `num_predict`, budget thinking separately. → **Thinking effort control** (Backlog). Detail: [05-token-streaming-review.md](planning/05-token-streaming-review.md).
+- ★★★ **Soft** `num_predict` **+ thinking budget** — **OPEN.** Hard Ollama wall (500/900) with no continue; `think: False` avoids empty replies on thinking models but caps quality. **v1 in scope:** raise per-mode caps (Speed 800 / Deep 1200 / Strategy 1600 targets); soft auto-continue on `done_reason=length` with ephemeral inline **`Continuing…`** cue stripped to one seamless reply; **C1** separate thinking-budget plumbing with **`think: false` default**; per-mode max **2** continues (timeout / Stop / empty-delta win); quiet empty-continue stop; STREAM-04 partial + “Stopped”; Strategy continues anyway; structured continue logs. **Not in scope:** Thinking effort Settings; blurb one-liner rewrite; Reply verbosity → `num_predict`; user raw `thinking` channel; new Developer toggle. → **Thinking effort control** (Backlog). Detail: [16-soft-num-predict-thinking-budget.md](planning/16-soft-num-predict-thinking-budget.md) · [05-token-streaming-review.md](planning/05-token-streaming-review.md).
 
 ---
 
@@ -91,8 +91,10 @@ Stars are **effort/risk**. Grouped by **theme**; within each lane sorted ascendi
   - **Goal:** Add or refresh preset strings as related features land. Wave 1 shipped four prompts; **PRESET-EXPAND-W1-01** open. [wave1.md](wave1.md).
   - **Not in scope:** replacing `fade` default animation; session RAG chips (shipped).
 - ★★ **Thinking effort control** (Settings Off / Low / Medium / High)
-  - **Goal:** User-adjustable Ollama thinking effort → `think: false | "low" | "medium" | "high"`.
   - **Depends on:** **Soft** `num_predict` **+ thinking budget** ([Bugs](#bugs)).
+  - **Phase 1:** Settings Off / Low / Medium / High → `think: false | "low" | "medium" | "high"` using C1 budgets from the bug.
+  - **Phase 2:** Short thinking one-liners via existing blurbs (not raw model `thinking` by default).
+  - **Not in scope:** Reply verbosity → token budgets; caveman / lowering `num_predict`.
 - ★★ **Unfenced spoiler feedback** (thumbs-down category)
   - **Goal:** Thumbs-down refinement chip for unfenced spoilers (and optional over-fenced sibling).
   - **Depends on:** reply micro-actions; spoiler confidence chip (shipped).
@@ -248,7 +250,7 @@ Stars are **effort/risk**. Grouped by **theme**; within each lane sorted ascendi
 - **Preset carousel (shipped)** → **Preset chip expansion**; **Session RAG preset chips** (shipped).
 - **RAG / offline KB** → Phase 2–3 shipped → **retrieval quality remediation** (PR1/PR2) → Phase 4–8 Backlog; **KB visual maps** separate; **Spoiler constitution** runtime encoding shipped 2026-08-07; **Spoiler confidence chip** → fencing + unfenced feedback.
 - **Web permission** → citations / allowlist / freshness chip.
-- **Soft** `num_predict` **+ thinking budget** ([Bugs](#bugs)) → **Thinking effort control**.
+- **Soft** `num_predict` **+ thinking budget** ([Bugs](#bugs)) → **Thinking effort control** (Phase 1 effort UI; Phase 2 blurb one-liners).
 - **Native QAM shortcut tile** → shorter path than Guide-chord macro docs ([troubleshooting.md](troubleshooting.md) §5).
 - **Steam Input jump Phase 1 (shipped)** → **Steam Input layout parse**.
 - **Offline intent packs (quiet)** → **Intent packs later review**.
