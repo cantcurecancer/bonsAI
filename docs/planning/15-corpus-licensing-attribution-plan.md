@@ -210,5 +210,7 @@ unusable costs nothing today and costs a rewrite later.
    cards carry their own licence dropdown, and a mixed-licence corpus does not fit one value.
    Preference: pick the most restrictive (`CC BY-SA 4.0`), or use `other` and point at
    `ATTRIBUTIONS.md`?
-2. **Attribution for the L4D2 dump.** Credit the wiki, or the wiki *and* the WikiTeam snapshot
-   it was read from? The snapshot is how we got the text but is not the author.
+2. **Attribution for the L4D2 dump.** **Locked 2026-08-09 (hybrid):** Deck chip stays
+   short (wiki · licence · as-of date); WikiTeam / archive.org snapshot line lives in
+   generated `ATTRIBUTIONS.md`. See
+   [17-kb-online-versus-strategy-content.md](17-kb-online-versus-strategy-content.md).

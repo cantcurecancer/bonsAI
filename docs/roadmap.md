@@ -151,12 +151,13 @@ Stars are **effort/risk**. Grouped by **theme**; within each lane sorted ascendi
 
 ### Knowledge base (v0.5.0 — hybrid RRF + schema v3, D16 topic router, D17 mode-independent game tips, 13-title / 119-card seed, wiki attribution, KB download Cancel, session RAG chips, hybrid kill-switch, …)
 
-- ★★★ **KB visual maps** (strategy maps — light prelim)
-  - **Goal:** Optional visual strategy maps in KB-grounded replies — prelim discovery only.
-  - **Depends on:** mature strategy corpus + Phase 4 retrieval quality.
+- ★★★ **KB visual maps** (strategy maps — later wave)
+  - **Goal:** Optional visual strategy maps in KB-grounded replies after brief callout cards exist.
+  - **Plan / depends on:** [17-kb-online-versus-strategy-content.md](planning/17-kb-online-versus-strategy-content.md) Stage 5; callout cards (OV-3.1). Phase 4 chip work remains orthogonal.
 - ★★★★ **KB online / versus strategy content**
-  - **Goal:** Online multiplayer strategy — versus, co-op, map callouts, tier lists — new `section_type` values + spoiler table updates.
-  - **Source policy:** WikiTeam dumps, licence per wiki; detail in planning notes from 2026-08-08 recon.
+  - **Goal:** Online multiplayer strategy — versus, co-op, map callouts — new `section_type` values + spoiler table updates. Tier lists parked. Visual maps later wave in same plan.
+  - **Plan:** [17-kb-online-versus-strategy-content.md](planning/17-kb-online-versus-strategy-content.md) (discovery locked 2026-08-09).
+  - **Source policy:** WikiTeam / archive.org dumps only; hybrid attribution (short chip + snapshot in `ATTRIBUTIONS.md`).
 - ★★★★ **RAG Deck query — corpus expansion (Phase 5)**
   - **Goal:** Corpus maturity after Phase 4 sample paths; session chip vector ranking.
   - **Status:** Seed deepening largely in remediation PR2; remainder depends Phase 4. [knowledge-base.md](knowledge-base.md) § Phase 5.
