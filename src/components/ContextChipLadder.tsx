@@ -263,7 +263,28 @@ function ChipExpandedBody({ chip }: { chip: ContextChip }) {
                 <span style={{ fontSize: 10, color: "#c9b892" }}> · as of {entry.captured}</span>
               ) : null}
               {entry.cards.length > 0 ? (
-                <div style={{ fontSize: 10, color: "#9fb7d5" }}>{entry.cards.join(", ")}</div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 3 }}>
+                  {entry.cards.map((card) => (
+                    <span
+                      key={card}
+                      title={card}
+                      style={{
+                        display: "inline-block",
+                        maxWidth: 120,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                        fontSize: 9,
+                        padding: "1px 6px",
+                        borderRadius: 999,
+                        border: "1px solid rgba(214, 174, 116, 0.4)",
+                        color: "#9fb7d5",
+                      }}
+                    >
+                      {card}
+                    </span>
+                  ))}
+                </div>
               ) : null}
             </div>
           ))}

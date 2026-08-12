@@ -38,6 +38,18 @@ $PluginName = "bonsAI"
 # no output or progress for about 60 seconds, kill the process (Ctrl+C) and run the
 # script again - a second run usually succeeds.
 
+# Preflight: passwordless sudo (via /etc/sudoers.d/decky_restart, installed by setup-dev.ps1)
+# lives outside SteamOS's persisted overlay. A SteamOS update re-images root and silently
+# wipes it while SSH keys under ~/.ssh survive - so the deploy connects fine and then dies at
+# the sudo step later, after a full build + upload. Catch that here, before spending the time.
+ssh "$User@$HostIp" "sudo -n true" 2>$null
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "Passwordless sudo is not set up on the Deck (exit code $LASTEXITCODE)." -ForegroundColor Red
+    Write-Host "This is usually a SteamOS update resetting /etc/sudoers.d/decky_restart - it lives outside the persisted overlay and does not survive a system update." -ForegroundColor Yellow
+    Write-Host "Fix: run .\scripts\setup-dev.ps1 to reinstall it, then re-run this script." -ForegroundColor Yellow
+    exit 1
+}
+
 # Every ssh/scp step is exit-code checked. A Deck that drifted to sleep mid-deploy used to
 # print "Deployment complete!" while nothing landed; unchecked native exit codes were why.
 function Assert-LastExit {
