@@ -146,6 +146,76 @@ not fail.
 
 ---
 
+## P1-5 (★★★★★ to fix upstream) — There is no way to test D-pad navigation where it actually runs: on the Deck, through Steam's gamepad focus
+
+Raised 2026-08-12 from bonsAI, after three separate focus bugs in one session could not be
+verified by any DPS tool.
+
+**Star rating is complexity to fix, not severity** — severity is the P1 above, using this
+file's own scale (line 13). Complexity borrows bonsAI's roadmap scale
+([roadmap.md](../roadmap.md) line 9: GTA-style, ★ easiest … ★★★★★ very high, ★★★★★★ extreme
+scope) since this doc has none of its own. ★★★★★ because the two asks below (input
+injection through Steam's own path, and a `gpfocus` oracle) both require new hooks into
+routing that Steam does not currently expose to a plugin host at all — not a shim gap or a
+config fix, but new instrumentation into a semi-closed client.
+
+**The gap.** DPS offers two surfaces, and neither can answer "does a D-pad press move focus
+from A to B on a real Deck?"
+
+| Surface | Why it cannot answer | 
+|---|---|
+| `preview.injectFocusEvent` / `preview.runSequence` | Runs in the in-IDE preview against approximate `@decky/ui` mocks. Steam's navigation graph is not present, so a press exercises DPS's shim `focusManager`, not the thing under test. P1-2 already shows `focusPath` cannot distinguish success from no-op. |
+| `deck.deploy` + `deck.captureScreenshot` | Puts real code on real hardware, then offers no way to *drive* it. A screenshot shows a focus ring after a human presses the button. |
+
+DPS's own docs concede the first half — bonsAI's [AGENTS.md](../../AGENTS.md) records
+"Focus/layout bugs need on-device QA via `deck.deploy`" and "Preview does **not** validate
+Deck focus graphs" — but nothing fills the second half. On-device focus QA is therefore
+100% manual, which for a plugin whose primary input is a D-pad is the single largest
+untestable surface in the product.
+
+**Why consumers cannot just use CEF remote debugging instead.** SteamOS exposes CEF on
+`127.0.0.1:8080`, and it is tempting to drive focus from there. It produces false positives:
+
+- A DOM `element.focus()` sets `document.activeElement` but does **not** transfer Steam's
+  gamepad focus. Steam keeps routing presses to the container that still owns `gpfocus`.
+- Any check written as `activeElement === target` therefore reports a move that did not
+  happen. bonsAI shipped **three** consecutive "fixes" that passed exactly that check and
+  changed nothing on device; the post-mortem is in `src/utils/navFocusRegistry.ts`.
+- Measured again 2026-08-12 on Portal 2 / Decky v3.2.8-pre1: calling a focus helper directly
+  over CDP did move Steam's ring (`gpfocus gpfocuswithin` appeared ~400 ms later), but that
+  is *direct invocation of the handler*. It proves the element can hold focus. It says
+  nothing about whether a real press is routed there — which is the actual bug class.
+
+Synthesising a `GamepadEvent` into the page has the same flaw: it invokes the consumer's
+handler while bypassing Steam's routing, so it can only ever confirm code the consumer
+already knows runs.
+
+**Concrete cost this session.** A masked spoiler fence was reported unreachable by D-pad.
+The element was mounted, `tabindex="0"`, in view, and focusable on demand — every property a
+consumer can inspect said it was fine. Deciding between "the registry skips it" and "the
+press never reaches the handler that would focus it" requires observing a real press, so the
+bug was returned to the reporter for manual repro rather than fixed.
+
+**Requested:**
+1. **On-device input injection.** A `deck.injectInput` (or `deck.pressButton`) that delivers
+   a press through Steam's input path on the connected Deck — not a DOM event, not the
+   preview shim. D-pad directions and A/B are enough to cover focus-graph QA.
+2. **An on-device focus oracle.** A `deck.readFocus` returning the element that currently
+   owns `gpfocus` / `gpfocuswithin`, not `activeElement`. These disagree, and only the first
+   one predicts where the next press goes.
+3. **A before/after trace for a press**, so a consumer can assert "Down moved focus from
+   `.thumbs-row button[aria-label=…]` to `.utility-row button[aria-label=…]`". This is the
+   same richer trace asked for in P1-2 §3, but on device, where it would be authoritative.
+4. Failing all of the above: **document plainly that DPS cannot validate Deck focus graphs
+   and that CDP `activeElement` is not a focus oracle.** Consumers are currently left to
+   discover the false-positive trap by shipping broken fixes.
+
+Severity is **P1** by this file's own definition: the existing tooling reports success for
+work that did not happen. It is arguably P0 for D-pad-first plugins, since the untestable
+surface is the primary input method.
+
+---
+
 ## P1-3 — `captureScreenshot` returns a drawn placeholder that looks like a capture
 
 `preview-server/src/sandbox-host.tsx:60-76`

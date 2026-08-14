@@ -152,6 +152,15 @@ export function buildReplyActionsElement(
    */
   const thumbsRowEl: { current: HTMLElement | null } = { current: null };
   const utilityRowEl: { current: HTMLElement | null } = { current: null };
+  /*
+   * Steam's nav node for the utility row. Thumbs and utility are separate navigation containers, so
+   * a DOM `focus()` alone cannot carry gamepad focus between them — see navFocusRegistry. A local
+   * holder rather than the id registry: the row is built here, and a per-render object in the
+   * module map would leave stale entries behind.
+   */
+  const utilityNavRef: { current: { TakeFocus?: (gamepad?: boolean) => unknown } | null } = {
+    current: null,
+  };
 
   /*
    * D-pad handling goes through `onButtonDown`, which instrumentation confirmed is what Decky
@@ -184,13 +193,31 @@ export function buildReplyActionsElement(
    * (no refinement chips): Helpful↔Retry, Not really↔Show details.
    * With chips between, yield (return false) so Decky advances to the chip row.
    */
+  /*
+   * Hand Steam's gamepad focus to the utility row *before* picking the column inside it.
+   *
+   * Without `TakeFocus`, the DOM `focus()` below sets `activeElement` while `gpfocus` stays on the
+   * thumbs row, so Steam handles the press itself and lands on the utility row's first child —
+   * Retry. That made "Not really → Down" go to Retry instead of Show details, and made
+   * "Helpful → Down" look correct only because Retry is where Steam was going to land anyway.
+   * Once focus is inside the row, a plain `focus()` moves between its two buttons (same container).
+   */
+  const enterUtilityRow = (stop: "retry" | "show-details") => {
+    try {
+      utilityNavRef.current?.TakeFocus?.(true);
+    } catch {
+      /* fall through — the DOM focus below still reports whether it landed */
+    }
+    const slot = liveSlot();
+    return stop === "retry" ? focusReplyRetry(slot) : focusReplyShowDetails(slot);
+  };
   const downFromHelpful = () => {
     if (showChipRows) return false;
-    return focusReplyRetry(liveSlot());
+    return enterUtilityRow("retry");
   };
   const downFromNotReally = () => {
     if (showChipRows) return false;
-    return focusReplyShowDetails(liveSlot());
+    return enterUtilityRow("show-details");
   };
   const upFromRetry = () => {
     const slot = liveSlot();
@@ -302,6 +329,7 @@ export function buildReplyActionsElement(
             utilityRowEl.current = el;
           }}
           {...({
+            navRef: utilityNavRef,
             onMoveUp: upFromUtilityRow,
             onMoveDown: downFromUtility,
             onButtonDown: pressHandler(utilityRowEl, downFromUtility, upFromUtilityRow),

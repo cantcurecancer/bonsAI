@@ -72,7 +72,6 @@ export function markSpoilerFenceVisited(el: HTMLElement): void {
  */
 export function focusSpoilerFence(el: HTMLElement | null): boolean {
   if (!el) return false;
-  markSpoilerFenceVisited(el);
   try {
     if (!el.hasAttribute("tabindex")) el.setAttribute("tabindex", "-1");
     el.focus({ preventScroll: true });
@@ -83,7 +82,17 @@ export function focusSpoilerFence(el: HTMLElement | null): boolean {
       /* ignore — a detached fence simply fails to claim focus */
     }
   }
-  return elementHasFocus(el);
+  /*
+   * Mark visited only once focus actually landed.
+   *
+   * Marking first meant a single failed attempt burned the fence's one offer: `visited` stayed true,
+   * `findUnvisitedSpoilerFenceInView` skipped it from then on, and the masked text became
+   * unreachable by D-pad for the rest of that mount — the same "no touchscreen, no spoiler" hole
+   * this registry exists to close.
+   */
+  if (!elementHasFocus(el)) return false;
+  markSpoilerFenceVisited(el);
+  return true;
 }
 
 /** Test-only reset. */

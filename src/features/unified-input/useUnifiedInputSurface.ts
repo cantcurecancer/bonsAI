@@ -56,7 +56,16 @@ export function useUnifiedInputSurface(currentTab: string, unifiedInput: string)
     setUsesNativeMultilineField(field?.tagName === "TEXTAREA");
     const fieldCw = field && field.clientWidth > 0 ? field.clientWidth : 0;
     const textWidth = Math.max(0, fieldCw > 0 ? fieldCw : hostW);
-    const container = layer ?? measure.offsetParent ?? host;
+    /*
+     * Measure against the element the overlay is actually positioned against, not `layer`.
+     *
+     * The overlay and this measure div are siblings, so they share a positioning context —
+     * `.bonsai-unified-input-text-box`, which starts where the field starts. `layer` sits further
+     * out, and the gap between the two is the avatar slot (18px + 6px margins). Measuring against
+     * `layer` and then positioning against the text box pushed the placeholder ~24px right of the
+     * real caret (measured on device 2026-08-12: field text at x=100.7, overlay text at x=124.7).
+     */
+    const container = (measure.offsetParent as HTMLElement | null) ?? layer ?? host;
     const cr = container.getBoundingClientRect();
     const fr = field?.getBoundingClientRect();
     const overlayLeft = field && fr ? fr.left - cr.left : UNIFIED_TEXT_INSET_LEFT_PX;

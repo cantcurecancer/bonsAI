@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 290,
-  "edgeCount": 683,
+  "fileCount": 295,
+  "edgeCount": 693,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -415,6 +415,13 @@
         "src/features/plugin-shell/useDesktopNoteSaveModal.tsx"
       ]
     },
+    "src/components/PermissionsTab.test.tsx": {
+      "imports": [
+        "src/components/PermissionsTab.tsx",
+        "src/data/bonsaiSettingsSchema.ts"
+      ],
+      "importedBy": []
+    },
     "src/components/PermissionsTab.tsx": {
       "imports": [
         "src/data/bonsaiSettingsSchema.ts",
@@ -422,6 +429,7 @@
         "src/utils/permissionJumpRegistry.ts"
       ],
       "importedBy": [
+        "src/components/PermissionsTab.test.tsx",
         "src/features/plugin-shell/tabs/usePermissionsTabPayload.tsx"
       ]
     },
@@ -684,6 +692,7 @@
         "src/components/DeveloperTab.tsx",
         "src/components/OllamaTab.tsx",
         "src/components/OllamaWhereAiRunsSection.tsx",
+        "src/components/PermissionsTab.test.tsx",
         "src/components/PermissionsTab.tsx",
         "src/components/PullModelsModal.tsx",
         "src/components/SettingsTab.tsx",
@@ -698,6 +707,7 @@
         "src/features/plugin-shell/useOllamaModelsHubModal.tsx",
         "src/hooks/useBonsaiAskOrchestration.ts",
         "src/hooks/useBonsaiPluginShell.test.ts",
+        "src/hooks/useKidsLock.ts",
         "src/hooks/usePluginSettings.test.ts",
         "src/hooks/usePluginSettings.ts",
         "src/hooks/useStrategyChecklistSession.ts",
@@ -1430,6 +1440,25 @@
         "src/index.tsx"
       ]
     },
+    "src/hooks/useKidsLock.test.ts": {
+      "imports": [
+        "src/hooks/useKidsLock.ts",
+        "src/utils/deckyCall.ts",
+        "src/utils/steamParental.ts"
+      ],
+      "importedBy": []
+    },
+    "src/hooks/useKidsLock.ts": {
+      "imports": [
+        "src/data/bonsaiSettingsSchema.ts",
+        "src/utils/deckyCall.ts",
+        "src/utils/steamParental.ts"
+      ],
+      "importedBy": [
+        "src/hooks/useKidsLock.test.ts",
+        "src/index.tsx"
+      ]
+    },
     "src/hooks/useMainTabAskBarFocus.ts": {
       "imports": [],
       "importedBy": [
@@ -1671,6 +1700,7 @@
         "src/hooks/useChatSlots.ts",
         "src/hooks/useDisclaimerAndLocalRuntimeGates.tsx",
         "src/hooks/useIntentPacks.ts",
+        "src/hooks/useKidsLock.ts",
         "src/hooks/usePermissionJump.ts",
         "src/hooks/usePluginSettings.ts",
         "src/hooks/useQamPanelHeightGuard.ts",
@@ -2374,6 +2404,8 @@
         "src/hooks/useBackgroundGameAi.ts",
         "src/hooks/useBonsaiAskOrchestration.ts",
         "src/hooks/useIntentPacks.ts",
+        "src/hooks/useKidsLock.test.ts",
+        "src/hooks/useKidsLock.ts",
         "src/hooks/usePluginSettings.ts",
         "src/hooks/usePullModelCatalog.ts",
         "src/hooks/useReplyLanguage.ts",
@@ -2818,6 +2850,20 @@
       ],
       "importedBy": [
         "src/index.tsx"
+      ]
+    },
+    "src/utils/steamParental.test.ts": {
+      "imports": [
+        "src/utils/steamParental.ts"
+      ],
+      "importedBy": []
+    },
+    "src/utils/steamParental.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/hooks/useKidsLock.test.ts",
+        "src/hooks/useKidsLock.ts",
+        "src/utils/steamParental.test.ts"
       ]
     },
     "src/utils/strategyChecklist.test.ts": {
