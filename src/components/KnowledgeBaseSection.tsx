@@ -46,6 +46,13 @@ type Props = {
   setUseLocalKnowledgeBase: (v: boolean) => void;
   ragCorpusVersion: string;
   ollamaIp: string;
+  /**
+   * Whether Ask routes to the Deck's own Ollama. `pull_ollama_models` always pulls to this
+   * Deck and takes no host, so the Pull button can only fix the missing model when the
+   * embed host *is* the Deck. Routing to a LAN box makes the button a no-op on the wrong
+   * machine, so we explain instead of offering it.
+   */
+  ollamaLocalOnDeck: boolean;
   onBeforeDeckyModal: () => void;
   onCompleteDeckyModalClose: (close: () => void) => void;
   toggleHostRef?: React.RefObject<HTMLDivElement | null>;
@@ -138,6 +145,7 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
   setUseLocalKnowledgeBase,
   ragCorpusVersion,
   ollamaIp,
+  ollamaLocalOnDeck,
   onBeforeDeckyModal,
   onCompleteDeckyModalClose,
   toggleHostRef,
@@ -509,6 +517,12 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
     installed &&
     status?.embeddings_populated === true &&
     status?.embed_model_available === false;
+  /**
+   * Only offer the button when pressing it could actually help. `pull_ollama_models`
+   * pulls to this Deck and takes no host, so when Ask routes to a LAN box the button
+   * would install the model on the wrong machine and the hint would never clear.
+   */
+  const showNomicPullBtn = showNomicHint && ollamaLocalOnDeck;
 
   const onPrimaryClick = installed ? runUpdate : openStoragePicker;
   /**
@@ -530,7 +544,7 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
             onChange={(checked) => setUseLocalKnowledgeBase(checked)}
             {...deckNav({
               onMoveUp: () => handleMoveUpFromToggle(),
-              onMoveDown: () => focusBelowToggle(showNomicHint),
+              onMoveDown: () => focusBelowToggle(showNomicPullBtn),
             })}
           />
         </div>
@@ -553,8 +567,19 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
           {showNomicHint ? (
             <div style={{ marginTop: 6 }}>
               <span style={{ display: "block", color: "#ffd299" }}>
-                Install <strong>nomic-embed-text</strong> in Ollama for Keyword + meaning search.
+                {showNomicPullBtn ? (
+                  <>
+                    Install <strong>nomic-embed-text</strong> in Ollama for Keyword + meaning search.
+                  </>
+                ) : (
+                  <>
+                    Install <strong>nomic-embed-text</strong> on {ollamaIp || "the Ollama host"} for
+                    Keyword + meaning search — Ask runs there, so it needs the model. Pulling here
+                    would only install it on this Deck.
+                  </>
+                )}
               </span>
+              {showNomicPullBtn ? (
               <div className="bonsai-settings-focus-btn-host" style={{ marginTop: 6, maxWidth: 220 }}>
                 <Focusable
                   onOKButton={pullNomicEmbed}
@@ -588,6 +613,7 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
                   </Button>
                 </Focusable>
               </div>
+              ) : null}
             </div>
           ) : null}
           {progress ? <span style={{ display: "block", marginTop: 6 }}>{progress}</span> : null}
@@ -636,7 +662,7 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
                   justifyContent: "flex-start",
                 }}
                 {...deckNav({
-                  onMoveUp: () => (showNomicHint ? focusNomicBtn() : focusKbToggle()),
+                  onMoveUp: () => (showNomicPullBtn ? focusNomicBtn() : focusKbToggle()),
                   onMoveDown: () => onMoveDownFromRemove?.() ?? false,
                   onMoveRight: () =>
                     downloadBusy ? focusCancelBtn() : installed ? focusRemoveBtn() : false,

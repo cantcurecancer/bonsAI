@@ -71,6 +71,11 @@
       "role": ""
     },
     {
+      "path": "src/components/KnowledgeBaseSection.tsx",
+      "lines": 769,
+      "role": ""
+    },
+    {
       "path": "py_modules/backend/services/transparency_service.py",
       "lines": 765,
       "role": ""
@@ -78,11 +83,6 @@
     {
       "path": "src/components/MainTabChatTranscript.tsx",
       "lines": 750,
-      "role": ""
-    },
-    {
-      "path": "src/components/KnowledgeBaseSection.tsx",
-      "lines": 743,
       "role": ""
     },
     {
@@ -191,13 +191,13 @@
       "role": ""
     },
     {
-      "path": "src/data/pullModelCatalog.ts",
+      "path": "src/components/OllamaTab.tsx",
       "lines": 374,
       "role": ""
     },
     {
-      "path": "src/components/OllamaTab.tsx",
-      "lines": 373,
+      "path": "src/data/pullModelCatalog.ts",
+      "lines": 374,
       "role": ""
     }
   ]

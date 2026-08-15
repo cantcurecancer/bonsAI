@@ -25,6 +25,7 @@ function renderSection() {
       setUseLocalKnowledgeBase={() => {}}
       ragCorpusVersion=""
       ollamaIp="192.168.1.100"
+      ollamaLocalOnDeck={true}
       onBeforeDeckyModal={() => {}}
       onCompleteDeckyModalClose={(close) => close()}
     />,

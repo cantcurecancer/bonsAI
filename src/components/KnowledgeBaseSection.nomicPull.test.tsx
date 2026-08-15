@@ -27,6 +27,7 @@ function renderInstalled(overrides: Record<string, unknown> = {}) {
       setUseLocalKnowledgeBase={() => {}}
       ragCorpusVersion="1.0.0"
       ollamaIp="127.0.0.1"
+      ollamaLocalOnDeck={true}
       onBeforeDeckyModal={() => {}}
       onCompleteDeckyModalClose={(close) => close()}
     />,
@@ -106,6 +107,37 @@ describe("KnowledgeBaseSection nomic-embed-text pull", () => {
     );
   }, 15000);
 
+  it("does not offer a Deck pull when Ask runs on a LAN host", async () => {
+    // `pull_ollama_models` pulls to this Deck and takes no host. Offering it while Ask
+    // routes to a LAN box installs the model on the wrong machine, so the hint could
+    // never clear no matter how many times you pressed it.
+    setRpcHandler("get_rag_corpus_status", () =>
+      ragCorpusStatusFixture({
+        installed: true,
+        corpus_version: "1.0.0",
+        embeddings_populated: true,
+        embed_model_available: false,
+      }),
+    );
+    render(
+      <KnowledgeBaseSection
+        useLocalKnowledgeBase={true}
+        setUseLocalKnowledgeBase={() => {}}
+        ragCorpusVersion="1.0.0"
+        ollamaIp="192.168.1.50:11434"
+        ollamaLocalOnDeck={false}
+        onBeforeDeckyModal={() => {}}
+        onCompleteDeckyModalClose={(close) => close()}
+      />,
+    );
+
+    // The gap is still explained -- naming the host that needs the model.
+    expect(await screen.findByText(/192\.168\.1\.50:11434/)).toBeTruthy();
+    // ...but the button that would target the wrong machine is gone.
+    expect(screen.queryByText("Pull nomic-embed-text")).toBeNull();
+    expect(pullCalls()).toHaveLength(0);
+  });
+
   it("shows the version the backend last reported, not the one it mounted with", async () => {
     // An Update writes the new version to settings.json on the backend, but nothing
     // re-reads settings into the frontend -- so the mount-time prop goes stale and the
@@ -124,6 +156,7 @@ describe("KnowledgeBaseSection nomic-embed-text pull", () => {
         setUseLocalKnowledgeBase={() => {}}
         ragCorpusVersion="2026.08.12"
         ollamaIp="127.0.0.1"
+        ollamaLocalOnDeck={true}
         onBeforeDeckyModal={() => {}}
         onCompleteDeckyModalClose={(close) => close()}
       />,
