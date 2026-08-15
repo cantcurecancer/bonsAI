@@ -39,8 +39,20 @@ class OllamaAskBudgetsTests(unittest.TestCase):
         self.assertEqual(high["think"], "high")
         self.assertEqual(high["num_predict"], 800 + 1024)
 
+        medium = resolve_ask_token_budgets("strategy", think_effort="medium")
+        self.assertEqual(medium["think"], "medium")
+        self.assertEqual(medium["thinking_budget"], 512)
+        self.assertEqual(medium["num_predict"], 1600 + 512)
+
     def test_unknown_mode_and_effort_fall_back_safely(self) -> None:
         budgets = resolve_ask_token_budgets("nope", think_effort="spicy")
+        self.assertEqual(budgets["ask_mode"], "speed")
+        self.assertEqual(budgets["think_effort"], "off")
+        self.assertEqual(budgets["think"], False)
+        self.assertEqual(budgets["num_predict"], 800)
+
+    def test_none_mode_and_effort_fall_back_to_defaults(self) -> None:
+        budgets = resolve_ask_token_budgets(None, think_effort=None)
         self.assertEqual(budgets["ask_mode"], "speed")
         self.assertEqual(budgets["think_effort"], "off")
         self.assertEqual(budgets["think"], False)

@@ -255,6 +255,163 @@ class OllamaServiceTests(unittest.TestCase):
             ASK_VISIBLE_NUM_PREDICT["strategy"],
         )
 
+    @patch("backend.services.ollama_service.urllib.request.urlopen")
+    def test_post_ollama_chat_cancel_mid_continue_clears_cue(
+        self, mock_urlopen: MagicMock
+    ) -> None:
+        """Stop landing after the cue is published republishes cue-free text, not silence."""
+        first = self._ndjson_response(
+            [
+                '{"message":{"role":"assistant","content":"Part one"}}',
+                '{"message":{"role":"assistant","content":""},"done":true,"done_reason":"length"}',
+            ]
+        )
+        # Cancel fires once the cue delta lands, before the second segment is read — this
+        # response only needs to support close()/context-manager, never read().
+        second = self._ndjson_response(
+            ['{"message":{"role":"assistant","content":" and two"},"done":true,"done_reason":"stop"}']
+        )
+        mock_urlopen.side_effect = [first, second]
+
+        cancelled = {"flag": False}
+        deltas_seen: list[tuple[str, bool]] = []
+
+        def _on_delta(text: str, done: bool, _thinking=None) -> None:
+            deltas_seen.append((text, done))
+            if SOFT_CONTINUE_CUE in text:
+                cancelled["flag"] = True
+
+        out = post_ollama_chat(
+            "http://127.0.0.1:11434/api/chat",
+            "vision:test",
+            [{"role": "user", "content": "long please"}],
+            60,
+            [],
+            [],
+            [],
+            [],
+            MagicMock(),
+            "deep",
+            "5m",
+            cancel_requested=lambda: cancelled["flag"],
+            on_delta=_on_delta,
+        )
+
+        self.assertFalse(out.get("success"))
+        self.assertTrue(out.get("cancelled"))
+        self.assertEqual(mock_urlopen.call_count, 2)
+        # The cue delta fired (that's what set cancelled["flag"]); the very next delta must
+        # be the cue-free clear, not the cue itself left standing as the last word.
+        self.assertTrue(any(SOFT_CONTINUE_CUE in t for t, done in deltas_seen if not done))
+        self.assertEqual(deltas_seen[-1], ("Part one", False))
+        self.assertNotIn(SOFT_CONTINUE_CUE, deltas_seen[-1][0])
+
+    @patch("backend.services.ollama_service.urllib.request.urlopen")
+    def test_post_ollama_chat_stitch_boundary_keeps_fence_hidden(
+        self, mock_urlopen: MagicMock
+    ) -> None:
+        """A strategy branch fence opened in segment one and closed in segment two never
+        leaks into any visible delta — at the boundary or after — only the raw preserves it."""
+        prefix = "Try the west path first."
+        fence_open_and_partial_json = (
+            '```bonsai-strategy-branches\n{"question":"Wher'
+        )
+        fence_close_and_rest_json = (
+            'e to go?","options":[{"id":"n","label":"North"}]}\n```\n'
+        )
+        first = self._ndjson_response(
+            [
+                json.dumps(
+                    {"message": {"role": "assistant", "content": prefix + "\n" + fence_open_and_partial_json}}
+                ),
+                json.dumps(
+                    {
+                        "message": {"role": "assistant", "content": ""},
+                        "done": True,
+                        "done_reason": "length",
+                    }
+                ),
+            ]
+        )
+        second = self._ndjson_response(
+            [
+                json.dumps({"message": {"role": "assistant", "content": fence_close_and_rest_json}}),
+                json.dumps(
+                    {
+                        "message": {"role": "assistant", "content": ""},
+                        "done": True,
+                        "done_reason": "stop",
+                    }
+                ),
+            ]
+        )
+        mock_urlopen.side_effect = [first, second]
+        deltas_seen: list[tuple[str, bool]] = []
+
+        out = post_ollama_chat(
+            "http://127.0.0.1:11434/api/chat",
+            "vision:test",
+            [{"role": "user", "content": "what should I do"}],
+            60,
+            [],
+            [],
+            [],
+            [],
+            MagicMock(),
+            "strategy",
+            "5m",
+            cancel_requested=lambda: False,
+            on_delta=lambda text, done, _thinking=None: deltas_seen.append((text, done)),
+        )
+
+        self.assertTrue(out.get("success"))
+        # Every delta — segment one, the cue, segment two mid-stream, and the terminal —
+        # shows the prefix only. Nothing from the fence ever reaches the UI.
+        for text, _done in deltas_seen:
+            self.assertNotIn("bonsai-strategy-branches", text)
+            self.assertNotIn("North", text)
+            self.assertTrue(text == prefix or text.startswith(prefix))
+        self.assertEqual(out.get("response"), prefix)
+        # The raw stitch is untouched by the visible-side hiding: both halves of the fence
+        # survive in assistant_raw, proving the boundary didn't drop or duplicate bytes.
+        assistant_raw = out.get("assistant_raw") or ""
+        self.assertIn("bonsai-strategy-branches", assistant_raw)
+        self.assertIn('"options"', assistant_raw)
+        self.assertIn("North", assistant_raw)
+
+    @patch("backend.services.ollama_service.urllib.request.urlopen")
+    def test_post_ollama_chat_returns_ask_budgets(self, mock_urlopen: MagicMock) -> None:
+        """The ask_budgets contract Thinking effort control (Phase 1) will build on."""
+        mock_urlopen.return_value = self._ndjson_response(
+            ['{"message":{"role":"assistant","content":"Hi"},"done":true,"done_reason":"stop"}']
+        )
+
+        out = post_ollama_chat(
+            "http://127.0.0.1:11434/api/chat",
+            "vision:test",
+            [{"role": "user", "content": "hi"}],
+            60,
+            [],
+            [],
+            [],
+            [],
+            MagicMock(),
+            "speed",
+            "5m",
+            cancel_requested=lambda: False,
+            on_delta=None,
+        )
+
+        self.assertTrue(out.get("success"))
+        budgets = out.get("ask_budgets") or {}
+        self.assertEqual(
+            set(budgets.keys()),
+            {"visible_num_predict", "thinking_budget", "num_predict", "think", "think_effort"},
+        )
+        self.assertIs(budgets.get("think"), False)
+        self.assertEqual(budgets.get("think_effort"), "off")
+        self.assertEqual(budgets.get("visible_num_predict"), ASK_VISIBLE_NUM_PREDICT["speed"])
+
     @staticmethod
     def _ndjson_response(lines: list[str]):
         """Fake urlopen response replaying NDJSON through the same chunked read the real one uses."""
