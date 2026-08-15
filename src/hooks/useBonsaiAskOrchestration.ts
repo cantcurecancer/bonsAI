@@ -32,6 +32,7 @@ import {
   scheduleStrategyChecklistSessionSave,
 } from "../utils/strategyChecklistPersistence";
 import { callDeckyWithTimeout, DECKY_RPC_TIMEOUT_MS, formatDeckyRpcError } from "../utils/deckyCall";
+import { stripSoftContinueCue } from "../utils/stripSoftContinueCue";
 import { uiActiveElement } from "../utils/uiDocument";
 import { useBackgroundGameAi } from "./useBackgroundGameAi";
 import type {
@@ -517,7 +518,7 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
         setThinkingSummary(null);
         const partialKeep =
           typeof status.partial_response === "string" && status.partial_response.trim()
-            ? status.partial_response.trim()
+            ? stripSoftContinueCue(status.partial_response).trim()
             : "";
         // `response` carries the kept draft (Plugin._cancelled_response_text); it falls back to a
         // stop status only when nothing readable had arrived, and that belongs in the notice.
