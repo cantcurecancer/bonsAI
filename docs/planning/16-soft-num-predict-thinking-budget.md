@@ -45,8 +45,13 @@ Ask calls hit a **hard** Ollama `num_predict` wall with no overshoot or continue
 | Ask mode | Today | Bug v1 target |
 |---|---|---|
 | Speed | 500 | **800** |
-| Deep | 500 | **1200** |
+| Expert | 500 | **1200** |
 | Strategy | 900 | **1600** |
+
+> The mode is **`expert`** (`Plugin.VALID_ASK_MODES`); `deep` was its name before
+> 2026-06-26 and is now a legacy alias migrated on settings load. The cap table
+> shipped keyed `deep`, so Expert ran on the Speed cap until **2026-08-15** — the
+> keys must match `VALID_ASK_MODES` or the mismatch fails silently.
 
 ---
 

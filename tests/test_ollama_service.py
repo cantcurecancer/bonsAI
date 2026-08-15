@@ -151,7 +151,7 @@ class OllamaServiceTests(unittest.TestCase):
             [],
             [],
             MagicMock(),
-            "deep",
+            "expert",
             "5m",
             cancel_requested=lambda: False,
             on_delta=lambda text, done, _thinking=None: deltas_seen.append((text, done)),
@@ -165,7 +165,7 @@ class OllamaServiceTests(unittest.TestCase):
 
         first_body = json.loads(mock_urlopen.call_args_list[0][0][0].data.decode("utf-8"))
         second_body = json.loads(mock_urlopen.call_args_list[1][0][0].data.decode("utf-8"))
-        self.assertEqual(first_body.get("options", {}).get("num_predict"), ASK_VISIBLE_NUM_PREDICT["deep"])
+        self.assertEqual(first_body.get("options", {}).get("num_predict"), ASK_VISIBLE_NUM_PREDICT["expert"])
         self.assertEqual(second_body["messages"][-1]["content"], SOFT_CONTINUE_USER_MESSAGE)
         self.assertEqual(second_body["messages"][-2]["content"], "Part one")
 
@@ -291,7 +291,7 @@ class OllamaServiceTests(unittest.TestCase):
             [],
             [],
             MagicMock(),
-            "deep",
+            "expert",
             "5m",
             cancel_requested=lambda: cancelled["flag"],
             on_delta=_on_delta,
