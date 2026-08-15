@@ -23,6 +23,14 @@ import { SETTINGS_GLASS_BTN } from "../styles/settingsGlassButton";
 
 export type OllamaTabProps = {
   ollamaIp: string;
+  /**
+   * The host Ask (and therefore KB hybrid retrieval) actually queries: the Deck-local
+   * address when "run on Deck" is on, else the trimmed entry field. The entry field alone
+   * is the wrong thing to probe for `nomic-embed-text` -- with local-on-Deck on it can
+   * still hold a stale LAN address, so the KB panel would ask a PC whether the Deck has
+   * the model and report "not installed" forever.
+   */
+  effectiveOllamaPcIp: string;
   onOllamaIpChange: (ip: string) => void;
   onPersistOllamaIp: (ip: string) => void;
   ollamaLocalOnDeck: boolean;
@@ -61,6 +69,7 @@ export type OllamaTabProps = {
 
 export const OllamaTab: React.FC<OllamaTabProps> = ({
   ollamaIp,
+  effectiveOllamaPcIp,
   onOllamaIpChange,
   onPersistOllamaIp,
   ollamaLocalOnDeck,
@@ -203,7 +212,7 @@ export const OllamaTab: React.FC<OllamaTabProps> = ({
         useLocalKnowledgeBase={useLocalKnowledgeBase}
         setUseLocalKnowledgeBase={setUseLocalKnowledgeBase}
         ragCorpusVersion={ragCorpusVersion}
-        ollamaIp={ollamaIp}
+        ollamaIp={effectiveOllamaPcIp}
         onBeforeDeckyModal={onBeforeDeckyModal}
         onCompleteDeckyModalClose={onCompleteDeckyModalClose}
         toggleHostRef={kbToggleHostRef}

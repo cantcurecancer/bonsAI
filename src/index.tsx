@@ -1123,6 +1123,7 @@ const Content: React.FC = () => {
   const ollamaTab = useOllamaTabPayload({
     ollamaTabResetKey,
     ollamaIp,
+    effectiveOllamaPcIp,
     onOllamaIpChange: setOllamaIp,
     ollamaLocalOnDeck,
     setOllamaLocalOnDeck,

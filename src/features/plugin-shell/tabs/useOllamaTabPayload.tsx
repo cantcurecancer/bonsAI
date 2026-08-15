@@ -20,6 +20,7 @@ export type UseOllamaTabPayloadArgs = Omit<OllamaTabProps, "onPersistOllamaIp"> 
 export function useOllamaTabPayload({
   ollamaTabResetKey,
   ollamaIp,
+  effectiveOllamaPcIp,
   onOllamaIpChange,
   ollamaLocalOnDeck,
   setOllamaLocalOnDeck,
@@ -56,6 +57,7 @@ export function useOllamaTabPayload({
       <OllamaTab
         key={`ollama-tab-${ollamaTabResetKey}`}
         ollamaIp={ollamaIp}
+        effectiveOllamaPcIp={effectiveOllamaPcIp}
         onOllamaIpChange={onOllamaIpChange}
         onPersistOllamaIp={saveIp}
         ollamaLocalOnDeck={ollamaLocalOnDeck}
@@ -89,6 +91,7 @@ export function useOllamaTabPayload({
     ),
     [
       ollamaIp,
+      effectiveOllamaPcIp,
       ollamaLocalOnDeck,
       ollamaTabResetKey,
       lastConnectionStatus,

@@ -12,7 +12,7 @@
     },
     {
       "path": "src/index.tsx",
-      "lines": 1398,
+      "lines": 1399,
       "role": "Plugin root: tabs, scoped CSS, RPC wiring, Settings"
     },
     {
@@ -81,6 +81,11 @@
       "role": ""
     },
     {
+      "path": "src/components/KnowledgeBaseSection.tsx",
+      "lines": 743,
+      "role": ""
+    },
+    {
       "path": "src/hooks/useBonsaiAskOrchestration.test.ts",
       "lines": 739,
       "role": ""
@@ -88,11 +93,6 @@
     {
       "path": "src/components/CharacterPickerModal.tsx",
       "lines": 721,
-      "role": ""
-    },
-    {
-      "path": "src/components/KnowledgeBaseSection.tsx",
-      "lines": 700,
       "role": ""
     },
     {
@@ -196,8 +196,8 @@
       "role": ""
     },
     {
-      "path": "py_modules/backend/services/voice_whisper_daemon.py",
-      "lines": 367,
+      "path": "src/components/OllamaTab.tsx",
+      "lines": 373,
       "role": ""
     }
   ]
