@@ -31,12 +31,22 @@ from backend.services.ollama_ask_budgets import (
     ASK_MAX_SOFT_CONTINUES,
     ASK_VISIBLE_NUM_PREDICT,
     SOFT_CONTINUE_CUE,
+    mark_model_without_thinking,
+    model_supports_thinking,
+    reset_thinking_support_cache,
     resolve_ask_token_budgets,
     strip_soft_continue_cue,
 )
 
 
 class OllamaAskBudgetsTests(unittest.TestCase):
+    def setUp(self) -> None:
+        # The cache is module-level (process = plugin session), so leaving it dirty would
+        # make later suites pass or fail on discovery order.
+        reset_thinking_support_cache()
+
+    def tearDown(self) -> None:
+        reset_thinking_support_cache()
     def test_visible_caps_match_bug_v1_targets(self) -> None:
         self.assertEqual(ASK_VISIBLE_NUM_PREDICT["speed"], 800)
         self.assertEqual(ASK_VISIBLE_NUM_PREDICT["expert"], 1200)
@@ -71,19 +81,42 @@ class OllamaAskBudgetsTests(unittest.TestCase):
             self.assertEqual(budgets["max_continues"], ASK_MAX_SOFT_CONTINUES)
 
     def test_effort_levels_add_thinking_budget_to_num_predict(self) -> None:
+        """Effort is carried by the budget, not the wire value — see D18."""
         low = resolve_ask_token_budgets("expert", think_effort="low")
-        self.assertEqual(low["think"], "low")
+        self.assertIs(low["think"], True)
         self.assertEqual(low["thinking_budget"], 256)
         self.assertEqual(low["num_predict"], 1200 + 256)
 
         high = resolve_ask_token_budgets("speed", think_effort="high")
-        self.assertEqual(high["think"], "high")
+        self.assertIs(high["think"], True)
+        self.assertEqual(high["thinking_budget"], 1024)
         self.assertEqual(high["num_predict"], 800 + 1024)
 
         medium = resolve_ask_token_budgets("strategy", think_effort="medium")
-        self.assertEqual(medium["think"], "medium")
+        self.assertIs(medium["think"], True)
         self.assertEqual(medium["thinking_budget"], 512)
         self.assertEqual(medium["num_predict"], 1600 + 512)
+
+    def test_think_wire_is_always_boolean_never_the_effort_name(self) -> None:
+        """Named levels are gpt-oss-only; qwen3 / deepseek-r1 reject a string (D18)."""
+        for effort in ("off", "low", "medium", "high"):
+            with self.subTest(effort=effort):
+                self.assertIsInstance(
+                    resolve_ask_token_budgets("speed", think_effort=effort)["think"], bool
+                )
+
+    def test_thinking_support_cache_remembers_only_rejecting_models(self) -> None:
+        reset_thinking_support_cache()
+        self.assertTrue(model_supports_thinking("qwen3:4b"))
+        mark_model_without_thinking("gemma3:4b")
+        self.assertFalse(model_supports_thinking("gemma3:4b"))
+        self.assertTrue(model_supports_thinking("qwen3:4b"))
+        # Blank tags are not cacheable — an empty entry would disable thinking for every
+        # model whose tag failed to resolve.
+        mark_model_without_thinking("")
+        self.assertTrue(model_supports_thinking(""))
+        reset_thinking_support_cache()
+        self.assertTrue(model_supports_thinking("gemma3:4b"))
 
     def test_unknown_mode_and_effort_fall_back_safely(self) -> None:
         budgets = resolve_ask_token_budgets("nope", think_effort="spicy")

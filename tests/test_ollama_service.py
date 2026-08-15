@@ -1,5 +1,7 @@
+import io
 import json
 import unittest
+import urllib.error
 from unittest.mock import MagicMock, patch
 
 from backend.services import ollama_service
@@ -7,7 +9,21 @@ from backend.services.ollama_ask_budgets import (
     ASK_VISIBLE_NUM_PREDICT,
     SOFT_CONTINUE_CUE,
     SOFT_CONTINUE_USER_MESSAGE,
+    mark_model_without_thinking,
+    model_supports_thinking,
+    reset_thinking_support_cache,
 )
+
+
+def _http_error_400(body: str) -> urllib.error.HTTPError:
+    """An HTTPError whose .read() yields `body`, matching what urlopen raises on a 400."""
+    return urllib.error.HTTPError(
+        url="http://127.0.0.1:11434/api/chat",
+        code=400,
+        msg="Bad Request",
+        hdrs=None,  # type: ignore[arg-type]
+        fp=io.BytesIO(body.encode("utf-8")),
+    )
 from backend.services.ollama_service import (
     OLLAMA_DELTA_PARSE_INTERVAL_S,
     append_deck_tdp_sysfs_grounding,
@@ -411,6 +427,116 @@ class OllamaServiceTests(unittest.TestCase):
         self.assertIs(budgets.get("think"), False)
         self.assertEqual(budgets.get("think_effort"), "off")
         self.assertEqual(budgets.get("visible_num_predict"), ASK_VISIBLE_NUM_PREDICT["speed"])
+
+    @patch("backend.services.ollama_service.urllib.request.urlopen")
+    def test_post_ollama_chat_sends_think_true_for_low_effort(
+        self, mock_urlopen: MagicMock
+    ) -> None:
+        """Low effort asks for thinking and buys it headroom on top of the mode cap."""
+        reset_thinking_support_cache()
+        mock_urlopen.return_value = self._ndjson_response(
+            ['{"message":{"role":"assistant","content":"Hi"},"done":true,"done_reason":"stop"}']
+        )
+
+        out = self._post(mock_urlopen, "expert", think_effort="low")
+
+        body = json.loads(mock_urlopen.call_args_list[0][0][0].data.decode("utf-8"))
+        self.assertIs(body.get("think"), True)
+        self.assertEqual(
+            body.get("options", {}).get("num_predict"),
+            ASK_VISIBLE_NUM_PREDICT["expert"] + 256,
+        )
+        self.assertTrue(out.get("success"))
+        self.assertFalse(out.get("thinking_unsupported"))
+
+    @patch("backend.services.ollama_service.urllib.request.urlopen")
+    def test_post_ollama_chat_falls_back_when_model_cannot_think(
+        self, mock_urlopen: MagicMock
+    ) -> None:
+        """A model that rejects think still answers, instead of surfacing a bare HTTP 400."""
+        reset_thinking_support_cache()
+        mock_urlopen.side_effect = [
+            _http_error_400('{"error":"\\"gemma3:4b\\" does not support thinking"}'),
+            self._ndjson_response(
+                ['{"message":{"role":"assistant","content":"Plain answer"},"done":true,"done_reason":"stop"}']
+            ),
+        ]
+
+        out = self._post(mock_urlopen, "speed", think_effort="high", model="gemma3:4b")
+
+        self.assertEqual(mock_urlopen.call_count, 2)
+        first = json.loads(mock_urlopen.call_args_list[0][0][0].data.decode("utf-8"))
+        second = json.loads(mock_urlopen.call_args_list[1][0][0].data.decode("utf-8"))
+        self.assertIs(first.get("think"), True)
+        self.assertIs(second.get("think"), False)
+        self.assertTrue(out.get("success"))
+        self.assertEqual(out.get("response"), "Plain answer")
+        self.assertTrue(out.get("thinking_unsupported"))
+        # The retry is not a soft continue and must not be counted as one.
+        self.assertEqual(out.get("soft_continue_count"), 0)
+
+    @patch("backend.services.ollama_service.urllib.request.urlopen")
+    def test_post_ollama_chat_skips_thinking_for_a_known_bad_model(
+        self, mock_urlopen: MagicMock
+    ) -> None:
+        """Once a model has refused, later Asks cost one round trip, not two."""
+        reset_thinking_support_cache()
+        mark_model_without_thinking("gemma3:4b")
+        mock_urlopen.return_value = self._ndjson_response(
+            ['{"message":{"role":"assistant","content":"Direct"},"done":true,"done_reason":"stop"}']
+        )
+
+        out = self._post(mock_urlopen, "speed", think_effort="high", model="gemma3:4b")
+
+        self.assertEqual(mock_urlopen.call_count, 1)
+        body = json.loads(mock_urlopen.call_args_list[0][0][0].data.decode("utf-8"))
+        self.assertIs(body.get("think"), False)
+        self.assertEqual(
+            body.get("options", {}).get("num_predict"), ASK_VISIBLE_NUM_PREDICT["speed"]
+        )
+        self.assertTrue(out.get("success"))
+        # It fell back before trying, so there is nothing new to tell the user this Ask.
+        self.assertFalse(out.get("thinking_unsupported"))
+
+    @patch("backend.services.ollama_service.urllib.request.urlopen")
+    def test_post_ollama_chat_does_not_retry_an_unrelated_400(
+        self, mock_urlopen: MagicMock
+    ) -> None:
+        """Only a thinking-shaped 400 triggers the fallback; anything else fails as before."""
+        reset_thinking_support_cache()
+        mock_urlopen.side_effect = [_http_error_400('{"error":"invalid options.num_predict"}')]
+
+        out = self._post(mock_urlopen, "speed", think_effort="high", model="qwen3:4b")
+
+        self.assertEqual(mock_urlopen.call_count, 1)
+        self.assertFalse(out.get("success"))
+        self.assertTrue(model_supports_thinking("qwen3:4b"))
+
+    def _post(
+        self,
+        _mock_urlopen: MagicMock,
+        ask_mode: str,
+        *,
+        think_effort: str = "off",
+        model: str = "vision:test",
+    ) -> dict:
+        """post_ollama_chat with the boilerplate args this suite never varies."""
+        return post_ollama_chat(
+            "http://127.0.0.1:11434/api/chat",
+            model,
+            [{"role": "user", "content": "q"}],
+            60,
+            [],
+            [],
+            [],
+            [],
+            MagicMock(),
+            ask_mode,
+            "5m",
+            cancel_requested=lambda: False,
+            on_delta=None,
+            think_effort=think_effort,
+        )
 
     @staticmethod
     def _ndjson_response(lines: list[str]):

@@ -75,7 +75,13 @@ def resolve_ask_token_budgets(
     effort = normalize_think_effort(think_effort)
     visible = int(ASK_VISIBLE_NUM_PREDICT[mode])
     thinking = int(ASK_THINKING_BUDGET[effort])
-    think_wire: ThinkWire = False if effort == "off" else effort
+    # Boolean on the wire for every level, not the effort name. Named levels
+    # ("low"/"medium"/"high") are a gpt-oss-family feature; qwen3 and deepseek-r1 -- the
+    # thinking models most likely on a Deck -- accept only a boolean and reject a string.
+    # Effort is expressed through ``thinking_budget`` below, which buys reasoning headroom
+    # in ``num_predict`` rather than asking Ollama for a depth it may not understand.
+    # Supersedes the string mapping locked in planning doc 16; see decision D18.
+    think_wire: ThinkWire = effort != "off"
     return {
         "ask_mode": mode,
         "think_effort": effort,
@@ -85,6 +91,31 @@ def resolve_ask_token_budgets(
         "think": think_wire,
         "max_continues": ASK_MAX_SOFT_CONTINUES,
     }
+
+
+# Models observed rejecting ``think`` this plugin session. Process lifetime is exactly
+# plugin-session lifetime, and the entry caches an immutable fact about a model, so a stale
+# entry only means thinking stays off for it until the next reload. Global mutable state is
+# a deliberate compromise to keep the wasted round trip to once per model instead of once
+# per Ask -- tests that touch it MUST call reset_thinking_support_cache() in setUp.
+_MODELS_WITHOUT_THINKING: set[str] = set()
+
+
+def mark_model_without_thinking(model: str) -> None:
+    """Remember that ``model`` rejected ``think`` so later Asks skip the failed attempt."""
+    tag = str(model or "").strip()
+    if tag:
+        _MODELS_WITHOUT_THINKING.add(tag)
+
+
+def model_supports_thinking(model: str) -> bool:
+    """False only once a model has actually rejected thinking; unknown models are tried."""
+    return str(model or "").strip() not in _MODELS_WITHOUT_THINKING
+
+
+def reset_thinking_support_cache() -> None:
+    """Test-only: clear the session cache so suites do not depend on execution order."""
+    _MODELS_WITHOUT_THINKING.clear()
 
 
 def strip_soft_continue_cue(text: str) -> str:

@@ -34,6 +34,8 @@ from backend.services.bonsai_stream_tags import extract_bonsai_status
 from backend.services.ollama_ask_budgets import (
     SOFT_CONTINUE_CUE,
     SOFT_CONTINUE_USER_MESSAGE,
+    mark_model_without_thinking,
+    model_supports_thinking,
     resolve_ask_token_budgets,
     strip_soft_continue_cue,
 )
@@ -437,6 +439,22 @@ def best_effort_abort_ollama_inference(
         )
 
 
+def _is_thinking_unsupported_error(status: Any, body: str) -> bool:
+    """True when Ollama rejected the request because the model cannot think.
+
+    Matched loosely on purpose: the wording is not a stable API surface, and the cost of a
+    miss is only that the graceful fallback does not fire (the Ask still fails with the
+    plain HTTP error it would have failed with anyway), never a wrong answer. The 400 body
+    is logged by the caller so the real string can be confirmed on-device.
+    """
+    if status != 400:
+        return False
+    text = (body or "").lower()
+    if "think" not in text:
+        return False
+    return "not support" in text or "unsupported" in text or "does not accept" in text
+
+
 def _stream_ollama_chat_once(
     url: str,
     model_name: str,
@@ -693,6 +711,7 @@ def _stream_ollama_chat_once(
             ),
             "status": e.code,
             "body": body,
+            "thinking_unsupported": _is_thinking_unsupported_error(e.code, body),
         }
     except urllib.error.URLError as e:
         if isinstance(e.reason, (TimeoutError, socket.timeout)):
@@ -759,7 +778,15 @@ def post_ollama_chat(
     Soft continue: up to ``max_continues`` re-issues when the model hits the visible
     ``num_predict`` wall. An ephemeral ``Continuing…`` cue is published on the stream
     tail between segments and stripped before the final reply is persisted.
+
+    Thinking fallback: a model that rejects ``think`` gets one silent retry with thinking
+    off and is remembered for the session, so the setting degrades to a no-op on models
+    that cannot think rather than failing the Ask.
     """
+    # A model that already rejected thinking this session skips straight to off: without
+    # this, every Ask on that model would burn a failed round trip re-learning the same fact.
+    if not model_supports_thinking(model_name):
+        think_effort = "off"
     budgets = resolve_ask_token_budgets(ask_mode, think_effort=think_effort)
     mode = str(budgets.get("ask_mode") or "speed")
     max_continues = int(budgets.get("max_continues") or 0)
@@ -769,6 +796,8 @@ def post_ollama_chat(
     last_thinking: Optional[str] = None
     continue_count = 0
     final_done_reason: Any = None
+    thinking_fell_back = False
+    thinking_retry_done = False
 
     def _visible_from_raw(raw: str) -> tuple[Optional[str], str]:
         thinking, visible = extract_bonsai_status(raw)
@@ -810,6 +839,24 @@ def post_ollama_chat(
         if not result.get("success"):
             if result.get("cancelled"):
                 _clear_continue_cue()
+                return result
+            # The model cannot think: retry once with thinking off rather than surfacing a
+            # bare HTTP 400. Deliberately NOT a soft continue -- continue_count is untouched,
+            # and stitched state is still empty because this can only fire on the first pass.
+            if (
+                result.get("thinking_unsupported")
+                and bool(budgets.get("think"))
+                and not thinking_retry_done
+            ):
+                thinking_retry_done = True
+                thinking_fell_back = True
+                mark_model_without_thinking(model_name)
+                budgets = resolve_ask_token_budgets(ask_mode, think_effort="off")
+                logger.info(
+                    "ask_ollama: model does not support thinking — retrying without it model=%s",
+                    model_name,
+                )
+                continue
             return result
 
         part_raw = str(result.get("assistant_raw") or "")
@@ -904,6 +951,9 @@ def post_ollama_chat(
         "strategy_checklist": strategy_checklist,
         "done_reason": final_done_reason,
         "soft_continue_count": continue_count,
+        # True when this Ask asked for thinking and the model refused, so the UI can say so
+        # once instead of leaving the setting looking silently broken.
+        "thinking_unsupported": thinking_fell_back,
         "ask_budgets": {
             "visible_num_predict": budgets.get("visible_num_predict"),
             "thinking_budget": budgets.get("thinking_budget"),

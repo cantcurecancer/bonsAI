@@ -339,6 +339,7 @@ async def run_ask_ollama(
                         on_http_response_opened=_on_http_response_opened,
                         on_http_response_done=_on_http_response_done,
                         on_delta=on_delta_cb,
+                        think_effort=str(settings.get("ask_think_effort") or "off"),
                     ),
                 )
             finally:
