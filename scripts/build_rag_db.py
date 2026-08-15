@@ -385,7 +385,7 @@ def _seed_compat_patterns(conn: sqlite3.Connection) -> int:
     return len(rows)
 
 
-def _seed_strategy_corpus(conn: sqlite3.Connection, crawled: str) -> None:
+def _seed_strategy_corpus(conn: sqlite3.Connection) -> None:
     path = KB_DATA_DIR / "strategy_seed.json"
     if not path.is_file():
         seed_sample_corpus_legacy(conn)
@@ -414,6 +414,22 @@ def _seed_strategy_corpus(conn: sqlite3.Connection, crawled: str) -> None:
         [(normalize_alias(str(a["alias"])), int(a["game_id"])) for a in aliases],
     )
     sections = data.get("sections") or []
+    # A third-party row must state when its text was captured -- the snapshot date of the
+    # archive.org dump it was distilled from, or the day the live wiki was read. That date is
+    # licensing-relevant: it is what ATTRIBUTIONS reports as "Oldest capture in this group".
+    # Refuse to guess it. Stamping build time here would relabel 2020 wiki text with today's
+    # date on every rebuild, which is exactly the staleness the reader needs to see -- and it
+    # would make the corpus unreproducible, since the bytes would change on every build.
+    undated = sorted(
+        str(s.get("name") or f"section {s.get('section_id')}")
+        for s in sections
+        if str(s.get("source_url") or "").strip() and not str(s.get("crawled_at") or "").strip()
+    )
+    if undated:
+        raise SystemExit(
+            "strategy_seed.json: these rows cite a source_url but no crawled_at, so their "
+            "capture date cannot be attributed: " + ", ".join(undated)
+        )
     conn.executemany(
         "INSERT INTO sections(section_id, game_id, section_type, name, card, source_url, "
         "source_license, source_version, crawled_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
@@ -427,12 +443,10 @@ def _seed_strategy_corpus(conn: sqlite3.Connection, crawled: str) -> None:
                 str(s.get("source_url") or ""),
                 str(s.get("source_license") or ""),
                 s.get("source_version"),
-                # A seed row may state when its text was captured -- the snapshot date of the
-                # archive.org dump it was distilled from, or the day the live wiki was read.
-                # Falling back to build time is only right for rows that never say; using it
-                # for a wiki card would relabel 2020 wiki text with today's date on every
-                # rebuild, which is the staleness the reader most needs to see.
-                str(s.get("crawled_at") or crawled),
+                # Maintainer-authored rows were never crawled from anywhere, so they carry no
+                # capture date. Both readers of this column already treat empty as "no source"
+                # (see collect_third_party_attribution_sources, which skips url-less rows).
+                str(s.get("crawled_at") or ""),
             )
             for s in sections
         ],
@@ -454,7 +468,8 @@ def _seed_strategy_corpus(conn: sqlite3.Connection, crawled: str) -> None:
 
 def seed_sample_corpus_legacy(conn: sqlite3.Connection) -> None:
     """Fallback when strategy_seed.json is missing."""
-    crawled = _utc_now()
+    # Maintainer-authored rows, no third-party source -- so no capture date to record.
+    crawled = ""
     games = [
         (1, "413150", None, "The Legend of Zelda: Ocarina of Time", "N64", "Nintendo 64", '["action-adventure"]'),
         (
@@ -515,8 +530,7 @@ def seed_sample_corpus_legacy(conn: sqlite3.Connection) -> None:
 
 def seed_sample_corpus(conn: sqlite3.Connection) -> None:
     """Seed dev/sample rows: 11-title strategy mix + shared compat tip sheet."""
-    crawled = _utc_now()
-    _seed_strategy_corpus(conn, crawled)
+    _seed_strategy_corpus(conn)
     tip_count = _seed_compat_patterns(conn)
     if tip_count == 0:
         conn.execute(

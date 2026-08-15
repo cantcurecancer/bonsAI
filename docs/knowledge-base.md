@@ -1,6 +1,6 @@
 # Knowledge base (offline RAG v1)
 
-Maintainer architecture for the **on-Deck offline strategy + compat knowledge base**. User setup: [troubleshooting.md](troubleshooting.md) § Knowledge base. QA: [testing.md](testing.md) **KB-*** rows. **Phase 2 hybrid** shipped 2026-07-28; **Phase 3** shipped 2026-07-29; **Phase 4–5** discovery locked 2026-07-30; **Phase 6 / 8** light discovery 2026-07-30; **Phase 7** tight discovery locked 2026-07-30 (see [roadmap.md](roadmap.md) Planned).
+Maintainer architecture for the **on-Deck offline strategy + compat knowledge base**. User setup: [troubleshooting.md](troubleshooting.md) § Knowledge base. QA: [testing.md](testing.md) **KB-*** rows. **Phase 2 hybrid** shipped 2026-07-28; **Phase 3** shipped 2026-07-29; **Phase 4–5** discovery locked 2026-07-30; **Phase 6** shipped 2026-08-14 (first public push live on HF + GitHub; on-Deck QA still open); **Phase 8** light discovery 2026-07-30; **Phase 7** tight discovery locked 2026-07-30 (see [roadmap.md](roadmap.md) Planned).
 
 ## Overview
 
@@ -154,7 +154,7 @@ On-Deck: reply credit → **KB-ATTRIB-01**; published corpus file beside DB → 
 | **Phase 3 (shipped 2026-07-29)** | **Compat/troubleshooting hybrid** on shared `compat_patterns` tip sheet (~124 platform-tagged maintainer tips) + **corpus maturity** (interim **11-title** strategy seed, 22 section cards). Schema v2: `compat_patterns_fts`, `compat_pattern_vectors`. Show details **Source: shared troubleshooting tips**. Eval set `tests/fixtures/kb_eval_v0.json`. **Not** public HF (→ Phase 6). |
 | **Phase 4** | Extended retrieval (discovery locked 2026-07-30; **not implementing yet**): session chip **visibility** (not vector ranking); structured enemy/item **sample** cards + light reply bullets; T1 per-game AppID compat tips; lean compat phrase-gate fix. |
 | **Phase 5** | **Corpus expansion** (discovery locked 2026-07-30; **not implementing yet**): deepen all **11** Phase 3 titles (content → chip vector ranking); profiled depth; baked chip ranking; Dev-tab install only until Phase 6. |
-| **Phase 6** | **Public publish + legal** (light discovery 2026-07-30): HF primary + GitHub mirror; Phase 5 matured **11** + shared tips; closes **KB-DOWNLOAD** Partial. |
+| **Phase 6 (shipped 2026-08-14)** | **Public publish + legal**: HF primary (`qd313/bonsai-knowledge-base`) + GitHub mirror (`knowledge-base-v1`); shipped the **13-title / 117-section** PR2-deepened corpus + 124 shared tips rather than a separate Phase 5 matured-11 pass. Corpus version `2026.08.14`. **KB-DOWNLOAD** stays Partial until on-Deck QA runs against the real hosts. |
 | **Phase 7** | **Retrieval infra + optional paths** (tight discovery 2026-07-30): prior ANN + nomic auto-pull; plus RRF fusion, vision→entity→retrieve, thumbs demote, delta/packs, named thinking hit. One umbrella row; tracks not gated on each other; UX may ship early. Fuller discovery later. |
 | **Phase 8** | **Catalog corpus** (intent): large title coverage (Steam ~1000 / Deck ~100 / emu eras) — fuller discovery later. |
 
@@ -266,7 +266,28 @@ On-Deck: reply credit → **KB-ATTRIB-01**; published corpus file beside DB → 
 
 ### Phase 6 — locked decisions (light, 2026-07-30)
 
-**Status:** Light discovery only — more Phase 6 detail in a later session. **Document only**; implementation after Phase 5 exit.
+**Status:** **Shipped 2026-08-14** — the locks below were implemented, not deferred. First public
+push is live on both channels: HF dataset `qd313/bonsai-knowledge-base` (primary) and GitHub release
+`knowledge-base-v1` (mirror), corpus version `2026.08.14`, `compressed_sha256` `081af237…`,
+758507 bytes, schema v3. Publish path is `scripts/publish_corpus.py --push-hf --push-github`.
+It shipped ahead of a formal Phase 5 exit: the 13-title / 117-section corpus came out of the
+remediation PR2 seed deepening rather than a separate Phase 5 pass. **Still open:** on-Deck
+**KB-ATTRIB-02** / **KB-SMOKE-01** / **KB-DOWNLOAD** against the real hosts.
+
+**Reproducibility (fixed 2026-08-15).** The build used to stamp `crawled = _utc_now()` into the 58
+maintainer-authored rows, so every rebuild produced a different `db_sha256` — three builds on
+2026-08-14 gave 758505 / 758506 / 758507 bytes. Those rows have no `source_url` and were never
+crawled from anywhere, and `collect_third_party_attribution_sources` already skips url-less rows,
+so the stamp fed nothing. `crawled_at` is now empty for them, and a row that cites a `source_url`
+without a `crawled_at` **fails the build** — that date is what ATTRIBUTIONS reports as "Oldest
+capture in this group", so guessing it is a licensing error, and backdating it to build time is
+what broke reproducibility. Two consecutive `--seed` builds now yield identical `db_sha256`.
+Guarded by `tests/test_build_rag_reproducible.py` (3 tests; the build-time stamp turns 2 red).
+
+Caveat: this pins the *corpus rows*. Vectors still come from Ollama at bake time, so cross-machine
+reproducibility is unproven — only same-machine rebuilds are shown identical. The published
+`2026.08.14` artifact predates the fix and is **not** reproducible from source; its manifest hash
+attests download integrity only. Republishing would fix that at the cost of a version bump.
 
 **Split from older “three bullets” row:** publish/legal stays Phase 6 (plus forward-compatible manifest hooks for packs/deltas); sqlite-vss/ANN + nomic auto-pull + Phase 7 optional paths → **Phase 7**; catalog-scale corpus → **Phase 8**.
 
