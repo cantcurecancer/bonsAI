@@ -16,7 +16,7 @@ from backend.services.background_request_state import (
     pending_background_state,
 )
 
-# The 18 keys the status poller and the frontend expect on every background state.
+# The 20 keys the status poller and the frontend expect on every background state.
 EXPECTED_KEYS = {
     "status",
     "request_id",
@@ -36,6 +36,8 @@ EXPECTED_KEYS = {
     "partial_response",
     "streaming",
     "thinking_summary",
+    "thinking_unsupported",
+    "model",
 }
 
 

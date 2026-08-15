@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 299,
-  "edgeCount": 699,
+  "fileCount": 300,
+  "edgeCount": 702,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -374,9 +374,11 @@
         "src/components/DeveloperTab.tsx",
         "src/components/KnowledgeBaseSection.tsx",
         "src/components/OllamaReplyVerbositySlider.tsx",
+        "src/components/OllamaThinkingEffortRow.tsx",
         "src/components/OllamaWhereAiRunsSection.tsx",
         "src/components/SettingsTabConnectionTimeoutSlider.tsx",
         "src/components/SettingsTabOllamaKeepAliveSlider.tsx",
+        "src/data/askThinkEffort.ts",
         "src/data/bonsaiSettingsSchema.ts",
         "src/data/modelPolicy.ts",
         "src/data/replyVerbosity.ts",
@@ -384,6 +386,14 @@
       ],
       "importedBy": [
         "src/features/plugin-shell/tabs/useOllamaTabPayload.tsx"
+      ]
+    },
+    "src/components/OllamaThinkingEffortRow.tsx": {
+      "imports": [
+        "src/data/askThinkEffort.ts"
+      ],
+      "importedBy": [
+        "src/components/OllamaTab.tsx"
       ]
     },
     "src/components/OllamaWhereAiRunsSection.tsx": {
@@ -655,6 +665,8 @@
     "src/data/askThinkEffort.ts": {
       "imports": [],
       "importedBy": [
+        "src/components/OllamaTab.tsx",
+        "src/components/OllamaThinkingEffortRow.tsx",
         "src/data/bonsaiSettingsNormalizers.ts",
         "src/data/bonsaiSettingsSchema.ts"
       ]

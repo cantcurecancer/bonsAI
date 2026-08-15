@@ -41,6 +41,8 @@ export function useOllamaTabPayload({
   setOllamaKeepAlive,
   replyVerbosity,
   setReplyVerbosity,
+  askThinkEffort,
+  setAskThinkEffort,
   modelPolicyTier,
   onApplyTier2MultimodalPolicy,
   useLocalKnowledgeBase,
@@ -76,6 +78,8 @@ export function useOllamaTabPayload({
         setOllamaKeepAlive={setOllamaKeepAlive}
         replyVerbosity={replyVerbosity}
         setReplyVerbosity={setReplyVerbosity}
+        askThinkEffort={askThinkEffort}
+        setAskThinkEffort={setAskThinkEffort}
         modelPolicyTier={modelPolicyTier}
         onApplyTier2MultimodalPolicy={onApplyTier2MultimodalPolicy}
         useLocalKnowledgeBase={useLocalKnowledgeBase}
@@ -94,6 +98,7 @@ export function useOllamaTabPayload({
       latencyTimeoutsCustomEnabled,
       ollamaKeepAlive,
       replyVerbosity,
+      askThinkEffort,
       modelPolicyTier,
       onApplyTier2MultimodalPolicy,
       useLocalKnowledgeBase,

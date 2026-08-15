@@ -321,6 +321,67 @@ describe("useBonsaiAskOrchestration", () => {
       expect(result.current.isAsking).toBe(false);
     });
 
+    it("warns once per model when the model cannot think", async () => {
+      const completed = (model: string) => ({
+        accepted: true,
+        status: "completed",
+        success: true,
+        response: "Answered without thinking.",
+        request_id: 11,
+        thinking_unsupported: true,
+        model,
+      });
+      setRpcHandler("start_background_game_ai", () => completed("gemma3:4b"));
+
+      const { result } = renderHook(() => useBonsaiAskOrchestration(makeArgs()));
+
+      await act(async () => {
+        await result.current.onAskOllama("first question");
+      });
+      await act(async () => {
+        await result.current.onAskOllama("second question");
+      });
+
+      const warnings = (toaster.toast as ReturnType<typeof vi.fn>).mock.calls.filter(
+        ([arg]) => (arg as { title?: string })?.title === "Thinking not supported",
+      );
+      expect(warnings).toHaveLength(1);
+      expect((warnings[0][0] as { body?: string }).body).toContain("gemma3:4b");
+
+      // A different model is a different fact about a different thing — warn again.
+      setRpcHandler("start_background_game_ai", () => completed("llama3.2:3b"));
+      await act(async () => {
+        await result.current.onAskOllama("third question");
+      });
+
+      const allWarnings = (toaster.toast as ReturnType<typeof vi.fn>).mock.calls.filter(
+        ([arg]) => (arg as { title?: string })?.title === "Thinking not supported",
+      );
+      expect(allWarnings).toHaveLength(2);
+    });
+
+    it("stays quiet when the model handled thinking fine", async () => {
+      setRpcHandler("start_background_game_ai", () => ({
+        accepted: true,
+        status: "completed",
+        success: true,
+        response: "Thought about it.",
+        request_id: 12,
+        thinking_unsupported: false,
+        model: "qwen3:4b",
+      }));
+
+      const { result } = renderHook(() => useBonsaiAskOrchestration(makeArgs()));
+
+      await act(async () => {
+        await result.current.onAskOllama("a question");
+      });
+
+      expect(toaster.toast).not.toHaveBeenCalledWith(
+        expect.objectContaining({ title: "Thinking not supported" }),
+      );
+    });
+
     it("surfaces a blocked question and does not leave the spinner up", async () => {
       setRpcHandler("start_background_game_ai", () => ({
         accepted: false,

@@ -31,6 +31,10 @@ export type BackgroundStartResponse = {
   meta?: string;
   /** Set when the Ask was a bonsai:shortcut-setup-* keyword (no Ollama). */
   shortcut_setup?: ShortcutSetupKind;
+  /** True when this Ask asked for thinking and the model refused; see the status type. */
+  thinking_unsupported?: boolean;
+  /** Model that answered, used to warn about unsupported thinking once per model. */
+  model?: string | null;
 };
 
 export type BackgroundRequestStatus = {
@@ -63,6 +67,14 @@ export type BackgroundRequestStatus = {
   streaming?: boolean;
   /** Model-emitted or deterministic phase label while status is pending. */
   thinking_summary?: string | null;
+  /**
+   * True when this Ask asked for thinking and the model refused, so the backend retried
+   * without it. Set only on the Ask that discovered it — later Asks on the same model skip
+   * thinking up front and leave this false.
+   */
+  thinking_unsupported?: boolean;
+  /** Model that answered, used to warn about unsupported thinking once per model. */
+  model?: string | null;
 };
 
 export type PresetCarouselInjectPayload = {

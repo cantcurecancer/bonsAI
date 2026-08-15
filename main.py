@@ -2454,6 +2454,10 @@ class Plugin:
                 "shortcut_setup": result.get("shortcut_setup"),
                 "cancelled": cancelled_rq,
                 "preset_carousel_inject": result.get("preset_carousel_inject"),
+                # True only on the Ask that discovered the model cannot think, so the UI can
+                # say so once. `model` names which model, to key that warning per model.
+                "thinking_unsupported": bool(result.get("thinking_unsupported")),
+                "model": result.get("model"),
                 "partial_response": None,
                 "streaming": False,
             }

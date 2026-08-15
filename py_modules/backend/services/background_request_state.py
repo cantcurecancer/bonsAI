@@ -34,6 +34,8 @@ def new_background_state() -> dict[str, Any]:
         "partial_response": None,
         "streaming": False,
         "thinking_summary": None,
+        "thinking_unsupported": False,
+        "model": None,
     }
 
 

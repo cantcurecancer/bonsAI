@@ -16,6 +16,8 @@ import { SettingsTabConnectionTimeoutSlider } from "./SettingsTabConnectionTimeo
 import { SettingsTabOllamaKeepAliveSlider } from "./SettingsTabOllamaKeepAliveSlider";
 import { OllamaReplyVerbositySlider } from "./OllamaReplyVerbositySlider";
 import type { ReplyVerbosityId } from "../data/replyVerbosity";
+import type { AskThinkEffortId } from "../data/askThinkEffort";
+import { OllamaThinkingEffortRow } from "./OllamaThinkingEffortRow";
 import type { NamedOllamaHost } from "../data/bonsaiSettingsSchema";
 import { SETTINGS_GLASS_BTN } from "../styles/settingsGlassButton";
 
@@ -53,6 +55,8 @@ export type OllamaTabProps = {
 
   replyVerbosity: ReplyVerbosityId;
   setReplyVerbosity: (v: ReplyVerbosityId) => void;
+  askThinkEffort: AskThinkEffortId;
+  setAskThinkEffort: (v: AskThinkEffortId) => void;
 };
 
 export const OllamaTab: React.FC<OllamaTabProps> = ({
@@ -84,6 +88,8 @@ export const OllamaTab: React.FC<OllamaTabProps> = ({
   ragCorpusVersion,
   replyVerbosity,
   setReplyVerbosity,
+  askThinkEffort,
+  setAskThinkEffort,
 }) => {
   const latencyWarningThumbHostRef = useRef<HTMLDivElement>(null);
   const ollamaKeepAliveThumbHostRef = useRef<HTMLDivElement>(null);
@@ -93,6 +99,7 @@ export const OllamaTab: React.FC<OllamaTabProps> = ({
   const kbCancelBtnRef = useRef<HTMLButtonElement>(null);
   const connectionTestBtnRef = useRef<HTMLButtonElement>(null);
   const replyVerbosityThumbHostRef = useRef<HTMLDivElement>(null);
+  const thinkingEffortHostRef = useRef<HTMLDivElement>(null);
 
   const focusOllamaKeepAliveThumb = useCallback((): boolean => {
     const host = ollamaKeepAliveThumbHostRef.current;
@@ -126,6 +133,17 @@ export const OllamaTab: React.FC<OllamaTabProps> = ({
     const host = replyVerbosityThumbHostRef.current;
     if (!host) return false;
     const target = host.querySelector<HTMLElement>("[tabindex], button");
+    if (!target) return false;
+    target.focus();
+    return true;
+  }, []);
+
+  // Element-scoped query on the row's own ref — never a global document.querySelector,
+  // which under Decky searches a 14-element shell rather than the plugin's DOM.
+  const focusThinkingEffortRow = useCallback((): boolean => {
+    const host = thinkingEffortHostRef.current;
+    if (!host) return false;
+    const target = host.querySelector<HTMLElement>("button:not([disabled])");
     if (!target) return false;
     target.focus();
     return true;
@@ -212,6 +230,17 @@ export const OllamaTab: React.FC<OllamaTabProps> = ({
               onChange={setReplyVerbosity}
               thumbHostRef={replyVerbosityThumbHostRef}
               onMoveUp={focusKbUpFromReplyVerbosity}
+              onMoveDown={focusThinkingEffortRow}
+            />
+          </div>
+        </PanelSectionRow>
+        <PanelSectionRow>
+          <div className="bonsai-settings-bleed" style={{ width: "100%", maxWidth: "100%", minWidth: 0 }}>
+            <OllamaThinkingEffortRow
+              value={askThinkEffort}
+              onChange={setAskThinkEffort}
+              hostRef={thinkingEffortHostRef}
+              onMoveUp={focusReplyVerbosityThumb}
               onMoveDown={focusLatencyWarningThumb}
             />
           </div>

@@ -197,6 +197,13 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
   const pendingThreadQuestionDisplayRef = useRef<string | null>(null);
   /** Last request_id whose completion already re-seeded suggested prompts (reseed is randomized). */
   const promptsReseededForRequestRef = useRef<number | null>(null);
+  /*
+   * Models already warned about for unsupported thinking. Keyed by model tag so a user with
+   * one thinking and one non-thinking model hears about each once, and deduped because the
+   * same terminal status can be applied more than once (restore + poll) — see the reseed
+   * guard below for the same hazard.
+   */
+  const thinkingUnsupportedWarnedRef = useRef<Set<string>>(new Set());
   const lastFlushedExchangeQuestionRef = useRef<string>("");
   const [askThreadCollapsed, setAskThreadCollapsed] = useState<AskThreadCollapsedTurn[]>(
     () => survivalPeek?.askThreadCollapsed ?? []
@@ -579,6 +586,21 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
               : null,
           );
           setPresetCarouselInject(normalizePresetCarouselInject(status.preset_carousel_inject));
+          if (status.thinking_unsupported) {
+            // Say it once per model. Silently doing nothing would leave the Thinking setting
+            // looking broken on a model that simply cannot do it.
+            const warnKey = (status.model || "").trim() || "__unknown_model__";
+            if (!thinkingUnsupportedWarnedRef.current.has(warnKey)) {
+              thinkingUnsupportedWarnedRef.current.add(warnKey);
+              toaster.toast({
+                title: "Thinking not supported",
+                body: status.model
+                  ? `${status.model} answered without it.`
+                  : "This model answered without it.",
+                duration: 4000,
+              });
+            }
+          }
           if (q) {
             const category = detectPromptCategory(q);
             /*
@@ -1022,6 +1044,10 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
             model_policy_disclosure: null,
             strategy_spoiler_consent_effective: false,
             shortcut_setup: data.shortcut_setup ?? null,
+            // Carried through so an Ask that completes on the start call still reports a
+            // model that refused to think; this path never polls, so nothing else would.
+            thinking_unsupported: data.thinking_unsupported ?? false,
+            model: data.model ?? null,
           };
           applyBackgroundStatusToUi(terminal, "");
           if (ip.trim().length > 0) {
