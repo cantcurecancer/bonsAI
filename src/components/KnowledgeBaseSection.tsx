@@ -151,6 +151,8 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
   const [downloadBusy, setDownloadBusy] = useState(false);
   const [cancelBusy, setCancelBusy] = useState(false);
   const [nomicPullBusy, setNomicPullBusy] = useState(false);
+  /** Set once a pull is accepted; polls status until the model shows up, then stops. */
+  const [nomicPullStarted, setNomicPullStarted] = useState(false);
   const primaryBtnRefLocal = useRef<HTMLButtonElement | null>(null);
   const removeBtnRef = useRef<HTMLButtonElement | null>(null);
   const cancelBtnRef = useRef<HTMLButtonElement | null>(null);
@@ -295,6 +297,25 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
     if (!downloadBusy) setCancelBusy(false);
   }, [downloadBusy]);
 
+  /**
+   * A pull happens in the setup service, which reports nothing back here. Poll the status
+   * that already knows the answer -- `embed_model_available` flips true once the model is
+   * on the Ask host -- so the button stops saying "Pulling…" on its own rather than
+   * stranding the user at a disabled control with no end state.
+   */
+  useEffect(() => {
+    if (!nomicPullStarted) return;
+    const id = window.setInterval(() => {
+      void refreshStatus().then((st) => {
+        if (st?.embed_model_available === true) {
+          setNomicPullStarted(false);
+          setNomicPullBusy(false);
+        }
+      });
+    }, 4000);
+    return () => window.clearInterval(id);
+  }, [nomicPullStarted, refreshStatus]);
+
   const startDownload = async (installPath: string, storage: string) => {
     setDownloadBusy(true);
     try {
@@ -339,21 +360,31 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
     )
       .then((out) => {
         if (out?.accepted) {
+          // Leave the button disabled and reading "Pulling…". The pull runs in the model
+          // setup service, not here, so resolving this RPC only means it was accepted --
+          // clearing busy now made the button snap back to "Pull nomic-embed-text" a
+          // moment after pressing it, which reads as "nothing happened". The poll below
+          // clears it for real: once the model lands, embed_model_available flips true
+          // and the whole hint unmounts.
+          setNomicPullStarted(true);
           toaster.toast({
             title: "Pulling nomic-embed-text",
             body: "Watch progress in Ollama → Where AI runs.",
             duration: 6000,
           });
-        } else {
-          toaster.toast({
-            title: "Pull not started",
-            body: out?.reason ?? "Setup busy, or Ollama isn't running on this Deck.",
-            duration: 8000,
-          });
+          return;
         }
+        setNomicPullBusy(false);
+        toaster.toast({
+          title: "Pull not started",
+          body: out?.reason ?? "Setup busy, or Ollama isn't running on this Deck.",
+          duration: 8000,
+        });
       })
-      .catch((e) => toaster.toast({ title: "Pull failed", body: formatDeckyRpcError(e), duration: 8000 }))
-      .finally(() => setNomicPullBusy(false));
+      .catch((e) => {
+        setNomicPullBusy(false);
+        toaster.toast({ title: "Pull failed", body: formatDeckyRpcError(e), duration: 8000 });
+      });
   };
 
   /**
@@ -459,6 +490,14 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
   };
 
   const installed = status?.installed === true;
+  /**
+   * Prefer the version the backend just reported over the one this component was mounted
+   * with. `ragCorpusVersion` is plugin-settings state: an Update writes the new version to
+   * settings.json on the backend, but nothing re-reads settings into the frontend, so that
+   * prop keeps its mount-time value and the label reads as though the Update did nothing.
+   * `status.corpus_version` comes from the poll that already runs while a download is busy.
+   */
+  const displayedVersion = (status?.corpus_version ?? "").trim() || ragCorpusVersion;
   const progress =
     downloadBusy && status?.bytes_total
       ? `${status.progress_pct ?? 0}% (${Math.round((status.bytes_downloaded ?? 0) / (1024 * 1024))} / ${Math.round(
@@ -501,7 +540,7 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
           {installed ? (
             <>
               <span style={{ color: "#7dcea0", fontWeight: 600 }}>Installed</span>
-              {ragCorpusVersion ? ` — version ${ragCorpusVersion}` : null}
+              {displayedVersion ? ` — version ${displayedVersion}` : null}
               {status?.corpus_path ? (
                 <span style={{ display: "block", marginTop: 4, color: "#8fa0b4" }}>{status.corpus_path}</span>
               ) : null}
@@ -541,7 +580,11 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
                       onMoveDown: () => focusActionRow(),
                     })}
                   >
-                    {nomicPullBusy ? "Starting…" : "Pull nomic-embed-text"}
+                    {nomicPullStarted
+                      ? "Pulling… (Ollama → Where AI runs)"
+                      : nomicPullBusy
+                        ? "Starting…"
+                        : "Pull nomic-embed-text"}
                   </Button>
                 </Focusable>
               </div>

@@ -6,7 +6,7 @@
  * when the hint would have shown, and pressing it calls the same pull_ollama_models
  * RPC the Pull Models modal already uses, with the model tag it exists to install.
  */
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it } from "vitest";
 import { KnowledgeBaseSection } from "./KnowledgeBaseSection";
 import { getRpcCallLog, ragCorpusStatusFixture, resetFakeDeckyRpc, setRpcHandler } from "../test-harness/fakeDeckyRpc";
@@ -68,13 +68,68 @@ describe("KnowledgeBaseSection nomic-embed-text pull", () => {
     expect(pullCalls()[0].args).toEqual([["nomic-embed-text"]]);
   });
 
-  it("re-enables the button after the pull request resolves", async () => {
+  it("keeps saying Pulling… after the request resolves, because the pull is not done yet", async () => {
+    // The RPC resolving means "accepted", not "installed" -- the pull runs in the setup
+    // service. Snapping back to the idle label here is what made pressing the button look
+    // like it did nothing at all.
     renderInstalled();
     const button = await screen.findByText("Pull nomic-embed-text");
 
     fireEvent.click(button);
-    await screen.findByText("Starting…");
 
-    await screen.findByText("Pull nomic-embed-text");
+    expect(await screen.findByText("Pulling… (Ollama → Where AI runs)")).toBeTruthy();
+    expect(screen.queryByText("Pull nomic-embed-text")).toBeNull();
+  });
+
+  it("stops showing the hint once the model actually arrives", async () => {
+    renderInstalled();
+    const button = await screen.findByText("Pull nomic-embed-text");
+    fireEvent.click(button);
+    await screen.findByText("Pulling… (Ollama → Where AI runs)");
+
+    // The poll re-reads status; the model is there now, so the whole hint unmounts.
+    setRpcHandler("get_rag_corpus_status", () =>
+      ragCorpusStatusFixture({
+        installed: true,
+        corpus_version: "1.0.0",
+        embeddings_populated: true,
+        embed_model_available: true,
+      }),
+    );
+
+    await waitFor(
+      () => {
+        expect(screen.queryByText("Pulling… (Ollama → Where AI runs)")).toBeNull();
+        expect(screen.queryByText("Pull nomic-embed-text")).toBeNull();
+      },
+      { timeout: 10000 },
+    );
+  }, 15000);
+
+  it("shows the version the backend last reported, not the one it mounted with", async () => {
+    // An Update writes the new version to settings.json on the backend, but nothing
+    // re-reads settings into the frontend -- so the mount-time prop goes stale and the
+    // panel reads as though the Update did nothing.
+    setRpcHandler("get_rag_corpus_status", () =>
+      ragCorpusStatusFixture({
+        installed: true,
+        corpus_version: "2026.08.14",
+        embeddings_populated: true,
+        embed_model_available: true,
+      }),
+    );
+    render(
+      <KnowledgeBaseSection
+        useLocalKnowledgeBase={true}
+        setUseLocalKnowledgeBase={() => {}}
+        ragCorpusVersion="2026.08.12"
+        ollamaIp="127.0.0.1"
+        onBeforeDeckyModal={() => {}}
+        onCompleteDeckyModalClose={(close) => close()}
+      />,
+    );
+
+    expect(await screen.findByText(/version 2026\.08\.14/)).toBeTruthy();
+    expect(screen.queryByText(/version 2026\.08\.12/)).toBeNull();
   });
 });
