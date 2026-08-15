@@ -109,14 +109,14 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
     result = retrieve_knowledge_context(
       settings,
       ask_mode="strategy",
-      question="King Dodongo boss weak point",
+      question="Queen Gohma boss weak point",
       app_id="",
       app_name="",
       shortcut_name="Ship of Harkinian",
       domain="strategy",
     )
     self.assertTrue(result.attached)
-    self.assertIn("King Dodongo", result.text_block)
+    self.assertIn("Queen Gohma", result.text_block)
     self.assertIn("alias:ship of harkinian", result.notes)
 
   def test_missing_corpus_graceful(self):

@@ -104,11 +104,11 @@
     },
     {
       "id": "EVAL-S02",
-      "query": "King Dodongo boss weak point",
+      "query": "Queen Gohma boss weak point",
       "ask_mode": "strategy",
       "domain": "strategy",
       "app_id": "413150",
-      "expect_section": "King Dodongo",
+      "expect_section": "Queen Gohma",
       "notes": "OoT/SoH alias path"
     },
     {
@@ -195,11 +195,11 @@
     },
     {
       "id": "EVAL-S12",
-      "query": "Water Temple oot",
+      "query": "Shadow Temple invisible floor oot",
       "ask_mode": "strategy",
       "domain": "strategy",
       "app_id": "413150",
-      "expect_section": "Water Temple",
+      "expect_section": "Shadow Temple invisible floors",
       "notes": "OoT dungeon"
     },
     {

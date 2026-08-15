@@ -16,12 +16,12 @@ choices are, and what happens either way. **Locked calls (2026-08-02 for D1–D6
 from that section when it disagrees with an option above.
 
 **One open: [D18](#d18--when-loading-settings-fails-four-values-keep-whatever-was-on-screen-bug-or-intent)**
-(raised 2026-08-05 by the step 11 friction test). D1–D17 and **D19** are locked; see the table
-below for D1–D15 and the sections below for D16, D17, and D19.
+(raised 2026-08-05 by the step 11 friction test). D1–D18 are locked; **D19 is superseded by
+D20** (below). See the table below for D1–D15 and the sections below for D16, D17, D19, D20.
 
 ---
 
-### D19 — Mixed CC BY / BY-SA cards in one corpus file?
+### D19 — Mixed CC BY / BY-SA cards in one corpus file? *(superseded by D20, 2026-08-14)*
 
 **Raised and locked 2026-08-09** (ATTR-1.3 in
 [15-corpus-licensing-attribution-plan.md](../planning/15-corpus-licensing-attribution-plan.md)).
@@ -41,7 +41,43 @@ this decision (GFDL ≠ CC BY 4.0). See
 [15-corpus-licensing-attribution-plan.md](../planning/15-corpus-licensing-attribution-plan.md)
 ATTR-1.1.
 
+**Superseded 2026-08-14 by D20** — reopened during Phase 6 publish planning once it was
+established that the ShareAlike attribution machinery (`ATTRIBUTIONS.md` generation, corpus
+license header, `NOTICE` separation) already fully discharges the obligations D19 was written
+to avoid taking on. No new legal information; a re-weighing of cost against what BY-only
+excluded (all six ShareAlike wikis).
+
 ---
+
+### D20 — Publish the corpus as one CC BY-SA 4.0 work, including ShareAlike sources
+
+**Raised and locked 2026-08-14**, during Phase 6 publish planning. Supersedes D19.
+
+**Choice:** the first public corpus ships as a single work licensed **CC BY-SA 4.0**, and
+ShareAlike sources (the CC-BY-SA-3.0/4.0 wikis: L4D2, Fallout, GTA, Cyberpunk, Combine
+OverWiki) are **included**, not deferred. Per-card `source_license` stays recorded and
+queryable — declaring one license for the whole work is what Hugging Face's dataset metadata
+requires, not a claim that every card shares one license underneath.
+
+Still excluded, on grounds D20 does not touch: `zelda.fandom.com` (**GFDL** — a different
+license family that does not mix with Creative Commons; the 2 affected cards are dropped
+from the seed entirely rather than published under the wrong license — see
+[15-corpus-licensing-attribution-plan.md](../planning/15-corpus-licensing-attribution-plan.md)),
+`hades.fandom.com` and `developer.valvesoftware.com` (NonCommercial), `bg3.wiki`
+(per-contributor licensing is ambiguous — some contributors' text is NC-only and no page says
+which).
+
+**Why.** No code anywhere filtered by license — D19's restriction existed only as a paragraph
+in the generated `ATTRIBUTIONS.md` header
+([build_rag_db.py](../../scripts/build_rag_db.py) `_attributions_header_lines()`) and about
+eight doc mentions; enforcing it as a real gate would have meant writing a filter to *shrink*
+an already-small, already-licensed, already-tested corpus for no legal necessity — ShareAlike
+obligations are fully satisfied by the attribution machinery Stages 1–5 already shipped.
+Sweeping the exclusion under one BY-only rule was overcautious relative to what CC BY-SA
+actually requires.
+
+**Consequence:** first publish grows from ~67 sections (58 maintainer + 9 Portal) to 117 of
+the 119 seed sections, across 6 wikis instead of 1.
 
 ### D17 — Game knowledge was gated on the Ask mode toggle
 

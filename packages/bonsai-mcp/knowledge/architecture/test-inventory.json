@@ -1,6 +1,7 @@
 {
   "vitest": [
     "src/components/BonsaiPluginShell.test.tsx",
+    "src/components/KnowledgeBaseSection.nomicPull.test.tsx",
     "src/components/KnowledgeBaseSection.test.tsx",
     "src/components/MainTabPresetAnimatedChips.test.tsx",
     "src/components/PermissionDenyAction.test.tsx",
@@ -128,6 +129,8 @@
     "tests/test_pull_model_catalog_merge.py",
     "tests/test_pull_model_catalog_parity.py",
     "tests/test_pyro_asshole_safety.py",
+    "tests/test_rag_corpus_cancel_state.py",
+    "tests/test_rag_corpus_download.py",
     "tests/test_reply_followup.py",
     "tests/test_reply_language_service.py",
     "tests/test_reply_language_snapshot_rpc.py",
@@ -148,6 +151,7 @@
     "tests/test_strategy_checklist_store_lock.py",
     "tests/test_strategy_guide_parse.py",
     "tests/test_tdp_service.py",
+    "tests/test_tls_ca_fallback.py",
     "tests/test_token_stream_request_id_wiring.py",
     "tests/test_transparency_kb_retrieval.py",
     "tests/test_voice_session_status.py",

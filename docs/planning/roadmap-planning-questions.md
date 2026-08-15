@@ -83,7 +83,7 @@ You want the repo-root **README.md** rewritten so a **Steam Deck owner with no O
 
 **Known problems in the current README (verified against code/docs):**
 
-- **Conflicting install URLs** — links to `cantcurecancer/bonsAI` releases but the install zip URL points at `qd313/bonsAI`.
+- ~~**Conflicting install URLs**~~ — **Resolved 2026-08-14.** `cantcurecancer` was this account's former GitHub username, not a second repo; it's now unregistered and was a live risk (see [02-readme-redesign-plan.md § Canonical repo](02-readme-redesign-plan.md#canonical-repo--resolved-2026-08-14-f3)). `qd313/bonsAI` is canonical everywhere.
 - **Stale permissions/power copy** — beta disclaimer and body text still describe **Adjust power limits** / TDP apply via Permissions; removed 2026-07-30 (TDP is suggestion-only per `docs/glossary.md`).
 - **Text-heavy, low visual guidance** — install steps are numbered prose only; no per-step images for Decky install URL, Ollama tab, or first Ask.
 - **Power-user content inline** — model-policy tables, sanitization deep dives, and contributor build notes mixed with first-run setup; should mostly link to `troubleshooting.md` instead.
@@ -102,7 +102,7 @@ You want the repo-root **README.md** rewritten so a **Steam Deck owner with no O
 > **Power-user reader:** Same README should surface a short **“Go deeper”** block linking to `docs/troubleshooting.md` (network, vision, permissions, shortcuts), `docs/knowledge-base.md` (offline KB), `docs/roadmap.md` (planned work), and `docs/development.md` (contributors only).
 >
 > **Known accuracy gaps to fix in any proposal:**
-> - Install URL inconsistency (`cantcurecancer` vs `qd313` release zip on line 12).
+> - ~~Install URL inconsistency~~ — resolved 2026-08-14; `qd313/bonsAI` is canonical.
 > - TDP/power: README still documents **Permissions → Adjust power limits** and apply behavior; shipped product is **read-only suggestions** (permissions cleanup 2026-07-30).
 > - Optional cleanup of copy for removed/planned-removed UI: Search intent packs, Response verification.
 >

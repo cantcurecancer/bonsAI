@@ -17,6 +17,8 @@ import urllib.request
 from dataclasses import dataclass
 from typing import Any, Optional
 
+from backend.tls_ca_fallback import urlopen_with_ca_fallback
+
 STEAM_API_GET_PLAYER_BANS = "https://api.steampowered.com/ISteamUser/GetPlayerBans/v1/"
 VAC_CACHE_TTL_SECONDS = 600.0
 VAC_CACHE_MAX_ENTRIES = 256
@@ -103,7 +105,7 @@ def _fetch_bans_uncached(api_key: str, steamids: list[str], *, timeout_seconds: 
     url = f"{STEAM_API_GET_PLAYER_BANS}?{q}"
     req = urllib.request.Request(url, method="GET")
     try:
-        with urllib.request.urlopen(req, timeout=timeout_seconds) as resp:
+        with urlopen_with_ca_fallback(req, timeout=timeout_seconds) as resp:
             raw = resp.read().decode("utf-8", errors="replace")
     except urllib.error.HTTPError as he:
         code = he.code

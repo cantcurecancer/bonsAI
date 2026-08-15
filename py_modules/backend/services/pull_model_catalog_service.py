@@ -17,9 +17,10 @@ from pathlib import Path
 from typing import Any
 
 from backend.services.ollama_catalog_service import OLLAMA_TAG_RE, is_valid_ollama_pull_tag
+from backend.tls_ca_fallback import urlopen_with_ca_fallback
 
 OVERLAY_REMOTE_URL = (
-    "https://raw.githubusercontent.com/cantcurecancer/bonsAI/main/data/pull-model-catalog-overlay.json"
+    "https://raw.githubusercontent.com/qd313/bonsAI/main/data/pull-model-catalog-overlay.json"
 )
 ALLOWED_HOSTS = frozenset({"raw.githubusercontent.com"})
 MAX_JSON_BYTES = 262_144
@@ -158,7 +159,7 @@ def _write_cache(overlay: dict[str, Any], fetched_at: int) -> None:
 def _fetch_remote_overlay() -> tuple[dict[str, Any] | None, str]:
     req = urllib.request.Request(OVERLAY_REMOTE_URL, method="GET", headers={"Accept": "application/json"})
     try:
-        with urllib.request.urlopen(req, timeout=FETCH_TIMEOUT_S) as resp:
+        with urlopen_with_ca_fallback(req, timeout=FETCH_TIMEOUT_S) as resp:
             host = (getattr(resp, "url", None) or OVERLAY_REMOTE_URL).split("/")[2]
             if host not in ALLOWED_HOSTS:
                 return None, "host_not_allowed"

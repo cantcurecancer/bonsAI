@@ -1620,9 +1620,13 @@ class Plugin:
         ce = getattr(self, "_rag_corpus_cancel_event", None)
         if isinstance(ce, asyncio.Event):
             ce.set()
-        st = dict(self._rag_corpus_download_state)
-        st["cancel_requested"] = True
-        self._rag_corpus_download_state = st
+        # Mutate the existing dict in place rather than rebinding the attribute — the running
+        # download task was handed this exact object by reference (start_rag_corpus_download's
+        # runner()) and keeps writing progress/phase to it. Reassigning self._rag_corpus_download_state
+        # to a new dict here would silently orphan the task's reference: every write after cancel
+        # (phase -> "cancelled", done -> True, error) would land on a dict nothing else can see,
+        # and status polls would show "running" forever.
+        self._rag_corpus_download_state["cancel_requested"] = True
         return {"cancel_requested": True}
 
     async def update_rag_corpus(self):

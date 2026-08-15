@@ -21,5 +21,5 @@ export const LAST_TAB_AT_STORAGE_KEY = "bonsai:last-tab-at";
 export const TAB_RESUME_MODE_STORAGE_KEY = "bonsai:tab-resume-mode";
 export const LOCAL_RUNTIME_BETA_DISMISSED_STORAGE_KEY = "bonsai:local-runtime-beta-dismissed-v1";
 
-export const GITHUB_ISSUES_URL = "https://github.com/cantcurecancer/bonsAI/issues";
+export const GITHUB_ISSUES_URL = "https://github.com/qd313/bonsAI/issues";
 export const OLLAMA_UPSTREAM_REPO_URL = "https://github.com/ollama/ollama";

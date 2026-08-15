@@ -36,6 +36,9 @@ if str(PY_MODULES) not in sys.path:
 from backend.services.knowledge_base_schema import (  # noqa: E402
     CORPUS_ATTRIBUTIONS_FILENAME,
     CORPUS_DB_FILENAME,
+    CORPUS_GITHUB_RELEASE_TAG,
+    CORPUS_GITHUB_REPO,
+    CORPUS_HF_NAMESPACE,
     CORPUS_MANIFEST_FILENAME,
     CORPUS_SCHEMA_VERSION,
     DEFAULT_EMBEDDING_DIM,
@@ -179,8 +182,8 @@ def _attributions_header_lines() -> list[str]:
         "- Strategy and tip cards that name a third-party source are **adaptations** of that",
         "  source, distilled for Deck Q&A — not verbatim wiki pages.",
         "- **Each card carries its own licence** in the database column `source_license`",
-        "  (queryable; also listed below per source). There is no single corpus-wide licence",
-        "  that replaces those per-card terms.",
+        "  (queryable; also listed below per source). That per-card licence is what actually",
+        "  governs what you may do with an individual card.",
         "- **ShareAlike (CC BY-SA / GFDL) cards:** if you adapt or redistribute those cards,",
         "  ShareAlike (or GFDL) binds *your* adaptation of them. Attribution must name the",
         "  source site, the licence, and a link to the material (see the groups below).",
@@ -188,9 +191,11 @@ def _attributions_header_lines() -> list[str]:
         "  that BY deed (no ShareAlike obligation from that card alone).",
         "- **Maintainer-authored** cards (`bonsAI-maintainer`, no `source_url`) credit nobody",
         "  beyond bonsAI; they are not third-party licensed material.",
-        "- **Publish policy (D19):** the first *public* corpus is intended to ship **CC BY 4.0**",
-        "  sources only. A seed/dev build may still list BY-SA or GFDL cards below for QA;",
-        "  those are deferred from first publish until ShareAlike redistribution work is ready.",
+        "- **Publish policy (D20):** the published corpus is distributed as one work under",
+        "  **CC BY-SA 4.0** (the umbrella label required by dataset hosts) — this does not",
+        "  replace the per-card terms above; a card's own licence still governs reuse of that",
+        "  card specifically. GFDL and NonCommercial sources are excluded outright: GFDL does",
+        "  not mix with Creative Commons, and NC does not mix with ShareAlike redistribution.",
         "",
         "## Accuracy",
         "",
@@ -482,11 +487,11 @@ def seed_sample_corpus_legacy(conn: sqlite3.Connection) -> None:
             1,
             1,
             "boss",
-            "King Dodongo",
-            "Weak point: tail when he rolls.",
-            "https://zelda.fandom.com/wiki/King_Dodongo",
-            "GFDL",
-            "1.0",
+            "Queen Gohma",
+            "Weak point: the giant eye. Stun it, then strike the eye directly.",
+            "",
+            "bonsAI-maintainer",
+            "seed-1.0",
             crawled,
         ),
         (
@@ -722,8 +727,12 @@ def build_corpus(out_dir: Path, *, seed: bool) -> dict:
             }
         ],
         "urls": {
-            "huggingface": f"https://huggingface.co/datasets/cantcurecancer/bonsai-knowledge-base/resolve/main/{compressed.name}",
-            "github_release": f"https://github.com/cantcurecancer/bonsAI/releases/download/knowledge-base-{version}/{compressed.name}",
+            # A stable release/dataset address, not one derived from `version` (the date) —
+            # point releases replace the assets under this same tag so the plugin's fixed
+            # discovery URL (DEFAULT_MANIFEST_HF_URL / DEFAULT_MANIFEST_GITHUB_URL) keeps
+            # resolving. `version` is what drives update detection, not the URL.
+            "huggingface": f"https://huggingface.co/datasets/{CORPUS_HF_NAMESPACE}/resolve/main/{compressed.name}",
+            "github_release": f"https://github.com/{CORPUS_GITHUB_REPO}/releases/download/{CORPUS_GITHUB_RELEASE_TAG}/{compressed.name}",
         },
         # Same string as the file on disk (ATTR-2.3) — do not re-read and risk newline drift.
         "attributions_markdown": attributions_text,

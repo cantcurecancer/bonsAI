@@ -86,11 +86,11 @@
     },
     {
       "id": "PARA-S02",
-      "query": "dodongo tail vulnerability n64 dungeon",
+      "query": "gohma eye weak point n64 dungeon",
       "ask_mode": "strategy",
       "domain": "strategy",
       "app_id": "413150",
-      "expect_section": "King Dodongo",
+      "expect_section": "Queen Gohma",
       "notes": "paraphrase EVAL-S02"
     },
     {
@@ -131,11 +131,11 @@
     },
     {
       "id": "PARA-S12",
-      "query": "water level dungeon zelda n64",
+      "query": "invisible floor dungeon zelda n64",
       "ask_mode": "strategy",
       "domain": "strategy",
       "app_id": "413150",
-      "expect_section": "Water Temple",
+      "expect_section": "Shadow Temple invisible floors",
       "notes": "paraphrase EVAL-S12"
     }
   ]

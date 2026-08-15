@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 295,
-  "edgeCount": 693,
+  "fileCount": 296,
+  "edgeCount": 695,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -140,6 +140,13 @@
         "src/utils/ollamaTabLocalSurvival.ts"
       ]
     },
+    "src/components/KnowledgeBaseSection.nomicPull.test.tsx": {
+      "imports": [
+        "src/components/KnowledgeBaseSection.tsx",
+        "src/test-harness/fakeDeckyRpc.ts"
+      ],
+      "importedBy": []
+    },
     "src/components/KnowledgeBaseSection.test.tsx": {
       "imports": [
         "src/components/KnowledgeBaseSection.tsx",
@@ -154,6 +161,7 @@
         "src/utils/settingsPanelScroll.ts"
       ],
       "importedBy": [
+        "src/components/KnowledgeBaseSection.nomicPull.test.tsx",
         "src/components/KnowledgeBaseSection.test.tsx",
         "src/components/OllamaTab.tsx"
       ]
@@ -1875,6 +1883,7 @@
         "src/types/backgroundAsk.ts"
       ],
       "importedBy": [
+        "src/components/KnowledgeBaseSection.nomicPull.test.tsx",
         "src/components/KnowledgeBaseSection.test.tsx",
         "src/components/MainTabPresetAnimatedChips.test.tsx",
         "src/components/SettingsTab.mdns.test.ts",

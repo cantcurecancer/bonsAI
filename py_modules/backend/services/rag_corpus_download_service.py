@@ -34,6 +34,7 @@ from backend.services.knowledge_base_schema import (
     write_manifest,
 )
 from backend.services.knowledge_base_service import close_connection
+from backend.tls_ca_fallback import urlopen_with_ca_fallback
 
 MAX_LOG_TAIL_LINES = 80
 
@@ -72,7 +73,7 @@ def _sha256_file(path: str) -> str:
 
 def _fetch_json_url(url: str, timeout: float = 60.0) -> dict[str, Any]:
     req = urllib.request.Request(url, headers={"User-Agent": "bonsAI/1.0"})
-    with urllib.request.urlopen(req, timeout=timeout) as resp:
+    with urlopen_with_ca_fallback(req, timeout=timeout) as resp:
         return parse_manifest_json(json.loads(resp.read().decode("utf-8")))
 
 
@@ -110,7 +111,7 @@ def _download_file(
     import shutil as _shutil
 
     req = urllib.request.Request(url, headers={"User-Agent": "bonsAI/1.0"})
-    with urllib.request.urlopen(req, timeout=120) as resp:
+    with urlopen_with_ca_fallback(req, timeout=120) as resp:
         total = int(resp.headers.get("Content-Length") or 0)
         done = 0
         os.makedirs(os.path.dirname(dest) or ".", exist_ok=True)
@@ -131,10 +132,12 @@ def _download_file(
 
 
 def _free_bytes(path: str) -> int:
+    # os.statvfs is POSIX-only (absent on Windows) — the caller already treats a 0 result as
+    # "couldn't tell, skip the check", so any failure to read free space is equally soft here.
     try:
         st = os.statvfs(path)
         return int(st.f_bavail * st.f_frsize)
-    except OSError:
+    except (OSError, AttributeError):
         return 0
 
 

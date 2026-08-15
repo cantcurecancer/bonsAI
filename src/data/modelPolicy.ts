@@ -5,7 +5,7 @@
  * Solves: Shared frontend vocabulary aligned with backend model source classification.
  * Does not: Classify individual Ollama tags — backend model policy service returns source_class.
  */
-const GITHUB_REPO_BASE = "https://github.com/cantcurecancer/bonsAI";
+const GITHUB_REPO_BASE = "https://github.com/qd313/bonsAI";
 
 /** README `### Model policy tiers` anchor on GitHub. */
 export const MODEL_POLICY_README_URL = `${GITHUB_REPO_BASE}/blob/main/README.md#model-policy-tiers`;

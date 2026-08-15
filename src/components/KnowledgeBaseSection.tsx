@@ -93,7 +93,7 @@ const RagCorpusStoragePickerModal: React.FC<StoragePickerModalProps> = ({
     strDescription={
       <div className="bonsai-prose" style={{ fontSize: 12, lineHeight: 1.45, color: "#cdd9e6", textAlign: "left" }}>
         <div style={{ marginBottom: 10 }}>
-          Wiki-derived strategy cards and compat notes (~5 GB). No Ask text is uploaded.
+          Wiki-derived strategy cards and compat notes (small — well under 5 MB). No Ask text is uploaded.
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           <div className="bonsai-settings-focus-btn-host" style={{ width: "100%" }}>
@@ -150,9 +150,11 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
   const [status, setStatus] = useState<RagCorpusStatus | null>(null);
   const [downloadBusy, setDownloadBusy] = useState(false);
   const [cancelBusy, setCancelBusy] = useState(false);
+  const [nomicPullBusy, setNomicPullBusy] = useState(false);
   const primaryBtnRefLocal = useRef<HTMLButtonElement | null>(null);
   const removeBtnRef = useRef<HTMLButtonElement | null>(null);
   const cancelBtnRef = useRef<HTMLButtonElement | null>(null);
+  const nomicBtnRef = useRef<HTMLButtonElement | null>(null);
   const toggleHostRefLocal = useRef<HTMLDivElement | null>(null);
   const toggleHost = toggleHostRef ?? toggleHostRefLocal;
 
@@ -180,6 +182,11 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
     return Boolean(cancelBtnRef.current);
   }, []);
 
+  const focusNomicBtn = useCallback((): boolean => {
+    nomicBtnRef.current?.focus();
+    return Boolean(nomicBtnRef.current);
+  }, []);
+
   /**
    * Down from the toggle: while a download runs the primary button is disabled and
    * Remove is not rendered, so Cancel is the only stop the row has.
@@ -188,6 +195,16 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
     if (downloadBusy && focusCancelBtn()) return true;
     return focusPrimaryBtn();
   }, [downloadBusy, focusCancelBtn, focusPrimaryBtn]);
+
+  /** Down from the toggle: the nomic pull button sits between it and the action row
+   * whenever the hint is showing, so it must be offered focus first. */
+  const focusBelowToggle = useCallback(
+    (showNomic: boolean): boolean => {
+      if (showNomic && focusNomicBtn()) return true;
+      return focusActionRow();
+    },
+    [focusActionRow, focusNomicBtn],
+  );
 
   const handleMoveUpFromToggle = useCallback((): boolean => {
     return tryMoveUpWithPanelScroll(toggleHost.current, () => onMoveUpToConnection?.() ?? false);
@@ -227,7 +244,7 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
         sessionStorage.setItem(KB_NOMIC_HINT_SESSION_KEY, "1");
         toaster.toast({
           title: "Keyword + meaning search",
-          body: "Install nomic-embed-text in Ollama for better strategy retrieval.",
+          body: "Pull nomic-embed-text below for better strategy retrieval.",
           duration: 8000,
         });
       }
@@ -296,7 +313,7 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
       }
       toaster.toast({
         title: "Downloading knowledge base",
-        body: "Large offline corpus (~5 GB). Stay on Wi‑Fi until finished.",
+        body: "Offline strategy corpus — small download, should finish quickly.",
         duration: 6000,
       });
     } catch (e: unknown) {
@@ -304,6 +321,39 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
       const msg = formatDeckyRpcError(e);
       toaster.toast({ title: "Download failed", body: msg, duration: 8000 });
     }
+  };
+
+  /**
+   * Explicit, user-pressed pull — never automatic. pull_ollama_models only pulls onto
+   * this Deck's own local Ollama (gated server-side on "Ollama on this Deck"); a LAN/PC
+   * Ollama host can't be pulled onto remotely, so that case surfaces as a plain rejection
+   * reason rather than a client-side pre-check duplicating the server's gate.
+   */
+  const pullNomicEmbed = () => {
+    if (nomicPullBusy) return;
+    setNomicPullBusy(true);
+    void callDeckyWithTimeout<[string[]], { accepted?: boolean; reason?: string }>(
+      "pull_ollama_models",
+      [["nomic-embed-text"]],
+      DECKY_RPC_TIMEOUT_MS,
+    )
+      .then((out) => {
+        if (out?.accepted) {
+          toaster.toast({
+            title: "Pulling nomic-embed-text",
+            body: "Watch progress in Ollama → Where AI runs.",
+            duration: 6000,
+          });
+        } else {
+          toaster.toast({
+            title: "Pull not started",
+            body: out?.reason ?? "Setup busy, or Ollama isn't running on this Deck.",
+            duration: 8000,
+          });
+        }
+      })
+      .catch((e) => toaster.toast({ title: "Pull failed", body: formatDeckyRpcError(e), duration: 8000 }))
+      .finally(() => setNomicPullBusy(false));
   };
 
   /**
@@ -350,18 +400,30 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
   };
 
   const runUpdate = () => {
-    void callDeckyWithTimeout<[], { ok?: boolean; error?: string }>("update_rag_corpus", [], DECKY_RPC_TIMEOUT_MS)
+    void callDeckyWithTimeout<[], { ok?: boolean; updated?: boolean; version?: string; error?: string }>(
+      "update_rag_corpus",
+      [],
+      DECKY_RPC_TIMEOUT_MS,
+    )
       .then((out) => {
-        if (out?.ok) {
+        if (!out?.ok) {
+          toaster.toast({ title: "Update failed", body: out?.error ?? "Unknown error", duration: 8000 });
+          return;
+        }
+        if (out.updated === false) {
           toaster.toast({
-            title: "Update check",
-            body: "Download started or already current.",
+            title: "Already up to date",
+            body: out.version ? `Version ${out.version} is the latest.` : "No update available.",
             duration: 4000,
           });
-          setDownloadBusy(true);
-        } else {
-          toaster.toast({ title: "Update failed", body: out?.error ?? "Unknown error", duration: 8000 });
+          return;
         }
+        toaster.toast({
+          title: "Update found",
+          body: out.version ? `Downloading version ${out.version}…` : "Downloading the latest corpus…",
+          duration: 4000,
+        });
+        setDownloadBusy(true);
       })
       .catch((e) => toaster.toast({ title: "Update failed", body: formatDeckyRpcError(e), duration: 8000 }));
   };
@@ -429,7 +491,7 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
             onChange={(checked) => setUseLocalKnowledgeBase(checked)}
             {...deckNav({
               onMoveUp: () => handleMoveUpFromToggle(),
-              onMoveDown: () => focusActionRow(),
+              onMoveDown: () => focusBelowToggle(showNomicHint),
             })}
           />
         </div>
@@ -447,17 +509,43 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
           ) : (
             <>
               <span style={{ color: "#ffd299" }}>Not installed — download to enable grounded strategy help.</span>
-              <span style={{ display: "block", marginTop: 6, color: "#9fb7d5" }}>
-                Public download is not live yet. For Phase 1 QA: run <strong>build.ps1</strong> (deploys a seed
-                corpus), enable <strong>Developer</strong> tab in Settings, then Developer →{" "}
-                <strong>Install seed knowledge base</strong>.
-              </span>
             </>
           )}
           {showNomicHint ? (
-            <span style={{ display: "block", marginTop: 6, color: "#ffd299" }}>
-              Install <strong>nomic-embed-text</strong> in Ollama for Keyword + meaning search.
-            </span>
+            <div style={{ marginTop: 6 }}>
+              <span style={{ display: "block", color: "#ffd299" }}>
+                Install <strong>nomic-embed-text</strong> in Ollama for Keyword + meaning search.
+              </span>
+              <div className="bonsai-settings-focus-btn-host" style={{ marginTop: 6, maxWidth: 220 }}>
+                <Focusable
+                  onOKButton={pullNomicEmbed}
+                  style={{ width: "100%", display: "flex", alignItems: "stretch" }}
+                >
+                  <Button
+                    ref={(el) => {
+                      nomicBtnRef.current = el as HTMLButtonElement | null;
+                    }}
+                    className="bonsai-settings-focus-btn"
+                    onClick={pullNomicEmbed}
+                    disabled={nomicPullBusy}
+                    style={{
+                      ...SETTINGS_GLASS_BTN,
+                      width: "100%",
+                      minHeight: KB_ACTION_ROW_MIN_HEIGHT,
+                      height: KB_ACTION_ROW_MIN_HEIGHT,
+                      boxSizing: "border-box",
+                      fontSize: 11,
+                    }}
+                    {...deckNav({
+                      onMoveUp: () => focusKbToggle(),
+                      onMoveDown: () => focusActionRow(),
+                    })}
+                  >
+                    {nomicPullBusy ? "Starting…" : "Pull nomic-embed-text"}
+                  </Button>
+                </Focusable>
+              </div>
+            </div>
           ) : null}
           {progress ? <span style={{ display: "block", marginTop: 6 }}>{progress}</span> : null}
           {wasCancelled && !downloadBusy ? (
@@ -505,7 +593,7 @@ export const KnowledgeBaseSection: React.FC<Props> = ({
                   justifyContent: "flex-start",
                 }}
                 {...deckNav({
-                  onMoveUp: () => focusKbToggle(),
+                  onMoveUp: () => (showNomicHint ? focusNomicBtn() : focusKbToggle()),
                   onMoveDown: () => onMoveDownFromRemove?.() ?? false,
                   onMoveRight: () =>
                     downloadBusy ? focusCancelBtn() : installed ? focusRemoveBtn() : false,

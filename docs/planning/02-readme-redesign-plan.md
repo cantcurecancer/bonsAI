@@ -23,7 +23,7 @@ come before the outline.
 |---|---------|----------|
 | **F1** | **The power-limit permission does not exist.** `adjust_power_limits`, `allowPowerLimit`, and `power_limit` return **zero** matches repo-wide. The Permissions tab ships **four** toggles: Read game & screenshot context (inline), Save files to Desktop, Steam ban lookup, Voice input (microphone). | [PermissionsTab.tsx:16-60](../../src/components/PermissionsTab.tsx#L16) |
 | **F2** | **Three files carry the stale TDP claim**, not one. README L5, L63, L80 — and the in-plugin copy at [pluginQuickStartInstructions.tsx:66-67](../../src/data/pluginQuickStartInstructions.tsx#L66) ("optional **Adjust power limits** in Permissions"). Fixing README alone leaves the plugin lying to the user. | grep `power limits` |
-| **F3** | **Install URL is broken three ways, not two.** README L12 links releases at `cantcurecancer/bonsAI` but the zip at `qd313/bonsAI`. `git remote -v` is a **third** name: `cantcurecancer/DeckySettingsSearch.git`. Repo-wide counts: 24 × `cantcurecancer/bonsAI`, 2 × `qd313/bonsAI`. **This needs a maintainer call before any README edit** (§ 7). | `git remote -v`; grep |
+| **F3** | ~~Install URL is broken three ways, not two.~~ **Resolved.** The GitHub account is `qd313` (renamed from `cantcurecancer`); the old name is unregistered and was claimable by anyone, which made it a live supply-chain risk (the RAG corpus manifest and the Pull Models overlay both fetched from it at runtime). Maintainer call (2026-08-14): `qd313` is canonical everywhere; `cantcurecancer` is being defensively registered on a throwaway account so it can't be taken. See § 7. | `git remote -v`; grep |
 | **F4** | **Search intent packs have no UI.** No user-facing string in `src/components/` or `src/index.tsx`; only `useIntentPacks.ts` / `intentPackSearch.ts` remain, and [troubleshooting.md:630](../troubleshooting.md) titles the section "What they do (**backend still present**)". Roadmap carries `★ Intent packs later review`. README L57 describes a Settings control the user cannot see. | grep; [roadmap.md § Near-term](../roadmap.md#planned) |
 | **F5** | **Response verification has no UI either.** Zero matches for `erification` in `src/components/*.tsx` or `src/index.tsx`. README L74 is describing removed surface. | grep |
 | **F6** | **`knowledge-base.md` is maintainer-facing, not a power-user link.** Its own line 3 routes users elsewhere: "User setup: troubleshooting.md § Knowledge base". The brief assumed it belonged in the power-user funnel; it belongs in the collapsed contributors block, and the user-facing KB link is [troubleshooting § Knowledge base](../troubleshooting.md#knowledge-base-offline-strategy-cards). | [knowledge-base.md:3](../knowledge-base.md) |
@@ -274,32 +274,32 @@ punctuation. Prose is not a good test subject.
 
 ## 7. Install and release hygiene
 
-### Canonical repo — blocked on a maintainer decision (F3)
+### Canonical repo — resolved 2026-08-14 (F3)
 
-Three names are in play and **no README edit should land until one is picked**,
-because the install URL is the single most damaging thing in the file to get wrong:
+`cantcurecancer` was never a second repo — it is this account's **former** GitHub
+username. `gh api user` confirms the account is `qd313` (id 17815999); GitHub's
+rename redirect was the only reason `cantcurecancer/bonsAI` URLs still resolved.
+`api.github.com/users/cantcurecancer` returns **404** — the name was unregistered
+and claimable by anyone, which was a live risk: the RAG corpus manifest and the
+Pull Models catalog overlay both fetched from that address at runtime, so
+claiming it would have let a stranger control what those features served.
 
-| Name | Where it appears | Count |
-|---|---|---|
-| `cantcurecancer/DeckySettingsSearch` | `git remote -v` — the actual push target | 1 (authoritative for git) |
-| `cantcurecancer/bonsAI` | Docs and roadmap issue links | 24 |
-| `qd313/bonsAI` | README L12 zip URL only | 2 |
+**Decision:** `qd313/bonsAI` is canonical, not the old name. All ~24 doc/code
+references were swept to `qd313` (2026-08-14). `cantcurecancer` is being
+registered on a throwaway account defensively, so it can't be claimed by someone
+else — it is **not** being used as a repo name. The old recommendation on this
+page (rename *to* `cantcurecancer`) is superseded; do not follow it.
 
-**Recommendation:** rename the GitHub repo to `cantcurecancer/bonsAI`. GitHub
-redirects the old path for both git and release-asset URLs, so nothing breaks;
-it makes the 24 existing doc links correct rather than aspirational; and it
-matches `plugin.json` `"name": "bonsAI"`. Then the canonical install URL is:
+Canonical install URL:
 
 ```
-https://github.com/cantcurecancer/bonsAI/releases/latest/download/bonsAI.zip
+https://github.com/qd313/bonsAI/releases/latest/download/bonsAI.zip
 ```
 
-Follow-up once decided: sweep the 2 `qd313/bonsAI` references
-(README L12, and the note in [roadmap-planning-questions.md:66](roadmap-planning-questions.md#L66)),
-and confirm the release asset is actually named `bonsAI.zip` — `/latest/download/`
-404s on a filename mismatch, which reads to a new user as "the plugin is gone".
-Note `qd313/decky-plugin-studio` (11 refs) is a **different, real** repo — do not
-sweep it.
+Still worth confirming when this README rewrite happens: that the release asset
+is actually named `bonsAI.zip` — `/latest/download/` 404s on a filename mismatch,
+which reads to a new user as "the plugin is gone". Note `qd313/decky-plugin-studio`
+(11 refs) is a **different, real** repo — do not sweep it.
 
 ### Hero asset versioning
 

@@ -11,7 +11,7 @@ import { TIER1_ESSENTIALS_TAG } from "../data/deckEssentialsTags";
 
 const DISCLAIMER_STORAGE_KEY = "bonsai:disclaimer-accepted";
 const LOCAL_RUNTIME_BETA_DISMISSED_STORAGE_KEY = "bonsai:local-runtime-beta-dismissed-v1";
-const GITHUB_ISSUES_URL = "https://github.com/cantcurecancer/bonsAI/issues";
+const GITHUB_ISSUES_URL = "https://github.com/qd313/bonsAI/issues";
 
 export type DeckyModalSurvivalHooks = {
   onBeforeDeckyModal: () => void;

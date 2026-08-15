@@ -29,12 +29,18 @@ DEFAULT_EMBEDDING_DIM = 768
 # prefixed query against unprefixed documents returns plausible garbage rather than an error.
 EMBEDDING_VARIANT = "nomic-prefixed-v1"
 
-# Manifest URL placeholders — maintainer publishes assets; plugin fetches at runtime.
+# Publish targets — single source of truth. build_rag_db.py imports these rather than
+# hardcoding its own copies, so the tag baked into published asset URLs can never drift from
+# the tag this module (and therefore every client) looks for.
+CORPUS_HF_NAMESPACE = "qd313/bonsai-knowledge-base"
+CORPUS_GITHUB_REPO = "qd313/bonsAI"
+CORPUS_GITHUB_RELEASE_TAG = "knowledge-base-v1"
+
 DEFAULT_MANIFEST_HF_URL = (
-    "https://huggingface.co/datasets/cantcurecancer/bonsai-knowledge-base/resolve/main/corpus-manifest.json"
+    f"https://huggingface.co/datasets/{CORPUS_HF_NAMESPACE}/resolve/main/corpus-manifest.json"
 )
 DEFAULT_MANIFEST_GITHUB_URL = (
-    "https://github.com/cantcurecancer/bonsAI/releases/download/knowledge-base-v0/corpus-manifest.json"
+    f"https://github.com/{CORPUS_GITHUB_REPO}/releases/download/{CORPUS_GITHUB_RELEASE_TAG}/corpus-manifest.json"
 )
 
 TRUST_TIER_WIKI_VERIFIED = "wiki_verified"

@@ -194,13 +194,15 @@ class FixtureWideInvariantTests(unittest.TestCase):
     def test_recognition_does_not_regress_below_the_measured_floor(self):
         """Pinned at the measured number so a pattern edit cannot quietly undo the fix.
 
-        19 of 169 on phrasing alone, up from 8 with 4 of those junk. It is not 100 and is not
-        meant to be: the rest are description-style queries that need the gazetteer, which only
-        has content once cards attach.
+        18 of 179 on phrasing alone (re-measured 2026-08-14 after the two GFDL-sourced OoT
+        queries — "how to beat king dodongo" / "water temple water level order" — were
+        dropped from the fixture per D20; the King Dodongo row was one of the recognized
+        ones). It is not 100 and is not meant to be: the rest are description-style queries
+        that need the gazetteer, which only has content once cards attach.
         """
         strategy = [r for r in self.rows if r["domain"] == "strategy"]
         found = [r for r in strategy if extract_strategy_asked_entity(r["query"])]
-        self.assertGreaterEqual(len(found), 19)
+        self.assertGreaterEqual(len(found), 18)
 
 
 if __name__ == "__main__":

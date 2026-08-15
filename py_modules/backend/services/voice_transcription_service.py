@@ -25,6 +25,7 @@ from collections import deque
 from typing import Any, Callable, Optional
 
 from backend.services.local_ollama_setup_service import _env_for_host_system_tools
+from backend.tls_ca_fallback import urlopen_with_ca_fallback
 
 SAMPLE_RATE = 16000
 CHANNELS = 1
@@ -758,7 +759,7 @@ def _download_model_file(
             pass
 
     req = urllib.request.Request(url, headers={"User-Agent": "bonsAI/1.0"})
-    with urllib.request.urlopen(req, timeout=120) as resp:
+    with urlopen_with_ca_fallback(req, timeout=120) as resp:
         total = int(resp.headers.get("Content-Length") or 0)
         read = 0
         chunk_size = 256 * 1024

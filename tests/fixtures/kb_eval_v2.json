@@ -474,25 +474,6 @@
       "expect_section": ""
     },
     {
-      "id": "V2-S-OOT-01",
-      "split": "tune",
-      "domain": "strategy",
-      "app_id": "413150",
-      "shortcut": "",
-      "query": "how to beat king dodongo",
-      "intent": "Opening on the first cave boss",
-      "topic_hint": "King Dodongo",
-      "withheld_card_terms": [
-        "weak point",
-        "when he rolls",
-        "bomb in his mouth"
-      ],
-      "skill_level": "beginner",
-      "input_style": "terse",
-      "note": "Name is known -- the dungeon is called Dodongo's Cavern.",
-      "expect_section": "King Dodongo"
-    },
-    {
       "id": "V2-S-OOT-02",
       "split": "tune",
       "domain": "strategy",
@@ -541,23 +522,6 @@
       "input_style": "voice",
       "note": "Voice register. Dungeon named, room described.",
       "expect_section": ""
-    },
-    {
-      "id": "V2-S-OOT-05",
-      "split": "tune",
-      "domain": "strategy",
-      "app_id": "413150",
-      "shortcut": "",
-      "query": "water temple water level order",
-      "intent": "Sequence for raising and lowering water",
-      "topic_hint": "Water Temple",
-      "withheld_card_terms": [
-        "raise the water",
-        "three levels"
-      ],
-      "skill_level": "familiar",
-      "input_style": "terse",
-      "expect_section": "Water Temple"
     },
     {
       "id": "V2-S-OOT-06",

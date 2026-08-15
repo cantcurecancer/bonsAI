@@ -27,7 +27,7 @@ Install Cursor on the Deck (Flatpak or AppImage from [cursor.com](https://cursor
 
 ```bash
 cd ~
-git clone https://github.com/cantcurecancer/bonsAI.git
+git clone https://github.com/qd313/bonsAI.git
 cd bonsAI
 ```
 

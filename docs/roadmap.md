@@ -75,7 +75,7 @@ Code-fixed or shipped; on-Deck / qualitative QA still owed. Detail: [testing.md]
 
 Stars are **effort/risk**. Grouped by **theme**; within each lane sorted ascending by ★.
 
-**GitHub tracking:** Items rated **★★★★★** or **★★★★★★** include a placeholder link to **[bonsAI Issues](https://github.com/cantcurecancer/bonsAI/issues)** (replace with a specific issue URL when created).
+**GitHub tracking:** Items rated **★★★★★** or **★★★★★★** include a placeholder link to **[bonsAI Issues](https://github.com/qd313/bonsAI/issues)** (replace with a specific issue URL when created).
 
 ### Ask / reply (v0.5.0 — token streaming live markdown, spoiler confidence chip, spoiler constitution runtime, thinking blurbs, reply-language / routing merge RPCs, Caveman reply style, …)
 
@@ -123,18 +123,18 @@ Stars are **effort/risk**. Grouped by **theme**; within each lane sorted ascendi
   - **Goal:** Live session facts + user-editable stash notes for Ask; no embeddings/cloud.
   - **Not in scope:** vector DBs; cloud sync.
 - ★★★★★ **Deck health snapshot** (full diagnostics + Ollama)
-  - **GitHub:** [bonsAI Issues](https://github.com/cantcurecancer/bonsAI/issues) — issue TBD.
+  - **GitHub:** [bonsAI Issues](https://github.com/qd313/bonsAI/issues) — issue TBD.
   - **Goal:** Read-only diagnostics dump to Desktop; Magic Ask `bonsai:diagnostics`.
 - ★★★★★ **Local reply TTS** (Phase 1–2 character voice)
-  - **GitHub:** [bonsAI Issues](https://github.com/cantcurecancer/bonsAI/issues) — issue TBD.
+  - **GitHub:** [bonsAI Issues](https://github.com/qd313/bonsAI/issues) — issue TBD.
   - **Goal:** Phase 1 offline TTS play/stop; Phase 2 character-aligned read-aloud (legal gate).
 - ★★★★★ **Named chat slots** (labeled threads — redesign only)
-  - **GitHub:** [bonsAI Issues](https://github.com/cantcurecancer/bonsAI/issues) — issue TBD.
+  - **GitHub:** [bonsAI Issues](https://github.com/qd313/bonsAI/issues) — issue TBD.
   - **Goal:** Up to 5 named, persistent chats with Main-tab LB/RB carousel (option C). Do not re-ship old mini-list picker.
   - **Status:** Code landed 2026-08-09 (storage, RPC, row UI). **On-Deck QA open** — all **CHAT-SLOTS-V2-01…06** must pass before Completed. **P-0 bumper spike** result still pending on device ([major-redesign.md](major-redesign.md) § 7 R1).
   - **Design:** [major-redesign.md](major-redesign.md), [07-named-chat-slots-postmortem.md](planning/07-named-chat-slots-postmortem.md).
 - ★★★★★ **On-Deck model benchmark** (measured routing order)
-  - **GitHub:** [bonsAI Issues](https://github.com/cantcurecancer/bonsAI/issues) — issue TBD.
+  - **GitHub:** [bonsAI Issues](https://github.com/qd313/bonsAI/issues) — issue TBD.
   - **Goal:** Rank installed models by measured speed/completion; offer as try order (with confirmation).
   - **Depends on:** shipped routing pickers; overlaps **Dynamic keep-alive** measurements.
   - **Source:** [13-roadmap-feature-ideas.md](planning/13-roadmap-feature-ideas.md) § C1.
@@ -165,17 +165,17 @@ Stars are **effort/risk**. Grouped by **theme**; within each lane sorted ascendi
   - **Status:** Discovery locked 2026-07-30; docs only. [knowledge-base.md](knowledge-base.md) § Phase 4.
 - ★★★★ **RAG Deck query — public publish (Phase 6)**
   - **Goal:** First public versioned corpus + manifest after Phase 5 + legal scrub.
-  - **Status:** Legal scrub plan [15-corpus-licensing-attribution-plan.md](planning/15-corpus-licensing-attribution-plan.md) **DONE** 2026-08-09 (Stages 1–5). Remaining Phase 6 work is packaging/HF publish + on-Deck **KB-ATTRIB-02**. [knowledge-base.md](knowledge-base.md) § Phase 6 / Source attribution.
+  - **Status:** Legal scrub **DONE** 2026-08-09 (plan 15, Stages 1–5); **D20** (2026-08-14) reopened D19 to include ShareAlike sources, corpus ships as one CC BY-SA 4.0 work. Packaging/publish tooling **DONE** 2026-08-14: `scripts/publish_corpus.py` (license gate + manifest self-consistency check, verified against a real build), `tests/test_rag_corpus_download.py` (10 tests — the download path had zero coverage before this), stable `qd313` HF/GitHub addresses (`knowledge_base_schema.py`), UI copy corrected (removed dev-only placeholder text, fixed the "~5 GB" claim — real corpus is ~1 MB). Fixed along the way: a live repo-identity hole (stale `cantcurecancer` GitHub username used at runtime by the corpus manifest fetch and the Pull Models overlay — now `qd313` everywhere), a Windows `os.statvfs` crash in the download path, and a cancel-state bug where cancelling a download orphaned the running task's progress reference. **Remaining:** actually create the `qd313/bonsai-knowledge-base` HF dataset repo and run `publish_corpus.py --push-hf --push-github` (one-time setup + first push, by hand — not automated), then on-Deck **KB-ATTRIB-02** / **KB-SMOKE-01** / **KB-DOWNLOAD**. [knowledge-base.md](knowledge-base.md) § Phase 6 / Source attribution.
 - ★★★★ **RAG Deck query — retrieval infra (Phase 7)**
   - **Goal:** Optional sqlite-vss/ANN, auto-pull nomic, RRF extensions, vision→KB, demote, packs, intent retrieval.
   - **Status:** FTS+vector shipped in remediation; remainder docs only. [knowledge-base.md](knowledge-base.md) § Phase 7.
 - ★★★★★ **Community tip contribution** (corpus inbound path)
-  - **GitHub:** [bonsAI Issues](https://github.com/cantcurecancer/bonsAI/issues) — issue TBD.
+  - **GitHub:** [bonsAI Issues](https://github.com/qd313/bonsAI/issues) — issue TBD.
   - **Goal:** Reply → **Suggest as a tip** writes schema-valid card to Desktop + GitHub attach URL.
   - **Depends on:** **RAG Phase 6** public publish.
   - **Source:** [13-roadmap-feature-ideas.md](planning/13-roadmap-feature-ideas.md) § C2.
 - ★★★★★★ **RAG Deck query — catalog corpus (Phase 8)**
-  - **GitHub:** [bonsAI Issues](https://github.com/cantcurecancer/bonsAI/issues) — issue TBD.
+  - **GitHub:** [bonsAI Issues](https://github.com/qd313/bonsAI/issues) — issue TBD.
   - **Goal:** Large offline catalog after Phase 6 publish (~top 1000 Steam, ~100 Deck, emulated slice).
   - **Status:** Locked intent only. [knowledge-base.md](knowledge-base.md) § Phase 8.
   - **Depends on:** Phase 6 + likely Phase 7 infra.
@@ -187,10 +187,10 @@ Stars are **effort/risk**. Grouped by **theme**; within each lane sorted ascendi
   - **Status:** Discovery locked; docs only. [web-permission-discovery.md](planning/web-permission-discovery.md).
   - **Depends on:** Capability Permission Center; Kids master lock (shipped — forces Web off when that key lands).
 - ★★★★★ **QAMP Phase 2 profiles** (experimental Steam opt-in)
-  - **GitHub:** [bonsAI Issues](https://github.com/cantcurecancer/bonsAI/issues) — issue TBD.
+  - **GitHub:** [bonsAI Issues](https://github.com/qd313/bonsAI/issues) — issue TBD.
   - **Status:** Backlog-only. Phase 1 verification in [Verify](#verify).
 - ★★★★★ **VAC Phase 2 opponent IDs** (lobby/session API research)
-  - **GitHub:** [bonsAI Issues](https://github.com/cantcurecancer/bonsAI/issues) — issue TBD.
+  - **GitHub:** [bonsAI Issues](https://github.com/qd313/bonsAI/issues) — issue TBD.
   - **Status:** Phase 1 complete; on-device QA in [Verify](#verify).
   - **Goal:** Surface live opponent Steam identities for ban checks when metadata allows.
 
@@ -202,30 +202,30 @@ Stars are **effort/risk**. Grouped by **theme**; within each lane sorted ascendi
   - **Goal:** Parse controller VDF configs for actionable control context.
   - **Not in scope:** editing/writing controller configs.
 - ★★★★★ **Steam Controller copilot** (Ibex gen-2)
-  - **GitHub:** [bonsAI Issues](https://github.com/cantcurecancer/bonsAI/issues) — issue TBD.
+  - **GitHub:** [bonsAI Issues](https://github.com/qd313/bonsAI/issues) — issue TBD.
   - **Goal:** AI copy tuned to gen-2 hardware + Steam Input–aligned suggestions.
 - ★★★★★ **Wake-word listening** (beta; Deck first)
-  - **GitHub:** [bonsAI Issues](https://github.com/cantcurecancer/bonsAI/issues) — issue TBD.
+  - **GitHub:** [bonsAI Issues](https://github.com/qd313/bonsAI/issues) — issue TBD.
   - **Goal:** Opt-in always-on local wake **bonsAI** → STT → quiet Ask.
   - **Depends on:** Whisper voice Ask; Reply ready toast; Voice STT session daemon (shipped).
   - **Feasibility:** [10-wake-word-listening-feasibility.md](planning/10-wake-word-listening-feasibility.md).
 - ★★★★★★ **Deep mod AI hints** (install paths + compatdata)
-  - **GitHub:** [bonsAI Issues](https://github.com/cantcurecancer/bonsAI/issues) — issue TBD.
+  - **GitHub:** [bonsAI Issues](https://github.com/qd313/bonsAI/issues) — issue TBD.
   - **Goal:** Detect mod frameworks/files; mod-aware AI guidance. [12-deep-mod-ai-hints-feasibility.md](planning/12-deep-mod-ai-hints-feasibility.md).
 - ★★★★★★ **In-game answer surface** (no-QAM reply; overlay research)
-  - **GitHub:** [bonsAI Issues](https://github.com/cantcurecancer/bonsAI/issues) — issue TBD.
+  - **GitHub:** [bonsAI Issues](https://github.com/qd313/bonsAI/issues) — issue TBD.
   - **Goal:** Read answer without leaving game. Full overlay upstream-gated; unblocked slice: toast carries ~2 lines (suppress Strategy/fenced replies).
   - **Source:** [13-roadmap-feature-ideas.md](planning/13-roadmap-feature-ideas.md) § C3.
 - ★★★★★★ **Native QAM shortcut tile** (under Decky; upstream research)
-  - **GitHub:** [bonsAI Issues](https://github.com/cantcurecancer/bonsAI/issues) — issue TBD.
+  - **GitHub:** [bonsAI Issues](https://github.com/qd313/bonsAI/issues) — issue TBD.
   - **Goal:** Separate QAM left-rail entry beneath Decky Loader icon.
   - **Feasibility:** [11-native-qam-tile-feasibility.md](planning/11-native-qam-tile-feasibility.md).
 - ★★★★★★ **Remote Play diagnostics layer** (streaming host/client)
-  - **GitHub:** [bonsAI Issues](https://github.com/cantcurecancer/bonsAI/issues) — issue TBD.
+  - **GitHub:** [bonsAI Issues](https://github.com/qd313/bonsAI/issues) — issue TBD.
   - **Goal:** Streamed gameplay answers weight encode latency and host-vs-client fixes.
   - **Related:** noted (not folded) in [09-steam-frame-companion-feasibility.md](planning/09-steam-frame-companion-feasibility.md) § B8.
 - ★★★★★★ **Steam Frame companion UX** (VR / LAN Deck)
-  - **GitHub:** [bonsAI Issues](https://github.com/cantcurecancer/bonsAI/issues) — issue TBD.
+  - **GitHub:** [bonsAI Issues](https://github.com/qd313/bonsAI/issues) — issue TBD.
   - **Goal:** Research-first companion workflows for Steam Frame. [09-steam-frame-companion-feasibility.md](planning/09-steam-frame-companion-feasibility.md).
 
 ---

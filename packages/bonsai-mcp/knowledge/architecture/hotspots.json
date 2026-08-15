@@ -2,12 +2,12 @@
   "hotspots": [
     {
       "path": "main.py",
-      "lines": 3081,
+      "lines": 3085,
       "role": "Decky RPC entrypoints and orchestration"
     },
     {
       "path": "py_modules/backend/services/voice_transcription_service.py",
-      "lines": 1523,
+      "lines": 1524,
       "role": ""
     },
     {
@@ -86,6 +86,11 @@
       "role": ""
     },
     {
+      "path": "src/components/KnowledgeBaseSection.tsx",
+      "lines": 700,
+      "role": ""
+    },
+    {
       "path": "src/hooks/useBonsaiAskOrchestration.test.ts",
       "lines": 678,
       "role": ""
@@ -98,11 +103,6 @@
     {
       "path": "src/styles/sections/section-6.ts",
       "lines": 635,
-      "role": ""
-    },
-    {
-      "path": "src/components/KnowledgeBaseSection.tsx",
-      "lines": 612,
       "role": ""
     },
     {
@@ -141,13 +141,13 @@
       "role": ""
     },
     {
-      "path": "src/styles/sections/gamepadAndPullModels.ts",
+      "path": "py_modules/backend/services/knowledge_base_schema.py",
       "lines": 470,
       "role": ""
     },
     {
-      "path": "py_modules/backend/services/knowledge_base_schema.py",
-      "lines": 464,
+      "path": "src/styles/sections/gamepadAndPullModels.ts",
+      "lines": 470,
       "role": ""
     },
     {

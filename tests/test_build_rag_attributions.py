@@ -203,9 +203,15 @@ class SeedCorpusAttributionsIntegrationTests(unittest.TestCase):
             on_disk = path.read_text(encoding="utf-8")
             self.assertEqual(manifest.get("attributions_markdown"), on_disk)
             self.assertIn("theportalwiki.com", on_disk)
-            self.assertIn("zelda.fandom.com", on_disk)
-            self.assertIn("GFDL", on_disk)
+            self.assertIn("left4dead.fandom.com", on_disk)
+            self.assertIn("CC-BY-SA-3.0", on_disk)
             self.assertIn("## May I redistribute this corpus?", on_disk)
+            # zelda.fandom.com (GFDL) is excluded from the seed entirely — GFDL does not mix
+            # with the corpus's CC BY-SA 4.0 whole-work licence (D20). The word "GFDL" still
+            # appears in the generic ShareAlike-explainer boilerplate, so check the actual
+            # per-source listing instead of the raw substring.
+            self.assertNotIn("zelda.fandom.com", on_disk)
+            self.assertNotIn("### zelda.fandom.com", on_disk)
             # Adding a card would change the file — prove the generator read the DB.
             conn = sqlite3.connect(str(out / "corpus.db"))
             try:

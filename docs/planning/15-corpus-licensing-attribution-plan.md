@@ -24,7 +24,7 @@ written — and that is cheaper to discover before 181 cards exist than after.
 
 | Task | Title | State |
 |---|---|---|
-| ATTR-1.1…1.4 | Confirm each source's licence, at the source | ☑ Done 2026-08-09 — footers confirmed for all in-seed wikis; Zelda corrected to GFDL; D19 BY-only publish |
+| ATTR-1.1…1.4 | Confirm each source's licence, at the source | ☑ Done 2026-08-09 — footers confirmed for all in-seed wikis; Zelda corrected to GFDL, excluded from publish (D19, superseded by **D20** 2026-08-14: publish as one CC BY-SA 4.0 work, ShareAlike included) |
 | ATTR-2.1…2.3 | Generate `ATTRIBUTIONS.md` from the corpus | ✅ Done 2026-08-09 |
 | ATTR-3.1…3.2 | State the corpus licence and the ShareAlike obligation | ✅ Done 2026-08-09 |
 | ATTR-4.1…4.2 | Repo-side `NOTICE` and the Apache/CC separation | ✅ Done 2026-08-09 |
@@ -89,7 +89,7 @@ unusable costs nothing today and costs a rewrite later.
       | `cyberpunk.fandom.com` | CC BY-SA 3.0 | snapshot `siteinfo` + `fandom.com/licensing`; page footer *"Community content is available under CC-BY-SA unless otherwise noted"* — **footer confirmed 2026-08-09** |
       | `gta.fandom.com` | CC BY-SA 3.0 | dump carries no `siteinfo`; page footer links `fandom.com/licensing`, read via Wayback at the snapshot date; live footer *"Community content is available under CC-BY-SA unless otherwise noted"* — **footer confirmed 2026-08-09** |
       | `liquipedia.net` | CC-BY-SA | `api.php` `rightsinfo` |
-      | `zelda.fandom.com` | **GFDL** | page footer: *"Community content is available under GNU Free Documentation License unless otherwise noted"* — **confirmed 2026-08-09**; seed had wrongly recorded `CC-BY-SA-3.0` (Fandom default assumed). **Excluded from publish** — GFDL is not CC BY 4.0 (D19); cards stay in seed for QA with corrected `source_license` |
+      | `zelda.fandom.com` | **GFDL** | page footer: *"Community content is available under GNU Free Documentation License unless otherwise noted"* — **confirmed 2026-08-09**; seed had wrongly recorded `CC-BY-SA-3.0` (Fandom default assumed). **Excluded from publish** — GFDL does not mix with Creative Commons (unaffected by D19→D20; this exclusion is independent of the BY-vs-ShareAlike question). The 2 affected cards (King Dodongo, Water Temple) were dropped from the seed entirely 2026-08-14 rather than published under the wrong licence |
       | `wiki.teamfortress.com` | **none published** | **excluded** — Valve ToU grants other users personal use only |
       | `developer.valvesoftware.com` | CC BY-NC-SA | **excluded** — NonCommercial is non-free |
       | `hades.fandom.com` | **CC BY-NC-SA 3.0** | **excluded** — snapshot `siteinfo`, which contradicts the archive.org item's `licenseurl` of CC BY-SA 3.0 |
@@ -112,10 +112,11 @@ unusable costs nothing today and costs a rewrite later.
 
 - [x] **ATTR-1.3** — Decide and write down whether **CC BY 4.0** and **CC BY-SA 3.0/4.0**
       cards may coexist in one corpus file.
-      *Decision (D19, 2026-08-09):* **CC BY 4.0 only** for the publishable corpus; defer
-      ShareAlike sources until attribution / ShareAlike redistribution work is ready. Seed may
-      still hold BY-SA cards for dev QA.
-      *Acceptance:* recorded in [maintainer-decisions-locked.md](../audit/maintainer-decisions-locked.md) § D19.
+      *Decision (D19, 2026-08-09, superseded by D20, 2026-08-14):* the publishable corpus
+      ships as one **CC BY-SA 4.0** work; ShareAlike sources are included, not deferred.
+      Per-card `source_license` stays queryable and governs individual reuse. GFDL and
+      NonCommercial sources remain excluded — those exclusions were never about BY-vs-ShareAlike.
+      *Acceptance:* recorded in [maintainer-decisions-locked.md](../audit/maintainer-decisions-locked.md) § D20.
 
 - [x] **ATTR-1.4** — Confirm no card text is a **verbatim copy** of source prose. Cards are
       distilled and maintainer-authored; that is what makes them adaptations rather than
@@ -129,7 +130,10 @@ unusable costs nothing today and costs a rewrite later.
       - Fallout **Deathclaw** — pass (wiki *"very high amount of health"* ↔ card rewrite,
         not verbatim)
       - GTA **Muscle** — pass (no copy/paste on Statistics)
-      - Still optional: Cyberpunk **Sandevistan**, Zelda **King Dodongo** (GFDL / D19 deferred)
+      - **Cyberpunk Sandevistan** — now in the publish set under D20 (was optional under
+        BY-only D19); spot-check before first publish, not optional.
+      - Zelda **King Dodongo** — moot; the card was dropped from the seed 2026-08-14 (GFDL
+        exclusion, unaffected by D19→D20).
 
 ---
 
@@ -165,8 +169,9 @@ unusable costs nothing today and costs a rewrite later.
       per-card licence lives (`source_license`, queryable). Say plainly that the corpus is
       **not** under the plugin's Apache-2.0 licence.
       *Acceptance:* the header answers "may I redistribute this?" without the reader opening
-      the database. **Done 2026-08-09** — `## May I redistribute this corpus?` in
-      `_attributions_header_lines()` (includes D19 BY-only publish note).
+      the database. **Done 2026-08-09**, updated 2026-08-14 for D20 — `## May I redistribute
+      this corpus?` in `_attributions_header_lines()` (now states the CC BY-SA 4.0 whole-work
+      label, not the D19 BY-only note).
 
 - [x] **ATTR-3.2** — Keep the existing *"sources can err → fix forward"* note from the Phase 6
       discovery lock, and add that cards are **distilled, not authoritative** — a wiki can be
@@ -227,13 +232,11 @@ unusable costs nothing today and costs a rewrite later.
 
 ## Open questions for the maintainer
 
-1. **Publishing target.** Phase 6 says HuggingFace primary, GitHub Releases mirror. With
-   **D19** (publishable corpus = CC BY 4.0 only), the HF licence dropdown can be **CC BY 4.0**
-   rather than a mixed-licence workaround. Confirm at first public tag, or reopen if
-   ShareAlike cards re-enter the publish set. (Stages 3–4 landed 2026-08-09.)
+1. ~~**Publishing target.**~~ **Resolved 2026-08-14 (D20).** HF licence dropdown is
+   **CC BY-SA 4.0**, and ShareAlike cards are in the first-publish set, not deferred.
 2. **Attribution for the L4D2 dump.** **Locked 2026-08-09 (hybrid):** Deck chip stays
    short (wiki · licence · as-of date); WikiTeam / archive.org snapshot line lives in
    generated `ATTRIBUTIONS.md`. See
    [17-kb-online-versus-strategy-content.md](17-kb-online-versus-strategy-content.md).
-   *(L4D2 is BY-SA — deferred from first publish under D19; hybrid still applies when that
-   source ships.)*
+   *(L4D2 is BY-SA — included in first publish under D20 (no longer deferred); the hybrid
+   attribution shape applies as designed.)*
