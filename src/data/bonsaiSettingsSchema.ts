@@ -12,6 +12,11 @@ import {
 import type { AskModeId } from "./askMode";
 import { DEFAULT_OLLAMA_KEEP_ALIVE, type OllamaKeepAliveDuration } from "./ollamaKeepAlive";
 import { DEFAULT_REPLY_VERBOSITY, type ReplyVerbosityId } from "./replyVerbosity";
+import {
+  ASK_THINK_EFFORT_IDS,
+  DEFAULT_ASK_THINK_EFFORT,
+  type AskThinkEffortId,
+} from "./askThinkEffort";
 import { type ReplyLanguageId } from "./replyLanguage";
 
 export { DEFAULT_REPLY_LANGUAGE, type ReplyLanguageId } from "./replyLanguage";
@@ -25,9 +30,11 @@ export type { UiScaleProfileId };
 export type { AskModeId };
 export type { OllamaKeepAliveDuration };
 export type { ReplyVerbosityId };
+export type { AskThinkEffortId };
 export type { ModelPolicyTierId };
 export { DEFAULT_OLLAMA_KEEP_ALIVE };
 export { DEFAULT_REPLY_VERBOSITY };
+export { ASK_THINK_EFFORT_IDS, DEFAULT_ASK_THINK_EFFORT };
 export { DEFAULT_MODEL_POLICY_TIER };
 
 export type UnifiedInputPersistenceMode = "persist_all" | "persist_search_only" | "no_persist";
@@ -96,6 +103,8 @@ export type BonsaiSettings = {
   ollama_keep_alive: OllamaKeepAliveDuration;
   /** Global reply prose style (Short / Balanced / Detailed); Balanced = no verbosity inject. */
   reply_verbosity: ReplyVerbosityId;
+  /** Hidden model reasoning before the reply; `off` sends `think: false`. Off by default. */
+  ask_think_effort: AskThinkEffortId;
   /** Ask reply language: follow Steam client, always English, or a fixed Steam language code. */
   reply_language: ReplyLanguageId;
   /** When true, show the Developer tab in the LB/RB strip (default off for typical users). */
@@ -172,6 +181,7 @@ export type BonsaiSettingsSnapshotInput = {
   askMode: AskModeId;
   ollamaKeepAlive: OllamaKeepAliveDuration;
   replyVerbosity: ReplyVerbosityId;
+  askThinkEffort: AskThinkEffortId;
   replyLanguage: ReplyLanguageId;
   showDeveloperTab: boolean;
   modelPolicyTier: ModelPolicyTierId;

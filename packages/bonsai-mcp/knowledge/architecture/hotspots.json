@@ -12,7 +12,7 @@
     },
     {
       "path": "src/index.tsx",
-      "lines": 1392,
+      "lines": 1395,
       "role": "Plugin root: tabs, scoped CSS, RPC wiring, Settings"
     },
     {
@@ -122,17 +122,17 @@
     },
     {
       "path": "src/hooks/usePluginSettings.ts",
-      "lines": 527,
+      "lines": 535,
       "role": ""
     },
     {
       "path": "src/utils/settingsContracts.test.ts",
-      "lines": 491,
+      "lines": 507,
       "role": ""
     },
     {
       "path": "py_modules/backend/services/settings_service.py",
-      "lines": 487,
+      "lines": 494,
       "role": "Load/save/merge settings.json"
     },
     {
@@ -152,7 +152,7 @@
     },
     {
       "path": "src/data/bonsaiSettingsNormalizers.ts",
-      "lines": 457,
+      "lines": 469,
       "role": ""
     },
     {

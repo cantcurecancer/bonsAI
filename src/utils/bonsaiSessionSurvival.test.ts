@@ -48,6 +48,7 @@ function minimalSnapshot(overrides: Partial<BonsaiSessionSurvivalSnapshot> = {})
       askMode: "speed",
       ollamaKeepAlive: "5m",
       replyVerbosity: "balanced",
+      askThinkEffort: "off",
       replyLanguage: "follow_system",
       showDeveloperTab: false,
       modelPolicyTier: DEFAULT_MODEL_POLICY_TIER,

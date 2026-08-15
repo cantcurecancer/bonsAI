@@ -293,6 +293,31 @@ class SettingsServiceTests(unittest.TestCase):
         )
         self.assertEqual(sanitized["ask_mode"], "expert")
 
+    def test_sanitize_ask_think_effort_defaults_off_and_rejects_unknown(self):
+        """Thinking is opt-in: an unrecognised or absent effort must never resolve to on."""
+
+        def _sanitized(data):
+            return sanitize_settings(
+                data=data,
+                default_latency_warning_seconds=15,
+                default_request_timeout_seconds=120,
+                min_latency_warning_seconds=5,
+                max_latency_warning_seconds=300,
+                min_request_timeout_seconds=10,
+                max_request_timeout_seconds=300,
+                valid_persistence_modes={"persist_all", "persist_search_only", "no_persist"},
+                default_persistence_mode="persist_all",
+                valid_ask_modes={"speed", "strategy", "expert"},
+                default_ask_mode="speed",
+            )
+
+        self.assertEqual(_sanitized({})["ask_think_effort"], "off")
+        for level in ("low", "medium", "high", "off"):
+            self.assertEqual(_sanitized({"ask_think_effort": level})["ask_think_effort"], level)
+        self.assertEqual(_sanitized({"ask_think_effort": " high "})["ask_think_effort"], "high")
+        for bad in ("HIGH", "maximum", "", None, True, 3):
+            self.assertEqual(_sanitized({"ask_think_effort": bad})["ask_think_effort"], "off")
+
     def test_sanitize_preset_chip_animation_accepts_stream(self):
         self.assertEqual(sanitize_preset_chip_animation("stream", True), "stream")
 

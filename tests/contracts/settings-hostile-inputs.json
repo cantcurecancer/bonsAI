@@ -18,6 +18,33 @@
     }
   },
   {
+    "name": "think effort is trimmed before matching",
+    "input": {
+      "ask_think_effort": " high "
+    },
+    "expected": {
+      "ask_think_effort": "high"
+    }
+  },
+  {
+    "name": "think effort stays case-sensitive",
+    "input": {
+      "ask_think_effort": "HIGH"
+    },
+    "expected": {
+      "ask_think_effort": "off"
+    }
+  },
+  {
+    "name": "unknown think effort falls back to off, never to thinking on",
+    "input": {
+      "ask_think_effort": "maximum"
+    },
+    "expected": {
+      "ask_think_effort": "off"
+    }
+  },
+  {
     "name": "tab resume mode is trimmed before matching",
     "input": {
       "tab_resume_mode": " always_main "

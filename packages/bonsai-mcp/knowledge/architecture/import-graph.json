@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 298,
-  "edgeCount": 697,
+  "fileCount": 299,
+  "edgeCount": 699,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -652,6 +652,13 @@
         "src/types/backgroundAsk.ts"
       ]
     },
+    "src/data/askThinkEffort.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/data/bonsaiSettingsNormalizers.ts",
+        "src/data/bonsaiSettingsSchema.ts"
+      ]
+    },
     "src/data/bonsaiSettingsContract.test.ts": {
       "imports": [
         "src/data/bonsaiSettingsNormalizers.ts"
@@ -668,6 +675,7 @@
       "imports": [
         "src/data/aiCharacterAccentIntensity.ts",
         "src/data/askMode.ts",
+        "src/data/askThinkEffort.ts",
         "src/data/bonsaiSettingsSchema.ts",
         "src/data/characterCatalog.ts",
         "src/data/modelPolicy.ts",
@@ -690,6 +698,7 @@
       "imports": [
         "src/data/aiCharacterAccentIntensity.ts",
         "src/data/askMode.ts",
+        "src/data/askThinkEffort.ts",
         "src/data/modelPolicy.ts",
         "src/data/ollamaKeepAlive.ts",
         "src/data/replyLanguage.ts",

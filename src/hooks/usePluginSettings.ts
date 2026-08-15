@@ -15,7 +15,7 @@ import {
   shouldIgnoreRestoredSettingsSnapshot,
   takeRestoredSettingsSnapshot,
 } from "../utils/bonsaiSessionSurvival";
-import { DEFAULT_AI_CHARACTER_ACCENT_INTENSITY, DEFAULT_AI_CHARACTER_CUSTOM_TEXT, DEFAULT_AI_CHARACTER_ENABLED, DEFAULT_AI_CHARACTER_PRESET_ID, DEFAULT_AI_CHARACTER_RANDOM, DEFAULT_ASK_MODE, DEFAULT_CAPABILITIES, DEFAULT_DESKTOP_ASK_VERBOSE_LOGGING, DEFAULT_DESKTOP_DEBUG_NOTE_AUTO_SAVE, DEFAULT_DESKTOP_APP_LOG_LEVEL, DEFAULT_INPUT_SANITIZER_USER_DISABLED, DEFAULT_LATENCY_WARNING_SECONDS, DEFAULT_MODEL_ALLOW_HIGH_VRAM_FALLBACKS, DEFAULT_MODEL_POLICY_TIER, DEFAULT_OLLAMA_KEEP_ALIVE, DEFAULT_REPLY_VERBOSITY, DEFAULT_REPLY_LANGUAGE, DEFAULT_OLLAMA_LOCAL_ON_DECK, DEFAULT_PRESET_CHIP_ANIMATION, DEFAULT_PRESET_CHIP_FADE_ANIMATION_ENABLED, DEFAULT_REQUEST_TIMEOUT_SECONDS, DEFAULT_SCREENSHOT_ATTACHMENT_PRESET, DEFAULT_SHOW_DEVELOPER_TAB, DEFAULT_BONSAI_TOKEN_STREAMING_ENABLED, DEFAULT_SHOW_ONSCREEN_DEBUG_HUD, DEFAULT_DEV_FORCE_SESSION_RAG_CHIPS, DEFAULT_TAB_RESUME_MODE, type TabResumeMode, type NamedOllamaHost, DEFAULT_STRATEGY_SPOILER_MASKING_ENABLED, DEFAULT_STRATEGY_SPOILER_AUTO_REVEAL_AFTER_CONSENT, DEFAULT_UNIFIED_INPUT_PERSISTENCE_MODE, DEFAULT_VOICE_STT_MODEL, type AskModeId, type BonsaiCapabilities, type BonsaiSettings, type BonsaiSettingsSnapshotInput, type DesktopAppLogLevel, type OllamaKeepAliveDuration, type ReplyVerbosityId, type ReplyLanguageId, type PresetChipAnimation, type ScreenshotAttachmentPreset, type UnifiedInputPersistenceMode, type VoiceSttModelId, type UiScaleProfileId, DEFAULT_UI_SCALE_AUTO_ENABLED, DEFAULT_UI_SCALE_MANUAL_PROFILE, DEFAULT_USE_LOCAL_KNOWLEDGE_BASE, DEFAULT_RAG_HYBRID_RETRIEVAL_ENABLED, DEFAULT_RAG_CORPUS_PATH, DEFAULT_RAG_CORPUS_VERSION } from "../data/bonsaiSettingsSchema";
+import { DEFAULT_AI_CHARACTER_ACCENT_INTENSITY, DEFAULT_AI_CHARACTER_CUSTOM_TEXT, DEFAULT_AI_CHARACTER_ENABLED, DEFAULT_AI_CHARACTER_PRESET_ID, DEFAULT_AI_CHARACTER_RANDOM, DEFAULT_ASK_MODE, DEFAULT_CAPABILITIES, DEFAULT_DESKTOP_ASK_VERBOSE_LOGGING, DEFAULT_DESKTOP_DEBUG_NOTE_AUTO_SAVE, DEFAULT_DESKTOP_APP_LOG_LEVEL, DEFAULT_INPUT_SANITIZER_USER_DISABLED, DEFAULT_LATENCY_WARNING_SECONDS, DEFAULT_MODEL_ALLOW_HIGH_VRAM_FALLBACKS, DEFAULT_MODEL_POLICY_TIER, DEFAULT_OLLAMA_KEEP_ALIVE, DEFAULT_REPLY_VERBOSITY, DEFAULT_ASK_THINK_EFFORT, type AskThinkEffortId, DEFAULT_REPLY_LANGUAGE, DEFAULT_OLLAMA_LOCAL_ON_DECK, DEFAULT_PRESET_CHIP_ANIMATION, DEFAULT_PRESET_CHIP_FADE_ANIMATION_ENABLED, DEFAULT_REQUEST_TIMEOUT_SECONDS, DEFAULT_SCREENSHOT_ATTACHMENT_PRESET, DEFAULT_SHOW_DEVELOPER_TAB, DEFAULT_BONSAI_TOKEN_STREAMING_ENABLED, DEFAULT_SHOW_ONSCREEN_DEBUG_HUD, DEFAULT_DEV_FORCE_SESSION_RAG_CHIPS, DEFAULT_TAB_RESUME_MODE, type TabResumeMode, type NamedOllamaHost, DEFAULT_STRATEGY_SPOILER_MASKING_ENABLED, DEFAULT_STRATEGY_SPOILER_AUTO_REVEAL_AFTER_CONSENT, DEFAULT_UNIFIED_INPUT_PERSISTENCE_MODE, DEFAULT_VOICE_STT_MODEL, type AskModeId, type BonsaiCapabilities, type BonsaiSettings, type BonsaiSettingsSnapshotInput, type DesktopAppLogLevel, type OllamaKeepAliveDuration, type ReplyVerbosityId, type ReplyLanguageId, type PresetChipAnimation, type ScreenshotAttachmentPreset, type UnifiedInputPersistenceMode, type VoiceSttModelId, type UiScaleProfileId, DEFAULT_UI_SCALE_AUTO_ENABLED, DEFAULT_UI_SCALE_MANUAL_PROFILE, DEFAULT_USE_LOCAL_KNOWLEDGE_BASE, DEFAULT_RAG_HYBRID_RETRIEVAL_ENABLED, DEFAULT_RAG_CORPUS_PATH, DEFAULT_RAG_CORPUS_VERSION } from "../data/bonsaiSettingsSchema";
 import { normalizeLatencyWarningSeconds, normalizeRequestTimeoutSeconds, normalizeSettings } from "../data/bonsaiSettingsNormalizers";
 import { toBonsaiSettingsPayload } from "../utils/settingsPayload";
 import { saveTabResumeMode } from "../features/plugin-shell/pluginStorage";
@@ -41,6 +41,7 @@ function snapshotFromBonsaiSettings(normalized: BonsaiSettings): BonsaiSettingsS
     askMode: normalized.ask_mode,
     ollamaKeepAlive: normalized.ollama_keep_alive,
     replyVerbosity: normalized.reply_verbosity,
+    askThinkEffort: normalized.ask_think_effort,
     replyLanguage: normalized.reply_language,
     showDeveloperTab: normalized.show_developer_tab,
     modelPolicyTier: normalized.model_policy_tier,
@@ -116,6 +117,7 @@ export function usePluginSettings() {
   const [askMode, setAskMode] = useState<AskModeId>(DEFAULT_ASK_MODE);
   const [ollamaKeepAlive, setOllamaKeepAlive] = useState<OllamaKeepAliveDuration>(DEFAULT_OLLAMA_KEEP_ALIVE);
   const [replyVerbosity, setReplyVerbosity] = useState<ReplyVerbosityId>(DEFAULT_REPLY_VERBOSITY);
+  const [askThinkEffort, setAskThinkEffort] = useState<AskThinkEffortId>(DEFAULT_ASK_THINK_EFFORT);
   const [replyLanguage, setReplyLanguage] = useState<ReplyLanguageId>(DEFAULT_REPLY_LANGUAGE);
   const [showDeveloperTab, setShowDeveloperTab] = useState<boolean>(DEFAULT_SHOW_DEVELOPER_TAB);
   const [modelPolicyTier, setModelPolicyTier] = useState<ModelPolicyTierId>(DEFAULT_MODEL_POLICY_TIER);
@@ -185,6 +187,7 @@ export function usePluginSettings() {
     askMode,
     ollamaKeepAlive,
     replyVerbosity,
+    askThinkEffort,
     replyLanguage,
     showDeveloperTab,
     modelPolicyTier,
@@ -243,6 +246,7 @@ export function usePluginSettings() {
     setAskMode(normalized.ask_mode);
     setOllamaKeepAlive(normalized.ollama_keep_alive);
     setReplyVerbosity(normalized.reply_verbosity);
+    setAskThinkEffort(normalized.ask_think_effort);
     setReplyLanguage(normalized.reply_language);
     setShowDeveloperTab(normalized.show_developer_tab);
     setModelPolicyTier(normalized.model_policy_tier);
@@ -338,6 +342,7 @@ export function usePluginSettings() {
         setAskMode(DEFAULT_ASK_MODE);
         setOllamaKeepAlive(DEFAULT_OLLAMA_KEEP_ALIVE);
         setReplyVerbosity(DEFAULT_REPLY_VERBOSITY);
+        setAskThinkEffort(DEFAULT_ASK_THINK_EFFORT);
         setShowDeveloperTab(DEFAULT_SHOW_DEVELOPER_TAB);
         setModelPolicyTier(DEFAULT_MODEL_POLICY_TIER);
         setModelPolicyNonFossUnlocked(false);
@@ -404,6 +409,7 @@ export function usePluginSettings() {
     askMode,
     ollamaKeepAlive,
     replyVerbosity,
+    askThinkEffort,
     replyLanguage,
     showDeveloperTab,
     modelPolicyTier,
@@ -461,8 +467,10 @@ export function usePluginSettings() {
     ollamaKeepAlive,
     setOllamaKeepAlive,
     replyVerbosity,
+    askThinkEffort,
     replyLanguage,
     setReplyVerbosity,
+    setAskThinkEffort,
     setReplyLanguage,
     showDeveloperTab,
     setShowDeveloperTab,

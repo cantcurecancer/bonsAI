@@ -38,6 +38,7 @@ export function toBonsaiSettingsPayload(
     ask_mode: input.askMode,
     ollama_keep_alive: input.ollamaKeepAlive,
     reply_verbosity: input.replyVerbosity,
+    ask_think_effort: input.askThinkEffort,
     reply_language: input.replyLanguage,
     show_developer_tab: input.showDeveloperTab,
     model_policy_tier: input.modelPolicyTier,

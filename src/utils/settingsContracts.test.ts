@@ -9,6 +9,7 @@ import {
   DEFAULT_SCREENSHOT_ATTACHMENT_PRESET,
   DEFAULT_STRATEGY_SPOILER_MASKING_ENABLED,
   type DesktopAppLogLevel,
+  type AskThinkEffortId,
   type TabResumeMode,
 } from "../data/bonsaiSettingsSchema";
 import {
@@ -147,6 +148,18 @@ describe("settings contracts", () => {
     expect(normalizeSettings({ ask_mode: "bogus" as unknown as string }).ask_mode).toBe(DEFAULT_ASK_MODE);
   });
 
+  it("normalizes ask think effort, defaulting off so thinking stays opt-in", () => {
+    expect(normalizeSettings({ ask_think_effort: "low" }).ask_think_effort).toBe("low");
+    expect(normalizeSettings({ ask_think_effort: "medium" }).ask_think_effort).toBe("medium");
+    expect(normalizeSettings({ ask_think_effort: "high" }).ask_think_effort).toBe("high");
+    expect(normalizeSettings({}).ask_think_effort).toBe("off");
+    // An unrecognised value must never resolve to an on state.
+    expect(
+      normalizeSettings({ ask_think_effort: "maximum" as unknown as AskThinkEffortId })
+        .ask_think_effort,
+    ).toBe("off");
+  });
+
   it("normalizes desktop app log level", () => {
     expect(normalizeSettings({ desktop_app_log_level: "default" }).desktop_app_log_level).toBe("default");
     expect(normalizeSettings({ desktop_app_log_level: "verbose" }).desktop_app_log_level).toBe("verbose");
@@ -252,6 +265,7 @@ describe("settings contracts", () => {
       askMode: "expert",
       ollamaKeepAlive: "30s",
       replyVerbosity: "detailed",
+      askThinkEffort: "high",
       replyLanguage: "japanese",
       showDeveloperTab: true,
       modelPolicyTier: "open_weight",
@@ -315,6 +329,7 @@ describe("settings contracts", () => {
       askMode: DEFAULT_ASK_MODE,
       ollamaKeepAlive: DEFAULT_OLLAMA_KEEP_ALIVE,
       replyVerbosity: DEFAULT_REPLY_VERBOSITY,
+      askThinkEffort: "off" as const,
       replyLanguage: REPLY_LANGUAGE_FOLLOW_SYSTEM,
       showDeveloperTab: false,
       modelPolicyTier: "open_source_only" as const,
@@ -457,6 +472,7 @@ describe("settings contracts", () => {
       askMode: normalized.ask_mode,
       ollamaKeepAlive: normalized.ollama_keep_alive,
       replyVerbosity: normalized.reply_verbosity,
+      askThinkEffort: normalized.ask_think_effort,
       replyLanguage: normalized.reply_language,
       showDeveloperTab: normalized.show_developer_tab,
       modelPolicyTier: normalized.model_policy_tier,

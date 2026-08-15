@@ -12,6 +12,11 @@ import {
 } from "./aiCharacterAccentIntensity";
 import { ASK_MODE_IDS, type AskModeId } from "./askMode";
 import {
+  ASK_THINK_EFFORT_IDS,
+  DEFAULT_ASK_THINK_EFFORT,
+  type AskThinkEffortId,
+} from "./askThinkEffort";
+import {
   DEFAULT_REPLY_VERBOSITY,
   isReplyVerbosityId,
   type ReplyVerbosityId,
@@ -372,6 +377,13 @@ const SIMPLE_FIELDS = {
     DEFAULT_UNIFIED_INPUT_PERSISTENCE_MODE,
   ),
   reply_verbosity: normalizeReplyVerbosity,
+  // Trimmed before matching, case-sensitive, and an unknown value falls back to `off` —
+  // an unrecognised effort must not silently turn thinking on.
+  ask_think_effort: enumOf<AskThinkEffortId>(
+    ASK_THINK_EFFORT_IDS,
+    DEFAULT_ASK_THINK_EFFORT,
+    { trim: true },
+  ),
   reply_language: normalizeReplyLanguage,
   ollama_keep_alive: normalizeOllamaKeepAlive,
   // `undefined`/`null` mean "never saved", which is off — same as any other non-`true`.

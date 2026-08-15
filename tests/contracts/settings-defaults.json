@@ -5,6 +5,7 @@
   "ai_character_preset_id": "",
   "ai_character_random": true,
   "ask_mode": "speed",
+  "ask_think_effort": "off",
   "bonsai_token_streaming_enabled": false,
   "capabilities": {
     "filesystem_write": false,

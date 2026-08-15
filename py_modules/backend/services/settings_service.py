@@ -133,6 +133,12 @@ _VALID_PRESET_CHIP_ANIMATION = frozenset({"fade", "carousel", "static", "stream"
 _VALID_TAB_RESUME_MODES = frozenset({"always_main", "resume", "resume_recent"})
 DEFAULT_TAB_RESUME_MODE = "resume"
 
+# How much hidden reasoning to ask the model for. Values match ASK_THINKING_BUDGET in
+# ollama_ask_budgets; the wire value is a boolean either way (D18). Defaults off: thinking
+# costs latency and tokens, and an unrecognised value must not turn it on.
+_VALID_ASK_THINK_EFFORTS = frozenset({"off", "low", "medium", "high"})
+DEFAULT_ASK_THINK_EFFORT = "off"
+
 
 def sanitize_preset_chip_animation(value: Any, legacy_fade: Any) -> str:
     """Main-tab preset chip animation mode; migrates from legacy fade boolean when unset."""
@@ -310,6 +316,7 @@ _SIMPLE_FIELDS: dict[str, Any] = {
     "input_sanitizer_user_disabled": _bool_default_false,
     "latency_timeouts_custom_enabled": _bool_default_false,
     "reply_verbosity": sanitize_reply_verbosity,
+    "ask_think_effort": _enum(_VALID_ASK_THINK_EFFORTS, DEFAULT_ASK_THINK_EFFORT, strip=True),
     "ollama_keep_alive": _ollama_keep_alive_field,
     # ``None`` means "never saved", which is off -- same result as any other non-``True``.
     "ollama_local_on_deck": _bool_default_false,
