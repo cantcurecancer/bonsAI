@@ -89,11 +89,10 @@ Stars are **effort/risk**. Grouped by **theme**; within each lane sorted ascendi
 - ★★ **Preset chip expansion** (incremental content)
   - **Goal:** Add or refresh preset strings as related features land. Wave 1 shipped four prompts; **PRESET-EXPAND-W1-01** open. [wave1.md](wave1.md).
   - **Not in scope:** replacing `fade` default animation; session RAG chips (shipped).
-- ★★ **Thinking effort control** (Settings Off / Low / Medium / High)
-  - **Depends on:** **Soft** `num_predict` **+ thinking budget** (shipped — C1 in Verify).
-  - **Phase 1:** Settings Off / Low / Medium / High → `think: false | "low" | "medium" | "high"` using C1 budgets (`resolve_ask_token_budgets`).
-  - **Phase 2:** Short thinking one-liners via existing blurbs (not raw model `thinking` by default).
-  - **Not in scope:** Reply verbosity → token budgets; caveman / lowering `num_predict`.
+- ★★ **Thinking effort control** — **Phase 1 shipped 2026-08-15; Phase 2 Backlog**
+  - **Phase 1 (shipped):** Ollama tab → **Thinking** row, Off / Brief / Balanced / Deep, defaulting **Off**. Sends `think: true` for all three on levels — named levels are gpt-oss-only and qwen3 / deepseek-r1 reject a string (**D21**, superseding doc 16) — with effort carried by the reserved budget (256 / 512 / 1024) added to `num_predict`. A model that cannot think gets one silent retry with thinking off, is remembered for the session, and the user is told once. On-Deck **THINK-EFFORT-04**, **THINK-EFFORT-05** Open.
+  - **Phase 2 (Backlog):** Short thinking one-liners via existing blurbs (not raw model `thinking` by default).
+  - **Not in scope:** Reply verbosity → token budgets; caveman / lowering `num_predict`; native gpt-oss levels (needs per-model capability detection — see D21).
 - ★★ **Unfenced spoiler feedback** (thumbs-down category)
   - **Goal:** Thumbs-down refinement chip for unfenced spoilers (and optional over-fenced sibling).
   - **Depends on:** reply micro-actions; spoiler confidence chip (shipped).
@@ -243,7 +242,7 @@ Stars are **effort/risk**. Grouped by **theme**; within each lane sorted ascendi
 - **Preset carousel (shipped)** → **Preset chip expansion**; **Session RAG preset chips** (shipped).
 - **RAG / offline KB** → Phase 2–3 shipped → **retrieval quality remediation** (PR1/PR2 closed 2026-08-09) → Phase 4–8 Backlog; **KB visual maps** separate; **Spoiler constitution** runtime encoding shipped 2026-08-07; **Spoiler confidence chip** → fencing + unfenced feedback.
 - **Web permission** → citations / allowlist / freshness chip.
-- **Soft** `num_predict` **+ thinking budget** (shipped; Verify QA) → **Thinking effort control** (Phase 1 effort UI; Phase 2 blurb one-liners).
+- **Soft** `num_predict` **+ thinking budget** (shipped; Verify QA) → **Thinking effort control** (Phase 1 effort UI shipped 2026-08-15; Phase 2 blurb one-liners Backlog).
 - **Native QAM shortcut tile** → shorter path than Guide-chord macro docs ([troubleshooting.md](troubleshooting.md) §5).
 - **Steam Input jump Phase 1 (shipped)** → **Steam Input layout parse**.
 - **Offline intent packs (quiet)** → **Intent packs later review**.

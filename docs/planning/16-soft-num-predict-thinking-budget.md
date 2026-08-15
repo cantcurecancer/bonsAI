@@ -78,9 +78,16 @@ Ask calls hit a **hard** Ollama `num_predict` wall with no overshoot or continue
 
 ## Backlog follow-on (after bug closes)
 
-### Phase 1 — Thinking effort control
+### Phase 1 — Thinking effort control *(shipped 2026-08-15; wire mapping superseded)*
 
-Settings Off / Low / Medium / High → `think: false | "low" | "medium" | "high"`, wired to C1 budgets from the bug.
+~~Settings Off / Low / Medium / High → `think: false | "low" | "medium" | "high"`~~, wired to C1 budgets from the bug.
+
+> **Superseded by [D21](../audit/maintainer-decisions-locked.md).** The named levels are a
+> gpt-oss-family feature; qwen3 and deepseek-r1 accept `think` only as a boolean and reject a
+> string, so the mapping above would have broken the thinking models most likely to be on a
+> Deck. Shipped as **`think: true` for all three on levels**, with effort carried by the
+> reserved thinking budget (256 / 512 / 1024) added to `num_predict`. The control lives on
+> the **Ollama tab** beside Reply style, not in Settings.
 
 ### Phase 2 — Short thinking one-liners
 

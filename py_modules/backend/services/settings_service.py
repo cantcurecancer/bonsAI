@@ -134,7 +134,7 @@ _VALID_TAB_RESUME_MODES = frozenset({"always_main", "resume", "resume_recent"})
 DEFAULT_TAB_RESUME_MODE = "resume"
 
 # How much hidden reasoning to ask the model for. Values match ASK_THINKING_BUDGET in
-# ollama_ask_budgets; the wire value is a boolean either way (D18). Defaults off: thinking
+# ollama_ask_budgets; the wire value is a boolean either way (D21). Defaults off: thinking
 # costs latency and tokens, and an unrecognised value must not turn it on.
 _VALID_ASK_THINK_EFFORTS = frozenset({"off", "low", "medium", "high"})
 DEFAULT_ASK_THINK_EFFORT = "off"

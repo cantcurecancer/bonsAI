@@ -17,7 +17,47 @@ from that section when it disagrees with an option above.
 
 **One open: [D18](#d18--when-loading-settings-fails-four-values-keep-whatever-was-on-screen-bug-or-intent)**
 (raised 2026-08-05 by the step 11 friction test). D1–D18 are locked; **D19 is superseded by
-D20** (below). See the table below for D1–D15 and the sections below for D16, D17, D19, D20.
+D20** (below). See the table below for D1–D15 and the sections below for D16, D17, D19, D20,
+D21.
+
+---
+
+### D21 — Thinking effort sends "on", not the level name
+
+**Raised and locked 2026-08-15**, while implementing Thinking effort control Phase 1.
+Supersedes the wire mapping locked in
+[16-soft-num-predict-thinking-budget.md](../planning/16-soft-num-predict-thinking-budget.md).
+
+**The question, plainly.** When you pick Brief / Balanced / Deep, what should bonsAI ask the
+model for? Some models understand "think a little" vs "think a lot" as named levels. Most
+thinking models only understand "think" or "don't think".
+
+**Choice:** send plain **`think: true`** for all three levels. The difference between them is
+how many tokens are *reserved* for thinking (256 / 512 / 1024), which is added on top of the
+mode's reply budget so reasoning cannot eat the answer's allowance.
+
+**Why.** The named levels `"low"` / `"medium"` / `"high"` are a **gpt-oss-family** feature.
+qwen3 and deepseek-r1 — the thinking models actually likely to be installed on a Deck, and
+the ones in the pull catalog — accept `think` only as a boolean. Sending them `"low"` would
+have broken models that genuinely think, which is worse than under-using one family's dial.
+Portability beat depth-on-one-family.
+
+**Cost, stated plainly:** on gpt-oss models the three levels differ less than they could,
+because their built-in dial is ignored. Native levels remain available as a later change,
+and would need per-model capability detection to be safe.
+
+**Not chosen:** "try the level, fall back to boolean, then fall back to off" — best result per
+model, but three possible round trips and the most code to get right for a benefit only one
+model family sees today.
+
+**Related, same session:** a model that cannot think *at all* is not a decision but a
+mechanism — it gets one silent retry with thinking off, is remembered for the plugin session,
+and the user is told once. Without it a plain HTTP 400 would have failed the Ask outright,
+because `ollama_ask_service` does not fall through to the next model on a generic 400.
+
+> **Numbering note:** the commit that landed this (`e049ace`) cites it as **D18** in its
+> message, written before D18–D20 were known to be taken. The decision is **D21**; every
+> code and doc reference says D21.
 
 ---
 

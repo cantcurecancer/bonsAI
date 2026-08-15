@@ -1,10 +1,12 @@
 """Title: Ollama Ask token budgets
 
-Purpose: Per-mode visible ``num_predict`` caps plus reserved thinking budgets (C1).
-Used for: ``post_ollama_chat`` request options; future Thinking effort control wiring.
-Solves: Split visible vs thinking token budgets so ``think`` can be enabled later without
-empty replies when reasoning burns the whole wall.
-Does not: Own soft-continue stitching or Settings UI for effort levels.
+Purpose: Per-mode visible ``num_predict`` caps, thinking budgets, and the session record of
+which models reject ``think``.
+Used for: ``post_ollama_chat`` request options, driven by the ``ask_think_effort`` setting.
+Solves: Split visible vs thinking token budgets so enabling ``think`` cannot starve the
+visible channel and return an empty reply.
+Does not: Own soft-continue stitching, the retry that uses ``mark_model_without_thinking``
+(``ollama_service``), or the Settings UI (``OllamaThinkingEffortRow``).
 """
 
 from __future__ import annotations
@@ -65,11 +67,11 @@ def resolve_ask_token_budgets(
     *,
     think_effort: Optional[str] = "off",
 ) -> dict[str, Any]:
-    """Resolve wire ``num_predict`` / ``think`` plus the C1 split for later effort control.
+    """Resolve wire ``num_predict`` / ``think`` plus the visible-vs-thinking token split.
 
-    Bug v1 callers pass ``think_effort=\"off\"`` (default): ``think`` is false and
-    ``num_predict`` equals the visible cap only. When effort is low/medium/high,
-    ``num_predict`` is visible + thinking so the visible channel is not starved.
+    ``think_effort=\"off\"`` (the default) sends ``think: False`` with ``num_predict`` equal
+    to the visible cap only. low/medium/high send ``think: True`` and add the reserved
+    thinking budget on top, so reasoning cannot eat the visible reply's allowance.
     """
     mode = normalize_ask_mode(ask_mode)
     effort = normalize_think_effort(think_effort)
@@ -80,7 +82,7 @@ def resolve_ask_token_budgets(
     # thinking models most likely on a Deck -- accept only a boolean and reject a string.
     # Effort is expressed through ``thinking_budget`` below, which buys reasoning headroom
     # in ``num_predict`` rather than asking Ollama for a depth it may not understand.
-    # Supersedes the string mapping locked in planning doc 16; see decision D18.
+    # Supersedes the string mapping locked in planning doc 16; see decision D21.
     think_wire: ThinkWire = effort != "off"
     return {
         "ask_mode": mode,

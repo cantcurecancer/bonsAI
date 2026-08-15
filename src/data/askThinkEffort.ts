@@ -4,7 +4,7 @@
  * Used for: OllamaThinkingEffortRow and bonsaiSettingsNormalizers persistence.
  * Solves: Typed effort enum for the four-stop control that enables model thinking.
  * Does not: Decide the wire value or token budgets — backend `ollama_ask_budgets`
- *   owns both, and sends `think` as a boolean regardless of level (decision D18).
+ *   owns both, and sends `think` as a boolean regardless of level (decision D21).
  */
 export type AskThinkEffortId = "off" | "low" | "medium" | "high";
 

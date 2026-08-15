@@ -47,6 +47,7 @@ class OllamaAskBudgetsTests(unittest.TestCase):
 
     def tearDown(self) -> None:
         reset_thinking_support_cache()
+
     def test_visible_caps_match_bug_v1_targets(self) -> None:
         self.assertEqual(ASK_VISIBLE_NUM_PREDICT["speed"], 800)
         self.assertEqual(ASK_VISIBLE_NUM_PREDICT["expert"], 1200)
@@ -81,7 +82,7 @@ class OllamaAskBudgetsTests(unittest.TestCase):
             self.assertEqual(budgets["max_continues"], ASK_MAX_SOFT_CONTINUES)
 
     def test_effort_levels_add_thinking_budget_to_num_predict(self) -> None:
-        """Effort is carried by the budget, not the wire value — see D18."""
+        """Effort is carried by the budget, not the wire value — see D21."""
         low = resolve_ask_token_budgets("expert", think_effort="low")
         self.assertIs(low["think"], True)
         self.assertEqual(low["thinking_budget"], 256)
@@ -98,7 +99,7 @@ class OllamaAskBudgetsTests(unittest.TestCase):
         self.assertEqual(medium["num_predict"], 1600 + 512)
 
     def test_think_wire_is_always_boolean_never_the_effort_name(self) -> None:
-        """Named levels are gpt-oss-only; qwen3 / deepseek-r1 reject a string (D18)."""
+        """Named levels are gpt-oss-only; qwen3 / deepseek-r1 reject a string (D21)."""
         for effort in ("off", "low", "medium", "high"):
             with self.subTest(effort=effort):
                 self.assertIsInstance(

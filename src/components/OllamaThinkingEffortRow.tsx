@@ -4,7 +4,7 @@
  * Used for: OllamaTab, directly below Reply style.
  * Solves: Lets a user trade latency for reasoning depth without editing settings.json.
  * Does not: Decide the wire value or budgets — backend `ollama_ask_budgets` owns both, and
- *   a model that cannot think falls back silently there (decision D18).
+ *   a model that cannot think falls back silently there (decision D21).
  */
 import { Focusable, Button } from "@decky/ui";
 
