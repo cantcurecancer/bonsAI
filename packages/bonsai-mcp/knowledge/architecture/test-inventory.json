@@ -75,6 +75,7 @@
     "src/utils/strategyChecklist.test.ts",
     "src/utils/streamMarkdownPrepare.test.ts",
     "src/utils/stripAssistantDisplayTags.test.ts",
+    "src/utils/stripSoftContinueCue.test.ts",
     "src/utils/thinkingSummaryText.test.ts",
     "src/utils/uiDocument.test.ts",
     "src/utils/unifiedInputPersistenceMode.test.ts",

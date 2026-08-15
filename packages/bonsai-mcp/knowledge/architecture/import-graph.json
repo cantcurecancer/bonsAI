@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 296,
-  "edgeCount": 695,
+  "fileCount": 298,
+  "edgeCount": 697,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -1373,6 +1373,7 @@
         "src/utils/strategyChecklist.ts",
         "src/utils/strategyChecklistPersistence.ts",
         "src/utils/strategyGuideBranches.ts",
+        "src/utils/stripSoftContinueCue.ts",
         "src/utils/thinkingSummaryText.ts",
         "src/utils/uiDocument.ts"
       ],
@@ -2935,6 +2936,19 @@
       "importedBy": [
         "src/utils/buildAnswerBubbleElement.tsx",
         "src/utils/stripAssistantDisplayTags.test.ts"
+      ]
+    },
+    "src/utils/stripSoftContinueCue.test.ts": {
+      "imports": [
+        "src/utils/stripSoftContinueCue.ts"
+      ],
+      "importedBy": []
+    },
+    "src/utils/stripSoftContinueCue.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/hooks/useBonsaiAskOrchestration.ts",
+        "src/utils/stripSoftContinueCue.test.ts"
       ]
     },
     "src/utils/tabBodyViewport.ts": {

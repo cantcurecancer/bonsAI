@@ -422,7 +422,11 @@ class Plugin:
                 return
             prev = snap.get("partial_response")
             last_flush = float(snap.get("last_flush_monotonic") or 0.0)
-            if prev and (now - last_flush) < Plugin.PARTIAL_RESPONSE_FLUSH_INTERVAL_S:
+            # A shrink is never a token append — it is a deliberate rewrite (soft-continue cue
+            # clear, or an opening strategy fence being hidden). Never rate-limit those away:
+            # no later token will arrive to correct the stale text.
+            shrank = bool(prev) and len(text) < len(str(prev))
+            if prev and not shrank and (now - last_flush) < Plugin.PARTIAL_RESPONSE_FLUSH_INTERVAL_S:
                 return
             snap["partial_response"] = text
             snap["last_flush_monotonic"] = now

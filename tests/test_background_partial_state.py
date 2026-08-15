@@ -58,6 +58,22 @@ class BackgroundPartialStateTests(unittest.TestCase):
             self.assertTrue(snap["streaming"])
             self.assertIsNone(snap.get("partial_response"))
 
+    def test_partial_response_throttles_rapid_growth(self) -> None:
+        self.plugin._reset_partial_stream_snapshot(6)
+        self.plugin._update_partial_response(6, "Hello", False)
+        self.plugin._update_partial_response(6, "Hello world", False)
+        with self.plugin._partial_response_lock:
+            snap = self.plugin._partial_stream_snapshot
+            self.assertEqual(snap["partial_response"], "Hello")
+
+    def test_partial_response_shrink_bypasses_throttle(self) -> None:
+        self.plugin._reset_partial_stream_snapshot(6)
+        self.plugin._update_partial_response(6, "A B Continuing…", False)
+        self.plugin._update_partial_response(6, "A B", False)
+        with self.plugin._partial_response_lock:
+            snap = self.plugin._partial_stream_snapshot
+            self.assertEqual(snap["partial_response"], "A B")
+
     def test_merge_partial_into_pending_status(self) -> None:
         self.plugin._background_state = {
             "status": "pending",
