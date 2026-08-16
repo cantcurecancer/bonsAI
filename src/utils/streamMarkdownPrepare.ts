@@ -24,6 +24,11 @@ export type StreamMarkdownPrepareResult = {
   waitChip: StreamWaitChip | null;
 };
 
+export type PrepareStreamMarkdownOpts = {
+  /** Returns true when an *open* bonsai-spoiler fence should stream as prose, not a mask chip. */
+  unwrapOpenSpoilerFence?: (openFenceText: string) => boolean;
+};
+
 function isFenceLine(line: string): boolean {
   return line.trimStart().startsWith("```");
 }
@@ -82,7 +87,10 @@ function flushProseBuffer(buffer: string[], closedBlocks: string[]): void {
 /**
  * Partition revealed assistant text for R2 live markdown rendering.
  */
-export function prepareStreamMarkdown(source: string): StreamMarkdownPrepareResult {
+export function prepareStreamMarkdown(
+  source: string,
+  opts: PrepareStreamMarkdownOpts = {}
+): StreamMarkdownPrepareResult {
   const text = source;
   if (!text.trim()) {
     return { closedBlocks: [], liveTail: null, waitChip: null };
@@ -127,6 +135,12 @@ export function prepareStreamMarkdown(source: string): StreamMarkdownPrepareResu
 
   if (inFence) {
     if (fenceIsSpoiler) {
+      const openFenceText = fenceLines.join("\n");
+      if (opts.unwrapOpenSpoilerFence?.(openFenceText)) {
+        const body = fenceLines.slice(1).join("\n");
+        const liveTail = body.trim().length > 0 ? normalizeIncompleteInline(body.trim()) : null;
+        return { closedBlocks, liveTail, waitChip: null };
+      }
       return {
         closedBlocks,
         liveTail: null,

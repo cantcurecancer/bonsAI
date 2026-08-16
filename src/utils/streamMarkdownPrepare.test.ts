@@ -50,6 +50,34 @@ describe("prepareStreamMarkdown", () => {
     );
     expect(r.waitChip).toBeNull();
   });
+
+  it("streams an open spoiler fence as prose when the caller says it qualifies", () => {
+    const t = "Hint.\n\n```bonsai-spoiler\nFocus fire the weak point while kiting";
+    const r = prepareStreamMarkdown(t, { unwrapOpenSpoilerFence: () => true });
+    expect(r.waitChip).toBeNull();
+    expect(r.liveTail).toBe("Focus fire the weak point while kiting");
+  });
+
+  it("still masks an open spoiler fence when the caller says it does not qualify", () => {
+    const t = "Hint.\n\n```bonsai-spoiler\nSecret ending";
+    const r = prepareStreamMarkdown(t, { unwrapOpenSpoilerFence: () => false });
+    expect(r.waitChip).toEqual({ kind: "spoiler", label: SPOILER_STREAM_MASK_LABEL });
+    expect(r.liveTail).toBeNull();
+    expect(JSON.stringify(r)).not.toContain("Secret ending");
+  });
+
+  it("still masks an open spoiler fence when no callback is passed (default behaviour unchanged)", () => {
+    const t = "Hint.\n\n```bonsai-spoiler\nBoss name\nPhase 2";
+    const r = prepareStreamMarkdown(t);
+    expect(r.waitChip).toEqual({ kind: "spoiler", label: SPOILER_STREAM_MASK_LABEL });
+  });
+
+  it("does not unwrap a non-spoiler open fence even when the callback always returns true", () => {
+    const t = "Before.\n\n```json\n{\"tdp_watts\": 12";
+    const r = prepareStreamMarkdown(t, { unwrapOpenSpoilerFence: () => true });
+    expect(r.waitChip).toEqual({ kind: "fence", label: FENCE_STREAM_WAIT_LABEL });
+    expect(r.liveTail).toBeNull();
+  });
 });
 
 describe("normalizeIncompleteInline", () => {

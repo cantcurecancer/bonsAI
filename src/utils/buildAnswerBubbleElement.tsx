@@ -29,7 +29,10 @@ import {
 import { prepareStreamMarkdown } from "./streamMarkdownPrepare";
 import { splitResponseIntoChunks } from "./splitResponseIntoChunks";
 import { stripAssistantDisplayTags } from "./stripAssistantDisplayTags";
-import { unwrapAskedEntitySpoilerFences } from "./unwrapAskedEntitySpoilerFences";
+import {
+  shouldUnwrapSpoilerFence,
+  unwrapAskedEntitySpoilerFences,
+} from "./unwrapAskedEntitySpoilerFences";
 
 export type BuildAnswerBubbleElementArgs = {
   body: string;
@@ -115,9 +118,10 @@ function renderStreamMarkdownStack(
   spoilerMaskingEnabled: boolean,
   spoilerDefaultExpanded: boolean,
   answerKey: string,
-  stopNav: Record<string, unknown>
+  stopNav: Record<string, unknown>,
+  unwrapOpenSpoilerFence?: (openFenceText: string) => boolean
 ): React.ReactNode {
-  const prepared = prepareStreamMarkdown(body);
+  const prepared = prepareStreamMarkdown(body, { unwrapOpenSpoilerFence });
   const nodes: React.ReactNode[] = [];
 
   prepared.closedBlocks.forEach((block, i) => {
@@ -192,20 +196,22 @@ export function buildAnswerBubbleElement(
     appId = null,
     spoilerConsentEffective = false,
   } = args;
+  const spoilerUnwrapEligible =
+    spoilerConsentEffective || (spoilerMaskingEnabled && (askQuestion.trim() || appId));
+  const spoilerUnwrapOpts = { question: askQuestion, appId, spoilerConsentEffective };
   let displayBody = stripAssistantDisplayTags(body);
-  if (
-    spoilerConsentEffective ||
-    (spoilerMaskingEnabled && (askQuestion.trim() || appId))
-  ) {
-    displayBody = unwrapAskedEntitySpoilerFences(displayBody, {
-      question: askQuestion,
-      appId,
-      spoilerConsentEffective,
-    });
+  if (spoilerUnwrapEligible) {
+    displayBody = unwrapAskedEntitySpoilerFences(displayBody, spoilerUnwrapOpts);
   }
   if (!displayBody.trim()) return null;
 
-  const prepared = streaming ? prepareStreamMarkdown(displayBody) : null;
+  /* Same eligibility as the closed-fence unwrap above, so a turn that streams a spoiler fence
+     never masks it only to unmask an identical fence once the stream closes. */
+  const unwrapOpenSpoilerFence = spoilerUnwrapEligible
+    ? (openFenceText: string) => shouldUnwrapSpoilerFence(openFenceText, spoilerUnwrapOpts)
+    : undefined;
+
+  const prepared = streaming ? prepareStreamMarkdown(displayBody, { unwrapOpenSpoilerFence }) : null;
   const displayChunks = streaming ? [] : splitResponseIntoChunks(displayBody);
   const chunkTotal = streaming ? 1 : displayChunks.length;
   const fenceWaitActive = prepared?.waitChip?.kind === "fence";
@@ -290,7 +296,8 @@ export function buildAnswerBubbleElement(
                 spoilerMaskingEnabled,
                 spoilerDefaultExpanded,
                 answerKey,
-                stopNav
+                stopNav,
+                unwrapOpenSpoilerFence
               )
             : /* Same stop treatment as the streaming stack, so navigating a turn feels the same
                  whether or not it streamed — and so a turn does not change shape under the user at

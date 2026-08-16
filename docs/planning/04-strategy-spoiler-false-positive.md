@@ -316,7 +316,7 @@ enforceable slice** of that rulebook, not the whole thing.
 | Primary fix | Recon options **1 + 2 + 4** only (thread `question`/`appId` on every turn; subtractive low-risk prompt; entity-only low-risk when genres/KB unavailable) |
 | Option 3 (server-side strip) | **Fallback only** if on-Deck still fails after 1+2+4 — not committed in the same ship |
 | Option 5 (widen genre/AppID allowlist) | **Do not** as primary fix (recon §2; Hades counterexample) |
-| Option 7 / R4 mid-stream chip | **Extra credit** after 1+2+4 — shippable without it; target “no spoiler wait-chip while streaming for named entity / low-risk AppID” |
+| Option 7 / R4 mid-stream chip | **Shipped 2026-08-15.** No spoiler wait-chip while streaming for a fence the turn already qualifies to unwrap (consent, low-risk AppID, or named entity) — see NEEDS VERIFICATION below |
 | Omit + soft invite | **Parked** in constitution / roadmap — out of this bug’s code |
 | Shared TS/Python entity extraction (option 6) | Out of scope for this bug |
 
@@ -338,19 +338,24 @@ Full recon matrix in §5 is coverage debt, not the minimum to close the bug.
 
 - Vitest: non-live turn still unwraps named-entity / low-risk AppID fences (R1)
 - Python: low-risk addendum fires with empty `game_genres` + non-empty `asked_entity` (R2 / option 4)
+- Vitest: an open spoiler fence streams as prose (no wait chip) when the turn's eligibility gate
+  already qualifies it; an ineligible open fence still masks (R4, shipped 2026-08-15)
 
 **On-Deck (required)**
 
 1. **DRG-01** — Glyphid Dreadnought by name → plain text
 2. **DRG-01d** — second question → first answer stays unfenced (R1)
 3. **DRG-01b or DRG-01c** — KB off or corpus absent → still plain text (R2)
+4. **DRG-01-STREAM-01** — as DRG-01 with streaming on → no *Spoiler hidden until complete…* chip at
+   any point (R4)
 
 **On-Deck (recommended if time)**
 
-4. Hades, **named** Megaera → plain text (decision above; supersedes recon HADES-01 “fence expected” for the named case)
-5. Hades, **not named** → story-adjacent detail still fenced (true genre over-relax guard)
+5. Hades, **named** Megaera → plain text (decision above; supersedes recon HADES-01 “fence expected” for the named case)
+6. Hades, **not named** → story-adjacent detail still fenced (true genre over-relax guard); with
+   streaming on this is also **HADES-UNNAMED-STREAM-01**, the regression guard for R4
 
-**Not required to close:** stream off, follow-up prefix, OOT, CONSENT, MASK-OFF, mid-stream chip (extra credit).
+**Not required to close:** stream off, follow-up prefix, OOT, CONSENT, MASK-OFF.
 
 ### Related docs
 
@@ -370,7 +375,17 @@ them as implementation gospel, verify against current code and on-Deck behavior:
 - [ ] Subtractive prompt change (option 2) does not drop needed fences for OOT-class progression secrets — **unit-level only so far**; the unnamed-ask path keeps the full avoid-clause, but whether the model still fences progression secrets is on-Deck behavior
 - [ ] Ship-gate Deck rows DRG-01 + 01d + (01b\|01c) after 1+2+4
 - [ ] Hades named vs unnamed expectations match §7 (recon HADES-01 row is partially superseded)
-- [ ] Mid-stream extra credit only after primary ship; do not block STRAT-SPOIL-DRG-01 on R4
+- [x] R4 (mid-stream spoiler chip flash) — **fixed 2026-08-15.** `prepareStreamMarkdown` takes an
+      optional `unwrapOpenSpoilerFence` callback; `buildAnswerBubbleElement.tsx` builds it from the
+      same eligibility gate as the closed-fence unwrap (`shouldUnwrapSpoilerFence`, extracted from
+      `unwrapAskedEntitySpoilerFences.ts`), so a turn that would unwrap once the fence closes now
+      streams it as prose from the moment the fence opens instead of masking until close. Called
+      with no callback, `prepareStreamMarkdown` is byte-identical to before — the four pre-existing
+      `streamMarkdownPrepare.test.ts` cases (including "masks open spoiler fence body (S1)") pass
+      unedited. 12 new unit cases across the three files. **Still on-Deck:** confirm the preview
+      scenario `STREAM-03-strategy-spoiler` stays PASS (opposite polarity — an ineligible open fence
+      must still mask with no body flash), plus **DRG-01-STREAM-01** / **HADES-UNNAMED-STREAM-01**
+      in [testing-manual.md](../testing-manual.md)
 - [ ] Constitution ★★★★ roadmap item exists and links here / to [spoiler-constitution.md](spoiler-constitution.md) — encoding work is **not** part of this bug fix
 - [ ] Option 3 only reconsidered if Deck still fails after 1+2+4
 

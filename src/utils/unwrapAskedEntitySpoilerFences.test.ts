@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   extractAskedBeatEntity,
+  shouldUnwrapSpoilerFence,
   unwrapAskedEntitySpoilerFences,
 } from "./unwrapAskedEntitySpoilerFences";
 
@@ -74,5 +75,39 @@ describe("unwrapAskedEntitySpoilerFences", () => {
     const out = unwrapAskedEntitySpoilerFences(raw, { appId: "550" });
     expect(out).not.toContain("```bonsai-spoiler");
     expect(out).toContain("Hold the choke point and watch the rear.");
+  });
+});
+
+describe("shouldUnwrapSpoilerFence", () => {
+  it("qualifies on consent regardless of fence text", () => {
+    expect(
+      shouldUnwrapSpoilerFence("```bonsai-spoiler\nThe true ending", {
+        spoilerConsentEffective: true,
+      })
+    ).toBe(true);
+  });
+
+  it("qualifies on a low-narrative AppID regardless of fence text", () => {
+    expect(
+      shouldUnwrapSpoilerFence("```bonsai-spoiler\nDodge the charge", { appId: "2321470" })
+    ).toBe(true);
+  });
+
+  it("qualifies when the fence mentions the asked entity", () => {
+    expect(
+      shouldUnwrapSpoilerFence(
+        "```bonsai-spoiler\nFocus fire Glyphid Dreadnought weak points",
+        { question: "How do I beat Glyphid Dreadnought?" }
+      )
+    ).toBe(true);
+  });
+
+  it("does not qualify on a narrative title with no entity named", () => {
+    expect(
+      shouldUnwrapSpoilerFence("```bonsai-spoiler\nThe true ending is that the dwarf retires", {
+        question: "Where should I go?",
+        appId: "413150",
+      })
+    ).toBe(false);
   });
 });

@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
   "fileCount": 300,
-  "edgeCount": 702,
+  "edgeCount": 703,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -2232,7 +2232,8 @@
         "src/utils/answerBubbleElRegistry.ts",
         "src/utils/answerStopRegistry.ts",
         "src/utils/buildAnswerBubbleElement.tsx",
-        "src/utils/splitResponseIntoChunks.ts"
+        "src/utils/splitResponseIntoChunks.ts",
+        "src/utils/streamMarkdownPrepare.ts"
       ],
       "importedBy": []
     },
@@ -2942,6 +2943,7 @@
       "imports": [],
       "importedBy": [
         "src/hooks/useSmoothStreamReveal.ts",
+        "src/utils/buildAnswerBubbleElement.test.tsx",
         "src/utils/buildAnswerBubbleElement.tsx",
         "src/utils/streamMarkdownPrepare.test.ts"
       ]

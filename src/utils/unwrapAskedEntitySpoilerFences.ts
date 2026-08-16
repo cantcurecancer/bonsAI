@@ -44,6 +44,24 @@ export type UnwrapSpoilerOpts = {
 };
 
 /**
+ * True when a single ```bonsai-spoiler fence (opener + body, closed or still open) should
+ * render as plain prose for this turn: the user consented, the title profile is
+ * low-narrative (routine boss/tactics), or the fence mentions the asked beat entity.
+ * Shared by the closed-fence unwrap below and the mid-stream open-fence check in
+ * prepareStreamMarkdown, so the two never drift on what "qualifies" means.
+ */
+export function shouldUnwrapSpoilerFence(fenceText: string, opts: UnwrapSpoilerOpts): boolean {
+  const question = opts.question || "";
+  const appId = String(opts.appId || "").trim();
+  const consent = opts.spoilerConsentEffective === true;
+  if (consent) return true;
+  if (titleProfileIsLowNarrative(appId)) return true;
+  const entity = extractAskedBeatEntity(question);
+  if (!entity) return false;
+  return entityMentioned(fenceText, entity);
+}
+
+/**
  * Convert ```bonsai-spoiler fences into plain prose when:
  * - the user consented to spoilers for this turn,
  * - the title profile is low-narrative (routine boss/tactics), or
@@ -63,8 +81,7 @@ export function unwrapAskedEntitySpoilerFences(
   if (!text) return text;
   if (!consent && !lowNarrativeTitle && !entity) return text;
   return text.replace(SPOILER_FENCE_RE, (full, body: string) => {
-    if (consent || lowNarrativeTitle) return String(body).replace(/\n$/, "");
-    if (entity && (entityMentioned(body, entity) || entityMentioned(full, entity))) {
+    if (shouldUnwrapSpoilerFence(full, opts) || shouldUnwrapSpoilerFence(body, opts)) {
       return String(body).replace(/\n$/, "");
     }
     return full;

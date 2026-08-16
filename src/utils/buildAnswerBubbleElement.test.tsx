@@ -5,6 +5,7 @@ import { buildAnswerBubbleElement, stopNavProps } from "./buildAnswerBubbleEleme
 import { orderedAnswerStops, resetAnswerStopRegistry } from "./answerStopRegistry";
 import { registerAnswerBubbleEl } from "./answerBubbleElRegistry";
 import { splitResponseIntoChunks } from "./splitResponseIntoChunks";
+import { SPOILER_STREAM_MASK_LABEL } from "./streamMarkdownPrepare";
 
 const ANSWER_KEY = "live";
 
@@ -170,5 +171,48 @@ describe("answer bubble section stops", () => {
     const { container } = render(el!);
     expect(container.textContent).toContain("Secret boss pattern.");
     expect(container.textContent).not.toContain("bonsai-spoiler");
+  });
+
+  /* R4: the spoiler mask chip must not flash for a fence the turn already qualifies to unwrap
+     once it closes — DRG Survivor's AppID is on the low-narrative allowlist. */
+  it("streams a low-narrative-title spoiler fence as prose instead of a mid-stream mask chip", () => {
+    const body = [
+      "Here is the plan.",
+      "",
+      "```bonsai-spoiler",
+      "Dodge the charge and focus the crystal",
+    ].join("\n");
+    const el = buildAnswerBubbleElement({
+      body,
+      streaming: true,
+      spoilerMaskingEnabled: true,
+      maxWidthCss: "100%",
+      answerKey: ANSWER_KEY,
+      appId: "2321470",
+    });
+    const { container } = render(el!);
+    expect(container.textContent).toContain("Dodge the charge and focus the crystal");
+    expect(container.textContent).not.toContain(SPOILER_STREAM_MASK_LABEL);
+  });
+
+  it("still shows the mid-stream mask chip on a narrative title with no entity named", () => {
+    const body = [
+      "Here is the plan.",
+      "",
+      "```bonsai-spoiler",
+      "The true ending is that the dwarf retires",
+    ].join("\n");
+    const el = buildAnswerBubbleElement({
+      body,
+      streaming: true,
+      spoilerMaskingEnabled: true,
+      maxWidthCss: "100%",
+      answerKey: ANSWER_KEY,
+      askQuestion: "Where should I go?",
+      appId: "413150",
+    });
+    const { container } = render(el!);
+    expect(container.textContent).toContain(SPOILER_STREAM_MASK_LABEL);
+    expect(container.textContent).not.toContain("dwarf retires");
   });
 });
