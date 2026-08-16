@@ -14,8 +14,58 @@ export function buildSection5Section(): string {
            5. UNIFIED INPUT FIELD & TEXT AREA STYLING
            Aggressively strips native styling from inputs so we can draw custom carets/overlays.
            ========================================================================== */
+        /*
+          Decky renders TextField inside a .Panel.Focusable wrapper (plus an inner div) that does
+          not inherit our host width — the "wrappers diverge from host width" note the measuring in
+          useUnifiedInputSurface was originally written around. Unwidened, the typing surface is
+          narrower than the glass card holding it. The Ask row already forces the same wrapper to
+          100% (section-4); this is the matching rule for the input host, which never had one.
+
+          Scoped by :has(textarea) / :has(input) on purpose: the ask-mode and attach popovers are
+          also .Panel.Focusable inside this host, contain no field, and must keep their own width.
+        */
+        .bonsai-scope .bonsai-unified-input-host .Panel.Focusable:has(textarea),
+        .bonsai-scope .bonsai-unified-input-host .Panel.Focusable:has(input),
+        .bonsai-scope .bonsai-unified-input-host .Panel.Focusable:has(textarea) > div,
+        .bonsai-scope .bonsai-unified-input-host .Panel.Focusable:has(input) > div {
+          width: 100% !important;
+          max-width: 100% !important;
+          min-width: 0 !important;
+          margin-left: 0 !important;
+          margin-right: 0 !important;
+          padding-left: 0 !important;
+          padding-right: 0 !important;
+          box-sizing: border-box !important;
+        }
+
+        /*
+          Same declarations without :has(), so the fix does not depend on it. An unsupported :has()
+          invalidates the whole selector list above and CEF drops that rule silently.
+
+          These reach the wrapper by position instead: direct child of the field layer (plain
+          layout) or of .bonsai-unified-input-text-box (AI character layout). The popovers are
+          excluded either way — .bonsai-ask-mode-menu-floater / .bonsai-attach-menu-floater are the
+          direct children there, and their own .Panel.Focusable sits a level deeper inside them.
+        */
+        .bonsai-scope .bonsai-unified-input-host > div > .Panel.Focusable,
+        .bonsai-scope .bonsai-unified-input-host > div > .Panel.Focusable > div,
+        .bonsai-scope .bonsai-unified-input-text-box > .Panel.Focusable,
+        .bonsai-scope .bonsai-unified-input-text-box > .Panel.Focusable > div {
+          width: 100% !important;
+          max-width: 100% !important;
+          min-width: 0 !important;
+          margin-left: 0 !important;
+          margin-right: 0 !important;
+          padding-left: 0 !important;
+          padding-right: 0 !important;
+          box-sizing: border-box !important;
+        }
+
         .bonsai-scope .bonsai-unified-input-host input,
         .bonsai-scope .bonsai-unified-input-host textarea {
+          width: 100% !important;
+          max-width: 100% !important;
+          min-width: 0 !important;
           color: transparent !important;
           -webkit-text-fill-color: transparent !important;
           margin: 0 !important;

@@ -117,28 +117,34 @@ export function buildSection4Section(): string {
           box-sizing: border-box !important;
         }
 
-        /* Re-map width for specific askbar rows using CSS Variables with fallbacks */
+        /*
+          The Ask row is a sibling PanelSectionRow of the unified input host in the same column, so
+          100% on both makes them the same width by construction.
+
+          It used to be a measured pixel snapshot instead (--bonsai-askbar-outer-width, set from
+          host width in useUnifiedInputSurface, plus a --bonsai-ask-margin-left correction). That
+          made the Ask row the only row that could not follow the panel: a sample taken mid-carousel,
+          at first paint, or before a padding change settled froze it narrower than its neighbours,
+          which is the "Ask bar no longer spans QAM width" bug. Both vars are gone — do not
+          reintroduce a px width here.
+        */
         .bonsai-scope .bonsai-ask-bleed-wrap.bonsai-full-bleed-row {
-          width: var(--bonsai-askbar-outer-width, var(--bonsai-search-host-width, 100%)) !important;
+          width: 100% !important;
+          max-width: 100% !important;
           min-width: 0 !important;
           margin-left: 0 !important;
           margin-right: 0 !important;
         }
 
-        /*
-          H1 fix: never tie min-width to --bonsai-search-host-width (measured px); that inflates tab
-          min-content and causes QAM horizontal spill. Ask inner width uses --bonsai-askbar-outer-width
-          (host + small extra) so the glass matches the unified field spill; max-width stays none so % parents do not clip it.
-        */
+        /* H1 fix: never set a px min-width here — it inflates tab min-content and spills the QAM
+           horizontally. max-width stays none so a % parent cannot clip the glass. */
         .bonsai-scope .bonsai-askbar-row-host,
         .bonsai-scope .bonsai-ask-bleed-wrap .bonsai-askbar-merged {
-          width: var(--bonsai-askbar-outer-width, var(--bonsai-search-host-width, 100%)) !important;
+          width: 100% !important;
           min-width: 0 !important;
           max-width: none !important;
-          /* Left-edge correction (ASK bar shell starts inset from the unified input host).
-           * Applied via CSS var set in useUnifiedInputSurface; ref-set inline styles on the
-           * ask element get wiped by React re-renders, but scope-level vars persist. */
-          margin-left: var(--bonsai-ask-margin-left, 0px) !important;
+          margin-left: 0 !important;
+          margin-right: 0 !important;
         }
 
         .bonsai-scope .bonsai-askbar-merged .bonsai-ask-primary.DialogButton,

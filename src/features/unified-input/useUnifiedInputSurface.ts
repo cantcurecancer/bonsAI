@@ -1,15 +1,13 @@
 /**
  * Title: Unified input surface hook
- * Purpose: Measure Decky TextField geometry and sync CSS vars for Ask bar width and text body height.
+ * Purpose: Measure the native field's painted bounds so the caret overlay sits on it, and grow the text body to fit.
  * Used for: MainTab unified input glass card and caret overlay alignment.
- * Solves: Wrapper/host width drift on Deck where DOM order does not match painted field bounds.
- * Does not: Handle Ask submit — see useBonsaiAskOrchestration and MainTab handlers.
+ * Solves: Overlay/caret drift on Deck where the Decky TextField wrapper does not start where the host does.
+ * Does not: Size the Ask row or the glass card — both are plain `width: 100%` in section-4.ts. Handle Ask submit — see useBonsaiAskOrchestration.
  */
-/** Main-tab unified Ask/search bar geometry: Decky `TextField` wrappers often diverge from host width, so we measure and sync CSS vars. */
+/** Main-tab unified input geometry: the overlay must land on the native field, which Decky's wrapper can offset. */
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
-  ASK_BAR_LAYOUT_SHIFT_RIGHT_PX,
-  ASK_BAR_ROW_WIDTH_EXTRA_PX,
   UNIFIED_INPUT_HEIGHT_PAD_PX,
   UNIFIED_TEXT_BODY_MAX_PX,
   UNIFIED_TEXT_BODY_MIN_PX,
@@ -28,7 +26,7 @@ export type UnifiedInputSurfaceRefs = {
 };
 
 /**
- * Measures the hidden overlay + syncs CSS vars / Ask bar width to the real TextField geometry (Decky wrappers differ from host width).
+ * Measures the hidden overlay + the native field's painted bounds so the caret overlay aligns with typed text.
  */
 export function useUnifiedInputSurface(currentTab: string, unifiedInput: string) {
   const bonsaiScopeRef = useRef<HTMLDivElement>(null);
@@ -36,7 +34,6 @@ export function useUnifiedInputSurface(currentTab: string, unifiedInput: string)
   const unifiedInputFieldLayerRef = useRef<HTMLDivElement>(null);
   const unifiedInputMeasureRef = useRef<HTMLDivElement>(null);
   const askBarHostRef = useRef<HTMLDivElement>(null);
-  const lastUnifiedHostWRef = useRef(0);
   /** Tab id can change between RO/RAF ticks; never remeasure Ask when not on main (avoids tab-switch flicker). */
   const currentTabRef = useRef(currentTab);
   currentTabRef.current = currentTab;
@@ -88,36 +85,19 @@ export function useUnifiedInputSurface(currentTab: string, unifiedInput: string)
       Math.max(bodyMinPx, sh + heightPadPx + expandAheadPx),
     );
     setUnifiedInputSurfacePx(nextPx);
-    const hostWRounded = Math.round(hostW * 100) / 100;
-    if (Math.abs(hostW - lastUnifiedHostWRef.current) > 0.5) {
-      lastUnifiedHostWRef.current = hostW;
-    }
-    const askOuterW = Math.round((hostW + ASK_BAR_ROW_WIDTH_EXTRA_PX) * 100) / 100;
-    bonsaiScopeRef.current?.style.setProperty("--bonsai-search-host-width", `${hostWRounded}px`);
-    bonsaiScopeRef.current?.style.setProperty("--bonsai-askbar-outer-width", `${askOuterW}px`);
-    if (askBarHostRef.current) {
-      askBarHostRef.current.style.width = `${askOuterW}px`;
-      askBarHostRef.current.style.minWidth = `${askOuterW}px`;
-    }
-    const askEl = askBarHostRef.current;
-    if (askEl) {
-      const ul = host.getBoundingClientRect().left;
-      const al = askEl.getBoundingClientRect().left;
-      /* CSS var --bonsai-ask-margin-left on the scope root already contributes to al; subtract it
-       * to recover the raw geometric delta so successive remeasures do not compound the correction. */
-      const scopeEl = bonsaiScopeRef.current;
-      const currentCorrection = scopeEl
-        ? parseFloat(scopeEl.style.getPropertyValue("--bonsai-ask-margin-left")) || 0
-        : 0;
-      const rawAskLeft = al - currentCorrection;
-      const leftDelta = Math.round((ul - rawAskLeft) * 100) / 100;
-      /* Do not lock leftDelta to the first sample — carousel transforms, preset→field focus, and
-       * ai-character padding change ul/al; a frozen correction caused visible horizontal jumps (logs H5). */
-      const marginLeftPx = Math.round((leftDelta + ASK_BAR_LAYOUT_SHIFT_RIGHT_PX) * 100) / 100;
-      /* Route correction through a CSS var + CSS rule rather than askEl.style.marginLeft: React
-       * re-renders wipe ref-set inline styles on the ask bar element, but scope-level CSS vars survive. */
-      scopeEl?.style.setProperty("--bonsai-ask-margin-left", `${marginLeftPx}px`);
-    }
+    /*
+     * The Ask row is NOT sized from this measurement any more (2026-08-15). It used to take
+     * `hostW - 1px` as a fixed width plus a measured left-edge correction, which made it the one
+     * row that could not track the panel: any sample taken mid-carousel, at first paint, or before
+     * a padding change settled froze the Ask bar narrower than every neighbouring row, and the
+     * user saw it as "the Ask button does not span the panel". It and the unified host are sibling
+     * PanelSectionRow children of one column, so `width: 100%` on both makes them equal by
+     * construction — no sample to go stale, no correction to compound. See section-4.ts.
+     *
+     * What still needs measuring is only the *caret overlay* geometry above: the fake caret and the
+     * typed-text overlay must sit exactly on the native field, and that offset is not derivable
+     * from CSS.
+     */
   }, []);
 
   useLayoutEffect(() => {
@@ -142,14 +122,6 @@ export function useUnifiedInputSurface(currentTab: string, unifiedInput: string)
       cancelAnimationFrame(rafInner);
     };
   }, [currentTab, remeasureUnifiedInputSurface]);
-
-  useEffect(() => {
-    if (currentTab !== "main") {
-      lastUnifiedHostWRef.current = 0;
-      /* Do not remove --bonsai-ask-* on tab change: one frame with missing vars made the Ask row
-       * jump to CSS fallbacks before MainTab unmounted (visible flash when leaving main). */
-    }
-  }, [currentTab]);
 
   useEffect(() => {
     if (currentTab !== "main") return;

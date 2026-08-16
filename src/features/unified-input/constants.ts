@@ -40,13 +40,11 @@ export const ASK_LABEL_COLOR_50 = "rgba(168, 180, 196, 0.5)";
 export const ASK_LABEL_READY_COLOR = "#d0dbe8";
 /** Duration (ms) for Ask bar idle → ready visual crossfade (glass overlay + label). */
 export const ASK_READY_STATE_TRANSITION_MS = 150;
-/** Nudge Ask bar host right (px) after left-edge parity correction — main-tab visual tuning vs glass bleed. */
-export const ASK_BAR_LAYOUT_SHIFT_RIGHT_PX = 0;
-/**
- * Extra width (px) for the Ask glass + bleed wrap vs the measured unified host border box.
- * The host width tracks the inner field track; this widens the Ask row to match the text area’s outer spill.
+/*
+ * ASK_BAR_LAYOUT_SHIFT_RIGHT_PX and ASK_BAR_ROW_WIDTH_EXTRA_PX were removed 2026-08-15. They tuned
+ * a measured px width for the Ask row; that row is plain `width: 100%` now and matches the unified
+ * input host by construction, so there is nothing left to nudge. See section-4.ts.
  */
-export const ASK_BAR_ROW_WIDTH_EXTRA_PX = -1;
 /** Min height (px) for the main-tab Ask glass row and primary `DialogButton` (touch target). */
 export const ASK_BAR_PRIMARY_MIN_HEIGHT_PX = 36;
 /** Minimum characters in the unified field before settings search returns matches (avoids noisy single-letter results). */

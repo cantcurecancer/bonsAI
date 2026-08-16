@@ -902,8 +902,10 @@ export function MainTabUnifiedAskBar(props: MainTabUnifiedAskBarProps) {
       className={`bonsai-askbar-merged bonsai-glass-panel bonsai-askbar-row-host${askLooksReady ? " bonsai-askbar-merged--ready" : ""}`}
       style={{
         position: "relative",
-        width: "var(--bonsai-askbar-outer-width, var(--bonsai-search-host-width, 100%))",
-        minWidth: "var(--bonsai-askbar-outer-width, var(--bonsai-search-host-width, 100%))",
+        /* Plain 100%: this row and the unified input host are sibling PanelSectionRow children of
+           one column, so they match by construction. Was a measured px var — see section-4.ts. */
+        width: "100%",
+        minWidth: 0,
         minHeight: ASK_BAR_PRIMARY_MIN_HEIGHT_PX,
         borderRadius: 8,
         overflow: "hidden",
