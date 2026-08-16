@@ -38,6 +38,30 @@ export function buildSection4Section(): string {
           margin-bottom: 2px !important;
         }
 
+        /*
+          Reach the PanelSection by structure, because its name cannot be matched on this build.
+
+          Measured on device 2026-08-16 (scripts/probe_deck_ask_row_width.py): inside the QAM,
+          \`[class*="PanelSection"]\` matches **0 elements** and \`.decky-qam-scope\` does not exist —
+          Steam ships hashed class names here (the PanelSection wrapping our rows is
+          \`_3gY0aBuNR8_NPTpXIYfkby\`), so every section-3 rule keyed on those names is inert. Only
+          \`_TabContentsScroll\` survives as a literal, which is why that one reset does work.
+
+          That PanelSection carries \`padding: 0 16px\`, and it was the entire remaining gutter —
+          probe V1 reported 15.99px on each side, against a 300px QAM column. Rows opting into
+          full bleed must not inherit it.
+
+          Matches exactly two nodes: the row wrapper holding a full-bleed row, and the section
+          holding that wrapper. :has() is verified supported on the Deck's CEF in the same run.
+          Keyed on .bonsai-full-bleed-row so only rows that asked for edge-to-edge are affected —
+          other tabs do not use that class.
+        */
+        .bonsai-scope div:has(> .bonsai-full-bleed-row),
+        .bonsai-scope div:has(> div > .bonsai-full-bleed-row) {
+          padding-left: 0 !important;
+          padding-right: 0 !important;
+        }
+
         .bonsai-scope .bonsai-preset-row-host {
           min-width: 0 !important;
           overflow: hidden !important;

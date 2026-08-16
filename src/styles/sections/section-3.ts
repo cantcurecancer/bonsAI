@@ -8,6 +8,19 @@ export function buildSection3Section(): string {
            Groups and removes Steam's default padding/margins on scroll areas and panels
            to allow true full-bleed layouts across the entire plugin.
            ========================================================================== */
+        /*
+          WARNING: every [class*="PanelSection"] / [class*="PanelSectionRow"] selector in this file
+          matches NOTHING on the shipping Deck build. Measured 2026-08-16 with
+          scripts/probe_deck_ask_row_width.py: 0 matches inside the QAM, because Steam hashes those
+          class names (the PanelSection wrapping Main's rows is "_3gY0aBuNR8_NPTpXIYfkby").
+          "_TabContentsScroll" survives as a literal, which is why only that reset actually applies.
+
+          Do not assume these rules are doing anything; the padding reset below silently was not,
+          which is what left a 16px gutter on both sides of every Main row (see section-4.ts, where
+          the working fix reaches the same element by structure via :has). They are kept because
+          other Steam builds do ship readable names — but anything load-bearing needs a structural
+          selector or a probe run to confirm it matches.
+        */
         .bonsai-scope [class*="TabContentsScroll"],
         .bonsai-scope [class*="TabContentsScroll"] > div,
         .bonsai-scope [class*="PanelSection"] {
