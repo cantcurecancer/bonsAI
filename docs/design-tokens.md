@@ -8,6 +8,10 @@ Written 2026-08-09 while designing the chat-slots redesign, because the same val
 getting re-derived by grep. Companion to [code-clarity.md](code-clarity.md) (file headers)
 and `.cursor/rules/decky-focus-graph.mdc` (D-pad wiring).
 
+**This file is the *what*. [design-language.md](design-language.md) is the *why*** — the layout
+rules these values serve, starting with using every pixel of a 300px column. Read it before
+adding a surface; read this one while building it.
+
 ---
 
 ## How styling works here
@@ -226,6 +230,14 @@ All from [unified-input/constants.ts](../src/features/unified-input/constants.ts
 
 The QAM column is roughly **400 × 800**. Design against that, not the Deck's 1280×800 screen —
 only `showModal()` content escapes the column.
+
+> **Disputed by measurement, 2026-08-16.** On a Deck output at 1080p (`devicePixelRatio` 1.28, UI
+> scale profile `desktop`), [scripts/probe_deck_ask_row_width.py](../scripts/probe_deck_ask_row_width.py)
+> reports `.bonsai-scope` at **300 × 752** and the `_TabContentsScroll` body at **300 × 667** — not
+> 400 × 800. Which figure holds on handheld is **UNKNOWN**; nobody has re-measured undocked. The
+> difference is not cosmetic: designing against 400 when the column is 300 makes every layout 25%
+> too optimistic. Re-measure before trusting either number, and see
+> [design-language.md](design-language.md) § *The space we are designing for*.
 
 ---
 
