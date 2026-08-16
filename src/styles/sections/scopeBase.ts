@@ -15,6 +15,10 @@ export function buildScopebaseSection(): string {
           max-width: 100%;
           min-width: 0;
           box-sizing: border-box;
+          /* Explicit 0: rows must reach the QAM edges, and an inherited inset here would shift
+             every full-bleed row at once (the "no longer span QAM width" bug). */
+          padding-left: 0;
+          padding-right: 0;
           /* Fill QAM column height so Decky Tabs body is not crushed into the ~80px strip row. */
           display: flex;
           flex-direction: column;
@@ -47,6 +51,10 @@ export function buildScopebaseSection(): string {
           align-self: stretch !important;
           width: 100% !important;
           box-sizing: border-box !important;
+          /* Decky's wrapper is the last ancestor bonsAI can name, and any horizontal padding it
+             carries insets every row at once. Scoped by :has so no other plugin's panel changes. */
+          padding-left: 0 !important;
+          padding-right: 0 !important;
         }
         .bonsai-scope .bonsai-settings-connection-row {
           min-width: 0;

@@ -218,7 +218,7 @@ All from [unified-input/constants.ts](../src/features/unified-input/constants.ts
 | `UNIFIED_INPUT_ICON_STRIP_PX` | 24 | Attach / mode / mic strip inside the host |
 | `UNIFIED_TEXT_BODY_MIN_PX` | 42 | Empty text body floor |
 | `ASK_BAR_PRIMARY_MIN_HEIGHT_PX` | 36 | Ask row and primary button touch target |
-| `BONSAI_PLUGIN_SIDE_PAD_PX` | 4 | Tab body horizontal inset |
+| `BONSAI_PLUGIN_SIDE_PAD_PX` | 0 | Tab body horizontal inset (was 4 until 2026-08-15; rows read as short of the QAM edges on device) |
 | `TAB_TITLE_ICON_PX` / `..._TAB_CELL_PX` | 26 / 32 | LB/RB strip icon and its cell |
 | `TAB_STRIP_BODY_GAP_PX` | 4 | Gap under the LB/RB strip |
 | `BONSAI_CHAT_INPUT_TO_TRANSCRIPT_GAP_PX` | 12 | Ask bar → transcript |

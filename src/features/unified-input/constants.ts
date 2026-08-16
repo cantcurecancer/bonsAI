@@ -65,8 +65,13 @@ export const TAB_TITLE_ICON_PX = 26;
 export const TAB_TITLE_TAB_CELL_PX = 32;
 /** Space between the LB/RB tab strip and the scrollable tab panel below (QAM). */
 export const TAB_STRIP_BODY_GAP_PX = 4;
-/** Horizontal inset (px) for tab body content inside the QAM plugin panel. */
-export const BONSAI_PLUGIN_SIDE_PAD_PX = 4;
+/**
+ * Horizontal inset (px) for tab body content inside the QAM plugin panel.
+ * 0 since 2026-08-15: rows were visibly short of the QAM edges on device, and this was the only
+ * inset bonsAI itself contributed. Raise to 2–4 if a glass-panel border ever clips against the
+ * scroll container edge — the remaining gap comes from ancestors above `.bonsai-scope`, not here.
+ */
+export const BONSAI_PLUGIN_SIDE_PAD_PX = 0;
 
 /** Vertical gap (px) between the Ask bar and the chat transcript (user bubble column). */
 export const BONSAI_CHAT_INPUT_TO_TRANSCRIPT_GAP_PX = 12;

@@ -120,6 +120,32 @@ HELPERS_JS = r"""
     return hits;
   };
 
+  // Everything from .bonsai-scope outward to <body>. The rows can only be as wide as the
+  // narrowest ancestor allows, and bonsAI's own CSS reaches no further than .decky-qam-scope —
+  // so if whitespace survives our resets, the ancestor that adds it is named here.
+  var outerChain = function (scopeEl) {
+    var out = [];
+    var n = scopeEl;
+    var depth = 0;
+    while (n && n.tagName && n.tagName.toLowerCase() !== 'html' && depth < 14) {
+      var cs = getComputedStyle(n);
+      var r = n.getBoundingClientRect();
+      out.push({
+        depth: depth,
+        tag: n.tagName.toLowerCase(),
+        cls: classesOf(n),
+        x: r2(r.x), right: r2(r.right), width: r2(r.width),
+        padLeft: cs.paddingLeft, padRight: cs.paddingRight,
+        marLeft: cs.marginLeft, marRight: cs.marginRight,
+        bordLeft: cs.borderLeftWidth, bordRight: cs.borderRightWidth,
+        boxSizing: cs.boxSizing,
+      });
+      n = n.parentElement;
+      depth++;
+    }
+    return out;
+  };
+
   var sample = function () {
     var qamScope = document.querySelector('.decky-qam-scope');
     var scope = document.querySelector('.bonsai-scope');
@@ -159,6 +185,7 @@ HELPERS_JS = r"""
       askbarMerged: describeNode(askbarMerged),
       vars: vars,
       transformedAncestors: anyAncestorTransformed(unifiedHost, scope),
+      outerChain: outerChain(scope),
     };
   };
 """
@@ -351,12 +378,58 @@ def print_chain(label, chain, indent="  "):
         )
 
 
+def _px(value):
+    """'12px' -> 12.0; anything non-numeric (auto, %, '') -> 0.0."""
+    try:
+        return float(str(value).replace("px", "").strip())
+    except (TypeError, ValueError):
+        return 0.0
+
+
+def inset_contributors(chain):
+    """Ancestors at or above .bonsai-scope that eat horizontal room, widest first.
+
+    This is the question the roadmap bug actually turns on once bonsAI's own insets are zero:
+    the rows cannot be wider than their narrowest ancestor, and our CSS stops at
+    .decky-qam-scope. Anything listed above that is Steam's and needs a named selector.
+    """
+    hits = []
+    for node in chain or []:
+        eaten = (
+            _px(node.get("padLeft")) + _px(node.get("padRight"))
+            + max(0.0, _px(node.get("marLeft"))) + max(0.0, _px(node.get("marRight")))
+            + _px(node.get("bordLeft")) + _px(node.get("bordRight"))
+        )
+        if eaten > 0.5:
+            hits.append((eaten, node))
+    hits.sort(key=lambda h: -h[0])
+    return hits
+
+
 def verdicts(s):
     out = []
 
     reference = s.get("tabScroll") or s.get("scope") or s.get("qamScope")
     uh = s.get("unifiedHost")
     ab = s.get("askBleedWrap") or s.get("askbarMerged")
+
+    # V0 — the "too much whitespace at the QAM edges" question, answered by name.
+    chain = s.get("outerChain") or []
+    contributors = inset_contributors(chain)
+    if chain:
+        outermost = chain[-1]
+        scope_node = chain[0]
+        left_gap = round(scope_node["x"] - outermost["x"], 2)
+        right_gap = round(outermost["right"] - scope_node["right"], 2)
+        detail = "scope vs outermost ancestor: left_gap=%spx right_gap=%spx" % (left_gap, right_gap)
+        if contributors:
+            detail += "; eats room: " + ", ".join(
+                "%s(%s) %.1fpx" % (n["tag"], (n["cls"].split() or ["-"])[0], eaten)
+                for eaten, n in contributors[:4]
+            )
+        out.append(("V0", abs(left_gap) > TOL_PX or abs(right_gap) > TOL_PX, detail))
+    else:
+        out.append(("V0", None, "ancestor chain above .bonsai-scope not captured"))
 
     # V1
     if reference and uh:
@@ -433,12 +506,38 @@ def print_verdicts(s):
         print("  %s %s  %s" % (vid, mark, detail))
 
 
+def print_outer_chain(chain):
+    if not chain:
+        print("  (ancestor chain above .bonsai-scope not captured)")
+        return
+    print("\n-- ancestors at/above .bonsai-scope (scope -> body) --")
+    print("  %-3s %-46s %8s %8s %8s  %-16s %-16s" % ("d", "node", "x", "right", "width", "padding L/R", "margin L/R"))
+    for node in chain:
+        label = node["tag"] + ("." + (node["cls"].split() or ["-"])[0] if node["cls"] else "")
+        print(
+            "  %-3s %-46s %8s %8s %8s  %-16s %-16s"
+            % (
+                node["depth"], label[:46], node["x"], node["right"], node["width"],
+                "%s / %s" % (node["padLeft"], node["padRight"]),
+                "%s / %s" % (node["marLeft"], node["marRight"]),
+            )
+        )
+    contributors = inset_contributors(chain)
+    if contributors:
+        print("\n  room eaten by ancestor (padding + positive margin + border), widest first:")
+        for eaten, node in contributors:
+            label = node["tag"] + ("." + (node["cls"].split() or ["-"])[0] if node["cls"] else "")
+            reach = "bonsAI CAN target" if node["depth"] <= 1 else "Steam/Decky - needs a named selector"
+            print("    %-46s %6.1fpx   (%s)" % (label[:46], eaten, reach))
+
+
 def report_sample(s):
     print("\n-- QAM / scope chain --")
     print_node("qamScope", s.get("qamScope"))
     print_node("scope", s.get("scope"))
     print_node("tabScroll", s.get("tabScroll"))
     print_node("mainPanel", s.get("mainPanel"))
+    print_outer_chain(s.get("outerChain"))
 
     print("\n-- unified input host --")
     print_node("unifiedHost", s.get("unifiedHost"))
