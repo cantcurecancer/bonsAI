@@ -15,6 +15,7 @@ Short guide to markdown under `docs/`. Repo root **[README.md](../README.md)** s
 | [testing-manual.md](testing-manual.md) | Maintainers | On-Deck smokes and Tier 0–4 runbook |
 | [knowledge-base.md](knowledge-base.md) | Maintainers | Offline RAG / corpus phases |
 | [code-clarity.md](code-clarity.md) | Contributors / agents | Module header convention and its exclusions |
+| [design-language.md](design-language.md) | Contributors / agents | **Read before adding UI.** Eight layout rules, each earned by a specific bug — starting with using every pixel of the 300px QAM column |
 | [design-tokens.md](design-tokens.md) | Contributors / agents | Palette, surfaces, focus rings, type scale, layout constants |
 | [major-redesign.md](major-redesign.md) | Planning / maintainers | Named chat slots v2 — mockup spec, decisions R1–R5, phased path |
 | [glossary.md](glossary.md) | Everyone | Terms used in file headers and maintainer docs |
