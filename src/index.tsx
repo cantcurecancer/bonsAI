@@ -57,6 +57,7 @@ import { useOllamaTabPayload } from "./features/plugin-shell/tabs/useOllamaTabPa
 import { useMainTabPayload } from "./features/plugin-shell/tabs/useMainTabPayload";
 import { useUiScaleProfile } from "./hooks/useUiScaleProfile";
 import { useQamPanelHeightGuard } from "./hooks/useQamPanelHeightGuard";
+import { useQamPanelSideBleed } from "./hooks/useQamPanelSideBleed";
 import { useTabStripBodyOffset } from "./hooks/useTabStripBodyOffset";
 import { UiScaleProvider } from "./context/UiScaleContext";
 import { publishUiScaleScopeStyle } from "./utils/uiScaleScopeBridge";
@@ -329,6 +330,7 @@ const Content: React.FC = () => {
   });
 
   useQamPanelHeightGuard(bonsaiScopeRef);
+  useQamPanelSideBleed(bonsaiScopeRef);
   useTabStripBodyOffset(bonsaiScopeRef);
 
   const intentPacks = useIntentPacks();

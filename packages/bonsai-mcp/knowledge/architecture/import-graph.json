@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 300,
-  "edgeCount": 703,
+  "fileCount": 302,
+  "edgeCount": 707,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -1560,6 +1560,23 @@
       ],
       "importedBy": [
         "src/hooks/useQamPanelHeightGuard.test.ts",
+        "src/hooks/useQamPanelSideBleed.ts",
+        "src/index.tsx"
+      ]
+    },
+    "src/hooks/useQamPanelSideBleed.test.ts": {
+      "imports": [
+        "src/hooks/useQamPanelSideBleed.ts"
+      ],
+      "importedBy": []
+    },
+    "src/hooks/useQamPanelSideBleed.ts": {
+      "imports": [
+        "src/hooks/useQamPanelHeightGuard.ts",
+        "src/utils/bonsaiDebugIngest.ts"
+      ],
+      "importedBy": [
+        "src/hooks/useQamPanelSideBleed.test.ts",
         "src/index.tsx"
       ]
     },
@@ -1734,6 +1751,7 @@
         "src/hooks/usePermissionJump.ts",
         "src/hooks/usePluginSettings.ts",
         "src/hooks/useQamPanelHeightGuard.ts",
+        "src/hooks/useQamPanelSideBleed.ts",
         "src/hooks/useReplyLanguage.ts",
         "src/hooks/useScreenshotBrowser.ts",
         "src/hooks/useSteamSettingsSearch.ts",
@@ -2146,6 +2164,7 @@
       "importedBy": [
         "src/components/BonsaiDebugOverlay.tsx",
         "src/hooks/useBonsaiPluginShell.ts",
+        "src/hooks/useQamPanelSideBleed.ts",
         "src/index.tsx"
       ]
     },
