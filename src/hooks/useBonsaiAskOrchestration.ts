@@ -131,6 +131,12 @@ export type UseBonsaiAskOrchestrationArgs = {
   devForceSessionRagChips?: boolean;
   /** Active chat slot id for Ask submit — ref updated synchronously in useChatSlots. */
   activeSlotIdRef?: RefObject<string | null>;
+  /**
+   * Creates a slot when none is active and returns the id this Ask should carry. Omit it
+   * and the Ask still runs — the backend simply has nowhere to file the turns, which is
+   * the data loss this arg exists to prevent.
+   */
+  ensureActiveSlotForAsk?: (question: string) => Promise<string | null>;
   /** Reload slot transcript from disk after terminal Ask completion. */
   onSlotTurnsChanged?: () => void;
 };
@@ -935,6 +941,20 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
         app_id: appId,
         app_context: appId ? "active" : "none",
       });
+      /*
+       * The slot has to exist *before* the RPC, not after it: `start_background_game_ai`
+       * files the user turn straight from this payload, so a missing `chat_slot_id` drops
+       * the user turn silently and the assistant turn with an error a reply later. This is
+       * free on the common path — `ensureActiveSlotForAsk` returns the active id without a
+       * round trip when one is already selected. Best-effort by design: if slot creation
+       * fails the Ask still runs, unpersisted, exactly as it behaved before.
+       */
+      let chatSlotIdForRequest = a.activeSlotIdRef?.current ?? null;
+      try {
+        chatSlotIdForRequest = (await a.ensureActiveSlotForAsk?.(q)) ?? chatSlotIdForRequest;
+      } catch {
+        /* An Ask that cannot be filed still has to run. */
+      }
       try {
         const data = await callDeckyWithTimeout<
           [
@@ -966,9 +986,7 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
             attachments: attachments as AskAttachment[],
             ask_mode: askModeForRequest,
             spoiler_consent: spoilerConsentForRequest,
-            ...(a.activeSlotIdRef?.current
-              ? { chat_slot_id: a.activeSlotIdRef.current }
-              : {}),
+            ...(chatSlotIdForRequest ? { chat_slot_id: chatSlotIdForRequest } : {}),
             ...(followUpPending
               ? {
                   reply_followup: {

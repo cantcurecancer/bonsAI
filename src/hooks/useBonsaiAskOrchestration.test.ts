@@ -174,6 +174,50 @@ describe("useBonsaiAskOrchestration", () => {
     });
 
     /*
+     * The backend files both turns from this payload and drops them when `chat_slot_id` is
+     * absent -- silently for the user turn, with an error for the assistant's. These two pin
+     * the wiring rather than the slot logic, because the bug that motivated them was neither:
+     * `ensureActiveSlotForAsk` was written, exported and unit-tested, and then never called,
+     * so every Ask on a fresh session shipped without an id and persisted nothing.
+     */
+    it("creates a slot for an Ask that has none, and sends its id", async () => {
+      const ensureActiveSlotForAsk = vi.fn(async () => "slot-1");
+
+      const { result } = renderHook(() =>
+        useBonsaiAskOrchestration(
+          makeArgs({ activeSlotIdRef: { current: null }, ensureActiveSlotForAsk }),
+        ),
+      );
+
+      await act(async () => {
+        await result.current.onAskOllama("where is the key");
+      });
+
+      expect(ensureActiveSlotForAsk).toHaveBeenCalledWith("where is the key");
+      expect(startPayload()?.chat_slot_id).toBe("slot-1");
+    });
+
+    it("still asks when the slot cannot be created, just without an id", async () => {
+      const { result } = renderHook(() =>
+        useBonsaiAskOrchestration(
+          makeArgs({
+            activeSlotIdRef: { current: null },
+            ensureActiveSlotForAsk: vi.fn(async () => {
+              throw new Error("disk full");
+            }),
+          }),
+        ),
+      );
+
+      await act(async () => {
+        await result.current.onAskOllama("where is the key");
+      });
+
+      expect(startCalls()).toHaveLength(1);
+      expect(startPayload()?.chat_slot_id).toBeUndefined();
+    });
+
+    /*
      * Python is the only writer of thinking copy. These four pin that the client renders what it
      * is given and never invents a replacement -- the failure they guard against is not a wrong
      * string, it is the line changing on its own within the first second of an Ask.

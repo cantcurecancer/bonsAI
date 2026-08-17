@@ -12,12 +12,12 @@
     },
     {
       "path": "src/index.tsx",
-      "lines": 1401,
+      "lines": 1407,
       "role": "Plugin root: tabs, scoped CSS, RPC wiring, Settings"
     },
     {
       "path": "src/hooks/useBonsaiAskOrchestration.ts",
-      "lines": 1377,
+      "lines": 1395,
       "role": ""
     },
     {
@@ -71,6 +71,11 @@
       "role": ""
     },
     {
+      "path": "src/hooks/useBonsaiAskOrchestration.test.ts",
+      "lines": 783,
+      "role": ""
+    },
+    {
       "path": "src/components/KnowledgeBaseSection.tsx",
       "lines": 769,
       "role": ""
@@ -83,11 +88,6 @@
     {
       "path": "src/components/MainTabChatTranscript.tsx",
       "lines": 750,
-      "role": ""
-    },
-    {
-      "path": "src/hooks/useBonsaiAskOrchestration.test.ts",
-      "lines": 739,
       "role": ""
     },
     {

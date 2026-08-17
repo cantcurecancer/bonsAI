@@ -134,6 +134,9 @@ const Content: React.FC = () => {
 
   const activeSlotIdRef = useRef<string | null>(peekBonsaiSessionPendingRestore()?.activeSlotId ?? null);
   const reloadSlotTranscriptRef = useRef<(() => Promise<void>) | null>(null);
+  /* Same indirection as the ref above: `useChatSlots` owns this but is declared after the
+   * orchestration hook, because it needs that hook's thread setters. */
+  const ensureActiveSlotForAskRef = useRef<((question: string) => Promise<string | null>) | null>(null);
 
   const {
     currentTab,
@@ -443,6 +446,8 @@ const Content: React.FC = () => {
     settingsLoaded,
     devForceSessionRagChips,
     activeSlotIdRef,
+    ensureActiveSlotForAsk: (question) =>
+      ensureActiveSlotForAskRef.current?.(question) ?? Promise.resolve(null),
     onSlotTurnsChanged: () => {
       void reloadSlotTranscriptRef.current?.();
     },
@@ -456,6 +461,7 @@ const Content: React.FC = () => {
     setExpandedTurnKey,
   });
   reloadSlotTranscriptRef.current = chatSlots.reloadActiveSlotTranscript;
+  ensureActiveSlotForAskRef.current = chatSlots.ensureActiveSlotForAsk;
 
   useEffect(() => {
     void chatSlots.refreshSummaries();
