@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 302,
-  "edgeCount": 707,
+  "fileCount": 304,
+  "edgeCount": 712,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -233,6 +233,7 @@
         "src/utils/answerBubbleNavRegistry.ts",
         "src/utils/answerBubbleNavigation.ts",
         "src/utils/appliedTuningText.ts",
+        "src/utils/archivedTurnTransparency.ts",
         "src/utils/askThinkingPhases.ts",
         "src/utils/buildAnswerBubbleElement.tsx",
         "src/utils/buildReplyActionsElement.tsx",
@@ -2012,6 +2013,7 @@
         "src/hooks/useScreenshotBrowser.ts",
         "src/hooks/useStrategyChecklistSession.ts",
         "src/types/backgroundAsk.ts",
+        "src/utils/archivedTurnTransparency.ts",
         "src/utils/bonsaiSessionSurvival.ts",
         "src/utils/chatSlotTurns.ts",
         "src/utils/strategyChecklist.ts",
@@ -2117,6 +2119,23 @@
         "src/components/MainTabChatTranscript.tsx",
         "src/hooks/useBonsaiAskOrchestration.ts",
         "src/utils/settingsContracts.test.ts"
+      ]
+    },
+    "src/utils/archivedTurnTransparency.test.ts": {
+      "imports": [
+        "src/utils/archivedTurnTransparency.ts",
+        "src/utils/inputTransparency.ts"
+      ],
+      "importedBy": []
+    },
+    "src/utils/archivedTurnTransparency.ts": {
+      "imports": [
+        "src/types/bonsaiUi.ts",
+        "src/utils/inputTransparency.ts"
+      ],
+      "importedBy": [
+        "src/components/MainTabChatTranscript.tsx",
+        "src/utils/archivedTurnTransparency.test.ts"
       ]
     },
     "src/utils/askThinkingPhases.test.ts": {
@@ -2537,6 +2556,8 @@
         "src/components/SessionContextStrip.tsx",
         "src/hooks/useBonsaiAskOrchestration.ts",
         "src/types/bonsaiUi.ts",
+        "src/utils/archivedTurnTransparency.test.ts",
+        "src/utils/archivedTurnTransparency.ts",
         "src/utils/bonsaiSessionSurvival.ts",
         "src/utils/contextChipsFromSnapshot.test.ts",
         "src/utils/contextChipsFromSnapshot.ts"

@@ -47,6 +47,26 @@ export function queryLiveTurnSlot(root?: HTMLElement | Document | null): HTMLEle
   return (header?.closest(".bonsai-chat-turn-slot") as HTMLElement | null) ?? null;
 }
 
+/**
+ * Slot for any turn by id — the archived-turn counterpart to `queryLiveTurnSlot`.
+ *
+ * Every helper below takes a slot and searches inside it, so they work on an archived turn as
+ * soon as one can be resolved. Needed because a completed Ask is now archived and expanded rather
+ * than left live (useChatSlots.applySlotTranscript), which put Show details and the chip ladder on
+ * a slot that `queryLiveTurnSlot` cannot see. Without this the row renders with no move handlers
+ * and D-pad Down escapes to whatever follows in document order.
+ */
+export function queryTurnSlot(
+  turnId: string,
+  root?: HTMLElement | Document | null
+): HTMLElement | null {
+  const scope = root ?? getUiDocument();
+  const selector = `[data-bonsai-turn-id="${turnId}"]`;
+  const header =
+    scope.querySelector?.(selector) ?? getUiDocument().querySelector(selector);
+  return (header?.closest(".bonsai-chat-turn-slot") as HTMLElement | null) ?? null;
+}
+
 function focusablesIn(container: ParentNode): HTMLElement[] {
   const all = Array.from(container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR));
   const visible = all.filter((el) => el.getClientRects().length > 0);

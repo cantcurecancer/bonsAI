@@ -30,6 +30,7 @@ import type { BonsaiCapabilityKey } from "../utils/permissionDeepLink";
 import { isPendingPlaceholderResponse } from "../utils/askThinkingPhases";
 import { BonsaiChatSecondaryButton } from "./BonsaiChatSecondaryButton";
 import { buildReplyActionsElement } from "../utils/buildReplyActionsElement";
+import { archivedTurnTransparency } from "../utils/archivedTurnTransparency";
 import { buildAnswerBubbleElement } from "../utils/buildAnswerBubbleElement";
 import { buildThinkingBlurbTextElement } from "../utils/buildThinkingBlurbTextElement";
 import { buildTurnHeaderElement } from "../utils/buildTurnHeaderElement";
@@ -57,6 +58,7 @@ import {
   focusReplyUtilityRow,
   focusSessionContextStrip,
   queryLiveTurnSlot,
+  queryTurnSlot,
 } from "../utils/liveTurnFocusGraph";
 import { questionLooksLikeTroubleshootingAsk } from "../utils/troubleshootingAskHeuristic";
 import {
@@ -173,29 +175,68 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
   const [transparencyDetailsOpen, setTransparencyDetailsOpen] = useState(false);
   const [troubleshootingPermHintDismissed, setTroubleshootingPermHintDismissed] = useState(false);
 
+  /*
+   * `expandedTurnKey` is a dependency because the details panel is a single boolean shared by
+   * whichever turn is expanded — only one ever is. Without the reset, opening details on one turn
+   * and then expanding another would show the second turn already open on the first one's chips.
+   */
   useEffect(() => {
     setDiagnosticsOpen(false);
     setSessionHighlightTurnId(null);
     setTransparencyDetailsOpen(false);
-  }, [transparencySnapshot?.raw_question, transparencySnapshot?.final_response]);
+  }, [
+    transparencySnapshot?.raw_question,
+    transparencySnapshot?.final_response,
+    expandedTurnKey,
+  ]);
 
   const noActiveGameContext =
     ollamaContext?.app_context !== "active" || !ollamaContext?.app_id?.trim();
 
-  const onToggleTransparencyDetails = () => {
+  /**
+   * Details toggle for one turn. Parameterised by turn key because the row is no longer live-only:
+   * a slot-restored turn is expanded instead of "live" (useChatSlots.applySlotTranscript), and the
+   * session-context highlight has to name the turn actually being inspected.
+   */
+  const makeToggleTransparencyDetails = (turnKey: string) => () => {
     setTransparencyDetailsOpen((open) => {
       const next = !open;
-      setSessionHighlightTurnId(next ? "live" : null);
+      setSessionHighlightTurnId(next ? turnKey : null);
       return next;
     });
   };
+
+  const onToggleTransparencyDetails = makeToggleTransparencyDetails("live");
+
+  const archivedTransparencyFor = (turn: AskThreadCollapsedTurn, index: number) =>
+    archivedTurnTransparency({
+      turn,
+      index,
+      total: askThreadCollapsed.length,
+      liveSnapshot: transparencySnapshot,
+    });
 
   const liveQuestion = askThreadDisplayQuestion.trim();
   const liveResponseBody = isStreamingPreview ? streamDisplayText : ollamaResponse;
   const showLiveResponse =
     Boolean(liveResponseBody.trim()) &&
     !(isAsking && !isStreamingPreview && isPendingPlaceholderResponse(liveResponseBody));
-  const showLiveTurn = Boolean(liveQuestion) || isAsking || showLiveResponse;
+  /*
+   * The response alone is not enough to justify a live turn.
+   *
+   * After a completed Ask the slot reload archives the exchange and expands the archived turn, but
+   * `ollamaResponse` still holds that same answer. That left a live turn whose question was empty
+   * and whose body was gated on `expandedTurnKey === "live"` — so it rendered as a bare header
+   * reading "…" with nothing under it and nothing to activate. Requiring the live turn to be the
+   * expanded one before a lone response can summon it removes that stub without hiding a real
+   * answer: when live IS expanded, the response still shows.
+   *
+   * The separate case where a background Ask restores a response with no question (roadmap: "Live
+   * Ask user bubble shows … after reopen") is NOT addressed here — that one needs the question
+   * carried through get_background_game_ai_status.
+   */
+  const showLiveTurn =
+    Boolean(liveQuestion) || isAsking || (showLiveResponse && expandedTurnKey === "live");
   const appliedTuningBannerText = formatAppliedTuningBannerText(lastApplied);
 
   const chatMainColumnRef = useRef<HTMLDivElement | null>(null);
@@ -319,7 +360,7 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
       }}
     >
       <div className="bonsai-chat-transcript">
-        {askThreadCollapsed.map((turn) => (
+        {askThreadCollapsed.map((turn, turnIndex) => (
           <Focusable
             key={turn.id}
             flow-children="vertical"
@@ -341,6 +382,39 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
                   turn.appId ?? null,
                   turn.spoilerConsentEffective === true
                 )}
+                {/*
+                 * Show details on an expanded archived turn. Without this the control is
+                 * unreachable after a completed Ask: the slot reload expands the archived turn
+                 * rather than "live", and the live-only row below renders nothing. Feedback,
+                 * Retry and refinement chips stay live-only — they act on the current exchange,
+                 * which an archived turn is not.
+                 */}
+                {transparencyUiAvailable(archivedTransparencyFor(turn, turnIndex))
+                  ? buildReplyActionsElement({
+                      replyKey: turn.id,
+                      rating: null,
+                      onRate: () => {},
+                      showFeedback: false,
+                      transparencyOpen: transparencyDetailsOpen,
+                      onToggleTransparency: makeToggleTransparencyDetails(turn.id),
+                      /* Down must reach this turn's own ladder. Without a handler the Focusable
+                         falls through to the next focusable in document order — Ask diagnostics —
+                         and the chips become unreachable from above. */
+                      onMoveDownFromUtility: () =>
+                        focusDownFromReplyUtilityRow(queryTurnSlot(turn.id)),
+                    })
+                  : null}
+                {transparencyDetailsOpen &&
+                transparencyUiAvailable(archivedTransparencyFor(turn, turnIndex)) ? (
+                  <div style={{ width: "100%", minWidth: 0, boxSizing: "border-box" }}>
+                    <ContextChipLadder
+                      snapshot={archivedTransparencyFor(turn, turnIndex)}
+                      collapsedHint={false}
+                      onMoveUpFromLadder={() => focusReplyUtilityRow(queryTurnSlot(turn.id))}
+                      onMoveDownFromLadder={() => focusSessionContextStrip()}
+                    />
+                  </div>
+                ) : null}
                 {turn.transparency && chipsFromSnapshot(turn.transparency).length > 0 ? (
                   <Focusable
                     style={{ maxWidth: BONSAI_CHAT_AI_MAX_WIDTH_CSS, marginTop: 8 }}

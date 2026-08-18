@@ -40,6 +40,7 @@
     "src/utils/answerBubbleNavigation.test.ts",
     "src/utils/answerStopRegistry.test.ts",
     "src/utils/appDesktopLog.test.ts",
+    "src/utils/archivedTurnTransparency.test.ts",
     "src/utils/askThinkingPhases.test.ts",
     "src/utils/bonsaiAskCompletionWatch.test.ts",
     "src/utils/bonsaiPhaseToast.test.ts",

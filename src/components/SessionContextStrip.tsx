@@ -47,6 +47,19 @@ export function SessionContextStrip({
     return () => registerNavFocus("session-context-strip", null);
   }, []);
 
+  /*
+   * The strip is the last block in the panel, so everything it reveals opens below the fold. The
+   * toggle worked — the arrow flipped — but nothing the user could see changed, which reads as a
+   * dead button. Scroll the revealed rows into view on open.
+   */
+  const expandedRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    if (!open) return;
+    window.requestAnimationFrame(() => {
+      expandedRef.current?.scrollIntoView?.({ block: "nearest", behavior: "auto" });
+    });
+  }, [open]);
+
   const rows: SessionContextTurn[] = [
     ...archivedTurns
       .filter((t) => t.transparency && chipsFromSnapshot(t.transparency).length > 0)
@@ -91,17 +104,20 @@ export function SessionContextStrip({
       {/* Decky's gamepad navigation only visits `Focusable`s — a bare <button> is touch-only, which
           is what made this header unreachable from a D-pad (reported 2026-08-04). Same wrapper the
           turn rows below already use; the native button stays for click and keeps the styling. */}
-      <Focusable
-        onActivate={() => setOpen((o) => !o)}
-        onButtonDown={(evt: unknown) => {
-          /* A only. `onButtonDown` fires for every button, so toggling on all of them meant a
-             D-pad press aimed at moving past this header collapsed or expanded it instead — the
-             same bug the spoiler fence had. */
-          if (!isOkDeckButtonEvent(evt)) return false;
-          setOpen((o) => !o);
-          return true;
-        }}
-      >
+      {/*
+        A is handled by `onActivate` ALONE, matching buildTurnHeaderElement.
+
+        This used to also toggle from `onButtonDown` on the OK button. Both fire for one A press,
+        so `setOpen` ran twice — `!o` then `!!o` — and the panel landed exactly where it started.
+        The header focused fine and looked completely dead (reported on device 2026-08-17). The row
+        Focusables below carry the same double-handler shape and are NOT affected, because
+        `setActiveId(row.id)` is idempotent; only a toggle is destroyed by firing twice.
+
+        The `onButtonDown` was originally added to stop a D-pad press aimed at moving past this
+        header from toggling it. Dropping it entirely is safe: `onActivate` never fires on a
+        direction press, which is the property the turn headers already rely on.
+      */}
+      <Focusable onActivate={() => setOpen((o) => !o)}>
         <button
           type="button"
           onClick={() => setOpen((o) => !o)}
@@ -122,7 +138,10 @@ export function SessionContextStrip({
         </button>
       </Focusable>
       {open ? (
-        <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 6 }}>
+        <div
+          ref={expandedRef}
+          style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 6 }}
+        >
           {rows.map((row) => (
             <Focusable
               key={row.id}
