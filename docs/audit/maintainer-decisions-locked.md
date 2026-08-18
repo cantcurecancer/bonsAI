@@ -822,6 +822,52 @@ is not scheduled.
 
 ---
 
+### D19 — Can you reach the strategy corpus without the game running?
+
+**LOCKED 2026-08-17**, raised during the KB QA sweep. Implementation deferred; filed as a bug.
+
+**What's going on.** `should_retrieve_knowledge`
+([knowledge_base_service.py:136](../../py_modules/backend/services/knowledge_base_service.py))
+has three ways through, and **every strategy path requires `app_id` or `app_name`**:
+
+```python
+if mode == "strategy" and (aid or aname):  return True, "strategy"
+if <compat topic router matches>:          return True, "compat"
+if aid or aname:                           return True, "strategy"
+return False, ""
+```
+
+With no running game the only door is the troubleshooting router, so all strategy content is
+unreachable however explicitly the user names the title. Measured on device 2026-08-17 against
+the published `2026.08.16` corpus: `hl2 ravenholm` and `drg survivor what class` both return
+`gate=False` in **Speed and Strategy alike**, while `ravenholm` with Half-Life 2 running
+retrieves the Ravenholm card normally. The corpus is fine; nothing asks it.
+
+**This is a bug, not a design choice.** `KB-NEWTITLE-01` in [testing.md](../testing.md) already
+specifies the opposite as expected — *"with no game running, ask something naming a title
+(`hl2 ravenholm`, `drg survivor what class`) and confirm the right game's cards attach and no
+other game's do."* The behavior was documented and never implemented.
+
+**The machinery already exists.** `_resolve_game_id` (`:222`) resolves app_id → alias table →
+canonical title, and the alias table already holds `hl2`, `oot`, `drg survivor`, `portal 2`.
+It is only ever handed `app_id` / `app_name` / `shortcut_name` — never the question text.
+
+**Locked shape.** Scan the question against the alias table as a **last resort** in the gate,
+only when `aid` and `aname` are both empty, so it can never override a running game. Word-boundary
+match, longest alias wins (`portal 2` beats `portal`). `BM25_RELEVANCE_FLOOR` still applies, so a
+title mention alone does not force a card.
+
+| Question | Locked answer |
+|---|---|
+| Does a text-resolved title apply that game's spoiler profile? | **Yes** — and fence spoilers as best we can. Asking about OoT by name gets OoT's progression fencing, same as if it were running |
+| Minimum alias length on this path? | **3 characters.** Excluding 3-char aliases would fail `hl2 ravenholm`, which is the documented test case this fixes |
+
+**Known risk, accepted.** Short aliases appear in ordinary sentences — *"this game is hades on my
+battery"* would wrongly resolve Hades. The relevance floor catches most, not all. Revisit if QA
+shows real-world false positives; do not pre-emptively widen the denylist without evidence.
+
+---
+
 ### Maintainer decisions locked — 2026-08-02
 
 The options above stay as the decision record. **Locked below** is what we are
