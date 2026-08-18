@@ -17,17 +17,23 @@ export type PresetPrompt = {
 
 /**
  * **Prompt-testing helper (default off):** When `true`, the main-tab preset carousel uses the
- * three fixed strings in `TEMP_CAROUSEL_FROZEN_TEXTS` (order preserved) instead of random or
+ * fixed strings in `TEMP_CAROUSEL_FROZEN_TEXTS` (order preserved) instead of random or
  * contextual sampling — stable chips for repeatable Deck / model checks. Shipped builds keep
  * this `false`; set to `true` locally while working through matrices in `docs/testing.md`.
+ *
+ * Freezing also suppresses session-RAG mixing (`composePresetSeedsWithSessionRag`), so a suite
+ * that asserts a RAG chip appears cannot pass while this is on — guard those cases on the flag
+ * the way `presets.test.ts` does rather than leaving them to fail.
  */
 export const TEMP_PRESET_CAROUSEL_FROZEN = false;
 
 /**
- * Shipped `PRESET_PROMPTS.text` values in chip order: slot1, slot2, slot3.
- * Must match entries in `PRESET_PROMPTS` (same strings).
+ * Frozen chip texts in order. The carousel has three slots, so the first three fill it and
+ * rotation walks the rest in order — list more than three to stage a whole QA batch in one
+ * deploy. Each entry must match a `text` in `PRESET_PROMPTS`; an entry that matches nothing is
+ * skipped, and if fewer than three resolve the freeze falls back to random sampling.
  */
-export const TEMP_CAROUSEL_FROZEN_TEXTS: readonly [string, string, string] = [
+export const TEMP_CAROUSEL_FROZEN_TEXTS: readonly string[] = [
   "What are the best settings for 60fps?",
   "How do I fix stuttering?",
   "When should I use Expert mode instead of Speed?",
@@ -160,10 +166,12 @@ const CATEGORY_KEYWORDS: [string, string[]][] = [
  * When `TEMP_PRESET_CAROUSEL_FROZEN` and `count === 3`, replace the triple with
  * `TEMP_CAROUSEL_FROZEN_TEXTS` in order. Shared by `getRandomPresets` and `getContextualPresets`.
  */
-function applyTempFrozenCarousel(picked: PresetPrompt[], count: number): PresetPrompt[] {
-  if (!TEMP_PRESET_CAROUSEL_FROZEN || count < 3 || picked.length < 3) {
-    return picked;
-  }
+/**
+ * Frozen texts resolved to prompts, in list order. Returns `[]` when fewer than three resolve,
+ * which is the caller's signal to fall back to normal sampling rather than show a short carousel.
+ */
+function frozenPresets(): PresetPrompt[] {
+  if (!TEMP_PRESET_CAROUSEL_FROZEN) return [];
   const resolved: PresetPrompt[] = [];
   for (const text of TEMP_CAROUSEL_FROZEN_TEXTS) {
     const p = PRESET_PROMPTS.find((x) => x.text === text);
@@ -171,10 +179,15 @@ function applyTempFrozenCarousel(picked: PresetPrompt[], count: number): PresetP
       resolved.push(p);
     }
   }
-  if (resolved.length === 3) {
-    return resolved;
+  return resolved.length >= 3 ? resolved : [];
+}
+
+function applyTempFrozenCarousel(picked: PresetPrompt[], count: number): PresetPrompt[] {
+  if (!TEMP_PRESET_CAROUSEL_FROZEN || count < 3 || picked.length < 3) {
+    return picked;
   }
-  return picked;
+  const resolved = frozenPresets();
+  return resolved.length >= 3 ? resolved.slice(0, count) : picked;
 }
 
 export function getRandomPresets(count: number, options?: PresetSamplerOptions): PresetPrompt[] {
@@ -208,6 +221,15 @@ export function getRandomPresetExcluding(
   exclude: Set<string>,
   options?: PresetSamplerOptions,
 ): PresetPrompt {
+  // Rotation must honour the freeze or the carousel drifts back to random prompts a tick after
+  // it is seeded, which silently ends a QA run that looks like it is still set up. Walking the
+  // frozen list in order (first entry not already on screen) is what lets a batch longer than the
+  // three slots be reached without a redeploy.
+  const frozen = frozenPresets();
+  if (frozen.length >= 3) {
+    const next = frozen.find((p) => !exclude.has(p.text));
+    return next ?? frozen[0]!;
+  }
   const base = samplerPool(options);
   const candidates = base.filter((p) => !exclude.has(p.text));
   const pool = candidates.length > 0 ? candidates : base;

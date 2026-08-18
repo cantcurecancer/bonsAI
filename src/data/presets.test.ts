@@ -36,7 +36,9 @@ describe("presets", () => {
 
   it("when TEMP_PRESET_CAROUSEL_FROZEN is on, random and contextual triples match TEMP_CAROUSEL_FROZEN_TEXTS", () => {
     if (!TEMP_PRESET_CAROUSEL_FROZEN) return;
-    const want = [...TEMP_CAROUSEL_FROZEN_TEXTS];
+    // The frozen list may be longer than the carousel's three slots (a whole QA batch staged in
+    // one deploy); the first three fill it and rotation walks the rest.
+    const want = [...TEMP_CAROUSEL_FROZEN_TEXTS].slice(0, 3);
     expect(getRandomPresets(3).map((p) => p.text)).toEqual(want);
     expect(getContextualPresets("performance", 3).map((p) => p.text)).toEqual(want);
   });
