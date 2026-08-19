@@ -25,6 +25,10 @@ from backend.services.knowledge_base_service import (
     _format_block,
     _fts_match_query,
     _fuse_cards_by_rrf,
+    _get_connection,
+    _load_section_vectors,
+    _vector_recall_sections,
+    VECTOR_RECALL_FLOOR,
 )
 from backend.services.ollama_embed_service import OllamaEmbedError
 
@@ -722,6 +726,171 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
       )
     self.assertTrue(result.attached)
     self.assertEqual(result.retrieval_method, "keyword_embed_unavailable")
+
+  def test_vector_recall_finds_a_card_no_keyword_matched(self):
+    """The bug this pass exists for: BM25 returns nothing, the right card is in the corpus.
+
+    Measured on Deck 2026-08-17 -- "how do i kill the big armoured bug boss" returned 0
+    candidates with the Glyphid Dreadnought card present, because vectors were only ever
+    loaded for cards FTS had already found.
+    """
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    with mock.patch(
+      "backend.services.knowledge_base_service.nomic_embed_available",
+      return_value=True,
+    ), mock.patch(
+      "backend.services.knowledge_base_service.corpus_has_usable_section_vectors",
+      return_value=True,
+    ), mock.patch(
+      "backend.services.knowledge_base_service.embed_texts",
+      return_value=[[1.0, 0.0] + [0.0] * 766],
+    ), mock.patch(
+      "backend.services.knowledge_base_service._load_section_vectors",
+      return_value={
+        3: [1.0, 0.0] + [0.0] * 766,
+        4: [0.0, 1.0] + [0.0] * 766,
+      },
+    ):
+      result = retrieve_knowledge_context(
+        settings,
+        ask_mode="strategy",
+        question="how do i kill the big armoured bug boss",
+        app_id="2321470",
+        app_name="Deep Rock Galactic: Survivor",
+        domain="strategy",
+        pc_ip="127.0.0.1:11434",
+      )
+    self.assertTrue(result.attached)
+    self.assertEqual(result.retrieval_method, "hybrid")
+    self.assertIn("Dreadnought", result.text_block)
+    self.assertNotIn("Hollow Bough", result.text_block)
+
+  def test_vector_recall_leaves_an_under_floor_card_alone(self):
+    """A card the keyword half never found has to clear VECTOR_RECALL_FLOOR to be attached."""
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    under_floor = VECTOR_RECALL_FLOOR - 0.05
+    with mock.patch(
+      "backend.services.knowledge_base_service.nomic_embed_available",
+      return_value=True,
+    ), mock.patch(
+      "backend.services.knowledge_base_service.corpus_has_usable_section_vectors",
+      return_value=True,
+    ), mock.patch(
+      "backend.services.knowledge_base_service.embed_texts",
+      return_value=[[1.0, 0.0] + [0.0] * 766],
+    ), mock.patch(
+      "backend.services.knowledge_base_service._load_section_vectors",
+      return_value={3: [under_floor, 0.0] + [0.0] * 766},
+    ):
+      result = retrieve_knowledge_context(
+        settings,
+        ask_mode="strategy",
+        question="how do i kill the big armoured bug boss",
+        app_id="2321470",
+        app_name="Deep Rock Galactic: Survivor",
+        domain="strategy",
+        pc_ip="127.0.0.1:11434",
+      )
+    self.assertNotIn("Dreadnought", result.text_block)
+
+  def test_vector_recall_does_not_run_on_the_implicit_route(self):
+    """An Ask that never declared itself to be about the game pays no embed round trip.
+
+    D17 routes every Ask made while a covered game runs. Spending ~800ms on Deck to attach a
+    strategy card to "what is the weather tomorrow" is the trade
+    IMPLICIT_ROUTE_RELEVANCE_FLOOR already refused for keyword hits.
+    """
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    with mock.patch(
+      "backend.services.knowledge_base_service.nomic_embed_available",
+      return_value=True,
+    ), mock.patch(
+      "backend.services.knowledge_base_service.corpus_has_usable_section_vectors",
+      return_value=True,
+    ), mock.patch(
+      "backend.services.knowledge_base_service.embed_texts",
+      return_value=[[1.0, 0.0] + [0.0] * 766],
+    ) as embed:
+      result = retrieve_knowledge_context(
+        settings,
+        ask_mode="speed",
+        question="how do i kill the big armoured bug boss",
+        app_id="2321470",
+        app_name="Deep Rock Galactic: Survivor",
+        domain="strategy",
+        pc_ip="127.0.0.1:11434",
+      )
+    embed.assert_not_called()
+    self.assertNotEqual(result.retrieval_method, "hybrid")
+    self.assertFalse(result.attached)
+
+  def test_vector_recall_stays_inside_the_resolved_game(self):
+    """Recall is per-game for the same reason the keyword search is: wrong-game advice."""
+    conn = _get_connection(str(SEED_DB))
+    dreadnought_vector = _load_section_vectors(conn, [3])[3]
+    cards, vectors = _vector_recall_sections(
+      conn,
+      game_id=2,
+      query_vector=dreadnought_vector,
+      top_k=3,
+      min_similarity=VECTOR_RECALL_FLOOR,
+      exclude_ids=set(),
+    )
+    self.assertTrue(cards)
+    self.assertEqual(cards[0].name, "Glyphid Dreadnought")
+    self.assertEqual({c.game_id for c in cards}, {2})
+    self.assertGreaterEqual(len(vectors), len(cards))
+
+  def test_vector_recall_skips_a_card_the_keyword_half_already_found(self):
+    conn = _get_connection(str(SEED_DB))
+    dreadnought_vector = _load_section_vectors(conn, [3])[3]
+    cards, _ = _vector_recall_sections(
+      conn,
+      game_id=2,
+      query_vector=dreadnought_vector,
+      top_k=3,
+      min_similarity=VECTOR_RECALL_FLOOR,
+      exclude_ids={3},
+    )
+    self.assertNotIn(3, [c.section_id for c in cards])
+
+  def test_rrf_lets_a_recall_card_compete_without_unseating_the_top_keyword_hit(self):
+    keyword = [
+      KnowledgeCard(1, 1, "G", "boss", "Keyword first", "c", "", "", None, None, "fallback"),
+      KnowledgeCard(2, 1, "G", "boss", "Keyword second", "c", "", "", None, None, "fallback"),
+    ]
+    recall = [KnowledgeCard(3, 1, "G", "boss", "Vector only", "c", "", "", None, None, "fallback")]
+    vectors = {
+      3: [1.0, 0.0],
+      1: [0.7, 0.7],
+      2: [0.0, 1.0],
+    }
+    fused = _fuse_cards_by_rrf(keyword, [1.0, 0.0], vectors, top_k=5, recall_cards=recall)
+    self.assertEqual([c.name for c in fused], ["Keyword first", "Vector only", "Keyword second"])
+
+  def test_rrf_does_not_duplicate_a_recall_card_the_keyword_list_already_had(self):
+    keyword = [KnowledgeCard(1, 1, "G", "boss", "Shared", "c", "", "", None, None, "fallback")]
+    recall = [KnowledgeCard(1, 1, "G", "boss", "Shared", "c", "", "", None, None, "fallback")]
+    fused = _fuse_cards_by_rrf(keyword, [1.0, 0.0], {1: [1.0, 0.0]}, top_k=5, recall_cards=recall)
+    self.assertEqual([c.section_id for c in fused], [1])
+
+  def test_rrf_ranks_recall_cards_by_vector_when_keyword_found_nothing(self):
+    recall = [
+      KnowledgeCard(1, 1, "G", "boss", "Weaker", "c", "", "", None, None, "fallback"),
+      KnowledgeCard(2, 1, "G", "boss", "Stronger", "c", "", "", None, None, "fallback"),
+    ]
+    vectors = {1: [0.6, 0.8], 2: [1.0, 0.0]}
+    fused = _fuse_cards_by_rrf([], [1.0, 0.0], vectors, top_k=5, recall_cards=recall)
+    self.assertEqual([c.name for c in fused], ["Stronger", "Weaker"])
 
   def test_compat_hybrid_reranks_when_nomic_available(self):
     settings = {

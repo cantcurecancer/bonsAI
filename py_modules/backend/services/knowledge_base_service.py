@@ -1,6 +1,6 @@
 """Title: Knowledge base service
 
-Purpose: On-Deck knowledge base retrieval (FTS5 + optional hybrid vector re-rank).
+Purpose: On-Deck knowledge base retrieval (FTS5 + optional per-game vector recall, RRF-fused).
 Used for: game_ai_request when use_local_knowledge_base is enabled.
 Solves: Offline RAG context blocks without cloud dependencies.
 Does not: Build UI or manage KB download UI — see KnowledgeBaseSection and rag_corpus_download_service.
@@ -85,6 +85,47 @@ BM25_RELEVANCE_FLOOR = 1.0
 # move once the seed is deepened. It is here because shipping D17 with a known noise source
 # is worse than shipping a constant that says out loud it is a guess.
 IMPLICIT_ROUTE_RELEVANCE_FLOOR = 4.0
+
+# --- Vector recall pass --------------------------------------------------------------------
+#
+# The vector half searches for itself instead of re-ranking whatever BM25 handed it. Before
+# this, every candidate came from one FTS query and vectors were loaded for that shortlist
+# only, so a semantically perfect card sharing no keyword with the question was unreachable --
+# when BM25 returned nothing, no embedding was computed at all. Measured on device 2026-08-17
+# against corpus 2026.08.16: "how do i kill the big armoured bug boss" returned 0 candidates
+# with DRG Survivor's Glyphid Dreadnought card sitting in the corpus. Phase 7's locked ranking
+# blend asks for exactly this -- "when FTS is empty/weak, meaning fallback ... vector/ANN list
+# into RRF" (docs/knowledge-base.md).
+#
+# Brute force over one game's sections (5-13 cards across the 13-title corpus), so it needs no
+# ANN index. Phase 7's sqlite-vss item is the version of this that matters at catalog scale.
+#
+# Cap of 3 bounds what a *wrong* recall costs: an Ask that is not about the game at all can add
+# at most three cards to the pool, and Strategy's budget only spends three. It is not a
+# recall limit in practice -- in the floor measurement the correct card sat at vector rank 1
+# for 10 of 15 paraphrased questions and within rank 3 for 14 of them (the exception already
+# had three keyword candidates of its own).
+VECTOR_RECALL_K = 3
+
+# Cosine floor for admitting a card the keyword half never found. MEASURED, not guessed -- and
+# the measurement says the two distributions overlap, so no floor separates them cleanly. Full
+# table: docs/audit/rag-vector-recall-floor-2026-08-18.md (15 paraphrased questions with a
+# known answer, 12 off-topic Asks, 4 titles, corpus 2026.08.16, nomic-embed-text):
+#
+#   correct card, paraphrased question   0.519 .. 0.738
+#   best card for an off-topic Ask       0.435 .. 0.593
+#
+# 0.50 clears every relevant hit in that sample and rejects 4 of the 12 off-topic ones. It is
+# deliberately loose because of what it is measured against, not against nothing: this floor
+# only decides what to attach on the *explicit* route, where the alternative when BM25 finds
+# nothing is _genre_fallback -- a generic genre card with no relation to the question at all.
+# A card at cosine 0.52 is weaker evidence than a keyword hit and stronger than that.
+#
+# Precision on this path is carried by the route gate rather than by the floor: the pass runs
+# only when the user declared the Ask to be about the game (see IMPLICIT_ROUTE_RELEVANCE_FLOOR
+# and the vector_recall_ready branch). Do not tighten this above 0.55 without re-measuring --
+# two of the four failures this fixes score 0.542 and 0.523.
+VECTOR_RECALL_FLOOR = 0.50
 
 # Column weights, highest first. sections_fts is (name, card); compat_patterns_fts is
 # (topic, platforms, card). A card whose *title* matches the Ask is a better hit than one
@@ -388,6 +429,28 @@ def _compat_row_to_card(row: sqlite3.Row) -> KnowledgeCard:
     )
 
 
+def _section_row_to_card(row: sqlite3.Row, *, bm25_score: float = 0.0) -> KnowledgeCard:
+    """Build a card from a `sections` row. Sibling of ``_compat_row_to_card``.
+
+    ``bm25_score`` is a keyword score the caller measured, so it is passed rather than read:
+    the vector recall pass finds cards no FTS query ranked and leaves it at 0.0.
+    """
+    return KnowledgeCard(
+        section_id=int(row["section_id"]),
+        game_id=int(row["game_id"]),
+        game_title=str(row["canonical_title"] or ""),
+        section_type=str(row["section_type"] or ""),
+        name=str(row["name"] or ""),
+        card=str(row["card"] or ""),
+        source_url=str(row["source_url"] or ""),
+        source_license=str(row["source_license"] or ""),
+        source_version=row["source_version"],
+        crawled_at=row["crawled_at"],
+        trust_tier=_trust_tier_for_row(row),
+        bm25_score=bm25_score,
+    )
+
+
 def _search_compat_patterns(
     conn: sqlite3.Connection,
     *,
@@ -436,17 +499,79 @@ def _load_section_vectors(conn: sqlite3.Connection, section_ids: list[int]) -> d
     return out
 
 
+def _vector_recall_sections(
+    conn: sqlite3.Connection,
+    *,
+    game_id: int,
+    query_vector: list[float],
+    top_k: int,
+    min_similarity: float,
+    exclude_ids: set[int],
+) -> tuple[list[KnowledgeCard], dict[int, list[float]]]:
+    """Rank one game's whole section set by cosine -- the vector half's own recall path.
+
+    Returns ``(recall_cards, vectors_by_id)``: the above-floor cards the keyword shortlist did
+    not already contain, plus the vectors for **every** section of the game. The second value
+    is what the fusion re-ranks with, so the caller needs exactly one load either way.
+
+    Scoped to the resolved game for the same reason ``_search_sections`` is: the best cosine
+    match in the whole corpus for an uncovered title is another game's card, and wrong-game
+    advice is worse than none. A game holds 5-13 sections, so scanning all of them costs one
+    indexed query and a few hundred dot products.
+
+    Raises ``EmbeddingDimensionMismatch`` via ``_dot_similarity`` when the corpus was baked at
+    a different dimension; the caller treats that as "disable hybrid for this request".
+    """
+    rows = conn.execute(
+        "SELECT s.section_id, s.game_id, g.canonical_title, s.section_type, s.name, s.card, "
+        "s.source_url, s.source_license, s.source_version, s.crawled_at "
+        "FROM sections s JOIN games g ON g.game_id = s.game_id "
+        "WHERE s.game_id = ?",
+        (game_id,),
+    ).fetchall()
+    if not rows:
+        return [], {}
+
+    vectors_by_id = _load_section_vectors(conn, [int(r["section_id"]) for r in rows])
+    if not vectors_by_id:
+        return [], {}
+
+    scored: list[tuple[float, int, sqlite3.Row]] = []
+    for row in rows:
+        section_id = int(row["section_id"])
+        if section_id in exclude_ids:
+            continue
+        vec = vectors_by_id.get(section_id)
+        if not vec:
+            continue
+        similarity = _dot_similarity(query_vector, vec)
+        if similarity < min_similarity:
+            continue
+        scored.append((similarity, section_id, row))
+
+    # Ties broken by section_id so the order is stable run to run.
+    scored.sort(key=lambda item: (-item[0], item[1]))
+    return [_section_row_to_card(row) for _, _, row in scored[:top_k]], vectors_by_id
+
+
 def _fuse_cards_by_rrf(
     cards: list[KnowledgeCard],
     query_vector: list[float],
     vectors_by_id: dict[int, list[float]],
     *,
     top_k: int,
+    recall_cards: Optional[list[KnowledgeCard]] = None,
 ) -> list[KnowledgeCard]:
     """Reciprocal-rank fusion of the keyword ordering with the vector ordering.
 
     ``cards`` arrives in BM25 order, so a card's index is its FTS rank. Each list contributes
     ``w / (RRF_K + rank)``.
+
+    ``recall_cards`` are cards only the vector pass found (see ``_vector_recall_sections``).
+    They join the pool and take an FTS rank one past the end of the keyword list -- the same
+    one-step backfill a vectorless card takes in the vector ranking below, and equal for all of
+    them, so the vector ordering alone decides their order among themselves. Passing none
+    leaves this a pure re-rank of the keyword shortlist, which is what the compat path does.
 
     Rank fusion replaces a cosine-only sort that appended vectorless cards *after* every
     vector-scored one, so the best keyword hit in the corpus sank below a marginal cosine
@@ -464,14 +589,22 @@ def _fuse_cards_by_rrf(
     Raises ``EmbeddingDimensionMismatch`` via ``_dot_similarity`` when the corpus was baked at
     a different dimension; the caller treats that as "disable hybrid for this request".
     """
-    if not cards:
+    pool = list(cards)
+    if recall_cards:
+        seen = {card.section_id for card in cards}
+        pool.extend(card for card in recall_cards if card.section_id not in seen)
+    if not pool:
         return []
 
-    scores = [RRF_W_FTS / (RRF_K + rank) for rank in range(1, len(cards) + 1)]
+    fts_missing_rank = len(cards) + 1
+    scores = [
+        RRF_W_FTS / (RRF_K + (index + 1 if index < len(cards) else fts_missing_rank))
+        for index in range(len(pool))
+    ]
 
     by_similarity: list[tuple[float, int]] = []
     vectorless: list[int] = []
-    for index, card in enumerate(cards):
+    for index, card in enumerate(pool):
         vec = vectors_by_id.get(card.section_id)
         if vec:
             by_similarity.append((_dot_similarity(query_vector, vec), index))
@@ -487,8 +620,8 @@ def _fuse_cards_by_rrf(
     for index in vectorless:
         scores[index] += RRF_W_VEC / (RRF_K + missing_rank)
 
-    order = sorted(range(len(cards)), key=lambda i: (-scores[i], i))
-    return [cards[i] for i in order[:top_k]]
+    order = sorted(range(len(pool)), key=lambda i: (-scores[i], i))
+    return [pool[i] for i in order[:top_k]]
 
 
 def _search_sections(
@@ -525,22 +658,7 @@ def _search_sections(
         relevance = _row_relevance(row)
         if relevance < min_relevance:
             continue
-        out.append(
-            KnowledgeCard(
-                section_id=int(row["section_id"]),
-                game_id=int(row["game_id"]),
-                game_title=str(row["canonical_title"] or ""),
-                section_type=str(row["section_type"] or ""),
-                name=str(row["name"] or ""),
-                card=str(row["card"] or ""),
-                source_url=str(row["source_url"] or ""),
-                source_license=str(row["source_license"] or ""),
-                source_version=row["source_version"],
-                crawled_at=row["crawled_at"],
-                trust_tier=_trust_tier_for_row(row),
-                bm25_score=relevance,
-            )
-        )
+        out.append(_section_row_to_card(row, bm25_score=relevance))
     return out
 
 
@@ -811,7 +929,20 @@ def retrieve_knowledge_context(
         elif has_vectors and not variant_ok:
             retrieval_method = "keyword_embed_unavailable"
 
-        if nomic_ready and cards:
+        # Whether the vector half gets to search for itself rather than only re-order the
+        # keyword shortlist. Two conditions, both load-bearing:
+        #
+        # - **A resolved game**, because the scan is per-game (`_vector_recall_sections`).
+        # - **The explicit route**, i.e. the user declared this Ask to be about the game. The
+        #   pass costs an embed round trip (793-900 ms measured on Deck 2026-08-17) and, at a
+        #   floor loose enough to catch a paraphrase, will attach *something* to almost any
+        #   question. Spending both on an Ask that merely happened while a game was open is
+        #   the trade IMPLICIT_ROUTE_RELEVANCE_FLOOR already refused for keyword hits. Keyed
+        #   off the same flag deliberately, so widening what counts as explicit (Expert is the
+        #   open case) widens both at once and they cannot drift apart.
+        vector_recall_ready = domain != "compat" and game_id is not None and not implicit_route
+
+        if nomic_ready and (cards or vector_recall_ready):
             t_embed = time.perf_counter()
             try:
                 query_vectors = embed_texts(
@@ -823,8 +954,18 @@ def retrieve_knowledge_context(
                 query_vector = query_vectors[0]
                 embed_ms = round((time.perf_counter() - t_embed) * 1000, 2)
                 t_rerank = time.perf_counter()
+                recall_cards: list[KnowledgeCard] = []
                 if domain == "compat":
                     vectors_by_id = _load_compat_vectors(conn, [c.section_id for c in cards])
+                elif vector_recall_ready and game_id is not None:
+                    recall_cards, vectors_by_id = _vector_recall_sections(
+                        conn,
+                        game_id=game_id,
+                        query_vector=query_vector,
+                        top_k=VECTOR_RECALL_K,
+                        min_similarity=VECTOR_RECALL_FLOOR,
+                        exclude_ids={c.section_id for c in cards},
+                    )
                 else:
                     vectors_by_id = _load_section_vectors(conn, [c.section_id for c in cards])
                 cards = _fuse_cards_by_rrf(
@@ -832,6 +973,7 @@ def retrieve_knowledge_context(
                     query_vector,
                     vectors_by_id,
                     top_k=top_k,
+                    recall_cards=recall_cards,
                 )
                 rerank_ms = round((time.perf_counter() - t_rerank) * 1000, 2)
                 retrieval_method = "hybrid"

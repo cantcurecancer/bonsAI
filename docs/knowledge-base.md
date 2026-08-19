@@ -4,7 +4,7 @@ Maintainer architecture for the **on-Deck offline strategy + compat knowledge ba
 
 ## Overview
 
-v1 grounds Strategy and troubleshooting Asks by **pre-retrieval prompt-splice** into `early_context_suffix` (not model-facing tools). The corpus is **maintainer-built**, **manifest-driven**, and **downloaded on demand** (Hugging Face primary, GitHub Releases mirror). Retrieval is **FTS5 + rule-based query expansion**, plus optional **hybrid ranking** with `nomic-embed-text` when vectors and the embed model are both available.
+v1 grounds Strategy and troubleshooting Asks by **pre-retrieval prompt-splice** into `early_context_suffix` (not model-facing tools). The corpus is **maintainer-built**, **manifest-driven**, and **downloaded on demand** (Hugging Face primary, GitHub Releases mirror). Retrieval is **FTS5 + rule-based query expansion**, fused with an optional **vector recall pass** over the resolved game's sections (`nomic-embed-text`, when vectors and the embed model are both available). Two lists, RRF-fused — see [§ Vector recall pass](#vector-recall-pass-2026-08-18).
 
 > **Corrected 2026-08-05 (remediation PR1).** Phases 2 and 3 shipped what this document
 > called hybrid, but was a **cosine-only re-rank**: the vector sort replaced the keyword
@@ -22,7 +22,7 @@ flowchart TD
   gate -->|yes| resolve["Resolve title:<br/>AppID -> IGDB via alias table"]
   resolve --> ambiguous{"Ambiguous edition/<br/>non-Steam?"}
   ambiguous -->|yes| clarifier["strategy-branches clarifier"]
-  ambiguous -->|no| retrieve["FTS5 query + expansion<br/>relevance floor<br/>optional RRF fusion w/ vectors"]
+  ambiguous -->|no| retrieve["FTS5 query + expansion<br/>relevance floor<br/>+ vector recall over the game<br/>RRF fusion of both lists"]
   retrieve --> hit{"Hit?"}
   hit -->|yes| cards["Top-k cards + trust tier"]
   hit -->|no| genre["Genre/compat pattern<br/>(fallback tier)"]
@@ -155,7 +155,7 @@ On-Deck: reply credit → **KB-ATTRIB-01**; published corpus file beside DB → 
 | **Phase 4** | Extended retrieval (discovery locked 2026-07-30; **not implementing yet**): session chip **visibility** (not vector ranking); structured enemy/item **sample** cards + light reply bullets; T1 per-game AppID compat tips; lean compat phrase-gate fix. |
 | **Phase 5** | **Corpus expansion** (discovery locked 2026-07-30; **not implementing yet**): deepen all **11** Phase 3 titles (content → chip vector ranking); profiled depth; baked chip ranking; Dev-tab install only until Phase 6. |
 | **Phase 6 (shipped 2026-08-14)** | **Public publish + legal**: HF primary (`qd313/bonsai-knowledge-base`) + GitHub mirror (`knowledge-base-v1`); shipped the **13-title / 117-section** PR2-deepened corpus + 124 shared tips rather than a separate Phase 5 matured-11 pass. First push `2026.08.14`; **point release `2026.08.16`** replaced it as the first *reproducible* artifact. **KB-DOWNLOAD** stays Partial until the download **UI** is exercised on-Deck. |
-| **Phase 7** | **Retrieval infra + optional paths** (tight discovery 2026-07-30): prior ANN + nomic auto-pull; plus RRF fusion, vision→entity→retrieve, thumbs demote, delta/packs, named thinking hit. One umbrella row; tracks not gated on each other; UX may ship early. Fuller discovery later. |
+| **Phase 7** | **Retrieval infra + optional paths** (tight discovery 2026-07-30): prior ANN + nomic auto-pull; plus RRF fusion, vision→entity→retrieve, thumbs demote, delta/packs, named thinking hit. One umbrella row; tracks not gated on each other; UX may ship early. Fuller discovery later. **The meaning-fallback half of the ranking blend shipped 2026-08-18** as a per-game vector recall pass (§ Vector recall pass), which makes sqlite-vss/ANN an optimisation rather than a prerequisite. |
 | **Phase 8** | **Catalog corpus** (intent): large title coverage (Steam ~1000 / Deck ~100 / emu eras) — fuller discovery later. |
 
 **Separate roadmap row (not Phase 3–8):** **KB visual maps** — light prelim only until closer to implementation.
@@ -317,7 +317,7 @@ on device (**KB-SMOKE-01**).
 
 ### Phase 7 — locked decisions (tight, 2026-07-30; intent retrieval extended 2026-07-31)
 
-**Status:** Tight discovery complete; **document only** — fuller discovery later; **not implementing yet**. One Phase 7 roadmap/KB umbrella; internal **optional tracks** are **not** gated on each other. UX tracks **may ship earlier** when dependencies exist. **Must not block** Phase 6 first public publish. May spike in parallel with Phase 6.
+**Status:** Tight discovery complete; **document only** — fuller discovery later; **not implementing yet**, with one exception: the **meaning-fallback** line of the ranking blend below shipped 2026-08-18 (§ Vector recall pass), because an open bug — the vector half adding no recall — could not be fixed without it. One Phase 7 roadmap/KB umbrella; internal **optional tracks** are **not** gated on each other. UX tracks **may ship earlier** when dependencies exist. **Must not block** Phase 6 first public publish. May spike in parallel with Phase 6.
 
 **Prior scope (kept):** optional **sqlite-vss / ANN**; optional **auto-pull `nomic-embed-text`** with explicit consent UX (never silent pull).
 
@@ -364,7 +364,7 @@ on device (**KB-SMOKE-01**).
 
 | User-facing (chip / Show details) | When |
 |-----------------------------------|------|
-| **Keyword + meaning** | Hybrid ran successfully |
+| **Keyword + meaning** | Hybrid ran successfully. Since 2026-08-18 the *meaning* half genuinely widens the search on the explicit route rather than only re-ordering keyword hits — see [§ Vector recall pass](#vector-recall-pass-2026-08-18) |
 | **Keyword search** | Vectors unused, missing, or corpus has no embeddings |
 | **Keyword search (embed unavailable)** | Hybrid attempted but could not run: embed failed/timeout, or the corpus vectors are an incompatible format (`embedding_variant` / `embedding_model` mismatch, dimension mismatch) |
 | **Keyword search (hybrid disabled)** | The Developer hybrid kill-switch (`rag_hybrid_retrieval_enabled`, default on) is off. **Deliberately a different string** from embed-unavailable (Decision 5) — a chosen setting must not read as a broken install. Label shipped in PR1; the setting shipped in PR2 stage 6a. Checked before the corpus-format gate, so the switch reports itself even when the corpus could not have run hybrid either. |
@@ -454,6 +454,58 @@ The plan specifies `score = w_fts/(k + rank_fts) + w_vec/(k + rank_vec)`, which 
 
 - **Spoiler confidence chip** — Planned Near-term in [roadmap.md](roadmap.md); decisions locked 2026-07-29 (bands, heuristics + same-Ask risk tag, transparency-only); ready to implement. Related Planned: user-adjustable fencing, unfenced-spoiler feedback (distinct from Phase 7 retrieval thumbs chips).
 - **KB visual maps** — separate Planned row; light prelim only.
+
+## Vector recall pass (2026-08-18)
+
+**Both halves search. Neither is a filter on the other.**
+
+Until this landed, "hybrid" meant: run one FTS query, load vectors **for the cards it
+returned**, RRF those. The vector half could only re-order a keyword shortlist, so a card that
+shared no keyword with the question was unreachable — and when BM25 returned nothing, no
+embedding was computed at all. Measured on Deck 2026-08-17 against corpus `2026.08.16`:
+*"how do i kill the big armoured bug boss"* returned **0 candidates** with DRG Survivor's
+Glyphid Dreadnought card sitting in the corpus.
+
+This is the **meaning-fallback** blend Phase 7 locked on 2026-07-30 ("when FTS is empty/weak,
+meaning fallback ... vector/ANN list into RRF"), so it is a locked decision implemented, not a
+new one.
+
+| | |
+|---|---|
+| **Scope** | Sections of the **resolved game** only — same reason `_search_sections` refuses an unscoped search: the best cosine match in the whole corpus for an uncovered title is another game's card |
+| **Cost** | Brute force over 5–13 cards: one indexed query plus a few hundred dot products. No ANN index; Phase 7's sqlite-vss is an optimisation of a path that now exists |
+| **Fusion** | A recall-only card enters `_fuse_cards_by_rrf` with an FTS rank one past the end of the keyword list — the same one-step backfill a vectorless card takes in the vector ranking, so a card FTS never found cannot unseat the top keyword hit |
+| **Floor** | `VECTOR_RECALL_FLOOR = 0.50`, `VECTOR_RECALL_K = 3` |
+| **Route** | **Explicit route only** — the pass runs when the user declared the Ask to be about the game, keyed off the same `implicit_route` flag that picks the relevance floor |
+| **Compat tips** | **Unchanged** — still re-rank only. The same flaw exists there and belongs with the D16 topic-filter fix, which edits the same search |
+
+### Why the route gate carries the precision, not the floor
+
+The floor was measured, and the measurement says a floor cannot do this job. Across 15
+paraphrased questions with a known answer and 12 off-topic Asks (4 titles, corpus
+`2026.08.16`):
+
+| group | range |
+|---|---|
+| cosine of the **correct** card | 0.519 – 0.738 |
+| best cosine on an **off-topic** Ask | 0.435 – 0.593 |
+
+They **overlap**. A shape-based rule (z-score over the game's own cards) was measured and
+rejected — off-topic z(top) ran 1.10–2.32 against 1.10–2.42 for relevant, because with 5–13
+cards in a game *something* always stands out. **Whether an Ask is about the game is a routing
+question, not a retrieval one.** So the route gate answers it, and the floor only has to clear
+a low bar: on the explicit route, what it replaces when BM25 finds nothing is `_genre_fallback`
+— a generic genre card with no relation to the question at all.
+
+The gate also buys the latency back. The pass costs an embed round trip (**793–900 ms** on
+Deck), and D17 routes *every* Ask made while a covered game runs; paying that on "what is the
+weather tomorrow" is the trade `IMPLICIT_ROUTE_RELEVANCE_FLOOR` already refused for keyword
+hits.
+
+**Effect** on `kb_eval_v2` (98 labeled strategy rows, paired, one query embedding per case):
+top-3 **95.9% → 100.0%**, top-1 unchanged, **zero** regressions. Full measurement:
+[audit/rag-vector-recall-floor-2026-08-18.md](audit/rag-vector-recall-floor-2026-08-18.md).
+On-Deck QA owed: **KB-RECALL-01**.
 
 ## Related docs
 
