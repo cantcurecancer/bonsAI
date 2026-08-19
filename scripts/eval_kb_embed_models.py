@@ -4,9 +4,11 @@
 Two independent questions, both answered here:
 
 1. **Which embed model?** Bare vs prompted columns per model, over the English fixtures.
-2. **Does fusion beat its parts?** keyword / vector-only / RRF at the baseline model, on the
-   *same* corpus, with bootstrap confidence intervals. Same-corpus only (R4): numbers from a
-   different corpus are not comparable and must not be quoted against each other.
+2. **Does fusion beat its parts?** keyword / vector-only / RRF-rerank-only / RRF at the
+   baseline model, on the *same* corpus, with bootstrap confidence intervals. Same-corpus only
+   (R4): numbers from a different corpus are not comparable and must not be quoted against
+   each other. ``rrf`` is what ships; ``rrf_rerank_only`` is what shipped before 2026-08-18,
+   kept as an arm so the vector recall pass has to keep earning its embed round trip.
 
 Two honesty rules are enforced in code rather than left to the reader:
 
@@ -83,6 +85,9 @@ from backend.services.knowledge_base_service import (  # noqa: E402
     _resolve_game_id,
     _search_compat_patterns,
     _search_sections,
+    _vector_recall_sections,
+    VECTOR_RECALL_FLOOR,
+    VECTOR_RECALL_K,
 )
 from backend.services.knowledge_base_service import (  # noqa: E402
     should_retrieve_knowledge,
@@ -93,7 +98,7 @@ from backend.services.ollama_embed_service import (  # noqa: E402
 )
 
 PromptMode = Literal["bare", "prompted"]
-RetrievalArm = Literal["keyword", "vector_only", "rrf"]
+RetrievalArm = Literal["keyword", "vector_only", "rrf_rerank_only", "rrf"]
 Split = Literal["tune", "holdout"]
 EVAL_MIN_TOP_K = 3  # fixtures often use speed (top_k=1); bake-off needs top-3 signal
 
@@ -372,9 +377,26 @@ def _hybrid_retrieve(
     vectors_by_id: dict[int, list[float]],
     fts_k: int,
     top_k: int,
+    with_recall: bool,
 ) -> list[KnowledgeCard]:
+    """Fusion as production runs it (``with_recall=True``) or as it ran before 2026-08-18.
+
+    ``with_recall=False`` reproduces the old shape exactly -- one FTS query, vectors for those
+    candidates only, and nothing at all when FTS came up empty. It is kept as an arm because a
+    measurement that cannot show what the recall pass bought cannot show when it stops paying.
+
+    **The recall pass reads the vectors baked into the corpus**, not the ``vectors_by_id`` the
+    caller embedded for this run. Those agree only because the arms run always uses
+    BASELINE_MODEL with production's document prefix -- the same model and prefix the corpus
+    was baked with, and embeddings are deterministic. Run the arms at another model and this
+    arm silently mixes two vector spaces; that is why ``_run_retrieval_arms`` is not given a
+    model parameter to vary.
+    """
     expanded = _expand_query(case.query, "")
+    recall_cards: list[KnowledgeCard] = []
     if case.domain == "compat":
+        # Production does not run recall on the tip sheet -- see the open compat topic-filter
+        # bug. When it does, this branch has to move with it or the arm goes stale again.
         cards = _search_compat_patterns(conn, query=expanded, top_k=fts_k)
     else:
         game_id, _ = _resolve_game_id(
@@ -384,13 +406,23 @@ def _hybrid_retrieve(
             shortcut_name=case.shortcut,
         )
         cards = _search_sections(conn, game_id=game_id, query=expanded, top_k=fts_k)
-    if not cards:
+        if with_recall and game_id is not None:
+            recall_cards, vectors_by_id = _vector_recall_sections(
+                conn,
+                game_id=game_id,
+                query_vector=query_vector,
+                top_k=VECTOR_RECALL_K,
+                min_similarity=VECTOR_RECALL_FLOOR,
+                exclude_ids={c.section_id for c in cards},
+            )
+    if not cards and not recall_cards:
         return []
     return _fuse_cards_by_rrf(
         cards,
         query_vector,
         vectors_by_id,
         top_k=top_k,
+        recall_cards=recall_cards,
     )
 
 
@@ -691,7 +723,12 @@ def _run_retrieval_arms(
     Embedding once and reusing it is not just a speed trick: it removes embedding nondeterminism
     as a source of difference between the arms, so a gap between them is a ranking difference.
     """
-    out: dict[str, list[QueryResult]] = {"keyword": [], "vector_only": [], "rrf": []}
+    out: dict[str, list[QueryResult]] = {
+        "keyword": [],
+        "vector_only": [],
+        "rrf_rerank_only": [],
+        "rrf": [],
+    }
     for case in cases:
         top_k = _eval_top_k(case.ask_mode)
         expanded = _expand_query(case.query, "")
@@ -703,6 +740,15 @@ def _run_retrieval_arms(
         vector_cards = _vector_only_for_case(
             case, conn, query_vector=q_vec, docs=docs, vectors=vectors_by_id, top_k=top_k
         )
+        rerank_only_cards = _hybrid_retrieve(
+            conn,
+            case,
+            query_vector=q_vec,
+            vectors_by_id=vectors_by_id,
+            fts_k=HYBRID_FTS_SHORTLIST_K,
+            top_k=top_k,
+            with_recall=False,
+        )
         rrf_cards = _hybrid_retrieve(
             conn,
             case,
@@ -710,11 +756,13 @@ def _run_retrieval_arms(
             vectors_by_id=vectors_by_id,
             fts_k=HYBRID_FTS_SHORTLIST_K,
             top_k=top_k,
+            with_recall=True,
         )
 
         for arm, cards in (
             ("keyword", keyword_cards),
             ("vector_only", vector_cards),
+            ("rrf_rerank_only", rerank_only_cards),
             ("rrf", rrf_cards),
         ):
             hit_at_1, hit_at_3 = _score_cards(cards, case, top_k)
@@ -736,6 +784,25 @@ def _slice_results(
 ) -> dict[str, list[QueryResult]]:
     """Filter every arm's results by a predicate over the matching case, keeping arms aligned."""
     indices = [i for i, case in enumerate(cases) if keep(case)]
+    return {arm: [rows[i] for i in indices] for arm, rows in results.items()}
+
+
+def _keyword_blind_slice(
+    results: dict[str, list[QueryResult]],
+) -> dict[str, list[QueryResult]]:
+    """Only the cases where the **keyword** arm returned nothing at all.
+
+    This is the slice that hid the recall bug found on Deck 2026-08-17. With vectors loaded
+    only for cards FTS had already found, every fusion arm scored zero here by construction --
+    and because the corpus answers most labeled questions on keywords alone, the overall
+    numbers barely moved. A hybrid that cannot answer when keyword search comes up empty is not
+    adding recall, whatever its average says, and this is where that shows.
+
+    Sliced off the keyword arm's own ``fts_empty`` rather than each arm's, so every arm is
+    scored on the same cases.
+    """
+    keyword = results.get("keyword") or []
+    indices = [i for i, row in enumerate(keyword) if row.fts_empty]
     return {arm: [rows[i] for i in indices] for arm, rows in results.items()}
 
 
@@ -950,7 +1017,7 @@ def _write_report(
                     "|-----|-------|----------|-------|----------|",
                 ]
             )
-            for arm in ("keyword", "vector_only", "rrf"):
+            for arm in ("keyword", "vector_only", "rrf_rerank_only", "rrf"):
                 row = table.get(arm)
                 if not row:
                     continue
@@ -960,6 +1027,48 @@ def _write_report(
                 )
             lines.append("")
         lines.extend(["**Holdout verdict:** " + arms["verdict"], ""])
+
+        blind = arms.get("keyword_blind") or {}
+        blind_n = (blind.get("keyword") or {}).get("n", 0)
+        lines.extend(
+            [
+                "### Recall — labeled cases keyword search cannot answer",
+                "",
+                "Cases where the **keyword** arm returned no candidate at all. Every arm is "
+                "scored on the same cases, so this reads as: when keywords fail, who still "
+                "finds the card?",
+                "",
+                "This slice exists because its absence hid a real bug. Until 2026-08-18 the "
+                "vector half only re-ordered the keyword shortlist, so every fusion arm scored "
+                "**0% here by construction** — and because the corpus answers most labeled "
+                "questions on keywords alone, the overall tables barely moved. A `rrf` row that "
+                "matches `rrf_rerank_only` here means the recall pass has stopped working.",
+                "",
+            ]
+        )
+        if not blind_n:
+            lines.extend(
+                [
+                    "No labeled case left the keyword arm empty in this run — the slice is "
+                    "empty, which is a property of the fixtures, not a pass.",
+                    "",
+                ]
+            )
+        else:
+            lines.extend(
+                [
+                    f"| Arm | top-1 | top-3 | n |",
+                    "|-----|-------|-------|---|",
+                ]
+            )
+            for arm in ("vector_only", "rrf_rerank_only", "rrf"):
+                row = blind.get(arm)
+                if not row:
+                    continue
+                lines.append(
+                    f"| {arm} | {row['top1_pct']}% | {row['top3_pct']}% | {row['n']} |"
+                )
+            lines.append("")
 
         lines.extend(
             [
@@ -995,7 +1104,7 @@ def _write_report(
             for label, table in (("overall", compat_all), ("gate-reachable only", compat_only)):
                 if not table:
                     continue
-                for arm in ("keyword", "vector_only", "rrf"):
+                for arm in ("keyword", "vector_only", "rrf_rerank_only", "rrf"):
                     row = table.get(arm)
                     if not row:
                         continue
@@ -1121,6 +1230,13 @@ def run_bakeoff(
         "compat_gate_reachable": _arms_table(
             _slice_results(
                 arm_results, english_cases, lambda c: c.domain == "compat" and c.gate_reachable
+            )
+        ),
+        # The recall question, asked directly: of the labeled cases keyword search cannot
+        # answer at all, how many does each arm still get right?
+        "keyword_blind": _arms_table(
+            _keyword_blind_slice(
+                _slice_results(arm_results, english_cases, _case_is_labeled)
             )
         ),
     }

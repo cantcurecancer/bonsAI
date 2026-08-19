@@ -204,6 +204,48 @@ class EvalArmsTests(unittest.TestCase):
         self.assertTrue(any(c.split == "tune" for c in labeled))
         self.assertTrue(any(c.split == "holdout" for c in labeled))
 
+    def _rows(self, spec):
+        """spec: list of (hit, fts_empty) -> QueryResult rows."""
+        mod = self.mod
+        return [
+            mod.QueryResult(
+                case_id=str(i), hit_at_1=hit, hit_at_3=hit, fts_empty=empty, embed_ms=0.0
+            )
+            for i, (hit, empty) in enumerate(spec)
+        ]
+
+    def test_keyword_blind_slice_keeps_only_the_cases_keyword_could_not_answer(self):
+        """The slice that would have caught the 2026-08-17 recall bug.
+
+        Until the vector half got its own recall pass, every fusion arm scored zero on exactly
+        these cases -- and the overall tables barely moved, because keyword search answers most
+        labeled questions on its own.
+        """
+        results = {
+            #                    case0          case1         case2
+            "keyword": self._rows([(True, False), (False, True), (False, True)]),
+            "rrf": self._rows([(True, False), (True, False), (False, False)]),
+        }
+        blind = self.mod._keyword_blind_slice(results)
+        self.assertEqual([r.case_id for r in blind["keyword"]], ["1", "2"])
+        self.assertEqual([r.case_id for r in blind["rrf"]], ["1", "2"])
+        self.assertEqual([r.hit_at_3 for r in blind["rrf"]], [True, False])
+
+    def test_keyword_blind_slice_reads_the_keyword_arm_not_each_arm(self):
+        """Every arm must be scored on the same cases, or the columns are not comparable."""
+        results = {
+            "keyword": self._rows([(False, True), (True, False)]),
+            # This arm found candidates on case 0 and none on case 1 -- irrelevant to the slice.
+            "rrf": self._rows([(True, False), (True, True)]),
+        }
+        blind = self.mod._keyword_blind_slice(results)
+        self.assertEqual([r.case_id for r in blind["keyword"]], ["0"])
+        self.assertEqual([r.case_id for r in blind["rrf"]], ["0"])
+
+    def test_keyword_blind_slice_is_empty_when_keyword_always_found_something(self):
+        results = {"keyword": self._rows([(True, False), (False, False)])}
+        self.assertEqual(self.mod._keyword_blind_slice(results)["keyword"], [])
+
     def test_slice_keeps_arms_aligned(self):
         mod = self.mod
         cases = [

@@ -18,9 +18,52 @@ from that section when it disagrees with an option above.
 **One open: [D18](#d18--when-loading-settings-fails-four-values-keep-whatever-was-on-screen-bug-or-intent)**
 (raised 2026-08-05 by the step 11 friction test). D1–D18 are locked; **D19 is superseded by
 D20** (below). See the table below for D1–D15 and the sections below for D16, D17, D19, D20,
-D21.
+D21, D22.
+
+> **Numbering collision, flagged 2026-08-18 and not silently fixed:** **D19 is used twice** —
+> once for the corpus licence question (superseded by D20, 2026-08-14) and again for
+> *"Can you reach the strategy corpus without the game running?"* (locked 2026-08-17, cited by
+> roadmap.md and by the open bug). Renaming either one breaks live references in the roadmap
+> and the bug list, so it needs a maintainer call rather than an edit in passing.
 
 ---
+
+### D22 — A matched troubleshooting topic is a strong preference, not a filter
+
+**Raised and locked 2026-08-18**, while planning the fix for *"Compat retrieval returns a tip
+from the wrong topic"*. Extends **D16**, which decided *whether* a question reaches the tip
+sheet; this decides *what it is allowed to return once it gets there*.
+
+**The question, plainly.** The router already works out what a troubleshooting question is
+about — "the game only responds to the touchpad and ignores the sticks" is a Steam Input
+question. Today that answer is thrown away and the search runs across all 124 tips, which is
+how a question about controllers comes back with a tip about screen resolution that happens to
+contain the word "ignores". Should the matched topic **restrict** what can be returned, or
+merely **favour** it?
+
+**Choice:** a **strong preference**. The matched topic feeds the ranking as a heavy signal;
+tips on that topic rise, tips on other topics can still surface when their match is genuinely
+better. Nothing is excluded outright.
+
+**Why.** The router guesses, and a hard filter turns every wrong guess into an empty result or
+a forced-wrong answer with no way back. A question that spans two topics — "my controller
+stops working after sleep" is Steam Input *and* power management — has no single right topic
+to filter on. Preference degrades gracefully in both cases; a filter fails hard in both.
+
+**Cost, stated plainly:** an off-topic tip can still win if it outscores everything on the
+right topic by a wide margin. That is the failure this fix is *for*, so the preference has to
+be weighted heavily enough to actually change the outcome, and the fix is not done until the
+four `KB-ROUTER-01` sentences return on-topic tips. If measurement later shows preference is
+too weak on this corpus, tightening toward a filter is a weight change, not a rewrite — which
+is the other reason to start here.
+
+**Not chosen:** hard filter (predictable, but one bad guess and the user gets nothing);
+leaving it as-is (measured 2026-08-17: half the router's own test sentences return an
+off-topic tip).
+
+**Also settled by this:** the compat path still re-ranks only — it never got the vector recall
+pass the strategy path got on 2026-08-18, because both edits land in `_search_compat_patterns`
+and they ship together.
 
 ### D21 — Thinking effort sends "on", not the level name
 
