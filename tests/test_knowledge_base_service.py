@@ -25,11 +25,15 @@ from backend.services.knowledge_base_service import (
     _format_block,
     _fts_match_query,
     _fuse_cards_by_rrf,
+    _compat_tips_for_topics,
     _get_connection,
     _load_section_vectors,
+    _search_compat_patterns,
+    COMPAT_TOPIC_RECALL_K,
     _vector_recall_sections,
     VECTOR_RECALL_FLOOR,
 )
+from backend.services.compat_topic_router import match_compat_corpus_topics
 from backend.services.ollama_embed_service import OllamaEmbedError
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -935,6 +939,100 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
     self.assertEqual(len(topics), 5)
     # Strongest keyword hits survive fusion rather than being displaced by the vectors.
     self.assertTrue(topics[0].startswith("[Tip: crash]"))
+
+  def test_routed_topic_tip_wins_over_a_keyword_match_on_another_topic(self):
+    """D22, and the bug it fixes.
+
+    Measured on Deck 2026-08-17: this sentence routes to steam_input, then retrieval threw the
+    topic away and returned the gamescope tip "If game ignores resolution, set in-game
+    resolution to match gamescope target" -- a lexical match on *ignores*, beating ten
+    steam_input tips that were in the corpus.
+    """
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    result = retrieve_knowledge_context(
+      settings,
+      ask_mode="speed",
+      question="the game only responds to the touchpad and ignores the sticks",
+      app_id="",
+      app_name="",
+      domain="compat",
+      pc_ip="",
+    )
+    self.assertTrue(result.attached)
+    tips = [ln for ln in result.text_block.splitlines() if ln.startswith("[Tip:")]
+    self.assertTrue(tips)
+    self.assertIn("steam_input", tips[0])
+    self.assertNotIn("gamescope", tips[0])
+
+  def test_topic_recall_reaches_tips_that_share_no_word_with_the_question(self):
+    """Why a ranking preference alone could not fix this.
+
+    Measured 2026-08-18: for three of the four KB-ROUTER-01 sentences the on-topic tips were
+    not ranked low, they were absent -- 0 of 8 storage tips reached the keyword candidate list.
+    You cannot promote a card that was never a candidate.
+    """
+    conn = _get_connection(str(SEED_DB))
+    question = "I'm out of room and want my installs on the memory card instead"
+    by_keyword = _search_compat_patterns(conn, query=_expand_query(question, ""), top_k=30)
+    self.assertNotIn("storage", [c.name for c in by_keyword])
+
+    recalled = _compat_tips_for_topics(
+      conn,
+      topics=match_compat_corpus_topics(question),
+      exclude_ids=set(),
+      top_k=COMPAT_TOPIC_RECALL_K,
+    )
+    self.assertTrue(recalled)
+    self.assertEqual({c.name for c in recalled}, {"storage"})
+
+  def test_topic_preference_is_not_a_filter(self):
+    """D22 chose preference over filter, so a clearly better match elsewhere still surfaces.
+
+    This question routes to proton *and* crash, but says "windows" outright, and the
+    windows_steam tips keep their place. If this ever returns proton-only, the weight has been
+    raised into filter territory and D22 no longer holds.
+    """
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    result = retrieve_knowledge_context(
+      settings,
+      ask_mode="expert",
+      question="my windows game shuts itself the moment the loading screen appears",
+      app_id="",
+      app_name="",
+      domain="compat",
+      pc_ip="",
+    )
+    topics = [ln for ln in result.text_block.splitlines() if ln.startswith("[Tip:")]
+    self.assertTrue(any("windows_steam" in ln for ln in topics))
+
+  def test_topic_preference_does_not_need_an_embed_model(self):
+    """A Deck without nomic installed still gets the routing fix, just without cosine order."""
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    with mock.patch(
+      "backend.services.knowledge_base_service.nomic_embed_available",
+      return_value=False,
+    ):
+      result = retrieve_knowledge_context(
+        settings,
+        ask_mode="speed",
+        question="my playstation 2 games run at half speed on the handheld",
+        app_id="",
+        app_name="",
+        domain="compat",
+        pc_ip="",
+      )
+    tips = [ln for ln in result.text_block.splitlines() if ln.startswith("[Tip:")]
+    self.assertTrue(tips)
+    self.assertIn("emudeck", tips[0])
 
   def test_compat_keyword_when_nomic_missing(self):
     settings = {

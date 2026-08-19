@@ -61,9 +61,17 @@ is the other reason to start here.
 leaving it as-is (measured 2026-08-17: half the router's own test sentences return an
 off-topic tip).
 
-**Also settled by this:** the compat path still re-ranks only — it never got the vector recall
-pass the strategy path got on 2026-08-18, because both edits land in `_search_compat_patterns`
-and they ship together.
+**Amended the same day, by measurement.** The plan said the compat path would also get the
+vector recall pass the strategy path got. It was built, measured and **removed**: on the tune
+split it cost a case and gained none (27/27 without, 26/27 with), and structurally it cannot
+help — reaching compat retrieval means the router matched a topic, so topic recall has already
+filled the pool, and a vector pass could only add *off-topic* candidates, which is the opposite
+of this decision. Zero of the 40 compat fixture rows reach retrieval with no routed topic.
+Detail: [rag-compat-topic-preference-2026-08-18.md](rag-compat-topic-preference-2026-08-18.md).
+
+**Implemented 2026-08-18.** Weight `RRF_W_TOPIC = 0.30` — the *weakest* setting that fixes all
+four KB-ROUTER-01 sentences, chosen that way because the decision was preference, not score.
+Router sentences 1/4 → **4/4**; compat tune top-3 81% → **100%**. Works without an embed model.
 
 ### D21 — Thinking effort sends "on", not the level name
 

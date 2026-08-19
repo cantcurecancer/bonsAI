@@ -36,7 +36,10 @@ from backend.services.ollama_embed_service import (
     format_embed_query,
     nomic_embed_available,
 )
-from backend.services.compat_topic_router import question_targets_compat_corpus
+from backend.services.compat_topic_router import (
+    match_compat_corpus_topics,
+    question_targets_compat_corpus,
+)
 from backend.services.ollama_prompts import question_matches_troubleshooting_log_context
 
 HYBRID_FTS_SHORTLIST_K = 30
@@ -143,6 +146,52 @@ VECTOR_RECALL_K = 3
 # and the vector_recall_ready branch). Do not tighten this above 0.55 without re-measuring --
 # two of the four failures this fixes score 0.542 and 0.523.
 VECTOR_RECALL_FLOOR = 0.50
+
+# --- Compat tips: routed topic + vector recall (D22, 2026-08-18) ---------------------------
+#
+# D16 works out which topic a troubleshooting question is about. Until now that answer was
+# thrown away -- `match_compat_corpus_topics` had no caller outside its own module -- and the
+# search ran across the whole tip sheet, which is how "the game only responds to the touchpad
+# and ignores the sticks" came back with a gamescope tip about screen resolution that happens
+# to contain the word "ignores".
+#
+# Measured 2026-08-18 on corpus 2026.08.16, and the measurement moved the design: for three of
+# the four KB-ROUTER-01 sentences the on-topic tips were not ranked low, they were **absent** --
+# 0 of 8 storage tips, 0 of 10 steam_input tips, 0 of 2 emudeck tips reached the candidate list
+# at all, because the question shares no word with them. A ranking preference cannot promote a
+# card that was never a candidate, so the topic first has to open a recall path.
+COMPAT_TOPIC_RECALL_K = 6
+
+# D22 locks this as a **preference, not a filter**: on-topic tips get a bonus, nothing is
+# excluded, and a genuinely better match on another topic can still win. The router guesses,
+# and a filter turns every wrong guess into an empty result; questions that span two topics
+# ("my controller stops working after sleep" is steam_input *and* power) have no single right
+# topic to filter on.
+#
+# Flat, not rank-based, because "the router matched this topic" is a yes/no fact -- there is no
+# meaningful ordering *within* the matched set for it to express. Rank order comes from the
+# keyword and vector lists, which is where ordering information actually lives.
+#
+# The weight is small on purpose and the reason is arithmetic: with RRF_K = 60, the whole FTS
+# ordering from rank 1 to rank 30 spans 1/61 - 1/90 = 0.0053, while list *membership* is worth
+# 1/61 = 0.0164. A topic bonus at full weight would be three times the entire keyword ordering
+# and would behave as the hard filter D22 rejected. Swept on the tune split 2026-08-18.
+RRF_W_TOPIC = 0.30
+
+# **The compat path deliberately has no vector recall pass**, unlike strategy sections. It was
+# built, measured and removed on 2026-08-18, for a structural reason and a measured one.
+#
+# Structural: the only doors into compat retrieval are `question_targets_compat_corpus` -- which
+# returns True only when a non-weak topic matched -- and the troubleshooting-log path. So
+# reaching this code almost always means a topic matched, which means topic recall has already
+# put candidates in the pool. A vector pass could then only add *off-topic* candidates, which is
+# the opposite of what D22 asks for. Across the 40 compat fixture rows, **zero** reach retrieval
+# with no routed topic.
+#
+# Measured: on the tune split it cost a case and gained none -- 27/27 without it, 26/27 with it,
+# and 4/4 on the KB-ROUTER-01 sentences either way. Shipping it anyway would have been symmetry
+# with the strategy path for its own sake. Detail:
+# docs/audit/rag-compat-topic-preference-2026-08-18.md.
 
 # Column weights, highest first. sections_fts is (name, card); compat_patterns_fts is
 # (topic, platforms, card). A card whose *title* matches the Ask is a better hit than one
@@ -505,6 +554,70 @@ def _search_compat_patterns(
     ]
 
 
+def _compat_topic_of(conn: sqlite3.Connection, pattern_id: int) -> str:
+    """The tip sheet's topic for one tip. Cards carry the topic as their ``name`` already, but
+    reading it back from the column keeps the preference set honest if that ever changes."""
+    row = conn.execute(
+        "SELECT topic FROM compat_patterns WHERE pattern_id = ?", (pattern_id,)
+    ).fetchone()
+    return str(row["topic"]) if row else ""
+
+
+def _merge_preferred_first(
+    cards: list[KnowledgeCard],
+    topic_cards: list[KnowledgeCard],
+    preferred_ids: set[int],
+    *,
+    top_k: int,
+) -> list[KnowledgeCard]:
+    """Keyword-only ordering: on-topic tips first, everything else in BM25 order behind them.
+
+    The no-embed equivalent of the RRF_W_TOPIC bonus. Still a preference and not a filter --
+    off-topic keyword hits keep their places, they just queue behind tips the router believes
+    are about the right thing. Without cosine there is nothing to order the recalled tips by,
+    so they hold their pattern_id order.
+    """
+    if not preferred_ids:
+        return cards[:top_k]
+    pool = list(cards) + [c for c in topic_cards if c.section_id not in {x.section_id for x in cards}]
+    preferred = [c for c in pool if c.section_id in preferred_ids]
+    rest = [c for c in pool if c.section_id not in preferred_ids]
+    return (preferred + rest)[:top_k]
+
+
+def _compat_tips_for_topics(
+    conn: sqlite3.Connection,
+    *,
+    topics: list[str],
+    exclude_ids: set[int],
+    top_k: int,
+) -> list[KnowledgeCard]:
+    """Tips on the topics the router matched, whether or not they share a word with the Ask.
+
+    No FTS MATCH here, and that is the point: three of the four KB-ROUTER-01 sentences share
+    no vocabulary with the tips that answer them, so a keyword-gated topic search returns the
+    same nothing the unfiltered one did. Ordered by pattern_id for determinism only -- the
+    useful ordering comes from fusion, where these compete on cosine like everything else.
+    """
+    if not topics:
+        return []
+    placeholders = ",".join("?" for _ in topics)
+    rows = conn.execute(
+        "SELECT p.pattern_id, p.topic, p.platforms, p.card, p.source_url, p.source_license "
+        f"FROM compat_patterns p WHERE p.topic IN ({placeholders}) "
+        "ORDER BY p.pattern_id",
+        topics,
+    ).fetchall()
+    out: list[KnowledgeCard] = []
+    for row in rows:
+        if int(row["pattern_id"]) in exclude_ids:
+            continue
+        out.append(_compat_row_to_card(row))
+        if len(out) >= top_k:
+            break
+    return out
+
+
 def _load_section_vectors(conn: sqlite3.Connection, section_ids: list[int]) -> dict[int, list[float]]:
     if not section_ids:
         return {}
@@ -584,6 +697,7 @@ def _fuse_cards_by_rrf(
     *,
     top_k: int,
     recall_cards: Optional[list[KnowledgeCard]] = None,
+    preferred_ids: Optional[set[int]] = None,
 ) -> list[KnowledgeCard]:
     """Reciprocal-rank fusion of the keyword ordering with the vector ordering.
 
@@ -608,6 +722,11 @@ def _fuse_cards_by_rrf(
     possible vectored card scores 1/90 + 1/90 = 0.0222 while the #1 keyword hit with no vector
     scores 1/61 = 0.0164, so *having* a vector would outrank *being the best match*. Backfill
     makes the penalty for a missing vector one rank step instead of the whole list.
+
+    ``preferred_ids`` marks cards the caller has a reason to favour that is not a ranking --
+    today, tips on the topic D16 routed the question to. Each gets a flat ``RRF_W_TOPIC``
+    bonus: a preference, per D22, so a clearly better match without the mark can still win.
+    Flat rather than ranked because membership is all the signal there is.
 
     Raises ``EmbeddingDimensionMismatch`` via ``_dot_similarity`` when the corpus was baked at
     a different dimension; the caller treats that as "disable hybrid for this request".
@@ -642,6 +761,11 @@ def _fuse_cards_by_rrf(
     missing_rank = len(by_similarity) + 1
     for index in vectorless:
         scores[index] += RRF_W_VEC / (RRF_K + missing_rank)
+
+    if preferred_ids:
+        for index, card in enumerate(pool):
+            if card.section_id in preferred_ids:
+                scores[index] += RRF_W_TOPIC / (RRF_K + 1)
 
     order = sorted(range(len(pool)), key=lambda i: (-scores[i], i))
     return [pool[i] for i in order[:top_k]]
@@ -909,9 +1033,28 @@ def retrieve_knowledge_context(
             t_fts = time.perf_counter()
             fts_k = HYBRID_FTS_SHORTLIST_K if nomic_ready else top_k
             cards = _search_compat_patterns(conn, query=expanded, top_k=fts_k)
+            # D16 already worked out what this question is about; D22 says use it. The topic
+            # opens a recall path (measured: on-topic tips were absent from the keyword
+            # candidates, not merely ranked below them) and marks its tips as preferred.
+            # Runs whether or not the embed model is installed -- a keyword-only Deck gets the
+            # routing fix too, just without the cosine ordering on top.
+            compat_topics = match_compat_corpus_topics(question)
+            topic_cards = _compat_tips_for_topics(
+                conn,
+                topics=compat_topics,
+                exclude_ids={c.section_id for c in cards},
+                top_k=COMPAT_TOPIC_RECALL_K,
+            )
+            preferred_ids = {
+                c.section_id
+                for c in cards + topic_cards
+                if _compat_topic_of(conn, c.section_id) in compat_topics
+            }
             fts_ms = round((time.perf_counter() - t_fts) * 1000, 2)
             resolution = "compat_tips"
         else:
+            topic_cards: list[KnowledgeCard] = []
+            preferred_ids: set[int] = set()
             section_floor = (
                 IMPLICIT_ROUTE_RELEVANCE_FLOOR if implicit_route else BM25_RELEVANCE_FLOOR
             )
@@ -965,7 +1108,7 @@ def retrieve_knowledge_context(
         #   open case) widens both at once and they cannot drift apart.
         vector_recall_ready = domain != "compat" and game_id is not None and not implicit_route
 
-        if nomic_ready and (cards or vector_recall_ready):
+        if nomic_ready and (cards or topic_cards or vector_recall_ready):
             t_embed = time.perf_counter()
             try:
                 query_vectors = embed_texts(
@@ -979,7 +1122,11 @@ def retrieve_knowledge_context(
                 t_rerank = time.perf_counter()
                 recall_cards: list[KnowledgeCard] = []
                 if domain == "compat":
-                    vectors_by_id = _load_compat_vectors(conn, [c.section_id for c in cards])
+                    # Vectors for the whole pool, topic-recalled tips included -- cosine is
+                    # what orders tips the keyword half never ranked.
+                    vectors_by_id = _load_compat_vectors(
+                        conn, [c.section_id for c in cards + topic_cards]
+                    )
                 elif vector_recall_ready and game_id is not None:
                     recall_cards, vectors_by_id = _vector_recall_sections(
                         conn,
@@ -996,16 +1143,17 @@ def retrieve_knowledge_context(
                     query_vector,
                     vectors_by_id,
                     top_k=top_k,
-                    recall_cards=recall_cards,
+                    recall_cards=topic_cards + recall_cards,
+                    preferred_ids=preferred_ids,
                 )
                 rerank_ms = round((time.perf_counter() - t_rerank) * 1000, 2)
                 retrieval_method = "hybrid"
             except (OllamaEmbedError, EmbeddingDimensionMismatch, IndexError, ValueError):
                 embed_ms = round((time.perf_counter() - t_embed) * 1000, 2)
-                cards = cards[:top_k]
+                cards = _merge_preferred_first(cards, topic_cards, preferred_ids, top_k=top_k)
                 retrieval_method = "keyword_embed_unavailable"
-        elif cards and fts_k != top_k:
-            cards = cards[:top_k]
+        else:
+            cards = _merge_preferred_first(cards, topic_cards, preferred_ids, top_k=top_k)
 
         # D17 routes every Ask made while a covered game runs, not just Strategy-mode ones.
         # The genre fallback is a generic card with no relation to the question, which is a
