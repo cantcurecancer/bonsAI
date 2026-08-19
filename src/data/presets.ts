@@ -13,6 +13,12 @@ export type PresetPrompt = {
   beta?: boolean;
   /** When set, tapping this chip also switches Ask mode (e.g. Strategy Guide). */
   preferAskMode?: AskModeId;
+  /**
+   * Phase 4 V4: this chip names something from the corpus for the running game, so it carries a
+   * **Tip** badge. Game RAG chips only — shared Proton/Deck troubleshooting chips do not get one,
+   * because the badge is a claim about *this game* being covered, and a generic Deck tip is not.
+   */
+  ragTip?: boolean;
 };
 
 /**

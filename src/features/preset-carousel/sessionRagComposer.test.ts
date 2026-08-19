@@ -30,7 +30,11 @@ describe("sessionRagComposer", () => {
     ).toEqual(staticSeeds);
   });
 
-  it("keeps all static when rolls never hit RAG threshold", () => {
+  it("guarantees one RAG chip even when every roll loses (Phase 4 V1)", () => {
+    // Before Phase 4 this returned three static chips. Rolling per slot at ~30% meant a player
+    // with a covered game saw no sign the corpus existed about a third of the time (0.7^3), which
+    // is what the on-Deck discovery found. The last slot is the one converted, so a contextual
+    // first chip keeps its place.
     const staticSeeds = [staticSeed("a"), staticSeed("b"), staticSeed("c")];
     const rolls = [0.99, 0.99, 0.99];
     const composed = composeSessionPresets({
@@ -38,7 +42,44 @@ describe("sessionRagComposer", () => {
       ragCandidates: [rag("RAG-1"), rag("RAG-2"), rag("RAG-3")],
       random: () => rolls.shift() ?? 0.99,
     });
+    expect(composed.map((p) => p.text)).toEqual(["a", "b", "RAG-1"]);
+  });
+
+  it("still returns all static chips when there is nothing in the corpus to offer", () => {
+    const staticSeeds = [staticSeed("a"), staticSeed("b"), staticSeed("c")];
+    const composed = composeSessionPresets({
+      staticSeeds,
+      ragCandidates: [],
+      random: () => 0.99,
+    });
     expect(composed.map((p) => p.text)).toEqual(["a", "b", "c"]);
+  });
+
+  it("prefers a game chip over a shared Deck tip for the guaranteed slot (G2)", () => {
+    const staticSeeds = [staticSeed("a"), staticSeed("b"), staticSeed("c")];
+    const composed = composeSessionPresets({
+      staticSeeds,
+      ragCandidates: [
+        { text: "Proton help", category: "troubleshooting", domain: "compat" },
+        { text: "How do I beat Glyphid Dreadnought?", category: "strategy", domain: "strategy" },
+      ],
+      random: () => 0.99,
+    });
+    expect(composed[2]!.text).toBe("How do I beat Glyphid Dreadnought?");
+  });
+
+  it("badges game chips and leaves shared Deck tips unbadged (V4)", () => {
+    const composed = composeSessionPresets({
+      staticSeeds: [staticSeed("a"), staticSeed("b")],
+      ragCandidates: [
+        { text: "How do I beat Glyphid Dreadnought?", category: "strategy", domain: "strategy" },
+        { text: "Proton help", category: "troubleshooting", domain: "compat" },
+      ],
+      ragProbability: 1,
+      random: () => 0,
+    });
+    expect(composed[0]!.ragTip).toBe(true);
+    expect(composed[1]!.ragTip).toBeUndefined();
   });
 
   it("substitutes ~one RAG chip when one roll hits", () => {
@@ -109,13 +150,14 @@ describe("QA probability override", () => {
     expect(out.map((p) => p.text)).toEqual(candidates.map((c) => c.text));
   });
 
-  it("at the default probability a losing roll keeps the static seeds", () => {
+  it("at the default probability a losing roll still leaves one RAG chip (V1)", () => {
     const out = composeSessionPresets({
       staticSeeds: seeds,
       ragCandidates: candidates,
       random: () => 0.99,
     });
-    expect(out.map((p) => p.text)).toEqual(seeds.map((s) => s.text));
+    expect(out.slice(0, 2).map((p) => p.text)).toEqual(seeds.slice(0, 2).map((s) => s.text));
+    expect(candidates.map((c) => c.text)).toContain(out[2]!.text);
   });
 
   it("at probability 1 with fewer candidates than slots, remaining slots fall back to seeds", () => {

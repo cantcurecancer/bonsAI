@@ -26,12 +26,28 @@ export type ComposeSessionPresetsArgs = {
   random?: () => number;
 };
 
+/** A chip drawn from the corpus for the running game, as opposed to a shared Deck tip. */
+function isGameCandidate(candidate: SessionRagChipCandidate): boolean {
+  return (candidate.domain || "").toLowerCase() === "strategy";
+}
+
 function toPresetPrompt(candidate: SessionRagChipCandidate): PresetPrompt {
   return {
     text: candidate.text,
     category: candidate.category,
     ...(candidate.preferAskMode ? { preferAskMode: candidate.preferAskMode } : {}),
+    // V4: badge game chips only. A shared Proton tip is not evidence this game is covered.
+    ...(isGameCandidate(candidate) ? { ragTip: true } : {}),
   };
+}
+
+/**
+ * G2: a chip naming something from *this game's* corpus is the one worth guaranteeing, so game
+ * candidates are tried before shared compat ones. Order within each group is preserved — the
+ * backend already ranks them.
+ */
+function orderCandidates(candidates: SessionRagChipCandidate[]): SessionRagChipCandidate[] {
+  return [...candidates.filter(isGameCandidate), ...candidates.filter((c) => !isGameCandidate(c))];
 }
 
 /**
@@ -52,7 +68,8 @@ export function composeSessionPresets({
   }
 
   const usedTexts = new Set<string>();
-  const ragPool = [...ragCandidates];
+  const ragPool = orderCandidates(ragCandidates);
+  const ragTexts = new Set(ragPool.map((c) => c.text));
   let ragIndex = 0;
 
   const pickRag = (): PresetPrompt | null => {
@@ -86,6 +103,21 @@ export function composeSessionPresets({
     }
     const fallbackRag = pickRag();
     out.push(fallbackRag ?? seed);
+  }
+
+  // V1, the guarantee. Rolling per slot at ~30% means three static chips come up about a third
+  // of the time (0.7^3 = 34%), so a player with a covered game could open the plugin and see no
+  // sign the corpus exists -- which is what Phase 4's discovery found on Deck. When candidates
+  // exist, at least one slot is a RAG chip.
+  //
+  // The *last* slot is the one converted, not the first: the first chip is the one a contextual
+  // reseed has deliberately chosen for the category the user just used, and overwriting that
+  // would trade one kind of relevance for another.
+  if (!out.some((prompt) => ragTexts.has(prompt.text))) {
+    const forced = pickRag();
+    if (forced) {
+      out[out.length - 1] = forced;
+    }
   }
 
   return out;

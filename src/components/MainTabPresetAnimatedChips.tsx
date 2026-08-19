@@ -109,6 +109,21 @@ function PresetChipButton(props: {
       }}
     >
       <span className="bonsai-preset-chip-label">
+        {p.ragTip ? (
+          <span
+            className="bonsai-preset-chip-tip-badge"
+            style={{
+              marginRight: 6,
+              fontSize: 9,
+              letterSpacing: "0.06em",
+              textTransform: "uppercase",
+              fontWeight: 700,
+              color: `var(--bonsai-ui-accent-main, ${BONSAI_FOREST_GREEN})`,
+            }}
+          >
+            Tip
+          </span>
+        ) : null}
         {p.text}
         {p.beta ? (
           <span
@@ -619,6 +634,21 @@ function MainTabPresetAnimatedChipsInner(props: MainTabPresetAnimatedChipsProps)
               }}
             >
               <span className="bonsai-preset-chip-label">
+            {p.ragTip ? (
+              <span
+                className="bonsai-preset-chip-tip-badge"
+                style={{
+                  marginRight: 6,
+                  fontSize: 9,
+                  letterSpacing: "0.06em",
+                  textTransform: "uppercase",
+                  fontWeight: 700,
+                  color: `var(--bonsai-ui-accent-main, ${BONSAI_FOREST_GREEN})`,
+                }}
+              >
+                Tip
+              </span>
+            ) : null}
                 {p.text}
                 {p.beta && (
                   <span
