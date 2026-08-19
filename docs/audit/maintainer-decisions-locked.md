@@ -875,7 +875,16 @@ is not scheduled.
 
 ### D19 — Can you reach the strategy corpus without the game running?
 
-**LOCKED 2026-08-17**, raised during the KB QA sweep. Implementation deferred; filed as a bug.
+**LOCKED 2026-08-17**, raised during the KB QA sweep. **Implemented 2026-08-19**; on-Deck QA
+owed as KB-NEWTITLE-01.
+
+> **Two things the implementation turned up, both fixed with it.** A canonical title carrying
+> punctuation never matched its own normalised form — `normalize_alias` strips the colon in
+> *The Legend of Zelda: Ocarina of Time* while `lower(canonical_title)` keeps it — so OoT
+> resolved to nothing and fell through to the genre card. And the spoiler profile this decision
+> requires was unreachable by name: `resolve_title_spoiler_profile` only knew AppIDs plus a
+> single hard-coded title, so a text-resolved OoT fenced as `unknown`. Both languages now carry
+> the name tables, moved together with the shared contract that caught it.
 
 **What's going on.** `should_retrieve_knowledge`
 ([knowledge_base_service.py:136](../../py_modules/backend/services/knowledge_base_service.py))

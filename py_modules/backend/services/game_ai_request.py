@@ -36,6 +36,7 @@ from backend.services.proton_troubleshooting_logs import collect_proton_troubles
 from backend.services.knowledge_base_service import (
     kb_coverage_to_transparency,
     lookup_game_genres,
+    resolve_title_from_question,
     retrieve_knowledge_context,
     should_retrieve_knowledge,
     stack_context_blocks,
@@ -288,12 +289,21 @@ async def run_game_ai_request(
         kb_text = ""
         kb_result = None
         kb_survived = False
+        # D19: with nothing running, a title the question names is the only way into the
+        # strategy corpus. Resolved only when Steam gives us neither an AppID nor a name, so a
+        # running game always wins -- a question mentioning Portal 2 while Hades is open is
+        # still an Ask about Hades.
+        text_resolved_title = ""
+        if not str(app_id or "").strip() and not str(app_name or "").strip():
+            text_resolved_title = resolve_title_from_question(settings, question_for_retrieval)
+
         should_kb, kb_domain = should_retrieve_knowledge(
             use_local_knowledge_base=settings.get("use_local_knowledge_base") is True,
             ask_mode=ask_mode,
             question=question_for_retrieval,
             app_id=app_id,
             app_name=app_name,
+            text_resolved_title=text_resolved_title,
         )
         if should_kb:
             if isinstance(active_rid, int) and hasattr(plugin, "_publish_thinking_phase_key"):
@@ -315,6 +325,7 @@ async def run_game_ai_request(
                     app_id=app_id,
                     app_name=app_name,
                     shortcut_name=shortcut_name,
+                    text_resolved_title=text_resolved_title,
                     domain=kb_domain,
                     pc_ip=pc_ip,
                 )
@@ -415,7 +426,13 @@ async def run_game_ai_request(
             kb_text=kb_text,
             asked_entity=strategy_spoiler_asked_entity,
             kb_entity_match=strategy_spoiler_kb_entity_match,
-            title_profile=resolve_title_spoiler_profile(app_id, app_name),
+            # D19 locks this: a title recognised from the question gets that title's spoiler
+            # profile, so asking about Ocarina of Time by name is fenced like Ocarina of Time
+            # even with nothing running. `app_name` stays empty everywhere else on purpose --
+            # the reply must not start claiming a game is running when none is.
+            title_profile=resolve_title_spoiler_profile(
+                app_id, app_name or text_resolved_title
+            ),
         )
 
         ollama_result = await plugin.ask_ollama(

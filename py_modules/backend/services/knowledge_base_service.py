@@ -253,8 +253,14 @@ def should_retrieve_knowledge(
     question: str,
     app_id: str,
     app_name: str,
+    text_resolved_title: str = "",
 ) -> tuple[bool, str]:
-    """Return (should_run, domain) where domain is strategy|compat|empty."""
+    """Return (should_run, domain) where domain is strategy|compat|empty.
+
+    ``text_resolved_title`` is D19's last resort: a title the *question* names when no game is
+    running. The caller resolves it (``resolve_title_from_question``) and must pass "" whenever
+    a game is running, so it can never override the game in front of the user.
+    """
     if not use_local_knowledge_base:
         return False, ""
     aid = str(app_id or "").strip()
@@ -286,7 +292,66 @@ def should_retrieve_knowledge(
     # fallback so this does not staple a boilerplate card to every Ask.
     if aid or aname:
         return True, "strategy"
+    # D19, last resort. Deliberately below the compat router: "how do I fix proton for portal 2"
+    # is a troubleshooting question that happens to name a title, and routing it to strategy
+    # would answer the wrong question. Measured on device 2026-08-17 -- `hl2 ravenholm` and
+    # `drg survivor what class` returned gate=False in every mode, so all strategy content was
+    # unreachable however plainly the user named the game. KB-NEWTITLE-01 documented the
+    # opposite as expected behaviour; it was specified and never built.
+    if str(text_resolved_title or "").strip():
+        return True, "strategy"
     return False, ""
+
+
+# D19: a title named in the question is worth as much as a title Steam happens to be running.
+# 3 characters minimum, locked -- excluding 3-char aliases would fail `hl2 ravenholm`, which is
+# the documented KB-NEWTITLE-01 case this exists to fix.
+_MIN_TEXT_TITLE_ALIAS_LEN = 3
+
+
+def resolve_title_from_question(settings: dict, question: str) -> str:
+    """Canonical title the question names outright, or "" (D19).
+
+    **Last resort only.** Callers must not reach for this while a game is running -- a question
+    that mentions Portal 2 while Hades is open is still an Ask about Hades, and letting the text
+    win would answer the wrong game. The caller enforces that; this function has no way to know.
+
+    Longest alias wins, so `portal 2` beats `portal` and `half life 2` beats `hl2`. Matching is
+    on word boundaries over the same normalisation the alias table is built with, so `soh` does
+    not fire inside "so here".
+
+    **Known risk, accepted at lock time:** short aliases appear in ordinary sentences -- "this
+    game is hades on my battery" resolves Hades. BM25_RELEVANCE_FLOOR still has to be cleared
+    for a card to attach, which catches most of it, not all. Widen the denylist only on evidence
+    from QA, not pre-emptively.
+    """
+    text = normalize_alias(question)
+    if not text:
+        return ""
+    db_path = resolve_corpus_db_path(settings)
+    if not db_path:
+        return ""
+    try:
+        conn = _get_connection(db_path)
+        rows = conn.execute(
+            "SELECT a.alias_normalized AS alias, g.canonical_title AS title "
+            "FROM aliases a JOIN games g ON g.game_id = a.game_id "
+            "UNION ALL "
+            "SELECT lower(canonical_title) AS alias, canonical_title AS title FROM games"
+        ).fetchall()
+    except sqlite3.Error:
+        return ""
+
+    best_title = ""
+    best_len = 0
+    for row in rows:
+        alias = normalize_alias(str(row["alias"] or ""))
+        if len(alias) < _MIN_TEXT_TITLE_ALIAS_LEN or len(alias) <= best_len:
+            continue
+        if re.search(rf"(?<!\w){re.escape(alias)}(?!\w)", text):
+            best_title = str(row["title"] or "")
+            best_len = len(alias)
+    return best_title
 
 
 def _get_connection(db_path: str) -> sqlite3.Connection:
@@ -338,8 +403,14 @@ def _resolve_game_id(
     app_id: str,
     app_name: str,
     shortcut_name: str,
+    text_resolved_title: str = "",
 ) -> tuple[Optional[int], str]:
-    """AppID-first, then alias table. Returns (game_id, resolution_note)."""
+    """AppID-first, then alias table, then a title the question named (D19).
+
+    The text-resolved title is tried **last** and only carries what the caller handed over, so
+    a running game always wins. Its resolution note is prefixed ``text:`` so Show details can
+    say the title came from the question rather than from Steam.
+    """
     aid = str(app_id or "").strip()
     if aid.isdigit():
         row = conn.execute(
@@ -354,6 +425,16 @@ def _resolve_game_id(
         candidates.append(normalize_alias(app_name))
     if shortcut_name:
         candidates.append(normalize_alias(shortcut_name))
+    text_candidate = normalize_alias(text_resolved_title) if text_resolved_title else ""
+    if text_candidate:
+        # Canonical titles are matched in Python, not SQL, because the two sides normalise
+        # differently: `normalize_alias` strips punctuation, `lower(canonical_title)` keeps it,
+        # so "The Legend of Zelda: Ocarina of Time" never equalled its own normalised form and
+        # OoT silently fell through to the genre fallback. Thirteen rows; the scan is free.
+        for row in conn.execute("SELECT game_id, canonical_title FROM games").fetchall():
+            if normalize_alias(str(row["canonical_title"] or "")) == text_candidate:
+                return int(row["game_id"]), f"text:{text_candidate}"
+        candidates.append(text_candidate)
     for cand in candidates:
         if not cand:
             continue
@@ -361,14 +442,15 @@ def _resolve_game_id(
             "SELECT game_id FROM aliases WHERE alias_normalized = ? LIMIT 1",
             (cand,),
         ).fetchone()
+        note_prefix = "text" if cand == text_candidate else "alias"
         if row:
-            return int(row["game_id"]), f"alias:{cand}"
+            return int(row["game_id"]), f"{note_prefix}:{cand}"
         row = conn.execute(
             "SELECT game_id FROM games WHERE lower(canonical_title) = ? LIMIT 1",
             (cand,),
         ).fetchone()
         if row:
-            return int(row["game_id"]), f"title:{cand}"
+            return int(row["game_id"]), f"{'text' if cand == text_candidate else 'title'}:{cand}"
     return None, "unresolved"
 
 
@@ -978,6 +1060,7 @@ def retrieve_knowledge_context(
     app_id: str,
     app_name: str,
     shortcut_name: str = "",
+    text_resolved_title: str = "",
     domain: str,
     pc_ip: str = "",
 ) -> KnowledgeRetrievalResult:
@@ -1003,10 +1086,15 @@ def retrieve_knowledge_context(
             app_id=app_id,
             app_name=app_name,
             shortcut_name=shortcut_name,
+            text_resolved_title=text_resolved_title,
         )
         resolve_ms = round((time.perf_counter() - t_resolve) * 1000, 2)
 
-        expanded = _expand_query(question, app_name, game_resolved=game_id is not None)
+        expanded = _expand_query(
+            question,
+            app_name or text_resolved_title,
+            game_resolved=game_id is not None,
+        )
         manifest = _load_corpus_manifest(settings)
 
         # Compatibility gate. A pre-v3 corpus baked bare documents; querying it with a

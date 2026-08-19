@@ -28,6 +28,34 @@ export const PROTECT_PROGRESSION_APP_IDS = new Set([
   "620", // Portal 2 — puzzles spoil nothing, the late reveal does; see the Python table
 ]);
 
+/**
+ * Same two profiles, reachable by title name. Required by D19: a title recognised from the
+ * question text has no AppID to look up. Keep in sync with _LOW_NARRATIVE_TITLES /
+ * _PROTECT_PROGRESSION_TITLES in spoiler_title_profiles.py — tests/contracts/spoiler-title-profiles.json
+ * asserts both languages against the same cases.
+ */
+export const LOW_NARRATIVE_TITLES = [
+  "state of emergency",
+  "deep rock galactic",
+  "left 4 dead 2",
+  "the sims 4",
+];
+
+export const PROTECT_PROGRESSION_TITLES = [
+  "ocarina of time",
+  "ship of harkinian",
+  "baldur's gate 3",
+  "baldurs gate 3",
+  "fallout 4",
+  "hades",
+  "cyberpunk 2077",
+  "san andreas",
+  "red dead redemption 2",
+  "half-life 2",
+  "half life 2",
+  "portal 2",
+];
+
 function normalizeTitle(name: string): string {
   return (name || "").trim().toLowerCase().replace(/\s+/g, " ");
 }
@@ -40,7 +68,13 @@ export function resolveTitleSpoilerProfile(
   if (aid && LOW_NARRATIVE_APP_IDS.has(aid)) return "low_narrative";
   if (aid && PROTECT_PROGRESSION_APP_IDS.has(aid)) return "protect_progression";
   const title = normalizeTitle(appName || "");
-  if (title.includes("state of emergency")) return "low_narrative";
+  if (!title) return "unknown";
+  // Protect first: when a name matches both tables the conservative answer wins, because
+  // over-fencing annoys and under-fencing cannot be taken back.
+  if (PROTECT_PROGRESSION_TITLES.some((known) => title.includes(known))) {
+    return "protect_progression";
+  }
+  if (LOW_NARRATIVE_TITLES.some((known) => title.includes(known))) return "low_narrative";
   return "unknown";
 }
 

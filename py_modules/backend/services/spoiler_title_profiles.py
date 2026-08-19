@@ -41,6 +41,38 @@ PROTECT_PROGRESSION_APP_IDS = frozenset(
 )
 
 
+# Same two profiles, reachable by title name. **Required by D19:** a title recognised from the
+# question text has no AppID to look up -- "what is the best way to beat volvagia in oot" with
+# nothing running resolved to Ocarina of Time and then fenced as `unknown`, which is the one
+# outcome D19 ruled out.
+#
+# Substring match on a normalised title, so the corpus's canonical form ("The Legend of Zelda:
+# Ocarina of Time") and a user's shorthand both land. Kept as a separate table from the AppID
+# sets rather than derived from them: the AppID for Ocarina in the seed is **Stardew Valley's**
+# (a known open bug), so deriving names from IDs would inherit that error and spread it.
+_LOW_NARRATIVE_TITLES = (
+    "state of emergency",
+    "deep rock galactic",
+    "left 4 dead 2",
+    "the sims 4",
+)
+
+_PROTECT_PROGRESSION_TITLES = (
+    "ocarina of time",
+    "ship of harkinian",
+    "baldur's gate 3",
+    "baldurs gate 3",
+    "fallout 4",
+    "hades",
+    "cyberpunk 2077",
+    "san andreas",
+    "red dead redemption 2",
+    "half-life 2",
+    "half life 2",
+    "portal 2",
+)
+
+
 def _normalize_title(name: str) -> str:
     return " ".join((name or "").strip().lower().split())
 
@@ -53,7 +85,13 @@ def resolve_title_spoiler_profile(app_id: str = "", app_name: str = "") -> Spoil
     if aid in PROTECT_PROGRESSION_APP_IDS:
         return "protect_progression"
     title = _normalize_title(app_name)
-    if "state of emergency" in title:
+    if not title:
+        return "unknown"
+    # Protect first: when a title matches both tables the conservative answer wins, because
+    # over-fencing annoys and under-fencing cannot be taken back.
+    if any(known in title for known in _PROTECT_PROGRESSION_TITLES):
+        return "protect_progression"
+    if any(known in title for known in _LOW_NARRATIVE_TITLES):
         return "low_narrative"
     return "unknown"
 

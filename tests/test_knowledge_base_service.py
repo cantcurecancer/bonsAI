@@ -14,6 +14,7 @@ from backend.services.knowledge_base_service import (
     KnowledgeCard,
     close_connection,
     kb_coverage_to_transparency,
+    resolve_title_from_question,
     retrieve_knowledge_context,
     session_rag_chip_candidates_to_rpc,
     should_retrieve_knowledge,
@@ -1204,6 +1205,118 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
     )
     self.assertTrue(should_run)
     self.assertEqual(domain, "compat")
+
+  def test_question_naming_a_title_reaches_the_corpus_with_no_game_running(self):
+    """D19 / KB-NEWTITLE-01, which was specified and never built.
+
+    Measured on Deck 2026-08-17: `hl2 ravenholm` and `drg survivor what class` returned
+    gate=False in every mode, so the whole strategy corpus was unreachable from the couch.
+    """
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    for question, expected_card in (
+      ("hl2 ravenholm", "Ravenholm"),
+      ("how do gels work in portal 2", "Gels"),
+      ("what is the best way to beat volvagia in oot", "Volvagia"),
+    ):
+      with self.subTest(question=question):
+        title = resolve_title_from_question(settings, question)
+        self.assertTrue(title)
+        should, domain = should_retrieve_knowledge(
+          use_local_knowledge_base=True,
+          ask_mode="speed",
+          question=question,
+          app_id="",
+          app_name="",
+          text_resolved_title=title,
+        )
+        self.assertTrue(should)
+        self.assertEqual(domain, "strategy")
+        result = retrieve_knowledge_context(
+          settings,
+          ask_mode="strategy",
+          question=question,
+          app_id="",
+          app_name="",
+          text_resolved_title=title,
+          domain=domain,
+          pc_ip="",
+        )
+        self.assertTrue(result.attached)
+        self.assertIn(expected_card, result.text_block)
+        self.assertTrue(result.notes.startswith("text:"))
+
+  def test_a_running_game_always_beats_a_title_named_in_the_question(self):
+    """The failure this must never cause: answering about a game the user is not playing."""
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    result = retrieve_knowledge_context(
+      settings,
+      ask_mode="strategy",
+      question="how do gels work in portal 2",
+      app_id="1145360",
+      app_name="Hades",
+      text_resolved_title="",
+      domain="strategy",
+      pc_ip="",
+    )
+    self.assertNotIn("Gels", result.text_block)
+
+  def test_troubleshooting_still_wins_over_a_title_named_in_the_question(self):
+    """"How do I fix proton for portal 2" is a troubleshooting question that names a title."""
+    should, domain = should_retrieve_knowledge(
+      use_local_knowledge_base=True,
+      ask_mode="speed",
+      question="how do i fix proton crashes for portal 2",
+      app_id="",
+      app_name="",
+      text_resolved_title="Portal 2",
+    )
+    self.assertTrue(should)
+    self.assertEqual(domain, "compat")
+
+  def test_a_short_alias_inside_an_ordinary_word_does_not_resolve_a_title(self):
+    """Word-boundary matching. `soh` must not fire inside "so here"."""
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    for question in ("so here is my problem", "i need a boot disk", "hooters"):
+      with self.subTest(question=question):
+        self.assertEqual(resolve_title_from_question(settings, question), "")
+
+  def test_longest_alias_wins(self):
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    self.assertEqual(
+      resolve_title_from_question(settings, "co-op tips for portal 2 please"), "Portal 2"
+    )
+
+  def test_a_canonical_title_with_punctuation_still_resolves(self):
+    """`normalize_alias` strips the colon, `lower(canonical_title)` keeps it, so Ocarina of
+    Time matched neither table and fell through to the genre fallback."""
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    result = retrieve_knowledge_context(
+      settings,
+      ask_mode="strategy",
+      question="how do i beat queen gohma",
+      app_id="",
+      app_name="",
+      text_resolved_title="The Legend of Zelda: Ocarina of Time",
+      domain="strategy",
+      pc_ip="",
+    )
+    self.assertTrue(result.attached)
+    self.assertIn("Queen Gohma", result.text_block)
 
   def test_no_running_game_means_no_strategy_route(self):
     should_run, domain = should_retrieve_knowledge(

@@ -1,6 +1,10 @@
 {
-  "note": "Built-in spoiler title profiles. Asserted from both languages — see tests/contracts/README.md.",
-  "low_narrative_app_ids": ["2321470", "550", "1222670"],
+  "note": "Built-in spoiler title profiles. Asserted from both languages \u2014 see tests/contracts/README.md.",
+  "low_narrative_app_ids": [
+    "2321470",
+    "550",
+    "1222670"
+  ],
   "protect_progression_app_ids": [
     "413150",
     "1086940",
@@ -104,10 +108,35 @@
       "expected": "protect_progression"
     },
     {
-      "name": "unknown title name does not fall back to low narrative",
+      "name": "a title known by name resolves without an AppID (D19)",
       "app_id": "",
       "app_name": "Baldur's Gate 3",
+      "expected": "protect_progression"
+    },
+    {
+      "name": "D19 text-resolved canonical title keeps its protect profile",
+      "app_id": "",
+      "app_name": "The Legend of Zelda: Ocarina of Time",
+      "expected": "protect_progression"
+    },
+    {
+      "name": "D19 text-resolved low-narrative title by name",
+      "app_id": "",
+      "app_name": "Deep Rock Galactic: Survivor",
+      "expected": "low_narrative"
+    },
+    {
+      "name": "a title in neither table is still unknown",
+      "app_id": "",
+      "app_name": "Some Game We Have Never Heard Of",
       "expected": "unknown"
+    },
+    {
+      "name": "protect wins when a name matches both tables",
+      "app_id": "",
+      "app_name": "Hades",
+      "expected": "protect_progression"
     }
-  ]
+  ],
+  "description": "Title-name resolution widened 2026-08-18 by D19: a title recognised from the question text has no AppID to look up, so the name tables must carry the same two profiles. Before that, only 'State of Emergency' resolved by name."
 }

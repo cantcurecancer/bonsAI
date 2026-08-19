@@ -6,13 +6,13 @@
       "role": "Decky RPC entrypoints and orchestration"
     },
     {
-      "path": "py_modules/backend/services/voice_transcription_service.py",
-      "lines": 1524,
+      "path": "py_modules/backend/services/knowledge_base_service.py",
+      "lines": 1604,
       "role": ""
     },
     {
-      "path": "py_modules/backend/services/knowledge_base_service.py",
-      "lines": 1516,
+      "path": "py_modules/backend/services/voice_transcription_service.py",
+      "lines": 1524,
       "role": ""
     },
     {
@@ -112,7 +112,7 @@
     },
     {
       "path": "py_modules/backend/services/game_ai_request.py",
-      "lines": 560,
+      "lines": 577,
       "role": ""
     },
     {
