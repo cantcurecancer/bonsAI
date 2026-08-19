@@ -212,9 +212,22 @@ Stars are **effort/risk**. Grouped by **theme**; within each lane sorted ascendi
 - ★★★★ **RAG Deck query — corpus expansion (Phase 5)**
   - **Goal:** Corpus maturity after Phase 4 sample paths; session chip vector ranking.
   - **Status:** Seed deepening largely in remediation PR2; remainder depends Phase 4. [knowledge-base.md](knowledge-base.md) § Phase 5.
-- ★★★★ **RAG Deck query — extended retrieval (Phase 4)**
+- ★★★★ **RAG Deck query — extended retrieval (Phase 4)** — **tracks 1–2 shipped 2026-08-19, track 3 blocked**
   - **Goal:** Richer retrieval shapes — chip visibility, structured cards, per-game compat tips.
-  - **Status:** Discovery locked 2026-07-30; docs only. [knowledge-base.md](knowledge-base.md) § Phase 4.
+  - **Track 1 (shipped):** chip guarantee (≥1 corpus chip when candidates exist), game chips preferred over
+    shared Deck tips, **Tip** badge on game chips only. On-Deck **PHASE4-CHIPS-01** Open.
+  - **Track 2 (shipped):** structured enemy/item cards for the two sample titles, authored with labelled
+    lines, plus a conditional prompt clause that keeps those labels as light bullets in the reply.
+    On-Deck **PHASE4-CARDS-01** Open.
+  - **Track 3 (blocked):** per-game troubleshooting tips need an `app_id` column on `compat_patterns` —
+    a **schema v4 bump and a corpus rebuild**, which by Decision 6 (no migration) makes every installed
+    corpus stale until re-downloaded. Retrieval side is already built: it is the same recall-plus-flat-
+    preference shape D22 introduced, so it reuses `preferred_ids` rather than adding a mechanism.
+    Plan: [18-phase4-track3-per-game-compat-tips.md](planning/18-phase4-track3-per-game-compat-tips.md).
+  - **Ship-shape lock relaxed:** Phase 4 was locked to ship all three tracks together. Two shipped without
+    the third because the blocker is a release action rather than effort, and the two that shipped are the
+    visible ones. **Maintainer call owed:** either accept the split or hold tracks 1–2 from the release
+    notes until track 3 lands. [knowledge-base.md](knowledge-base.md) § Phase 4.
 - ★★★★ **RAG Deck query — retrieval infra (Phase 7)**
   - **Goal:** Optional sqlite-vss/ANN, auto-pull nomic, RRF extensions, vision→KB, demote, packs, intent retrieval.
   - **Status:** FTS+vector shipped in remediation; the locked **meaning-fallback** track (vector list into RRF when FTS is empty/weak) shipped 2026-08-18 as the per-game recall pass — sqlite-vss/ANN is now an optimisation of a path that exists, not a prerequisite. Remainder docs only. [knowledge-base.md](knowledge-base.md) § Phase 7.

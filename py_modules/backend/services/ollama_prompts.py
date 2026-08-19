@@ -944,6 +944,12 @@ def build_reply_verbosity_block(
     )
 
 
+# Labels the Phase 4 structured enemy/item cards use. Kept here rather than imported from the
+# knowledge base service so the prompt layer takes no dependency on retrieval internals; the
+# two are coupled by the card authoring format, documented in docs/knowledge-base.md.
+_STRUCTURED_CARD_LABELS = ("Weak points:", "Uses:", "Phases:", "Summary:")
+
+
 def build_system_prompt(
     question: str,
     app_id: str,
@@ -1085,6 +1091,21 @@ def build_system_prompt(
             "trust tier (wiki_verified / wiki_no_patch / fallback_no_source). "
             "Put spoilery walkthrough detail inside ```bonsai-spoiler``` when the user has not opted in.\n"
         )
+        # Phase 4 R1: structured cards carry labelled lines (Summary / Weak points / Uses /
+        # Tips / Phases). Keep those labels in the reply as light bullets so an enemy or item
+        # answer has a predictable shape a player can scan mid-fight -- plain markdown on
+        # purpose, not a custom UI card, which is a later wave.
+        #
+        # Conditional on the block actually containing a structured card. An unconditional
+        # instruction would spend tokens on every knowledge-base Ask, and most of them attach
+        # prose cards with nothing to label.
+        if any(label in early_stripped for label in _STRUCTURED_CARD_LABELS):
+            early_block += (
+                "\nSTRUCTURED CARDS: some attached cards use labelled lines "
+                "(Summary / Weak points / Uses / Tips / Phases). When you draw on one, keep "
+                "those labels as short bullets rather than dissolving them into a paragraph, "
+                "and drop any label the card does not have.\n"
+            )
 
     hardware_tdp_appendix = (
         "Hardware appendix (apply only when relevant): The Steam Deck APU supports a TDP range of 3-15 watts and "
