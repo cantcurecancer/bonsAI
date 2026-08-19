@@ -1026,6 +1026,75 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
     self.assertEqual(counts["speed"], 1)
     self.assertGreater(counts["expert"], counts["speed"])
 
+  def test_expert_mode_is_on_the_explicit_route_like_strategy(self):
+    """Expert declares the Ask is about the game just as plainly as Strategy does.
+
+    The two mode-keyed knobs disagreed: `_budget_for_mode` gave Expert the largest card budget
+    while the route flag put it on IMPLICIT_ROUTE_RELEVANCE_FLOOR, so the mode picked for
+    maximum depth hid the most corpus. Measured on device 2026-08-17 and reproduced on the
+    seed corpus: DRG Survivor, "what class should i pick" -- Strategy 2 cards, Expert 1.
+
+    Keyword-only on purpose: this is about the relevance floor, not the vector recall pass.
+    """
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    counts = {}
+    with mock.patch(
+      "backend.services.knowledge_base_service.nomic_embed_available",
+      return_value=False,
+    ):
+      for mode in ("speed", "strategy", "expert"):
+        result = retrieve_knowledge_context(
+          settings,
+          ask_mode=mode,
+          question="what class should i pick",
+          app_id="2321470",
+          app_name="Deep Rock Galactic: Survivor",
+          domain="strategy",
+          pc_ip="",
+        )
+        counts[mode] = [
+          ln for ln in result.text_block.splitlines() if ln.startswith("[Deep Rock")
+        ]
+    self.assertEqual(len(counts["expert"]), len(counts["strategy"]))
+    self.assertGreater(len(counts["expert"]), len(counts["speed"]))
+    # The card that died at the implicit floor.
+    self.assertTrue(any("Upgrades and overclocks" in ln for ln in counts["expert"]))
+
+  def test_expert_mode_gets_the_vector_recall_pass_too(self):
+    """The floor and the recall gate read one flag, so widening it widens both."""
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    with mock.patch(
+      "backend.services.knowledge_base_service.nomic_embed_available",
+      return_value=True,
+    ), mock.patch(
+      "backend.services.knowledge_base_service.corpus_has_usable_section_vectors",
+      return_value=True,
+    ), mock.patch(
+      "backend.services.knowledge_base_service.embed_texts",
+      return_value=[[1.0, 0.0] + [0.0] * 766],
+    ), mock.patch(
+      "backend.services.knowledge_base_service._load_section_vectors",
+      return_value={3: [1.0, 0.0] + [0.0] * 766},
+    ):
+      result = retrieve_knowledge_context(
+        settings,
+        ask_mode="expert",
+        question="how do i kill the big armoured bug boss",
+        app_id="2321470",
+        app_name="Deep Rock Galactic: Survivor",
+        domain="strategy",
+        pc_ip="127.0.0.1:11434",
+      )
+    self.assertTrue(result.attached)
+    self.assertEqual(result.retrieval_method, "hybrid")
+    self.assertIn("Dreadnought", result.text_block)
+
   def test_troubleshooting_still_wins_over_an_open_game(self):
     """A crash question asked mid-game is a crash question, not a boss question."""
     should_run, domain = should_retrieve_knowledge(

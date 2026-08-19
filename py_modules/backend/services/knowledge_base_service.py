@@ -86,6 +86,23 @@ BM25_RELEVANCE_FLOOR = 1.0
 # is worse than shipping a constant that says out loud it is a guess.
 IMPLICIT_ROUTE_RELEVANCE_FLOOR = 4.0
 
+# The Ask modes in which the user declared the Ask to be about the game. Anything else is the
+# D17 implicit route -- an Ask that merely happened while a game was running.
+#
+# Expert belongs here and was missing until 2026-08-18, because the test was written as
+# `!= "strategy"`: it asked for Strategy by name rather than for the thing Strategy stands for.
+# That left the two mode-keyed knobs disagreeing about what Expert means -- _budget_for_mode
+# gives Expert the LARGEST card budget (5) while the flag put it on the STRICTEST relevance bar
+# (4.0 against 1.0). Measured on device 2026-08-17, DRG Survivor (2321470), "what class should
+# i pick": Strategy attached 2 cards, Expert attached 1, because "Upgrades and overclocks"
+# scores bm25 2.13 and died at the 4.0 floor. The mode a stuck player picks for maximum depth
+# was the one hiding the most corpus.
+#
+# Keep this the one definition of "explicit route". VECTOR_RECALL_FLOOR's gate reads the same
+# flag, so a mode listed here gets the loose floor and the vector recall pass together, and
+# they cannot drift apart again.
+_DECLARED_GAME_ASK_MODES = frozenset({"strategy", "expert"})
+
 # --- Vector recall pass --------------------------------------------------------------------
 #
 # The vector half searches for itself instead of re-ranking whatever BM25 handed it. Before
@@ -165,7 +182,13 @@ class KnowledgeRetrievalResult:
 
 
 def _budget_for_mode(ask_mode: str) -> tuple[int, int]:
-    """Return (top_k, max_bytes) adaptive by Ask mode."""
+    """Return (top_k, max_bytes) adaptive by Ask mode.
+
+    Mode decides a second thing one layer up -- the relevance floor, via
+    ``_DECLARED_GAME_ASK_MODES``. Two knobs, same input, and they disagreed once: a mode that
+    earns a bigger budget here has to be on the explicit route there, or it gets more room to
+    fill and a stricter bar for filling it at the same time.
+    """
     mode = (ask_mode or "speed").strip().lower()
     if mode == "expert":
         return 5, 10_240
@@ -873,7 +896,7 @@ def retrieve_knowledge_context(
         # without the user having declared the Ask to be about the game. That weaker evidence
         # gets a higher relevance bar and no genre-card consolation prize -- see
         # IMPLICIT_ROUTE_RELEVANCE_FLOOR and the fallback branch below.
-        implicit_route = (ask_mode or "").strip().lower() != "strategy"
+        implicit_route = (ask_mode or "").strip().lower() not in _DECLARED_GAME_ASK_MODES
 
         if domain == "compat":
             has_vectors = corpus_has_usable_compat_vectors(conn, manifest)
