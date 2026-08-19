@@ -791,18 +791,18 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
       return_value=[[1.0, 0.0] + [0.0] * 766],
     ), mock.patch(
       "backend.services.knowledge_base_service._load_section_vectors",
-      return_value={3: [under_floor, 0.0] + [0.0] * 766},
+      return_value={118: [under_floor, 0.0] + [0.0] * 766},
     ):
       result = retrieve_knowledge_context(
         settings,
         ask_mode="strategy",
-        question="how do i kill the big armoured bug boss",
+        question="which character is best for a beginner",
         app_id="2321470",
         app_name="Deep Rock Galactic: Survivor",
         domain="strategy",
         pc_ip="127.0.0.1:11434",
       )
-    self.assertNotIn("Dreadnought", result.text_block)
+    self.assertNotIn("Classes", result.text_block)
 
   def test_vector_recall_does_not_run_on_the_implicit_route(self):
     """An Ask that never declared itself to be about the game pays no embed round trip.
@@ -828,7 +828,9 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
       result = retrieve_knowledge_context(
         settings,
         ask_mode="speed",
-        question="how do i kill the big armoured bug boss",
+        # Not the "armoured bug boss" phrasing: the spelling fix means that one now has keyword
+        # hits, and this test needs a question the keyword half cannot answer at all.
+        question="which character is best for a beginner",
         app_id="2321470",
         app_name="Deep Rock Galactic: Survivor",
         domain="strategy",
@@ -1362,6 +1364,109 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
       pc_ip="",
     )
     self.assertTrue(explicit.attached)
+
+  def test_a_british_spelling_reaches_a_us_spelled_card(self):
+    """Measured 2026-08-18: `armor` found the Dreadnought card, `armour` found nothing.
+
+    FTS5's porter stemmer normalises word endings, not spelling variants, and every card in the
+    corpus is written in US English.
+    """
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    with mock.patch(
+      "backend.services.knowledge_base_service.nomic_embed_available",
+      return_value=False,
+    ):
+      result = retrieve_knowledge_context(
+        settings,
+        ask_mode="strategy",
+        question="armour",
+        app_id="2321470",
+        app_name="Deep Rock Galactic: Survivor",
+        domain="strategy",
+        pc_ip="",
+      )
+    self.assertIn("Dreadnought", result.text_block)
+
+  def test_spelling_expansion_widens_and_never_replaces(self):
+    """Both spellings go in, so a British question reaches a US-spelled card *and* the other way."""
+    self.assertEqual(_expand_query("armoured plates", "", game_resolved=True), "armoured plates armored")
+    self.assertEqual(_expand_query("customise controls", "", game_resolved=True), "customise controls customize")
+
+  def test_spelling_expansion_leaves_ordinary_words_alone(self):
+    """The -our rule must not turn "our" into "or", or "hours" into "hors"."""
+    for phrase in ("our team", "four hours", "the flour", "rise and shine", "one sentence"):
+      with self.subTest(phrase=phrase):
+        self.assertEqual(_expand_query(phrase, "", game_resolved=True), phrase)
+
+  def test_asking_for_the_boss_by_kind_reaches_a_card_typed_as_a_boss(self):
+    """A card's type is not in the FTS index, so "how do i beat the boss" found nothing.
+
+    The player who cannot name the boss is the player who needs the card most.
+    """
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    result = retrieve_knowledge_context(
+      settings,
+      ask_mode="strategy",
+      question="how do i beat the boss",
+      app_id="2321470",
+      app_name="Deep Rock Galactic: Survivor",
+      domain="strategy",
+      pc_ip="",
+    )
+    self.assertTrue(result.attached)
+    self.assertIn("Dreadnought", result.text_block)
+
+  def test_type_recall_does_not_displace_a_card_the_question_named(self):
+    """The preference is flat and small: naming a card still beats asking for its kind."""
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    result = retrieve_knowledge_context(
+      settings,
+      ask_mode="strategy",
+      question="how do i beat queen gohma",
+      app_id="413150",
+      app_name="The Legend of Zelda: Ocarina of Time",
+      domain="strategy",
+      pc_ip="",
+    )
+    first_card = next(ln for ln in result.text_block.splitlines() if ln.startswith("["))
+    self.assertIn("Queen Gohma", first_card)
+
+  def test_type_recall_does_not_run_on_the_implicit_route(self):
+    """A bare "boss" in a passing Ask is weak evidence the Ask is about the game."""
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    result = retrieve_knowledge_context(
+      settings,
+      ask_mode="speed",
+      question="how do i beat the boss",
+      app_id="2321470",
+      app_name="Deep Rock Galactic: Survivor",
+      domain="strategy",
+      pc_ip="",
+    )
+    self.assertFalse(result.attached)
+
+  def test_fusion_never_lists_the_same_card_twice(self):
+    """Two recall paths can surface one card -- a boss card is typed *and* a cosine match."""
+    keyword = [KnowledgeCard(1, 1, "G", "boss", "A", "c", "", "", None, None, "fallback")]
+    duplicated = [
+      KnowledgeCard(2, 1, "G", "boss", "B", "c", "", "", None, None, "fallback"),
+      KnowledgeCard(2, 1, "G", "boss", "B", "c", "", "", None, None, "fallback"),
+      KnowledgeCard(1, 1, "G", "boss", "A", "c", "", "", None, None, "fallback"),
+    ]
+    fused = _fuse_cards_by_rrf(keyword, [1.0, 0.0], {}, top_k=10, recall_cards=duplicated)
+    self.assertEqual(sorted(c.section_id for c in fused), [1, 2])
 
   def test_uncovered_game_does_not_get_another_games_cards(self):
     """Strategy search is scoped to the resolved game, or it does not run.

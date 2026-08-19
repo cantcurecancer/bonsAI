@@ -381,6 +381,100 @@ def close_connection(db_path: str) -> None:
                 pass
 
 
+# Every card in the corpus is written in US English and FTS5's porter stemmer normalises word
+# endings, not spelling variants, so `armour` matched nothing while `armor` found the card
+# sitting right there (measured 2026-08-18, corpus 2026.08.16).
+#
+# The query is **widened, never rewritten**: both spellings go in, and _fts_match_query ORs its
+# tokens, so a British question reaches a US-spelled card and a card that ever gets written in
+# British English still reaches its own question. Substituting one for the other would just move
+# the blind spot.
+#
+# Suffix rules rather than a word list, because the failure is systematic. Word list only where
+# a rule would misfire.
+_SPELLING_SUFFIX_RULES = (
+    ("our", "or"),      # armour, colour, behaviour, favourite, honour, rumour, neighbour
+    ("ours", "ors"),
+    ("oured", "ored"),
+    ("ouring", "oring"),
+    ("ise", "ize"),     # customise, optimise, organise, realise, recognise
+    ("ised", "ized"),
+    ("ising", "izing"),
+    ("isation", "ization"),
+    ("yse", "yze"),     # analyse, paralyse
+    ("ysed", "yzed"),
+    ("tre", "ter"),     # centre, metre, theatre, fibre
+    ("tres", "ters"),
+    ("ence", "ense"),   # defence, offence, licence
+    ("ences", "enses"),
+    ("logue", "log"),   # dialogue, catalogue
+)
+
+_SPELLING_WORDS = {
+    "grey": "gray",
+    "greyed": "grayed",
+    "aluminium": "aluminum",
+    "tyre": "tire",
+    "tyres": "tires",
+    "sulphur": "sulfur",
+    "kerb": "curb",
+    "plough": "plow",
+    "draught": "draft",
+    "mould": "mold",
+    "moulded": "molded",
+    "storey": "story",
+    "aeroplane": "airplane",
+    "programme": "program",
+    "cheque": "check",
+    "gaol": "jail",
+    "manoeuvre": "maneuver",
+    "manoeuvres": "maneuvers",
+}
+
+# Rules that would fire on ordinary words. "our" -> "or" must not turn *our* into *or*, and the
+# -ence rule must not touch words whose US spelling is also -ence.
+_SPELLING_EXEMPT = frozenset(
+    {
+        "our", "ours", "four", "fours", "hour", "hours", "flour", "flours", "pour", "pours",
+        "tour", "tours", "sour", "your", "yours", "detour", "detours", "devour", "labour",
+        "rise", "raise", "wise", "else", "sentence", "sentences", "science", "sciences",
+        "silence", "silences", "presence", "essence", "absence", "evidence", "sequence",
+        "sequences", "influence", "audience", "experience", "experiences", "difference",
+        "differences", "reference", "references", "preference", "preferences", "confidence",
+        "patience", "violence", "existence", "occurrence", "interference", "convenience",
+        "centre",  # handled by the rule; listed nowhere else so the rule owns it
+    }
+) - {"centre"}
+
+
+def _us_spelling_variant(token: str) -> str:
+    """The US spelling of one British token, or "" when there is nothing to add."""
+    low = token.lower()
+    if low in _SPELLING_EXEMPT:
+        return ""
+    mapped = _SPELLING_WORDS.get(low)
+    if mapped:
+        return mapped
+    for british, american in _SPELLING_SUFFIX_RULES:
+        if len(low) > len(british) + 1 and low.endswith(british):
+            return low[: -len(british)] + american
+    return ""
+
+
+def _add_spelling_variants(question: str) -> str:
+    """Append US spellings of any British words, so the query matches either form."""
+    extra: list[str] = []
+    seen: set[str] = set()
+    for token in re.findall(r"\w+", question or ""):
+        variant = _us_spelling_variant(token)
+        if variant and variant != token.lower() and variant not in seen:
+            seen.add(variant)
+            extra.append(variant)
+    if not extra:
+        return question
+    return f"{question} {' '.join(extra)}"
+
+
 def _expand_query(question: str, app_name: str, *, game_resolved: bool = False) -> str:
     """Rule-based query expansion (no LLM).
 
@@ -390,7 +484,7 @@ def _expand_query(question: str, app_name: str, *, game_resolved: bool = False) 
     signal narrowing the search, so it goes *first*: appending it put it past the token cap on
     any question of ordinary length, which silently discarded it.
     """
-    q = (question or "").strip()
+    q = _add_spelling_variants((question or "").strip())
     name = (app_name or "").strip()
     if game_resolved or not name:
         return q
@@ -636,6 +730,69 @@ def _search_compat_patterns(
     ]
 
 
+# A section's type (`boss`, `area`, `mechanic`) is shown to the model but is not in the FTS
+# index, which indexes (name, card) only -- so "how do i beat the boss" returned **0** candidates
+# on a title whose one boss card was right there, and the vector half did not rescue it either
+# (measured 2026-08-18). The player who does not know the boss's name is the player who needs the
+# card most.
+#
+# Chosen over indexing the type in FTS because it needs no schema change and no corpus rebuild,
+# so it ships to an installed corpus rather than waiting for one. It is also easy to reverse: the
+# alternative -- adding `section_type` to `sections_fts` -- makes a bare "boss" match every boss
+# card at BM25 rank, which is right for a one-boss title and noisy for a twelve-boss one.
+_TYPE_WORDS: dict[str, tuple[str, ...]] = {
+    "boss": ("boss", "bosses", "bossfight"),
+    "area": ("area", "areas", "level", "levels", "stage", "stages", "zone", "zones", "biome", "biomes", "map", "maps"),
+    "dungeon": ("dungeon", "dungeons", "temple", "temples"),
+    "quest": ("quest", "quests", "mission", "missions", "sidequest"),
+    "encounter": ("encounter", "encounters", "fight", "fights"),
+    "mechanic": ("mechanic", "mechanics", "system", "systems"),
+}
+
+
+def _section_types_named(question: str) -> list[str]:
+    """Section types the question asks for generically -- "the boss", "this level"."""
+    tokens = {t.lower() for t in re.findall(r"\w+", question or "")}
+    return [
+        section_type
+        for section_type, words in _TYPE_WORDS.items()
+        if tokens.intersection(words)
+    ]
+
+
+def _sections_of_type(
+    conn: sqlite3.Connection,
+    *,
+    game_id: int,
+    section_types: list[str],
+    exclude_ids: set[int],
+    top_k: int,
+) -> list[KnowledgeCard]:
+    """A game's cards of the named types, whether or not they share a word with the question."""
+    if not section_types:
+        return []
+    placeholders = ",".join("?" for _ in section_types)
+    rows = conn.execute(
+        "SELECT s.section_id, s.game_id, g.canonical_title, s.section_type, s.name, s.card, "
+        "s.source_url, s.source_license, s.source_version, s.crawled_at "
+        "FROM sections s JOIN games g ON g.game_id = s.game_id "
+        f"WHERE s.game_id = ? AND s.section_type IN ({placeholders}) "
+        "ORDER BY s.section_id",
+        [game_id, *section_types],
+    ).fetchall()
+    out: list[KnowledgeCard] = []
+    for row in rows:
+        if int(row["section_id"]) in exclude_ids:
+            continue
+        out.append(_section_row_to_card(row))
+        if len(out) >= top_k:
+            break
+    return out
+
+
+TYPE_RECALL_K = 3
+
+
 def _compat_topic_of(conn: sqlite3.Connection, pattern_id: int) -> str:
     """The tip sheet's topic for one tip. Cards carry the topic as their ``name`` already, but
     reading it back from the column keeps the preference set honest if that ever changes."""
@@ -815,8 +972,15 @@ def _fuse_cards_by_rrf(
     """
     pool = list(cards)
     if recall_cards:
+        # Deduped against the whole pool as it grows: two recall paths can surface the same
+        # card -- a boss card is both "typed boss" and a strong cosine match -- and it was
+        # being fused twice, which showed up as the same card listed twice in one block.
         seen = {card.section_id for card in cards}
-        pool.extend(card for card in recall_cards if card.section_id not in seen)
+        for card in recall_cards:
+            if card.section_id in seen:
+                continue
+            seen.add(card.section_id)
+            pool.append(card)
     if not pool:
         return []
 
@@ -1126,6 +1290,7 @@ def retrieve_knowledge_context(
             # candidates, not merely ranked below them) and marks its tips as preferred.
             # Runs whether or not the embed model is installed -- a keyword-only Deck gets the
             # routing fix too, just without the cosine ordering on top.
+            preferred_ids: set[int] = set()
             compat_topics = match_compat_corpus_topics(question)
             topic_cards = _compat_tips_for_topics(
                 conn,
@@ -1133,7 +1298,7 @@ def retrieve_knowledge_context(
                 exclude_ids={c.section_id for c in cards},
                 top_k=COMPAT_TOPIC_RECALL_K,
             )
-            preferred_ids = {
+            preferred_ids |= {
                 c.section_id
                 for c in cards + topic_cards
                 if _compat_topic_of(conn, c.section_id) in compat_topics
@@ -1141,8 +1306,7 @@ def retrieve_knowledge_context(
             fts_ms = round((time.perf_counter() - t_fts) * 1000, 2)
             resolution = "compat_tips"
         else:
-            topic_cards: list[KnowledgeCard] = []
-            preferred_ids: set[int] = set()
+            preferred_ids = set()
             section_floor = (
                 IMPLICIT_ROUTE_RELEVANCE_FLOOR if implicit_route else BM25_RELEVANCE_FLOOR
             )
@@ -1172,6 +1336,25 @@ def retrieve_knowledge_context(
                 if game_id is not None
                 else []
             )
+            # "the boss" / "this level": pull the game's cards of that type into the pool.
+            # Only on the explicit route -- same trade as the vector recall pass, since a bare
+            # type word in a passing Ask is weak evidence that the Ask is about the game.
+            # Marked preferred for the same reason compat's routed topic is: pool membership
+            # alone left DRG's one boss card behind three keyword hits and outside a top-3
+            # budget. Shares RRF_W_TOPIC deliberately -- both are the same shape of signal, a
+            # flat "this card is what the question asked for by kind, not by name".
+            topic_cards = (
+                _sections_of_type(
+                    conn,
+                    game_id=game_id,
+                    section_types=_section_types_named(question),
+                    exclude_ids={c.section_id for c in cards},
+                    top_k=TYPE_RECALL_K,
+                )
+                if game_id is not None and not implicit_route
+                else []
+            )
+            preferred_ids = {c.section_id for c in topic_cards}
             fts_ms = round((time.perf_counter() - t_fts) * 1000, 2)
 
         # Vectors exist but were not used: the user installed a corpus, so "keyword" alone
@@ -1222,7 +1405,7 @@ def retrieve_knowledge_context(
                         query_vector=query_vector,
                         top_k=VECTOR_RECALL_K,
                         min_similarity=VECTOR_RECALL_FLOOR,
-                        exclude_ids={c.section_id for c in cards},
+                        exclude_ids={c.section_id for c in cards + topic_cards},
                     )
                 else:
                     vectors_by_id = _load_section_vectors(conn, [c.section_id for c in cards])
