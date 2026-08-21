@@ -119,6 +119,30 @@ class CorpusDoc:
 
 
 @dataclass
+class DomainVectors:
+    """Two vector maps, never one.
+
+    ``compat_patterns.pattern_id`` and ``sections.section_id`` are independent sequences that
+    both land in ``CorpusDoc.doc_id``. Keying one dict by it meant a section card's vector
+    silently overwrote the tip's for every id present in both tables -- 122 of 124 tips at the
+    current corpus size -- so every compat case in a vector-using arm was scored against a
+    strategy card's vector. Production never has this problem: it stores ``section_vectors``
+    and ``compat_pattern_vectors`` in separate tables and reads whichever the query needs.
+
+    Fixed 2026-08-21. Compat numbers in reports before that date are wrong for the
+    ``vector_only``, ``rrf_rerank_only`` and ``rrf`` arms; the keyword arm uses no vectors and
+    is unaffected, as is every strategy case -- sections were written last, so they kept
+    their own vectors.
+    """
+
+    compat: dict[int, list[float]]
+    strategy: dict[int, list[float]]
+
+    def for_domain(self, domain: str) -> dict[int, list[float]]:
+        return self.compat if domain == "compat" else self.strategy
+
+
+@dataclass
 class QueryCase:
     case_id: str
     query: str
@@ -374,7 +398,7 @@ def _hybrid_retrieve(
     case: QueryCase,
     *,
     query_vector: list[float],
-    vectors_by_id: dict[int, list[float]],
+    vectors_by_id: DomainVectors,
     fts_k: int,
     top_k: int,
     with_recall: bool,
@@ -394,6 +418,7 @@ def _hybrid_retrieve(
     """
     expanded = _expand_query(case.query, "")
     recall_cards: list[KnowledgeCard] = []
+    vectors = vectors_by_id.for_domain(case.domain)
     if case.domain == "compat":
         # Production does not run recall on the tip sheet -- see the open compat topic-filter
         # bug. When it does, this branch has to move with it or the arm goes stale again.
@@ -407,7 +432,7 @@ def _hybrid_retrieve(
         )
         cards = _search_sections(conn, game_id=game_id, query=expanded, top_k=fts_k)
         if with_recall and game_id is not None:
-            recall_cards, vectors_by_id = _vector_recall_sections(
+            recall_cards, vectors = _vector_recall_sections(
                 conn,
                 game_id=game_id,
                 query_vector=query_vector,
@@ -420,7 +445,7 @@ def _hybrid_retrieve(
     return _fuse_cards_by_rrf(
         cards,
         query_vector,
-        vectors_by_id,
+        vectors,
         top_k=top_k,
         recall_cards=recall_cards,
     )
@@ -471,7 +496,7 @@ def _vector_only_for_case(
     *,
     query_vector: list[float],
     docs: list[CorpusDoc],
-    vectors: dict[int, list[float]],
+    vectors: DomainVectors,
     top_k: int,
 ) -> list[KnowledgeCard]:
     """Domain-scoped vector-only retrieval, matching what the keyword arm is allowed to see."""
@@ -484,7 +509,9 @@ def _vector_only_for_case(
         if game_id is None:
             return []
         pool = [d for d in docs if d.domain == "strategy" and d.game_id == game_id]
-    return _vector_only(pool, query_vector=query_vector, vectors=vectors, top_k=top_k)
+    return _vector_only(
+        pool, query_vector=query_vector, vectors=vectors.for_domain(case.domain), top_k=top_k
+    )
 
 
 def _build_vectors(
@@ -492,10 +519,13 @@ def _build_vectors(
     model: str,
     docs: list[CorpusDoc],
     mode: PromptMode,
-) -> dict[int, list[float]]:
+) -> DomainVectors:
     texts = [_format_document(model, doc.bare_text, mode) for doc in docs]
     vectors = _embed_batch(ollama_base, model, texts)
-    return {doc.doc_id: vec for doc, vec in zip(docs, vectors)}
+    by_domain = DomainVectors(compat={}, strategy={})
+    for doc, vec in zip(docs, vectors):
+        by_domain.for_domain(doc.domain)[doc.doc_id] = vec
+    return by_domain
 
 
 def _evaluate_model(
@@ -507,12 +537,12 @@ def _evaluate_model(
     *,
     prompt_mode: PromptMode,
     hybrid: bool,
-    vectors_by_id: dict[int, list[float]] | None = None,
+    vectors_by_id: DomainVectors | None = None,
 ) -> ModelScores:
     if hybrid and vectors_by_id is None:
         vectors_by_id = _build_vectors(ollama_base, model, docs, prompt_mode)
     elif not hybrid:
-        vectors_by_id = {}
+        vectors_by_id = DomainVectors(compat={}, strategy={})
     # warm query embed
     if hybrid:
         _embed_one(ollama_base, model, _format_query(model, "warmup", prompt_mode))
@@ -582,10 +612,10 @@ def _evaluate_spanish_probe(
     compat_docs: list[CorpusDoc],
     cases: list[QueryCase],
     *,
-    bare_vectors: dict[int, list[float]],
-    prompted_vectors: dict[int, list[float]],
+    bare_vectors: DomainVectors,
+    prompted_vectors: DomainVectors,
 ) -> dict[str, Any]:
-    def _run(mode: PromptMode, vectors: dict[int, list[float]], *, vector_only: bool) -> ModelScores:
+    def _run(mode: PromptMode, vectors: DomainVectors, *, vector_only: bool) -> ModelScores:
         results: list[QueryResult] = []
         embed_times: list[float] = []
         fts_empty = 0
@@ -599,7 +629,7 @@ def _evaluate_spanish_probe(
                 cards = _vector_only(
                     compat_docs,
                     query_vector=q_vec,
-                    vectors=vectors,
+                    vectors=vectors.compat,
                     top_k=top_k,
                 )
             else:
@@ -724,7 +754,7 @@ def _run_retrieval_arms(
     docs: list[CorpusDoc],
     cases: list[QueryCase],
     *,
-    vectors_by_id: dict[int, list[float]],
+    vectors_by_id: DomainVectors,
 ) -> dict[str, list[QueryResult]]:
     """Run all three arms per case off one query embedding.
 

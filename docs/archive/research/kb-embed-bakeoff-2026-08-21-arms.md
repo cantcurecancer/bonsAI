@@ -1,25 +1,8 @@
-> **CORRECTION, 2026-08-21 — every vector-using number below is understated.**
->
-> The harness kept one vector map keyed by `CorpusDoc.doc_id`, and
-> `compat_patterns.pattern_id` and `sections.section_id` are independent sequences that both
-> land in that field. A section card's vector therefore overwrote the tip's for every id in
-> both tables — 122 of 124 tips at the corpus size this run used — so every compat case in the
-> `vector_only`, `rrf_rerank_only` and `rrf` arms was scored against a strategy card's vector.
->
-> The `keyword` arm uses no vectors and is unaffected; it is the only column here that can
-> still be quoted. Fixed in `scripts/eval_kb_embed_models.py`; re-measured in
-> [kb-embed-bakeoff-2026-08-21-arms.md](kb-embed-bakeoff-2026-08-21-arms.md), against a corpus
-> that also gained the 16 Phase 4 cards — so the two runs are **not** a clean A/B (R4:
-> same-corpus only). This file is kept unedited below the line as the record of what was
-> reported at the time.
-
----
-
 # KB embed model bake-off
 
-Date: 2026-08-18
+Date: 2026-08-21
 Ollama: `http://127.0.0.1:11434`
-Corpus: `C:\Users\still\Documents\BonsAI\build\knowledge-base-embed-bakeoff\corpus.db`
+Corpus: `build\knowledge-base-embed-bakeoff\corpus.db`
 
 ## Recommendation
 
@@ -29,9 +12,9 @@ No model sweep in this run (`--arms-only`); `nomic-embed-text` stands unchalleng
 
 ## Key findings
 
-- Keyword-only baseline: **73.9%** top-1 / **87.0%** top-3.
+- Keyword-only baseline: **74.6%** top-1 / **87.0%** top-3.
 - Best hybrid prompted top-3: not measured in this run (`--arms-only`).
-- Holdout arm verdict: No separation on holdout top-3: RRF 80.6% [66.7, 91.7] vs keyword 83.3% [69.4, 94.4] — intervals overlap, so these fixtures (n=36) cannot tell the arms apart. Not a tie; an unresolved question.
+- Holdout arm verdict: No separation on holdout top-3: RRF 83.3% [69.4, 94.4] vs keyword 83.3% [69.4, 94.4] — intervals overlap, so these fixtures (n=36) cannot tell the arms apart. Not a tie; an unresolved question.
 - Re-run: `python scripts/eval_kb_embed_models.py --write-report`
 
 ## English aggregate (kb_eval_v2, labeled rows)
@@ -57,21 +40,21 @@ Baseline model `nomic-embed-text`, prompted, **same corpus for every arm** (R4).
 
 | Arm | top-1 | top-1 CI | top-3 | top-3 CI |
 |-----|-------|----------|-------|----------|
-| keyword | 75.5% | [66.7, 83.3] | 88.2% | [81.4, 94.1] |
-| vector_only | 66.7% | [56.9, 75.5] | 81.4% | [73.5, 89.2] |
-| rrf_rerank_only | 74.5% | [65.7, 82.4] | 86.3% | [79.4, 92.2] |
-| rrf | 75.5% | [66.7, 83.3] | 90.2% | [83.3, 96.1] |
+| keyword | 77.5% | [68.6, 85.3] | 88.2% | [81.4, 94.1] |
+| vector_only | 77.5% | [68.6, 85.3] | 93.1% | [88.2, 98.0] |
+| rrf_rerank_only | 79.4% | [70.6, 87.3] | 91.2% | [85.3, 96.1] |
+| rrf | 80.4% | [71.6, 87.3] | 94.1% | [89.2, 98.0] |
 
 ### holdout (n=36)
 
 | Arm | top-1 | top-1 CI | top-3 | top-3 CI |
 |-----|-------|----------|-------|----------|
-| keyword | 69.4% | [52.8, 83.3] | 83.3% | [69.4, 94.4] |
-| vector_only | 52.8% | [36.1, 69.4] | 63.9% | [47.2, 80.6] |
-| rrf_rerank_only | 63.9% | [47.2, 80.6] | 80.6% | [66.7, 91.7] |
-| rrf | 61.1% | [44.4, 75.0] | 80.6% | [66.7, 91.7] |
+| keyword | 66.7% | [50.0, 80.6] | 83.3% | [69.4, 94.4] |
+| vector_only | 63.9% | [47.2, 80.6] | 83.3% | [72.2, 94.4] |
+| rrf_rerank_only | 66.7% | [50.0, 80.6] | 83.3% | [69.4, 94.4] |
+| rrf | 63.9% | [47.2, 77.8] | 83.3% | [69.4, 94.4] |
 
-**Holdout verdict:** No separation on holdout top-3: RRF 80.6% [66.7, 91.7] vs keyword 83.3% [69.4, 94.4] — intervals overlap, so these fixtures (n=36) cannot tell the arms apart. Not a tie; an unresolved question.
+**Holdout verdict:** No separation on holdout top-3: RRF 83.3% [69.4, 94.4] vs keyword 83.3% [69.4, 94.4] — intervals overlap, so these fixtures (n=36) cannot tell the arms apart. Not a tie; an unresolved question.
 
 ### Recall — labeled cases keyword search cannot answer
 
@@ -99,18 +82,18 @@ A fixture's `domain` is what we want retrieval to do. `should_retrieve_knowledge
 | Slice | Arm | top-3 | top-3 CI | n |
 |-------|-----|-------|----------|---|
 | overall | keyword | 65.0% | [50.0, 80.0] | 40 |
-| overall | vector_only | 20.0% | [7.5, 32.5] | 40 |
-| overall | rrf_rerank_only | 57.5% | [42.5, 72.5] | 40 |
-| overall | rrf | 57.5% | [42.5, 72.5] | 40 |
+| overall | vector_only | 67.5% | [52.5, 82.5] | 40 |
+| overall | rrf_rerank_only | 72.5% | [57.5, 85.0] | 40 |
+| overall | rrf | 72.5% | [57.5, 85.0] | 40 |
 | gate-reachable only | keyword | 66.7% | [51.3, 82.1] | 39 |
-| gate-reachable only | vector_only | 20.5% | [7.7, 33.3] | 39 |
-| gate-reachable only | rrf_rerank_only | 59.0% | [43.6, 74.4] | 39 |
-| gate-reachable only | rrf | 59.0% | [43.6, 74.4] | 39 |
+| gate-reachable only | vector_only | 66.7% | [51.3, 82.1] | 39 |
+| gate-reachable only | rrf_rerank_only | 71.8% | [56.4, 84.6] | 39 |
+| gate-reachable only | rrf | 71.8% | [56.4, 84.6] | 39 |
 
 
 ## Keyword-only baseline
 
-- Top-1: **73.9%**
+- Top-1: **74.6%**
 - Top-3: **87.0%**
 - FTS empty: **0.7%**
 
@@ -127,4 +110,4 @@ A fixture's `domain` is what we want retrieval to do. `should_retrieve_knowledge
 
 ## Raw JSON
 
-Full payload: `docs/archive/research/kb-embed-bakeoff-2026-08-18-arms.json`
+Full payload: `docs/archive/research/kb-embed-bakeoff-2026-08-21-arms.json`
