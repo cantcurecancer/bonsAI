@@ -1504,8 +1504,11 @@ def retrieve_knowledge_context(
 
 _CHIP_TEXT_MAX_LEN = 80
 
-# Section types surfaced first for session preset chips (boss / stuck-style).
-_CHIP_SECTION_TYPE_ORDER = ("boss", "dungeon", "encounter", "area", "quest")
+# Section types surfaced first for session preset chips (boss / stuck-style). This is the
+# order kinds are *drawn* in, one at a time — see _list_game_sections_for_chips — not a
+# priority that lets an earlier kind take every slot. Kinds absent from this tuple still
+# appear, after the ones listed.
+_CHIP_SECTION_TYPE_ORDER = ("boss", "dungeon", "encounter", "area", "quest", "enemy", "item")
 
 # Insertion order is the display order for compat chips — see _compat_chip_candidates.
 # Note "deck" is textually identical to a static carousel seed (src/data/presets.ts), so it is
@@ -1613,6 +1616,12 @@ def _curtail_section_to_chip(section_type: str, name: str) -> str:
         return _truncate_chip_text(f"How do I get through {n}?")
     if st in ("encounter", "area", "quest"):
         return _truncate_chip_text(f"Tips for {n} in this game?")
+    # Phrased to read for a singular or a plural card name alike -- the seed has "Exploder"
+    # next to "ReDead and Gibdo", and "Nitra" next to "Bottles".
+    if st == "enemy":
+        return _truncate_chip_text(f"How do I deal with {n}?")
+    if st == "item":
+        return _truncate_chip_text(f"How do I use {n}?")
     return _truncate_chip_text(f"What should I know about {n}?")
 
 
@@ -1622,16 +1631,42 @@ def _list_game_sections_for_chips(
     *,
     limit: int = 6,
 ) -> list[tuple[str, str]]:
+    """One card per kind, then a second from each, until ``limit`` — not the first N by kind.
+
+    Strict kind-priority let one kind take every slot. It looked fine while no title had more
+    than a handful of cards of one kind, then the Phase 4 cards took Ocarina of Time to six
+    boss cards and the whole chip pool became six *"How do I beat X?"* — its items and enemies
+    unreachable, and six boss names offered up in a carousel a player is only browsing.
+
+    Round-robin costs nothing where kinds are already lopsided: Left 4 Dead 2 keeps its
+    seventeen `mechanic` cards feeding the pool once the other kinds run dry, so it returns
+    the same six chips it did before, reordered.
+    """
     order_cases = " ".join(
         f"WHEN lower(section_type) = '{st}' THEN {i}"
         for i, st in enumerate(_CHIP_SECTION_TYPE_ORDER)
     )
+    # No LIMIT: the interleave below needs every kind's cards, and a game's section count is
+    # tens of rows, not thousands.
     sql = (
         "SELECT section_type, name FROM sections WHERE game_id = ? "
-        f"ORDER BY CASE {order_cases} ELSE 99 END, section_id LIMIT ?"
+        f"ORDER BY CASE {order_cases} ELSE 99 END, section_id"
     )
-    rows = conn.execute(sql, (game_id, limit)).fetchall()
-    return [(str(r["section_type"] or ""), str(r["name"] or "")) for r in rows]
+    by_kind: dict[str, list[tuple[str, str]]] = {}
+    for row in conn.execute(sql, (game_id,)).fetchall():
+        section_type = str(row["section_type"] or "")
+        by_kind.setdefault(section_type, []).append((section_type, str(row["name"] or "")))
+
+    out: list[tuple[str, str]] = []
+    queues = list(by_kind.values())
+    while len(out) < limit and any(queues):
+        for queue in queues:
+            if not queue:
+                continue
+            out.append(queue.pop(0))
+            if len(out) >= limit:
+                break
+    return out
 
 
 def _compat_chip_candidates(

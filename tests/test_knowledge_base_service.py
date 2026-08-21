@@ -23,6 +23,7 @@ from backend.services.knowledge_base_service import (
     suggest_chip_candidates,
     summarize_kb_coverage,
     _COMPAT_CHIP_TEMPLATES,
+    _curtail_section_to_chip,
     _expand_query,
     _format_block,
     _fts_match_query,
@@ -288,11 +289,11 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
       [c.text for c in result.candidates],
       [
         "How do I beat Glyphid Dreadnought?",
-        "How do I beat Dreadnought Twins?",
         "Tips for Hollow Bough in this game?",
+        "How do I deal with Exploder?",
+        "How do I use Red Sugar?",
         "What should I know about Mining and the run timer?",
-        "What should I know about Classes?",
-        "What should I know about Upgrades and overclocks?",
+        "How do I beat Dreadnought Twins?",
         "Any known Proton issues for this game?",
         "Any Steam Input issues for this game?",
       ],
@@ -301,6 +302,55 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
       [c.domain for c in result.candidates],
       ["strategy"] * 6 + ["compat", "compat"],
     )
+  def test_chip_pool_draws_one_kind_at_a_time_rather_than_flooding(self):
+    """Measured 2026-08-19: after the Phase 4 cards, Ocarina of Time's six chips were six
+    "How do I beat X?" and its items and enemies were unreachable.
+
+    Two things were wrong with that, and only one is cosmetic: the pool stopped representing
+    the corpus, and a carousel a player is merely browsing offered six boss names at once.
+    """
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    result = suggest_chip_candidates(
+      settings,
+      app_id="413150",
+      app_name="The Legend of Zelda: Ocarina of Time",
+    )
+    self.assertTrue(result.ok)
+    strategy = [c.text for c in result.candidates if c.domain == "strategy"]
+    self.assertEqual(sum(1 for t in strategy if t.startswith("How do I beat ")), 2)
+    # One of each other kind the title has, before any kind gets a second turn.
+    self.assertIn("How do I deal with ReDead and Gibdo?", strategy)
+    self.assertIn("How do I use Bottles?", strategy)
+    self.assertIn("How do I get through Shadow Temple invisible floors?", strategy)
+
+  def test_chip_pool_still_fills_from_one_kind_when_a_title_has_only_one(self):
+    """The direction interleaving must not cost anything.
+
+    Left 4 Dead 2 files seventeen cards as `mechanic` and has two bosses and one area, so a
+    per-kind cap would have shrunk its pool. Round-robin keeps drawing from whatever is left
+    once the other kinds run dry, so it returns the same six it always did.
+    """
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    result = suggest_chip_candidates(settings, app_id="550", app_name="Left 4 Dead 2")
+    strategy = [c.text for c in result.candidates if c.domain == "strategy"]
+    self.assertEqual(len(strategy), 6)
+    self.assertEqual(sum(1 for t in strategy if t.startswith("What should I know about ")), 3)
+
+  def test_enemy_and_item_cards_get_their_own_chip_wording(self):
+    """"What should I know about Exploder?" is the fallback template, and it reads as though
+    the corpus does not know what kind of thing it is holding."""
+    self.assertEqual(_curtail_section_to_chip("enemy", "Exploder"), "How do I deal with Exploder?")
+    self.assertEqual(_curtail_section_to_chip("item", "Bottles"), "How do I use Bottles?")
+    self.assertEqual(
+      _curtail_section_to_chip("mechanic", "Epona"), "What should I know about Epona?"
+    )
+
 
   def test_suggest_chip_candidates_caps_generic_compat_chips(self):
     """Generic compat chips are bounded so they cannot crowd out entity-named ones."""

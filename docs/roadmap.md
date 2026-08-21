@@ -215,7 +215,7 @@ Stars are **effort/risk**. Grouped by **theme**; within each lane sorted ascendi
 - ★★★★ **RAG Deck query — extended retrieval (Phase 4)** — **tracks 1–2 shipped 2026-08-19, track 3 blocked**
   - **Goal:** Richer retrieval shapes — chip visibility, structured cards, per-game compat tips.
   - **Track 1 (shipped):** chip guarantee (≥1 corpus chip when candidates exist), game chips preferred over
-    shared Deck tips, **Tip** badge on game chips only. On-Deck **PHASE4-CHIPS-01** Open.
+    shared Deck tips, **Tip** badge on game chips only. The chip pool now draws **one kind at a time** rather than filling from the highest-priority kind first: the track 2 cards took Ocarina of Time to six boss cards and its whole pool became six *"How do I beat X?"*, with its items and enemies unreachable and six boss names offered in a carousel a player is only browsing. Enemy and item cards get their own wording (*"How do I deal with X?"*, *"How do I use X?"*). Costs nothing where a title's cards are lopsided — Left 4 Dead 2 files seventeen cards as `mechanic` and returns the same six chips, reordered. On-Deck **PHASE4-CHIPS-01** Open.
   - **Track 2 (shipped):** 16 structured cards for the two sample titles — 6 enemy, 6 item, 4 boss —
     authored with labelled lines (`Summary:` / `Weak points:` / `Uses:` / `Phases:` / `Tips:`), plus a
     conditional prompt clause that keeps those labels as light bullets in the reply. Corpus 117 → 133
