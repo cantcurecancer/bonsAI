@@ -1441,6 +1441,57 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
     )
     first_card = next(ln for ln in result.text_block.splitlines() if ln.startswith("["))
     self.assertIn("Queen Gohma", first_card)
+  def test_type_recall_does_not_outrank_a_keyword_match_of_the_same_kind(self):
+    """Measured 2026-08-19, once Ocarina of Time went from three boss cards to six.
+
+    `_sections_of_type` takes the game's first TYPE_RECALL_K cards of the kind by section_id,
+    which is authoring order and carries no relevance. Preferring them unconditionally promoted
+    that arbitrary slice over a real match: "how do i beat the water temple boss" returned Queen
+    Gohma, Volvagia and Twinrova and dropped Morpha, whose card opens "The Water Temple boss".
+    """
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    for question, expected in (
+      ("how do i beat the water temple boss", "Morpha"),
+      ("the forest temple boss keeps flying away", "Phantom Ganon"),
+    ):
+      with self.subTest(question=question):
+        result = retrieve_knowledge_context(
+          settings,
+          ask_mode="strategy",
+          question=question,
+          app_id="413150",
+          app_name="The Legend of Zelda: Ocarina of Time",
+          domain="strategy",
+          pc_ip="",
+        )
+        first_card = next(ln for ln in result.text_block.splitlines() if ln.startswith("["))
+        self.assertIn(expected, first_card)
+
+  def test_type_recall_still_rescues_a_kind_the_keyword_half_missed(self):
+    """The direction the feature exists for, and the one this narrowing must not break.
+
+    "how do i beat the boss" on DRG Survivor has no keyword hit typed `boss` -- the word matches
+    a mechanic and an area card incidentally -- so the recalled boss cards keep the preference.
+    """
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    result = retrieve_knowledge_context(
+      settings,
+      ask_mode="strategy",
+      question="how do i beat the boss",
+      app_id="2321470",
+      app_name="Deep Rock Galactic: Survivor",
+      domain="strategy",
+      pc_ip="",
+    )
+    first_card = next(ln for ln in result.text_block.splitlines() if ln.startswith("["))
+    self.assertIn("boss:", first_card)
+
 
   def test_type_recall_does_not_run_on_the_implicit_route(self):
     """A bare "boss" in a passing Ask is weak evidence the Ask is about the game."""

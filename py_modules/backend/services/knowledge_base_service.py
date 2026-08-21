@@ -1339,10 +1339,11 @@ def retrieve_knowledge_context(
             # "the boss" / "this level": pull the game's cards of that type into the pool.
             # Only on the explicit route -- same trade as the vector recall pass, since a bare
             # type word in a passing Ask is weak evidence that the Ask is about the game.
-            # Marked preferred for the same reason compat's routed topic is: pool membership
-            # alone left DRG's one boss card behind three keyword hits and outside a top-3
-            # budget. Shares RRF_W_TOPIC deliberately -- both are the same shape of signal, a
-            # flat "this card is what the question asked for by kind, not by name".
+            # Marked preferred -- conditionally, see below -- for the same reason compat's
+            # routed topic is: pool membership alone left DRG's one boss card behind three
+            # keyword hits and outside a top-3 budget. Shares RRF_W_TOPIC deliberately: both
+            # are the same shape of signal, a flat "this card is what the question asked for
+            # by kind, not by name".
             topic_cards = (
                 _sections_of_type(
                     conn,
@@ -1354,7 +1355,24 @@ def retrieve_knowledge_context(
                 if game_id is not None and not implicit_route
                 else []
             )
-            preferred_ids = {c.section_id for c in topic_cards}
+            # Type recall is a rescue, not a ranking: prefer its cards only for kinds the
+            # keyword half missed entirely. `_sections_of_type` takes the game's first
+            # TYPE_RECALL_K cards of the type by section_id, which is authoring order and
+            # carries no relevance, so preferring them unconditionally promotes an arbitrary
+            # slice over a real match. Measured 2026-08-19, once Ocarina of Time went from
+            # three boss cards to six: "how do i beat the water temple boss" returned Queen
+            # Gohma, Volvagia and Twinrova and dropped Morpha, whose card opens "The Water
+            # Temple boss". Same bug, milder, on "the forest temple boss keeps flying away".
+            #
+            # Per kind rather than all-or-nothing: a question naming two types ("the boss in
+            # this dungeon") can have keyword hits for one and none for the other, and the
+            # half that found nothing still needs rescuing.
+            kinds_found_by_keyword = {card.section_type for card in cards}
+            preferred_ids = {
+                card.section_id
+                for card in topic_cards
+                if card.section_type not in kinds_found_by_keyword
+            }
             fts_ms = round((time.perf_counter() - t_fts) * 1000, 2)
 
         # Vectors exist but were not used: the user installed a corpus, so "keyword" alone
