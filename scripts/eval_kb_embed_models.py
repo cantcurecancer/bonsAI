@@ -535,6 +535,10 @@ def _evaluate_model(
                 vectors_by_id=vectors_by_id,
                 fts_k=HYBRID_FTS_SHORTLIST_K,
                 top_k=top_k,
+                # The model sweep measures models against the pipeline that ships, so it takes
+                # the recall pass. Only the arms run has a reason to turn it off, and it does
+                # that to hold the old shape alongside the new one for comparison.
+                with_recall=True,
             )
         else:
             embed_ms = 0.0
@@ -606,6 +610,10 @@ def _evaluate_spanish_probe(
                     vectors_by_id=vectors,
                     fts_k=HYBRID_FTS_SHORTLIST_K,
                     top_k=top_k,
+                    # Compat cases only, and production runs no recall on the tip sheet, so
+                    # this reads the same either way. Passed explicitly so the next person to
+                    # change the compat path sees there is a decision here.
+                    with_recall=True,
                 )
             if not cards:
                 fts_empty += 1
