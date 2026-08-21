@@ -216,8 +216,14 @@ Stars are **effort/risk**. Grouped by **theme**; within each lane sorted ascendi
   - **Goal:** Richer retrieval shapes — chip visibility, structured cards, per-game compat tips.
   - **Track 1 (shipped):** chip guarantee (≥1 corpus chip when candidates exist), game chips preferred over
     shared Deck tips, **Tip** badge on game chips only. On-Deck **PHASE4-CHIPS-01** Open.
-  - **Track 2 (shipped):** structured enemy/item cards for the two sample titles, authored with labelled
-    lines, plus a conditional prompt clause that keeps those labels as light bullets in the reply.
+  - **Track 2 (shipped):** 16 structured cards for the two sample titles — 6 enemy, 6 item, 4 boss —
+    authored with labelled lines (`Summary:` / `Weak points:` / `Uses:` / `Phases:` / `Tips:`), plus a
+    conditional prompt clause that keeps those labels as light bullets in the reply. Corpus 117 → 133
+    sections. Measured against the built corpus with the real embedding model: of 18 questions naming or
+    describing a new card, **0 reached one before and 15 after** (16 once the type-recall preference was
+    narrowed, below). The misses are pure paraphrases sharing no word with the card —
+    `what do i do about the big one that tanks everything`, `something keeps grabbing me and sending me
+    to the start`. No regression on the six questions that already worked.
     On-Deck **PHASE4-CARDS-01** Open.
   - **Track 3 (blocked):** per-game troubleshooting tips need an `app_id` column on `compat_patterns` —
     a **schema v4 bump and a corpus rebuild**, which by Decision 6 (no migration) makes every installed

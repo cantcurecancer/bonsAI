@@ -1,3 +1,4 @@
+import json
 import os
 import subprocess
 import sys
@@ -287,6 +288,7 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
       [c.text for c in result.candidates],
       [
         "How do I beat Glyphid Dreadnought?",
+        "How do I beat Dreadnought Twins?",
         "Tips for Hollow Bough in this game?",
         "What should I know about Mining and the run timer?",
         "What should I know about Classes?",
@@ -297,7 +299,7 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
     )
     self.assertEqual(
       [c.domain for c in result.candidates],
-      ["strategy", "strategy", "strategy", "strategy", "strategy", "compat", "compat"],
+      ["strategy"] * 6 + ["compat", "compat"],
     )
 
   def test_suggest_chip_candidates_caps_generic_compat_chips(self):
@@ -1456,6 +1458,103 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
       pc_ip="",
     )
     self.assertFalse(result.attached)
+  def test_structured_enemy_cards_are_reachable_for_the_sample_titles(self):
+    """Phase 4 track 2. Measured 2026-08-19: 0 of 18 questions reached a new card before the
+    cards existed, 16 after -- these are the two shapes that carried it.
+
+    Named outright and described by what it does; the named case is the one a player types
+    mid-run, the described case is what the vector half is for.
+    """
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    for question, expected in (
+      ("how do i deal with the exploders", "Exploder"),
+      ("the flying ones keep getting me", "Mactera"),
+      ("what is red sugar for", "Red Sugar"),
+    ):
+      with self.subTest(question=question):
+        result = retrieve_knowledge_context(
+          settings,
+          ask_mode="strategy",
+          question=question,
+          app_id="2321470",
+          app_name="Deep Rock Galactic: Survivor",
+          domain="strategy",
+          pc_ip="",
+        )
+        self.assertTrue(result.attached)
+        self.assertIn(expected, result.text_block)
+
+  def test_structured_cards_keep_their_labelled_lines_in_the_block(self):
+    """The labels are the whole point of the format -- the prompt clause that turns them into
+    bullets fires on their presence in the block, so losing them here silently disables it."""
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    result = retrieve_knowledge_context(
+      settings,
+      ask_mode="strategy",
+      question="how do i deal with the exploders",
+      app_id="2321470",
+      app_name="Deep Rock Galactic: Survivor",
+      domain="strategy",
+      pc_ip="",
+    )
+    self.assertIn("Summary:", result.text_block)
+    self.assertIn("Weak points:", result.text_block)
+
+  def test_an_item_question_reaches_an_item_card_not_a_mechanic_card(self):
+    """Ocarina of Time's items were the half of the corpus a player asks about most and the
+    half that did not exist. `Adult dungeon order` was answering "what should i keep in my
+    bottles" before the cards landed."""
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    result = retrieve_knowledge_context(
+      settings,
+      ask_mode="strategy",
+      question="what should i keep in my bottles",
+      app_id="413150",
+      app_name="The Legend of Zelda: Ocarina of Time",
+      domain="strategy",
+      pc_ip="",
+    )
+    first_card = next(ln for ln in result.text_block.splitlines() if ln.startswith("["))
+    self.assertIn("item: Bottles", first_card)
+
+  def test_a_structured_card_uses_known_labels_on_every_line(self):
+    """Guards the authoring format across the whole corpus rather than the new rows only.
+
+    A card that opens `Weakpoints:` or `Weaknesses:` reads fine to a human and is invisible to
+    the prompt clause in `ollama_prompts.py`, which matches the exact strings.
+
+    A card counts as structured when its **first** line carries an allowed label, and then
+    every line must. Prose cards are left alone entirely -- several of them legitimately open a
+    line with a colon (`PCSX2:`, `DE edition:`), and no heuristic separates those from a
+    mistyped label, so the format opts in rather than being inferred.
+    """
+    seed = json.loads((REPO_ROOT / "data" / "kb" / "strategy_seed.json").read_text(encoding="utf-8"))
+    allowed = {"Summary:", "Weak points:", "Uses:", "Phases:", "Tips:"}
+    structured = 0
+    for section in seed["sections"]:
+      lines = [ln for ln in str(section["card"]).split("\n") if ln.strip()]
+      if not lines or not any(lines[0].startswith(label) for label in allowed):
+        continue
+      structured += 1
+      for line in lines:
+        with self.subTest(section=section["name"], line=line[:40]):
+          self.assertTrue(
+            any(line.startswith(label) for label in allowed),
+            f"{section['name']!r} is a structured card but this line has no known label: {line[:60]!r}",
+          )
+    # Fails loudly if the seed ever loses the structured cards, which would make the loop above
+    # pass by iterating over nothing.
+    self.assertEqual(structured, 16)
+
 
   def test_fusion_never_lists_the_same_card_twice(self):
     """Two recall paths can surface one card -- a boss card is typed *and* a cosine match."""
