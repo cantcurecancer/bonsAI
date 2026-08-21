@@ -24,7 +24,6 @@ LOW_NARRATIVE_APP_IDS = frozenset(
 # Protect progression: story/campaign titles stay conservative unless the user names the entity.
 PROTECT_PROGRESSION_APP_IDS = frozenset(
     {
-        "413150",  # The Legend of Zelda: Ocarina of Time
         "1086940",  # Baldur's Gate 3
         "377160",  # Fallout 4
         "1145360",  # Hades

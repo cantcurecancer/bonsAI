@@ -73,7 +73,7 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
       use_local_knowledge_base=True,
       ask_mode="strategy",
       question="How do I beat King Dodongo?",
-      app_id="413150",
+      app_id="",
       app_name="The Legend of Zelda: Ocarina of Time",
     )
     self.assertTrue(ok)
@@ -106,7 +106,7 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
       use_local_knowledge_base=False,
       ask_mode="strategy",
       question="boss help",
-      app_id="413150",
+      app_id="",
       app_name="Zelda",
     )
     self.assertFalse(ok)
@@ -315,7 +315,7 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
     }
     result = suggest_chip_candidates(
       settings,
-      app_id="413150",
+      app_id="",
       app_name="The Legend of Zelda: Ocarina of Time",
     )
     self.assertTrue(result.ok)
@@ -393,7 +393,7 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
     }
     result = suggest_chip_candidates(
       settings,
-      app_id="413150",
+      app_id="",
       app_name="The Legend of Zelda: Ocarina of Time",
     )
     self.assertTrue(result.ok)
@@ -412,7 +412,7 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
     }
     result = suggest_chip_candidates(
       settings,
-      app_id="413150",
+      app_id="",
       app_name="The Legend of Zelda: Ocarina of Time",
     )
     payload = session_rag_chip_candidates_to_rpc(result)
@@ -1484,7 +1484,7 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
       settings,
       ask_mode="strategy",
       question="how do i beat queen gohma",
-      app_id="413150",
+      app_id="",
       app_name="The Legend of Zelda: Ocarina of Time",
       domain="strategy",
       pc_ip="",
@@ -1512,7 +1512,7 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
           settings,
           ask_mode="strategy",
           question=question,
-          app_id="413150",
+          app_id="",
           app_name="The Legend of Zelda: Ocarina of Time",
           domain="strategy",
           pc_ip="",
@@ -1559,6 +1559,49 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
       pc_ip="",
     )
     self.assertFalse(result.attached)
+
+  def test_a_stardew_valley_session_does_not_inherit_ocarina_of_times_cards(self):
+    """413150 is Stardew Valley's real Steam AppID. The seed had it on Ocarina of Time, which
+    has none -- so a Stardew player asking about farming got Zelda cards, and, worse, Zelda's
+    progression fencing. Measured 2026-08-21 before the fix: three Ocarina of Time cards came
+    back for "how do i make more money on my farm".
+    """
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    result = retrieve_knowledge_context(
+      settings,
+      ask_mode="strategy",
+      question="how do i make more money on my farm",
+      app_id="413150",
+      app_name="Stardew Valley",
+      domain="strategy",
+      pc_ip="",
+    )
+    self.assertNotIn("Ocarina of Time", result.text_block)
+
+  def test_ocarina_of_time_still_resolves_from_the_session_title(self):
+    """The direction the fix must not cost anything. Both the emulator's canonical title and
+    the Ship of Harkinian shortcut name reach the same cards, through the alias table."""
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    for app_name in ("The Legend of Zelda: Ocarina of Time", "Ship of Harkinian"):
+      with self.subTest(app_name=app_name):
+        result = retrieve_knowledge_context(
+          settings,
+          ask_mode="strategy",
+          question="how do i beat volvagia",
+          app_id="",
+          app_name=app_name,
+          domain="strategy",
+          pc_ip="",
+        )
+        self.assertTrue(result.attached)
+        self.assertIn("Volvagia", result.text_block)
+
   def test_structured_enemy_cards_are_reachable_for_the_sample_titles(self):
     """Phase 4 track 2. Measured 2026-08-19: 0 of 18 questions reached a new card before the
     cards existed, 16 after -- these are the two shapes that carried it.
@@ -1619,7 +1662,7 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
       settings,
       ask_mode="strategy",
       question="what should i keep in my bottles",
-      app_id="413150",
+      app_id="",
       app_name="The Legend of Zelda: Ocarina of Time",
       domain="strategy",
       pc_ip="",

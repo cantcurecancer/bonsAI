@@ -107,9 +107,10 @@
       "query": "Queen Gohma boss weak point",
       "ask_mode": "strategy",
       "domain": "strategy",
-      "app_id": "413150",
+      "app_id": "",
       "expect_section": "Queen Gohma",
-      "notes": "OoT/SoH alias path"
+      "notes": "OoT/SoH alias path",
+      "shortcut": "ocarina of time"
     },
     {
       "id": "EVAL-S03",
@@ -198,9 +199,10 @@
       "query": "Shadow Temple invisible floor oot",
       "ask_mode": "strategy",
       "domain": "strategy",
-      "app_id": "413150",
+      "app_id": "",
       "expect_section": "Shadow Temple invisible floors",
-      "notes": "OoT dungeon"
+      "notes": "OoT dungeon",
+      "shortcut": "ocarina of time"
     },
     {
       "id": "EVAL-S13",

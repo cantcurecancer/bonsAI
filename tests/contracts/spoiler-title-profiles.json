@@ -1,12 +1,11 @@
 {
-  "note": "Built-in spoiler title profiles. Asserted from both languages \u2014 see tests/contracts/README.md.",
+  "note": "Built-in spoiler title profiles. Asserted from both languages — see tests/contracts/README.md.",
   "low_narrative_app_ids": [
     "2321470",
     "550",
     "1222670"
   ],
   "protect_progression_app_ids": [
-    "413150",
     "1086940",
     "377160",
     "1145360",
@@ -42,9 +41,9 @@
       "expected": "protect_progression"
     },
     {
-      "name": "ocarina of time appid protects progression",
-      "app_id": "413150",
-      "app_name": "",
+      "name": "ocarina of time protects progression by name, having no AppID",
+      "app_id": "",
+      "app_name": "The Legend of Zelda: Ocarina of Time",
       "expected": "protect_progression"
     },
     {

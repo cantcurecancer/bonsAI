@@ -1,6 +1,6 @@
 {
   "games": [
-    {"game_id": 1, "app_id": "413150", "igdb_id": null, "canonical_title": "The Legend of Zelda: Ocarina of Time", "edition": "N64", "platform": "Nintendo 64", "genres": ["action-adventure"]},
+    {"game_id": 1, "app_id": null, "igdb_id": "emudeck-oot-n64", "canonical_title": "The Legend of Zelda: Ocarina of Time", "edition": "N64", "platform": "Nintendo 64", "genres": ["action-adventure"]},
     {"game_id": 2, "app_id": "2321470", "igdb_id": null, "canonical_title": "Deep Rock Galactic: Survivor", "edition": null, "platform": "Steam", "genres": ["bullet-heaven", "roguelike", "action"]},
     {"game_id": 3, "app_id": "550", "igdb_id": null, "canonical_title": "Left 4 Dead 2", "edition": null, "platform": "Steam", "genres": ["fps", "co-op", "horror"]},
     {"game_id": 4, "app_id": "1086940", "igdb_id": null, "canonical_title": "Baldur's Gate 3", "edition": null, "platform": "Steam", "genres": ["rpg", "turn-based", "co-op"]},
@@ -15,6 +15,7 @@
     {"game_id": 13, "app_id": "220", "igdb_id": null, "canonical_title": "Half-Life 2", "edition": null, "platform": "Steam", "genres": ["fps", "action", "single-player"]}
   ],
   "aliases": [
+    {"alias": "the legend of zelda ocarina of time", "game_id": 1},
     {"alias": "ocarina of time", "game_id": 1},
     {"alias": "oot", "game_id": 1},
     {"alias": "zelda oot", "game_id": 1},

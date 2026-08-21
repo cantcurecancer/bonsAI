@@ -209,7 +209,7 @@ describe("answer bubble section stops", () => {
       maxWidthCss: "100%",
       answerKey: ANSWER_KEY,
       askQuestion: "Where should I go?",
-      appId: "413150",
+      appId: "1174180",
     });
     const { container } = render(el!);
     expect(container.textContent).toContain(SPOILER_STREAM_MASK_LABEL);

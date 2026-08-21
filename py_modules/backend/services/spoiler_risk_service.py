@@ -93,6 +93,7 @@ def build_spoiler_risk_signals(
     return {
         "ask_mode": str(ask_mode or "speed").strip().lower(),
         "app_id": str(app_id or "").strip(),
+        "app_name": str(app_name or "").strip(),
         "game_genres": str(game_genres or "").strip(),
         "asked_entity": entity,
         "kb_entity_match": kb_match,
@@ -130,7 +131,9 @@ def compute_heuristic_spoiler_risk_score(signals: dict[str, Any]) -> float:
         score += 8.0
 
     app_id = str(signals.get("app_id") or "").strip()
-    profile = str(signals.get("title_profile") or "").strip() or resolve_title_spoiler_profile(app_id)
+    profile = str(signals.get("title_profile") or "").strip() or resolve_title_spoiler_profile(
+        app_id, str(signals.get("app_name") or "")
+    )
     # One source of truth: an explicitly supplied title_profile wins, and only when the caller
     # supplies none does the AppID table decide. Re-checking the table here as well made an
     # explicit profile unoverridable.

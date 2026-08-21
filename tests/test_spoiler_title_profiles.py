@@ -19,9 +19,23 @@ class SpoilerTitleProfilesTests(unittest.TestCase):
             self.assertTrue(title_profile_is_low_narrative(app_id))
 
     def test_protect_progression_app_ids(self):
-        for app_id in ("413150", "1145360", "1174180"):
+        for app_id in ("1086940", "1145360", "1174180"):
             self.assertEqual(resolve_title_spoiler_profile(app_id), "protect_progression")
             self.assertFalse(title_profile_is_low_narrative(app_id))
+
+    def test_ocarina_of_time_is_protected_by_name_and_not_by_app_id(self):
+        """It has no Steam AppID. It carried 413150, which is Stardew Valley's, so a Stardew
+        session inherited both Ocarina of Time's cards and its progression fencing."""
+        self.assertEqual(
+            resolve_title_spoiler_profile("", "The Legend of Zelda: Ocarina of Time"),
+            "protect_progression",
+        )
+        self.assertEqual(
+            resolve_title_spoiler_profile("", "Ship of Harkinian"), "protect_progression"
+        )
+        self.assertNotIn("413150", PROTECT_PROGRESSION_APP_IDS)
+        # And the AppID's real owner is now nobody's business but its own.
+        self.assertEqual(resolve_title_spoiler_profile("413150", "Stardew Valley"), "unknown")
 
     def test_soe_title_fallback_without_app_id(self):
         self.assertEqual(
@@ -35,7 +49,7 @@ class SpoilerTitleProfilesTests(unittest.TestCase):
 
     def test_matrix_counts(self):
         self.assertEqual(len(LOW_NARRATIVE_APP_IDS), 3)
-        self.assertEqual(len(PROTECT_PROGRESSION_APP_IDS), 9)
+        self.assertEqual(len(PROTECT_PROGRESSION_APP_IDS), 8)
 
     def test_every_corpus_title_has_a_spoiler_profile(self):
         """A game in the corpus with no profile silently resolves to ``unknown``.

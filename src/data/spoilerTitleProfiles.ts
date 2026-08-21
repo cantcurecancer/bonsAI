@@ -17,7 +17,6 @@ export const LOW_NARRATIVE_APP_IDS = new Set([
 
 /** Keep in sync with PROTECT_PROGRESSION_APP_IDS in spoiler_title_profiles.py */
 export const PROTECT_PROGRESSION_APP_IDS = new Set([
-  "413150", // Ocarina of Time
   "1086940", // Baldur's Gate 3
   "377160", // Fallout 4
   "1145360", // Hades

@@ -35,7 +35,7 @@ describe("unwrapAskedEntitySpoilerFences", () => {
       "The true ending is that the dwarf retires.",
       "```",
     ].join("\n");
-    expect(unwrapAskedEntitySpoilerFences(raw, { question: q, appId: "413150" })).toContain(
+    expect(unwrapAskedEntitySpoilerFences(raw, { question: q, appId: "1174180" })).toContain(
       "```bonsai-spoiler"
     );
   });
@@ -59,7 +59,7 @@ describe("unwrapAskedEntitySpoilerFences", () => {
     ].join("\n");
     const out = unwrapAskedEntitySpoilerFences(raw, {
       question: "Where should I go?",
-      appId: "413150",
+      appId: "1174180",
       spoilerConsentEffective: true,
     });
     expect(out).not.toContain("```bonsai-spoiler");
@@ -106,7 +106,7 @@ describe("shouldUnwrapSpoilerFence", () => {
     expect(
       shouldUnwrapSpoilerFence("```bonsai-spoiler\nThe true ending is that the dwarf retires", {
         question: "Where should I go?",
-        appId: "413150",
+        appId: "1174180",
       })
     ).toBe(false);
   });

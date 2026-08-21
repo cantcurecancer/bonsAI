@@ -471,7 +471,7 @@ def seed_sample_corpus_legacy(conn: sqlite3.Connection) -> None:
     # Maintainer-authored rows, no third-party source -- so no capture date to record.
     crawled = ""
     games = [
-        (1, "413150", None, "The Legend of Zelda: Ocarina of Time", "N64", "Nintendo 64", '["action-adventure"]'),
+        (1, None, "emudeck-oot-n64", "The Legend of Zelda: Ocarina of Time", "N64", "Nintendo 64", '["action-adventure"]'),
         (
             2,
             "2321470",

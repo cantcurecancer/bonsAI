@@ -89,9 +89,10 @@
       "query": "gohma eye weak point n64 dungeon",
       "ask_mode": "strategy",
       "domain": "strategy",
-      "app_id": "413150",
+      "app_id": "",
       "expect_section": "Queen Gohma",
-      "notes": "paraphrase EVAL-S02"
+      "notes": "paraphrase EVAL-S02",
+      "shortcut": "ocarina of time"
     },
     {
       "id": "PARA-S03",
@@ -134,9 +135,10 @@
       "query": "invisible floor dungeon zelda n64",
       "ask_mode": "strategy",
       "domain": "strategy",
-      "app_id": "413150",
+      "app_id": "",
       "expect_section": "Shadow Temple invisible floors",
-      "notes": "paraphrase EVAL-S12"
+      "notes": "paraphrase EVAL-S12",
+      "shortcut": "ocarina of time"
     }
   ]
 }
