@@ -35,6 +35,39 @@ are now, and what is still owed.
 
 ---
 
+### D29 — Which titles get Phase 4 track 3's per-game tips?
+
+**Raised and locked 2026-08-22: keep Deep Rock Galactic: Survivor and Ocarina of Time, and write
+their tips from research.**
+
+**The situation.** Track 3's locked sample titles are DRG Survivor and Ocarina of Time, but the
+only real per-game knowledge in the repo is for **Fallout 4** (`moshortcut://"F4SE"`) and **GTA:
+San Andreas – DE** (`%command% -dx12`), both confirmed on the maintainer's own Deck on
+2026-08-21. Three options were put: move the sample titles to the two proven ones, cover all
+four, or keep the locked pair and research their tips.
+
+**Chosen: the third.** [The planning page](../planning/18-phase4-track3-per-game-compat-tips.md)
+rated it least preferred — it puts unverified claims in the part of the corpus users act on most
+directly — and the maintainer chose it with that rating in front of them. Settled; not to be
+re-argued.
+
+**What it obliges, recorded so the risk is handled rather than just accepted.** A researched tip
+has no provenance a user can weigh, so it must not render like a confirmed one: give researched
+tips a distinct provenance line and the weaker trust tier the corpus already carries for this
+case. Prefer quirks checkable on the maintainer's Deck in a minute (a shader stall, a menu that
+ignores touch) over ones that cannot be checked at all (a claim about a specific Proton build) —
+the second kind goes stale silently. The Fallout 4 and San Andreas quirks are still real and
+still dated; author them somewhere rather than discarding the only verified per-game knowledge
+in the repo. And keep 3–5 tips a target rather than a gate: with no natural supply the pull
+towards padding is stronger here than under either other option.
+
+**Still true regardless of this choice:** track 3 is blocked on the **schema v4** bump
+(`app_id TEXT` on `compat_patterns`) and therefore on a second corpus release, and the eval
+cannot currently tell a per-game tip from a shared tip on the same topic — so it ships unmeasured
+unless a label is added. Both are on the planning page under *What to check before starting*.
+
+---
+
 ### D28 — Ordinary phrases attach game cards. How hard should the floor be?
 
 **Raised 2026-08-22 by the first on-Deck QA pass. Not urgent, not a shipping blocker —

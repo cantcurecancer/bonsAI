@@ -99,6 +99,26 @@ Both are in the corpus already (`game_id` 5 and 9). Three options, in preference
 Recommend the first, and treat the volume target (3–5 each) as a target rather than a gate —
 two real tips are worth more than five padded ones.
 
+**Maintainer answered 2026-08-22: option three — keep Deep Rock Galactic: Survivor and Ocarina of
+Time, and write their tips from research.** Locked as **D29**. This is the option this page rated
+worst, and the maintainer chose it with that rating in front of them, so it is settled and not to
+be re-argued. What follows from it, so it is handled rather than forgotten:
+
+- **Every researched tip is an unverified claim and the card must say so.** The two
+  maintainer-supplied quirks (Fallout 4, San Andreas) have a named provenance — *runs on the
+  maintainer's Deck, confirmed 2026-08-21*. A researched DRG or Ocarina tip has nothing of the
+  kind. Give them a distinct provenance line and the weaker trust tier the corpus already has for
+  exactly this; do not let the two kinds render identically.
+- **Prefer quirks that are checkable on the maintainer's own Deck** over ones that are not. A
+  shader-compilation stall or a menu that ignores touch can be confirmed in a minute; a claim
+  about a specific Proton build cannot, and is the kind that goes stale silently.
+- **The Fallout 4 and San Andreas quirks do not disappear.** They are real, dated and already
+  written up above. Author them as shared-sheet or per-game tips anyway rather than discarding the
+  only verified per-game knowledge in the repo because the sample titles went elsewhere.
+- **Volume stays a target, not a gate.** Under this option the temptation to pad to 3–5 is
+  stronger, not weaker, because there is no natural supply. Two defensible tips beat five
+  researched ones.
+
 ## What to check before starting
 
 - **Whether the corpus is due a release anyway.** This work is cheap to bundle with a point
