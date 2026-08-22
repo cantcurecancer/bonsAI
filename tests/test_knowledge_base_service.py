@@ -7,10 +7,14 @@ from pathlib import Path
 from unittest import mock
 
 from backend.services.knowledge_base_schema import (
+    TRUST_TIER_FALLBACK,
+    TRUST_TIER_WIKI_NO_PATCH,
+    TRUST_TIER_WIKI_VERIFIED,
     pack_embedding_vector,
     unpack_embedding_vector,
 )
 from backend.services.knowledge_base_service import (
+    _trust_tier_for_row,
     EmbeddingDimensionMismatch,
     KnowledgeCard,
     close_connection,
@@ -1826,3 +1830,45 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
 
 if __name__ == "__main__":
   unittest.main()
+
+
+class TrustTierDerivationTests(unittest.TestCase):
+    """A wiki tier has to mean a wiki.
+
+    Found on device 2026-08-22: `source_version` was tested first, and the seed writes a build tag
+    there for maintainer-authored cards with no source. 24 unsourced cards were rated
+    `wiki_verified` while 59 genuinely wiki-sourced ones were rated lower, so the top tier was
+    reachable only through the fault. The tier is passed to the model as well as shown to the
+    user, so this was telling the model to trust unsourced advice most.
+    """
+
+    @staticmethod
+    def _row(source_url, source_version):
+        import sqlite3
+
+        conn = sqlite3.connect(":memory:")
+        conn.row_factory = sqlite3.Row
+        conn.execute("CREATE TABLE s (source_url TEXT, source_version TEXT)")
+        conn.execute("INSERT INTO s VALUES (?, ?)", (source_url, source_version))
+        return conn.execute("SELECT * FROM s").fetchone()
+
+    def test_no_source_url_is_never_a_wiki_tier_even_with_a_version(self):
+        # The exact shape of the 24 mislabelled cards: seed build tag, no wiki anywhere.
+        self.assertEqual(_trust_tier_for_row(self._row("", "seed-1.1")), TRUST_TIER_FALLBACK)
+        self.assertEqual(_trust_tier_for_row(self._row(None, "seed-1.0")), TRUST_TIER_FALLBACK)
+
+    def test_wiki_url_without_a_revision_is_wiki_no_patch(self):
+        # The 59 real wiki cards. Unchanged by the fix -- that is the point.
+        self.assertEqual(
+            _trust_tier_for_row(self._row("https://theportalwiki.com/wiki/Gels", "")),
+            TRUST_TIER_WIKI_NO_PATCH,
+        )
+
+    def test_wiki_url_with_a_revision_is_wiki_verified(self):
+        self.assertEqual(
+            _trust_tier_for_row(self._row("https://theportalwiki.com/wiki/Gels", "2026-08-09")),
+            TRUST_TIER_WIKI_VERIFIED,
+        )
+
+    def test_bare_card_with_nothing_is_fallback(self):
+        self.assertEqual(_trust_tier_for_row(self._row("", "")), TRUST_TIER_FALLBACK)

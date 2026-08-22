@@ -596,11 +596,21 @@ def _fts_match_query(query: str) -> str:
 
 
 def _trust_tier_for_row(row: sqlite3.Row) -> str:
+    """Both wiki tiers require a wiki. ``source_version`` alone is not evidence of one.
+
+    Ordering fault found on device 2026-08-22: this tested ``source_version`` first, and the seed
+    writes a *build* tag there (``seed-1.1``) for maintainer-authored cards that have no source at
+    all. Those 24 cards were reported to the user -- and to the model, which is told the tier --
+    as ``wiki_verified``, the strongest claim available, while the 59 cards with a real wiki URL
+    got the weaker ``wiki_no_patch`` because they carry no revision. No card in the corpus had
+    both, so the top tier was reachable *only* by the fault. Requiring the URL first is what the
+    tier names have always meant.
+    """
+    if not row["source_url"]:
+        return TRUST_TIER_FALLBACK
     if row["source_version"]:
         return TRUST_TIER_WIKI_VERIFIED
-    if row["source_url"]:
-        return TRUST_TIER_WIKI_NO_PATCH
-    return TRUST_TIER_FALLBACK
+    return TRUST_TIER_WIKI_NO_PATCH
 
 
 def _load_corpus_manifest(settings: dict) -> Optional[dict[str, Any]]:
