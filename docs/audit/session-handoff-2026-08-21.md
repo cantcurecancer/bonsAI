@@ -32,10 +32,46 @@ own release when its content is written (§5).
 downloading today gets a Stardew session inheriting Zelda's cards and Zelda's spoiler fencing.
 That is the strongest argument for not letting this sit.
 
+### Runbook — every prerequisite verified 2026-08-21
+
+`scripts/publish_corpus.py` already exists and does the whole thing. It is a **gate as well as a
+push**: it validates the D20 licence rules and manifest self-consistency, and refuses to publish
+an NC or GFDL card, an unbaked-embeddings build, or a manifest that disagrees with the files.
+
+```bash
+python scripts/build_rag_db.py --seed --out ./build/knowledge-base
+python scripts/publish_corpus.py --build-dir build/knowledge-base --check
+python scripts/publish_corpus.py --build-dir build/knowledge-base     --hf-clone-dir ../bonsai-knowledge-base --push-hf --push-github
+```
+
+`--check` pushes nothing. **It was run against the current build on 2026-08-21 and passed**, so
+the gate is not the risk here.
+
+Checked on 2026-08-21, all present:
+
+- `gh` 2.87.3, authenticated as `cantcurecancer`.
+- The Hugging Face dataset clone exists at `../bonsai-knowledge-base`, pointing at
+  `huggingface.co/datasets/qd313/bonsai-knowledge-base`, working tree clean, last commit
+  *Corpus point release 2026.08.16*.
+- The build at `build/knowledge-base-p5` (133 sections, 124 tips, schema 3) passes the gate.
+
+**One correction to make in passing:** the push to Hugging Face is a plain `git push` from that
+clone — `publish_corpus.py` deliberately does not use `huggingface_hub`, because the corpus is
+under 1 MB and nowhere near the LFS threshold. So `HUGGINGFACE_API_KEY` in `.env` is **not read by
+the script**. If the push prompts for credentials, that token is the password; do not go looking
+for a config that reads it.
+
 Release surface: `CORPUS_HF_NAMESPACE = "qd313/bonsai-knowledge-base"`,
 `CORPUS_GITHUB_RELEASE_TAG = "knowledge-base-v1"`
 ([knowledge_base_schema.py:35](../../py_modules/backend/services/knowledge_base_schema.py)).
-`.env` already holds `DECK_IP`, `DECK_USER`, `HUGGINGFACE_API_KEY`, `HUGGINGFACE_USERNAME`.
+
+**Build to `build/knowledge-base`, not to one of the dated scratch directories.** `build/` holds
+several from this week (`-p4`, `-p5`, `-pre-p4`, `-test`, `-embed-bakeoff`) that exist only for
+before-and-after comparison; `knowledge-base-test` is rebuilt by the test suite on every run.
+
+**After the publish, deploy the plugin too** (`scripts/build.ps1`, or `./scripts/build.sh dev`) —
+the corpus carries the cards and the AppID fix, and the plugin carries everything else. Then the
+on-Deck QA rows in §6 become runnable for the first time.
 
 **Sequencing is settled (D24, 2026-08-21): publish now, do not wait for schema v4.** Track 3 gets
 its own release later.
