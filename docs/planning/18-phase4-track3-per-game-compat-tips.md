@@ -60,6 +60,22 @@ Per-game tips are where a Deck-specific quirk lives — a title that needs a lau
 known Proton version, a controller layout that ships broken. Those are exactly the claims that
 go stale, so date them and expect to fix forward.
 
+### Maintainer-supplied quirks, 2026-08-21
+
+From the maintainer's own Deck. **Neither is card-ready yet** — see the gaps below. Both are
+launch options, which is a useful signal in itself: it is the first category to cover, and
+neither title is one of the two sample titles the lock names, so either the sample list widens
+or these wait.
+
+| Title | What the maintainer runs | State |
+|---|---|---|
+| Fallout 4 (`377160`) | `moshortcut://"F4SE"` — to launch F4SE through Mod Organizer 2 | **Needs the full string.** A Steam launch option for MO2 is the `ModOrganizer.exe` path plus the shortcut plus `%command%`; the fragment above is the shortcut part only, and MO2 is also documented with a colon (`moshortcut://:F4SE`). Ask for the field copied verbatim off the Deck rather than reconstructing it — a launch option one character wrong does not work, and a card that does not work is worse than no card. |
+| GTA: San Andreas – DE (`1547000`) | `%command% -dx12` | **Needs a date and a why.** Recorded as working on the maintainer's Deck; not verified elsewhere and no capture date. Worth confirming what it fixes (crash, performance, black screen) before it becomes a card, because the symptom is what a user will search for. |
+
+Asked and not known: any title needing a specific Proton version, and any title whose
+controller layout ships broken. Both remain open categories — do not invent examples to fill
+them, since a wrong compat claim is the kind that costs trust fastest.
+
 ## What to check before starting
 
 - **Whether the corpus is due a release anyway.** This work is cheap to bundle with a point
