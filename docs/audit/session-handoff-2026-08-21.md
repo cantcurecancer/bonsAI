@@ -4,8 +4,8 @@ Written so the next session starts from what was decided rather than re-deriving
 language on purpose: the maintainer reads this file.
 
 **Where the authority lives.** Locked calls are in
-[maintainer-decisions-locked.md](maintainer-decisions-locked.md) (**D23–D25 locked 2026-08-21**,
-**D26–D27 open**). Live status is [../roadmap.md](../roadmap.md). QA steps are
+[maintainer-decisions-locked.md](maintainer-decisions-locked.md) — **D23–D27 all locked
+2026-08-21**; nothing on this page is waiting on a maintainer answer. Live status is [../roadmap.md](../roadmap.md). QA steps are
 [../testing.md](../testing.md). Where this file disagrees with any of those, they are right —
 this one goes stale first.
 
@@ -16,14 +16,16 @@ this one goes stale first.
 **Publish a new corpus** (D24 — locked, maintainer said yes on 2026-08-21). Nothing else on this
 list is blocked on anything but that.
 
-Three separate pieces of work are all sitting behind this single release, which is why it is one
-release and not three:
+Two pieces of finished work are sitting behind it, both **library data rather than plugin code**,
+so a plugin deploy alone does not carry either:
 
-| Waiting | Why it needs a release |
+| In this release | Why it needs one |
 |---|---|
-| 16 structured cards (Phase 4 track 2) | Card content is corpus data, not plugin code |
+| 16 structured cards (Phase 4 track 2) | Card content is corpus data |
 | Ocarina of Time AppID fix | The wrong AppID is a row in the corpus |
-| Phase 4 track 3 (per-game tips) | Needs schema v4 — a new column on the tip table |
+
+**Not in it:** Phase 4 track 3, which needs schema v4 — a new column on the tip table. It gets its
+own release when its content is written (§5).
 
 **The published corpus is currently stale *and* carries a known bug.** Hugging Face still serves
 `2026.08.16` — 117 cards, and Ocarina of Time still holding Stardew Valley's AppID, so anyone
@@ -35,9 +37,15 @@ Release surface: `CORPUS_HF_NAMESPACE = "qd313/bonsai-knowledge-base"`,
 ([knowledge_base_schema.py:35](../../py_modules/backend/services/knowledge_base_schema.py)).
 `.env` already holds `DECK_IP`, `DECK_USER`, `HUGGINGFACE_API_KEY`, `HUGGINGFACE_USERNAME`.
 
-**Sequencing question worth settling first:** whether to bump to schema v4 (track 3) in this same
-release or publish v3 now and v4 later. Bundling means one stale-corpus event instead of two.
-Publishing now means the Stardew fix reaches users sooner. Not locked — see §5.
+**Sequencing is settled (D24, 2026-08-21): publish now, do not wait for schema v4.** Track 3 gets
+its own release later.
+
+**The fact that settled it, recorded with a date because it expires: as of 2026-08-21 there are no
+users.** Nothing is installed in the field, so the no-migration cost of **Decision 6** is currently
+zero and a second corpus release costs nothing either. Several cautions in this repo — the
+no-migration rule, the stale-corpus warning, the reluctance to bump the schema — are priced for a
+world where users exist. Keep the rules; stop paying the caution premium until there is somebody to
+pay it for. The first real user makes all of it real again.
 
 ---
 
@@ -103,28 +111,38 @@ honest locked answer and the correction did not change it. **D23** is the work t
 ## 4. Locked this session — do not re-litigate
 
 - **D23 — fold the paraphrase questions into the approved set.** Expect the totals to *drop*;
-  that is the point. The 2026-08-21 report becomes the last one measured on the old set, and
-  old and new numbers are not comparable afterwards (R4).
-- **D24 — publish a new corpus.** See §1.
+  that is the point. The 2026-08-21 report becomes the last one measured on the old set, and old
+  and new numbers are not comparable afterwards (R4). The split has to be assigned for the new
+  rows *before* anything is tuned on them (R1), or the ship gate is contaminated on arrival.
+- **D24 — publish a new corpus, now, without waiting for schema v4.** See §1.
 - **D25 — the type/"the boss" fix stays in its light form.** Query-time recall, no schema change,
   reaches an already-installed corpus. The heavier FTS-indexed version is not wanted.
+- **D26 — the thirteen re-keyed eval rows are endorsed.** The standard it sets is the part worth
+  keeping: an approved fixture may be edited when the edit is *shown* not to move any score, and
+  the showing comes before the ask. An edit that does move a score goes back to the maintainer
+  with the movement quantified.
+- **D27 — Phase 4 ships in two parts.** Tracks 1–2 are in `CHANGELOG.md` under `[Unreleased]` as
+  of 2026-08-21; track 3 gets its own entry when it lands.
 
 Full reasoning for each in [maintainer-decisions-locked.md](maintainer-decisions-locked.md).
 
 ---
 
-## 5. Still owed by the maintainer
+## 5. Track 3's content problem
 
-Both are quick, neither blocks the release.
+Not a blocker for the release, but the next thing to solve on track 3, and it is a *content*
+problem rather than a code one — the retrieval half is already built.
 
-- **D26 — endorse the re-keyed eval rows.** Thirteen rows in the approved set identified an
-  Ocarina of Time session by the borrowed AppID; they now identify it by name. Measured: **every
-  arm on every split scored identically to the decimal** before and after. Nothing to undo, only
-  to confirm.
-- **D27 — Phase 4 shipping two tracks of three.** Accept the split, or hold tracks 1–2 out of the
-  release notes until track 3 lands.
+The maintainer knows two Deck launch options, both confirmed verbatim on 2026-08-21: Fallout 4
+`moshortcut://"F4SE"` (F4SE through Mod Organizer 2) and GTA: San Andreas – DE `%command% -dx12`
+(symptom unknown — write the card without one rather than inventing it).
 
-Also unlocked, smaller: whether schema v4 rides in this release or the next (§1).
+**Neither title is a sample title**, and the question that produced them was too narrow. Both
+points, with the recommended fix — move the sample titles to the two games there is real
+knowledge about — are in
+[../planning/18-phase4-track3-per-game-compat-tips.md](../planning/18-phase4-track3-per-game-compat-tips.md).
+The short version for the next session: **ask what is annoying about playing each title on a
+Deck, not what is configured.**
 
 ---
 
@@ -136,6 +154,9 @@ Also unlocked, smaller: whether schema v4 rides in this release or the next (§1
   the details panel prints no card count — so they need `scripts/probe_deck_kb_retrieval.py`
   over SSH.
 - **Phase 5 is gated on Phase 4 passing on the Deck.** Maintainer's own gate; a good one.
+- **A2 / D23 is not implemented yet** — the fifteen paraphrase rows are still in
+  `tests/fixtures/kb_eval_paraphrase_v0.json` and the arms run does not read them. The decision is
+  locked; the work is not done.
 - Two small bugs: the details panel says *"Running game could not be matched"* when no game is
   running, and two different decisions are both filed as **D19**.
 

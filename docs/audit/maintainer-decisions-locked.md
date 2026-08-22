@@ -15,14 +15,11 @@ choices are, and what happens either way. **Locked calls (2026-08-02 for D1–D6
 [Maintainer decisions locked](#maintainer-decisions-locked--2026-08-02); implement
 from that section when it disagrees with an option above.
 
-**Three open:**
+**One open:**
 [D18](#d18--when-loading-settings-fails-four-values-keep-whatever-was-on-screen-bug-or-intent)
-(raised 2026-08-05 by the step 11 friction test),
-[D26](#d26--thirteen-eval-rows-were-re-keyed-off-a-borrowed-appid-endorse-it) and
-[D27](#d27--phase-4-shipped-two-tracks-of-three-accept-the-split-or-hold-it)
-(both raised during the RAG work of 2026-08-18 to 2026-08-21; neither blocks any
-implementation). Everything else D1–D25 is locked; **D19 is superseded by D20** (below). See the
-table below for D1–D15 and the sections below for D16, D17, D19–D27.
+(raised 2026-08-05 by the step 11 friction test). **D23–D27 were raised and locked during the RAG
+work of 2026-08-18 to 2026-08-21.** Everything else D1–D27 is locked; **D19 is superseded by D20**
+(below). See the table below for D1–D15 and the sections below for D16, D17, D19–D27.
 
 **Session handoff for the 2026-08-18 to 2026-08-21 RAG work:**
 [session-handoff-2026-08-21.md](session-handoff-2026-08-21.md) — what shipped, what the numbers
@@ -38,7 +35,11 @@ are now, and what is still owed.
 
 ### D27 — Phase 4 shipped two tracks of three. Accept the split, or hold it?
 
-**Raised 2026-08-19, OPEN.** Phase 4 was locked to ship all three tracks together. Tracks 1 and
+**Raised 2026-08-19, locked 2026-08-21: accept the split — tracks 1 and 2 go in the release
+notes now.** Written into `CHANGELOG.md` under `[Unreleased]` the same day. Track 3 gets its
+own entry when it lands; Phase 4 is announced in two parts rather than held.
+
+**Original framing.** Phase 4 was locked to ship all three tracks together. Tracks 1 and
 2 shipped on 2026-08-19 and 2026-08-21; track 3 did not.
 
 **Why it split.** Track 3 needs an `app_id` column on `compat_patterns` — a schema v4 bump and a
@@ -53,14 +54,15 @@ shipped are the ones a user can see.
 - **Hold.** Keep tracks 1–2 out of the release notes until track 3 lands, so Phase 4 is
   announced once and completely. Costs visible work sitting unannounced.
 
-**Note, 2026-08-21:** **D24** now locks a corpus release, so track 3 is no longer indefinitely
-blocked. If it rides in that release, this question may resolve itself.
-
-**No implementation depends on this** — it is a release-notes and phase-bookkeeping call.
+**Why the split was accepted.** **D24** settled that the corpus ships now rather than waiting
+for track 3, so holding tracks 1–2 would have meant announcing nothing about work that is
+already in users' hands the moment the corpus lands.
 
 ### D26 — Thirteen eval rows were re-keyed off a borrowed AppID. Endorse it?
 
-**Raised 2026-08-21, OPEN.** `kb_eval_v2` is the approved scored set and the bake-off numbers
+**Raised and locked 2026-08-21: endorsed — "yes, still the same test."**
+
+**Original framing.** `kb_eval_v2` is the approved scored set and the bake-off numbers
 were measured against it, so editing it normally needs a call first.
 
 **What happened.** Thirteen rows identified *"asked while Ocarina of Time is running"* by AppID
@@ -74,8 +76,10 @@ scored **identically to the decimal** before and after the re-key: keyword, vect
 rerank-only and RRF, across tune, holdout, compat-all and compat-gate-reachable. Sixteen
 score pairs, zero movement. The rows test what they always tested.
 
-**What is being asked:** confirm the set is still the set. Nothing needs undoing either way; if
-you would rather it had been asked first, say so and the same standard applies next time.
+**The standard this sets, which is the part worth keeping.** Editing an approved fixture is
+allowed when the edit is shown not to move any score, and the showing comes *before* the ask.
+An edit that does move a score is a different question and goes back to the maintainer with the
+movement quantified, not with an argument about why it should be fine.
 
 ### D25 — "How do I beat the boss" — the light fix or the indexed one?
 
@@ -119,9 +123,17 @@ which is 117 cards with Ocarina of Time still holding Stardew Valley's AppID —
 downloading today gets a Stardew Valley session inheriting Zelda's cards and Zelda's spoiler
 fencing.
 
-**Left open deliberately:** whether schema v4 (track 3) rides in this same release or waits for
-the next. Bundling means one stale-corpus event instead of two; publishing v3 now gets the
-Stardew fix to users sooner. Decide before building the release, not during.
+**Sequencing, settled 2026-08-21: publish now — do not wait for schema v4.** The question was
+whether to bundle track 3's schema bump so users take one stale-corpus event instead of two.
+The maintainer's answer removed the premise: **there are no users yet.** Nothing is installed in
+the field, so the no-migration cost of **Decision 6** is currently zero, and a second corpus
+release when track 3 lands costs nothing either.
+
+**Record that fact with a date, because it expires.** As of **2026-08-21** the plugin has no
+users, and several cautions in this repo — the no-migration rule, the stale-corpus warning, the
+reluctance to bump the schema — are priced for a world where it does. They are still the right
+long-run rules and they cost nothing to keep, but do not treat a schema bump as expensive today
+and do not assume it is still cheap in three months. The first real user makes all of it real.
 
 ### D23 — Where do the paraphrase questions go?
 

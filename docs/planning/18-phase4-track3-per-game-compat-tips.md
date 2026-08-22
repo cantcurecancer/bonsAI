@@ -62,19 +62,42 @@ go stale, so date them and expect to fix forward.
 
 ### Maintainer-supplied quirks, 2026-08-21
 
-From the maintainer's own Deck. **Neither is card-ready yet** — see the gaps below. Both are
-launch options, which is a useful signal in itself: it is the first category to cover, and
-neither title is one of the two sample titles the lock names, so either the sample list widens
-or these wait.
+From the maintainer's own Deck. Both confirmed verbatim on 2026-08-21 — record them as given.
 
-| Title | What the maintainer runs | State |
+| Title | Launch option | Provenance |
 |---|---|---|
-| Fallout 4 (`377160`) | `moshortcut://"F4SE"` — to launch F4SE through Mod Organizer 2 | **Needs the full string.** A Steam launch option for MO2 is the `ModOrganizer.exe` path plus the shortcut plus `%command%`; the fragment above is the shortcut part only, and MO2 is also documented with a colon (`moshortcut://:F4SE`). Ask for the field copied verbatim off the Deck rather than reconstructing it — a launch option one character wrong does not work, and a card that does not work is worse than no card. |
-| GTA: San Andreas – DE (`1547000`) | `%command% -dx12` | **Needs a date and a why.** Recorded as working on the maintainer's Deck; not verified elsewhere and no capture date. Worth confirming what it fixes (crash, performance, black screen) before it becomes a card, because the symptom is what a user will search for. |
+| Fallout 4 (`377160`) | `moshortcut://"F4SE"` | Launches F4SE through Mod Organizer 2. Confirmed verbatim by the maintainer, whose Deck it runs on. Write the card with the string exactly as it appears here; it is shorter than most MO2 guides show, and it is the one that works on the machine we have evidence from. |
+| GTA: San Andreas – DE (`1547000`) | `%command% -dx12` | Runs on the maintainer's Deck. **Symptom unknown** — they do not know what it fixes. |
 
-Asked and not known: any title needing a specific Proton version, and any title whose
-controller layout ships broken. Both remain open categories — do not invent examples to fill
-them, since a wrong compat claim is the kind that costs trust fastest.
+**Write the GTA card without a symptom rather than guessing one.** A compat tip normally leads
+with the problem, because the problem is what a user types. This one cannot, so it says what it
+is — a launch option the maintainer runs — and stops there. Inventing "fixes crashes on launch"
+would make it more findable and possibly false, and a wrong compat claim is the kind that costs
+trust fastest.
+
+### Two problems with the content, and the better question to ask
+
+**1. The question asked was too narrow.** *"Any launch options, Proton versions, or broken
+controller layouts?"* returned two answers because those are three categories out of many. A
+per-game tip is any Deck-specific thing about a title: a graphics setting that costs half the
+battery, a menu that does not take touch input, a save that lives somewhere unexpected, a first
+launch that takes five minutes compiling shaders and looks hung. The maintainer plays these
+games and will know several without thinking of them as "compat". **Ask what is annoying about
+playing each title on a Deck, not what is configured.**
+
+**2. Neither title is a sample title.** The lock names Deep Rock Galactic: Survivor and
+Ocarina of Time / Ship of Harkinian; the real knowledge is Fallout 4 and GTA: San Andreas – DE.
+Both are in the corpus already (`game_id` 5 and 9). Three options, in preference order:
+
+- **Move the sample titles to Fallout 4 and San Andreas.** Track 3 exists to prove per-game tips
+  work; proving it on titles with genuine tips beats proving it on titles whose tips were
+  invented to fill a quota. Nothing in the retrieval design cares which titles they are.
+- **Cover four titles**, two proven and two thin. More authoring for no extra proof.
+- **Keep the locked pair and write DRG/OoT tips from research.** Cheapest to say, worst to trust:
+  it puts unverified claims in the one part of the corpus users will act on directly.
+
+Recommend the first, and treat the volume target (3–5 each) as a target rather than a gate —
+two real tips are worth more than five padded ones.
 
 ## What to check before starting
 
