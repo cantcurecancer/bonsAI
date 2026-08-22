@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import {
   LOCAL_KNOWLEDGE_BASE_ADVICE_PRESET_TEXT,
   TEMP_CAROUSEL_FROZEN_TEXTS,
@@ -8,10 +8,17 @@ import {
   getRandomPresetExcluding,
   getRandomPresets,
   holdMsForPresetText,
+  setFrozenTestChips,
+  getFrozenTestChips,
+  frozenTestChipsActive,
 } from "./presets";
 
 /** Regression tests for preset sampling and category detection heuristics. */
 describe("presets", () => {
+  // The runtime freeze is module-level state (see setFrozenTestChips), so every case here has to
+  // clear it or it leaks into the sampling tests below and they fail for the wrong reason.
+  afterEach(() => setFrozenTestChips([]));
+
   it("returns requested number of random presets when possible", () => {
     const presets = getRandomPresets(3);
     expect(presets.length).toBe(3);
@@ -85,5 +92,59 @@ describe("presets", () => {
   it("includes KB-advice static seed when useLocalKnowledgeBase is off", () => {
     const all = getRandomPresets(50, { useLocalKnowledgeBase: false });
     expect(all.some((p) => p.text === LOCAL_KNOWLEDGE_BASE_ADVICE_PRESET_TEXT)).toBe(true);
+  });
+});
+
+describe("frozen test chips (QA)", () => {
+  afterEach(() => setFrozenTestChips([]));
+
+  const BATCH = [
+    "how do i deal with the exploders",
+    "what is red sugar for",
+    "how do i beat the twins",
+  ];
+
+  it("drives the carousel with arbitrary text that is not a built-in preset", () => {
+    // The whole reason this exists: TEMP_CAROUSEL_FROZEN_TEXTS resolves entries against
+    // PRESET_PROMPTS and skips misses, so a real QA question could never be frozen.
+    setFrozenTestChips(BATCH);
+    expect(getRandomPresets(3).map((p) => p.text)).toEqual(BATCH);
+    expect(getContextualPresets("performance", 3).map((p) => p.text)).toEqual(BATCH);
+  });
+
+  it("badges frozen chips so a batch is never mistaken for real carousel output", () => {
+    setFrozenTestChips(BATCH);
+    expect(getRandomPresets(3).every((p) => p.testChip === true)).toBe(true);
+  });
+
+  it("keeps rotation inside the batch instead of drifting back to sampled prompts", () => {
+    setFrozenTestChips(BATCH);
+    const next = getRandomPresetExcluding(new Set([BATCH[0]!, BATCH[1]!]));
+    expect(next.text).toBe(BATCH[2]);
+  });
+
+  it("walks a batch longer than the three slots", () => {
+    const long = [...BATCH, "how do i sink underwater"];
+    setFrozenTestChips(long);
+    const next = getRandomPresetExcluding(new Set(long.slice(0, 3)));
+    expect(next.text).toBe("how do i sink underwater");
+  });
+
+  it("treats fewer than three entries as off, rather than showing a short carousel", () => {
+    setFrozenTestChips(["only one"]);
+    expect(frozenTestChipsActive()).toBe(false);
+    expect(getRandomPresets(3).some((p) => p.text === "only one")).toBe(false);
+  });
+
+  it("trims and drops blank entries when the batch is set", () => {
+    setFrozenTestChips(["  a  ", "", "b", "c"]);
+    expect(getFrozenTestChips()).toEqual(["a", "b", "c"]);
+  });
+
+  it("clears back to normal sampling", () => {
+    setFrozenTestChips(BATCH);
+    setFrozenTestChips([]);
+    expect(frozenTestChipsActive()).toBe(false);
+    expect(getRandomPresets(3).some((p) => p.testChip)).toBe(false);
   });
 });

@@ -17,7 +17,7 @@
     },
     {
       "path": "src/index.tsx",
-      "lines": 1407,
+      "lines": 1422,
       "role": "Plugin root: tabs, scoped CSS, RPC wiring, Settings"
     },
     {
@@ -91,13 +91,13 @@
       "role": ""
     },
     {
-      "path": "src/components/CharacterPickerModal.tsx",
-      "lines": 721,
+      "path": "src/components/MainTabPresetAnimatedChips.tsx",
+      "lines": 737,
       "role": ""
     },
     {
-      "path": "src/components/MainTabPresetAnimatedChips.tsx",
-      "lines": 701,
+      "path": "src/components/CharacterPickerModal.tsx",
+      "lines": 721,
       "role": ""
     },
     {
@@ -122,22 +122,27 @@
     },
     {
       "path": "src/hooks/usePluginSettings.ts",
-      "lines": 535,
-      "role": ""
-    },
-    {
-      "path": "src/utils/settingsContracts.test.ts",
-      "lines": 507,
+      "lines": 543,
       "role": ""
     },
     {
       "path": "py_modules/backend/services/settings_service.py",
-      "lines": 494,
+      "lines": 528,
       "role": "Load/save/merge settings.json"
     },
     {
       "path": "src/components/DeveloperTab.tsx",
-      "lines": 477,
+      "lines": 523,
+      "role": ""
+    },
+    {
+      "path": "src/utils/settingsContracts.test.ts",
+      "lines": 508,
+      "role": ""
+    },
+    {
+      "path": "src/data/bonsaiSettingsNormalizers.ts",
+      "lines": 492,
       "role": ""
     },
     {
@@ -148,11 +153,6 @@
     {
       "path": "src/styles/sections/gamepadAndPullModels.ts",
       "lines": 470,
-      "role": ""
-    },
-    {
-      "path": "src/data/bonsaiSettingsNormalizers.ts",
-      "lines": 469,
       "role": ""
     },
     {

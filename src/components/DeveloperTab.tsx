@@ -98,6 +98,9 @@ export type DeveloperTabProps = {
   setShowOnscreenDebugHud: (v: boolean) => void;
   devForceSessionRagChips: boolean;
   setDevForceSessionRagChips: (v: boolean) => void;
+  /** QA: exact questions pinned into the preset carousel, in order. Empty means normal sampling. */
+  devFrozenTestChips: string[];
+  setDevFrozenTestChips: (v: string[]) => void;
   ragHybridRetrievalEnabled: boolean;
   setRagHybridRetrievalEnabled: (v: boolean) => void;
   tabResumeMode: TabResumeMode;
@@ -133,6 +136,8 @@ export const DeveloperTab: React.FC<DeveloperTabProps> = ({
   setShowOnscreenDebugHud,
   devForceSessionRagChips,
   setDevForceSessionRagChips,
+  devFrozenTestChips,
+  setDevFrozenTestChips,
   ragHybridRetrievalEnabled,
   setRagHybridRetrievalEnabled,
   tabResumeMode,
@@ -449,6 +454,47 @@ export const DeveloperTab: React.FC<DeveloperTabProps> = ({
               checked={devForceSessionRagChips}
               onChange={(checked) => setDevForceSessionRagChips(checked)}
             />
+            <div style={{ marginTop: 10 }}>
+              <div style={{ color: "#d9d9d9", fontWeight: 600, fontSize: 13, marginBottom: 4 }}>
+                Frozen test chips (QA)
+              </div>
+              <div
+                className="bonsai-prose"
+                style={{ fontSize: 11, color: "#9fb7d5", marginBottom: 6, lineHeight: 1.35 }}
+              >
+                {devFrozenTestChips.length === 0 ? (
+                  <>
+                    None pinned — the carousel is sampling normally. A pinned batch replaces the
+                    carousel with exact questions in order and stops it reseeding, so a QA row is one
+                    press per case instead of typing the sentence. Set the list from the host while
+                    preparing a run.
+                  </>
+                ) : (
+                  <>
+                    <span style={{ color: "#9ce7ff" }}>{devFrozenTestChips.length} pinned.</span> The
+                    carousel is showing these and will not reseed. Session RAG chips are suppressed
+                    while a batch is active, so corpus-chip checks cannot pass until you clear it.
+                  </>
+                )}
+              </div>
+              {devFrozenTestChips.length > 0 ? (
+                <ol
+                  className="bonsai-prose"
+                  style={{ fontSize: 11, color: "#c8d8ea", margin: "0 0 6px 0", paddingLeft: 18, lineHeight: 1.4 }}
+                >
+                  {devFrozenTestChips.map((text) => (
+                    <li key={text}>{text}</li>
+                  ))}
+                </ol>
+              ) : null}
+              <ButtonItem
+                layout="below"
+                disabled={devFrozenTestChips.length === 0}
+                onClick={() => setDevFrozenTestChips([])}
+              >
+                Clear frozen test chips
+              </ButtonItem>
+            </div>
           </div>
         </PanelSectionRow>
       </PanelSection>

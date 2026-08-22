@@ -48,6 +48,8 @@ import {
   LATENCY_WARNING_STEP_SECONDS,
   MAX_LATENCY_WARNING_SECONDS,
   MAX_NAMED_OLLAMA_HOSTS,
+  MAX_FROZEN_TEST_CHIPS,
+  FROZEN_TEST_CHIP_MAX_LEN,
   MAX_REQUEST_TIMEOUT_SECONDS,
   MIN_LATENCY_WARNING_SECONDS,
   MIN_REQUEST_TIMEOUT_SECONDS,
@@ -207,6 +209,26 @@ function enumOf<T extends string>(
 /** Trimmed and length-capped. A non-string is rejected outright, not stringified. */
 function boundedString(maxLength: number): (value: unknown) => string {
   return (value: unknown): string => (typeof value === "string" ? value.trim().slice(0, maxLength) : "");
+}
+
+/**
+ * QA-only: exact questions pinned into the preset carousel, in order. Mirrors Python's
+ * `sanitize_frozen_test_chips`. Free text by design — the older compile-time freeze resolved
+ * entries against the built-in preset list, which is why it could never hold a real QA question.
+ */
+export function normalizeFrozenTestChips(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  const out: string[] = [];
+  const seen = new Set<string>();
+  for (const item of value) {
+    if (out.length >= MAX_FROZEN_TEST_CHIPS) break;
+    if (typeof item !== "string") continue;
+    const text = item.trim().slice(0, FROZEN_TEST_CHIP_MAX_LEN);
+    if (!text || seen.has(text)) continue;
+    seen.add(text);
+    out.push(text);
+  }
+  return out;
 }
 
 export function normalizeNamedOllamaHosts(value: unknown): NamedOllamaHost[] {
@@ -460,6 +482,7 @@ export function normalizeSettings(data: unknown): BonsaiSettings {
     // Structured or list-valued.
     capabilities: normalizeCapabilities(raw.capabilities),
     named_ollama_hosts: normalizeNamedOllamaHosts(raw.named_ollama_hosts),
+    dev_frozen_test_chips: normalizeFrozenTestChips(raw.dev_frozen_test_chips),
     text_model_routing_order: normalizeModelRoutingOrder(raw.text_model_routing_order),
     vision_model_routing_order: normalizeModelRoutingOrder(raw.vision_model_routing_order),
     // Path validation beyond a length cap (traversal rejection).

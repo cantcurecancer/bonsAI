@@ -1,4 +1,6 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
+import { composePresetSeedsWithSessionRag } from "./composePresetSeedsWithSessionRag";
+import { setFrozenTestChips } from "../../data/presets";
 import type { PresetPrompt } from "../../data/presets";
 import {
   composeSessionPresets,
@@ -170,5 +172,42 @@ describe("QA probability override", () => {
     expect(out[0]!.text).toBe(candidates[0]!.text);
     expect(out).toHaveLength(3);
     expect(new Set(out.map((p) => p.text)).size).toBe(3);
+  });
+});
+
+describe("frozen test chips suppress RAG mixing", () => {
+  afterEach(() => setFrozenTestChips([]));
+
+  const seeds = [
+    { text: "pinned one", category: "testing", testChip: true },
+    { text: "pinned two", category: "testing", testChip: true },
+    { text: "pinned three", category: "testing", testChip: true },
+  ];
+  const candidates = [
+    { text: "How do I beat Glyphid Dreadnought?", category: "strategy", domain: "strategy" },
+  ];
+
+  it("returns the pinned batch untouched, even though a corpus candidate is available", () => {
+    // Without this gate the guarantee in composeSessionPresets would overwrite the last pinned
+    // chip with a RAG chip, silently ending a QA run that still looks set up.
+    setFrozenTestChips(seeds.map((s) => s.text));
+    const out = composePresetSeedsWithSessionRag({
+      staticSeeds: seeds,
+      ragCandidates: candidates,
+      ragProbability: 1,
+      random: () => 0,
+    });
+    expect(out.map((p) => p.text)).toEqual(["pinned one", "pinned two", "pinned three"]);
+  });
+
+  it("resumes normal RAG mixing once the batch is cleared", () => {
+    setFrozenTestChips([]);
+    const out = composePresetSeedsWithSessionRag({
+      staticSeeds: seeds,
+      ragCandidates: candidates,
+      ragProbability: 1,
+      random: () => 0,
+    });
+    expect(out.some((p) => p.text === "How do I beat Glyphid Dreadnought?")).toBe(true);
   });
 });

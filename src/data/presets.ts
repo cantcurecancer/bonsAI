@@ -19,6 +19,12 @@ export type PresetPrompt = {
    * because the badge is a claim about *this game* being covered, and a generic Deck tip is not.
    */
   ragTip?: boolean;
+  /**
+   * A pinned QA question (see `setFrozenTestChips`). Badged **Test** so a frozen batch is never
+   * mistaken for real carousel output — the whole point of freezing is that these chips are not
+   * what the plugin would have chosen.
+   */
+  testChip?: boolean;
 };
 
 /**
@@ -32,6 +38,43 @@ export type PresetPrompt = {
  * the way `presets.test.ts` does rather than leaving them to fail.
  */
 export const TEMP_PRESET_CAROUSEL_FROZEN = false;
+
+/**
+ * Runtime frozen test chips, set from `dev_frozen_test_chips` in settings.
+ *
+ * Two things this does that `TEMP_CAROUSEL_FROZEN_TEXTS` below cannot, both of which is why it
+ * exists rather than the constant being edited:
+ *
+ * 1. **Arbitrary text.** The constant resolves each entry against `PRESET_PROMPTS` and silently
+ *    skips anything that does not match, so a QA question like *"how do i deal with the
+ *    exploders"* can never be frozen — it is not a built-in preset. These are the questions QA
+ *    actually needs.
+ * 2. **No rebuild.** The constant is compile-time, so staging a batch costs a build and a deploy.
+ *
+ * Module-level on purpose: it mirrors the constant it supersedes, and the alternative is
+ * threading a parameter through `getRandomPresets`, `getContextualPresets` and
+ * `getRandomPresetExcluding` plus every caller, for a value that is global by nature.
+ *
+ * Fewer than three entries is treated as off — the carousel has three slots and a short freeze
+ * would silently mix frozen and sampled chips, which is the one thing a deterministic QA run
+ * cannot have.
+ */
+let runtimeFrozenChipTexts: readonly string[] = [];
+
+/** Replace the frozen QA batch. Empty (or fewer than three) restores normal sampling. */
+export function setFrozenTestChips(texts: readonly string[]): void {
+  runtimeFrozenChipTexts = texts.map((t) => String(t ?? "").trim()).filter(Boolean);
+}
+
+/** The frozen batch currently in force, in carousel order. */
+export function getFrozenTestChips(): readonly string[] {
+  return runtimeFrozenChipTexts;
+}
+
+/** True when a frozen batch is driving the carousel, so RAG mixing and reseeding must stand down. */
+export function frozenTestChipsActive(): boolean {
+  return runtimeFrozenChipTexts.length >= 3;
+}
 
 /**
  * Frozen chip texts in order. The carousel has three slots, so the first three fill it and
@@ -177,6 +220,15 @@ const CATEGORY_KEYWORDS: [string, string[]][] = [
  * which is the caller's signal to fall back to normal sampling rather than show a short carousel.
  */
 function frozenPresets(): PresetPrompt[] {
+  // Runtime list wins. Its entries are free text and are NOT looked up in PRESET_PROMPTS -- that
+  // lookup is exactly what stops the constant below from being usable for real QA questions.
+  if (frozenTestChipsActive()) {
+    return runtimeFrozenChipTexts.map((text) => ({
+      text,
+      category: "testing",
+      testChip: true,
+    }));
+  }
   if (!TEMP_PRESET_CAROUSEL_FROZEN) return [];
   const resolved: PresetPrompt[] = [];
   for (const text of TEMP_CAROUSEL_FROZEN_TEXTS) {
@@ -189,7 +241,7 @@ function frozenPresets(): PresetPrompt[] {
 }
 
 function applyTempFrozenCarousel(picked: PresetPrompt[], count: number): PresetPrompt[] {
-  if (!TEMP_PRESET_CAROUSEL_FROZEN || count < 3 || picked.length < 3) {
+  if ((!TEMP_PRESET_CAROUSEL_FROZEN && !frozenTestChipsActive()) || count < 3 || picked.length < 3) {
     return picked;
   }
   const resolved = frozenPresets();

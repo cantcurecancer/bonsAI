@@ -265,5 +265,91 @@
     "expected": {
       "steam_web_api_key": ""
     }
+  },
+  {
+    "name": "frozen test chips: a non-list is discarded",
+    "input": {
+      "dev_frozen_test_chips": "how do i beat the boss"
+    },
+    "expected": {
+      "dev_frozen_test_chips": []
+    }
+  },
+  {
+    "name": "frozen test chips: entries are trimmed, blanks and non-strings dropped, order kept",
+    "input": {
+      "dev_frozen_test_chips": [
+        "  what is red sugar for  ",
+        "",
+        7,
+        null,
+        "how do i beat the twins"
+      ]
+    },
+    "expected": {
+      "dev_frozen_test_chips": [
+        "what is red sugar for",
+        "how do i beat the twins"
+      ]
+    }
+  },
+  {
+    "name": "frozen test chips: duplicates are dropped, first position wins",
+    "input": {
+      "dev_frozen_test_chips": [
+        "a",
+        "b",
+        "a"
+      ]
+    },
+    "expected": {
+      "dev_frozen_test_chips": [
+        "a",
+        "b"
+      ]
+    }
+  },
+  {
+    "name": "frozen test chips: capped at twelve",
+    "input": {
+      "dev_frozen_test_chips": [
+        "q0",
+        "q1",
+        "q2",
+        "q3",
+        "q4",
+        "q5",
+        "q6",
+        "q7",
+        "q8",
+        "q9",
+        "q10",
+        "q11",
+        "q12",
+        "q13",
+        "q14",
+        "q15",
+        "q16",
+        "q17",
+        "q18",
+        "q19"
+      ]
+    },
+    "expected": {
+      "dev_frozen_test_chips": [
+        "q0",
+        "q1",
+        "q2",
+        "q3",
+        "q4",
+        "q5",
+        "q6",
+        "q7",
+        "q8",
+        "q9",
+        "q10",
+        "q11"
+      ]
+    }
   }
 ]

@@ -172,8 +172,41 @@ def sanitize_model_routing_order(value: Any) -> list[str]:
 
 
 MAX_NAMED_OLLAMA_HOSTS = 4
+
+# Frozen test chips: a QA batch pinned into the preset carousel. Twelve is four full carousels,
+# which is more than any single docs/testing.md row needs; the cap exists so a malformed write
+# cannot put an unbounded list in front of the sampler. The length cap matches what a chip can
+# show without the QAM column clipping it -- a question longer than this is not testable anyway.
+MAX_FROZEN_TEST_CHIPS = 12
+FROZEN_TEST_CHIP_MAX_LEN = 160
 NAMED_OLLAMA_HOST_LABEL_MAX = 32
 NAMED_OLLAMA_HOST_VALUE_MAX = 128
+
+
+def sanitize_frozen_test_chips(value: Any) -> list[str]:
+    """QA-only: exact questions pinned into the preset carousel, in order.
+
+    Free text on purpose. The carousel's older compile-time freeze resolved each entry against
+    the built-in preset list and skipped anything that did not match, which made it useless for
+    the questions QA actually runs -- those are not built-in presets. Order is preserved because
+    a testing.md row is a sequence, and duplicates are dropped because a repeated chip wastes a
+    carousel slot the tester is trying to step through.
+    """
+    if not isinstance(value, list):
+        return []
+    out: list[str] = []
+    seen: set[str] = set()
+    for item in value:
+        if len(out) >= MAX_FROZEN_TEST_CHIPS:
+            break
+        if not isinstance(item, str):
+            continue
+        text = item.strip()[:FROZEN_TEST_CHIP_MAX_LEN]
+        if not text or text in seen:
+            continue
+        seen.add(text)
+        out.append(text)
+    return out
 
 
 def sanitize_named_ollama_hosts(value: Any) -> list[dict[str, str]]:
@@ -421,6 +454,7 @@ def sanitize_settings(
             # Structured or list-valued.
             "capabilities": sanitize_capabilities(raw.get("capabilities")),
             "named_ollama_hosts": sanitize_named_ollama_hosts(raw.get("named_ollama_hosts")),
+            "dev_frozen_test_chips": sanitize_frozen_test_chips(raw.get("dev_frozen_test_chips")),
             "text_model_routing_order": sanitize_model_routing_order(raw.get("text_model_routing_order")),
             "vision_model_routing_order": sanitize_model_routing_order(
                 raw.get("vision_model_routing_order")

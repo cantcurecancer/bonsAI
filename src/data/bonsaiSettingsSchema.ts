@@ -140,6 +140,7 @@ export type BonsaiSettings = {
   tab_resume_mode: TabResumeMode;
   /** Labeled ``host:port`` presets for quick Connection switching (max 4). */
   named_ollama_hosts: NamedOllamaHost[];
+  dev_frozen_test_chips: string[];
   /** Local whisper.cpp model for voice Ask (tiny.en default for Deck real-time). */
   voice_stt_model: VoiceSttModelId;
   /** When true, UI scale profile is chosen automatically from QAM viewport + display heuristics. */
@@ -198,6 +199,7 @@ export type BonsaiSettingsSnapshotInput = {
   devForceSessionRagChips: boolean;
   tabResumeMode: TabResumeMode;
   namedOllamaHosts: NamedOllamaHost[];
+  devFrozenTestChips: string[];
   voiceSttModel: VoiceSttModelId;
   uiScaleAutoEnabled: boolean;
   uiScaleManualProfile: UiScaleProfileId;
@@ -240,6 +242,10 @@ export const TAB_RESUME_MODE_OPTIONS: TabResumeMode[] = ["always_main", "resume"
  */
 export const TAB_RESUME_RECENT_WINDOW_MS = 5 * 60 * 1000;
 export const MAX_NAMED_OLLAMA_HOSTS = 4;
+
+/** Mirrors `MAX_FROZEN_TEST_CHIPS` / `FROZEN_TEST_CHIP_MAX_LEN` in `settings_service.py`. */
+export const MAX_FROZEN_TEST_CHIPS = 12;
+export const FROZEN_TEST_CHIP_MAX_LEN = 160;
 export const DEFAULT_DESKTOP_APP_LOG_LEVEL: DesktopAppLogLevel = "off";
 export const DESKTOP_APP_LOG_LEVEL_OPTIONS: DesktopAppLogLevel[] = ["off", "default", "verbose"];
 export const DEFAULT_PRESET_CHIP_FADE_ANIMATION_ENABLED = true;

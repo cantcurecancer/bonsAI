@@ -11,6 +11,7 @@ import { Navigation, Router, Tabs } from "@decky/ui";
 
 import { PLUGIN_VERSION } from "./pluginVersion";
 import { DEFAULT_LATENCY_WARNING_SECONDS, type BonsaiSettings } from "./data/bonsaiSettingsSchema";
+import { setFrozenTestChips } from "./data/presets";
 import { toBonsaiSettingsPayload } from "./utils/settingsPayload";
 import { BonsaiPluginShell } from "./components/BonsaiPluginShell";
 import { BonsaiDebugOverlay } from "./components/BonsaiDebugOverlay";
@@ -268,8 +269,10 @@ const Content: React.FC = () => {
     setBonsaiTokenStreamingEnabled,
     showOnscreenDebugHud,
     devForceSessionRagChips,
+    devFrozenTestChips,
     setShowOnscreenDebugHud,
     setDevForceSessionRagChips,
+    setDevFrozenTestChips,
     tabResumeMode,
     setTabResumeMode,
     namedOllamaHosts,
@@ -291,6 +294,14 @@ const Content: React.FC = () => {
     pauseDebouncedSettingsSave,
     syncSettingsFromDisk,
   } = usePluginSettings();
+
+  // Frozen QA chips live in a module-level register in `presets.ts` because the sampler is called
+  // from several places that have no access to settings. Syncing it here keeps settings the single
+  // source of truth: change the list on disk (or clear it in the Developer tab) and the carousel
+  // follows on the next render, with no rebuild.
+  useEffect(() => {
+    setFrozenTestChips(devFrozenTestChips);
+  }, [devFrozenTestChips]);
 
   const kidsLockActive = useKidsLock();
   const gatedCapabilities = useMemo(
@@ -599,6 +610,7 @@ const Content: React.FC = () => {
       bonsaiTokenStreamingEnabled,
       showOnscreenDebugHud,
       devForceSessionRagChips,
+      devFrozenTestChips,
       tabResumeMode,
       namedOllamaHosts,
       voiceSttModel,
@@ -645,6 +657,7 @@ const Content: React.FC = () => {
       bonsaiTokenStreamingEnabled,
       showOnscreenDebugHud,
       devForceSessionRagChips,
+      devFrozenTestChips,
       tabResumeMode,
       namedOllamaHosts,
       voiceSttModel,
@@ -1237,6 +1250,8 @@ const Content: React.FC = () => {
     setShowOnscreenDebugHud,
     devForceSessionRagChips,
     setDevForceSessionRagChips,
+    devFrozenTestChips,
+    setDevFrozenTestChips,
     ragHybridRetrievalEnabled,
     setRagHybridRetrievalEnabled,
     tabResumeMode,

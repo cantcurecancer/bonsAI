@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
   "fileCount": 304,
-  "edgeCount": 712,
+  "edgeCount": 714,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -883,6 +883,7 @@
         "src/features/preset-carousel/sessionRagComposer.test.ts",
         "src/features/preset-carousel/sessionRagComposer.ts",
         "src/hooks/useBonsaiAskOrchestration.ts",
+        "src/index.tsx",
         "src/utils/bonsaiSessionSurvival.ts"
       ]
     },
@@ -1271,12 +1272,14 @@
         "src/features/preset-carousel/sessionRagComposer.ts"
       ],
       "importedBy": [
+        "src/features/preset-carousel/sessionRagComposer.test.ts",
         "src/hooks/useBonsaiAskOrchestration.ts"
       ]
     },
     "src/features/preset-carousel/sessionRagComposer.test.ts": {
       "imports": [
         "src/data/presets.ts",
+        "src/features/preset-carousel/composePresetSeedsWithSessionRag.ts",
         "src/features/preset-carousel/sessionRagComposer.ts"
       ],
       "importedBy": []
@@ -1719,6 +1722,7 @@
         "src/data/characterUiAccent.ts",
         "src/data/knowledgeBaseDev.ts",
         "src/data/modelPolicy.ts",
+        "src/data/presets.ts",
         "src/data/pullModelCatalog.ts",
         "src/data/steam-input-lexicon.ts",
         "src/data/steamSettingsNavigation.ts",

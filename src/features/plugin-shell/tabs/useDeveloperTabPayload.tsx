@@ -46,6 +46,8 @@ export function useDeveloperTabPayload({
   setShowOnscreenDebugHud,
   devForceSessionRagChips,
   setDevForceSessionRagChips,
+  devFrozenTestChips,
+  setDevFrozenTestChips,
   ragHybridRetrievalEnabled,
   setRagHybridRetrievalEnabled,
   tabResumeMode,
@@ -83,6 +85,8 @@ export function useDeveloperTabPayload({
         setShowOnscreenDebugHud={setShowOnscreenDebugHud}
         devForceSessionRagChips={devForceSessionRagChips}
         setDevForceSessionRagChips={setDevForceSessionRagChips}
+        devFrozenTestChips={devFrozenTestChips}
+        setDevFrozenTestChips={setDevFrozenTestChips}
         ragHybridRetrievalEnabled={ragHybridRetrievalEnabled}
         setRagHybridRetrievalEnabled={setRagHybridRetrievalEnabled}
         tabResumeMode={tabResumeMode}
@@ -104,6 +108,7 @@ export function useDeveloperTabPayload({
       bonsaiTokenStreamingEnabled,
       showOnscreenDebugHud,
       devForceSessionRagChips,
+      devFrozenTestChips,
       ragHybridRetrievalEnabled,
       tabResumeMode,
       installSeedKnowledgeBase,

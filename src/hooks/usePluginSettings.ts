@@ -56,6 +56,7 @@ function snapshotFromBonsaiSettings(normalized: BonsaiSettings): BonsaiSettingsS
     bonsaiTokenStreamingEnabled: normalized.bonsai_token_streaming_enabled,
     showOnscreenDebugHud: normalized.show_onscreen_debug_hud,
     devForceSessionRagChips: normalized.dev_force_session_rag_chips,
+    devFrozenTestChips: normalized.dev_frozen_test_chips,
     tabResumeMode: normalized.tab_resume_mode,
     namedOllamaHosts: normalized.named_ollama_hosts,
     voiceSttModel: normalized.voice_stt_model,
@@ -142,6 +143,7 @@ export function usePluginSettings() {
   const [devForceSessionRagChips, setDevForceSessionRagChips] = useState<boolean>(
     DEFAULT_DEV_FORCE_SESSION_RAG_CHIPS,
   );
+  const [devFrozenTestChips, setDevFrozenTestChips] = useState<string[]>([]);
   const [tabResumeMode, setTabResumeMode] = useState<TabResumeMode>(DEFAULT_TAB_RESUME_MODE);
   const [namedOllamaHosts, setNamedOllamaHosts] = useState<NamedOllamaHost[]>([]);
   const [voiceSttModel, setVoiceSttModel] = useState<VoiceSttModelId>(DEFAULT_VOICE_STT_MODEL);
@@ -202,6 +204,7 @@ export function usePluginSettings() {
     bonsaiTokenStreamingEnabled,
     showOnscreenDebugHud,
     devForceSessionRagChips,
+    devFrozenTestChips,
     tabResumeMode,
     namedOllamaHosts,
     voiceSttModel,
@@ -261,6 +264,7 @@ export function usePluginSettings() {
     setBonsaiTokenStreamingEnabled(normalized.bonsai_token_streaming_enabled);
     setShowOnscreenDebugHud(normalized.show_onscreen_debug_hud);
     setDevForceSessionRagChips(normalized.dev_force_session_rag_chips);
+    setDevFrozenTestChips(normalized.dev_frozen_test_chips);
     setTabResumeMode(normalized.tab_resume_mode);
     setNamedOllamaHosts(normalized.named_ollama_hosts);
     setVoiceSttModel(normalized.voice_stt_model);
@@ -353,6 +357,7 @@ export function usePluginSettings() {
         setBonsaiTokenStreamingEnabled(DEFAULT_BONSAI_TOKEN_STREAMING_ENABLED);
         setShowOnscreenDebugHud(DEFAULT_SHOW_ONSCREEN_DEBUG_HUD);
         setDevForceSessionRagChips(DEFAULT_DEV_FORCE_SESSION_RAG_CHIPS);
+        setDevFrozenTestChips([]);
         setTabResumeMode(DEFAULT_TAB_RESUME_MODE);
         setNamedOllamaHosts([]);
         setVoiceSttModel(DEFAULT_VOICE_STT_MODEL);
@@ -424,6 +429,7 @@ export function usePluginSettings() {
     bonsaiTokenStreamingEnabled,
     showOnscreenDebugHud,
     devForceSessionRagChips,
+    devFrozenTestChips,
     tabResumeMode,
     namedOllamaHosts,
     voiceSttModel,
@@ -496,8 +502,10 @@ export function usePluginSettings() {
     setBonsaiTokenStreamingEnabled,
     showOnscreenDebugHud,
     devForceSessionRagChips,
+    devFrozenTestChips,
     setShowOnscreenDebugHud,
     setDevForceSessionRagChips,
+    setDevFrozenTestChips,
     tabResumeMode,
     setTabResumeMode,
     namedOllamaHosts,
