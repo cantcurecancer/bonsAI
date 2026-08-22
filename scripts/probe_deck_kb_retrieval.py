@@ -82,11 +82,21 @@ def main() -> int:
     print("game       : %s / %s" % (args.app_id or "(none)", args.app_name or "(none)"))
     print()
 
+    # D19 (game_ai_request.py:296-298): with nothing running, a title the *question* names is
+    # the only way into the strategy corpus -- and the caller has to resolve it. This probe
+    # omitted that until 2026-08-22, so every KB-NEWTITLE-01 case read as gate=False here while
+    # working in the product. Resolved only when Steam gives neither an AppID nor a name, so a
+    # running game always wins.
+    text_resolved_title = ""
+    if not str(args.app_id or "").strip() and not str(args.app_name or "").strip():
+        text_resolved_title = kb.resolve_title_from_question(settings, args.question)
+    print("from text  :", text_resolved_title or "(none)")
+
     conn = kb._get_connection(db_path)
     game_id, resolution = kb._resolve_game_id(
         conn,
         app_id=args.app_id,
-        app_name=args.app_name,
+        app_name=args.app_name or text_resolved_title,
         shortcut_name=args.shortcut_name,
     )
     print("resolved   : game_id=%s via %s" % (game_id, resolution or "(unresolved)"))
@@ -127,6 +137,7 @@ def main() -> int:
             question=args.question,
             app_id=args.app_id,
             app_name=args.app_name,
+            text_resolved_title=text_resolved_title,
         )
         if not gate:
             print("%-9s %-7d %-9s %-8s gate=False (domain routing declined)"
@@ -139,6 +150,7 @@ def main() -> int:
             app_id=args.app_id,
             app_name=args.app_name,
             shortcut_name=args.shortcut_name,
+            text_resolved_title=text_resolved_title,
             domain=domain,
             pc_ip=args.pc_ip,
         )

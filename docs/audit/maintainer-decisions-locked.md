@@ -15,9 +15,11 @@ choices are, and what happens either way. **Locked calls (2026-08-02 for D1–D6
 [Maintainer decisions locked](#maintainer-decisions-locked--2026-08-02); implement
 from that section when it disagrees with an option above.
 
-**One open:**
+**Two open:**
 [D18](#d18--when-loading-settings-fails-four-values-keep-whatever-was-on-screen-bug-or-intent)
-(raised 2026-08-05 by the step 11 friction test). **D23–D27 were raised and locked during the RAG
+(raised 2026-08-05 by the step 11 friction test) and
+[D28](#d28--ordinary-phrases-attach-game-cards-how-hard-should-the-floor-be)
+(raised 2026-08-22 by the first on-Deck QA pass of the RAG work). **D23–D27 were raised and locked during the RAG
 work of 2026-08-18 to 2026-08-21.** Everything else D1–D27 is locked; **D19 is superseded by D20**
 (below). See the table below for D1–D15 and the sections below for D16, D17, D19–D27.
 
@@ -30,6 +32,66 @@ are now, and what is still owed.
 > *"Can you reach the strategy corpus without the game running?"* (locked 2026-08-17, cited by
 > roadmap.md and by the open bug). Renaming either one breaks live references in the roadmap
 > and the bug list, so it needs a maintainer call rather than an edit in passing.
+
+---
+
+### D28 — Ordinary phrases attach game cards. How hard should the floor be?
+
+**Raised 2026-08-22 by the first on-Deck QA pass. Not urgent, not a shipping blocker —
+but it is a real wrong answer the user can see.**
+
+**The situation.** With a game running and Strategy mode on, questions that have nothing to do
+with the game still get game cards stapled to them. Measured on the Deck against corpus
+`2026.08.22` with Deep Rock Galactic: Survivor running:
+
+| What was asked | What attached |
+|---|---|
+| *"one sentence"* | Praetorian |
+| *"thank you very much"* | Nitra |
+| *"what time is it"* | Glyphid Dreadnought, Praetorian, Classes |
+| *"please repeat that"* | Glyphid Dreadnought, Nitra, Dreadnought Twins |
+| *"our team"* | nothing (clean) |
+| *"four hours"* | nothing (clean) |
+
+This is the regression direction `KB-SPELLING-01` in [testing.md](../testing.md) explicitly says
+must not happen. **That row points at the British-spelling exemption set as the first place to
+look, and the exemption set is innocent** — the query is not expanded at all, and Praetorian
+scores `bm25=0.00` and never enters the keyword pool.
+
+**Where it actually comes from — both halves, unequally.** Comparing hybrid on against hybrid off
+on the same questions: the vector recall pass (`bf16b35`, this week) supplies the card on its own
+for *"one sentence"* and *"please repeat that"*, where keyword-only attaches nothing. But
+*"thank you very much"* and *"what time is it"* attach cards **with the vector half switched
+off**, so the keyword floor is letting near-noise through by itself. The underlying cause is the
+Strategy explicit route's relevance floor of **1.0**, which the new vector recall then widens.
+
+**Why it did not show up before.** Every question in `kb_eval_v2` is a real question about a real
+game. Nothing in the approved set asks *"what time is it"*, so no score moves when this
+misbehaves. It is invisible to the eval and visible immediately on a device — the same shape as
+the four faults in §2 of the [handoff](session-handoff-2026-08-21.md).
+
+**Your options.**
+
+1. **Raise the Strategy floor** (say 1.0 → 2.5) and re-measure. Cheapest change, one number.
+   Costs recall on genuinely short questions — *"the boss"* and *"gels"* are short too, and the
+   whole point of D25's light fix was to reach them. **Must be measured against the eval before
+   and after, not eyeballed.**
+2. **Give the vector half its own floor**, separate from BM25's. Fixes the half that is clearly
+   over-reaching without touching keyword recall. More code, and picking the cosine cut-off is its
+   own tuning job.
+3. **Gate on the question rather than the score** — attach nothing when the question names no
+   noun the corpus knows. Most precise, most work, and a new failure mode when a real question
+   happens to use only common words.
+4. **Accept it for now.** With no users (as of 2026-08-21) nobody sees it, and a stray card in the
+   prompt degrades an answer rather than breaking it. Revisit before the first real user.
+
+**My recommendation: option 2, and not before A2/D23 lands.** The paraphrase rows are about to
+move every number anyway, and tuning a floor twice against two different baselines wastes the
+measurement. Option 1 is tempting because it is one number, but it pushes directly against D25,
+which was locked eleven days earlier to make exactly these short questions reachable.
+
+**Note this is not a reason to hold the corpus release** — it is plugin behaviour, not corpus
+data, and the corpus published on 2026-08-22 is unaffected either way.
 
 ---
 
