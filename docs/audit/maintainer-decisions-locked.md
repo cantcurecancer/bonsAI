@@ -15,23 +15,71 @@ choices are, and what happens either way. **Locked calls (2026-08-02 for D1–D6
 [Maintainer decisions locked](#maintainer-decisions-locked--2026-08-02); implement
 from that section when it disagrees with an option above.
 
-**Two open:**
+**One open:**
 [D18](#d18--when-loading-settings-fails-four-values-keep-whatever-was-on-screen-bug-or-intent)
-(raised 2026-08-05 by the step 11 friction test) and
-[D28](#d28--ordinary-phrases-attach-game-cards-how-hard-should-the-floor-be)
-(raised 2026-08-22 by the first on-Deck QA pass of the RAG work). **D23–D27 were raised and locked during the RAG
-work of 2026-08-18 to 2026-08-21.** Everything else D1–D27 is locked; **D19 is superseded by D20**
-(below). See the table below for D1–D15 and the sections below for D16, D17, D19–D27.
+(raised 2026-08-05 by the step 11 friction test). **D23–D27 were raised and locked during the RAG
+work of 2026-08-18 to 2026-08-21; D28–D31 were raised and locked 2026-08-22.** Everything else
+D1–D31 is locked; **D19 is superseded by D20** (below), and **D31 renumbers the superseded one to
+D19b**. See the table below for D1–D15 and the sections below for D16, D17, D19–D31.
 
 **Session handoff for the 2026-08-18 to 2026-08-21 RAG work:**
 [session-handoff-2026-08-21.md](session-handoff-2026-08-21.md) — what shipped, what the numbers
 are now, and what is still owed.
 
-> **Numbering collision, flagged 2026-08-18 and not silently fixed:** **D19 is used twice** —
-> once for the corpus licence question (superseded by D20, 2026-08-14) and again for
-> *"Can you reach the strategy corpus without the game running?"* (locked 2026-08-17, cited by
-> roadmap.md and by the open bug). Renaming either one breaks live references in the roadmap
-> and the bug list, so it needs a maintainer call rather than an edit in passing.
+> **Numbering collision, flagged 2026-08-18 and resolved by [D31](#d31--which-of-the-two-d19s-keeps-the-number)
+> on 2026-08-22.** The superseded corpus-licence question becomes **D19b**; the live
+> *"Can you reach the strategy corpus without the game running?"* keeps **D19**.
+
+---
+
+### D31 — Which of the two D19s keeps the number?
+
+**Raised 2026-08-18, locked 2026-08-22: the live one keeps D19. The superseded corpus-licence
+question becomes D19b.**
+
+**The situation.** Two unrelated decisions both carried **D19** — the corpus licence question
+(*mixed CC BY / BY-SA in one file*, superseded by D20 on 2026-08-14) and *Can you reach the
+strategy corpus without the game running?* (locked 2026-08-17). A reference reading "see D19" was
+ambiguous, and the risk was implementing against the wrong lock.
+
+**Why the superseded one moves.** It is the cheaper side by reference count. The live D19 is cited
+by roadmap.md (twice), by the *You cannot ask about a game unless it is running* entry, by the
+`KB-NEWTITLE-01` row in testing.md, and by the fix commit itself. The superseded one is cited only
+by D20, which sits directly beside it in this file — so the rename touches two adjacent paragraphs
+instead of five files.
+
+**Why `D19b` rather than the next free number.** Reusing D32 would scatter a 2026-08-14 decision
+into the middle of the 2026-08-22 block and lose the ordering that makes this file readable. The
+suffix keeps it where it belongs and makes the relationship to D19 obvious. Prior art in this file:
+D21 carries its own numbering note because commit `e049ace` cited it as D18.
+
+**Not chosen: leaving the collision note in place.** It had been there since 2026-08-18 and did not
+stop the ambiguity — a reader following a "see D19" link still lands on whichever comes first.
+
+---
+
+### D30 — Which of the two `KB-NEWTITLE-01` rows keeps the ID?
+
+**Raised 2026-08-22, locked 2026-08-22: the D19 row keeps `KB-NEWTITLE-01`. *Every corpus title has
+cards* is renamed.**
+
+**The situation.** Two rows in [testing.md](../testing.md) both carried `KB-NEWTITLE-01` —
+*KB reaches a title named in the question (D19)* (line 177, **Verified on Deck 2026-08-22**) and
+*Every corpus title has cards* (line 193, **Open**). They test different things: the first is
+whether a question naming a game reaches that game's cards, the second is whether all thirteen
+titles have any coverage at all.
+
+**Why the newer one moves.** Same reasoning as D31 — reference count. The D19 row is cited from
+roadmap.md, from this file, and from the 2026-08-21 session handoff. *Every corpus title has cards*
+is cited nowhere outside its own table row, so renaming it breaks no live reference.
+
+**New ID: `KB-COVERAGE-ALL-01`.** It names what the row actually checks (every title has cards),
+and does not collide with `KB-COVERAGE-01`, which is the corpus-honesty chip row and a different
+test.
+
+**Watch for one thing when applying it.** The row also still says the corpus is 119 sections; it is
+**133** as of corpus `2026.08.22`. Fix that in the same edit rather than leaving a second wrong fact
+in a row being touched anyway.
 
 ---
 
@@ -70,8 +118,34 @@ unless a label is added. Both are on the planning page under *What to check befo
 
 ### D28 — Ordinary phrases attach game cards. How hard should the floor be?
 
-**Raised 2026-08-22 by the first on-Deck QA pass. Not urgent, not a shipping blocker —
-but it is a real wrong answer the user can see.**
+**Raised 2026-08-22 by the first on-Deck QA pass, locked the same day: option 2 — give the vector
+half its own floor, separate from BM25's.**
+
+**The precondition cleared before the lock.** The recommendation was "option 2, and not before
+A2/D23 lands". D23 landed the same morning in `e606b82` — the fifteen paraphrase questions folded
+into `kb_eval_v2`, taking it 219 → 234 rows and 138 → 153 labelled, with a **new baseline series
+that is not comparable to anything measured before 2026-08-22**. So the floor is now tuned once
+against one baseline, which is exactly what the recommendation was waiting for.
+
+**What this obliges when it is implemented.**
+
+- **Measure against the new series only.** Labelled tune top-3 is 86.3 keyword / 91.5 vector /
+  91.5 fusion; labelled holdout 83.3 across all three; tips 68.8 / 72.9 / 75.0. Any before/after
+  claim quoting a pre-2026-08-22 number is comparing two different fixtures.
+- **Do not touch `BM25_RELEVANCE_FLOOR`.** Option 1 was explicitly not chosen because raising it
+  pushes against D25, locked eleven days earlier to make short questions like *"the boss"* and
+  *"gels"* reachable. The keyword half keeps its 1.0.
+- **The keyword half is not innocent and this decision does not fix it.** Two of the four
+  measured cases — *"thank you very much"* and *"what time is it"* — attach cards with the vector
+  half switched **off**. Option 2 fixes the half that is clearly over-reaching; it will not make
+  those two clean. Re-measure all six phrases from the table below after the change and record
+  which ones still attach, rather than declaring the bug closed.
+- **The eval cannot see this bug.** Every question in `kb_eval_v2` is a real question about a real
+  game, so nothing in it scores worse when noise attaches. The six phrases below are the only
+  evidence either way — keep them as a written check, and consider them a candidate for the frozen
+  test chips shipped in `b278f7b`.
+
+**The original write-up follows, kept because it is the measurement this decision rests on.**
 
 **The situation.** With a game running and Strategy mode on, questions that have nothing to do
 with the game still get game cards stapled to them. Measured on the Deck against corpus
@@ -118,10 +192,11 @@ the four faults in §2 of the [handoff](session-handoff-2026-08-21.md).
 4. **Accept it for now.** With no users (as of 2026-08-21) nobody sees it, and a stray card in the
    prompt degrades an answer rather than breaking it. Revisit before the first real user.
 
-**My recommendation: option 2, and not before A2/D23 lands.** The paraphrase rows are about to
-move every number anyway, and tuning a floor twice against two different baselines wastes the
-measurement. Option 1 is tempting because it is one number, but it pushes directly against D25,
-which was locked eleven days earlier to make exactly these short questions reachable.
+**Recommendation at the time, and the option chosen: option 2, and not before A2/D23 lands.** The
+paraphrase rows were about to move every number anyway, and tuning a floor twice against two
+different baselines wastes the measurement. Option 1 is tempting because it is one number, but it
+pushes directly against D25, which was locked eleven days earlier to make exactly these short
+questions reachable.
 
 **Note this is not a reason to hold the corpus release** — it is plugin behaviour, not corpus
 data, and the corpus published on 2026-08-22 is unaffected either way.
