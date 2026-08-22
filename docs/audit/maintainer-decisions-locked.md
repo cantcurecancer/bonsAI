@@ -228,6 +228,49 @@ is the measurement working, not a regression. Two things follow:
 **What it is for.** The holdout half currently cannot separate the arms at all — 83.3% whichever
 approach is used, on 36 rows. This is the work that should give it something to separate.
 
+**Done 2026-08-22.** The 15 rows are in `kb_eval_v2.json` as `V2-PARA-*` (219 → 234 rows,
+138 → 153 labelled). **The split was assigned before the eval was re-run: all 15 are `tune`.**
+That is forced, not chosen — they paraphrase `kb_eval_v0`, which is card-derived in full
+("written alongside the cards they match", R1), and a paraphrase of a card-derived query is
+still card-derived. A holdout row has to be written blind, and these were not.
+
+**New baseline — a new series. Do not compare these against any report dated before
+2026-08-22 (R4).** Last old-set report:
+[kb-embed-bakeoff-2026-08-21-arms.md](../archive/research/kb-embed-bakeoff-2026-08-21-arms.md).
+New: [kb-embed-bakeoff-2026-08-22-arms.md](../archive/research/kb-embed-bakeoff-2026-08-22-arms.md).
+
+| Slice | keyword | vector only | fusion (ships) |
+|---|---|---|---|
+| Labelled tune, top-3 (n=117) | 86.3% | 91.5% | **91.5%** |
+| Labelled holdout, top-3 (n=36) | 83.3% | 83.3% | **83.3%** |
+| Troubleshooting tips, top-3 (n=48) | 68.8% | 72.9% | **75.0%** |
+
+**Three results worth your attention, two of them unwelcome.**
+
+1. **The scores fell where they were meant to.** Labelled tune fusion went from 94.1% to 91.5%
+   on a set that is 15 rows harder. That is the measurement working, exactly as this decision
+   said it would.
+2. **This did not do what it was for.** D23's stated purpose was to give the holdout something
+   to separate. **The holdout is untouched — still n=36, still 83.3% on every arm, still
+   overlapping intervals.** It could not be otherwise: the split rule sends all 15 rows to
+   `tune`, so a decision aimed at the holdout could never reach it. The holdout separation
+   problem is exactly where it was on 2026-08-21, and **it needs rows written blind against
+   the cards** — which is a different piece of work from this one.
+3. **The troubleshooting slice went up, not down** — 72.5% → 75.0%. The 8 compat paraphrases are
+   *easier* than the compat rows already in the set, so folding them in raised the average. Worth
+   knowing before anyone reads that rise as an improvement in retrieval: nothing improved, the
+   test got easier on that slice.
+
+**Two smaller things that changed shape.** The recall slice — labelled cases where keyword
+search returns nothing, the one D23 called "a sample of one" — is now **n=3**. Better, still
+too small to carry a verdict. And on that slice fusion now scores **33.3%** top-3 against
+vector-only's **66.7%**, where on the old single case both scored 100%. On the tune slice fusion
+no longer beats vector-only either (both 91.5%). Neither is a regression in shipped behaviour —
+the corpus and the code are unchanged — but if fusion is going to be defended over plain vector
+search, these are now the numbers it has to be defended with. **Related: [D28](#d28--ordinary-phrases-attach-game-cards-how-hard-should-the-floor-be)** — tune a floor once, against this baseline, not the old one.
+
+---
+
 ### D22 — A matched troubleshooting topic is a strong preference, not a filter
 
 **Raised and locked 2026-08-18**, while planning the fix for *"Compat retrieval returns a tip

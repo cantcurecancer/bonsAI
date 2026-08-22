@@ -13,8 +13,13 @@ this one goes stale first.
 
 ## 1. The one thing to do next
 
-**Publish a new corpus** (D24 — locked, maintainer said yes on 2026-08-21). Nothing else on this
-list is blocked on anything but that.
+> **DONE 2026-08-22.** Corpus `2026.08.22` (133 cards) is published on both mirrors and installed
+> on the maintainer's Deck; the plugin is deployed. The on-Deck QA in §6 has been run — results
+> are in [../testing.md](../testing.md). One new bug came out of it:
+> [D28](maintainer-decisions-locked.md#d28--ordinary-phrases-attach-game-cards-how-hard-should-the-floor-be).
+
+**Publish a new corpus** (D24 — locked, maintainer said yes on 2026-08-21; **done 2026-08-22**).
+Kept below as the record of what was done and how.
 
 Two pieces of finished work are sitting behind it, both **library data rather than plugin code**,
 so a plugin deploy alone does not carry either:
@@ -27,10 +32,17 @@ so a plugin deploy alone does not carry either:
 **Not in it:** Phase 4 track 3, which needs schema v4 — a new column on the tip table. It gets its
 own release when its content is written (§5).
 
-**The published corpus is currently stale *and* carries a known bug.** Hugging Face still serves
-`2026.08.16` — 117 cards, and Ocarina of Time still holding Stardew Valley's AppID, so anyone
-downloading today gets a Stardew session inheriting Zelda's cards and Zelda's spoiler fencing.
-That is the strongest argument for not letting this sit.
+**~~The published corpus is currently stale *and* carries a known bug.~~ Fixed 2026-08-22.** Both
+mirrors now serve `2026.08.22` (133 cards). Until then Hugging Face served `2026.08.16` — 117
+cards, with Ocarina of Time holding Stardew Valley's AppID, so anyone downloading got a Stardew
+session inheriting Zelda's cards and Zelda's spoiler fencing. Verified fixed on the Deck:
+`KB-APPID-01` passes in full.
+
+**One thing the runbook below does not say, learned in the doing:** publishing and deploying does
+**not** update the corpus the Deck actually reads. `build.ps1` ships a fresh *seed* copy, but
+retrieval reads the **installed** corpus at `rag_corpus_path` — on this Deck an SD-card directory
+— which stayed on `2026.08.16` through both steps. Installing is a third action, and without it
+every QA row below silently tests the old corpus.
 
 ### Runbook — every prerequisite verified 2026-08-21
 
@@ -129,7 +141,15 @@ Treat corpus growth as a test of the machinery. Phase 8's thousand titles will f
 **Corrected 2026-08-21** (`2a217cd`). Every vector-using figure published before that date is
 understated; prior reports carry a correction banner and must not be quoted.
 
-Current, on the 133-card corpus, `nomic-embed-text`, same corpus for every arm:
+> **SUPERSEDED 2026-08-22 by the D23 fold-in.** The table below is the last measurement on the
+> **old** fixture set and is kept only as that record. The approved set now has 15 more rows, so
+> these numbers and the current ones are not comparable (R4). **Current baseline, and what
+> changed, are on [D23](maintainer-decisions-locked.md#d23--where-do-the-paraphrase-questions-go)**
+> — headline: labelled tune fusion 94.1% → **91.5%** (the set got harder, as intended), holdout
+> **unchanged** at 83.3% (so D23 did not achieve what it was for), troubleshooting 72.5% →
+> **75.0%** (that slice got *easier*, which is not an improvement).
+
+Last old-set measurement, on the 133-card corpus, `nomic-embed-text`, same corpus for every arm:
 
 | Slice | keyword | vector only | fusion (ships) |
 |---|---|---|---|
@@ -190,9 +210,10 @@ Deck, not what is configured.**
   the details panel prints no card count — so they need `scripts/probe_deck_kb_retrieval.py`
   over SSH.
 - **Phase 5 is gated on Phase 4 passing on the Deck.** Maintainer's own gate; a good one.
-- **A2 / D23 is not implemented yet** — the fifteen paraphrase rows are still in
-  `tests/fixtures/kb_eval_paraphrase_v0.json` and the arms run does not read them. The decision is
-  locked; the work is not done.
+- ~~**A2 / D23 is not implemented yet**~~ — **done 2026-08-22.** The fifteen rows are folded into
+  `kb_eval_v2.json` as `V2-PARA-*`, all `tune`, and the arms run reads them. See
+  [D23](maintainer-decisions-locked.md#d23--where-do-the-paraphrase-questions-go) for the new
+  baseline. **It did not fix the holdout** — that still needs rows written blind.
 - Two small bugs: the details panel says *"Running game could not be matched"* when no game is
   running, and two different decisions are both filed as **D19**.
 
