@@ -143,6 +143,22 @@ _ENTITY_TRAILING_ADVERBS = frozenset(
      "here", "there", "safely", "solo", "alone", "properly", "cheaply", "reliably"}
 )
 
+# Head nouns too generic to stand in for a card title. "Water Temple Boss" must not be reachable
+# by typing "boss" -- that is a whole category, not a name, and matching it would unfence
+# arbitrary content on a story title. Only consulted for the shortened-name fallback in
+# _match_known_entity; a card whose *entire* title is one of these (DRG's "Classes") still
+# matches exactly, through the full-title pass that runs first.
+_ENTITY_GENERIC_HEADS = frozenset(
+    {
+        "boss", "bosses", "fight", "fights", "enemy", "enemies", "monster", "monsters",
+        "creature", "creatures", "mob", "mobs", "weapon", "weapons", "item", "items",
+        "level", "levels", "stage", "stages", "area", "areas", "room", "rooms", "zone", "zones",
+        "puzzle", "puzzles", "quest", "quests", "mission", "missions", "wave", "waves",
+        "mode", "modes", "class", "classes", "skill", "skills", "guide", "guides",
+        "mechanic", "mechanics", "upgrade", "upgrades", "build", "builds", "tips",
+    }
+)
+
 _KB_CARD_NAME_RE = re.compile(r"\[(?:[^\]/]+/\s*[^:\]]+|Tip)\s*:\s*([^\]]+)\]", re.IGNORECASE)
 
 
@@ -203,15 +219,49 @@ def _match_known_entity(question: str, known_entities) -> str:
     plural while the singular resolved fine. Still boundary-anchored past that "s": a bare
     substring test matches "lan" inside "plants", the same class of false positive
     compat_topic_router.py already had to fix.
+
+    Falls back to the card's *head noun* when the full title does not appear, because players
+    shorten multi-word names: the card is "Dreadnought Twins" and nobody types the first word.
+    Measured on device 2026-08-23 -- "how do i beat the twins" resolved to the bare word "twins"
+    (four runs, identical), so the prompt told the model the user asked about "twins" while the
+    attached card was titled "Dreadnought Twins", and the two never got connected.
+
+    The fallback is deliberately narrow, because over-matching here is a *safety* regression and
+    not just noise: naming an entity is what unfences it, so a wrong match unfences something on
+    a story title. Hence -- only when no full title matched, only trailing spans (the standard
+    English shortening; "twins" for "Dreadnought Twins", not "dreadnought" for "Twins Dreadnought"),
+    never a generic head like "boss" that would match half the corpus, and never shorter than four
+    characters. The returned value is still the *card's* full title, so the prompt names the thing
+    the corpus knows about rather than echoing the user's abbreviation back at them.
     """
     haystack = re.sub(r"\s+", " ", (question or "").lower())
+
+    def _appears(text: str) -> bool:
+        return bool(re.search(rf"(?<![a-z0-9]){re.escape(text.lower())}s?(?![a-z0-9])", haystack))
+
     best = ""
     for candidate in known_entities or ():
         name = str(candidate or "").strip()
         if len(name) < 3 or len(name) <= len(best):
             continue
-        if re.search(rf"(?<![a-z0-9]){re.escape(name.lower())}s?(?![a-z0-9])", haystack):
+        if _appears(name):
             best = name
+    if best:
+        return best
+
+    for candidate in known_entities or ():
+        name = str(candidate or "").strip()
+        words = name.split()
+        if len(words) < 2 or len(name) <= len(best):
+            continue
+        for start in range(1, len(words)):
+            tail = " ".join(words[start:])
+            lowered = tail.lower()
+            if len(tail) < 4 or lowered in _ENTITY_GENERIC_HEADS or lowered in _ENTITY_FILLER:
+                continue
+            if _appears(tail):
+                best = name
+                break
     return best
 
 

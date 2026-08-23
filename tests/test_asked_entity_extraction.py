@@ -181,6 +181,71 @@ class KnownEntityGazetteerTests(unittest.TestCase):
             extract_strategy_asked_entity("best tanking stats", known_entities=["Tank"]), ""
         )
 
+    def test_shortened_multi_word_card_resolves_to_the_full_title(self):
+        """Players type the head noun, not the whole card title.
+
+        Measured on device 2026-08-23: "how do i beat the twins" produced the bare entity
+        "twins" on four consecutive runs while the attached card was "Dreadnought Twins", so
+        the prompt never named the card the corpus had actually supplied.
+        """
+        self.assertEqual(
+            extract_strategy_asked_entity(
+                "how do i beat the twins", known_entities=["Dreadnought Twins"]
+            ),
+            "Dreadnought Twins",
+        )
+
+    def test_shortened_match_picks_the_card_whose_head_noun_was_typed(self):
+        """Both DRG cards share a word; only one shares the word the player used."""
+        names = ["Glyphid Dreadnought", "Dreadnought Twins", "Acid Spitter"]
+        self.assertEqual(
+            extract_strategy_asked_entity("how do i beat the twins", known_entities=names),
+            "Dreadnought Twins",
+        )
+        self.assertEqual(
+            extract_strategy_asked_entity("how do i beat the dreadnought", known_entities=names),
+            "Glyphid Dreadnought",
+        )
+
+    def test_full_title_match_still_wins_over_a_head_noun(self):
+        """The fallback runs only when nothing matched in full, so it cannot demote an exact hit."""
+        self.assertEqual(
+            extract_strategy_asked_entity(
+                "any tips for the glyphid dreadnought",
+                known_entities=["Glyphid Dreadnought", "Dreadnought Twins"],
+            ),
+            "Glyphid Dreadnought",
+        )
+
+    def test_generic_head_noun_never_stands_in_for_a_card(self):
+        """The safety direction. Naming an entity unfences it, so "boss" must reach nothing.
+
+        Without this guard "how do i beat the boss" would resolve to a real boss card on a story
+        title and unfence its tactics -- the opposite of what spoiler masking is for.
+        """
+        for question in (
+            "how do i beat the boss",
+            "any tips for the level",
+            "how do i beat the water temple boss",
+        ):
+            self.assertEqual(
+                extract_strategy_asked_entity(
+                    question, known_entities=["Water Temple Boss", "Fire Temple Level"]
+                ),
+                "" if question != "how do i beat the water temple boss" else "Water Temple Boss",
+                msg=question,
+            )
+
+    def test_single_word_cards_are_untouched_by_the_fallback(self):
+        """A one-word title has no head noun to shorten, so the old behaviour must be identical."""
+        self.assertEqual(
+            extract_strategy_asked_entity("best tanking stats", known_entities=["Tank"]), ""
+        )
+        self.assertEqual(
+            extract_strategy_asked_entity("how do i beat the tank", known_entities=["Tank"]),
+            "Tank",
+        )
+
 
 class FixtureWideInvariantTests(unittest.TestCase):
     """Run the whole eval set through it, because that is what exposed the bug."""
