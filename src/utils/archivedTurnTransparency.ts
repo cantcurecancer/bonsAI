@@ -2,14 +2,16 @@
  * Title: Archived turn transparency resolver
  * Purpose: Decide which transparency snapshot an expanded archived turn should show.
  * Used for: MainTabChatTranscript's Show details row on slot-restored turns.
- * Solves: Slot-restored turns always carry `transparency: null` — chatSlotTurns.ts builds them
- *         from disk and the Python slot store persists no snapshot. Since a completed Ask is
- *         archived and expanded instead of staying live, the live-only Show details row rendered
- *         nothing and the control became unreachable entirely.
- * Does not: Fetch or persist snapshots — get_input_transparency owns the live one.
+ * Solves: A slot-restored turn now carries its own (trimmed) snapshot — chat_slot_service.py
+ *         persists one alongside each assistant turn — but slots written before that fix, or a
+ *         turn some other path never attached one to, still carry `transparency: null`. This
+ *         keeps the one-turn live-snapshot fallback for exactly that gap instead of assuming
+ *         every archived turn now has its own.
+ * Does not: Fetch or persist snapshots — get_input_transparency owns the live one,
+ *         chat_slot_service.py owns the persisted one.
  */
 import type { AskThreadCollapsedTurn } from "../types/bonsaiUi";
-import type { TransparencySnapshot } from "./inputTransparency";
+import type { ChatSlotTurnTransparency, TransparencySnapshot } from "./inputTransparency";
 
 export type ArchivedTurnTransparencyArgs = {
   turn: Pick<AskThreadCollapsedTurn, "transparency">;
@@ -30,7 +32,7 @@ export type ArchivedTurnTransparencyArgs = {
  */
 export function archivedTurnTransparency(
   args: ArchivedTurnTransparencyArgs
-): TransparencySnapshot | null {
+): TransparencySnapshot | ChatSlotTurnTransparency | null {
   const { turn, index, total, liveSnapshot } = args;
   if (turn.transparency) return turn.transparency;
   const isNewest = total > 0 && index === total - 1;

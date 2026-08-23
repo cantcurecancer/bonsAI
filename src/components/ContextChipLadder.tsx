@@ -7,7 +7,7 @@
  */
 import { useCallback, useState } from "react";
 import { Focusable } from "@decky/ui";
-import type { ContextChip, TransparencySnapshot } from "../utils/inputTransparency";
+import type { ChatSlotTurnTransparency, ContextChip, TransparencySnapshot } from "../utils/inputTransparency";
 import {
   ATTRIBUTION_ACCENT,
   ATTRIBUTION_ACCENT_SOFT,
@@ -29,7 +29,7 @@ const deckNav = (handlers: Record<string, () => boolean | void>) =>
   handlers as unknown as Record<string, unknown>;
 
 export type ContextChipLadderProps = {
-  snapshot: TransparencySnapshot | null | undefined;
+  snapshot: TransparencySnapshot | ChatSlotTurnTransparency | null | undefined;
   /** When true, show compact hint only until expanded. */
   collapsedHint?: boolean;
   onExpandChange?: (expanded: boolean) => void;

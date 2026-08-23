@@ -119,6 +119,52 @@ class ChatSlotOwnershipTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(assistant_turns[0]["text"], "routed answer")
         self.assertNotIn(ack.get("request_id"), self.plugin._chat_slot_by_request)
 
+    async def test_assistant_turn_persists_transparency_from_result(self) -> None:
+        """Regression: the assistant turn used to be saved with no transparency at all — the
+        RPC result carried a per-Ask snapshot that never reached chat_slot_service. Verifies the
+        result's ``transparency`` key (built by ``transparency_snapshot_for_chat_slot``) lands on
+        the persisted assistant turn.
+        """
+        slot = create_slot(self.tmp, label="transparency-route")
+        sid = slot["id"]
+        snapshot = {
+            "route": "ollama",
+            "success": True,
+            "context_chips": [{"id": "kb", "rank": 1, "label": "KB", "attached": True}],
+            "overflow_skips": [],
+        }
+
+        async def fast_execute(*_args, **_kwargs):
+            return {
+                "success": True,
+                "response": "routed answer",
+                "elapsed_seconds": 0.01,
+                "transparency": snapshot,
+            }
+
+        with patch.object(Plugin, "_execute_game_ai_request", side_effect=fast_execute):
+            with patch.object(Plugin, "load_settings", return_value={}):
+                with patch.object(
+                    Plugin,
+                    "_compose_opening_thinking_blurb",
+                    return_value=("Thinking…", None),
+                ):
+                    await self.plugin.start_background_game_ai(
+                        {
+                            "question": "does this persist transparency?",
+                            "PcIp": "127.0.0.1:11434",
+                            "chat_slot_id": sid,
+                        }
+                    )
+                    if self.plugin._background_task is not None:
+                        await self.plugin._background_task
+
+        loaded = load_slot(self.tmp, sid)
+        assert loaded is not None
+        assistant_turns = [t for t in loaded["turns"] if t.get("role") == "assistant"]
+        self.assertEqual(len(assistant_turns), 1)
+        self.assertEqual(assistant_turns[0]["transparency"], snapshot)
+
     async def test_unknown_request_id_logs_fault(self) -> None:
         self.plugin._background_request_seq = 9999
         self.plugin._background_state = {

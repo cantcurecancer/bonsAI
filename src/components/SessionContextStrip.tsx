@@ -8,7 +8,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Focusable } from "@decky/ui";
 import type { AskThreadCollapsedTurn } from "../types/bonsaiUi";
-import type { TransparencySnapshot } from "../utils/inputTransparency";
+import type { ChatSlotTurnTransparency, TransparencySnapshot } from "../utils/inputTransparency";
 import { ContextChipLadder } from "./ContextChipLadder";
 import { chipsFromSnapshot } from "../utils/contextChipsFromSnapshot";
 import { registerNavFocus, type NavRefHolder } from "../utils/navFocusRegistry";
@@ -17,7 +17,7 @@ import { isOkDeckButtonEvent } from "../utils/focusNavigation";
 export type SessionContextTurn = {
   id: string;
   label: string;
-  snapshot: TransparencySnapshot | null;
+  snapshot: TransparencySnapshot | ChatSlotTurnTransparency | null;
 };
 
 export type SessionContextStripProps = {

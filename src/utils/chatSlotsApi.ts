@@ -6,12 +6,14 @@
  * Does not: Map turns to UI transcript — see chatSlotTurns.ts.
  */
 import { callDeckyWithTimeout } from "./deckyCall";
+import type { ChatSlotTurnTransparency } from "./inputTransparency";
 
 export type ChatSlotTurn = {
   id: string;
   role: "user" | "assistant";
   text: string;
   request_id?: number | null;
+  transparency?: ChatSlotTurnTransparency | null;
   created_at?: number;
 };
 

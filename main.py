@@ -972,6 +972,7 @@ class Plugin:
         *,
         slot_id: str,
         response_text: str,
+        transparency: Optional[dict] = None,
     ) -> None:
         sid = str(slot_id or "").strip()
         body = str(response_text or "").strip()
@@ -985,6 +986,7 @@ class Plugin:
                 sid,
                 role="assistant",
                 text=body,
+                transparency=transparency,
                 logger=logger,
             )
 
@@ -2469,9 +2471,13 @@ class Plugin:
                 request_id,
             )
         else:
+            # A cancelled request's response_text is overwritten above with the cancel message,
+            # so the underlying ask's transparency (whatever it was mid-flight) would describe a
+            # reply that was never shown — only attach it for a real terminal answer.
             await self._chat_slots_record_assistant_turn(
                 slot_id=slot_id,
                 response_text=response_text,
+                transparency=None if cancelled_rq else result.get("transparency"),
             )
         await self._maybe_app_log(
             "ask.background",
