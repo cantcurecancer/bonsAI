@@ -15,9 +15,11 @@ choices are, and what happens either way. **Locked calls (2026-08-02 for D1–D6
 [Maintainer decisions locked](#maintainer-decisions-locked--2026-08-02); implement
 from that section when it disagrees with an option above.
 
-**One open:**
+**Two open:**
 [D18](#d18--when-loading-settings-fails-four-values-keep-whatever-was-on-screen-bug-or-intent)
-(raised 2026-08-05 by the step 11 friction test). **D23–D27 were raised and locked during the RAG
+(raised 2026-08-05 by the step 11 friction test) and
+[D32](#d32--clear-cache-says-it-clears-the-thread-but-the-saved-chat-stays-on-disk-which-half-is-wrong)
+(raised 2026-08-23 from Deck QA). **D23–D27 were raised and locked during the RAG
 work of 2026-08-18 to 2026-08-21; D28–D31 were raised and locked 2026-08-22.** Everything else
 D1–D31 is locked; **D19 is superseded by D20** (below), and **D31 renumbers the superseded one to
 D19b**. See the table below for D1–D15 and the sections below for D16, D17, D19–D31.
@@ -29,6 +31,49 @@ are now, and what is still owed.
 > **Numbering collision, flagged 2026-08-18 and resolved by [D31](#d31--which-of-the-two-d19s-keeps-the-number)
 > on 2026-08-22.** The superseded corpus-licence question becomes **D19b**; the live
 > *"Can you reach the strategy corpus without the game running?"* keeps **D19**.
+
+---
+
+### D32 — *Clear cache* says it clears the thread, but the saved chat stays on disk. Which half is wrong?
+
+**OPEN — raised 2026-08-23 from Deck QA** (`recordings/DeckRecord_20260823_172915_game.mkv`).
+Needs your call before anyone changes the behavior, because the two options do opposite things.
+
+**What happens now.** You press **Clear cache…**. Its confirmation box says it clears *"this
+session from RAM: input, reply, thread, transparency, branches, attachments, timers."* The screen
+goes empty and a toast appears. But the chat itself is saved in a file under
+`~/homebrew/settings/bonsAI/chat_slots/`, and that file is not touched. The plugin also keeps
+pointing at it, so the next time anything reloads the chat — which happens automatically after your
+next question — the old turns can come straight back.
+
+**Checked on your Deck the same day.** Five saved chats were sitting there, none of them removed by
+any clear. Three carried the same name, *Deep Rock Galactic: Survivor: one sentence*, made at 17:05,
+17:08 and 17:29 — one for each time you cleared and asked again. So clearing does not reuse or empty
+the old chat, it leaves it behind and starts another. They pile up.
+
+**This is not the "Clear all plugin data" button.** That one is separate, and it does delete saved
+chats properly. Only the smaller *Clear cache* is in question here.
+
+**Your two options.**
+
+1. **Make the button match its words.** Clearing also empties or deletes the saved chat you are
+   looking at. Pressing it means the conversation is gone for good.
+   - *Good:* the button does exactly what it says, and nothing accumulates.
+   - *Cost:* if you were treating saved chats as things you can come back to, this throws one away,
+     and there is no undo.
+
+2. **Make the words match the button.** Clearing only tidies the screen; the saved chat is kept.
+   Reword the box to say so — drop "thread" and say the saved chat is kept.
+   - *Good:* nothing is ever destroyed by a button meant to tidy up.
+   - *Cost:* the screen and the saved chat disagree until you switch chats, and the clear feels like
+     it did less than you wanted — which is the complaint that started this.
+
+**Either way, one thing still needs answering:** the leftover chats. Five built up from QA alone.
+Should old ones be cleaned up automatically, or is a growing list of saved chats the intended
+behavior and just needs somewhere to manage them from?
+
+**My read, if you want one:** option 2 plus a cleanup answer. Option 1 makes a tidy-up button
+destructive, and nothing else in the plugin deletes your content without saying "delete".
 
 ---
 

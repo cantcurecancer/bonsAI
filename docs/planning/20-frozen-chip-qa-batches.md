@@ -204,11 +204,121 @@ a match had failed when nothing was running.
 
 ---
 
+## 4a. Run log — Batch A, 2026-08-23 (closed)
+
+Pinned by writing `dev_frozen_test_chips` directly into
+`~/homebrew/settings/bonsAI/settings.json` over SSH, replacing a stale seven-chip mix left from an
+earlier session. All six chips from § 3 landed verbatim.
+
+**The batch was unpinned at the end of the session** — `dev_frozen_test_chips` is back to `[]`, so
+session RAG chips and normal carousel reseeding are live again and corpus-chip rows are unblocked
+(§ 1.1). If the chips still appear on device, the plugin is holding its in-memory copy; the
+Developer tab's **Clear frozen test chips** button settles it.
+
+**All six chips ran and the card results are complete.** The navigation checks in § 3.1 are the
+part that did not survive, and the spoiler result is a wash rather than a pass.
+
+### Read the trace, not the panel
+
+§ 6 asks for **which cards attached**, not just whether any did. **The device UI cannot answer
+that** — *Show details* gives retrieval mode, a trust tier and a corpus section count, and never
+names a card. Worse, `Trust tier: fallback_no_source` is a *tier*, not a count, so the genre
+fallback and a real game card look identical there. Reading that chip as "no cards" is a mistake
+this run actually made before the trace corrected it.
+
+The answer is on the Deck already, provided `desktop_ask_verbose_logging` is on:
+
+```
+~/Desktop/bonsAI_logs/bonsai-ask-trace-<date>.md
+```
+
+Each entry carries the verbatim `--- Local knowledge base ---` block from the built prompt, one
+`[Title / kind: Card] (trust: tier)` header per attached card, the resolved asked-entity line, and
+the raw model output before any UI processing. **Use it for every card-attachment and fence row
+from now on** — it is the only place the two can be told apart, and it also separates "the model
+wrote this" from "the UI rendered this", which settled three separate findings in this run.
+
+### § 3 — the six chips
+
+| # | Question | Result |
+|---|---|---|
+| 1 | `one sentence` | **PASS.** `Genre/compat fallback` only — no game card. Reproduced on three runs. |
+| 2 | `please repeat that` | **PASS.** `boss: Glyphid Dreadnought` only. Was three cards before the floor change. |
+| 3 | `thank you very much` | **PASS** (expected to attach). `item: Nitra`. Keyword half, off limits per D25/D28. |
+| 4 | `what time is it` | **PASS** (expected to attach). `boss: Glyphid Dreadnought`, `enemy: Praetorian`, `mechanic: Classes` — all three, as predicted. |
+| 5 | `how do i deal with the exploders` | **PASS.** Plain text, **no fence**. The trace shows the fix working rather than a lucky generation: the entity resolved to `Exploder`, the low-risk arm carried its new no-fencing instruction, and the raw model output contains no fence. Cards: `Exploder`, `Acid Spitter`, `Mactera`. |
+| 6 | `how do i beat the twins` | **FAIL — the regression § 3 named as *more serious than #5 failing*.** Fenced **mid-reply**, having been clean on 2026-08-22. Retrieval was fine (`Dreadnought Twins` ranked first). Ran four times total: **fenced every time**, same entity every time. |
+
+**D28's re-measure obligation is discharged.** The device reproduced the desk table card for card,
+including the two phrases that are supposed to keep attaching.
+
+**The spoiler fix is a wash, not a pass.** #5 stopped fencing and #6 started, so the net fence rate
+on this title is unchanged. The "when" half stays **open**.
+
+**What #6 established, and what was done about it.** Four consecutive runs with the identical
+entity `"twins"` ruled out the turn-to-turn variance this false positive was previously filed
+under. The trace showed why the two questions differ: *exploders* resolved to the card title
+`Exploder`, while *twins* resolved to the bare word — `_match_known_entity` needed the **whole**
+card title, and *"twins"* is only a suffix of `Dreadnought Twins`. Fixed the same day with a
+head-noun fallback that returns the card's full title, guarded so generic heads like `boss` reach
+nothing. **Not yet shown to stop the fence** — re-run the same four after deploying. If it still
+fences with the entity naming the card, the cause is prompt wording, which is the last hypothesis
+standing.
+
+### § 3.1 — the four ride-along checks
+
+| Check | Result |
+|---|---|
+| The blank question | **FAIL, and the failure moved.** The caption survived the reopen and stayed correct for the whole thinking phase — the `pending`-branch backfill working on hardware for the first time — then reverted to `…` the moment thinking finished. The unguarded write at `useBonsaiAskOrchestration.ts:1312` is the prime suspect and is **not proven**. |
+| Duplicate question | **Not observed.** One clean turn. Not a close — it was always intermittent. |
+| Thumbs and Retry row | **PASS.** The full row renders under a normal completed Ask with no reopen trick. **REPLY-ARCHIVED-01**'s primary claim is closed on hardware; its rating, Retry and older-turn sub-checks are still owed. |
+| Chip strip backwards | **BLOCKED — new bug.** D-pad focus trapped inside the expanded **Session context** panel, nothing above it reachable. Two independent causes, both fixed 2026-08-23, neither confirmed on device. |
+| Focus on plain text | **Not run** — same block. |
+
+### Filed from this run
+
+Seven bugs, all in [roadmap.md](../roadmap.md) § Bugs:
+
+| Bug | State |
+|---|---|
+| D-pad focus trapped in the expanded Session context panel | Fixed same day, **unconfirmed on device** |
+| Shortened card names never resolved (`twins` → `Dreadnought Twins`) | Fixed same day, **unconfirmed on device** |
+| Active chip in *Show details* is unidentifiable — no ring on the chip, only a 10px grey pager | OPEN |
+| Clear cache leaves the saved chat on disk | OPEN — needs [D32](../audit/maintainer-decisions-locked.md) first |
+| Session context counts the newest turn twice (n+1) | OPEN — **fix before Batch B** |
+| Strategy branch picker never renders though the model emits a valid fence | OPEN |
+| A rendered reply breaks a line mid-sentence (`BOOM` / `. The trick`) | OPEN, cosmetic |
+
+The turn-count bug appeared in every recording: 1 question → "2 turns", 2 → "3 turns", 3 → "4 turns".
+
+One UI removal, same day: the **"Context used · view in session context ↓"** link under archived
+turns is gone at the maintainer's call. It was added in `98434b0` with the transparency work as a
+shortcut that pre-selected a row in the Session context panel a few rows below — a panel that
+already lists every turn by its own question text. It cost two lines of the 300px column
+mid-transcript and no capability was lost.
+
+### Where the next session picks up
+
+1. **Deploy first.** Three fixes are built but have never run on device: the focus trap, the
+   head-noun entity resolution, and the link removal. Everything below assumes they are on.
+2. **Re-run `how do i beat the twins` four times.** Decides extractor vs prompt wording — the one
+   open question on the spoiler work.
+3. **Re-run the § 3.1 navigation checks**, which the focus trap blocked.
+4. **Fix the turn-count duplicate before Batch B**, or § 4.3 tests the wrong thing — it will read
+   four turns for three questions.
+5. **Batch B needs its own pinning run.** Its six chips (§ 4) were never pinned; the batch is
+   entirely untouched.
+
+The **card** results above are settled and need no re-running. The **fence** and **navigation**
+results do.
+
+---
+
 ## 5. What neither batch covers
 
 | Not covered | Why | Where it goes instead |
 |---|---|---|
-| The mid-reply spoiler fence **placement** | The *when* half was fixed; **where** it lands is untouched and is about how a reply is segmented. | Still OPEN in the roadmap under the spoiler fence entry. |
+| The mid-reply spoiler fence **placement** | **Where** it lands is untouched and is about how a reply is segmented. (The *when* half was expected to be fixed when this was written; § 4a found it is a wash — both halves are open.) | Still OPEN in the roadmap under the spoiler fence entry. Batch A #6 produced a mid-reply fence, so there is now a device repro to work from. |
 | Corpus / session RAG chips | Suppressed while any batch is pinned (§ 1.1). | Needs its own run with chips cleared. |
 | Chunky streaming under game load | A performance measurement, not a question. Needs the capture and timing tooling. | **STREAM-09** / **STREAM-11**. |
 | The five device-only bugs already on the list | Never had a code fix — they need measurement first, not confirmation. | [roadmap.md](../roadmap.md) § Bugs. |
