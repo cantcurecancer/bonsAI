@@ -60,6 +60,9 @@ So pinning is a host-side write of `dev_frozen_test_chips` into
 plan and is not blocked by anything, but it is not a precondition: a host-side edit works today.
 Clearing is easier than pinning — the Developer tab button does it on device.
 
+Filed 2026-08-23 as **Pin a frozen chip batch from the host**, Platform / upstream lane in
+[roadmap.md](../roadmap.md), with the two candidate routes and the limits it has to enforce.
+
 ---
 
 ## 2. What each batch is for

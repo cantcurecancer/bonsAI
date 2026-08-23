@@ -400,6 +400,36 @@ Stars are **effort/risk**. Grouped by **theme**; within each lane sorted ascendi
 
 ### Platform / upstream (v0.5.0 — voice STT session daemon, …)
 
+- ★★ **Pin a frozen chip batch from the host** (QA tooling)
+  - **Goal:** One command on the maintainer's PC replaces the frozen test chip batch on the Deck,
+    so a QA run from [20-frozen-chip-qa-batches.md](planning/20-frozen-chip-qa-batches.md) is
+    `pin batch A` rather than a hand-edited settings file. Companion to
+    [deck_send_ask.py](../scripts/deck_send_ask.py), which solved the same class of problem for the
+    Ask field.
+  - **The gap it closes.** The frozen chip feature shipped in `b278f7b` and the Developer tab
+    **shows** the pinned list and can **clear** it, but has no control to add one — its own help
+    text says *"Set the list from the host while preparing a run"*
+    ([DeveloperTab.tsx:459-497](../src/components/DeveloperTab.tsx)). Nothing in `scripts/` writes
+    a batch. So today the host side of "set the list from the host" does not exist, and pinning is
+    a hand-edited `dev_frozen_test_chips` in `~/homebrew/settings/bonsAI/settings.json`.
+  - **Two candidate routes, neither chosen.** (a) CDP at `127.0.0.1:8080`, the way every
+    `probe_deck_*` script already reaches the Deck — but `setDevFrozenTestChips` is React state
+    inside the plugin, so whether it is reachable from the page is **UNKNOWN** and needs a spike.
+    (b) SSH-write `settings.json` and force a settings reload. Cheaper to write; the open question
+    is what makes the running plugin re-read the file — **UNKNOWN** whether anything short of a
+    plugin reload does.
+  - **Must enforce the same limits the backend does**, and fail loudly rather than silently: **12**
+    chips max and **160** characters each (`MAX_FROZEN_TEST_CHIPS` / `FROZEN_TEST_CHIP_MAX_LEN`,
+    [settings_service.py:180-181](../py_modules/backend/services/settings_service.py)) — the
+    backend **truncates** an over-long chip, which for a QA question means silently testing a
+    different sentence. Fewer than three restores normal sampling.
+  - **Must warn that a pinned batch suppresses session RAG chips**, so nobody spends an evening on
+    a corpus-chip row that cannot pass until the batch is cleared.
+  - **Verify the write, do not assume it.** `deck_send_ask.py` earned this the hard way — it
+    re-reads the field and prints VERIFIED / NOT VERIFIED because the write is silent when it
+    fails. Same rule here: read the batch back and print what is actually pinned.
+  - **Not in scope:** pressing Ask, choosing the mode, or reading *Show details*. Same boundary as
+    `deck_send_ask.py` — this replaces the settings edit, not the test.
 - ★★★★ **Llama.cpp provider spike** (Deck perf / replacement eval)
   - **Goal:** Research-only go/no-go vs Deck-local Ollama. Deliverable: `docs/archive/spikes/llama-cpp-provider-eval.md`. Prior: [llama-cpp-provider.md](archive/spikes/llama-cpp-provider.md).
 - ★★★★ **Steam Input layout parse** (VDF → AI context)
