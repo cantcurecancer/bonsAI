@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
   "fileCount": 304,
-  "edgeCount": 714,
+  "edgeCount": 715,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -2366,7 +2366,8 @@
     },
     "src/utils/chatSlotsApi.ts": {
       "imports": [
-        "src/utils/deckyCall.ts"
+        "src/utils/deckyCall.ts",
+        "src/utils/inputTransparency.ts"
       ],
       "importedBy": [
         "src/components/MainTab.tsx",
@@ -2563,6 +2564,7 @@
         "src/utils/archivedTurnTransparency.test.ts",
         "src/utils/archivedTurnTransparency.ts",
         "src/utils/bonsaiSessionSurvival.ts",
+        "src/utils/chatSlotsApi.ts",
         "src/utils/contextChipsFromSnapshot.test.ts",
         "src/utils/contextChipsFromSnapshot.ts"
       ]
