@@ -50,6 +50,13 @@ class VerbFirstPhrasingTests(unittest.TestCase):
         self.assertEqual(extract_strategy_asked_entity("how to use smoker"), "smoker")
         self.assertEqual(extract_strategy_asked_entity("how to use the gravity gun"), "gravity gun")
 
+    def test_deal_with_is_a_verb(self):
+        """Confirmed on device 2026-08-22: this phrasing extracted "" and let a spoiler fence
+        through on a low-narrative title with the relevant card sitting unused in the prompt."""
+        self.assertEqual(
+            extract_strategy_asked_entity("how do i deal with the exploders"), "exploders"
+        )
+
 
 class EntityFirstPhrasingTests(unittest.TestCase):
     """The register the eval set was re-authored into, which the extractor could not read."""
@@ -156,6 +163,22 @@ class KnownEntityGazetteerTests(unittest.TestCase):
         self.assertEqual(
             extract_strategy_asked_entity("wheatley fight", known_entities=["Tank", "Witch"]),
             "wheatley",
+        )
+
+    def test_gazetteer_match_allows_a_plural(self):
+        """"exploders" must match the card "Exploder" -- confirmed on device 2026-08-22 that the
+        singular resolved fine and only the plural was missed."""
+        self.assertEqual(
+            extract_strategy_asked_entity(
+                "how do i deal with the exploders", known_entities=["Exploder"]
+            ),
+            "Exploder",
+        )
+
+    def test_gazetteer_plural_match_stays_boundary_anchored(self):
+        """The trailing "s" allowance must not reopen the "tanking"/"Stalingrad" false match."""
+        self.assertEqual(
+            extract_strategy_asked_entity("best tanking stats", known_entities=["Tank"]), ""
         )
 
 

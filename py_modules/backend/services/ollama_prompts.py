@@ -107,8 +107,12 @@ _ENTITY_SENTENCE_TOKENS = frozenset(
 # Every verb is boundary-anchored. Without the lookarounds "kill" matches inside "skill", so
 # "how to raise a skill fast" yielded the entity "fast" -- the same unanchored-substring class
 # of bug that compat_topic_router.py hit with "lan" inside "plants".
+#
+# "deal with" added 2026-08-23: confirmed on device that "how do i deal with the exploders"
+# extracted no entity at all, which is what let the spoiler fence through on that question --
+# neither this list nor _match_known_entity's plural handling (see below) covered it alone.
 _ENTITY_VERB_FIRST_PATTERNS = (
-    r"(?:how\s+(?:do\s+i|to|can\s+i)\s+)?(?<![a-z])(?:beat|defeat|kill|fight|survive(?:\s+against)?)(?![a-z])\s+(?:the\s+)?(.+?)(?:\?|$)",
+    r"(?:how\s+(?:do\s+i|to|can\s+i)\s+)?(?<![a-z])(?:beat|defeat|kill|fight|survive(?:\s+against)?|deal\s+with)(?![a-z])\s+(?:the\s+)?(.+?)(?:\?|$)",
     r"(?<![a-z])tips?\s+(?:for|on|against)(?![a-z])\s+(?:the\s+)?(.+?)(?:\?|$)",
     # Versus/co-op register: the player is asking to *operate* the thing, not to survive it.
     r"(?:how\s+(?:do\s+i|to)\s+)?(?<![a-z])(?:use|counter|play\s+as)(?![a-z])\s+(?:the\s+)?(.+?)(?:\?|$)",
@@ -192,16 +196,21 @@ def _clean_asked_entity(raw: str, *, entity_first: bool) -> str:
 
 
 def _match_known_entity(question: str, known_entities) -> str:
-    """Longest known name that appears in the question on word boundaries."""
+    """Longest known name that appears in the question on word boundaries.
+
+    Allows one trailing "s" past the card's own name -- "exploders" must match the card
+    "Exploder" -- because exact-only matching was confirmed on device (2026-08-22) to miss the
+    plural while the singular resolved fine. Still boundary-anchored past that "s": a bare
+    substring test matches "lan" inside "plants", the same class of false positive
+    compat_topic_router.py already had to fix.
+    """
     haystack = re.sub(r"\s+", " ", (question or "").lower())
     best = ""
     for candidate in known_entities or ():
         name = str(candidate or "").strip()
         if len(name) < 3 or len(name) <= len(best):
             continue
-        # Boundary-anchored: a bare substring test matches "lan" inside "plants", the same class
-        # of false positive that compat_topic_router.py already had to fix.
-        if re.search(rf"(?<![a-z0-9]){re.escape(name.lower())}(?![a-z0-9])", haystack):
+        if re.search(rf"(?<![a-z0-9]){re.escape(name.lower())}s?(?![a-z0-9])", haystack):
             best = name
     return best
 
