@@ -351,8 +351,26 @@ would imply detection that did not happen.
 Per §0.1 there is no destructive-advice check today. The input sanitizer
 ([input_sanitizer_service.py](../../py_modules/backend/services/input_sanitizer_service.py))
 is **input-side only** — it normalizes and size-caps the user's question; it
-never sees the reply. The natural home for an output-side check is
-`response_verify.py`.
+never sees the reply. This section proposed `response_verify.py` as the natural
+home for an output-side check.
+
+**Built 2026-08-23, and it did not go there — maintainer accepted the departure
+the same day.** The guard lives in its own module,
+[destructive_advice_guard.py](../../py_modules/backend/services/destructive_advice_guard.py),
+wired into `run_game_ai_request` after a successful reply. Two reasons, both
+accepted: it shares no logic with what `response_verify.py` already does, so
+co-locating them would file by coincidence rather than by subject; and it was
+written alongside four other parallel work streams, where a separate file
+removed any chance of a collision in a shared file. QA row
+**DESTRUCT-ADVICE-01** in [testing.md](../testing.md).
+
+**Accepted limitation — the warning is appended after the reply completes.**
+With token streaming on, the risky line is already on screen before the warning
+lands beneath it. The maintainer accepted this on 2026-08-23: the app and repo
+already carry disclaimers telling the user to double-check AI answers, and a
+delayed flag is worth more than no flag. Catching it earlier would mean judging
+a reply mid-generation, which is a much larger change and is not planned. What
+this does oblige is **proving the flag actually appears** — see the QA row.
 
 Whether that guardrail is in scope for a ★-tier prompt change is a maintainer
 call (§7). Worth weighing honestly: mod advice is the first Ask topic where

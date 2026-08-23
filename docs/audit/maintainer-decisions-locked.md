@@ -145,6 +145,26 @@ against one baseline, which is exactly what the recommendation was waiting for.
   evidence either way — keep them as a written check, and consider them a candidate for the frozen
   test chips shipped in `b278f7b`.
 
+**Correction, 2026-08-23 — the vector half already had its own floor.** This decision is worded
+as "give the vector half its own floor", but `VECTOR_RECALL_FLOOR` already existed at 0.50
+(`py_modules/backend/services/knowledge_base_service.py`). So what was implemented is a retune of
+an existing number, not the addition of a new gate. The decision text above is left as written,
+because it records what was decided with the information available at the time; this note records
+what turned out to be true. The intent — move the vector half, leave the keyword half alone — was
+carried out exactly.
+
+**And the retune is thin. 0.50 -> 0.515, measured 2026-08-23** against corpus `2026.08.22` seed
+cards with the real embedding model. The measurement found what the 2026-08-18 run had already
+found: **no single floor separates the noise from the genuine hits, because the two ranges
+overlap.** 0.515 sits between *"one sentence"* at 0.5034 (noise, now excluded) and Mind Flayer /
+`V2-PARA-S04` at 0.5169 (genuine, the lowest score the change must not break) — a margin of
+0.0011. That margin is a property of today's card set, not a safety buffer; adding cards or
+changing the embedding model moves it. Kept on the maintainer's call 2026-08-23, with the overlap
+itself filed as its own backlog entry (*Card relevance needs a second signal*, Knowledge base lane)
+rather than treated as a tuning job. **Do not retune this number again without re-running the
+measurement — and if the answer is a third floor value, that is the signal to go do the backlog
+entry instead.**
+
 **The original write-up follows, kept because it is the measurement this decision rests on.**
 
 **The situation.** With a game running and Strategy mode on, questions that have nothing to do

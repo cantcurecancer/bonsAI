@@ -14,7 +14,7 @@ Star ratings use the GTA scale: `★` easiest … `★★★★★` very high co
 
 Status tags: **OPEN** · **PARTIAL**. Fixed entries move to [archive/roadmap-bugs-fixed.md](archive/roadmap-bugs-fixed.md) with their QA row in [Verify](#verify) — nothing marked FIXED stays in this list. Last checked against the code **2026-08-17**.
 
-- ★★ **Ordinary phrases attach game cards** — **PARTIAL, D28 option 2 implemented 2026-08-23.** With a game running in Strategy mode, questions unrelated to the game still get cards stapled on: *"one sentence"* → Praetorian, *"thank you very much"* → Nitra, *"what time is it"* and *"please repeat that"* → three cards each (Deck, corpus `2026.08.22`, DRG Survivor running). This is the regression direction **KB-SPELLING-01** says must not happen, but **not for the reason that row predicts** — the British-spelling exemption set is innocent, the query is not expanded and the card scores `bm25=0.00`. Hybrid on/off splits the blame: the new vector recall pass (`bf16b35`) supplies the card alone for two of the four, while the other two attach on the keyword half by itself — so the Strategy explicit-route floor of **1.0** is the underlying cause and the vector recall widens it. Invisible to `kb_eval_v2`, because every approved question is a real question about a real game. **[D28](audit/maintainer-decisions-locked.md#d28--ordinary-phrases-attach-game-cards-how-hard-should-the-floor-be) locked 2026-08-22: option 2 — give the vector half its own floor, separate from BM25's.** The precondition cleared the same morning (D23 landed in `e606b82`), so the floor is tuned once against one baseline. `BM25_RELEVANCE_FLOOR` stays at 1.0 as instructed (raising it pushes against D25).
+- ★★ **Ordinary phrases attach game cards** — **PARTIAL, D28 option 2 implemented 2026-08-23.** With a game running in Strategy mode, questions unrelated to the game still get cards stapled on: *"one sentence"* → Praetorian, *"thank you very much"* → Nitra, *"what time is it"* and *"please repeat that"* → three cards each (Deck, corpus `2026.08.22`, DRG Survivor running). This is the regression direction **KB-SPELLING-01** says must not happen, but **not for the reason that row predicts** — the British-spelling exemption set is innocent, the query is not expanded and the card scores `bm25=0.00`. Hybrid on/off splits the blame: the new vector recall pass (`bf16b35`) supplies the card alone for two of the four, while the other two attach on the keyword half by itself — so the Strategy explicit-route floor of **1.0** is the underlying cause and the vector recall widens it. Invisible to `kb_eval_v2`, because every approved question is a real question about a real game. **[D28](audit/maintainer-decisions-locked.md#d28--ordinary-phrases-attach-game-cards-how-hard-should-the-floor-be) locked 2026-08-22: option 2 — give the vector half its own floor, separate from BM25's.** The precondition cleared the same morning (D23 landed in `e606b82`), so the floor is tuned once against one baseline. `BM25_RELEVANCE_FLOOR` stays at 1.0 as instructed (raising it pushes against D25). **The floor is kept at 0.515 on the maintainer's call 2026-08-23, and the overlap behind it is filed as its own backlog entry — *Card relevance needs a second signal*, Knowledge base lane. Do not retune this number again; see the correction note under [D28](audit/maintainer-decisions-locked.md#d28--ordinary-phrases-attach-game-cards-how-hard-should-the-floor-be).**
   - **Implemented 2026-08-23:** `VECTOR_RECALL_FLOOR` raised `py_modules/backend/services/knowledge_base_service.py:148` from 0.50 to 0.515, against a fresh local repro (real `nomic-embed-text` via a local Ollama, real seed cards for the six phrases and the seven `V2-PARA-*` strategy rows in `kb_eval_v2.json` — script not committed). The two ranges overlap (noise up to 0.5308, a genuine paraphrase hit as low as 0.4302), so no single floor separates them cleanly; 0.515 was chosen to sit just above "one sentence"'s noise score (0.5034) and just below the lowest genuine score this change must not break (Mind Flayer / `V2-PARA-S04`, 0.5169).
   - **Re-measured all six phrases end-to-end** through `retrieve_knowledge_context` against the real test corpus (`build/knowledge-base-test/corpus.db`, real embeddings, real local Ollama for the query) rather than eyeballed:
 
@@ -304,6 +304,28 @@ Stars are **effort/risk**. Grouped by **theme**; within each lane sorted ascendi
 - ★★★ **KB visual maps** (strategy maps — later wave)
   - **Goal:** Optional visual strategy maps in KB-grounded replies after brief callout cards exist.
   - **Plan / depends on:** [17-kb-online-versus-strategy-content.md](planning/17-kb-online-versus-strategy-content.md) Stage 5; callout cards (OV-3.1). Phase 4 chip work remains orthogonal.
+- ★★★★ **Card relevance needs a second signal** (the score alone cannot decide)
+  - **Goal:** Stop deciding "is this card relevant?" from a single similarity score. Measured
+    2026-08-23 while implementing **D28**: junk questions and genuine questions score in the
+    **same range**, so no cutoff value can separate them. *"one sentence"* scores 0.5034 against a
+    Deep Rock Survivor card; a real paraphrase question (`V2-PARA-S04`, Mind Flayer) scores 0.5169
+    against its own correct card. The shipped floor of 0.515 sits in the 0.0135 gap between them.
+    That is a property of the current card set, not a margin — new cards or a different embedding
+    model move both numbers. The 2026-08-18 measurement found the same overlap, so this is twice
+    observed, not a one-off.
+  - **Why a second signal rather than a better number:** a third retune buys the same fragility
+    again. Candidates, none chosen: score *relative to the rest of the pool* rather than absolute
+    (a question whose best card barely beats its tenth-best is probably noise); whether the
+    question contains any content word at all after filler removal; agreement between the keyword
+    and vector halves as evidence in its own right rather than only as a rank-fusion input.
+  - **What must not regress:** **D25** — short real questions like *"the boss"* and *"gels"* stay
+    reachable; and `BM25_RELEVANCE_FLOOR` stays at 1.0 per **D28**.
+  - **Measure against:** the six ordinary phrases recorded under **D28** (four still attach cards
+    today: two through the keyword half, two through the vector half above the floor), plus the
+    `kb_eval_v2` tune / holdout / tips series — noting that **the eval cannot see this bug**, since
+    every question in it is a real question about a real game. Both are needed; neither is enough.
+  - **Depends on:** nothing. Blocked by nothing. Deliberately **not** a bug — the shipped floor
+    works as designed; this is the design being insufficient.
 - ★★★★ **KB online / versus strategy content**
   - **Goal:** Online multiplayer strategy — versus, co-op, map callouts — new `section_type` values + spoiler table updates. Tier lists parked. Visual maps later wave in same plan.
   - **Plan:** [17-kb-online-versus-strategy-content.md](planning/17-kb-online-versus-strategy-content.md) (discovery locked 2026-08-09).
@@ -429,6 +451,7 @@ Stars are **effort/risk**. Grouped by **theme**; within each lane sorted ascendi
 - **User-owned model routing pickers (shipped)** → **On-Deck model benchmark**; overlaps **Dynamic keep-alive / smart unload**.
 - **RAG Phase 6 publish** (shipped 2026-08-16) → **Community tip contribution** (now unblocked).
 - **Permission jump** (shipped) → shared deep-link for **Connection doctor**.
+- **Ordinary phrases attach game cards** (floor retuned, D28) → **Card relevance needs a second signal** — the overlap the floor cannot fix; blocked by nothing, and the trigger to start it is any third retune of `VECTOR_RECALL_FLOOR`.
 - **Controller macro test rig** (DPS-owned) → closes QA-plan F1 (on-device input) and findings-log P1-5; **Frozen test chips** → deterministic chip-select macros for it; corroborates **STREAM-09/11** measurement runs.
 
 ```mermaid
