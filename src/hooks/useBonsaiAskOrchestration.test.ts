@@ -519,6 +519,53 @@ describe("useBonsaiAskOrchestration", () => {
       expect(result.current.isAsking).toBe(false);
       vi.useRealTimers();
     });
+
+    /**
+     * Reopen-while-thinking regression: a plugin remount (QAM close/reopen) starts
+     * askThreadDisplayQuestion over at "" — no submit call ran to set it, and the survival
+     * snapshot is only captured before a nested modal, not on a plain close. The mount-restore
+     * poll (fired with no onAskOllama call here, mirroring a fresh mount) is the only thing left
+     * that can supply the question, and it must fill the header while still pending, not only
+     * once the answer lands.
+     */
+    it("fills the blank live question from the mount-restore poll while still thinking", async () => {
+      vi.useFakeTimers();
+      let polls = 0;
+      setRpcHandler("get_background_game_ai_status", () => {
+        polls += 1;
+        if (polls < 3) {
+          return {
+            ...idleBackgroundStatusFixture(),
+            status: "pending",
+            question: "where do i find the reactor core",
+            request_id: 9,
+          };
+        }
+        return {
+          ...idleBackgroundStatusFixture(),
+          status: "completed",
+          question: "where do i find the reactor core",
+          request_id: 9,
+          success: true,
+          response: "It's in the engineering bay.",
+        };
+      });
+
+      const { result } = renderHook(() => useBonsaiAskOrchestration(makeArgs()));
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(100);
+      });
+      expect(result.current.askThreadDisplayQuestion).toBe("where do i find the reactor core");
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(5000);
+      });
+
+      expect(result.current.ollamaResponse).toContain("It's in the engineering bay.");
+      expect(result.current.askThreadDisplayQuestion).toBe("where do i find the reactor core");
+      vi.useRealTimers();
+    });
   });
 
   describe("cancel", () => {

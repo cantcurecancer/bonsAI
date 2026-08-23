@@ -492,6 +492,18 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
         setOllamaContext({ app_id: appId, app_context: appContext });
         setIsAsking(true);
         /*
+         * Refill the live header only when it is blank. A remount mid-Ask (QAM close/reopen
+         * while still thinking) starts askThreadDisplayQuestion over at "" — the in-memory ref
+         * that would normally hold it does not survive the remount — so this poll is the only
+         * source left. Guarding on "currently blank" means a normal in-session poll, which
+         * already has the right value (set synchronously at submit), is never overwritten with
+         * a plainer caption than the one the app substituted for some presets.
+         */
+        const polledQuestion = typeof status.question === "string" ? status.question.trim() : "";
+        if (polledQuestion) {
+          setAskThreadDisplayQuestion((prev) => prev || polledQuestion);
+        }
+        /*
          * Python is the only writer. When a poll carries no summary — a remount mid-Ask, or a
          * status read before the opener was published — keep whatever is on screen rather than
          * composing a replacement, and fall back to the placeholder only if nothing is there.
@@ -584,6 +596,14 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
         setLastRequestId(typeof status.request_id === "number" ? status.request_id : null);
         if (status.status === "completed" && status.success) {
           const q = (status.question || fallbackQuestion || "").trim();
+          // Same blank-only guard as the pending branch above: closes the case where the Ask
+          // finished the remount still holding a blank live header (nothing polled while
+          // pending, or the poll loop was never reached — e.g. the mount-restore effect's
+          // one-shot status.status === "completed" read on reopen). Never fires once a real
+          // caption is already showing.
+          if (q) {
+            setAskThreadDisplayQuestion((prev) => prev || q);
+          }
           const answer = buildResponseText(status.response ?? "No response text.", applied);
           const disc = status.model_policy_disclosure;
           setModelPolicyDisclosure(
