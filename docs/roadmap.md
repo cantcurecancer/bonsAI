@@ -141,6 +141,19 @@ Stars are **effort/risk**. Grouped by **theme**; within each lane sorted ascendi
   - **Phase 2 (Backlog):** Replace the cosmetic `<bonsai-status>` blurb outright with hand-curated bonsAI tips — feature tips ("Ask-mode Speed trims replies for a quick answer") for generic asks, KB-strategy tips ("A run spent only kiting is a run that ends underpowered") for game-specific asks, selected contextually by current game/mode. Not a fallback for otherwise-empty moments — the generic filler copy goes away entirely. Data file shaped like `data/kb/strategy_seed.json`.
   - **Not in scope:** Reply verbosity → token budgets; caveman / lowering `num_predict`; native gpt-oss levels (needs per-model capability detection — see D21).
   - **Related:** **Reasoning display** (below) — once raw `thinking` streams live, it takes over the slot Phase 2 tips otherwise fill.
+- ★★ **Make token streaming the default and drop the setting** (maintainer direction 2026-08-23)
+  - **Goal:** `bonsai_token_streaming_enabled` goes away and streaming is simply how replies
+    arrive. Stated by the maintainer 2026-08-23 as the intended end state, not a proposal.
+  - **Gate:** the outstanding streaming bugs are fixed and the reveal performs well on the Deck.
+    The live blocker is *Token streaming reveal is chunky under game load* in [Bugs](#bugs),
+    measured 2026-08-22 with a game running; the earlier idle-Deck measurement that called it
+    smooth does not cover this case.
+  - **What it shrinks:** every QA row currently written as "with streaming on and with it off"
+    loses half its work — **DESTRUCT-ADVICE-01** most directly, whose accepted limitation only
+    exists on the streaming path. Do not spend on hardening the non-streaming path meanwhile.
+  - **Two-language removal, so budget for the plumbing:** dropping a boolean is not the reverse of
+    adding one. Python is authoritative (**D13**), both settings contracts need the key gone, and
+    a Deck whose `settings.json` still carries it must not read as "the setting reset itself".
 - ★★ **Unfenced spoiler feedback** (thumbs-down category)
   - **Goal:** Thumbs-down refinement chip for unfenced spoilers (and optional over-fenced sibling).
   - **Depends on:** reply micro-actions; spoiler confidence chip (shipped).
