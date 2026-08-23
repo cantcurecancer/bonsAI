@@ -206,6 +206,8 @@ def kb_coverage_chip_label(*, status: str, section_count: int = 0) -> str:
         return "KB: off"
     if status == "corpus_missing":
         return "KB: no corpus"
+    if status == "no_app":
+        return "KB: no game running"
     if status in ("no_sections", "app_unresolved"):
         return "KB: none for this game"
     if status == "corpus_error":
@@ -223,6 +225,8 @@ def kb_coverage_detail_bullets(*, status: str, section_count: int = 0, reason: s
         return ["Local knowledge base is disabled in Settings."]
     if status == "corpus_missing":
         return ["No knowledge-base corpus is installed."]
+    if status == "no_app":
+        return ["No game is running, so there is nothing to look up."]
     if status == "app_unresolved":
         return ["Running game could not be matched to corpus entries."]
     if status == "no_sections":
@@ -291,6 +295,26 @@ def ensure_context_chips_on_snapshot(snapshot: dict[str, Any]) -> dict[str, Any]
     out["context_chips"] = manifest["context_chips"]
     out["overflow_skips"] = manifest["overflow_skips"]
     return out
+
+
+def transparency_snapshot_for_chat_slot(snapshot: dict[str, Any]) -> dict[str, Any]:
+    """Trim a full transparency snapshot to what a persisted chat-slot turn needs.
+
+    Chat slots keep up to 200 turns per slot (``MAX_TURNS_PER_SLOT`` in chat_slot_service.py).
+    The session context strip only ever reads ``route``, ``success`` and ``context_chips`` off a
+    stored turn (``SessionContextStrip.tsx``, ``chipsFromSnapshot``) — storing the rest (raw
+    prompts, system prompt text, the developer chip's dev_json) would multiply slot size on disk
+    for fields no persisted-turn UI reads. ``ensure_context_chips_on_snapshot`` runs first because
+    some snapshot builders (sanitizer block, capability denied, sanitizer command) build chips
+    lazily at RPC-read time rather than at build time.
+    """
+    enriched = ensure_context_chips_on_snapshot(snapshot)
+    return {
+        "route": enriched.get("route"),
+        "success": bool(enriched.get("success")),
+        "context_chips": enriched.get("context_chips") or [],
+        "overflow_skips": enriched.get("overflow_skips") or [],
+    }
 
 
 def _chip_body(

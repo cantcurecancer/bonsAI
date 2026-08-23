@@ -102,6 +102,20 @@ export type TransparencySnapshot = {
   };
 };
 
+/**
+ * Trimmed per-turn snapshot persisted alongside a restored chat-slot turn
+ * (`transparency_snapshot_for_chat_slot` in transparency_service.py).
+ *
+ * Chat slots keep up to 200 turns per slot, and the session context strip only ever reads
+ * `route`, `success`, and `context_chips`/`overflow_skips` off an archived turn — so that is all
+ * the backend persists per turn rather than the full snapshot (raw prompts, system prompt text,
+ * developer dev_json). A slot-restored turn carries this shape, not the full TransparencySnapshot.
+ */
+export type ChatSlotTurnTransparency = Pick<
+  TransparencySnapshot,
+  "route" | "success" | "context_chips" | "overflow_skips"
+>;
+
 export type AskDiagnosticsSnapshot = {
   models_before_policy?: string[];
   models_after_policy?: string[];

@@ -3,6 +3,7 @@ import unittest
 from backend.services.transparency_service import (
     build_context_chips_manifest,
     build_knowledge_base_transparency,
+    build_ollama_route_snapshot,
     kb_coverage_chip_label,
     kb_retrieval_chip_label,
     kb_retrieval_detail_label,
@@ -109,6 +110,7 @@ class TransparencyKbCoverageTests(unittest.TestCase):
     def test_kb_coverage_chip_labels(self):
         self.assertEqual(kb_coverage_chip_label(status="kb_off"), "KB: off")
         self.assertEqual(kb_coverage_chip_label(status="corpus_missing"), "KB: no corpus")
+        self.assertEqual(kb_coverage_chip_label(status="no_app"), "KB: no game running")
         self.assertEqual(
             kb_coverage_chip_label(status="no_sections"),
             "KB: none for this game",
@@ -120,6 +122,19 @@ class TransparencyKbCoverageTests(unittest.TestCase):
         self.assertEqual(kb_coverage_chip_label(status="sections", section_count=1), "KB: 1 section")
         self.assertEqual(kb_coverage_chip_label(status="sections", section_count=2), "KB: 2 sections")
         self.assertEqual(kb_coverage_chip_label(status="corpus_error"), "KB: unreadable")
+
+    def test_kb_coverage_no_app_distinct_from_app_unresolved(self):
+        """Decision: 'nothing running' and 'a game is running but unmatched' must not share a
+        bullet -- the app_unresolved sentence says a game could not be matched, which is false
+        when no game was running to match in the first place.
+        """
+        from backend.services.transparency_service import kb_coverage_detail_bullets
+
+        no_app_bullets = kb_coverage_detail_bullets(status="no_app")
+        unresolved_bullets = kb_coverage_detail_bullets(status="app_unresolved")
+        self.assertNotEqual(no_app_bullets, unresolved_bullets)
+        self.assertNotIn("Running game", no_app_bullets[0])
+        self.assertIn("Running game", unresolved_bullets[0])
 
     def test_kb_coverage_chip_in_manifest(self):
         snapshot = {
@@ -160,6 +175,69 @@ class TransparencyKbCoverageTests(unittest.TestCase):
         coverage_chip = next(c for c in manifest["context_chips"] if c["id"] == "kb_coverage")
         self.assertEqual(kb_chip["label"], "Keyword + meaning")
         self.assertEqual(coverage_chip["label"], "KB: 2 sections")
+
+
+class TransparencySnapshotForChatSlotTests(unittest.TestCase):
+    """`transparency_snapshot_for_chat_slot` trims a full snapshot to what a persisted chat-slot
+    turn needs -- see chat_slot_service.py's MAX_TURNS_PER_SLOT and SessionContextStrip.tsx,
+    which only ever reads route/success/context_chips off an archived turn.
+    """
+
+    def test_keeps_only_the_session_strip_fields(self):
+        from backend.services.transparency_service import transparency_snapshot_for_chat_slot
+
+        full_snapshot = build_ollama_route_snapshot(
+            raw_question="how do I beat this boss",
+            sanitizer_action="allow",
+            sanitizer_reason_codes=[],
+            text_after_sanitizer="how do I beat this boss",
+            ollama_result={
+                "model": "gemma4:e2b",
+                "success": True,
+                "response": "answer text",
+                "system_prompt": "a very long system prompt" * 50,
+            },
+            base_response_text="answer text",
+            response_text="answer text",
+            applied=None,
+            app_id="550",
+            app_name="Left 4 Dead 2",
+            pc_ip="127.0.0.1:11434",
+            err_tail="",
+            elapsed_seconds=1.0,
+        )
+        trimmed = transparency_snapshot_for_chat_slot(full_snapshot)
+        self.assertEqual(set(trimmed.keys()), {"route", "success", "context_chips", "overflow_skips"})
+        self.assertEqual(trimmed["route"], "ollama")
+        self.assertTrue(trimmed["success"])
+        self.assertTrue(trimmed["context_chips"])
+        self.assertNotIn("system_prompt", trimmed)
+        self.assertNotIn("raw_question", trimmed)
+
+    def test_builds_chips_lazily_for_snapshots_that_defer_them(self):
+        """Sanitizer-block / capability-denied / sanitizer-command snapshots do not populate
+        context_chips at build time (they rely on ensure_context_chips_on_snapshot running at
+        RPC-read time) -- the chat-slot trim must run that step itself so a persisted turn is not
+        silently chip-less.
+        """
+        from backend.services.transparency_service import (
+            build_sanitizer_block_snapshot,
+            transparency_snapshot_for_chat_slot,
+        )
+
+        raw = build_sanitizer_block_snapshot(
+            raw_question="blocked question",
+            sanitizer_action="block",
+            sanitizer_reason_codes=["r1"],
+            text_after_sanitizer="blocked question",
+            final_response="That request was blocked.",
+            app_id="",
+            app_name="",
+            pc_ip="127.0.0.1:11434",
+        )
+        self.assertEqual(raw.get("context_chips"), None)
+        trimmed = transparency_snapshot_for_chat_slot(raw)
+        self.assertTrue(trimmed["context_chips"])
 
 
 if __name__ == "__main__":

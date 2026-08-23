@@ -6,6 +6,20 @@ const snap = (route: string): TransparencySnapshot =>
   ({ route, context_chips: [{ label: "KB: 9 sections", rank: 1 }] }) as unknown as TransparencySnapshot;
 
 describe("archivedTurnTransparency", () => {
+  it("prefers a slot-restored turn's own trimmed snapshot over borrowing the live one", () => {
+    // Since chat_slot_service.py now persists a per-turn snapshot, an older archived turn no
+    // longer has to fall back to null — it carries the trimmed ChatSlotTurnTransparency shape
+    // (route/success/context_chips/overflow_skips only) rather than a full TransparencySnapshot.
+    const restored = { route: "ollama", success: true, context_chips: [{ label: "KB: 3 sections", rank: 1 }] };
+    const got = archivedTurnTransparency({
+      turn: { transparency: restored as never },
+      index: 0,
+      total: 3,
+      liveSnapshot: snap("live"),
+    });
+    expect(got).toBe(restored);
+  });
+
   it("prefers the turn's own snapshot when it has one", () => {
     const own = snap("own");
     const got = archivedTurnTransparency({

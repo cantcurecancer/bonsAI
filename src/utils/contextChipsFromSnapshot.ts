@@ -6,6 +6,7 @@
  * Does not: Fetch transparency data — backend Ask status and inputTransparency types.
  */
 import type {
+  ChatSlotTurnTransparency,
   TransparencySnapshot,
   ContextChip,
   ContextChipAttribution,
@@ -16,13 +17,21 @@ export const CONTEXT_CHIP_WINDOW = 2;
 /** When chip count is at or below this, show every pill (no sliding window). */
 export const CONTEXT_CHIP_SHOW_ALL_MAX = 6;
 
-export function chipsFromSnapshot(snapshot: TransparencySnapshot | null | undefined): ContextChip[] {
+/** Everything these helpers actually read off a snapshot — satisfied by a live-session
+ *  TransparencySnapshot and by the trimmed ChatSlotTurnTransparency a restored slot turn carries. */
+type ChipSource = Pick<TransparencySnapshot, "route" | "success" | "context_chips">;
+
+export function chipsFromSnapshot(
+  snapshot: TransparencySnapshot | ChatSlotTurnTransparency | ChipSource | null | undefined,
+): ContextChip[] {
   if (!snapshot?.context_chips?.length) return [];
   return [...snapshot.context_chips].sort((a, b) => a.rank - b.rank);
 }
 
 /** True when transparency entry points (Show details, session strip, inline hint) should render. */
-export function transparencyUiAvailable(snapshot: TransparencySnapshot | null | undefined): boolean {
+export function transparencyUiAvailable(
+  snapshot: TransparencySnapshot | ChatSlotTurnTransparency | ChipSource | null | undefined,
+): boolean {
   if (!snapshot?.route) return false;
   return chipsFromSnapshot(snapshot).length > 0 || snapshot.success === true;
 }

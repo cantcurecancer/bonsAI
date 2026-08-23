@@ -25,7 +25,7 @@ export function turnsToCollapsedTurns(turns: ChatSlotTurn[]): CollapsedTurnsResu
         id: pendingQ.id,
         question: pendingQ.text,
         answer: turn.text,
-        transparency: null,
+        transparency: turn.transparency ?? null,
         appId: "",
         spoilerConsentEffective: false,
       });

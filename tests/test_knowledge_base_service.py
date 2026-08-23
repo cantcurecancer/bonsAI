@@ -243,6 +243,31 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
     )
     self.assertEqual(summary.status, "corpus_missing")
 
+  def test_summarize_kb_coverage_no_app_running(self):
+    """Desktop context (nothing running) is distinct from a running game the corpus can't match.
+
+    Before this status existed both cases collapsed onto "app_unresolved", which made Show
+    details claim a running game could not be matched even when no game was running at all.
+    """
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    summary = summarize_kb_coverage(settings, app_id="", app_name="")
+    self.assertEqual(summary.status, "no_app")
+
+  def test_summarize_kb_coverage_app_unresolved_when_game_running_but_unmatched(self):
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    summary = summarize_kb_coverage(
+      settings,
+      app_id="999999999",
+      app_name="Some Game Not In The Corpus",
+    )
+    self.assertEqual(summary.status, "app_unresolved")
+
   def test_suggest_chip_candidates_missing_corpus(self):
     result = suggest_chip_candidates(
       {"use_local_knowledge_base": True, "rag_corpus_path": "/nonexistent/path"},

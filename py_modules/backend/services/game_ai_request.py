@@ -19,6 +19,10 @@ import decky
 
 from backend.services.capabilities import capability_enabled
 from backend.services.ai_character_service import build_roleplay_system_suffix_meta
+from backend.services.destructive_advice_guard import (
+    append_destructive_advice_notice,
+    check_destructive_advice,
+)
 from backend.services.input_sanitizer_service import apply_input_sanitizer_lane
 from backend.services.ollama_prompts import (
     build_reply_followup_context_block,
@@ -53,6 +57,7 @@ from backend.services.transparency_service import (
     build_proton_log_transparency,
     build_sanitizer_block_snapshot,
     build_sanitizer_command_snapshot,
+    transparency_snapshot_for_chat_slot,
 )
 from backend.services.tdp_service import (
     GPU_CLK_MAX_MHZ,
@@ -113,17 +118,23 @@ async def run_game_ai_request(
             elapsed = round(time.time() - start, 1)
             out = {**keyword_result, "elapsed_seconds": elapsed}
             logger.info("run_game_ai_request: sanitizer keyword command handled (elapsed=%.1fs)", elapsed)
-            await plugin._persist_input_transparency(
-                build_sanitizer_command_snapshot(
-                    raw_question=question,
-                    final_response=str(out.get("response", "") or ""),
-                    app_id=app_id,
-                    app_name=app_name,
-                    pc_ip=pc_ip,
-                    elapsed_seconds=elapsed,
-                )
+            keyword_snapshot = build_sanitizer_command_snapshot(
+                raw_question=question,
+                final_response=str(out.get("response", "") or ""),
+                app_id=app_id,
+                app_name=app_name,
+                pc_ip=pc_ip,
+                elapsed_seconds=elapsed,
             )
-            return {**out, "model_policy_disclosure": None, "strategy_guide_branches": None, "strategy_checklist": None, "strategy_spoiler_consent_effective": False}
+            await plugin._persist_input_transparency(keyword_snapshot)
+            return {
+                **out,
+                "model_policy_disclosure": None,
+                "strategy_guide_branches": None,
+                "strategy_checklist": None,
+                "strategy_spoiler_consent_effective": False,
+                "transparency": transparency_snapshot_for_chat_slot(keyword_snapshot),
+            }
 
         atts = attachments or []
         if atts and not capability_enabled(settings, "media_library_access"):
@@ -132,17 +143,16 @@ async def run_game_ai_request(
                 "Screenshot attachments require media library access. "
                 "Enable it in the Permissions tab, then try again."
             )
-            await plugin._persist_input_transparency(
-                build_capability_denied_snapshot(
-                    raw_question=question,
-                    attachment_paths=[str(a.get("path", "") or "") for a in atts if isinstance(a, dict)],
-                    final_response=msg,
-                    app_id=app_id,
-                    app_name=app_name,
-                    pc_ip=pc_ip,
-                    elapsed_seconds=elapsed,
-                )
+            capability_denied_snapshot = build_capability_denied_snapshot(
+                raw_question=question,
+                attachment_paths=[str(a.get("path", "") or "") for a in atts if isinstance(a, dict)],
+                final_response=msg,
+                app_id=app_id,
+                app_name=app_name,
+                pc_ip=pc_ip,
+                elapsed_seconds=elapsed,
             )
+            await plugin._persist_input_transparency(capability_denied_snapshot)
             return {
                 "success": False,
                 "response": msg,
@@ -154,6 +164,7 @@ async def run_game_ai_request(
                 "strategy_checklist": None,
                 "model_policy_disclosure": None,
                 "strategy_spoiler_consent_effective": False,
+                "transparency": transparency_snapshot_for_chat_slot(capability_denied_snapshot),
             }
 
         user_sanitizer_disabled = bool(settings.get("input_sanitizer_user_disabled"))
@@ -162,19 +173,18 @@ async def run_game_ai_request(
             elapsed = round(time.time() - start, 1)
             logger.info("run_game_ai_request: input blocked by sanitizer (%s)", lane.reason_codes)
             um = str(lane.user_message or "")
-            await plugin._persist_input_transparency(
-                build_sanitizer_block_snapshot(
-                    raw_question=question,
-                    sanitizer_action=str(lane.action),
-                    sanitizer_reason_codes=list(lane.reason_codes),
-                    text_after_sanitizer=str(lane.text or ""),
-                    final_response=um,
-                    app_id=app_id,
-                    app_name=app_name,
-                    pc_ip=pc_ip,
-                    elapsed_seconds=elapsed,
-                )
+            sanitizer_block_snapshot = build_sanitizer_block_snapshot(
+                raw_question=question,
+                sanitizer_action=str(lane.action),
+                sanitizer_reason_codes=list(lane.reason_codes),
+                text_after_sanitizer=str(lane.text or ""),
+                final_response=um,
+                app_id=app_id,
+                app_name=app_name,
+                pc_ip=pc_ip,
+                elapsed_seconds=elapsed,
             )
+            await plugin._persist_input_transparency(sanitizer_block_snapshot)
             return {
                 "success": False,
                 "response": um,
@@ -186,6 +196,7 @@ async def run_game_ai_request(
                 "strategy_checklist": None,
                 "model_policy_disclosure": None,
                 "strategy_spoiler_consent_effective": False,
+                "transparency": transparency_snapshot_for_chat_slot(sanitizer_block_snapshot),
             }
         question_for_model = lane.text
         # Retrieval searches the user's actual words. question_for_model grows a follow-up
@@ -496,35 +507,51 @@ async def run_game_ai_request(
             else:
                 logger.info("ask_game_ai: no TDP recommendation found in response")
 
+        # Output-side safety check: run once the full reply is in hand (see
+        # destructive_advice_guard.py for why this is finished-reply, not per-token). Runs on
+        # the actual model text (base_response_text) so a prior append can't hide a second
+        # flaggable sentence from itself, but the notice lands on response_text -- the copy
+        # that reaches the user and transparency.
+        destructive_advice_check: dict[str, Any] = {"flagged": False, "signals": []}
+        if ollama_result.get("success"):
+            destructive_advice_check = check_destructive_advice(base_response_text)
+            if destructive_advice_check.get("flagged"):
+                logger.warning(
+                    "run_game_ai_request: destructive advice guard fired (%d signal(s))",
+                    len(destructive_advice_check.get("signals") or []),
+                )
+                response_text = append_destructive_advice_notice(
+                    response_text, destructive_advice_check
+                )
+
         err_tail = ""
         if not ollama_result.get("success"):
             err_tail = base_response_text[:8000]
 
-        await plugin._persist_input_transparency(
-            build_ollama_route_snapshot(
-                raw_question=question,
-                sanitizer_action=str(lane.action),
-                sanitizer_reason_codes=list(lane.reason_codes),
-                text_after_sanitizer=question_for_model,
-                ollama_result={
-                    **ollama_result,
-                    **kb_transparency,
-                    **kb_coverage_transparency,
-                    "tdp_cap_watts": pre_cap if tdp_grounding_requested else None,
-                    "ask_mode": ask_mode,
-                    "spoiler_risk_signals": spoiler_risk_signals,
-                },
-                base_response_text=base_response_text,
-                response_text=response_text,
-                applied=applied,
-                app_id=app_id,
-                app_name=app_name,
-                pc_ip=pc_ip,
-                err_tail=err_tail,
-                elapsed_seconds=elapsed,
-                reply_followup=reply_followup,
-            )
+        ollama_route_snapshot = build_ollama_route_snapshot(
+            raw_question=question,
+            sanitizer_action=str(lane.action),
+            sanitizer_reason_codes=list(lane.reason_codes),
+            text_after_sanitizer=question_for_model,
+            ollama_result={
+                **ollama_result,
+                **kb_transparency,
+                **kb_coverage_transparency,
+                "tdp_cap_watts": pre_cap if tdp_grounding_requested else None,
+                "ask_mode": ask_mode,
+                "spoiler_risk_signals": spoiler_risk_signals,
+            },
+            base_response_text=base_response_text,
+            response_text=response_text,
+            applied=applied,
+            app_id=app_id,
+            app_name=app_name,
+            pc_ip=pc_ip,
+            err_tail=err_tail,
+            elapsed_seconds=elapsed,
+            reply_followup=reply_followup,
         )
+        await plugin._persist_input_transparency(ollama_route_snapshot)
 
         logger.info("run_game_ai_request: completed in %.1fs", elapsed)
         return {
@@ -542,23 +569,23 @@ async def run_game_ai_request(
                 ollama_result.get("strategy_spoiler_consent_effective", False)
             ),
             "preset_carousel_inject": ollama_result.get("preset_carousel_inject"),
+            "transparency": transparency_snapshot_for_chat_slot(ollama_route_snapshot),
         }
     except Exception as exc:
         elapsed = round(time.time() - start, 1)
         logger.exception("run_game_ai_request failed (%.1fs)", elapsed)
-        await plugin._persist_input_transparency(
-            build_error_route_snapshot(
-                raw_question=question,
-                final_response=(
-                    "Something went wrong while processing your Ask. "
-                    "If this repeats, check the plugin log on the Deck."
-                ),
-                app_id=app_id,
-                app_name=app_name,
-                pc_ip=pc_ip,
-                elapsed_seconds=elapsed,
-            )
+        error_route_snapshot = build_error_route_snapshot(
+            raw_question=question,
+            final_response=(
+                "Something went wrong while processing your Ask. "
+                "If this repeats, check the plugin log on the Deck."
+            ),
+            app_id=app_id,
+            app_name=app_name,
+            pc_ip=pc_ip,
+            elapsed_seconds=elapsed,
         )
+        await plugin._persist_input_transparency(error_route_snapshot)
         return {
             "success": False,
             "response": (
@@ -569,6 +596,7 @@ async def run_game_ai_request(
             "app_context": app_context,
             "applied": None,
             "elapsed_seconds": elapsed,
+            "transparency": transparency_snapshot_for_chat_slot(error_route_snapshot),
             "strategy_guide_branches": None,
             "strategy_checklist": None,
             "model_policy_disclosure": None,

@@ -66,6 +66,27 @@ def _normalize_attachment_refs(raw: Any) -> list[dict[str, str]]:
     return out
 
 
+def _normalize_turn_transparency(raw: Any) -> dict[str, Any] | None:
+    """Sanitize the trimmed snapshot ``transparency_snapshot_for_chat_slot`` hands us.
+
+    Only ``context_chips`` is load-bearing here — it is what
+    ``SessionContextStrip.tsx`` filters archived turns on (``t.transparency && chipsFromSnapshot(...)
+    .length > 0``). A turn with no chips is treated the same as no snapshot at all, so a slot
+    round-tripped through disk cannot resurrect an empty placeholder as a countable turn.
+    """
+    if not isinstance(raw, dict):
+        return None
+    chips = raw.get("context_chips")
+    if not isinstance(chips, list) or not chips:
+        return None
+    return {
+        "route": str(raw.get("route") or ""),
+        "success": bool(raw.get("success")),
+        "context_chips": chips,
+        "overflow_skips": list(raw.get("overflow_skips") or []),
+    }
+
+
 def _normalize_turn(raw: Any) -> dict[str, Any] | None:
     if not isinstance(raw, dict):
         return None
@@ -84,6 +105,7 @@ def _normalize_turn(raw: Any) -> dict[str, Any] | None:
         "text": text[:MAX_TURN_TEXT_LEN],
         "request_id": request_id,
         "attachment_refs": _normalize_attachment_refs(raw.get("attachment_refs")),
+        "transparency": _normalize_turn_transparency(raw.get("transparency")),
         "created_at": int(raw.get("created_at") or time.time()),
     }
 
@@ -327,6 +349,7 @@ def append_turn(
     text: str,
     request_id: int | None = None,
     attachment_refs: list[dict[str, str]] | None = None,
+    transparency: dict[str, Any] | None = None,
     label: str | None = None,
     logger: Any = None,
 ) -> dict[str, Any] | None:
@@ -340,6 +363,7 @@ def append_turn(
             "text": text,
             "request_id": request_id,
             "attachment_refs": attachment_refs or [],
+            "transparency": transparency,
             "created_at": int(time.time()),
         }
     )

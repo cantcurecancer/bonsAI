@@ -1,4 +1,4 @@
-import type { TransparencySnapshot } from "../utils/inputTransparency";
+import type { ChatSlotTurnTransparency, TransparencySnapshot } from "../utils/inputTransparency";
 
 export type AppliedResult = {
   tdp_watts: number | null;
@@ -46,12 +46,19 @@ export type StrategyChecklistState = StrategyChecklistPayload & {
   appName?: string;
 };
 
-/** One completed Ask round shown in the session thread (client-only; not persisted across reloads). */
+/**
+ * One completed Ask round shown in the session thread.
+ *
+ * `transparency` is the full snapshot for a turn archived live this session, but a turn
+ * restored from a chat slot (`chatSlotTurns.ts`) only ever carries the trimmed
+ * `ChatSlotTurnTransparency` shape the backend persisted alongside it — see
+ * `transparency_snapshot_for_chat_slot` in transparency_service.py.
+ */
 export type AskThreadCollapsedTurn = {
   id: string;
   question: string;
   answer: string;
-  transparency?: TransparencySnapshot | null;
+  transparency?: TransparencySnapshot | ChatSlotTurnTransparency | null;
   /**
    * AppID this turn was asked against. Optional so older session-survival snapshots still parse.
    * Stored per turn rather than read from live context because "named bosses are not spoilers"
