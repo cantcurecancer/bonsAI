@@ -22,7 +22,7 @@
     },
     {
       "path": "src/hooks/useBonsaiAskOrchestration.ts",
-      "lines": 1395,
+      "lines": 1415,
       "role": ""
     },
     {
@@ -66,6 +66,11 @@
       "role": ""
     },
     {
+      "path": "src/hooks/useBonsaiAskOrchestration.test.ts",
+      "lines": 830,
+      "role": ""
+    },
+    {
       "path": "src/components/MainTabChatTranscript.tsx",
       "lines": 824,
       "role": ""
@@ -78,11 +83,6 @@
     {
       "path": "py_modules/backend/services/transparency_service.py",
       "lines": 789,
-      "role": ""
-    },
-    {
-      "path": "src/hooks/useBonsaiAskOrchestration.test.ts",
-      "lines": 783,
       "role": ""
     },
     {
