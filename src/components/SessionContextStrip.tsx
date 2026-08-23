@@ -13,6 +13,7 @@ import { ContextChipLadder } from "./ContextChipLadder";
 import { chipsFromSnapshot } from "../utils/contextChipsFromSnapshot";
 import { registerNavFocus, type NavRefHolder } from "../utils/navFocusRegistry";
 import { isDeckDirectionUpEvent, isOkDeckButtonEvent } from "../utils/focusNavigation";
+import { focusLastSessionContextRow } from "../utils/liveTurnFocusGraph";
 
 export type SessionContextTurn = {
   id: string;
@@ -156,6 +157,7 @@ export function SessionContextStrip({
           {rows.map((row) => (
             <Focusable
               key={row.id}
+              className="bonsai-session-context-row"
               onActivate={() => {
                 setActiveId(row.id);
                 onHighlightClear?.();
@@ -181,8 +183,20 @@ export function SessionContextStrip({
               {row.label}
             </Focusable>
           ))}
+          {/*
+            Up out of this ladder has to be wired explicitly. The ladder owns `onMoveUp` for chip
+            stepping and, at its first chip, hands the press to `onMoveUpFromLadder` — absent, that
+            returned false and the ring stayed put. The transcript's copy of the ladder has always
+            passed both escapes ([MainTabChatTranscript.tsx] onMoveUpFromLadder/onMoveDownFromLadder);
+            this one was rendered bare, which is half of the 2026-08-23 focus trap. Target is the row
+            list directly above, not the header, so a different turn can still be picked on the way.
+          */}
           {activeRow?.snapshot ? (
-            <ContextChipLadder snapshot={activeRow.snapshot} collapsedHint={false} />
+            <ContextChipLadder
+              snapshot={activeRow.snapshot}
+              collapsedHint={false}
+              onMoveUpFromLadder={() => focusLastSessionContextRow() || (onMoveUp?.() ?? false)}
+            />
           ) : null}
         </div>
       ) : null}

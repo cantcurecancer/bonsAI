@@ -227,6 +227,19 @@ export function focusSessionContextStrip(): boolean {
 }
 
 /**
+ * Last turn row inside the expanded session context strip.
+ *
+ * The strip's own chip ladder sits below those rows, and the ladder swallows Up at its first chip.
+ * Without a target here the press had nowhere to go and the ring stayed in the ladder — the trap
+ * recorded on device 2026-08-23. Rows are ordinary siblings, so once focus is on one, Steam's own
+ * navigation carries it the rest of the way up to the header.
+ */
+export function focusLastSessionContextRow(): boolean {
+  const rows = getUiDocument().querySelectorAll<HTMLElement>(".bonsai-session-context-row");
+  return focusDeckOwner(rows.length ? rows[rows.length - 1] : null);
+}
+
+/**
  * Dev-only Ask diagnostics block — present only with desktop verbose logging on, so a miss here is
  * the normal case rather than a failure.
  */
@@ -250,12 +263,21 @@ export function focusDownFromReplyUtilityRow(liveSlot: HTMLElement | null): bool
  *
  * Only one turn is ever expanded at a time, so at most one `.bonsai-chip-ladder` sits in the
  * transcript — querying without a specific slot means the caller does not need to know which turn
- * it belongs to. `querySelector` returns the first DOM match, which is the transcript's inline
- * ladder even when the session context strip's own ladder (same class) is also mounted further down.
+ * it belongs to.
+ *
+ * The session context strip renders a ladder of its own with the same class, so the match has to
+ * exclude anything inside the strip. Taking the first DOM match instead is what trapped the ring
+ * on device 2026-08-23 (`DeckRecord_20260823_170847_game.mkv`): with *Show details* collapsed there
+ * is no inline ladder at all, so the strip's own ladder was the only match, and the strip header's
+ * Up handler — which routes through here — fed focus straight back down into the strip it was
+ * trying to leave. Nothing above the strip was reachable until the panel was closed.
  */
 export function focusAnyContextChipLadder(): boolean {
-  const ladder = getUiDocument().querySelector<HTMLElement>(".bonsai-chip-ladder");
-  return focusDeckOwner(ladder);
+  const ladders = Array.from(
+    getUiDocument().querySelectorAll<HTMLElement>(".bonsai-chip-ladder"),
+  );
+  const inlineLadder = ladders.find((el) => !el.closest(".bonsai-session-context-strip"));
+  return focusDeckOwner(inlineLadder ?? null);
 }
 
 /**

@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  focusAnyContextChipLadder,
   focusDeckOwner,
   focusDownFromLiveAnswerBubble,
+  focusLastSessionContextRow,
   focusReplyHelpful,
   focusReplyNotReally,
   focusReplyRetry,
@@ -118,5 +120,51 @@ describe("liveTurnFocusGraph", () => {
     expect(document.activeElement?.id).toBe("stop-retry");
     expect(focusReplyHelpful(slot)).toBe(true);
     expect(document.activeElement?.id).toBe("stop-helpful");
+  });
+
+  /*
+   * The focus trap recorded on device 2026-08-23 (DeckRecord_20260823_170847_game.mkv). With
+   * *Show details* collapsed there is no inline ladder, so a plain first-match query found the
+   * session context strip's own ladder and the strip header's Up handler fed the ring straight
+   * back into the strip it was trying to leave.
+   */
+  it("focusAnyContextChipLadder ignores the session context strip's own ladder", () => {
+    mountLiveTurn(`
+      <div class="bonsai-session-context-strip">
+        <div class="bonsai-chip-ladder Focusable" tabindex="-1" id="strip-ladder"></div>
+      </div>
+    `);
+    expect(focusAnyContextChipLadder()).toBe(false);
+    expect(document.activeElement?.id).not.toBe("strip-ladder");
+  });
+
+  it("focusAnyContextChipLadder still finds the transcript ladder when both are mounted", () => {
+    mountLiveTurn(`
+      <div class="bonsai-chat-turn-slot">
+        <div class="bonsai-chip-ladder Focusable" tabindex="-1" id="inline-ladder"></div>
+      </div>
+      <div class="bonsai-session-context-strip">
+        <div class="bonsai-chip-ladder Focusable" tabindex="-1" id="strip-ladder"></div>
+      </div>
+    `);
+    expect(focusAnyContextChipLadder()).toBe(true);
+    expect(document.activeElement?.id).toBe("inline-ladder");
+  });
+
+  it("focusLastSessionContextRow targets the row list above the strip's ladder", () => {
+    mountLiveTurn(`
+      <div class="bonsai-session-context-strip">
+        <div class="bonsai-session-context-row Focusable" tabindex="-1" id="row-1"></div>
+        <div class="bonsai-session-context-row Focusable" tabindex="-1" id="row-2"></div>
+        <div class="bonsai-chip-ladder Focusable" tabindex="-1" id="strip-ladder"></div>
+      </div>
+    `);
+    expect(focusLastSessionContextRow()).toBe(true);
+    expect(document.activeElement?.id).toBe("row-2");
+  });
+
+  it("focusLastSessionContextRow reports failure when the strip is collapsed", () => {
+    mountLiveTurn(`<div class="bonsai-session-context-strip"></div>`);
+    expect(focusLastSessionContextRow()).toBe(false);
   });
 });
