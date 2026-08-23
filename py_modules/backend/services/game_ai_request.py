@@ -19,6 +19,10 @@ import decky
 
 from backend.services.capabilities import capability_enabled
 from backend.services.ai_character_service import build_roleplay_system_suffix_meta
+from backend.services.destructive_advice_guard import (
+    append_destructive_advice_notice,
+    check_destructive_advice,
+)
 from backend.services.input_sanitizer_service import apply_input_sanitizer_lane
 from backend.services.ollama_prompts import (
     build_reply_followup_context_block,
@@ -502,6 +506,23 @@ async def run_game_ai_request(
                 }
             else:
                 logger.info("ask_game_ai: no TDP recommendation found in response")
+
+        # Output-side safety check: run once the full reply is in hand (see
+        # destructive_advice_guard.py for why this is finished-reply, not per-token). Runs on
+        # the actual model text (base_response_text) so a prior append can't hide a second
+        # flaggable sentence from itself, but the notice lands on response_text -- the copy
+        # that reaches the user and transparency.
+        destructive_advice_check: dict[str, Any] = {"flagged": False, "signals": []}
+        if ollama_result.get("success"):
+            destructive_advice_check = check_destructive_advice(base_response_text)
+            if destructive_advice_check.get("flagged"):
+                logger.warning(
+                    "run_game_ai_request: destructive advice guard fired (%d signal(s))",
+                    len(destructive_advice_check.get("signals") or []),
+                )
+                response_text = append_destructive_advice_notice(
+                    response_text, destructive_advice_check
+                )
 
         err_tail = ""
         if not ollama_result.get("success"):
