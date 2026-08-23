@@ -245,6 +245,34 @@ export function focusDownFromReplyUtilityRow(liveSlot: HTMLElement | null): bool
   return focusSessionContextStrip();
 }
 
+/**
+ * Any currently-mounted inline chip ladder, regardless of which turn (live or archived) owns it.
+ *
+ * Only one turn is ever expanded at a time, so at most one `.bonsai-chip-ladder` sits in the
+ * transcript — querying without a specific slot means the caller does not need to know which turn
+ * it belongs to. `querySelector` returns the first DOM match, which is the transcript's inline
+ * ladder even when the session context strip's own ladder (same class) is also mounted further down.
+ */
+export function focusAnyContextChipLadder(): boolean {
+  const ladder = getUiDocument().querySelector<HTMLElement>(".bonsai-chip-ladder");
+  return focusDeckOwner(ladder);
+}
+
+/**
+ * Up from whatever sits below the ladder (Ask diagnostics / session context strip): ladder →
+ * collapsed hint → utility row (Retry / Show details).
+ *
+ * This is the missing reverse of `focusDownFromReplyUtilityRow`. Without it, Up from Ask
+ * diagnostics or the session context strip had no explicit handler and fell through to Steam's
+ * default geometry navigation, which landed on Show/Hide details directly and skipped the ladder —
+ * once a chip carousel scrolled past its last chip and exited downward, there was no way back in.
+ */
+export function focusUpFromBelowContextChipLadder(liveSlot: HTMLElement | null): boolean {
+  if (focusAnyContextChipLadder()) return true;
+  if (focusContextHint(liveSlot)) return true;
+  return focusReplyUtilityRow(liveSlot);
+}
+
 /*
  * `focusSpoilerRevealIn` was removed 2026-08-04. It focused the first masked fence in a bubble on
  * every Down press regardless of where that fence was, and the answer-bubble Down handler already

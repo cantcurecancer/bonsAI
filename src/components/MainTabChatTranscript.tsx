@@ -16,6 +16,7 @@ import {
 } from "../utils/answerBubbleNavRegistry";
 import { focusAnswerBubbleAfterHeader } from "../utils/answerBubbleNavigation";
 import {
+  isDeckDirectionUpEvent,
   isDownNavigationEvent,
   isOkDeckButtonEvent,
   isUpNavigationEvent,
@@ -57,6 +58,7 @@ import {
   focusDownFromReplyUtilityRow,
   focusReplyUtilityRow,
   focusSessionContextStrip,
+  focusUpFromBelowContextChipLadder,
   queryLiveTurnSlot,
   queryTurnSlot,
 } from "../utils/liveTurnFocusGraph";
@@ -385,25 +387,48 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
                 {/*
                  * Show details on an expanded archived turn. Without this the control is
                  * unreachable after a completed Ask: the slot reload expands the archived turn
-                 * rather than "live", and the live-only row below renders nothing. Feedback,
-                 * Retry and refinement chips stay live-only — they act on the current exchange,
-                 * which an archived turn is not.
+                 * rather than "live", and the live-only row below renders nothing.
+                 *
+                 * Feedback, Retry and the refinement chips stay tied to `lastExchange` — the most
+                 * recently completed exchange — rather than to "live" specifically, because after a
+                 * normal Ask finishes the slot reload expands the newest ARCHIVED turn, not live
+                 * (useChatSlots.applySlotTranscript), leaving the whole action row dead code on the
+                 * ordinary path. Wiring it here, gated to the newest archived turn while it still
+                 * matches `lastExchange`, is the same fix already applied to Show details: teach the
+                 * archived branch to render the control instead of assuming it stays live-only.
                  */}
-                {transparencyUiAvailable(archivedTransparencyFor(turn, turnIndex))
-                  ? buildReplyActionsElement({
-                      replyKey: turn.id,
-                      rating: null,
-                      onRate: () => {},
-                      showFeedback: false,
-                      transparencyOpen: transparencyDetailsOpen,
-                      onToggleTransparency: makeToggleTransparencyDetails(turn.id),
-                      /* Down must reach this turn's own ladder. Without a handler the Focusable
-                         falls through to the next focusable in document order — Ask diagnostics —
-                         and the chips become unreachable from above. */
-                      onMoveDownFromUtility: () =>
-                        focusDownFromReplyUtilityRow(queryTurnSlot(turn.id)),
-                    })
-                  : null}
+                {(() => {
+                  const isNewestArchivedTurn = turnIndex === askThreadCollapsed.length - 1;
+                  const showFeedbackHere =
+                    isNewestArchivedTurn && !isAsking && Boolean(lastExchange?.answer?.trim());
+                  const transparencyAvailableHere = transparencyUiAvailable(
+                    archivedTransparencyFor(turn, turnIndex)
+                  );
+                  if (!showFeedbackHere && !transparencyAvailableHere) return null;
+                  return buildReplyActionsElement({
+                    replyKey: turn.id,
+                    rating: showFeedbackHere ? liveReplyFeedbackRating : null,
+                    onRate: showFeedbackHere
+                      ? (rating) => onReplyFeedback?.(rating)
+                      : () => {},
+                    showFeedback: showFeedbackHere,
+                    onRetry: showFeedbackHere ? onRetryLastResponse : undefined,
+                    transparencyOpen: transparencyDetailsOpen,
+                    onToggleTransparency: transparencyAvailableHere
+                      ? makeToggleTransparencyDetails(turn.id)
+                      : undefined,
+                    chipsDisabled: false,
+                    chipUsed: showFeedbackHere ? liveReplyChipUsed : false,
+                    chipError: showFeedbackHere ? liveReplyChipError : null,
+                    onChip: showFeedbackHere ? onReplyMicroAction : undefined,
+                    askInFlight: isAsking,
+                    /* Down must reach this turn's own ladder. Without a handler the Focusable
+                       falls through to the next focusable in document order — Ask diagnostics —
+                       and the chips become unreachable from above. */
+                    onMoveDownFromUtility: () =>
+                      focusDownFromReplyUtilityRow(queryTurnSlot(turn.id)),
+                  });
+                })()}
                 {transparencyDetailsOpen &&
                 transparencyUiAvailable(archivedTransparencyFor(turn, turnIndex)) ? (
                   <div style={{ width: "100%", minWidth: 0, boxSizing: "border-box" }}>
@@ -729,7 +754,17 @@ questionLooksLikeTroubleshootingAsk(unifiedInput) ? (
         transfers gamepad focus here: this block is its own navigation container, and a DOM focus()
         would move `activeElement` without moving Steam's ring. */}
     <Focusable
-      {...({ navRef: askDiagnosticsNavRef } as Record<string, unknown>)}
+      {...({
+        navRef: askDiagnosticsNavRef,
+        /* Up has no explicit handler otherwise and falls through to Steam's default geometry
+           navigation, which lands on Show/Hide details directly and skips the chip ladder above —
+           the reverse of the Down chain this block is already classed for. */
+        onMoveUp: () => focusUpFromBelowContextChipLadder(queryLiveTurnSlot()),
+        onButtonDown: (evt: unknown) =>
+          isDeckDirectionUpEvent(evt)
+            ? focusUpFromBelowContextChipLadder(queryLiveTurnSlot())
+            : false,
+      } as Record<string, unknown>)}
       className="bonsai-ask-diagnostics"
       style={{ width: "100%" }}
     >
@@ -776,6 +811,7 @@ questionLooksLikeTroubleshootingAsk(unifiedInput) ? (
     archivedTurns={askThreadCollapsed}
     highlightTurnId={sessionHighlightTurnId ?? (transparencyDetailsOpen ? "live" : null)}
     onHighlightClear={() => setSessionHighlightTurnId(null)}
+    onMoveUp={() => focusUpFromBelowContextChipLadder(queryLiveTurnSlot())}
   />
 </PanelSectionRow>
 {canSaveDesktopNote && (

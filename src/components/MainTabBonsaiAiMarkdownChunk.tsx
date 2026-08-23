@@ -6,7 +6,7 @@
  * Does not: Stream tokens or parse strategy branches — parent supplies source string and mask flags.
  */
 import type { Components } from "react-markdown";
-import { memo, useEffect, useMemo, useRef, useState } from "react";
+import { isValidElement, memo, useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { Focusable } from "@decky/ui";
 
@@ -38,7 +38,34 @@ function buildMdComponents(args: MdArgs): Components {
     ul: ({ children }) => <ul className="bonsai-md-ul">{children}</ul>,
     ol: ({ children }) => <ol className="bonsai-md-ol">{children}</ol>,
     li: ({ children }) => <li className="bonsai-md-li">{children}</li>,
-    pre: ({ children }) => <pre className="bonsai-md-fenced-pre">{children}</pre>,
+    pre: ({ children }) => {
+      /*
+       * react-markdown wraps every fenced code block's `code` output in `pre` regardless of what
+       * `code` actually rendered, so a masked spoiler fence — a Decky `Focusable` with a real button
+       * inside — ends up nested inside a `<pre class="bonsai-md-fenced-pre">` meant for monospace
+       * text (confirmed by rendering: `.bonsai-spoiler-reveal-target` sits under `PRE.bonsai-md-
+       * fenced-pre` in the DOM). `overflow-x: auto` on that class establishes a scroll/formatting
+       * context around the fence that a `<pre>` was never designed to hold an interactive control
+       * inside, and is the kind of cross-file coupling — between this `pre:` renderer and the `code:`
+       * renderer's spoiler branch below — that a per-file review of the fence's own registry would
+       * never surface. Render the fence directly, without the `<pre>`, so its geometry is exactly
+       * what its own styles say it is.
+       */
+      const only = Array.isArray(children) ? children[0] : children;
+      const onlyClassName =
+        isValidElement(only) && only.props && typeof only.props === "object"
+          ? (only.props as { className?: unknown }).className
+          : undefined;
+      const wrapsMaskedSpoiler =
+        typeof onlyClassName === "string" &&
+        onlyClassName.split(/\s+/).includes("language-bonsai-spoiler") &&
+        spoilerMaskingEnabled &&
+        depth === 0;
+      if (wrapsMaskedSpoiler) {
+        return <>{children}</>;
+      }
+      return <pre className="bonsai-md-fenced-pre">{children}</pre>;
+    },
     code: ({ className, children, ...rest }) => {
       const isSpoiler =
         typeof className === "string" && className.split(/\s+/).includes("language-bonsai-spoiler");

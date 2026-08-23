@@ -12,7 +12,7 @@ import type { TransparencySnapshot } from "../utils/inputTransparency";
 import { ContextChipLadder } from "./ContextChipLadder";
 import { chipsFromSnapshot } from "../utils/contextChipsFromSnapshot";
 import { registerNavFocus, type NavRefHolder } from "../utils/navFocusRegistry";
-import { isOkDeckButtonEvent } from "../utils/focusNavigation";
+import { isDeckDirectionUpEvent, isOkDeckButtonEvent } from "../utils/focusNavigation";
 
 export type SessionContextTurn = {
   id: string;
@@ -25,6 +25,8 @@ export type SessionContextStripProps = {
   archivedTurns?: AskThreadCollapsedTurn[];
   highlightTurnId?: string | null;
   onHighlightClear?: () => void;
+  /** D-pad Up from the strip header — e.g. back into the transcript's inline chip ladder. */
+  onMoveUp?: () => boolean;
 };
 
 export function SessionContextStrip({
@@ -32,6 +34,7 @@ export function SessionContextStrip({
   archivedTurns = [],
   highlightTurnId = null,
   onHighlightClear,
+  onMoveUp,
 }: SessionContextStripProps) {
   const [open, setOpen] = useState(false);
   const [activeId, setActiveId] = useState<string>("live");
@@ -117,7 +120,15 @@ export function SessionContextStrip({
         header from toggling it. Dropping it entirely is safe: `onActivate` never fires on a
         direction press, which is the property the turn headers already rely on.
       */}
-      <Focusable onActivate={() => setOpen((o) => !o)}>
+      <Focusable
+        onActivate={() => setOpen((o) => !o)}
+        {...(onMoveUp
+          ? ({
+              onMoveUp,
+              onButtonDown: (evt: unknown) => (isDeckDirectionUpEvent(evt) ? onMoveUp() : false),
+            } as Record<string, unknown>)
+          : {})}
+      >
         <button
           type="button"
           onClick={() => setOpen((o) => !o)}
