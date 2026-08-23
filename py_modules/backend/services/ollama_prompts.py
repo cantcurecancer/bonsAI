@@ -297,7 +297,9 @@ def _strategy_spoiler_low_risk_addendum(
     else:
         lines.append(
             "For bullet-heaven / roguelike / survivor-style titles, boss and elite enemy names are not narrative "
-            "spoilers — keep mechanical coaching visible."
+            "spoilers — keep mechanical coaching visible. Do NOT wrap routine boss/enemy guidance in "
+            "```bonsai-spoiler``` fences just because no specific entity was identified in this question — "
+            "the title-level low-spoiler-risk context above already applies with or without one."
         )
     lines.append(
         "Reserve ```bonsai-spoiler``` only for hidden narrative twists, endings, or secret unlock paths — "

@@ -1226,6 +1226,23 @@ class OllamaServiceTests(unittest.TestCase):
         self.assertIn("Glyphid Dreadnought", block)
         self.assertIn("do NOT wrap routine boss/enemy guidance", block)
 
+    def test_strategy_spoiler_policy_low_risk_genre_with_no_entity_still_forbids_fencing(self):
+        """The branch reached when extraction names nothing on a low-risk title.
+
+        Confirmed on device 2026-08-22: this was the one branch of the three with no explicit
+        "do not fence" instruction, and it fired for exactly the questions whose entity
+        extraction missed (e.g. "how do i deal with the exploders" before that gap was closed).
+        """
+        block = _strategy_spoiler_policy_block(
+            False,
+            False,
+            asked_entity="",
+            kb_entity_match=False,
+            app_id="2321470",
+        )
+        self.assertIn("LOW-SPOILER-RISK CONTEXT", block)
+        self.assertIn("Do NOT wrap routine boss/enemy guidance", block)
+
     def test_strategy_spoiler_policy_story_game_keeps_default_fence(self):
         """No named entity on a story title — the conservative default has to survive intact."""
         block = _strategy_spoiler_policy_block(
