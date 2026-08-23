@@ -18,7 +18,6 @@ import { focusAnswerBubbleAfterHeader } from "../utils/answerBubbleNavigation";
 import {
   isDeckDirectionUpEvent,
   isDownNavigationEvent,
-  isOkDeckButtonEvent,
   isUpNavigationEvent,
 } from "../utils/focusNavigation";
 import { getUiDocument, uiActiveElement } from "../utils/uiDocument";
@@ -39,7 +38,7 @@ import { buildCollapsedTurnTitle } from "../utils/chatTurnTitle";
 import { ContextChipLadder } from "./ContextChipLadder";
 import { SessionContextStrip } from "./SessionContextStrip";
 import { registerNavFocus, type NavRefHolder } from "../utils/navFocusRegistry";
-import { chipsFromSnapshot, transparencyUiAvailable } from "../utils/contextChipsFromSnapshot";
+import { transparencyUiAvailable } from "../utils/contextChipsFromSnapshot";
 import type {
   AppliedResult,
   AskThreadCollapsedTurn,
@@ -440,34 +439,16 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
                     />
                   </div>
                 ) : null}
-                {turn.transparency && chipsFromSnapshot(turn.transparency).length > 0 ? (
-                  <Focusable
-                    style={{ maxWidth: BONSAI_CHAT_AI_MAX_WIDTH_CSS, marginTop: 8 }}
-                    onActivate={() => setSessionHighlightTurnId(turn.id)}
-                    onButtonDown={(evt) => {
-                      if (!isOkDeckButtonEvent(evt)) return false;
-                      setSessionHighlightTurnId(turn.id);
-                      return true;
-                    }}
-                  >
-                    <button
-                      type="button"
-                      onClick={() => setSessionHighlightTurnId(turn.id)}
-                      style={{
-                        background: "none",
-                        border: "none",
-                        padding: 0,
-                        color: "#7dd3fc",
-                        fontSize: 11,
-                        textDecoration: "underline",
-                        cursor: "pointer",
-                        font: "inherit",
-                      }}
-                    >
-                      Context used · view in session context ↓
-                    </button>
-                  </Focusable>
-                ) : null}
+                {/*
+                  A "Context used · view in session context ↓" jump link used to render here (added
+                  in 98434b0 alongside the transparency work). Removed 2026-08-23 at the maintainer's
+                  call: it sat mid-transcript under every archived turn that had chips, cost two
+                  lines of the 300px column, and only pre-selected a row in the Session context panel
+                  a few rows below — which already lists every turn by its own question text. The
+                  highlight state it drove is still reachable: expanding a turn's own details sets it
+                  (see `transparencyDetailsOpen` below), so nothing lost a capability, only a
+                  shortcut.
+                */}
               </>
             ) : null}
           </Focusable>
