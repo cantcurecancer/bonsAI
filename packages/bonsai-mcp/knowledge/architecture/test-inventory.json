@@ -3,6 +3,7 @@
     "src/components/BonsaiPluginShell.test.tsx",
     "src/components/KnowledgeBaseSection.nomicPull.test.tsx",
     "src/components/KnowledgeBaseSection.test.tsx",
+    "src/components/MainTabBonsaiAiMarkdownChunk.test.tsx",
     "src/components/MainTabPresetAnimatedChips.test.tsx",
     "src/components/PermissionDenyAction.test.tsx",
     "src/components/PermissionsTab.test.tsx",

@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 304,
-  "edgeCount": 715,
+  "fileCount": 305,
+  "edgeCount": 717,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -205,12 +205,20 @@
         "src/components/MainTabUnifiedAskBar.tsx"
       ]
     },
+    "src/components/MainTabBonsaiAiMarkdownChunk.test.tsx": {
+      "imports": [
+        "src/components/MainTabBonsaiAiMarkdownChunk.tsx",
+        "src/test-harness/fakeDeckyUi.tsx"
+      ],
+      "importedBy": []
+    },
     "src/components/MainTabBonsaiAiMarkdownChunk.tsx": {
       "imports": [
         "src/utils/focusNavigation.ts",
         "src/utils/spoilerFenceRegistry.ts"
       ],
       "importedBy": [
+        "src/components/MainTabBonsaiAiMarkdownChunk.test.tsx",
         "src/utils/buildAnswerBubbleElement.tsx"
       ]
     },
@@ -1946,6 +1954,7 @@
     "src/test-harness/fakeDeckyUi.tsx": {
       "imports": [],
       "importedBy": [
+        "src/components/MainTabBonsaiAiMarkdownChunk.test.tsx",
         "src/test-harness/setup.ts"
       ]
     },

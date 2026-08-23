@@ -61,6 +61,11 @@
       "role": ""
     },
     {
+      "path": "src/components/MainTabChatTranscript.tsx",
+      "lines": 860,
+      "role": ""
+    },
+    {
       "path": "py_modules/backend/services/bonsai_stream_tags.py",
       "lines": 858,
       "role": ""
@@ -68,11 +73,6 @@
     {
       "path": "src/hooks/useBonsaiAskOrchestration.test.ts",
       "lines": 830,
-      "role": ""
-    },
-    {
-      "path": "src/components/MainTabChatTranscript.tsx",
-      "lines": 824,
       "role": ""
     },
     {
