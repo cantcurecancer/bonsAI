@@ -135,17 +135,36 @@ VECTOR_RECALL_K = 3
 #   correct card, paraphrased question   0.519 .. 0.738
 #   best card for an off-topic Ask       0.435 .. 0.593
 #
-# 0.50 clears every relevant hit in that sample and rejects 4 of the 12 off-topic ones. It is
-# deliberately loose because of what it is measured against, not against nothing: this floor
-# only decides what to attach on the *explicit* route, where the alternative when BM25 finds
-# nothing is _genre_fallback -- a generic genre card with no relation to the question at all.
-# A card at cosine 0.52 is weaker evidence than a keyword hit and stronger than that.
-#
 # Precision on this path is carried by the route gate rather than by the floor: the pass runs
 # only when the user declared the Ask to be about the game (see IMPLICIT_ROUTE_RELEVANCE_FLOOR
-# and the vector_recall_ready branch). Do not tighten this above 0.55 without re-measuring --
-# two of the four failures this fixes score 0.542 and 0.523.
-VECTOR_RECALL_FLOOR = 0.50
+# and the vector_recall_ready branch). A card at cosine 0.52 is weaker evidence than a keyword
+# hit and stronger than nothing, which is why this stays its own number instead of borrowing
+# BM25_RELEVANCE_FLOOR (D28, decision 2026-08-22): raising the keyword floor to fix this would
+# have pushed against D25, so only this half moves.
+#
+# RAISED 0.50 -> 0.515, 2026-08-23 (D28 implementation), against a fresh local repro run on
+# corpus 2026.08.22's actual seed cards with the real nomic-embed-text model (script not
+# committed -- same embed calls and prefixes as embed_texts/format_embed_query/
+# format_embed_document, so the numbers match production). Two ordinary phrases asked in
+# Strategy mode against Deep Rock Galactic: Survivor supplied a card through this pass alone,
+# with the keyword half finding nothing:
+#
+#   "one sentence"           Praetorian            0.5034
+#   "please repeat that"     Glyphid Dreadnought    0.5308
+#                             Nitra                 0.5116
+#                             Dreadnought Twins      0.5104
+#
+# Re-measuring the seven V2-PARA-* strategy rows from kb_eval_v2.json against their real
+# target cards on the same corpus found genuine hits as low as 0.4302 (Megara, already unrescued
+# under 0.50) and as high as 0.6971, with one -- Mind Flayer, V2-PARA-S04 -- at 0.5169, just
+# above "one sentence"'s noise score. **No single floor separates all six noise phrases from
+# all seven genuine hits; the two ranges overlap, same finding as the original 2026-08-18
+# measurement.** 0.515 was chosen to sit between "one sentence" (0.5034, now excluded) and
+# Mind Flayer (0.5169, the lowest genuine score this change must not break) -- it fully fixes
+# "one sentence", but only partially fixes "please repeat that": Dreadnought Twins (0.5104)
+# drops out, Glyphid Dreadnought (0.5308) and Nitra (0.5116) still clear it and still attach.
+# D28 says explicitly not to expect this to clean every case -- re-measure rather than assume.
+VECTOR_RECALL_FLOOR = 0.515
 
 # --- Compat tips: routed topic + vector recall (D22, 2026-08-18) ---------------------------
 #
