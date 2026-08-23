@@ -206,6 +206,8 @@ def kb_coverage_chip_label(*, status: str, section_count: int = 0) -> str:
         return "KB: off"
     if status == "corpus_missing":
         return "KB: no corpus"
+    if status == "no_app":
+        return "KB: no game running"
     if status in ("no_sections", "app_unresolved"):
         return "KB: none for this game"
     if status == "corpus_error":
@@ -223,6 +225,8 @@ def kb_coverage_detail_bullets(*, status: str, section_count: int = 0, reason: s
         return ["Local knowledge base is disabled in Settings."]
     if status == "corpus_missing":
         return ["No knowledge-base corpus is installed."]
+    if status == "no_app":
+        return ["No game is running, so there is nothing to look up."]
     if status == "app_unresolved":
         return ["Running game could not be matched to corpus entries."]
     if status == "no_sections":

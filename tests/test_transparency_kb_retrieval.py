@@ -109,6 +109,7 @@ class TransparencyKbCoverageTests(unittest.TestCase):
     def test_kb_coverage_chip_labels(self):
         self.assertEqual(kb_coverage_chip_label(status="kb_off"), "KB: off")
         self.assertEqual(kb_coverage_chip_label(status="corpus_missing"), "KB: no corpus")
+        self.assertEqual(kb_coverage_chip_label(status="no_app"), "KB: no game running")
         self.assertEqual(
             kb_coverage_chip_label(status="no_sections"),
             "KB: none for this game",
@@ -120,6 +121,19 @@ class TransparencyKbCoverageTests(unittest.TestCase):
         self.assertEqual(kb_coverage_chip_label(status="sections", section_count=1), "KB: 1 section")
         self.assertEqual(kb_coverage_chip_label(status="sections", section_count=2), "KB: 2 sections")
         self.assertEqual(kb_coverage_chip_label(status="corpus_error"), "KB: unreadable")
+
+    def test_kb_coverage_no_app_distinct_from_app_unresolved(self):
+        """Decision: 'nothing running' and 'a game is running but unmatched' must not share a
+        bullet -- the app_unresolved sentence says a game could not be matched, which is false
+        when no game was running to match in the first place.
+        """
+        from backend.services.transparency_service import kb_coverage_detail_bullets
+
+        no_app_bullets = kb_coverage_detail_bullets(status="no_app")
+        unresolved_bullets = kb_coverage_detail_bullets(status="app_unresolved")
+        self.assertNotEqual(no_app_bullets, unresolved_bullets)
+        self.assertNotIn("Running game", no_app_bullets[0])
+        self.assertIn("Running game", unresolved_bullets[0])
 
     def test_kb_coverage_chip_in_manifest(self):
         snapshot = {

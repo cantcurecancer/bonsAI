@@ -1581,6 +1581,14 @@ def summarize_kb_coverage(
     if not db_path:
         return KbCoverageSummary(status="corpus_missing")
 
+    # Nothing running at all (desktop context) is a different fact from "a game is running
+    # but the corpus has no entry for it" -- conflating the two under one status made Show
+    # details claim a match failure when there was no game to match against in the first
+    # place. Same emptiness test D19 already uses just above this call site (game_ai_request.py)
+    # to decide whether text-resolution from the question is the only path into the corpus.
+    if not str(app_id or "").strip() and not str(app_name or "").strip():
+        return KbCoverageSummary(status="no_app")
+
     try:
         conn = _get_connection(db_path)
         game_id, _ = _resolve_game_id(
