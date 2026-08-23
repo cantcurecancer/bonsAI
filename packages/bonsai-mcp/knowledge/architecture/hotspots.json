@@ -2,12 +2,12 @@
   "hotspots": [
     {
       "path": "main.py",
-      "lines": 3093,
+      "lines": 3099,
       "role": "Decky RPC entrypoints and orchestration"
     },
     {
       "path": "py_modules/backend/services/knowledge_base_service.py",
-      "lines": 1850,
+      "lines": 1877,
       "role": ""
     },
     {
@@ -27,7 +27,7 @@
     },
     {
       "path": "py_modules/backend/services/ollama_prompts.py",
-      "lines": 1347,
+      "lines": 1358,
       "role": ""
     },
     {
@@ -76,6 +76,11 @@
       "role": ""
     },
     {
+      "path": "py_modules/backend/services/transparency_service.py",
+      "lines": 789,
+      "role": ""
+    },
+    {
       "path": "src/hooks/useBonsaiAskOrchestration.test.ts",
       "lines": 783,
       "role": ""
@@ -83,11 +88,6 @@
     {
       "path": "src/components/KnowledgeBaseSection.tsx",
       "lines": 769,
-      "role": ""
-    },
-    {
-      "path": "py_modules/backend/services/transparency_service.py",
-      "lines": 765,
       "role": ""
     },
     {
@@ -106,13 +106,13 @@
       "role": ""
     },
     {
-      "path": "py_modules/backend/services/intent_pack_service.py",
-      "lines": 581,
+      "path": "py_modules/backend/services/game_ai_request.py",
+      "lines": 584,
       "role": ""
     },
     {
-      "path": "py_modules/backend/services/game_ai_request.py",
-      "lines": 577,
+      "path": "py_modules/backend/services/intent_pack_service.py",
+      "lines": 581,
       "role": ""
     },
     {
@@ -171,6 +171,11 @@
       "role": ""
     },
     {
+      "path": "py_modules/backend/services/chat_slot_service.py",
+      "lines": 425,
+      "role": ""
+    },
+    {
       "path": "py_modules/backend/services/ollama_ask_service.py",
       "lines": 415,
       "role": ""
@@ -178,11 +183,6 @@
     {
       "path": "src/components/deck/DeckFocusSlider.tsx",
       "lines": 413,
-      "role": ""
-    },
-    {
-      "path": "py_modules/backend/services/chat_slot_service.py",
-      "lines": 401,
       "role": ""
     },
     {
