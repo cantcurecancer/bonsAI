@@ -48,6 +48,42 @@ Both are by design, both will invalidate a QA run if forgotten:
 - **The carousel stops reseeding.** That is the point — the chips stay put in order — but it means
   the carousel is not in its normal state, so do not judge normal carousel behaviour from a run.
 
+### 1.2 Before you pin anything — turn the trace on
+
+**`Verbose Ask logging to Desktop notes` (Developer tab) must be ON before the run starts. It
+defaults OFF** (`desktop_ask_verbose_logging`,
+[settings_service.py:339](../../py_modules/backend/services/settings_service.py)). Switching it on
+afterwards does not recover the run — the trace is written as each Ask happens, so a batch run
+without it produces results that cannot be checked and has to be done again.
+
+### 1.3 Read the trace, not the panel — this is the method for every card and fence row
+
+**Corrected 2026-08-23 by the Batch A run, which made this mistake before catching it.** An earlier
+version of this plan asked for *which cards attached* without saying where to read that. It is not
+readable on the device:
+
+- *Show details* gives the retrieval mode, a trust tier and a corpus section count. **It never
+  names a card.**
+- `Trust tier: fallback_no_source` is a **tier**, not a count. The generic genre fallback and a
+  real game card look identical there. Batch A read one chip as "no cards attached" on that basis,
+  which was wrong.
+
+The answer is already on the Deck:
+
+```
+~/Desktop/bonsAI_logs/bonsai-ask-trace-<date>.md
+```
+
+Each entry carries the verbatim `--- Local knowledge base ---` block from the built prompt, one
+`[Title / kind: Card] (trust: tier)` header per attached card, the resolved asked-entity line, and
+**the raw model output before any UI processing**.
+
+That last part matters beyond counting cards: it separates *what the model wrote* from *what the
+display rendered*, which is the only way to tell a prompt bug from a rendering bug. Three separate
+findings in the Batch A run were settled by that distinction alone. Use the trace for **every card
+row, every fence row, and anything where the screen looks wrong** — not just the four search
+phrases.
+
 ### 1.2 How a batch gets pinned — and the gap
 
 The Developer tab **shows** the pinned list and offers **Clear frozen test chips**, but has no
@@ -93,7 +129,7 @@ resolved against.
 
 | # | Question | Expected | If it differs |
 |---|---|---|---|
-| 1 | `one sentence` | **No cards.** Scored 0.5034, below the new 0.515 floor. | Cards still attaching means the floor is not doing what the desk measurement said. Record the card names. |
+| 1 | `one sentence` | **No cards.** Scored 0.5034, below the new 0.515 floor. | Cards still attaching means the floor is not doing what the desk measurement said. Read the card names from the trace (§ 1.3) — the panel cannot tell a real card from the genre fallback. |
 | 2 | `please repeat that` | **One card** (Glyphid Dreadnought, 0.5308). Was three. | Three cards means no change took effect — check the build actually deployed. |
 | 3 | `thank you very much` | **Still attaches** (Nitra). | **This is a pass, not a failure.** It comes from the keyword half, which **D25** and **D28** both put off limits. |
 | 4 | `what time is it` | **Still attaches** (three cards). | Same — expected, keyword half. |
@@ -157,6 +193,11 @@ Clear batch A first (Developer tab → **Clear frozen test chips**), then pin:
 Ask #1, wait for the fence, then try to reach it with the D-pad alone. **Do not touch the
 screen** — touching it is what made this look fixed before.
 
+**Confirm from the trace (§ 1.3) that the model actually emitted a fence before judging the
+D-pad.** Batch A found a case where the model wrote a valid fence and the display dropped it
+entirely — if that happens here, there is nothing on screen to reach and the navigation is not what
+failed.
+
 This regressed once already after being marked verified on 2026-08-04, which is why the roadmap
 entry says the *recurrence* is the bug. The 2026-08-23 fix removed a real structural defect — the
 markdown renderer was nesting the clickable control inside a `<pre>`, a scroll and formatting
@@ -169,9 +210,11 @@ be the sole cause.
 Two positives (#2, #3) and one negative (#4), because a guard that fires on innocent replies gets
 switched off, which is the same as not having one.
 
-**Read the reply before recording a failure.** If no notice appears on #2 or #3, check whether the
-model actually told you to delete anything. If it did not, **the question missed, not the guard**.
-That is why there are two attempts at it.
+**Read the reply before recording a failure — from the trace (§ 1.3), not the screen.** If no
+notice appears on #2 or #3, check whether the model actually told you to delete anything. If it did
+not, **the question missed, not the guard**. That is why there are two attempts at it. The trace
+also shows the raw output before the display touched it, which separates "the guard never fired"
+from "the guard fired and the notice did not render".
 
 **Record which model you ran.** The check is tuned against plausible phrasing, not against phrasing
 pulled from a live model, so a miss is a wording gap in the check rather than a wiring failure —
@@ -187,6 +230,10 @@ that streaming becomes the default and the setting is removed once the streaming
 lands, the streaming-off half of this row stops existing.
 
 ### 4.3 The session turn count
+
+**Blocked — do not run this section yet.** Batch A found that the session context counts the newest
+turn **twice**, so this section would read four turns for three questions and the result would mean
+nothing either way. Fix that first; § 4a records it.
 
 Ask #1, #5 and #6 back to back in **one** chat, waiting for each answer. The session panel must
 say **three turns**, with a row per question — not one.
@@ -333,7 +380,9 @@ Per CLAUDE.md, findings go to files, not chat. For each batch:
 1. Update the QA rows in [testing.md](../testing.md) with pass, fail, or *question missed*.
 2. For the four search phrases, record **which cards attached**, not just whether any did — the
    expected result for two of them is that cards still attach, so a bare pass/fail loses the
-   information.
+   information. **Read the names from the ask trace, not from the panel (§ 1.3).** The panel cannot
+   distinguish a real card from the generic fallback, and a run made without the trace switched on
+   cannot be checked afterwards.
 3. For the guard, record the **model name** alongside the result.
 4. Move anything that fully passes out of [roadmap.md](../roadmap.md) § Bugs and into
    [archive/roadmap-bugs-fixed.md](../archive/roadmap-bugs-fixed.md), which the list's own rule
