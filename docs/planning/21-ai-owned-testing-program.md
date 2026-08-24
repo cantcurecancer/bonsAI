@@ -1,4 +1,4 @@
-# 20 — Getting to AI-owned testing — the program plan
+# 21 — Getting to AI-owned testing — the program plan
 
 What it takes to get from "every bug costs the maintainer a manual Deck session" to
 "an agent reproduces, fixes, verifies and locks a bug without you." Written 2026-08-24
