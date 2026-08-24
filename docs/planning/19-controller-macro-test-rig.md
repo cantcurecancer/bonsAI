@@ -205,6 +205,9 @@ rows) in the same change sets.
   single-port boards (Seeed XIAO ESP32S3, most "mini" boards) do not fit the wired topology.
   Plain ESP32 (no native USB) and ESP32-S2 (no Bluetooth) do not qualify. S1 still validates the
   unit on hardware.
+  **Ordered 2026-08-24:** Amazon ASIN `B0GVSQXBK3` — WROOM-1 N16R8, dual Type-C (native "USB" +
+  CH343P-bridged "UART"), BLE 5.0. Matches spec exactly. Windows may need a CH343 driver from
+  WCH's site the first time the UART port is plugged in — not yet hit, note for S1.
 - Approve the one-line sudoers rule at implementation time (L8).
 - Upstream issues on `qd313/decky-plugin-studio` (tool surface, extension UI, firmware home,
   retiring the `deck_openPlugin` manual-checklist note): drafted from this doc **when you say
