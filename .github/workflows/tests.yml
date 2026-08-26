@@ -4,18 +4,25 @@
 #   npx tsc --noEmit   (typecheck — rollup does NOT typecheck, so this is the only one that does)
 #   pnpm test          (vitest, 593 tests)
 #   pnpm test:py       (unittest, 834 tests)
+#   pnpm test:focus    (Track B static focus checks, ratcheted to a baseline)
 #
 # Plan: docs/planning/21-ai-owned-testing-program.md § 3, Track A.
 # Milestone M1 ("CI rejects a pull request because a test failed") is reached
 # when ADVISORY below flips to "false".
 #
-# ADVISORY MODE — agreed for the first session. Every gate runs and reports,
-# but a red gate annotates the run instead of blocking the merge. The point of
-# the first run is to find out what a clean Linux runner says about a suite
-# that has, until now, only ever run on one Windows machine.
+# BLOCKING since 2026-08-26. The advisory first session is over: the suite came
+# back green on a clean Linux runner, including three tests that had never
+# executed anywhere because they skip on Windows. A red gate now fails the job.
+# That is milestone M1.
 #
-# TO MAKE IT BLOCKING: set ADVISORY to "false" in the "Gate summary" step.
-# That is the whole change — one line.
+# TO GO BACK TO ADVISORY: set ADVISORY to "true" in the "Gate summary" step.
+# That is the whole change — one line. Do that if a gate turns out to produce
+# false positives, rather than deleting the gate.
+#
+# Note the split: ADVISORY governs the GATES. It does not cover setup — if
+# "Install Node" or "Install dependencies" fails, the job goes red either way,
+# because a workflow that cannot set itself up is broken rather than reporting
+# bad news.
 
 name: Tests
 
@@ -40,7 +47,7 @@ concurrency:
 
 jobs:
   gates:
-    name: tsc + vitest + python
+    name: tsc + vitest + python + focus
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -99,14 +106,27 @@ jobs:
         continue-on-error: true
         run: pnpm test:py
 
+      # Track B. Static focus checks, ratcheted against scripts/focus-baseline.json:
+      # it fails only when a violation count goes UP, so the 77 pre-existing ones
+      # do not block work while new ones cannot get in.
+      - name: Focus patterns
+        id: focus
+        if: always() && steps.install.outcome == 'success'
+        continue-on-error: true
+        run: pnpm test:focus
+
       - name: Gate summary
         if: always()
         env:
           # <<< Track A flip: "false" makes a red gate block the merge. >>>
-          ADVISORY: "true"
+          # Flipped to "false" on 2026-08-26 after the first green run on a clean
+          # Linux runner (1,427 tests, plus three that had never executed anywhere
+          # because they skip on Windows). This is milestone M1.
+          ADVISORY: "false"
           TSC: ${{ steps.tsc.outcome }}
           VITEST: ${{ steps.vitest.outcome }}
           PYTESTS: ${{ steps.pytests.outcome }}
+          FOCUS: ${{ steps.focus.outcome }}
           INSTALL: ${{ steps.install.outcome }}
         run: |
           set -u
@@ -127,11 +147,12 @@ jobs:
             echo "| Typecheck | \`npx tsc --noEmit\` | $(mark "$TSC") |"
             echo "| Unit | \`pnpm test\` | $(mark "$VITEST") |"
             echo "| Python | \`pnpm test:py\` | $(mark "$PYTESTS") |"
+            echo "| Focus | \`pnpm test:focus\` | $(mark "$FOCUS") |"
             echo
           } >> "$GITHUB_STEP_SUMMARY"
 
           failed=0
-          for r in "$INSTALL" "$TSC" "$VITEST" "$PYTESTS"; do
+          for r in "$INSTALL" "$TSC" "$VITEST" "$PYTESTS" "$FOCUS"; do
             [ "$r" = "success" ] || failed=1
           done
 

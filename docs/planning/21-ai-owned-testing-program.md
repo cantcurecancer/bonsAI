@@ -137,6 +137,33 @@ This converts the answer to *"why isn't focus considered when new UI is built"* 
 harder to remember" into "the build says no." **It catches new mistakes; it does not find
 existing ones** — that is Track C.
 
+**Status 2026-08-26 — built and blocking.** `scripts/check-focus-patterns.mjs`, wired into
+`tests.yml` as a fourth gate (`pnpm test:focus`). Three of the five candidate checks are
+implemented; checks 4 and 5 stay deferred, still marked UNKNOWN.
+
+It uses the TypeScript compiler API rather than regex, because two of these rules are about
+JSX prop identity and a regex version produces false positives that get the rule deleted.
+
+**Ratcheted, not retroactive.** The repo has **77 existing violations** across 20 files,
+recorded in `scripts/focus-baseline.json`. The check fails only when a count goes *up* — which
+is exactly the "catches new mistakes, does not find existing ones" line above, made mechanical.
+Verified both ways: a probe file with all three violations failed the gate, and removing it
+returned to green.
+
+**What the first run found, and what it means.** `move-props-on-button` scored **zero** — that
+bug class was eliminated when ABOUT-LINKS-01 and REPLY-DOWN-01 were fixed, and the check now
+stops it returning. The other two are concentrated exactly where § 2.1 predicts:
+`liveTurnFocusGraph.ts` (25), `answerBubbleNavigation.ts` (10), `useMainTabAskBarFocus.ts` (9)
+— whose own header reads *"Solves: Reliable focus targets without document.querySelector"*.
+
+**Test files are excluded on purpose.** Including them added 27 findings nobody could act on:
+the focus tests call `querySelector` because they build the fake DOM they assert against, which
+is the § 2.1 observation itself. A test file cannot ship a focus bug to the Deck.
+
+**Known limit, stated rather than hidden.** The baseline counts per file per rule, so deleting
+one violation and adding another in the same file nets to zero and slips through. Line-level
+keys were the alternative and they break on every unrelated edit above them.
+
 ### Track C — The rig ★★★★★ (5–9 sessions)
 
 [19-controller-macro-test-rig.md](19-controller-macro-test-rig.md), phases P0–P2: bridge
@@ -191,8 +218,8 @@ Each is a yes/no event, not a feeling.
 
 | # | Milestone | Proves |
 |---|---|---|
-| **M1** | CI rejects a pull request because a test failed | the ratchet exists at all |
-| **M2** | A focus anti-pattern is caught before deploy, not on the Deck | the inflow is closing |
+| **M1** ✅ | CI rejects a pull request because a test failed | the ratchet exists at all — *reached 2026-08-26* |
+| **M2** ✅ | A focus anti-pattern is caught before deploy, not on the Deck | the inflow is closing — *reached 2026-08-26, Track B gate* |
 | **M3** | Golden-path smoke passes unattended (plan 19 § 4) | an agent can drive the device |
 | **M4** | **A D-pad bug is reproduced by script, fixed, and locked by a check that fails without the fix** | the recurrence loop is broken — *the milestone that matters* |
 | **M5** | A nightly run produces evidence with nobody present | the loop is real |
