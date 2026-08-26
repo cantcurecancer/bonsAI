@@ -25,7 +25,7 @@ import {
   queryLiveTurnSlot,
 } from "./liveTurnFocusGraph";
 import { getReplyStop, REPLY_STOP_ORDER, type ReplyStopId } from "./replyStopRegistry";
-import { elementHasFocus } from "./uiDocument";
+import { elementHasGamepadFocus } from "./uiDocument";
 import { isDeckDirectionDownEvent, isDeckDirectionUpEvent } from "./focusNavigation";
 
 const CHIP_ROW_REFINE: ReplyMicroActionId[] = ["bad_information", "misidentified_game"];
@@ -134,7 +134,9 @@ export function buildReplyActionsElement(
   const focusedStop = (): ReplyStopId | null => {
     for (const id of REPLY_STOP_ORDER) {
       const el = getReplyStop(id);
-      if (el && elementHasFocus(el)) return id;
+      // Gamepad ring, not activeElement — see elementHasGamepadFocus. Using the
+      // DOM's notion here made both column handlers below dead code.
+      if (el && elementHasGamepadFocus(el)) return id;
     }
     return null;
   };
@@ -184,7 +186,10 @@ export function buildReplyActionsElement(
     const isUp = isDeckDirectionUpEvent(evt);
     if (!isDown && !isUp) return false;
     const el = rowEl.current;
-    if (el && !elementHasFocus(el)) return false;
+    // Same reason as focusedStop: on Deck the row owns the gamepad ring while
+    // activeElement can be somewhere else entirely, and this guard then refuses
+    // a press that genuinely belongs to this row.
+    if (el && !elementHasGamepadFocus(el)) return false;
     return isDown ? onDown() : onUp();
   };
 

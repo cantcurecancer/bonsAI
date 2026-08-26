@@ -131,12 +131,33 @@ function checkFile(absPath) {
     /\.(tsx|jsx)$/.test(absPath) ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
   );
 
+  /*
+   * Inline escape hatch: `focus-patterns-allow: <reason>` on the line itself or
+   * the line above.
+   *
+   * Added 2026-08-26 for a case the rules cannot express. Reading `.gpfocus` is
+   * page search by the letter of rule R5, and it is also the ONLY way to observe
+   * Steam's gamepad ring: the class is stamped on whichever element Steam
+   * chooses, so "register the element when it is created" -- the rule's advice --
+   * is impossible. The alternative was bumping the baseline, which buries the
+   * justification in a JSON count where no reviewer will ever see it. A reason is
+   * mandatory, so the hatch cannot be used as a silent mute.
+   */
+  const lines = text.split(/\r?\n/);
+  const ALLOW = /focus-patterns-allow:\s*\S/;
+  const allowedAt = (line) => {
+    const self = lines[line - 1] ?? "";
+    const above = lines[line - 2] ?? "";
+    return ALLOW.test(self) || ALLOW.test(above);
+  };
+
   const findings = [];
   const seen = new Set();
   const add = (rule, line, detail) => {
     const key = `${rule}:${line}`;
     if (seen.has(key)) return;
     seen.add(key);
+    if (allowedAt(line)) return;
     findings.push({ rule, file: relPath, line, detail });
   };
 

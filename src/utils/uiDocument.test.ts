@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 
 import {
   elementHasFocus,
+  elementHasGamepadFocus,
   getUiDocument,
   rememberUiDocument,
   resetUiDocument,
@@ -109,6 +110,106 @@ describe("uiDocument", () => {
 
       expect(el.contains(document.activeElement)).toBe(false);
       expect(elementHasFocus(el)).toBe(true);
+    });
+  });
+
+  /*
+   * MICRO-04, measured on device 2026-08-26 with the Decky Plugin Studio sequence
+   * runner and reproduced by script.
+   *
+   * `focusedStop()` in buildReplyActionsElement scans the four reply stops in
+   * REPLY_STOP_ORDER and returns the one holding focus, so the row's single
+   * onMove handler can tell the left column from the right. It asked with
+   * `elementHasFocus`, which reads `activeElement`. Steam moves the gamepad ring
+   * without moving activeElement, so the scan matched the wrong stop -- or the
+   * first one -- and both column-aware branches became dead code:
+   *
+   *     Down from "Not really"   landed on Retry   (should be Show details)
+   *     Up   from "Show details" landed on Helpful (should be Not really)
+   *
+   * The right column was unreachable vertically; the only way in was Retry then
+   * Right. These pin the helper that fixed it.
+   */
+  describe("elementHasGamepadFocus", () => {
+    it("follows the gamepad ring, not activeElement, when they disagree", () => {
+      const doc = makeUiDocument();
+      const helpful = doc.createElement("button");
+      const notReally = doc.createElement("button");
+      doc.body.append(helpful, notReally);
+      // The exact disagreement measured on device.
+      notReally.classList.add("gpfocus");
+      setActiveElement(doc, helpful);
+
+      expect(elementHasGamepadFocus(notReally)).toBe(true);
+      expect(elementHasGamepadFocus(helpful)).toBe(false);
+      // And the old answer, for contrast -- this is what made the bug.
+      expect(elementHasFocus(helpful)).toBe(true);
+    });
+
+    it("scanning the four reply stops in order picks the column that owns the ring", () => {
+      /*
+       * A faithful copy of focusedStop()'s loop. Reading order matters: helpful
+       * comes first, so an implementation that cannot tell the stops apart
+       * returns "helpful" and the left column wins every time -- exactly the
+       * device symptom.
+       */
+      const doc = makeUiDocument();
+      const order = ["helpful", "not-really", "retry", "show-details"] as const;
+      const stops: Record<string, HTMLElement> = {};
+      for (const id of order) {
+        const el = doc.createElement("button");
+        el.id = id;
+        doc.body.append(el);
+        stops[id] = el;
+      }
+      stops["not-really"].classList.add("gpfocus");
+      setActiveElement(doc, stops.helpful);
+
+      const focusedStop = (): string | null => {
+        for (const id of order) if (elementHasGamepadFocus(stops[id])) return id;
+        return null;
+      };
+      expect(focusedStop()).toBe("not-really");
+    });
+
+    it("a registered wrapper counts when the ring sits on a node inside it", () => {
+      const doc = makeUiDocument();
+      const wrapper = doc.createElement("div");
+      const inner = doc.createElement("button");
+      wrapper.append(inner);
+      doc.body.append(wrapper);
+      inner.classList.add("gpfocus");
+      setActiveElement(doc, null);
+
+      expect(elementHasGamepadFocus(wrapper)).toBe(true);
+    });
+
+    it("a ring on a container does not claim every stop inside it", () => {
+      // The reverse containment check is deliberately absent: with it, a ring on
+      // the row would match all four stops and the first in reading order would
+      // win -- the same left-column bug in a new disguise.
+      const doc = makeUiDocument();
+      const row = doc.createElement("div");
+      const helpful = doc.createElement("button");
+      const notReally = doc.createElement("button");
+      row.append(helpful, notReally);
+      doc.body.append(row);
+      row.classList.add("gpfocus");
+      setActiveElement(doc, null);
+
+      expect(elementHasGamepadFocus(helpful)).toBe(false);
+      expect(elementHasGamepadFocus(notReally)).toBe(false);
+    });
+
+    it("falls back to activeElement when nothing owns the ring", () => {
+      // Desktop, jsdom, or the moment after a plugin opens. A confident "no"
+      // here would break the mouse and touch paths.
+      const doc = makeUiDocument();
+      const el = doc.createElement("button");
+      doc.body.append(el);
+      setActiveElement(doc, el);
+
+      expect(elementHasGamepadFocus(el)).toBe(true);
     });
   });
 });

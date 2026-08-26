@@ -60,6 +60,42 @@ export function elementHasFocus(el: HTMLElement | null | undefined): boolean {
   return Boolean(active && (el === active || el.contains(active)));
 }
 
+/**
+ * Does Steam's gamepad ring sit on `el`, or inside it?
+ *
+ * `elementHasFocus` answers the DOM's question — where is `activeElement`? On a
+ * Steam Deck that is a *different question* from "where is the gamepad ring",
+ * and the two routinely disagree: Steam moves `.gpfocus` without moving
+ * `activeElement`.
+ *
+ * Measured on device 2026-08-26 (MICRO-04). `focusedStop()` in
+ * buildReplyActionsElement asked which of the four reply stops had focus using
+ * `elementHasFocus`, could not tell the columns apart, and fell through to the
+ * left column every time — so Down from *Not really* landed on *Retry* instead
+ * of *Show details*, and Up from *Show details* landed on *Helpful* instead of
+ * *Not really*. The right column was unreachable vertically.
+ *
+ * No ring in the document means desktop, jsdom, or a moment where nothing owns
+ * gamepad focus; `activeElement` is the best answer available there, so fall
+ * back rather than reporting a confident "no".
+ *
+ * Containment is deliberately one-way. `el.contains(ring)` covers a registered
+ * wrapper whose inner node holds the ring. The reverse — `ring.contains(el)` —
+ * is NOT checked: when the ring sits on a container, every stop inside it would
+ * match and the first entry in REPLY_STOP_ORDER would win, which is the same
+ * left-column bug wearing a different hat.
+ */
+export function elementHasGamepadFocus(el: HTMLElement | null | undefined): boolean {
+  if (!el) return false;
+  // Reading Steam's ring marker is not a focus-target lookup: the class is stamped
+  // on whichever element Steam picks, so there is nothing to register at creation
+  // time and this query IS the measurement.
+  // focus-patterns-allow: observing the gamepad ring, not searching for a target.
+  const ring = el.ownerDocument?.querySelector<HTMLElement>(".gpfocus") ?? null;
+  if (!ring) return elementHasFocus(el);
+  return el === ring || el.contains(ring);
+}
+
 /** Test-only reset. */
 export function resetUiDocument(): void {
   uiDocument = null;
