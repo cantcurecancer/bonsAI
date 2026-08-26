@@ -1,0 +1,151 @@
+# Track A — the ratchet.
+#
+# Runs the three gates that already exist, on every push and pull request:
+#   npx tsc --noEmit   (typecheck — rollup does NOT typecheck, so this is the only one that does)
+#   pnpm test          (vitest, 593 tests)
+#   pnpm test:py       (unittest, 834 tests)
+#
+# Plan: docs/planning/21-ai-owned-testing-program.md § 3, Track A.
+# Milestone M1 ("CI rejects a pull request because a test failed") is reached
+# when ADVISORY below flips to "false".
+#
+# ADVISORY MODE — agreed for the first session. Every gate runs and reports,
+# but a red gate annotates the run instead of blocking the merge. The point of
+# the first run is to find out what a clean Linux runner says about a suite
+# that has, until now, only ever run on one Windows machine.
+#
+# TO MAKE IT BLOCKING: set ADVISORY to "false" in the "Gate summary" step.
+# That is the whole change — one line.
+
+name: Tests
+
+on:
+  push:
+    paths-ignore:
+      - "docs/**"
+      - "screenshots/**"
+      - "**.md"
+  pull_request:
+    paths-ignore:
+      - "docs/**"
+      - "screenshots/**"
+      - "**.md"
+  workflow_dispatch:
+
+# A newer push to the same branch makes the older run irrelevant. Cancelling it
+# keeps the minutes bill roughly flat no matter how often you push.
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gates:
+    name: tsc + vitest + python
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # pnpm has to exist before setup-node, or setup-node cannot resolve the
+      # pnpm cache backend on the next step.
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          # Pinned exactly. package.json has no "packageManager" field, so
+          # nothing else in the repo states a pnpm version — a floating major
+          # would mean CI silently changing package managers under you.
+          version: 11.23.0
+
+      - name: Install Node
+        uses: actions/setup-node@v4
+        with:
+          # 20 matches validate-mcp.yml. vitest 3.2.4 declares
+          # "^18.0.0 || ^20.0.0 || >=22.0.0", so 20 is supported, not merely tolerated.
+          node-version: "20"
+          cache: pnpm
+
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          # Matches the maintainer's local 3.12.x. scripts/run_python_tests.py
+          # uses only the standard library, so there is nothing to pip install.
+          python-version: "3.12"
+
+      - name: Install dependencies
+        id: install
+        run: pnpm install --frozen-lockfile
+
+      # All three gates carry `continue-on-error` and run even after an earlier
+      # one goes red, so a single failure cannot hide the other two answers.
+      # The "Gate summary" step is what decides whether the job passes.
+      - name: Typecheck
+        id: tsc
+        if: always() && steps.install.outcome == 'success'
+        continue-on-error: true
+        run: npx tsc --noEmit
+
+      - name: Unit tests
+        id: vitest
+        if: always() && steps.install.outcome == 'success'
+        continue-on-error: true
+        run: pnpm test
+
+      - name: Python tests
+        id: pytests
+        if: always() && steps.install.outcome == 'success'
+        continue-on-error: true
+        run: pnpm test:py
+
+      - name: Gate summary
+        if: always()
+        env:
+          # <<< Track A flip: "false" makes a red gate block the merge. >>>
+          ADVISORY: "true"
+          TSC: ${{ steps.tsc.outcome }}
+          VITEST: ${{ steps.vitest.outcome }}
+          PYTESTS: ${{ steps.pytests.outcome }}
+          INSTALL: ${{ steps.install.outcome }}
+        run: |
+          set -u
+          mark() {
+            case "$1" in
+              success) echo ":white_check_mark: pass" ;;
+              failure) echo ":x: FAIL" ;;
+              skipped|"") echo ":heavy_minus_sign: not run" ;;
+              *)       echo "$1" ;;
+            esac
+          }
+          {
+            echo "## Test gates"
+            echo
+            echo "| Gate | Command | Result |"
+            echo "|---|---|---|"
+            echo "| Install | \`pnpm install --frozen-lockfile\` | $(mark "$INSTALL") |"
+            echo "| Typecheck | \`npx tsc --noEmit\` | $(mark "$TSC") |"
+            echo "| Unit | \`pnpm test\` | $(mark "$VITEST") |"
+            echo "| Python | \`pnpm test:py\` | $(mark "$PYTESTS") |"
+            echo
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          failed=0
+          for r in "$INSTALL" "$TSC" "$VITEST" "$PYTESTS"; do
+            [ "$r" = "success" ] || failed=1
+          done
+
+          if [ "$failed" -eq 0 ]; then
+            echo "All gates green." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          if [ "$ADVISORY" = "true" ]; then
+            {
+              echo "**Advisory run — the red gate above did not block this merge.**"
+              echo
+              echo "This is Track A's agreed first-session behaviour. Flip \`ADVISORY\`"
+              echo "to \`false\` in \`.github/workflows/tests.yml\` to start blocking."
+              echo "See \`docs/planning/21-ai-owned-testing-program.md\` § 3."
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          echo "**Blocking run — a gate failed.**" >> "$GITHUB_STEP_SUMMARY"
+          exit 1

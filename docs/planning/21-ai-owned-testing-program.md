@@ -111,6 +111,11 @@ on pull requests and pushes.
   environment-dependent test). Budget the session for fixing what it exposes; that discovery
   is the point.
 
+**Status 2026-08-25 — implemented, advisory.** [`.github/workflows/tests.yml`](../../.github/workflows/tests.yml).
+The clean-runner failure predicted above did **not** happen: 1,427 tests pass from a bare
+clone. The baseline, the three tests that will execute for the first time on Linux, and what
+is still unverified are recorded in [24-track-a-ci-baseline.md](24-track-a-ci-baseline.md).
+
 ### Track B — Static focus checks ★★ (1–2 sessions)
 
 A standalone checker script in `scripts/` — matching the repo's existing habit
