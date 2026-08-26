@@ -52,7 +52,7 @@
     },
     {
       "path": "py_modules/backend/services/ollama_service.py",
-      "lines": 965,
+      "lines": 995,
       "role": "Prompt build, Ollama HTTP, streaming"
     },
     {
@@ -166,6 +166,11 @@
       "role": ""
     },
     {
+      "path": "py_modules/backend/services/ollama_ask_service.py",
+      "lines": 429,
+      "role": ""
+    },
+    {
       "path": "py_modules/backend/services/ai_character_service.py",
       "lines": 426,
       "role": ""
@@ -173,11 +178,6 @@
     {
       "path": "py_modules/backend/services/chat_slot_service.py",
       "lines": 425,
-      "role": ""
-    },
-    {
-      "path": "py_modules/backend/services/ollama_ask_service.py",
-      "lines": 415,
       "role": ""
     },
     {

@@ -922,10 +922,40 @@ def post_ollama_chat(
     strategy_guide_branches = None
     strategy_checklist = None
     if mode == "strategy":
+        # Did the model even try? Checked before extraction, because extraction
+        # removes the fence on success and leaves it in place on failure -- so
+        # afterwards the two look identical from the outside.
+        branch_marker = "bonsai-strategy-branches" in text
+        checklist_marker = "bonsai-strategy-checklist" in text
+
         visible, strategy_guide_branches = extract_strategy_guide_branches(text)
         text = visible
         visible, strategy_checklist = extract_strategy_checklist(text)
         text = visible
+
+        # Three failures wear the same face in the UI -- "no branch buttons
+        # anywhere in the transcript" -- and nothing here used to tell them
+        # apart. That is why the branch-picker report sat open with "though the
+        # model produces it" in its title and no way to check the claim.
+        branch_options = len((strategy_guide_branches or {}).get("options") or [])
+        logger.info(
+            "ask_ollama: strategy fences branch_marker=%s branch_parsed=%s branch_options=%d "
+            "checklist_marker=%s checklist_parsed=%s",
+            branch_marker,
+            strategy_guide_branches is not None,
+            branch_options,
+            checklist_marker,
+            strategy_checklist is not None,
+        )
+        if branch_marker and strategy_guide_branches is None:
+            # The model emitted a fence and the parser rejected it. That is a
+            # parser or prompt-contract problem, not a model one, and it is the
+            # only case where the raw text is worth keeping.
+            start = text.find("bonsai-strategy-branches")
+            logger.warning(
+                "ask_ollama: strategy branch fence present but did NOT parse; snippet=%r",
+                text[max(0, start - 40) : start + 400],
+            )
     text = format_ai_response(
         text,
         normalized_attachments,

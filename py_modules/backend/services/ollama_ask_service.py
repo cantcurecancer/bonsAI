@@ -136,6 +136,20 @@ async def run_ask_ollama(
         reply_verbosity=reply_verbosity,
         reply_language=reply_language,
     )
+    if ask_mode == "strategy":
+        # Closes the last gap in the branch-picker chain. With this plus the
+        # extraction log in ollama_service, one Strategy turn now answers all
+        # three questions in order: did we ASK the model for a branch fence, did
+        # it EMIT one, did the parser ACCEPT it. Before this, "no branch buttons
+        # anywhere in the transcript" was the only observable, and it is the same
+        # symptom for all three causes -- which is why that report stayed open
+        # with an unverified premise in its title.
+        logger.info(
+            "ask_strategy: branch fence requested in prompt=%s (mode=%s, app_id=%s)",
+            "bonsai-strategy-branches" in (system_content or ""),
+            ask_mode,
+            app_id,
+        )
     roleplay = rp_meta.suffix
     pyro_asshole = pyro_asshole_mode_active(settings, rp_meta.resolved_preset_id)
     preset_carousel_inject = None
