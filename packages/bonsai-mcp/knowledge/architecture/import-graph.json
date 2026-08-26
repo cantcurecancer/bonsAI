@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 305,
-  "edgeCount": 718,
+  "fileCount": 307,
+  "edgeCount": 720,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -96,12 +96,26 @@
         "src/features/plugin-shell/useCharacterPickerModal.tsx"
       ]
     },
+    "src/components/CharacterPropGlyph.tsx": {
+      "imports": [],
+      "importedBy": [
+        "src/components/CharacterRoleplayEmoticon.tsx"
+      ]
+    },
+    "src/components/CharacterRoleplayEmoticon.test.tsx": {
+      "imports": [
+        "src/components/CharacterRoleplayEmoticon.tsx"
+      ],
+      "importedBy": []
+    },
     "src/components/CharacterRoleplayEmoticon.tsx": {
       "imports": [
+        "src/components/CharacterPropGlyph.tsx",
         "src/data/characterPlaceholderEmoticonGrids.ts"
       ],
       "importedBy": [
         "src/components/CharacterPickerModal.tsx",
+        "src/components/CharacterRoleplayEmoticon.test.tsx",
         "src/components/MainTabUnifiedAskBar.tsx"
       ]
     },

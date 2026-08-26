@@ -15,11 +15,13 @@ choices are, and what happens either way. **Locked calls (2026-08-02 for D1–D6
 [Maintainer decisions locked](#maintainer-decisions-locked--2026-08-02); implement
 from that section when it disagrees with an option above.
 
-**Two open:**
+**Three open:**
 [D18](#d18--when-loading-settings-fails-four-values-keep-whatever-was-on-screen-bug-or-intent)
-(raised 2026-08-05 by the step 11 friction test) and
+(raised 2026-08-05 by the step 11 friction test),
 [D32](#d32--clear-cache-says-it-clears-the-thread-but-the-saved-chat-stays-on-disk-which-half-is-wrong)
-(raised 2026-08-23 from Deck QA). **D23–D27 were raised and locked during the RAG
+(raised 2026-08-23 from Deck QA), and
+[D33](#d33--the-new-character-avatars-were-drawn-for-44px-the-picker-shows-them-at-24px-which-one-moves)
+(raised 2026-08-26 from the AI character avatars design handoff). **D23–D27 were raised and locked during the RAG
 work of 2026-08-18 to 2026-08-21; D28–D31 were raised and locked 2026-08-22.** Everything else
 D1–D31 is locked; **D19 is superseded by D20** (below), and **D31 renumbers the superseded one to
 D19b**. See the table below for D1–D15 and the sections below for D16, D17, D19–D31.
@@ -31,6 +33,66 @@ are now, and what is still owed.
 > **Numbering collision, flagged 2026-08-18 and resolved by [D31](#d31--which-of-the-two-d19s-keeps-the-number)
 > on 2026-08-22.** The superseded corpus-licence question becomes **D19b**; the live
 > *"Can you reach the strategy corpus without the game running?"* keeps **D19**.
+
+---
+
+### D33 — The new character avatars were drawn for 44px. The picker shows them at 24px. Which one moves?
+
+**OPEN, but now only for the character picker — raised 2026-08-26 from the AI character avatars
+design handoff.** Full intake:
+[25-ai-character-avatars-handoff.md](../planning/25-ai-character-avatars-handoff.md).
+
+> **The main tab half is settled (2026-08-26).** The maintainer's instruction was that the Ask bar
+> textarea must not look any different except for better artwork in the corner. A true-size mock-up
+> confirmed that is achievable exactly — same 18 × 18 slot, same 50.0 × 276.8px text row, same badge
+> — provided the main tab renders the plain glyph and keeps its existing corner badge, rather than
+> the design's `CharacterAvatar` wrapper, whose selection chip would be clipped by the slot's
+> `overflow: hidden`. **What remains open below is the picker only.**
+
+**What the situation is.** A design handoff arrived that replaces the little
+pixel-grid character faces with drawn objects — Scout's bat, Heavy's sandvich,
+Nick Valentine's fedora — each sitting on a coloured disc. The art is finished
+and was reviewed at **44 pixels** across, and the handoff's own notes say the
+character picker is a 44px grid.
+
+It is not. In this codebase the picker draws those avatars at **24 pixels**, and
+the largest avatar anywhere in the plugin is 26. Nothing is 44, and nothing is
+bigger. So the art would land at a little over half the size it was approved at,
+and nobody has seen it at that size.
+
+**The second half of the same problem.** The design puts the letter badge in two
+different places depending on size: inside the disc at 26 and above, and off to
+the side as a small pill below 26. The picker's avatars are 22, 24, 24, 26 and
+26 — which straddles that line. As written, **one picker screen would show both
+styles at once**: side pills on the character rows, in-disc badges on the Random
+and Custom rows. The side pill also adds roughly 19 pixels of width to a
+selected row, in a list that currently reserves only the width of the circle.
+
+**Your choices.**
+
+**A. Grow the picker to 44px.** The art is shown at the size it was designed and
+reviewed for, and every avatar lands on the same side of the badge line, so the
+picker looks consistent. The cost is that the picker rows get noticeably taller,
+which means fewer characters visible per screen on the Deck, and the row layout
+has to be re-measured on device.
+
+**B. Keep 24px and have the design re-checked at that size.** Nothing in the
+picker layout moves. The risk is that the props were tuned at 44px — the bat
+barrel taper, the fedora crown pinch, Navi's wings — and detail chosen at 44 may
+turn to mush at 24. That is the exact failure the pixel grids were being
+replaced for, so it would be worth someone looking at it small before we commit.
+
+**C. Split the difference — grow the picker to 26 or 32, not the full 44.** Puts
+every avatar on the same side of the badge line, which fixes the mixed-styles
+problem cheaply, without the full row-height cost of A. The art is still below
+its reviewed size, just less so.
+
+**What happens either way.** Whichever you pick, the badge line needs to end up
+with all the picker's avatars on one side of it, or the picker will look like two
+different designs stitched together. If you would rather not decide from a
+description, the approved prototype is in the repo at
+`docs/design/handoffs/ai-character-avatars/AI character avatars.dc.html` — open it
+in a browser and it shows the real thing at several sizes.
 
 ---
 

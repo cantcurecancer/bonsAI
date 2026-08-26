@@ -1,12 +1,21 @@
 /**
  * Title: Character roleplay emoticon
- * Purpose: Render preset or synthetic character avatars as colored emoticon grids with optional badge letter.
- * Used for: Main tab Ask bar, character picker rows, and Settings character summary chrome.
- * Solves: Consistent small avatar art without shipping per-character image assets.
+ * Purpose: Render preset or synthetic character avatars, as pixel grids or prop emblems, with an optional badge letter.
+ * Used for: Main tab Ask bar (prop emblems), character picker rows and Settings character summary chrome (grids).
+ * Solves: Consistent small avatar art without shipping per-character image assets, and one place the badge is drawn.
  * Does not: Load catalog metadata or apply accent colors — see characterCatalog and characterUiAccent.
  */
 import React from "react";
 import { EMOTICON_PALETTE, resolvePlaceholderCharacterEmoticonGrid } from "../data/characterPlaceholderEmoticonGrids";
+import { CharacterPropGlyph } from "./CharacterPropGlyph";
+
+/**
+ * `"grid"` is the original 8x8/16x16 pixel art; `"prop"` is the prop-emblem disc from the
+ * 2026-08-26 design handoff. Both keep the same box, so a caller can switch without moving
+ * anything around it. The picker is still on `"grid"` pending D33 — see
+ * docs/planning/25-ai-character-avatars-handoff.md.
+ */
+export type CharacterRoleplayEmoticonArt = "grid" | "prop";
 
 export type CharacterRoleplayEmoticonProps = {
   /** Preset catalog id, or `__random__` / `__custom__` for synthetic avatars. */
@@ -16,6 +25,8 @@ export type CharacterRoleplayEmoticonProps = {
   title?: string;
   /** When set, draws a corner letter pill (main tab + character picker). */
   badgeLetter?: string | null;
+  /** Which artwork to draw. Defaults to the pixel grids so existing callers are unchanged. */
+  art?: CharacterRoleplayEmoticonArt;
 };
 
 function badgeOverlayStyle(size: number): React.CSSProperties {
@@ -41,12 +52,50 @@ function badgeOverlayStyle(size: number): React.CSSProperties {
   };
 }
 
+/** Corner letter pill over the art. Shared by both art styles so the badge cannot drift between them. */
+function withBadge(art: React.ReactElement, size: number, badgeLetter: string) {
+  return (
+    <div
+      style={{
+        position: "relative",
+        width: size,
+        height: size,
+        flexShrink: 0,
+      }}
+    >
+      {art}
+      <span aria-hidden style={badgeOverlayStyle(size)}>
+        {badgeLetter}
+      </span>
+    </div>
+  );
+}
+
 /**
- * Renders the PLACEHOLDER pixel-art emoticon for the character roleplay picker and main input avatar.
- * Final AI character art is expected to be higher-detail; see `characterPlaceholderEmoticonGrids.ts`.
+ * Draws a character avatar in one of two styles, with the same box either way.
+ *
+ * `art="prop"` is the finished prop-emblem artwork (`CharacterPropGlyph`) and is what the main
+ * tab Ask bar uses. `art="grid"` is the older PLACEHOLDER pixel art in
+ * `characterPlaceholderEmoticonGrids.ts`, still the default because the character picker has not
+ * migrated — its avatar size is an open maintainer call (D33).
  */
 export function CharacterRoleplayEmoticon(props: CharacterRoleplayEmoticonProps) {
-  const { presetId, size, className, title, badgeLetter } = props;
+  const { presetId, size, className, title, badgeLetter, art = "grid" } = props;
+
+  // Prop emblems cover every key including `__random__` and `__custom__`, so this path skips
+  // the "?" fallback below — Random has its own crate glyph and still gets the "?" badge.
+  if (art === "prop") {
+    const glyph = (
+      <CharacterPropGlyph
+        characterKey={presetId}
+        size={size}
+        framed
+        className={className}
+        title={title}
+      />
+    );
+    return badgeLetter ? withBadge(glyph, size, badgeLetter) : glyph;
+  }
 
   if (presetId === "__random__") {
     const qSize = Math.max(12, Math.round(size * 0.72));
@@ -110,23 +159,5 @@ export function CharacterRoleplayEmoticon(props: CharacterRoleplayEmoticonProps)
     </svg>
   );
 
-  if (!badgeLetter) {
-    return svg;
-  }
-
-  return (
-    <div
-      style={{
-        position: "relative",
-        width: size,
-        height: size,
-        flexShrink: 0,
-      }}
-    >
-      {svg}
-      <span aria-hidden style={badgeOverlayStyle(size)}>
-        {badgeLetter}
-      </span>
-    </div>
-  );
+  return badgeLetter ? withBadge(svg, size, badgeLetter) : svg;
 }

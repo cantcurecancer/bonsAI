@@ -42,7 +42,7 @@
     },
     {
       "path": "src/components/MainTabUnifiedAskBar.tsx",
-      "lines": 1058,
+      "lines": 1059,
       "role": ""
     },
     {
@@ -136,6 +136,11 @@
       "role": ""
     },
     {
+      "path": "src/components/CharacterPropGlyph.tsx",
+      "lines": 511,
+      "role": ""
+    },
+    {
       "path": "src/utils/settingsContracts.test.ts",
       "lines": 508,
       "role": ""
@@ -192,11 +197,6 @@
     },
     {
       "path": "src/components/OllamaTab.tsx",
-      "lines": 374,
-      "role": ""
-    },
-    {
-      "path": "src/data/pullModelCatalog.ts",
       "lines": 374,
       "role": ""
     }
