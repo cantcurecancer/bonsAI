@@ -220,8 +220,8 @@ Each is a yes/no event, not a feeling.
 |---|---|---|
 | **M1** ✅ | CI rejects a pull request because a test failed | the ratchet exists at all — *reached 2026-08-26* |
 | **M2** ✅ | A focus anti-pattern is caught before deploy, not on the Deck | the inflow is closing — *reached 2026-08-26, Track B gate* |
-| **M3** | Golden-path smoke passes unattended (plan 19 § 4) | an agent can drive the device |
-| **M4** | **A D-pad bug is reproduced by script, fixed, and locked by a check that fails without the fix** | the recurrence loop is broken — *the milestone that matters* |
+| **M3** ◐ | Golden-path smoke passes unattended (plan 19 § 4) | an agent can drive the device — *the navigation half is done: 2026-08-26 a 9-step asserted D-pad run drove the QAM with nobody at the Deck. Still missing from § 4: the stream start/stop bracket and the live-Ask reply signal (steps 1, 4-6).* |
+| **M4** ◐ | **A D-pad bug is reproduced by script, fixed, and locked by a check that fails without the fix** | the recurrence loop is broken — *the milestone that matters*. **Two of three parts done, 2026-08-26, on CONTEXT-LADDER-03.** Reproduced by script ✅ — the exact 2026-08-23 trap state was reached unattended, which is what had blocked this row for three days. Locked by a check that fails without the fix ✅ — verified by reverting the fix and watching the new test go red. **Not fixed by the rig ✗**, because the claim did not reproduce: the fix shipped on 2026-08-23 works. A full M4 still needs a D-pad bug that is broken *now*. |
 | **M5** | A nightly run produces evidence with nobody present | the loop is real |
 | **M6** | A `testing.md` row moves Open → Verified on rig evidence alone | the manual queue is actually draining |
 
