@@ -43,12 +43,12 @@ jobs:
     name: tsc + vitest + python
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # pnpm has to exist before setup-node, or setup-node cannot resolve the
       # pnpm cache backend on the next step.
       - name: Install pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
         with:
           # Pinned exactly. package.json has no "packageManager" field, so
           # nothing else in the repo states a pnpm version — a floating major
@@ -56,15 +56,19 @@ jobs:
           version: 11.23.0
 
       - name: Install Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
-          # 20 matches validate-mcp.yml. vitest 3.2.4 declares
-          # "^18.0.0 || ^20.0.0 || >=22.0.0", so 20 is supported, not merely tolerated.
-          node-version: "20"
+          # NOT 20, and not whatever validate-mcp.yml says. pnpm 11.23 requires
+          # Node >= 22.13 because it imports node:sqlite; pinning 20 to match the
+          # older workflow failed the very first run at setup, before any test ran.
+          # Checking that vitest/rollup/tsc supported 20 was not enough -- the
+          # package manager is a dependency too. 24 also matches the maintainer's
+          # local Node, so CI runs the suite on the version it is known green on.
+          node-version: "24"
           cache: pnpm
 
       - name: Install Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           # Matches the maintainer's local 3.12.x. scripts/run_python_tests.py
           # uses only the standard library, so there is nothing to pip install.

@@ -39,9 +39,10 @@ Why the pessimism was misplaced, item by item:
   `pnpm-workspace.yaml`. `pnpm install --frozen-lockfile` succeeds in a clean clone, which
   means the lockfile is genuinely in sync with `package.json` — the thing `--frozen-lockfile`
   exists to check.
-- **"Node version"** — vitest 3.2.4 declares `^18.0.0 || ^20.0.0 || >=22.0.0`; rollup,
-  typescript and jsdom all accept ≥18. Node 20 (matching `validate-mcp.yml`) is supported,
-  not merely tolerated.
+- **"Node version"** — this one *was* real, and I got it wrong in the other direction.
+  vitest 3.2.4 declares `^18.0.0 || ^20.0.0 || >=22.0.0` and rollup, typescript and jsdom
+  all accept ≥18, so I pinned Node 20 to match `validate-mcp.yml`. The first real run
+  failed at setup. See § 7 — the package manager is a dependency too, and nobody checked it.
 - **"An environment-dependent test"** — the only real instance is § 2 below, and it is
   Windows-dependent, not runner-dependent.
 
@@ -83,7 +84,7 @@ The clean-room rehearsal was a fresh clone on **Windows, Node 24, Python 3.12**.
   `forceConsistentCasingInFileNames` to true, so `tsc` passing clean proves `src/` imports
   are case-correct. No two tracked files collide when lowercased. Runtime string paths in
   Python are not covered by either check.
-- **Node 20 vs 24** — declared-compatible, never run.
+- ~~**Node 20 vs 24** — declared-compatible, never run.~~ **Closed by § 7: Node 20 does not work.**
 
 Claiming Track A is de-risked would overstate this. The rehearsal closed the *dependency and
 untracked-file* classes of failure, which are the common ones. It could not close the
@@ -140,3 +141,49 @@ true today.
 Closing the *absence* gap is Track B (static focus checks, wired into this same job) and
 Track C (the rig). See [22-xinput-near-miss-and-button-map.md](22-xinput-near-miss-and-button-map.md)
 for how confidently a wrong answer can present itself when the only oracle is inference.
+
+---
+
+## 7. The first real run — what actually broke
+
+Pushed 2026-08-26. Run [32928132758](https://github.com/cantcurecancer/DeckySettingsSearch/actions/runs/32928132758)
+**failed in 15 seconds**, at `Install Node`, before a single test executed:
+
+```
+warn: This version of pnpm requires at least Node.js v22.13
+warn: The current version of Node.js is v20.20.2
+Error [ERR_UNKNOWN_BUILTIN_MODULE]: No such built-in module: node:sqlite
+```
+
+**pnpm 11.23.0 imports `node:sqlite`, which does not exist before Node 22.13.** The workflow
+pinned Node 20 and pnpm 11.23.0 together, which cannot work.
+
+The reasoning error is worth naming, because it is the same shape as the XInput near-miss in
+[22](22-xinput-near-miss-and-button-map.md): **a compatibility check that surveyed the wrong
+set.** I verified Node 20 against vitest, rollup, typescript and jsdom — every *test* dependency —
+and concluded 20 was safe. pnpm was never in the list, because it reads as infrastructure rather
+than as a dependency. It is a dependency. It runs on Node like everything else.
+
+The clean-room rehearsal could not have caught this: it ran on the maintainer's Node 24, where
+the pairing is fine. The rehearsal validated the repo, not the workflow's own pins. That is a
+real limit of the method — **a clean clone tests your code, not your CI configuration.**
+
+Fixed by pinning **Node 24**, matching the maintainer's local version, so CI runs the suite on
+the Node it is actually known green on. Also bumped the actions, which were copied from
+`validate-mcp.yml` and are a year stale — `checkout@v4 → v7`, `setup-node@v4 → v7`,
+`setup-python@v5 → v7`, `pnpm/action-setup@v4 → v6`. That clears the run's other annotation,
+that all three v4 actions target a Node 20 runtime GitHub is removing.
+
+### What the run did confirm
+
+- `Install pnpm` and `checkout` succeeded, so the trigger, `paths-ignore` and `concurrency`
+  wiring are correct — a push touching the workflow file did start a run.
+- **`Gate summary` executed even though setup died**, which is what `if: always()` was for.
+
+### One design point the failure exposed
+
+Advisory mode covers **gates, not infrastructure**. `Install Node` and `Install dependencies`
+carry no `continue-on-error`, so when setup breaks the job goes red regardless of `ADVISORY`.
+That is deliberate and worth keeping: a workflow that cannot set itself up is broken, not
+merely reporting bad news, and it should be loud. `ADVISORY` governs whether a *failing test*
+blocks a merge.
