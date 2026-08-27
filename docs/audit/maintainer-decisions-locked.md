@@ -15,13 +15,15 @@ choices are, and what happens either way. **Locked calls (2026-08-02 for D1–D6
 [Maintainer decisions locked](#maintainer-decisions-locked--2026-08-02); implement
 from that section when it disagrees with an option above.
 
-**Three open:**
+**Four open:**
 [D18](#d18--when-loading-settings-fails-four-values-keep-whatever-was-on-screen-bug-or-intent)
 (raised 2026-08-05 by the step 11 friction test),
 [D32](#d32--clear-cache-says-it-clears-the-thread-but-the-saved-chat-stays-on-disk-which-half-is-wrong)
-(raised 2026-08-23 from Deck QA), and
+(raised 2026-08-23 from Deck QA),
 [D33](#d33--the-new-character-avatars-were-drawn-for-44px-the-picker-shows-them-at-24px-which-one-moves)
-(raised 2026-08-26 from the AI character avatars design handoff). **D23–D27 were raised and locked during the RAG
+(raised 2026-08-26 from the AI character avatars design handoff), and
+[D34](#d34--open--clear-cache-is-undone-by-its-own-confirmation-box-what-should-come-back-afterwards)
+(raised 2026-08-27 on device, while implementing D32 — it is why D32 could not be finished). **D23–D27 were raised and locked during the RAG
 work of 2026-08-18 to 2026-08-21; D28–D31 were raised and locked 2026-08-22.** Everything else
 D1–D31 is locked; **D19 is superseded by D20** (below), and **D31 renumbers the superseded one to
 D19b**. See the table below for D1–D15 and the sections below for D16, D17, D19–D31.
@@ -93,6 +95,48 @@ different designs stitched together. If you would rather not decide from a
 description, the approved prototype is in the repo at
 `docs/design/handoffs/ai-character-avatars/AI character avatars.dc.html` — open it
 in a browser and it shows the real thing at several sizes.
+
+---
+
+### D34 — OPEN — *Clear cache* is undone by its own confirmation box. What should come back afterwards?
+
+**Raised 2026-08-27, measured on your Deck the same day. This is a follow-on from D32 — D32's
+answer still stands, but the reason the button looked broken turned out to be something else, and
+fixing it needs one small call from you.**
+
+**What we found.** D32 assumed the old chat came back on your *next question*. It comes back
+sooner than that. Press **Clear**, ask nothing at all, and the conversation is already back on the
+screen. Measured twice with a real controller, on a build checked against the source.
+
+**Why it happens, in plain terms.** *Clear cache* asks "are you sure?" in a pop-up box. Opening any
+pop-up box makes the plugin restart itself behind the scenes — that is normal, and the plugin
+handles it by taking a photo of your session first, then putting everything back afterwards. The
+trouble is the order. The photo is taken **when the box opens**, which is *before* you press Clear.
+So: photo taken (chat still there) → you press Clear (chat wiped) → box closes → plugin restarts →
+plugin restores the photo → **your chat is back**. The button works; the box quietly puts
+everything back a moment later.
+
+**What needs deciding.** The fix is to stop that photo from restoring a session you just cleared.
+The question is how much of the photo to throw away, because it holds more than the chat:
+
+1. **Throw the whole photo away.** Simplest and safest to reason about.
+   - *Good:* the clear definitely sticks, with the least fiddly code.
+   - *Cost:* the photo also remembers which tab you were on. You press Clear while in **Settings**,
+     and the plugin would likely drop you back on the **Main** tab instead of leaving you where you
+     were. A small jolt, right after you pressed a button.
+
+2. **Keep the photo, but blank out the conversation parts of it.** Keeps your tab position.
+   - *Good:* nothing moves except what you asked to be cleared.
+   - *Cost:* more fiddly — there is a list of things a clear resets, and blanking them in the photo
+     means keeping that list correct in a second place. If the two ever drift apart, a future clear
+     half-works and it will be hard to spot.
+
+**My read, if you want one:** option 2, because option 1's tab jump is exactly the kind of "did that
+do what I meant?" moment this whole bug was about — but it is your call, and option 1 is genuinely
+more robust. If you pick 2, I would keep the two lists side by side in one file so drift is obvious.
+
+**Not blocking anything else.** The pointer-detach half of D32 is already done and tested; this
+decides only what the restart puts back.
 
 ---
 

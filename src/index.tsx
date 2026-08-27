@@ -864,6 +864,27 @@ const Content: React.FC = () => {
 
   const resetPluginSession = useCallback(() => {
     resetAskSessionSlice();
+    /*
+     * Detach the saved chat slot, or the cleared screen fills itself back in.
+     *
+     * `resetAskSessionSlice` clears React state and stops there, leaving `activeSlotIdRef` pointing
+     * at the slot on disk. `reloadActiveSlotTranscript` runs after every completed Ask (via
+     * `onSlotTurnsChanged` above), reads that pointer, and calls `setAskThreadCollapsed` with the
+     * slot's turns — so the next Ask brought the whole cleared thread back, which is what the
+     * maintainer reported as "I can't tell if it did anything" (D32).
+     *
+     * Detach rather than delete, which D32 leaves to the implementer: it keeps the modal's own
+     * promise true — *"Does not change settings.json, Ollama, or image files on disk"* would become
+     * false the moment we removed the slot file. Clearing the pointer is enough to satisfy the
+     * other half of D32 ("and it must stay clean"), because `reloadActiveSlotTranscript` blanks the
+     * thread rather than restoring anything when the pointer is null, and the session-survival
+     * snapshot stores `chatSlots.activeSlotId` — now null — so a QAM reopen has nothing to restore.
+     *
+     * `ensureActiveSlotForAsk` mints a fresh slot on the next Ask. That is intended: a cleared
+     * session is a new session. The slots left behind accumulate; that is NOT settled by D32 and is
+     * tracked as its own follow-up on the roadmap entry.
+     */
+    chatSlots.setActiveSlot(null);
     persistSearchQuery("");
     setUnifiedInput("");
     setSelectedIndex(-1);
@@ -875,7 +896,7 @@ const Content: React.FC = () => {
       body: uiT("toast.sessionCleared.body"),
       duration: 3800,
     });
-  }, [resetAskSessionSlice, reseedSuggestedPrompts, uiT]);
+  }, [chatSlots.setActiveSlot, resetAskSessionSlice, reseedSuggestedPrompts, uiT]);
 
   const onClearAllPluginData = useCallback(async () => {
     try {
