@@ -825,5 +825,97 @@ describe("useBonsaiAskOrchestration", () => {
         appId: "2321470",
       });
     });
+
+    /*
+     * The saved-chat reload rebuilds this list from disk after every completed reply, so by the
+     * time the next Ask flushes its pending archive the turn is usually already there. Appending
+     * unconditionally showed the previous turn twice for the whole generation — measured on device
+     * 2026-08-27, one row under the slot id and one under a minted `turn-<ts>-<i>` id.
+     */
+    describe("when the saved-chat reload already put the previous turn in the list", () => {
+      it("replaces that row instead of appending a second copy of it", async () => {
+        setRpcHandler("start_background_game_ai", () => ({
+          accepted: true,
+          status: "completed",
+          success: true,
+          response: "First answer.",
+          request_id: 21,
+          app_id: "2321470",
+        }));
+
+        const { result } = renderHook(() => useBonsaiAskOrchestration(makeArgs()));
+
+        await act(async () => {
+          await result.current.onAskOllama("first question");
+        });
+
+        // Stand in for reloadActiveSlotTranscript: the slot's own turn id, and the metadata the
+        // disk round-trip drops.
+        await act(async () => {
+          result.current.setAskThreadCollapsed([
+            {
+              id: "slot-turn-1",
+              question: "first question",
+              answer: "First answer.",
+              transparency: null,
+              appId: "",
+              spoilerConsentEffective: false,
+            },
+          ]);
+        });
+
+        await act(async () => {
+          await result.current.onAskOllama("second question");
+        });
+
+        expect(result.current.askThreadCollapsed).toHaveLength(1);
+        expect(result.current.askThreadCollapsed[0]).toMatchObject({
+          // The slot's id survives, because the next reload would restore it anyway.
+          id: "slot-turn-1",
+          question: "first question",
+          // ...but the AppID the disk copy lost comes back, which the spoiler unwrap reads.
+          appId: "2321470",
+        });
+      });
+
+      it("still appends when the pending turn is a different exchange", async () => {
+        setRpcHandler("start_background_game_ai", () => ({
+          accepted: true,
+          status: "completed",
+          success: true,
+          response: "Second answer.",
+          request_id: 22,
+        }));
+
+        const { result } = renderHook(() => useBonsaiAskOrchestration(makeArgs()));
+
+        await act(async () => {
+          await result.current.onAskOllama("second question");
+        });
+
+        await act(async () => {
+          result.current.setAskThreadCollapsed([
+            {
+              id: "slot-turn-1",
+              question: "first question",
+              answer: "First answer.",
+              transparency: null,
+              appId: "",
+              spoilerConsentEffective: false,
+            },
+          ]);
+        });
+
+        await act(async () => {
+          await result.current.onAskOllama("third question");
+        });
+
+        expect(result.current.askThreadCollapsed).toHaveLength(2);
+        expect(result.current.askThreadCollapsed.map((t) => t.question)).toEqual([
+          "first question",
+          "second question",
+        ]);
+      });
+    });
   });
 });

@@ -881,17 +881,49 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
 
       const arch = pendingArchiveTurnRef.current;
       if (arch && arch.question.trim() && arch.answer.trim()) {
-        setAskThreadCollapsed((prev) => [
-          ...prev,
-          {
-            id: `turn-${Date.now()}-${prev.length}`,
+        /*
+         * Replace the tail rather than always appending, or the previous turn shows up twice for
+         * the whole length of this generation.
+         *
+         * Two writers reach this list and neither knows about the other. When the previous reply
+         * landed, `onSlotTurnsChanged` fired `reloadActiveSlotTranscript`, which rebuilt the whole
+         * list from the saved chat — turn N included. This flush then appended turn N a second time
+         * from `pendingArchiveTurnRef`. Measured on device 2026-08-27 mid-Ask: the same question
+         * appeared twice, once under its slot id and once under a freshly minted `turn-<ts>-<i>` id,
+         * which is what named this line as the doubling writer. The next reload flattens it back,
+         * so it self-corrects — but only after a generation that runs one to three minutes on this
+         * hardware, which is exactly the window a QA pass is looking at.
+         *
+         * The flush is NOT redundant, which is why this replaces instead of skipping: the reloaded
+         * copy comes from disk via `turnsToCollapsedTurns`, which hardcodes `appId: ""` and
+         * `spoilerConsentEffective: false` ([chatSlotTurns.ts:29-30](../utils/chatSlotTurns.ts)),
+         * and the display-time spoiler unwrap reads the AppID back off the turn (STRAT-SPOIL-DRG-01).
+         * Keeping the reloaded row's `id` matters too — it is the slot's own turn id, so it survives
+         * the next reload, where a minted one would be replaced by it anyway.
+         *
+         * Matching on question+answer rather than id is deliberate: the two writers mint ids
+         * independently, so ids cannot match by construction. The one case this gets wrong is a
+         * question and answer that are both byte-identical to the immediately preceding turn with
+         * no saved chat active to reload from — a repeat of the same question answered verbatim the
+         * same way. That loses one history row; the alternative loses nothing and shows a duplicate
+         * on every follow-up Ask.
+         */
+        setAskThreadCollapsed((prev) => {
+          const last = prev[prev.length - 1];
+          const alreadyReloaded =
+            !!last &&
+            last.question.trim() === arch.question.trim() &&
+            last.answer.trim() === arch.answer.trim();
+          const row = {
+            id: alreadyReloaded ? last.id : `turn-${Date.now()}-${prev.length}`,
             question: arch.question,
             answer: arch.answer,
             transparency: arch.transparency ?? null,
             appId: arch.appId,
             spoilerConsentEffective: arch.spoilerConsentEffective === true,
-          },
-        ]);
+          };
+          return alreadyReloaded ? [...prev.slice(0, -1), row] : [...prev, row];
+        });
         lastFlushedExchangeQuestionRef.current = arch.question.trim();
       }
       pendingArchiveTurnRef.current = null;
