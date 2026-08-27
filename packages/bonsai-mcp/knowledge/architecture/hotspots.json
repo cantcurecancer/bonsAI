@@ -91,13 +91,13 @@
       "role": ""
     },
     {
-      "path": "src/components/MainTabPresetAnimatedChips.tsx",
-      "lines": 737,
+      "path": "src/components/CharacterPickerModal.tsx",
+      "lines": 740,
       "role": ""
     },
     {
-      "path": "src/components/CharacterPickerModal.tsx",
-      "lines": 721,
+      "path": "src/components/MainTabPresetAnimatedChips.tsx",
+      "lines": 737,
       "role": ""
     },
     {

@@ -115,4 +115,38 @@ export const Router = {
 };
 
 export const showModal = (content: React.ReactNode) => content;
-export const ConfirmModal = stub("ConfirmModal");
+
+/**
+ * Not `stub()`, because this component's *content* arrives as props rather than children: every
+ * bonsAI confirm modal passes its whole body as `strDescription` and its OK label as
+ * `strOKButtonText`. The generic stub spreads props onto a `<div>`, so a modal's entire body
+ * rendered as `strdescription="[object Object]"` and a test asking what the modal draws saw an
+ * empty tree — passing or failing for reasons that had nothing to do with the component.
+ *
+ * Rendering them is also what the real `ConfirmModal` does, so this makes the stub more faithful,
+ * not less. The remaining string props stay on the element for tests that assert on wording.
+ */
+export const ConfirmModal = React.forwardRef<HTMLDivElement, StubProps>(function ConfirmModalStub(
+  {
+    children,
+    strTitle,
+    strDescription,
+    strOKButtonText,
+    strCancelButtonText,
+    // Not DOM handlers — spreading them onto a div only earns an "Unknown event handler" warning.
+    onOK: _onOK,
+    onCancel: _onCancel,
+    ...rest
+  },
+  ref
+) {
+  return (
+    <div ref={ref} data-decky-ui="ConfirmModal" {...withoutSteamNavProps(rest)}>
+      <div data-decky-ui="ConfirmModalTitle">{strTitle as React.ReactNode}</div>
+      <div data-decky-ui="ConfirmModalDescription">{strDescription as React.ReactNode}</div>
+      {children as React.ReactNode}
+      <div data-decky-ui="ConfirmModalOKButton">{strOKButtonText as React.ReactNode}</div>
+      <div data-decky-ui="ConfirmModalCancelButton">{strCancelButtonText as React.ReactNode}</div>
+    </div>
+  );
+});

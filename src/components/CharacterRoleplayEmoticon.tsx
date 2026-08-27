@@ -12,8 +12,10 @@ import { CharacterPropGlyph } from "./CharacterPropGlyph";
 /**
  * `"grid"` is the original 8x8/16x16 pixel art; `"prop"` is the prop-emblem disc from the
  * 2026-08-26 design handoff. Both keep the same box, so a caller can switch without moving
- * anything around it. The picker is still on `"grid"` pending D33 — see
- * docs/planning/25-ai-character-avatars-handoff.md.
+ * anything around it. **Both shipped callers are now on `"prop"`** — the Ask bar since the handoff
+ * landed, the picker since D33 was locked at 26px (2026-08-27). `"grid"` stays the default so the
+ * switch is opt-in rather than a silent change to anything added later, and because it is still
+ * the fallback art for a preset with no prop. See docs/planning/25-ai-character-avatars-handoff.md.
  */
 export type CharacterRoleplayEmoticonArt = "grid" | "prop";
 
@@ -74,10 +76,10 @@ function withBadge(art: React.ReactElement, size: number, badgeLetter: string) {
 /**
  * Draws a character avatar in one of two styles, with the same box either way.
  *
- * `art="prop"` is the finished prop-emblem artwork (`CharacterPropGlyph`) and is what the main
- * tab Ask bar uses. `art="grid"` is the older PLACEHOLDER pixel art in
- * `characterPlaceholderEmoticonGrids.ts`, still the default because the character picker has not
- * migrated — its avatar size is an open maintainer call (D33).
+ * `art="prop"` is the finished prop-emblem artwork (`CharacterPropGlyph`) and is what both the
+ * main tab Ask bar and the character picker use. `art="grid"` is the older PLACEHOLDER pixel art in
+ * `characterPlaceholderEmoticonGrids.ts`; it remains the default, so it is what an unspecified new
+ * caller gets.
  */
 export function CharacterRoleplayEmoticon(props: CharacterRoleplayEmoticonProps) {
   const { presetId, size, className, title, badgeLetter, art = "grid" } = props;

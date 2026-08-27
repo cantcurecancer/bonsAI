@@ -1,9 +1,9 @@
 /**
  * Title: Character prop glyph
  * Purpose: Render a character as a prop emblem (bat, fedora, sandvich…) in inline SVG on a tinted, vignetted disc.
- * Used for: The main tab Ask bar avatar, via CharacterRoleplayEmoticon's `art="prop"` path.
+ * Used for: The main tab Ask bar avatar (18px) and every character picker avatar (26px), via CharacterRoleplayEmoticon's `art="prop"` path.
  * Solves: The 8x8/16x16 pixel grids in CharacterRoleplayEmoticon read as noise at 18px and break up above ~32px.
- * Does not: Serve the character picker yet — it stays on the grids until D33 settles its avatar size.
+ * Does not: Render at the 44px the art was reviewed at — D33 locked the picker at 26px instead.
  *
  * DO NOT REDRAW THE SVG PATH DATA. Every coordinate below is the approved design and was
  * ported verbatim from the prototype; several props went through multiple review rounds.

@@ -15,13 +15,13 @@ choices are, and what happens either way. **Locked calls (2026-08-02 for D1–D6
 [Maintainer decisions locked](#maintainer-decisions-locked--2026-08-02); implement
 from that section when it disagrees with an option above.
 
-**Two open:**
+**One open:**
 [D18](#d18--when-loading-settings-fails-four-values-keep-whatever-was-on-screen-bug-or-intent)
-(raised 2026-08-05 by the step 11 friction test) and
-[D33](#d33--the-new-character-avatars-were-drawn-for-44px-the-picker-shows-them-at-24px-which-one-moves)
-(raised 2026-08-26 from the AI character avatars design handoff).
+(raised 2026-08-05 by the step 11 friction test).
 **D32, D34 and D35 are all locked and implemented** (2026-08-27) — three separate causes of the one
-*Clear cache* bug, which is now fixed and confirmed on device. **D23–D27 were raised and locked during the RAG
+*Clear cache* bug, which is now fixed and confirmed on device. **D33 is locked and implemented**
+(2026-08-27, option C at 26px); it still owes a look on the Deck, which is what the maintainer asked
+for. **D23–D27 were raised and locked during the RAG
 work of 2026-08-18 to 2026-08-21; D28–D31 were raised and locked 2026-08-22.** Everything else
 D1–D31 is locked; **D19 is superseded by D20** (below), and **D31 renumbers the superseded one to
 D19b**. See the table below for D1–D15 and the sections below for D16, D17, D19–D31.
@@ -36,10 +36,43 @@ are now, and what is still owed.
 
 ---
 
-### D33 — The new character avatars were drawn for 44px. The picker shows them at 24px. Which one moves?
+### D33 — LOCKED (option C at 26px, 2026-08-27) — The new character avatars were drawn for 44px. The picker shows them at 24px. Which one moves?
 
-**OPEN, but now only for the character picker — raised 2026-08-26 from the AI character avatars
-design handoff.** Full intake:
+**Locked in the maintainer's words: "let's go for 26 px and see how that is, I may change to another
+after seeing how it looks."** So option C — grow the picker part of the way rather than to the
+design's full 44px. Implemented the same day.
+
+**What shipped.** Every avatar in the picker is now the drawn artwork at **26 pixels** — the
+character rows, the Random row, the Custom row, and the little preview on the **OK** button. Before
+this they were five different hardcoded numbers (22, 24, 24, 26, 26) and still the old pixel-grid
+faces. They are now one number in one place, `PICKER_AVATAR_PX` in `CharacterPickerModal.tsx`, so
+changing your mind is a one-line edit rather than a hunt through the file.
+
+**26 is not an arbitrary middle.** It is exactly the line the design draws for where the letter
+badge sits — inside the disc at 26 and above, beside it below. Putting every picker avatar at 26
+puts them all on the same side of that line, which is what stops one screen showing two badge
+styles at once. Anything you move to next is worth keeping at 26 or higher for that reason; below
+it, the badges split.
+
+**One visible change beyond the rows:** the avatar on the **OK** button grew from 22 to 26, so that
+button is very slightly taller. It was included deliberately — it previews the character you are
+about to pick, and leaving it at 22 would have been the one avatar on the wrong side of the badge
+line.
+
+**What did not change.** The main tab Ask bar stays at its own 18px and is deliberately not wired to
+the picker's number, because the standing instruction is that the Ask row must not move.
+
+**Locked by two tests** ([CharacterPickerModal.test.tsx](../../src/components/CharacterPickerModal.test.tsx)):
+every avatar the modal draws is the same size, and every one is the drawn emblem rather than the old
+pixel grid. Both were checked to fail without the change. That second test matters more than it
+looks — the art style is an opt-in setting that falls back to the *old* pixel grids, so forgetting it
+renders something that looks fine and is wrong.
+
+**Not yet seen on the Deck.** The maintainer asked to look at 26 before settling, so the next step is
+a device pass on the picker: row heights, how many characters fit on one screen, and whether the
+props read clearly at 26.
+
+**Original intake, raised 2026-08-26 from the AI character avatars design handoff.** Full detail:
 [25-ai-character-avatars-handoff.md](../planning/25-ai-character-avatars-handoff.md).
 
 > **The main tab half is settled (2026-08-26).** The maintainer's instruction was that the Ask bar
@@ -1447,40 +1480,48 @@ mechanism and **TAB-RESUME-MODE-01** for how to test it.
 
 ### D18 — When loading settings fails, four values keep whatever was on screen. Bug or intent?
 
-**OPEN — raised 2026-08-05 by the step 11 friction test.**
+**OPEN — raised 2026-08-05 by the step 11 friction test. Rewritten in plain language 2026-08-27 at
+the maintainer's request; nothing about the question changed.**
 
-**What's going on.** If `load_settings` fails, `usePluginSettings.ts` resets state to
-defaults so the UI does not show values it could not actually read. That reset lists **40**
-setters. Five other lists in the same file enumerate all of them. Four are missing from this
-one and nothing says why:
+**The short version.** When the plugin cannot read your saved settings, it deliberately blanks the
+Settings screen back to factory values, so you are never shown a setting it could not actually
+confirm. It blanks 40 of them. Four are missed, and no note anywhere says whether that was on
+purpose. Those four are: **reply language**, the **two model try-orders** (text and vision), and
+**auto-reveal spoilers after you have consented**.
 
-- `setReplyLanguage`
-- `setTextModelRoutingOrder`
-- `setVisionModelRoutingOrder`
-- `setStrategySpoilerAutoRevealAfterConsent`
+**What you would actually see.** Almost certainly nothing, almost all of the time. This only runs
+when reading the settings file fails, which on a healthy Deck does not happen. And on a fresh open
+those four are sitting at their factory values anyway, so blanking them would change nothing
+visible.
 
-**Why it matters, and why it probably has not bitten.** The branch only runs when the backend
-read fails, which on a healthy Deck is never. When it does run, those four keep whatever was
-already in state — on a first open that is their default anyway, so the visible effect is
-limited to a failure *after* a successful load, e.g. a backend restart mid-session. Then the
-UI would show a reply language or try-order it can no longer confirm is saved. **No test
-covers this branch at all**, in either direction.
+The one case where it bites: the read fails *after* a successful one — say the plugin's back end
+restarts while you have the menu open. Then the screen keeps showing your reply language and your
+model try-order, looking saved and settled, when the plugin has just admitted it cannot read them.
+Everything around them has snapped back to factory. So the screen is telling you two different
+stories at once, and the four that stayed are the ones you would be least likely to doubt.
 
-**Option A — add the four, and a test.** *(my recommendation)* Makes the branch mean one
-thing: a failed load shows defaults, full stop. Cheap, and the test is what stops the list
-drifting again.
+**Nothing tests this either way**, so today there is no record of which behaviour was intended.
 
-**Option B — leave them out and say why.** Legitimate if the omission is deliberate — e.g.
-routing orders are expensive to re-derive and a stale one is better than an empty one. Needs
-a comment naming the reason, or the next reader files this again.
+**Your choices.**
 
-**Option C — delete the reset branch.** Honest if the answer is "a failed load should change
-nothing." Biggest behavior change of the three and the least likely to be what you want.
+**A. Blank those four too, and add a test.** *(my recommendation)* Then a failed read means one
+simple thing — the screen shows factory values, all of them, no exceptions — and it is the same
+answer every time. The test is what stops the list quietly drifting apart again, which is how this
+happened in the first place.
 
-**This is a symptom of the D14 item, not a separate problem.** Six hand-maintained copies of
-one field list in a single file is exactly what the friction test ranked first; fixing the
-plumbing removes the *class*. Answer this one anyway — it is live behavior, and the collapse
-is not scheduled.
+**B. Leave them out on purpose, and write down why.** Reasonable if there is a real reason — for
+instance, a model try-order is worked out from what your machine actually has, and showing a stale
+one may genuinely beat showing an empty one. It just needs a sentence saying so, or the next person
+to read this file files the same question again.
+
+**C. Stop blanking anything on a failed read.** Honest if you think a failed read should simply
+leave the screen alone. It is the biggest change of the three, and it means a failure looks
+identical to everything being fine — which is the thing the current behaviour is trying to avoid.
+
+**Worth knowing:** this is a symptom, not its own problem. The same list of settings is written out
+by hand **six times** in one file, and these four fell out of one copy. Fixing that duplication is
+already the top item from the friction test (D14) and would remove the whole class of mistake. But
+that work is not scheduled, and this is live behaviour, so it is worth answering on its own.
 
 ---
 

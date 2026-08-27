@@ -35,6 +35,21 @@ export type CharacterPickerModalProps = {
   onOK: (next: AiCharacterPickerDraft) => void | Promise<void>;
 };
 
+/*
+ * Every avatar in this modal, one number (D33, locked 2026-08-27 at 26px — option C, "grow the
+ * picker part-way rather than to the design's 44px").
+ *
+ * It was five hardcoded numbers — 22 on the OK button preview, 24 on both character grids, 26 on
+ * the Random and Custom rows — which is what let the picker straddle the design's badge line: the
+ * handoff puts the letter badge inside the disc at 26 and above and beside it below, so one screen
+ * would have shown both treatments. One constant is also how the maintainer changes their mind
+ * cheaply, which they said they might after seeing 26 on the Deck.
+ *
+ * The main tab Ask bar is deliberately NOT on this constant: it is pinned to its own 18px slot and
+ * the standing instruction is that the Ask row must not move.
+ */
+const PICKER_AVATAR_PX = 26;
+
 const PICKER_COL_COUNT = CHARACTER_PICKER_COLUMNS.length;
 const LAST_PICKER_COL = PICKER_COL_COUNT - 1;
 /** Only show the spinner if resolving takes longer than this (avoids flash on fast path). */
@@ -113,7 +128,8 @@ export function CharacterPickerModal(props: CharacterPickerModalProps) {
         <CharacterRoleplayEmoticon
           key={okButtonPreviewPresetId}
           presetId={okButtonPreviewPresetId}
-          size={22}
+          size={PICKER_AVATAR_PX}
+          art="prop"
           badgeLetter={okButtonPreviewBadgeLetter}
         />
         <span>OK</span>
@@ -408,7 +424,8 @@ export function CharacterPickerModal(props: CharacterPickerModalProps) {
                 >
                   <CharacterRoleplayEmoticon
                     presetId={entry.id}
-                    size={24}
+                    size={PICKER_AVATAR_PX}
+                    art="prop"
                     badgeLetter={resolveAvatarBadgeLetterFromDisplayLabel(entry.label)}
                   />
                   <span
@@ -502,7 +519,7 @@ export function CharacterPickerModal(props: CharacterPickerModalProps) {
               />
             </div>
             <div style={{ flexShrink: 0 }} aria-hidden>
-              <CharacterRoleplayEmoticon presetId="__random__" size={26} />
+              <CharacterRoleplayEmoticon presetId="__random__" size={PICKER_AVATAR_PX} art="prop" />
             </div>
           </div>
           {runningStrip === undefined && showSlowSpinner && (
@@ -615,7 +632,8 @@ export function CharacterPickerModal(props: CharacterPickerModalProps) {
                     >
                       <CharacterRoleplayEmoticon
                         presetId={entry.id}
-                        size={24}
+                        size={PICKER_AVATAR_PX}
+                        art="prop"
                         badgeLetter={resolveAvatarBadgeLetterFromDisplayLabel(entry.label)}
                       />
                       <span
@@ -675,7 +693,8 @@ export function CharacterPickerModal(props: CharacterPickerModalProps) {
             <div style={{ flexShrink: 0 }} aria-hidden>
               <CharacterRoleplayEmoticon
                 presetId="__custom__"
-                size={26}
+                size={PICKER_AVATAR_PX}
+                art="prop"
                 badgeLetter={customFieldBadgeLetter}
               />
             </div>

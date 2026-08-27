@@ -28,7 +28,7 @@ function gradientIds(container: HTMLElement): string[] {
 }
 
 describe("CharacterRoleplayEmoticon art styles", () => {
-  it("defaults to the pixel grid, so the character picker is untouched", () => {
+  it("defaults to the pixel grid, so a caller that does not ask gets the old art", () => {
     const { container } = render(<CharacterRoleplayEmoticon presetId="tf2_scout" size={24} />);
     const svg = svgOf(container);
     expect(svg.getAttribute("viewBox")).toBe("0 0 16 16");

@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 308,
-  "edgeCount": 722,
+  "fileCount": 309,
+  "edgeCount": 723,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -85,6 +85,12 @@
         "src/index.tsx"
       ]
     },
+    "src/components/CharacterPickerModal.test.tsx": {
+      "imports": [
+        "src/components/CharacterPickerModal.tsx"
+      ],
+      "importedBy": []
+    },
     "src/components/CharacterPickerModal.tsx": {
       "imports": [
         "src/components/BonsaiModalScope.tsx",
@@ -93,6 +99,7 @@
         "src/utils/runningGameCharacterSuggestions.ts"
       ],
       "importedBy": [
+        "src/components/CharacterPickerModal.test.tsx",
         "src/features/plugin-shell/useCharacterPickerModal.tsx"
       ]
     },
