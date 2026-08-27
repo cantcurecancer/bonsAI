@@ -158,42 +158,50 @@ Each of these has exact steps in its roadmap/testing entry. Save every run's evi
 
 ---
 
-## Explained for the maintainer, and what would move them (do not start without a decision)
+## Phase 4 — the Strategy branch picker (★★★) — maintainer go-ahead 2026-08-27
 
-### The Strategy branch picker (★★★) — "the AI never shows its follow-up buttons"
+**Background, plainly:** in Strategy mode, the AI's first answer is supposed to end with a
+little question of its own — *"Are you trying to clear a swarm, or just survive?"* — rendered
+as two buttons. The buttons never appear. Two log lines added 2026-08-26 name the failing step
+per run (`ask_strategy: branch fence requested…` in `ollama_ask_service.py`; `ask_ollama:
+strategy fences branch_marker=… branch_parsed=…` in `ollama_service.py`). The evidence points
+at **two different failures on two different days**: in controlled 2026-08-26 runs (no game
+running) the small model (`gemma4:e2b-it-qat`) never wrote the fence; but in the maintainer's
+2026-08-23 recordings (DRG Survivor **running**) the trace shows the model wrote a
+perfectly-formed fence and the buttons still did not render.
 
-In Strategy mode, the AI's first answer is supposed to end with a little question of its own —
-*"Are you trying to clear a swarm, or just survive?"* — rendered as two buttons. The buttons
-never appear. There were three possible points of failure (we never asked / the model never
-wrote it / we dropped it while displaying), and they were indistinguishable until 2026-08-26,
-when two log lines were added that name the failing step per run (`ask_strategy: branch fence
-requested…` in `ollama_ask_service.py`; `ask_ollama: strategy fences branch_marker=…
-branch_parsed=…` in `ollama_service.py`).
+**The approved sequence — do it in this order:**
 
-The evidence so far points at **two different failures on two different days**: in the
-controlled 2026-08-26 runs (no game running) the small model (`gemma4:e2b-it-qat`) simply
-ignored the instruction — it never wrote the fence. But in the maintainer's original 2026-08-23
-recordings (DRG Survivor **running**), the trace shows the model DID write a perfectly-formed
-fence and the buttons still did not render. **One cheap task any session can do:** re-run the
-original combination (game running, "how do i deal with the exploders") once and read the two
-log lines — if `branch_marker=True, branch_parsed=False` appears, there is a parser bug to fix
-and it is fixable without any decision. **The decision only applies to the model-won't-comply
-half:** push the small model harder (few-shot examples in the prompt), route Strategy first
-turns to a bigger model, or hide the feature when the routed model won't produce it.
+1. **Measure first, free:** re-run the original combination — DRG Survivor **running** on the
+   Deck, question *"how do i deal with the exploders"* — and read the two log lines
+   (`deck_readPluginLog`, or the plugin log over SSH). Needs the game launched; coordinate with
+   the maintainer rather than launching a game by automation (the killswitch story exists
+   because a rig once parked the ring on a Play button).
+2. **If `branch_marker=True, branch_parsed=False`:** it is a **parser bug**. Fix the backend
+   parse (`strategy_guide_branches`), pin it with a unit test feeding the exact fence text from
+   the 08-23 trace, re-run the log check — it answers in one line.
+3. **If the model did not emit:** try **few-shot coaching in the Strategy first-turn prompt
+   first** (an example fence in the prompt). Re-run the log check. Only if coaching fails,
+   escalate to the maintainer's remaining options: route Strategy first turns to a larger
+   model, or gate the feature when the routed model will not emit fences.
 
-### Ordinary phrases attach game cards (★★, the remaining half) — "why does 'what time is it' get game tips stapled on"
+Also check `normalizeStrategyGuideBranches`
+([useBonsaiAskOrchestration.ts:657](../../src/hooks/useBonsaiAskOrchestration.ts#L657)) if step
+2 fires — the roadmap entry names it as the frontend half of the handoff.
 
-With a game running, the plugin looks up little knowledge cards to attach to each answer. Two
-lookup engines run side by side: one matches **keywords**, one matches **meaning**. Both have a
-"minimum relevance" bar. The meaning engine's bar was raised on 2026-08-23 (D28), which cleaned
-up half the nonsense. The remaining offenders ("thank you very much" → Nitra card, "what time is
-it" → three cards) get in through the **keyword** engine, whose bar (`BM25_RELEVANCE_FLOOR`,
-1.0) is deliberately low — raising it risks starving legitimate game questions of cards, which
-pushes against decision D25. So the real question is not "raise the number": it is whether to
-accept the occasional irrelevant card, or build a **second signal** that tells "a real question
-about the game" from "a random phrase" (that idea is already filed in the backlog as *Card
-relevance needs a second signal*, Knowledge base lane). That is design work with its own
-measurement, not a quick fix — do not retune the floors; D28's correction note forbids it.
+## Research-only — ordinary phrases attach game cards (★★) — do NOT tune anything
+
+**Maintainer call 2026-08-27: live with the residual irrelevant cards for now** (the model is
+expected to mostly talk past them), **and research the cause properly.** Plainly: two lookup
+engines pick knowledge cards — one matches *keywords*, one matches *meaning*. The meaning bar
+was raised (D28) and cleaned up half the nonsense; the leftovers ("what time is it" → three DRG
+cards) get in through the keyword engine, whose bar is deliberately low because raising it
+starves real game questions (D25). The research question: **why does a bare phrase clear the
+keyword bar for these specific cards** — what tokens match, what scores result — and what
+*second signal* (backlog entry: *Card relevance needs a second signal*, Knowledge base lane)
+could tell "a real question about the game" from "a random phrase". Deliverable is a written
+analysis in `docs/audit/`, not a code change. **Hard constraints:** `VECTOR_RECALL_FLOOR` stays
+at 0.515 (D28 correction note forbids retuning) and `BM25_RELEVANCE_FLOOR` stays at 1.0 (D25).
 
 ---
 
@@ -237,7 +245,10 @@ Environment: Deck at the `.env` IP, DPS MCP tools (`deck_*`), ESP32 bridge for r
 
 ## Tooling to fix or improve (flagged for the maintainer — each shortens future sessions)
 
-Filed upstream candidates (index: [mcp-setup.md](../mcp-setup.md) § DPS findings log):
+**All of items 1–5 are now filed in BOTH repos** (2026-08-27): index rows in
+[mcp-setup.md](../mcp-setup.md) § DPS findings log, and full entries in the DPS repo's own
+`docs/ROADMAP.md` (local checkout: `c:/Users/still/decky-plugin-studio`). Do not re-file them —
+fixing them happens in the DPS tree, not here (AGENTS.md: bonsAI never locally patches DPS).
 
 1. **P2-4 — DPS build doesn't copy capture scripts into `dist`** → on-device screenshots dead
    from agent sessions. Fix in the DPS tree (copy `scripts/` at build); until then the ps1
