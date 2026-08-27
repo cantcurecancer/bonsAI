@@ -82,16 +82,27 @@ const STOP_CLASS = "bonsai-ai-response-chunk bonsai-ai-response-chunk--in-bubble
  * string-shaped presses tests and desktop keyboards deliver — with the string-only predicates, so
  * one press can never fire both (the pairing rule documented in focusNavigation.ts).
  *
- * There is deliberately no `onActivate` behaviour beyond claiming the press: the wait chips are
- * status, not controls, and a press that early-revealed a spoiler mask from its holding chip would
- * defeat the point of masking it (STREAM-03).
+ * `onActivate` delegates to a revealed spoiler's collapse control when one is inside this stop —
+ * that control (`.bonsai-spoiler-collapse-target`) is a healthy `Focusable` with its own
+ * `onActivate`, but the D-pad walk parks on the stop, not on it, so it never takes the ring on its
+ * own. A masked reveal target renders `.bonsai-spoiler-reveal-target` instead, and a wait chip
+ * renders neither, so the query simply finds nothing there — the exclusion STREAM-03 needs (A must
+ * not early-reveal a masked fence or act on a wait chip) falls out of the DOM shape rather than
+ * needing its own check. Reads the ring, not `activeElement`, for the same reason `moveUp` below
+ * does: Steam moves `.gpfocus` without moving `activeElement`.
  */
 export function stopNavProps(
   moveDown: () => boolean,
   moveUp: () => boolean
 ): Record<string, unknown> {
   return {
-    onActivate: () => {},
+    onActivate: () => {
+      const stop = uiGamepadFocusElement();
+      const collapseButton = stop?.querySelector<HTMLButtonElement>(
+        ".bonsai-spoiler-collapse-target button"
+      );
+      collapseButton?.click();
+    },
     onMoveDown: () => moveDown(),
     onMoveUp: () => moveUp(),
     onButtonDown: (button: unknown) => {

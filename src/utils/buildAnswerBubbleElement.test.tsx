@@ -160,6 +160,70 @@ describe("answer bubble section stops", () => {
 
       expect(onMoveDown()).toBe(false);
     });
+
+    /*
+     * `.bonsai-spoiler-collapse-target` never takes the ring itself — the D-pad walk parks on the
+     * stop that contains it — so A on the stop has to reach in for it. Regression guard for "A
+     * revealed spoiler cannot be re-hidden with the controller".
+     */
+    describe("A on a stop containing a revealed spoiler's collapse control", () => {
+      function stopWithGpFocus(): HTMLElement {
+        const stop = document.createElement("div");
+        stop.className = "gpfocus bonsai-answer-stop";
+        document.body.appendChild(stop);
+        return stop;
+      }
+
+      it("collapses it", () => {
+        const stop = stopWithGpFocus();
+        const collapseTarget = document.createElement("div");
+        collapseTarget.className = "bonsai-spoiler-collapse-target";
+        const button = document.createElement("button");
+        const onClick = vi.fn();
+        button.addEventListener("click", onClick);
+        collapseTarget.appendChild(button);
+        stop.appendChild(collapseTarget);
+
+        try {
+          const onActivate = stopNavProps(() => false, () => false).onActivate as () => void;
+          onActivate();
+          expect(onClick).toHaveBeenCalledTimes(1);
+        } finally {
+          stop.remove();
+        }
+      });
+
+      it("does nothing when the ring sits on a masked reveal target instead", () => {
+        const stop = stopWithGpFocus();
+        const revealTarget = document.createElement("div");
+        revealTarget.className = "bonsai-spoiler-reveal-target";
+        const button = document.createElement("button");
+        const onClick = vi.fn();
+        button.addEventListener("click", onClick);
+        revealTarget.appendChild(button);
+        stop.appendChild(revealTarget);
+
+        try {
+          const onActivate = stopNavProps(() => false, () => false).onActivate as () => void;
+          expect(() => onActivate()).not.toThrow();
+          expect(onClick).not.toHaveBeenCalled();
+        } finally {
+          stop.remove();
+        }
+      });
+
+      it("does nothing when the ring sits on a wait chip", () => {
+        const stop = stopWithGpFocus();
+        stop.innerHTML = '<div class="bonsai-ai-response-chunk--stream-wait">Working…</div>';
+
+        try {
+          const onActivate = stopNavProps(() => false, () => false).onActivate as () => void;
+          expect(() => onActivate()).not.toThrow();
+        } finally {
+          stop.remove();
+        }
+      });
+    });
   });
 
   it("drops every stop when the bubble unmounts", () => {
