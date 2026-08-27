@@ -22,11 +22,15 @@ is what React's onChange listener actually reads. That trick is load-bearing and
 fails, so the script re-reads the field after a delay and prints VERIFIED / NOT VERIFIED rather
 than trusting the write.
 
-Run with the QAM open on the bonsAI Main tab:
+Run with the QAM open on the bonsAI Main tab. The flags MUST go inside the quoted remote
+command — outside it, ssh rejoins the words and the remote shell re-splits them, so a
+multi-word --text silently keeps only its first word, and the VERIFIED line below then
+honestly confirms the truncated write (measured 2026-08-27: sent a 14-word question, field
+held 'in', script printed VERIFIED):
 
-    ssh deck@<ip> 'python3 -' < scripts/deck_send_ask.py --text "your question"
-    ssh deck@<ip> 'python3 -' < scripts/deck_send_ask.py --read     # report state, write nothing
-    ssh deck@<ip> 'python3 -' < scripts/deck_send_ask.py --clear    # empty the field
+    ssh deck@<ip> 'python3 - --text "your question here"' < scripts/deck_send_ask.py
+    ssh deck@<ip> 'python3 - --read'  < scripts/deck_send_ask.py   # report state, write nothing
+    ssh deck@<ip> 'python3 - --clear' < scripts/deck_send_ask.py   # empty the field
 
 Transport (ws_connect / ws_send / ws_recv / evaluate / connect_qa) is lifted verbatim from
 probe_deck_ask_row_width.py, which took it from probe_deck_tab_switch.py. The injected JS avoids
