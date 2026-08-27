@@ -19,6 +19,14 @@ bonsAI uses **two complementary MCP servers**:
 
 Do **not** permanently fork DPS behavior into bonsAI. Product-specific MCP (`bonsai`) and app code stay here; studio ops stay in DPS.
 
+**Which file your client reads.** Three clients, three files, and they are not interchangeable:
+`mcp.json` (repo root) is Cursor's and the DPS extension's; `.cursor/mcp.json` is Cursor's
+workspace copy; **`.mcp.json` — with the leading dot — is Claude Code's**, and it was missing
+entirely until 2026-08-27, so Claude Code sessions had *no* MCP servers while `mcp.json` sat in
+the root looking authoritative. The failure is silent: tools are simply absent, with no error and
+nothing in the transcript to say a server was expected. If tools are missing, check which file
+your client actually reads before debugging the server. Keep the two in step.
+
 **Installed version:** pin `mcp.json` / `.cursor/mcp.json` to the installed VSIX path under `~/.cursor/extensions/decky-plugin-studio.decky-plugin-studio-extension-<version>/`. After upgrading the VSIX, update those paths and **Developer: Reload Window**.
 
 ### DPS findings log (bonsAI)
