@@ -105,6 +105,15 @@ function splitLongRespectingFences(text: string, maxLen: number): string[] {
 function findSafeCutInRange(text: string, start: number, maxEnd: number): number {
   const limit = Math.min(maxEnd, text.length);
   let c = text.lastIndexOf(". ", limit);
+  /*
+   * `lastIndexOf(". ", limit)` returns the index of the "." itself, not the boundary after it — used
+   * as-is, the slice ends right before the period, so the sentence's own full stop is orphaned onto
+   * the start of the next chunk ("...go BOOM" / ". The trick is..."). Advance past both characters so
+   * the period stays with the sentence it closes.
+   */
+  if (c >= 0) {
+    c += 2;
+  }
   if (c < start + 80) {
     c = text.lastIndexOf(" ", limit);
   }

@@ -38,4 +38,39 @@ describe("splitResponseIntoChunks", () => {
     const spoilerChunk = c.find((x) => x.includes("bonsai-spoiler") && x.includes("Phase 2"));
     expect(spoilerChunk).toBeDefined();
   });
+
+  describe("long single-paragraph text — sentence-boundary cuts", () => {
+    /*
+     * A ~160-char filler with no blank line, so the whole thing stays one paragraph and one line —
+     * only `splitLongRespectingFences`'s density split (maxLen 300) can produce a second chunk here.
+     * Long enough to push the shout sentence past the "prefer a nearby '. '" floor (start + 80) but
+     * still inside the 300-char cut window, so `findSafeCutInRange` picks the period this test cares
+     * about rather than a later or earlier one.
+     */
+    const FILLER =
+      "Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut " +
+      "labore et dolore magna aliqua ut enim ad minim veniam quis nostrud exercitation. ";
+    const TAIL =
+      " and never let them corner you, because that is when things go from bad to worse for " +
+      "everyone involved and nobody in the squad wants that outcome at all, trust me on this one.";
+
+    it.each(["BOOM", "KABOOM", "RUN"])(
+      /* Regression guard for "a rendered reply breaks a line mid-sentence": the model wrote one
+         unbroken sentence ("...go BOOM. The trick is...") and the display layer introduced the
+         break, landing the period at the start of the next chunk instead of the end of this one. */
+      'keeps "%s." on the same chunk as the sentence it ends, not orphaned onto the next one',
+      (shoutWord) => {
+        const text = `${FILLER}they walk right into ya and go ${shoutWord}. The trick is to keep your distance${TAIL}`;
+        const chunks = splitResponseIntoChunks(text);
+
+        expect(chunks.length).toBeGreaterThan(1);
+        for (const chunk of chunks) {
+          expect(chunk.trimStart().startsWith(".")).toBe(false);
+        }
+        const shoutChunk = chunks.find((c) => c.includes(shoutWord));
+        expect(shoutChunk).toBeDefined();
+        expect(shoutChunk).toContain(`${shoutWord}.`);
+      }
+    );
+  });
 });
