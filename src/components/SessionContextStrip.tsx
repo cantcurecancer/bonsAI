@@ -18,6 +18,8 @@ import { focusLastSessionContextRow } from "../utils/liveTurnFocusGraph";
 export type SessionContextTurn = {
   id: string;
   label: string;
+  /** Full trimmed question text, used only to detect the live/archived duplicate below — not displayed. */
+  question: string;
   snapshot: TransparencySnapshot | ChatSlotTurnTransparency | null;
 };
 
@@ -64,15 +66,34 @@ export function SessionContextStrip({
     });
   }, [open]);
 
+  const archivedRows: SessionContextTurn[] = archivedTurns
+    .filter((t) => t.transparency && chipsFromSnapshot(t.transparency).length > 0)
+    .map((t) => ({
+      id: t.id,
+      label: t.question.trim().slice(0, 48) || t.id,
+      question: t.question.trim(),
+      snapshot: t.transparency ?? null,
+    }));
+
+  const newestArchivedRow = archivedRows[archivedRows.length - 1];
+  /*
+   * After a completed Ask, `liveTurn` stays populated — `transparencySnapshot` still holds that
+   * turn's data — at the same moment the slot reload archives the identical turn into
+   * `archivedTurns`. Nothing upstream de-dupes them, so the newest turn rendered twice and the
+   * header read one turn too many (roadmap: "Session context counts the newest turn twice").
+   * There is no shared id between a live turn ("live") and its archived record (minted fresh at
+   * archive time), so question text is the only identity signal both sides carry.
+   */
+  const liveIsNewestArchived =
+    Boolean(liveTurn) &&
+    Boolean(newestArchivedRow) &&
+    (liveTurn!.id === newestArchivedRow!.id || liveTurn!.question === newestArchivedRow!.question);
+
   const rows: SessionContextTurn[] = [
-    ...archivedTurns
-      .filter((t) => t.transparency && chipsFromSnapshot(t.transparency).length > 0)
-      .map((t) => ({
-        id: t.id,
-        label: t.question.trim().slice(0, 48) || t.id,
-        snapshot: t.transparency ?? null,
-      })),
-    ...(liveTurn && chipsFromSnapshot(liveTurn.snapshot).length > 0 ? [liveTurn] : []),
+    ...archivedRows,
+    ...(liveTurn && !liveIsNewestArchived && chipsFromSnapshot(liveTurn.snapshot).length > 0
+      ? [liveTurn]
+      : []),
   ];
 
   if (!rows.length) return null;

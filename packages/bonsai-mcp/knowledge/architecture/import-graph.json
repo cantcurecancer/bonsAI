@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 307,
-  "edgeCount": 718,
+  "fileCount": 308,
+  "edgeCount": 722,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -497,6 +497,15 @@
         "src/components/OllamaModelsHubModal.tsx"
       ]
     },
+    "src/components/SessionContextStrip.test.tsx": {
+      "imports": [
+        "src/components/SessionContextStrip.tsx",
+        "src/test-harness/fakeDeckyUi.tsx",
+        "src/types/bonsaiUi.ts",
+        "src/utils/inputTransparency.ts"
+      ],
+      "importedBy": []
+    },
     "src/components/SessionContextStrip.tsx": {
       "imports": [
         "src/components/ContextChipLadder.tsx",
@@ -508,7 +517,8 @@
         "src/utils/navFocusRegistry.ts"
       ],
       "importedBy": [
-        "src/components/MainTabChatTranscript.tsx"
+        "src/components/MainTabChatTranscript.tsx",
+        "src/components/SessionContextStrip.test.tsx"
       ]
     },
     "src/components/SettingsTab.mdns.test.ts": {
@@ -1968,6 +1978,7 @@
       "imports": [],
       "importedBy": [
         "src/components/MainTabBonsaiAiMarkdownChunk.test.tsx",
+        "src/components/SessionContextStrip.test.tsx",
         "src/test-harness/setup.ts"
       ]
     },
@@ -2032,6 +2043,7 @@
         "src/components/MainTabChatTranscript.tsx",
         "src/components/MainTabScreenshotBrowser.tsx",
         "src/components/MainTabUnifiedAskBar.tsx",
+        "src/components/SessionContextStrip.test.tsx",
         "src/components/SessionContextStrip.tsx",
         "src/components/StrategyChecklistPanel.tsx",
         "src/hooks/useBonsaiAskOrchestration.ts",
@@ -2578,6 +2590,7 @@
         "src/components/ContextChipLadder.tsx",
         "src/components/MainTab.tsx",
         "src/components/MainTabChatTranscript.tsx",
+        "src/components/SessionContextStrip.test.tsx",
         "src/components/SessionContextStrip.tsx",
         "src/hooks/useBonsaiAskOrchestration.ts",
         "src/types/bonsaiUi.ts",

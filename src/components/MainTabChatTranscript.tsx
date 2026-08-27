@@ -745,6 +745,7 @@ questionLooksLikeTroubleshootingAsk(unifiedInput) ? (
         ? {
             id: "live",
             label: (askThreadDisplayQuestion || lastExchange?.question || "Latest Ask").trim().slice(0, 48),
+            question: (askThreadDisplayQuestion || lastExchange?.question || "").trim(),
             snapshot: transparencySnapshot,
           }
         : null

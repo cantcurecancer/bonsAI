@@ -8,6 +8,7 @@
     "src/components/MainTabPresetAnimatedChips.test.tsx",
     "src/components/PermissionDenyAction.test.tsx",
     "src/components/PermissionsTab.test.tsx",
+    "src/components/SessionContextStrip.test.tsx",
     "src/components/SettingsTab.mdns.test.ts",
     "src/components/VoiceInputSettingsSection.test.tsx",
     "src/components/icons.bonsaiGeometry.test.tsx",
