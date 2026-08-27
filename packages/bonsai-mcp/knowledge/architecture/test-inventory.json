@@ -49,6 +49,7 @@
     "src/utils/bonsaiReplyReadyToast.test.ts",
     "src/utils/bonsaiSessionSurvival.test.ts",
     "src/utils/buildAnswerBubbleElement.test.tsx",
+    "src/utils/buildTurnHeaderElement.test.tsx",
     "src/utils/chatPanelScroll.test.ts",
     "src/utils/chatSlotTurns.test.ts",
     "src/utils/chatTurnTitle.test.ts",

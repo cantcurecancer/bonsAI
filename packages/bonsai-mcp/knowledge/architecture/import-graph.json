@@ -1,6 +1,6 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 307,
+  "fileCount": 308,
   "edgeCount": 720,
   "cycles": [],
   "orphans": [],
@@ -252,8 +252,6 @@
         "src/hooks/useStreamScrollPin.ts",
         "src/types/backgroundAsk.ts",
         "src/types/bonsaiUi.ts",
-        "src/utils/answerBubbleNavRegistry.ts",
-        "src/utils/answerBubbleNavigation.ts",
         "src/utils/appliedTuningText.ts",
         "src/utils/archivedTurnTransparency.ts",
         "src/utils/askThinkingPhases.ts",
@@ -2071,7 +2069,6 @@
     "src/utils/answerBubbleNavRegistry.ts": {
       "imports": [],
       "importedBy": [
-        "src/components/MainTabChatTranscript.tsx",
         "src/utils/answerBubbleNavigation.ts",
         "src/utils/buildAnswerBubbleElement.tsx"
       ]
@@ -2097,9 +2094,9 @@
         "src/utils/uiDocument.ts"
       ],
       "importedBy": [
-        "src/components/MainTabChatTranscript.tsx",
         "src/utils/answerBubbleNavigation.test.ts",
         "src/utils/buildAnswerBubbleElement.tsx",
+        "src/utils/buildTurnHeaderElement.test.tsx",
         "src/utils/buildTurnHeaderElement.tsx"
       ]
     },
@@ -2346,13 +2343,21 @@
         "src/components/MainTabChatTranscript.tsx"
       ]
     },
+    "src/utils/buildTurnHeaderElement.test.tsx": {
+      "imports": [
+        "src/utils/answerBubbleNavigation.ts",
+        "src/utils/buildTurnHeaderElement.tsx"
+      ],
+      "importedBy": []
+    },
     "src/utils/buildTurnHeaderElement.tsx": {
       "imports": [
         "src/utils/answerBubbleNavigation.ts",
         "src/utils/focusNavigation.ts"
       ],
       "importedBy": [
-        "src/components/MainTabChatTranscript.tsx"
+        "src/components/MainTabChatTranscript.tsx",
+        "src/utils/buildTurnHeaderElement.test.tsx"
       ]
     },
     "src/utils/chatPanelScroll.test.ts": {

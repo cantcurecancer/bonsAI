@@ -66,11 +66,6 @@
       "role": ""
     },
     {
-      "path": "src/components/MainTabChatTranscript.tsx",
-      "lines": 841,
-      "role": ""
-    },
-    {
       "path": "src/hooks/useBonsaiAskOrchestration.test.ts",
       "lines": 830,
       "role": ""
@@ -78,6 +73,11 @@
     {
       "path": "py_modules/backend/services/screenshot_media.py",
       "lines": 804,
+      "role": ""
+    },
+    {
+      "path": "src/components/MainTabChatTranscript.tsx",
+      "lines": 801,
       "role": ""
     },
     {

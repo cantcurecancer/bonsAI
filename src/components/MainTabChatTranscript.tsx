@@ -10,17 +10,8 @@ import { PanelSectionRow, Button, Focusable } from "@decky/ui";
 import {
   BONSAI_CHAT_AI_BUBBLE_MAX_FRAC,
 } from "../features/unified-input/constants";
-import {
-  invokeAnswerBubbleMoveDown,
-  invokeAnswerBubbleMoveUp,
-} from "../utils/answerBubbleNavRegistry";
-import { focusAnswerBubbleAfterHeader } from "../utils/answerBubbleNavigation";
-import {
-  isDeckDirectionUpEvent,
-  isDownNavigationEvent,
-  isUpNavigationEvent,
-} from "../utils/focusNavigation";
-import { getUiDocument, uiActiveElement } from "../utils/uiDocument";
+import { isDeckDirectionUpEvent } from "../utils/focusNavigation";
+import { getUiDocument } from "../utils/uiDocument";
 import { formatAppliedTuningBannerText } from "../utils/appliedTuningText";
 import type { ModelPolicyDisclosurePayload } from "../data/modelPolicy";
 import { StrategyChecklistPanel } from "./StrategyChecklistPanel";
@@ -266,47 +257,16 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
     });
   }, [expandedTurnKey]);
 
-  useEffect(() => {
-    const col = chatMainColumnRef.current;
-    if (!col) return;
-    const onKeyDown = (ev: KeyboardEvent) => {
-      const active = uiActiveElement();
-      if (!active || !col.contains(active)) return;
-      const onAnswer = Boolean(active?.closest(".bonsai-chat-ai-bubble"));
-      const inHeader = Boolean(active?.closest(".bonsai-chat-turn-row-header"));
-      if (isDownNavigationEvent(ev)) {
-        if (inHeader) {
-          const turnId = active
-            ?.closest(".bonsai-chat-turn-row-header")
-            ?.getAttribute("data-bonsai-turn-id");
-          const handled = focusAnswerBubbleAfterHeader(
-            active?.closest(".bonsai-chat-turn-row-header") as HTMLElement | null,
-            turnId ?? undefined
-          );
-          if (handled) {
-            ev.preventDefault();
-            ev.stopPropagation();
-          }
-          return;
-        }
-        if (!onAnswer) return;
-        const handled = invokeAnswerBubbleMoveDown();
-        if (handled) {
-          ev.preventDefault();
-          ev.stopPropagation();
-        }
-      } else if (isUpNavigationEvent(ev)) {
-        if (!onAnswer) return;
-        const handled = invokeAnswerBubbleMoveUp();
-        if (handled) {
-          ev.preventDefault();
-          ev.stopPropagation();
-        }
-      }
-    };
-    col.addEventListener("keydown", onKeyDown, true);
-    return () => col.removeEventListener("keydown", onKeyDown, true);
-  }, [askThreadCollapsed.length, expandedTurnKey]);
+  /*
+   * There is deliberately NO keydown listener for D-pad routing here. One lived in this spot
+   * until 2026-08-27, carrying the header→bubble entry edge and the answer-walk dispatch — and
+   * it was dead code on device: a real controller DOWN press dispatches zero DOM keyboard
+   * events into the plugin (measured with a capture-phase logger on `document`, bridge press,
+   * empty log). Steam routes the D-pad through its own focus tree, which invokes `Focusable`
+   * `onMoveUp`/`onMoveDown` props — so those edges now live on the elements themselves:
+   * buildTurnHeaderElement (header→bubble) and buildAnswerBubbleElement (bubble/stop walk).
+   * See docs/audit/spoiler-dpad-01-keydown-dead-code-2026-08-27.md before reintroducing one.
+   */
 
   /*
    * askQuestion/appId are the inputs the asked-entity spoiler unwrap runs on, so they must be

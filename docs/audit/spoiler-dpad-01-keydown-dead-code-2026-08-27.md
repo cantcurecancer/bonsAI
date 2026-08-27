@@ -10,6 +10,21 @@ The spoiler fence is still unreachable by D-pad on device, with both prior fixes
 loaded and provably intact. The cause is not any of the code inside the navigation intercept —
 it is that **the intercept never runs on device at all**.
 
+## Fixed the same day — and confirmed on device
+
+The fix direction below was implemented and confirmed on 2026-08-27, same session: the
+header, the bubble, and every section stop now carry `Focusable` `onMoveDown`/`onMoveUp`
+(with `onButtonDown` demoted to string-only presses per focusNavigation.ts's pairing rule),
+and the dead keydown intercept in MainTabChatTranscript.tsx is deleted. Deployed via
+`build.ps1`, loader restarted, same rig and same ocarina question: DOWN from ask → header →
+**the fence takes the ring** (`runs/SPOILER-REVEAL-AFTER-onmove-fix.json`, `neverReached: []`,
+reproduced on a second pass), and **A reveals it** — masked fences 1→0, revealed 0→1, read
+from the page after the press. Two residues observed, both cosmetic: one DOWN press is
+absorbed on the fence before the next moves on (the offered-once diversion plus a scroll step
+that moves nothing), and after an A-reveal the ring is momentarily unowned while the chunk
+re-renders (the next press re-places it). B-over-fence and the revealed *tap to hide* control
+were not exercised by script — that residue is in the testing.md row.
+
 ## What was proven before the walk (the 08-26 run could prove none of these)
 
 | Claim | How it was proven |
@@ -98,9 +113,12 @@ the question, not the syntax.
    focus and carry their question text. Rule: before pressing A on a chip, confirm the focused
    element's *own* text is the question. Worth a look someday: what that empty focusable
    sub-element in the carousel is.
-5. **`deck_waitFor` treats an object return as unsatisfied** — a poll returning
-   `{fences: 1, helpful: true}` ran the full timeout with `satisfied: false` and the right
-   answer sitting in `value`. Return plain booleans/numbers from waitFor expressions.
+5. **`deck_waitFor` reported `satisfied: false` with a truthy final `value`, twice** — once
+   with an object, once with a plain boolean `true`, so "return plain booleans" is not the
+   workaround it first looked like. Either both replies genuinely finished right at the
+   deadline (~3 min generations make that possible) or the tool mis-detects satisfaction;
+   not separable from here. Treat `value` as the finding — the tool's own advice — and
+   follow a timed-out wait with a direct `deck_readPage` before concluding anything.
 6. **`deck_openPlugin` fails when the panel is already open** ("walked 1 control(s) without
    finding bonsAI" — it is *inside* bonsAI). Read the failure's own focus payload before
    retrying; ring inside plugin content means proceed.

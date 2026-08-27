@@ -8,7 +8,7 @@
 import React from "react";
 import { Focusable } from "@decky/ui";
 import { focusFirstAnswerChunk } from "./answerBubbleNavigation";
-import { isDeckDirectionDownEvent } from "./focusNavigation";
+import { isDownDeckButtonEvent } from "./focusNavigation";
 
 export type BuildTurnHeaderElementArgs = {
   turnId: string;
@@ -44,9 +44,20 @@ export function buildTurnHeaderElement(args: BuildTurnHeaderElementArgs): React.
     return focusFirstAnswerChunk(turnId);
   };
 
+  /*
+   * `onMoveDown` is the handler Steam actually invokes for a D-pad press on device. Measured
+   * 2026-08-27: with the ring on this header, a real DOWN press dispatched no DOM keyboard event
+   * and never entered the bubble through the previous `onButtonDown`-only wiring — the ring
+   * skipped straight past the answer to the utility row. `onMoveDown`'s return value is honored
+   * (true suppresses Steam's own move; ContextChipLadder's on-device runs prove both halves).
+   * The `onButtonDown` twin stays for the string-shaped presses tests and desktop keyboards
+   * deliver, with the string-only predicate so one press can never fire both — the pairing rule
+   * documented in focusNavigation.ts.
+   */
   const headerNavHandlers = {
+    onMoveDown: () => focusAnswer(),
     onButtonDown: (button: unknown) =>
-      isDeckDirectionDownEvent(button) ? focusAnswer() : false,
+      isDownDeckButtonEvent(button) ? focusAnswer() : false,
   } as Record<string, unknown>;
 
   return (

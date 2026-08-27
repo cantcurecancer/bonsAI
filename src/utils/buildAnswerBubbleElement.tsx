@@ -23,8 +23,8 @@ import {
 import { registerAnswerStop } from "./answerStopRegistry";
 import { uiGamepadFocusElement } from "./uiDocument";
 import {
-  isDeckDirectionDownEvent,
-  isDeckDirectionUpEvent,
+  isDownDeckButtonEvent,
+  isUpDeckButtonEvent,
 } from "./focusNavigation";
 import { prepareStreamMarkdown } from "./streamMarkdownPrepare";
 import { splitResponseIntoChunks } from "./splitResponseIntoChunks";
@@ -74,12 +74,14 @@ const STOP_CLASS = "bonsai-ai-response-chunk bonsai-ai-response-chunk--in-bubble
  * to continue the walk. Both directions delegate to the bubble's own handlers rather than
  * reimplementing anything — the bubble stays the single owner of what Down and Up mean in an answer.
  *
- * `onButtonDown` is the sole direction handler here, which is why it uses the event-aware predicates
- * rather than the string ones the bubble pairs with its `onMoveDown`. Two reasons, in order:
- * `onButtonDown` fires on every Decky component for every button, where `onMoveUp`/`onMoveDown` are
- * `Focusable`-only — and whether Steam routes a press to a *nested* Focusable's `onMove*` is the one
- * thing about this design that is unproven on device. Wiring both would risk firing twice for one
- * press, which is exactly what the string predicates exist to prevent.
+ * `onMoveDown`/`onMoveUp` carry the directions. The previous design bet the other way — its comment
+ * called nested-Focusable `onMove*` "the one thing about this design that is unproven on device"
+ * and made `onButtonDown` the sole direction handler. Measured 2026-08-27, the bet lost: a real
+ * D-pad press reaches neither a DOM keydown listener nor (on this path) a direction `onButtonDown`,
+ * while `onMove*` on nested plugin Focusables is exactly what CONTEXT-LADDER-03's on-device runs
+ * exercised. So `onMove*` is the wiring Steam honors, and `onButtonDown` stays only for the
+ * string-shaped presses tests and desktop keyboards deliver — with the string-only predicates, so
+ * one press can never fire both (the pairing rule documented in focusNavigation.ts).
  *
  * There is deliberately no `onActivate` behaviour beyond claiming the press: the wait chips are
  * status, not controls, and a press that early-revealed a spoiler mask from its holding chip would
@@ -91,9 +93,11 @@ export function stopNavProps(
 ): Record<string, unknown> {
   return {
     onActivate: () => {},
+    onMoveDown: () => moveDown(),
+    onMoveUp: () => moveUp(),
     onButtonDown: (button: unknown) => {
-      if (isDeckDirectionDownEvent(button)) return moveDown();
-      if (isDeckDirectionUpEvent(button)) return moveUp();
+      if (isDownDeckButtonEvent(button)) return moveDown();
+      if (isUpDeckButtonEvent(button)) return moveUp();
       return false;
     },
   };
@@ -253,6 +257,7 @@ export function buildAnswerBubbleElement(
 
   const stopNav = stopNavProps(moveDown, moveUp);
 
+  /* Same direction wiring as stopNavProps, for the same measured reason. */
   const navHandlers = {
     onFocus: () => {
       captureBubble(answerKey);
@@ -261,9 +266,11 @@ export function buildAnswerBubbleElement(
     onActivate: () => {
       captureBubble(answerKey);
     },
+    onMoveDown: () => moveDown(),
+    onMoveUp: () => moveUp(),
     onButtonDown: (button: unknown) => {
-      if (isDeckDirectionDownEvent(button)) return moveDown();
-      if (isDeckDirectionUpEvent(button)) return moveUp();
+      if (isDownDeckButtonEvent(button)) return moveDown();
+      if (isUpDeckButtonEvent(button)) return moveUp();
       return false;
     },
   } as Record<string, unknown>;

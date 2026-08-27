@@ -96,11 +96,12 @@ describe("answer bubble section stops", () => {
   });
 
   /*
-   * Decky hands `onButtonDown` a GamepadEvent, not a key string, and a stop's `onButtonDown` is its
-   * only direction handler. The string predicates the bubble uses alongside its own `onMoveDown`
-   * stringify to "[object Object]" and match nothing — wiring those here would have shipped a stop
-   * that looks correct and never moves. Same failure that made the spoiler fence reveal itself on a
-   * D-pad press (focusNavigation.ts:69-77).
+   * Directions ride `onMoveDown`/`onMoveUp` — the handlers Steam actually invokes for a D-pad
+   * press on device. Measured 2026-08-27: a real press dispatches no DOM keyboard event into the
+   * plugin, and the previous `onButtonDown`-only wiring never moved the ring on hardware, which
+   * is how the spoiler fence stayed unreachable through three shipped fixes. `onButtonDown`
+   * remains for string-shaped presses only; a GamepadEvent direction must be a no-op there so a
+   * press that somehow reaches both handlers cannot double-step.
    */
   describe("what a section does with a press", () => {
     const gamepad = (button: number) => ({ type: "gamepadbuttondown", detail: { button } });
@@ -108,16 +109,35 @@ describe("answer bubble section stops", () => {
     const DIR_DOWN = 10;
     const OK = 1;
 
-    it("walks on a real gamepad direction event", () => {
+    it("walks on onMoveDown / onMoveUp, the handlers Steam invokes for the D-pad", () => {
+      const down = vi.fn(() => true);
+      const up = vi.fn(() => true);
+      const props = stopNavProps(down, up);
+
+      expect((props.onMoveDown as () => boolean)()).toBe(true);
+      expect(down).toHaveBeenCalledTimes(1);
+
+      expect((props.onMoveUp as () => boolean)()).toBe(true);
+      expect(up).toHaveBeenCalledTimes(1);
+    });
+
+    it("does not double-step: a GamepadEvent direction on onButtonDown is a no-op", () => {
       const down = vi.fn(() => true);
       const up = vi.fn(() => true);
       const onButtonDown = stopNavProps(down, up).onButtonDown as (b: unknown) => boolean;
 
-      expect(onButtonDown(gamepad(DIR_DOWN))).toBe(true);
-      expect(down).toHaveBeenCalledTimes(1);
+      expect(onButtonDown(gamepad(DIR_DOWN))).toBe(false);
+      expect(onButtonDown(gamepad(DIR_UP))).toBe(false);
+      expect(down).not.toHaveBeenCalled();
+      expect(up).not.toHaveBeenCalled();
+    });
 
-      expect(onButtonDown(gamepad(DIR_UP))).toBe(true);
-      expect(up).toHaveBeenCalledTimes(1);
+    it("still walks on a string-shaped press, which desktop keyboards deliver", () => {
+      const down = vi.fn(() => true);
+      const onButtonDown = stopNavProps(down, () => false).onButtonDown as (b: unknown) => boolean;
+
+      expect(onButtonDown("ArrowDown")).toBe(true);
+      expect(down).toHaveBeenCalledTimes(1);
     });
 
     /* A on a section must not act — a spoiler wait chip is the section that makes this matter. */
@@ -133,12 +153,12 @@ describe("answer bubble section stops", () => {
 
     /* Returning false is what lets the press fall through and leave the bubble at either end. */
     it("reports the walk's own answer, so an exhausted walk yields", () => {
-      const onButtonDown = stopNavProps(
+      const onMoveDown = stopNavProps(
         () => false,
         () => false
-      ).onButtonDown as (b: unknown) => boolean;
+      ).onMoveDown as () => boolean;
 
-      expect(onButtonDown(gamepad(DIR_DOWN))).toBe(false);
+      expect(onMoveDown()).toBe(false);
     });
   });
 

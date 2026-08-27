@@ -101,6 +101,25 @@ const RING_QUESTION_CALLS = new Set(["uiActiveElement"]);
 /** The accessor's own home, where reading activeElement is the point. */
 const RING_QUESTION_EXEMPT = new Set(["src/utils/uiDocument.ts"]);
 
+/**
+ * KeyboardEvent-shaped Up/Down predicates. These exist to interpret DOM keyboard
+ * events — and a controller D-pad press dispatches none into the plugin (measured
+ * on device 2026-08-27: capture-phase logger on `document`, real bridge press,
+ * empty log). Any call is therefore D-pad routing on a channel Steam never uses:
+ * the code runs under vitest, which dispatches real KeyboardEvents, and is dead
+ * on hardware. That split is SPOILER-DPAD-01's recurrence engine — the
+ * header→bubble edge and the fence diversion lived behind one such listener
+ * through three shipped fixes. Route directions through Focusable
+ * `onMoveUp`/`onMoveDown` instead.
+ *
+ * Left/Right are deliberately NOT flagged: a focused text input does receive real
+ * key events, and the ask bar legitimately reads Left/Right there for the caret.
+ */
+const KEYDOWN_DPAD_CALLS = new Set(["isDownNavigationEvent", "isUpNavigationEvent"]);
+
+/** The predicates' own home. */
+const KEYDOWN_DPAD_EXEMPT = new Set(["src/utils/focusNavigation.ts"]);
+
 const RULES = {
   "page-search": {
     title: "page search or activeElement used for focus",
@@ -117,6 +136,10 @@ const RULES = {
   "ring-question": {
     title: "uiActiveElement() asked which control the gamepad ring owns",
     fix: "use elementHasGamepadFocus / uiGamepadFocusElement, which read .gpfocus",
+  },
+  "keydown-dpad": {
+    title: "D-pad routing via a KeyboardEvent predicate — the Deck dispatches no key events for the D-pad",
+    fix: "wire the direction through Focusable onMoveUp/onMoveDown; keydown code is dead on device",
   },
 };
 
@@ -291,6 +314,22 @@ function checkFile(absPath) {
       RING_QUESTION_CALLS.has(node.expression.text)
     ) {
       add("ring-question", lineOf(node, sf), `${node.expression.text}()`);
+    }
+
+    /*
+     * --- keydown D-pad routing --------------------------------------------
+     *
+     * Like ring-question, not gated on focus context: the Up/Down KeyboardEvent
+     * predicates have exactly one purpose, so every call is direction routing by
+     * construction. See KEYDOWN_DPAD_CALLS above for the measurement behind this.
+     */
+    if (
+      !KEYDOWN_DPAD_EXEMPT.has(relPath) &&
+      ts.isCallExpression(node) &&
+      ts.isIdentifier(node.expression) &&
+      KEYDOWN_DPAD_CALLS.has(node.expression.text)
+    ) {
+      add("keydown-dpad", lineOf(node, sf), `${node.expression.text}()`);
     }
 
     ts.forEachChild(node, (child) => visit(child, focus));
