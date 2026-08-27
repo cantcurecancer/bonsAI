@@ -246,39 +246,44 @@
       "line": 2760
     },
     {
+      "name": "forget_background_game_ai",
+      "domain": "ask",
+      "line": 2815
+    },
+    {
       "name": "ask_ollama",
       "domain": "ollama",
-      "line": 2865
+      "line": 2910
     },
     {
       "name": "get_voice_engine_status",
       "domain": "voice",
-      "line": 2932
+      "line": 2977
     },
     {
       "name": "install_voice_engine",
       "domain": "voice",
-      "line": 2940
+      "line": 2985
     },
     {
       "name": "get_voice_install_status",
       "domain": "voice",
-      "line": 2990
+      "line": 3035
     },
     {
       "name": "start_voice_transcription",
       "domain": "voice",
-      "line": 2994
+      "line": 3039
     },
     {
       "name": "stop_voice_transcription",
       "domain": "voice",
-      "line": 3053
+      "line": 3098
     },
     {
       "name": "get_voice_transcription_status",
       "domain": "voice",
-      "line": 3073
+      "line": 3118
     }
   ]
 }

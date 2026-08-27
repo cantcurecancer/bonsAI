@@ -108,7 +108,18 @@ bottom of this file before any on-device step.
 
 ---
 
-## Phase 2 — Clear cache leaves the thread on disk (★★★) — decision now LOCKED
+## Phase 2 — Clear cache leaves the thread on disk (★★★) — **DONE 2026-08-27**
+
+> **Closed.** Three causes, all real, only the third load-bearing. D32 (chat slot detach) and D34
+> (modal snapshot discard) landed first and did **not** fix the visible bug; the restored turn's
+> `data-bonsai-turn-id` was `live`, which ruled both out by measurement. The actual cause was the
+> backend keeping the finished answer while the frontend repaints it on every mount — fixed under
+> **D35 option 1** with a new `forget_background_game_ai` RPC that also stops a generation still in
+> flight. Confirmed on device including a full QAM close/reopen. Row **CLEAR-CACHE-01** in
+> [testing.md](../testing.md) is Partial: the mid-generation stop is unit-tested only, because the
+> model answers faster than the D-pad walk to the button. Writeup:
+> [archive/roadmap-bugs-fixed.md](../archive/roadmap-bugs-fixed.md). The orphan-slot pile-up is
+> still open as its own follow-up. Original plan text below, kept as written.
 
 **[D32](../audit/maintainer-decisions-locked.md) locked 2026-08-27:** clearing must leave the
 Main tab clean **and it must stay clean**. Delete or detach the saved chat slot — implementer's

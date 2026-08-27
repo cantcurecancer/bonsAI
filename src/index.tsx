@@ -863,6 +863,31 @@ const Content: React.FC = () => {
 
 
   const resetPluginSession = useCallback(() => {
+    /*
+     * Tell Python to forget the last answer *first* (D35, option 1, locked 2026-08-27) — and stop a
+     * generation still in flight, which is the maintainer's call on D35's open sub-question.
+     *
+     * This is the route the maintainer was actually hitting. D32 (chat slot) and D34 (modal
+     * snapshot) were both real and are both fixed, and the cleared thread still came back: the
+     * restored turn was tagged `live`, so it came from neither. It came from the backend — the
+     * finished answer lives on in `_background_state` so that a reply survives the user tabbing
+     * away mid-generation, and `useBonsaiAskOrchestration.ts` calls `get_background_game_ai_status`
+     * on *every* mount to repaint it. Clearing never told Python, so switching tabs was enough to
+     * bring it back.
+     *
+     * Dispatched before anything else in this function, and not awaited. The remount that follows
+     * the confirmation modal closing sends its own `get_background_game_ai_status`; both travel the
+     * same socket in send order, and `forget_background_game_ai` resets the state under
+     * `_background_lock` before its first suspension point, so the status call either finds idle
+     * state or waits on the lock. Awaiting instead would hold the modal open for the Ollama stop
+     * (up to ~1.5s), which is a worse trade for a button that should feel instant.
+     */
+    void callDeckyWithTimeout<[], { ok?: boolean; stopped?: boolean }>(
+      "forget_background_game_ai",
+      [],
+    ).catch(() => {
+      /* Best-effort: the UI is cleared either way, and a failure only means a remount can repaint. */
+    });
     resetAskSessionSlice();
     /*
      * Detach the saved chat slot, or the cleared screen fills itself back in.

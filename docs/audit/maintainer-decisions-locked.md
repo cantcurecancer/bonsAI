@@ -15,15 +15,13 @@ choices are, and what happens either way. **Locked calls (2026-08-02 for D1–D6
 [Maintainer decisions locked](#maintainer-decisions-locked--2026-08-02); implement
 from that section when it disagrees with an option above.
 
-**Three open:**
+**Two open:**
 [D18](#d18--when-loading-settings-fails-four-values-keep-whatever-was-on-screen-bug-or-intent)
-(raised 2026-08-05 by the step 11 friction test),
+(raised 2026-08-05 by the step 11 friction test) and
 [D33](#d33--the-new-character-avatars-were-drawn-for-44px-the-picker-shows-them-at-24px-which-one-moves)
-(raised 2026-08-26 from the AI character avatars design handoff), and
-[D35](#d35--open--clear-cache-clears-the-screen-but-the-ais-last-answer-is-still-stored-on-the-plugins-own-back-end-should-clearing-forget-it)
-(raised 2026-08-27 on device — the third and load-bearing cause of the *Clear cache* bug).
-**D32 and D34 are both locked and implemented** (2026-08-27); they closed two real routes into that
-bug, but the one you actually see needs D35. **D23–D27 were raised and locked during the RAG
+(raised 2026-08-26 from the AI character avatars design handoff).
+**D32, D34 and D35 are all locked and implemented** (2026-08-27) — three separate causes of the one
+*Clear cache* bug, which is now fixed and confirmed on device. **D23–D27 were raised and locked during the RAG
 work of 2026-08-18 to 2026-08-21; D28–D31 were raised and locked 2026-08-22.** Everything else
 D1–D31 is locked; **D19 is superseded by D20** (below), and **D31 renumbers the superseded one to
 D19b**. See the table below for D1–D15 and the sections below for D16, D17, D19–D31.
@@ -98,7 +96,32 @@ in a browser and it shows the real thing at several sizes.
 
 ---
 
-### D35 — OPEN — *Clear cache* clears the screen, but the AI's last answer is still stored on the plugin's own back end. Should clearing forget it?
+### D35 — LOCKED (option 1, 2026-08-27) — *Clear cache* clears the screen, but the AI's last answer is still stored on the plugin's own back end. Should clearing forget it?
+
+**Locked in the maintainer's words: "tell Python to forget, if answer is still being generated,
+stop it."** So both halves of option 1, including its open sub-question. Implemented the same day.
+
+**What shipped.** A new command `forget_background_game_ai` ([main.py:2815](../../main.py#L2815)),
+sent the moment you press **Clear** and not waited on. It drops the stored answer, and if a reply is
+still being written it stops that too — properly, by closing the connection to the AI rather than
+only cancelling the plugin's own job, because the AI keeps writing until the connection goes. After
+a clear you see **nothing at all** — not a "Request cancelled." bubble.
+
+**Why it is not waited on.** Waiting would hold the confirmation box open for up to a second and a
+half while the AI is told to stop, on a button that should feel instant. The order is safe without
+waiting: the forget clears the stored answer before it can be interrupted, so the screen's own
+"what was the last answer?" question, sent a moment later when the panel rebuilds, either finds
+nothing or waits its turn.
+
+**Confirmed on your Deck the same day.** Asked a question, cleared, switched tabs — gone. Then
+closed and reopened the Quick Access Menu, which is the strongest version of the same test — still
+gone. The plugin log now records the drop, so a future session can tell "the command ran" apart
+from "the screen just didn't redraw".
+
+**One honest gap.** The *stop a reply mid-write* half is covered by four automated tests but was not
+reproducible by hand on the Deck: the model answers in well under a minute even when asked for an
+essay, and walking the D-pad from **Ask** to **Clear cache…** takes longer than that. Nothing
+suggests it is broken; it simply has not been watched happening.
 
 **Raised 2026-08-27, measured on your Deck. This is what actually makes *Clear cache* look like it
 does nothing** — D32 and D34 were both real problems, both are now fixed, and **neither was the
@@ -155,8 +178,9 @@ snapshot would also drop the remembered tab, bouncing you from **Settings** back
 after pressing Clear. Measured on the Deck: the panel **stayed on the Settings tab**. Worth
 re-checking if the modal machinery changes, but as it stands there is no visible cost.
 
-**This fix is correct and is not sufficient on its own** — the cleared thread still comes back, by a
-third route that is nothing to do with the snapshot. See **D35** above.
+**This fix is correct and was not sufficient on its own** — the cleared thread still came back, by a
+third route that is nothing to do with the snapshot. That route is **D35**, now also locked and
+fixed; the bug is closed.
 
 **Raised 2026-08-27, measured on your Deck the same day. This is a follow-on from D32 — D32's
 answer still stands, but the reason the button looked broken turned out to be something else, and

@@ -2812,6 +2812,51 @@ class Plugin:
         await self._maybe_app_log("ask.abort", "background ask abort requested")
         return {"ok": True}
 
+    async def forget_background_game_ai(self):
+        """Feature: Clear session cache. Input: none. Output: {"ok", "stopped"} — drop the stored answer.
+
+        *Clear cache* used to empty the screen only. The finished answer stayed here, and
+        ``get_background_game_ai_status`` runs on every frontend mount to rebuild a reply the user
+        tabbed away from — so switching tabs after a clear painted the cleared thread straight back.
+        Measured on the maintainer's Deck 2026-08-27; locked as **D35 option 1**.
+
+        Two jobs, in this order:
+
+        1. **Forget**, under ``_background_lock`` and before any real suspension point. The lock's
+           uncontended fast path does not yield, so a ``get_background_game_ai_status`` sent right
+           behind this one (the remount that follows the confirmation modal closing) either finds
+           the state already idle or blocks on the lock until it is. That ordering is what makes a
+           fire-and-forget call from the frontend safe.
+        2. **Stop**, if a generation was still running — the maintainer's call on D35's open
+           sub-question. Cancelling the asyncio task is not enough on its own: the model call is a
+           blocking urllib read on a worker thread, and only ``abort_background_game_ai`` owns that
+           teardown (abort event -> close the HTTP response -> ask Ollama to stop). Its own state
+           write is a no-op by the time it runs here, which is the wanted outcome: a cleared session
+           shows nothing at all, not a "Request cancelled." bubble.
+        """
+        async with self._background_lock:
+            task = self._background_task
+            self._background_task = None
+            was_running = task is not None and not task.done()
+            self._background_state = self._new_background_state()
+            self._background_request_seq += 1
+        self._last_input_transparency = None
+        # Logged unconditionally: the visible proof of this fix is a *absence* — a thread that does
+        # not come back — and an absence cannot tell you whether the RPC ran or the UI simply never
+        # repainted. This line is how the next on-device run distinguishes the two.
+        logger.info("forget_background_game_ai: stored answer dropped (stopped=%s)", was_running)
+
+        if was_running:
+            await self.abort_background_game_ai()
+        await cancel_and_await(task)
+
+        await self._maybe_app_log(
+            "ask.forget",
+            "background ask state forgotten",
+            fields={"stopped": was_running},
+        )
+        return {"ok": True, "stopped": was_running}
+
     def _build_system_prompt(
         self,
         question: str,

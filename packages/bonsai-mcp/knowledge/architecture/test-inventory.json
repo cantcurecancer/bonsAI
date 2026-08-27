@@ -94,6 +94,7 @@
     "tests/test_async_task_lifecycle.py",
     "tests/test_backend_helpers.py",
     "tests/test_background_abort_busy.py",
+    "tests/test_background_forget_on_clear.py",
     "tests/test_background_partial_state.py",
     "tests/test_background_request_state.py",
     "tests/test_bonsai_stream_tags.py",
