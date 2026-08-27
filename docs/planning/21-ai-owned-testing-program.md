@@ -139,16 +139,45 @@ existing ones** — that is Track C.
 
 **Status 2026-08-26 — built and blocking.** `scripts/check-focus-patterns.mjs`, wired into
 `tests.yml` as a fourth gate (`pnpm test:focus`). Three of the five candidate checks are
-implemented; checks 4 and 5 stay deferred, still marked UNKNOWN.
+implemented, plus a fourth rule found by using it (`ring-question`, below); plan checks 4 and 5
+stay deferred, still marked UNKNOWN.
 
 It uses the TypeScript compiler API rather than regex, because two of these rules are about
 JSX prop identity and a regex version produces false positives that get the rule deleted.
 
-**Ratcheted, not retroactive.** The repo has **77 existing violations** across 20 files,
+**Ratcheted, not retroactive.** The repo has **80 existing violations** across 21 files,
 recorded in `scripts/focus-baseline.json`. The check fails only when a count goes *up* — which
 is exactly the "catches new mistakes, does not find existing ones" line above, made mechanical.
 Verified both ways: a probe file with all three violations failed the gate, and removing it
 returned to green.
+
+**A fourth check, added 2026-08-26 — `ring-question`, and the reason it is worth reading.**
+The three checks above went green over a live bug, and the way they did it is the interesting
+part.
+
+`page-search` fires on the `.activeElement` property access. Once `uiDocument.ts` wrapped that
+access behind `uiActiveElement()`, exactly **one** such access was left in `src/` — inside
+`uiDocument.ts` itself, where it is correct, and duly recorded in the baseline. Every call site
+of the wrapper therefore scored **zero**. `answerStopRegistry.ts` — which the roadmap names as
+the lead for the still-open spoiler-reveal bug — showed only a `tabindex` finding.
+
+So the check reported green over the exact defect class it was written for, because the
+codebase had been tidied in a way that moved the pattern out of its sight. **A rule that
+matches a syntax rather than a question stops matching the moment someone extracts a helper.**
+That is the general lesson, and it is worth more than the specific rule.
+
+`ring-question` matches the question instead: any call to `uiActiveElement()` outside its own
+module. It found **7 sites**, which is the full set a hand audit found independently. Four are
+fixed (three on the answer-bubble focus path, plus an escape hatch on the one legitimate use —
+blurring the on-screen keyboard before an Ask, which really is an `activeElement` operation).
+Three remain in the baseline, named rather than invisible: `MainTabChatTranscript.tsx`,
+`MainTabUnifiedAskBar.tsx`, `chatPanelScroll.ts`. They are the same defect class on surfaces
+this change set did not verify on device, and each will want its own row.
+
+The distinction the rule encodes: reading focus **right after you called `.focus()` yourself**
+is a landing check and stays legal — `focusSpoilerFence`, `focusDeckOwner` and `focusAnswerStop`
+all do this correctly with `elementHasFocus`. Reading focus to decide **where the ring already
+is**, with no `.focus()` of your own in front of it, is the trap.
 
 **What the first run found, and what it means.** `move-props-on-button` scored **zero** — that
 bug class was eliminated when ABOUT-LINKS-01 and REPLY-DOWN-01 were fixed, and the check now

@@ -96,6 +96,25 @@ export function elementHasGamepadFocus(el: HTMLElement | null | undefined): bool
   return el === ring || el.contains(ring);
 }
 
+/**
+ * The element Steam's gamepad ring currently owns, or `activeElement` when there is no ring.
+ *
+ * The counterpart to `uiActiveElement`, and the one to reach for when the question is *which
+ * control is the user on* rather than *did the `focus()` I just called land*. `elementHasGamepadFocus`
+ * answers the same question for a known element; this answers it when you have no candidate yet and
+ * need to look up from wherever the ring is.
+ *
+ * Same fallback rule, and for the same reason: no ring in the document means desktop, jsdom, or a
+ * moment where nothing owns gamepad focus, and `activeElement` is the best answer available there.
+ */
+export function uiGamepadFocusElement(): HTMLElement | null {
+  // The ring class is stamped by Steam on whichever element it picks, so there is nothing to
+  // register at creation time and this query IS the measurement — same as elementHasGamepadFocus.
+  // focus-patterns-allow: observing the gamepad ring, not searching for a target.
+  const ring = getUiDocument().querySelector<HTMLElement>(".gpfocus");
+  return ring ?? uiActiveElement();
+}
+
 /** Test-only reset. */
 export function resetUiDocument(): void {
   uiDocument = null;

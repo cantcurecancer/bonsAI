@@ -850,6 +850,9 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
 
   const onAskOllama = useCallback(
     async (overrideQuestion?: string, opts?: { threadQuestionDisplay?: string }) => {
+      // The point here is to dismiss the on-screen keyboard before an Ask, and that is bound to
+      // activeElement — the gamepad ring is the wrong question, not the right one.
+      // focus-patterns-allow: blurring the DOM's focused element, not asking where the ring is.
       const active = uiActiveElement();
       if (active) {
         active.blur();

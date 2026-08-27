@@ -22,6 +22,32 @@
  *                         stamped -1 on the button and its row, so navigating onto
  *                         them deleted them from the graph.
  *
+ *   ring-question         `uiActiveElement()` used to work out which control the
+ *                         gamepad ring owns. This is MICRO-04's defect, and adding
+ *                         the rule is what plan 21 § 3 Track B calls "catching the
+ *                         class rather than the instance".
+ *
+ *                         WHY THE EXISTING page-search RULE MISSES IT. That rule
+ *                         fires on the `.activeElement` property access. Once
+ *                         uiDocument.ts wrapped that access, exactly one such
+ *                         access was left in src/ -- inside uiDocument.ts itself,
+ *                         where it is correct, and duly recorded in the baseline.
+ *                         Every call site of the wrapper therefore scored zero.
+ *                         answerStopRegistry.ts carried the bug and showed only a
+ *                         tabindex finding. A check whose one true positive is
+ *                         grandfathered reports green over a live bug.
+ *
+ *                         THE DISTINCTION THE RULE ENCODES. Reading focus right
+ *                         after you called `.focus()` yourself is a landing check
+ *                         and stays legal -- that is what `elementHasFocus` is for,
+ *                         and focusSpoilerFence / focusDeckOwner / focusAnswerStop
+ *                         all use it correctly. Reading focus to decide where the
+ *                         ring already is, with no `.focus()` of your own in front
+ *                         of it, is the trap: Steam moves `.gpfocus` without moving
+ *                         `activeElement`, so the answer is confidently wrong
+ *                         rather than null -- which is why the `??` fallback in
+ *                         captureBubble did not save it.
+ *
  * Parsing uses the TypeScript compiler API, not regex. Focus checks need JSX
  * boundaries and prop identity; a regex version produces false positives that get
  * blamed on the rule rather than the parser, and a rule nobody trusts gets removed.
@@ -66,6 +92,15 @@ const NON_FORWARDING = new Set(["Button", "ButtonItem", "DialogButton"]);
 
 const MOVE_PROP = /^onMove(Up|Down|Left|Right)$/;
 
+/**
+ * Accessors that answer "what does the DOM think has focus" and get mistaken for
+ * "what does Steam's gamepad ring own". See the ring-question rule below.
+ */
+const RING_QUESTION_CALLS = new Set(["uiActiveElement"]);
+
+/** The accessor's own home, where reading activeElement is the point. */
+const RING_QUESTION_EXEMPT = new Set(["src/utils/uiDocument.ts"]);
+
 const RULES = {
   "page-search": {
     title: "page search or activeElement used for focus",
@@ -78,6 +113,10 @@ const RULES = {
   "tabindex-removal": {
     title: "tabindex -1 removes the element from Steam's nav graph",
     fix: "leave tabindex alone, or restore it once focus has moved on",
+  },
+  "ring-question": {
+    title: "uiActiveElement() asked which control the gamepad ring owns",
+    fix: "use elementHasGamepadFocus / uiGamepadFocusElement, which read .gpfocus",
   },
 };
 
@@ -233,6 +272,25 @@ function checkFile(absPath) {
       ) {
         add("page-search", lineOf(node, sf), `${node.expression.name.text}()`);
       }
+    }
+
+    /*
+     * --- the ring question ------------------------------------------------
+     *
+     * NOT gated on focus context, unlike page-search above. `uiActiveElement()`
+     * exists for exactly one purpose, so every call is a focus question by
+     * construction and there is no "unrelated use elsewhere in the app" to spare.
+     * Gating it would also miss the confirmed instances: none of
+     * answerStopRegistry.ts, answerBubbleElRegistry.ts or chatPanelScroll.ts has
+     * "focus" or "navigation" in its path.
+     */
+    if (
+      !RING_QUESTION_EXEMPT.has(relPath) &&
+      ts.isCallExpression(node) &&
+      ts.isIdentifier(node.expression) &&
+      RING_QUESTION_CALLS.has(node.expression.text)
+    ) {
+      add("ring-question", lineOf(node, sf), `${node.expression.text}()`);
     }
 
     ts.forEachChild(node, (child) => visit(child, focus));

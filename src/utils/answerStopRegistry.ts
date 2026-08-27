@@ -12,7 +12,7 @@
  * navigation is identical whether or not a turn streamed.
  */
 
-import { elementHasFocus, rememberUiDocument, uiActiveElement } from "./uiDocument";
+import { elementHasFocus, rememberUiDocument, uiGamepadFocusElement } from "./uiDocument";
 
 /**
  * One map per answer, keyed by the section's position in the rendered stack.
@@ -65,14 +65,20 @@ export function orderedAnswerStops(answerKey: string, bubble: HTMLElement): HTML
 }
 
 /**
- * Position in `stops` of the stop that currently holds focus, or -1 when focus is elsewhere
+ * Position in `stops` of the stop the gamepad ring currently sits in, or -1 when it is elsewhere
  * (the bubble itself, a spoiler fence's own Focusable, or another turn).
  *
  * `contains` is the right test rather than identity: focus may sit on a control nested inside the
  * stop, and that still means "the user is in this section".
+ *
+ * Reads the ring, not `activeElement`. This is the MICRO-04 defect: nobody calls `.focus()` before
+ * this, so there is no landing to check — it is a pure "where is the user" question, and on device
+ * `activeElement` answers a different one. A stale `activeElement` inside some other stop makes
+ * `at` a real but wrong index, so Down goes to `stops[at + 1]` — a section the user is not next to,
+ * or `undefined`, which drops the whole chain and yields the press to Steam.
  */
 export function focusedAnswerStopIndex(stops: HTMLElement[]): number {
-  const active = uiActiveElement();
+  const active = uiGamepadFocusElement();
   if (!active) return -1;
   return stops.findIndex((el) => el === active || el.contains(active));
 }

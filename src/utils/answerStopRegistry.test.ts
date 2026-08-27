@@ -138,6 +138,31 @@ describe("answer stop registry", () => {
       expect(focusedAnswerStopIndex(orderedAnswerStops("live", bubble))).toBe(-1);
     });
 
+    /*
+     * MICRO-04's defect, in the section walk rather than the reply row.
+     *
+     * Nothing calls `.focus()` before this, so there is no landing to verify -- it is a pure
+     * "which section is the user in" question, and on device `activeElement` answers a different
+     * one. A stale value inside another stop makes `at` a real but wrong index, so Down jumps to
+     * `stops[at + 1]` (a section the user is not next to) or to `undefined`, which drops the whole
+     * chain and hands the press back to Steam.
+     */
+    it("follows the ring, not activeElement, when the two disagree", () => {
+      const doc = makeUiDocument();
+      const bubble = makeBubble(doc);
+      const first = addStop(doc, bubble);
+      const second = addStop(doc, bubble);
+      const third = addStop(doc, bubble);
+      registerAnswerStop("live", 0, first);
+      registerAnswerStop("live", 1, second);
+      registerAnswerStop("live", 2, third);
+
+      third.classList.add("gpfocus");
+      setActiveElement(doc, first);
+
+      expect(focusedAnswerStopIndex(orderedAnswerStops("live", bubble))).toBe(2);
+    });
+
     it("finds the stop that holds focus", () => {
       const doc = makeUiDocument();
       const bubble = makeBubble(doc);

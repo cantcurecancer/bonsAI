@@ -100,5 +100,50 @@ describe("answer bubble element registry", () => {
 
       expect(resolveFocusedAnswerBubble()).toBeNull();
     });
+
+    /*
+     * The spoiler-fence bug, reproduced on device 2026-08-26
+     * (`runs/SPOILER-REVEAL-reachability.json`): a 10-step D-pad walk went bubble -> Helpful ->
+     * Retry -> ... and never reached a masked fence that was on screen, Focusable and tabindex 0.
+     *
+     * This resolver is the first thing `captureBubble` tries. Both call sites guard it with `??`,
+     * which only catches a NULL answer -- and on device `activeElement` does not come back null,
+     * it comes back stale in the previous turn. So the fallback never fires, `captureBubble`
+     * re-registers the WRONG bubble under this answer's key, and `bubble.contains(fence)` in
+     * `handleAnswerBubbleMoveDown` is false for a fence that is right there on screen. The
+     * diversion finds nothing and Down yields to the reply actions.
+     *
+     * Same defect class as MICRO-04, one file further up the chain than the roadmap's lead named.
+     */
+    it("follows the ring into the live turn when activeElement is stale in an older one", () => {
+      const doc = makeUiDocument();
+      const previousTurn = makeBubble(doc);
+      const liveTurn = makeBubble(doc);
+      const fence = doc.createElement("div");
+      fence.className = "bonsai-spoiler-reveal-target Panel Focusable";
+      liveTurn.appendChild(fence);
+      registerAnswerBubbleEl("live", liveTurn);
+
+      // The exact disagreement measured on device: ring in the live turn, activeElement left behind.
+      liveTurn.classList.add("gpfocus");
+      setActiveElement(doc, previousTurn);
+
+      expect(resolveFocusedAnswerBubble()).toBe(liveTurn);
+      // Without this, the caller works on `previousTurn`, which does not contain the fence.
+      expect(resolveFocusedAnswerBubble()?.contains(fence)).toBe(true);
+    });
+
+    it("finds the bubble when the ring is on a descendant", () => {
+      const doc = makeUiDocument();
+      const bubble = makeBubble(doc);
+      const fence = doc.createElement("div");
+      fence.className = "bonsai-spoiler-reveal-target Panel Focusable";
+      bubble.appendChild(fence);
+      registerAnswerBubbleEl("live", bubble);
+      fence.classList.add("gpfocus");
+      setActiveElement(doc, doc.body);
+
+      expect(resolveFocusedAnswerBubble()).toBe(bubble);
+    });
   });
 });

@@ -7,6 +7,7 @@ import {
   rememberUiDocument,
   resetUiDocument,
   uiActiveElement,
+  uiGamepadFocusElement,
 } from "./uiDocument";
 
 /**
@@ -210,6 +211,64 @@ describe("uiDocument", () => {
       setActiveElement(doc, el);
 
       expect(elementHasGamepadFocus(el)).toBe(true);
+    });
+  });
+  /*
+   * The lookup half of the same question, added 2026-08-26 alongside the
+   * `ring-question` focus-lint rule.
+   *
+   * `elementHasGamepadFocus` answers "is the ring in THIS element" — it needs a
+   * candidate. The answer-bubble path has none: `resolveFocusedAnswerBubble` has
+   * to start from wherever the ring is and walk up to the bubble containing it.
+   * That is what made the spoiler fence unreachable, because the only accessor
+   * available for it read `activeElement`.
+   */
+  describe("uiGamepadFocusElement", () => {
+    it("returns the element the ring sits on", () => {
+      const doc = makeUiDocument();
+      const el = doc.createElement("button");
+      doc.body.append(el);
+      el.classList.add("gpfocus");
+      rememberUiDocument(el);
+
+      expect(uiGamepadFocusElement()).toBe(el);
+    });
+
+    /*
+     * The failure mode that matters, and the one a `??` fallback cannot catch:
+     * activeElement does not come back null on device, it comes back STALE. A
+     * caller that trusts it gets a real element in the wrong turn and never
+     * reaches its fallback.
+     */
+    it("prefers the ring over a stale activeElement pointing somewhere else", () => {
+      const doc = makeUiDocument();
+      const previousTurn = doc.createElement("div");
+      const currentTurn = doc.createElement("div");
+      doc.body.append(previousTurn, currentTurn);
+      currentTurn.classList.add("gpfocus");
+      setActiveElement(doc, previousTurn);
+      rememberUiDocument(currentTurn);
+
+      expect(uiActiveElement()).toBe(previousTurn);
+      expect(uiGamepadFocusElement()).toBe(currentTurn);
+    });
+
+    it("falls back to activeElement when nothing owns the ring", () => {
+      const doc = makeUiDocument();
+      const el = doc.createElement("button");
+      doc.body.append(el);
+      setActiveElement(doc, el);
+      rememberUiDocument(el);
+
+      expect(uiGamepadFocusElement()).toBe(el);
+    });
+
+    it("is null when nothing owns the ring and nothing has focus", () => {
+      const doc = makeUiDocument();
+      rememberUiDocument(doc.body);
+      setActiveElement(doc, null);
+
+      expect(uiGamepadFocusElement()).toBeNull();
     });
   });
 });
