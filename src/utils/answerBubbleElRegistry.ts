@@ -4,7 +4,7 @@
  * Used for: buildAnswerBubbleElement, answerBubbleNavigation, and liveTurnFocusGraph.
  * Solves: Focus hops without asking the global `document`, which under Decky is the wrong
  *         document entirely — see uiDocument.ts.
- * Does not: Track chunk index within a bubble — see answerBubbleNavRegistry.
+ * Does not: Own the walk between stops — see answerBubbleNavigation.
  */
 import { rememberUiDocument, uiGamepadFocusElement } from "./uiDocument";
 

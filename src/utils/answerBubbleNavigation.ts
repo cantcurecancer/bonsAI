@@ -13,7 +13,6 @@ import {
   scrollTabContentsByStep,
   tryGeometryPanelScroll,
 } from "./chatPanelScroll";
-import { resetAnswerBubbleChunkIndex } from "./answerBubbleNavRegistry";
 import {
   getRegisteredAnswerBubble,
   registerAnswerBubbleEl,
@@ -107,24 +106,6 @@ export function resolveAnswerBubbleEl(
     return findAnswerBubbleByKey(answerKey);
   }
   return null;
-}
-
-/** Focus the answer bubble immediately after a turn header (Decky graph may skip it). */
-export function focusAnswerBubbleAfterHeader(
-  headerEl: HTMLElement | null,
-  turnId?: string
-): boolean {
-  if (headerEl) {
-    const turnSlot = headerEl.closest(".bonsai-chat-turn-slot");
-    const bubble = turnSlot?.querySelector(".bonsai-chat-ai-bubble") as HTMLElement | null;
-    if (bubble) {
-      registerAnswerBubbleEl(turnId ?? "", bubble);
-      resetAnswerBubbleChunkIndex();
-      return focusPanelEl(bubble);
-    }
-  }
-  if (turnId) return focusFirstAnswerChunk(turnId);
-  return false;
 }
 
 /** Scroll QAM panel down; true only when scrollTop increases. */

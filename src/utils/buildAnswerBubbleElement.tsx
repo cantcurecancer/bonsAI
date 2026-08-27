@@ -9,7 +9,6 @@ import React from "react";
 import { Focusable } from "@decky/ui";
 import { MainTabBonsaiAiMarkdownChunk } from "../components/MainTabBonsaiAiMarkdownChunk";
 import { StreamFenceWaitChip } from "../components/StreamFenceWaitChip";
-import { registerAnswerBubbleNav } from "./answerBubbleNavRegistry";
 import {
   getRegisteredAnswerBubble,
   registerAnswerBubbleEl,
@@ -261,7 +260,6 @@ export function buildAnswerBubbleElement(
   const navHandlers = {
     onFocus: () => {
       captureBubble(answerKey);
-      registerAnswerBubbleNav({ moveDown, moveUp, resetChunkIndex: () => {} });
     },
     onActivate: () => {
       captureBubble(answerKey);
