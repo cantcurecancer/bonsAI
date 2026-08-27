@@ -15,9 +15,8 @@ choices are, and what happens either way. **Locked calls (2026-08-02 for D1–D6
 [Maintainer decisions locked](#maintainer-decisions-locked--2026-08-02); implement
 from that section when it disagrees with an option above.
 
-**One open:**
-[D18](#d18--when-loading-settings-fails-four-values-keep-whatever-was-on-screen-bug-or-intent)
-(raised 2026-08-05 by the step 11 friction test).
+**None open.** D18 — the last one, raised 2026-08-05 by the step 11 friction test — was locked as
+option A on 2026-08-27 and implemented the same day.
 **D32, D34 and D35 are all locked and implemented** (2026-08-27) — three separate causes of the one
 *Clear cache* bug, which is now fixed and confirmed on device. **D33 is locked and implemented**
 (2026-08-27, option C at 26px); it still owes a look on the Deck, which is what the maintainer asked
@@ -1478,10 +1477,29 @@ mechanism and **TAB-RESUME-MODE-01** for how to test it.
 
 ---
 
-### D18 — When loading settings fails, four values keep whatever was on screen. Bug or intent?
+### D18 — LOCKED (option A, 2026-08-27) — When loading settings fails, four values keep whatever was on screen. Bug or intent?
 
-**OPEN — raised 2026-08-05 by the step 11 friction test. Rewritten in plain language 2026-08-27 at
-the maintainer's request; nothing about the question changed.**
+**Locked in the maintainer's word: A.** So a failed read shows defaults — all of them, no
+exceptions. Implemented the same day: the four missing resets (reply language, both model
+routing orders, spoiler auto-reveal after consent) were added to the failure branch in
+`usePluginSettings.ts`. The two routing orders reset to **empty**, matching where they start,
+because an order is worked out from the models the machine actually has and there is no static
+default to fall back to.
+
+**On the test, and an honest limit.** The reset only runs from the mount effect, and by the time it
+can fire the values are already sitting at their defaults — so no test that drives the hook can tell
+a complete list from an incomplete one. What broke here was not a wrong value, it was **a list that
+drifted**: six hand-written copies of the same field list in one file, and four fields fell out of
+one copy. So the test checks that invariant directly, by comparing the two lists in the source:
+anything the successful-load path sets, the failure path must reset. It fails with exactly those
+four names on the old code. When D14 collapses the duplication, that test goes with it.
+
+**Which also means the fix is currently invisible.** It is correct, and today nothing can reach the
+state where it matters. It becomes reachable the moment anything restores settings before the load
+resolves — which the session-survival path already does a few lines away.
+
+**Original question, rewritten in plain language 2026-08-27 at the maintainer's request; nothing
+about it changed.**
 
 **The short version.** When the plugin cannot read your saved settings, it deliberately blanks the
 Settings screen back to factory values, so you are never shown a setting it could not actually

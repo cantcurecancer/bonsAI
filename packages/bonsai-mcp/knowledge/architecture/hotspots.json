@@ -116,13 +116,13 @@
       "role": ""
     },
     {
-      "path": "src/components/SettingsTab.tsx",
-      "lines": 552,
+      "path": "src/hooks/usePluginSettings.ts",
+      "lines": 566,
       "role": ""
     },
     {
-      "path": "src/hooks/usePluginSettings.ts",
-      "lines": 543,
+      "path": "src/components/SettingsTab.tsx",
+      "lines": 552,
       "role": ""
     },
     {

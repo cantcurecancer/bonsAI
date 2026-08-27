@@ -324,6 +324,23 @@ export function usePluginSettings() {
         }
       })
       .catch(() => {
+        /*
+         * A failed read shows defaults — all of them, no exceptions (D18, option A, locked
+         * 2026-08-27).
+         *
+         * Four fields used to be missing from this list with nothing saying why: reply language,
+         * both model routing orders, and the spoiler auto-reveal flag. They kept whatever was
+         * already in state, which is invisible on a first open (state is already at its defaults)
+         * but wrong after a read fails *following* a good one — a backend restart with the menu
+         * open. Everything else snapped back to defaults while those four kept showing values the
+         * plugin had just admitted it could not read, which is the worst of both: a screen telling
+         * two stories, and the four still showing user-set values are the ones a user would least
+         * suspect.
+         *
+         * They fell out because this field list is maintained by hand in six places in this file.
+         * Fixing that duplication is D14's job and is not scheduled; the test in
+         * `usePluginSettings.test.ts` is what stops this particular copy drifting again.
+         */
         if (cancelled) return;
         setSettingsPersistEnabled(false);
         setLatencyWarningSeconds(DEFAULT_LATENCY_WARNING_SECONDS);
@@ -347,12 +364,18 @@ export function usePluginSettings() {
         setOllamaKeepAlive(DEFAULT_OLLAMA_KEEP_ALIVE);
         setReplyVerbosity(DEFAULT_REPLY_VERBOSITY);
         setAskThinkEffort(DEFAULT_ASK_THINK_EFFORT);
+        setReplyLanguage(DEFAULT_REPLY_LANGUAGE);
         setShowDeveloperTab(DEFAULT_SHOW_DEVELOPER_TAB);
         setModelPolicyTier(DEFAULT_MODEL_POLICY_TIER);
         setModelPolicyNonFossUnlocked(false);
         setModelAllowHighVramFallbacks(DEFAULT_MODEL_ALLOW_HIGH_VRAM_FALLBACKS);
+        // Empty, matching their `useState` initial value: an order is derived from the models the
+        // machine actually has, and there is no static default to fall back to.
+        setTextModelRoutingOrder([]);
+        setVisionModelRoutingOrder([]);
         setOllamaLocalOnDeck(DEFAULT_OLLAMA_LOCAL_ON_DECK);
         setStrategySpoilerMaskingEnabled(DEFAULT_STRATEGY_SPOILER_MASKING_ENABLED);
+        setStrategySpoilerAutoRevealAfterConsent(DEFAULT_STRATEGY_SPOILER_AUTO_REVEAL_AFTER_CONSENT);
         setSteamWebApiKey("");
         setBonsaiTokenStreamingEnabled(DEFAULT_BONSAI_TOKEN_STREAMING_ENABLED);
         setShowOnscreenDebugHud(DEFAULT_SHOW_ONSCREEN_DEBUG_HUD);
