@@ -98,8 +98,15 @@ in a browser and it shows the real thing at several sizes.
 
 ### D32 — *Clear cache* says it clears the thread, but the saved chat stays on disk. Which half is wrong?
 
-**OPEN — raised 2026-08-23 from Deck QA** (`recordings/DeckRecord_20260823_172915_game.mkv`).
-Needs your call before anyone changes the behavior, because the two options do opposite things.
+**Raised 2026-08-23 from Deck QA** (`recordings/DeckRecord_20260823_172915_game.mkv`).
+**Locked 2026-08-27, in the maintainer's words: "yes it should clear the saved chat slot or at
+least hide it so that the user comes back to a clean main tab."** That is option 1 with latitude
+on the mechanism: clearing must leave the Main tab clean **and it must stay clean** — the old
+turns must not come back when the next question triggers a transcript reload. Whether the slot
+file is deleted or merely detached (the active-slot pointer cleared so nothing reloads it) is the
+implementer's choice; detaching is acceptable. **The leftover-chats half is NOT settled by this
+lock** — if the implementation detaches rather than deletes, the pile-up question below still
+needs an answer, and it can be its own follow-up.
 
 **What happens now.** You press **Clear cache…**. Its confirmation box says it clears *"this
 session from RAM: input, reply, thread, transparency, branches, attachments, timers."* The screen
