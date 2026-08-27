@@ -15,15 +15,15 @@ choices are, and what happens either way. **Locked calls (2026-08-02 for D1–D6
 [Maintainer decisions locked](#maintainer-decisions-locked--2026-08-02); implement
 from that section when it disagrees with an option above.
 
-**Four open:**
+**Three open:**
 [D18](#d18--when-loading-settings-fails-four-values-keep-whatever-was-on-screen-bug-or-intent)
 (raised 2026-08-05 by the step 11 friction test),
-[D32](#d32--clear-cache-says-it-clears-the-thread-but-the-saved-chat-stays-on-disk-which-half-is-wrong)
-(raised 2026-08-23 from Deck QA),
 [D33](#d33--the-new-character-avatars-were-drawn-for-44px-the-picker-shows-them-at-24px-which-one-moves)
 (raised 2026-08-26 from the AI character avatars design handoff), and
-[D34](#d34--open--clear-cache-is-undone-by-its-own-confirmation-box-what-should-come-back-afterwards)
-(raised 2026-08-27 on device, while implementing D32 — it is why D32 could not be finished). **D23–D27 were raised and locked during the RAG
+[D35](#d35--open--clear-cache-clears-the-screen-but-the-ais-last-answer-is-still-stored-on-the-plugins-own-back-end-should-clearing-forget-it)
+(raised 2026-08-27 on device — the third and load-bearing cause of the *Clear cache* bug).
+**D32 and D34 are both locked and implemented** (2026-08-27); they closed two real routes into that
+bug, but the one you actually see needs D35. **D23–D27 were raised and locked during the RAG
 work of 2026-08-18 to 2026-08-21; D28–D31 were raised and locked 2026-08-22.** Everything else
 D1–D31 is locked; **D19 is superseded by D20** (below), and **D31 renumbers the superseded one to
 D19b**. See the table below for D1–D15 and the sections below for D16, D17, D19–D31.
@@ -98,7 +98,65 @@ in a browser and it shows the real thing at several sizes.
 
 ---
 
-### D34 — OPEN — *Clear cache* is undone by its own confirmation box. What should come back afterwards?
+### D35 — OPEN — *Clear cache* clears the screen, but the AI's last answer is still stored on the plugin's own back end. Should clearing forget it?
+
+**Raised 2026-08-27, measured on your Deck. This is what actually makes *Clear cache* look like it
+does nothing** — D32 and D34 were both real problems, both are now fixed, and **neither was the
+one you were seeing.**
+
+**How we know.** After clearing, the returning conversation was tagged `live` — the label the
+plugin uses for *the answer that just came back from the AI*, not the label it uses for a saved
+chat. So it was not reloaded from the saved chat file, and it was not restored from the
+confirmation-box snapshot. Both of those routes are now closed and it still came back.
+
+**What is actually happening, plainly.** When you ask something, the Python side of the plugin
+keeps the finished answer so the screen can be rebuilt if you close and reopen the menu — that is a
+feature, and it is why a reply survives you tabbing away mid-generation. *Clear cache* only empties
+the screen. It never tells the Python side to forget. So the next time the panel rebuilds itself —
+switching tabs is enough — the plugin asks "what was the last answer?", Python still has it, and it
+gets painted straight back.
+
+**Your two options.**
+
+1. **Tell the back end to forget the last answer when you clear.** A small new command from the
+   screen to Python saying "drop it".
+   - *Good:* the cleanest meaning of the word "clear". Nothing lingers anywhere.
+   - *Cost:* one new command between the two halves of the plugin, and we would need to decide what
+     happens if you clear *while an answer is still being generated* — most likely it should stop
+     it, which makes Clear cache slightly more powerful than it is today.
+
+2. **Leave the back end alone; have the screen ignore anything older than the clear.** The screen
+   remembers "I cleared at this point" and skips restoring anything from before it.
+   - *Good:* no change to Python at all, and a generation still running is untouched.
+   - *Cost:* the answer is still sitting in memory on the Python side, just not shown. If anything
+     else ever reads it, the bug comes back wearing a different hat — and that is exactly the shape
+     of this bug's last three "fixes".
+
+**My read, if you want one:** option 1. This bug has now had three separate causes, and two of them
+survived because something kept a copy the clear did not reach. Option 2 knowingly leaves a third
+copy in place. The extra question option 1 raises — what a clear does to an in-flight answer — is
+worth answering once, out loud, rather than inheriting by accident.
+
+**Note on the two already-landed fixes.** They stay. D32's chat-slot detach stops the saved chat
+being reloaded after your *next* question, and D34's snapshot discard stops the confirmation box
+undoing the clear. Both were reproduced, fixed and re-tested on the Deck; they were simply not the
+route you were hitting first.
+
+---
+
+### D34 — LOCKED (option 1, 2026-08-27) — *Clear cache* is undone by its own confirmation box. What should come back afterwards?
+
+**Locked in the maintainer's words: option 1 — throw the whole photo away.** Implemented the same
+day: `resetPluginSession` now calls `clearBonsaiSessionSurvival()`, which is the same discard
+`clear_plugin_data` already used, so this is an established path rather than a new mechanism.
+
+**On the accepted cost — it did not materialise in testing.** The worry was that discarding the
+snapshot would also drop the remembered tab, bouncing you from **Settings** back to **Main** right
+after pressing Clear. Measured on the Deck: the panel **stayed on the Settings tab**. Worth
+re-checking if the modal machinery changes, but as it stands there is no visible cost.
+
+**This fix is correct and is not sufficient on its own** — the cleared thread still comes back, by a
+third route that is nothing to do with the snapshot. See **D35** above.
 
 **Raised 2026-08-27, measured on your Deck the same day. This is a follow-on from D32 — D32's
 answer still stands, but the reason the button looked broken turned out to be something else, and

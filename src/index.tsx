@@ -885,6 +885,29 @@ const Content: React.FC = () => {
      * tracked as its own follow-up on the roadmap entry.
      */
     chatSlots.setActiveSlot(null);
+    /*
+     * Then throw away the modal survival snapshot, or the confirmation box undoes the clear (D34,
+     * option 1, locked 2026-08-27).
+     *
+     * Measured on device: detaching the pointer alone did nothing, because *Clear cache* is a
+     * `ConfirmModal` and opening any Decky modal remounts the plugin. `onBeforeDeckyModal` snapshots
+     * the whole live session — thread and `activeSlotId` — *before* the user presses Clear
+     * (SettingsTab.tsx, `captureSessionBeforeModal` in useBonsaiPluginShell.ts). The modal then
+     * closes, the plugin remounts, and `finalizeSessionRestoreAfterRemount` restores that pre-clear
+     * snapshot over everything this function just cleared. Pressing Clear and asking nothing at all
+     * still brought the thread straight back.
+     *
+     * Discarding the snapshot wholesale is D34's chosen option, and the accepted cost is that the
+     * remount no longer restores `currentTab` either — so clearing from the Settings tab lands the
+     * user back on the default tab. `clear_plugin_data` already does exactly this via
+     * `markPluginDataCleared`, so this is the established shape rather than a new mechanism.
+     *
+     * Known and deliberately not handled: a settings edit still inside its save debounce would be
+     * read back from disk on the remount rather than from the discarded snapshot. Reaching that
+     * needs a toggle and a Clear press within a few hundred ms of each other, which is several
+     * D-pad presses apart in practice; `flushSettingsSnapshotNow` is the lever if it ever bites.
+     */
+    clearBonsaiSessionSurvival();
     persistSearchQuery("");
     setUnifiedInput("");
     setSelectedIndex(-1);
