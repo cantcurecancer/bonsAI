@@ -10,6 +10,8 @@ from backend.services.knowledge_base_schema import (
     TRUST_TIER_FALLBACK,
     TRUST_TIER_WIKI_NO_PATCH,
     TRUST_TIER_WIKI_VERIFIED,
+    corpus_has_usable_compat_vectors,
+    corpus_has_usable_section_vectors,
     pack_embedding_vector,
     unpack_embedding_vector,
 )
@@ -68,6 +70,29 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
   def setUp(self):
     if not SEED_DB.is_file():
       self.skipTest("seed corpus missing")
+
+  def _require_seed_vectors(self, kind: str) -> None:
+    """Skip when the seed corpus was built without embeddings.
+
+    `build_rag_db.py --seed` needs a local Ollama with nomic-embed-text to populate
+    `section_vectors` / `compat_pattern_vectors`; without one it prints "Skipping
+    section_vectors embeddings" and writes the corpus anyway. That is correct behaviour --
+    a Deck with no embed model still gets a working keyword corpus, and there are tests
+    directly below asserting exactly that. But it left the vector tests reading rows that
+    were never written, so they failed with a bare `KeyError: 3` on any machine without the
+    model. Green on the maintainer's PC, red on every CI run since the gate began blocking.
+    Skipping states the dependency instead of asserting on absent data.
+    """
+    conn = _get_connection(str(SEED_DB))
+    has = (
+      corpus_has_usable_section_vectors(conn)
+      if kind == "section"
+      else corpus_has_usable_compat_vectors(conn)
+    )
+    if not has:
+      self.skipTest(
+        f"seed corpus has no {kind} vectors -- build it with a local nomic-embed-text to run this"
+      )
 
   def tearDown(self):
     close_connection(str(SEED_DB))
@@ -923,6 +948,7 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
 
   def test_vector_recall_stays_inside_the_resolved_game(self):
     """Recall is per-game for the same reason the keyword search is: wrong-game advice."""
+    self._require_seed_vectors("section")
     conn = _get_connection(str(SEED_DB))
     dreadnought_vector = _load_section_vectors(conn, [3])[3]
     cards, vectors = _vector_recall_sections(
@@ -939,6 +965,7 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
     self.assertGreaterEqual(len(vectors), len(cards))
 
   def test_vector_recall_skips_a_card_the_keyword_half_already_found(self):
+    self._require_seed_vectors("section")
     conn = _get_connection(str(SEED_DB))
     dreadnought_vector = _load_section_vectors(conn, [3])[3]
     cards, _ = _vector_recall_sections(
@@ -1078,7 +1105,11 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
     This question routes to proton *and* crash, but says "windows" outright, and the
     windows_steam tips keep their place. If this ever returns proton-only, the weight has been
     raised into filter territory and D22 no longer holds.
+
+    Needs compat vectors: this asserts the cosine-ordered result. The test directly below is
+    the same claim for a corpus built without an embed model, and that one always runs.
     """
+    self._require_seed_vectors("compat")
     settings = {
       "use_local_knowledge_base": True,
       "rag_corpus_path": str(SEED_DB.parent),

@@ -116,6 +116,35 @@ The clean-runner failure predicted above did **not** happen: 1,427 tests pass fr
 clone. The baseline, the three tests that will execute for the first time on Linux, and what
 is still unverified are recorded in [24-track-a-ci-baseline.md](24-track-a-ci-baseline.md).
 
+**Status 2026-08-27 — the predicted clean-runner failure did happen, just one flip later, and
+is now fixed.** Every `Tests` run went red from the moment `ADVISORY` was set to `false` —
+**16 consecutive failures**, all of them the same four Python tests, none of them caused by the
+commit they were reported against. The gate summary was doing its job (`TSC: success`,
+`VITEST: success`, `FOCUS: success`, `PYTESTS: failure`); nobody had read past the red cross.
+So the section above stands corrected: the failure was environment-dependent exactly as
+predicted, and being advisory for the first two sessions is what let it hide.
+
+Two causes, both "green on the maintainer's Windows PC, red on a Linux runner", and neither in
+product code:
+
+- **Three knowledge-base tests read vectors the CI corpus does not have.** `build_rag_db.py
+  --seed` needs a local Ollama with `nomic-embed-text` to fill `section_vectors` /
+  `compat_pattern_vectors`; without one it logs *"Skipping section_vectors embeddings"* and
+  writes a keyword-only corpus. That is correct behaviour — a Deck with no embed model still
+  gets a working corpus, and there is a test directly below one of these asserting it. But the
+  vector tests then read rows that were never written and died on a bare `KeyError: 3`. They
+  now **skip** with a message naming the dependency.
+- **`test_reset_wipes_rag_corpus_dir` only ever passed by accident of the temp root.** The
+  corpus wipe refuses any path outside `Path.home()` or `/run/media/<user>` — a deliberate
+  guard. `tempfile.TemporaryDirectory()` lands under home on Windows and in `/tmp` on Linux,
+  so the fixture was inside the allowed area on one platform and outside it on the other. The
+  fixture now sits under home on both, and a new test covers the refusal half, which nothing
+  had asserted at this level.
+
+**Worth keeping:** a blocking gate that is red on every run is the same as no gate — it stops
+being information after the second red cross. Whatever turns it red must be fixed or skipped
+the day it appears.
+
 ### Track B — Static focus checks ★★ (1–2 sessions)
 
 A standalone checker script in `scripts/` — matching the repo's existing habit

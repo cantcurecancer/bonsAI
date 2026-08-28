@@ -21,6 +21,22 @@ class _Logger:
         pass
 
 
+@contextmanager
+def _temp_dir_under_home():
+    """A temp dir inside the user's home, because the corpus wipe refuses anything outside it.
+
+    `remove_corpus_at_path` runs `is_allowed_corpus_install_path`, which allows only paths under
+    `Path.home()` or `/run/media/<user>` -- a deliberate guard against a bad settings value
+    pointing the wipe at somewhere it should never touch. `tempfile.TemporaryDirectory()` lands
+    under the home directory on Windows and in `/tmp` on Linux, so the corpus test passed on the
+    maintainer's PC and failed on every CI run, on a difference that has nothing to do with the
+    code under test. Putting the fixture where the real install lives tests the guard rather
+    than the platform's choice of temp root.
+    """
+    with tempfile.TemporaryDirectory(dir=str(Path.home())) as tmp:
+        yield tmp
+
+
 def _sanitize(data):
     return sanitize_settings(
         data,
@@ -79,7 +95,7 @@ class PluginDataResetTests(unittest.TestCase):
 
     def test_reset_wipes_rag_corpus_dir(self):
         logger = _Logger()
-        with tempfile.TemporaryDirectory() as tmp:
+        with _temp_dir_under_home() as tmp:
             root = Path(tmp)
             settings_dir = root / "settings"
             settings_dir.mkdir()
@@ -145,6 +161,47 @@ class PluginDataResetTests(unittest.TestCase):
             self.assertFalse((settings_dir / "bonsai_feedback.jsonl").exists())
             self.assertTrue(Path(settings_path).is_file())
             self.assertFalse(out["capabilities"]["filesystem_write"])
+
+    def test_reset_leaves_a_corpus_dir_outside_home_alone(self):
+        """The other half of the guard, and the half nothing covered.
+
+        `remove_corpus_at_path` refuses a path outside home or the SD mount, so a bad
+        `rag_corpus_path` cannot aim the wipe somewhere it should not reach. Only the allowed
+        case was tested, and only by accident of Windows putting temp dirs under home -- which
+        is why the platform difference went unnoticed until CI ran on Linux. This states the
+        refusal directly, so neither half depends on where the temp root happens to be.
+        """
+        logger = _Logger()
+        with _temp_dir_under_home() as home_tmp, tempfile.TemporaryDirectory() as outside_tmp:
+            root = Path(home_tmp)
+            settings_dir = root / "settings"
+            settings_dir.mkdir()
+            settings_path = str(settings_dir / "settings.json")
+            runtime_dir = str(root / "runtime")
+            log_dir = str(root / "logs")
+            Path(runtime_dir).mkdir()
+            Path(log_dir).mkdir()
+            Path(settings_path).write_text("{}", encoding="utf-8")
+
+            outside_corpus = Path(outside_tmp) / "rag"
+            outside_corpus.mkdir()
+            (outside_corpus / "corpus.db").write_bytes(b"sqlite")
+
+            with patch.object(Path, "home", return_value=root):
+                reset_plugin_disk_and_defaults(
+                    settings_path=settings_path,
+                    settings_dir=str(settings_dir),
+                    runtime_dir=runtime_dir,
+                    log_dir=log_dir,
+                    sanitize_func=_sanitize,
+                    load_settings=lambda p, s, lg: load_settings(p, s, lg),
+                    save_settings=save_settings,
+                    logger=logger,
+                    rag_corpus_path=str(outside_corpus),
+                )
+
+            self.assertTrue(outside_corpus.exists())
+            self.assertTrue((outside_corpus / "corpus.db").is_file())
 
 
 class ProtonJournalWipeTests(unittest.TestCase):
