@@ -5,7 +5,7 @@
  * Solves: Separates transcript layout/focus from Ask submit and poll logic.
  * Does not: Submit Asks or poll background status — receives props from useBonsaiAskOrchestration.
  */
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { PanelSectionRow, Button, Focusable } from "@decky/ui";
 import {
   BONSAI_CHAT_AI_BUBBLE_MAX_FRAC,
@@ -53,6 +53,11 @@ import {
   queryTurnSlot,
 } from "../utils/liveTurnFocusGraph";
 import { questionLooksLikeTroubleshootingAsk } from "../utils/troubleshootingAskHeuristic";
+import type { DrgGlossaryTerm } from "../data/drgGlossaryTerms";
+import {
+  composeDrgGlossaryExplainFurtherQuestion,
+  drgGlossaryExplainFurtherThreadDisplay,
+} from "../utils/drgGlossaryAsk";
 import {
   registerModalReturnFocusOwner,
   rememberModalReturnFocus,
@@ -108,6 +113,13 @@ export type MainTabChatTranscriptProps = {
   /** When false, troubleshooting-shaped Asks show a dismissible hint to enable game-context permission. */
   gameContextReadEnabled?: boolean;
   onNavigateToPermissions?: (capability: BonsaiCapabilityKey) => void;
+  /**
+   * Starts a new Ask turn programmatically — same function preset chips and strategy branches
+   * already use (useBonsaiAskOrchestration). Backs the DRG Survivor glossary "explain further" chip;
+   * already part of MainTabProps and reaches this component via MainTab's `{...props}` spread, so
+   * this only needs declaring here to type it.
+   */
+  onAskOllama?: (overrideQuestion?: string, opts?: { threadQuestionDisplay?: string }) => void | Promise<void>;
 };
 
 export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
@@ -153,6 +165,7 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
     askMode,
     gameContextReadEnabled = false,
     onNavigateToPermissions,
+    onAskOllama,
   } = props;
 
   const [diagnosticsOpen, setDiagnosticsOpen] = useState(false);
@@ -285,6 +298,26 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
    * meant an answer rendered unfenced while it was live and then re-fenced itself the moment
    * the next Ask pushed it into the collapsed thread.
    */
+  /*
+   * DRG Survivor glossary "explain further" chip (roadmap: tap-to-define jargon). Same
+   * programmatic-Ask shape onStrategyBranchPick already uses: fill the input, then call
+   * onAskOllama directly rather than requiring a manual Send.
+   *
+   * useCallback keyed only on onAskOllama, not on every render: MainTabBonsaiAiMarkdownChunk is
+   * memoised specifically so the streaming reveal's per-tick re-renders skip re-parsing closed
+   * markdown blocks, and a fresh function identity here on every render would defeat that for
+   * every DRG Survivor reply (see the memo note on that component).
+   */
+  const onDrgGlossaryExplainFurther = useCallback(
+    (term: DrgGlossaryTerm) => {
+      if (!onAskOllama) return;
+      void onAskOllama(composeDrgGlossaryExplainFurtherQuestion(term), {
+        threadQuestionDisplay: drgGlossaryExplainFurtherThreadDisplay(term),
+      });
+    },
+    [onAskOllama]
+  );
+
   const renderAnswerBubble = (
     body: string,
     streaming: boolean,
@@ -306,6 +339,7 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
       askQuestion,
       appId,
       spoilerConsentEffective,
+      onDrgGlossaryExplainFurther: onAskOllama ? onDrgGlossaryExplainFurther : undefined,
     });
 
   /*

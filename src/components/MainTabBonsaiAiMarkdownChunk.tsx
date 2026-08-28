@@ -6,12 +6,16 @@
  * Does not: Stream tokens or parse strategy branches — parent supplies source string and mask flags.
  */
 import type { Components } from "react-markdown";
-import { isValidElement, memo, useEffect, useMemo, useRef, useState } from "react";
+import type { ReactNode } from "react";
+import { Fragment, cloneElement, isValidElement, memo, useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { Focusable } from "@decky/ui";
 
 import { registerSpoilerFence } from "../utils/spoilerFenceRegistry";
 import { isOkDeckButtonEvent } from "../utils/focusNavigation";
+import { isDrgSurvivorAppId, splitTextForDrgGlossaryTerms } from "../utils/drgGlossaryTermMatch";
+import { DrgGlossaryTermChip } from "./DrgGlossaryTermChip";
+import type { DrgGlossaryTerm } from "../data/drgGlossaryTerms";
 
 /** Per-mount counter for spoiler fence ids; only needs to be unique among mounted fences. */
 let spoilerFenceSeq = 0;
@@ -22,22 +26,88 @@ export type MainTabBonsaiAiMarkdownChunkProps = {
   spoilerMaskingEnabled?: boolean;
   /** When masking is on, start expanded if the last reply had spoiler consent and Settings allow it. */
   spoilerDefaultExpanded?: boolean;
+  /** Turn's game AppID. Curated DRG Survivor glossary terms only mark up when this matches. */
+  appId?: string | null;
+  /** Wired to onAskOllama by MainTabChatTranscript; starts a new Ask turn about the tapped term. */
+  onDrgGlossaryExplainFurther?: (term: DrgGlossaryTerm) => void;
 };
 
 type MdArgs = {
   spoilerMaskingEnabled: boolean;
   spoilerDefaultExpanded: boolean;
   depth: number;
+  drgGlossaryEnabled: boolean;
+  onDrgGlossaryExplainFurther?: (term: DrgGlossaryTerm) => void;
 };
 
+/**
+ * Wrap curated DRG Survivor glossary terms inside already-parsed markdown children with a tappable
+ * chip. Recurses one level into `strong`/`em` (bold/italic prose can still carry the term); any other
+ * element (links, inline code, nested block content) is left alone rather than reached into.
+ */
+function linkifyDrgGlossaryNode(
+  node: ReactNode,
+  onExplainFurther: ((term: DrgGlossaryTerm) => void) | undefined,
+  depth = 0
+): ReactNode {
+  if (typeof node === "string") {
+    const segments = splitTextForDrgGlossaryTerms(node);
+    if (segments.length === 1 && segments[0].kind === "text") return node;
+    return segments.map((seg, i) =>
+      seg.kind === "text" ? (
+        <Fragment key={i}>{seg.value}</Fragment>
+      ) : (
+        <DrgGlossaryTermChip
+          key={i}
+          term={seg.term}
+          matchedText={seg.value}
+          onExplainFurther={onExplainFurther}
+        />
+      )
+    );
+  }
+  if (Array.isArray(node)) {
+    return node.map((child, i) => (
+      <Fragment key={i}>{linkifyDrgGlossaryNode(child, onExplainFurther, depth)}</Fragment>
+    ));
+  }
+  if (
+    depth < 1 &&
+    isValidElement(node) &&
+    (node.type === "strong" || node.type === "em")
+  ) {
+    const elProps = node.props as { children?: ReactNode };
+    return cloneElement(
+      node,
+      undefined,
+      linkifyDrgGlossaryNode(elProps.children, onExplainFurther, depth + 1)
+    );
+  }
+  return node;
+}
+
 function buildMdComponents(args: MdArgs): Components {
-  const { spoilerMaskingEnabled, spoilerDefaultExpanded, depth } = args;
+  const { spoilerMaskingEnabled, spoilerDefaultExpanded, depth, drgGlossaryEnabled, onDrgGlossaryExplainFurther } =
+    args;
+  const linkify = (children: ReactNode): ReactNode =>
+    drgGlossaryEnabled ? linkifyDrgGlossaryNode(children, onDrgGlossaryExplainFurther) : children;
 
   const base: Components = {
-    p: ({ children }) => <p className="bonsai-md-p">{children}</p>,
+    /*
+     * A glossary term chip is a Decky `Focusable`, which renders a `<div>` (@decky/ui's own type:
+     * `RefAttributes<HTMLDivElement>`) — invalid inside `<p>`, whose content model is phrasing
+     * content only. `<li>` has no such restriction (flow content), so only `p` needs this; when
+     * glossary markup is off (`drgGlossaryEnabled` false, i.e. every non-DRG-Survivor reply) this
+     * renders a real `<p>` exactly as before. `.bonsai-md-p` is a class-only selector
+     * (section-6.ts:108) so the swap changes nothing visually.
+     */
+    p: ({ children }) => {
+      const Tag = drgGlossaryEnabled ? "div" : "p";
+      return <Tag className="bonsai-md-p">{linkify(children)}</Tag>;
+    },
     ul: ({ children }) => <ul className="bonsai-md-ul">{children}</ul>,
     ol: ({ children }) => <ol className="bonsai-md-ol">{children}</ol>,
-    li: ({ children }) => <li className="bonsai-md-li">{children}</li>,
+    li: ({ children }) => <li className="bonsai-md-li">{linkify(children)}</li>,
     pre: ({ children }) => {
       /*
        * react-markdown wraps every fenced code block's `code` output in `pre` regardless of what
@@ -77,6 +147,8 @@ function buildMdComponents(args: MdArgs): Components {
               spoilerMaskingEnabled: false,
               spoilerDefaultExpanded: true,
               depth: 1,
+              drgGlossaryEnabled,
+              onDrgGlossaryExplainFurther,
             })}
           >
             {raw}
@@ -93,6 +165,8 @@ function buildMdComponents(args: MdArgs): Components {
               spoilerMaskingEnabled,
               spoilerDefaultExpanded,
               depth: depth + 1,
+              drgGlossaryEnabled,
+              onDrgGlossaryExplainFurther,
             })}
           />
         );
@@ -270,14 +344,21 @@ export const MainTabBonsaiAiMarkdownChunk = memo(function MainTabBonsaiAiMarkdow
 ) {
   const masking = props.spoilerMaskingEnabled !== false;
   const defaultEx = props.spoilerDefaultExpanded === true;
+  const drgGlossaryEnabled = isDrgSurvivorAppId(props.appId);
+  const onDrgGlossaryExplainFurther = props.onDrgGlossaryExplainFurther;
   const components = useMemo(
     () =>
       buildMdComponents({
         spoilerMaskingEnabled: masking,
         spoilerDefaultExpanded: defaultEx,
         depth: 0,
+        drgGlossaryEnabled,
+        onDrgGlossaryExplainFurther,
       }),
-    [masking, defaultEx]
+    // `onDrgGlossaryExplainFurther` should be a stable callback from the caller (useCallback keyed
+    // on onAskOllama) — see the memoisation note above this component. A fresh function identity
+    // per render would defeat that memo for every DRG Survivor reply, not just correctness here.
+    [masking, defaultEx, drgGlossaryEnabled, onDrgGlossaryExplainFurther]
   );
 
   return <ReactMarkdown components={components}>{props.source}</ReactMarkdown>;

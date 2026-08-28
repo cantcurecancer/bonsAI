@@ -27,7 +27,7 @@
     },
     {
       "path": "py_modules/backend/services/ollama_prompts.py",
-      "lines": 1408,
+      "lines": 1445,
       "role": ""
     },
     {
@@ -66,13 +66,13 @@
       "role": ""
     },
     {
-      "path": "py_modules/backend/services/bonsai_stream_tags.py",
-      "lines": 858,
+      "path": "src/components/MainTabChatTranscript.tsx",
+      "lines": 881,
       "role": ""
     },
     {
-      "path": "src/components/MainTabChatTranscript.tsx",
-      "lines": 847,
+      "path": "py_modules/backend/services/bonsai_stream_tags.py",
+      "lines": 858,
       "role": ""
     },
     {

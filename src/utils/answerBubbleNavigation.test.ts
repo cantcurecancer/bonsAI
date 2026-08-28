@@ -7,6 +7,10 @@ import {
 import { registerAnswerStop, resetAnswerStopRegistry } from "./answerStopRegistry";
 import { registerAnswerBubbleEl } from "./answerBubbleElRegistry";
 import { registerSpoilerFence, resetSpoilerFenceRegistry } from "./spoilerFenceRegistry";
+import {
+  registerDrgGlossaryTermChip,
+  resetDrgGlossaryTermRegistry,
+} from "./drgGlossaryTermRegistry";
 import { resetUiDocument } from "./uiDocument";
 
 describe("streaming answer sections", () => {
@@ -94,6 +98,7 @@ describe("walking answer sections with the D-pad", () => {
   beforeEach(() => {
     resetAnswerStopRegistry();
     resetSpoilerFenceRegistry();
+    resetDrgGlossaryTermRegistry();
     resetUiDocument();
     registerAnswerBubbleEl(ANSWER_KEY, null);
     document.body.innerHTML = "";
@@ -210,6 +215,42 @@ describe("walking answer sections with the D-pad", () => {
     expect(document.activeElement).toBe(fence);
 
     // Focus sits inside section 0, so the next press continues to section 1 rather than restarting.
+    expect(moveDown(bubble)).toBe(true);
+    expect(document.activeElement).toBe(stops[1]);
+  });
+
+  /*
+   * DRG Survivor glossary term chip (roadmap: tap-to-define jargon). Same diversion shape as the
+   * masked-spoiler one above, since a term chip is likewise a nested Focusable inside plain reply
+   * prose rather than a stop of its own — see drgGlossaryTermRegistry.ts.
+   */
+  it("parks on an unvisited glossary term chip before continuing the walk", () => {
+    const { bubble, stops } = threeSections();
+    const chip = document.createElement("div");
+    stubRect(chip, 100, 150);
+    stops[1]!.appendChild(chip);
+    registerDrgGlossaryTermChip("kiting-1", chip);
+    bubble.focus();
+
+    expect(moveDown(bubble)).toBe(true);
+    expect(document.activeElement).toBe(chip);
+  });
+
+  it("resumes the walk from the section holding the visited term chip", () => {
+    const { bubble, stops } = buildBubble([
+      { top: 0, bottom: 100 },
+      { top: 100, bottom: 200 },
+    ]);
+    const chip = document.createElement("div");
+    stubRect(chip, 0, 50);
+    stops[0]!.appendChild(chip);
+    registerDrgGlossaryTermChip("kiting-1", chip);
+    bubble.focus();
+
+    moveDown(bubble);
+    expect(document.activeElement).toBe(chip);
+
+    // Focus sits inside section 0, so the next press continues to section 1 rather than re-parking.
     expect(moveDown(bubble)).toBe(true);
     expect(document.activeElement).toBe(stops[1]);
   });

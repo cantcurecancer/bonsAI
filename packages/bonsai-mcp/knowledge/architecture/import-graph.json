@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 310,
-  "edgeCount": 728,
+  "fileCount": 318,
+  "edgeCount": 751,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -161,6 +161,26 @@
         "src/utils/ollamaTabLocalSurvival.ts"
       ]
     },
+    "src/components/DrgGlossaryTermChip.test.tsx": {
+      "imports": [
+        "src/components/DrgGlossaryTermChip.tsx",
+        "src/data/drgGlossaryTerms.ts",
+        "src/test-harness/fakeDeckyUi.tsx",
+        "src/utils/drgGlossaryAsk.ts"
+      ],
+      "importedBy": []
+    },
+    "src/components/DrgGlossaryTermChip.tsx": {
+      "imports": [
+        "src/data/drgGlossaryTerms.ts",
+        "src/utils/drgGlossaryTermRegistry.ts",
+        "src/utils/focusNavigation.ts"
+      ],
+      "importedBy": [
+        "src/components/DrgGlossaryTermChip.test.tsx",
+        "src/components/MainTabBonsaiAiMarkdownChunk.tsx"
+      ]
+    },
     "src/components/KnowledgeBaseSection.nomicPull.test.tsx": {
       "imports": [
         "src/components/KnowledgeBaseSection.tsx",
@@ -229,12 +249,16 @@
     "src/components/MainTabBonsaiAiMarkdownChunk.test.tsx": {
       "imports": [
         "src/components/MainTabBonsaiAiMarkdownChunk.tsx",
+        "src/data/drgGlossaryTerms.ts",
         "src/test-harness/fakeDeckyUi.tsx"
       ],
       "importedBy": []
     },
     "src/components/MainTabBonsaiAiMarkdownChunk.tsx": {
       "imports": [
+        "src/components/DrgGlossaryTermChip.tsx",
+        "src/data/drgGlossaryTerms.ts",
+        "src/utils/drgGlossaryTermMatch.ts",
         "src/utils/focusNavigation.ts",
         "src/utils/spoilerFenceRegistry.ts"
       ],
@@ -260,6 +284,7 @@
         "src/components/StrategyChecklistPanel.tsx",
         "src/components/icons.tsx",
         "src/data/askMode.ts",
+        "src/data/drgGlossaryTerms.ts",
         "src/data/modelPolicy.ts",
         "src/data/replyMicroActions.ts",
         "src/features/plugin-shell/modalReturnFocusRegistry.ts",
@@ -276,6 +301,7 @@
         "src/utils/buildTurnHeaderElement.tsx",
         "src/utils/chatTurnTitle.ts",
         "src/utils/contextChipsFromSnapshot.ts",
+        "src/utils/drgGlossaryAsk.ts",
         "src/utils/focusNavigation.ts",
         "src/utils/inputTransparency.ts",
         "src/utils/liveTurnFocusGraph.ts",
@@ -854,6 +880,21 @@
       "imports": [],
       "importedBy": [
         "src/components/PullModelsModal.tsx"
+      ]
+    },
+    "src/data/drgGlossaryTerms.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/components/DrgGlossaryTermChip.test.tsx",
+        "src/components/DrgGlossaryTermChip.tsx",
+        "src/components/MainTabBonsaiAiMarkdownChunk.test.tsx",
+        "src/components/MainTabBonsaiAiMarkdownChunk.tsx",
+        "src/components/MainTabChatTranscript.tsx",
+        "src/utils/buildAnswerBubbleElement.tsx",
+        "src/utils/drgGlossaryAsk.test.ts",
+        "src/utils/drgGlossaryAsk.ts",
+        "src/utils/drgGlossaryTermMatch.test.ts",
+        "src/utils/drgGlossaryTermMatch.ts"
       ]
     },
     "src/data/inputSanitizerCommands.ts": {
@@ -1997,6 +2038,7 @@
     "src/test-harness/fakeDeckyUi.tsx": {
       "imports": [],
       "importedBy": [
+        "src/components/DrgGlossaryTermChip.test.tsx",
         "src/components/MainTabBonsaiAiMarkdownChunk.test.tsx",
         "src/components/MainTabChatTranscript.strategyPanels.test.tsx",
         "src/components/SessionContextStrip.test.tsx",
@@ -2105,6 +2147,7 @@
         "src/utils/answerBubbleElRegistry.ts",
         "src/utils/answerBubbleNavigation.ts",
         "src/utils/answerStopRegistry.ts",
+        "src/utils/drgGlossaryTermRegistry.ts",
         "src/utils/splitResponseIntoChunks.ts",
         "src/utils/spoilerFenceRegistry.ts",
         "src/utils/uiDocument.ts"
@@ -2116,6 +2159,7 @@
         "src/utils/answerBubbleElRegistry.ts",
         "src/utils/answerStopRegistry.ts",
         "src/utils/chatPanelScroll.ts",
+        "src/utils/drgGlossaryTermRegistry.ts",
         "src/utils/spoilerFenceRegistry.ts",
         "src/utils/uiDocument.ts"
       ],
@@ -2330,6 +2374,7 @@
       "imports": [
         "src/components/MainTabBonsaiAiMarkdownChunk.tsx",
         "src/components/StreamFenceWaitChip.tsx",
+        "src/data/drgGlossaryTerms.ts",
         "src/utils/answerBubbleElRegistry.ts",
         "src/utils/answerBubbleNavigation.ts",
         "src/utils/answerStopRegistry.ts",
@@ -2557,6 +2602,49 @@
         "src/hooks/useBonsaiAskOrchestration.ts"
       ]
     },
+    "src/utils/drgGlossaryAsk.test.ts": {
+      "imports": [
+        "src/data/drgGlossaryTerms.ts",
+        "src/utils/drgGlossaryAsk.ts"
+      ],
+      "importedBy": []
+    },
+    "src/utils/drgGlossaryAsk.ts": {
+      "imports": [
+        "src/data/drgGlossaryTerms.ts"
+      ],
+      "importedBy": [
+        "src/components/DrgGlossaryTermChip.test.tsx",
+        "src/components/MainTabChatTranscript.tsx",
+        "src/utils/drgGlossaryAsk.test.ts"
+      ]
+    },
+    "src/utils/drgGlossaryTermMatch.test.ts": {
+      "imports": [
+        "src/data/drgGlossaryTerms.ts",
+        "src/utils/drgGlossaryTermMatch.ts"
+      ],
+      "importedBy": []
+    },
+    "src/utils/drgGlossaryTermMatch.ts": {
+      "imports": [
+        "src/data/drgGlossaryTerms.ts"
+      ],
+      "importedBy": [
+        "src/components/MainTabBonsaiAiMarkdownChunk.tsx",
+        "src/utils/drgGlossaryTermMatch.test.ts"
+      ]
+    },
+    "src/utils/drgGlossaryTermRegistry.ts": {
+      "imports": [
+        "src/utils/uiDocument.ts"
+      ],
+      "importedBy": [
+        "src/components/DrgGlossaryTermChip.tsx",
+        "src/utils/answerBubbleNavigation.test.ts",
+        "src/utils/answerBubbleNavigation.ts"
+      ]
+    },
     "src/utils/focusNavigation.test.ts": {
       "imports": [
         "src/utils/focusNavigation.ts",
@@ -2570,6 +2658,7 @@
       ],
       "importedBy": [
         "src/components/ContextChipLadder.tsx",
+        "src/components/DrgGlossaryTermChip.tsx",
         "src/components/MainTabBonsaiAiMarkdownChunk.tsx",
         "src/components/MainTabChatTranscript.tsx",
         "src/components/MainTabUnifiedAskBar.tsx",
@@ -3128,6 +3217,7 @@
         "src/utils/buildAnswerBubbleElement.tsx",
         "src/utils/buildReplyActionsElement.tsx",
         "src/utils/chatPanelScroll.ts",
+        "src/utils/drgGlossaryTermRegistry.ts",
         "src/utils/focusNavigation.test.ts",
         "src/utils/focusNavigation.ts",
         "src/utils/liveTurnFocusGraph.ts",

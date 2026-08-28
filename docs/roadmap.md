@@ -343,10 +343,10 @@ Stars are **effort/risk**. Grouped by **theme**; within each lane sorted ascendi
 
 ### Knowledge base
 
-- ★★★ **DRG Survivor glossary terms** (tap-to-define jargon)
-  - **Goal:** Curated glossary entries — starting with "kiting," already used undefined in the existing DRG Survivor card at `data/kb/strategy_seed.json:163` — back model prompt guidance so jargon gets defined without derailing the reply. Terms render as a tappable inline element: a floating tooltip above the term (not inline-push). D-pad focus alone shows a short peek (first few words, no action) before the user presses to open the full definition; dismiss via any D-pad direction or B. The full definition includes an **explain further** chip that auto-sends a new Ask turn about the term.
-  - **Not in scope (for now):** general jargon-detection across every game's KB content — scoped to DRG Survivor only until this proves out.
-  - **Depends on:** focus-graph entry for D-pad reachability (`.cursor/rules/decky-focus-graph.mdc`) — required before shipping, not optional polish.
+- ★★★ **DRG Survivor glossary terms** (tap-to-define jargon) — shipped 2026-08-28, desk only; on-Deck **DRG-GLOSSARY-01** Open
+  - Two curated terms, "kiting" and "overclock," both read undefined in the shipped DRG Survivor cards. A DRG Survivor reply that uses one renders it as a tappable inline chip; a floating tooltip (not inline-push) shows a short peek on focus alone, the full definition on A, and an **explain further** chip that auto-sends a new Ask turn. Frontend-only data (`src/data/drgGlossaryTerms.ts`) — no Python retrieval needed for a two-term DRG-only list; the model prompt separately gets a small clause telling it the terms are tap-to-define so it doesn't stop to explain them.
+  - **Not in scope:** general jargon-detection across every game's KB content — DRG Survivor only, as planned.
+  - The D-pad walk (peek → A → full → B/direction dismiss → explain-further sends) is owed on-device — see **DRG-GLOSSARY-01** in [testing.md](testing.md).
 - ★★ **Eval fixture cannot see a recall failure** (paraphrase rows)
   - **Goal:** `kb_eval_v2` has **1** labeled case out of 138 where keyword search returns nothing, so the slice that proves the vector half adds recall is a sample of one. Measured 2026-08-18 by the re-aligned harness. Add paraphrase rows — questions that ask for a card without using its words — until that slice can gate a regression.
   - **Starting material:** the 15 paraphrased questions in [audit/rag-vector-recall-floor-2026-08-18.md](audit/rag-vector-recall-floor-2026-08-18.md) are already written, measured and labelled with the card each one should return. `tests/fixtures/kb_eval_paraphrase_v0.json` (15 rows) exists but the arms run does not read it.

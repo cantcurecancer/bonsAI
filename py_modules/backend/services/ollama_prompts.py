@@ -1011,6 +1011,42 @@ def build_reply_verbosity_block(
 _STRUCTURED_CARD_LABELS = ("Weak points:", "Uses:", "Phases:", "Summary:")
 
 
+# DRG Survivor jargon glossary (roadmap: tap-to-define jargon). AppID matches the game row at
+# data/kb/strategy_seed.json:4. Terms match the frontend's curated list at
+# src/data/drgGlossaryTerms.ts -- keep the two in sync by hand; there is no shared source yet
+# because this is a deliberately small, single-title first cut, not a generic cross-game
+# jargon framework the roadmap explicitly rules out building.
+DRG_SURVIVOR_APP_ID = "2321470"
+_DRG_SURVIVOR_NAME_NEEDLE = "deep rock galactic: survivor"
+_DRG_GLOSSARY_TERM_LABELS = ("kiting", "overclock")
+
+
+def _is_drg_survivor_title(app_id: str = "", app_name: str = "") -> bool:
+    """True for Deep Rock Galactic: Survivor, by AppID or by name."""
+    if (app_id or "").strip() == DRG_SURVIVOR_APP_ID:
+        return True
+    return _DRG_SURVIVOR_NAME_NEEDLE in (app_name or "").strip().lower()
+
+
+def _drg_survivor_glossary_clause(app_id: str = "", app_name: str = "") -> str:
+    """Tell the model DRG Survivor jargon is tap-to-define, so it can use terms without derailing to explain them.
+
+    Conditional on the title, the same shape as STRUCTURED CARDS above: an unconditional clause
+    would spend tokens on every Ask regardless of game. Scoped to this one title on purpose --
+    see the module-level comment above; this is a curated single-title glossary, not a generic
+    jargon-detection framework.
+    """
+    if not _is_drg_survivor_title(app_id=app_id, app_name=app_name):
+        return ""
+    terms = " / ".join(_DRG_GLOSSARY_TERM_LABELS)
+    return (
+        f"\nGLOSSARY (Deep Rock Galactic: Survivor): {terms} are tap-to-define in this UI -- "
+        "the player can select one of these words to see its definition. Use them naturally "
+        "where they fit rather than stopping to define them inline; only spell one out in "
+        "prose if the player directly asks what it means.\n"
+    )
+
+
 def build_system_prompt(
     question: str,
     app_id: str,
@@ -1133,6 +1169,7 @@ def build_system_prompt(
             character_roleplay_on=character_roleplay_on,
         )
     )
+    drg_glossary_block = _drg_survivor_glossary_clause(app_id=app_id, app_name=app_name)
     strategy_domain = strategy_domain_guidance or ask_mode == "strategy"
     strategy_kb_relaxed = strategy_domain and _strategy_kb_spoiler_clause_suppressed(
         app_id=app_id,
@@ -1223,7 +1260,7 @@ def build_system_prompt(
                 app_id=app_id,
                 app_name=app_name,
             )
-        return dynamic_block + general_block + early_block + middle + language_block + verbosity_block + tail
+        return dynamic_block + general_block + drg_glossary_block + early_block + middle + language_block + verbosity_block + tail
 
     ollama_q = user_asks_ollama_bonsai_host_or_latency(question)
     model_policy_q = _user_asks_model_policy_tiers_explainer(question)
@@ -1340,7 +1377,7 @@ def build_system_prompt(
         character_roleplay_on=character_roleplay_on,
     )
     language_block = build_reply_language_block(reply_language)
-    return dynamic_block + general_block + early_block + middle + language_block + verbosity_block + tail
+    return dynamic_block + general_block + drg_glossary_block + early_block + middle + language_block + verbosity_block + tail
 
 
 def format_ai_response(

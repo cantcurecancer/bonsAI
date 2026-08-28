@@ -8,6 +8,7 @@
 import React from "react";
 import { Focusable } from "@decky/ui";
 import { MainTabBonsaiAiMarkdownChunk } from "../components/MainTabBonsaiAiMarkdownChunk";
+import type { DrgGlossaryTerm } from "../data/drgGlossaryTerms";
 import { StreamFenceWaitChip } from "../components/StreamFenceWaitChip";
 import {
   getRegisteredAnswerBubble,
@@ -46,6 +47,8 @@ export type BuildAnswerBubbleElementArgs = {
   appId?: string | null;
   /** When true, unwrap every spoiler fence for this turn (explicit consent). */
   spoilerConsentEffective?: boolean;
+  /** DRG Survivor glossary "explain further" chip — starts a new Ask turn about the tapped term. */
+  onDrgGlossaryExplainFurther?: (term: DrgGlossaryTerm) => void;
 };
 
 const noopChunkRef = { current: 0 };
@@ -133,7 +136,9 @@ function renderStreamMarkdownStack(
   spoilerDefaultExpanded: boolean,
   answerKey: string,
   stopNav: Record<string, unknown>,
-  unwrapOpenSpoilerFence?: (openFenceText: string) => boolean
+  unwrapOpenSpoilerFence?: (openFenceText: string) => boolean,
+  appId?: string | null,
+  onDrgGlossaryExplainFurther?: (term: DrgGlossaryTerm) => void
 ): React.ReactNode {
   const prepared = prepareStreamMarkdown(body, { unwrapOpenSpoilerFence });
   const nodes: React.ReactNode[] = [];
@@ -150,6 +155,8 @@ function renderStreamMarkdownStack(
           source={block}
           spoilerMaskingEnabled={spoilerMaskingEnabled}
           spoilerDefaultExpanded={spoilerDefaultExpanded}
+          appId={appId}
+          onDrgGlossaryExplainFurther={onDrgGlossaryExplainFurther}
         />
       </Focusable>
     );
@@ -184,6 +191,8 @@ function renderStreamMarkdownStack(
           source={prepared.liveTail}
           spoilerMaskingEnabled={spoilerMaskingEnabled}
           spoilerDefaultExpanded={spoilerDefaultExpanded}
+          appId={appId}
+          onDrgGlossaryExplainFurther={onDrgGlossaryExplainFurther}
         />
       </Focusable>
     );
@@ -209,6 +218,7 @@ export function buildAnswerBubbleElement(
     askQuestion = "",
     appId = null,
     spoilerConsentEffective = false,
+    onDrgGlossaryExplainFurther,
   } = args;
   const spoilerUnwrapEligible =
     spoilerConsentEffective || (spoilerMaskingEnabled && (askQuestion.trim() || appId));
@@ -321,7 +331,9 @@ export function buildAnswerBubbleElement(
                 spoilerDefaultExpanded,
                 answerKey,
                 stopNav,
-                unwrapOpenSpoilerFence
+                unwrapOpenSpoilerFence,
+                appId,
+                onDrgGlossaryExplainFurther
               )
             : /* Same stop treatment as the streaming stack, so navigating a turn feels the same
                  whether or not it streamed — and so a turn does not change shape under the user at
@@ -337,6 +349,8 @@ export function buildAnswerBubbleElement(
                     source={chunk}
                     spoilerMaskingEnabled={spoilerMaskingEnabled}
                     spoilerDefaultExpanded={spoilerDefaultExpanded}
+                    appId={appId}
+                    onDrgGlossaryExplainFurther={onDrgGlossaryExplainFurther}
                   />
                 </Focusable>
               ))}
