@@ -48,7 +48,7 @@ seconds; anything that would otherwise have to be re-measured goes there rather 
 
 ### Wrong or missing content in a reply
 
-- ★★ **A finished reply forgets which game it was about** — **FIXED at the desk 2026-08-28; device proof owed.** Found on device the same
+- ★★ ~~**A finished reply forgets which game it was about**~~ — **FIXED and confirmed on device 2026-08-28.** Found on device the same
   day while checking the new DRG Survivor glossary chips (`DRG-GLOSSARY-01`). The chips appear while the answer is still being written and
   are **gone by the time it finishes**: measured 2 of them on screen at 30 characters in, none at the end, with the game running and the
   turn's own snapshot naming it. The cause was one line — [chatSlotTurns.ts](../src/utils/chatSlotTurns.ts) rebuilt every turn from a saved
@@ -62,8 +62,11 @@ seconds; anything that would otherwise have to be re-measured goes there rather 
   `origin_app_id` — that last step is the only guess, and it exists so chats saved before this change still answer sensibly instead of
   answering `""`. Per-turn rather than per-chat because a saved chat outlives a play session: quit one game, start another, keep asking in
   the same chat, and the older answers must keep the game they were asked under.
-  **Still owed:** the device walk. `DRG-GLOSSARY-01` cannot be re-run until the plugin can be deployed again — see the deploy note in
-  [testing.md](testing.md). Consent is deliberately *not* persisted per turn (it is a live decision), so a restored turn still re-fences.
+  **Confirmed on hardware the same evening** with DRG Survivor running: 2 glossary chips mid-stream and still 2 after the reply finished
+  and was written to disk, which is the exact moment they used to vanish. The saved chat holds both states for comparison — this morning's
+  turn stored `app_id=''`, tonight's stored `app_id='2321470'`, in a chat whose `origin_app_id` is `''`, so the fallback cannot account for
+  it. Full run record in [testing.md](testing.md) under `DRG-GLOSSARY-01`.
+  Consent is deliberately *not* persisted per turn (it is a live decision), so a restored turn still re-fences.
 
 - ★★ **Unrelated questions still get game cards stapled on** — **PARTIAL; the maintainer chose to live with it 2026-08-27.** With a game running,
   *"thank you very much"* still attaches a Nitra card and *"what time is it"* attaches three. Two of the six test phrases were fixed by the D28
