@@ -23,11 +23,10 @@ seconds; anything that would otherwise have to be re-measured goes there rather 
 
 ### Blocking a feature on the couch
 
-- ★★★ **You can get stuck inside the Session context panel and have to close it to get out** — **fix written 2026-08-23, never checked on the Deck.**
-  With *Show details* collapsed, opening *Session context* and pressing down traps the ring: Helpful, Not really, Retry and Show details all
-  become unreachable. Two causes, both fixed in code — a helper grabbing the wrong chip ladder, and the strip's own ladder having no way out.
-  **This is the highest-value thing to check on device**, because the fix is unproven and the symptom is worse than the bug it came from.
-  Steps and root cause: [roadmap-details.md](roadmap-details.md#d-pad-focus-is-trapped-inside-the-expanded-session-context-panel).
+- ~~★★★ **You can get stuck inside the Session context panel**~~ — **FIXED, and confirmed on device 2026-08-27.**
+  With *Show details* collapsed and *Session context* expanded, Down enters the panel and Up now walks back out to **Retry**,
+  then **Helpful**, then the branch buttons — nothing is stranded. Evidence: `runs/SESSION-CTX-TRAP-verify-2026-08-27.json`
+  (`escaped: true`, `neverReached: []`). The fix had sat unproven since 2026-08-23.
 
 - ★★★ **The D-pad may not escape the full-screen pickers** — **OPEN, never audited.** Pull Models, the character picker, the models hub and any
   other `showModal` picker need one pass each: from the top item press up, from the last item press down, and confirm the ring leaves the list
@@ -63,10 +62,6 @@ seconds; anything that would otherwise have to be re-measured goes there rather 
 *Each of these has a fix and tests. None has been watched on hardware, so none can be called done.*
 
 - ★★ **Focus lands on answer text that does nothing when you press A** — fix landed 2026-08-23.
-- ★★ **Feedback and Retry are unreachable after a normal Ask** — fix landed 2026-08-23.
-- ★★ **The live question bubble shows a bare "…" after reopening the panel** — fix landed 2026-08-23; a later run showed half of it working and
-  the failure moving. May have been closed as a side effect of the 2026-08-27 chat-history fix — worth one look before spending on it.
-  Detail: [roadmap-details.md](roadmap-details.md#live-ask-user-bubble-shows-a-bare-ellipsis-after-reopen).
 - ★★ **Pickers return you to the right tab but not the right control** — 1 of 3 confirmed; the models hub and desktop-note cases still land on
   the tab strip. Next step is instrumentation, not another attempt.
 
@@ -84,6 +79,11 @@ seconds; anything that would otherwise have to be re-measured goes there rather 
   work changed this area, so the old description may no longer describe what happens.
 
 ### Small and cosmetic
+
+- ★ **After reopening the panel, a branch-pick turn's header shows the internal prompt** — **OPEN, found on-Deck 2026-08-27**
+  during the verification sweep. The header reads `[Strategy follow-up] I'm at: Tell me what you want to know…` instead of the
+  friendly *I'm at: …* caption it shows while live. The friendly caption is a display-only value; the reopen rebuilds headers from
+  the saved chat, which stores the composed prompt. Cosmetic, but it is internal plumbing on screen.
 
 - ★ **The active chip in Show details is hard to spot** — no focus ring, and the "Chip 1 of 6" counter is easy to miss. Filed by the maintainer.
 - ★ **The question overlay is a few pixels out of line** with the native text field underneath it, most visible on a three-line question and on
