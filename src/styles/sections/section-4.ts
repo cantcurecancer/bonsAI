@@ -139,7 +139,7 @@ export function buildSection4Section(): string {
         */
         .bonsai-scope .bonsai-preset-carousel-focus-root.gpfocuswithin .bonsai-preset-carousel-slot--focus .bonsai-preset-glass,
         .bonsai-scope .bonsai-preset-carousel-focus-root:has(.gpfocus) .bonsai-preset-carousel-slot--focus .bonsai-preset-glass,
-        .bonsai-scope:not(:has(.gpfocus)) .bonsai-preset-carousel-slot--focus .bonsai-preset-glass {
+        :root:not(:has(.gpfocus)) .bonsai-scope .bonsai-preset-carousel-slot--focus .bonsai-preset-glass {
           border-color: rgba(56, 189, 248, 0.45) !important;
         }
 

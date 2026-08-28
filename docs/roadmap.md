@@ -48,6 +48,15 @@ seconds; anything that would otherwise have to be re-measured goes there rather 
 
 ### Wrong or missing content in a reply
 
+- ★★ **OPEN — A finished reply forgets which game it was about.** Found on device 2026-08-28 while checking the new DRG Survivor glossary
+  chips (`DRG-GLOSSARY-01`). The chips appear while the answer is still being written and are **gone by the time it finishes**: measured 2
+  of them on screen at 30 characters in, none at the end, with the game running and the turn's own snapshot naming it. The cause is one
+  line — [chatSlotTurns.ts:29](../src/utils/chatSlotTurns.ts) rebuilds every turn from a saved chat with `appId: ""`, and only the live
+  branch passes the real value ([MainTabChatTranscript.tsx:633](../src/components/MainTabChatTranscript.tsx)). So the reply on screen
+  believes no game is running the moment it settles. **Fix it at the mapper, not per feature:** the glossary is just the first thing to
+  notice; the asked-entity spoiler unwrap reads the same value (`:286`), and anything added later that asks "which game was this turn
+  about" will hit it too. The saved turn needs to carry the AppID it was asked under, which means the persisted slot has to store it.
+
 - ★★ **Unrelated questions still get game cards stapled on** — **PARTIAL; the maintainer chose to live with it 2026-08-27.** With a game running,
   *"thank you very much"* still attaches a Nitra card and *"what time is it"* attaches three. Two of the six test phrases were fixed by the D28
   floor change; the other two come from the keyword half, and raising that floor pushes against D25. Confirmed on hardware, card for card.
@@ -76,8 +85,12 @@ seconds; anything that would otherwise have to be re-measured goes there rather 
 
 *Each of these has a fix and tests. None has been watched on hardware, so none can be called done.*
 
-- ★★ **A carousel chip showed a focus ring while the D-pad was on the tab strip above it** — **fixed 2026-08-28, on-Deck confirmation owed
-  (`FOCUS-CHIP-RING-01`).** Found during the automated Batch A run, and it fooled both parties at once: the maintainer, watching the screen,
+- ~~★★ **A carousel chip showed a focus ring while the D-pad was on the tab strip above it**~~ — **FIXED and confirmed on device
+  2026-08-28**, the same day it was found (`FOCUS-CHIP-RING-01`). With the ring on a tab icon, no chip carries a highlight of any kind;
+  with the ring on a chip, the blue marker and the white ring are on that same chip; Up from the Ask row lands the real gamepad ring on a
+  chip and **A fills the Ask field** instead of switching tabs. The tab icons now answer to their own names — *Ask bonsAI*, *Where AI runs*,
+  and so on. Full run and evidence files in [testing.md](testing.md). Found during the automated Batch A run, and it fooled both parties at
+  once: the maintainer, watching the screen,
   saw the ring on a chip; the automation, reading the real gamepad focus, saw it on a **tab icon**, and pressing A activated the tab rather
   than the chip. Both halves named in the original entry turned out to be real and both are fixed. **The cause:** the carousel is its own
   `Focusable`, so Up out of the Ask bar was crossing a navigation boundary with a plain `focus()` — which moves `activeElement` and leaves
@@ -161,7 +174,7 @@ Code-fixed or shipped; on-Deck / qualitative QA still owed. Detail: [testing.md]
 - ★ **VAC / `bonsai:vac-check` (Phase 1) — on-device QA** — implementation complete; finish **VAC-02…06** after Tier 0 **SMOKE-F** passes.
 - ★ **~22% of Asks show bare emoji for every phase change** — fix landed 2026-08-08; **THINKING-EMOJI-CLUSTER-01**.
 - ★★ **Asked-entity extraction (player typing patterns)** — fixed 2026-08-09; **STRAT-ENTITY-01**.
-- ★★ **Unfenced spoiler feedback (thumbs-down category)** — shipped 2026-08-28; **SPOILER-FEEDBACK-01** Open. New refine chip **Unfenced spoiler** next to Bad information / Misidentified game/problem. Also fixed a pre-existing bug where `save_ask_feedback` was missing its `chip_id` parameter, so every refine chip failed silently on the real RPC bridge. Over-fenced sibling skipped — not free enough to bundle in. [spoiler-constitution.md](planning/spoiler-constitution.md).
+- ★★ **Unfenced spoiler feedback (thumbs-down category)** — shipped **and confirmed on device** 2026-08-28; **SPOILER-FEEDBACK-01** Verified. The chip is there, reachable, and the press reached the backend — `chip_id: "unfenced_spoiler"` landed in the feedback log, which is the `chip_id` bug proven fixed against the real RPC bridge. New refine chip **Unfenced spoiler** next to Bad information / Misidentified game/problem. Also fixed a pre-existing bug where `save_ask_feedback` was missing its `chip_id` parameter, so every refine chip failed silently on the real RPC bridge. Over-fenced sibling skipped — not free enough to bundle in. [spoiler-constitution.md](planning/spoiler-constitution.md).
 - ★★ **Device QA — Tier 0–1** — execute Tier 0 smokes (SMOKE-A, C, F) then Tier 1 (SMOKE-B, E, H); update coverage with Pass / Partial / Fail + build id.
 - ★★ **Expert mode attached fewer knowledge cards than Strategy** — fixed 2026-08-18; **KB-EXPERT-01** owed, and it re-opens **KB-ASKMODE-01** for a re-run. The route flag asked for Strategy by name, so Expert silently took the small budget. [why](roadmap-details.md#shipped-qa-owed--why-each-was-built-this-way)
 - ★★ **KB compat retrieval phrase gate** — fixed 2026-08-06 (**D16**); **KB-ROUTER-01**. [audit/rag-pr2-signoff.md](audit/rag-pr2-signoff.md) § 2.
@@ -173,12 +186,14 @@ Code-fixed or shipped; on-Deck / qualitative QA still owed. Detail: [testing.md]
 - ★★ **Show diagnostics folded into Show details** — shipped 2026-08-28. The standalone **Show
   diagnostics** button is gone; the raw `ask_diagnostics` JSON now lives behind the chip ladder's
   **Developer details** chip, same verbose-logging gate as before. Desk-verified only (unit tests,
-  typecheck, build); on-Deck confirmation owed. **DIAG-FOLD-01** in [testing.md](testing.md).
+  typecheck, build) when it shipped; **confirmed on device the same day — DIAG-FOLD-01 Verified.** No button matching "diagnostics"
+  survives anywhere, and the raw JSON is where it should be, on chip 6 of 6. The verbose-logging-**off** half was not re-run.
+  [testing.md](testing.md).
 - ★★ **Thinking blurbs — three writers disagree** — fix landed 2026-08-08; re-verify **THINKING-COPY-01**, **THINKING-SLOW-01**, **THINKING-LIVE-01**, **THINKING-SPOILER-01**. [06-thinking-blurbs-review.md § 10](planning/06-thinking-blurbs-review.md#10-implementation-log).
 - ★★ **Wave 4 G slider direction handlers** — Deck-check: **ONBUTTONDOWN-AUDIT-01** (distinguish nothing happens vs double-step; cover Ollama keep-alive, Reply verbosity, Connection timeout sliders).
 - ★★ **Your tab is not remembered when you leave and reopen** — **TAB-RESUME-01** Partial (tab + scroll restore; focus-after-reopen separate).
 - ★★★ **D11 legacy-loader shim removal** — **D11-SHIM-01** Partial (RPC probe ok; Main-tab Ask UI pass open).
-- ★★★ **Ghost in the Shell preset chip decode** — shipped 2026-08-28, replacing the `stream` typewriter mode (`decode` now fills that slot in the picker). Chips arrive as a full-width scrambled green block and lock into the real prompt left to right behind a blinking caret; a Deck whose settings still say `stream` maps forward to `decode` rather than silently resetting to fade. **PRESET-STREAM-ANIM-01** Open — frame-rate feel and the focus-during-churn walk are device-only. Writeup: [archive/roadmap-completed.md](archive/roadmap-completed.md).
+- ★★★ **Ghost in the Shell preset chip decode** — shipped 2026-08-28, replacing the `stream` typewriter mode (`decode` now fills that slot in the picker). Chips arrive as a full-width scrambled green block and lock into the real prompt left to right behind a blinking caret; a Deck whose settings still say `stream` maps forward to `decode` rather than silently resetting to fade. **PRESET-STREAM-ANIM-01** Partial — **measured on device 2026-08-28: a flat 60 fps with all three chips decoding** (479 frames in 8 s, worst gap 50 ms), characters locking every 33–50 ms, and the focus-during-churn walk clean. The three chips never advance in the same frame — they are staggered, so it is three chips mid-decode rather than three in step. **Only the feel is still owed**, and that is a person's call, not a rig's. Writeup: [archive/roadmap-completed.md](archive/roadmap-completed.md).
 - ★★★ **KB coverage chip (Show details)** — shipped 2026-08-07 (Wave 3 I); **KB-COVERAGE-01 Partial.** On-Deck 2026-08-16 the live-turn ladder rendered and the chip read `KB: 9 sections` on a Portal 2 Strategy Ask. **Still open: the two negative cases** — KB off must read `KB: off`, and an uncovered title must read `KB: none for this game`. Distinct from the per-turn `kb` retrieval chip; this one is corpus honesty.
 - ★★★ **KB download Cancel** — shipped 2026-08-05; **KB-CANCEL-01 is not testable as written, and that is the blocker.** The whole download finishes in about a second on device, so there is no window to press Cancel in. Needs a slower fixture or a throttle before it can be QA'd at all. [why](roadmap-details.md#shipped-qa-owed--why-each-was-built-this-way)
 - ★★★ **Kids master lock** — shipped 2026-08-09; on-Deck **KIDS-LOCK-01**, **KIDS-FOCUS-01**, **KIDS-REGRESS-01** (and **KIDS-LOCK-02** if child account) Open. Live CEF Stage 0 confirmation still owed.
@@ -216,8 +231,12 @@ Stars are **effort/risk**. Grouped by **theme**; within each lane sorted ascendi
   - **Goal:** One reply action copies visible answer text to host clipboard. Done: Copy button in
     the reply utility row, tries `navigator.clipboard.writeText` → `execCommand('copy')` → host RPC
     (`wl-copy`/`xclip`) in that order, shows Copied / Copy failed on the button itself.
-  - **Spike:** [clipboard-spike-2026-08-28.md](audit/clipboard-spike-2026-08-28.md) — Wayland
-    selection ownership across a plugin reload is the one thing left unconfirmed; see **COPY-REPLY-01/02**.
+  - **Spike:** [clipboard-spike-2026-08-28.md](audit/clipboard-spike-2026-08-28.md). **Settled on device 2026-08-28 —
+    COPY-REPLY-01/02 both Verified.** The browser path wins outright: `navigator.clipboard.writeText` succeeded, the host RPC was never
+    called, and the text survived closing and reopening the QAM. The Wayland worry turns out to be moot on stock SteamOS for a blunter
+    reason — **`wl-copy`, `xclip`, `xsel` and `wl-paste` are all absent from the device**, so the host-script fallback could not run even
+    if it were reached. Keep it for other setups, but it is not the path this Deck uses. Untestable here: whether another application can
+    paste the text, since there is no clipboard tool on the device to check with.
   - **Source:** [13-roadmap-feature-ideas.md](planning/13-roadmap-feature-ideas.md) A2.
 - ★★ **Preset chip expansion** (incremental content)
   - **Goal:** Add or refresh preset strings as related features land. Wave 1 shipped four prompts; **PRESET-EXPAND-W1-01** open. [wave1.md](wave1.md).
@@ -307,7 +326,7 @@ Stars are **effort/risk**. Grouped by **theme**; within each lane sorted ascendi
 
 ### Knowledge base
 
-- ★★★ **DRG Survivor glossary terms** (tap-to-define jargon) — shipped 2026-08-28, desk only; on-Deck **DRG-GLOSSARY-01** Open
+- ★★★ **DRG Survivor glossary terms** (tap-to-define jargon) — shipped 2026-08-28, desk only; on-Deck **DRG-GLOSSARY-01** **Failed on device 2026-08-28** — the chips render while the answer streams and vanish when it settles, because a finished turn reports no game. Not a fault in this feature; see the bug entry above. Fix that and re-run this row.
   - Two curated terms, "kiting" and "overclock," both read undefined in the shipped DRG Survivor cards. A DRG Survivor reply that uses one renders it as a tappable inline chip; a floating tooltip (not inline-push) shows a short peek on focus alone, the full definition on A, and an **explain further** chip that auto-sends a new Ask turn. Frontend-only data (`src/data/drgGlossaryTerms.ts`) — no Python retrieval needed for a two-term DRG-only list; the model prompt separately gets a small clause telling it the terms are tap-to-define so it doesn't stop to explain them.
   - **Not in scope:** general jargon-detection across every game's KB content — DRG Survivor only, as planned.
   - The D-pad walk (peek → A → full → B/direction dismiss → explain-further sends) is owed on-device — see **DRG-GLOSSARY-01** in [testing.md](testing.md).
