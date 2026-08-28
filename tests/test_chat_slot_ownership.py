@@ -165,6 +165,41 @@ class ChatSlotOwnershipTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(len(assistant_turns), 1)
         self.assertEqual(assistant_turns[0]["transparency"], snapshot)
 
+    async def test_both_turns_persist_the_ask_app_id(self) -> None:
+        """Regression (DRG-GLOSSARY-01): the AppID the Ask ran under reached the log line and the
+        slot header but never the turns themselves, so a reply re-read from the saved chat came
+        back claiming no game was running. Covers both writers in one pass — the user turn on
+        submit and the assistant turn on completion.
+        """
+        slot = create_slot(self.tmp, label="app-id-route")
+        sid = slot["id"]
+
+        async def fast_execute(*_args, **_kwargs):
+            return {"success": True, "response": "routed answer", "elapsed_seconds": 0.01}
+
+        with patch.object(Plugin, "_execute_game_ai_request", side_effect=fast_execute):
+            with patch.object(Plugin, "load_settings", return_value={}):
+                with patch.object(
+                    Plugin,
+                    "_compose_opening_thinking_blurb",
+                    return_value=("Thinking…", None),
+                ):
+                    await self.plugin.start_background_game_ai(
+                        {
+                            "question": "what is kiting?",
+                            "PcIp": "127.0.0.1:11434",
+                            "appId": "548430",
+                            "appName": "Deep Rock Galactic: Survivor",
+                            "chat_slot_id": sid,
+                        }
+                    )
+                    if self.plugin._background_task is not None:
+                        await self.plugin._background_task
+
+        loaded = load_slot(self.tmp, sid)
+        assert loaded is not None
+        self.assertEqual([t["app_id"] for t in loaded["turns"]], ["548430", "548430"])
+
     async def test_unknown_request_id_logs_fault(self) -> None:
         self.plugin._background_request_seq = 9999
         self.plugin._background_state = {

@@ -961,6 +961,7 @@ class Plugin:
                 text=question,
                 request_id=request_id,
                 attachment_refs=refs,
+                app_id=app_id,
                 logger=logger,
             )
 
@@ -973,6 +974,7 @@ class Plugin:
         slot_id: str,
         response_text: str,
         transparency: Optional[dict] = None,
+        app_id: str = "",
     ) -> None:
         sid = str(slot_id or "").strip()
         body = str(response_text or "").strip()
@@ -987,6 +989,7 @@ class Plugin:
                 role="assistant",
                 text=body,
                 transparency=transparency,
+                app_id=app_id,
                 logger=logger,
             )
 
@@ -2493,6 +2496,7 @@ class Plugin:
                 slot_id=slot_id,
                 response_text=response_text,
                 transparency=None if cancelled_rq else result.get("transparency"),
+                app_id=app_id,
             )
         await self._maybe_app_log(
             "ask.background",
@@ -2823,6 +2827,10 @@ class Plugin:
                         await self._chat_slots_record_assistant_turn(
                             slot_id=slot_id,
                             response_text=cancel_response,
+                            # The game the cancelled ask was about, off the state dict this
+                            # method just rewrote (it spreads the pending state, so `app_id`
+                            # from `pending_background_state` survives the cancel).
+                            app_id=str(self._background_state.get("app_id") or ""),
                         )
         await self._maybe_app_log("ask.abort", "background ask abort requested")
         return {"ok": True}

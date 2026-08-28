@@ -48,14 +48,22 @@ seconds; anything that would otherwise have to be re-measured goes there rather 
 
 ### Wrong or missing content in a reply
 
-- ★★ **OPEN — A finished reply forgets which game it was about.** Found on device 2026-08-28 while checking the new DRG Survivor glossary
-  chips (`DRG-GLOSSARY-01`). The chips appear while the answer is still being written and are **gone by the time it finishes**: measured 2
-  of them on screen at 30 characters in, none at the end, with the game running and the turn's own snapshot naming it. The cause is one
-  line — [chatSlotTurns.ts:29](../src/utils/chatSlotTurns.ts) rebuilds every turn from a saved chat with `appId: ""`, and only the live
-  branch passes the real value ([MainTabChatTranscript.tsx:633](../src/components/MainTabChatTranscript.tsx)). So the reply on screen
-  believes no game is running the moment it settles. **Fix it at the mapper, not per feature:** the glossary is just the first thing to
-  notice; the asked-entity spoiler unwrap reads the same value (`:286`), and anything added later that asks "which game was this turn
-  about" will hit it too. The saved turn needs to carry the AppID it was asked under, which means the persisted slot has to store it.
+- ★★ **A finished reply forgets which game it was about** — **FIXED at the desk 2026-08-28; device proof owed.** Found on device the same
+  day while checking the new DRG Survivor glossary chips (`DRG-GLOSSARY-01`). The chips appear while the answer is still being written and
+  are **gone by the time it finishes**: measured 2 of them on screen at 30 characters in, none at the end, with the game running and the
+  turn's own snapshot naming it. The cause was one line — [chatSlotTurns.ts](../src/utils/chatSlotTurns.ts) rebuilt every turn from a saved
+  chat with `appId: ""`, and only the live branch passed the real value
+  ([MainTabChatTranscript.tsx:633](../src/components/MainTabChatTranscript.tsx)), so the reply on screen believed no game was running the
+  moment it settled.
+  **Fixed at the mapper, not per feature**, because the glossary was only the first thing to notice it — the asked-entity spoiler unwrap
+  reads the same value (`:286`), and anything added later that asks "which game was this turn about" would have hit it too. The AppID is
+  now recorded on the turn itself: `chat_slot_service.py` stores `app_id` per turn and `main.py` passes it from both writers (the question
+  on submit, the answer on completion, including a cancel). A restored turn reads its own AppID, then the question's, then the chat's
+  `origin_app_id` — that last step is the only guess, and it exists so chats saved before this change still answer sensibly instead of
+  answering `""`. Per-turn rather than per-chat because a saved chat outlives a play session: quit one game, start another, keep asking in
+  the same chat, and the older answers must keep the game they were asked under.
+  **Still owed:** the device walk. `DRG-GLOSSARY-01` cannot be re-run until the plugin can be deployed again — see the deploy note in
+  [testing.md](testing.md). Consent is deliberately *not* persisted per turn (it is a live decision), so a restored turn still re-fences.
 
 - ★★ **Unrelated questions still get game cards stapled on** — **PARTIAL; the maintainer chose to live with it 2026-08-27.** With a game running,
   *"thank you very much"* still attaches a Nitra card and *"what time is it"* attaches three. Two of the six test phrases were fixed by the D28

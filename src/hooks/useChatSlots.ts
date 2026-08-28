@@ -57,9 +57,14 @@ export function useChatSlots({
     [activeSlotIdRef],
   );
 
+  /*
+   * `fallbackAppId` is the slot's own `origin_app_id`, used only for turns saved before the
+   * backend recorded one per turn. Passing it here rather than defaulting inside the mapper
+   * keeps the mapper honest about where the guess comes from.
+   */
   const applySlotTranscript = useCallback(
-    (turns: Parameters<typeof turnsToCollapsedTurns>[0]) => {
-      const { collapsed, pendingQuestion } = turnsToCollapsedTurns(turns);
+    (turns: Parameters<typeof turnsToCollapsedTurns>[0], fallbackAppId = "") => {
+      const { collapsed, pendingQuestion } = turnsToCollapsedTurns(turns, fallbackAppId);
       setAskThreadCollapsed(collapsed);
       setAskThreadDisplayQuestion(pendingQuestion ?? "");
       setExpandedTurnKey(pendingQuestion ? "live" : collapsed.length > 0 ? collapsed[collapsed.length - 1]!.id : "live");
@@ -84,7 +89,7 @@ export function useChatSlots({
     }
     const slot = await getChatSlot(sid);
     if (!slot) return;
-    applySlotTranscript(slot.turns);
+    applySlotTranscript(slot.turns, slot.origin_app_id ?? "");
   }, [applySlotTranscript, setAskThreadCollapsed, setAskThreadDisplayQuestion, setExpandedTurnKey]);
 
   const selectSlot = useCallback(
@@ -99,7 +104,7 @@ export function useChatSlots({
       }
       const slot = await getChatSlot(slotId);
       if (!slot) return;
-      applySlotTranscript(slot.turns);
+      applySlotTranscript(slot.turns, slot.origin_app_id ?? "");
     },
     [
       applySlotTranscript,

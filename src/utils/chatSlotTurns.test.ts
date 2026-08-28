@@ -47,6 +47,59 @@ describe("turnsToCollapsedTurns", () => {
     expect(collapsed[0]?.transparency?.route).toBe("ollama");
   });
 
+  it("carries the persisted app id onto the collapsed turn", () => {
+    // Regression (DRG-GLOSSARY-01, device 2026-08-28): this was hardcoded to "", so a reply that
+    // showed glossary chips while it streamed lost them the moment it settled into history —
+    // MainTabBonsaiAiMarkdownChunk gates on isDrgSurvivorAppId(props.appId).
+    const { collapsed } = turnsToCollapsedTurns([
+      { id: "u1", role: "user", text: "what is kiting?", app_id: "548430" },
+      { id: "a1", role: "assistant", text: "keep moving", app_id: "548430" },
+    ]);
+    expect(collapsed[0]?.appId).toBe("548430");
+  });
+
+  it("prefers each turn's own app id over the slot fallback", () => {
+    // A saved chat outlives a play session: the player can quit one game, start another, and
+    // keep asking in the same chat. The older turns must keep the game they were asked under.
+    const { collapsed } = turnsToCollapsedTurns(
+      [
+        { id: "u1", role: "user", text: "first?", app_id: "548430" },
+        { id: "a1", role: "assistant", text: "first answer", app_id: "548430" },
+        { id: "u2", role: "user", text: "second?", app_id: "1245620" },
+        { id: "a2", role: "assistant", text: "second answer", app_id: "1245620" },
+      ],
+      "999999",
+    );
+    expect(collapsed.map((t) => t.appId)).toEqual(["548430", "1245620"]);
+  });
+
+  it("falls back to the question's app id when only the answer predates the field", () => {
+    const { collapsed } = turnsToCollapsedTurns([
+      { id: "u1", role: "user", text: "q", app_id: "548430" },
+      { id: "a1", role: "assistant", text: "a" },
+    ]);
+    expect(collapsed[0]?.appId).toBe("548430");
+  });
+
+  it("falls back to the slot's origin app id for turns saved before the field existed", () => {
+    const { collapsed } = turnsToCollapsedTurns(
+      [
+        { id: "u1", role: "user", text: "q" },
+        { id: "a1", role: "assistant", text: "a" },
+      ],
+      "548430",
+    );
+    expect(collapsed[0]?.appId).toBe("548430");
+  });
+
+  it("reports an empty app id when neither the turns nor the slot know one", () => {
+    const { collapsed } = turnsToCollapsedTurns([
+      { id: "u1", role: "user", text: "q" },
+      { id: "a1", role: "assistant", text: "a" },
+    ]);
+    expect(collapsed[0]?.appId).toBe("");
+  });
+
   it("keeps transparency null when the persisted turn carries none", () => {
     const { collapsed } = turnsToCollapsedTurns([
       { id: "u1", role: "user", text: "q" },

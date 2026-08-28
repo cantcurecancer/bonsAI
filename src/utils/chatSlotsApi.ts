@@ -14,6 +14,12 @@ export type ChatSlotTurn = {
   text: string;
   request_id?: number | null;
   transparency?: ChatSlotTurnTransparency | null;
+  /**
+   * Steam AppID of the game running when this turn happened, written by chat_slot_service.py.
+   * Optional because turns saved before the field existed come back without it — see the
+   * fallback chain in chatSlotTurns.ts.
+   */
+  app_id?: string;
   created_at?: number;
 };
 

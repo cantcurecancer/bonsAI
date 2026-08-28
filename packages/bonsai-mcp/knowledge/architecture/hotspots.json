@@ -2,7 +2,7 @@
   "hotspots": [
     {
       "path": "main.py",
-      "lines": 3159,
+      "lines": 3167,
       "role": "Decky RPC entrypoints and orchestration"
     },
     {
@@ -22,7 +22,7 @@
     },
     {
       "path": "src/hooks/useBonsaiAskOrchestration.ts",
-      "lines": 1476,
+      "lines": 1479,
       "role": ""
     },
     {
@@ -166,6 +166,11 @@
       "role": ""
     },
     {
+      "path": "py_modules/backend/services/chat_slot_service.py",
+      "lines": 437,
+      "role": ""
+    },
+    {
       "path": "py_modules/backend/services/desktop_note_service.py",
       "lines": 432,
       "role": ""
@@ -178,11 +183,6 @@
     {
       "path": "py_modules/backend/services/ai_character_service.py",
       "lines": 426,
-      "role": ""
-    },
-    {
-      "path": "py_modules/backend/services/chat_slot_service.py",
-      "lines": 425,
       "role": ""
     },
     {

@@ -104,6 +104,16 @@ def _normalize_turn(raw: Any) -> dict[str, Any] | None:
         "role": role,
         "text": text[:MAX_TURN_TEXT_LEN],
         "request_id": request_id,
+        # Which game was running when this turn happened. Per-turn and not per-slot because a
+        # slot outlives a play session: the player can close one game, open another, and keep
+        # asking in the same saved chat. Reading the slot's ``origin_app_id`` for every turn
+        # would relabel the older answers with the newer game.
+        #
+        # Turns saved before this field existed round-trip as "" — a load-bearing empty string,
+        # not a bug. ``turnsToCollapsedTurns`` in TS falls back to the slot's ``origin_app_id``
+        # for those, which is right in the ordinary one-chat-one-game case and no worse than the
+        # "" the frontend used to hardcode in every other case.
+        "app_id": str(raw.get("app_id", "") or "").strip()[:32],
         "attachment_refs": _normalize_attachment_refs(raw.get("attachment_refs")),
         "transparency": _normalize_turn_transparency(raw.get("transparency")),
         "created_at": int(raw.get("created_at") or time.time()),
@@ -350,6 +360,7 @@ def append_turn(
     request_id: int | None = None,
     attachment_refs: list[dict[str, str]] | None = None,
     transparency: dict[str, Any] | None = None,
+    app_id: str = "",
     label: str | None = None,
     logger: Any = None,
 ) -> dict[str, Any] | None:
@@ -364,6 +375,7 @@ def append_turn(
             "request_id": request_id,
             "attachment_refs": attachment_refs or [],
             "transparency": transparency,
+            "app_id": app_id,
             "created_at": int(time.time()),
         }
     )

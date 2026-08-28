@@ -11,6 +11,7 @@ from backend.services.chat_slot_service import (
     heuristic_slot_label,
     list_slot_summaries,
     load_slot,
+    save_slot,
     update_slot_label,
     wipe_all_slots,
 )
@@ -51,6 +52,55 @@ class ChatSlotServiceTests(unittest.TestCase):
         self.assertIsNotNone(saved)
         assert saved is not None
         self.assertEqual(len(saved["turns"]), 2)
+
+    def test_turns_persist_the_app_id_they_were_asked_under(self):
+        """Regression (DRG-GLOSSARY-01, measured on device 2026-08-28): nothing recorded which
+        game a turn was about, so a reply that had glossary chips while it streamed lost them
+        the moment it settled into history and was re-read from the saved chat.
+        """
+        slot = create_slot(self.settings_dir, first_question="What is kiting?", app_name="Deep Rock")
+        sid = slot["id"]
+        append_turn(self.settings_dir, sid, role="user", text="What is kiting?", app_id="548430")
+        saved = append_turn(
+            self.settings_dir,
+            sid,
+            role="assistant",
+            text="Keep moving and shoot behind you.",
+            app_id="548430",
+        )
+        assert saved is not None
+        self.assertEqual([t["app_id"] for t in saved["turns"]], ["548430", "548430"])
+
+        reloaded = load_slot(self.settings_dir, sid)
+        assert reloaded is not None
+        self.assertEqual(reloaded["turns"][-1]["app_id"], "548430")
+
+    def test_turns_saved_before_the_field_existed_load_with_an_empty_app_id(self):
+        """A slot file written by an older build has no ``app_id`` on its turns. It must load
+        rather than fail — the frontend falls back to the slot's ``origin_app_id`` for these.
+        """
+        slot = create_slot(self.settings_dir, origin_app_id="548430", label="old chat")
+        sid = slot["id"]
+        legacy = {
+            **slot,
+            "turns": [
+                {"id": "u1", "role": "user", "text": "What is kiting?"},
+                {"id": "a1", "role": "assistant", "text": "Keep moving."},
+            ],
+        }
+        save_slot(self.settings_dir, legacy)
+        reloaded = load_slot(self.settings_dir, sid)
+        assert reloaded is not None
+        self.assertEqual([t["app_id"] for t in reloaded["turns"]], ["", ""])
+        self.assertEqual(reloaded["origin_app_id"], "548430")
+
+    def test_turn_app_id_is_bounded(self):
+        slot = create_slot(self.settings_dir, label="bounds")
+        saved = append_turn(
+            self.settings_dir, slot["id"], role="user", text="q", app_id=" " + ("9" * 80) + " "
+        )
+        assert saved is not None
+        self.assertEqual(saved["turns"][-1]["app_id"], "9" * 32)
 
     def test_assistant_turn_persists_transparency_snapshot(self):
         """Regression: assistant turns used to save no transparency at all, so a slot restored

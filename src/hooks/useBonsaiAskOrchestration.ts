@@ -912,9 +912,12 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
          * hardware, which is exactly the window a QA pass is looking at.
          *
          * The flush is NOT redundant, which is why this replaces instead of skipping: the reloaded
-         * copy comes from disk via `turnsToCollapsedTurns`, which hardcodes `appId: ""` and
-         * `spoilerConsentEffective: false` ([chatSlotTurns.ts:29-30](../utils/chatSlotTurns.ts)),
-         * and the display-time spoiler unwrap reads the AppID back off the turn (STRAT-SPOIL-DRG-01).
+         * copy comes from disk via `turnsToCollapsedTurns`, which still hardcodes
+         * `spoilerConsentEffective: false` (consent is a live decision, never persisted). The
+         * AppID it used to blank as well is now carried through from Python
+         * ([chatSlotTurns.ts](../utils/chatSlotTurns.ts)), so a reloaded row no longer loses the
+         * game its answer was about — but this flush still holds the fresher consent flag that the
+         * display-time spoiler unwrap reads (STRAT-SPOIL-DRG-01).
          * Keeping the reloaded row's `id` matters too — it is the slot's own turn id, so it survives
          * the next reload, where a minted one would be replaced by it anyway.
          *
