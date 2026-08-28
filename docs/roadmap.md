@@ -45,6 +45,14 @@ seconds; anything that would otherwise have to be re-measured goes there rather 
 - ~~★★ **Choosing a character: focus ring now visible**~~ — **CLOSED.** The maintainer confirmed on device 2026-08-27 that focus is visible
   and the picker is usable; the edge behaviour it was still waiting on passed the 2026-08-28 audit above. Nothing left open here.
 
+- ★★ **OPEN — A carousel chip shows a focus ring when the D-pad is actually on the tab strip above it.** Found 2026-08-28 during the
+  automated Batch A run, and it fooled both parties at once: the maintainer, watching the screen, saw the ring on a chip; the automation,
+  reading the real gamepad focus, saw it on a **tab icon** — and pressing A activated the tab (a no-op on the already-open Main tab), not
+  the chip. Two things compound here and it is UNKNOWN which is the bug to fix first: the chip renders focus styling it does not own, and
+  the tab icon's accessible text is the *entire tab's content*, so anything reading labels (a person squinting, a screen reader, the QA
+  rig) matches chip text while sitting on the tab strip. Evidence: `runs/probe-focus-1.json`, `runs/probe-strip-right.json` (gpfocus on a
+  60×57 icon-strip element whose label is the whole Main tab). New Settings/QAM focus work must check `.cursor/rules/decky-focus-graph.mdc`.
+
 ### Wrong or missing content in a reply
 
 - ★★ **Unrelated questions still get game cards stapled on** — **PARTIAL; the maintainer chose to live with it 2026-08-27.** With a game running,
@@ -57,6 +65,9 @@ seconds; anything that would otherwise have to be re-measured goes there rather 
   appears for questions the spoiler check actually flags, but it can still land in the middle of an answer rather than at the end. Root cause of
   the remaining half is known: the asked-entity extractor returns nothing for the one question that fences.
   Workaround while open: turn spoiler masking off in Settings. Detail: [roadmap-details.md](roadmap-details.md#the-spoiler-fence-on-a-no-story-game-lands-mid-reply).
+  **Freshly reproduced 2026-08-28** during the automated Batch A re-run: *"how do i beat the twins"* (DRG Survivor, Strategy) came back with
+  the tactic wrapped in a `bonsai-spoiler` fence between the opening prose and the closing prose — trace entry `2026-08-28T17:26` in the
+  Deck's ask-trace log. Still open, unchanged.
 
 - ~~★ **An answer that arrives instantly loses its branch buttons and checklist**~~ — **NOT A BUG, settled 2026-08-28.** The path that
   builds its own result and drops the strategy payloads only ever runs for local commands — the sanitizer, shortcut setup and the VAC
@@ -164,7 +175,7 @@ Code-fixed or shipped; on-Deck / qualitative QA still owed. Detail: [testing.md]
 - ★★★ **The eval harness scored every troubleshooting tip against the wrong vector** — fixed 2026-08-21. Two independent id sequences were used as one key, so tips were compared against unrelated vectors. Any eval number from before that date is void. [why](roadmap-details.md#shipped-qa-owed--why-each-was-built-this-way)
 - ★ **The eval harness's model sweep could not run at all** — fixed 2026-08-21. A required argument was added to the retrieval helper and two of its four callers were never updated, so the sweep crashed on entry. Any sweep result from before that date is void.
 - ★★★ **The vector half of retrieval now has its own recall pass** — fixed 2026-08-18; **KB-RECALL-01** owed on device, **KB-RECALL-02** verified at the desk. It searches the game's cards directly instead of only re-ordering the keyword shortlist. [why](roadmap-details.md#shipped-qa-owed--why-each-was-built-this-way)
-- ★★★★ **Card relevance has its second signal (pool margin)** — shipped 2026-08-28, closing the backlog item that D28's thin 0.515 floor retune triggered. The vector recall pass now runs only when the game's best card either stands out from the rest of that game's cards by 0.0395 cosine or clears the floor by the same amount — a junk question is roughly equidistant from everything a game knows, so it fails both, while a genuine paraphrase singles a card out and a broad "how do i play this" question scores high outright. Measured before shipping: all six D28 ordinary phrases now get **zero** cards from the vector half (the two that attach through the keyword half stay, by design under D25/D28), the `kb_eval_v2` tune / tips slices are unchanged to the decimal, holdout gained one top-1 case without being tuned against, and D25's *"the boss"* / *"gels"* keep their cards. On-Deck re-check of the six phrases owed on **KB-SPELLING-01**. Numbers and the two rejected candidate signals: [audit/kb-second-signal-2026-08-28.md](audit/kb-second-signal-2026-08-28.md).
+- ★★★★ **Card relevance has its second signal (pool margin)** — shipped 2026-08-28, closing the backlog item that D28's thin 0.515 floor retune triggered. The vector recall pass now runs only when the game's best card either stands out from the rest of that game's cards by 0.0395 cosine or clears the floor by the same amount — a junk question is roughly equidistant from everything a game knows, so it fails both, while a genuine paraphrase singles a card out and a broad "how do i play this" question scores high outright. Measured before shipping: all six D28 ordinary phrases now get **zero** cards from the vector half (the two that attach through the keyword half stay, by design under D25/D28), the `kb_eval_v2` tune / tips slices are unchanged to the decimal, holdout gained one top-1 case without being tuned against, and D25's *"the boss"* / *"gels"* keep their cards. **On-Deck re-check done 2026-08-28 — the device matches the desk table card for card**, and **KB-SPELLING-01** is Verified (Deck); the run was driven end to end by the bridge board with the results read from the ask trace. Numbers and the two rejected candidate signals: [audit/kb-second-signal-2026-08-28.md](audit/kb-second-signal-2026-08-28.md).
 - ★★★★★ **Global quick-launch macro** — Guide-chord docs in [troubleshooting.md](troubleshooting.md) §5; verification checklist not run on hardware.
 - **D-pad reachability sweep blind spot (2026-08-04)** — cross-file nested `Focusable` (spoiler fence) not visible to per-file static analysis; answer on-device per [testing-manual.md](testing-manual.md) focus rows.
 - **Reply-language snapshot RPC (2026-08-03 fix)** — verified via `probe_deck_rpc_surface.py`; UI translation spot-check optional.
@@ -413,6 +424,13 @@ Stars are **effort/risk**. Grouped by **theme**; within each lane sorted ascendi
 
 ### Platform / upstream
 
+- ★★ **The studio's remote deploy leaves the plugin unreadable by its own backend** (upstream decky-plugin-studio). Found 2026-08-28:
+  `deck_deploy` (remote mode) copies `py_modules/`, `dist/`, `assets/`, `bin/`, `defaults/` onto the Deck as `drwx------ root:root`, so the
+  sandboxed plugin process cannot read its own Python and dies at import (`No module named 'backend'` in the loader log). The symptom is
+  maximally misleading — the frontend still renders (the loader serves it as root), settings fail to load, and D18's reset makes it look
+  like a settings bug; it cost three loader restarts before the log was read. `scripts/build.ps1` deploys do not do this (yesterday's
+  directories were `755`). Workaround until fixed upstream: `chmod -R u+rwX,go+rX ~/homebrew/plugins/bonsAI` on the Deck, then restart
+  `plugin_loader`. **When a deploy "didn't take", read the loader log before blaming settings.**
 - ★★★★ **Llama.cpp provider spike** (Deck perf / replacement eval)
   - **Goal:** Research-only go/no-go vs Deck-local Ollama. Deliverable: `docs/archive/spikes/llama-cpp-provider-eval.md`. Prior: [llama-cpp-provider.md](archive/spikes/llama-cpp-provider.md).
 - ★★★★ **Steam Input layout parse** (VDF → AI context)
@@ -421,7 +439,7 @@ Stars are **effort/risk**. Grouped by **theme**; within each lane sorted ascendi
 - ★★★★★ **Controller macro test rig + live view** (real gamepad input; DPS-owned)
   - **GitHub:** [bonsAI Issues](https://github.com/qd313/bonsAI/issues) — issue TBD.
   - **Goal:** Close the last missing capability for unattended on-Deck QA — [01-qa-automation-plan.md](planning/01-qa-automation-plan.md) **F1**, "there is no input injection on the Deck." A bridge board the Deck sees as a real controller (wired USB on the dock by default, Bluetooth for handheld-geometry runs, both from day one), a macro runner whose steps are gated on real UI state (`gpfocus` markers, never `activeElement` — the P1-5 lesson), and one PipeWire pipeline teeing the QA `.mkv` to file **and** a live analyzer stream for a single encoder's APU cost.
-  - **Status:** **Discovery locked 2026-08-23** — decisions L1–L10, architecture, serial protocol, spikes and phasing in [19-controller-macro-test-rig.md](planning/19-controller-macro-test-rig.md). Board ordered 2026-08-24. Next concrete step: spikes S1–S3 (board bring-up, QAM Guide-chord from the bridge pad, tee-pipeline latency + scoped sudoers).
+  - **Status:** **Discovery locked 2026-08-23** — decisions L1–L10, architecture, serial protocol, spikes and phasing in [19-controller-macro-test-rig.md](planning/19-controller-macro-test-rig.md). Board ordered 2026-08-24. Next concrete step: spikes S1–S3 (board bring-up, QAM Guide-chord from the bridge pad, tee-pipeline latency + scoped sudoers). **The V1 acceptance flow already ran in practice on 2026-08-28:** the Batch A re-run drove QAM chord → bonsAI panel → six frozen chips (real A-press each on chip and on **ask**) → reply-finished waits → ask-trace readback, unattended, with the existing bridge + CDP tooling — evidence in `runs/` and the KB-SPELLING-01 row. What V1 adds beyond that is the recording tee and the formalized safety interlocks.
   - **This is one track of five.** The program plan — including the two tracks that need no hardware and should land first (CI gate, static focus checks, both above) — is [21-ai-owned-testing-program.md](planning/21-ai-owned-testing-program.md), with effort, milestones and the autonomy boundaries.
   - **Owner split:** primitives (`deck_pad*`, `deck_macroRun`, `deck_stream*`, extension kill switch + always-visible agent-control status) land upstream in decky-plugin-studio per [AGENTS.md](../AGENTS.md); bonsAI keeps only its macro files and CDP assertions (`tests/macros/`). Answers findings-log **P1-5**; retires DPS's "Deck UI cannot be automated in v1" note.
   - **V1 acceptance:** one unattended golden-path smoke — QAM chord → bonsAI tab → question via the existing injector → real A-press on Ask → reply-finished signal → recording, step log and plugin log land on the PC, no human touch after invocation.
