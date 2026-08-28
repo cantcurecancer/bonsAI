@@ -134,9 +134,13 @@ seconds; anything that would otherwise have to be re-measured goes there rather 
 - ~~★★ **Answer scrolling by D-pad feels choppy and jumps several lines**~~ — **re-measured on device 2026-08-28: fixed by the 2026-08-07
   work.** Walking a three-paragraph reply gave one stop per paragraph, plus one for the safety notice — a readable step each press, not a
   jump of several lines.
-- ★★ **Token streaming reveals text in chunks while a game is running** — measured smooth at idle in an earlier pass, chunky under load in a
-  later one. The two runs were not comparable; neither is trustworthy on its own. **Still not re-measured, and deliberately so:** it needs a
-  game actually running, and starting one is the maintainer's to do, not an automated step. Worth pairing with the next session on device.
+- ★★ **Token streaming reveals text in chunks while a game is running** — **measured properly on device 2026-08-28 with DRG Survivor
+  actually running** (the condition earlier passes could not meet). Both halves of the old contradiction are real, at different moments:
+  tokens arrive in bursts, and *during a paint burst* the QAM overlay dropped to **47 fps** with a worst frame of **50 ms** (39 frames over
+  20 ms in a 3-second sample); *between bursts* it sat at a flat 60 fps, worst frame 17 ms. So the reveal is chunky because delivery is
+  bursty, not because painting is slow — the repaint of a burst costs about a quarter of the frame budget for as long as the burst lasts.
+  Overlay frames only: the rig reads the QAM's own page and cannot measure the game's frame rate — the maintainer's performance overlay is
+  the judge of whether the game itself stutters during a burst. Full numbers in [testing.md](testing.md) **STREAM-11**.
 - ~~★★ **The D-pad skips the branch buttons and the feedback row on a live Strategy turn**~~ — **re-measured on device 2026-08-28: it does
   not skip them.** One walk down a finished Strategy reply reached both branch buttons, then **Helpful**, then **Retry** — nothing stepped
   over. **MICRO-04** passes.
@@ -153,11 +157,12 @@ seconds; anything that would otherwise have to be re-measured goes there rather 
   DRG-GLOSSARY-02 walk. The popup closed, but the ring jumped to the QAM's own chrome: Steam processed B as back-out-of-pane as well,
   so the chip's "B is fully consumed" contract does not hold on device. The spoiler fence uses the same pattern and has never had its
   B step walked, so assume it shares this. Dismiss-by-direction works and is the path to recommend meanwhile.
-- ★ **Reaching a glossary chip from below takes Up then Down, not one Up** — **OPEN, measured on-Deck 2026-08-28.** Up from
-  *Show details* is handled by Steam (the press never reaches the bubble's handlers) and lands on the bubble; the next Down dives to
-  the chip. Fixing it to one press means the reply-actions row's Up handler crossing into the bubble's navigation container, which
-  needs the bubble to register a `navFocusRegistry` entry — the same `TakeFocus` shape the Ask-row fix used. Deliberately not done in
-  the same change as the geometry rewrite (one refactor per commit).
+- ~~★ **Reaching a glossary chip from below takes Up then Down, not one Up**~~ — **FIXED and proven on-Deck 2026-08-28 the same
+  evening** (`runs/DRG-GLOSSARY-03-one-press-up.json`: one Up from *Show details* landed on the nearest chip, 1/1). The reply-actions
+  row's Up handlers now try the glossary chip as their *last* fallback — after refinement chips and the thumbs row, so turns that have
+  those are unchanged — and cross into the bubble's navigation container with `TakeFocus` via a per-bubble nav handle in
+  `answerBubbleElRegistry`, the same shape the Ask-row fix used. One deliberate leftover: on a turn *with* a thumbs row, Up from the
+  thumbs still yields to Steam (diverting there could skip the branch-picker chips that sit between); that leg stays two presses.
 - ★ **The question overlay is a few pixels out of line** with the native text field underneath it, most visible on a three-line question and on
   the empty-field placeholder.
 - ★ **Spoiler false-positive on a named entity** — **PARTIAL.** The mid-stream flash is fixed; the remaining case is narrow.

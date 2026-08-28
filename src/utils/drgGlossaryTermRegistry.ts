@@ -46,9 +46,11 @@ function beforeInReadingOrder(a: DOMRect, b: DOMRect): boolean {
  * - the ring is on an *ancestor* of the chip (the bubble itself, or the section containing it) →
  *   eligible going Down (its content is ahead of us), never going Up (arriving up at a container
  *   means the user is on their way out — same asymmetry `handleAnswerBubbleMoveUp` documents);
- * - disjoint → plain reading-order comparison of the two rects.
+ * - otherwise → plain reading-order comparison of the two rects. This includes a ring *outside*
+ *   the bubble: the reply-actions row below it calls this going Up, and every chip in the bubble
+ *   is before that ring in reading order, which is exactly right.
  *
- * No ring inside the bubble behaves like the ancestor case: Down offers the first chip, Up nothing.
+ * No ring at all behaves like the ancestor case: Down offers the first chip, Up nothing.
  */
 export function findNextDrgGlossaryTermChipInView(
   bubble: HTMLElement,
@@ -56,8 +58,7 @@ export function findNextDrgGlossaryTermChipInView(
   direction: "down" | "up",
 ): HTMLElement | null {
   const ring = uiGamepadFocusElement();
-  const ringInBubble = ring !== null && bubble.contains(ring);
-  const ringRect = ringInBubble ? ring.getBoundingClientRect() : null;
+  const ringRect = ring ? ring.getBoundingClientRect() : null;
 
   let best: { el: HTMLElement; rect: DOMRect } | null = null;
   for (const el of chips.values()) {
@@ -66,7 +67,7 @@ export function findNextDrgGlossaryTermChipInView(
     if (ring && (el === ring || el.contains(ring))) continue;
 
     const rect = el.getBoundingClientRect();
-    const ringIsAncestor = !ringInBubble || ring.contains(el);
+    const ringIsAncestor = !ring || ring.contains(el);
     if (ringIsAncestor) {
       if (direction === "up") continue;
     } else {

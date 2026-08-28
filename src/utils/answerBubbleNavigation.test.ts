@@ -8,6 +8,7 @@ import { registerAnswerStop, resetAnswerStopRegistry } from "./answerStopRegistr
 import { registerAnswerBubbleEl } from "./answerBubbleElRegistry";
 import { registerSpoilerFence, resetSpoilerFenceRegistry } from "./spoilerFenceRegistry";
 import {
+  findNextDrgGlossaryTermChipInView,
   registerDrgGlossaryTermChip,
   resetDrgGlossaryTermRegistry,
 } from "./drgGlossaryTermRegistry";
@@ -325,6 +326,26 @@ describe("walking answer sections with the D-pad", () => {
     bubble.focus(); // re-entering the reply from the header
     expect(moveDown(bubble)).toBe(true);
     expect(document.activeElement).toBe(chip);
+  });
+
+  it("offers a chip going up to a ring below the bubble (the reply-actions row)", () => {
+    // The reply-actions row sits under the bubble in a different navigation container; its Up
+    // handler asks this registry directly. A ring outside the bubble uses plain reading-order
+    // geometry, so every chip above it is eligible.
+    const { bubble, stops } = threeSections();
+    const chip = document.createElement("div");
+    stubRect(chip, 100, 150);
+    stops[1]!.appendChild(chip);
+    registerDrgGlossaryTermChip("kiting-1", chip);
+
+    const showDetails = document.createElement("button");
+    stubRect(showDetails, 420, 450);
+    showDetails.setAttribute("tabindex", "-1");
+    document.body.appendChild(showDetails);
+    showDetails.focus();
+
+    const found = findNextDrgGlossaryTermChipInView(bubble, () => true, "up");
+    expect(found).toBe(chip);
   });
 
   it("does nothing for an answer with no sections registered", () => {

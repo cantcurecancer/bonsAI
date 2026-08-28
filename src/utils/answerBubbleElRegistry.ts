@@ -10,6 +10,37 @@ import { rememberUiDocument, uiGamepadFocusElement } from "./uiDocument";
 
 const bubbleByKey = new Map<string, HTMLElement>();
 
+/**
+ * Steam's navigation node for each bubble, captured via the Focusable `navRef` prop.
+ *
+ * Exists for one caller: the reply-actions row handing the ring *into* the bubble (Up onto a
+ * glossary chip). The bubble is a different navigation container, and a DOM `focus()` across that
+ * boundary moves `activeElement` while Steam's ring stays put — `TakeFocus` first is the sanctioned
+ * transfer, same shape as `utilityNavRef` in buildReplyActionsElement and the preset carousel's
+ * navFocusRegistry entry.
+ */
+type BubbleNavHolder = { current: { TakeFocus?: (gamepad?: boolean) => unknown } | null };
+const bubbleNavByKey = new Map<string, BubbleNavHolder>();
+
+/** Called during buildAnswerBubbleElement's render; the holder fills in when Decky mounts it. */
+export function registerAnswerBubbleNav(answerKey: string, holder: BubbleNavHolder): void {
+  if (!answerKey) return;
+  bubbleNavByKey.set(answerKey, holder);
+}
+
+/**
+ * Hand Steam's gamepad focus to this bubble's navigation container. Best-effort by design: the
+ * caller must still land focus on a concrete element afterwards and verify with `elementHasFocus`
+ * — that verification, not this call, is what reports success.
+ */
+export function takeAnswerBubbleNavFocus(answerKey: string): void {
+  try {
+    bubbleNavByKey.get(answerKey)?.current?.TakeFocus?.(true);
+  } catch {
+    /* fall through — the caller's focus + verify decides the outcome */
+  }
+}
+
 export function registerAnswerBubbleEl(answerKey: string, el: HTMLElement | null): void {
   if (!answerKey) return;
   // `el.isConnected` asks the node about its own tree. The previous `document.contains(el)` asked

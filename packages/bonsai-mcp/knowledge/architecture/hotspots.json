@@ -186,13 +186,13 @@
       "role": ""
     },
     {
-      "path": "src/components/deck/DeckFocusSlider.tsx",
-      "lines": 413,
+      "path": "src/utils/buildReplyActionsElement.tsx",
+      "lines": 424,
       "role": ""
     },
     {
-      "path": "src/utils/buildReplyActionsElement.tsx",
-      "lines": 385,
+      "path": "src/components/deck/DeckFocusSlider.tsx",
+      "lines": 413,
       "role": ""
     },
     {

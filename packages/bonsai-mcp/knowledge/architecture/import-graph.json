@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
   "fileCount": 329,
-  "edgeCount": 777,
+  "edgeCount": 781,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -2201,7 +2201,8 @@
         "src/utils/answerBubbleNavigation.test.ts",
         "src/utils/answerBubbleNavigation.ts",
         "src/utils/buildAnswerBubbleElement.test.tsx",
-        "src/utils/buildAnswerBubbleElement.tsx"
+        "src/utils/buildAnswerBubbleElement.tsx",
+        "src/utils/buildReplyActionsElement.tsx"
       ]
     },
     "src/utils/answerBubbleNavigation.test.ts": {
@@ -2228,6 +2229,7 @@
       "importedBy": [
         "src/utils/answerBubbleNavigation.test.ts",
         "src/utils/buildAnswerBubbleElement.tsx",
+        "src/utils/buildReplyActionsElement.tsx",
         "src/utils/buildTurnHeaderElement.test.tsx",
         "src/utils/buildTurnHeaderElement.tsx"
       ]
@@ -2481,6 +2483,10 @@
         "src/components/ReplyCopyButton.tsx",
         "src/components/icons.tsx",
         "src/data/replyMicroActions.ts",
+        "src/utils/answerBubbleElRegistry.ts",
+        "src/utils/answerBubbleNavigation.ts",
+        "src/utils/chatPanelScroll.ts",
+        "src/utils/drgGlossaryTermRegistry.ts",
         "src/utils/focusNavigation.ts",
         "src/utils/liveTurnFocusGraph.ts",
         "src/utils/replyStopRegistry.ts",
@@ -2530,6 +2536,7 @@
       "importedBy": [
         "src/hooks/useStreamScrollPin.ts",
         "src/utils/answerBubbleNavigation.ts",
+        "src/utils/buildReplyActionsElement.tsx",
         "src/utils/chatPanelScroll.test.ts",
         "src/utils/settingsPanelScroll.ts"
       ]
@@ -2747,7 +2754,8 @@
       "importedBy": [
         "src/components/DrgGlossaryTermChip.tsx",
         "src/utils/answerBubbleNavigation.test.ts",
-        "src/utils/answerBubbleNavigation.ts"
+        "src/utils/answerBubbleNavigation.ts",
+        "src/utils/buildReplyActionsElement.tsx"
       ]
     },
     "src/utils/focusNavigation.test.ts": {

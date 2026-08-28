@@ -28,6 +28,16 @@ import {
 import { getReplyStop, REPLY_STOP_ORDER, type ReplyStopId } from "./replyStopRegistry";
 import { elementHasGamepadFocus } from "./uiDocument";
 import { isDeckDirectionDownEvent, isDeckDirectionUpEvent } from "./focusNavigation";
+import {
+  getRegisteredAnswerBubble,
+  takeAnswerBubbleNavFocus,
+} from "./answerBubbleElRegistry";
+import { elementIsWithinViewportOf } from "./answerBubbleNavigation";
+import {
+  findNextDrgGlossaryTermChipInView,
+  focusDrgGlossaryTermChip,
+} from "./drgGlossaryTermRegistry";
+import { findScrollablePanel } from "./chatPanelScroll";
 
 const CHIP_ROW_REFINE: ReplyMicroActionId[] = [
   "bad_information",
@@ -235,15 +245,44 @@ export function buildReplyActionsElement(
     if (showChipRows) return false;
     return enterUtilityRow("show-details");
   };
+  /*
+   * Last fallback on the way up: hand the ring straight to a glossary chip inside this turn's
+   * answer bubble. Measured on-Deck 2026-08-28 (runs/DRG-GLOSSARY-02-dpad-chip-ladder.json step 3):
+   * on a turn with no thumbs row, Up from Show details yielded to Steam, which landed on the
+   * bubble — reaching the chip took Up-then-Down. This runs only after every existing fallback
+   * declined, so a thumbs row or refinement chips still win when they exist, and turns with no
+   * chip in view are unchanged.
+   *
+   * The bubble is a different navigation container, hence `takeAnswerBubbleNavFocus` before the
+   * DOM focus — a bare `focus()` across that boundary moves `activeElement` while Steam's ring
+   * stays put, and `focusDrgGlossaryTermChip`'s elementHasFocus check is what reports the truth.
+   * `replyKey` and the bubble's answerKey are the same value per turn (`turn.id`, or "live").
+   */
+  const upIntoGlossaryChip = () => {
+    const bubble = getRegisteredAnswerBubble(replyKey);
+    if (!bubble) return false;
+    const scroll = findScrollablePanel(bubble);
+    if (!scroll) return false;
+    const chip = findNextDrgGlossaryTermChipInView(
+      bubble,
+      (el) => elementIsWithinViewportOf(el, scroll),
+      "up",
+    );
+    if (!chip) return false;
+    takeAnswerBubbleNavFocus(replyKey);
+    return focusDrgGlossaryTermChip(chip);
+  };
   const upFromRetry = () => {
     const slot = liveSlot();
     if (showChipRows && focusLastReplyChip(slot)) return true;
-    return focusReplyHelpful(slot);
+    if (focusReplyHelpful(slot)) return true;
+    return upIntoGlossaryChip();
   };
   const upFromShowDetails = () => {
     const slot = liveSlot();
     if (showChipRows && focusLastReplyChip(slot)) return true;
-    return focusReplyNotReally(slot);
+    if (focusReplyNotReally(slot)) return true;
+    return upIntoGlossaryChip();
   };
 
   if (!showFeedback && !showUtilityRow && !showChipRows && rating === null) {

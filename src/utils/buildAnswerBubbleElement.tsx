@@ -13,6 +13,7 @@ import { StreamFenceWaitChip } from "../components/StreamFenceWaitChip";
 import {
   getRegisteredAnswerBubble,
   registerAnswerBubbleEl,
+  registerAnswerBubbleNav,
   resolveFocusedAnswerBubble,
 } from "./answerBubbleElRegistry";
 import {
@@ -277,6 +278,17 @@ export function buildAnswerBubbleElement(
 
   const stopNav = stopNavProps(moveDown, moveUp);
 
+  /*
+   * Steam's nav node for this bubble, so the reply-actions row below can hand the ring in (Up onto
+   * a glossary chip). A plain per-render holder like buildReplyActionsElement's utilityNavRef —
+   * this is a plain function, so there are no hooks to use; re-registering each render replaces the
+   * previous holder under the same key, matching registerAnswerBubbleEl's semantics.
+   */
+  const bubbleNavRef: { current: { TakeFocus?: (gamepad?: boolean) => unknown } | null } = {
+    current: null,
+  };
+  registerAnswerBubbleNav(answerKey, bubbleNavRef);
+
   /* Same direction wiring as stopNavProps, for the same measured reason. */
   const navHandlers = {
     onFocus: () => {
@@ -304,6 +316,7 @@ export function buildAnswerBubbleElement(
         streaming ? " bonsai-chat-ai-bubble--stream-preview" : ""
       }${fenceWaitActive ? " bonsai-chat-ai-bubble--fence-wait" : ""}`}
       {...navHandlers}
+      {...({ navRef: bubbleNavRef } as Record<string, unknown>)}
       style={{
         width: maxWidthCss,
         maxWidth: maxWidthCss,
