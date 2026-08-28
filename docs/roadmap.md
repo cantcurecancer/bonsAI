@@ -418,7 +418,8 @@ Stars are **effort/risk**. Grouped by **theme**; within each lane sorted ascendi
   maximally misleading — the frontend still renders (the loader serves it as root), settings fail to load, and D18's reset makes it look
   like a settings bug; it cost three loader restarts before the log was read. `scripts/build.ps1` deploys do not do this (yesterday's
   directories were `755`). Workaround until fixed upstream: `chmod -R u+rwX,go+rX ~/homebrew/plugins/bonsAI` on the Deck, then restart
-  `plugin_loader`. **When a deploy "didn't take", read the loader log before blaming settings.**
+  `plugin_loader`. **When a deploy "didn't take", read the loader log before blaming settings.** Filed upstream 2026-08-28 as a
+  DPS `docs/ROADMAP.md` row; indexed as **P1-8** in [mcp-setup.md](mcp-setup.md) § DPS findings log.
 - ★★★★ **Llama.cpp provider spike** (Deck perf / replacement eval)
   - **Goal:** Research-only go/no-go vs Deck-local Ollama. Deliverable: `docs/archive/spikes/llama-cpp-provider-eval.md`. Prior: [llama-cpp-provider.md](archive/spikes/llama-cpp-provider.md).
 - ★★★★ **Steam Input layout parse** (VDF → AI context)
