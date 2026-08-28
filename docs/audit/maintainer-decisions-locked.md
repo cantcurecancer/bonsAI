@@ -755,7 +755,11 @@ because `ollama_ask_service` does not fall through to the next model on a generi
 
 ---
 
-### D19 — Mixed CC BY / BY-SA cards in one corpus file? *(superseded by D20, 2026-08-14)*
+### D19b — Mixed CC BY / BY-SA cards in one corpus file? *(superseded by D20, 2026-08-14)*
+
+> **Numbering note:** formerly filed as D19 by mistake; renumbered D19b 2026-08-28 per
+> [D31](#d31--which-of-the-two-d19s-keeps-the-number). The other D19 — *Can you reach the
+> strategy corpus without the game running?* — keeps the number.
 
 **Raised and locked 2026-08-09** (ATTR-1.3 in
 [15-corpus-licensing-attribution-plan.md](../planning/15-corpus-licensing-attribution-plan.md)).
@@ -777,7 +781,7 @@ ATTR-1.1.
 
 **Superseded 2026-08-14 by D20** — reopened during Phase 6 publish planning once it was
 established that the ShareAlike attribution machinery (`ATTRIBUTIONS.md` generation, corpus
-license header, `NOTICE` separation) already fully discharges the obligations D19 was written
+license header, `NOTICE` separation) already fully discharges the obligations D19b was written
 to avoid taking on. No new legal information; a re-weighing of cost against what BY-only
 excluded (all six ShareAlike wikis).
 
@@ -785,7 +789,7 @@ excluded (all six ShareAlike wikis).
 
 ### D20 — Publish the corpus as one CC BY-SA 4.0 work, including ShareAlike sources
 
-**Raised and locked 2026-08-14**, during Phase 6 publish planning. Supersedes D19.
+**Raised and locked 2026-08-14**, during Phase 6 publish planning. Supersedes D19b.
 
 **Choice:** the first public corpus ships as a single work licensed **CC BY-SA 4.0**, and
 ShareAlike sources (the CC-BY-SA-3.0/4.0 wikis: L4D2, Fallout, GTA, Cyberpunk, Combine
@@ -801,7 +805,7 @@ from the seed entirely rather than published under the wrong license — see
 (per-contributor licensing is ambiguous — some contributors' text is NC-only and no page says
 which).
 
-**Why.** No code anywhere filtered by license — D19's restriction existed only as a paragraph
+**Why.** No code anywhere filtered by license — D19b's restriction existed only as a paragraph
 in the generated `ATTRIBUTIONS.md` header
 ([build_rag_db.py](../../scripts/build_rag_db.py) `_attributions_header_lines()`) and about
 eight doc mentions; enforcing it as a real gate would have meant writing a filter to *shrink*

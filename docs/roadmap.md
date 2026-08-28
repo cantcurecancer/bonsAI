@@ -113,11 +113,6 @@ seconds; anything that would otherwise have to be re-measured goes there rather 
   picker not built on the shared modal frame.** Same root cause as the B entry above, so one change fixes both. The focus half of this
   entry was fixed the same day under D36.
 
-### Documentation bookkeeping
-
-- ★ **Two different QA rows share the ID `KB-NEWTITLE-01`**, and **two different decisions are both filed as D19**. Both are resolved on paper
-  (D30 and D31 say which keeps the name) but the documents have not been edited to match, so a search still returns two hits for one ID.
-
 ---
 
 ## Verify — shipped, QA owed
