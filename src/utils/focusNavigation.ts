@@ -81,6 +81,7 @@ export function isUpDeckButtonEvent(button: unknown): boolean {
  * the enum is a Steam input protocol, not a library detail.
  */
 const DECK_BUTTON_OK = 1;
+const DECK_BUTTON_CANCEL = 2;
 const DECK_BUTTON_DIR_UP = 9;
 const DECK_BUTTON_DIR_DOWN = 10;
 const DECK_BUTTON_DIR_LEFT = 11;
@@ -108,6 +109,14 @@ export function isOkDeckButtonEvent(button: unknown): boolean {
   if (id !== null) return id === DECK_BUTTON_OK;
   const key = String(button ?? "").toLowerCase();
   return key === "enter" || key === "a" || key === "gamepada";
+}
+
+/** True only for B / Cancel (`GamepadButton.CANCEL` = 2 in @decky/ui's FooterLegend enum). */
+export function isCancelDeckButtonEvent(button: unknown): boolean {
+  const id = deckButtonId(button);
+  if (id !== null) return id === DECK_BUTTON_CANCEL;
+  const key = String(button ?? "").toLowerCase();
+  return key === "escape" || key === "b" || key === "gamepadb";
 }
 
 export function isBumperLeftDeckEvent(button: unknown): boolean {

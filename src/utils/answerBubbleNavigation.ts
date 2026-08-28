@@ -26,6 +26,11 @@ import {
 } from "./spoilerFenceRegistry";
 
 import {
+  findUnvisitedDrgGlossaryTermChipInView,
+  focusDrgGlossaryTermChip,
+} from "./drgGlossaryTermRegistry";
+
+import {
   focusAnswerStop,
   focusedAnswerStopIndex,
   orderedAnswerStops,
@@ -179,6 +184,19 @@ export function handleAnswerBubbleMoveDown(
     elementIsWithinViewportOf(el, scroll),
   );
   if (fence && focusSpoilerFence(fence)) return true;
+
+  /*
+   * Same diversion, same reason, for a DRG Survivor glossary term chip (roadmap: tap-to-define
+   * jargon). The term chip is a nested Focusable inside plain reply prose, not a stop of its own,
+   * so without this it is as unreachable by D-pad as a masked spoiler fence was before the block
+   * above existed. Runs after the fence check so a fence still wins if both are in view at once;
+   * order between the two diversions has no other significance since they can never overlap in the
+   * same reply (spoilers are Strategy-mode only, the glossary is DRG Survivor only).
+   */
+  const termChip = findUnvisitedDrgGlossaryTermChipInView(bubble, (el) =>
+    elementIsWithinViewportOf(el, scroll),
+  );
+  if (termChip && focusDrgGlossaryTermChip(termChip)) return true;
 
   /*
    * Then step section by section, before scrolling.

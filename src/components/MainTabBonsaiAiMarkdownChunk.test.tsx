@@ -1,7 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
-import { render } from "@testing-library/react";
+import { render, fireEvent } from "@testing-library/react";
 
 import { MainTabBonsaiAiMarkdownChunk } from "./MainTabBonsaiAiMarkdownChunk";
+import { DRG_SURVIVOR_APP_ID } from "../data/drgGlossaryTerms";
 
 /*
  * `@decky/ui`'s `Focusable` has to render as a real DOM node with a working `ref`, or this suite
@@ -11,6 +12,9 @@ vi.mock("@decky/ui", async () => import("../test-harness/fakeDeckyUi"));
 
 const SPOILER_SOURCE =
   "Opening line.\n\n```bonsai-spoiler\nSecret content here.\n```\n\nHere's the lowdown: more text.";
+
+const DRG_KITING_SOURCE =
+  "Mining is not a side activity, so a run spent only kiting is a run that ends underpowered.";
 
 describe("MainTabBonsaiAiMarkdownChunk spoiler fence DOM shape", () => {
   /*
@@ -59,5 +63,65 @@ describe("MainTabBonsaiAiMarkdownChunk spoiler fence DOM shape", () => {
     const pre = container.querySelector("pre.bonsai-md-fenced-pre");
     expect(pre).toBeTruthy();
     expect(pre?.textContent).toContain('{"a": 1}');
+  });
+});
+
+describe("MainTabBonsaiAiMarkdownChunk DRG Survivor glossary markup", () => {
+  /*
+   * Roadmap: "DRG Survivor glossary terms" — a reply that uses "kiting" should let the user tap it
+   * for a definition, but only when the turn's game is DRG Survivor. Scoped to that one AppID on
+   * purpose (see data/drgGlossaryTerms.ts); a reply about any other game must render the word plain.
+   */
+  it("marks up a curated term as a tappable chip when the turn's game is DRG Survivor", () => {
+    const { container } = render(
+      <MainTabBonsaiAiMarkdownChunk source={DRG_KITING_SOURCE} appId={DRG_SURVIVOR_APP_ID} />
+    );
+    const chip = container.querySelector(".bonsai-drg-glossary-term");
+    expect(chip).toBeTruthy();
+    expect(chip?.textContent).toBe("kiting");
+    // The rest of the sentence renders untouched around the chip.
+    expect(container.textContent).toContain("Mining is not a side activity");
+    expect(container.textContent).toContain("ends underpowered.");
+  });
+
+  it("leaves the same text plain for a non-DRG-Survivor turn", () => {
+    const { container } = render(
+      <MainTabBonsaiAiMarkdownChunk source={DRG_KITING_SOURCE} appId="570" />
+    );
+    expect(container.querySelector(".bonsai-drg-glossary-term")).toBeNull();
+    expect(container.textContent).toContain("kiting");
+  });
+
+  it("leaves the same text plain when no AppID is supplied at all", () => {
+    const { container } = render(<MainTabBonsaiAiMarkdownChunk source={DRG_KITING_SOURCE} />);
+    expect(container.querySelector(".bonsai-drg-glossary-term")).toBeNull();
+  });
+
+  it("tapping the chip opens the full definition with an explain-further chip", () => {
+    const onDrgGlossaryExplainFurther = vi.fn();
+    const { container } = render(
+      <MainTabBonsaiAiMarkdownChunk
+        source={DRG_KITING_SOURCE}
+        appId={DRG_SURVIVOR_APP_ID}
+        onDrgGlossaryExplainFurther={onDrgGlossaryExplainFurther}
+      />
+    );
+    fireEvent.click(container.querySelector(".bonsai-drg-glossary-term-text")!);
+    expect(container.querySelector(".bonsai-drg-glossary-explain-further")).toBeTruthy();
+    fireEvent.click(container.querySelector(".bonsai-drg-glossary-explain-further")!);
+    expect(onDrgGlossaryExplainFurther).toHaveBeenCalledTimes(1);
+    expect(onDrgGlossaryExplainFurther.mock.calls[0][0]).toMatchObject({ id: "kiting" });
+  });
+
+  it("does not mark up terms that only appear inside an unrevealed spoiler fence", () => {
+    const source =
+      "Opening about kiting.\n\n```bonsai-spoiler\nOverclock the boss weapon.\n```\n\nDone.";
+    const { container } = render(
+      <MainTabBonsaiAiMarkdownChunk source={source} appId={DRG_SURVIVOR_APP_ID} spoilerMaskingEnabled={true} />
+    );
+    // The plain-text "kiting" outside the fence still gets marked up.
+    expect(container.querySelector(".bonsai-drg-glossary-term")?.textContent).toBe("kiting");
+    // The masked spoiler body is not in the DOM at all yet, so "overclock" cannot appear twice.
+    expect(container.querySelectorAll(".bonsai-drg-glossary-term")).toHaveLength(1);
   });
 });
