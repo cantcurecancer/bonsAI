@@ -656,7 +656,24 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
             lastStrategyAskQuestionRef.current = q;
             setStrategyGuideBranches(normalizeStrategyGuideBranches(status.strategy_guide_branches));
             const checklistPayload = normalizeStrategyChecklist(status.strategy_checklist);
-            if (checklistPayload && a.askMode === "strategy") {
+            /*
+             * The mode the REQUEST ran under, not the mode the panel is showing now.
+             *
+             * This read used to be `a.askMode`, and `applyBackgroundStatusToUi` is a `useCallback`
+             * whose deps are `[refreshInputTransparency, syncOllamaContextFromRunningApp]` — neither
+             * changes when the ask mode does, so the prop was frozen at its first-render value.
+             * Settings hydrate after mount, so that value is the default `"speed"` essentially
+             * always: the guard was false on every completed Ask and the checklist could never be
+             * stored, no matter what the user had selected. Measured on device 2026-08-27 through
+             * `dbg_fe_log` — the panel read Strategy, the backend logged `checklist_parsed=True`,
+             * and this line saw `askMode: "speed"`.
+             *
+             * `lastAskContextRef` is written at submit from `askModeForRequest`, so it is both fresh
+             * (a ref) and the right question to ask — the checklist belongs to the reply, so what
+             * matters is the mode that produced it, not what the panel switched to since. The
+             * `lastExchange` write directly above already sources it exactly this way.
+             */
+            if (checklistPayload && lastAskContextRef.current.askMode === "strategy") {
               const appId = status.app_id ?? "";
               const merged = mergeStrategyChecklistState(strategyChecklistRef.current, checklistPayload, {
                 appId,

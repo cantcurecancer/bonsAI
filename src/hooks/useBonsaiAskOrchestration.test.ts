@@ -918,4 +918,104 @@ describe("useBonsaiAskOrchestration", () => {
       });
     });
   });
+
+  describe("strategy checklist storage", () => {
+    const CHECKLIST = {
+      title: "Dealing with Exploders",
+      items: [
+        { id: "1", label: "Maintain distance from immediate explosions" },
+        { id: "2", label: "Use kiting movement to avoid direct contact" },
+        { id: "3", label: "Position yourself so the blast hits the swarm behind you" },
+      ],
+    };
+
+    /*
+     * STRAT-CHECKLIST-01. The mode is read at *mount*, not at reply time, so the sequence matters:
+     * the panel mounts on the default `"speed"` and only becomes `"strategy"` once settings hydrate
+     * a render later. `applyBackgroundStatusToUi` is a `useCallback` that does not depend on the
+     * mode, so reading `a.askMode` inside it saw the mount-time value forever — the guard was false
+     * on every completed Ask and the checklist could never be stored, whatever the user selected.
+     *
+     * Starting this test at "strategy" would pass on the broken code, which is why the rerender is
+     * the whole point of it. Measured on device 2026-08-27: panel showing Strategy, backend logging
+     * `checklist_parsed=True`, and the guard reading `askMode: "speed"`.
+     */
+    /*
+     * The polled path specifically, which is the one the device takes: the model needs 6-32s on this
+     * hardware, so `start_background_game_ai` answers `pending` and the checklist arrives on a later
+     * status read. The complete-on-start path cannot carry a checklist at all — it hand-builds its
+     * terminal status and omits the field — which is a separate defect, filed, not under test here.
+     */
+    function pollsToCompletionWithChecklist(requestId: number) {
+      setRpcHandler("start_background_game_ai", () => ({
+        accepted: true,
+        status: "pending",
+        request_id: requestId,
+      }));
+      let polls = 0;
+      setRpcHandler("get_background_game_ai_status", () => {
+        polls += 1;
+        const base = {
+          ...idleBackgroundStatusFixture(),
+          question: "how do i deal with the exploders",
+          request_id: requestId,
+        };
+        if (polls < 2) return { ...base, status: "pending" };
+        return {
+          ...base,
+          status: "completed",
+          success: true,
+          response: "Keep your distance and let them come to you.",
+          strategy_checklist: CHECKLIST,
+        };
+      });
+    }
+
+    async function runAsk(result: { current: { onAskOllama: (q: string) => Promise<void> } }) {
+      let pending: Promise<void> | undefined;
+      act(() => {
+        pending = result.current.onAskOllama("how do i deal with the exploders");
+      });
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(100);
+      });
+      await act(async () => {
+        await pending;
+      });
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(5000);
+      });
+    }
+
+    it("stores a checklist when strategy was selected after mount", async () => {
+      vi.useFakeTimers();
+      pollsToCompletionWithChecklist(41);
+
+      const { result, rerender } = renderHook(
+        ({ askMode }: { askMode: "speed" | "strategy" }) =>
+          useBonsaiAskOrchestration(makeArgs({ askMode })),
+        { initialProps: { askMode: "speed" as "speed" | "strategy" } },
+      );
+
+      rerender({ askMode: "strategy" });
+      await runAsk(result);
+
+      expect(result.current.strategyChecklist).not.toBeNull();
+      expect(result.current.strategyChecklist?.title).toBe("Dealing with Exploders");
+      expect(result.current.strategyChecklist?.items).toHaveLength(3);
+      vi.useRealTimers();
+    });
+
+    /* The guard still has to bite: a Speed-mode reply must not leave a checklist behind. */
+    it("ignores a checklist on a reply that was not asked in strategy", async () => {
+      vi.useFakeTimers();
+      pollsToCompletionWithChecklist(42);
+
+      const { result } = renderHook(() => useBonsaiAskOrchestration(makeArgs({ askMode: "speed" })));
+      await runAsk(result);
+
+      expect(result.current.strategyChecklist).toBeNull();
+      vi.useRealTimers();
+    });
+  });
 });
