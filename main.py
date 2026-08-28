@@ -2250,7 +2250,14 @@ class Plugin:
         settings = await self.load_settings()
         return reply_language_snapshot(settings.get("reply_language"))
 
-    async def save_ask_feedback(self, rating: str, request_id: int = 0, question_len: int = 0, success: bool = False):
+    async def save_ask_feedback(
+        self,
+        rating: str,
+        request_id: int = 0,
+        question_len: int = 0,
+        success: bool = False,
+        chip_id: str = "",
+    ):
         """Persist thumbs up/down locally (JSONL under plugin settings); no network."""
         from backend.services.feedback_service import append_ask_feedback
 
@@ -2261,6 +2268,7 @@ class Plugin:
             rating=str(rating or ""),
             question_len=int(question_len or 0),
             success=success is True,
+            chip_id=str(chip_id or ""),
         )
 
     async def read_host_clipboard_text(self):

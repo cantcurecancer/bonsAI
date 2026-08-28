@@ -19,7 +19,13 @@ def feedback_log_path(settings_dir: str) -> str:
 
 
 _VALID_CHIP_IDS = frozenset(
-    {"bad_information", "too_long", "too_short", "misidentified_game"}
+    {
+        "bad_information",
+        "too_long",
+        "too_short",
+        "misidentified_game",
+        "unfenced_spoiler",
+    }
 )
 
 

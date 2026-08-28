@@ -28,7 +28,11 @@ import { getReplyStop, REPLY_STOP_ORDER, type ReplyStopId } from "./replyStopReg
 import { elementHasGamepadFocus } from "./uiDocument";
 import { isDeckDirectionDownEvent, isDeckDirectionUpEvent } from "./focusNavigation";
 
-const CHIP_ROW_REFINE: ReplyMicroActionId[] = ["bad_information", "misidentified_game"];
+const CHIP_ROW_REFINE: ReplyMicroActionId[] = [
+  "bad_information",
+  "misidentified_game",
+  "unfenced_spoiler",
+];
 const CHIP_ROW_LENGTH: ReplyMicroActionId[] = ["too_long", "too_short"];
 
 export type BuildReplyActionsElementArgs = {

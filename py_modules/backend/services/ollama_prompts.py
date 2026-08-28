@@ -1368,6 +1368,7 @@ _REPLY_FOLLOWUP_CHIP_LABELS = {
     "too_long": "Too long",
     "too_short": "Too short",
     "misidentified_game": "Misidentified game/problem",
+    "unfenced_spoiler": "Unfenced spoiler",
 }
 
 

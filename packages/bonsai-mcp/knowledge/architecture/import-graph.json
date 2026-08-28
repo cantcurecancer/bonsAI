@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 311,
-  "edgeCount": 730,
+  "fileCount": 312,
+  "edgeCount": 731,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -2355,6 +2355,12 @@
         "src/utils/buildAnswerBubbleElement.test.tsx"
       ]
     },
+    "src/utils/buildReplyActionsElement.test.tsx": {
+      "imports": [
+        "src/utils/buildReplyActionsElement.tsx"
+      ],
+      "importedBy": []
+    },
     "src/utils/buildReplyActionsElement.tsx": {
       "imports": [
         "src/components/BonsaiChatSecondaryButton.tsx",
@@ -2366,7 +2372,8 @@
         "src/utils/uiDocument.ts"
       ],
       "importedBy": [
-        "src/components/MainTabChatTranscript.tsx"
+        "src/components/MainTabChatTranscript.tsx",
+        "src/utils/buildReplyActionsElement.test.tsx"
       ]
     },
     "src/utils/buildThinkingBlurbTextElement.tsx": {

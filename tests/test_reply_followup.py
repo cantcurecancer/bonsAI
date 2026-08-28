@@ -35,6 +35,23 @@ class ReplyFollowupTests(unittest.TestCase):
         self.assertIn("Why lag?", block)
         self.assertIn("Because CPU.", block)
 
+    def test_sanitize_accepts_unfenced_spoiler_chip(self):
+        out = sanitize_reply_followup(
+            {
+                "chip_id": "unfenced_spoiler",
+                "parent_question": "How do I beat the boss?",
+                "parent_answer": "Just rush in.",
+            }
+        )
+        self.assertIsNotNone(out)
+        self.assertEqual(out["chip_id"], "unfenced_spoiler")
+
+    def test_context_block_labels_unfenced_spoiler(self):
+        block = build_reply_followup_context_block(
+            "unfenced_spoiler", "How do I beat the boss?", "Just rush in."
+        )
+        self.assertIn("Unfenced spoiler", block)
+
 
 if __name__ == "__main__":
     unittest.main()
