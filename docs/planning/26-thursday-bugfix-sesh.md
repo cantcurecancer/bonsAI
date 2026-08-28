@@ -148,6 +148,27 @@ choice; detaching (clearing the active-slot pointer so nothing reloads it) is ac
 
 ---
 
+## Phase 3 — QA sweeps with the rig — **RUN 2026-08-27**
+
+> **All four items run. Two passed outright, one passed and closed a second row with it, one turned
+> up two genuine failures.**
+>
+> 1. **Session-context focus trap — PASSES, both cases**, with evidence in `runs/SESSION-CTX-TRAP-*.json`.
+> 2. **QA-TRUST-TIER-01 — PASSES, both directions**, read from the ask trace: maintainer-written DRG
+>    cards are `fallback_no_source`, wiki-sourced Portal 2 cards are still `wiki_no_patch` and still
+>    show their credit. Row now **Verified**.
+> 3. **Frozen-chip batches — Batch B run** (Batch A was already closed). Its two owed sub-checks are
+>    now closed, so **QA-FROZEN-CHIPS-01 is Verified**. § 4.3's first half passes; **§ 4.3's reopen half
+>    and § 4.2's guard both fail** and are filed as roadmap bugs. Run log: [20-frozen-chip-qa-batches.md](20-frozen-chip-qa-batches.md) § 4b.
+> 4. **SPOILER-DPAD-01 residue — PASSES.** B over a masked fence does not reveal it; row now **Verified**.
+>
+> **Also withdrawn:** the *focusable dead spot in the chip carousel* bug was a misdiagnosis — the
+> element is the plugin's own icon-only tab bar, and A on the already-selected tab is correctly a
+> no-op. See the roadmap entry for how `ownerText` produced the wrong region.
+>
+> **Two new bugs filed:** the destructive-advice guard missing a "delete the prefix folder" reply, and
+> session context dropping its older turns on a QAM reopen. Original plan text below.
+
 ## Phase 3 — QA sweeps with the rig (cheap now; run after 1.1 lands)
 
 Each of these has exact steps in its roadmap/testing entry. Save every run's evidence file from

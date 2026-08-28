@@ -361,6 +361,52 @@ results do.
 
 ---
 
+## 4b. Run log — Batch B, 2026-08-27
+
+Pinned the six § 4 chips by writing `dev_frozen_test_chips` into
+`~/homebrew/settings/bonsAI/settings.json` over SSH, as Batch A did. All six landed verbatim and
+badged **TEST**. The batch was **cleared at the end of the session** — `dev_frozen_test_chips` is
+back to `[]` and the loader restarted, so corpus-chip rows are unblocked again.
+
+**§ 4.1 spoiler block by D-pad — PASSES.** Ran on a fresh Strategy reply that produced a masked
+fence (confirmed on screen before judging navigation, as this section requires). Three presses from
+**ask**: question echo → **the fence takes the ring**. Then the residue press this row still owed:
+**B over the masked fence did not reveal it** — masked stayed 1, revealed stayed 0. `SPOILER-DPAD-01`
+is now Verified. One Down press is absorbed on the fence before the walk continues; that is the
+offered-once diversion and is cosmetic.
+
+**§ 4.2 destructive-advice guard — FAILS on #3, and the other two are uninformative.** #3
+*"my proton prefix is broken how do i start fresh"* produced real destructive advice — *"Try deleting
+the existing prefix folder"* plus a branch button *"Delete and Rebuild the prefix"* — and **no notice**
+in the trace's Final UI text. #2 ran twice and the model refused to name anything to delete, which is
+the "question missed, not the guard" case this section has two positives for. #4 produced no notice as
+expected, but the model deflected without advising anything, so it does not exercise the guard.
+Model: `gemma4:e2b-it-qat`. Streaming **on**; the streaming-off half was not run. Filed on the roadmap.
+
+**§ 4.3 session turn count — first half PASSES, second half FAILS.** Three questions back to back gave
+**Session context (3 turns)** with one row each, which is what this section was blocked on. But after
+closing and reopening the QAM the strip read **(1 turn)**. The saved chat on disk still holds all three
+turns with their per-turn transparency, and the single rendered turn is tagged `live` with no archived
+rows — so the backend half is sound and the frontend never reloads the slot on a QAM reopen. Filed.
+
+**§ 4.4 no-game-running label — first half PASSES.** With nothing running, *Show details* read
+**`KB: no game running`**. The second half needs a game with no corpus coverage launched, which the rig
+must not do.
+
+### The trap that nearly produced a phantom bug — read this before filing a logging failure
+
+Mid-run the Desktop ask trace appeared to **stop being written**: four Asks completed, the settings
+still read `desktop_ask_verbose_logging: true`, and `bonsai-ask-trace-2026-08-27.md` had not been
+touched for ten minutes. It survived a clean `plugin_loader` restart, which made it look like a real
+defect rather than a side effect of editing `settings.json` under a running plugin.
+
+It was neither. **The Desktop log filenames use the UTC date while the Deck clock shows local time.**
+At 20:00 EDT the date rolled over in UTC and every subsequent Ask went to
+`bonsai-ask-trace-2026-08-**28**.md`. Any evening session on a US timezone will hit this. Check for
+tomorrow's file before concluding that logging stopped.
+
+---
+
 ## 5. What neither batch covers
 
 | Not covered | Why | Where it goes instead |
