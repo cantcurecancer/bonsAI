@@ -2,7 +2,7 @@
   "hotspots": [
     {
       "path": "main.py",
-      "lines": 3144,
+      "lines": 3151,
       "role": "Decky RPC entrypoints and orchestration"
     },
     {
@@ -66,13 +66,13 @@
       "role": ""
     },
     {
-      "path": "py_modules/backend/services/bonsai_stream_tags.py",
-      "lines": 858,
+      "path": "src/components/MainTabChatTranscript.tsx",
+      "lines": 871,
       "role": ""
     },
     {
-      "path": "src/components/MainTabChatTranscript.tsx",
-      "lines": 847,
+      "path": "py_modules/backend/services/bonsai_stream_tags.py",
+      "lines": 858,
       "role": ""
     },
     {
@@ -196,8 +196,8 @@
       "role": ""
     },
     {
-      "path": "src/components/OllamaTab.tsx",
-      "lines": 374,
+      "path": "src/utils/buildReplyActionsElement.tsx",
+      "lines": 381,
       "role": ""
     }
   ]

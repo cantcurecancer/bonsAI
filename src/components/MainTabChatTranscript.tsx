@@ -23,6 +23,7 @@ import { BonsaiChatSecondaryButton } from "./BonsaiChatSecondaryButton";
 import { buildReplyActionsElement } from "../utils/buildReplyActionsElement";
 import { archivedTurnTransparency } from "../utils/archivedTurnTransparency";
 import { buildAnswerBubbleElement } from "../utils/buildAnswerBubbleElement";
+import { buildAnswerCopyText } from "../utils/answerCopyText";
 import { buildThinkingBlurbTextElement } from "../utils/buildThinkingBlurbTextElement";
 import { buildTurnHeaderElement } from "../utils/buildTurnHeaderElement";
 import { buildCollapsedTurnTitle } from "../utils/chatTurnTitle";
@@ -493,6 +494,16 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
                     chipError: showFeedbackHere ? liveReplyChipError : null,
                     onChip: showFeedbackHere ? onReplyMicroAction : undefined,
                     askInFlight: isAsking,
+                    getAnswerCopyText: turn.answer?.trim()
+                      ? () =>
+                          buildAnswerCopyText({
+                            body: turn.answer,
+                            spoilerMaskingEnabled: strategySpoilerMaskingEnabled,
+                            askQuestion: turn.question,
+                            appId: turn.appId ?? null,
+                            spoilerConsentEffective: turn.spoilerConsentEffective === true,
+                          })
+                      : undefined,
                     /* Down must reach this turn's own ladder. Without a handler the Focusable
                        falls through to the next focusable in document order — Ask diagnostics —
                        and the chips become unreachable from above. */
@@ -603,6 +614,19 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
                   chipError: liveReplyChipError,
                   onChip: onReplyMicroAction,
                   askInFlight: isAsking,
+                  /* Same body the bubble above just rendered (liveResponseBody), with a fallback to
+                     lastExchange for the brief window where the row is visible but the live slot's
+                     own body has not repopulated yet. */
+                  getAnswerCopyText: (liveResponseBody.trim() || lastExchange?.answer?.trim())
+                    ? () =>
+                        buildAnswerCopyText({
+                          body: liveResponseBody.trim() ? liveResponseBody : lastExchange?.answer || "",
+                          spoilerMaskingEnabled: strategySpoilerMaskingEnabled,
+                          askQuestion: liveQuestion || lastExchange?.question || "",
+                          appId: ollamaContext?.app_id ?? null,
+                          spoilerConsentEffective: lastExchange?.spoilerConsentEffective === true,
+                        })
+                    : undefined,
                   onMoveDownFromUtility: () =>
                     focusDownFromReplyUtilityRow(queryLiveTurnSlot()),
                 })

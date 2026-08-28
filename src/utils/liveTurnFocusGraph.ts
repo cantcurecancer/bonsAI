@@ -118,13 +118,13 @@ export function focusReplyThumbsRow(liveSlot: HTMLElement | null): boolean {
 }
 
 /**
- * Focus a reply-actions 2x2 cell via the mount-time ref registry.
+ * Focus a reply-actions cell via the mount-time ref registry.
  * `document.querySelector` returns null on Deck for these nodes (proven ok/found:false);
  * registered Button refs are the reliable focus targets.
  */
 export function focusReplyStop(
   _liveSlot: HTMLElement | null,
-  stop: "helpful" | "not-really" | "retry" | "show-details",
+  stop: "helpful" | "not-really" | "retry" | "show-details" | "copy",
 ): boolean {
   return focusRegisteredReplyStop(stop);
 }
@@ -145,9 +145,15 @@ export function focusReplyShowDetails(liveSlot: HTMLElement | null): boolean {
   return focusReplyStop(liveSlot, "show-details");
 }
 
+export function focusReplyCopy(liveSlot: HTMLElement | null): boolean {
+  return focusReplyStop(liveSlot, "copy");
+}
+
+/** Retry -> Show details -> Copy: whichever of the utility row's columns is actually mounted. */
 export function focusReplyUtilityRow(liveSlot: HTMLElement | null): boolean {
   if (focusReplyRetry(liveSlot)) return true;
-  return focusReplyShowDetails(liveSlot);
+  if (focusReplyShowDetails(liveSlot)) return true;
+  return focusReplyCopy(liveSlot);
 }
 
 export function focusLastReplyChip(liveSlot: HTMLElement | null): boolean {

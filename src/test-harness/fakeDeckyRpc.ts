@@ -35,6 +35,7 @@ export const FRONTEND_RPC_METHODS = [
   "append_desktop_debug_note",
   "append_desktop_chat_event",
   "read_host_clipboard_text",
+  "write_host_clipboard_text",
   "get_input_transparency",
   "save_ask_feedback",
   "list_recent_screenshots",
@@ -128,6 +129,7 @@ function defaultHandlers(): Record<string, RpcHandler> {
     append_desktop_debug_note: () => ({ success: true }),
     append_desktop_chat_event: () => ({ success: true }),
     read_host_clipboard_text: () => ({ ok: true, text: "" }),
+    write_host_clipboard_text: () => ({ success: true }),
     get_input_transparency: () => ({ ok: true }),
     get_reply_language_snapshot: () => ({
       override: settings.reply_language ?? "follow_system",

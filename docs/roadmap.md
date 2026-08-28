@@ -188,9 +188,12 @@ Stars are **effort/risk**. Grouped by **theme**; within each lane sorted ascendi
 - ★ **Intent packs later review** (keep / quiet / Developer)
   - **Goal:** Decide whether quiet intent-pack search aliases should be deleted, left quiet, or revived under Developer.
   - **Not in scope:** re-shipping Proton journal inject without redesign.
-- ★★ **Copy reply to clipboard** (reply micro-action)
-  - **Goal:** One reply action copies visible answer text to host clipboard.
-  - **Depends on:** shipped reply micro-actions + read clipboard pattern. Spike Wayland selection ownership first.
+- ★★ **Copy reply to clipboard** (reply micro-action) — **Shipped 2026-08-28, on-Deck confirm Open**
+  - **Goal:** One reply action copies visible answer text to host clipboard. Done: Copy button in
+    the reply utility row, tries `navigator.clipboard.writeText` → `execCommand('copy')` → host RPC
+    (`wl-copy`/`xclip`) in that order, shows Copied / Copy failed on the button itself.
+  - **Spike:** [clipboard-spike-2026-08-28.md](audit/clipboard-spike-2026-08-28.md) — Wayland
+    selection ownership across a plugin reload is the one thing left unconfirmed; see **COPY-REPLY-01/02**.
   - **Source:** [13-roadmap-feature-ideas.md](planning/13-roadmap-feature-ideas.md) A2.
 - ★★ **Preset chip expansion** (incremental content)
   - **Goal:** Add or refresh preset strings as related features land. Wave 1 shipped four prompts; **PRESET-EXPAND-W1-01** open. [wave1.md](wave1.md).
