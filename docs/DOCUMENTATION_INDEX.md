@@ -7,7 +7,8 @@ Short guide to markdown under `docs/`. Repo root **[README.md](../README.md)** s
 | [mcp-setup.md](mcp-setup.md) | Contributors / agents | MCP servers — bonsai knowledge + Decky Plugin Studio |
 | [development.md](development.md) | Contributors | Deck-first setup, build/deploy, architecture, hotspots |
 | [troubleshooting.md](troubleshooting.md) | Power users | GPU, network, vision, permissions, QAM, deploy edge cases |
-| [roadmap.md](roadmap.md) | Planning | Active index — Bugs, Verify, themed Backlog |
+| [roadmap.md](roadmap.md) | Planning | Active index — Bugs, Verify, themed Backlog. Entries are kept short on purpose |
+| [roadmap-details.md](roadmap-details.md) | Planning | Long-form notes for **open** roadmap items — steps, measurements, ruled-out leads |
 | [audit/maintainer-decisions-locked.md](audit/maintainer-decisions-locked.md) | Planning / refactor | Locked D1–D15 decisions, execution order, cleanup candidates |
 | [archive/roadmap-bugs-fixed.md](archive/roadmap-bugs-fixed.md) | Planning | Fixed-bug writeups (full detail) |
 | [testing.md](testing.md) | QA / contributors | Testing hub + slim coverage |

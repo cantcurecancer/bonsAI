@@ -265,3 +265,82 @@ Headings group related work. Star counts match the historical list.
 - **Not in scope:** continuous video streaming.
 
 ---
+
+---
+
+## Moved from the roadmap's Verify list 2026-08-27
+
+All of these are **Verified on device** in testing.md. They were still sitting in the roadmap's
+"QA owed" list, which had drifted out of step with testing.md — the roadmap was claiming work
+was outstanding that had in fact been signed off. Kept in full for the reasoning.
+
+- ★ **You cannot ask for "the boss"** — a card's type was not searchable, so *"how do i beat the boss"* found nothing on a game whose boss card was right there. Fixed 2026-08-19 by pulling that game's cards of the named kind into the pool, only when the keyword half found none of that kind. **KB-TYPE-01** owed on device. The reversible option was taken over a schema change; [why](roadmap-details.md#shipped-qa-owed--why-each-was-built-this-way) has the trade-off and a standing maintainer question.
+- ★★ **D-pad reaches the spoiler reveal, and A opens it** — fixed 2026-08-27, already confirmed on device **by script** (`runs/SPOILER-REVEAL-AFTER-onmove-fix.json`: ask → header → the fence takes the ring; A reveals it, masked 1→0). **SPOILER-DPAD-01** — by-hand residue only: B over a masked fence must not reveal; expect one absorbed Down press on the fence before the walk moves on (offered-once diversion, cosmetic). The *tap to hide* control is a separate open bug (it never takes the ring — see Bugs). Writeup: [archive/roadmap-bugs-fixed.md](archive/roadmap-bugs-fixed.md).
+- ★★ **You cannot ask about a game unless it is running** — fixed 2026-08-19 (**D19**); **KB-NEWTITLE-01** owed on device. The question is matched against the alias table as a last resort, only when Steam supplies no AppID. [why](roadmap-details.md#shipped-qa-owed--why-each-was-built-this-way)
+- ★★ **Compat retrieval returned a tip from the wrong topic** — fixed 2026-08-18 (**D22**); **KB-ROUTER-02** owed on device. The router worked the topic out and retrieval threw it away. The report's premise was half wrong and the fix changed as a result — [why](roadmap-details.md#shipped-qa-owed--why-each-was-built-this-way)
+- ★★ **Session context counts the newest turn twice** — fixed 2026-08-27, **confirmed on-Deck the same day by the rig with real controller presses**; **SESSION-CONTEXT-DEDUPE-01 Verified.** After a completed Ask, `liveTurn` and the newest `askThreadCollapsed` entry were the same turn shown twice; the strip now drops the live row when its question matches the newest archived one — see [testing.md](testing.md). Writeup: [archive/roadmap-bugs-fixed.md](archive/roadmap-bugs-fixed.md).
+- ★ **A revealed spoiler cannot be re-hidden with the controller** — fixed 2026-08-27, **confirmed on-Deck the same day by the rig with real controller presses**; **SPOILER-COLLAPSE-01 Verified.** The stop containing `.bonsai-spoiler-collapse-target` now delegates A to it via the gamepad ring, instead of the deliberate no-op that only needed to guard reveal targets and wait chips — see [testing.md](testing.md). Writeup: [archive/roadmap-bugs-fixed.md](archive/roadmap-bugs-fixed.md).
+- ★★ **Session context strip counts every archived turn** — fixed 2026-08-23; **SESSION-CONTEXT-COUNT-01** Open on-Deck. Chat slots now save a transparency snapshot per turn instead of only the newest one — see [testing.md](testing.md). Writeup: [archive/roadmap-bugs-fixed.md](archive/roadmap-bugs-fixed.md).
+
+---
+
+## What each section's heading used to list (v0.5.0 shipped work)
+
+Until 2026-08-27 every roadmap heading carried a long parenthetical listing what had already
+shipped in that area. It was a changelog wedged into a title and made the headings unreadable.
+Preserved verbatim here.
+
+- ## Bugs (v0.5.0 fixes — LB/RB tab switch, thinking blurbs single-writer, streaming reveal tweaks, asked-entity extraction, KB phrase gate / D16, session RAG chip RPC, source attribution on chips, QAM row width, chat-slot persistence, soft num_predict → Verify, …)
+- ## Verify (v0.5.0 QA owed — CHAT-SLOTS-V2, ASK-WIDTH-01, Wave 1 voice/icon/thinking rows, STREAM-09, SHELL-PAYLOAD-01, KB-ROUTER-01 / KB-ASKMODE-01, …)
+- ### Ask / reply (v0.5.0 — token streaming live markdown, spoiler confidence chip, spoiler constitution runtime, thinking blurbs, reply-language / routing merge RPCs, Caveman reply style, …)
+- ### Focus / Deck UI (v0.5.0 — LB/RB overflow clip, QAM ResizeObserver rebind, global document sweep, onButtonDown audit, ask-bar caret + avatar, permission jump, modal return-focus registry, …)
+- ### Knowledge base (v0.5.0 — hybrid RRF + schema v3, D16 topic router, D17 mode-independent game tips, 13-title / 119-card seed, wiki attribution, KB download Cancel, session RAG chips, hybrid kill-switch, …)
+- ### Permissions / safety (v0.5.0 — permission jump, spoiler constitution / named-entity consent, …)
+- ### Platform / upstream (v0.5.0 — voice STT session daemon, …)
+
+---
+
+## Shipped, but left sitting in the roadmap's Backlog until 2026-08-27
+
+Each of these says "shipped" in its own text and was still filed as future work. Moved here
+whole, rationale included — the reasoning is why they were built the way they were.
+
+- ★ **CI runs the gates that already exist** (the missing ratchet)
+  - **Goal:** Run `npx tsc --noEmit`, `npm test` and `npm run test:py` in CI. **Measured 2026-08-24: nothing enforces them today** — `.githooks/pre-commit` only syncs architecture snapshots, `build-plugin-zip.yml` builds without testing, and `validate-mcp.yml` only checks MCP knowledge freshness. So **1,306 tests run when someone remembers**, which is the failure class [testing.md](testing.md) already named for evidence retention: *a rule that depends on someone remembering is not a mechanism*.
+  - **Why it comes first:** every "fixed and locked so it cannot regress" claim depends on something actually running the lock. Prerequisite for the whole program in [21-ai-owned-testing-program.md](planning/21-ai-owned-testing-program.md).
+  - **Expect a red first run** on a clean runner (Python deps, Node version, environment-dependent tests). Budget the session for fixing what it exposes — that discovery is the point, not a setback.
+- ★★ **Static focus checks** (make the focus rules fail the build)
+  - **Goal:** A checker script in `scripts/` — matching the existing `plugin_zip_corpus_guard.py` habit rather than adopting a linter toolchain (**there is no eslint/biome/prettier config in the repo at all**, measured 2026-08-24) — wired into the CI job above. Turns [.cursor/rules/decky-focus-graph.mdc](../.cursor/rules/decky-focus-graph.mdc) from prose an agent must remember into a gate.
+  - **Certain checks:** `document.querySelector` / `activeElement` used to move or verify focus; `onMoveUp`/`onMoveDown` passed to a Decky `Button` (which does not forward them); an overwritten `tabindex` or a `-1` on a natively focusable element.
+  - **Feasibility UNKNOWN:** a registration call whose registry is never consumed (the spoiler-fence class), and "new focus owner shipped with no D-pad row in testing.md".
+  - **Scope honesty:** catches **new** mistakes only. Existing focus bugs still need the rig + oracles to observe. Detail: [21-ai-owned-testing-program.md](planning/21-ai-owned-testing-program.md) § 3 Track B.
+  - **Why it is the answer to "focus isn't considered when new UI is built":** the rule is 26 lines of hard-won correctness that only works if read at the right moment. A check does not need to be remembered.
+- ★★ **AI character avatars — prop emblems** (design handoff received 2026-08-26) — **BOTH HALVES SHIPPED. Main tab 2026-08-26 (on-Deck check owed, AVATAR-PROP-01); picker 2026-08-27 once [D33](audit/maintainer-decisions-locked.md) locked at 26px — measured on device, row **CHAR-AVATAR-26-01** in [testing.md](testing.md) is Partial pending the maintainer's own look at the size.**
+  - **Goal:** Replace the 8×8/16×16 pixel-grid character placeholders with drawn prop emblems — one object per character (Scout's bat, Heavy's sandvich, Nick Valentine's fedora) on a tinted, vignetted disc. Covers all 33 keys plus `__random__` and `__custom__`. Vector, so it stays legible from 18px up without a per-character art pipeline, and it is props rather than likenesses, which keeps it clear of the copyright problem.
+  - **What shipped 2026-08-26:** the Ask-bar avatar draws the prop emblem. [CharacterRoleplayEmoticon](../src/components/CharacterRoleplayEmoticon.tsx) gained an `art` prop that defaults to `"grid"`, so the picker is byte-for-byte unchanged and only the main tab opts in with `art="prop"`. The design's module-level gradient counter became `React.useId()` with the colons stripped, and the art array got its missing React keys. First tests for the component: `CharacterRoleplayEmoticon.test.tsx` (9). Design bundle and the approved prototype are in `docs/design/handoffs/ai-character-avatars/`.
+  - **The main tab is settled (2026-08-26).** A true-size mock-up confirmed the Ask bar can take the new artwork with **no layout change at all** — same 18 × 18 slot, same 50.0 × 276.8px text row, same corner badge — as long as it renders the plain glyph rather than the design's `CharacterAvatar` wrapper, whose selection chip the slot's `overflow: hidden` would clip. The art also clearly beats what is there now: today seven of eight grids resolve to the same hooded silhouette at 18px.
+  - **What blocked it, and how it was answered.** The picker only. The art was reviewed at 44px, the picker rendered at 24px, and the design's badge breakpoint (26px) fell in the middle of the picker's five actual sizes (22, 24, 24, 26, 26) — so one screen would have shown two badge styles. **[D33](audit/maintainer-decisions-locked.md) locked 2026-08-27 at 26px** (option C: part of the way, not the full 44). All five sizes collapsed into `PICKER_AVATAR_PX` and the picker opted into `art="prop"`. **Measured on device the same day:** 34 avatars, every one 26px on the emblem viewBox, rows still **38px so nothing gets shorter**, badges unclipped. The maintainer explicitly reserved the right to change the number after seeing it — it is one constant, so that is a one-line edit.
+  - **Sequencing note:** this adds a *selection ring* to the character picker, which already carries the open **★★★ focus ring invisible / D-pad does not move** bug above. Fix the focus bug first or expect to debug both at once.
+  - **Do not redraw the SVG paths** — every coordinate is the approved design. Full intake, the six mismatches, and the wiring plan: [25-ai-character-avatars-handoff.md](planning/25-ai-character-avatars-handoff.md).
+- ★★★ **Frozen test chips** (pin an exact QA question into the carousel) — **SHIPPED 2026-08-22; this entry is kept for the rationale below, not as pending work.** Setting `dev_frozen_test_chips`, Developer tab UI, on-Deck row **QA-FROZEN-CHIPS-01** (Partial — two sub-checks owed, see [testing.md](testing.md)). **Left here because the request is a standing working agreement, not just a feature** — see [CLAUDE.md](../CLAUDE.md) § Testing on the Deck. **Read the shipped row, not this entry, for what it does:** a session reading only this bullet in 2026-08-26 concluded the feature did not exist and offered the maintainer a fallback it did not need.
+  - **Goal:** Let a session pin a named set of exact questions as preset chips and **freeze them in
+    the rotation**, so on-device QA is one press per case instead of thumb-typing a sentence into
+    the on-screen keyboard. Cleared explicitly, not on the next reseed.
+  - **Why it is worth building.** Every KB QA row quotes a verbatim sentence, and several are
+    chosen precisely because of which words they do *not* contain — **KB-ROUTER-01**'s four
+    sentences avoid "deck" and "proton" deliberately, so one stray word silently tests something
+    else. `scripts/deck_send_ask.py` exists for this reason and only solves half of it: it types
+    the question but will not press Ask, and it needs the QAM open on the right tab with an SSH
+    session live. A frozen chip is reachable with the D-pad and survives a reseed.
+  - **It also unblocks chip QA itself.** **PHASE4-CHIPS-01** has to watch a rotation to judge the
+    guarantee and the **Tip** badge, and the carousel currently cannot be walked backwards (see
+    Bugs) — a deterministic pinned set removes the timing problem entirely.
+  - **What exists:** `dev_force_session_rag_chips` (boolean, Developer tab) forces corpus chips on,
+    but there is **no way to pin specific chip text** — that is the gap. `sessionRagComposer.ts`
+    already composes and reseeds the pool, so the freeze belongs there rather than in a new system.
+  - **Shape:** a dev-only list of pinned questions in settings, consumed by the composer ahead of
+    the normal pool, exempt from reseed, and visibly marked as test chips so a frozen set is never
+    mistaken for real corpus output. Needs a focus-graph entry per CLAUDE.md.
+  - **Confirmation is part of the design, not politeness:** the maintainer wants to approve the
+    exact question set before it is pinned, because a wrong sentence invalidates the row it was
+    meant to test.
