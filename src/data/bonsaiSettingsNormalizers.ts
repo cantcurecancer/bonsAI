@@ -275,8 +275,13 @@ export function normalizePresetChipAnimation(
   legacyFadeEnabled: unknown,
 ): PresetChipAnimation {
   if (typeof value === "string") {
-    const t = value.trim() as PresetChipAnimation;
-    if (PRESET_CHIP_ANIMATION_OPTIONS.includes(t)) return t;
+    const t = value.trim();
+    // Migrated away in the Ghost in the Shell chip-decode rewrite: a Deck whose settings.json
+    // still holds the retired `stream` mode maps forward to its replacement rather than falling
+    // through to the `fade` default below, which would read as "the setting reset itself."
+    // Mirrors `sanitize_preset_chip_animation` in settings_service.py (Python is authoritative, D13).
+    if (t === "stream") return "decode";
+    if (PRESET_CHIP_ANIMATION_OPTIONS.includes(t as PresetChipAnimation)) return t as PresetChipAnimation;
   }
   if (legacyFadeEnabled === false) return "static";
   return DEFAULT_PRESET_CHIP_ANIMATION;

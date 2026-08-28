@@ -40,7 +40,7 @@ export type MainTabProps = {
   useLocalKnowledgeBase?: boolean;
   onOpenPluginHelp: () => void;
   presetChipFadeAnimationEnabled?: boolean;
-  presetChipAnimation?: "fade" | "carousel" | "static" | "stream";
+  presetChipAnimation?: "fade" | "carousel" | "static" | "decode";
   onRetryLastResponse?: () => void;
   liveReplyFeedbackRating?: "up" | "down" | null;
   onReplyFeedback?: (rating: "up" | "down") => void;

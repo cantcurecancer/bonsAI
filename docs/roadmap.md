@@ -155,6 +155,7 @@ Code-fixed or shipped; on-Deck / qualitative QA still owed. Detail: [testing.md]
 - ★★ **Wave 4 G slider direction handlers** — Deck-check: **ONBUTTONDOWN-AUDIT-01** (distinguish nothing happens vs double-step; cover Ollama keep-alive, Reply verbosity, Connection timeout sliders).
 - ★★ **Your tab is not remembered when you leave and reopen** — **TAB-RESUME-01** Partial (tab + scroll restore; focus-after-reopen separate).
 - ★★★ **D11 legacy-loader shim removal** — **D11-SHIM-01** Partial (RPC probe ok; Main-tab Ask UI pass open).
+- ★★★ **Ghost in the Shell preset chip decode** — shipped 2026-08-28, replacing the `stream` typewriter mode (`decode` now fills that slot in the picker). Chips arrive as a full-width scrambled green block and lock into the real prompt left to right behind a blinking caret; a Deck whose settings still say `stream` maps forward to `decode` rather than silently resetting to fade. **PRESET-STREAM-ANIM-01** Open — frame-rate feel and the focus-during-churn walk are device-only. Writeup: [archive/roadmap-completed.md](archive/roadmap-completed.md).
 - ★★★ **KB coverage chip (Show details)** — shipped 2026-08-07 (Wave 3 I); **KB-COVERAGE-01 Partial.** On-Deck 2026-08-16 the live-turn ladder rendered and the chip read `KB: 9 sections` on a Portal 2 Strategy Ask. **Still open: the two negative cases** — KB off must read `KB: off`, and an uncovered title must read `KB: none for this game`. Distinct from the per-turn `kb` retrieval chip; this one is corpus honesty.
 - ★★★ **KB download Cancel** — shipped 2026-08-05; **KB-CANCEL-01 is not testable as written, and that is the blocker.** The whole download finishes in about a second on device, so there is no window to press Cancel in. Needs a slower fixture or a throttle before it can be QA'd at all. [why](roadmap-details.md#shipped-qa-owed--why-each-was-built-this-way)
 - ★★★ **Kids master lock** — shipped 2026-08-09; on-Deck **KIDS-LOCK-01**, **KIDS-FOCUS-01**, **KIDS-REGRESS-01** (and **KIDS-LOCK-02** if child account) Open. Live CEF Stage 0 confirmation still owed.
@@ -291,49 +292,6 @@ Stars are **effort/risk**. Grouped by **theme**; within each lane sorted ascendi
     `focusDownFromReplyUtilityRow` falls through to it ([liveTurnFocusGraph.ts:221](../src/utils/liveTurnFocusGraph.ts)).
     Removing the button without updating that chain leaves a D-pad step pointing at nothing — the
     same class of gap that made the archived-turn Show details row unreachable the same day.
-- ★★★ **Ghost in the Shell preset chip decode** (replaces the `stream` typewriter mode)
-  - **Goal:** Replace the plain left-to-right typewriter on preset chips with the *Ghost in the
-    Shell* title-sequence look: each chip arrives as a full-width block of scrambled green glyphs
-    that resolve into the real prompt, character by character, behind a blinking block caret. It is
-    a **replacement, not a fifth mode** — `stream` goes away, its slot in the mode list is taken by
-    the new one.
-  - **What exists today.** Mode `stream` (Wave 4 J) already owns the whole scaffold: the enum
-    ([bonsaiSettingsSchema.ts:48](../src/data/bonsaiSettingsSchema.ts) plus
-    `PRESET_CHIP_ANIMATION_OPTIONS` at `:253`), the Python allow-list
-    `_VALID_PRESET_CHIP_ANIMATION` ([settings_service.py:129](../py_modules/backend/services/settings_service.py)),
-    the Developer tab picker ([DeveloperTab.tsx:412](../src/components/DeveloperTab.tsx)), the caret
-    CSS ([section-4.ts:93](../src/styles/sections/section-4.ts)), and the reveal loop
-    `MainTabPresetStreamSlots` ([MainTabPresetAnimatedChips.tsx:217](../src/components/MainTabPresetAnimatedChips.tsx)).
-    So this is a rewrite of one function plus a rename, not new plumbing.
-  - **The effect, concretely.** Per slot: fill the label with a scrambled string **of the prompt's
-    final length** from the first frame, then lock characters left to right at
-    `PRESET_STREAM_CHAR_MS` (42ms today) while the unlocked tail keeps churning; caret sits at the
-    lock boundary; hold for `holdMsForPresetText`, then the next prompt. Green comes from
-    `--bonsai-ui-accent-main` (`BONSAI_FOREST_GREEN` `#2e8753`), never a hardcoded colour, per
-    [design-language.md](design-language.md).
-  - **Reserve the width from frame 0 — this is the point of the rewrite.** The chip label is
-    `white-space: nowrap` + `text-overflow: ellipsis` ([section-4.ts:85](../src/styles/sections/section-4.ts)),
-    and today's reveal grows the string one character at a time, so the chip reflows on every tick.
-    Scrambling at final length ends that. It also means the churn glyphs must be **half-width** —
-    ASCII plus half-width katakana (U+FF66–U+FF9D). Full-width CJK is double-width and would push a
-    long prompt into the ellipsis mid-animation, changing which chip is truncated frame to frame.
-  - **Watch the frame cost.** Today's loop fires one `setState` per character per slot; a churn
-    effect fires one per *frame* per slot, three slots at once, on Deck hardware. Drive it from a
-    single `requestAnimationFrame` loop writing one batched state object (or a ref plus direct
-    `textContent`), not three independent timer chains — three React re-renders per frame in the
-    300px QAM column is the failure mode to design out, not to discover on device.
-  - **Rules that must survive the rewrite** (they are the `stream` QA row and each was earned):
-    chips stay D-pad focusable while glyphs are still churning and **A selects the full prompt, not
-    the partial** — easier here, since the real text is known from frame 0; and
-    `prefers-reduced-motion: reduce` swaps instantly with no churn and no caret blink.
-  - **Migration is the two-language half.** Dropping `"stream"` from the TS union and from
-    `_VALID_PRESET_CHIP_ANIMATION` orphans any Deck whose `settings.json` already holds it. Map the
-    old value to the new one in `sanitize_preset_chip_animation` rather than letting it fall through
-    to the `fade` default — a silent downgrade to fade reads as "the setting reset itself". Python is
-    authoritative here (**D13**), and both settings contracts
-    (`tests/contracts/settings-defaults.json`, `settings-hostile-inputs.json`) need the new value.
-  - **QA:** rewrite **PRESET-STREAM-ANIM-01** in [testing-manual.md](testing-manual.md) rather than
-    adding a row — the old mode will not exist to test.
 - ★★★ **Search density UX** (match emphasis + tighter rows)
   - **Goal:** Tighter, more scannable search results with highlighted match tokens.
 - ★★★★ **SteamOS Share path** (capture → attach)

@@ -128,6 +128,16 @@
     }
   },
   {
+    "name": "legacy stream animation value migrates to decode",
+    "input": {
+      "preset_chip_animation": "stream"
+    },
+    "expected": {
+      "preset_chip_animation": "decode",
+      "preset_chip_fade_animation_enabled": false
+    }
+  },
+  {
     "name": "ask mode migrates deep to expert",
     "input": {
       "ask_mode": "deep"
