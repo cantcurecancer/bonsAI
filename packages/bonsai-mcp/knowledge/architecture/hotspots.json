@@ -71,13 +71,13 @@
       "role": ""
     },
     {
-      "path": "py_modules/backend/services/screenshot_media.py",
-      "lines": 804,
+      "path": "src/components/MainTabChatTranscript.tsx",
+      "lines": 847,
       "role": ""
     },
     {
-      "path": "src/components/MainTabChatTranscript.tsx",
-      "lines": 802,
+      "path": "py_modules/backend/services/screenshot_media.py",
+      "lines": 804,
       "role": ""
     },
     {

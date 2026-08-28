@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 309,
-  "edgeCount": 723,
+  "fileCount": 310,
+  "edgeCount": 726,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -243,6 +243,14 @@
         "src/utils/buildAnswerBubbleElement.tsx"
       ]
     },
+    "src/components/MainTabChatTranscript.strategyPanels.test.tsx": {
+      "imports": [
+        "src/components/MainTabChatTranscript.tsx",
+        "src/test-harness/fakeDeckyUi.tsx",
+        "src/types/bonsaiUi.ts"
+      ],
+      "importedBy": []
+    },
     "src/components/MainTabChatTranscript.tsx": {
       "imports": [
         "src/components/BonsaiChatSecondaryButton.tsx",
@@ -277,7 +285,8 @@
         "src/utils/uiDocument.ts"
       ],
       "importedBy": [
-        "src/components/MainTab.tsx"
+        "src/components/MainTab.tsx",
+        "src/components/MainTabChatTranscript.strategyPanels.test.tsx"
       ]
     },
     "src/components/MainTabPresetAnimatedChips.test.tsx": {
@@ -1985,6 +1994,7 @@
       "imports": [],
       "importedBy": [
         "src/components/MainTabBonsaiAiMarkdownChunk.test.tsx",
+        "src/components/MainTabChatTranscript.strategyPanels.test.tsx",
         "src/components/SessionContextStrip.test.tsx",
         "src/test-harness/setup.ts"
       ]
@@ -2047,6 +2057,7 @@
       ],
       "importedBy": [
         "src/components/MainTab.tsx",
+        "src/components/MainTabChatTranscript.strategyPanels.test.tsx",
         "src/components/MainTabChatTranscript.tsx",
         "src/components/MainTabScreenshotBrowser.tsx",
         "src/components/MainTabUnifiedAskBar.tsx",

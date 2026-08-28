@@ -234,14 +234,25 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
   const chatMainColumnRef = useRef<HTMLDivElement | null>(null);
   useStreamScrollPin(chatMainColumnRef, streamDisplayText, isStreamingPreview);
 
-  const showLiveStrategyBranches =
-    expandedTurnKey === "live" &&
+  /*
+   * Deliberately NOT gated on `expandedTurnKey === "live"`.
+   *
+   * Both payloads describe the most recently completed answer, and on the ordinary path that answer
+   * is not live by the time they arrive: the post-Ask slot reload archives the exchange and re-points
+   * the expanded key at its slot id (useChatSlots.applySlotTranscript), so a live-only gate meant the
+   * picker and the checklist were never rendered at all — measured on device with the backend
+   * reporting branch_options=2 and `.bonsai-strategy-branch-picker` count 0.
+   *
+   * Broadening the gate alone is not enough — the live *block* is gone by then too — so each of the
+   * two render sites below decides for itself, exactly as Show details and the reply actions already
+   * do. This is the same fix, applied to the two panels that were left behind.
+   */
+  const strategyBranchesReady =
     !isAsking &&
     Boolean(strategyGuideBranches?.options.length) &&
     Boolean(onStrategyBranchPick);
 
-  const showLiveStrategyChecklist =
-    expandedTurnKey === "live" &&
+  const strategyChecklistReady =
     !isAsking &&
     askMode === "strategy" &&
     Boolean(strategyChecklist?.items.length) &&
@@ -297,6 +308,96 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
       spoilerConsentEffective,
     });
 
+  /*
+   * The two strategy panels, rendered from whichever turn slot currently holds the newest answer.
+   *
+   * Extracted verbatim from the live branch so the archived branch can render the same markup rather
+   * than a second copy of it. `placementKey` only distinguishes the React keys — the panels' D-pad
+   * edges are position-based, not id-based: each edge exit returns false so the parent turn-slot
+   * Focusable advances to the sibling above (answer bubble) or below (reply actions), and both
+   * siblings sit in the same order in either branch. `liveTurnFocusGraph` reads them out of whatever
+   * slot it is handed, so nothing there needs to change.
+   */
+  const renderStrategyBranchPicker = (placementKey: string) => {
+    if (!strategyBranchesReady || !strategyGuideBranches || !onStrategyBranchPick) return null;
+    return (
+      <Focusable
+        key={`strategy-branches-${placementKey}`}
+        className="bonsai-glass-panel bonsai-strategy-branch-picker"
+        flow-children="vertical"
+        style={{
+          width: "100%",
+          display: "flex",
+          flexDirection: "column",
+          gap: 8,
+          marginTop: 4,
+          marginBottom: 8,
+          padding: "10px 12px",
+          borderRadius: 8,
+          border: "1px solid rgba(150, 187, 223, 0.45)",
+          background:
+            "linear-gradient(180deg, rgba(64, 93, 124, 0.42) 0%, rgba(48, 71, 95, 0.42) 100%)",
+          boxSizing: "border-box",
+        }}
+      >
+        <div style={{ fontSize: 12, color: "#dce8f4", fontWeight: 600 }}>
+          {strategyGuideBranches.question}
+        </div>
+        {strategyGuideBranches.options.map((opt, idx) => {
+          const lastIdx = strategyGuideBranches.options.length - 1;
+          /*
+           * Edge exits return false so the parent turn-slot Focusable advances to the
+           * previous/next sibling (answer bubble / reply actions). Programmatic .focus()
+           * is unreliable on Deck and caused skips to Save chat.
+           */
+          const deckNav =
+            idx === 0 || idx === lastIdx
+              ? {
+                  ...(idx === 0 ? { onMoveUp: () => false } : {}),
+                  ...(idx === lastIdx ? { onMoveDown: () => false } : {}),
+                }
+              : undefined;
+          return (
+            <BonsaiChatSecondaryButton
+              key={`sg-branch-${opt.id}-${idx}`}
+              className="bonsai-strategy-branch-btn"
+              onClick={() => onStrategyBranchPick(opt)}
+              style={{
+                width: "100%",
+                minHeight: 36,
+                fontSize: 12,
+                fontWeight: 600,
+                color: "#e8eef4",
+                justifyContent: "flex-start",
+                textAlign: "left",
+                borderRadius: 4,
+                border: "1px solid rgba(150, 187, 223, 0.35)",
+                background: "rgba(36, 52, 70, 0.75)",
+                boxShadow: "inset 0 1px 0 rgba(255, 255, 255, 0.06)",
+              }}
+              deckNav={deckNav}
+            >
+              {`${String.fromCharCode(65 + idx)}. ${opt.label}`}
+            </BonsaiChatSecondaryButton>
+          );
+        })}
+      </Focusable>
+    );
+  };
+
+  const renderStrategyChecklist = (placementKey: string) => {
+    if (!strategyChecklistReady || !strategyChecklist || !onStrategyChecklistToggle) return null;
+    return (
+      <StrategyChecklistPanel
+        key={`strategy-checklist-${placementKey}`}
+        checklist={strategyChecklist}
+        onToggle={onStrategyChecklistToggle}
+        onMoveUpFromFirst={() => false}
+        onMoveDownFromLast={() => false}
+      />
+    );
+  };
+
   const showTransparencyUi = transparencyUiAvailable(transparencySnapshot);
   const renderInlineLadder =
     expandedTurnKey === "live" &&
@@ -321,7 +422,10 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
       }}
     >
       <div className="bonsai-chat-transcript">
-        {askThreadCollapsed.map((turn, turnIndex) => (
+        {askThreadCollapsed.map((turn, turnIndex) => {
+          /* Hoisted out of the reply-actions IIFE below: the strategy panels need it too. */
+          const isNewestArchivedTurn = turnIndex === askThreadCollapsed.length - 1;
+          return (
           <Focusable
             key={turn.id}
             flow-children="vertical"
@@ -344,6 +448,15 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
                   turn.spoilerConsentEffective === true
                 )}
                 {/*
+                 * Same placement as in the live turn — between the answer bubble and the reply
+                 * actions — so the D-pad walk down the slot is unchanged. Gated to the newest
+                 * archived turn because both payloads describe the newest answer only: hanging
+                 * them off an older expanded turn would offer branches for an answer that is no
+                 * longer on screen.
+                 */}
+                {isNewestArchivedTurn ? renderStrategyBranchPicker(turn.id) : null}
+                {isNewestArchivedTurn ? renderStrategyChecklist(turn.id) : null}
+                {/*
                  * Show details on an expanded archived turn. Without this the control is
                  * unreachable after a completed Ask: the slot reload expands the archived turn
                  * rather than "live", and the live-only row below renders nothing.
@@ -357,7 +470,6 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
                  * archived branch to render the control instead of assuming it stays live-only.
                  */}
                 {(() => {
-                  const isNewestArchivedTurn = turnIndex === askThreadCollapsed.length - 1;
                   const showFeedbackHere =
                     isNewestArchivedTurn && !isAsking && Boolean(lastExchange?.answer?.trim());
                   const transparencyAvailableHere = transparencyUiAvailable(
@@ -412,7 +524,8 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
               </>
             ) : null}
           </Focusable>
-        ))}
+          );
+        })}
         {showLiveTurn ? (
           <Focusable key="live" flow-children="vertical" className="bonsai-chat-turn-slot">
             {buildTurnHeaderElement({
@@ -469,76 +582,8 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
                   lastExchange?.spoilerConsentEffective === true
                 )
               : null}
-            {showLiveStrategyBranches && strategyGuideBranches && onStrategyBranchPick ? (
-              <Focusable
-                className="bonsai-glass-panel bonsai-strategy-branch-picker"
-                flow-children="vertical"
-                style={{
-                  width: "100%",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 8,
-                  marginTop: 4,
-                  marginBottom: 8,
-                  padding: "10px 12px",
-                  borderRadius: 8,
-                  border: "1px solid rgba(150, 187, 223, 0.45)",
-                  background:
-                    "linear-gradient(180deg, rgba(64, 93, 124, 0.42) 0%, rgba(48, 71, 95, 0.42) 100%)",
-                  boxSizing: "border-box",
-                }}
-              >
-                <div style={{ fontSize: 12, color: "#dce8f4", fontWeight: 600 }}>
-                  {strategyGuideBranches.question}
-                </div>
-                {strategyGuideBranches.options.map((opt, idx) => {
-                  const lastIdx = strategyGuideBranches.options.length - 1;
-                  /*
-                   * Edge exits return false so the parent turn-slot Focusable advances to the
-                   * previous/next sibling (answer bubble / reply actions). Programmatic .focus()
-                   * is unreliable on Deck and caused skips to Save chat.
-                   */
-                  const deckNav =
-                    idx === 0 || idx === lastIdx
-                      ? {
-                          ...(idx === 0 ? { onMoveUp: () => false } : {}),
-                          ...(idx === lastIdx ? { onMoveDown: () => false } : {}),
-                        }
-                      : undefined;
-                  return (
-                    <BonsaiChatSecondaryButton
-                      key={`sg-branch-${opt.id}-${idx}`}
-                      className="bonsai-strategy-branch-btn"
-                      onClick={() => onStrategyBranchPick(opt)}
-                      style={{
-                        width: "100%",
-                        minHeight: 36,
-                        fontSize: 12,
-                        fontWeight: 600,
-                        color: "#e8eef4",
-                        justifyContent: "flex-start",
-                        textAlign: "left",
-                        borderRadius: 4,
-                        border: "1px solid rgba(150, 187, 223, 0.35)",
-                        background: "rgba(36, 52, 70, 0.75)",
-                        boxShadow: "inset 0 1px 0 rgba(255, 255, 255, 0.06)",
-                      }}
-                      deckNav={deckNav}
-                    >
-                      {`${String.fromCharCode(65 + idx)}. ${opt.label}`}
-                    </BonsaiChatSecondaryButton>
-                  );
-                })}
-              </Focusable>
-            ) : null}
-            {showLiveStrategyChecklist && strategyChecklist && onStrategyChecklistToggle ? (
-              <StrategyChecklistPanel
-                checklist={strategyChecklist}
-                onToggle={onStrategyChecklistToggle}
-                onMoveUpFromFirst={() => false}
-                onMoveDownFromLast={() => false}
-              />
-            ) : null}
+            {expandedTurnKey === "live" ? renderStrategyBranchPicker("live") : null}
+            {expandedTurnKey === "live" ? renderStrategyChecklist("live") : null}
             {expandedTurnKey === "live" &&
             !isAsking &&
             (lastExchange?.answer?.trim() || onRetryLastResponse)

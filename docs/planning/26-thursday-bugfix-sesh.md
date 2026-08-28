@@ -204,11 +204,27 @@ Each of these has exact steps in its roadmap/testing entry. Save every run's evi
 > branch_parsed=True branch_options=2`**, reply still clean prose. **No prompt coaching, model
 > routing or feature gating is needed** — step 3 of the sequence below is moot for this model.
 >
-> **The buttons still do not render**, for a second and independent reason in the frontend: the
-> picker only renders for `expandedTurnKey === "live"`, and the post-Ask slot reload re-keys the same
-> answer to its archived slot id the instant it lands. Measured, filed, and **not attempted this
-> session** — the fix is a placement change inside the turn slot's D-pad graph, and the rule is to
-> measure on device before moving layout. Row **STRAT-BRANCH-01**. Original plan text below.
+> **The frontend had a second, independent cause, and it is fixed too — the phase is done.** The
+> picker only rendered for `expandedTurnKey === "live"`, and the post-Ask slot reload re-keys the
+> same answer to its archived slot id the instant it lands. Both panels are now rendered from the
+> archived branch as well, gated to the newest turn — the same fix Show details and the reply
+> actions row already had. Placement inside the slot is unchanged, so the panels' `deckNav` edge
+> exits still hand off to the bubble above and the reply row below, and `liveTurnFocusGraph.ts`
+> needed no change at all (its helpers already take a slot rather than assuming the live one).
+>
+> **Verified end to end on device with real controller presses:** picker renders once on the
+> archived turn, slot order header → bubble → picker → reply actions, D-pad walks in and out both
+> ways, and **A on a branch fires the follow-up and clears the picker**. Five tests, three red
+> before the change.
+>
+> **One thing this uncovered and did not fix:** the follow-up's **strategy checklist** parses on the
+> backend (`checklist_parsed=True`, valid 3-item fence in the trace) and still does not appear. That
+> is a *third* cause, upstream of rendering — the payload never reaches `setStrategyChecklist`. The
+> render gate is now correct and test-covered, the normalizer accepts the payload, and the status
+> dict carries the key, so the gap is the guard at `useBonsaiAskOrchestration.ts:659`. **Log both
+> operands once and read it** rather than guessing — that is what cracked the backend half here.
+> Filed as **STRAT-CHECKLIST-01**. Rows: **STRAT-BRANCH-01** (verified), **STRAT-CHECKLIST-01**
+> (open). Original plan text below.
 
 ## Phase 4 — the Strategy branch picker (★★★) — maintainer go-ahead 2026-08-27
 
