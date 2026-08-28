@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
   "fileCount": 310,
-  "edgeCount": 727,
+  "edgeCount": 728,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -1150,7 +1150,9 @@
       "importedBy": []
     },
     "src/features/plugin-shell/modalReturnFocusRegistry.ts": {
-      "imports": [],
+      "imports": [
+        "src/utils/uiDocument.ts"
+      ],
       "importedBy": [
         "src/components/MainTabChatTranscript.tsx",
         "src/components/MainTabPresetRow.tsx",
@@ -3115,6 +3117,7 @@
         "src/components/MainTabChatTranscript.tsx",
         "src/components/MainTabPresetAnimatedChips.tsx",
         "src/components/MainTabUnifiedAskBar.tsx",
+        "src/features/plugin-shell/modalReturnFocusRegistry.ts",
         "src/hooks/useBonsaiAskOrchestration.ts",
         "src/utils/answerBubbleElRegistry.test.ts",
         "src/utils/answerBubbleElRegistry.ts",
