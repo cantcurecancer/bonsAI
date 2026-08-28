@@ -41,6 +41,8 @@ from backend.services.knowledge_base_service import (
     COMPAT_TOPIC_RECALL_K,
     _vector_recall_sections,
     VECTOR_RECALL_FLOOR,
+    VECTOR_RECALL_MARGIN_MIN_POOL,
+    VECTOR_RECALL_POOL_MARGIN,
 )
 from backend.services.compat_topic_router import match_compat_corpus_topics
 from backend.services.ollama_embed_service import OllamaEmbedError
@@ -977,6 +979,160 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
       exclude_ids={3},
     )
     self.assertNotIn(3, [c.section_id for c in cards])
+
+  def test_pool_margin_blocks_a_question_that_singles_nothing_out(self):
+    """Junk direction of the second signal: above the floor is no longer enough alone.
+
+    Measured 2026-08-28 (docs/audit/kb-second-signal-2026-08-28.md): "please repeat that"
+    scores 0.5308 against Glyphid Dreadnought -- clearing VECTOR_RECALL_FLOOR -- but beats
+    DRG's pool average by only 0.0312, because a junk question is roughly equidistant from
+    everything the game knows. A flat pool at a middling score must attach nothing, while
+    the vectors still come back so fusion can re-rank whatever the keyword half found.
+    """
+    conn = _get_connection(str(SEED_DB))
+    ids = [
+      int(r[0])
+      for r in conn.execute("SELECT section_id FROM sections WHERE game_id = 2")
+    ]
+    self.assertGreaterEqual(len(ids), VECTOR_RECALL_MARGIN_MIN_POOL)
+    flat = VECTOR_RECALL_FLOOR + 0.01  # above the floor, identical for every card
+    with mock.patch(
+      "backend.services.knowledge_base_service._load_section_vectors",
+      return_value={sid: [flat, 0.0] + [0.0] * 766 for sid in ids},
+    ):
+      cards, vectors = _vector_recall_sections(
+        conn,
+        game_id=2,
+        query_vector=[1.0, 0.0] + [0.0] * 766,
+        top_k=3,
+        min_similarity=VECTOR_RECALL_FLOOR,
+        exclude_ids=set(),
+      )
+    self.assertEqual(cards, [])
+    self.assertEqual(len(vectors), len(ids))
+
+  def test_pool_margin_lets_a_card_that_stands_out_through(self):
+    """Genuine direction: a paraphrase singles one card out even at a modest absolute score."""
+    conn = _get_connection(str(SEED_DB))
+    ids = [
+      int(r[0])
+      for r in conn.execute("SELECT section_id FROM sections WHERE game_id = 2")
+    ]
+    standout = ids[0]
+    vectors = {sid: [0.40, 0.0] + [0.0] * 766 for sid in ids}
+    vectors[standout] = [VECTOR_RECALL_FLOOR + 0.01, 0.0] + [0.0] * 766
+    with mock.patch(
+      "backend.services.knowledge_base_service._load_section_vectors",
+      return_value=vectors,
+    ):
+      cards, _ = _vector_recall_sections(
+        conn,
+        game_id=2,
+        query_vector=[1.0, 0.0] + [0.0] * 766,
+        top_k=3,
+        min_similarity=VECTOR_RECALL_FLOOR,
+        exclude_ids=set(),
+      )
+    self.assertEqual([c.section_id for c in cards], [standout])
+
+  def test_pool_margin_absolute_branch_admits_a_uniformly_strong_pool(self):
+    """A broad question naming its own game is close to ALL of that game's cards.
+
+    "how to play state of emergency" has a pool margin of 0.0280 -- *below* every measured
+    junk margin -- yet is genuine, and its top score (0.5751) is far above anything junk
+    reaches (max 0.5326). The absolute branch (floor + VECTOR_RECALL_POOL_MARGIN) exists
+    for exactly this case; without it the margin branch alone would cost a tune case.
+    """
+    conn = _get_connection(str(SEED_DB))
+    ids = [
+      int(r[0])
+      for r in conn.execute("SELECT section_id FROM sections WHERE game_id = 2")
+    ]
+    strong = VECTOR_RECALL_FLOOR + VECTOR_RECALL_POOL_MARGIN + 0.01
+    with mock.patch(
+      "backend.services.knowledge_base_service._load_section_vectors",
+      return_value={sid: [strong, 0.0] + [0.0] * 766 for sid in ids},
+    ):
+      cards, _ = _vector_recall_sections(
+        conn,
+        game_id=2,
+        query_vector=[1.0, 0.0] + [0.0] * 766,
+        top_k=3,
+        min_similarity=VECTOR_RECALL_FLOOR,
+        exclude_ids=set(),
+      )
+    self.assertEqual(len(cards), 3)
+
+  def test_pool_margin_gate_skips_a_small_pool(self):
+    """Below VECTOR_RECALL_MARGIN_MIN_POOL vectored sections, the floor alone decides.
+
+    "Relative to the pool" is not a meaningful statistic over 1-3 cards (with one card the
+    margin is identically zero and the gate would block every recall), so a partly-embedded
+    or minimal corpus keeps the pre-signal behaviour.
+    """
+    conn = _get_connection(str(SEED_DB))
+    ids = [
+      int(r[0])
+      for r in conn.execute("SELECT section_id FROM sections WHERE game_id = 2")
+    ][: VECTOR_RECALL_MARGIN_MIN_POOL - 1]
+    flat = VECTOR_RECALL_FLOOR + 0.01
+    with mock.patch(
+      "backend.services.knowledge_base_service._load_section_vectors",
+      return_value={sid: [flat, 0.0] + [0.0] * 766 for sid in ids},
+    ):
+      cards, _ = _vector_recall_sections(
+        conn,
+        game_id=2,
+        query_vector=[1.0, 0.0] + [0.0] * 766,
+        top_k=3,
+        min_similarity=VECTOR_RECALL_FLOOR,
+        exclude_ids=set(),
+      )
+    self.assertEqual(len(cards), len(ids))
+
+  def test_second_signal_keeps_a_junk_ask_unattached_end_to_end(self):
+    """D28's regression direction through the full retrieval path.
+
+    "please repeat that" has no keyword hits on the seed corpus, so before the second
+    signal the vector recall pass was the only supplier of cards for it (Glyphid
+    Dreadnought at 0.5308 on the Deck, 2026-08-23). With a flat above-floor pool the
+    recall pass must now stay silent, so no game card reaches the block.
+    """
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    conn = _get_connection(str(SEED_DB))
+    ids = [
+      int(r[0])
+      for r in conn.execute("SELECT section_id FROM sections WHERE game_id = 2")
+    ]
+    flat = VECTOR_RECALL_FLOOR + 0.01
+    with mock.patch(
+      "backend.services.knowledge_base_service.nomic_embed_available",
+      return_value=True,
+    ), mock.patch(
+      "backend.services.knowledge_base_service.corpus_has_usable_section_vectors",
+      return_value=True,
+    ), mock.patch(
+      "backend.services.knowledge_base_service.embed_texts",
+      return_value=[[1.0, 0.0] + [0.0] * 766],
+    ), mock.patch(
+      "backend.services.knowledge_base_service._load_section_vectors",
+      return_value={sid: [flat, 0.0] + [0.0] * 766 for sid in ids},
+    ):
+      result = retrieve_knowledge_context(
+        settings,
+        ask_mode="strategy",
+        question="please repeat that",
+        app_id="2321470",
+        app_name="Deep Rock Galactic: Survivor",
+        domain="strategy",
+        pc_ip="127.0.0.1:11434",
+      )
+    self.assertNotIn("Dreadnought", result.text_block)
+    self.assertNotIn("Praetorian", result.text_block)
+    self.assertNotIn("Nitra", result.text_block)
 
   def test_rrf_lets_a_recall_card_compete_without_unseating_the_top_keyword_hit(self):
     keyword = [
