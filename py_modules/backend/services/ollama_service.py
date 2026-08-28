@@ -922,13 +922,36 @@ def post_ollama_chat(
     strategy_guide_branches = None
     strategy_checklist = None
     if mode == "strategy":
+        """
+        Parse the branch fence from the text that still HAS one.
+
+        `stitched_visible` is display text: `_visible_from_raw` runs it through
+        `hide_incomplete_strategy_branch_fence`, which deletes everything from the fence onward so
+        raw JSON never scrolls past the user mid-stream. That helper's own docstring defers the
+        picker to "the final extract" -- but the final extract used to read `stitched_visible` too,
+        i.e. the one string guaranteed not to contain the thing it was looking for. So a
+        perfectly-formed fence logged `branch_marker=False branch_parsed=False branch_options=0`
+        and the buttons could never appear.
+
+        Measured on device 2026-08-27, DRG Survivor running (`appid=2321470`), question "how do i
+        deal with the exploders": the trace's raw API output carried a valid two-option
+        ```bonsai-strategy-branches block and the log line said the model had emitted nothing. That
+        contradiction is what named this line rather than the model or the frontend, after the
+        report had sat open since 2026-08-23 saying "though the model produces it".
+
+        The status tags and soft-continue cue still come off -- they are noise in every path. Only
+        the fence hiding is skipped, and only here.
+        """
+        _, raw_visible = extract_bonsai_status(assistant_raw)
+        strategy_source = strip_soft_continue_cue(raw_visible or "").strip() or text
+
         # Did the model even try? Checked before extraction, because extraction
         # removes the fence on success and leaves it in place on failure -- so
         # afterwards the two look identical from the outside.
-        branch_marker = "bonsai-strategy-branches" in text
-        checklist_marker = "bonsai-strategy-checklist" in text
+        branch_marker = "bonsai-strategy-branches" in strategy_source
+        checklist_marker = "bonsai-strategy-checklist" in strategy_source
 
-        visible, strategy_guide_branches = extract_strategy_guide_branches(text)
+        visible, strategy_guide_branches = extract_strategy_guide_branches(strategy_source)
         text = visible
         visible, strategy_checklist = extract_strategy_checklist(text)
         text = visible
@@ -956,6 +979,10 @@ def post_ollama_chat(
                 "ask_ollama: strategy branch fence present but did NOT parse; snippet=%r",
                 text[max(0, start - 40) : start + 400],
             )
+            # Now that extraction reads the unhidden text, an unparsed fence would otherwise be
+            # shown to the user as raw JSON. Hide it for display only -- the diagnosis above has
+            # already been logged from the text that still had it.
+            text = hide_incomplete_strategy_branch_fence(text)
     text = format_ai_response(
         text,
         normalized_attachments,

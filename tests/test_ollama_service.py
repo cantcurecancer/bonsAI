@@ -396,6 +396,135 @@ class OllamaServiceTests(unittest.TestCase):
         self.assertIn("North", assistant_raw)
 
     @patch("backend.services.ollama_service.urllib.request.urlopen")
+    def test_post_ollama_chat_parses_the_branch_fence_it_hid_from_the_stream(
+        self, mock_urlopen: MagicMock
+    ) -> None:
+        """The branch picker must survive the very hiding that keeps the fence off screen.
+
+        This is the whole branch-picker bug, reduced. `hide_incomplete_strategy_branch_fence`
+        deletes everything from the fence onward so raw JSON never scrolls past mid-stream, and the
+        final extract used to read that same hidden string -- so a valid fence logged
+        `branch_marker=False branch_parsed=False` and no buttons could ever render. The test above
+        proves the hiding works; nothing proved the picker still came out the other side.
+
+        The reply text is the one measured on the maintainer's Deck 2026-08-27 with Deep Rock
+        Galactic: Survivor running (`appid=2321470`), question "how do i deal with the exploders",
+        `gemma4:e2b-it-qat` -- including the `<bonsai-status>` line, because the status tag is
+        stripped on the same path and a fix that only handled one of the two would pass a
+        hand-written fixture.
+        """
+        reply = (
+            "<bonsai-status>Reviewing tactics against Exploders</bonsai-status>\n"
+            "Right then, so you're asking about those big orange blighters, the Exploders.\n\n"
+            "The trick is simple: keep your distance!\n\n"
+            "```bonsai-strategy-branches\n"
+            '{"question":"Are you currently facing a large group of Exploders?","options":'
+            '[{"id":"a","label":"Yes, they are right in front of me"},'
+            '{"id":"b","label":"No, I\'m trying to find a safe spot first"}]}\n'
+            "```\n"
+        )
+        mock_urlopen.return_value = self._ndjson_response(
+            [
+                json.dumps({"message": {"role": "assistant", "content": reply}}),
+                json.dumps(
+                    {
+                        "message": {"role": "assistant", "content": ""},
+                        "done": True,
+                        "done_reason": "stop",
+                    }
+                ),
+            ]
+        )
+        deltas_seen: list[str] = []
+
+        out = post_ollama_chat(
+            "http://127.0.0.1:11434/api/chat",
+            "gemma4:e2b-it-qat",
+            [{"role": "user", "content": "how do i deal with the exploders"}],
+            60,
+            [],
+            [],
+            [],
+            [],
+            MagicMock(),
+            "strategy",
+            "5m",
+            cancel_requested=lambda: False,
+            on_delta=lambda text, done, _thinking=None: deltas_seen.append(text),
+        )
+
+        self.assertTrue(out.get("success"))
+
+        branches = out.get("strategy_guide_branches")
+        self.assertIsNotNone(branches, "a valid fence must produce a picker")
+        assert branches is not None  # narrowing for the reads below
+        self.assertEqual(
+            branches.get("question"),
+            "Are you currently facing a large group of Exploders?",
+        )
+        self.assertEqual([o.get("id") for o in branches.get("options") or []], ["a", "b"])
+
+        # And the two properties that made this hard to see: the user never meets the fence,
+        # in any delta or in the final reply, even though it parsed.
+        for text in deltas_seen:
+            self.assertNotIn("bonsai-strategy-branches", text)
+        response = out.get("response") or ""
+        self.assertNotIn("bonsai-strategy-branches", response)
+        self.assertNotIn('"options"', response)
+        self.assertIn("keep your distance", response)
+        # The status tag is display noise and must not survive into the reply either.
+        self.assertNotIn("bonsai-status", response)
+
+    @patch("backend.services.ollama_service.urllib.request.urlopen")
+    def test_post_ollama_chat_hides_a_branch_fence_that_does_not_parse(
+        self, mock_urlopen: MagicMock
+    ) -> None:
+        """A malformed fence still must not reach the user as raw JSON.
+
+        Reading the unhidden text for extraction reopens that possibility, so the display falls
+        back to hiding whenever a fence was present and did not parse.
+        """
+        reply = (
+            "Try the west path first.\n\n"
+            "```bonsai-strategy-branches\n"
+            '{"question":"Where to go?","options":[{"id":"n"\n'
+            "```\n"
+        )
+        mock_urlopen.return_value = self._ndjson_response(
+            [
+                json.dumps({"message": {"role": "assistant", "content": reply}}),
+                json.dumps(
+                    {
+                        "message": {"role": "assistant", "content": ""},
+                        "done": True,
+                        "done_reason": "stop",
+                    }
+                ),
+            ]
+        )
+
+        out = post_ollama_chat(
+            "http://127.0.0.1:11434/api/chat",
+            "gemma4:e2b-it-qat",
+            [{"role": "user", "content": "where do i go"}],
+            60,
+            [],
+            [],
+            [],
+            [],
+            MagicMock(),
+            "strategy",
+            "5m",
+            cancel_requested=lambda: False,
+        )
+
+        self.assertTrue(out.get("success"))
+        response = out.get("response") or ""
+        self.assertNotIn("bonsai-strategy-branches", response)
+        self.assertNotIn('"question"', response)
+        self.assertIn("west path", response)
+
+    @patch("backend.services.ollama_service.urllib.request.urlopen")
     def test_post_ollama_chat_returns_ask_budgets(self, mock_urlopen: MagicMock) -> None:
         """The ask_budgets contract Thinking effort control (Phase 1) will build on."""
         mock_urlopen.return_value = self._ndjson_response(
