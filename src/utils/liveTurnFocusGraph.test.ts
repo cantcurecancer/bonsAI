@@ -266,17 +266,21 @@ describe("liveTurnFocusGraph", () => {
     expect(document.activeElement?.id).not.toBe("strip-ladder");
   });
 
-  it("Down from the utility row reaches Ask diagnostics when details are collapsed", () => {
-    // Matches the device: with the ladder unmounted, Down goes Show details ->
-    // Show diagnostics rather than skipping to the session strip.
+  /*
+   * The standalone "Ask diagnostics" block (and its own focus stop between Show details and the
+   * session strip) was removed 2026-08-28 (roadmap: "Fold Show diagnostics into Show details") —
+   * the same JSON now lives inside the chip ladder's "Developer details" chip, reached via
+   * `focusContextChipLadder` above like any other chip content. With the ladder unmounted (details
+   * collapsed) and no collapsed hint either, Down from the utility row now has nothing left between
+   * it and the session strip.
+   */
+  it("Down from the utility row reaches the session strip directly when details are collapsed", () => {
     const slot = mountTurnWithUtilityRow();
     document.body.insertAdjacentHTML(
       "beforeend",
-      `<div class="bonsai-ask-diagnostics">
-         <button class="Focusable" id="diag-btn">Show diagnostics</button>
-       </div>`,
+      '<div class="bonsai-session-context-strip Panel Focusable" tabindex="-1" id="strip"></div>',
     );
     expect(focusDownFromReplyUtilityRow(slot)).toBe(true);
-    expect(document.activeElement?.id).toBe("diag-btn");
+    expect(document.activeElement?.id).toBe("strip");
   });
 });

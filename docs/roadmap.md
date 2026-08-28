@@ -151,6 +151,10 @@ Code-fixed or shipped; on-Deck / qualitative QA still owed. Detail: [testing.md]
 - ★★ **The destructive-advice guard** — built 2026-08-23, and **fixed and confirmed on device 2026-08-27** after it failed to fire on a real reply telling the user to delete a folder. It appends a visible safety notice to a finished reply that describes deleting saves, a Proton prefix or compatdata with no backup step. **Owed: the same check with token streaming off.**
 - ★★ **Prompt testing pass** — broader systematic validation beyond shipped prompt-testing MVP matrices.
 - ★★ **Session context header is not D-pad focusable** — fixed 2026-08-04; confirm on-Deck.
+- ★★ **Show diagnostics folded into Show details** — shipped 2026-08-28. The standalone **Show
+  diagnostics** button is gone; the raw `ask_diagnostics` JSON now lives behind the chip ladder's
+  **Developer details** chip, same verbose-logging gate as before. Desk-verified only (unit tests,
+  typecheck, build); on-Deck confirmation owed. **DIAG-FOLD-01** in [testing.md](testing.md).
 - ★★ **Thinking blurbs — three writers disagree** — fix landed 2026-08-08; re-verify **THINKING-COPY-01**, **THINKING-SLOW-01**, **THINKING-LIVE-01**, **THINKING-SPOILER-01**. [06-thinking-blurbs-review.md § 10](planning/06-thinking-blurbs-review.md#10-implementation-log).
 - ★★ **Wave 4 G slider direction handlers** — Deck-check: **ONBUTTONDOWN-AUDIT-01** (distinguish nothing happens vs double-step; cover Ollama keep-alive, Reply verbosity, Connection timeout sliders).
 - ★★ **Your tab is not remembered when you leave and reopen** — **TAB-RESUME-01** Partial (tab + scroll restore; focus-after-reopen separate).
@@ -275,22 +279,6 @@ Stars are **effort/risk**. Grouped by **theme**; within each lane sorted ascendi
 
 ### Focus / Deck UI
 
-- ★★ **Fold "Show diagnostics" into "Show details"** (one reply-inspection surface)
-  - **Goal:** One place to inspect a reply. Today the panel carries **two** disclosure buttons doing
-    the same job at different depths — **Show details** (the context chip ladder: retrieval method,
-    coverage, trust tier, source credit) and **Show diagnostics** (`ask_diagnostics` raw JSON:
-    models before/after policy, routing strategy, attachment counts). They sit adjacent, look alike,
-    and neither name says which is which. It cost a QA cycle on 2026-08-17: the raw-JSON panel was
-    opened while looking for the source-credit line, which only ever renders in the other one.
-  - **Fix lean:** keep **Show details** as the single entry point and move the diagnostics JSON
-    behind the existing **Developer details** chip already in the ladder — the ladder is the natural
-    home for it, and that chip is already the "deeper than the chips" affordance. Then drop the
-    second button. Gating stays as-is: diagnostics render only with desktop verbose logging on
-    ([MainTabChatTranscript.tsx:651](../src/components/MainTabChatTranscript.tsx)).
-  - **Watch for:** the diagnostics block owns a `registerNavFocus("ask-diagnostics", …)` entry and
-    `focusDownFromReplyUtilityRow` falls through to it ([liveTurnFocusGraph.ts:221](../src/utils/liveTurnFocusGraph.ts)).
-    Removing the button without updating that chain leaves a D-pad step pointing at nothing — the
-    same class of gap that made the archived-turn Show details row unreachable the same day.
 - ★★★ **Ghost in the Shell preset chip decode** (replaces the `stream` typewriter mode)
   - **Goal:** Replace the plain left-to-right typewriter on preset chips with the *Ghost in the
     Shell* title-sequence look: each chip arrives as a full-width block of scrambled green glyphs

@@ -1,7 +1,7 @@
 /**
  * Title: Steam nav focus registry
  * Purpose: Move gamepad focus between separate navigation containers using Steam's own API.
- * Used for: liveTurnFocusGraph hops that leave the reply row (session context strip, Ask diagnostics).
+ * Used for: liveTurnFocusGraph hops that leave the reply row (session context strip, chat-slot row).
  * Solves: A DOM `.focus()` does NOT transfer Steam's gamepad focus ownership across containers.
  *         Measured on device 2026-08-04: focusing the session context strip from the reply row set
  *         `document.activeElement` to the strip, left `gpfocus` on Retry, and a moment later cleared
@@ -13,7 +13,7 @@
  *           is focused that way and Steam's ring follows it — and this registry is not needed there.
  */
 
-export type NavFocusId = "session-context-strip" | "ask-diagnostics" | "chat-slot-row";
+export type NavFocusId = "session-context-strip" | "chat-slot-row";
 
 /** The object Steam assigns to a `navRef`: a thin wrapper over the nav node. */
 type SteamNavNode = { TakeFocus?: (gamepad?: boolean) => unknown };

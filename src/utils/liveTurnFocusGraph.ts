@@ -239,22 +239,17 @@ export function focusLastSessionContextRow(): boolean {
   return focusDeckOwner(rows.length ? rows[rows.length - 1] : null);
 }
 
-/**
- * Dev-only Ask diagnostics block — present only with desktop verbose logging on, so a miss here is
- * the normal case rather than a failure.
+/*
+ * `focusAskDiagnostics` was removed 2026-08-28 (roadmap: "Fold Show diagnostics into Show
+ * details"). The standalone "Ask diagnostics" block it targeted is gone — the same JSON now
+ * renders inside the chip ladder's "Developer details" chip, which `focusContextChipLadder` below
+ * already reaches. Nothing replaces this stop; the Down chain just has one fewer link.
  */
-export function focusAskDiagnostics(): boolean {
-  if (takeNavFocus("ask-diagnostics")) return true;
-  const host = getUiDocument().querySelector<HTMLElement>(".bonsai-ask-diagnostics");
-  if (!host) return false;
-  return focusDeckOwner(host.querySelector<HTMLElement>("button") ?? host);
-}
 
-/** Down from utility row: inline ladder → collapsed hint → Ask diagnostics → session strip. */
+/** Down from utility row: inline ladder → collapsed hint → session strip. */
 export function focusDownFromReplyUtilityRow(liveSlot: HTMLElement | null): boolean {
   if (focusContextChipLadder(liveSlot)) return true;
   if (focusContextHint(liveSlot)) return true;
-  if (focusAskDiagnostics()) return true;
   return focusSessionContextStrip();
 }
 
@@ -281,13 +276,14 @@ export function focusAnyContextChipLadder(): boolean {
 }
 
 /**
- * Up from whatever sits below the ladder (Ask diagnostics / session context strip): ladder →
- * collapsed hint → utility row (Retry / Show details).
+ * Up from whatever sits below the ladder (session context strip, formerly also the standalone Ask
+ * diagnostics block removed 2026-08-28): ladder → collapsed hint → utility row (Retry / Show
+ * details).
  *
- * This is the missing reverse of `focusDownFromReplyUtilityRow`. Without it, Up from Ask
- * diagnostics or the session context strip had no explicit handler and fell through to Steam's
- * default geometry navigation, which landed on Show/Hide details directly and skipped the ladder —
- * once a chip carousel scrolled past its last chip and exited downward, there was no way back in.
+ * This is the missing reverse of `focusDownFromReplyUtilityRow`. Without it, Up from the session
+ * context strip had no explicit handler and fell through to Steam's default geometry navigation,
+ * which landed on Show/Hide details directly and skipped the ladder — once a chip carousel
+ * scrolled past its last chip and exited downward, there was no way back in.
  */
 export function focusUpFromBelowContextChipLadder(liveSlot: HTMLElement | null): boolean {
   if (focusAnyContextChipLadder()) return true;
