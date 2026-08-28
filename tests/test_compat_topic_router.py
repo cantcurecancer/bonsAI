@@ -133,8 +133,11 @@ class CompatTopicRouterTests(unittest.TestCase):
         """The number D16 was decided on, pinned so a rule edit cannot quietly undo it.
 
         Holdout compat intents were not read while the rules were written — they are the
-        blind check. One tune case is a known miss and is named here rather than patched
-        for: it describes a symptom without naming any troubleshooting term.
+        blind check. Two cases are known misses and are named here rather than patched
+        for, both the same shape: a symptom described without naming any troubleshooting
+        term. V2-C-04 sits in tune; V2-BLIND-H19 (written blind 2026-08-28 under D37)
+        sits in holdout — rewording it until it routes would tune it against the router
+        and undo the blindness it exists to provide, so the miss is recorded instead.
         """
         data = json.loads(
             (REPO_ROOT / "tests" / "fixtures" / "kb_eval_v2.json").read_text(encoding="utf-8")
@@ -143,8 +146,10 @@ class CompatTopicRouterTests(unittest.TestCase):
         strategy = [q for q in data["queries"] if q["domain"] == "strategy"]
 
         holdout = [q for q in compat if q["split"] == "holdout"]
-        reached_holdout = [q for q in holdout if question_targets_compat_corpus(q["query"])]
-        self.assertEqual(len(reached_holdout), len(holdout))
+        missed_holdout = [
+            q["id"] for q in holdout if not question_targets_compat_corpus(q["query"])
+        ]
+        self.assertEqual(missed_holdout, ["V2-BLIND-H19"])
 
         missed_tune = [
             q["id"]

@@ -2270,10 +2270,8 @@ side-findings the confirmation run turned up are in
 
 ### D37 — PROPOSED, NOT YET LOCKED (raised 2026-08-28) — Twenty blind holdout rows added to `kb_eval_v2`. Endorse them?
 
-> **Numbering note.** D36 was the highest decision number visible in this file when this entry was
-> written. A separate agent was reportedly renumbering a duplicate D19 in parallel; if that work
-> lands under a different number, this entry may need renumbering to stay unique — it is placed at
-> the very end of the file on purpose so a merge only has to resolve one seam.
+> **Numbering note, resolved 2026-08-28.** The parallel duplicate-D19 fix renamed that decision to
+> **D19b** (per D31) rather than taking a new number, so D37 stands and no renumbering is needed.
 
 **The situation.** [D23](#d23--where-do-the-paraphrase-questions-go) folded 15 paraphrase rows into
 `kb_eval_v2` but, by its own rule (R1), had to assign every one of them to `tune` — they paraphrase
@@ -2312,3 +2310,22 @@ knowledge plus an id/title/type/game listing only, zero measurement before the a
 genuinely blind for the purpose D23 described, and whether they should stand as the new holdout
 baseline once next measured. Not being asked: the specific wording of any individual row, which is
 reviewable from the row list in the linked write-up.
+
+**First measurement, 2026-08-28 (after merge, as promised above).** One arms run on the merged
+tree — new rows plus the pool-margin gate from
+[kb-second-signal-2026-08-28.md](kb-second-signal-2026-08-28.md) — with `nomic-embed-text`, seed
+corpus at `build/knowledge-base-test`. On the labelled holdout (now n=56): **fusion 85.7%
+[75.0, 94.6] vs keyword 83.9% [73.2, 92.9] top-3.** That is the first time the two arms have
+produced *different* holdout numbers at all — the old 36-row holdout scored every arm identically —
+but the confidence intervals still overlap, so the honest reading is unchanged: these fixtures
+cannot yet tell the arms apart. Not a tie; an unresolved question that now at least has a
+direction. Run of record:
+[../archive/research/kb-embed-bakeoff-2026-08-28-arms.md](../archive/research/kb-embed-bakeoff-2026-08-28-arms.md)
+(this run supersedes the same-day file committed with the second-signal work, which measured the
+pre-fold-in fixture; those numbers survive in that work's own write-up and in git history). One
+row, `V2-BLIND-H19`, describes its controller symptom without any troubleshooting term and so
+never reaches compat retrieval in production — the same known-miss shape as `V2-C-04`. It is
+**named in the reach pin** (`test_compat_topic_router.py`,
+`test_measured_reach_on_the_drafted_intents`) rather than reworded, because rewording it until it
+routes would tune it against the router and undo its blindness. That a blind row immediately found
+a hole the card-derived rows never could is the method working, not a defect in the row.

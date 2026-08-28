@@ -138,3 +138,13 @@ instead run directly against this fixture using the same logic those tests use, 
 metadata (ids, titles, topics) from `data/kb/*.json` on the sibling checkout, never card bodies. All
 of them passed. Whoever merges this should re-run the real `npm run test:py` once this content is in
 a checkout that actually has those test files.
+
+**Done on merge, 2026-08-28.** The full `npm run test:py` on the merged tree surfaced exactly one
+consumer failure: the D16 reach pin in `test_compat_topic_router.py` requires every holdout compat
+row to route, and `V2-BLIND-H19` (controller symptom, no troubleshooting term) does not — the same
+known-miss shape as `V2-C-04`. The pin now names it instead of requiring 100% reach; the row itself
+is unchanged, for the reason recorded in the pin's docstring. First measurement against the new
+holdout is recorded under **D37** in
+[maintainer-decisions-locked.md](maintainer-decisions-locked.md): fusion 85.7% vs keyword 83.9%
+top-3 on the labelled holdout (n=56), intervals overlapping — the first run where the arms differ
+at all, still not a separation.
