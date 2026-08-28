@@ -143,6 +143,7 @@ Code-fixed or shipped; on-Deck / qualitative QA still owed. Detail: [testing.md]
 - ★ **VAC / `bonsai:vac-check` (Phase 1) — on-device QA** — implementation complete; finish **VAC-02…06** after Tier 0 **SMOKE-F** passes.
 - ★ **~22% of Asks show bare emoji for every phase change** — fix landed 2026-08-08; **THINKING-EMOJI-CLUSTER-01**.
 - ★★ **Asked-entity extraction (player typing patterns)** — fixed 2026-08-09; **STRAT-ENTITY-01**.
+- ★★ **Unfenced spoiler feedback (thumbs-down category)** — shipped 2026-08-28; **SPOILER-FEEDBACK-01** Open. New refine chip **Unfenced spoiler** next to Bad information / Misidentified game/problem. Also fixed a pre-existing bug where `save_ask_feedback` was missing its `chip_id` parameter, so every refine chip failed silently on the real RPC bridge. Over-fenced sibling skipped — not free enough to bundle in. [spoiler-constitution.md](planning/spoiler-constitution.md).
 - ★★ **Device QA — Tier 0–1** — execute Tier 0 smokes (SMOKE-A, C, F) then Tier 1 (SMOKE-B, E, H); update coverage with Pass / Partial / Fail + build id.
 - ★★ **Expert mode attached fewer knowledge cards than Strategy** — fixed 2026-08-18; **KB-EXPERT-01** owed, and it re-opens **KB-ASKMODE-01** for a re-run. The route flag asked for Strategy by name, so Expert silently took the small budget. [why](roadmap-details.md#shipped-qa-owed--why-each-was-built-this-way)
 - ★★ **KB compat retrieval phrase gate** — fixed 2026-08-06 (**D16**); **KB-ROUTER-01**. [audit/rag-pr2-signoff.md](audit/rag-pr2-signoff.md) § 2.
@@ -213,10 +214,6 @@ Stars are **effort/risk**. Grouped by **theme**; within each lane sorted ascendi
   - **Two-language removal, so budget for the plumbing:** dropping a boolean is not the reverse of
     adding one. Python is authoritative (**D13**), both settings contracts need the key gone, and
     a Deck whose `settings.json` still carries it must not read as "the setting reset itself".
-- ★★ **Unfenced spoiler feedback** (thumbs-down category)
-  - **Goal:** Thumbs-down refinement chip for unfenced spoilers (and optional over-fenced sibling).
-  - **Depends on:** reply micro-actions; spoiler confidence chip (shipped).
-  - **Related:** [spoiler-constitution.md](planning/spoiler-constitution.md).
 - ★★ **User-adjustable spoiler fencing** (hide by risk band)
   - **Goal:** Settings control for tap-to-reveal / fence masking by estimated risk band.
   - **Depends on:** spoiler confidence chip; shipped `strategy_spoiler_masking_enabled`.

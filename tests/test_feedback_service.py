@@ -22,6 +22,21 @@ class FeedbackServiceTests(unittest.TestCase):
             line = open(path, encoding="utf-8").read().strip()
             self.assertIn('"chip_id":"too_long"', line)
 
+    def test_append_unfenced_spoiler_chip_id(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            result = append_ask_feedback(
+                tmp,
+                request_id=9,
+                rating="down",
+                question_len=20,
+                success=True,
+                chip_id="unfenced_spoiler",
+            )
+            self.assertTrue(result.get("ok"))
+            path = feedback_log_path(tmp)
+            line = open(path, encoding="utf-8").read().strip()
+            self.assertIn('"chip_id":"unfenced_spoiler"', line)
+
     def test_rejects_invalid_chip_id(self):
         with tempfile.TemporaryDirectory() as tmp:
             result = append_ask_feedback(

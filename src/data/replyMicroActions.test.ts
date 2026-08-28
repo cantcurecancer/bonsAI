@@ -9,4 +9,13 @@ describe("replyMicroActions", () => {
     expect(text.endsWith("Why is FPS low?")).toBe(true);
     expect(text).toContain("Original question:");
   });
+
+  it("composes the unfenced-spoiler prefix pointing at the bonsai-spoiler fence syntax", () => {
+    const action = replyMicroActionById("unfenced_spoiler");
+    expect(action).toBeTruthy();
+    const text = composeChipAutofillPrefix(action!, "How do I beat the final boss?");
+    expect(text.endsWith("How do I beat the final boss?")).toBe(true);
+    expect(text).toContain("Original question:");
+    expect(text).toContain("```bonsai-spoiler```");
+  });
 });

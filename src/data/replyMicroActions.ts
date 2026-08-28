@@ -9,7 +9,8 @@ export type ReplyMicroActionId =
   | "bad_information"
   | "too_long"
   | "too_short"
-  | "misidentified_game";
+  | "misidentified_game"
+  | "unfenced_spoiler";
 
 export type ReplyMicroActionDef = {
   id: ReplyMicroActionId;
@@ -32,6 +33,13 @@ export const REPLY_MICRO_ACTIONS: ReplyMicroActionDef[] = [
     prefix:
       "You may have the wrong game or issue. Re-check the running game/AppID and context, then re-answer. Original question: ",
     transparencyLabel: "Follow-up: Misidentified game/problem",
+  },
+  {
+    id: "unfenced_spoiler",
+    label: "Unfenced spoiler",
+    prefix:
+      "The last answer revealed spoiler content in plain text that should have been hidden. Rewrite it with the same information, but put anything spoilery — twists, endings, secret unlocks, or other things the player shouldn't know yet — inside ```bonsai-spoiler``` fences this time. Original question: ",
+    transparencyLabel: "Follow-up: Unfenced spoiler",
   },
   {
     id: "too_long",
