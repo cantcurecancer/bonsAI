@@ -166,6 +166,59 @@ VECTOR_RECALL_K = 3
 # D28 says explicitly not to expect this to clean every case -- re-measure rather than assume.
 VECTOR_RECALL_FLOOR = 0.515
 
+# --- Second signal: pool margin (roadmap "Card relevance needs a second signal") -----------
+#
+# The floor above cannot decide relevance alone: junk questions and genuine questions score in
+# the same absolute range (twice measured, 2026-08-18 and 2026-08-23), so any floor value sits
+# inside the overlap. The second signal is *relative*: how far the best card stands out from
+# the rest of that game's cards. A junk question ("please repeat that") is roughly equidistant
+# from everything the game knows, so its best card barely beats the pool average; a genuine
+# question -- even a paraphrase sharing no word with its card -- singles one card out.
+#
+# Margin = top-1 cosine minus the mean cosine over ALL of the game's sections with vectors
+# (keyword-found cards included: they are part of the pool the question is measured against).
+# The recall pass runs only when the best card either stands out from its pool by this much,
+# OR clears the floor by this much in absolute terms. One constant, two branches, because the
+# measurement (2026-08-28, seed corpus at build/knowledge-base-test, nomic-embed-text with
+# production prefixes; D28's six ordinary phrases vs every labeled strategy row in kb_eval_v2
+# plus the D25 short questions) found each branch covering the other's blind spot:
+#
+#   junk phrases that clear the 0.515 floor    margin 0.0312 .. 0.0378, top-1 0.5034 .. 0.5326
+#     ("please repeat that" 0.0312/0.5308, "one sentence" 0.0353/0.5034,
+#      "what time is it" 0.0378/0.5326)
+#   genuine questions, lowest margins first    margin 0.0280 .. 0.1591
+#     ("how to play state of emergency" 0.0280 -- but top-1 0.5751, rescued by the absolute
+#      branch; "gunner or scout" 0.0412; "first boss underworld roguelike" 0.0490;
+#      "the boss" 0.0665; "illithid encounter tactics act one" 0.0771; "gels" 0.1224)
+#
+# The margin distributions overlap too ("how to play state of emergency" sits *below* every
+# junk margin, because a broad question naming its own game is uniformly close to all of that
+# game's cards, where junk is uniformly far) -- which is exactly why this is a two-branch
+# signal and not another single number. 0.0395 is the midpoint of the margin gap that matters
+# (junk max 0.0378 vs "gunner or scout" 0.0412), and the absolute branch it implies,
+# 0.515 + 0.0395 = 0.5545, lands almost exactly midway between the highest junk top-1
+# (0.5326, +0.0219) and the lowest genuine top-1 that needs it (0.5751, -0.0206).
+#
+# The other two roadmap candidates were measured and rejected on the same data: content-word
+# presence fails outright (all six junk phrases contain content words -- "sentence", "time",
+# "repeat", "team", "hours"), and keyword/vector agreement is an anti-signal ("what time is
+# it" has keyword hits AND vector hits and is still junk, while genuine paraphrases are
+# keyword-blind by construction). Full tables: docs/audit/kb-second-signal-2026-08-28.md.
+#
+# The gate is ANDed with the floor, not a replacement: "our team" has margin 0.0523 (its best
+# card merely stands out from a very unrelated pool) but tops out at cosine 0.4997, so the
+# floor still blocks it. Junk now has to clear an absolute bar and a relative one, which are
+# different properties, where before it only needed one.
+VECTOR_RECALL_POOL_MARGIN = 0.0395
+
+# Below this many vectored sections, "relative to the pool" is not a meaningful statistic --
+# with 1 card the margin is identically 0 and the gate would block every recall, and with 2-3
+# the mean is dominated by the top card itself. Small pools skip the gate and keep the
+# pre-change behaviour (floor only). Every seed game has 7+ vectored sections, so on the
+# shipped corpus the gate always runs; this guard exists for minimal or partly-embedded
+# corpora.
+VECTOR_RECALL_MARGIN_MIN_POOL = 4
+
 # --- Compat tips: routed topic + vector recall (D22, 2026-08-18) ---------------------------
 #
 # D16 works out which topic a troubleshooting question is about. Until now that answer was
@@ -923,6 +976,15 @@ def _vector_recall_sections(
     advice is worse than none. A game holds 5-13 sections, so scanning all of them costs one
     indexed query and a few hundred dot products.
 
+    **Second signal (pool margin).** Clearing ``min_similarity`` is not enough on its own:
+    the whole recall pass returns nothing unless the best card in the game either stands out
+    from the pool average by ``VECTOR_RECALL_POOL_MARGIN`` or clears the floor by that same
+    amount -- a question that is roughly equidistant from everything the game knows, at a
+    score no better than middling, is noise. The margin is computed over every vectored
+    section of the game -- ``exclude_ids`` included, since the question is being measured
+    against the game, not against the shortlist -- and the gate only suppresses cards this
+    pass alone would have supplied; keyword hits and their fusion re-ranking are untouched.
+
     Raises ``EmbeddingDimensionMismatch`` via ``_dot_similarity`` when the corpus was baked at
     a different dimension; the caller treats that as "disable hybrid for this request".
     """
@@ -940,16 +1002,27 @@ def _vector_recall_sections(
     if not vectors_by_id:
         return [], {}
 
+    similarity_by_id = {
+        section_id: _dot_similarity(query_vector, vec)
+        for section_id, vec in vectors_by_id.items()
+    }
+    pool = list(similarity_by_id.values())
+    if len(pool) >= VECTOR_RECALL_MARGIN_MIN_POOL:
+        top1 = max(pool)
+        margin = top1 - (sum(pool) / len(pool))
+        if (
+            margin < VECTOR_RECALL_POOL_MARGIN
+            and top1 < min_similarity + VECTOR_RECALL_POOL_MARGIN
+        ):
+            return [], vectors_by_id
+
     scored: list[tuple[float, int, sqlite3.Row]] = []
     for row in rows:
         section_id = int(row["section_id"])
         if section_id in exclude_ids:
             continue
-        vec = vectors_by_id.get(section_id)
-        if not vec:
-            continue
-        similarity = _dot_similarity(query_vector, vec)
-        if similarity < min_similarity:
+        similarity = similarity_by_id.get(section_id)
+        if similarity is None or similarity < min_similarity:
             continue
         scored.append((similarity, section_id, row))
 
