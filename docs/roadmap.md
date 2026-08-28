@@ -115,8 +115,12 @@ seconds; anything that would otherwise have to be re-measured goes there rather 
 
 ### Documentation bookkeeping
 
-- ★ **Two different QA rows share the ID `KB-NEWTITLE-01`**, and **two different decisions are both filed as D19**. Both are resolved on paper
-  (D30 and D31 say which keeps the name) but the documents have not been edited to match, so a search still returns two hits for one ID.
+- ~~Two different decisions are both filed as D19~~ — **fixed 2026-08-28** (D31): the corpus-licence
+  decision is renumbered `D19b`; the live *"Can you reach the strategy corpus without the game
+  running?"* decision keeps `D19`.
+- ★ **Two different QA rows share the ID `KB-NEWTITLE-01`.** Resolved on paper (D30 says which keeps
+  the name) but the documents have not been edited to match, so a search still returns two hits for
+  one ID.
 
 ---
 
