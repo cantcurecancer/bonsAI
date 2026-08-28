@@ -19,7 +19,10 @@ import {
   captureOllamaTabLocalSnapshot,
 } from "../utils/ollamaTabLocalSurvival";
 import { resolveResumeTab, saveLastTab } from "../features/plugin-shell/pluginStorage";
-import { restoreModalReturnFocusWithRetry } from "../features/plugin-shell/modalReturnFocusRegistry";
+import {
+  peekModalReturnFocus,
+  restoreModalReturnFocusWithRetry,
+} from "../features/plugin-shell/modalReturnFocusRegistry";
 
 /**
  * If Decky unmounts plugin `Content` when `showModal` closes, React state resets to defaults; this
@@ -95,8 +98,21 @@ export function useBonsaiPluginShell({ getSessionSnapshot }: UseBonsaiPluginShel
         // Focus last: the tab has to be active and its controls mounted before the opener can be
         // focused, and after a Content remount the ref callbacks only re-register on that mount.
         // A miss is a no-op, which is exactly the behavior this had before.
+        // Logged because this bug has already survived two attempts that looked successful: the
+        // registry used to report "claimed" whenever the control existed, so nobody could tell a
+        // restore from a miss without a Deck in hand. `claimed` now means Steam's ring actually
+        // moved, and `opener` names which of the five entry points it was, so a device run says
+        // which cases work rather than that "some pickers" do. PICKER-FOCUS-01.
+        const opener = peekModalReturnFocus();
         window.requestAnimationFrame(() => {
-          restoreModalReturnFocusWithRetry();
+          restoreModalReturnFocusWithRetry((claimed, attempts) => {
+            bonsaiDebugLog("modalReturnFocus:restore", "return focus", "H4", {
+              opener,
+              backTab: back,
+              claimed,
+              attempts,
+            });
+          });
         });
       }, 80);
     },

@@ -135,4 +135,44 @@ describe("modal return-focus registry", () => {
     expect(secondFocus).toHaveBeenCalled();
     expect(firstFocus).not.toHaveBeenCalled();
   });
+
+  // Both of these lock in fixes for rule violations that shipped in this file from the start.
+  // See `.cursor/rules/decky-focus-graph.mdc` and the header comment on `focusOwnerById`.
+
+  it("does not rewrite the opener's tabindex", () => {
+    const el = mountButton();
+    el.setAttribute("tabindex", "0");
+    registerModalReturnFocusOwner("plugin-help", el);
+    rememberModalReturnFocus("plugin-help");
+
+    restoreModalReturnFocus();
+
+    // It used to stamp tabindex="-1" and never put it back, which takes the control out of Steam's
+    // nav graph -- so a picker you closed once could not be navigated onto again.
+    expect(el.getAttribute("tabindex")).toBe("0");
+  });
+
+  it("reports a miss when Steam's ring stayed somewhere else", () => {
+    const ringOwner = document.createElement("div");
+    ringOwner.className = "gpfocus";
+    document.body.appendChild(ringOwner);
+
+    const el = mountButton();
+    registerModalReturnFocusOwner("ollama-models-hub", el);
+    rememberModalReturnFocus("ollama-models-hub");
+
+    // The DOM focus call still happens; what changed is that we no longer call that a success.
+    // Reporting "claimed" whenever the element merely existed is why two on-device attempts at
+    // PICKER-FOCUS-01 both looked like they had worked.
+    expect(restoreModalReturnFocus()).toBe(false);
+  });
+
+  it("reports a hit when the ring lands on the opener", () => {
+    const el = mountButton();
+    el.className = "gpfocus";
+    registerModalReturnFocusOwner("ollama-models-hub", el);
+    rememberModalReturnFocus("ollama-models-hub");
+
+    expect(restoreModalReturnFocus()).toBe(true);
+  });
 });

@@ -10,6 +10,7 @@
  * under Decky and land focus somewhere wrong. A control registers itself while mounted; if it is
  * not mounted when the modal closes, focus is left exactly where it is — today's behavior.
  */
+import { elementHasGamepadFocus } from "../../utils/uiDocument";
 
 /** One id per control that can open a modal. Two entry points to the same modal need two ids. */
 export type ModalReturnFocusId =
@@ -75,9 +76,12 @@ export function restoreModalReturnFocusWithRetry(
   let index = 0;
   const attempt = () => {
     if (pendingReturn !== id) return; // something else armed or cleared it meanwhile
-    if (owners.has(id)) {
+    // Keep trying while the ring has not actually moved, not just while the control is unmounted.
+    // The old loop stopped the moment the owner appeared in the map and reported whatever the
+    // first try returned — and since that return was always `true`, it always stopped at one.
+    if (owners.has(id) && focusOwnerById(id)) {
       pendingReturn = null;
-      onResult?.(focusOwnerById(id), index + 1);
+      onResult?.(true, index + 1);
       return;
     }
     index += 1;
@@ -91,6 +95,29 @@ export function restoreModalReturnFocusWithRetry(
   window.setTimeout(attempt, delaysMs[0]);
 }
 
+/**
+ * Focus one target and say honestly whether Steam's ring followed.
+ *
+ * Two things changed here on 2026-08-28, both of them rule violations that had been shipping since
+ * this registry landed:
+ *
+ * 1. **It used to write `tabindex="-1"` onto all three targets, and never put it back.**
+ *    `.cursor/rules/decky-focus-graph.mdc`: *"NEVER overwrite an existing `tabindex`... Decky sets
+ *    `tabindex="0"` on the nodes it navigates; replacing it removes them from Steam's graph, so
+ *    navigating onto a control is what stops it responding."* So every modal close quietly took
+ *    its own opener out of the nav graph. That is the strongest available explanation for the
+ *    models-hub and desktop-note openers landing focus on the tab strip instead.
+ * 2. **It returned `true` whenever the element merely existed.** A plain `focus()` sets
+ *    `activeElement` while `gpfocus` stays behind, so "claimed" meant nothing — which is why two
+ *    on-device attempts at this bug both looked like they had worked. The check is now
+ *    `elementHasGamepadFocus`, i.e. Steam's ring, not the DOM's idea of focus.
+ *
+ * A plain `focus()` is still the mechanism, and that is allowed: the rule bans it for crossing
+ * navigation containers, and permits it within one. If the honest check shows it is not enough
+ * here, the sanctioned fix is a `navRef` + `TakeFocus(true)` per
+ * [navFocusRegistry.ts](../../utils/navFocusRegistry.ts) — but that needs each opener to expose a
+ * nav node, so it is a bigger change and wants its own measurement first.
+ */
 function focusOwnerById(id: ModalReturnFocusId): boolean {
   const el = owners.get(id);
   if (!el) return false;
@@ -104,7 +131,6 @@ function focusOwnerById(id: ModalReturnFocusId): boolean {
   const targets = [panel, button, el].filter(Boolean) as HTMLElement[];
   for (const target of targets) {
     try {
-      target.setAttribute("tabindex", "-1");
       target.focus({ preventScroll: true });
     } catch {
       try {
@@ -113,8 +139,9 @@ function focusOwnerById(id: ModalReturnFocusId): boolean {
         /* ignore */
       }
     }
+    if (elementHasGamepadFocus(target)) return true;
   }
-  return true;
+  return false;
 }
 
 /** Test-only reset. */
