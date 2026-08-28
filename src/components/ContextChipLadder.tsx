@@ -7,7 +7,12 @@
  */
 import { useCallback, useState } from "react";
 import { Focusable } from "@decky/ui";
-import type { ChatSlotTurnTransparency, ContextChip, TransparencySnapshot } from "../utils/inputTransparency";
+import type {
+  AskDiagnosticsSnapshot,
+  ChatSlotTurnTransparency,
+  ContextChip,
+  TransparencySnapshot,
+} from "../utils/inputTransparency";
 import {
   ATTRIBUTION_ACCENT,
   ATTRIBUTION_ACCENT_SOFT,
@@ -39,6 +44,14 @@ export type ContextChipLadderProps = {
   onMoveUpFromLadder?: () => boolean;
   /** D-pad Down from ladder (last chip) → session context strip. */
   onMoveDownFromLadder?: () => boolean;
+  /**
+   * Full `ask_diagnostics` payload, shown inside the "Developer details" chip's body when that
+   * chip is active. Folded in here 2026-08-22/28 (roadmap: "Fold Show diagnostics into Show
+   * details") so Show details is the single disclosure entry point instead of two adjacent
+   * buttons. The caller is responsible for the gate — pass `null`/`undefined` unless desktop
+   * verbose logging is on, matching the standalone "Show diagnostics" button's old gating exactly.
+   */
+  devDiagnostics?: AskDiagnosticsSnapshot | null;
 };
 
 export function ContextChipLadder({
@@ -48,6 +61,7 @@ export function ContextChipLadder({
   onMoveDownFromHint,
   onMoveUpFromLadder,
   onMoveDownFromLadder,
+  devDiagnostics = null,
 }: ContextChipLadderProps) {
   const chips = chipsFromSnapshot(snapshot);
   const [expanded, setExpanded] = useState(!collapsedHint);
@@ -218,12 +232,21 @@ export function ContextChipLadder({
           );
         })}
       </div>
-      <ChipExpandedBody chip={active} />
+      <ChipExpandedBody
+        chip={active}
+        devDiagnostics={active.id === "developer" ? devDiagnostics : null}
+      />
     </Focusable>
   );
 }
 
-function ChipExpandedBody({ chip }: { chip: ContextChip }) {
+function ChipExpandedBody({
+  chip,
+  devDiagnostics,
+}: {
+  chip: ContextChip;
+  devDiagnostics?: AskDiagnosticsSnapshot | null;
+}) {
   const bullets = chipBodyBullets(chip);
   const paths = chipBodyPaths(chip);
   const attribution = chipAttribution(chip);
@@ -318,6 +341,28 @@ function ChipExpandedBody({ chip }: { chip: ContextChip }) {
         >
           {JSON.stringify(devJson, null, 2)}
         </pre>
+      ) : null}
+      {devDiagnostics != null ? (
+        <>
+          {/* Formerly a separate "Show diagnostics" button next to Show details (roadmap: "Fold
+              Show diagnostics into Show details") — same raw ask_diagnostics dump, same gate on
+              desktop verbose logging, now reached by opening this chip instead of a second button. */}
+          <div style={{ fontWeight: 700, marginTop: 10, marginBottom: 6 }}>Ask diagnostics</div>
+          <pre
+            style={{
+              fontSize: 9,
+              maxHeight: 200,
+              overflow: "auto",
+              whiteSpace: "pre-wrap",
+              wordBreak: "break-word",
+              background: "rgba(0,0,0,0.25)",
+              padding: 6,
+              borderRadius: 4,
+            }}
+          >
+            {JSON.stringify(devDiagnostics, null, 2)}
+          </pre>
+        </>
       ) : null}
     </div>
   );

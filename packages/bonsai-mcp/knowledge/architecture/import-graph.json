@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 310,
-  "edgeCount": 728,
+  "fileCount": 311,
+  "edgeCount": 730,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -243,6 +243,15 @@
         "src/utils/buildAnswerBubbleElement.tsx"
       ]
     },
+    "src/components/MainTabChatTranscript.diagnostics.test.tsx": {
+      "imports": [
+        "src/components/MainTabChatTranscript.tsx",
+        "src/test-harness/fakeDeckyUi.tsx",
+        "src/types/backgroundAsk.ts",
+        "src/utils/inputTransparency.ts"
+      ],
+      "importedBy": []
+    },
     "src/components/MainTabChatTranscript.strategyPanels.test.tsx": {
       "imports": [
         "src/components/MainTabChatTranscript.tsx",
@@ -276,16 +285,15 @@
         "src/utils/buildTurnHeaderElement.tsx",
         "src/utils/chatTurnTitle.ts",
         "src/utils/contextChipsFromSnapshot.ts",
-        "src/utils/focusNavigation.ts",
         "src/utils/inputTransparency.ts",
         "src/utils/liveTurnFocusGraph.ts",
-        "src/utils/navFocusRegistry.ts",
         "src/utils/permissionDeepLink.ts",
         "src/utils/troubleshootingAskHeuristic.ts",
         "src/utils/uiDocument.ts"
       ],
       "importedBy": [
         "src/components/MainTab.tsx",
+        "src/components/MainTabChatTranscript.diagnostics.test.tsx",
         "src/components/MainTabChatTranscript.strategyPanels.test.tsx"
       ]
     },
@@ -1998,6 +2006,7 @@
       "imports": [],
       "importedBy": [
         "src/components/MainTabBonsaiAiMarkdownChunk.test.tsx",
+        "src/components/MainTabChatTranscript.diagnostics.test.tsx",
         "src/components/MainTabChatTranscript.strategyPanels.test.tsx",
         "src/components/SessionContextStrip.test.tsx",
         "src/test-harness/setup.ts"
@@ -2041,6 +2050,7 @@
       ],
       "importedBy": [
         "src/components/MainTab.tsx",
+        "src/components/MainTabChatTranscript.diagnostics.test.tsx",
         "src/components/MainTabChatTranscript.tsx",
         "src/hooks/useBackgroundGameAi.test.ts",
         "src/hooks/useBackgroundGameAi.ts",
@@ -2571,7 +2581,6 @@
       "importedBy": [
         "src/components/ContextChipLadder.tsx",
         "src/components/MainTabBonsaiAiMarkdownChunk.tsx",
-        "src/components/MainTabChatTranscript.tsx",
         "src/components/MainTabUnifiedAskBar.tsx",
         "src/components/SessionContextStrip.tsx",
         "src/components/SettingsTabUiScaleSection.tsx",
@@ -2611,6 +2620,7 @@
       "importedBy": [
         "src/components/ContextChipLadder.tsx",
         "src/components/MainTab.tsx",
+        "src/components/MainTabChatTranscript.diagnostics.test.tsx",
         "src/components/MainTabChatTranscript.tsx",
         "src/components/SessionContextStrip.test.tsx",
         "src/components/SessionContextStrip.tsx",
@@ -2733,7 +2743,6 @@
     "src/utils/navFocusRegistry.ts": {
       "imports": [],
       "importedBy": [
-        "src/components/MainTabChatTranscript.tsx",
         "src/components/SessionContextStrip.tsx",
         "src/features/chat-slots/ChatSlotRow.tsx",
         "src/utils/liveTurnFocusGraph.ts",

@@ -27,7 +27,7 @@ describe("nav focus registry", () => {
   });
 
   it("reports false for a target that was never registered", () => {
-    expect(takeNavFocus("ask-diagnostics")).toBe(false);
+    expect(takeNavFocus("chat-slot-row")).toBe(false);
   });
 
   /*
@@ -67,11 +67,11 @@ describe("nav focus registry", () => {
   });
 
   it("forgets a target on unmount", () => {
-    registerNavFocus("ask-diagnostics", steamNavRef(() => true));
-    expect(takeNavFocus("ask-diagnostics")).toBe(true);
+    registerNavFocus("chat-slot-row", steamNavRef(() => true));
+    expect(takeNavFocus("chat-slot-row")).toBe(true);
 
-    registerNavFocus("ask-diagnostics", null);
+    registerNavFocus("chat-slot-row", null);
 
-    expect(takeNavFocus("ask-diagnostics")).toBe(false);
+    expect(takeNavFocus("chat-slot-row")).toBe(false);
   });
 });

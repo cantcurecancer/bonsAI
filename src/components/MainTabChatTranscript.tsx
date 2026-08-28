@@ -10,7 +10,6 @@ import { PanelSectionRow, Button, Focusable } from "@decky/ui";
 import {
   BONSAI_CHAT_AI_BUBBLE_MAX_FRAC,
 } from "../features/unified-input/constants";
-import { isDeckDirectionUpEvent } from "../utils/focusNavigation";
 import { getUiDocument } from "../utils/uiDocument";
 import { formatAppliedTuningBannerText } from "../utils/appliedTuningText";
 import type { ModelPolicyDisclosurePayload } from "../data/modelPolicy";
@@ -28,7 +27,6 @@ import { buildTurnHeaderElement } from "../utils/buildTurnHeaderElement";
 import { buildCollapsedTurnTitle } from "../utils/chatTurnTitle";
 import { ContextChipLadder } from "./ContextChipLadder";
 import { SessionContextStrip } from "./SessionContextStrip";
-import { registerNavFocus, type NavRefHolder } from "../utils/navFocusRegistry";
 import { transparencyUiAvailable } from "../utils/contextChipsFromSnapshot";
 import type {
   AppliedResult,
@@ -155,14 +153,6 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
     onNavigateToPermissions,
   } = props;
 
-  const [diagnosticsOpen, setDiagnosticsOpen] = useState(false);
-
-  /* Steam fills this in for the dev-only Ask diagnostics block; see navFocusRegistry. */
-  const askDiagnosticsNavRef = useRef<NavRefHolder["current"]>(null);
-  useEffect(() => {
-    registerNavFocus("ask-diagnostics", askDiagnosticsNavRef);
-    return () => registerNavFocus("ask-diagnostics", null);
-  }, []);
   const [sessionHighlightTurnId, setSessionHighlightTurnId] = useState<string | null>(null);
   const [transparencyDetailsOpen, setTransparencyDetailsOpen] = useState(false);
   const [troubleshootingPermHintDismissed, setTroubleshootingPermHintDismissed] = useState(false);
@@ -173,7 +163,6 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
    * and then expanding another would show the second turn already open on the first one's chips.
    */
   useEffect(() => {
-    setDiagnosticsOpen(false);
     setSessionHighlightTurnId(null);
     setTransparencyDetailsOpen(false);
   }, [
@@ -404,6 +393,17 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
     !isAsking &&
     showTransparencyUi &&
     transparencyDetailsOpen;
+  /*
+   * Formerly its own always-visible "Ask diagnostics" block below the applied-tuning banner,
+   * independent of Show details (roadmap: "Fold Show diagnostics into Show details"). Same gate as
+   * before — desktop verbose logging on, and the backend actually returned ask_diagnostics for the
+   * most recently completed Ask — now handed to the Developer details chip instead of a second
+   * button. `transparencySnapshot` never changes mid-turn, so this one value is correct both for the
+   * live ladder and for the newest archived turn's ladder below (see isNewestArchivedTurn).
+   */
+  const devDiagnosticsForLiveSnapshot = desktopAskVerboseLogging
+    ? (transparencySnapshot?.ask_diagnostics ?? null)
+    : null;
 
   return (
     <>
@@ -494,8 +494,8 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
                     onChip: showFeedbackHere ? onReplyMicroAction : undefined,
                     askInFlight: isAsking,
                     /* Down must reach this turn's own ladder. Without a handler the Focusable
-                       falls through to the next focusable in document order — Ask diagnostics —
-                       and the chips become unreachable from above. */
+                       falls through to the next focusable in document order — the session context
+                       strip — and the chips become unreachable from above. */
                     onMoveDownFromUtility: () =>
                       focusDownFromReplyUtilityRow(queryTurnSlot(turn.id)),
                   });
@@ -508,6 +508,13 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
                       collapsedHint={false}
                       onMoveUpFromLadder={() => focusReplyUtilityRow(queryTurnSlot(turn.id))}
                       onMoveDownFromLadder={() => focusSessionContextStrip()}
+                      /*
+                       * Only the newest archived turn matches `transparencySnapshot` — the post-Ask
+                       * slot reload expands that turn instead of "live" (useChatSlots.applySlotTranscript),
+                       * so this is the common path a completed Ask's diagnostics need to stay reachable
+                       * on. An older expanded turn never held the live ask_diagnostics to begin with.
+                       */
+                      devDiagnostics={isNewestArchivedTurn ? devDiagnosticsForLiveSnapshot : null}
                     />
                   </div>
                 ) : null}
@@ -614,6 +621,7 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
                   collapsedHint={false}
                   onMoveUpFromLadder={() => focusReplyUtilityRow(queryLiveTurnSlot())}
                   onMoveDownFromLadder={() => focusSessionContextStrip()}
+                  devDiagnostics={devDiagnosticsForLiveSnapshot}
                 />
               </div>
             ) : null}
@@ -733,56 +741,12 @@ questionLooksLikeTroubleshootingAsk(unifiedInput) ? (
     <div style={{ color: "#f2cf84", fontSize: 12, lineHeight: 1.35 }}>{appliedTuningBannerText}</div>
   </PanelSectionRow>
 )}
-{desktopAskVerboseLogging && transparencySnapshot?.ask_diagnostics ? (
-  <PanelSectionRow>
-    {/* Classed so the reply-row Down chain can reach it — it sits between Retry and the session
-        context strip, and a hop straight to the strip would step over it. `navRef` is what actually
-        transfers gamepad focus here: this block is its own navigation container, and a DOM focus()
-        would move `activeElement` without moving Steam's ring. */}
-    <Focusable
-      {...({
-        navRef: askDiagnosticsNavRef,
-        /* Up has no explicit handler otherwise and falls through to Steam's default geometry
-           navigation, which lands on Show/Hide details directly and skips the chip ladder above —
-           the reverse of the Down chain this block is already classed for. */
-        onMoveUp: () => focusUpFromBelowContextChipLadder(queryLiveTurnSlot()),
-        onButtonDown: (evt: unknown) =>
-          isDeckDirectionUpEvent(evt)
-            ? focusUpFromBelowContextChipLadder(queryLiveTurnSlot())
-            : false,
-      } as Record<string, unknown>)}
-      className="bonsai-ask-diagnostics"
-      style={{ width: "100%" }}
-    >
-      <div style={{ fontSize: 12, fontWeight: 700, color: "#b8c9dc", marginBottom: 6 }}>
-        Ask diagnostics
-      </div>
-      <BonsaiChatSecondaryButton
-        onClick={() => setDiagnosticsOpen((o) => !o)}
-        aria-expanded={diagnosticsOpen}
-        aria-label={diagnosticsOpen ? "Hide diagnostics" : "Show diagnostics"}
-      >
-        {diagnosticsOpen ? "Hide diagnostics" : "Show diagnostics"}
-      </BonsaiChatSecondaryButton>
-      {diagnosticsOpen && (
-        <pre
-          style={{
-            fontSize: 10,
-            lineHeight: 1.35,
-            color: "#dce8f4",
-            whiteSpace: "pre-wrap",
-            wordBreak: "break-word",
-            padding: 8,
-            background: "rgba(0,0,0,0.22)",
-            borderRadius: 4,
-          }}
-        >
-          {JSON.stringify(transparencySnapshot.ask_diagnostics, null, 2)}
-        </pre>
-      )}
-    </Focusable>
-  </PanelSectionRow>
-) : null}
+{/*
+ * The standalone "Ask diagnostics" block (its own always-visible button next to Show details) was
+ * removed 2026-08-28 (roadmap: "Fold Show diagnostics into Show details") — same JSON, same gate on
+ * desktopAskVerboseLogging, now rendered inside the "Developer details" chip by ContextChipLadder
+ * (see devDiagnosticsForLiveSnapshot above) instead of a second adjacent disclosure control.
+ */}
 <PanelSectionRow>
   <SessionContextStrip
     liveTurn={
