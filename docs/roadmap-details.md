@@ -195,3 +195,48 @@ AFTER hide  - text the user reads: 'Alright, listen up! Here is the deal.'
 checklist. The marker to look for is the new
 `ask_ollama: strategy checklist fence present but did NOT parse` warning — when it appears, the
 reply above it must contain no JSON.
+
+### Fullscreen picker edge-escape audit — run 2026-08-28
+
+Every press below was a real controller press through the bridge board, against a byte-identical
+bundle (`md5 6e6e200aa84b8eabdbaa3cf9ad5e589a` on host and Deck). The test for each picker was the
+one the roadmap asked for: from the first control press **Up**, from the last press **Down**, and
+see whether the ring leaves the list or sticks.
+
+| Picker | Top edge | Walking down | Bottom edge | Verdict |
+|---|---|---|---|---|
+| AI character | holds on *Random* | through every character column, the custom field, then **OK** | holds on **OK** | **pass** |
+| AI models hub (also where *Browse models* goes) | holds on the *Policy* tab | filters, chips, model rows, then **Pull selected** | holds on **Pull selected** | **pass** |
+| Text / vision try order | holds on the first *Up* button | **reorders the list and drops the ring** | reaches the footer only after the item is dragged to the bottom | **fail** |
+
+**On the two passes.** "Holds" is not the same as "traps". In both, the first control is the top of
+the modal and there is nothing above it to reach, and the last control is **OK** / **Pull selected**
+with **Cancel** one press to the right. Nothing is stranded, so both are closed. Worth noting the
+footers are two-wide: a down-only walk reports the left button and misses the right one, which is
+the same shape as the 2×2 reply-actions grid and should not be filed as a half pass.
+
+**On the failure.** [ModelRoutingOrderModal.tsx:139-153](../src/components/ModelRoutingOrderModal.tsx#L139-L153)
+binds each row's `onMoveUp` / `onMoveDown` to *reorder the model*, then calls
+`rowRefs.current[index ± 1]?.focus()`. So on a controller:
+
+- **Down does not move the highlight.** It moves the *model*. Measured: the order began
+  `gemma4, qwen2.5:1.5b, qwen3.5:4b, nomic` and after three Down presses read
+  `qwen2.5:1.5b, qwen3.5:4b, nomic, gemma4`. A user scrolling to read the list rewrites it.
+- **The ring then disappears.** After each reorder, `document.querySelectorAll('.gpfocus').length`
+  was **0** across every Steam view, with `document.activeElement` back on `BODY`. The `.focus()`
+  call is a DOM focus, which is the thing `.cursor/rules/decky-focus-graph.mdc` says does not move
+  Steam's ring — so the row moves out from under the ring and nothing picks it up.
+- **B stops working while the ring is gone.** Three B presses in a row did not close the modal;
+  the first two went into re-acquiring focus. This is the "picker you cannot leave" case the audit
+  was written to find, and it is worse than sticking, because there is no highlight to tell you
+  where you are.
+- **The only exit downward is to finish the job.** Once the item reaches the last row,
+  `onMoveDown` returns `false`, Steam yields to the parent, and the ring lands on *Reset to
+  defaults*. Confirmed.
+
+Nothing was saved: `Cancel` was used to close, and `text_model_routing_order` /
+`vision_model_routing_order` both read `[]` on disk afterwards, unchanged. The same component
+serves the vision order, so the vision list has the same defect without needing a second run.
+
+**Also re-confirmed in passing:** closing the models hub put the ring back on the **tab strip**,
+not on the button that opened it — **PICKER-FOCUS-01**, exactly as recorded on 2026-08-04.

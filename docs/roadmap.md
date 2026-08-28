@@ -28,13 +28,19 @@ seconds; anything that would otherwise have to be re-measured goes there rather 
   then **Helpful**, then the branch buttons — nothing is stranded. Evidence: `runs/SESSION-CTX-TRAP-verify-2026-08-27.json`
   (`escaped: true`, `neverReached: []`). The fix had sat unproven since 2026-08-23.
 
-- ★★★ **The D-pad may not escape the full-screen pickers** — **OPEN, never audited.** Pull Models, the character picker, the models hub and any
-  other `showModal` picker need one pass each: from the top item press up, from the last item press down, and confirm the ring leaves the list
-  instead of sticking. A picker you cannot leave has to be closed with B, which loses whatever was being chosen.
+- ~~★★★ **The D-pad may not escape the full-screen pickers**~~ — **audited on device 2026-08-28. Two pass, one fails badly.**
+  The character picker and the AI models hub (which is also where *Browse models* goes) both walk cleanly from the first control to
+  **OK** / **Pull selected** at the bottom; the top and bottom presses hold still rather than trapping you. The **try-order picker**
+  fails, and is now its own ★★★ entry below. Detail: [roadmap-details.md](roadmap-details.md).
 
-- ★★ **Choosing a character: focus ring now visible** — **the maintainer confirmed on device 2026-08-27 that focus is visible and the picker is
-  usable.** Downgraded from ★★★. What is still unconfirmed is the *edge* behaviour covered by the audit item above — whether the ring can leave
-  the list at the top and bottom.
+- ★★★ **Pressing down in the try-order picker reorders your models instead of moving the highlight** — **OPEN, found on device 2026-08-28.**
+  Each press down shuffles the highlighted model one place down the list and then loses the highlight completely: nothing on screen is
+  selected, and **B stops closing the picker** until a further press brings the ring back. The only way out downward is to keep pressing
+  until the model reaches the bottom. Both the text and the vision list are affected. A user trying to read the list silently reorders it.
+  Needs a maintainer call on how reordering should work on a controller — see [D36](audit/maintainer-decisions-locked.md).
+
+- ~~★★ **Choosing a character: focus ring now visible**~~ — **CLOSED.** The maintainer confirmed on device 2026-08-27 that focus is visible
+  and the picker is usable; the edge behaviour it was still waiting on passed the 2026-08-28 audit above. Nothing left open here.
 
 ### Wrong or missing content in a reply
 
@@ -67,7 +73,8 @@ seconds; anything that would otherwise have to be re-measured goes there rather 
   **Fixed the same day** — a rejected checklist block is now dropped from the reply, the way a rejected branch block already was.
   Owed: one sighting on device of a reply where this happens. Detail: [roadmap-details.md](roadmap-details.md).
 - ★★ **Pickers return you to the right tab but not the right control** — 1 of 3 confirmed; the models hub and desktop-note cases still land on
-  the tab strip. Next step is instrumentation, not another attempt.
+  the tab strip. **The models hub half reproduced again on 2026-08-28** during the picker audit, unchanged. Next step is instrumentation,
+  not another attempt.
 
 ### Open, but measure before spending anything
 
@@ -98,8 +105,8 @@ seconds; anything that would otherwise have to be re-measured goes there rather 
   screen that lays tiles out in a grid. Needs each grid to leave a margin outside its own edge for the ring to fit.
 - ★★ **Focus ring styling is inconsistent** between plugin controls and Steam's own — **PARTIAL.** Modal scoping shipped; a blanket rule was
   tried and reverted in favour of Steam's native outline.
-- ★★ **The model routing try-order modal** puts focus on the leaf up/down buttons and its chrome does not match the other full-screen pickers —
-  deferred polish.
+- ★★ **The model routing try-order modal** chrome does not match the other full-screen pickers — deferred polish. The focus half of this
+  entry turned out to be much worse than "lands on the leaf buttons" and moved to its own ★★★ entry at the top of this file.
 
 ### Documentation bookkeeping
 

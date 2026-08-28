@@ -2215,3 +2215,43 @@ Nothing here changed product behavior.
 `_reencode_oversized_capture` and `_mirror_capture_to_plugin_dir` in
 `screenshot_media.py` — no production callers; deleted in execution-order step **5d**.
 
+
+---
+
+### D36 — Pressing down in the try-order picker reorders your models. How should reordering work on a controller?
+
+**Raised 2026-08-28 from the fullscreen picker edge-escape audit.** Real controller presses; the
+full measurement is in [roadmap-details.md](../roadmap-details.md) under *Fullscreen picker
+edge-escape audit*.
+
+**What happens now.** Open **Set text model try order…**. Press down. The highlighted model moves
+one place down the list — the highlight does not move to the next model, the *model* moves. Press
+again and it moves again. After each move the highlight vanishes entirely: nothing on screen looks
+selected, and **B no longer closes the picker** until another press brings the highlight back. The
+only way to get out downward is to keep pressing until the model has been pushed to the bottom of
+the list, at which point the highlight finally escapes to *Reset to defaults*. Measured: three
+presses turned `gemma4, qwen2.5:1.5b, qwen3.5:4b, nomic` into
+`qwen2.5:1.5b, qwen3.5:4b, nomic, gemma4`. The vision list works the same way — it is the same
+screen.
+
+**Why it matters.** Reading the list and rearranging the list are the same gesture, so a user who
+just wants to see what is in there rewrites their own model order without being told. Nothing is
+saved unless they press **Done**, so the damage stops at the picker — but they have no highlight to
+tell them what is going on, and B appearing to be broken is the worst part of it.
+
+**What is not in question.** Whichever option is chosen, the `.focus()` calls have to go: they are
+plain DOM focus, which is not how Steam's ring moves, and they are the reason the highlight
+disappears. `.cursor/rules/decky-focus-graph.mdc` already says so.
+
+**Options.**
+
+| # | Option | What it costs you |
+|---|---|---|
+| 1 | **Up/down move the highlight; reorder only with the Up/Down buttons on each row** | Simplest, and the buttons already work — you press A on one. Reordering becomes a two-step gesture: move to the row, move right to its buttons, press A. Matches every other picker in the plugin |
+| 2 | **A "grab" mode** — press A on a row to pick it up, then up/down move it, then A again to drop it | Closest to how people expect to drag a list with a controller, and keeps reordering fast. Needs a visible "held" state, or it is the current bug with extra steps |
+| 3 | **Leave up/down as reorder, but fix the highlight** so it follows the moved row and never disappears | Smallest change to what exists. Does not fix the real complaint — you still cannot read the list without editing it |
+
+**Recommendation: option 1.** It is the least code, it removes a whole class of focus bug rather
+than papering over it, and the reorder buttons it relies on are already there and already labelled
+(*"Move gemma4:e2b-it-qat up"*). Option 2 is the nicer gesture if reordering turns out to be
+something people do often, and it can be added later on top of option 1 without undoing it.
