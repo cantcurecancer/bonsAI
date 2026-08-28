@@ -8,6 +8,7 @@
 import React from "react";
 import { Focusable } from "@decky/ui";
 import { BonsaiChatSecondaryButton } from "../components/BonsaiChatSecondaryButton";
+import { ReplyCopyButton } from "../components/ReplyCopyButton";
 import {
   RefreshArrowIcon,
   ThumbDownOutlineIcon,
@@ -48,6 +49,8 @@ export type BuildReplyActionsElementArgs = {
   chipError?: string | null;
   onChip?: (chipId: ReplyMicroActionId) => void;
   askInFlight?: boolean;
+  /** When set and non-blank, the utility row gains a Copy button that copies this text. */
+  getAnswerCopyText?: () => string;
   /** When set, D-pad Up from reply actions focuses strategy chrome before the answer bubble. */
   onMoveUpFromReply?: () => boolean;
   /** D-pad Up from utility row (Retry / Show details) when no chip rows are visible. */
@@ -111,12 +114,14 @@ export function buildReplyActionsElement(
     chipError = null,
     onChip,
     askInFlight = false,
+    getAnswerCopyText,
     onMoveUpFromChips,
     onMoveDownFromUtility,
   } = args;
 
   const showChipRows = Boolean(onChip) && rating === "down";
-  const showUtilityRow = Boolean(onRetry) || Boolean(onToggleTransparency);
+  const showUtilityRow =
+    Boolean(onRetry) || Boolean(onToggleTransparency) || Boolean(getAnswerCopyText);
   const feedbackDisabled = askInFlight;
   const chipsInactive = chipsDisabled || chipUsed || askInFlight;
   const thumbsLocked = rating !== null;
@@ -129,11 +134,13 @@ export function buildReplyActionsElement(
   };
 
   /*
-   * Which of the four stops currently holds focus.
+   * Which reply stop currently holds focus (thumbs: 2, utility row: up to 3 with Copy).
    *
    * The row handlers below need this because `onMove*` has to sit on the row `Focusable`, not on the
-   * individual buttons — see the comment on the utility row — so a single handler serves both
-   * columns and has to work out which one it was called for.
+   * individual buttons — see the comment on the utility row — so a single handler serves every
+   * column and has to work out which one it was called for. Copy does not get its own up/down
+   * mapping below (it falls back to the Retry column's) — Left/Right within the row is Steam's own
+   * `flow-children="horizontal"` navigation, unaffected by which column owns the vertical hop.
    */
   const focusedStop = (): ReplyStopId | null => {
     for (const id of REPLY_STOP_ORDER) {
@@ -366,6 +373,9 @@ export function buildReplyActionsElement(
             >
               {transparencyOpen ? "Hide details" : "Show details"}
             </BonsaiChatSecondaryButton>
+          ) : null}
+          {getAnswerCopyText ? (
+            <ReplyCopyButton getCopyText={getAnswerCopyText} disabled={askInFlight} />
           ) : null}
         </Focusable>
       ) : null}

@@ -2277,6 +2277,13 @@ class Plugin:
 
         return read_host_clipboard_text(logger)
 
+    async def write_host_clipboard_text(self, text: str = ""):
+        """Write clipboard via host script (wl-copy/xclip); last-resort fallback behind the
+        frontend's own navigator.clipboard.writeText and execCommand('copy') attempts."""
+        from backend.services.clipboard_service import write_host_clipboard_text
+
+        return write_host_clipboard_text(text, logger)
+
     async def take_steam_screenshot(self, app_id: str = ""):
         """Close-QAM flow: capture game into Steam screenshots (not auto-attached to Ask)."""
         try:

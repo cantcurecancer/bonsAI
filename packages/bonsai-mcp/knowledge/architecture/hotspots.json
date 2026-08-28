@@ -2,7 +2,7 @@
   "hotspots": [
     {
       "path": "main.py",
-      "lines": 3152,
+      "lines": 3159,
       "role": "Decky RPC entrypoints and orchestration"
     },
     {
@@ -72,7 +72,7 @@
     },
     {
       "path": "src/components/MainTabChatTranscript.tsx",
-      "lines": 811,
+      "lines": 835,
       "role": ""
     },
     {
@@ -191,13 +191,13 @@
       "role": ""
     },
     {
-      "path": "src/styles/sections/section-8.ts",
-      "lines": 383,
+      "path": "src/utils/buildReplyActionsElement.tsx",
+      "lines": 385,
       "role": ""
     },
     {
-      "path": "src/utils/buildReplyActionsElement.tsx",
-      "lines": 375,
+      "path": "src/styles/sections/section-8.ts",
+      "lines": 383,
       "role": ""
     }
   ]

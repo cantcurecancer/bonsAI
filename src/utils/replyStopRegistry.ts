@@ -8,14 +8,15 @@
 
 import { elementHasFocus } from "./uiDocument";
 
-export type ReplyStopId = "helpful" | "not-really" | "retry" | "show-details";
+export type ReplyStopId = "helpful" | "not-really" | "retry" | "show-details" | "copy";
 
-/** Reading order of the 2x2 grid — used to ask "which stop has focus?" deterministically. */
+/** Reading order of the grid — used to ask "which stop has focus?" deterministically. */
 export const REPLY_STOP_ORDER: readonly ReplyStopId[] = [
   "helpful",
   "not-really",
   "retry",
   "show-details",
+  "copy",
 ];
 
 const stops = new Map<ReplyStopId, HTMLElement>();
