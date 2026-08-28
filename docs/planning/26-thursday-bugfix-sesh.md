@@ -190,6 +190,26 @@ Each of these has exact steps in its roadmap/testing entry. Save every run's evi
 
 ---
 
+## Phase 4 — the Strategy branch picker — **RUN 2026-08-27, backend half fixed**
+
+> **Step 1's free measurement paid off immediately, and contradicted its own log line.** With DRG
+> Survivor running the log said the model emitted nothing (`branch_marker=False`) while the ask
+> trace's raw output held a valid two-option fence. So neither branch of the sequence below applied:
+> not a parse rejection (`marker=True, parsed=False`), and not model non-compliance either.
+>
+> **The cause was one line.** The final extract read the *display* text, which
+> `hide_incomplete_strategy_branch_fence` deliberately strips the fence out of so raw JSON never
+> scrolls past mid-stream. Extraction now reads the raw text with only the status tags and cue
+> removed. Two tests, red before green. Re-measured on device: **`branch_marker=True
+> branch_parsed=True branch_options=2`**, reply still clean prose. **No prompt coaching, model
+> routing or feature gating is needed** — step 3 of the sequence below is moot for this model.
+>
+> **The buttons still do not render**, for a second and independent reason in the frontend: the
+> picker only renders for `expandedTurnKey === "live"`, and the post-Ask slot reload re-keys the same
+> answer to its archived slot id the instant it lands. Measured, filed, and **not attempted this
+> session** — the fix is a placement change inside the turn slot's D-pad graph, and the rule is to
+> measure on device before moving layout. Row **STRAT-BRANCH-01**. Original plan text below.
+
 ## Phase 4 — the Strategy branch picker (★★★) — maintainer go-ahead 2026-08-27
 
 **Background, plainly:** in Strategy mode, the AI's first answer is supposed to end with a
