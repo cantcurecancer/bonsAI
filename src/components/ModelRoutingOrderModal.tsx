@@ -5,7 +5,7 @@
  * Solves: Drag-free Deck-friendly reorder UI with policy-tier and VRAM filters applied.
  * Does not: Pull models or persist settings — parent supplies catalog and commits saved order.
  */
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Button, Focusable } from "@decky/ui";
 import type { ModelPolicyTierId } from "../data/modelPolicy";
 import type { PullModelEntry } from "../data/pullModelCatalog";
@@ -57,7 +57,6 @@ export function ModelRoutingOrderModal({
     [kind, installedTags, savedOrder],
   );
   const [order, setOrder] = useState<string[]>(initial);
-  const rowRefs = useRef<(HTMLElement | null)[]>([]);
 
   const rows: RowMeta[] = useMemo(
     () =>
@@ -108,14 +107,27 @@ export function ModelRoutingOrderModal({
           {title}
         </div>
         <div className="bonsai-prose" style={{ fontSize: 11, color: "#9fb7d5", lineHeight: 1.4 }}>
-          Installed models only. Move up/down to set try order. Grayed models stay in the list but are skipped at Ask
-          time when blocked by tier or high-VRAM policy.
+          Installed models only. Use a row's <strong>Up</strong> and <strong>Down</strong> buttons to set the try order.
+          Grayed models stay in the list but are skipped at Ask time when blocked by tier or high-VRAM policy.
         </div>
         <Focusable
           className="bonsai-model-routing-list"
           flow-children="vertical"
           style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: "52vh", overflowY: "auto" }}
         >
+          {/*
+            Rows deliberately do NOT handle onMoveUp/onMoveDown. They used to, and reordering was
+            bound to them, so on a controller Down moved the *model* instead of the highlight: a
+            user scrolling to read the list silently rewrote it (measured on device 2026-08-28 --
+            three presses reordered four models). The handlers also called `.focus()` on the
+            neighbouring row, a plain DOM focus, which is not how Steam moves its ring -- after
+            each reorder nothing owned `gpfocus` at all and even B stopped closing the modal.
+
+            Reordering belongs to each row's Up/Down buttons, which already do it on A and are
+            already labelled for a screen reader. Locked as D36 option 1. If reordering ever needs
+            to be faster than "move right, press A", add an explicit grab mode -- do not put it
+            back on the navigation keys.
+          */}
           {rows.map((row, index) => {
             const inactive = row.tierBlocked || row.highVramInactive;
             return (
@@ -132,27 +144,6 @@ export function ModelRoutingOrderModal({
                   opacity: inactive ? 0.55 : 1,
                   background: "rgba(255,255,255,0.04)",
                 }}
-                {...({
-                  ref: (el: HTMLElement | null) => {
-                    rowRefs.current[index] = el;
-                  },
-                  onMoveUp: () => {
-                    if (index > 0) {
-                      move(index, -1);
-                      rowRefs.current[index - 1]?.focus();
-                      return true;
-                    }
-                    return false;
-                  },
-                  onMoveDown: () => {
-                    if (index < rows.length - 1) {
-                      move(index, 1);
-                      rowRefs.current[index + 1]?.focus();
-                      return true;
-                    }
-                    return false;
-                  },
-                } as Record<string, unknown>)}
               >
                 <span style={{ flex: 1, fontSize: 12, color: "#e2e8f0", minWidth: 0, wordBreak: "break-word" }}>
                   {row.tag}

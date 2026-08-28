@@ -240,3 +240,43 @@ serves the vision order, so the vision list has the same defect without needing 
 
 **Also re-confirmed in passing:** closing the models hub put the ring back on the **tab strip**,
 not on the button that opened it — **PICKER-FOCUS-01**, exactly as recorded on 2026-08-04.
+
+### D36 option 1, implemented and confirmed — 2026-08-28
+
+**The change.** Each row's `onMoveUp` / `onMoveDown` handlers are gone, along with the
+`rowRefs` + `.focus()` calls they used. Reordering stays where it already worked: the **Up** and
+**Down** buttons on each row, pressed with A. The body copy changed with it — *"Move up/down to set
+try order"* was ambiguous once the D-pad stopped reordering, and now reads *"Use a row's Up and Down
+buttons to set the try order."* A comment on the row records why the handlers must not come back.
+
+**Confirmed on device**, real presses, bundle hash matched host and Deck (`fc91a526…`):
+
+| Check | Before | After |
+|---|---|---|
+| One press of Down | model moved, order rewritten | highlight moves to the next row, order unchanged |
+| Ring after that press | `gpfocus` count **0**, `activeElement` on `BODY` | ring owned, on the next row's button |
+| Reaching the footer | only after dragging the item to the last row | three ordinary presses to **Reset to defaults** |
+| Up from the first row | held | holds — nothing above it, no trap |
+| Reordering still works | — | A on a row's **Down** moved `gemma4` below `qwen2.5:1.5b` |
+
+Nothing persisted: closed with **Cancel**, and `text_model_routing_order` /
+`vision_model_routing_order` both still read `[]` on disk.
+
+**Two things the confirmation run turned up, neither of them caused by this change.**
+
+- **Pressing a reorder button costs one dead press.** After A on **Down**, `gpfocus` count is 0 —
+  the row's DOM node moves when the list reorders and Steam's ring does not follow it. The next
+  press re-acquires, and lands on the moved model's own button, which is where you would want it;
+  the cost is one press that appears to do nothing. This is pre-existing on those buttons, not new,
+  but it is more visible now that they are the only way to reorder. A candidate fix exists — the
+  focus-graph rule allows a plain `focus()` *within* one container, and both buttons are inside the
+  list — but it needs its own measurement, so it is not bundled here.
+- **B does not close this modal, from anywhere in it.** Measured from a row button and again from
+  the footer: three presses, modal still open. An earlier note in this file said B was blocked only
+  while the ring was lost — **that was wrong**, and is corrected here: B has never worked in this
+  picker. The cause is that `ModelRoutingOrderModal` renders `BonsaiModalScope` with bare divs and a
+  hand-rolled footer, while every picker that *does* close on B wraps its content in Decky's
+  `ConfirmModal` — `OllamaModelsHubModal.tsx:127-128` (`strTitle="AI models"`),
+  `PullModelsModal.tsx:1092`, `CharacterPickerModal.tsx:462`. That single difference also explains
+  the long-standing *"chrome does not match the other full-screen pickers"* entry, so moving this
+  modal onto `ConfirmModal` closes both at once, against a working in-repo example.

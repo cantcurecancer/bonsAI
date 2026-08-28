@@ -33,11 +33,15 @@ seconds; anything that would otherwise have to be re-measured goes there rather 
   **OK** / **Pull selected** at the bottom; the top and bottom presses hold still rather than trapping you. The **try-order picker**
   fails, and is now its own ★★★ entry below. Detail: [roadmap-details.md](roadmap-details.md).
 
-- ★★★ **Pressing down in the try-order picker reorders your models instead of moving the highlight** — **OPEN, found on device 2026-08-28.**
-  Each press down shuffles the highlighted model one place down the list and then loses the highlight completely: nothing on screen is
-  selected, and **B stops closing the picker** until a further press brings the ring back. The only way out downward is to keep pressing
-  until the model reaches the bottom. Both the text and the vision list are affected. A user trying to read the list silently reorders it.
-  Needs a maintainer call on how reordering should work on a controller — see [D36](audit/maintainer-decisions-locked.md).
+- ~~★★★ **Pressing down in the try-order picker reorders your models instead of moving the highlight**~~ — **FIXED and confirmed on device
+  2026-08-28**, the same day it was found. Down now moves the highlight, the list stays put, and three presses reach the buttons at the
+  bottom. Reordering moved to each row's own **Up**/**Down** buttons, which already worked. [D36](audit/maintainer-decisions-locked.md)
+  option 1, chosen by the maintainer.
+
+- ★★ **B does not close the try-order picker — from anywhere in it** — **OPEN, found on device 2026-08-28** while confirming the fix above.
+  You have to walk down to **Cancel** and press A. Every other fullscreen picker closes on B. One cause explains both this and the chrome
+  complaint below: this is the only picker that does not use the shared modal frame the others do, so it never got B, a title bar, or the
+  standard footer. Fixing it is a small change with a working example already in the repo.
 
 - ~~★★ **Choosing a character: focus ring now visible**~~ — **CLOSED.** The maintainer confirmed on device 2026-08-27 that focus is visible
   and the picker is usable; the edge behaviour it was still waiting on passed the 2026-08-28 audit above. Nothing left open here.
@@ -105,8 +109,9 @@ seconds; anything that would otherwise have to be re-measured goes there rather 
   screen that lays tiles out in a grid. Needs each grid to leave a margin outside its own edge for the ring to fit.
 - ★★ **Focus ring styling is inconsistent** between plugin controls and Steam's own — **PARTIAL.** Modal scoping shipped; a blanket rule was
   tried and reverted in favour of Steam's native outline.
-- ★★ **The model routing try-order modal** chrome does not match the other full-screen pickers — deferred polish. The focus half of this
-  entry turned out to be much worse than "lands on the leaf buttons" and moved to its own ★★★ entry at the top of this file.
+- ★★ **The model routing try-order modal** chrome does not match the other full-screen pickers — **cause found 2026-08-28: it is the only
+  picker not built on the shared modal frame.** Same root cause as the B entry above, so one change fixes both. The focus half of this
+  entry was fixed the same day under D36.
 
 ### Documentation bookkeeping
 

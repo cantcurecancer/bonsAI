@@ -2218,7 +2218,7 @@ Nothing here changed product behavior.
 
 ---
 
-### D36 — Pressing down in the try-order picker reorders your models. How should reordering work on a controller?
+### D36 — LOCKED (option 1, 2026-08-28) — Pressing down in the try-order picker reorders your models. How should reordering work on a controller?
 
 **Raised 2026-08-28 from the fullscreen picker edge-escape audit.** Real controller presses; the
 full measurement is in [roadmap-details.md](../roadmap-details.md) under *Fullscreen picker
@@ -2255,3 +2255,9 @@ disappears. `.cursor/rules/decky-focus-graph.mdc` already says so.
 than papering over it, and the reorder buttons it relies on are already there and already labelled
 (*"Move gemma4:e2b-it-qat up"*). Option 2 is the nicer gesture if reordering turns out to be
 something people do often, and it can be added later on top of option 1 without undoing it.
+
+**Locked 2026-08-28, in the maintainer's words: "option 1. Fix it now."** Implemented and
+confirmed on device the same day: the row handlers and their `.focus()` calls are gone, Down moves
+the highlight, and reordering lives on each row's Up/Down buttons. Measurements and the two
+side-findings the confirmation run turned up are in
+[roadmap-details.md](../roadmap-details.md) under *D36 option 1, implemented and confirmed*.
