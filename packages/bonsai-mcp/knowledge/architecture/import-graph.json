@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 326,
-  "edgeCount": 768,
+  "fileCount": 329,
+  "edgeCount": 777,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -340,6 +340,7 @@
         "src/features/preset-carousel/carouselState.ts",
         "src/features/unified-input/constants.ts",
         "src/utils/joinPresetWithRunningGame.ts",
+        "src/utils/navFocusRegistry.ts",
         "src/utils/uiDocument.ts"
       ],
       "importedBy": [
@@ -1249,12 +1250,19 @@
         "src/index.tsx"
       ]
     },
+    "src/features/plugin-shell/tabTitles.test.tsx": {
+      "imports": [
+        "src/features/plugin-shell/tabTitles.tsx"
+      ],
+      "importedBy": []
+    },
     "src/features/plugin-shell/tabTitles.tsx": {
       "imports": [
         "src/components/icons.tsx",
         "src/features/unified-input/constants.ts"
       ],
       "importedBy": [
+        "src/features/plugin-shell/tabTitles.test.tsx",
         "src/index.tsx",
         "src/styles/sections/section-1.ts"
       ]
@@ -1613,10 +1621,22 @@
         "src/index.tsx"
       ]
     },
+    "src/hooks/useMainTabAskBarFocus.test.ts": {
+      "imports": [
+        "src/hooks/useMainTabAskBarFocus.ts",
+        "src/utils/navFocusRegistry.ts",
+        "src/utils/uiDocument.ts"
+      ],
+      "importedBy": []
+    },
     "src/hooks/useMainTabAskBarFocus.ts": {
-      "imports": [],
+      "imports": [
+        "src/utils/navFocusRegistry.ts",
+        "src/utils/uiDocument.ts"
+      ],
       "importedBy": [
-        "src/components/MainTabUnifiedAskBar.tsx"
+        "src/components/MainTabUnifiedAskBar.tsx",
+        "src/hooks/useMainTabAskBarFocus.test.ts"
       ]
     },
     "src/hooks/usePermissionJump.test.ts": {
@@ -1933,10 +1953,18 @@
         "src/components/BonsaiPluginShell.tsx"
       ]
     },
+    "src/styles/presetChipFocusRing.test.ts": {
+      "imports": [
+        "src/styles/sections/gamepadAndPullModels.ts",
+        "src/styles/sections/section-4.ts"
+      ],
+      "importedBy": []
+    },
     "src/styles/sections/gamepadAndPullModels.ts": {
       "imports": [],
       "importedBy": [
-        "src/styles/bonsaiScopeStylesheet.ts"
+        "src/styles/bonsaiScopeStylesheet.ts",
+        "src/styles/presetChipFocusRing.test.ts"
       ]
     },
     "src/styles/sections/scopeBase.ts": {
@@ -1978,7 +2006,8 @@
         "src/styles/sections/uiScalePx.ts"
       ],
       "importedBy": [
-        "src/styles/bonsaiScopeStylesheet.ts"
+        "src/styles/bonsaiScopeStylesheet.ts",
+        "src/styles/presetChipFocusRing.test.ts"
       ]
     },
     "src/styles/sections/section-5.ts": {
@@ -2898,8 +2927,11 @@
     "src/utils/navFocusRegistry.ts": {
       "imports": [],
       "importedBy": [
+        "src/components/MainTabPresetAnimatedChips.tsx",
         "src/components/SessionContextStrip.tsx",
         "src/features/chat-slots/ChatSlotRow.tsx",
+        "src/hooks/useMainTabAskBarFocus.test.ts",
+        "src/hooks/useMainTabAskBarFocus.ts",
         "src/utils/liveTurnFocusGraph.ts",
         "src/utils/navFocusRegistry.test.ts"
       ]
@@ -3284,6 +3316,8 @@
         "src/components/MainTabUnifiedAskBar.tsx",
         "src/features/plugin-shell/modalReturnFocusRegistry.ts",
         "src/hooks/useBonsaiAskOrchestration.ts",
+        "src/hooks/useMainTabAskBarFocus.test.ts",
+        "src/hooks/useMainTabAskBarFocus.ts",
         "src/utils/answerBubbleElRegistry.test.ts",
         "src/utils/answerBubbleElRegistry.ts",
         "src/utils/answerBubbleNavigation.test.ts",

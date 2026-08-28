@@ -27,6 +27,7 @@ import {
 } from "../features/preset-carousel/carouselState";
 import { BONSAI_FOREST_GREEN } from "../features/unified-input/constants";
 import { joinPresetWithRunningGame } from "../utils/joinPresetWithRunningGame";
+import { registerNavFocus, type NavRefHolder } from "../utils/navFocusRegistry";
 import { elementHasFocus } from "../utils/uiDocument";
 
 /** Fade-in duration (ms); must match the slot wrapper transition when opacity increases. */
@@ -517,6 +518,19 @@ function MainTabPresetVerticalCarousel(
   const autoPausedUntilRef = useRef(0);
   const verticalRef = useRef<HTMLDivElement | null>(null);
 
+  /*
+   * The carousel is its own Focusable, so it is a separate navigation container from the Ask bar
+   * below it. Steam populates this with the container's nav node, which is the only supported way
+   * to hand the gamepad ring across that boundary — a plain `focus()` moves `activeElement` and
+   * leaves the ring where it was (navFocusRegistry, measured 2026-08-04). That split is what put a
+   * ring on a chip while the D-pad was really on the tab strip, found on device 2026-08-28.
+   */
+  const navRef = useRef<NavRefHolder["current"]>(null);
+  useEffect(() => {
+    registerNavFocus("preset-carousel", navRef);
+    return () => registerNavFocus("preset-carousel", null);
+  }, []);
+
   const pauseAuto = useCallback(() => {
     autoPausedUntilRef.current = performance.now() + CAROUSEL_MANUAL_PAUSE_MS;
   }, []);
@@ -578,7 +592,12 @@ function MainTabPresetVerticalCarousel(
   const trackOffset = carouselTrackOffsetPx(focusIndex);
 
   return (
-    <Focusable className="bonsai-preset-carousel-focus-root">
+    <Focusable
+      /* `navRef` is a real Steam Focusable prop that Decky's types omit — same gap as `onMoveDown`,
+         so it goes through the cast the repo already uses for those (SessionContextStrip). */
+      {...({ navRef } as Record<string, unknown>)}
+      className="bonsai-preset-carousel-focus-root"
+    >
       <div className="bonsai-preset-carousel-vertical" ref={verticalRef}>
         <div
           className="bonsai-preset-carousel-track"

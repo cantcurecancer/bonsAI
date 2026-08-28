@@ -45,13 +45,6 @@ seconds; anything that would otherwise have to be re-measured goes there rather 
 - ~~★★ **Choosing a character: focus ring now visible**~~ — **CLOSED.** The maintainer confirmed on device 2026-08-27 that focus is visible
   and the picker is usable; the edge behaviour it was still waiting on passed the 2026-08-28 audit above. Nothing left open here.
 
-- ★★ **OPEN — A carousel chip shows a focus ring when the D-pad is actually on the tab strip above it.** Found 2026-08-28 during the
-  automated Batch A run, and it fooled both parties at once: the maintainer, watching the screen, saw the ring on a chip; the automation,
-  reading the real gamepad focus, saw it on a **tab icon** — and pressing A activated the tab (a no-op on the already-open Main tab), not
-  the chip. Two things compound here and it is UNKNOWN which is the bug to fix first: the chip renders focus styling it does not own, and
-  the tab icon's accessible text is the *entire tab's content*, so anything reading labels (a person squinting, a screen reader, the QA
-  rig) matches chip text while sitting on the tab strip. Evidence: `runs/probe-focus-1.json`, `runs/probe-strip-right.json` (gpfocus on a
-  60×57 icon-strip element whose label is the whole Main tab). New Settings/QAM focus work must check `.cursor/rules/decky-focus-graph.mdc`.
 
 ### Wrong or missing content in a reply
 
@@ -82,6 +75,20 @@ seconds; anything that would otherwise have to be re-measured goes there rather 
 ### Fixed in code, never confirmed on the Deck
 
 *Each of these has a fix and tests. None has been watched on hardware, so none can be called done.*
+
+- ★★ **A carousel chip showed a focus ring while the D-pad was on the tab strip above it** — **fixed 2026-08-28, on-Deck confirmation owed
+  (`FOCUS-CHIP-RING-01`).** Found during the automated Batch A run, and it fooled both parties at once: the maintainer, watching the screen,
+  saw the ring on a chip; the automation, reading the real gamepad focus, saw it on a **tab icon**, and pressing A activated the tab rather
+  than the chip. Both halves named in the original entry turned out to be real and both are fixed. **The cause:** the carousel is its own
+  `Focusable`, so Up out of the Ask bar was crossing a navigation boundary with a plain `focus()` — which moves `activeElement` and leaves
+  Steam's ring behind, the failure `navFocusRegistry.ts` was written for in the first place. The chip then drew a ring off `:focus-visible`
+  (the DOM's idea of focus) while Steam routed the press somewhere else. It now hands over with `TakeFocus(true)` like the session context
+  strip does, and reports whether the ring actually followed instead of whether the element existed. **The paint is honest too:** the blue
+  current-row border and the white chip ring only draw when the carousel owns Steam's ring, with a `:not(:has(.gpfocus))` arm so the marker
+  still shows on desktop, on touch and in the in-IDE preview, where nothing owns a ring at all. **And the tab icons now have names** —
+  `aria-label` per tab, so a probe or a screen reader on the tab strip no longer reads back the whole tab's contents. Evidence for the
+  original find: `runs/probe-focus-1.json`, `runs/probe-strip-right.json`. New Settings/QAM focus work must check
+  `.cursor/rules/decky-focus-graph.mdc`.
 
 - ★★ **Focus lands on answer text that does nothing when you press A** — **audited on device 2026-08-28; the reported cause was wrong.** The
   Developer chip's JSON sits inside the chip strip, so the ring never lands on it, and stopping on each paragraph is on purpose. The real one

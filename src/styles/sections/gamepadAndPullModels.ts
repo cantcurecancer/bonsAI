@@ -52,7 +52,7 @@ export function buildGamepadFocusRingStylesheet(): string {
         .bonsai-scope button.bonsai-chat-secondary-btn.gpfocus,
         .bonsai-scope button.bonsai-chat-secondary-btn:focus-visible,
         .bonsai-scope button.bonsai-preset-glass.gpfocus,
-        .bonsai-scope button.bonsai-preset-glass:focus-visible,
+        .bonsai-scope:not(:has(.gpfocus)) button.bonsai-preset-glass:focus-visible,
         .bonsai-scope button.bonsai-preset-help-chip.gpfocus,
         .bonsai-scope button.bonsai-preset-help-chip:focus-visible,
         .bonsai-scope .bonsai-askbar-merged .bonsai-ask-primary.gpfocus,
@@ -77,7 +77,11 @@ export function buildGamepadFocusRingStylesheet(): string {
         .bonsai-scope button.bonsai-pullmodels-refresh-btn:focus-visible {
           ${ring}
         }
-        .bonsai-scope .bonsai-preset-carousel-vertical .bonsai-preset-carousel-slot--focus .bonsai-preset-glass,
+        /* The blue "this is the current row" border, gated on the carousel actually owning Steam's
+           ring — see section-4.ts for why the gate exists and what the third selector is for. */
+        .bonsai-scope .bonsai-preset-carousel-focus-root.gpfocuswithin .bonsai-preset-carousel-slot--focus .bonsai-preset-glass,
+        .bonsai-scope .bonsai-preset-carousel-focus-root:has(.gpfocus) .bonsai-preset-carousel-slot--focus .bonsai-preset-glass,
+        .bonsai-scope:not(:has(.gpfocus)) .bonsai-preset-carousel-slot--focus .bonsai-preset-glass,
         .bonsai-scope button.bonsai-preset-glass.gpfocus {
           border-color: rgba(56, 189, 248, 0.72) !important;
         }

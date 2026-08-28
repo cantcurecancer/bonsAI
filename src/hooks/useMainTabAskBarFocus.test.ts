@@ -1,0 +1,113 @@
+/**
+ * Title: Ask bar → preset chip focus transfer
+ * Purpose: Pin that pressing Up out of the Ask bar hands Steam the ring, and admits when it cannot.
+ * Used for: `focusFirstPresetChip`, the Up edge of the unified input's D-pad graph.
+ * Solves: On device 2026-08-28 this claimed success after a plain `focus()`. The carousel is its
+ *         own navigation container, so that moved `activeElement` only — Steam's ring went to the
+ *         tab strip instead, a chip drew the highlight, and A activated the tab.
+ * Does not: Cover the other focus helpers in this hook; they hop within one container and work.
+ */
+import { renderHook } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+import { useMainTabAskBarFocus } from "./useMainTabAskBarFocus";
+import { registerNavFocus, resetNavFocusRegistry } from "../utils/navFocusRegistry";
+import { resetUiDocument } from "../utils/uiDocument";
+
+/** The on-device shape: a row host holding the carousel's current slot and its chip button. */
+function buildPresetRow(): { host: HTMLDivElement; chip: HTMLButtonElement } {
+  const host = document.createElement("div");
+  host.className = "bonsai-preset-row-host";
+
+  const root = document.createElement("div");
+  root.className = "bonsai-preset-carousel-focus-root";
+
+  const slot = document.createElement("div");
+  slot.className = "bonsai-preset-carousel-slot bonsai-preset-carousel-slot--focus";
+  slot.setAttribute("data-bonsai-preset-visible", "true");
+
+  const chip = document.createElement("button");
+  chip.className = "bonsai-preset-glass";
+
+  slot.appendChild(chip);
+  root.appendChild(slot);
+  host.appendChild(root);
+  document.body.appendChild(host);
+  return { host, chip };
+}
+
+function renderFocusHelpers(host: HTMLDivElement) {
+  return renderHook(() =>
+    useMainTabAskBarFocus(
+      {
+        unifiedInputFieldLayerRef: { current: null },
+        attachActionHostRef: { current: null },
+        askBarHostRef: { current: null },
+        presetCarouselHostRef: { current: host },
+      },
+      false,
+    ),
+  );
+}
+
+/** Steam's ring, parked on something that is not the carousel. */
+function putRingOnTabStrip(): HTMLElement {
+  const strip = document.createElement("div");
+  strip.className = "gpfocus";
+  document.body.appendChild(strip);
+  return strip;
+}
+
+describe("focusFirstPresetChip", () => {
+  beforeEach(() => {
+    resetNavFocusRegistry();
+    resetUiDocument();
+  });
+
+  afterEach(() => {
+    document.body.innerHTML = "";
+    resetNavFocusRegistry();
+    resetUiDocument();
+  });
+
+  it("uses Steam's own transfer when the carousel has registered its nav node", () => {
+    const { host, chip } = buildPresetRow();
+    const takeFocus = vi.fn(() => true);
+    registerNavFocus("preset-carousel", { current: { TakeFocus: takeFocus } });
+
+    const { result } = renderFocusHelpers(host);
+    expect(result.current.focusFirstPresetChip()).toBe(true);
+    // `true` marks the move as gamepad-sourced, which is what a D-pad press is.
+    expect(takeFocus).toHaveBeenCalledWith(true);
+    // No DOM focus needed — Steam moves the ring and the chip's own onFocus follows it.
+    expect(document.activeElement).not.toBe(chip);
+  });
+
+  it("reports failure when the ring stayed on the tab strip", () => {
+    const { host, chip } = buildPresetRow();
+    putRingOnTabStrip();
+
+    const { result } = renderFocusHelpers(host);
+    const claimed = result.current.focusFirstPresetChip();
+
+    // The DOM focus still moves — that is the fallback doing its best — but the answer is honest.
+    expect(document.activeElement).toBe(chip);
+    expect(claimed).toBe(false);
+  });
+
+  it("falls back to a plain focus() where nothing owns a ring at all", () => {
+    const { host, chip } = buildPresetRow();
+
+    const { result } = renderFocusHelpers(host);
+    expect(result.current.focusFirstPresetChip()).toBe(true);
+    expect(document.activeElement).toBe(chip);
+  });
+
+  it("says false rather than true when there is no chip to focus", () => {
+    const host = document.createElement("div");
+    document.body.appendChild(host);
+
+    const { result } = renderFocusHelpers(host);
+    expect(result.current.focusFirstPresetChip()).toBe(false);
+  });
+});

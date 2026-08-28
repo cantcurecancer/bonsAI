@@ -37,9 +37,26 @@ export const ALL_BONSAI_TAB_IDS: readonly BonsaiTabId[] = [
   "about",
 ];
 
+/**
+ * What each tab is called out loud. The titles are icons with no text, so without this a tab has no
+ * accessible name of its own and anything reading labels falls back to the nearest text it can find
+ * — which, on device 2026-08-28, was *the whole tab's contents*: a probe sitting on the Main tab
+ * icon reported the chip carousel's text, so a chip looked focused when the D-pad was on the strip
+ * above it. Screen readers hit the same wall. Short names, the way the tab is spoken about in the
+ * UI, not sentences.
+ */
+export const BONSAI_TAB_ACCESSIBLE_NAMES: Readonly<Record<BonsaiTabId, string>> = {
+  main: "Ask bonsAI",
+  ollama: "Where AI runs",
+  settings: "Settings",
+  permissions: "Permissions",
+  developer: "Developer",
+  about: "About bonsAI",
+};
+
 export function bonsaiTabIconTitle(classSuffix: BonsaiTabId, children: React.ReactNode): React.ReactElement {
   return (
-    <div className="bonsai-tab-title-leaf">
+    <div className="bonsai-tab-title-leaf" aria-label={BONSAI_TAB_ACCESSIBLE_NAMES[classSuffix]}>
       <div className={`bonsai-tab-title-shell bonsai-tab-title-shell--${classSuffix}`}>
         <span className={`bonsai-tab-title-icon bonsai-tab-title-icon--${classSuffix}`}>{children}</span>
       </div>

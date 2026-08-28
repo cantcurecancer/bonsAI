@@ -125,7 +125,21 @@ export function buildSection4Section(): string {
           min-width: 0 !important;
           will-change: transform !important;
         }
-        .bonsai-scope .bonsai-preset-carousel-vertical .bonsai-preset-carousel-slot--focus .bonsai-preset-glass {
+        /*
+          The blue border marks which chip the carousel considers current. It is NOT a focus ring
+          and must never look like one: ungated, it sat on a chip permanently, so with the D-pad up
+          on the tab strip the screen still showed a highlighted chip — the fake focus ring found on
+          device 2026-08-28, which fooled the maintainer and the QA rig at the same time.
+
+          Gate 1 and 2 say "the carousel owns Steam's ring": \`gpfocuswithin\` is what Steam stamps on
+          the ancestor Focusable, and the \`:has(.gpfocus)\` arm covers it directly in case Steam
+          stamps only the chip. Gate 3 keeps the marker on desktop, in the in-IDE preview and on
+          touch, where nothing owns a ring at all — the same fallback rule
+          \`elementHasGamepadFocus\` uses in uiDocument.ts.
+        */
+        .bonsai-scope .bonsai-preset-carousel-focus-root.gpfocuswithin .bonsai-preset-carousel-slot--focus .bonsai-preset-glass,
+        .bonsai-scope .bonsai-preset-carousel-focus-root:has(.gpfocus) .bonsai-preset-carousel-slot--focus .bonsai-preset-glass,
+        .bonsai-scope:not(:has(.gpfocus)) .bonsai-preset-carousel-slot--focus .bonsai-preset-glass {
           border-color: rgba(56, 189, 248, 0.45) !important;
         }
 

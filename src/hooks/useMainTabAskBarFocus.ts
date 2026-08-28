@@ -7,6 +7,9 @@
  */
 import React, { useCallback, useMemo } from "react";
 
+import { takeNavFocus } from "../utils/navFocusRegistry";
+import { elementHasGamepadFocus } from "../utils/uiDocument";
+
 export type MainTabAskBarFocusRefs = {
   unifiedInputFieldLayerRef: React.Ref<HTMLDivElement>;
   attachActionHostRef: React.Ref<HTMLDivElement>;
@@ -58,13 +61,28 @@ export function useMainTabAskBarFocus(
     return true;
   }, [showAiCharacterChrome, refs.unifiedInputFieldLayerRef]);
 
+  /**
+   * Up from the Ask bar into the preset row.
+   *
+   * The carousel is its own `Focusable`, i.e. a separate navigation container, so a plain `focus()`
+   * on a chip only moves `activeElement` — Steam's ring stays where it was. Found on device
+   * 2026-08-28: the ring went to the tab strip while a chip carried the highlight, and A activated
+   * the tab. `takeNavFocus` is Steam's own transfer and is the supported way across that boundary
+   * (navFocusRegistry).
+   *
+   * The DOM ladder stays as the fallback for the frames before Decky has populated the nav ref, and
+   * for mouse and touch where there is no ring to move at all. It now reports whether the ring
+   * actually followed rather than whether the element existed — the same honesty fix
+   * `modalReturnFocusRegistry` needed, and for the same reason.
+   */
   const focusFirstPresetChip = useCallback((): boolean => {
     const host = refs.presetCarouselHostRef.current;
     const help = host?.querySelector<HTMLElement>("button.bonsai-preset-help-chip");
     if (help) {
       help.focus();
-      return true;
+      return elementHasGamepadFocus(help);
     }
+    if (takeNavFocus("preset-carousel")) return true;
     const btn =
       host?.querySelector<HTMLElement>(
         ".bonsai-preset-carousel-slot--focus button.bonsai-preset-glass",
@@ -74,7 +92,7 @@ export function useMainTabAskBarFocus(
       );
     if (!btn) return false;
     btn.focus();
-    return true;
+    return elementHasGamepadFocus(btn);
   }, [refs.presetCarouselHostRef]);
 
   const focusAskPrimary = useCallback((): boolean => {
