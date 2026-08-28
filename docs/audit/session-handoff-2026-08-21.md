@@ -215,7 +215,10 @@ Deck, not what is configured.**
   [D23](maintainer-decisions-locked.md#d23--where-do-the-paraphrase-questions-go) for the new
   baseline. **It did not fix the holdout** — that still needs rows written blind.
 - Two small bugs: the details panel says *"Running game could not be matched"* when no game is
-  running, and two different decisions are both filed as **D19**.
+  running, and two different decisions are both filed as **D19** — **fixed 2026-08-28**: the
+  corpus-licence decision is renumbered **D19b** (see
+  [D31](maintainer-decisions-locked.md#d31--which-of-the-two-d19s-keeps-the-number)); the live
+  *"Can you reach the strategy corpus without the game running?"* decision keeps **D19**.
 
 ---
 

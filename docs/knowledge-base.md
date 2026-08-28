@@ -140,7 +140,7 @@ rules and is discharged in the separately downloaded corpus package (not the plu
 
 Plan (all executable stages done 2026-08-09):
 [15-corpus-licensing-attribution-plan.md](planning/15-corpus-licensing-attribution-plan.md).
-**D20** (2026-08-14, supersedes D19): the published corpus ships as one **CC BY-SA 4.0** work,
+**D20** (2026-08-14, supersedes D19b): the published corpus ships as one **CC BY-SA 4.0** work,
 including ShareAlike sources; only GFDL and NonCommercial sources are excluded (they don't mix
 with CC BY-SA). Per-card `source_license` stays authoritative for individual reuse.
 On-Deck: reply credit → **KB-ATTRIB-01**; published corpus file beside DB → **KB-ATTRIB-02**.

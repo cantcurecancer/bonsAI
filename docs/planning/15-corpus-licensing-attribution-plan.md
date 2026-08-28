@@ -24,7 +24,7 @@ written — and that is cheaper to discover before 181 cards exist than after.
 
 | Task | Title | State |
 |---|---|---|
-| ATTR-1.1…1.4 | Confirm each source's licence, at the source | ☑ Done 2026-08-09 — footers confirmed for all in-seed wikis; Zelda corrected to GFDL, excluded from publish (D19, superseded by **D20** 2026-08-14: publish as one CC BY-SA 4.0 work, ShareAlike included) |
+| ATTR-1.1…1.4 | Confirm each source's licence, at the source | ☑ Done 2026-08-09 — footers confirmed for all in-seed wikis; Zelda corrected to GFDL, excluded from publish (D19b, superseded by **D20** 2026-08-14: publish as one CC BY-SA 4.0 work, ShareAlike included) |
 | ATTR-2.1…2.3 | Generate `ATTRIBUTIONS.md` from the corpus | ✅ Done 2026-08-09 |
 | ATTR-3.1…3.2 | State the corpus licence and the ShareAlike obligation | ✅ Done 2026-08-09 |
 | ATTR-4.1…4.2 | Repo-side `NOTICE` and the Apache/CC separation | ✅ Done 2026-08-09 |
@@ -89,7 +89,7 @@ unusable costs nothing today and costs a rewrite later.
       | `cyberpunk.fandom.com` | CC BY-SA 3.0 | snapshot `siteinfo` + `fandom.com/licensing`; page footer *"Community content is available under CC-BY-SA unless otherwise noted"* — **footer confirmed 2026-08-09** |
       | `gta.fandom.com` | CC BY-SA 3.0 | dump carries no `siteinfo`; page footer links `fandom.com/licensing`, read via Wayback at the snapshot date; live footer *"Community content is available under CC-BY-SA unless otherwise noted"* — **footer confirmed 2026-08-09** |
       | `liquipedia.net` | CC-BY-SA | `api.php` `rightsinfo` |
-      | `zelda.fandom.com` | **GFDL** | page footer: *"Community content is available under GNU Free Documentation License unless otherwise noted"* — **confirmed 2026-08-09**; seed had wrongly recorded `CC-BY-SA-3.0` (Fandom default assumed). **Excluded from publish** — GFDL does not mix with Creative Commons (unaffected by D19→D20; this exclusion is independent of the BY-vs-ShareAlike question). The 2 affected cards (King Dodongo, Water Temple) were dropped from the seed entirely 2026-08-14 rather than published under the wrong licence |
+      | `zelda.fandom.com` | **GFDL** | page footer: *"Community content is available under GNU Free Documentation License unless otherwise noted"* — **confirmed 2026-08-09**; seed had wrongly recorded `CC-BY-SA-3.0` (Fandom default assumed). **Excluded from publish** — GFDL does not mix with Creative Commons (unaffected by D19b→D20; this exclusion is independent of the BY-vs-ShareAlike question). The 2 affected cards (King Dodongo, Water Temple) were dropped from the seed entirely 2026-08-14 rather than published under the wrong licence |
       | `wiki.teamfortress.com` | **none published** | **excluded** — Valve ToU grants other users personal use only |
       | `developer.valvesoftware.com` | CC BY-NC-SA | **excluded** — NonCommercial is non-free |
       | `hades.fandom.com` | **CC BY-NC-SA 3.0** | **excluded** — snapshot `siteinfo`, which contradicts the archive.org item's `licenseurl` of CC BY-SA 3.0 |
@@ -112,7 +112,7 @@ unusable costs nothing today and costs a rewrite later.
 
 - [x] **ATTR-1.3** — Decide and write down whether **CC BY 4.0** and **CC BY-SA 3.0/4.0**
       cards may coexist in one corpus file.
-      *Decision (D19, 2026-08-09, superseded by D20, 2026-08-14):* the publishable corpus
+      *Decision (D19b, 2026-08-09, superseded by D20, 2026-08-14):* the publishable corpus
       ships as one **CC BY-SA 4.0** work; ShareAlike sources are included, not deferred.
       Per-card `source_license` stays queryable and governs individual reuse. GFDL and
       NonCommercial sources remain excluded — those exclusions were never about BY-vs-ShareAlike.
@@ -131,9 +131,9 @@ unusable costs nothing today and costs a rewrite later.
         not verbatim)
       - GTA **Muscle** — pass (no copy/paste on Statistics)
       - **Cyberpunk Sandevistan** — now in the publish set under D20 (was optional under
-        BY-only D19); spot-check before first publish, not optional.
+        BY-only D19b); spot-check before first publish, not optional.
       - Zelda **King Dodongo** — moot; the card was dropped from the seed 2026-08-14 (GFDL
-        exclusion, unaffected by D19→D20).
+        exclusion, unaffected by D19b→D20).
 
 ---
 
@@ -171,7 +171,7 @@ unusable costs nothing today and costs a rewrite later.
       *Acceptance:* the header answers "may I redistribute this?" without the reader opening
       the database. **Done 2026-08-09**, updated 2026-08-14 for D20 — `## May I redistribute
       this corpus?` in `_attributions_header_lines()` (now states the CC BY-SA 4.0 whole-work
-      label, not the D19 BY-only note).
+      label, not the D19b BY-only note).
 
 - [x] **ATTR-3.2** — Keep the existing *"sources can err → fix forward"* note from the Phase 6
       discovery lock, and add that cards are **distilled, not authoritative** — a wiki can be

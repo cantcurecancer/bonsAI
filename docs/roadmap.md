@@ -119,11 +119,6 @@ seconds; anything that would otherwise have to be re-measured goes there rather 
   picker not built on the shared modal frame.** Same root cause as the B entry above, so one change fixes both. The focus half of this
   entry was fixed the same day under D36.
 
-### Documentation bookkeeping
-
-- ★ **Two different QA rows share the ID `KB-NEWTITLE-01`**, and **two different decisions are both filed as D19**. Both are resolved on paper
-  (D30 and D31 say which keeps the name) but the documents have not been edited to match, so a search still returns two hits for one ID.
-
 ---
 
 ## Verify — shipped, QA owed
@@ -169,6 +164,7 @@ Code-fixed or shipped; on-Deck / qualitative QA still owed. Detail: [testing.md]
 - ★★★ **The eval harness scored every troubleshooting tip against the wrong vector** — fixed 2026-08-21. Two independent id sequences were used as one key, so tips were compared against unrelated vectors. Any eval number from before that date is void. [why](roadmap-details.md#shipped-qa-owed--why-each-was-built-this-way)
 - ★ **The eval harness's model sweep could not run at all** — fixed 2026-08-21. A required argument was added to the retrieval helper and two of its four callers were never updated, so the sweep crashed on entry. Any sweep result from before that date is void.
 - ★★★ **The vector half of retrieval now has its own recall pass** — fixed 2026-08-18; **KB-RECALL-01** owed on device, **KB-RECALL-02** verified at the desk. It searches the game's cards directly instead of only re-ordering the keyword shortlist. [why](roadmap-details.md#shipped-qa-owed--why-each-was-built-this-way)
+- ★★★★ **Card relevance has its second signal (pool margin)** — shipped 2026-08-28, closing the backlog item that D28's thin 0.515 floor retune triggered. The vector recall pass now runs only when the game's best card either stands out from the rest of that game's cards by 0.0395 cosine or clears the floor by the same amount — a junk question is roughly equidistant from everything a game knows, so it fails both, while a genuine paraphrase singles a card out and a broad "how do i play this" question scores high outright. Measured before shipping: all six D28 ordinary phrases now get **zero** cards from the vector half (the two that attach through the keyword half stay, by design under D25/D28), the `kb_eval_v2` tune / tips slices are unchanged to the decimal, holdout gained one top-1 case without being tuned against, and D25's *"the boss"* / *"gels"* keep their cards. On-Deck re-check of the six phrases owed on **KB-SPELLING-01**. Numbers and the two rejected candidate signals: [audit/kb-second-signal-2026-08-28.md](audit/kb-second-signal-2026-08-28.md).
 - ★★★★★ **Global quick-launch macro** — Guide-chord docs in [troubleshooting.md](troubleshooting.md) §5; verification checklist not run on hardware.
 - **D-pad reachability sweep blind spot (2026-08-04)** — cross-file nested `Focusable` (spoiler fence) not visible to per-file static analysis; answer on-device per [testing-manual.md](testing-manual.md) focus rows.
 - **Reply-language snapshot RPC (2026-08-03 fix)** — verified via `probe_deck_rpc_surface.py`; UI translation spot-check optional.
@@ -358,28 +354,6 @@ Stars are **effort/risk**. Grouped by **theme**; within each lane sorted ascendi
 - ★★★ **KB visual maps** (strategy maps — later wave)
   - **Goal:** Optional visual strategy maps in KB-grounded replies after brief callout cards exist.
   - **Plan / depends on:** [17-kb-online-versus-strategy-content.md](planning/17-kb-online-versus-strategy-content.md) Stage 5; callout cards (OV-3.1). Phase 4 chip work remains orthogonal.
-- ★★★★ **Card relevance needs a second signal** (the score alone cannot decide)
-  - **Goal:** Stop deciding "is this card relevant?" from a single similarity score. Measured
-    2026-08-23 while implementing **D28**: junk questions and genuine questions score in the
-    **same range**, so no cutoff value can separate them. *"one sentence"* scores 0.5034 against a
-    Deep Rock Survivor card; a real paraphrase question (`V2-PARA-S04`, Mind Flayer) scores 0.5169
-    against its own correct card. The shipped floor of 0.515 sits in the 0.0135 gap between them.
-    That is a property of the current card set, not a margin — new cards or a different embedding
-    model move both numbers. The 2026-08-18 measurement found the same overlap, so this is twice
-    observed, not a one-off.
-  - **Why a second signal rather than a better number:** a third retune buys the same fragility
-    again. Candidates, none chosen: score *relative to the rest of the pool* rather than absolute
-    (a question whose best card barely beats its tenth-best is probably noise); whether the
-    question contains any content word at all after filler removal; agreement between the keyword
-    and vector halves as evidence in its own right rather than only as a rank-fusion input.
-  - **What must not regress:** **D25** — short real questions like *"the boss"* and *"gels"* stay
-    reachable; and `BM25_RELEVANCE_FLOOR` stays at 1.0 per **D28**.
-  - **Measure against:** the six ordinary phrases recorded under **D28** (four still attach cards
-    today: two through the keyword half, two through the vector half above the floor), plus the
-    `kb_eval_v2` tune / holdout / tips series — noting that **the eval cannot see this bug**, since
-    every question in it is a real question about a real game. Both are needed; neither is enough.
-  - **Depends on:** nothing. Blocked by nothing. Deliberately **not** a bug — the shipped floor
-    works as designed; this is the design being insufficient.
 - ★★★★ **KB online / versus strategy content**
   - **Goal:** Online multiplayer strategy — versus, co-op, map callouts — new `section_type` values + spoiler table updates. Tier lists parked. Visual maps later wave in same plan.
   - **Plan:** [17-kb-online-versus-strategy-content.md](planning/17-kb-online-versus-strategy-content.md) (discovery locked 2026-08-09).
@@ -506,7 +480,7 @@ Stars are **effort/risk**. Grouped by **theme**; within each lane sorted ascendi
 - **User-owned model routing pickers (shipped)** → **On-Deck model benchmark**; overlaps **Dynamic keep-alive / smart unload**.
 - **RAG Phase 6 publish** (shipped 2026-08-16) → **Community tip contribution** (now unblocked).
 - **Permission jump** (shipped) → shared deep-link for **Connection doctor**.
-- **Ordinary phrases attach game cards** (floor retuned, D28) → **Card relevance needs a second signal** — the overlap the floor cannot fix; blocked by nothing, and the trigger to start it is any third retune of `VECTOR_RECALL_FLOOR`.
+- **Ordinary phrases attach game cards** (floor retuned, D28) → **Card relevance has its second signal** (shipped 2026-08-28, see Verify) — the pool-margin gate covers the overlap the floor could not fix; the keyword half's two attachments remain by design under D25/D28.
 - **Controller macro test rig** (DPS-owned) → closes QA-plan F1 (on-device input) and findings-log P1-5; **Frozen test chips** → deterministic chip-select macros for it; corroborates **STREAM-09/11** measurement runs.
 
 ```mermaid
