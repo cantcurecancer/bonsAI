@@ -149,6 +149,15 @@ seconds; anything that would otherwise have to be re-measured goes there rather 
   the saved chat, which stores the composed prompt. Cosmetic, but it is internal plumbing on screen.
 
 - ★ **The active chip in Show details is hard to spot** — no focus ring, and the "Chip 1 of 6" counter is easy to miss. Filed by the maintainer.
+- ★ **B on an open glossary popup also backs the ring out of the reply** — **OPEN, measured on-Deck 2026-08-28** during the
+  DRG-GLOSSARY-02 walk. The popup closed, but the ring jumped to the QAM's own chrome: Steam processed B as back-out-of-pane as well,
+  so the chip's "B is fully consumed" contract does not hold on device. The spoiler fence uses the same pattern and has never had its
+  B step walked, so assume it shares this. Dismiss-by-direction works and is the path to recommend meanwhile.
+- ★ **Reaching a glossary chip from below takes Up then Down, not one Up** — **OPEN, measured on-Deck 2026-08-28.** Up from
+  *Show details* is handled by Steam (the press never reaches the bubble's handlers) and lands on the bubble; the next Down dives to
+  the chip. Fixing it to one press means the reply-actions row's Up handler crossing into the bubble's navigation container, which
+  needs the bubble to register a `navFocusRegistry` entry — the same `TakeFocus` shape the Ask-row fix used. Deliberately not done in
+  the same change as the geometry rewrite (one refactor per commit).
 - ★ **The question overlay is a few pixels out of line** with the native text field underneath it, most visible on a three-line question and on
   the empty-field placeholder.
 - ★ **Spoiler false-positive on a named entity** — **PARTIAL.** The mid-stream flash is fixed; the remaining case is narrow.
@@ -337,7 +346,13 @@ Stars are **effort/risk**. Grouped by **theme**; within each lane sorted ascendi
 
 ### Knowledge base
 
-- ★★★ **DRG Survivor glossary terms** (tap-to-define jargon) — shipped 2026-08-28, desk only; on-Deck **DRG-GLOSSARY-01** **Failed on device 2026-08-28** — the chips render while the answer streams and vanish when it settles, because a finished turn reports no game. Not a fault in this feature; see the bug entry above. Fix that and re-run this row.
+- ★★★ **DRG Survivor glossary terms** (tap-to-define jargon) — shipped 2026-08-28 and **walked on device the same evening**. The morning
+  failure (chips vanish when the reply settles) was the per-turn game-ID bug, fixed and confirmed separately. The evening added the three
+  maintainer asks and proved them on hardware under **DRG-GLOSSARY-02**: full underline (skip-ink off, computed style read on device),
+  tap → temporary plain-language popup (peek 4s / full 10s, unit-tested; the tap itself needs one manual finger check), and consistent
+  D-pad reachability — the visited-once flag replaced with reading-order geometry, proven by a `deck_runSequence` that landed the ring on
+  the chip three passes running (`runs/DRG-GLOSSARY-02-dpad-consistency.json`). Two small D-pad warts found and filed above (B backs out
+  of the pane; from-below is Up-then-Down). Remaining: one touch tap, and the Explain-further auto-send on device.
   - Two curated terms, "kiting" and "overclock," both read undefined in the shipped DRG Survivor cards. A DRG Survivor reply that uses one renders it as a tappable inline chip; a floating tooltip (not inline-push) shows a short peek on focus alone, the full definition on A, and an **explain further** chip that auto-sends a new Ask turn. Frontend-only data (`src/data/drgGlossaryTerms.ts`) — no Python retrieval needed for a two-term DRG-only list; the model prompt separately gets a small clause telling it the terms are tap-to-define so it doesn't stop to explain them.
   - **Not in scope:** general jargon-detection across every game's KB content — DRG Survivor only, as planned.
   - The D-pad walk (peek → A → full → B/direction dismiss → explain-further sends) is owed on-device — see **DRG-GLOSSARY-01** in [testing.md](testing.md).

@@ -26,7 +26,7 @@ import {
 } from "./spoilerFenceRegistry";
 
 import {
-  findUnvisitedDrgGlossaryTermChipInView,
+  findNextDrgGlossaryTermChipInView,
   focusDrgGlossaryTermChip,
 } from "./drgGlossaryTermRegistry";
 
@@ -192,9 +192,14 @@ export function handleAnswerBubbleMoveDown(
    * above existed. Runs after the fence check so a fence still wins if both are in view at once;
    * order between the two diversions has no other significance since they can never overlap in the
    * same reply (spoilers are Strategy-mode only, the glossary is DRG Survivor only).
+   *
+   * Unlike the fence, eligibility is geometric (chips *after* the ring) rather than visited-once,
+   * so every pass down the reply can land on the chip again — see drgGlossaryTermRegistry.ts.
    */
-  const termChip = findUnvisitedDrgGlossaryTermChipInView(bubble, (el) =>
-    elementIsWithinViewportOf(el, scroll),
+  const termChip = findNextDrgGlossaryTermChipInView(
+    bubble,
+    (el) => elementIsWithinViewportOf(el, scroll),
+    "down",
   );
   if (termChip && focusDrgGlossaryTermChip(termChip)) return true;
 
@@ -245,6 +250,21 @@ export function handleAnswerBubbleMoveUp(
 
   const scroll = findScrollablePanel(bubble);
   if (!scroll) return false;
+
+  /*
+   * Up-direction glossary chip diversion — the other half of "consistently D-pad focusable"
+   * (maintainer, 2026-08-28): without it, a chip walked past was unreachable until remount. Only
+   * chips strictly *before* the ring in reading order are eligible, and the registry's ancestor
+   * rule keeps the exit intact: with the ring on the bubble itself, no chip is "before" it, so
+   * heading out to the header stays one press, exactly like the stop-walk asymmetry below.
+   * No fence equivalent exists on Up — fences keep their shipped Down-only, visited-once shape.
+   */
+  const termChip = findNextDrgGlossaryTermChipInView(
+    bubble,
+    (el) => elementIsWithinViewportOf(el, scroll),
+    "up",
+  );
+  if (termChip && focusDrgGlossaryTermChip(termChip)) return true;
 
   /*
    * Step back through the sections, and note the asymmetry with Down: Up walks only when a stop

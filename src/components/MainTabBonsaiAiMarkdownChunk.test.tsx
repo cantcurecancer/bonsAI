@@ -97,7 +97,7 @@ describe("MainTabBonsaiAiMarkdownChunk DRG Survivor glossary markup", () => {
     expect(container.querySelector(".bonsai-drg-glossary-term")).toBeNull();
   });
 
-  it("tapping the chip opens the full definition with an explain-further chip", () => {
+  it("tapping the chip twice opens the full definition with an explain-further chip", () => {
     const onDrgGlossaryExplainFurther = vi.fn();
     const { container } = render(
       <MainTabBonsaiAiMarkdownChunk
@@ -106,6 +106,8 @@ describe("MainTabBonsaiAiMarkdownChunk DRG Survivor glossary markup", () => {
         onDrgGlossaryExplainFurther={onDrgGlossaryExplainFurther}
       />
     );
+    // First tap shows the short peek; the second escalates to the full definition.
+    fireEvent.click(container.querySelector(".bonsai-drg-glossary-term-text")!);
     fireEvent.click(container.querySelector(".bonsai-drg-glossary-term-text")!);
     expect(container.querySelector(".bonsai-drg-glossary-explain-further")).toBeTruthy();
     fireEvent.click(container.querySelector(".bonsai-drg-glossary-explain-further")!);

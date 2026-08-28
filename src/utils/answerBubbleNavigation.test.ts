@@ -222,9 +222,12 @@ describe("walking answer sections with the D-pad", () => {
   /*
    * DRG Survivor glossary term chip (roadmap: tap-to-define jargon). Same diversion shape as the
    * masked-spoiler one above, since a term chip is likewise a nested Focusable inside plain reply
-   * prose rather than a stop of its own — see drgGlossaryTermRegistry.ts.
+   * prose rather than a stop of its own — but geometric rather than visited-once: only chips after
+   * the ring (Down) or before it (Up) are offered, so every pass can land on the chip and no pass
+   * can be trapped by it ("consistently dpad focusable", maintainer 2026-08-28). See
+   * drgGlossaryTermRegistry.ts.
    */
-  it("parks on an unvisited glossary term chip before continuing the walk", () => {
+  it("parks on a glossary term chip before continuing the walk", () => {
     const { bubble, stops } = threeSections();
     const chip = document.createElement("div");
     stubRect(chip, 100, 150);
@@ -236,7 +239,7 @@ describe("walking answer sections with the D-pad", () => {
     expect(document.activeElement).toBe(chip);
   });
 
-  it("resumes the walk from the section holding the visited term chip", () => {
+  it("resumes the walk from the section holding the parked-on term chip", () => {
     const { bubble, stops } = buildBubble([
       { top: 0, bottom: 100 },
       { top: 100, bottom: 200 },
@@ -253,6 +256,75 @@ describe("walking answer sections with the D-pad", () => {
     // Focus sits inside section 0, so the next press continues to section 1 rather than re-parking.
     expect(moveDown(bubble)).toBe(true);
     expect(document.activeElement).toBe(stops[1]);
+  });
+
+  it("Down never jumps back to a chip above the ring", () => {
+    const { bubble, stops } = threeSections();
+    const chip = document.createElement("div");
+    stubRect(chip, 0, 50);
+    stops[0]!.appendChild(chip);
+    registerDrgGlossaryTermChip("kiting-1", chip);
+    stops[1]!.setAttribute("tabindex", "-1");
+    stops[1]!.focus();
+
+    moveDown(bubble);
+    expect(document.activeElement).not.toBe(chip);
+  });
+
+  it("Up parks back on a chip that was walked past", () => {
+    const { bubble, stops } = buildBubble([
+      { top: 0, bottom: 100 },
+      { top: 100, bottom: 200 },
+    ]);
+    const chip = document.createElement("div");
+    stubRect(chip, 0, 50);
+    stops[0]!.appendChild(chip);
+    registerDrgGlossaryTermChip("kiting-1", chip);
+    bubble.focus();
+
+    moveDown(bubble); // chip
+    moveDown(bubble); // section 1
+    expect(document.activeElement).toBe(stops[1]);
+
+    expect(moveUp(bubble)).toBe(true);
+    expect(document.activeElement).toBe(chip);
+  });
+
+  it("Up from the chip yields toward the header instead of trapping", () => {
+    const { bubble, stops } = buildBubble([
+      { top: 0, bottom: 100 },
+      { top: 100, bottom: 200 },
+    ]);
+    const chip = document.createElement("div");
+    stubRect(chip, 0, 50);
+    stops[0]!.appendChild(chip);
+    registerDrgGlossaryTermChip("kiting-1", chip);
+    bubble.focus();
+
+    moveDown(bubble);
+    expect(document.activeElement).toBe(chip);
+
+    expect(moveUp(bubble)).toBe(false);
+  });
+
+  it("a second pass down the same reply lands on the chip again", () => {
+    // The old visited-once flag made this exact walk skip the chip forever after the first pass.
+    const { bubble, stops } = buildBubble([
+      { top: 0, bottom: 100 },
+      { top: 100, bottom: 200 },
+    ]);
+    const chip = document.createElement("div");
+    stubRect(chip, 0, 50);
+    stops[0]!.appendChild(chip);
+    registerDrgGlossaryTermChip("kiting-1", chip);
+    bubble.focus();
+
+    moveDown(bubble); // chip
+    moveDown(bubble); // section 1
+
+    bubble.focus(); // re-entering the reply from the header
+    expect(moveDown(bubble)).toBe(true);
+    expect(document.activeElement).toBe(chip);
   });
 
   it("does nothing for an answer with no sections registered", () => {
