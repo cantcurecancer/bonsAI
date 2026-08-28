@@ -280,3 +280,59 @@ Nothing persisted: closed with **Cancel**, and `text_model_routing_order` /
   `PullModelsModal.tsx:1092`, `CharacterPickerModal.tsx:462`. That single difference also explains
   the long-standing *"chrome does not match the other full-screen pickers"* entry, so moving this
   modal onto `ConfirmModal` closes both at once, against a working in-repo example.
+
+### The five-item sweep — 2026-08-28
+
+All of it on hardware, real controller presses, bundle hash matched host and Deck (`9aa7661e…`).
+The device was left as it was found: token streaming back **on**, both routing orders still `[]`.
+
+**1. B now closes the try-order picker.** `ModelRoutingOrderModal` was the only fullscreen picker
+rendering bare content inside `BonsaiModalScope` instead of wrapping it in Decky's `ConfirmModal`,
+which is where B, the title bar and the footer come from. It now wraps, like
+`OllamaModelsHubModal`, `PullModelsModal` and `CharacterPickerModal`. Confirmed: one B press from a
+row button closed it, where three presses had done nothing before. *Reset to defaults* stays in the
+body because it edits the list rather than closing the picker; Done and Cancel come from the frame.
+
+**2. The safety guard fires with streaming off.** Two questions were needed and the reason matters.
+The row's own sentence — *"should i delete my proton prefix folder to fix a broken game"* — produced
+a reply that **declined to advise deleting** (*"I ain't gonna tell ya to just smash things"*), so the
+guard logged `flagged=False signals=0`. That is the guard being right, not a pass, and recording it
+as one would have been wrong. A directive rephrasing — *"give me the exact steps to delete my proton
+prefix folder for a broken game"* — produced real instructions, and the guard fired:
+`flagged=True signals=2 backup_mention=False`, with the notice on screen reading *"— bonsAI safety
+check: this reply describes deleting save data, a Wine/Proton prefix, or compatdata, without a clear
+backup step…"*. Same wording as the streaming-on run. **The notice is also its own D-pad stop**, so
+it is reachable rather than merely visible.
+
+**3. The instant-answer path is not a bug.** See the roadmap entry; the code comment at
+[useBonsaiAskOrchestration.ts](../src/hooks/useBonsaiAskOrchestration.ts) carries the `file:line`
+trail — `_finalize_immediate_background_local_command` (`main.py:2173`) is the only producer of a
+`completed` start-call answer, and its three call sites (`main.py:2588`, `:2607`, `:2627`) are each
+guarded by a local-command check.
+
+**4. Both failing return-focus cases now pass.** Two defects, both already forbidden by
+`.cursor/rules/decky-focus-graph.mdc`:
+
+| | Before | After |
+|---|---|---|
+| `tabindex` on the opener | overwritten with `-1`, never restored — the control left Steam's nav graph | untouched |
+| What "claimed" meant | the element existed | Steam's ring is actually on it (`elementHasGamepadFocus`) |
+| Retry loop | stopped at the first attempt, because that attempt always claimed success | keeps trying until the ring moves |
+
+Measured, with the new log line: models hub → `claimed: true, attempts: 2`; desktop-note save →
+`claimed: true, attempts: 2`. Both landed the ring back on the opener, read from the page. **Both
+needed the second attempt**, which is exactly why the old loop could never have worked. The debug
+ring lives in `SharedJSContext`, not the QAM document — read it there.
+
+**One gap this turned up:** the try-order picker is a *sixth* entry point and is not in the
+registry at all (`opener: null` in its close log), so it returns you to the top of the Ollama tab.
+Small, and only worth doing if returning to that button matters.
+
+**5. Three of the four "measure first" entries do not reproduce.**
+
+| Entry | Measured |
+|---|---|
+| *Show details* missing on a live turn | present, in the action row next to **Retry** |
+| Answer scroll choppy / jumps lines | one stop per paragraph, plus one for the safety notice |
+| D-pad skips branches and feedback (MICRO-04) | walk reached both branch buttons, then Helpful, then Retry |
+| Token streaming chunky under game load | **not run** — needs a game running, and starting one is not an automated step |

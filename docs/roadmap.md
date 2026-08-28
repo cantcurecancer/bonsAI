@@ -38,10 +38,9 @@ seconds; anything that would otherwise have to be re-measured goes there rather 
   bottom. Reordering moved to each row's own **Up**/**Down** buttons, which already worked. [D36](audit/maintainer-decisions-locked.md)
   option 1, chosen by the maintainer.
 
-- ★★ **B does not close the try-order picker — from anywhere in it** — **OPEN, found on device 2026-08-28** while confirming the fix above.
-  You have to walk down to **Cancel** and press A. Every other fullscreen picker closes on B. One cause explains both this and the chrome
-  complaint below: this is the only picker that does not use the shared modal frame the others do, so it never got B, a title bar, or the
-  standard footer. Fixing it is a small change with a working example already in the repo.
+- ~~★★ **B does not close the try-order picker**~~ — **FIXED and confirmed on device 2026-08-28**, hours after it was found. B now closes
+  it on the first press. The picker was the only one not built on the shared modal frame, so it never inherited B, a title bar, or the
+  standard footer — it now uses the same frame as the models hub, which also settles the chrome complaint below.
 
 - ~~★★ **Choosing a character: focus ring now visible**~~ — **CLOSED.** The maintainer confirmed on device 2026-08-27 that focus is visible
   and the picker is usable; the edge behaviour it was still waiting on passed the 2026-08-28 audit above. Nothing left open here.
@@ -59,13 +58,15 @@ seconds; anything that would otherwise have to be re-measured goes there rather 
   the remaining half is known: the asked-entity extractor returns nothing for the one question that fences.
   Workaround while open: turn spoiler masking off in Settings. Detail: [roadmap-details.md](roadmap-details.md#the-spoiler-fence-on-a-no-story-game-lands-mid-reply).
 
-- ★ **An answer that arrives instantly loses its branch buttons and checklist** — **OPEN, found 2026-08-27.** When a reply comes back on the
-  first call instead of after polling, the code builds its own summary of the result and drops both strategy payloads from it. Not reachable on
-  this hardware, where replies take 6–32s, so it needs a fast or cached model to see. One-line fix, but confirm the data is there first:
-  [roadmap-details.md](roadmap-details.md#an-ask-that-completes-instantly-loses-its-branch-picker-and-checklist).
+- ~~★ **An answer that arrives instantly loses its branch buttons and checklist**~~ — **NOT A BUG, settled 2026-08-28.** The path that
+  builds its own result and drops the strategy payloads only ever runs for local commands — the sanitizer, shortcut setup and the VAC
+  check — and none of those ask the model, so there is nothing to lose. The 2026-08-27 note guessed it was unreachable because replies are
+  slow; it is unreachable by construction. A comment at the line now says so, so it is not filed a third time.
 
-- ★ **The safety guard has not been checked with streaming turned off** — **owed from the 2026-08-27 QA batch.** The guard itself is fixed and
-  confirmed with streaming on. With streaming off the notice should behave the same; nobody has run it.
+- ~~★ **The safety guard has not been checked with streaming turned off**~~ — **PASSES, confirmed on device 2026-08-28.** With streaming
+  off, a reply that walked through deleting a Proton prefix got the warning, worded the same as with streaming on. Took two questions:
+  the first time the model refused to advise deleting at all, so there was nothing to warn about — which is the guard behaving correctly,
+  not a pass. Detail: [roadmap-details.md](roadmap-details.md).
 
 ### Fixed in code, never confirmed on the Deck
 
@@ -76,22 +77,27 @@ seconds; anything that would otherwise have to be re-measured goes there rather 
   was next door: a checklist the model got wrong is left in the reply as raw JSON, and *that* is its own stop that does nothing on A.
   **Fixed the same day** — a rejected checklist block is now dropped from the reply, the way a rejected branch block already was.
   Owed: one sighting on device of a reply where this happens. Detail: [roadmap-details.md](roadmap-details.md).
-- ★★ **Pickers return you to the right tab but not the right control** — 1 of 3 confirmed; the models hub and desktop-note cases still land on
-  the tab strip. **The models hub half reproduced again on 2026-08-28** during the picker audit, unchanged. Next step is instrumentation,
-  not another attempt.
+- ~~★★ **Pickers return you to the right tab but not the right control**~~ — **FIXED and confirmed on device 2026-08-28.** Both cases that
+  had been failing since 2026-08-04 now land the highlight back on the button you opened the picker from. Two causes, both of them things
+  the focus rules already forbid: the code stamped `tabindex="-1"` on the opener and never put it back, quietly removing it from Steam's
+  navigation, and it reported success whenever the control merely existed — so two earlier attempts looked like they had worked.
+  It now retries until the ring really moves (both cases needed a second try) and says so in the log. Detail: [roadmap-details.md](roadmap-details.md).
 
 ### Open, but measure before spending anything
 
 *Each of these was filed from an observation that later work may have already changed. Re-measure first; do not fix from the description.*
 
-- ★★ **Show details is missing on a live turn after a successful Ask** — **the premise is doubtful.** Filed as a blocker for CONTEXT-LADDER-01;
-  much has changed since. Retest before treating it as real.
-- ★★ **Answer scrolling by D-pad feels choppy and jumps several lines** — the 2026-08-07 work made every answer section its own stop, which may
-  have removed this. Re-measure.
+- ~~★★ **Show details is missing on a live turn after a successful Ask**~~ — **re-measured on device 2026-08-28: it is there.** A completed
+  Strategy Ask showed **Show details** next to **Retry**, as part of the same action row. Closed on the measurement, not on the guess.
+- ~~★★ **Answer scrolling by D-pad feels choppy and jumps several lines**~~ — **re-measured on device 2026-08-28: fixed by the 2026-08-07
+  work.** Walking a three-paragraph reply gave one stop per paragraph, plus one for the safety notice — a readable step each press, not a
+  jump of several lines.
 - ★★ **Token streaming reveals text in chunks while a game is running** — measured smooth at idle in an earlier pass, chunky under load in a
-  later one. The two runs were not comparable; neither is trustworthy on its own.
-- ★★ **The D-pad skips the branch buttons and the feedback row on a live Strategy turn** — check **MICRO-04** on device. The 2026-08-27 picker
-  work changed this area, so the old description may no longer describe what happens.
+  later one. The two runs were not comparable; neither is trustworthy on its own. **Still not re-measured, and deliberately so:** it needs a
+  game actually running, and starting one is the maintainer's to do, not an automated step. Worth pairing with the next session on device.
+- ~~★★ **The D-pad skips the branch buttons and the feedback row on a live Strategy turn**~~ — **re-measured on device 2026-08-28: it does
+  not skip them.** One walk down a finished Strategy reply reached both branch buttons, then **Helpful**, then **Retry** — nothing stepped
+  over. **MICRO-04** passes.
 
 ### Small and cosmetic
 

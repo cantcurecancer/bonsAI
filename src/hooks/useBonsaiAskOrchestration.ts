@@ -1130,6 +1130,15 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
             error: null,
             started_at: now,
             completed_at: now,
+            // Null is correct here, and this was filed as a bug on 2026-08-27 for looking like it
+            // was not. `start_background_game_ai` only ever answers "completed" from
+            // `_finalize_immediate_background_local_command` (main.py:2173), whose three call
+            // sites are all guarded by `local_kinds.sanitizer` / `.shortcut` / `.vac`
+            // (main.py:2588, :2607, :2627). Those are local commands -- the model is never asked,
+            // so there is no branch picker, no checklist and no policy disclosure to carry. The
+            // old note guessed this path was unreachable only because replies are slow; it is
+            // unreachable for model answers by construction. Do not "fix" this by passing
+            // `data.strategy_*` through: that would be dead code on the only path that gets here.
             strategy_guide_branches: null,
             model_policy_disclosure: null,
             strategy_spoiler_consent_effective: false,
