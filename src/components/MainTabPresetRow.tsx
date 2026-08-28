@@ -21,7 +21,7 @@ export type MainTabPresetRowProps = {
   showPluginHelpChip: boolean;
   onOpenPluginHelp: () => void;
   presetChipFadeAnimationEnabled?: boolean;
-  presetChipAnimation?: "fade" | "carousel" | "static" | "stream";
+  presetChipAnimation?: "fade" | "carousel" | "static" | "decode";
   setUnifiedInput: React.Dispatch<React.SetStateAction<string>>;
   onPresetPreferAskMode?: (mode: AskModeId) => void;
   presetCarouselInject?: { text: string } | null;

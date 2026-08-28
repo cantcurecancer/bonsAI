@@ -1,4 +1,4 @@
-import { BONSAI_CHAT_RESPONSE_STACK_MARGIN_TOP_PX } from "../../features/unified-input/constants";
+import { BONSAI_CHAT_RESPONSE_STACK_MARGIN_TOP_PX, BONSAI_FOREST_GREEN } from "../../features/unified-input/constants";
 import { uiScalePx } from "./uiScalePx";
 
 export function buildSection4Section(): string {
@@ -90,17 +90,15 @@ export function buildSection4Section(): string {
           text-overflow: ellipsis !important;
           white-space: nowrap !important;
         }
-        .bonsai-scope button.bonsai-preset-glass--stream .bonsai-preset-chip-label--stream-caret::after {
-          content: "▋" !important;
-          display: inline !important;
-          margin-left: 2px !important;
-          opacity: 0.85 !important;
-          animation: bonsai-stream-caret-blink 0.9s step-end infinite !important;
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .bonsai-scope button.bonsai-preset-glass--stream .bonsai-preset-chip-label--stream-caret::after {
-            animation: none !important;
-          }
+        /*
+          Decode mode (Ghost in the Shell chip decode -- replaces the old \`stream\` typewriter).
+          The reveal loop in MainTabPresetAnimatedChips.tsx writes scrambled/resolving glyphs and
+          the blinking block caret straight into the label's textContent from a single shared
+          requestAnimationFrame loop, so there is no CSS keyframe to gate here -- reduced motion is
+          enforced entirely in JS (instant swap to the final prompt, no churn, no caret).
+        */
+        .bonsai-scope button.bonsai-preset-glass--decode .bonsai-preset-chip-label {
+          color: var(--bonsai-ui-accent-main, ${BONSAI_FOREST_GREEN}) !important;
         }
 
         .bonsai-scope .bonsai-chat-response-stack {

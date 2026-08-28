@@ -318,8 +318,13 @@ class SettingsServiceTests(unittest.TestCase):
         for bad in ("HIGH", "maximum", "", None, True, 3):
             self.assertEqual(_sanitized({"ask_think_effort": bad})["ask_think_effort"], "off")
 
-    def test_sanitize_preset_chip_animation_accepts_stream(self):
-        self.assertEqual(sanitize_preset_chip_animation("stream", True), "stream")
+    def test_sanitize_preset_chip_animation_accepts_decode(self):
+        self.assertEqual(sanitize_preset_chip_animation("decode", True), "decode")
+
+    def test_sanitize_preset_chip_animation_migrates_legacy_stream_to_decode(self):
+        """`stream` was retired by the chip-decode rewrite; it must not fall through to `fade`."""
+        self.assertEqual(sanitize_preset_chip_animation("stream", True), "decode")
+        self.assertEqual(sanitize_preset_chip_animation("stream", False), "decode")
 
     def test_sanitize_preset_chip_fade_animation_enabled_false_only_for_literal_false(self):
         """Preset chip fades stay enabled unless JSON false is stored."""

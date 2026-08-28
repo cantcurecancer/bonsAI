@@ -126,7 +126,7 @@ def sanitize_ask_mode(
 
 _VALID_DESKTOP_APP_LOG_LEVELS = frozenset({"off", "default", "verbose"})
 
-_VALID_PRESET_CHIP_ANIMATION = frozenset({"fade", "carousel", "static", "stream"})
+_VALID_PRESET_CHIP_ANIMATION = frozenset({"fade", "carousel", "static", "decode"})
 
 # Which tab a reopen lands on -- one value per option in roadmap D15. Read only by the
 # frontend; the backend's job here is to let the key survive a save_settings round trip.
@@ -141,9 +141,18 @@ DEFAULT_ASK_THINK_EFFORT = "off"
 
 
 def sanitize_preset_chip_animation(value: Any, legacy_fade: Any) -> str:
-    """Main-tab preset chip animation mode; migrates from legacy fade boolean when unset."""
+    """Main-tab preset chip animation mode; migrates from legacy fade boolean when unset.
+
+    ``stream`` was retired by the Ghost in the Shell chip-decode rewrite. A Deck whose
+    settings.json still holds it maps forward to ``decode`` rather than falling through to the
+    ``fade`` default below -- a silent downgrade to fade would read as "the setting reset itself."
+    Python is authoritative here (D13); ``normalizePresetChipAnimation`` in
+    bonsaiSettingsNormalizers.ts mirrors this exact mapping.
+    """
     if isinstance(value, str):
         t = value.strip()
+        if t == "stream":
+            return "decode"
         if t in _VALID_PRESET_CHIP_ANIMATION:
             return t
     if legacy_fade is False:

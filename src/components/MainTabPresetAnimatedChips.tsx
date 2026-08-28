@@ -1,11 +1,11 @@
 /**
  * Title: Preset animated chips
  * Purpose: Fade or carousel preset prompt chips with running-game contextual seeding.
- * Used for: MainTabPresetRow when presetChipAnimation is fade, carousel, static, or stream.
+ * Used for: MainTabPresetRow when presetChipAnimation is fade, carousel, static, or decode.
  * Solves: Timed slot fades, carousel track motion, and Deck-focusable chip buttons in one module.
  * Does not: Persist selected presets or submit asks — parent setUnifiedInput handles composer text.
  */
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button, Focusable } from "@decky/ui";
 import type { AskModeId } from "../data/askMode";
 import {
@@ -36,8 +36,75 @@ export const PRESET_CAROUSEL_FADE_OUT_MS = 2000;
 /** Carousel schedules new preset cycles for this long after mount/re-seed; in-flight fades still complete, then no more swaps until remount. */
 export const PRESET_CAROUSEL_ACTIVE_MS = 60_000;
 
-/** Milliseconds between revealed characters in stream mode (must feel close to live answer streaming). */
-export const PRESET_STREAM_CHAR_MS = 42;
+/** Milliseconds between locked characters in decode mode (must feel close to live answer streaming). */
+export const PRESET_DECODE_CHAR_MS = 42;
+/**
+ * How often the still-churning glyphs reshuffle, ms. Throttled well below frame rate on purpose:
+ * the reveal loop runs one shared `requestAnimationFrame` per tick across all three slots, but
+ * only writes to the DOM on this cadence (or on a lock advance / caret blink) so a churning chip
+ * does not repaint three times per 16ms frame on Deck hardware.
+ */
+const PRESET_DECODE_CHURN_REFRESH_MS = 55;
+/** Caret blink period, ms. */
+const PRESET_DECODE_CARET_BLINK_MS = 450;
+/** Block caret glyph, drawn inline at the lock boundary rather than as a separate CSS ::after. */
+export const PRESET_DECODE_CARET_CHAR = "▋";
+
+/**
+ * Churn glyph pool for the still-scrambling tail: printable ASCII plus half-width katakana
+ * (U+FF66-U+FF9D). Both render half-width. Full-width CJK would not — the chip label reserves
+ * its width from frame 0 at the prompt's final character count, so a double-width churn glyph
+ * would push a long prompt into the ellipsis mid-animation and undo the whole point of the rewrite.
+ */
+const PRESET_DECODE_GLYPH_POOL: string = (() => {
+  let pool = "";
+  for (let code = 0x21; code <= 0x7e; code += 1) pool += String.fromCharCode(code);
+  for (let code = 0xff66; code <= 0xff9d; code += 1) pool += String.fromCharCode(code);
+  return pool;
+})();
+
+function randomDecodeGlyph(): string {
+  return PRESET_DECODE_GLYPH_POOL[Math.floor(Math.random() * PRESET_DECODE_GLYPH_POOL.length)]!;
+}
+
+function makeDecodeChurn(length: number): string[] {
+  return Array.from({ length }, randomDecodeGlyph);
+}
+
+/**
+ * Composes what the label should show right now: locked (real) characters up to `revealedCount`,
+ * then a boundary position that alternates between the caret glyph and the churning glyph beneath
+ * it (never an *extra* character — that would grow the string past the reserved width), then the
+ * rest of the still-churning tail. Once `revealedCount` reaches the prompt length the caller
+ * should just render `text` directly; this always returns a string of exactly `text.length`.
+ */
+export function composeDecodeText(
+  text: string,
+  revealedCount: number,
+  churn: readonly string[],
+  caretOn: boolean,
+): string {
+  if (revealedCount >= text.length) return text;
+  const prefix = text.slice(0, revealedCount);
+  const boundaryChar = caretOn ? PRESET_DECODE_CARET_CHAR : (churn[revealedCount] ?? " ");
+  const tail = churn.slice(revealedCount + 1).join("");
+  return prefix + boundaryChar + tail;
+}
+
+/** Per-slot decode animation state, owned by the reveal effect's closure — never React state, so a
+ *  lock advance or churn refresh never triggers a re-render. See `MainTabPresetDecodeSlots`. */
+type DecodeSlotAnim = {
+  prompt: PresetPrompt;
+  /** `performance.now()` when this prompt's reveal began. */
+  startAt: number;
+  churn: string[];
+  /** Avoids redundant DOM writes: skip repainting when neither the lock boundary, a churn
+   *  refresh, nor the caret blink changed anything since the last tick. */
+  lastRevealedCount: number;
+  resolved: boolean;
+  /** Valid once `resolved`: when to start the next prompt's reveal. */
+  holdEndAt: number;
+};
 
 type SlotFade = { opacity: number; transitionMs: number };
 
@@ -62,7 +129,7 @@ function normalizeThreeSeeds(
   ];
 }
 
-export type PresetChipAnimationMode = "fade" | "carousel" | "static" | "stream";
+export type PresetChipAnimationMode = "fade" | "carousel" | "static" | "decode";
 
 export type MainTabPresetAnimatedChipsProps = {
   /** When upstream presets change (e.g. after ask), carousel re-seeds from this list. */
@@ -70,7 +137,7 @@ export type MainTabPresetAnimatedChipsProps = {
   setUnifiedInput: React.Dispatch<React.SetStateAction<string>>;
   /** When false, chips stay fully opaque and prompts rotate after hold without opacity transitions. */
   fadeAnimationEnabled?: boolean;
-  /** fade = opacity crossfade; carousel = vertical stack with middle focus; static = no opacity animation; stream = typewriter reveal. */
+  /** fade = opacity crossfade; carousel = vertical stack with middle focus; static = no opacity animation; decode = Ghost in the Shell scramble-to-resolve reveal. */
   animationMode?: PresetChipAnimationMode;
   /** If a preset declares `preferAskMode`, apply it when the chip is chosen. */
   onPreferAskMode?: (mode: AskModeId) => void;
@@ -166,19 +233,27 @@ function prefersReducedMotion(): boolean {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
-function StreamPresetChipButton(props: {
+/**
+ * The label's text is owned by the reveal effect below, written straight to this span's
+ * `textContent` via `setLabelRef` \u2014 never through React state. The JSX child here is only what
+ * paints during a slot's stagger delay, before its first `beginSlot` call; every frame after that
+ * (the initial scramble included, since `beginSlot` also writes on start) bypasses React entirely,
+ * which is the point of the rewrite (see the module header comment on frame cost).
+ */
+function DecodePresetChipButton(props: {
   preset: PresetPrompt;
-  displayedText: string;
-  showCaret: boolean;
+  setLabelRef: (el: HTMLSpanElement | null) => void;
   setUnifiedInput: React.Dispatch<React.SetStateAction<string>>;
   onPreferAskMode?: (mode: AskModeId) => void;
 }) {
-  const { preset: p, displayedText, showCaret, setUnifiedInput, onPreferAskMode } = props;
+  const { preset: p, setLabelRef, setUnifiedInput, onPreferAskMode } = props;
   return (
     <Button
-      className="bonsai-preset-glass bonsai-preset-glass--stream"
+      className="bonsai-preset-glass bonsai-preset-glass--decode"
       focusable
       onClick={() => {
+        // Always the real prompt, never whatever is mid-churn on screen \u2014 the text is known from
+        // frame 0, so there is no "partial" to accidentally submit.
         setUnifiedInput(joinPresetWithRunningGame(p.text));
         if (p.preferAskMode && onPreferAskMode) {
           onPreferAskMode(p.preferAskMode);
@@ -188,15 +263,10 @@ function StreamPresetChipButton(props: {
         width: "100%",
         minHeight: 34,
         fontSize: 12,
-        color: "#c4d3e2",
       }}
     >
-      <span
-        className={
-          "bonsai-preset-chip-label" + (showCaret ? " bonsai-preset-chip-label--stream-caret" : "")
-        }
-      >
-        {displayedText || "\u00a0"}
+      <span className="bonsai-preset-chip-label">
+        <span ref={setLabelRef}>{"\u00a0"}</span>
         {p.beta ? (
           <span
             style={{
@@ -215,7 +285,21 @@ function StreamPresetChipButton(props: {
   );
 }
 
-function MainTabPresetStreamSlots(
+/**
+ * Ghost in the Shell title-sequence reveal: each chip arrives as a full-width block of scrambled
+ * glyphs (reserving the prompt's final character width from frame 0, so the chip never reflows)
+ * that lock into the real prompt left to right behind a blinking block caret, then hold and move
+ * to the next prompt. Replaces the old per-character typewriter (`stream` mode) \u2014 see the module
+ * header on `PresetChipAnimationMode` and CLAUDE.md's chip-decode notes for why this is a rewrite
+ * of this one function rather than new plumbing.
+ *
+ * Per-slot animation state lives in a plain object inside the effect closure (`DecodeSlotAnim`),
+ * not React state, and a single shared `requestAnimationFrame` loop drives all three slots,
+ * writing straight to each label's `textContent` through a ref. `slots` React state still exists,
+ * but only changes once per prompt cycle (when a new prompt begins) \u2014 that's the frequency a
+ * Button's onClick closure and beta badge need, not per-frame.
+ */
+function MainTabPresetDecodeSlots(
   props: Omit<MainTabPresetAnimatedChipsProps, "fadeAnimationEnabled" | "animationMode">,
 ) {
   const { seeds, setUnifiedInput, onPreferAskMode, useLocalKnowledgeBase = false } = props;
@@ -226,24 +310,47 @@ function MainTabPresetStreamSlots(
   const [slots, setSlots] = useState<[PresetPrompt, PresetPrompt, PresetPrompt]>(() =>
     normalizeThreeSeeds(seeds, samplerOptions),
   );
-  const [displayed, setDisplayed] = useState<[string, string, string]>(["", "", ""]);
-  const [showCaret, setShowCaret] = useState<[boolean, boolean, boolean]>([true, true, true]);
   const slotsRef = useRef(slots);
   slotsRef.current = slots;
+
+  const labelRefs = useRef<[HTMLSpanElement | null, HTMLSpanElement | null, HTMLSpanElement | null]>([
+    null,
+    null,
+    null,
+  ]);
+  /** Stable per-slot ref callbacks \u2014 an inline arrow per render would churn ref identity and
+   *  briefly null the target between renders for no reason (`slots` only updates once a cycle). */
+  const labelRefSetters = useMemo(
+    () =>
+      [
+        (el: HTMLSpanElement | null) => {
+          labelRefs.current[0] = el;
+        },
+        (el: HTMLSpanElement | null) => {
+          labelRefs.current[1] = el;
+        },
+        (el: HTMLSpanElement | null) => {
+          labelRefs.current[2] = el;
+        },
+      ] as const,
+    [],
+  );
 
   useEffect(() => {
     const initial = normalizeThreeSeeds(seeds, samplerOptions);
     setSlots(initial);
     slotsRef.current = initial;
-    setDisplayed(["", "", ""]);
-    setShowCaret([true, true, true]);
 
     const sessionEnd = performance.now() + PRESET_CAROUSEL_ACTIVE_MS;
-    const timeouts: number[] = [];
     let cancelled = false;
-
     const mayStartNextCycle = (): boolean => !cancelled && performance.now() < sessionEnd;
 
+    const pickNextForSlot = (slotIndex: number, current: PresetPrompt): PresetPrompt => {
+      const otherTexts = slotsRef.current.filter((_, j) => j !== slotIndex).map((s) => s.text);
+      return getRandomPresetExcluding(new Set([...otherTexts, current.text]), samplerOptions);
+    };
+
+    const timeouts: number[] = [];
     const pushTimeout = (fn: () => void, ms: number) => {
       const id = window.setTimeout(() => {
         if (cancelled) return;
@@ -252,71 +359,124 @@ function MainTabPresetStreamSlots(
       timeouts.push(id);
     };
 
-    const pickNextForSlot = (slotIndex: number, current: PresetPrompt): PresetPrompt => {
-      const otherTexts = slotsRef.current.filter((_, j) => j !== slotIndex).map((s) => s.text);
-      return getRandomPresetExcluding(new Set([...otherTexts, current.text]), samplerOptions);
-    };
-
-    const setSlotDisplayed = (slotIndex: 0 | 1 | 2, text: string, caret: boolean) => {
-      setDisplayed((prev) => {
-        const next = [...prev] as [string, string, string];
-        next[slotIndex] = text;
-        return next;
-      });
-      setShowCaret((prev) => {
-        const next = [...prev] as [boolean, boolean, boolean];
-        next[slotIndex] = caret;
-        return next;
-      });
-    };
-
-    const runStreamSlot = (slotIndex: 0 | 1 | 2, prompt: PresetPrompt, firstDelay: number) => {
-      const charMs = reducedMotion ? 0 : PRESET_STREAM_CHAR_MS;
-
-      const beginPrompt = () => {
+    // prefers-reduced-motion: reduce \u2014 swap the text in instantly, no churn, no caret blink.
+    // Each slot still keeps its own stagger before its first appearance (flavor shared with every
+    // other mode, not part of the "churn" the rule is about); every swap after that is instant.
+    if (reducedMotion) {
+      const beginReducedSlot = (slotIndex: 0 | 1 | 2, prompt: PresetPrompt) => {
         slotsRef.current = [...slotsRef.current];
         slotsRef.current[slotIndex] = prompt;
         setSlots([slotsRef.current[0]!, slotsRef.current[1]!, slotsRef.current[2]!]);
-        setSlotDisplayed(slotIndex, "", true);
-
-        const afterHold = () => {
-          pushTimeout(() => {
-            if (!mayStartNextCycle()) return;
-            setSlotDisplayed(slotIndex, "", false);
-            const nextPrompt = pickNextForSlot(slotIndex, prompt);
-            runStreamSlot(slotIndex, nextPrompt, reducedMotion ? 0 : 120);
-          }, holdMsForPresetText(prompt.text));
-        };
-
-        if (reducedMotion) {
-          setSlotDisplayed(slotIndex, prompt.text, false);
-          afterHold();
-          return;
-        }
-
-        let index = 0;
-        const revealNext = () => {
-          index += 1;
-          const partial = prompt.text.slice(0, index);
-          setSlotDisplayed(slotIndex, partial, index < prompt.text.length);
-          if (index < prompt.text.length) {
-            pushTimeout(revealNext, charMs);
-          } else {
-            afterHold();
-          }
-        };
-        pushTimeout(revealNext, charMs);
+        const el = labelRefs.current[slotIndex];
+        if (el) el.textContent = prompt.text;
       };
 
-      pushTimeout(beginPrompt, firstDelay);
+      const runReducedSlot = (slotIndex: 0 | 1 | 2, prompt: PresetPrompt, firstDelay: number) => {
+        pushTimeout(() => {
+          beginReducedSlot(slotIndex, prompt);
+          pushTimeout(() => {
+            if (!mayStartNextCycle()) return;
+            const nextPrompt = pickNextForSlot(slotIndex, prompt);
+            runReducedSlot(slotIndex, nextPrompt, 0);
+          }, holdMsForPresetText(prompt.text));
+        }, firstDelay);
+      };
+
+      runReducedSlot(0, initial[0]!, PRESET_SLOT_STAGGER_MS[0]);
+      runReducedSlot(1, initial[1]!, PRESET_SLOT_STAGGER_MS[1]);
+      runReducedSlot(2, initial[2]!, PRESET_SLOT_STAGGER_MS[2]);
+
+      return () => {
+        cancelled = true;
+        timeouts.forEach((id) => window.clearTimeout(id));
+      };
+    }
+
+    // Full decode path. One shared rAF loop drives all three slots; DOM writes are throttled to
+    // a lock advance, a churn refresh, or a caret blink \u2014 not every frame. See the module header.
+    const state: [DecodeSlotAnim | null, DecodeSlotAnim | null, DecodeSlotAnim | null] = [null, null, null];
+    let rafId = 0;
+    let lastChurnRefresh = 0;
+    let lastBlinkToggle = 0;
+    let caretOn = true;
+
+    const beginSlot = (slotIndex: 0 | 1 | 2, prompt: PresetPrompt, now: number) => {
+      const churn = makeDecodeChurn(prompt.text.length);
+      state[slotIndex] = {
+        prompt,
+        startAt: now,
+        churn,
+        lastRevealedCount: -1,
+        resolved: false,
+        holdEndAt: 0,
+      };
+      slotsRef.current = [...slotsRef.current];
+      slotsRef.current[slotIndex] = prompt;
+      setSlots([slotsRef.current[0]!, slotsRef.current[1]!, slotsRef.current[2]!]);
+      // Frame 0: the label is already mounted (every chip renders at t=0; only its first
+      // `beginSlot` call is staggered), so paint the full-length scramble immediately rather than
+      // waiting for the next rAF tick.
+      const el = labelRefs.current[slotIndex];
+      if (el) el.textContent = composeDecodeText(prompt.text, 0, churn, true);
     };
 
-    runStreamSlot(0, initial[0]!, PRESET_SLOT_STAGGER_MS[0]);
-    runStreamSlot(1, initial[1]!, PRESET_SLOT_STAGGER_MS[1]);
-    runStreamSlot(2, initial[2]!, PRESET_SLOT_STAGGER_MS[2]);
+    const processSlot = (slotIndex: 0 | 1 | 2, now: number, churnDue: boolean, blinkDue: boolean) => {
+      const anim = state[slotIndex];
+      if (!anim) return;
+
+      if (anim.resolved) {
+        if (now >= anim.holdEndAt && mayStartNextCycle()) {
+          const nextPrompt = pickNextForSlot(slotIndex, anim.prompt);
+          beginSlot(slotIndex, nextPrompt, now);
+        }
+        return;
+      }
+
+      const text = anim.prompt.text;
+      const elapsed = now - anim.startAt;
+      const revealedCount = Math.min(text.length, Math.floor(elapsed / PRESET_DECODE_CHAR_MS));
+
+      if (revealedCount >= text.length) {
+        anim.resolved = true;
+        anim.holdEndAt = now + holdMsForPresetText(text);
+        const el = labelRefs.current[slotIndex];
+        if (el) el.textContent = text;
+        return;
+      }
+
+      if (churnDue) {
+        anim.churn = makeDecodeChurn(text.length);
+      }
+      if (revealedCount !== anim.lastRevealedCount || churnDue || blinkDue) {
+        anim.lastRevealedCount = revealedCount;
+        const el = labelRefs.current[slotIndex];
+        if (el) el.textContent = composeDecodeText(text, revealedCount, anim.churn, caretOn);
+      }
+    };
+
+    const tick = (now: number) => {
+      if (cancelled) return;
+      const churnDue = now - lastChurnRefresh >= PRESET_DECODE_CHURN_REFRESH_MS;
+      const blinkDue = now - lastBlinkToggle >= PRESET_DECODE_CARET_BLINK_MS;
+      if (blinkDue) {
+        caretOn = !caretOn;
+        lastBlinkToggle = now;
+      }
+      processSlot(0, now, churnDue, blinkDue);
+      processSlot(1, now, churnDue, blinkDue);
+      processSlot(2, now, churnDue, blinkDue);
+      if (churnDue) lastChurnRefresh = now;
+      rafId = window.requestAnimationFrame(tick);
+    };
+
+    pushTimeout(() => beginSlot(0, initial[0]!, performance.now()), PRESET_SLOT_STAGGER_MS[0]);
+    pushTimeout(() => beginSlot(1, initial[1]!, performance.now()), PRESET_SLOT_STAGGER_MS[1]);
+    pushTimeout(() => beginSlot(2, initial[2]!, performance.now()), PRESET_SLOT_STAGGER_MS[2]);
+    rafId = window.requestAnimationFrame(tick);
 
     return () => {
       cancelled = true;
+      window.cancelAnimationFrame(rafId);
       timeouts.forEach((id) => window.clearTimeout(id));
     };
   }, [seedsKey, seeds, reducedMotion, useLocalKnowledgeBase]);
@@ -325,14 +485,13 @@ function MainTabPresetStreamSlots(
     <>
       {slots.map((p, i) => (
         <div
-          key={`preset-stream-slot-${i}`}
+          key={`preset-decode-slot-${i}`}
           className="bonsai-preset-carousel-slot"
           data-bonsai-preset-visible="true"
         >
-          <StreamPresetChipButton
+          <DecodePresetChipButton
             preset={p}
-            displayedText={displayed[i] ?? ""}
-            showCaret={showCaret[i] ?? false}
+            setLabelRef={labelRefSetters[i]!}
             setUnifiedInput={setUnifiedInput}
             onPreferAskMode={onPreferAskMode}
           />
@@ -492,9 +651,9 @@ function MainTabPresetAnimatedChipsInner(props: MainTabPresetAnimatedChipsProps)
       />
     );
   }
-  if (animationMode === "stream") {
+  if (animationMode === "decode") {
     return (
-      <MainTabPresetStreamSlots
+      <MainTabPresetDecodeSlots
         seeds={seeds}
         setUnifiedInput={setUnifiedInput}
         onPreferAskMode={onPreferAskMode}

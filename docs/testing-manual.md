@@ -143,14 +143,23 @@ Wave 4 H — confirm each path works on-Deck (SharedJSContext vs QAM popup docum
       this is the check that proves it.
 - [ ] Expand collapsed history turn: header scrolls into view
 
-### PRESET-STREAM-ANIM-01 — stream preset chip animation (P1)
+### PRESET-STREAM-ANIM-01 — decode preset chip animation (P1)
 
-Wave 4 J — Developer tab → Preset suggestions → **stream**.
+Ghost in the Shell chip decode (2026-08-28) — replaces the old `stream` typewriter mode; row
+kept its id since it is testing the same slot in the mode list. Developer tab → Preset
+suggestions → **decode**.
 
-- [ ] Three chips cascade with staggered typewriter reveal and blinking block caret
-- [ ] Chips stay D-pad focusable while text is still typing (A selects full prompt, not partial)
+- [ ] Each chip arrives as a full-width block of scrambled green glyphs (not a growing/reflowing
+      string — the chip's width should look settled from the first frame, not still catching up)
+- [ ] Glyphs lock into the real prompt left to right behind a blinking block caret, green (accent
+      colour, not a different hardcoded green)
+- [ ] Chips stay D-pad focusable while glyphs are still churning (A selects the full prompt, not
+      whatever is on screen mid-churn)
 - [ ] After hold, chip clears and samples a new prompt
-- [ ] With OS **prefers-reduced-motion: reduce**, chips swap instantly (no per-char reveal)
+- [ ] With OS **prefers-reduced-motion: reduce**, chips swap instantly (no scramble, no caret)
+- [ ] **Frame-rate feel:** with three chips churning at once, the QAM column does not stutter —
+      watch for dropped frames/jank on real Deck hardware specifically, since the desk can only
+      confirm the loop is throttled, not how it actually performs
 
 ### SMOKE-F — Deterministic commands (P2)
 
