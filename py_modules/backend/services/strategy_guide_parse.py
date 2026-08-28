@@ -49,6 +49,34 @@ def hide_incomplete_strategy_branch_fence(text: str) -> str:
     return raw
 
 
+def hide_incomplete_strategy_checklist_fence(text: str) -> str:
+    """
+    Drop a checklist fence the parser refused, so raw JSON never reaches the answer bubble.
+
+    The branch path has had `hide_incomplete_strategy_branch_fence` since the picker shipped;
+    the checklist path had no twin, so a rejected fence stayed in the visible text. Measured on
+    device 2026-08-28: a one-item checklist fails `_normalize_checklist_payload`'s two-item floor,
+    `_extract_checklist_fence` returns the text untouched, and the user reads
+    `{"title":"General Deck Performance Tip","items":[...]}` inside the reply -- where it is also
+    its own D-pad stop that does nothing on A.
+
+    Unlike the branch helper this keeps whatever follows the closing fence: the prompt asks for the
+    checklist *after* the coaching prose, so a tail is model drift rather than payload, and dropping
+    it would lose real text.
+    """
+    raw = text or ""
+    idx = raw.find(_CHECKLIST_FENCE_OPEN)
+    if idx < 0:
+        return raw
+    head = raw[:idx].rstrip()
+    tail_from_fence = raw[idx + len(_CHECKLIST_FENCE_OPEN) :]
+    close_idx = tail_from_fence.find("```")
+    # No closing fence: the rest is an unfinished payload, so there is nothing to keep.
+    tail = tail_from_fence[close_idx + 3 :].strip() if close_idx >= 0 else ""
+    joined = (head + "\n\n" + tail).strip() if (head and tail) else (head or tail)
+    return re.sub(r"\n{3,}", "\n\n", joined).strip()
+
+
 def is_strategy_followup_question(question: str) -> bool:
     return (question or "").lstrip().startswith(STRATEGY_FOLLOWUP_PREFIX)
 

@@ -46,14 +46,14 @@
       "role": ""
     },
     {
+      "path": "py_modules/backend/services/ollama_service.py",
+      "lines": 1033,
+      "role": "Prompt build, Ollama HTTP, streaming"
+    },
+    {
       "path": "src/data/characterPlaceholderEmoticonGrids.ts",
       "lines": 1024,
       "role": ""
-    },
-    {
-      "path": "py_modules/backend/services/ollama_service.py",
-      "lines": 1022,
-      "role": "Prompt build, Ollama HTTP, streaming"
     },
     {
       "path": "src/hooks/useBonsaiAskOrchestration.test.ts",
@@ -161,13 +161,13 @@
       "role": ""
     },
     {
-      "path": "py_modules/backend/services/desktop_note_service.py",
-      "lines": 432,
+      "path": "py_modules/backend/services/strategy_guide_parse.py",
+      "lines": 458,
       "role": ""
     },
     {
-      "path": "py_modules/backend/services/strategy_guide_parse.py",
-      "lines": 430,
+      "path": "py_modules/backend/services/desktop_note_service.py",
+      "lines": 432,
       "role": ""
     },
     {

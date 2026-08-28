@@ -43,6 +43,7 @@ from backend.services.strategy_guide_parse import (
     extract_strategy_guide_branches,
     extract_strategy_checklist,
     hide_incomplete_strategy_branch_fence,
+    hide_incomplete_strategy_checklist_fence,
 )
 from backend.services.ollama_prompts import (
     append_deck_tdp_sysfs_grounding,
@@ -983,6 +984,16 @@ def post_ollama_chat(
             # shown to the user as raw JSON. Hide it for display only -- the diagnosis above has
             # already been logged from the text that still had it.
             text = hide_incomplete_strategy_branch_fence(text)
+        if checklist_marker and strategy_checklist is None:
+            # Same shape as the branch case above, and it had no twin until 2026-08-28. A rejected
+            # checklist fence stayed in the visible answer, so the user read raw JSON -- and it was
+            # also its own D-pad stop that did nothing on A. Log first, then hide for display.
+            start = text.find("bonsai-strategy-checklist")
+            logger.warning(
+                "ask_ollama: strategy checklist fence present but did NOT parse; snippet=%r",
+                text[max(0, start - 40) : start + 400],
+            )
+            text = hide_incomplete_strategy_checklist_fence(text)
     text = format_ai_response(
         text,
         normalized_attachments,

@@ -4,6 +4,7 @@ from backend.services.strategy_guide_parse import (
     STRATEGY_FOLLOWUP_PREFIX,
     extract_strategy_guide_branches,
     hide_incomplete_strategy_branch_fence,
+    hide_incomplete_strategy_checklist_fence,
     is_strategy_followup_question,
 )
 
@@ -206,6 +207,46 @@ class StrategyGuideParseTests(unittest.TestCase):
         self.assertIn("PLUGIN CHECKLIST STATE", block)
         self.assertIn("Phase 1", block)
         self.assertIn("Phase 2", block)
+
+
+class HideIncompleteChecklistFenceTests(unittest.TestCase):
+    """
+    A checklist fence the parser refuses must not reach the user as raw JSON.
+
+    Reproduced on device 2026-08-28: the model emitted a one-item checklist, which is below the
+    two-item floor, so extraction returned the text untouched and the reply showed the payload as
+    a code block -- one that is also a D-pad stop doing nothing on A.
+    """
+
+    ONE_ITEM = (
+        "Keep power mode on Balanced.\n\n"
+        "```bonsai-strategy-checklist\n"
+        '{"title":"General Deck Performance Tip","items":[{"id":"1","label":"Check Power Mode"}]}\n'
+        "```\n"
+    )
+
+    def test_rejected_fence_is_removed_from_visible_text(self):
+        visible = hide_incomplete_strategy_checklist_fence(self.ONE_ITEM)
+        self.assertNotIn("bonsai-strategy-checklist", visible)
+        self.assertNotIn('"items"', visible)
+        self.assertNotIn("```", visible)
+        self.assertIn("Balanced", visible)
+
+    def test_prose_after_the_fence_is_kept(self):
+        raw = self.ONE_ITEM + "\nGood luck out there.\n"
+        visible = hide_incomplete_strategy_checklist_fence(raw)
+        self.assertIn("Balanced", visible)
+        self.assertIn("Good luck out there.", visible)
+        self.assertNotIn('"title"', visible)
+
+    def test_unclosed_fence_drops_the_remainder(self):
+        raw = "Coaching first.\n\n```bonsai-strategy-checklist\n" + '{"title":"Half a payl'
+        visible = hide_incomplete_strategy_checklist_fence(raw)
+        self.assertEqual(visible, "Coaching first.")
+
+    def test_text_without_a_fence_is_untouched(self):
+        raw = "Just prose, no fence at all."
+        self.assertEqual(hide_incomplete_strategy_checklist_fence(raw), raw)
 
 
 if __name__ == "__main__":

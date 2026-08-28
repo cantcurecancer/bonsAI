@@ -61,7 +61,11 @@ seconds; anything that would otherwise have to be re-measured goes there rather 
 
 *Each of these has a fix and tests. None has been watched on hardware, so none can be called done.*
 
-- ★★ **Focus lands on answer text that does nothing when you press A** — fix landed 2026-08-23.
+- ★★ **Focus lands on answer text that does nothing when you press A** — **audited on device 2026-08-28; the reported cause was wrong.** The
+  Developer chip's JSON sits inside the chip strip, so the ring never lands on it, and stopping on each paragraph is on purpose. The real one
+  was next door: a checklist the model got wrong is left in the reply as raw JSON, and *that* is its own stop that does nothing on A.
+  **Fixed the same day** — a rejected checklist block is now dropped from the reply, the way a rejected branch block already was.
+  Owed: one sighting on device of a reply where this happens. Detail: [roadmap-details.md](roadmap-details.md).
 - ★★ **Pickers return you to the right tab but not the right control** — 1 of 3 confirmed; the models hub and desktop-note cases still land on
   the tab strip. Next step is instrumentation, not another attempt.
 
@@ -89,6 +93,9 @@ seconds; anything that would otherwise have to be re-measured goes there rather 
 - ★ **The question overlay is a few pixels out of line** with the native text field underneath it, most visible on a three-line question and on
   the empty-field placeholder.
 - ★ **Spoiler false-positive on a named entity** — **PARTIAL.** The mid-stream flash is fixed; the remaining case is narrow.
+- ★ **Focus ring gets clipped on grid layouts** — **OPEN, found 2026-08-27.** Tiles sit flush against the edge of their grid, so the
+  highlight around a focused tile is cut off instead of drawn in full. Most visible on the AI character picker; check any other
+  screen that lays tiles out in a grid. Needs each grid to leave a margin outside its own edge for the ring to fit.
 - ★★ **Focus ring styling is inconsistent** between plugin controls and Steam's own — **PARTIAL.** Modal scoping shipped; a blanket rule was
   tried and reverted in favour of Steam's native outline.
 - ★★ **The model routing try-order modal** puts focus on the leaf up/down buttons and its chrome does not match the other full-screen pickers —

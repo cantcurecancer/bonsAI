@@ -141,3 +141,57 @@ Where an entry has since been fixed and verified, its writeup is in
 - ★★★ **AppID collision: OoT/SoH seed row used the real Stardew Valley AppID** — fixed 2026-08-21; **KB-APPID-01** Open (on-Deck). `data/kb/strategy_seed.json` game_id 1 carried `app_id: "413150"`, which is Valve's actual Stardew Valley AppID. Reproduced before the fix: a Stardew Valley session asking *"how do i make more money on my farm"* attached **three Ocarina of Time cards**, and `resolve_title_spoiler_profile` returned `protect_progression` — so a Stardew player also inherited Zelda's progression fencing. The Phase 4 cards made it worse by eight cards before this was fixed. **The prerequisite the earlier note asked for already existed:** the name tables added for D19 on 2026-08-19 protect both *Ocarina of Time* and *Ship of Harkinian* without an AppID, so removing 413150 costs no fencing. Now `app_id: null` with `igdb_id: "emudeck-oot-n64"` — the same shape State of Emergency already used, and required by the schema's `app_id IS NOT NULL OR igdb_id IS NOT NULL` check — plus the canonical title added to the alias table so a running session still resolves by name. **The eval fixture was the one real blocker and measurement dissolved it:** the 13 `kb_eval_v2` rows keyed by the borrowed AppID became `shortcut` rows, and **every arm on every split scored identically to the decimal** before and after — keyword, vector-only, rerank-only and RRF, tune and holdout, compat and strategy. The rows test what they always tested. Four TypeScript tests used 413150 as a stand-in for *any* narrative title and were repointed to Red Dead Redemption 2; they kept passing after the change for the wrong reason, which is the failure mode CLAUDE.md rule 6 names.
 - ★★★ **Character picker: focus ring invisible, D-pad does not move** — **OPEN (selection fixed).** Modal uses `querySelector` focus helpers — fix CSS reach first, then registered-owner pattern. Blocks AI-character on Deck. [CharacterPickerModal.tsx](../src/components/CharacterPickerModal.tsx).
 - ★★★ **Fullscreen picker D-pad edge-escape (audit)** — **OPEN.** Audit Pull Models, Character picker, models hub, other `showModal` pickers for below-list / above-list escape.
+### The raw JSON inside a reply — measured 2026-08-28
+
+**What the report said, and what was actually there.** The entry *"Focus inside the answer bubble
+lands on text that does nothing"* named two things: prose stops, and *"the raw JSON block under
+Full transparency snapshot"*. Both were checked on device against a byte-identical bundle
+(`md5 6e6e200aa84b8eabdbaa3cf9ad5e589a` on host and Deck).
+
+- **Prose stops are not a defect.** A finished Strategy reply produced three of them, one per
+  answer section, which is exactly what Phase B (2026-08-07) set out to do. This repeats the
+  2026-08-26 result on a different reply, so the question is settled.
+- **The Developer chip's JSON is not a stop.** With *Show details* open and the strip stepped to
+  *Chip 5 of 5*, the `dev_json` `<pre>` mounts (181px, `overflow: auto`) but its nearest focusable
+  ancestor is the chip strip itself (`tabindex="-1"`, holding `gpfocus`). The ring stays on the
+  strip. That half of the report is closed as **does not reproduce** — the location named in it is
+  wrong.
+- **A different raw JSON block does reproduce, and it is worse**, because it is inside the answer
+  the user is reading. Walking down the reply, the ring landed on
+  `{"title":"General Deck Performance Tip","items":[{"id":"1","label":"Check Power Mode",…}]}`
+  rendered as a visible code block (238×107px). It is a real stop —
+  `bonsai-answer-stop Panel Focusable tabindex="0"` — and A on it did nothing
+  (`moved: false`, panel labels unchanged before and after).
+
+**Cause, from the log rather than from reading code.** The plugin log for that turn reads
+`ask_ollama: strategy fences branch_marker=False branch_parsed=False branch_options=0
+checklist_marker=True checklist_parsed=False`. The model emitted a checklist fence with **one**
+item; `_normalize_checklist_payload` requires two
+([strategy_guide_parse.py:29](../py_modules/backend/services/strategy_guide_parse.py#L29)), so
+`_extract_checklist_fence` returns `(text, None)` — **the original text, fence and all**. Nothing
+downstream removed it, so it rendered as a markdown code fence
+(`pre.bonsai-md-fenced-pre`, `language-bonsai-strategy-checklist`) and picked up an answer-stop
+wrapper like any other section.
+
+**Why only the checklist had this hole.** The branch path has had
+`hide_incomplete_strategy_branch_fence` since the picker shipped, for exactly this case: log the
+rejection, then take the fence out of the display text. The checklist path never got the twin.
+
+**The fix** is that twin, plus the matching warning log line. It differs in one way on purpose: it
+keeps whatever follows the closing fence, because the prompt asks for the checklist *after* the
+coaching prose, so a tail is model drift and not payload.
+
+**Proof on the deployed code, not on a local copy.** The reply's exact payload was run through the
+Deck's own installed parser after the reload:
+
+```
+checklist parsed: False
+BEFORE hide - fence still visible: True   raw json still visible: True
+AFTER hide  - fence still visible: False  raw json still visible: False
+AFTER hide  - text the user reads: 'Alright, listen up! Here is the deal.'
+```
+
+**Still owed:** one sighting on device of a live reply where the model emits an under-sized
+checklist. The marker to look for is the new
+`ask_ollama: strategy checklist fence present but did NOT parse` warning — when it appears, the
+reply above it must contain no JSON.
