@@ -17,6 +17,13 @@ streamed Ask the raw text is already visible before the notice can be appended. 
 would mean scanning partial, still-growing text turn by turn and deciding when to abort a
 stream mid-generation -- a materially bigger change than one output-side check, and out of
 scope here. See the module-level test file for the false-positive cases this is tuned against.
+
+Known misses, kept honest because this is a safety check and an overstated one is worse than
+none. It is keyword matching, not comprehension: a reply that describes the deletion without
+naming the folder ("just start it fresh and let Steam rebuild everything"), or that names a
+target several clauses away from the verb, still gets through. `format` is deliberately not
+inflected -- see the comment on the verb pattern. And on a streamed Ask the raw text is on
+screen before this runs at all, per the paragraph above.
 """
 
 from __future__ import annotations
@@ -27,16 +34,52 @@ from typing import Any
 # Sentence-scoped on purpose: "remove the mod" or "delete the shortcut" name no destructive
 # target, so they never trip the guard even though "remove"/"delete" alone are common words.
 # Both a verb and a target must land in the same sentence for a signal to count.
+#
+# Inflected forms are matched, not just the bare imperative. `\bdelete\b` leaves no word
+# boundary before "ing", so "deleting" never matched -- and a model writing prose says
+# "try deleting" far more often than "delete". Measured on device 2026-08-27: the reply
+# "Try deleting the existing prefix folder and letting Steam rebuild it" reached the user
+# with no notice, and this was one of its two independent reasons (DESTRUCT-ADVICE-01).
+#
+# `format` / `reformat` stay uninflected on purpose. "formatting" collides with the
+# ordinary text sense ("the save file formatting"), and unlike the others this verb has a
+# common innocent meaning, so widening it would buy a rare catch for a routine false hit.
 _DESTRUCTIVE_VERB_RE = re.compile(
-    r"\b(?:delete|remove|wipe|erase|format|reformat|uninstall|nuke|"
-    r"clear\s+out|get\s+rid\s+of|rm\s+-rf)\b",
+    r"\b(?:"
+    r"delet(?:e|es|ed|ing)|"
+    r"remov(?:e|es|ed|ing)|"
+    r"wip(?:e|es|ed|ing)|"
+    r"eras(?:e|es|ed|ing)|"
+    r"nuk(?:e|es|ed|ing)|"
+    r"uninstall(?:s|ed|ing)?|"
+    r"reformat|format|"
+    r"clear(?:s|ed|ing)?\s+out|"
+    r"(?:get|gets|getting|got)\s+rid\s+of|"
+    r"rm\s+-rf"
+    r")\b",
     re.IGNORECASE,
 )
+
+# Targets that name the dangerous thing outright. Unambiguous on their own.
 _DESTRUCTIVE_TARGET_RE = re.compile(
     r"\b(?:compatdata|(?:wine|proton)\s*prefix|pfx|"
+    r"prefix\s+(?:folder|director(?:y|ies)|dir)|"
     r"save\s*(?:file|data|game)s?|savegames?)\b",
     re.IGNORECASE,
 )
+
+#
+# "prefix" on its own is the second half of the same device miss: the model names the brand
+# once at the top of a reply and then just says "the prefix". But a bare "prefix" also has an
+# ordinary text meaning -- "remove the bonsai- prefix from the setting name" is advice this
+# very assistant could give, and flagging it would be a false alarm.
+#
+# So a bare "prefix" counts as a target only when the reply has already established what kind
+# of prefix it is talking about. The topic word may be in any sentence; the destructive verb
+# still has to share a sentence with the word "prefix", so this widens the target vocabulary
+# without loosening the sentence-scoping the rest of the guard depends on.
+_BARE_PREFIX_RE = re.compile(r"\bprefix(?:es)?\b", re.IGNORECASE)
+_PREFIX_TOPIC_RE = re.compile(r"\b(?:wine|proton|compatdata)\b", re.IGNORECASE)
 _BACKUP_MENTION_RE = re.compile(
     r"\bback(?:\s|-)?up\b|\bbacking\s+up\b|\bmake\s+a\s+copy\b|"
     r"\bkeep(?:ing)?\s+a\s+copy\b|\bcopy\s+(?:it|them|your|the)\b",
@@ -71,11 +114,18 @@ def check_destructive_advice(response_text: str) -> dict[str, Any]:
     un-flag this.
     """
     text = response_text or ""
+    # Reply-level, so it is computed once rather than per sentence: see _BARE_PREFIX_RE.
+    prefix_means_a_folder_here = bool(_PREFIX_TOPIC_RE.search(text))
     signals: list[str] = []
     for sentence in _SENTENCE_SPLIT_RE.split(text):
         if _NEGATION_RE.search(sentence):
             continue
-        if _DESTRUCTIVE_VERB_RE.search(sentence) and _DESTRUCTIVE_TARGET_RE.search(sentence):
+        if not _DESTRUCTIVE_VERB_RE.search(sentence):
+            continue
+        hits_target = bool(_DESTRUCTIVE_TARGET_RE.search(sentence)) or (
+            prefix_means_a_folder_here and bool(_BARE_PREFIX_RE.search(sentence))
+        )
+        if hits_target:
             signals.append(sentence.strip()[:_SIGNAL_EXCERPT_CHARS])
     if not signals:
         return {"flagged": False, "signals": [], "has_backup_mention": False}

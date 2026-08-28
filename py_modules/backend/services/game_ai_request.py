@@ -515,6 +515,18 @@ async def run_game_ai_request(
         destructive_advice_check: dict[str, Any] = {"flagged": False, "signals": []}
         if ollama_result.get("success"):
             destructive_advice_check = check_destructive_advice(base_response_text)
+            # Logged whether or not it fires. Only the firing case used to say anything, which
+            # meant a reply that reached the user with no notice was indistinguishable from a
+            # guard that never ran -- and the ask trace records the final text, not whether the
+            # matcher executed. DESTRUCT-ADVICE-01 sat on exactly that ambiguity: the roadmap
+            # entry could not say whether it was a wiring failure or a wording gap without a
+            # code change first. It was the wording; this line is so the next one is cheaper.
+            logger.info(
+                "run_game_ai_request: destructive advice guard ran flagged=%s signals=%d backup_mention=%s",
+                bool(destructive_advice_check.get("flagged")),
+                len(destructive_advice_check.get("signals") or []),
+                bool(destructive_advice_check.get("has_backup_mention")),
+            )
             if destructive_advice_check.get("flagged"):
                 logger.warning(
                     "run_game_ai_request: destructive advice guard fired (%d signal(s))",
