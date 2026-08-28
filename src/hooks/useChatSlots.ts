@@ -18,6 +18,7 @@ import {
   type ChatSlotSummary,
 } from "../utils/chatSlotsApi";
 import { turnsToCollapsedTurns } from "../utils/chatSlotTurns";
+import { saveActiveChatSlotId } from "../features/plugin-shell/pluginStorage";
 
 export type UseChatSlotsArgs = {
   activeSlotIdRef: RefObject<string | null>;
@@ -41,9 +42,16 @@ export function useChatSlots({
     initialActiveSlotId ?? activeSlotIdRef.current,
   );
 
+  /*
+   * The one place the active slot changes, which is why the persistence goes here rather than at
+   * each call site: `selectSlot`, `createSlot`, `deleteSlot`, `ensureActiveSlotForAsk` and the
+   * *Clear cache* detach all route through it. Writing null clears the stored pointer, so the
+   * detach that keeps Clear cache clean (D32) keeps working across a reopen.
+   */
   const setActiveSlot = useCallback(
     (id: string | null) => {
       activeSlotIdRef.current = id;
+      saveActiveChatSlotId(id);
       setActiveSlotIdState(id);
     },
     [activeSlotIdRef],

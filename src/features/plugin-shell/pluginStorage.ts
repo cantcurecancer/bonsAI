@@ -7,6 +7,7 @@
  *   so the opening tab can be resolved before load_settings answers.
  */
 import {
+  ACTIVE_CHAT_SLOT_STORAGE_KEY,
   IP_DEFAULT,
   IP_STORAGE_KEY,
   LAST_TAB_AT_STORAGE_KEY,
@@ -74,6 +75,35 @@ export function loadLastTab(): string | null {
   } catch {
     return null;
   }
+}
+
+/** Which saved chat the session was in, or null when there is none. See the key's own comment. */
+export function loadActiveChatSlotId(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(ACTIVE_CHAT_SLOT_STORAGE_KEY);
+    const id = (raw ?? "").trim();
+    return id || null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Record the active saved chat, or clear it when `id` is null.
+ *
+ * Clearing on null is load-bearing, not tidiness: *Clear cache* detaches the slot by calling
+ * `setActiveSlot(null)`, and the whole D32 fix rests on there being nothing left to restore
+ * afterwards. If this only ever wrote ids, the next reopen would read a stale pointer and refill
+ * the thread the user had just cleared.
+ */
+export function saveActiveChatSlotId(id: string | null): void {
+  if (typeof window === "undefined") return;
+  try {
+    const next = (id ?? "").trim();
+    if (next) window.localStorage.setItem(ACTIVE_CHAT_SLOT_STORAGE_KEY, next);
+    else window.localStorage.removeItem(ACTIVE_CHAT_SLOT_STORAGE_KEY);
+  } catch {}
 }
 
 /**

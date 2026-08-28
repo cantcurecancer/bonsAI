@@ -151,4 +151,66 @@ describe("useChatSlots", () => {
       expect(setAskThreadCollapsed.mock.calls.at(-1)?.[0]).not.toEqual([]);
     });
   });
+
+  describe("the active slot survives a reopen", () => {
+    /*
+     * SESSION-CONTEXT-COUNT-01. The pointer to the saved chat was carried only by the
+     * modal-survival snapshot, which is written when a Decky modal opens. A QAM close/reopen is
+     * a plain remount and writes none, so the pointer came back null and the thread read as
+     * empty while the slot file still held every turn. Measured on device: four entries on disk,
+     * one turn on screen tagged `live`.
+     */
+    function render(activeSlotIdRef: { current: string | null }) {
+      return renderHook(() =>
+        useChatSlots({
+          activeSlotIdRef,
+          setAskThreadCollapsed: vi.fn(),
+          setAskThreadDisplayQuestion: vi.fn(),
+          setExpandedTurnKey: vi.fn(),
+        }),
+      );
+    }
+
+    it("stores the id so a fresh mount can find it", async () => {
+      window.localStorage.removeItem("bonsai:active-chat-slot");
+      const { result } = render({ current: null });
+
+      await act(async () => {
+        result.current.setActiveSlot("slot-a");
+      });
+
+      expect(window.localStorage.getItem("bonsai:active-chat-slot")).toBe("slot-a");
+    });
+
+    /*
+     * The half that keeps Clear cache fixed. *Clear cache* detaches by calling
+     * `setActiveSlot(null)`, and D32 rests on there being nothing left to restore afterwards —
+     * a write-only pointer would refill the thread on the next reopen.
+     */
+    it("clears the stored id when the slot is detached", async () => {
+      const { result } = render({ current: null });
+
+      await act(async () => {
+        result.current.setActiveSlot("slot-a");
+      });
+      expect(window.localStorage.getItem("bonsai:active-chat-slot")).toBe("slot-a");
+
+      await act(async () => {
+        result.current.setActiveSlot(null);
+      });
+
+      expect(window.localStorage.getItem("bonsai:active-chat-slot")).toBeNull();
+    });
+
+    it("stores the id minted for a first Ask, not just an explicit selection", async () => {
+      window.localStorage.removeItem("bonsai:active-chat-slot");
+      const { result } = render({ current: null });
+
+      await act(async () => {
+        await result.current.ensureActiveSlotForAsk("how do i deal with the exploders");
+      });
+
+      expect(window.localStorage.getItem("bonsai:active-chat-slot")).toBe("new-slot");
+    });
+  });
 });

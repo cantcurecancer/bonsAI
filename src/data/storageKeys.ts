@@ -20,6 +20,18 @@ export const LAST_TAB_AT_STORAGE_KEY = "bonsai:last-tab-at";
  */
 export const TAB_RESUME_MODE_STORAGE_KEY = "bonsai:tab-resume-mode";
 export const LOCAL_RUNTIME_BETA_DISMISSED_STORAGE_KEY = "bonsai:local-runtime-beta-dismissed-v1";
+/**
+ * Which saved chat the session is in, so a QAM close/reopen resumes it.
+ *
+ * The turns themselves live on disk in the slot file; this is only the pointer. It was previously
+ * carried by the modal-survival snapshot alone, which is written when a Decky modal opens — and a
+ * QAM close/reopen is not that, so the pointer came back null and the thread read as empty while
+ * the slot on disk still held every turn (SESSION-CONTEXT-COUNT-01).
+ *
+ * `bonsai:`-prefixed deliberately: `clearBonsaiBrowserStorage` removes the whole prefix, so
+ * *Clear all plugin data* takes this with it and needs no separate line.
+ */
+export const ACTIVE_CHAT_SLOT_STORAGE_KEY = "bonsai:active-chat-slot";
 
 export const GITHUB_ISSUES_URL = "https://github.com/qd313/bonsAI/issues";
 export const OLLAMA_UPSTREAM_REPO_URL = "https://github.com/ollama/ollama";

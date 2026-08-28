@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
   "fileCount": 310,
-  "edgeCount": 726,
+  "edgeCount": 727,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -1173,6 +1173,7 @@
         "src/features/plugin-shell/usePluginHelpModal.tsx",
         "src/hooks/useBonsaiPluginShell.test.ts",
         "src/hooks/useBonsaiPluginShell.ts",
+        "src/hooks/useChatSlots.ts",
         "src/hooks/usePluginSettings.ts",
         "src/index.tsx"
       ]
@@ -1495,6 +1496,7 @@
     },
     "src/hooks/useChatSlots.ts": {
       "imports": [
+        "src/features/plugin-shell/pluginStorage.ts",
         "src/types/bonsaiUi.ts",
         "src/utils/chatSlotTurns.ts",
         "src/utils/chatSlotsApi.ts"

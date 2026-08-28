@@ -48,7 +48,11 @@ import {
 import { useUnifiedInputSurface } from "./features/unified-input/useUnifiedInputSurface";
 import { PluginErrorBoundary } from "./features/plugin-shell/PluginErrorBoundary";
 import { DECKY_TAB_TITLES } from "./features/plugin-shell/tabTitles";
-import { loadSavedSearchQuery, persistSearchQuery } from "./features/plugin-shell/pluginStorage";
+import {
+  loadActiveChatSlotId,
+  loadSavedSearchQuery,
+  persistSearchQuery,
+} from "./features/plugin-shell/pluginStorage";
 import { useOllamaConnectionState } from "./features/plugin-shell/useOllamaConnectionState";
 import { useDeveloperTabPayload } from "./features/plugin-shell/tabs/useDeveloperTabPayload";
 import { useAboutTabPayload } from "./features/plugin-shell/tabs/useAboutTabPayload";
@@ -133,7 +137,18 @@ const Content: React.FC = () => {
     } as unknown as BonsaiSessionSurvivalSnapshot;
   });
 
-  const activeSlotIdRef = useRef<string | null>(peekBonsaiSessionPendingRestore()?.activeSlotId ?? null);
+  /*
+   * The modal-survival snapshot first, the stored pointer second.
+   *
+   * The snapshot only exists when a Decky modal opened; a QAM close/reopen is a plain remount and
+   * writes none, so this used to come back null and the whole thread read as empty while the slot
+   * on disk still held every turn. The two cannot disagree — both are written from `setActiveSlot`,
+   * so a snapshot saying "no slot" comes with storage saying the same — which is what makes the
+   * `??` safe rather than a way to resurrect a chat *Clear cache* just detached.
+   */
+  const activeSlotIdRef = useRef<string | null>(
+    peekBonsaiSessionPendingRestore()?.activeSlotId ?? loadActiveChatSlotId(),
+  );
   const reloadSlotTranscriptRef = useRef<(() => Promise<void>) | null>(null);
   /* Same indirection as the ref above: `useChatSlots` owns this but is declared after the
    * orchestration hook, because it needs that hook's thread setters. */
@@ -491,7 +506,22 @@ const Content: React.FC = () => {
       inputLen: survived?.unifiedInput?.length ?? 0,
       hasExchange: !!survived?.lastExchange,
     });
-    if (!survived) return;
+    if (!survived) {
+      /*
+       * A plain mount — a QAM close/reopen, the ordinary way this panel comes back. There is no
+       * snapshot to restore, but the saved chat is still on disk and the pointer to it now
+       * survives, so load it here. Without this the thread came back empty and the session
+       * context strip counted only the answer the background poll repainted
+       * (SESSION-CONTEXT-COUNT-01): measured on device with four entries in the slot file and
+       * one turn on screen, tagged `live`.
+       */
+      const storedSlotId = loadActiveChatSlotId();
+      if (storedSlotId) {
+        activeSlotIdRef.current = storedSlotId;
+        void chatSlots.selectSlot(storedSlotId);
+      }
+      return;
+    }
     if (consumePendingFocusMainTab()) {
       setCurrentTab("main");
     } else if (survived.currentTab) {
