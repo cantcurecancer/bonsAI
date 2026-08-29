@@ -200,6 +200,41 @@ class ChatSlotOwnershipTests(unittest.IsolatedAsyncioTestCase):
         assert loaded is not None
         self.assertEqual([t["app_id"] for t in loaded["turns"]], ["548430", "548430"])
 
+    async def test_display_question_reaches_the_saved_user_turn(self) -> None:
+        """End to end through the RPC: the payload's ``display_question`` (the caption the user
+        saw) lands on the persisted user turn as ``display_text``, while ``text`` keeps the
+        composed prompt the model was actually sent.
+        """
+        slot = create_slot(self.tmp, label="caption-route")
+        sid = slot["id"]
+
+        async def fast_execute(*_args, **_kwargs):
+            return {"success": True, "response": "routed answer", "elapsed_seconds": 0.01}
+
+        with patch.object(Plugin, "_execute_game_ai_request", side_effect=fast_execute):
+            with patch.object(Plugin, "load_settings", return_value={}):
+                with patch.object(
+                    Plugin,
+                    "_compose_opening_thinking_blurb",
+                    return_value=("Thinking…", None),
+                ):
+                    await self.plugin.start_background_game_ai(
+                        {
+                            "question": "[Strategy follow-up] I'm at: the twins",
+                            "display_question": "I'm at: the twins",
+                            "PcIp": "127.0.0.1:11434",
+                            "chat_slot_id": sid,
+                        }
+                    )
+                    if self.plugin._background_task is not None:
+                        await self.plugin._background_task
+
+        loaded = load_slot(self.tmp, sid)
+        assert loaded is not None
+        user_turns = [t for t in loaded["turns"] if t.get("role") == "user"]
+        self.assertEqual(user_turns[0]["display_text"], "I'm at: the twins")
+        self.assertEqual(user_turns[0]["text"], "[Strategy follow-up] I'm at: the twins")
+
     async def test_unknown_request_id_logs_fault(self) -> None:
         self.plugin._background_request_seq = 9999
         self.plugin._background_state = {

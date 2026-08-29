@@ -20,6 +20,11 @@ export type ChatSlotTurn = {
    * fallback chain in chatSlotTurns.ts.
    */
   app_id?: string;
+  /**
+   * What the user saw as their question when it differs from `text` (the composed prompt).
+   * Display only — reasoning about the turn keeps reading `text`. "" or absent: same as `text`.
+   */
+  display_text?: string;
   created_at?: number;
 };
 

@@ -468,7 +468,7 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
           >
             {buildTurnHeaderElement({
               turnId: turn.id,
-              title: buildCollapsedTurnTitle(turn.question),
+              title: buildCollapsedTurnTitle(turn.questionDisplay || turn.question),
               expanded: expandedTurnKey === turn.id,
               onActivate: () => onTurnActivate?.(turn.id),
             })}

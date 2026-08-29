@@ -100,6 +100,43 @@ describe("turnsToCollapsedTurns", () => {
     expect(collapsed[0]?.appId).toBe("");
   });
 
+  it("carries the friendly caption onto the collapsed turn without touching the real question", () => {
+    // Roadmap: "After reopening the panel, a branch-pick turn's header shows the internal
+    // prompt". The header should read "I'm at: the twins" while spoiler unwrap and copy keep
+    // the composed prompt.
+    const { collapsed } = turnsToCollapsedTurns([
+      {
+        id: "u1",
+        role: "user",
+        text: "[Strategy follow-up] I'm at: the twins",
+        display_text: "I'm at: the twins",
+      },
+      { id: "a1", role: "assistant", text: "answer" },
+    ]);
+    expect(collapsed[0]?.questionDisplay).toBe("I'm at: the twins");
+    expect(collapsed[0]?.question).toBe("[Strategy follow-up] I'm at: the twins");
+  });
+
+  it("leaves questionDisplay unset for a plain typed question", () => {
+    const { collapsed } = turnsToCollapsedTurns([
+      { id: "u1", role: "user", text: "how do i parry" },
+      { id: "a1", role: "assistant", text: "answer" },
+    ]);
+    expect(collapsed[0]?.questionDisplay).toBeUndefined();
+  });
+
+  it("prefers the friendly caption for a pending question too", () => {
+    const { pendingQuestion } = turnsToCollapsedTurns([
+      {
+        id: "u1",
+        role: "user",
+        text: "[Strategy follow-up] I'm at: the twins",
+        display_text: "I'm at: the twins",
+      },
+    ]);
+    expect(pendingQuestion).toBe("I'm at: the twins");
+  });
+
   it("keeps transparency null when the persisted turn carries none", () => {
     const { collapsed } = turnsToCollapsedTurns([
       { id: "u1", role: "user", text: "q" },

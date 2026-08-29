@@ -94,6 +94,34 @@ class ChatSlotServiceTests(unittest.TestCase):
         self.assertEqual([t["app_id"] for t in reloaded["turns"]], ["", ""])
         self.assertEqual(reloaded["origin_app_id"], "548430")
 
+    def test_turn_persists_the_display_caption_separately_from_the_composed_prompt(self):
+        """Roadmap: a reopened chat's header showed '[Strategy follow-up] I'm at: …' because only
+        the composed prompt was saved. The friendly caption now rides along, display-only.
+        """
+        slot = create_slot(self.settings_dir, label="captions")
+        sid = slot["id"]
+        saved = append_turn(
+            self.settings_dir,
+            sid,
+            role="user",
+            text="[Strategy follow-up] I'm at: the twins",
+            display_text="I'm at: the twins",
+        )
+        assert saved is not None
+        turn = saved["turns"][-1]
+        self.assertEqual(turn["display_text"], "I'm at: the twins")
+        self.assertEqual(turn["text"], "[Strategy follow-up] I'm at: the twins")
+
+        reloaded = load_slot(self.settings_dir, sid)
+        assert reloaded is not None
+        self.assertEqual(reloaded["turns"][-1]["display_text"], "I'm at: the twins")
+
+    def test_turns_without_a_display_caption_load_with_an_empty_one(self):
+        slot = create_slot(self.settings_dir, label="no-caption")
+        saved = append_turn(self.settings_dir, slot["id"], role="user", text="plain question")
+        assert saved is not None
+        self.assertEqual(saved["turns"][-1]["display_text"], "")
+
     def test_turn_app_id_is_bounded(self):
         slot = create_slot(self.settings_dir, label="bounds")
         saved = append_turn(

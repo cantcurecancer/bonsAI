@@ -147,10 +147,12 @@ seconds; anything that would otherwise have to be re-measured goes there rather 
 
 ### Small and cosmetic
 
-- ★ **After reopening the panel, a branch-pick turn's header shows the internal prompt** — **OPEN, found on-Deck 2026-08-27**
-  during the verification sweep. The header reads `[Strategy follow-up] I'm at: Tell me what you want to know…` instead of the
-  friendly *I'm at: …* caption it shows while live. The friendly caption is a display-only value; the reopen rebuilds headers from
-  the saved chat, which stores the composed prompt. Cosmetic, but it is internal plumbing on screen.
+- ~~★ **After reopening the panel, a branch-pick turn's header shows the internal prompt**~~ — **FIXED at the desk 2026-08-28** with
+  the same recipe as the per-turn game ID: the caption the user saw now rides on the saved turn (`display_text` through the Ask
+  payload's `display_question` → `append_turn` → `ChatSlotTurn` → `questionDisplay` on the collapsed turn), and the header prefers it
+  while spoiler unwrap, copy text and follow-up context keep reading the composed prompt. Chats saved before the change show the
+  composed prompt as before — the caption was never recorded, so there is nothing to restore for them. Covered by three mapper tests,
+  two persistence tests and one end-to-end RPC test. **Device check owed:** make a branch pick, reopen the panel, read the header.
 
 - ★ **The active chip in Show details is hard to spot** — no focus ring, and the "Chip 1 of 6" counter is easy to miss. Filed by the maintainer.
 - ★ **B on an open glossary popup also backs the ring out of the reply** — **OPEN, measured on-Deck 2026-08-28** during the

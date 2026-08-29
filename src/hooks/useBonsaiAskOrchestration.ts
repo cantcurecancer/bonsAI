@@ -1049,6 +1049,7 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
                 preferred_model: string | null;
               };
               chat_slot_id?: string;
+              display_question?: string;
             },
           ],
           BackgroundStartResponse
@@ -1062,6 +1063,16 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
             ask_mode: askModeForRequest,
             spoiler_consent: spoilerConsentForRequest,
             ...(chatSlotIdForRequest ? { chat_slot_id: chatSlotIdForRequest } : {}),
+            /*
+             * The friendly caption the user saw, when it differs from the composed prompt (a
+             * branch pick shows "I'm at: …" but sends "[Strategy follow-up] I'm at: …"). The
+             * backend stores it on the saved turn so a reopened chat's header shows this and not
+             * internal plumbing. The ref is set a few lines above and not cleared until the
+             * request resolves, so it is still live here.
+             */
+            ...(pendingThreadQuestionDisplayRef.current?.trim()
+              ? { display_question: pendingThreadQuestionDisplayRef.current.trim() }
+              : {}),
             ...(followUpPending
               ? {
                   reply_followup: {

@@ -19,6 +19,7 @@ MAX_CHAT_SLOTS = 5
 MAX_TURNS_PER_SLOT = 200
 MAX_TURN_TEXT_LEN = 120_000
 MAX_LABEL_LEN = 120
+MAX_DISPLAY_TEXT_LEN = 300
 SLOTS_SUBDIR = "chat_slots"
 
 
@@ -114,6 +115,12 @@ def _normalize_turn(raw: Any) -> dict[str, Any] | None:
         # for those, which is right in the ordinary one-chat-one-game case and no worse than the
         # "" the frontend used to hardcode in every other case.
         "app_id": str(raw.get("app_id", "") or "").strip()[:32],
+        # What the user saw as their question, when it differs from ``text`` (the composed prompt
+        # actually sent to the model — e.g. a branch pick sends "[Strategy follow-up] I'm at: …"
+        # while the header shows "I'm at: …"). Display only: anything that reasons about the turn
+        # (spoiler unwrap, follow-up context) keeps reading ``text``. "" means they are the same,
+        # which is also what every turn saved before this field existed reports.
+        "display_text": str(raw.get("display_text", "") or "").strip()[:MAX_DISPLAY_TEXT_LEN],
         "attachment_refs": _normalize_attachment_refs(raw.get("attachment_refs")),
         "transparency": _normalize_turn_transparency(raw.get("transparency")),
         "created_at": int(raw.get("created_at") or time.time()),
@@ -361,6 +368,7 @@ def append_turn(
     attachment_refs: list[dict[str, str]] | None = None,
     transparency: dict[str, Any] | None = None,
     app_id: str = "",
+    display_text: str = "",
     label: str | None = None,
     logger: Any = None,
 ) -> dict[str, Any] | None:
@@ -376,6 +384,7 @@ def append_turn(
             "attachment_refs": attachment_refs or [],
             "transparency": transparency,
             "app_id": app_id,
+            "display_text": display_text,
             "created_at": int(time.time()),
         }
     )

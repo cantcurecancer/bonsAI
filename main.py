@@ -921,6 +921,18 @@ class Plugin:
             return str(question.get("chat_slot_id") or question.get("chatSlotId") or "").strip()
         return ""
 
+    @staticmethod
+    def _parse_chat_slot_display_question(question: Any) -> str:
+        """What the user saw as their question when it differs from the composed prompt sent to
+        the model (a branch pick shows "I'm at: …" but sends "[Strategy follow-up] I'm at: …").
+        Persisted per turn so a reopened chat's header shows the friendly caption, not internal
+        plumbing. "" means no separate display form."""
+        if isinstance(question, dict):
+            return str(
+                question.get("display_question") or question.get("displayQuestion") or ""
+            ).strip()
+        return ""
+
     async def _chat_slots_record_user_turn(
         self,
         *,
@@ -930,6 +942,7 @@ class Plugin:
         attachments: list,
         app_id: str,
         app_name: str,
+        display_question: str = "",
     ) -> None:
         sid = str(slot_id or "").strip()
         if not sid or not str(question or "").strip():
@@ -962,6 +975,7 @@ class Plugin:
                 request_id=request_id,
                 attachment_refs=refs,
                 app_id=app_id,
+                display_text=display_question,
                 logger=logger,
             )
 
@@ -2686,6 +2700,7 @@ class Plugin:
                     attachments=attachments,
                     app_id=app_id,
                     app_name=app_name,
+                    display_question=Plugin._parse_chat_slot_display_question(question),
                 )
                 self._chat_slot_by_request[request_id] = chat_slot_id
             self._background_task = asyncio.create_task(

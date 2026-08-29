@@ -57,6 +57,13 @@ export type StrategyChecklistState = StrategyChecklistPayload & {
 export type AskThreadCollapsedTurn = {
   id: string;
   question: string;
+  /**
+   * The caption the user saw for this question, when it differs from `question` (the composed
+   * prompt — e.g. a branch pick shows "I'm at: …" but sends "[Strategy follow-up] I'm at: …").
+   * Header rendering prefers this; everything that reasons about the turn (spoiler unwrap, copy
+   * text, follow-up context) keeps reading `question`.
+   */
+  questionDisplay?: string;
   answer: string;
   transparency?: TransparencySnapshot | ChatSlotTurnTransparency | null;
   /**

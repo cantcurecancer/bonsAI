@@ -44,6 +44,9 @@ export function turnsToCollapsedTurns(turns: ChatSlotTurn[], fallbackAppId = "")
       collapsed.push({
         id: pendingQ.id,
         question: pendingQ.text,
+        // The friendly caption the user saw, when one was recorded (branch picks and preset
+        // sends store it; a plain typed question saves "" and the header falls back to the text).
+        questionDisplay: (pendingQ.display_text || "").trim() || undefined,
         answer: turn.text,
         transparency: turn.transparency ?? null,
         appId: turnAppId(turn, pendingQ, fallbackAppId),
@@ -57,6 +60,8 @@ export function turnsToCollapsedTurns(turns: ChatSlotTurn[], fallbackAppId = "")
 
   return {
     collapsed,
-    pendingQuestion: pendingQ?.text ?? null,
+    // The pending question is pure display (the thread header while an answer is still owed),
+    // so the friendly caption wins here outright.
+    pendingQuestion: pendingQ ? (pendingQ.display_text || "").trim() || pendingQ.text : null,
   };
 }
