@@ -144,6 +144,26 @@ export function DrgGlossaryTermChip(props: DrgGlossaryTermChipProps) {
       }}
       onBlur={() => setChipState("idle")}
       onActivate={activate}
+      {...(state !== "idle"
+        ? ({
+            /*
+             * B closes the popup without leaving the reply — and only `onCancelButton` can deliver
+             * that. Instrumented on device 2026-08-28: `onButtonDown` receives the B press (button
+             * 2) and returning true does NOT stop Steam from also backing the ring out of the
+             * pane, while `onCancelButton` + preventDefault genuinely consumes it. The handler is
+             * attached only while the popup is open, and that too is measured, not styling: its
+             * mere presence suppresses Steam's back-out even when the handler does nothing, so an
+             * always-on handler would leave B dead on an idle chip. Wired conditionally, the flow
+             * is: first B closes the popup (ring stays on the term), second B — handler gone —
+             * backs out of the pane as Steam intends. `onCancel` never fired on device; this is
+             * the one that does.
+             */
+            onCancelButton: (e: unknown) => {
+              setChipState("idle");
+              (e as { preventDefault?: () => void })?.preventDefault?.();
+            },
+          } as Record<string, unknown>)
+        : {})}
       onButtonDown={(evt: unknown) => {
         if (isOkDeckButtonEvent(evt)) {
           activate();

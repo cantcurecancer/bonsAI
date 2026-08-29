@@ -155,10 +155,8 @@ seconds; anything that would otherwise have to be re-measured goes there rather 
   two persistence tests and one end-to-end RPC test. **Device check owed:** make a branch pick, reopen the panel, read the header.
 
 - ★ **The active chip in Show details is hard to spot** — no focus ring, and the "Chip 1 of 6" counter is easy to miss. Filed by the maintainer.
-- ★ **B on an open glossary popup also backs the ring out of the reply** — **OPEN, measured on-Deck 2026-08-28** during the
-  DRG-GLOSSARY-02 walk. The popup closed, but the ring jumped to the QAM's own chrome: Steam processed B as back-out-of-pane as well,
-  so the chip's "B is fully consumed" contract does not hold on device. The spoiler fence uses the same pattern and has never had its
-  B step walked, so assume it shares this. Dismiss-by-direction works and is the path to recommend meanwhile.
+- ~~★ **B on an open glossary popup also backs the ring out of the reply**~~ — **FIXED and proven on-Deck 2026-08-28, and the mechanism is now measured, not guessed.** Instrumentation on the chip showed `onButtonDown` receives the B press and returning true does NOT stop Steam — the only handler Steam honors is `onCancelButton` with `preventDefault()`. One more measured subtlety: the handler's mere *presence* suppresses Steam's back-out even when it does nothing, so it is attached only while the popup is open. Result, verified press by press: first B closes the popup with the ring staying on the term; second B — handler gone — backs out of the pane normally.
+- ★ **Apply the same B fix to the spoiler fence** — **OPEN.** The fence handles B through the same `onButtonDown` pattern the chip just proved Steam ignores, so its "B is fully consumed" comment is almost certainly wrong on device too. The fix recipe is now known and one line of shape: a conditional `onCancelButton` + `preventDefault` while the fence's popup state is open ([DrgGlossaryTermChip.tsx](../src/components/DrgGlossaryTermChip.tsx) is the template). Needs its own on-device B walk.
 - ~~★ **Reaching a glossary chip from below takes Up then Down, not one Up**~~ — **FIXED and proven on-Deck 2026-08-28 the same
   evening** (`runs/DRG-GLOSSARY-03-one-press-up.json`: one Up from *Show details* landed on the nearest chip, 1/1). The reply-actions
   row's Up handlers now try the glossary chip as their *last* fallback — after refinement chips and the thumbs row, so turns that have
