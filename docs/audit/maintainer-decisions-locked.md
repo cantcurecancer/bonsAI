@@ -15,7 +15,10 @@ choices are, and what happens either way. **Locked calls (2026-08-02 for D1–D6
 [Maintainer decisions locked](#maintainer-decisions-locked--2026-08-02); implement
 from that section when it disagrees with an option above.
 
-**None open.** **D37**, the most recent — the blind holdout rows — was endorsed and locked
+**One deferred, none awaiting an answer.** **D38** — the fusion weights, raised 2026-08-29 by D37's
+first measurement — is **deferred at the maintainer's request** pending more data, more games and
+more questions; it is not waiting on a decision today and nothing about the weights changes until it
+is. **D37**, the blind holdout rows, was endorsed and locked
 2026-08-29, and the measurement it was gating was run the same day (see D37 for the numbers and the
 two findings that came out of them). Before that, D18 — raised 2026-08-05 by the step 11 friction test — was locked as
 option A on 2026-08-27 and implemented the same day.
@@ -2403,3 +2406,69 @@ entry, not a defect in either row.
 **What is being asked has not changed** — endorse the method and let these stand as the holdout
 baseline once next measured. Batch 2 rides on the same answer; a "no" on the method retires both
 batches together.
+
+---
+
+### D38 — DEFERRED at the maintainer's request (raised 2026-08-29) — What ships is beaten by half of itself on the blind rows. How should that be acted on?
+
+**Maintainer's position, 2026-08-29, in their own words: "I need more data, more games, more
+questions before I can make an informed decision."** So this is **not** open for an answer yet, and
+nothing about the fusion weights is to be changed until it is. What the deferral asks for is being
+built — see *What is being done about it* below.
+
+**The situation, in plain language.** The plugin finds knowledge cards two ways: **word matching**
+(cards containing the words you typed) and **meaning matching** (cards that mean the same thing,
+even sharing no words). It blends the two lists into one ranking, and each way currently gets an
+**equal vote**.
+
+The first measurement against the blind holdout rows says that equal vote is costing us:
+
+| Split | keyword | vector_only | rrf (ships) |
+|---|---|---|---|
+| tune (n=117) | 75.2 / 86.3 | 74.4 / 91.5 | **75.2 / 91.5** |
+| holdout (n=92) | 51.1 / 70.7 | **64.1 / 83.7** | 56.5 / 79.3 |
+
+*(top-1 / top-3. Run of record:
+[../archive/research/kb-embed-bakeoff-2026-08-29-arms.md](../archive/research/kb-embed-bakeoff-2026-08-29-arms.md))*
+
+**On the blind rows the meaning half alone beats the shipping blend by 7.6 points of top-1.** The
+reason is legible: the blind questions share no wording with their card by construction, so the
+word-matching half has nothing to go on — and because it still gets an equal vote, it drags good
+answers down the ranking.
+
+**Why this is a decision and not just a number to change.** The weights
+([knowledge_base_service.py:60-68](../../py_modules/backend/services/knowledge_base_service.py))
+were never tuned. They were set equal and locked on 2026-08-09 with an explicit instruction: *"Equal
+weights stay; do not 'tune' from a later peek at holdout."* That rule is correct — tuning after
+peeking is how a ship gate quietly stops being one. But **the only split it is legitimate to tune
+against said "change nothing"**: on tune, the blend was already the best arm available. So the rule
+that keeps the gate honest was also blocking the fix the gate had just asked for. That is the knot,
+and it is why this went to the maintainer rather than being quietly re-weighted.
+
+**The options as they stood when it was raised.**
+
+- **A — give tune the missing kind of question, then tune normally.** Write blind rows into `tune`
+  so tuning can finally see keyword-hostile questions, sweep the weights on tune alone, and spend
+  one holdout confirmation at the end. Costs writing effort; keeps the gate intact. Recommended.
+- **B — re-weight from reasoning, then spend one holdout check to confirm.** Fast, but it uses up
+  some of the gate's honesty and cannot be repeated.
+- **C — change nothing.** Accept that the blend does worse on realistic questions than one of its
+  own halves. Defensible while there are no users; less so after the first one.
+
+**What is being done about it while it is deferred**, all of it option A's groundwork and none of it
+touching a weight:
+
+1. **51 blind rows added to `tune`** (`V2-BLINDT-01`…`51`), 2026-08-29 — the split had **zero**
+   before, which is the whole reason it could not see the defect. Labelled tune 117 → 168. Method
+   and disclosures: [kb-blind-tune-rows-2026-08-29.md](kb-blind-tune-rows-2026-08-29.md). **Every
+   tune figure in the table above is superseded by this (R4)**; holdout is untouched.
+2. **A weight sweep on `tune` only** — measuring whether any keyword/vector ratio looks better than
+   equal, which is the legal move under the lock. Result to be recorded here.
+3. **More games** — the maintainer asked for these explicitly. Flagged rather than started, because
+   [knowledge-base.md](../knowledge-base.md) § Phase 5 locks *"no net-new titles in Phase 5"*
+   (2026-07-30), sending catalog growth to Phase 8. Net-new titles therefore need that lock revisited
+   first, and a title list only the maintainer can supply. Deepening the existing 13 is Phase 5 work
+   and is gated on Phase 4 passing on the Deck, which is now all but complete.
+
+**Not to be done meanwhile:** no weight change, and no tuning against holdout, whatever a later
+number looks like.

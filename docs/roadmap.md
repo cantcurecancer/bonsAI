@@ -2,7 +2,7 @@
 
 **Next:** [Bugs](#bugs) → [Verify](#verify) → lowest ★ in your lane.
 
-Tracks open defects ([Bugs](#bugs)), on-Deck confirmation ([Verify](#verify)), and the themed backlog ([Backlog](#backlog)). Shipped work: [archive/roadmap-completed.md](archive/roadmap-completed.md) · fixed bugs: [archive/roadmap-bugs-fixed.md](archive/roadmap-bugs-fixed.md). Locked decisions: [audit/maintainer-decisions-locked.md](audit/maintainer-decisions-locked.md) (**D23–D25** locked 2026-08-21, **D26–D31** locked 2026-08-22, **D18** and **D32–D36** locked 2026-08-27/28, **D37** locked 2026-08-29. **None open.**). RAG session handoff: [audit/session-handoff-2026-08-21.md](audit/session-handoff-2026-08-21.md).
+Tracks open defects ([Bugs](#bugs)), on-Deck confirmation ([Verify](#verify)), and the themed backlog ([Backlog](#backlog)). Shipped work: [archive/roadmap-completed.md](archive/roadmap-completed.md) · fixed bugs: [archive/roadmap-bugs-fixed.md](archive/roadmap-bugs-fixed.md). Locked decisions: [audit/maintainer-decisions-locked.md](audit/maintainer-decisions-locked.md) (**D23–D25** locked 2026-08-21, **D26–D31** locked 2026-08-22, **D18** and **D32–D36** locked 2026-08-27/28, **D37** locked 2026-08-29; **D38 deferred** at the maintainer's request pending more data, more games and more questions). RAG session handoff: [audit/session-handoff-2026-08-21.md](audit/session-handoff-2026-08-21.md).
 
 Setup: [troubleshooting.md](troubleshooting.md). QA: [testing.md](testing.md), [testing-manual.md](testing-manual.md). Release: [development.md](development.md), [CHANGELOG.md](../CHANGELOG.md).
 
@@ -50,13 +50,16 @@ seconds; anything that would otherwise have to be re-measured goes there rather 
 
 - ★★★★ **The shipping retrieval arm loses to the vector half alone on rows nobody tuned against** — found 2026-08-29 by the first
   measurement against the 92-row blind holdout (**D37**, endorsed the same day). On `holdout`, `vector_only` scores **83.7% top-3 / 64.1%
-  top-1** against the shipping `rrf` arm's **79.3% / 56.5%** — **7.6 points of top-1**. On `tune` the two are level (91.5% top-3 each,
+  top-1** against the shipping `rrf` arm's **79.3% / 56.5%** — **7.6 points of top-1**. On `tune` the two were level (91.5% top-3 each,
   `rrf` marginally ahead on top-1). An arm that ties on the rows its weights were tuned on and loses by that much on rows written blind is
   the textbook shape of **fusion weights that do not generalise**, and catching it is the whole reason a blind holdout exists.
-  **Do not fix this by tuning against holdout** — that burns the only clean gate in the fixture. The legitimate moves are to re-tune the
-  fusion weights on `tune` and re-check holdout once, or to question whether RRF is the right combiner at all now that the vector half has
-  its own recall pass (it did not when the fusion was designed). Run of record:
-  [archive/research/kb-embed-bakeoff-2026-08-29-arms.md](archive/research/kb-embed-bakeoff-2026-08-29-arms.md).
+  **Filed as [D38](audit/maintainer-decisions-locked.md#d38--deferred-at-the-maintainers-request-raised-2026-08-29--what-ships-is-beaten-by-half-of-itself-on-the-blind-rows-how-should-that-be-acted-on)
+  and DEFERRED 2026-08-29 at the maintainer's request** — more data, more games and more questions
+  first. **No weight changes until it is answered, and never by tuning against holdout**, which would burn the only clean gate in the
+  fixture. The knot worth remembering: the weights were never tuned (equal, locked 2026-08-09), and `tune` rated the blend the best arm
+  available — so the one split it is legal to tune against said "change nothing" while the gate said otherwise. **Groundwork done:** 51
+  blind rows added to `tune`, which had none ([audit/kb-blind-tune-rows-2026-08-29.md](audit/kb-blind-tune-rows-2026-08-29.md)). Run of
+  record: [archive/research/kb-embed-bakeoff-2026-08-29-arms.md](archive/research/kb-embed-bakeoff-2026-08-29-arms.md).
 - ★ **The arms report's verdict line only ever compares `rrf` against `keyword`** — so the 2026-08-29 run printed "no separation" while its
   own table showed `vector_only` 83.7% [76.1, 91.3] against `keyword` 70.7% [60.9, 80.4], the closest thing to a separation these fixtures
   have ever produced. The sentence is not wrong about the pair it names; it just does not look at the pair that moved. Make the verdict
