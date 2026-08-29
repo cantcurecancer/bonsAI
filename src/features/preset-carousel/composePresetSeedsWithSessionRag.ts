@@ -44,10 +44,22 @@ export function composePresetSeedsWithSessionRag(args: ComposePresetSeedsWithSes
  * for a value none of those layers has any opinion about.
  */
 let sessionRagCandidates: SessionRagChipCandidate[] = [];
+let sessionRagRotationProbability: number | undefined;
 
-/** Publish the candidates the carousel tick may draw from. Empty restores static-only rotation. */
-export function setSessionRagCarouselCandidates(candidates: SessionRagChipCandidate[]): void {
+/**
+ * Publish the candidates the carousel tick may draw from. Empty restores static-only rotation.
+ *
+ * `ragProbability` carries the Developer-tab QA override the compose path already honours. Without
+ * it the override only applied to the three seeded slots and rotation went straight back to rolling
+ * 0.3, so "force session RAG chips" forced half the carousel — and the half it did not force is the
+ * one a QA row watching the carousel over time is actually reading.
+ */
+export function setSessionRagCarouselCandidates(
+  candidates: SessionRagChipCandidate[],
+  options?: { ragProbability?: number },
+): void {
   sessionRagCandidates = [...candidates];
+  sessionRagRotationProbability = options?.ragProbability;
 }
 
 /** The candidates currently available to rotation. */
@@ -70,5 +82,6 @@ export function pickCarouselChipWithSessionRag(args: PickCarouselChipArgs): Pres
   return pickNextCarouselChip({
     ...args,
     ragCandidates: args.ragCandidates ?? sessionRagCandidates,
+    ragProbability: args.ragProbability ?? sessionRagRotationProbability,
   });
 }

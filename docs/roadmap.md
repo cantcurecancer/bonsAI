@@ -85,19 +85,28 @@ seconds; anything that would otherwise have to be re-measured goes there rather 
   (*Glyphid Dreadnought*, *Hollow Bough*, *Exploder*) where before only one could. One honest limit stands: the carousel stops advancing at
   `PRESET_CAROUSEL_ACTIVE_MS` 60s, so the guarantee cannot re-fire after that — it makes a corpus chip very likely to be on screen when
   rotation freezes, not certain. 8 unit tests in `sessionRagComposer.test.ts`.
-- ★★ **The longest game chip labels overflow the 300px column by about 20px** — predicted 2026-08-29, **not yet observed directly**, and
-  filed because the prediction is now well grounded rather than arithmetic on a static seed. Calibrated against real rendered game chips on
-  device (factor 1.0166, measured from *TipHow do I beat Glyphid Dreadnought?* at 228.3px), the three longest corpus labels come out at
-  **318.3px** (*Mining and the run timer*), **319.5px** (*Upgrades and overclocks*) and **323.3px** (*Shadow Temple invisible floors*,
-  Ocarina) against a **300px** slot — badge included, since the **Tip** badge renders inside the label element. **The overflow mechanism is
-  already confirmed:** the label is `text-overflow: ellipsis` but `display: inline`, so the ellipsis cannot fire, and a label caught wider
-  than its slot during the decode animation was measured overflowing rather than truncating. What is missing is one direct sighting, which
-  is harder than it sounds — see the rotation bias below.
+- ★★★ **The longest game chip labels overflow the QAM column, and are not truncated** — **CONFIRMED on device 2026-08-29 by direct
+  measurement**, superseding the ~20px estimate first filed the same day. That estimate was wrong in the safe direction: **the real overflow
+  is 86.6px.** With Half-Life 2 running, *"What should I know about Rocket-Propelled Grenade Launcher?"* rendered at **379.8px inside a
+  300px slot** — 29% wider than the column, spilling 86.6px past its right edge. Read off the live element with `getBoundingClientRect`,
+  not predicted. The next widest chip that appeared, *"How do I beat Hunter-Chopper (helicopter)?"* at 268.3px, fits with 15.9px to spare,
+  so the cliff sits between those two.
+  **The label does not truncate**, which is the part worth acting on: it is `text-overflow: ellipsis` on a `display: inline` element, and
+  `overflow` does not apply to inline boxes, so the ellipsis can never fire and the text simply runs out of the column. Making truncation
+  actually work is the cheap fix and a prerequisite for the marquee item in Backlog → Focus / Deck UI.
+  **How it was finally caught**, recorded because the earlier attempt failed twice: the longest label in the whole corpus is Half-Life 2's
+  at **59 characters**, not the Ocarina one at 52 that `PHASE4-CHIPS-01` names, and it only rendered once the Developer *force session RAG
+  chips* override was made to reach rotation as well as seeding (below).
 - ★ **Chip rotation is biased to the top of the candidate list** — noticed 2026-08-29 while trying to make a long label appear. The
   guarantee and the roll both take `available[0]`, the first candidate not already in history, and the backend returns candidates in rank
   order. Across three 60s windows the same three chips came round every time (ranks 1–3) and ranks 4–6 never appeared. Not the old bug —
   those chips are reachable now, where before only rank 1 ever showed — but it is why the long labels stayed unobserved. A shuffle among
-  eligible candidates, or a rotating start index, would spread it.
+  eligible candidates, or a rotating start index, would spread it. **With the QA override on, all six appeared in 90s**, so the bias is in
+  the roll rather than in reachability.
+- ★ ~~**"Force session RAG chips" only forced half the carousel**~~ — **FIXED 2026-08-29.** The Developer override set `ragProbability: 1`
+  on the compose path, so it forced the three seeded slots and then rotation went straight back to rolling 0.3. The half it did not force is
+  the half a QA row watching the carousel over time is actually reading — which is why the long-label check could not be run even with the
+  override on. The published candidate list now carries the probability with it, so the override reaches the tick too. Found by using it.
 - ★★ **A troubleshooting question that only describes the symptom reaches no tips** — found 2026-08-28 by the second batch of blind
   holdout rows, before any of them were scored. The compat router reaches a question that **names** a topic and not one that only says
   what is going wrong: *"the game drops me back to the library a few minutes in"* (`V2-BLIND-H55`) never routes, because the word *crash*
@@ -403,6 +412,37 @@ Stars are **effort/risk**. Grouped by **theme**; within each lane sorted ascendi
 
 ### Focus / Deck UI
 
+- ★★★ **Chip labels too long for the column autoscroll** (Netflix-style marquee)
+  - **Goal:** A preset or corpus chip whose label does not fit the 300px QAM column scrolls its text
+    gently and continuously — the slow, smooth title crawl media apps use — instead of being cut off.
+    A cleaner read than truncation, and it lets a long card name be read in full without the user
+    doing anything.
+  - **Truncation is acceptable in the meantime.** This is a polish item, not a bug fix; the chip
+    being readable-but-clipped is a tolerable interim state and should not block anything.
+  - **The fit check must be measured at runtime against the real element — never predicted.**
+    Compare the rendered label's actual width against its actual container (`getBoundingClientRect`
+    / `scrollWidth` on the live node, re-checked when the text, the font or the container changes),
+    and only start scrolling when it genuinely overflows. Calculating expected width from character
+    counts, a font metric or a canvas measurement is explicitly out — this repo already has the
+    receipts for why: an earlier width prediction on this exact element was thrown off by the decode
+    animation's substituted glyphs, and design-language rule *measure layout on device* exists for
+    the same reason.
+  - **Why it is worth doing, measured on device 2026-08-29:** the corpus's longest chip label,
+    Half-Life 2's *"What should I know about Rocket-Propelled Grenade Launcher?"*, renders at
+    **379.8px inside the 300px slot** — 29% wider than the column, 86.6px past its right edge, read
+    off the live element rather than predicted. Truncation is not even the current behaviour: the
+    label is `text-overflow: ellipsis` on a `display: inline` element, where the ellipsis cannot
+    fire, so today a long label simply spills out. Making truncation work is the sensible first step
+    and a prerequisite for this.
+  - **What makes it more than a CSS animation**, and the reason for three stars rather than one:
+    it has to co-exist with the **decode** reveal (which rewrites the text glyph by glyph, so any
+    measurement or animation has to wait for the reveal to settle), with the fade and carousel
+    modes, and with D-pad focus — a scrolling label must not disturb the focus ring or the row
+    geometry the carousel's translateY math depends on. Deck frame budget is a real constraint here:
+    a paint burst on this panel already costs about a quarter of a frame, so the animation wants to
+    be compositor-driven (`transform`, not `left`) and to stop when the chip is off screen.
+  - **Nice to have:** pause the scroll while the chip has focus so a player reading it with the D-pad
+    is not chasing moving text, or scroll only the focused chip.
 - ★★★ **Search density UX** (match emphasis + tighter rows)
   - **Goal:** Tighter, more scannable search results with highlighted match tokens.
 - ★★★★ **SteamOS Share path** (capture → attach)

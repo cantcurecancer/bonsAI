@@ -335,3 +335,38 @@ describe("pickNextCarouselChip — the rotation half of the guarantee", () => {
     setSessionRagCarouselCandidates([]);
   });
 });
+
+describe("the Developer force-chips override reaches rotation too", () => {
+  const candidates = [rag("How do I beat Glyphid Dreadnought?"), rag("How do I use Red Sugar?")];
+  const fallback = () => staticSeed("static-chip");
+  const onScreen = new Set(["How do I beat Glyphid Dreadnought?", "b", "c"]);
+
+  afterEach(() => setSessionRagCarouselCandidates([]));
+
+  it("takes a corpus chip on every tick when the override is published", () => {
+    // Without this the override forced only the three seeded slots and rotation went straight back
+    // to rolling 0.3 -- so "force session RAG chips" forced half the carousel, and the half it left
+    // alone is the one a QA row watching over time is reading.
+    setSessionRagCarouselCandidates(candidates, { ragProbability: 1 });
+    expect(
+      pickCarouselChipWithSessionRag({
+        historyTexts: onScreen,
+        visibleTexts: onScreen,
+        staticFallback: fallback,
+        random: () => 0.99,
+      }).text,
+    ).toBe("How do I use Red Sugar?");
+  });
+
+  it("goes back to the normal roll when the override is not published", () => {
+    setSessionRagCarouselCandidates(candidates);
+    expect(
+      pickCarouselChipWithSessionRag({
+        historyTexts: onScreen,
+        visibleTexts: onScreen,
+        staticFallback: fallback,
+        random: () => 0.99,
+      }).text,
+    ).toBe("static-chip");
+  });
+});

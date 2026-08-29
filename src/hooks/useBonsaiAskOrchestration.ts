@@ -308,11 +308,14 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
       });
       ragCandidatesCacheRef.current = { appId, candidates };
       // The carousel tick draws from these too, or the corpus chip seeded below is carried out of
-      // the window within about four ticks and never returns.
-      setSessionRagCarouselCandidates(candidates);
+      // the window within about four ticks and never returns. The QA override rides along so it
+      // forces the whole carousel rather than only the seeded slots.
+      setSessionRagCarouselCandidates(candidates, {
+        ...(a.devForceSessionRagChips ? { ragProbability: 1 } : {}),
+      });
       return candidates;
     },
-    [a.useLocalKnowledgeBase],
+    [a.useLocalKnowledgeBase, a.devForceSessionRagChips],
   );
 
   const applyComposedSuggestedPrompts = useCallback(
