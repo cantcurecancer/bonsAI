@@ -2472,3 +2472,46 @@ touching a weight:
 
 **Not to be done meanwhile:** no weight change, and no tuning against holdout, whatever a later
 number looks like.
+
+---
+
+### D39 — LOCKED (2026-08-29) — Four cards are filed under an arguable kind. Which kind do they take?
+
+**All four answered by the maintainer on the corpus gap sheet, 2026-08-29.** Full answers and
+context: [corpus-gap-answers-2026-08-29.md](corpus-gap-answers-2026-08-29.md).
+
+**Why it was asked.** A card's `section_type` is not cosmetic: it decides the wording of the carousel
+chip built from it (*"How do I deal with X?"* for an enemy, *"What should I know about X?"* for a
+mechanic), it feeds the D25 type-recall rescue, and it decides what the one-kind-at-a-time chip pool
+interleaves. Ten cards were re-typed without asking because the call was clear-cut. These four were
+not clear-cut, and a wrong call is worse than none, so they went to the maintainer.
+
+| Cards | Locked call |
+|---|---|
+| Cyberpunk 2077 — *Sandevistan*, *Kerenzikov*, *Berserk* | **Stay `mechanic`.** In their words: "not worth the churn" |
+| Portal 2 — gels, funnels, faith plates, light bridges | **Stay `mechanic`** |
+| Half-Life 2 — *Antlions and the sand* | **Split into two cards** |
+| Hades — *Starting weapons* | **One card per weapon** |
+
+**The first two cost nothing** — they confirm the depth plan's proposal to leave them alone, so no
+card changes and no measurement is needed for either.
+
+**The second two are authoring work**, and they are the only card writing this round has an explicit
+instruction for:
+
+- **Half-Life 2** — one card becomes two: the antlions as an `enemy`, and the sand rule as a
+  `mechanic`. The existing card is wiki-sourced (`combineoverwiki.net`, CC-BY-SA-4.0), so **both
+  halves inherit that source and licence** and the ATTRIBUTIONS entry must still name it. Splitting
+  a sourced card does not make either half maintainer-authored.
+- **Hades** — one card becomes six, one per Infernal Arm. These are maintainer-authored
+  (`source_license: bonsAI-maintainer`, empty `source_url`), so they carry the weaker
+  `fallback_no_source` trust tier, the same standing as the existing DRG Survivor and Ocarina entity
+  cards.
+
+**Both are behaviour changes, not refactors.** Splitting a card changes what retrieval can return and
+changes the chip pool's kind mix, so both are measured before and after, and Half-Life 2 and Hades
+each get their chip pool re-checked the way `PHASE4-CHIPS-01` does for Left 4 Dead 2.
+
+**Not asked and not decided here:** whether the corpus should gain a *build / early-game orientation*
+card shape, which the same gap sheet asked for twice in free text. That is a bigger question than a
+`section_type` value and is filed on the roadmap rather than smuggled in under this decision.

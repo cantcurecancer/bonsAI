@@ -2,7 +2,7 @@
 
 **Next:** [Bugs](#bugs) → [Verify](#verify) → lowest ★ in your lane.
 
-Tracks open defects ([Bugs](#bugs)), on-Deck confirmation ([Verify](#verify)), and the themed backlog ([Backlog](#backlog)). Shipped work: [archive/roadmap-completed.md](archive/roadmap-completed.md) · fixed bugs: [archive/roadmap-bugs-fixed.md](archive/roadmap-bugs-fixed.md). Locked decisions: [audit/maintainer-decisions-locked.md](audit/maintainer-decisions-locked.md) (**D23–D25** locked 2026-08-21, **D26–D31** locked 2026-08-22, **D18** and **D32–D36** locked 2026-08-27/28, **D37** locked 2026-08-29; **D38 deferred** at the maintainer's request pending more data, more games and more questions). RAG session handoff: [audit/session-handoff-2026-08-21.md](audit/session-handoff-2026-08-21.md).
+Tracks open defects ([Bugs](#bugs)), on-Deck confirmation ([Verify](#verify)), and the themed backlog ([Backlog](#backlog)). Shipped work: [archive/roadmap-completed.md](archive/roadmap-completed.md) · fixed bugs: [archive/roadmap-bugs-fixed.md](archive/roadmap-bugs-fixed.md). Locked decisions: [audit/maintainer-decisions-locked.md](audit/maintainer-decisions-locked.md) (**D23–D25** locked 2026-08-21, **D26–D31** locked 2026-08-22, **D18** and **D32–D36** locked 2026-08-27/28, **D37** and **D39** locked 2026-08-29; **D38 deferred** at the maintainer's request pending more data, more games and more questions). RAG session handoff: [audit/session-handoff-2026-08-21.md](audit/session-handoff-2026-08-21.md).
 
 Setup: [troubleshooting.md](troubleshooting.md). QA: [testing.md](testing.md), [testing-manual.md](testing-manual.md). Release: [development.md](development.md), [CHANGELOG.md](../CHANGELOG.md).
 
@@ -454,6 +454,22 @@ Stars are **effort/risk**. Grouped by **theme**; within each lane sorted ascendi
   - **Goal:** Detection + deep link to troubleshooting for immutable spins.
 
 ### Knowledge base
+
+- ★★★ **Spoiler coverage should be a setting with tiers** — proposed by the maintainer on the corpus gap sheet, 2026-08-29:
+  *"I think spoiler coverage should be matched to a future setting. On one setting, there's no spoiling of bosses/endings/chapters. On
+  the another end it'll allow anything specifically asked by the user. On another it's anything past the intro/tutorial."* Today the fencing
+  rule is fixed. **Half of it already ships:** their closing line — *"if the user asks about a boss or area specifically, they don't care
+  about spoilers"* — is Phase 4's locked spoiler rule (stay unfenced when the user named the thing), so the instinct matches the code. What
+  is new is wanting the rest exposed as a user choice. **Default if nothing is chosen, also from the sheet: fence only named story beats and
+  endings.** Needs a Settings control (and therefore a focus-graph entry), a tier the spoiler service reads, and prompt wording per tier.
+  [audit/corpus-gap-answers-2026-08-29.md](audit/corpus-gap-answers-2026-08-29.md) § 5.
+- ★★★ **The corpus has no "starting out" card** — found 2026-08-29 by what the gap sheet's free-text answers asked for rather than by what it
+  asked about. Every strategy card is about a *thing*: an enemy, an item, an area, a mechanic. The maintainer asked twice for **build and
+  early-game guidance** ("pros and cons of different builds, make cards designed around early game, or even character design" — for both
+  Cyberpunk 2077 and Fallout 4) and once for **an orientation card pitched at someone who knows a neighbouring game** ("explain this game to
+  someone familiar to GTA but not RDR"). Neither shape fits the existing types cleanly. **Open question before any are written:** whether
+  this is a new `section_type` (which is a schema and chip-wording change) or lives as `mechanic` with a naming convention. Not smuggled in
+  under D39, which was only about four existing cards' kinds.
 
 - ★★★ **DRG Survivor glossary terms** (tap-to-define jargon) — shipped 2026-08-28 and **walked on device the same evening**. The morning
   failure (chips vanish when the reply settles) was the per-turn game-ID bug, fixed and confirmed separately. The evening added the three

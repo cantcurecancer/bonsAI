@@ -1,187 +1,1686 @@
 {
   "games": [
-    {"game_id": 1, "app_id": null, "igdb_id": "emudeck-oot-n64", "canonical_title": "The Legend of Zelda: Ocarina of Time", "edition": "N64", "platform": "Nintendo 64", "genres": ["action-adventure"]},
-    {"game_id": 2, "app_id": "2321470", "igdb_id": null, "canonical_title": "Deep Rock Galactic: Survivor", "edition": null, "platform": "Steam", "genres": ["bullet-heaven", "roguelike", "action"]},
-    {"game_id": 3, "app_id": "550", "igdb_id": null, "canonical_title": "Left 4 Dead 2", "edition": null, "platform": "Steam", "genres": ["fps", "co-op", "horror"]},
-    {"game_id": 4, "app_id": "1086940", "igdb_id": null, "canonical_title": "Baldur's Gate 3", "edition": null, "platform": "Steam", "genres": ["rpg", "turn-based", "co-op"]},
-    {"game_id": 5, "app_id": "377160", "igdb_id": null, "canonical_title": "Fallout 4", "edition": null, "platform": "Steam", "genres": ["rpg", "open-world", "fps"]},
-    {"game_id": 6, "app_id": null, "igdb_id": "emudeck-soe-pcsx2", "canonical_title": "State of Emergency", "edition": "PS2", "platform": "PCSX2", "genres": ["action"]},
-    {"game_id": 7, "app_id": "1145360", "igdb_id": null, "canonical_title": "Hades", "edition": null, "platform": "Steam", "genres": ["roguelike", "action"]},
-    {"game_id": 8, "app_id": "1091500", "igdb_id": null, "canonical_title": "Cyberpunk 2077", "edition": null, "platform": "Steam", "genres": ["rpg", "open-world", "fps"]},
-    {"game_id": 9, "app_id": "1547000", "igdb_id": null, "canonical_title": "Grand Theft Auto: San Andreas - The Definitive Edition", "edition": "DE", "platform": "Steam", "genres": ["action-adventure", "open-world"]},
-    {"game_id": 10, "app_id": "1222670", "igdb_id": null, "canonical_title": "The Sims 4", "edition": null, "platform": "Steam", "genres": ["simulation", "life"]},
-    {"game_id": 11, "app_id": "1174180", "igdb_id": null, "canonical_title": "Red Dead Redemption 2", "edition": null, "platform": "Steam", "genres": ["action-adventure", "open-world"]},
-    {"game_id": 12, "app_id": "620", "igdb_id": null, "canonical_title": "Portal 2", "edition": null, "platform": "Steam", "genres": ["puzzle", "first-person", "co-op"]},
-    {"game_id": 13, "app_id": "220", "igdb_id": null, "canonical_title": "Half-Life 2", "edition": null, "platform": "Steam", "genres": ["fps", "action", "single-player"]}
+    {
+      "game_id": 1,
+      "app_id": null,
+      "igdb_id": "emudeck-oot-n64",
+      "canonical_title": "The Legend of Zelda: Ocarina of Time",
+      "edition": "N64",
+      "platform": "Nintendo 64",
+      "genres": [
+        "action-adventure"
+      ]
+    },
+    {
+      "game_id": 2,
+      "app_id": "2321470",
+      "igdb_id": null,
+      "canonical_title": "Deep Rock Galactic: Survivor",
+      "edition": null,
+      "platform": "Steam",
+      "genres": [
+        "bullet-heaven",
+        "roguelike",
+        "action"
+      ]
+    },
+    {
+      "game_id": 3,
+      "app_id": "550",
+      "igdb_id": null,
+      "canonical_title": "Left 4 Dead 2",
+      "edition": null,
+      "platform": "Steam",
+      "genres": [
+        "fps",
+        "co-op",
+        "horror"
+      ]
+    },
+    {
+      "game_id": 4,
+      "app_id": "1086940",
+      "igdb_id": null,
+      "canonical_title": "Baldur's Gate 3",
+      "edition": null,
+      "platform": "Steam",
+      "genres": [
+        "rpg",
+        "turn-based",
+        "co-op"
+      ]
+    },
+    {
+      "game_id": 5,
+      "app_id": "377160",
+      "igdb_id": null,
+      "canonical_title": "Fallout 4",
+      "edition": null,
+      "platform": "Steam",
+      "genres": [
+        "rpg",
+        "open-world",
+        "fps"
+      ]
+    },
+    {
+      "game_id": 6,
+      "app_id": null,
+      "igdb_id": "emudeck-soe-pcsx2",
+      "canonical_title": "State of Emergency",
+      "edition": "PS2",
+      "platform": "PCSX2",
+      "genres": [
+        "action"
+      ]
+    },
+    {
+      "game_id": 7,
+      "app_id": "1145360",
+      "igdb_id": null,
+      "canonical_title": "Hades",
+      "edition": null,
+      "platform": "Steam",
+      "genres": [
+        "roguelike",
+        "action"
+      ]
+    },
+    {
+      "game_id": 8,
+      "app_id": "1091500",
+      "igdb_id": null,
+      "canonical_title": "Cyberpunk 2077",
+      "edition": null,
+      "platform": "Steam",
+      "genres": [
+        "rpg",
+        "open-world",
+        "fps"
+      ]
+    },
+    {
+      "game_id": 9,
+      "app_id": "1547000",
+      "igdb_id": null,
+      "canonical_title": "Grand Theft Auto: San Andreas - The Definitive Edition",
+      "edition": "DE",
+      "platform": "Steam",
+      "genres": [
+        "action-adventure",
+        "open-world"
+      ]
+    },
+    {
+      "game_id": 10,
+      "app_id": "1222670",
+      "igdb_id": null,
+      "canonical_title": "The Sims 4",
+      "edition": null,
+      "platform": "Steam",
+      "genres": [
+        "simulation",
+        "life"
+      ]
+    },
+    {
+      "game_id": 11,
+      "app_id": "1174180",
+      "igdb_id": null,
+      "canonical_title": "Red Dead Redemption 2",
+      "edition": null,
+      "platform": "Steam",
+      "genres": [
+        "action-adventure",
+        "open-world"
+      ]
+    },
+    {
+      "game_id": 12,
+      "app_id": "620",
+      "igdb_id": null,
+      "canonical_title": "Portal 2",
+      "edition": null,
+      "platform": "Steam",
+      "genres": [
+        "puzzle",
+        "first-person",
+        "co-op"
+      ]
+    },
+    {
+      "game_id": 13,
+      "app_id": "220",
+      "igdb_id": null,
+      "canonical_title": "Half-Life 2",
+      "edition": null,
+      "platform": "Steam",
+      "genres": [
+        "fps",
+        "action",
+        "single-player"
+      ]
+    }
   ],
   "aliases": [
-    {"alias": "the legend of zelda ocarina of time", "game_id": 1},
-    {"alias": "ocarina of time", "game_id": 1},
-    {"alias": "oot", "game_id": 1},
-    {"alias": "zelda oot", "game_id": 1},
-    {"alias": "ship of harkinian", "game_id": 1},
-    {"alias": "soh", "game_id": 1},
-    {"alias": "deep rock galactic survivor", "game_id": 2},
-    {"alias": "drg survivor", "game_id": 2},
-    {"alias": "drgs", "game_id": 2},
-    {"alias": "left 4 dead 2", "game_id": 3},
-    {"alias": "l4d2", "game_id": 3},
-    {"alias": "baldurs gate 3", "game_id": 4},
-    {"alias": "bg3", "game_id": 4},
-    {"alias": "fallout 4", "game_id": 5},
-    {"alias": "state of emergency", "game_id": 6},
-    {"alias": "pcsx2 state of emergency", "game_id": 6},
-    {"alias": "hades", "game_id": 7},
-    {"alias": "cyberpunk 2077", "game_id": 8},
-    {"alias": "cyberpunk", "game_id": 8},
-    {"alias": "gta san andreas definitive", "game_id": 9},
-    {"alias": "gta sa de", "game_id": 9},
-    {"alias": "the sims 4", "game_id": 10},
-    {"alias": "sims 4", "game_id": 10},
-    {"alias": "red dead redemption 2", "game_id": 11},
-    {"alias": "rdr2", "game_id": 11},
-    {"alias": "portal 2", "game_id": 12},
-    {"alias": "portal2", "game_id": 12},
-    {"alias": "half-life 2", "game_id": 13},
-    {"alias": "halflife 2", "game_id": 13},
-    {"alias": "hl2", "game_id": 13}
+    {
+      "alias": "the legend of zelda ocarina of time",
+      "game_id": 1
+    },
+    {
+      "alias": "ocarina of time",
+      "game_id": 1
+    },
+    {
+      "alias": "oot",
+      "game_id": 1
+    },
+    {
+      "alias": "zelda oot",
+      "game_id": 1
+    },
+    {
+      "alias": "ship of harkinian",
+      "game_id": 1
+    },
+    {
+      "alias": "soh",
+      "game_id": 1
+    },
+    {
+      "alias": "deep rock galactic survivor",
+      "game_id": 2
+    },
+    {
+      "alias": "drg survivor",
+      "game_id": 2
+    },
+    {
+      "alias": "drgs",
+      "game_id": 2
+    },
+    {
+      "alias": "left 4 dead 2",
+      "game_id": 3
+    },
+    {
+      "alias": "l4d2",
+      "game_id": 3
+    },
+    {
+      "alias": "baldurs gate 3",
+      "game_id": 4
+    },
+    {
+      "alias": "bg3",
+      "game_id": 4
+    },
+    {
+      "alias": "fallout 4",
+      "game_id": 5
+    },
+    {
+      "alias": "state of emergency",
+      "game_id": 6
+    },
+    {
+      "alias": "pcsx2 state of emergency",
+      "game_id": 6
+    },
+    {
+      "alias": "hades",
+      "game_id": 7
+    },
+    {
+      "alias": "cyberpunk 2077",
+      "game_id": 8
+    },
+    {
+      "alias": "cyberpunk",
+      "game_id": 8
+    },
+    {
+      "alias": "gta san andreas definitive",
+      "game_id": 9
+    },
+    {
+      "alias": "gta sa de",
+      "game_id": 9
+    },
+    {
+      "alias": "the sims 4",
+      "game_id": 10
+    },
+    {
+      "alias": "sims 4",
+      "game_id": 10
+    },
+    {
+      "alias": "red dead redemption 2",
+      "game_id": 11
+    },
+    {
+      "alias": "rdr2",
+      "game_id": 11
+    },
+    {
+      "alias": "portal 2",
+      "game_id": 12
+    },
+    {
+      "alias": "portal2",
+      "game_id": 12
+    },
+    {
+      "alias": "half-life 2",
+      "game_id": 13
+    },
+    {
+      "alias": "halflife 2",
+      "game_id": 13
+    },
+    {
+      "alias": "hl2",
+      "game_id": 13
+    }
   ],
   "sections": [
-    {"section_id": 3, "game_id": 2, "section_type": "boss", "name": "Glyphid Dreadnought", "card": "Kite between waves; focus weak-point armor plates as they open. Save overclock/nuke for armor break windows.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": "seed-1.0"},
-    {"section_id": 4, "game_id": 2, "section_type": "area", "name": "Hollow Bough", "card": "Sticky webs and reduced visibility — mobility build or clear web shooters first. XP magnet perks help swarm waves.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": null},
-    {"section_id": 5, "game_id": 3, "section_type": "boss", "name": "Tank", "card": "The big one, the one throwing chunks of concrete at you. While he is up the director stops sending commons and specials outside finales, so it is four guns against one target — but slip past him and the horde comes straight back. Fight him in the open: anything he can punch becomes a projectile with more reach than his fists, and a punch taken near a drop kills rather than knocks down. If the route makes him crouch through a vent he is barely mobile, and he never looks for another way round.", "source_url": "https://left4dead.fandom.com/wiki/The_Tank", "source_license": "CC-BY-SA-3.0", "source_version": null, "crawled_at": "2025-04-05"},
-    {"section_id": 6, "game_id": 3, "section_type": "area", "name": "The Parish", "card": "Hold choke points with shotguns; watch rooftop crescendo timing. Medkits before the finale wave.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": null},
-    {"section_id": 7, "game_id": 4, "section_type": "boss", "name": "Mind Flayer", "card": "Break concentration and interrupt psychic links. Position to avoid AoE after each phase shift.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": "seed-1.0"},
-    {"section_id": 8, "game_id": 4, "section_type": "area", "name": "Goblin Camp", "card": "Use elevation and stealth for surprise rounds. Short rest before multi-wave camp defense.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": null},
-    {"section_id": 9, "game_id": 5, "section_type": "boss", "name": "Deathclaw", "card": "Very high health for its level and resistant to nearly everything, energy weapons worst of all — lasers can reflect straight off the hide. It opens with a roar and a ground stomp, headbutts to stagger, and throws cars at you once you are out of reach. Below a certain health it can kill you outright with a grab or a decapitation, and at low level that threshold is higher than it sounds, so distance and cover matter more than raw damage.", "source_url": "https://fallout.fandom.com/wiki/Deathclaw_(Fallout_4)", "source_license": "CC-BY-SA-3.0", "source_version": null, "crawled_at": "2025-06-01"},
-    {"section_id": 10, "game_id": 5, "section_type": "area", "name": "Corvega Factory", "card": "Clear raiders floor-by-floor; grenades for clustered groups. Save ammo for Assaultron encounter.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": null},
-    {"section_id": 11, "game_id": 6, "section_type": "area", "name": "Downtown", "card": "PCSX2: stable 60 FPS needs aggressive EE/IOP tuning. EmuDeck preset recommended for Deck.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": "seed-1.0"},
-    {"section_id": 12, "game_id": 6, "section_type": "boss", "name": "Final Confrontation", "card": "Stock riot gear pickups; keep crowd control weapons for riot phases.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": null},
-    {"section_id": 13, "game_id": 7, "section_type": "boss", "name": "Megara", "card": "Learn dash patterns; punish recovery windows. Mirror and trap boons help burst phases.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": "seed-1.0"},
-    {"section_id": 14, "game_id": 7, "section_type": "area", "name": "Temple of Styx", "card": "Buy charms before entry; poison resistance or healing crucial. Route choice affects shop access.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": null},
-    {"section_id": 15, "game_id": 8, "section_type": "boss", "name": "Adam Smasher", "card": "Sandevistan or high DPS builds; destroy legs first. Cover during rocket barrages.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": "seed-1.0"},
-    {"section_id": 16, "game_id": 8, "section_type": "area", "name": "All Foods Plant", "card": "Stealth route saves ammo; quickhack turrets when detected. Deck: lower crowd density settings help FPS.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": null},
-    {"section_id": 17, "game_id": 9, "section_type": "boss", "name": "Big Smoke", "card": "Keep distance during chase; aim for vehicle weak points. Motorcycle section: avoid collisions.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": "seed-1.0"},
-    {"section_id": 18, "game_id": 9, "section_type": "area", "name": "Los Santos", "card": "DE edition: verify Proton forced; shader cache regen after updates. Driving missions: cap FPS for stability.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": null},
-    {"section_id": 19, "game_id": 10, "section_type": "area", "name": "Starter Lot", "card": "Build small starter home first; career goals unlock skills. Deck: lower sim speed in crowded lots.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": "seed-1.0"},
-    {"section_id": 20, "game_id": 10, "section_type": "quest", "name": "Get a Job", "card": "Complete daily tasks for steady income before expanding house. Save before major lot changes.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": null},
-    {"section_id": 21, "game_id": 11, "section_type": "boss", "name": "Bear", "card": "Dead Eye on entry; headshots during slow. Use cover trees; horse keeps distance.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": "seed-1.0"},
-    {"section_id": 22, "game_id": 11, "section_type": "area", "name": "Valentine", "card": "Honor missions affect town mood. Stable upkeep and camp supplies before long hunts.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": null},
-    {"section_id": 23, "game_id": 12, "section_type": "mechanic", "name": "Gels", "card": "Three paints, all useless on glass. Blue bounces you higher the further you fell. Orange removes friction so you keep whatever speed you arrive with. White lets you portal a surface that refused portals before, but it will not stick to cubes or turrets, and the cleansing spray strips it.", "source_url": "https://theportalwiki.com/wiki/Gel", "source_license": "CC-BY-4.0", "source_version": null, "crawled_at": "2026-08-09"},
-    {"section_id": 24, "game_id": 12, "section_type": "mechanic", "name": "Repulsion Gel", "card": "The blue one. Bounce height scales with how far you dropped, so gain height by falling onto it from somewhere higher, not by jumping. Two coated surfaces facing each other let you climb by bouncing between them.", "source_url": "https://theportalwiki.com/wiki/Gel", "source_license": "CC-BY-4.0", "source_version": null, "crawled_at": "2026-08-09"},
-    {"section_id": 25, "game_id": 12, "section_type": "mechanic", "name": "Aerial Faith Plate", "card": "Launches to a fixed destination, but it keeps the speed you arrive with — so run or fall into one to travel further than it looks. It throws objects as well as you, and its arc can be fed through a portal.", "source_url": "https://theportalwiki.com/wiki/Aerial_Faith_Plate", "source_license": "CC-BY-4.0", "source_version": null, "crawled_at": "2026-08-09"},
-    {"section_id": 26, "game_id": 12, "section_type": "mechanic", "name": "Hard Light Bridge", "card": "Solid light that runs until something blocks it. Put a portal in its path to move the whole bridge somewhere else — it leaves the portal square-on, so centre the portal on the beam. It is also cover: a turret cannot see through it, let alone shoot. Gel sits on a bridge and disappears when the bridge does.", "source_url": "https://theportalwiki.com/wiki/Hard_Light_Bridge", "source_license": "CC-BY-4.0", "source_version": null, "crawled_at": "2026-08-09"},
-    {"section_id": 27, "game_id": 12, "section_type": "mechanic", "name": "Excursion Funnel", "card": "Weightless travel along the beam. If it is carrying you the wrong way, look for the button that reverses it before assuming the route is shut. It passes through portals, so it can cross the whole chamber, and it ferries gel and cubes as well as you.", "source_url": "https://theportalwiki.com/wiki/Excursion_Funnel", "source_license": "CC-BY-4.0", "source_version": null, "crawled_at": "2026-08-09"},
-    {"section_id": 28, "game_id": 12, "section_type": "mechanic", "name": "Thermal Discouragement Beam", "card": "The laser exists to feed receptacles and relays; the exit usually will not open until it reaches one. A redirection cube aims it freely, portals only along fixed directions, and it goes straight through glass. Held on a turret, it cooks it.", "source_url": "https://theportalwiki.com/wiki/Thermal_Discouragement_Beam", "source_license": "CC-BY-4.0", "source_version": null, "crawled_at": "2026-08-09"},
-    {"section_id": 29, "game_id": 12, "section_type": "boss", "name": "Wheatley", "card": "He strips the portal surfaces, shields himself and throws bombs. Let a bomb break the conversion gel pipe, paint a wall with what spills, and portal his own bombs back into him. Every stun buys time to attach one corrupted core; three of them force the transfer.", "source_url": "https://theportalwiki.com/wiki/Wheatley", "source_license": "CC-BY-4.0", "source_version": null, "crawled_at": "2026-08-09"},
-    {"section_id": 30, "game_id": 12, "section_type": "mechanic", "name": "Co-op portals and pinging", "card": "Two players, two guns, four portals — and a portal one of you places links with the other's, which is the whole puzzle most of the time. Ping to point at a spot or to count down a timed jump; it carries without voice chat. Dying costs nothing but seconds.", "source_url": "https://theportalwiki.com/wiki/Co-op", "source_license": "CC-BY-4.0", "source_version": null, "crawled_at": "2026-08-09"},
-    {"section_id": 31, "game_id": 12, "section_type": "area", "name": "Co-op courses", "card": "Five courses unlock in order — Team Building, then Mass and Velocity, Hard-Light Surfaces, Excursion Funnels and Mobility Gels — each teaching one mechanic before combining them. Art Therapy is the DLC course after those.", "source_url": "https://theportalwiki.com/wiki/Co-op", "source_license": "CC-BY-4.0", "source_version": null, "crawled_at": "2026-08-09"},
-    {"section_id": 32, "game_id": 13, "section_type": "mechanic", "name": "Gravity Gun", "card": "Secondary pulls and holds, primary punts. Explosive barrels hit hardest, sawblades cut zombies apart, and a held radiator works as a shield you can walk behind. It will not lift most enemies, but manhacks and scanners are fair game, and thrown grenades can go back where they came from.", "source_url": "https://combineoverwiki.net/wiki/Zero-Point_Energy_Field_Manipulator", "source_license": "CC-BY-SA-4.0", "source_version": null, "crawled_at": "2026-08-09"},
-    {"section_id": 33, "game_id": 13, "section_type": "area", "name": "Ravenholm", "card": "Ammo is scarce on purpose, so fight with the town instead of your guns. Levers drop car traps and reset them; waist-high blade traps shred zombies while you duck under; propane spray ignites from a single shot. Poison zombies switch traps off, so deal with those first. Loose blades are gravity gun ammunition.", "source_url": "https://combineoverwiki.net/wiki/Ravenholm", "source_license": "CC-BY-SA-4.0", "source_version": null, "crawled_at": "2026-08-09"},
-    {"section_id": 34, "game_id": 13, "section_type": "boss", "name": "Strider", "card": "RPG only, and roughly seven rockets on Normal. The rocket stays laser-guided the whole flight, so steer it wide and bring it in off-axis rather than straight up the barrel. Its warp cannon does splash damage, so keep moving between shots. A crate of rockets nearby means the fight is a long one.", "source_url": "https://combineoverwiki.net/wiki/Strider", "source_license": "CC-BY-SA-4.0", "source_version": null, "crawled_at": "2026-08-09"},
-    {"section_id": 35, "game_id": 13, "section_type": "mechanic", "name": "Rocket-Propelled Grenade Launcher", "card": "Three rockets carried, and every one is steerable — hold the laser where you want it and the rocket follows, even turning right around after a miss. A gunship shoots rockets out of the air, so loop yours around behind it instead of flying it in straight.", "source_url": "https://combineoverwiki.net/wiki/Rocket-Propelled_Grenade_Launcher_(Half-Life_2)", "source_license": "CC-BY-SA-4.0", "source_version": null, "crawled_at": "2026-08-09"},
-    {"section_id": 36, "game_id": 13, "section_type": "mechanic", "name": "Antlions and the sand", "card": "Antlions are blind and hunt vibration, so on the coast the rocks are safe and the sand is not — step off and they come up. Once you have the pheropod from the Antlion Guard it reverses: throw it and they read you as a guard and swarm whatever you marked.", "source_url": "https://combineoverwiki.net/wiki/Antlion", "source_license": "CC-BY-SA-4.0", "source_version": null, "crawled_at": "2026-08-09"},
-    {"section_id": 37, "game_id": 13, "section_type": "area", "name": "Sandtraps", "card": "The coastal chapter that teaches the sand. Rock to rock on the way out; after the Antlion Guard you keep the pheropod and use antlions to break the Combine bunkers guarding the road to Nova Prospekt.", "source_url": "https://combineoverwiki.net/wiki/Sandtraps", "source_license": "CC-BY-SA-4.0", "source_version": null, "crawled_at": "2026-08-09"},
-    {"section_id": 38, "game_id": 13, "section_type": "boss", "name": "Hunter-Chopper (helicopter)", "card": "Fought from the airboat once its gun is mounted. Hold fire on it and pieces break away until it goes down. It drops contact mines and charges a pulse turret between passes; nearly dead, it makes one bombing run, so steer between the lines of falling bombs rather than trying to outrun them.", "source_url": "https://combineoverwiki.net/wiki/Hunter-Chopper", "source_license": "CC-BY-SA-4.0", "source_version": null, "crawled_at": "2026-08-09"},
-    {"section_id": 39, "game_id": 13, "section_type": "mechanic", "name": "Combine soldiers", "card": "They move in squads of four to six and will flank you while the rest lay down covering fire, so holding one angle gets you surrounded. A grenade breaks them out of cover and into the open — and you can throw theirs back. Kill the shotgun one first and keep your distance from the rest; up close they club you.", "source_url": "https://combineoverwiki.net/wiki/Overwatch_Soldier", "source_license": "CC-BY-SA-4.0", "source_version": null, "crawled_at": "2026-08-09"},
-    {"section_id": 40, "game_id": 3, "section_type": "boss", "name": "The Witch", "card": "She ignores gunfire that is not aimed at her and ignores other infected; what wakes her is a flashlight or a survivor standing too close. The growl is a warning — back off and she settles. Keep coming and she stands, flails, then charges and incapacitates whoever she picked in one hit. Fire kills her in about fifteen seconds and slows her down, but only once she is already startled: light a wandering witch while she is still calm and she keeps full speed. Either way she switches to whoever burned her, not whoever woke her.", "source_url": "https://left4dead.fandom.com/wiki/The_Witch", "source_license": "CC-BY-SA-3.0", "source_version": null, "crawled_at": "2025-04-05"},
-    {"section_id": 41, "game_id": 3, "section_type": "mechanic", "name": "Charger", "card": "Shoving does nothing to him — only explosives stumble him. Treat the charge like a bull: once he commits he cannot steer, so step aside and let him hit a wall. The damage is not the problem, the destination is; near water, a ledge, or a bunched-up team he flings everybody. AI chargers take about two thirds less damage while charging, so wait until he stops rather than emptying a magazine into the run.", "source_url": "https://left4dead.fandom.com/wiki/The_Charger", "source_license": "CC-BY-SA-3.0", "source_version": null, "crawled_at": "2025-04-05"},
-    {"section_id": 42, "game_id": 3, "section_type": "mechanic", "name": "Hunter", "card": "He goes for whoever is on their own, and a long pounce does damage before the clawing starts. There is about a second to shove him out of the air, which is more warning than the jockey gives, and he has very little health once you land shots. A pounce does not end on its own — a teammate has to shove him off — so the real counter is not being the survivor at the back.", "source_url": "https://left4dead.fandom.com/wiki/The_Hunter", "source_license": "CC-BY-SA-3.0", "source_version": null, "crawled_at": "2025-04-05"},
-    {"section_id": 43, "game_id": 3, "section_type": "mechanic", "name": "Smoker", "card": "The cough and the drifting green trails say he has spawned; the tongue says where. Follow it back and shoot: while he is dragging someone he stands still and takes extra damage in campaign, so one headshot ends it. If the tongue pulls the victim against an obstacle it starts choking them, so cut it fast rather than trading shots at range.", "source_url": "https://left4dead.fandom.com/wiki/The_Smoker", "source_license": "CC-BY-SA-3.0", "source_version": null, "crawled_at": "2025-04-05"},
-    {"section_id": 44, "game_id": 3, "section_type": "mechanic", "name": "Jockey", "card": "The laugh is the warning. Do not swing at him mid-leap — he is much harder to hit than a hunter — step backwards as he jumps and he sails past, then shove and kill him. His damage is slow; the danger is where he steers you, which is into a witch, into acid, into a tank you were not ready for, or off a ledge.", "source_url": "https://left4dead.fandom.com/wiki/The_Jockey", "source_license": "CC-BY-SA-3.0", "source_version": null, "crawled_at": "2025-04-05"},
-    {"section_id": 45, "game_id": 3, "section_type": "mechanic", "name": "Boomer", "card": "The vomit is not damage, it is a horde sent to you, and killing him at close range coats you anyway because he bursts. Shove first, then shoot. On Easy and Normal there is a second or so of warning; on Advanced and Expert he pukes on sight and backing away does not beat the arc. Being biled makes you glow to both teams, and the burst stumbles anything nearby — chargers and tanks included.", "source_url": "https://left4dead.fandom.com/wiki/The_Boomer", "source_license": "CC-BY-SA-3.0", "source_version": null, "crawled_at": "2025-04-05"},
-    {"section_id": 46, "game_id": 3, "section_type": "mechanic", "name": "Spitter", "card": "The green puddle burns worse the longer it has been down, and one spit can take most of a survivor's health. Moving out of it is always right, even onto worse ground — including when you are picking someone up, because reviving means standing in it. This is why a jockey ride or a charger pin over acid is lethal rather than annoying.", "source_url": "https://left4dead.fandom.com/wiki/The_Spitter", "source_license": "CC-BY-SA-3.0", "source_version": null, "crawled_at": "2025-04-05"},
-    {"section_id": 47, "game_id": 3, "section_type": "mechanic", "name": "The Director", "card": "Nothing about the spawns is fixed. Hordes of ten to thirty commons come at you every one to four minutes, from behind or off to the side, while tanks and witches only appear at threat spots the map author placed. After a heavy fight it goes quiet for roughly thirty to forty-five seconds — that pause is the healing window, and moving on ends it early. If the idle commons have thinned out, it is making room for something.", "source_url": "https://left4dead.fandom.com/wiki/The_Director", "source_license": "CC-BY-SA-3.0", "source_version": null, "crawled_at": "2025-04-05"},
-    {"section_id": 48, "game_id": 3, "section_type": "mechanic", "name": "Going down and black and white", "card": "Going down leaves you with 300 temporary health draining three at a time until somebody picks you up. Go down a second time without healing and the screen turns grey with a heartbeat: the third one kills, and only a first aid kit clears it — pills and adrenaline do not. Death is still recoverable, by defibrillator, by reaching the safe room, or from a rescue closet, but Realism switches the closets off.", "source_url": "https://left4dead.fandom.com/wiki/Health", "source_license": "CC-BY-SA-3.0", "source_version": null, "crawled_at": "2025-04-05"},
-    {"section_id": 49, "game_id": 3, "section_type": "mechanic", "name": "Bile bomb", "card": "Crowd control, not a weapon. Wherever the jar lands pulls the horde for about twenty seconds, and any infected caught in it gets attacked by its own side. Throw it well away from the team before starting a crescendo, or to buy a route past a tank — not at whatever is closest.", "source_url": "https://left4dead.fandom.com/wiki/Bile_Bomb", "source_license": "CC-BY-SA-3.0", "source_version": null, "crawled_at": "2025-04-05"},
-    {"section_id": 50, "game_id": 3, "section_type": "mechanic", "name": "Expert and Realism", "card": "Two different kinds of hard. On Expert a single common does 20 a hit, standing still gets you killed, and a tank punch incapacitates outright. Realism is a separate switch that works on any difficulty: no outlines around your teammates, no item glow, no rescue closets, and commons shrug off body shots, so it is headshots, melee, or the magnum. Learn a map with Realism off first — the director puts supplies off the obvious path.", "source_url": "https://left4dead.fandom.com/wiki/Difficulty", "source_license": "CC-BY-SA-3.0", "source_version": null, "crawled_at": "2025-04-05"},
-    {"section_id": 51, "game_id": 3, "section_type": "mechanic", "name": "Playing as the Tank", "card": "Save him for ground that suits him: mounted guns shred you, so go around rather than through, and wait for the rest of the infected team to be up before you commit. Rocks are for the places they must walk through. Chase the panicking one or the biled one rather than the nearest one, and if a teammate has someone pinned, put your body between that survivor and their friends — the bullets hitting you are bullets not saving them. Someone running at you with a revved chainsaw gets punched before they arrive.", "source_url": "https://left4dead.fandom.com/wiki/The_Tank", "source_license": "CC-BY-SA-3.0", "source_version": null, "crawled_at": "2025-04-05"},
-    {"section_id": 52, "game_id": 3, "section_type": "mechanic", "name": "Playing as the Hunter", "card": "Pounce damage scales with distance — up to 25 on a long one — so height and a run-up matter more than surprise alone. Take the straggler, never the group, and if you have to be near the group, move like a common: the melee claw reads as horde damage until someone checks. In Left 4 Dead 2 the pounce recharges fast, so holding crouch and re-pouncing keeps pressure on.", "source_url": "https://left4dead.fandom.com/wiki/The_Hunter", "source_license": "CC-BY-SA-3.0", "source_version": null, "crawled_at": "2025-04-05"},
-    {"section_id": 53, "game_id": 3, "section_type": "mechanic", "name": "Playing as the Jockey", "card": "The ride is the weapon. Steer towards a witch, a spitter pool, a fire, a ledge or an unfinished tank fight — anywhere the survivor's own team makes things worse. Rides last longer where the map turns: corners, alleys, stairwells. Off a ledge is only worth it when nobody is close enough to pick them back up, otherwise a charger does that job better.", "source_url": "https://left4dead.fandom.com/wiki/The_Jockey", "source_license": "CC-BY-SA-3.0", "source_version": null, "crawled_at": "2025-04-05"},
-    {"section_id": 54, "game_id": 3, "section_type": "mechanic", "name": "Playing as the Smoker", "card": "Patience, then elevation. Wait until the team is busy, then take someone from above — a drop adds fall damage on top of the 3 a second the tongue does, and a hanging victim is far harder to rescue than one dragged along the floor. Pull towards a witch, a fire, or a drop rather than towards yourself; you have no cover. Keep moving, because standing still leaves a green cloud that marks you.", "source_url": "https://left4dead.fandom.com/wiki/The_Smoker", "source_license": "CC-BY-SA-3.0", "source_version": null, "crawled_at": "2025-04-05"},
-    {"section_id": 55, "game_id": 3, "section_type": "mechanic", "name": "Playing as the Charger", "card": "Angle beats timing. A hallway lets you bowl the whole team at once; open ground lets you carry one of them far enough that the rescue costs the others real time. A drop or a hazard on the line turns the charge into a kill outright. Check nothing solid is between you and the target — hitting it stops you dead — and do not spawn early, because the grunting gives away the ambush.", "source_url": "https://left4dead.fandom.com/wiki/The_Charger", "source_license": "CC-BY-SA-3.0", "source_version": null, "crawled_at": "2025-04-05"},
-    {"section_id": 56, "game_id": 3, "section_type": "mechanic", "name": "Playing as the Boomer", "card": "Support, not damage. Set up out of sight, let them walk into range rather than charging in, and spawn just before you puke so the noise does not give you away. Bile on a grouped, distracted team while your teammates are ready is worth more than bile on whoever is nearest. Exploding on purpose in the middle of the mess is a legitimate second use.", "source_url": "https://left4dead.fandom.com/wiki/The_Boomer", "source_license": "CC-BY-SA-3.0", "source_version": null, "crawled_at": "2025-04-05"},
-    {"section_id": 57, "game_id": 3, "section_type": "mechanic", "name": "Playing as the Spitter", "card": "Put the acid where they have to walk — a doorway, an alley, the stairs off a ledge — not in open ground they can step around. Spit from a balcony or a dark corner, since a headshot usually kills you outright and the glow gives you away in the light. Best paired with the horde: near a car alarm or a crowd, the pool is what stops them dealing with either.", "source_url": "https://left4dead.fandom.com/wiki/The_Spitter", "source_license": "CC-BY-SA-3.0", "source_version": null, "crawled_at": "2025-04-05"},
-    {"section_id": 58, "game_id": 8, "section_type": "mechanic", "name": "Sandevistan", "card": "An operating system rather than one more implant, and it is built around blades — it slows time on demand, and some variants add crit chance and crit damage on top. Mods extend the duration or shorten the cooldown. Since patch 2.0 you can switch it off early by pressing the button again instead of burning the tail of it.", "source_url": "https://cyberpunk.fandom.com/wiki/Sandevistan", "source_license": "CC-BY-SA-3.0", "source_version": null, "crawled_at": "2026-06-18"},
-    {"section_id": 59, "game_id": 8, "section_type": "mechanic", "name": "Berserk", "card": "The other operating system, and the melee one that does not care about time. While it runs it cuts damage taken and will not let your health fall below a quarter, and afterwards every enemy you put down returns a quarter of your maximum health. What it does for your melee weapons depends on the model installed.", "source_url": "https://cyberpunk.fandom.com/wiki/Berserk", "source_license": "CC-BY-SA-3.0", "source_version": null, "crawled_at": "2026-06-18"},
-    {"section_id": 60, "game_id": 8, "section_type": "mechanic", "name": "Kerenzikov", "card": "Lets you fire while sliding, dodging or dashing, and aiming during any of those slows time for a couple of seconds. It has its own cooldown, so treat it as a repositioning tool rather than something to lean on.", "source_url": "https://cyberpunk.fandom.com/wiki/Kerenzikov", "source_license": "CC-BY-SA-3.0", "source_version": null, "crawled_at": "2026-06-18"},
-    {"section_id": 61, "game_id": 8, "section_type": "mechanic", "name": "Street Cred", "card": "A separate track from your character level, paid out by fixers for gigs, and how you finish a job changes the payout rather than just finishing it. It buys a permanent vendor discount up to 15% and unlocks better cars on the Autofixer; the good gear starts appearing around Street Cred 40, and it caps at 50.", "source_url": "https://cyberpunk.fandom.com/wiki/Street_Cred", "source_license": "CC-BY-SA-3.0", "source_version": null, "crawled_at": "2026-06-18"},
-    {"section_id": 62, "game_id": 8, "section_type": "mechanic", "name": "Lifepath", "card": "Nomad, Streetkid or Corpo. What it changes is the opening chapter, one unique side job, and dialogue options that keep turning up later on — so pick the opening you want to play rather than the one that sounds strongest.", "source_url": "https://cyberpunk.fandom.com/wiki/Lifepath", "source_license": "CC-BY-SA-3.0", "source_version": null, "crawled_at": "2026-06-18"},
-    {"section_id": 63, "game_id": 9, "section_type": "mechanic", "name": "Muscle", "card": "Built at a gym or by running, cycling and swimming — fourteen seconds on the treadmill or bike is one percent, and a weights rep is one percent. It raises melee damage, respect and sex appeal, but do not max it: at 100% it works against sex appeal and some girlfriends will not talk to you. All fifty oysters, expensive clothes and a good car offset that.", "source_url": "https://gta.fandom.com/wiki/Statistics", "source_license": "CC-BY-SA-3.0", "source_version": null, "crawled_at": "2022-03-22"},
-    {"section_id": 64, "game_id": 9, "section_type": "mechanic", "name": "Stamina", "card": "Endurance for sprinting, swimming and cycling; low stamina means you stop running almost immediately. It goes up with the activity itself — five percent per two and a half minutes of swimming, or per five minutes of running or biking — and four percent per fourteen seconds on gym cardio. Finishing the Burglary side missions, ten thousand dollars of stolen goods, grants unlimited stamina regardless of the stat.", "source_url": "https://gta.fandom.com/wiki/Statistics", "source_license": "CC-BY-SA-3.0", "source_version": null, "crawled_at": "2022-03-22"},
-    {"section_id": 65, "game_id": 9, "section_type": "mechanic", "name": "Fat", "card": "Goes up with food, including meals on dates, and down with exercise or with not eating. Overweight slows you down and costs health, jumping and speed. Zero fat is worse: once there is nothing left to burn you start losing muscle, and after that health, so eat when the hunger warning appears.", "source_url": "https://gta.fandom.com/wiki/Statistics", "source_license": "CC-BY-SA-3.0", "source_version": null, "crawled_at": "2022-03-22"},
-    {"section_id": 66, "game_id": 9, "section_type": "mechanic", "name": "Respect", "card": "Sets how many gang members you can recruit, from one up to seven. It comes from missions, killing rival gang members and police, taking territory and spraying over tags, and appearance nudges it — hair, tattoos, clothes, muscle, and wearing green in Grove Street territory most of all. It falls if you wear the wrong colours at home, kill your own, or lose turf.", "source_url": "https://gta.fandom.com/wiki/Statistics", "source_license": "CC-BY-SA-3.0", "source_version": null, "crawled_at": "2022-03-22"},
-    {"section_id": 67, "game_id": 9, "section_type": "mechanic", "name": "Weapon skill", "card": "Each weapon type levels separately by hitting people and vehicles: Poor, then Gangster, then Hitman. Higher skill means better accuracy, more range, faster strafing and fire rate, and the ability to move while shooting. At Hitman the pistol, sawn-off, Tec-9 and Micro SMG can be dual wielded. Thrown weapons, melee, rifles and heavy weapons have no skill meter at all.", "source_url": "https://gta.fandom.com/wiki/Statistics", "source_license": "CC-BY-SA-3.0", "source_version": null, "crawled_at": "2022-03-22"},
-    {"section_id": 68, "game_id": 9, "section_type": "mechanic", "name": "Gang territory", "card": "Opens up after Sweet's mission Doberman, and goes away for a stretch in the middle of the story before coming back. Holding turf pays: money accumulates and is collected outside the Johnson house on Grove Street, respect goes up, and rival gang members stop spawning in the streets you own.", "source_url": "https://gta.fandom.com/wiki/Gang_Warfare_in_GTA_San_Andreas", "source_license": "CC-BY-SA-3.0", "source_version": null, "crawled_at": "2022-03-22"},
-    {"section_id": 69, "game_id": 9, "section_type": "mechanic", "name": "Girlfriends", "card": "Six of them, and only Millie is actually required for full completion — the rest are optional. Denise and Millie arrive through story missions; Michelle, Katie and Helena become available once Flint County, Whetstone and San Fierro are open, and Barbara once Tierra Robada, Bone County and Las Venturas are. Sex appeal decides whether they will talk to you at all, and all fifty oysters covers most of that.", "source_url": "https://gta.fandom.com/wiki/Girlfriends_in_GTA_San_Andreas", "source_license": "CC-BY-SA-3.0", "source_version": null, "crawled_at": "2022-03-22"},
-    {"section_id": 70, "game_id": 9, "section_type": "mechanic", "name": "Lung capacity and oysters", "card": "How long you last underwater. It grows with time spent under, and collecting oysters is the fast way — there are fifty, along shorelines, under bridges and in pools. Let the oxygen meter empty and you lose health quickly, and surfacing gives the air back but not the health. One mission, Amphibious Assault, will not start below five percent lung capacity.", "source_url": "https://gta.fandom.com/wiki/Statistics", "source_license": "CC-BY-SA-3.0", "source_version": null, "crawled_at": "2022-03-22"},
-    {"section_id": 71, "game_id": 9, "section_type": "area", "name": "Horseshoes", "card": "Fifty of them around Las Venturas, and all fifty are required for 100% completion. Each one is a hundred dollars and twenty points of luck, a stat that starts at zero and only ever goes up; the full set maxes it at 1,000.", "source_url": "https://gta.fandom.com/wiki/Horseshoes", "source_license": "CC-BY-SA-3.0", "source_version": null, "crawled_at": "2022-03-22"},
-    {"section_id": 72, "game_id": 5, "section_type": "mechanic", "name": "Settlement happiness", "card": "Happiness is just whether needs are met: food, water, beds and defense each have to be at least the number of settlers. Power is not part of it, though better machines need it. Higher happiness makes settlers more productive, and a settlement left very unhappy can be lost outright after a failed Minutemen radiant quest.", "source_url": "https://fallout.fandom.com/wiki/Fallout_4_settlements", "source_license": "CC-BY-SA-3.0", "source_version": null, "crawled_at": "2025-06-01"},
-    {"section_id": 73, "game_id": 5, "section_type": "mechanic", "name": "Settlement defense and attacks", "card": "One unit of defense per settler is the number to hit, and only workshop-built defenses count — mines do not, though they still kill attackers if you are there. Attack chance rises with stored food and water and falls with population and defense, but never below 2%; a settlement with nobody living in it is never attacked. Turn up in person and it is a normal fight with your turrets and companions helping; skip it and the game rolls defense rating plus population against the raid, which is why spreading defense thin costs you inventory and temporary happiness rather than nothing.", "source_url": "https://fallout.fandom.com/wiki/Fallout_4_settlements", "source_license": "CC-BY-SA-3.0", "source_version": null, "crawled_at": "2025-06-01"},
-    {"section_id": 74, "game_id": 5, "section_type": "mechanic", "name": "SPECIAL points", "card": "You start with one in everything and 21 to spend, so 28 in total — much less than earlier Fallouts. It is not a permanent ceiling: bobbleheads and magazines raise attributes, and each level-up lets you put the point into a SPECIAL stat instead of a perk. Your SPECIAL values are what decide which perks you can take at all.", "source_url": "https://fallout.fandom.com/wiki/Fallout_4_SPECIAL", "source_license": "CC-BY-SA-3.0", "source_version": null, "crawled_at": "2025-06-01"},
-    {"section_id": 75, "game_id": 5, "section_type": "mechanic", "name": "Perks", "card": "The perk chart replaced skills. Every level gives one point, and it buys either a rank of a perk or a rank of the SPECIAL attribute that unlocks deeper perks in that column. Magazines scattered around the world grant extra perks that cost no points at all, and they are listed separately on the Pip-Boy.", "source_url": "https://fallout.fandom.com/wiki/Fallout_4_perks", "source_license": "CC-BY-SA-3.0", "source_version": null, "crawled_at": "2025-06-01"},
-    {"section_id": 76, "game_id": 5, "section_type": "mechanic", "name": "Power armor and fusion cores", "card": "The frame runs on a fusion core that drains with time and faster with anything that spends AP — sprinting, V.A.T.S. When it empties you can still walk, but you are over-encumbered and lose V.A.T.S. and steady aim. No training perk is needed. Wearing it overrides your normal armour bonuses entirely and can push Strength past the usual limit of 10.", "source_url": "https://fallout.fandom.com/wiki/Power_armor_(Fallout_4)", "source_license": "CC-BY-SA-3.0", "source_version": null, "crawled_at": "2025-06-01"},
-    {"section_id": 77, "game_id": 5, "section_type": "mechanic", "name": "Upgrading power armor", "card": "Repairs and mods happen at a power armor station, and one can be built at a settlement. Upgrading a piece costs the same materials whichever tier you come from, so it is usually worth waiting until Armorer and Science are ranked up rather than paying twice — especially for the later models, whose materials are rare.", "source_url": "https://fallout.fandom.com/wiki/Power_armor_(Fallout_4)", "source_license": "CC-BY-SA-3.0", "source_version": null, "crawled_at": "2025-06-01"},
-    {"section_id": 78, "game_id": 5, "section_type": "boss", "name": "Mirelurk queen", "card": "Much bigger and much harder than the rest, doing heavy physical and radiation damage, and her arrival is announced by a roar. On top of the claws she spits acid that keeps damaging you after it lands, and she periodically fires a barrage of eggs that hatch into a wave of small ones — the game treats that as a grenade, so the grenade warning icon is the cue to move.", "source_url": "https://fallout.fandom.com/wiki/Mirelurk_(Fallout_4)", "source_license": "CC-BY-SA-3.0", "source_version": null, "crawled_at": "2025-06-01"},
-    {"section_id": 79, "game_id": 5, "section_type": "mechanic", "name": "Crafting and junk", "card": "Almost nothing needs a schematic; the recipes are known by default. What you need is components, which come from scrapping junk at a crafting table, from scrapping world objects such as trees and cars inside a settlement you own, or from merchants. Components are drawn either from your own inventory or from the workshop of the settlement you are standing in.", "source_url": "https://fallout.fandom.com/wiki/Fallout_4_crafting", "source_license": "CC-BY-SA-3.0", "source_version": null, "crawled_at": "2025-06-01"},
-    {"section_id": 80, "game_id": 1, "section_type": "boss", "name": "Queen Gohma", "card": "The spider in the Deku Tree. She is only vulnerable when the big eye turns red — a slingshot seed or a Deku nut at that moment drops her, and then you get a few free sword slashes before she recovers. When she climbs the ceiling, watch where she lands rather than chasing her.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": null},
-    {"section_id": 81, "game_id": 1, "section_type": "boss", "name": "Volvagia", "card": "The fire dragon that pops out of the holes in the floor. The Megaton Hammer is the whole fight: hit the head the moment it comes up, then slash while it is stunned. When it flies around the room, the hookshot pulls it back down. Goron Tunic and a shield for the fire, and keep off the lava at the edges.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": null},
-    {"section_id": 82, "game_id": 1, "section_type": "boss", "name": "Twinrova", "card": "The two witches, one ice and one fire. First phase, the Mirror Shield reflects each sister's magic into the other — aim at the one who did not cast. Once they merge, the shield absorbs their blasts instead: take three of the same element and it fires back at them. Mixing the elements resets the charge, so wait rather than catching whatever comes.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": null},
-    {"section_id": 83, "game_id": 1, "section_type": "mechanic", "name": "Epona", "card": "Learn Epona's Song from Malon at Lon Lon Ranch as a child. As an adult, Ingo has taken over — pay to ride, then race him, and he will bet the horse on a rematch. Win that and he locks the gate, so ride at the fence and jump it.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": null},
-    {"section_id": 84, "game_id": 1, "section_type": "dungeon", "name": "Shadow Temple invisible floors", "card": "Almost everything in the Shadow Temple that looks missing is there. Equip the Lens of Truth and the invisible floors, walls and chests all appear; it drains magic while held, so use it in bursts rather than leaving it on. Green potions and the fairies in the temple keep it running.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": null},
-    {"section_id": 85, "game_id": 1, "section_type": "mechanic", "name": "Adult dungeon order", "card": "Forest, then Fire, then Water, then Shadow, then Spirit. Each one hands you the item the next expects — the hookshot from Forest, the Megaton Hammer from Fire, the longshot from Water — so going out of order mostly means walking back later. The Spirit Temple is the only one that splits across child and adult.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": null},
-    {"section_id": 86, "game_id": 1, "section_type": "mechanic", "name": "Gold Skulltulas", "card": "A hundred tokens across the game, and the cursed family in Kakariko pays out every ten: wallet upgrades early, then better rewards, with the last one at a hundred. Ten and twenty are quick and worth doing on the way past. The full hundred is a completionist job, not something to detour for mid-playthrough.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": null},
-    {"section_id": 87, "game_id": 1, "section_type": "mechanic", "name": "Biggoron's Sword", "card": "A long trade chain that starts with the Pocket Egg from the Cucco Lady in Kakariko and ends at the top of Death Mountain. Two links in it are on a timer — the Odd Mushroom and the Eyedrops — so ride Epona and use the warp songs for those two rather than walking. Everything before and after can be done at your own pace.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": null},
-    {"section_id": 88, "game_id": 7, "section_type": "mechanic", "name": "Mirror of Night", "card": "The permanent upgrades, bought with Darkness in your room. Each row has two alternatives and you can switch between them for a small cost at any time, so nothing is locked in. Death Defiance is the one that changes early runs most: each rank is another free revive mid-run.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": null},
-    {"section_id": 89, "game_id": 7, "section_type": "mechanic", "name": "Starting weapons", "card": "The Stygian Blade is the safest thing to learn on — short reach, forgiving timing. The Shield of Chaos is the most survivable, because holding block turns a mistake into nothing. The Rail and the Bow reward staying at range but punish you for standing still. Each weapon also has aspects unlocked later that change how it plays entirely.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": null},
-    {"section_id": 90, "game_id": 7, "section_type": "mechanic", "name": "Darkness, keys and gems", "card": "They are different currencies for different things: Darkness feeds the Mirror, Chthonic Keys unlock new weapons and new Mirror rows, and gems pay for the house contractor. Early on, keys and Darkness are both bottlenecks — take whichever you have fewer of, and stop taking gems once the contractor jobs you want are bought.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": null},
-    {"section_id": 91, "game_id": 7, "section_type": "mechanic", "name": "Boons and duo boons", "card": "Boons come from gods and last one run. A duo needs two specific gods' boons already in the right slots, so you cannot aim at one directly — you pick a god early, keep taking them, and the duo becomes possible. Taking one boon from every god who offers is how runs end up with nothing that stacks.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": null},
-    {"section_id": 92, "game_id": 7, "section_type": "boss", "name": "Theseus and Asterius", "card": "Two at once, which is the actual difficulty. Asterius, the bull, telegraphs a long charge — sidestep it and he is briefly stuck. Theseus throws his spear and periodically calls down a god's power, which is marked on the ground before it lands. Most runs go better killing Asterius first, because Theseus alone is predictable.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": null},
-    {"section_id": 93, "game_id": 7, "section_type": "mechanic", "name": "Heat and the Pact of Punishment", "card": "Beating the game once is the middle of the story, not the end — the runs continue and the ending needs several more. The Pact of Punishment unlocks then too: Heat is optional difficulty you add yourself, in exchange for rewards that only come from raising it.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": null},
-    {"section_id": 94, "game_id": 4, "section_type": "mechanic", "name": "Long rest", "card": "Rest more than feels right. A long rest costs camp supplies and restores spells, health and most abilities, and it is also what advances companion scenes and personal quests — hoarding rests means missing story, not saving resources. Supplies are plentiful; food you pick up counts.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": null},
-    {"section_id": 95, "game_id": 4, "section_type": "mechanic", "name": "Inspiration", "card": "Each character has background goals, and doing something that matches one grants Inspiration. You can hold a few at a time, and spending one rerolls a failed ability check — including in dialogue, after you have seen the failure. Picking backgrounds that suit how you actually play is what keeps the supply up.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": null},
-    {"section_id": 96, "game_id": 4, "section_type": "mechanic", "name": "Dialogue checks", "card": "A check is your ability modifier plus proficiency plus a d20, so the fix is usually who is talking rather than luck: let the high-Charisma character lead conversations. The Guidance cantrip adds a d4 to a check and can be cast beforehand, and Inspiration rerolls a failure outright.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": null},
-    {"section_id": 97, "game_id": 4, "section_type": "mechanic", "name": "Companion approval", "card": "Companions react to what you do and say in front of them, not to gifts. Approval gates their personal quests and any romance, and low approval can end with them leaving. Someone who disapproves of a plan can be left at camp for it.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": null},
-    {"section_id": 98, "game_id": 4, "section_type": "mechanic", "name": "Sneak Attack", "card": "Sneak Attack needs advantage, or an ally already next to the target — without one of those it is a normal, weak attack. Hide as a bonus action, attack from stealth, and let a melee companion engage first. Height and darkness help too: shooting from above and out of sight is the rogue's normal opening, not a trick.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": null},
-    {"section_id": 99, "game_id": 4, "section_type": "mechanic", "name": "Party composition", "card": "Four slots. You want someone to talk, someone to heal, someone who can find and disarm traps and pick locks, and enough damage — one character often covers two of those. Bard and Paladin both talk well; Cleric and Druid both heal; Rogue and Ranger both handle traps. The party you cannot cover is the one with no healing at all.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": null},
-    {"section_id": 100, "game_id": 11, "section_type": "mechanic", "name": "Honor", "card": "It moves on small things done often: greeting people, helping strangers on the road, paying bounties instead of running, donating to camp. It falls for robbery, killing civilians and animals you do not use. High honor means shop discounts and different reactions; low honor pays differently. It is a slider, not a switch — one bad day does not undo a good chapter.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": null},
-    {"section_id": 101, "game_id": 11, "section_type": "mechanic", "name": "Horse bonding", "card": "Bond level is what makes a horse feel different. Riding, feeding, brushing, patting and calming it during danger all raise it, and each level adds stamina, better handling, and eventually manoeuvres like the rear and the drift. A high-bond horse also stops throwing you when something scares it. Bond is per horse, so switching mounts starts again.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": null},
-    {"section_id": 102, "game_id": 11, "section_type": "mechanic", "name": "Cores and rings", "card": "Each of health, stamina and Dead Eye has an inner core and a ring around it. The ring is the meter you spend; the core is the reserve that refills it, and it drains from hunger, cold and injury. Eat and sleep to keep cores up, and use tonics for the rings mid-fight. A dead core means everything drains faster, which is what makes long rides go wrong.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": null},
-    {"section_id": 103, "game_id": 11, "section_type": "mechanic", "name": "Dead Eye", "card": "Slows time and refills from tonics, food and clean kills. Early on it auto-marks; later story upgrades let you paint targets yourself and eventually see weak points. Use it for the shot you cannot line up rather than for every fight, because the meter is a resource and not a mode.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": null},
-    {"section_id": 104, "game_id": 11, "section_type": "mechanic", "name": "Perfect pelts", "card": "Two things have to be true: a three-star animal, and a clean kill with the right weapon for its size. Small animals want the varmint rifle; medium ones want a bow with improved arrows; big ones want a rifle to the head or heart. Study an animal first to see its rating, and skin it or take the carcass to a trapper or butcher before it spoils.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": null},
-    {"section_id": 105, "game_id": 11, "section_type": "mechanic", "name": "Bounties", "card": "A bounty stays on the region it was earned in and grows with witnesses. Leave it and lawmen and bounty hunters keep coming, and a big enough one effectively closes that region's towns to you. Pay it at any post office; wearing a mask during a crime keeps the bounty smaller.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": null},
-    {"section_id": 106, "game_id": 11, "section_type": "mechanic", "name": "Camp donations", "card": "The ledger is not a tax — it is where camp upgrades come from, and they are real: better provisions, more ammo and food to take for free, faster fast travel from camp once bought. Contributing also keeps morale up. Money given to the ledger goes further than money in your pocket for most of the early game.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": null},
-    {"section_id": 107, "game_id": 10, "section_type": "mechanic", "name": "Emotions", "card": "Moodlets add up into one emotion, and the emotion changes what your Sim can do and how fast they learn. Focused speeds up logic and programming, Inspired speeds up creative skills, Confident unlocks bolder social options. Decorated rooms, showers, tea and thinking at a chess board are the reliable ways to choose the mood you want before starting work.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": null},
-    {"section_id": 108, "game_id": 10, "section_type": "mechanic", "name": "Sad moodlets", "card": "Sad usually comes from a moodlet with a timer — a death, a rejection, an uncomfortable house — and it overrides better moods until it expires. Check the moodlet list to see which one and how long. A shower, a good meal, comfortable furniture and time with a friend clear the ordinary causes; the grief ones simply have to run out.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": null},
-    {"section_id": 109, "game_id": 10, "section_type": "mechanic", "name": "Raising a skill quickly", "card": "Three things stack: the matching emotion, a good object to practise on, and no interruptions. Set the mood first, use the best version of the object you can afford, and keep needs topped up so the Sim does not wander off mid-session. Children's skills are separate tracks and level faster.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": null},
-    {"section_id": 110, "game_id": 10, "section_type": "mechanic", "name": "Promotions", "card": "A promotion wants four things at once: the listed skill levels, the daily task done, good work performance, and a decent mood on the way out the door. The career panel lists exactly which skills and how high. Sending a Sim to work in the right emotion is usually the missing piece.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": null},
-    {"section_id": 111, "game_id": 10, "section_type": "mechanic", "name": "Making money", "card": "Painting and writing are the classic self-employed earners because they only need one skill and one object, and both scale hard with level. Gardening is slower to start and larger later. Selling collectibles funds the very early game, and a cheap starter lot leaves more for the object that earns.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": null},
-    {"section_id": 112, "game_id": 10, "section_type": "mechanic", "name": "Fires", "card": "There are no firefighters to call in The Sims 4. Keep a fire extinguisher and a smoke alarm in the kitchen, and when something catches, direct a Sim to extinguish it rather than waiting — panicking Sims will not act on their own. Sims can die in a fire, so getting everyone out of the room is the safer first move.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": null},
-    {"section_id": 113, "game_id": 10, "section_type": "mechanic", "name": "moveobjects", "card": "Open the cheat console with Ctrl+Shift+C, enter testingcheats true, then bb.moveobjects on. Objects will then place anywhere, ignoring the grid and each other, and Alt while dragging frees the rotation. Things placed this way can end up unusable by Sims, so it is a decorating tool first.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": null},
-    {"section_id": 114, "game_id": 6, "section_type": "mechanic", "name": "Kaos mode and Revolution mode", "card": "Two different games. Kaos is score attack against a clock in one zone at a time: you extend the time by hitting the objectives that pop up mid-riot rather than by surviving. Revolution is the story — a chain of missions per zone with objectives handed out by the resistance, and it is where characters and zones unlock.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": null},
-    {"section_id": 115, "game_id": 6, "section_type": "mechanic", "name": "Fighting the Corporation", "card": "Corporation troops shoot from range and arrive in groups, so open ground kills you. Fight along the shopfronts and stalls where you can break line of sight, pick up whatever weapon the last one dropped, and use thrown objects and the crowd as cover. Melee is only for one straggler at a time.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": null},
-    {"section_id": 116, "game_id": 6, "section_type": "mechanic", "name": "Unlocking characters", "card": "Characters come from Revolution progress, not from Kaos scores. Each one plays the same but they are gated behind clearing missions in the zones, so a run through Revolution is what opens up Kaos rather than the other way round.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": null},
-    {"section_id": 117, "game_id": 2, "section_type": "mechanic", "name": "Mining and the run timer", "card": "Weapons fire themselves; your job is where to stand and what to mine. Mining is not a side activity — it is where the resources for upgrades come from, so a run spent only kiting is a run that ends underpowered. Each stage runs to a timer and then a descent, with the difficulty stepping up each time.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": null},
-    {"section_id": 118, "game_id": 2, "section_type": "mechanic", "name": "Classes", "card": "Each dwarf class comes with its own weapon pool and its own movement kit, and that combination decides how you play far more than any single upgrade. Try one class over several runs rather than switching each time: the upgrades that matter are the ones that stack with what the class already does.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": null},
-    {"section_id": 119, "game_id": 2, "section_type": "mechanic", "name": "Upgrades and overclocks", "card": "Levelling offers a choice of upgrades, and taking a little of everything is the common way to lose. Pick one weapon to carry the run and feed it, then spend the rest on survivability. Overclocks change what a weapon is for rather than making it bigger, so read what one removes as well as what it adds.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": null},
-    {"section_id": 120, "game_id": 2, "section_type": "enemy", "name": "Exploder", "card": "Summary: Large orange glyphids that walk into you and detonate in a wide blast.\nWeak points: Fragile, and the blasts chain, so one popped early clears the group behind it.\nTips: Weapons fire themselves, so it dies where you stand - keep distance and the blast lands in the swarm instead.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": "seed-1.1"},
-    {"section_id": 121, "game_id": 2, "section_type": "enemy", "name": "Praetorian", "card": "Summary: A large melee glyphid with far more health than anything else in the wave.\nWeak points: Slow enough to kite indefinitely while the rest of the swarm is cleared.\nTips: It digs through terrain to reach you, so rock is not a wall - pick the exit lane before it arrives.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": "seed-1.1"},
-    {"section_id": 122, "game_id": 2, "section_type": "enemy", "name": "Acid Spitter", "card": "Summary: Ranged glyphids that hold a medium distance, fire purple acid and back away instead of closing in.\nWeak points: Fragile, and they retreat rather than fight, so walking at them is what kills them.\nTips: Orbiting a swarm drags you through their fire - turn into the spitters and clear the line.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": "seed-1.1"},
-    {"section_id": 123, "game_id": 2, "section_type": "enemy", "name": "Mactera", "card": "Summary: Flying enemies that cross walls, vines and voids as if the terrain were not there.\nWeak points: The common ones drift rather than hunt and can be walked around; the elites chase you.\nTips: Mining a pocket does nothing against them, so no dug corridor is safe while Mactera are up.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": "seed-1.1"},
-    {"section_id": 124, "game_id": 2, "section_type": "boss", "name": "Dreadnought Twins", "card": "Summary: Two smaller Dreadnoughts at once - the Lacerator chases and leaps, the Arbalest hangs back firing fireball spreads.\nWeak points: Neither is as tough as a full Dreadnought on its own.\nPhases: Let their health bars drift apart and both turn immune while they heal the gap closed.\nTips: Split fire evenly rather than burning one down, and the healing never starts.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": "seed-1.1"},
-    {"section_id": 125, "game_id": 2, "section_type": "item", "name": "Red Sugar", "card": "Summary: The glowing red crystals in the cave walls, mined for an instant heal.\nUses: The only healing during a stage, apart from the gold heal at the shop between stages.\nTips: It cannot be banked, so leave a node standing near where you fight and come back once a wave has hurt you.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": "seed-1.1"},
-    {"section_id": 126, "game_id": 2, "section_type": "item", "name": "Nitra", "card": "Summary: The resource that pays for weapons rather than for your dwarf.\nUses: Buys weapon upgrade cards at the between-stage shop and rerolls the artifact choice from the Supply Pod.\nTips: No nitra means an underleveled weapon however much gold you mined, so keep mining it for whichever weapon carries the run.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": "seed-1.1"},
-    {"section_id": 127, "game_id": 2, "section_type": "item", "name": "Gold", "card": "Summary: The general currency, mined from the walls and dropped by lootbugs.\nUses: Buys player stat upgrades between stages, rerolls shop stock and level-up cards, and pays for a fifty percent heal.\nTips: There is no shop after the final stage, so gold still in hand by then only buys rerolls.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": "seed-1.1"},
-    {"section_id": 128, "game_id": 1, "section_type": "boss", "name": "Dark Link", "card": "Summary: Your own shadow, fought in the flooded illusion room partway through the Water Temple.\nWeak points: He mirrors and blocks sword attacks but has no answer to the Megaton Hammer or Din's Fire.\nTips: Hammer him as he perches on your held-out blade - trading ordinary swings is what drags the fight out.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": "seed-1.1"},
-    {"section_id": 129, "game_id": 1, "section_type": "boss", "name": "Phantom Ganon", "card": "Summary: The Forest Temple boss, who rides out of the wall paintings before taking to the air.\nWeak points: An arrow drops the rider, and his energy ball comes back at him off a plain sword slash.\nPhases: Only one of the two riders is real, so watch the paintings rather than the room.\nTips: Keep the rally going until the ball lands, then slash him while he is grounded.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": "seed-1.1"},
-    {"section_id": 130, "game_id": 1, "section_type": "boss", "name": "Morpha", "card": "Summary: The Water Temple boss, an amoeba whose red nucleus swims the flooded room and lashes at you with water tentacles.\nWeak points: The nucleus is the only part that can be hurt, and the hookshot drags it onto the floor.\nTips: Pull it in, slash it while it is beached, and fight from a corner so the tentacles come from one side.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": "seed-1.1"},
-    {"section_id": 131, "game_id": 1, "section_type": "enemy", "name": "ReDead and Gibdo", "card": "Summary: Corpses whose scream freezes you in place before they grab on and drain hearts, the bandaged Gibdos hitting hardest.\nWeak points: The Sun's Song stops any of them where they stand, leaving free hits or a clear walk past.\nTips: Play it as one turns toward you, not after the scream lands, and mash buttons to shake off a grab.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": "seed-1.1"},
-    {"section_id": 132, "game_id": 1, "section_type": "enemy", "name": "Wallmaster", "card": "Summary: The giant hand that drops from the ceiling and carries you back to the dungeon entrance.\nWeak points: Slow and fragile once landed, so it only threatens you while you are standing still.\nTips: Watch for the shadow spreading on the floor around you, step out of it, then kill it before it climbs back up.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": "seed-1.1"},
-    {"section_id": 133, "game_id": 1, "section_type": "item", "name": "Bottles", "card": "Summary: Four bottles exist, and what you keep in them matters more than most items.\nUses: A caught fairy revives you the moment you die, Blue Fire from the Ice Cavern melts red ice, and bugs dig up the soil patches hiding Gold Skulltulas.\nTips: Never enter a dungeon with all four empty, since a fairy is the cheapest extra life in the game.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": "seed-1.1"},
-    {"section_id": 134, "game_id": 1, "section_type": "item", "name": "Iron Boots", "card": "Summary: The boots from the Ice Cavern that sink you to the bottom of any water and hold you against wind.\nUses: Needed to reach and move around the Water Temple, and to push through the gusts in the Shadow Temple.\nTips: The Zora Tunic is what lets you breathe down there, and on N64 the boots are swapped from the equipment menu every time.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": "seed-1.1"},
-    {"section_id": 135, "game_id": 1, "section_type": "item", "name": "Hookshot and Longshot", "card": "Summary: The Forest Temple gives the Hookshot and the Water Temple upgrades it to the Longshot, which reaches twice as far.\nUses: Pulls you to wood, ladders and marked targets, and drags distant chests, items and Skulltula tokens to you.\nTips: When a ledge looks impossible, look for wood or a target rather than a jump.", "source_url": "", "source_license": "bonsAI-maintainer", "source_version": "seed-1.1"}
+    {
+      "section_id": 3,
+      "game_id": 2,
+      "section_type": "boss",
+      "name": "Glyphid Dreadnought",
+      "card": "Kite between waves; focus weak-point armor plates as they open. Save overclock/nuke for armor break windows.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": "seed-1.0"
+    },
+    {
+      "section_id": 4,
+      "game_id": 2,
+      "section_type": "area",
+      "name": "Hollow Bough",
+      "card": "Sticky webs and reduced visibility — mobility build or clear web shooters first. XP magnet perks help swarm waves.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": null
+    },
+    {
+      "section_id": 5,
+      "game_id": 3,
+      "section_type": "boss",
+      "name": "Tank",
+      "card": "The big one, the one throwing chunks of concrete at you. While he is up the director stops sending commons and specials outside finales, so it is four guns against one target — but slip past him and the horde comes straight back. Fight him in the open: anything he can punch becomes a projectile with more reach than his fists, and a punch taken near a drop kills rather than knocks down. If the route makes him crouch through a vent he is barely mobile, and he never looks for another way round.",
+      "source_url": "https://left4dead.fandom.com/wiki/The_Tank",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2025-04-05"
+    },
+    {
+      "section_id": 6,
+      "game_id": 3,
+      "section_type": "area",
+      "name": "The Parish",
+      "card": "Hold choke points with shotguns; watch rooftop crescendo timing. Medkits before the finale wave.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": null
+    },
+    {
+      "section_id": 7,
+      "game_id": 4,
+      "section_type": "boss",
+      "name": "Mind Flayer",
+      "card": "Break concentration and interrupt psychic links. Position to avoid AoE after each phase shift.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": "seed-1.0"
+    },
+    {
+      "section_id": 8,
+      "game_id": 4,
+      "section_type": "area",
+      "name": "Goblin Camp",
+      "card": "Use elevation and stealth for surprise rounds. Short rest before multi-wave camp defense.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": null
+    },
+    {
+      "section_id": 9,
+      "game_id": 5,
+      "section_type": "boss",
+      "name": "Deathclaw",
+      "card": "Very high health for its level and resistant to nearly everything, energy weapons worst of all — lasers can reflect straight off the hide. It opens with a roar and a ground stomp, headbutts to stagger, and throws cars at you once you are out of reach. Below a certain health it can kill you outright with a grab or a decapitation, and at low level that threshold is higher than it sounds, so distance and cover matter more than raw damage.",
+      "source_url": "https://fallout.fandom.com/wiki/Deathclaw_(Fallout_4)",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2025-06-01"
+    },
+    {
+      "section_id": 10,
+      "game_id": 5,
+      "section_type": "area",
+      "name": "Corvega Factory",
+      "card": "Clear raiders floor-by-floor; grenades for clustered groups. Save ammo for Assaultron encounter.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": null
+    },
+    {
+      "section_id": 11,
+      "game_id": 6,
+      "section_type": "area",
+      "name": "Downtown",
+      "card": "PCSX2: stable 60 FPS needs aggressive EE/IOP tuning. EmuDeck preset recommended for Deck.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": "seed-1.0"
+    },
+    {
+      "section_id": 12,
+      "game_id": 6,
+      "section_type": "boss",
+      "name": "Final Confrontation",
+      "card": "Stock riot gear pickups; keep crowd control weapons for riot phases.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": null
+    },
+    {
+      "section_id": 13,
+      "game_id": 7,
+      "section_type": "boss",
+      "name": "Megara",
+      "card": "Learn dash patterns; punish recovery windows. Mirror and trap boons help burst phases.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": "seed-1.0"
+    },
+    {
+      "section_id": 14,
+      "game_id": 7,
+      "section_type": "area",
+      "name": "Temple of Styx",
+      "card": "Buy charms before entry; poison resistance or healing crucial. Route choice affects shop access.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": null
+    },
+    {
+      "section_id": 15,
+      "game_id": 8,
+      "section_type": "boss",
+      "name": "Adam Smasher",
+      "card": "Sandevistan or high DPS builds; destroy legs first. Cover during rocket barrages.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": "seed-1.0"
+    },
+    {
+      "section_id": 16,
+      "game_id": 8,
+      "section_type": "area",
+      "name": "All Foods Plant",
+      "card": "Stealth route saves ammo; quickhack turrets when detected. Deck: lower crowd density settings help FPS.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": null
+    },
+    {
+      "section_id": 17,
+      "game_id": 9,
+      "section_type": "boss",
+      "name": "Big Smoke",
+      "card": "Keep distance during chase; aim for vehicle weak points. Motorcycle section: avoid collisions.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": "seed-1.0"
+    },
+    {
+      "section_id": 18,
+      "game_id": 9,
+      "section_type": "area",
+      "name": "Los Santos",
+      "card": "DE edition: verify Proton forced; shader cache regen after updates. Driving missions: cap FPS for stability.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": null
+    },
+    {
+      "section_id": 19,
+      "game_id": 10,
+      "section_type": "area",
+      "name": "Starter Lot",
+      "card": "Build small starter home first; career goals unlock skills. Deck: lower sim speed in crowded lots.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": "seed-1.0"
+    },
+    {
+      "section_id": 20,
+      "game_id": 10,
+      "section_type": "quest",
+      "name": "Get a Job",
+      "card": "Complete daily tasks for steady income before expanding house. Save before major lot changes.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": null
+    },
+    {
+      "section_id": 21,
+      "game_id": 11,
+      "section_type": "boss",
+      "name": "Bear",
+      "card": "Dead Eye on entry; headshots during slow. Use cover trees; horse keeps distance.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": "seed-1.0"
+    },
+    {
+      "section_id": 22,
+      "game_id": 11,
+      "section_type": "area",
+      "name": "Valentine",
+      "card": "Honor missions affect town mood. Stable upkeep and camp supplies before long hunts.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": null
+    },
+    {
+      "section_id": 23,
+      "game_id": 12,
+      "section_type": "mechanic",
+      "name": "Gels",
+      "card": "Three paints, all useless on glass. Blue bounces you higher the further you fell. Orange removes friction so you keep whatever speed you arrive with. White lets you portal a surface that refused portals before, but it will not stick to cubes or turrets, and the cleansing spray strips it.",
+      "source_url": "https://theportalwiki.com/wiki/Gel",
+      "source_license": "CC-BY-4.0",
+      "source_version": null,
+      "crawled_at": "2026-08-09"
+    },
+    {
+      "section_id": 24,
+      "game_id": 12,
+      "section_type": "mechanic",
+      "name": "Repulsion Gel",
+      "card": "The blue one. Bounce height scales with how far you dropped, so gain height by falling onto it from somewhere higher, not by jumping. Two coated surfaces facing each other let you climb by bouncing between them.",
+      "source_url": "https://theportalwiki.com/wiki/Gel",
+      "source_license": "CC-BY-4.0",
+      "source_version": null,
+      "crawled_at": "2026-08-09"
+    },
+    {
+      "section_id": 25,
+      "game_id": 12,
+      "section_type": "mechanic",
+      "name": "Aerial Faith Plate",
+      "card": "Launches to a fixed destination, but it keeps the speed you arrive with — so run or fall into one to travel further than it looks. It throws objects as well as you, and its arc can be fed through a portal.",
+      "source_url": "https://theportalwiki.com/wiki/Aerial_Faith_Plate",
+      "source_license": "CC-BY-4.0",
+      "source_version": null,
+      "crawled_at": "2026-08-09"
+    },
+    {
+      "section_id": 26,
+      "game_id": 12,
+      "section_type": "mechanic",
+      "name": "Hard Light Bridge",
+      "card": "Solid light that runs until something blocks it. Put a portal in its path to move the whole bridge somewhere else — it leaves the portal square-on, so centre the portal on the beam. It is also cover: a turret cannot see through it, let alone shoot. Gel sits on a bridge and disappears when the bridge does.",
+      "source_url": "https://theportalwiki.com/wiki/Hard_Light_Bridge",
+      "source_license": "CC-BY-4.0",
+      "source_version": null,
+      "crawled_at": "2026-08-09"
+    },
+    {
+      "section_id": 27,
+      "game_id": 12,
+      "section_type": "mechanic",
+      "name": "Excursion Funnel",
+      "card": "Weightless travel along the beam. If it is carrying you the wrong way, look for the button that reverses it before assuming the route is shut. It passes through portals, so it can cross the whole chamber, and it ferries gel and cubes as well as you.",
+      "source_url": "https://theportalwiki.com/wiki/Excursion_Funnel",
+      "source_license": "CC-BY-4.0",
+      "source_version": null,
+      "crawled_at": "2026-08-09"
+    },
+    {
+      "section_id": 28,
+      "game_id": 12,
+      "section_type": "mechanic",
+      "name": "Thermal Discouragement Beam",
+      "card": "The laser exists to feed receptacles and relays; the exit usually will not open until it reaches one. A redirection cube aims it freely, portals only along fixed directions, and it goes straight through glass. Held on a turret, it cooks it.",
+      "source_url": "https://theportalwiki.com/wiki/Thermal_Discouragement_Beam",
+      "source_license": "CC-BY-4.0",
+      "source_version": null,
+      "crawled_at": "2026-08-09"
+    },
+    {
+      "section_id": 29,
+      "game_id": 12,
+      "section_type": "boss",
+      "name": "Wheatley",
+      "card": "He strips the portal surfaces, shields himself and throws bombs. Let a bomb break the conversion gel pipe, paint a wall with what spills, and portal his own bombs back into him. Every stun buys time to attach one corrupted core; three of them force the transfer.",
+      "source_url": "https://theportalwiki.com/wiki/Wheatley",
+      "source_license": "CC-BY-4.0",
+      "source_version": null,
+      "crawled_at": "2026-08-09"
+    },
+    {
+      "section_id": 30,
+      "game_id": 12,
+      "section_type": "mechanic",
+      "name": "Co-op portals and pinging",
+      "card": "Two players, two guns, four portals — and a portal one of you places links with the other's, which is the whole puzzle most of the time. Ping to point at a spot or to count down a timed jump; it carries without voice chat. Dying costs nothing but seconds.",
+      "source_url": "https://theportalwiki.com/wiki/Co-op",
+      "source_license": "CC-BY-4.0",
+      "source_version": null,
+      "crawled_at": "2026-08-09"
+    },
+    {
+      "section_id": 31,
+      "game_id": 12,
+      "section_type": "area",
+      "name": "Co-op courses",
+      "card": "Five courses unlock in order — Team Building, then Mass and Velocity, Hard-Light Surfaces, Excursion Funnels and Mobility Gels — each teaching one mechanic before combining them. Art Therapy is the DLC course after those.",
+      "source_url": "https://theportalwiki.com/wiki/Co-op",
+      "source_license": "CC-BY-4.0",
+      "source_version": null,
+      "crawled_at": "2026-08-09"
+    },
+    {
+      "section_id": 32,
+      "game_id": 13,
+      "section_type": "item",
+      "name": "Gravity Gun",
+      "card": "Secondary pulls and holds, primary punts. Explosive barrels hit hardest, sawblades cut zombies apart, and a held radiator works as a shield you can walk behind. It will not lift most enemies, but manhacks and scanners are fair game, and thrown grenades can go back where they came from.",
+      "source_url": "https://combineoverwiki.net/wiki/Zero-Point_Energy_Field_Manipulator",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-08-09"
+    },
+    {
+      "section_id": 33,
+      "game_id": 13,
+      "section_type": "area",
+      "name": "Ravenholm",
+      "card": "Ammo is scarce on purpose, so fight with the town instead of your guns. Levers drop car traps and reset them; waist-high blade traps shred zombies while you duck under; propane spray ignites from a single shot. Poison zombies switch traps off, so deal with those first. Loose blades are gravity gun ammunition.",
+      "source_url": "https://combineoverwiki.net/wiki/Ravenholm",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-08-09"
+    },
+    {
+      "section_id": 34,
+      "game_id": 13,
+      "section_type": "boss",
+      "name": "Strider",
+      "card": "RPG only, and roughly seven rockets on Normal. The rocket stays laser-guided the whole flight, so steer it wide and bring it in off-axis rather than straight up the barrel. Its warp cannon does splash damage, so keep moving between shots. A crate of rockets nearby means the fight is a long one.",
+      "source_url": "https://combineoverwiki.net/wiki/Strider",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-08-09"
+    },
+    {
+      "section_id": 35,
+      "game_id": 13,
+      "section_type": "item",
+      "name": "Rocket-Propelled Grenade Launcher",
+      "card": "Three rockets carried, and every one is steerable — hold the laser where you want it and the rocket follows, even turning right around after a miss. A gunship shoots rockets out of the air, so loop yours around behind it instead of flying it in straight.",
+      "source_url": "https://combineoverwiki.net/wiki/Rocket-Propelled_Grenade_Launcher_(Half-Life_2)",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-08-09"
+    },
+    {
+      "section_id": 36,
+      "game_id": 13,
+      "section_type": "mechanic",
+      "name": "Antlions and the sand",
+      "card": "Antlions are blind and hunt vibration, so on the coast the rocks are safe and the sand is not — step off and they come up. Once you have the pheropod from the Antlion Guard it reverses: throw it and they read you as a guard and swarm whatever you marked.",
+      "source_url": "https://combineoverwiki.net/wiki/Antlion",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-08-09"
+    },
+    {
+      "section_id": 37,
+      "game_id": 13,
+      "section_type": "area",
+      "name": "Sandtraps",
+      "card": "The coastal chapter that teaches the sand. Rock to rock on the way out; after the Antlion Guard you keep the pheropod and use antlions to break the Combine bunkers guarding the road to Nova Prospekt.",
+      "source_url": "https://combineoverwiki.net/wiki/Sandtraps",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-08-09"
+    },
+    {
+      "section_id": 38,
+      "game_id": 13,
+      "section_type": "boss",
+      "name": "Hunter-Chopper (helicopter)",
+      "card": "Fought from the airboat once its gun is mounted. Hold fire on it and pieces break away until it goes down. It drops contact mines and charges a pulse turret between passes; nearly dead, it makes one bombing run, so steer between the lines of falling bombs rather than trying to outrun them.",
+      "source_url": "https://combineoverwiki.net/wiki/Hunter-Chopper",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-08-09"
+    },
+    {
+      "section_id": 39,
+      "game_id": 13,
+      "section_type": "enemy",
+      "name": "Combine soldiers",
+      "card": "They move in squads of four to six and will flank you while the rest lay down covering fire, so holding one angle gets you surrounded. A grenade breaks them out of cover and into the open — and you can throw theirs back. Kill the shotgun one first and keep your distance from the rest; up close they club you.",
+      "source_url": "https://combineoverwiki.net/wiki/Overwatch_Soldier",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-08-09"
+    },
+    {
+      "section_id": 40,
+      "game_id": 3,
+      "section_type": "boss",
+      "name": "The Witch",
+      "card": "She ignores gunfire that is not aimed at her and ignores other infected; what wakes her is a flashlight or a survivor standing too close. The growl is a warning — back off and she settles. Keep coming and she stands, flails, then charges and incapacitates whoever she picked in one hit. Fire kills her in about fifteen seconds and slows her down, but only once she is already startled: light a wandering witch while she is still calm and she keeps full speed. Either way she switches to whoever burned her, not whoever woke her.",
+      "source_url": "https://left4dead.fandom.com/wiki/The_Witch",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2025-04-05"
+    },
+    {
+      "section_id": 41,
+      "game_id": 3,
+      "section_type": "enemy",
+      "name": "Charger",
+      "card": "Shoving does nothing to him — only explosives stumble him. Treat the charge like a bull: once he commits he cannot steer, so step aside and let him hit a wall. The damage is not the problem, the destination is; near water, a ledge, or a bunched-up team he flings everybody. AI chargers take about two thirds less damage while charging, so wait until he stops rather than emptying a magazine into the run.",
+      "source_url": "https://left4dead.fandom.com/wiki/The_Charger",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2025-04-05"
+    },
+    {
+      "section_id": 42,
+      "game_id": 3,
+      "section_type": "enemy",
+      "name": "Hunter",
+      "card": "He goes for whoever is on their own, and a long pounce does damage before the clawing starts. There is about a second to shove him out of the air, which is more warning than the jockey gives, and he has very little health once you land shots. A pounce does not end on its own — a teammate has to shove him off — so the real counter is not being the survivor at the back.",
+      "source_url": "https://left4dead.fandom.com/wiki/The_Hunter",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2025-04-05"
+    },
+    {
+      "section_id": 43,
+      "game_id": 3,
+      "section_type": "enemy",
+      "name": "Smoker",
+      "card": "The cough and the drifting green trails say he has spawned; the tongue says where. Follow it back and shoot: while he is dragging someone he stands still and takes extra damage in campaign, so one headshot ends it. If the tongue pulls the victim against an obstacle it starts choking them, so cut it fast rather than trading shots at range.",
+      "source_url": "https://left4dead.fandom.com/wiki/The_Smoker",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2025-04-05"
+    },
+    {
+      "section_id": 44,
+      "game_id": 3,
+      "section_type": "enemy",
+      "name": "Jockey",
+      "card": "The laugh is the warning. Do not swing at him mid-leap — he is much harder to hit than a hunter — step backwards as he jumps and he sails past, then shove and kill him. His damage is slow; the danger is where he steers you, which is into a witch, into acid, into a tank you were not ready for, or off a ledge.",
+      "source_url": "https://left4dead.fandom.com/wiki/The_Jockey",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2025-04-05"
+    },
+    {
+      "section_id": 45,
+      "game_id": 3,
+      "section_type": "enemy",
+      "name": "Boomer",
+      "card": "The vomit is not damage, it is a horde sent to you, and killing him at close range coats you anyway because he bursts. Shove first, then shoot. On Easy and Normal there is a second or so of warning; on Advanced and Expert he pukes on sight and backing away does not beat the arc. Being biled makes you glow to both teams, and the burst stumbles anything nearby — chargers and tanks included.",
+      "source_url": "https://left4dead.fandom.com/wiki/The_Boomer",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2025-04-05"
+    },
+    {
+      "section_id": 46,
+      "game_id": 3,
+      "section_type": "enemy",
+      "name": "Spitter",
+      "card": "The green puddle burns worse the longer it has been down, and one spit can take most of a survivor's health. Moving out of it is always right, even onto worse ground — including when you are picking someone up, because reviving means standing in it. This is why a jockey ride or a charger pin over acid is lethal rather than annoying.",
+      "source_url": "https://left4dead.fandom.com/wiki/The_Spitter",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2025-04-05"
+    },
+    {
+      "section_id": 47,
+      "game_id": 3,
+      "section_type": "mechanic",
+      "name": "The Director",
+      "card": "Nothing about the spawns is fixed. Hordes of ten to thirty commons come at you every one to four minutes, from behind or off to the side, while tanks and witches only appear at threat spots the map author placed. After a heavy fight it goes quiet for roughly thirty to forty-five seconds — that pause is the healing window, and moving on ends it early. If the idle commons have thinned out, it is making room for something.",
+      "source_url": "https://left4dead.fandom.com/wiki/The_Director",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2025-04-05"
+    },
+    {
+      "section_id": 48,
+      "game_id": 3,
+      "section_type": "mechanic",
+      "name": "Going down and black and white",
+      "card": "Going down leaves you with 300 temporary health draining three at a time until somebody picks you up. Go down a second time without healing and the screen turns grey with a heartbeat: the third one kills, and only a first aid kit clears it — pills and adrenaline do not. Death is still recoverable, by defibrillator, by reaching the safe room, or from a rescue closet, but Realism switches the closets off.",
+      "source_url": "https://left4dead.fandom.com/wiki/Health",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2025-04-05"
+    },
+    {
+      "section_id": 49,
+      "game_id": 3,
+      "section_type": "item",
+      "name": "Bile bomb",
+      "card": "Crowd control, not a weapon. Wherever the jar lands pulls the horde for about twenty seconds, and any infected caught in it gets attacked by its own side. Throw it well away from the team before starting a crescendo, or to buy a route past a tank — not at whatever is closest.",
+      "source_url": "https://left4dead.fandom.com/wiki/Bile_Bomb",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2025-04-05"
+    },
+    {
+      "section_id": 50,
+      "game_id": 3,
+      "section_type": "mechanic",
+      "name": "Expert and Realism",
+      "card": "Two different kinds of hard. On Expert a single common does 20 a hit, standing still gets you killed, and a tank punch incapacitates outright. Realism is a separate switch that works on any difficulty: no outlines around your teammates, no item glow, no rescue closets, and commons shrug off body shots, so it is headshots, melee, or the magnum. Learn a map with Realism off first — the director puts supplies off the obvious path.",
+      "source_url": "https://left4dead.fandom.com/wiki/Difficulty",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2025-04-05"
+    },
+    {
+      "section_id": 51,
+      "game_id": 3,
+      "section_type": "mechanic",
+      "name": "Playing as the Tank",
+      "card": "Save him for ground that suits him: mounted guns shred you, so go around rather than through, and wait for the rest of the infected team to be up before you commit. Rocks are for the places they must walk through. Chase the panicking one or the biled one rather than the nearest one, and if a teammate has someone pinned, put your body between that survivor and their friends — the bullets hitting you are bullets not saving them. Someone running at you with a revved chainsaw gets punched before they arrive.",
+      "source_url": "https://left4dead.fandom.com/wiki/The_Tank",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2025-04-05"
+    },
+    {
+      "section_id": 52,
+      "game_id": 3,
+      "section_type": "mechanic",
+      "name": "Playing as the Hunter",
+      "card": "Pounce damage scales with distance — up to 25 on a long one — so height and a run-up matter more than surprise alone. Take the straggler, never the group, and if you have to be near the group, move like a common: the melee claw reads as horde damage until someone checks. In Left 4 Dead 2 the pounce recharges fast, so holding crouch and re-pouncing keeps pressure on.",
+      "source_url": "https://left4dead.fandom.com/wiki/The_Hunter",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2025-04-05"
+    },
+    {
+      "section_id": 53,
+      "game_id": 3,
+      "section_type": "mechanic",
+      "name": "Playing as the Jockey",
+      "card": "The ride is the weapon. Steer towards a witch, a spitter pool, a fire, a ledge or an unfinished tank fight — anywhere the survivor's own team makes things worse. Rides last longer where the map turns: corners, alleys, stairwells. Off a ledge is only worth it when nobody is close enough to pick them back up, otherwise a charger does that job better.",
+      "source_url": "https://left4dead.fandom.com/wiki/The_Jockey",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2025-04-05"
+    },
+    {
+      "section_id": 54,
+      "game_id": 3,
+      "section_type": "mechanic",
+      "name": "Playing as the Smoker",
+      "card": "Patience, then elevation. Wait until the team is busy, then take someone from above — a drop adds fall damage on top of the 3 a second the tongue does, and a hanging victim is far harder to rescue than one dragged along the floor. Pull towards a witch, a fire, or a drop rather than towards yourself; you have no cover. Keep moving, because standing still leaves a green cloud that marks you.",
+      "source_url": "https://left4dead.fandom.com/wiki/The_Smoker",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2025-04-05"
+    },
+    {
+      "section_id": 55,
+      "game_id": 3,
+      "section_type": "mechanic",
+      "name": "Playing as the Charger",
+      "card": "Angle beats timing. A hallway lets you bowl the whole team at once; open ground lets you carry one of them far enough that the rescue costs the others real time. A drop or a hazard on the line turns the charge into a kill outright. Check nothing solid is between you and the target — hitting it stops you dead — and do not spawn early, because the grunting gives away the ambush.",
+      "source_url": "https://left4dead.fandom.com/wiki/The_Charger",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2025-04-05"
+    },
+    {
+      "section_id": 56,
+      "game_id": 3,
+      "section_type": "mechanic",
+      "name": "Playing as the Boomer",
+      "card": "Support, not damage. Set up out of sight, let them walk into range rather than charging in, and spawn just before you puke so the noise does not give you away. Bile on a grouped, distracted team while your teammates are ready is worth more than bile on whoever is nearest. Exploding on purpose in the middle of the mess is a legitimate second use.",
+      "source_url": "https://left4dead.fandom.com/wiki/The_Boomer",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2025-04-05"
+    },
+    {
+      "section_id": 57,
+      "game_id": 3,
+      "section_type": "mechanic",
+      "name": "Playing as the Spitter",
+      "card": "Put the acid where they have to walk — a doorway, an alley, the stairs off a ledge — not in open ground they can step around. Spit from a balcony or a dark corner, since a headshot usually kills you outright and the glow gives you away in the light. Best paired with the horde: near a car alarm or a crowd, the pool is what stops them dealing with either.",
+      "source_url": "https://left4dead.fandom.com/wiki/The_Spitter",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2025-04-05"
+    },
+    {
+      "section_id": 58,
+      "game_id": 8,
+      "section_type": "mechanic",
+      "name": "Sandevistan",
+      "card": "An operating system rather than one more implant, and it is built around blades — it slows time on demand, and some variants add crit chance and crit damage on top. Mods extend the duration or shorten the cooldown. Since patch 2.0 you can switch it off early by pressing the button again instead of burning the tail of it.",
+      "source_url": "https://cyberpunk.fandom.com/wiki/Sandevistan",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-06-18"
+    },
+    {
+      "section_id": 59,
+      "game_id": 8,
+      "section_type": "mechanic",
+      "name": "Berserk",
+      "card": "The other operating system, and the melee one that does not care about time. While it runs it cuts damage taken and will not let your health fall below a quarter, and afterwards every enemy you put down returns a quarter of your maximum health. What it does for your melee weapons depends on the model installed.",
+      "source_url": "https://cyberpunk.fandom.com/wiki/Berserk",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-06-18"
+    },
+    {
+      "section_id": 60,
+      "game_id": 8,
+      "section_type": "mechanic",
+      "name": "Kerenzikov",
+      "card": "Lets you fire while sliding, dodging or dashing, and aiming during any of those slows time for a couple of seconds. It has its own cooldown, so treat it as a repositioning tool rather than something to lean on.",
+      "source_url": "https://cyberpunk.fandom.com/wiki/Kerenzikov",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-06-18"
+    },
+    {
+      "section_id": 61,
+      "game_id": 8,
+      "section_type": "mechanic",
+      "name": "Street Cred",
+      "card": "A separate track from your character level, paid out by fixers for gigs, and how you finish a job changes the payout rather than just finishing it. It buys a permanent vendor discount up to 15% and unlocks better cars on the Autofixer; the good gear starts appearing around Street Cred 40, and it caps at 50.",
+      "source_url": "https://cyberpunk.fandom.com/wiki/Street_Cred",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-06-18"
+    },
+    {
+      "section_id": 62,
+      "game_id": 8,
+      "section_type": "mechanic",
+      "name": "Lifepath",
+      "card": "Nomad, Streetkid or Corpo. What it changes is the opening chapter, one unique side job, and dialogue options that keep turning up later on — so pick the opening you want to play rather than the one that sounds strongest.",
+      "source_url": "https://cyberpunk.fandom.com/wiki/Lifepath",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-06-18"
+    },
+    {
+      "section_id": 63,
+      "game_id": 9,
+      "section_type": "mechanic",
+      "name": "Muscle",
+      "card": "Built at a gym or by running, cycling and swimming — fourteen seconds on the treadmill or bike is one percent, and a weights rep is one percent. It raises melee damage, respect and sex appeal, but do not max it: at 100% it works against sex appeal and some girlfriends will not talk to you. All fifty oysters, expensive clothes and a good car offset that.",
+      "source_url": "https://gta.fandom.com/wiki/Statistics",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2022-03-22"
+    },
+    {
+      "section_id": 64,
+      "game_id": 9,
+      "section_type": "mechanic",
+      "name": "Stamina",
+      "card": "Endurance for sprinting, swimming and cycling; low stamina means you stop running almost immediately. It goes up with the activity itself — five percent per two and a half minutes of swimming, or per five minutes of running or biking — and four percent per fourteen seconds on gym cardio. Finishing the Burglary side missions, ten thousand dollars of stolen goods, grants unlimited stamina regardless of the stat.",
+      "source_url": "https://gta.fandom.com/wiki/Statistics",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2022-03-22"
+    },
+    {
+      "section_id": 65,
+      "game_id": 9,
+      "section_type": "mechanic",
+      "name": "Fat",
+      "card": "Goes up with food, including meals on dates, and down with exercise or with not eating. Overweight slows you down and costs health, jumping and speed. Zero fat is worse: once there is nothing left to burn you start losing muscle, and after that health, so eat when the hunger warning appears.",
+      "source_url": "https://gta.fandom.com/wiki/Statistics",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2022-03-22"
+    },
+    {
+      "section_id": 66,
+      "game_id": 9,
+      "section_type": "mechanic",
+      "name": "Respect",
+      "card": "Sets how many gang members you can recruit, from one up to seven. It comes from missions, killing rival gang members and police, taking territory and spraying over tags, and appearance nudges it — hair, tattoos, clothes, muscle, and wearing green in Grove Street territory most of all. It falls if you wear the wrong colours at home, kill your own, or lose turf.",
+      "source_url": "https://gta.fandom.com/wiki/Statistics",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2022-03-22"
+    },
+    {
+      "section_id": 67,
+      "game_id": 9,
+      "section_type": "mechanic",
+      "name": "Weapon skill",
+      "card": "Each weapon type levels separately by hitting people and vehicles: Poor, then Gangster, then Hitman. Higher skill means better accuracy, more range, faster strafing and fire rate, and the ability to move while shooting. At Hitman the pistol, sawn-off, Tec-9 and Micro SMG can be dual wielded. Thrown weapons, melee, rifles and heavy weapons have no skill meter at all.",
+      "source_url": "https://gta.fandom.com/wiki/Statistics",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2022-03-22"
+    },
+    {
+      "section_id": 68,
+      "game_id": 9,
+      "section_type": "mechanic",
+      "name": "Gang territory",
+      "card": "Opens up after Sweet's mission Doberman, and goes away for a stretch in the middle of the story before coming back. Holding turf pays: money accumulates and is collected outside the Johnson house on Grove Street, respect goes up, and rival gang members stop spawning in the streets you own.",
+      "source_url": "https://gta.fandom.com/wiki/Gang_Warfare_in_GTA_San_Andreas",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2022-03-22"
+    },
+    {
+      "section_id": 69,
+      "game_id": 9,
+      "section_type": "mechanic",
+      "name": "Girlfriends",
+      "card": "Six of them, and only Millie is actually required for full completion — the rest are optional. Denise and Millie arrive through story missions; Michelle, Katie and Helena become available once Flint County, Whetstone and San Fierro are open, and Barbara once Tierra Robada, Bone County and Las Venturas are. Sex appeal decides whether they will talk to you at all, and all fifty oysters covers most of that.",
+      "source_url": "https://gta.fandom.com/wiki/Girlfriends_in_GTA_San_Andreas",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2022-03-22"
+    },
+    {
+      "section_id": 70,
+      "game_id": 9,
+      "section_type": "mechanic",
+      "name": "Lung capacity and oysters",
+      "card": "How long you last underwater. It grows with time spent under, and collecting oysters is the fast way — there are fifty, along shorelines, under bridges and in pools. Let the oxygen meter empty and you lose health quickly, and surfacing gives the air back but not the health. One mission, Amphibious Assault, will not start below five percent lung capacity.",
+      "source_url": "https://gta.fandom.com/wiki/Statistics",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2022-03-22"
+    },
+    {
+      "section_id": 71,
+      "game_id": 9,
+      "section_type": "area",
+      "name": "Horseshoes",
+      "card": "Fifty of them around Las Venturas, and all fifty are required for 100% completion. Each one is a hundred dollars and twenty points of luck, a stat that starts at zero and only ever goes up; the full set maxes it at 1,000.",
+      "source_url": "https://gta.fandom.com/wiki/Horseshoes",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2022-03-22"
+    },
+    {
+      "section_id": 72,
+      "game_id": 5,
+      "section_type": "mechanic",
+      "name": "Settlement happiness",
+      "card": "Happiness is just whether needs are met: food, water, beds and defense each have to be at least the number of settlers. Power is not part of it, though better machines need it. Higher happiness makes settlers more productive, and a settlement left very unhappy can be lost outright after a failed Minutemen radiant quest.",
+      "source_url": "https://fallout.fandom.com/wiki/Fallout_4_settlements",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2025-06-01"
+    },
+    {
+      "section_id": 73,
+      "game_id": 5,
+      "section_type": "mechanic",
+      "name": "Settlement defense and attacks",
+      "card": "One unit of defense per settler is the number to hit, and only workshop-built defenses count — mines do not, though they still kill attackers if you are there. Attack chance rises with stored food and water and falls with population and defense, but never below 2%; a settlement with nobody living in it is never attacked. Turn up in person and it is a normal fight with your turrets and companions helping; skip it and the game rolls defense rating plus population against the raid, which is why spreading defense thin costs you inventory and temporary happiness rather than nothing.",
+      "source_url": "https://fallout.fandom.com/wiki/Fallout_4_settlements",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2025-06-01"
+    },
+    {
+      "section_id": 74,
+      "game_id": 5,
+      "section_type": "mechanic",
+      "name": "SPECIAL points",
+      "card": "You start with one in everything and 21 to spend, so 28 in total — much less than earlier Fallouts. It is not a permanent ceiling: bobbleheads and magazines raise attributes, and each level-up lets you put the point into a SPECIAL stat instead of a perk. Your SPECIAL values are what decide which perks you can take at all.",
+      "source_url": "https://fallout.fandom.com/wiki/Fallout_4_SPECIAL",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2025-06-01"
+    },
+    {
+      "section_id": 75,
+      "game_id": 5,
+      "section_type": "mechanic",
+      "name": "Perks",
+      "card": "The perk chart replaced skills. Every level gives one point, and it buys either a rank of a perk or a rank of the SPECIAL attribute that unlocks deeper perks in that column. Magazines scattered around the world grant extra perks that cost no points at all, and they are listed separately on the Pip-Boy.",
+      "source_url": "https://fallout.fandom.com/wiki/Fallout_4_perks",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2025-06-01"
+    },
+    {
+      "section_id": 76,
+      "game_id": 5,
+      "section_type": "mechanic",
+      "name": "Power armor and fusion cores",
+      "card": "The frame runs on a fusion core that drains with time and faster with anything that spends AP — sprinting, V.A.T.S. When it empties you can still walk, but you are over-encumbered and lose V.A.T.S. and steady aim. No training perk is needed. Wearing it overrides your normal armour bonuses entirely and can push Strength past the usual limit of 10.",
+      "source_url": "https://fallout.fandom.com/wiki/Power_armor_(Fallout_4)",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2025-06-01"
+    },
+    {
+      "section_id": 77,
+      "game_id": 5,
+      "section_type": "mechanic",
+      "name": "Upgrading power armor",
+      "card": "Repairs and mods happen at a power armor station, and one can be built at a settlement. Upgrading a piece costs the same materials whichever tier you come from, so it is usually worth waiting until Armorer and Science are ranked up rather than paying twice — especially for the later models, whose materials are rare.",
+      "source_url": "https://fallout.fandom.com/wiki/Power_armor_(Fallout_4)",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2025-06-01"
+    },
+    {
+      "section_id": 78,
+      "game_id": 5,
+      "section_type": "boss",
+      "name": "Mirelurk queen",
+      "card": "Much bigger and much harder than the rest, doing heavy physical and radiation damage, and her arrival is announced by a roar. On top of the claws she spits acid that keeps damaging you after it lands, and she periodically fires a barrage of eggs that hatch into a wave of small ones — the game treats that as a grenade, so the grenade warning icon is the cue to move.",
+      "source_url": "https://fallout.fandom.com/wiki/Mirelurk_(Fallout_4)",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2025-06-01"
+    },
+    {
+      "section_id": 79,
+      "game_id": 5,
+      "section_type": "mechanic",
+      "name": "Crafting and junk",
+      "card": "Almost nothing needs a schematic; the recipes are known by default. What you need is components, which come from scrapping junk at a crafting table, from scrapping world objects such as trees and cars inside a settlement you own, or from merchants. Components are drawn either from your own inventory or from the workshop of the settlement you are standing in.",
+      "source_url": "https://fallout.fandom.com/wiki/Fallout_4_crafting",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2025-06-01"
+    },
+    {
+      "section_id": 80,
+      "game_id": 1,
+      "section_type": "boss",
+      "name": "Queen Gohma",
+      "card": "The spider in the Deku Tree. She is only vulnerable when the big eye turns red — a slingshot seed or a Deku nut at that moment drops her, and then you get a few free sword slashes before she recovers. When she climbs the ceiling, watch where she lands rather than chasing her.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": null
+    },
+    {
+      "section_id": 81,
+      "game_id": 1,
+      "section_type": "boss",
+      "name": "Volvagia",
+      "card": "The fire dragon that pops out of the holes in the floor. The Megaton Hammer is the whole fight: hit the head the moment it comes up, then slash while it is stunned. When it flies around the room, the hookshot pulls it back down. Goron Tunic and a shield for the fire, and keep off the lava at the edges.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": null
+    },
+    {
+      "section_id": 82,
+      "game_id": 1,
+      "section_type": "boss",
+      "name": "Twinrova",
+      "card": "The two witches, one ice and one fire. First phase, the Mirror Shield reflects each sister's magic into the other — aim at the one who did not cast. Once they merge, the shield absorbs their blasts instead: take three of the same element and it fires back at them. Mixing the elements resets the charge, so wait rather than catching whatever comes.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": null
+    },
+    {
+      "section_id": 83,
+      "game_id": 1,
+      "section_type": "mechanic",
+      "name": "Epona",
+      "card": "Learn Epona's Song from Malon at Lon Lon Ranch as a child. As an adult, Ingo has taken over — pay to ride, then race him, and he will bet the horse on a rematch. Win that and he locks the gate, so ride at the fence and jump it.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": null
+    },
+    {
+      "section_id": 84,
+      "game_id": 1,
+      "section_type": "dungeon",
+      "name": "Shadow Temple invisible floors",
+      "card": "Almost everything in the Shadow Temple that looks missing is there. Equip the Lens of Truth and the invisible floors, walls and chests all appear; it drains magic while held, so use it in bursts rather than leaving it on. Green potions and the fairies in the temple keep it running.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": null
+    },
+    {
+      "section_id": 85,
+      "game_id": 1,
+      "section_type": "mechanic",
+      "name": "Adult dungeon order",
+      "card": "Forest, then Fire, then Water, then Shadow, then Spirit. Each one hands you the item the next expects — the hookshot from Forest, the Megaton Hammer from Fire, the longshot from Water — so going out of order mostly means walking back later. The Spirit Temple is the only one that splits across child and adult.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": null
+    },
+    {
+      "section_id": 86,
+      "game_id": 1,
+      "section_type": "mechanic",
+      "name": "Gold Skulltulas",
+      "card": "A hundred tokens across the game, and the cursed family in Kakariko pays out every ten: wallet upgrades early, then better rewards, with the last one at a hundred. Ten and twenty are quick and worth doing on the way past. The full hundred is a completionist job, not something to detour for mid-playthrough.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": null
+    },
+    {
+      "section_id": 87,
+      "game_id": 1,
+      "section_type": "mechanic",
+      "name": "Biggoron's Sword",
+      "card": "A long trade chain that starts with the Pocket Egg from the Cucco Lady in Kakariko and ends at the top of Death Mountain. Two links in it are on a timer — the Odd Mushroom and the Eyedrops — so ride Epona and use the warp songs for those two rather than walking. Everything before and after can be done at your own pace.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": null
+    },
+    {
+      "section_id": 88,
+      "game_id": 7,
+      "section_type": "mechanic",
+      "name": "Mirror of Night",
+      "card": "The permanent upgrades, bought with Darkness in your room. Each row has two alternatives and you can switch between them for a small cost at any time, so nothing is locked in. Death Defiance is the one that changes early runs most: each rank is another free revive mid-run.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": null
+    },
+    {
+      "section_id": 89,
+      "game_id": 7,
+      "section_type": "mechanic",
+      "name": "Starting weapons",
+      "card": "The Stygian Blade is the safest thing to learn on — short reach, forgiving timing. The Shield of Chaos is the most survivable, because holding block turns a mistake into nothing. The Rail and the Bow reward staying at range but punish you for standing still. Each weapon also has aspects unlocked later that change how it plays entirely.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": null
+    },
+    {
+      "section_id": 90,
+      "game_id": 7,
+      "section_type": "mechanic",
+      "name": "Darkness, keys and gems",
+      "card": "They are different currencies for different things: Darkness feeds the Mirror, Chthonic Keys unlock new weapons and new Mirror rows, and gems pay for the house contractor. Early on, keys and Darkness are both bottlenecks — take whichever you have fewer of, and stop taking gems once the contractor jobs you want are bought.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": null
+    },
+    {
+      "section_id": 91,
+      "game_id": 7,
+      "section_type": "mechanic",
+      "name": "Boons and duo boons",
+      "card": "Boons come from gods and last one run. A duo needs two specific gods' boons already in the right slots, so you cannot aim at one directly — you pick a god early, keep taking them, and the duo becomes possible. Taking one boon from every god who offers is how runs end up with nothing that stacks.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": null
+    },
+    {
+      "section_id": 92,
+      "game_id": 7,
+      "section_type": "boss",
+      "name": "Theseus and Asterius",
+      "card": "Two at once, which is the actual difficulty. Asterius, the bull, telegraphs a long charge — sidestep it and he is briefly stuck. Theseus throws his spear and periodically calls down a god's power, which is marked on the ground before it lands. Most runs go better killing Asterius first, because Theseus alone is predictable.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": null
+    },
+    {
+      "section_id": 93,
+      "game_id": 7,
+      "section_type": "mechanic",
+      "name": "Heat and the Pact of Punishment",
+      "card": "Beating the game once is the middle of the story, not the end — the runs continue and the ending needs several more. The Pact of Punishment unlocks then too: Heat is optional difficulty you add yourself, in exchange for rewards that only come from raising it.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": null
+    },
+    {
+      "section_id": 94,
+      "game_id": 4,
+      "section_type": "mechanic",
+      "name": "Long rest",
+      "card": "Rest more than feels right. A long rest costs camp supplies and restores spells, health and most abilities, and it is also what advances companion scenes and personal quests — hoarding rests means missing story, not saving resources. Supplies are plentiful; food you pick up counts.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": null
+    },
+    {
+      "section_id": 95,
+      "game_id": 4,
+      "section_type": "mechanic",
+      "name": "Inspiration",
+      "card": "Each character has background goals, and doing something that matches one grants Inspiration. You can hold a few at a time, and spending one rerolls a failed ability check — including in dialogue, after you have seen the failure. Picking backgrounds that suit how you actually play is what keeps the supply up.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": null
+    },
+    {
+      "section_id": 96,
+      "game_id": 4,
+      "section_type": "mechanic",
+      "name": "Dialogue checks",
+      "card": "A check is your ability modifier plus proficiency plus a d20, so the fix is usually who is talking rather than luck: let the high-Charisma character lead conversations. The Guidance cantrip adds a d4 to a check and can be cast beforehand, and Inspiration rerolls a failure outright.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": null
+    },
+    {
+      "section_id": 97,
+      "game_id": 4,
+      "section_type": "mechanic",
+      "name": "Companion approval",
+      "card": "Companions react to what you do and say in front of them, not to gifts. Approval gates their personal quests and any romance, and low approval can end with them leaving. Someone who disapproves of a plan can be left at camp for it.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": null
+    },
+    {
+      "section_id": 98,
+      "game_id": 4,
+      "section_type": "mechanic",
+      "name": "Sneak Attack",
+      "card": "Sneak Attack needs advantage, or an ally already next to the target — without one of those it is a normal, weak attack. Hide as a bonus action, attack from stealth, and let a melee companion engage first. Height and darkness help too: shooting from above and out of sight is the rogue's normal opening, not a trick.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": null
+    },
+    {
+      "section_id": 99,
+      "game_id": 4,
+      "section_type": "mechanic",
+      "name": "Party composition",
+      "card": "Four slots. You want someone to talk, someone to heal, someone who can find and disarm traps and pick locks, and enough damage — one character often covers two of those. Bard and Paladin both talk well; Cleric and Druid both heal; Rogue and Ranger both handle traps. The party you cannot cover is the one with no healing at all.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": null
+    },
+    {
+      "section_id": 100,
+      "game_id": 11,
+      "section_type": "mechanic",
+      "name": "Honor",
+      "card": "It moves on small things done often: greeting people, helping strangers on the road, paying bounties instead of running, donating to camp. It falls for robbery, killing civilians and animals you do not use. High honor means shop discounts and different reactions; low honor pays differently. It is a slider, not a switch — one bad day does not undo a good chapter.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": null
+    },
+    {
+      "section_id": 101,
+      "game_id": 11,
+      "section_type": "mechanic",
+      "name": "Horse bonding",
+      "card": "Bond level is what makes a horse feel different. Riding, feeding, brushing, patting and calming it during danger all raise it, and each level adds stamina, better handling, and eventually manoeuvres like the rear and the drift. A high-bond horse also stops throwing you when something scares it. Bond is per horse, so switching mounts starts again.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": null
+    },
+    {
+      "section_id": 102,
+      "game_id": 11,
+      "section_type": "mechanic",
+      "name": "Cores and rings",
+      "card": "Each of health, stamina and Dead Eye has an inner core and a ring around it. The ring is the meter you spend; the core is the reserve that refills it, and it drains from hunger, cold and injury. Eat and sleep to keep cores up, and use tonics for the rings mid-fight. A dead core means everything drains faster, which is what makes long rides go wrong.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": null
+    },
+    {
+      "section_id": 103,
+      "game_id": 11,
+      "section_type": "mechanic",
+      "name": "Dead Eye",
+      "card": "Slows time and refills from tonics, food and clean kills. Early on it auto-marks; later story upgrades let you paint targets yourself and eventually see weak points. Use it for the shot you cannot line up rather than for every fight, because the meter is a resource and not a mode.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": null
+    },
+    {
+      "section_id": 104,
+      "game_id": 11,
+      "section_type": "mechanic",
+      "name": "Perfect pelts",
+      "card": "Two things have to be true: a three-star animal, and a clean kill with the right weapon for its size. Small animals want the varmint rifle; medium ones want a bow with improved arrows; big ones want a rifle to the head or heart. Study an animal first to see its rating, and skin it or take the carcass to a trapper or butcher before it spoils.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": null
+    },
+    {
+      "section_id": 105,
+      "game_id": 11,
+      "section_type": "mechanic",
+      "name": "Bounties",
+      "card": "A bounty stays on the region it was earned in and grows with witnesses. Leave it and lawmen and bounty hunters keep coming, and a big enough one effectively closes that region's towns to you. Pay it at any post office; wearing a mask during a crime keeps the bounty smaller.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": null
+    },
+    {
+      "section_id": 106,
+      "game_id": 11,
+      "section_type": "mechanic",
+      "name": "Camp donations",
+      "card": "The ledger is not a tax — it is where camp upgrades come from, and they are real: better provisions, more ammo and food to take for free, faster fast travel from camp once bought. Contributing also keeps morale up. Money given to the ledger goes further than money in your pocket for most of the early game.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": null
+    },
+    {
+      "section_id": 107,
+      "game_id": 10,
+      "section_type": "mechanic",
+      "name": "Emotions",
+      "card": "Moodlets add up into one emotion, and the emotion changes what your Sim can do and how fast they learn. Focused speeds up logic and programming, Inspired speeds up creative skills, Confident unlocks bolder social options. Decorated rooms, showers, tea and thinking at a chess board are the reliable ways to choose the mood you want before starting work.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": null
+    },
+    {
+      "section_id": 108,
+      "game_id": 10,
+      "section_type": "mechanic",
+      "name": "Sad moodlets",
+      "card": "Sad usually comes from a moodlet with a timer — a death, a rejection, an uncomfortable house — and it overrides better moods until it expires. Check the moodlet list to see which one and how long. A shower, a good meal, comfortable furniture and time with a friend clear the ordinary causes; the grief ones simply have to run out.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": null
+    },
+    {
+      "section_id": 109,
+      "game_id": 10,
+      "section_type": "mechanic",
+      "name": "Raising a skill quickly",
+      "card": "Three things stack: the matching emotion, a good object to practise on, and no interruptions. Set the mood first, use the best version of the object you can afford, and keep needs topped up so the Sim does not wander off mid-session. Children's skills are separate tracks and level faster.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": null
+    },
+    {
+      "section_id": 110,
+      "game_id": 10,
+      "section_type": "mechanic",
+      "name": "Promotions",
+      "card": "A promotion wants four things at once: the listed skill levels, the daily task done, good work performance, and a decent mood on the way out the door. The career panel lists exactly which skills and how high. Sending a Sim to work in the right emotion is usually the missing piece.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": null
+    },
+    {
+      "section_id": 111,
+      "game_id": 10,
+      "section_type": "mechanic",
+      "name": "Making money",
+      "card": "Painting and writing are the classic self-employed earners because they only need one skill and one object, and both scale hard with level. Gardening is slower to start and larger later. Selling collectibles funds the very early game, and a cheap starter lot leaves more for the object that earns.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": null
+    },
+    {
+      "section_id": 112,
+      "game_id": 10,
+      "section_type": "mechanic",
+      "name": "Fires",
+      "card": "There are no firefighters to call in The Sims 4. Keep a fire extinguisher and a smoke alarm in the kitchen, and when something catches, direct a Sim to extinguish it rather than waiting — panicking Sims will not act on their own. Sims can die in a fire, so getting everyone out of the room is the safer first move.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": null
+    },
+    {
+      "section_id": 113,
+      "game_id": 10,
+      "section_type": "mechanic",
+      "name": "moveobjects",
+      "card": "Open the cheat console with Ctrl+Shift+C, enter testingcheats true, then bb.moveobjects on. Objects will then place anywhere, ignoring the grid and each other, and Alt while dragging frees the rotation. Things placed this way can end up unusable by Sims, so it is a decorating tool first.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": null
+    },
+    {
+      "section_id": 114,
+      "game_id": 6,
+      "section_type": "mechanic",
+      "name": "Kaos mode and Revolution mode",
+      "card": "Two different games. Kaos is score attack against a clock in one zone at a time: you extend the time by hitting the objectives that pop up mid-riot rather than by surviving. Revolution is the story — a chain of missions per zone with objectives handed out by the resistance, and it is where characters and zones unlock.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": null
+    },
+    {
+      "section_id": 115,
+      "game_id": 6,
+      "section_type": "mechanic",
+      "name": "Fighting the Corporation",
+      "card": "Corporation troops shoot from range and arrive in groups, so open ground kills you. Fight along the shopfronts and stalls where you can break line of sight, pick up whatever weapon the last one dropped, and use thrown objects and the crowd as cover. Melee is only for one straggler at a time.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": null
+    },
+    {
+      "section_id": 116,
+      "game_id": 6,
+      "section_type": "mechanic",
+      "name": "Unlocking characters",
+      "card": "Characters come from Revolution progress, not from Kaos scores. Each one plays the same but they are gated behind clearing missions in the zones, so a run through Revolution is what opens up Kaos rather than the other way round.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": null
+    },
+    {
+      "section_id": 117,
+      "game_id": 2,
+      "section_type": "mechanic",
+      "name": "Mining and the run timer",
+      "card": "Weapons fire themselves; your job is where to stand and what to mine. Mining is not a side activity — it is where the resources for upgrades come from, so a run spent only kiting is a run that ends underpowered. Each stage runs to a timer and then a descent, with the difficulty stepping up each time.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": null
+    },
+    {
+      "section_id": 118,
+      "game_id": 2,
+      "section_type": "mechanic",
+      "name": "Classes",
+      "card": "Each dwarf class comes with its own weapon pool and its own movement kit, and that combination decides how you play far more than any single upgrade. Try one class over several runs rather than switching each time: the upgrades that matter are the ones that stack with what the class already does.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": null
+    },
+    {
+      "section_id": 119,
+      "game_id": 2,
+      "section_type": "mechanic",
+      "name": "Upgrades and overclocks",
+      "card": "Levelling offers a choice of upgrades, and taking a little of everything is the common way to lose. Pick one weapon to carry the run and feed it, then spend the rest on survivability. Overclocks change what a weapon is for rather than making it bigger, so read what one removes as well as what it adds.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": null
+    },
+    {
+      "section_id": 120,
+      "game_id": 2,
+      "section_type": "enemy",
+      "name": "Exploder",
+      "card": "Summary: Large orange glyphids that walk into you and detonate in a wide blast.\nWeak points: Fragile, and the blasts chain, so one popped early clears the group behind it.\nTips: Weapons fire themselves, so it dies where you stand - keep distance and the blast lands in the swarm instead.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": "seed-1.1"
+    },
+    {
+      "section_id": 121,
+      "game_id": 2,
+      "section_type": "enemy",
+      "name": "Praetorian",
+      "card": "Summary: A large melee glyphid with far more health than anything else in the wave.\nWeak points: Slow enough to kite indefinitely while the rest of the swarm is cleared.\nTips: It digs through terrain to reach you, so rock is not a wall - pick the exit lane before it arrives.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": "seed-1.1"
+    },
+    {
+      "section_id": 122,
+      "game_id": 2,
+      "section_type": "enemy",
+      "name": "Acid Spitter",
+      "card": "Summary: Ranged glyphids that hold a medium distance, fire purple acid and back away instead of closing in.\nWeak points: Fragile, and they retreat rather than fight, so walking at them is what kills them.\nTips: Orbiting a swarm drags you through their fire - turn into the spitters and clear the line.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": "seed-1.1"
+    },
+    {
+      "section_id": 123,
+      "game_id": 2,
+      "section_type": "enemy",
+      "name": "Mactera",
+      "card": "Summary: Flying enemies that cross walls, vines and voids as if the terrain were not there.\nWeak points: The common ones drift rather than hunt and can be walked around; the elites chase you.\nTips: Mining a pocket does nothing against them, so no dug corridor is safe while Mactera are up.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": "seed-1.1"
+    },
+    {
+      "section_id": 124,
+      "game_id": 2,
+      "section_type": "boss",
+      "name": "Dreadnought Twins",
+      "card": "Summary: Two smaller Dreadnoughts at once - the Lacerator chases and leaps, the Arbalest hangs back firing fireball spreads.\nWeak points: Neither is as tough as a full Dreadnought on its own.\nPhases: Let their health bars drift apart and both turn immune while they heal the gap closed.\nTips: Split fire evenly rather than burning one down, and the healing never starts.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": "seed-1.1"
+    },
+    {
+      "section_id": 125,
+      "game_id": 2,
+      "section_type": "item",
+      "name": "Red Sugar",
+      "card": "Summary: The glowing red crystals in the cave walls, mined for an instant heal.\nUses: The only healing during a stage, apart from the gold heal at the shop between stages.\nTips: It cannot be banked, so leave a node standing near where you fight and come back once a wave has hurt you.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": "seed-1.1"
+    },
+    {
+      "section_id": 126,
+      "game_id": 2,
+      "section_type": "item",
+      "name": "Nitra",
+      "card": "Summary: The resource that pays for weapons rather than for your dwarf.\nUses: Buys weapon upgrade cards at the between-stage shop and rerolls the artifact choice from the Supply Pod.\nTips: No nitra means an underleveled weapon however much gold you mined, so keep mining it for whichever weapon carries the run.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": "seed-1.1"
+    },
+    {
+      "section_id": 127,
+      "game_id": 2,
+      "section_type": "item",
+      "name": "Gold",
+      "card": "Summary: The general currency, mined from the walls and dropped by lootbugs.\nUses: Buys player stat upgrades between stages, rerolls shop stock and level-up cards, and pays for a fifty percent heal.\nTips: There is no shop after the final stage, so gold still in hand by then only buys rerolls.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": "seed-1.1"
+    },
+    {
+      "section_id": 128,
+      "game_id": 1,
+      "section_type": "boss",
+      "name": "Dark Link",
+      "card": "Summary: Your own shadow, fought in the flooded illusion room partway through the Water Temple.\nWeak points: He mirrors and blocks sword attacks but has no answer to the Megaton Hammer or Din's Fire.\nTips: Hammer him as he perches on your held-out blade - trading ordinary swings is what drags the fight out.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": "seed-1.1"
+    },
+    {
+      "section_id": 129,
+      "game_id": 1,
+      "section_type": "boss",
+      "name": "Phantom Ganon",
+      "card": "Summary: The Forest Temple boss, who rides out of the wall paintings before taking to the air.\nWeak points: An arrow drops the rider, and his energy ball comes back at him off a plain sword slash.\nPhases: Only one of the two riders is real, so watch the paintings rather than the room.\nTips: Keep the rally going until the ball lands, then slash him while he is grounded.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": "seed-1.1"
+    },
+    {
+      "section_id": 130,
+      "game_id": 1,
+      "section_type": "boss",
+      "name": "Morpha",
+      "card": "Summary: The Water Temple boss, an amoeba whose red nucleus swims the flooded room and lashes at you with water tentacles.\nWeak points: The nucleus is the only part that can be hurt, and the hookshot drags it onto the floor.\nTips: Pull it in, slash it while it is beached, and fight from a corner so the tentacles come from one side.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": "seed-1.1"
+    },
+    {
+      "section_id": 131,
+      "game_id": 1,
+      "section_type": "enemy",
+      "name": "ReDead and Gibdo",
+      "card": "Summary: Corpses whose scream freezes you in place before they grab on and drain hearts, the bandaged Gibdos hitting hardest.\nWeak points: The Sun's Song stops any of them where they stand, leaving free hits or a clear walk past.\nTips: Play it as one turns toward you, not after the scream lands, and mash buttons to shake off a grab.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": "seed-1.1"
+    },
+    {
+      "section_id": 132,
+      "game_id": 1,
+      "section_type": "enemy",
+      "name": "Wallmaster",
+      "card": "Summary: The giant hand that drops from the ceiling and carries you back to the dungeon entrance.\nWeak points: Slow and fragile once landed, so it only threatens you while you are standing still.\nTips: Watch for the shadow spreading on the floor around you, step out of it, then kill it before it climbs back up.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": "seed-1.1"
+    },
+    {
+      "section_id": 133,
+      "game_id": 1,
+      "section_type": "item",
+      "name": "Bottles",
+      "card": "Summary: Four bottles exist, and what you keep in them matters more than most items.\nUses: A caught fairy revives you the moment you die, Blue Fire from the Ice Cavern melts red ice, and bugs dig up the soil patches hiding Gold Skulltulas.\nTips: Never enter a dungeon with all four empty, since a fairy is the cheapest extra life in the game.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": "seed-1.1"
+    },
+    {
+      "section_id": 134,
+      "game_id": 1,
+      "section_type": "item",
+      "name": "Iron Boots",
+      "card": "Summary: The boots from the Ice Cavern that sink you to the bottom of any water and hold you against wind.\nUses: Needed to reach and move around the Water Temple, and to push through the gusts in the Shadow Temple.\nTips: The Zora Tunic is what lets you breathe down there, and on N64 the boots are swapped from the equipment menu every time.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": "seed-1.1"
+    },
+    {
+      "section_id": 135,
+      "game_id": 1,
+      "section_type": "item",
+      "name": "Hookshot and Longshot",
+      "card": "Summary: The Forest Temple gives the Hookshot and the Water Temple upgrades it to the Longshot, which reaches twice as far.\nUses: Pulls you to wood, ladders and marked targets, and drags distant chests, items and Skulltula tokens to you.\nTips: When a ledge looks impossible, look for wood or a target rather than a jump.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": "seed-1.1"
+    }
   ],
   "genre_patterns": [
-    {"pattern_id": 1, "genre_tags": "soulslike", "card": "Soulslike basics: learn dodge timing, stamina management, and safe heal windows. Summon allies when available; upgrade vigor before glass-cannon damage.", "source_license": "bonsAI-maintainer"}
+    {
+      "pattern_id": 1,
+      "genre_tags": "soulslike",
+      "card": "Soulslike basics: learn dodge timing, stamina management, and safe heal windows. Summon allies when available; upgrade vigor before glass-cannon damage.",
+      "source_license": "bonsAI-maintainer"
+    }
   ]
 }

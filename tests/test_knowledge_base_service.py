@@ -383,11 +383,18 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
     self.assertIn("How do I get through Shadow Temple invisible floors?", strategy)
 
   def test_chip_pool_still_fills_from_one_kind_when_a_title_has_only_one(self):
-    """The direction interleaving must not cost anything.
+    """The direction interleaving must not cost anything: the pool is still six.
 
-    Left 4 Dead 2 files seventeen cards as `mechanic` and has two bosses and one area, so a
-    per-kind cap would have shrunk its pool. Round-robin keeps drawing from whatever is left
-    once the other kinds run dry, so it returns the same six it always did.
+    Left 4 Dead 2 was the lopsided title -- seventeen cards filed as `mechanic` against two
+    bosses and one area -- so a per-kind cap would have shrunk its pool. Round-robin keeps
+    drawing from whatever is left once the other kinds run dry, so the count holds either way.
+
+    **The pool composition assertion was relaxed on 2026-08-29 and the reason matters.** It used
+    to pin "exactly three of the six say *What should I know about*", which was true only because
+    the six special infected and a throwable were mis-filed as `mechanic`. Re-typing them under
+    Phase 5 fixed the data, so that number is now 1, and re-pinning it at 1 would just be the same
+    mistake against newer data. What the row actually protects is the count, plus the fact that
+    interleaving reaches more than one kind -- so that is what is asserted.
     """
     settings = {
       "use_local_knowledge_base": True,
@@ -396,7 +403,10 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
     result = suggest_chip_candidates(settings, app_id="550", app_name="Left 4 Dead 2")
     strategy = [c.text for c in result.candidates if c.domain == "strategy"]
     self.assertEqual(len(strategy), 6)
-    self.assertEqual(sum(1 for t in strategy if t.startswith("What should I know about ")), 3)
+    openers = {t.split(" ")[0] + " " + t.split(" ")[1] for t in strategy}
+    self.assertGreaterEqual(
+      len(openers), 3, "interleaving should reach several kinds, got: %r" % (strategy,)
+    )
 
   def test_enemy_and_item_cards_get_their_own_chip_wording(self):
     """"What should I know about Exploder?" is the fallback template, and it reads as though
