@@ -2329,3 +2329,26 @@ never reaches compat retrieval in production — the same known-miss shape as `V
 `test_measured_reach_on_the_drafted_intents`) rather than reworded, because rewording it until it
 routes would tune it against the router and undo its blindness. That a blind row immediately found
 a hole the card-derived rows never could is the method working, not a defect in the row.
+
+**Batch 2, added 2026-08-28 — thirty-six more rows, same method, same ask.** `V2-BLIND-H21` …
+`V2-BLIND-H56`: 34 strategy rows across 11 titles and 2 compat rows, every one targeting a card
+that carried no eval row of any kind before. Write-up and full row list:
+[kb-blind-holdout-rows-batch2-2026-08-28.md](kb-blind-holdout-rows-batch2-2026-08-28.md).
+
+Why a second batch rather than stopping at the first measurement: the arms differ by under two
+points and the interval half-width at n=56 is about ten, so the overlap above is mostly a
+sample-size problem rather than an answer. **Labelled holdout is now 92** (holdout overall 84 →
+120). By the same R4 rule this file keeps applying, the 85.7% / 83.9% figures in the paragraph
+above are now the *previous* series and are not comparable to anything measured from here on. **No
+measurement was run while writing batch 2**, for the reason batch 1 gives; the first run against
+the 92-row holdout happens after that change merges.
+
+Batch 2 found the same hole again before it was scored: `V2-BLIND-H55` (*"the game drops me back
+to the library a few minutes in"* — a crash with the word *crash* never used) also fails to reach
+compat retrieval, and is named in the reach pin alongside H19 rather than reworded. **Two of the
+four blind compat rows now miss**, which is a reach limit of the D16 router worth its own roadmap
+entry, not a defect in either row.
+
+**What is being asked has not changed** — endorse the method and let these stand as the holdout
+baseline once next measured. Batch 2 rides on the same answer; a "no" on the method retires both
+batches together.

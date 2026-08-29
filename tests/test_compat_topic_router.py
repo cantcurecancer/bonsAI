@@ -133,11 +133,17 @@ class CompatTopicRouterTests(unittest.TestCase):
         """The number D16 was decided on, pinned so a rule edit cannot quietly undo it.
 
         Holdout compat intents were not read while the rules were written — they are the
-        blind check. Two cases are known misses and are named here rather than patched
-        for, both the same shape: a symptom described without naming any troubleshooting
-        term. V2-C-04 sits in tune; V2-BLIND-H19 (written blind 2026-08-28 under D37)
-        sits in holdout — rewording it until it routes would tune it against the router
-        and undo the blindness it exists to provide, so the miss is recorded instead.
+        blind check. Three cases are known misses and are named here rather than patched
+        for, all the same shape: a symptom described without naming any troubleshooting
+        term. V2-C-04 sits in tune; V2-BLIND-H19 and V2-BLIND-H55 (both written blind
+        under D37 — H19 in the first batch, H55 in the second) sit in holdout — rewording
+        either until it routes would tune it against the router and undo the blindness it
+        exists to provide, so the misses are recorded instead.
+
+        Two of the four blind compat rows miss, which is the finding rather than the
+        noise: the router reaches a question that names a troubleshooting term and not
+        one that only describes the symptom. That is the D16 gate working as specified
+        and is a real reach limit, filed on the roadmap rather than patched here.
         """
         data = json.loads(
             (REPO_ROOT / "tests" / "fixtures" / "kb_eval_v2.json").read_text(encoding="utf-8")
@@ -149,7 +155,7 @@ class CompatTopicRouterTests(unittest.TestCase):
         missed_holdout = [
             q["id"] for q in holdout if not question_targets_compat_corpus(q["query"])
         ]
-        self.assertEqual(missed_holdout, ["V2-BLIND-H19"])
+        self.assertEqual(missed_holdout, ["V2-BLIND-H19", "V2-BLIND-H55"])
 
         missed_tune = [
             q["id"]
