@@ -1,9 +1,14 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { composePresetSeedsWithSessionRag } from "./composePresetSeedsWithSessionRag";
+import {
+  composePresetSeedsWithSessionRag,
+  pickCarouselChipWithSessionRag,
+  setSessionRagCarouselCandidates,
+} from "./composePresetSeedsWithSessionRag";
 import { setFrozenTestChips } from "../../data/presets";
 import type { PresetPrompt } from "../../data/presets";
 import {
   composeSessionPresets,
+  pickNextCarouselChip,
   SESSION_RAG_CHIP_PROBABILITY,
   type SessionRagChipCandidate,
 } from "./sessionRagComposer";
@@ -209,5 +214,124 @@ describe("frozen test chips suppress RAG mixing", () => {
       random: () => 0,
     });
     expect(out.some((p) => p.text === "How do I beat Glyphid Dreadnought?")).toBe(true);
+  });
+});
+
+describe("pickNextCarouselChip — the rotation half of the guarantee", () => {
+  afterEach(() => setFrozenTestChips([]));
+
+  const candidates = [rag("How do I beat Glyphid Dreadnought?"), rag("How do I use Red Sugar?")];
+  const fallback = () => staticSeed("static-chip");
+
+  it("forces a corpus chip when none is on screen, whatever the roll", () => {
+    // The bug this closes, measured on device 2026-08-29: the seeded corpus chip was carried out
+    // of the three-slot window within about four ticks and rotation could only ever replace it
+    // with another static preset, so it never came back for the rest of the session.
+    const picked = pickNextCarouselChip({
+      historyTexts: new Set(["a", "b", "c"]),
+      visibleTexts: new Set(["a", "b", "c"]),
+      ragCandidates: candidates,
+      staticFallback: fallback,
+      random: () => 0.99,
+    });
+    expect(picked.text).toBe("How do I beat Glyphid Dreadnought?");
+    expect(picked.ragTip).toBe(true);
+  });
+
+  it("rolls normally once a corpus chip is already on screen", () => {
+    const onScreen = new Set(["a", "How do I beat Glyphid Dreadnought?", "c"]);
+    const lost = pickNextCarouselChip({
+      historyTexts: onScreen,
+      visibleTexts: onScreen,
+      ragCandidates: candidates,
+      staticFallback: fallback,
+      random: () => 0.99,
+    });
+    expect(lost.text).toBe("static-chip");
+
+    const won = pickNextCarouselChip({
+      historyTexts: onScreen,
+      visibleTexts: onScreen,
+      ragCandidates: candidates,
+      staticFallback: fallback,
+      random: () => 0,
+    });
+    expect(won.text).toBe("How do I use Red Sugar?");
+  });
+
+  it("reads the guarantee off the visible window, not all of history", () => {
+    // A corpus chip still in history but scrolled off screen is precisely the reported state, so
+    // scoring the guarantee against history would leave the bug in place.
+    const picked = pickNextCarouselChip({
+      historyTexts: new Set(["How do I beat Glyphid Dreadnought?", "a", "b", "c"]),
+      visibleTexts: new Set(["a", "b", "c"]),
+      ragCandidates: candidates,
+      staticFallback: fallback,
+      random: () => 0.99,
+    });
+    expect(picked.text).toBe("How do I use Red Sugar?");
+  });
+
+  it("never repeats a chip still in history, and falls back when all are spent", () => {
+    const all = new Set(candidates.map((c) => c.text));
+    expect(
+      pickNextCarouselChip({
+        historyTexts: all,
+        visibleTexts: new Set(["a", "b", "c"]),
+        ragCandidates: candidates,
+        staticFallback: fallback,
+        random: () => 0,
+      }).text,
+    ).toBe("static-chip");
+  });
+
+  it("stays static when there are no candidates at all", () => {
+    expect(
+      pickNextCarouselChip({
+        historyTexts: new Set(),
+        visibleTexts: new Set(),
+        ragCandidates: [],
+        staticFallback: fallback,
+        random: () => 0,
+      }).text,
+    ).toBe("static-chip");
+  });
+
+  it("prefers a game chip over a shared Deck tip when forcing", () => {
+    const picked = pickNextCarouselChip({
+      historyTexts: new Set(),
+      visibleTexts: new Set(),
+      ragCandidates: [rag("Any known Proton issues?", "troubleshooting"), rag("How do I beat X?")],
+      staticFallback: fallback,
+      random: () => 0.99,
+    });
+    expect(picked.text).toBe("How do I beat X?");
+  });
+
+  it("stands down completely while a frozen QA batch is pinned", () => {
+    // A pinned batch is a deterministic run; rotating a corpus chip in would end it silently.
+    setFrozenTestChips(["pinned one", "pinned two", "pinned three"]);
+    setSessionRagCarouselCandidates(candidates);
+    expect(
+      pickCarouselChipWithSessionRag({
+        historyTexts: new Set(["a", "b", "c"]),
+        visibleTexts: new Set(["a", "b", "c"]),
+        staticFallback: fallback,
+      }).text,
+    ).toBe("static-chip");
+    setSessionRagCarouselCandidates([]);
+  });
+
+  it("draws from the published candidate list when none is passed", () => {
+    setSessionRagCarouselCandidates(candidates);
+    expect(
+      pickCarouselChipWithSessionRag({
+        historyTexts: new Set(["a", "b", "c"]),
+        visibleTexts: new Set(["a", "b", "c"]),
+        staticFallback: fallback,
+        random: () => 0.99,
+      }).text,
+    ).toBe("How do I beat Glyphid Dreadnought?");
+    setSessionRagCarouselCandidates([]);
   });
 });

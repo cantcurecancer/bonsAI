@@ -14,7 +14,10 @@ import type { AskAttachment } from "../types/bonsaiUi";
 import { type AskModeId, type UnifiedInputPersistenceMode } from "../data/bonsaiSettingsSchema";
 import { buildResponseText } from "../utils/appliedTuningText";
 import { detectPromptCategory, getContextualPresets, getRandomPresets, type PresetPrompt } from "../data/presets";
-import { composePresetSeedsWithSessionRag } from "../features/preset-carousel/composePresetSeedsWithSessionRag";
+import {
+  composePresetSeedsWithSessionRag,
+  setSessionRagCarouselCandidates,
+} from "../features/preset-carousel/composePresetSeedsWithSessionRag";
 import type { SessionRagChipCandidate } from "../features/preset-carousel/sessionRagComposer";
 import {
   CUSTOM_RESOLUTION_INPUT_PREFIX,
@@ -289,6 +292,7 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
     ): Promise<SessionRagChipCandidate[]> => {
       if (!a.useLocalKnowledgeBase) {
         ragCandidatesCacheRef.current = { appId, candidates: [] };
+        setSessionRagCarouselCandidates([]);
         return [];
       }
       if (
@@ -303,6 +307,9 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
         appName,
       });
       ragCandidatesCacheRef.current = { appId, candidates };
+      // The carousel tick draws from these too, or the corpus chip seeded below is carried out of
+      // the window within about four ticks and never returns.
+      setSessionRagCarouselCandidates(candidates);
       return candidates;
     },
     [a.useLocalKnowledgeBase],

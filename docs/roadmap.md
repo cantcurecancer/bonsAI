@@ -61,22 +61,27 @@ seconds; anything that would otherwise have to be re-measured goes there rather 
   own table showed `vector_only` 83.7% [76.1, 91.3] against `keyword` 70.7% [60.9, 80.4], the closest thing to a separation these fixtures
   have ever produced. The sentence is not wrong about the pair it names; it just does not look at the pair that moved. Make the verdict
   consider every arm, or say which pair it is judging.
-- ★★★★ **Corpus chips vanish about 21 seconds after the panel opens** — found on device 2026-08-29 while running **PHASE4-CHIPS-01**, and it
-  is the exact failure the Phase 4 chip guarantee was written to prevent, just delayed. **Measured, with DRG Survivor running:** a fresh
-  panel open shows one game chip with its **Tip** badge, present in every 3s sample from 0s to 21s; from 24s onward the badge count and the
-  corpus-chip count are both **0** and stay there — 42 more seconds in that run, and 120 seconds in an earlier one. Reproduced twice, once
-  after a panel reopen. It is not the carousel merely scrolling: the count is taken over every rendered chip label, not the visible window,
-  and the chip never comes back, so the list is being **recomposed** without corpus chips rather than rotated past them.
-  **The backend is not at fault** — probed directly on the Deck against the real settings, `get_session_rag_chip_candidates` returns **8
-  candidates** (6 `strategy` + 2 `compat`) for `2321470` while all this is happening. So the candidates exist and the screen does not show
-  them, which is precisely what the V1 guarantee in
-  [sessionRagComposer.ts](../src/features/preset-carousel/sessionRagComposer.ts) exists to make impossible ("a player with a covered game
-  could open the plugin and see no sign the corpus exists"). The guarantee is correct at first render and never re-applied, or the
-  candidate list the reseed composes against has gone empty by then — **not yet separated**, and worth separating before any fix, because
-  the second shape is the same swallowed-error pattern CLAUDE.md flags for this very RPC.
-  **Two consequences worth knowing:** only ever **one** of the 6 game chips reaches the screen, so the other five are effectively
-  unreachable; and that makes **PHASE4-CHIPS-01**'s clipping check unrunnable on any title, because the long labels never render. Detail
-  and geometry in [testing.md](testing.md).
+- ★★★★ ~~**Corpus chips vanish about 21 seconds after the panel opens**~~ — **found on device and FIXED at the desk 2026-08-29; device
+  re-check owed.** Found while running **PHASE4-CHIPS-01**, and it was the exact failure the Phase 4 chip guarantee was written to prevent,
+  just delayed. **Measured, with DRG Survivor running:** a fresh panel open showed one game chip with its **Tip** badge in every 3s sample
+  from 0s to 21s; from 24s on, the badge count and the corpus-chip count were both **0** and stayed there — 42 more seconds in that run and
+  120 in an earlier one. Reproduced twice, once across a panel reopen. The backend was never at fault: probed directly against real settings
+  on the Deck, `get_session_rag_chip_candidates` returned **8 candidates** (6 `strategy` + 2 `compat`) throughout.
+  **Neither hypothesis in the first write-up was right** — the guarantee did not fail, and the candidate list did not go empty. The cause is
+  simpler and was found by reading the tick: `composeSessionPresets` applies the session-RAG mix **once, when the carousel is seeded**, and
+  the auto-advance tick then replenished itself straight from the static preset pool via `getRandomPresetExcluding`, which has no access to
+  RAG candidates at all. History caps at `CAROUSEL_HISTORY_MAX` 5 behind a 3-wide window, so at `CAROUSEL_STEP_MS` 5800 the seeded corpus
+  chip is carried out of the window after about four ticks — **~23s, against the ~21s measured** — and nothing could ever put another back.
+  **The fix** gives rotation the same guarantee the seeding had: `pickNextCarouselChip`
+  ([sessionRagComposer.ts](../src/features/preset-carousel/sessionRagComposer.ts)) forces a corpus chip when none is in the **visible
+  window** (not merely somewhere in history — that distinction is the bug), rolls the usual ~30% otherwise, dedupes against history, prefers
+  game chips over shared Deck tips, and stands down entirely while a frozen QA batch is pinned. Candidates reach the tick through a
+  module-level holder, following the precedent `runtimeFrozenChipTexts` sets in [presets.ts](../src/data/presets.ts) for the same reason —
+  the alternative was threading a list through six layers and a hand-written memo compare for a value that is global by nature.
+  **A second bug fixed with it:** only **one** of the 6 game chips could ever reach the screen; all six now rotate through as history trims.
+  **Still owed:** the on-Deck re-check, which is also what unblocks **PHASE4-CHIPS-01**'s clipping direction — the long labels can render
+  now. One honest limit: the carousel stops advancing at `PRESET_CAROUSEL_ACTIVE_MS` 60s, so the guarantee cannot re-fire after that; it
+  makes a corpus chip very likely to be on screen when it freezes, not certain. 8 unit tests in `sessionRagComposer.test.ts`.
 - ★★ **A troubleshooting question that only describes the symptom reaches no tips** — found 2026-08-28 by the second batch of blind
   holdout rows, before any of them were scored. The compat router reaches a question that **names** a topic and not one that only says
   what is going wrong: *"the game drops me back to the library a few minutes in"* (`V2-BLIND-H55`) never routes, because the word *crash*

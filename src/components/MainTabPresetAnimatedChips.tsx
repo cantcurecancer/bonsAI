@@ -24,7 +24,9 @@ import {
   carouselTrackOffsetPx,
   mergeContextualSeeds,
   seedsKeyFrom,
+  visibleWindowTexts,
 } from "../features/preset-carousel/carouselState";
+import { pickCarouselChipWithSessionRag } from "../features/preset-carousel/composePresetSeedsWithSessionRag";
 import { BONSAI_FOREST_GREEN } from "../features/unified-input/constants";
 import { joinPresetWithRunningGame } from "../utils/joinPresetWithRunningGame";
 import { registerNavFocus, type NavRefHolder } from "../utils/navFocusRegistry";
@@ -559,7 +561,14 @@ function MainTabPresetVerticalCarousel(
 
       setCarousel((prev) => {
         const texts = new Set(prev.history.map((s) => s.text));
-        const nextPreset = getRandomPresetExcluding(texts, samplerOptions);
+        // Rotation has to be able to draw corpus chips, not only static presets: the session-RAG
+        // mix is applied when the carousel is seeded, so replenishing from the static pool alone
+        // carried every corpus chip out of the window within about four ticks, permanently.
+        const nextPreset = pickCarouselChipWithSessionRag({
+          historyTexts: texts,
+          visibleTexts: visibleWindowTexts(prev.history, prev.focusIndex),
+          staticFallback: () => getRandomPresetExcluding(texts, samplerOptions),
+        });
         const advanced = advanceCarouselFocus(prev.history, prev.focusIndex, nextPreset);
         return advanced;
       });

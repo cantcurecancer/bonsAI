@@ -22,7 +22,7 @@
     },
     {
       "path": "src/hooks/useBonsaiAskOrchestration.ts",
-      "lines": 1490,
+      "lines": 1497,
       "role": ""
     },
     {
@@ -61,12 +61,12 @@
       "role": ""
     },
     {
-      "path": "py_modules/backend/services/local_ollama_setup_service.py",
-      "lines": 915,
+      "path": "src/components/MainTabPresetAnimatedChips.tsx",
+      "lines": 924,
       "role": ""
     },
     {
-      "path": "src/components/MainTabPresetAnimatedChips.tsx",
+      "path": "py_modules/backend/services/local_ollama_setup_service.py",
       "lines": 915,
       "role": ""
     },

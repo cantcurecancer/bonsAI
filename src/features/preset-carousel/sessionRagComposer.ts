@@ -122,3 +122,53 @@ export function composeSessionPresets({
 
   return out;
 }
+
+export type PickNextCarouselChipArgs = {
+  /** Every text in carousel history. A chip already here is never picked again. */
+  historyTexts: ReadonlySet<string>;
+  /** The three texts on screen right now — see carouselState.visibleWindowTexts. */
+  visibleTexts: ReadonlySet<string>;
+  ragCandidates: SessionRagChipCandidate[];
+  /** What to show when no RAG chip is chosen; the caller binds this to getRandomPresetExcluding. */
+  staticFallback: () => PresetPrompt;
+  ragProbability?: number;
+  /** Injectable RNG for tests (returns [0, 1)). */
+  random?: () => number;
+};
+
+/**
+ * The chip the auto-advance tick should append next.
+ *
+ * `composeSessionPresets` above runs **once**, when the carousel is seeded. Rotation then
+ * replenished itself straight from the static preset pool, so every corpus chip was carried out of
+ * the window within about four ticks and none could ever come back — measured on device
+ * 2026-08-29 as "present to 21s, gone from 24s, never again", with the backend supplying eight
+ * candidates the whole time. The guarantee was real but applied at one instant; this is the same
+ * guarantee applied to the tick.
+ *
+ * The two text sets are not interchangeable. Dedupe reads `historyTexts` so a chip is not repeated
+ * while it is still remembered; the guarantee reads `visibleTexts`, because a corpus chip sitting
+ * in history off screen is exactly the state the user complains about.
+ */
+export function pickNextCarouselChip({
+  historyTexts,
+  visibleTexts,
+  ragCandidates,
+  staticFallback,
+  ragProbability = SESSION_RAG_CHIP_PROBABILITY,
+  random = Math.random,
+}: PickNextCarouselChipArgs): PresetPrompt {
+  if (ragCandidates.length === 0) {
+    return staticFallback();
+  }
+  const available = orderCandidates(ragCandidates).filter((c) => !historyTexts.has(c.text));
+  if (available.length === 0) {
+    return staticFallback();
+  }
+  // The guarantee, at rotation time: nothing on screen is from the corpus, so the next chip is.
+  const corpusOnScreen = ragCandidates.some((c) => visibleTexts.has(c.text));
+  if (!corpusOnScreen) {
+    return toPresetPrompt(available[0]!);
+  }
+  return random() < ragProbability ? toPresetPrompt(available[0]!) : staticFallback();
+}

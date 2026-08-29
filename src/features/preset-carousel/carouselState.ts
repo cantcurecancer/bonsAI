@@ -33,6 +33,24 @@ export function carouselTrackOffsetPx(focusIndex: number): number {
   return Math.max(0, focusIndex - 1) * CAROUSEL_ROW_HEIGHT_PX;
 }
 
+/**
+ * The three texts actually on screen, centred on `focusIndex` — the same window
+ * `carouselTrackOffsetPx` scrolls to.
+ *
+ * Distinct from "every text in history" on purpose. History runs to CAROUSEL_HISTORY_MAX and the
+ * window shows three of it, so a chip can be in history and off screen. Anything asking "is the
+ * user currently seeing one of these?" must ask this, not the history set.
+ */
+export function visibleWindowTexts(
+  history: readonly PresetPrompt[],
+  focusIndex: number,
+): Set<string> {
+  return new Set(
+    [history[focusIndex - 1]?.text, history[focusIndex]?.text, history[focusIndex + 1]?.text]
+      .filter((t): t is string => Boolean(t)),
+  );
+}
+
 export type CarouselAdvanceResult = {
   history: PresetPrompt[];
   focusIndex: number;

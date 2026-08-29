@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
   "fileCount": 329,
-  "edgeCount": 782,
+  "edgeCount": 783,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -339,6 +339,7 @@
         "src/data/askMode.ts",
         "src/data/presets.ts",
         "src/features/preset-carousel/carouselState.ts",
+        "src/features/preset-carousel/composePresetSeedsWithSessionRag.ts",
         "src/features/unified-input/constants.ts",
         "src/utils/joinPresetWithRunningGame.ts",
         "src/utils/navFocusRegistry.ts",
@@ -1400,6 +1401,7 @@
         "src/features/preset-carousel/sessionRagComposer.ts"
       ],
       "importedBy": [
+        "src/components/MainTabPresetAnimatedChips.tsx",
         "src/features/preset-carousel/sessionRagComposer.test.ts",
         "src/hooks/useBonsaiAskOrchestration.ts"
       ]

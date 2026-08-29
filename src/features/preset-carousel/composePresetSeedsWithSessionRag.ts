@@ -1,14 +1,20 @@
 /**
  * Title: Preset seeds with session RAG
- * Purpose: Compose preset carousel seeds with session RAG unless frozen QA triple is active.
- * Used for: MainTab preset carousel initialization hook.
+ * Purpose: Compose carousel seeds, and pick rotation chips, with session RAG unless a frozen QA
+ *          batch is active.
+ * Used for: MainTab preset carousel initialization hook and the carousel's auto-advance tick.
  * Solves: Gate RAG mixing behind a frozen QA batch (settings-driven or the compile-time
  *         constant) so a deterministic run is not reseeded out from under the tester.
  * Does not: Advance carousel focus — see carouselState and MainTab carousel UI.
  */
 import { TEMP_PRESET_CAROUSEL_FROZEN, frozenTestChipsActive } from "../../data/presets";
 import type { PresetPrompt } from "../../data/presets";
-import { composeSessionPresets, type SessionRagChipCandidate } from "./sessionRagComposer";
+import {
+  composeSessionPresets,
+  pickNextCarouselChip,
+  type PickNextCarouselChipArgs,
+  type SessionRagChipCandidate,
+} from "./sessionRagComposer";
 
 export type ComposePresetSeedsWithSessionRagArgs = {
   staticSeeds: PresetPrompt[];
@@ -25,4 +31,44 @@ export function composePresetSeedsWithSessionRag(args: ComposePresetSeedsWithSes
     return [...args.staticSeeds];
   }
   return composeSessionPresets(args);
+}
+
+/**
+ * Session RAG candidates for the running game, as last fetched.
+ *
+ * Module-level for the same reason `runtimeFrozenChipTexts` is (see data/presets.ts): the carousel
+ * tick needs it, the tick lives inside a memoised component five props deep from the hook that
+ * fetches it, and the value is global by nature — there is one running game. The alternative is
+ * threading a list through useBonsaiAskOrchestration, index.tsx, useMainTabPayload, MainTab,
+ * MainTabPresetRow and MainTabPresetAnimatedChips plus that component's hand-written memo compare,
+ * for a value none of those layers has any opinion about.
+ */
+let sessionRagCandidates: SessionRagChipCandidate[] = [];
+
+/** Publish the candidates the carousel tick may draw from. Empty restores static-only rotation. */
+export function setSessionRagCarouselCandidates(candidates: SessionRagChipCandidate[]): void {
+  sessionRagCandidates = [...candidates];
+}
+
+/** The candidates currently available to rotation. */
+export function getSessionRagCarouselCandidates(): SessionRagChipCandidate[] {
+  return sessionRagCandidates;
+}
+
+export type PickCarouselChipArgs = Omit<PickNextCarouselChipArgs, "ragCandidates"> & {
+  /** Defaults to the published list; passed explicitly only by tests. */
+  ragCandidates?: SessionRagChipCandidate[];
+};
+
+/** Pick the next rotation chip, standing down entirely while a frozen QA batch is in force. */
+export function pickCarouselChipWithSessionRag(args: PickCarouselChipArgs): PresetPrompt {
+  // Same gate as the compose path: a frozen batch means the tester chose these exact chips, and
+  // rotating a RAG chip in would end the run without saying so.
+  if (TEMP_PRESET_CAROUSEL_FROZEN || frozenTestChipsActive()) {
+    return args.staticFallback();
+  }
+  return pickNextCarouselChip({
+    ...args,
+    ragCandidates: args.ragCandidates ?? sessionRagCandidates,
+  });
 }
