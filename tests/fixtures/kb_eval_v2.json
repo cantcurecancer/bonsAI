@@ -2582,7 +2582,7 @@
       "skill_level": "familiar",
       "input_style": "voice",
       "note": "Voice register. The chapter is called Sandtraps and almost nobody recalls that.",
-      "expect_section": "Antlions and the sand"
+      "expect_section": "Antlions"
     },
     {
       "id": "V2-S-HL2-07",
@@ -2613,7 +2613,7 @@
       ],
       "skill_level": "familiar",
       "input_style": "terse",
-      "expect_section": "Antlions and the sand"
+      "expect_section": "Pheropod (bugbait)"
     },
     {
       "id": "V2-S-HL2-09",

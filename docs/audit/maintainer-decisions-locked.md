@@ -2515,3 +2515,55 @@ each get their chip pool re-checked the way `PHASE4-CHIPS-01` does for Left 4 De
 **Not asked and not decided here:** whether the corpus should gain a *build / early-game orientation*
 card shape, which the same gap sheet asked for twice in free text. That is a bigger question than a
 `section_type` value and is filed on the roadmap rather than smuggled in under this decision.
+
+#### D39 follow-up (2026-08-29) — the Half-Life 2 half is done; the Hades half is blocked
+
+**Half-Life 2 — shipped, but not in the shape this decision wrote down.** D39 above says the two
+halves become an `enemy` and a `mechanic`. They became an `enemy` and an **`item`**. The reason is a
+card nobody had looked at when D39 was written: **`Sandtraps` (section 37) already carries the sand**
+— *"Rock to rock on the way out; after the Antlion Guard you keep the pheropod and use antlions to
+break the Combine bunkers."* A new `mechanic` card about sand would have been the **third** Half-Life
+2 card on the same subject, all three competing for the same query. So the pheropod became what it
+actually is — a thing you carry and throw, the same kind as `Gravity Gun` and the RPG — and the sand
+rule stayed with the antlions, because it is a fact *about the antlions* (they are blind, they feel
+vibration) rather than a rule of its own.
+
+Result: section 36 is now `enemy` **Antlions**, section 142 is `item` **Pheropod (bugbait)**. Both
+sentences are the original wording, split where the original card already changed subject; the only
+new words are the four needed to stop *"it reverses"* dangling. Both keep
+`combineoverwiki.net/wiki/Antlion` and CC-BY-SA-4.0, so the ATTRIBUTIONS entry gains a row rather
+than losing one. Half-Life 2 goes 8 cards to 9, spanning four kinds.
+
+The name carries **both** words the game uses — *pheropod* in dialogue, *bugbait* in the HUD — so a
+player who only ever saw one of them still reaches the card.
+
+**Two eval rows were repointed**, which is worth stating plainly because repointing a question after
+seeing how it scores is how a score gets quietly flattered:
+
+| Row | Was | Now |
+|---|---|---|
+| `V2-S-HL2-06` — *"there is a bit on the beach where you cant touch the sand and i keep dying"* | Antlions and the sand | **Antlions** |
+| `V2-S-HL2-08` — *"antlions how to control them"* | Antlions and the sand | **Pheropod (bugbait)** |
+
+**Both are on `tune`. No holdout row was touched**, so the honest ship gate is unaffected by this
+edit. 887 Python tests pass.
+
+**Hades — blocked, and not on schema or tooling.** The maintainer said on 2026-08-29 that they do
+not know the game well enough to supply the content. That is a real blocker, because the existing
+card cannot be split into six: **it names four of the six Infernal Arms** — the Stygian Blade, the
+Shield of Chaos, the Rail and the Bow. The Eternal Spear and the Twin Fists appear nowhere in the
+corpus. Splitting what exists yields four one-line cards and still leaves two weapons missing, which
+is motion rather than progress.
+
+Three ways out, none of them started, none needing a decision before the corpus republishes:
+
+1. **Source it.** A Hades wiki under CC-BY-SA-3.0 is already precedented in this corpus (Cyberpunk,
+   Fallout 4, Left 4 Dead 2 and GTA all use Fandom under exactly that licence, and D20's publish
+   policy already covers it). This removes the need for maintainer knowledge **and** upgrades the
+   cards from `fallback_no_source` to a sourced tier. Best option on the merits.
+2. **Split the four that exist** and leave the Spear and Fists absent, with the gap recorded rather
+   than hidden.
+3. **Leave section 89 alone** until either of the above is worth doing.
+
+Recommendation is (1). It is the only one that ends with six real cards, and it is the option that
+does not spend the maintainer's time on a game they have told us they do not know well.
