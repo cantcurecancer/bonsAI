@@ -15,7 +15,9 @@ choices are, and what happens either way. **Locked calls (2026-08-02 for D1–D6
 [Maintainer decisions locked](#maintainer-decisions-locked--2026-08-02); implement
 from that section when it disagrees with an option above.
 
-**None open.** D18 — the last one, raised 2026-08-05 by the step 11 friction test — was locked as
+**None open.** **D37**, the most recent — the blind holdout rows — was endorsed and locked
+2026-08-29, and the measurement it was gating was run the same day (see D37 for the numbers and the
+two findings that came out of them). Before that, D18 — raised 2026-08-05 by the step 11 friction test — was locked as
 option A on 2026-08-27 and implemented the same day.
 **D32, D34 and D35 are all locked and implemented** (2026-08-27) — three separate causes of the one
 *Clear cache* bug, which is now fixed and confirmed on device. **D33 is locked and implemented**
@@ -2268,7 +2270,56 @@ side-findings the confirmation run turned up are in
 
 ---
 
-### D37 — PROPOSED, NOT YET LOCKED (raised 2026-08-28) — Twenty blind holdout rows added to `kb_eval_v2`. Endorse them?
+### D37 — LOCKED (endorsed 2026-08-29) — Blind holdout rows added to `kb_eval_v2`. Endorse them?
+
+**Locked in the maintainer's words: "D37: i endorse it" (2026-08-29).** The method stands, and both
+batches — 56 rows in total, `V2-BLIND-H01` … `V2-BLIND-H56` — are the holdout baseline from here on.
+Not to be re-argued; what remains is measurement, not permission.
+
+**What the endorsement settles, so it is not re-litigated later:** writing a question from a bare
+metadata listing (id, title, `section_type`, game) plus the author's own knowledge of the title
+counts as blind, even though the author is the one certifying they did not read the card. The
+evidence for that claim is the written procedure and the automated title-word-leak check, not a
+guarantee — and that was visible when the call was made.
+
+**What it does not settle:** the wording of any individual row was explicitly not part of the ask.
+Any row can still be challenged on its merits; what cannot be re-opened is whether rows written
+this way belong in holdout at all.
+
+#### First measurement against the 92-row holdout, 2026-08-29 — the rows earned their keep
+
+Run after the rows merged (`ebd2361`) and after the endorsement, in that order, as promised.
+`nomic-embed-text` prompted, seed corpus `build/knowledge-base-test` manifest `2026.08.29` (same
+card content as `2026.08.28` — `data/kb/` is unchanged since `4a479b1`), same corpus for every arm.
+Run of record:
+[../archive/research/kb-embed-bakeoff-2026-08-29-arms.md](../archive/research/kb-embed-bakeoff-2026-08-29-arms.md).
+
+| Arm | holdout top-3 | CI | holdout top-1 | CI |
+|---|---|---|---|---|
+| keyword | 70.7% | [60.9, 80.4] | 51.1% | [41.3, 62.0] |
+| vector_only | **83.7%** | [76.1, 91.3] | **64.1%** | [54.3, 73.9] |
+| rrf_rerank_only | 71.7% | [62.0, 81.5] | 52.2% | [42.4, 63.0] |
+| rrf (ships) | 79.3% | [70.7, 87.0] | 56.5% | [46.7, 67.4] |
+
+**Every number is lower than the n=56 series and that is the rows working, not a regression.**
+Fusion fell 85.7% → 79.3%; keyword fell 83.9% → 70.7%. Keyword lost **twice as much**, which is
+exactly the direction rows written to share no vocabulary with their card should push it. The
+gap between the two grew from **1.8 points to 8.6**. Not comparable as levels (R4) — comparable
+as a direction.
+
+**Two findings that matter more than the headline:**
+
+1. **The holdout has started to separate.** keyword 70.7% [60.9, 80.4] against vector_only 83.7%
+   [76.1, 91.3] overlap by 4.3 points, where the old 36-row holdout scored every arm *identically*.
+   The harness's printed verdict still reads "no separation" because it only ever compares `rrf`
+   against `keyword` — the pair that separates is `vector_only` against `keyword`, and the verdict
+   line does not look at it. Worth fixing in the harness so the sentence matches the table.
+2. **The shipping arm is beaten by the vector half alone, on holdout only.** `rrf` 79.3% / 56.5%
+   against `vector_only` 83.7% / **64.1%** — 7.6 points of top-1. On `tune` the two are level
+   (91.5% top-3 each, `rrf` ahead on top-1). An arm that ties on the rows the weights were tuned on
+   and loses by 7.6 points on rows nobody tuned against is the textbook shape of **fusion weights
+   that do not generalise** — and catching that is the entire reason a blind holdout exists. Filed
+   on the roadmap; **not** to be acted on by re-tuning against holdout, which would burn it.
 
 > **Numbering note, resolved 2026-08-28.** The parallel duplicate-D19 fix renamed that decision to
 > **D19b** (per D31) rather than taking a new number, so D37 stands and no renumbering is needed.

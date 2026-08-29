@@ -1,8 +1,8 @@
 # Twenty blind holdout rows added to `kb_eval_v2`, 2026-08-28
 
-Written so the method can be checked without re-deriving it. Plain language on purpose. Proposed
-decision: [D37](maintainer-decisions-locked.md#d37--proposed-not-yet-locked-raised-2026-08-28--twenty-blind-holdout-rows-added-to-kb_eval_v2-endorse-them),
-**not yet locked**.
+Written so the method can be checked without re-deriving it. Plain language on purpose. Decision:
+[D37](maintainer-decisions-locked.md#d37--locked-endorsed-2026-08-29--blind-holdout-rows-added-to-kb_eval_v2-endorse-them),
+**locked 2026-08-29 — the maintainer endorsed the method.**
 
 ## 1. Why blind rows
 

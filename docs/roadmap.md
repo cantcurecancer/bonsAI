@@ -2,7 +2,7 @@
 
 **Next:** [Bugs](#bugs) → [Verify](#verify) → lowest ★ in your lane.
 
-Tracks open defects ([Bugs](#bugs)), on-Deck confirmation ([Verify](#verify)), and the themed backlog ([Backlog](#backlog)). Shipped work: [archive/roadmap-completed.md](archive/roadmap-completed.md) · fixed bugs: [archive/roadmap-bugs-fixed.md](archive/roadmap-bugs-fixed.md). Locked decisions: [audit/maintainer-decisions-locked.md](audit/maintainer-decisions-locked.md) (**D23–D25** locked 2026-08-21, **D26–D31** locked 2026-08-22, **D18** and **D32–D36** locked 2026-08-27/28; **D37 is proposed and open** — endorse the blind holdout rows). RAG session handoff: [audit/session-handoff-2026-08-21.md](audit/session-handoff-2026-08-21.md).
+Tracks open defects ([Bugs](#bugs)), on-Deck confirmation ([Verify](#verify)), and the themed backlog ([Backlog](#backlog)). Shipped work: [archive/roadmap-completed.md](archive/roadmap-completed.md) · fixed bugs: [archive/roadmap-bugs-fixed.md](archive/roadmap-bugs-fixed.md). Locked decisions: [audit/maintainer-decisions-locked.md](audit/maintainer-decisions-locked.md) (**D23–D25** locked 2026-08-21, **D26–D31** locked 2026-08-22, **D18** and **D32–D36** locked 2026-08-27/28, **D37** locked 2026-08-29. **None open.**). RAG session handoff: [audit/session-handoff-2026-08-21.md](audit/session-handoff-2026-08-21.md).
 
 Setup: [troubleshooting.md](troubleshooting.md). QA: [testing.md](testing.md), [testing-manual.md](testing-manual.md). Release: [development.md](development.md), [CHANGELOG.md](../CHANGELOG.md).
 
@@ -48,6 +48,19 @@ seconds; anything that would otherwise have to be re-measured goes there rather 
 
 ### Wrong or missing content in a reply
 
+- ★★★★ **The shipping retrieval arm loses to the vector half alone on rows nobody tuned against** — found 2026-08-29 by the first
+  measurement against the 92-row blind holdout (**D37**, endorsed the same day). On `holdout`, `vector_only` scores **83.7% top-3 / 64.1%
+  top-1** against the shipping `rrf` arm's **79.3% / 56.5%** — **7.6 points of top-1**. On `tune` the two are level (91.5% top-3 each,
+  `rrf` marginally ahead on top-1). An arm that ties on the rows its weights were tuned on and loses by that much on rows written blind is
+  the textbook shape of **fusion weights that do not generalise**, and catching it is the whole reason a blind holdout exists.
+  **Do not fix this by tuning against holdout** — that burns the only clean gate in the fixture. The legitimate moves are to re-tune the
+  fusion weights on `tune` and re-check holdout once, or to question whether RRF is the right combiner at all now that the vector half has
+  its own recall pass (it did not when the fusion was designed). Run of record:
+  [archive/research/kb-embed-bakeoff-2026-08-29-arms.md](archive/research/kb-embed-bakeoff-2026-08-29-arms.md).
+- ★ **The arms report's verdict line only ever compares `rrf` against `keyword`** — so the 2026-08-29 run printed "no separation" while its
+  own table showed `vector_only` 83.7% [76.1, 91.3] against `keyword` 70.7% [60.9, 80.4], the closest thing to a separation these fixtures
+  have ever produced. The sentence is not wrong about the pair it names; it just does not look at the pair that moved. Make the verdict
+  consider every arm, or say which pair it is judging.
 - ★★★★ **Corpus chips vanish about 21 seconds after the panel opens** — found on device 2026-08-29 while running **PHASE4-CHIPS-01**, and it
   is the exact failure the Phase 4 chip guarantee was written to prevent, just delayed. **Measured, with DRG Survivor running:** a fresh
   panel open shows one game chip with its **Tip** badge, present in every 3s sample from 0s to 21s; from 24s onward the badge count and the

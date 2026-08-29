@@ -3,8 +3,8 @@
 Second batch, same method as
 [kb-blind-holdout-rows-2026-08-28.md](kb-blind-holdout-rows-2026-08-28.md) — read that file
 first; this one records only what is different. Plain language on purpose. Falls under the same
-proposed decision, [D37](maintainer-decisions-locked.md#d37--proposed-not-yet-locked-raised-2026-08-28--twenty-blind-holdout-rows-added-to-kb_eval_v2-endorse-them),
-still **not locked**.
+decision, [D37](maintainer-decisions-locked.md#d37--locked-endorsed-2026-08-29--blind-holdout-rows-added-to-kb_eval_v2-endorse-them),
+**locked 2026-08-29** — the endorsement covers both batches.
 
 ## 1. Why a second batch
 
@@ -144,6 +144,14 @@ that is the row's whole purpose. Filed on the roadmap instead.
   measuring in the same session that wrote the rows lets the author see the arms' scores before
   anyone else, which is a smaller version of the contamination blind rows exist to prevent. **The
   first measurement against the 92-row labelled holdout happens after this merges.**
+  **Done 2026-08-29**, after the merge (`ebd2361`) and after D37 was endorsed, in that order.
+  Headline: keyword 70.7% / vector_only **83.7%** / rrf 79.3% top-3 on the 92-row labelled holdout.
+  Both arms scored lower than on the 56-row set, and **keyword fell twice as far as fusion**
+  (13.2 points against 6.4) — which is what rows sharing no vocabulary with their card should do to
+  a keyword arm, and the first evidence these rows are testing what they were written to test. The
+  two findings worth carrying — the holdout starting to separate, and the shipping `rrf` arm losing
+  to `vector_only` by 7.6 points of top-1 on holdout while tying it on tune — are recorded under
+  [D37](maintainer-decisions-locked.md#d37--locked-endorsed-2026-08-29--blind-holdout-rows-added-to-kb_eval_v2-endorse-them).
 - **Nothing about tune changed.** No existing row of any split was edited.
 
 ## 7. Tests
