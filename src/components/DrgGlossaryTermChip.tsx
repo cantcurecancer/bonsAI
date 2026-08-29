@@ -9,7 +9,10 @@
  *           (drgGlossaryTermMatch.ts) — this only renders one already-matched term.
  */
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Focusable } from "@decky/ui";
+
+import { getUiDocument } from "../utils/uiDocument";
 
 import type { DrgGlossaryTerm } from "../data/drgGlossaryTerms";
 import {
@@ -63,6 +66,9 @@ export function DrgGlossaryTermChip(props: DrgGlossaryTermChipProps) {
     idRef.current = `drg-glossary-${termChipSeq}`;
   }
   useEffect(() => () => registerDrgGlossaryTermChip(idRef.current, null), []);
+
+  /** The chip's own DOM node, for anchoring the portal tooltip to its on-screen position. */
+  const chipElRef = useRef<HTMLElement | null>(null);
 
   const dismissTimerRef = useRef<number | null>(null);
   const clearDismissTimer = () => {
@@ -127,7 +133,10 @@ export function DrgGlossaryTermChip(props: DrgGlossaryTermChipProps) {
   return (
     <Focusable
       className={`bonsai-drg-glossary-term${state !== "idle" ? " bonsai-drg-glossary-term--open" : ""}`}
-      ref={(el: HTMLElement | null) => registerDrgGlossaryTermChip(idRef.current, el)}
+      ref={(el: HTMLElement | null) => {
+        chipElRef.current = el;
+        registerDrgGlossaryTermChip(idRef.current, el);
+      }}
       onFocus={() => {
         // Gamepad arrival takes over any tap-opened popup: kill its timer, keep what is showing.
         clearDismissTimer();
@@ -179,27 +188,53 @@ export function DrgGlossaryTermChip(props: DrgGlossaryTermChipProps) {
         {matchedText}
       </span>
       {state !== "idle" && (
-        <span
-          className="bonsai-drg-glossary-tooltip"
-          role="tooltip"
-          style={{
-            position: "absolute",
-            bottom: "100%",
-            left: 0,
-            marginBottom: 6,
-            zIndex: 5,
-            maxWidth: 220,
-            padding: "8px 10px",
-            borderRadius: 8,
-            border: "1px solid rgba(150, 187, 223, 0.45)",
-            background: "rgba(24, 40, 58, 0.95)",
-            boxShadow: "0 4px 14px rgba(0, 0, 0, 0.45)",
-            fontSize: 11,
-            lineHeight: 1.4,
-            color: "rgba(220, 232, 245, 0.92)",
-            whiteSpace: "normal",
-          }}
-        >
+        /*
+         * Portal to the document body, positioned fixed — both halves load-bearing, measured on
+         * device 2026-08-28. Rendered inside the chip, the popup inherited the chip's ~33px width
+         * (an absolutely-positioned box resolves width against its containing block) and every
+         * ancestor from the response stack up clips overflow, so all that survived on screen was
+         * a one-word-per-line sliver over the reply text. `position: fixed` alone cannot escape
+         * either: the bubble's backdrop-filter makes it a containing block for fixed descendants.
+         * Only leaving the subtree entirely does — hence the portal. Anchored above the chip
+         * (below it when the chip sits near the top), clamped to the plugin column.
+         */
+        createPortal(
+          <span
+            className="bonsai-drg-glossary-tooltip"
+            role="tooltip"
+            style={{
+              position: "fixed",
+              ...(() => {
+                const doc = getUiDocument();
+                const chipRect = chipElRef.current?.getBoundingClientRect();
+                const scopeRect = chipElRef.current
+                  ?.closest(".bonsai-scope")
+                  ?.getBoundingClientRect();
+                const viewH = doc.documentElement?.clientHeight ?? 0;
+                if (!chipRect || !scopeRect) return { left: 0, top: 0, width: 240 };
+                const width = Math.max(120, Math.min(240, scopeRect.width - 16));
+                const left = Math.min(
+                  Math.max(scopeRect.left + 8, chipRect.left + chipRect.width / 2 - width / 2),
+                  scopeRect.right - width - 8,
+                );
+                // Near the top edge there is no room above the chip; open downward instead.
+                return chipRect.top < 180
+                  ? { left, top: chipRect.bottom + 6, width }
+                  : { left, bottom: viewH - chipRect.top + 6, width };
+              })(),
+              zIndex: 9000,
+              boxSizing: "border-box",
+              padding: "8px 10px",
+              borderRadius: 8,
+              border: "1px solid rgba(150, 187, 223, 0.45)",
+              background: "rgba(24, 40, 58, 0.95)",
+              boxShadow: "0 4px 14px rgba(0, 0, 0, 0.45)",
+              fontSize: 11,
+              lineHeight: 1.4,
+              color: "rgba(220, 232, 245, 0.92)",
+              whiteSpace: "normal",
+            }}
+          >
           {state === "peek" ? (
             term.peek
           ) : (
@@ -229,7 +264,9 @@ export function DrgGlossaryTermChip(props: DrgGlossaryTermChipProps) {
               </button>
             </>
           )}
-        </span>
+          </span>,
+          getUiDocument().body,
+        )
       )}
     </Focusable>
   );

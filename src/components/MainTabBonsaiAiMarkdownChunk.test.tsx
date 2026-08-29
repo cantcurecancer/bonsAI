@@ -109,8 +109,8 @@ describe("MainTabBonsaiAiMarkdownChunk DRG Survivor glossary markup", () => {
     // First tap shows the short peek; the second escalates to the full definition.
     fireEvent.click(container.querySelector(".bonsai-drg-glossary-term-text")!);
     fireEvent.click(container.querySelector(".bonsai-drg-glossary-term-text")!);
-    expect(container.querySelector(".bonsai-drg-glossary-explain-further")).toBeTruthy();
-    fireEvent.click(container.querySelector(".bonsai-drg-glossary-explain-further")!);
+    expect(document.querySelector(".bonsai-drg-glossary-explain-further")).toBeTruthy();
+    fireEvent.click(document.querySelector(".bonsai-drg-glossary-explain-further")!);
     expect(onDrgGlossaryExplainFurther).toHaveBeenCalledTimes(1);
     expect(onDrgGlossaryExplainFurther.mock.calls[0][0]).toMatchObject({ id: "kiting" });
   });

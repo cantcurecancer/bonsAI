@@ -24,14 +24,14 @@ describe("DrgGlossaryTermChip", () => {
   it("renders the matched text with no tooltip while idle", () => {
     const { container } = render(<DrgGlossaryTermChip term={kitingTerm} matchedText="kiting" />);
     expect(container.textContent).toContain("kiting");
-    expect(container.querySelector(".bonsai-drg-glossary-tooltip")).toBeNull();
+    expect(document.querySelector(".bonsai-drg-glossary-tooltip")).toBeNull();
   });
 
   it("shows the short peek on focus alone, with no action needed", () => {
     const { container } = render(<DrgGlossaryTermChip term={kitingTerm} matchedText="kiting" />);
     const chip = container.querySelector(".bonsai-drg-glossary-term") as HTMLElement;
     fireEvent.focus(chip);
-    const tooltip = container.querySelector(".bonsai-drg-glossary-tooltip");
+    const tooltip = document.querySelector(".bonsai-drg-glossary-tooltip");
     expect(tooltip?.textContent).toBe(kitingTerm.peek);
   });
 
@@ -40,7 +40,7 @@ describe("DrgGlossaryTermChip", () => {
     const chip = container.querySelector(".bonsai-drg-glossary-term") as HTMLElement;
     fireEvent.focus(chip);
     fireEvent.blur(chip);
-    expect(container.querySelector(".bonsai-drg-glossary-tooltip")).toBeNull();
+    expect(document.querySelector(".bonsai-drg-glossary-tooltip")).toBeNull();
   });
 
   it("underlines every letter — no skip-ink gap at the g's descender", () => {
@@ -57,9 +57,9 @@ describe("DrgGlossaryTermChip", () => {
     const chip = container.querySelector(".bonsai-drg-glossary-term") as HTMLElement;
     fireEvent.focus(chip);
     fireEvent.click(container.querySelector(".bonsai-drg-glossary-term-text")!);
-    const tooltip = container.querySelector(".bonsai-drg-glossary-tooltip");
+    const tooltip = document.querySelector(".bonsai-drg-glossary-tooltip");
     expect(tooltip?.textContent).toContain(kitingTerm.full);
-    expect(container.querySelector(".bonsai-drg-glossary-explain-further")).toBeTruthy();
+    expect(document.querySelector(".bonsai-drg-glossary-explain-further")).toBeTruthy();
   });
 
   it("explain-further calls back with the term and composes the right Ask text", () => {
@@ -70,7 +70,7 @@ describe("DrgGlossaryTermChip", () => {
     // Two taps: the first shows the short peek, the second escalates to the full definition.
     fireEvent.click(container.querySelector(".bonsai-drg-glossary-term-text")!);
     fireEvent.click(container.querySelector(".bonsai-drg-glossary-term-text")!);
-    fireEvent.click(container.querySelector(".bonsai-drg-glossary-explain-further")!);
+    fireEvent.click(document.querySelector(".bonsai-drg-glossary-explain-further")!);
     expect(onExplainFurther).toHaveBeenCalledTimes(1);
     expect(onExplainFurther).toHaveBeenCalledWith(kitingTerm);
     const question = composeDrgGlossaryExplainFurtherQuestion(onExplainFurther.mock.calls[0][0]);
@@ -84,8 +84,8 @@ describe("DrgGlossaryTermChip", () => {
     );
     fireEvent.click(container.querySelector(".bonsai-drg-glossary-term-text")!);
     fireEvent.click(container.querySelector(".bonsai-drg-glossary-term-text")!);
-    fireEvent.click(container.querySelector(".bonsai-drg-glossary-explain-further")!);
-    expect(container.querySelector(".bonsai-drg-glossary-tooltip")).toBeNull();
+    fireEvent.click(document.querySelector(".bonsai-drg-glossary-explain-further")!);
+    expect(document.querySelector(".bonsai-drg-glossary-tooltip")).toBeNull();
   });
 });
 
@@ -100,7 +100,7 @@ describe("DrgGlossaryTermChip tap flow", () => {
       ...utils,
       chip: utils.container.querySelector(".bonsai-drg-glossary-term") as HTMLElement,
       text: utils.container.querySelector(".bonsai-drg-glossary-term-text") as HTMLElement,
-      tooltip: () => utils.container.querySelector(".bonsai-drg-glossary-tooltip"),
+      tooltip: () => document.querySelector(".bonsai-drg-glossary-tooltip"),
     };
   };
 
@@ -158,7 +158,7 @@ describe("DrgGlossaryTermChip tap flow", () => {
       fireEvent.pointerDown(text);
       fireEvent.click(text);
     }
-    expect(container.querySelector(".bonsai-drg-glossary-tooltip")).toBeNull();
+    expect(document.querySelector(".bonsai-drg-glossary-tooltip")).toBeNull();
     expect(onExplainFurther).not.toHaveBeenCalled();
   });
 
