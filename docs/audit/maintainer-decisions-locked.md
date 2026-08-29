@@ -20,7 +20,9 @@ first measurement — is **deferred at the maintainer's request** pending more d
 more questions; it is not waiting on a decision today and nothing about the weights changes until it
 is. **D37**, the blind holdout rows, was endorsed and locked
 2026-08-29, and the measurement it was gating was run the same day (see D37 for the numbers and the
-two findings that came out of them). Before that, D18 — raised 2026-08-05 by the step 11 friction test — was locked as
+two findings that came out of them). **D39 and D40 are locked 2026-08-29 as well** — D39 by the
+corpus gap sheet, and **D40** in discovery for **Terse mode**, before a line of code for it exists.
+Before that, D18 — raised 2026-08-05 by the step 11 friction test — was locked as
 option A on 2026-08-27 and implemented the same day.
 **D32, D34 and D35 are all locked and implemented** (2026-08-27) — three separate causes of the one
 *Clear cache* bug, which is now fixed and confirmed on device. **D33 is locked and implemented**
@@ -2567,3 +2569,55 @@ Three ways out, none of them started, none needing a decision before the corpus 
 
 Recommendation is (1). It is the only one that ends with six real cards, and it is the option that
 does not spend the maintainer's time on a game they have told us they do not know well.
+
+---
+
+### D40 — LOCKED (2026-08-29) — Terse mode's branch menu appears on every reply and never stops. The branch fence is mandatory-once and banned on follow-ups. Which rule wins?
+
+**Locked in discovery with the maintainer on 2026-08-29, before any code exists.** Roadmap entry:
+**Terse mode** under Backlog → Ask / reply; full shape in
+[roadmap-details.md](../roadmap-details.md).
+
+**Why it was asked.** Terse caps a Speed answer at three lines, so it needs a way to get the rest.
+The maintainer chose the existing strategy branch picker over a new *explain further* chip — reusing
+a control that already renders and is already D-pad reachable. But the picker as built is close to
+the opposite of what terse needs. Today it is **Strategy-mode only**, **mandatory on the first
+turn**, and the prompt explicitly forbids repeating it — *"Do NOT repeat this branching fence when
+the user later sends a message starting with [Strategy follow-up]"*
+([ollama_prompts.py:1317](../../py_modules/backend/services/ollama_prompts.py#L1317)). Terse needs it
+in Speed, on every reply, without end.
+
+**Four shapes were drawn out for the maintainer, who picked B:**
+
+| | Buttons appear | Pressing one leads to | Picked |
+|---|---|---|---|
+| A | every reply | one more reply, then the trail ends | |
+| **B** | **every reply** | **another set of buttons, forever** | **yes** |
+| C | only when there is more to say | one more reply, then ends | |
+| D | only when there is more to say | another set, forever | |
+
+**Why B.** It is the version you can play a whole session with and never touch the on-screen
+keyboard, which on a couch is the point of the feature. **C was rejected on a specific ground rather
+than taste:** enforcement is wording only, so a missing button row is ambiguous — you cannot tell
+*"there was nothing more to say"* from *"the model forgot to offer"*.
+
+**What is locked:**
+
+- The branch fence becomes **repeatable** and available **outside Strategy mode**. This decision
+  *widens* the fence; it does not delete the existing Strategy rule, which stays once-only until
+  someone measures a reason to change it.
+- Buttons are **stacked full-width** in the 300px column, not squeezed into a single row.
+- **No separate *explain further* chip.** The menu already does that job, and two controls for one
+  intention is one more thing to reach with the D-pad.
+- **No exit control.** The Ask field stays live throughout, so the menu is an offer, not a trap.
+
+**What this decision does not cover**, both build-time questions rather than maintainer calls: how
+many options a terse menu should offer (Strategy's fence allows 2–8), and how a repeating fence
+interacts with the spoiler rule that currently requires every `bonsai-spoiler` block to sit **above**
+the branch fence on a first turn
+([ollama_prompts.py:454](../../py_modules/backend/services/ollama_prompts.py#L454)).
+
+**Also settled in the same session and deliberately given no number of their own**, because nothing
+in the existing code or docs argues with them: terse overrides the reply-style slider and the AI
+character inside Speed; it is off by default; it changes output only and never thinking effort; and
+it keeps Caveman's destructive-warning and depth-phrase escapes but not its character step-aside.

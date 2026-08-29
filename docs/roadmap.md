@@ -2,7 +2,7 @@
 
 **Next:** [Bugs](#bugs) → [Verify](#verify) → lowest ★ in your lane.
 
-Tracks open defects ([Bugs](#bugs)), on-Deck confirmation ([Verify](#verify)), and the themed backlog ([Backlog](#backlog)). Shipped work: [archive/roadmap-completed.md](archive/roadmap-completed.md) · fixed bugs: [archive/roadmap-bugs-fixed.md](archive/roadmap-bugs-fixed.md). Locked decisions: [audit/maintainer-decisions-locked.md](audit/maintainer-decisions-locked.md) (**D23–D25** locked 2026-08-21, **D26–D31** locked 2026-08-22, **D18** and **D32–D36** locked 2026-08-27/28, **D37** and **D39** locked 2026-08-29; **D38 deferred** at the maintainer's request pending more data, more games and more questions). RAG session handoff: [audit/session-handoff-2026-08-21.md](audit/session-handoff-2026-08-21.md).
+Tracks open defects ([Bugs](#bugs)), on-Deck confirmation ([Verify](#verify)), and the themed backlog ([Backlog](#backlog)). Shipped work: [archive/roadmap-completed.md](archive/roadmap-completed.md) · fixed bugs: [archive/roadmap-bugs-fixed.md](archive/roadmap-bugs-fixed.md). Locked decisions: [audit/maintainer-decisions-locked.md](audit/maintainer-decisions-locked.md) (**D23–D25** locked 2026-08-21, **D26–D31** locked 2026-08-22, **D18** and **D32–D36** locked 2026-08-27/28, **D37**, **D39** and **D40** locked 2026-08-29; **D38 deferred** at the maintainer's request pending more data, more games and more questions). RAG session handoff: [audit/session-handoff-2026-08-21.md](audit/session-handoff-2026-08-21.md).
 
 Setup: [troubleshooting.md](troubleshooting.md). QA: [testing.md](testing.md), [testing-manual.md](testing-manual.md). Release: [development.md](development.md), [CHANGELOG.md](../CHANGELOG.md).
 
@@ -371,6 +371,11 @@ Stars are **effort/risk**. Grouped by **theme**; within each lane sorted ascendi
 - ★★★ **Per-mode latency timeouts** (warn vs hard limit profiles)
   - **Goal:** Separate warning and timeout values per selected mode.
   - **Depends on:** Mode selector (shipped).
+- ★★★ **Terse mode** (Speed answers in three lines) — planned 2026-08-29, nothing built
+  - **Goal:** A toggle beside the reply-style slider, **off out of the box**, capping a **Speed**-mode answer at **three lines** — a sentence or a bullet each. It is an *output* rule, so the wording under it has to say plainly that it shortens the answer and not the thinking: effort is untouched, and a screenshot question still comes back at three lines.
+  - **Inside Speed it wins.** It overrides the reply-style slider and the AI character, which still picks the words but only gets three lines. Two escapes survive: destructive warnings drop to plain prose, and the ten existing depth phrases (*step by step*, *in detail*) loosen it. Panels, code and file paths are free — and so are pictures, once anything can draw one.
+  - **Getting more is the strategy branch picker**, under every terse reply and repeating forever, stacked full-width. That fence is mandatory-once, Strategy-only and banned on follow-ups today, so widening it is the real work here — locked as **[D40](audit/maintainer-decisions-locked.md)**.
+  - **Nothing enforces the cap but wording.** **TERSE-01** counts lines across ten fixed questions and passes at 8 of 10; the ten are written, approved, and pinned as a frozen chip batch when the work starts. Questions and full shape: [roadmap-details.md](roadmap-details.md).
 - ★★★★ **Connection doctor** (guided first-Ask repair — candidate)
   - **Status:** Candidate, not accepted — decide vs **Deck health snapshot** (shared probe set).
   - **Goal:** **Fix this** on Ask failure walks probes → one next action with Ollama-tab deep link.
@@ -487,7 +492,9 @@ Stars are **effort/risk**. Grouped by **theme**; within each lane sorted ascendi
   - **Needs a maintainer call first:** the v2 fixture is approved and the PR2 bake-off was measured against it — new rows change what the numbers mean, so decide whether they join v2, form a v3, or stay a separate reported slice.
   - **Largely overtaken by the blind holdout rows, pending one measurement.** The 15 paraphrase rows joined v2 as `V2-PARA-*` under **D23** (all `tune`), and 56 blind rows joined as `V2-BLIND-*` under **D37** (all `holdout`) — 20 on 2026-08-28 and 36 later the same day, 18 of the second batch written as pure paraphrases sharing no vocabulary with their card. The keyword-blind slice was **3** labeled rows when last measured on 2026-08-28, up from 1. **It has not been re-counted since the second batch**, deliberately — no measurement was run while those rows were written. Re-count it on the next arms run before deciding whether this item is closed.
 - ★★★ **KB visual maps** (strategy maps — later wave)
-  - **Goal:** Optional visual strategy maps in KB-grounded replies after brief callout cards exist.
+  - **Goal:** Optional visual strategy maps in KB-grounded replies after brief callout cards exist. **Two shapes named by the maintainer 2026-08-29:** a **dungeon map**, and a **boss outline** with the limbs and weak points marked the way Fallout marks them — so a player sees where to aim instead of reading a sentence about it.
+  - **Still parked, and Terse mode does not un-park it.** Terse ships with no picture at all; its *pictures don't count against the three lines* clause is forward-looking. Nothing draws anything in a reply today — replies are `react-markdown` plus the existing fenced panels.
+  - **Open:** what a boss outline is *made of* — characters the model types out, a drawing shipped with the card, or one the plugin draws from the card's own `Weak points:` line. Undecided 2026-08-29. A **dungeon map has to be authored** either way, which puts it behind the WikiTeam / archive.org source policy and a corpus rebuild — the same wall Phase 4 track 3 sits behind.
   - **Plan / depends on:** [17-kb-online-versus-strategy-content.md](planning/17-kb-online-versus-strategy-content.md) Stage 5; callout cards (OV-3.1). Phase 4 chip work remains orthogonal.
 - ★★★★ **KB online / versus strategy content**
   - **Goal:** Online multiplayer strategy — versus, co-op, map callouts — new `section_type` values + spoiler table updates. Tier lists parked. Visual maps later wave in same plan.

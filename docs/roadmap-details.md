@@ -69,6 +69,97 @@ Each heading below matches a roadmap item's title, and the roadmap item links he
 
 ---
 
+## Terse mode (Speed answers in three lines)
+
+Discovery ran with the maintainer on 2026-08-29. **Nothing is built.** This is the settled shape,
+written down so the build does not have to re-ask any of it.
+
+**What it is.** A toggle on the Ollama tab beside the reply-style slider, off out of the box, that
+caps a **Speed**-mode answer at **three lines**. A line is a sentence or a bullet — one number
+covering both shapes, because the promise is about what you can take in at a glance rather than
+about grammar.
+
+**It is an output rule, not an effort rule**, and this is the thing most likely to be got wrong by
+whoever builds it. The model may think as long as it likes and read a screenshot as closely as it
+likes; only what lands on screen is capped. The thinking-effort control is untouched, and a
+screenshot question still comes back at three lines. The toggle's own help line has to say so,
+because *shorter* reads as *dumber* otherwise.
+
+**Speed mode only, and inside Speed it wins:**
+
+| Against | Terse |
+|---|---|
+| Reply-style slider (Caveman / Balanced / Detailed) | **Ignored while in Speed** |
+| AI character roleplay | **Overridden** — the character still picks the words, in three lines |
+| Strategy and Expert ask modes | **Does not apply**, and the toggle says so in plain words |
+
+The character override is a deliberate reversal of Caveman, which steps aside entirely when a
+character is on ([ollama_prompts.py:967](../py_modules/backend/services/ollama_prompts.py#L967)).
+
+**Two of Caveman's three escape hatches survive.**
+
+- **Destructive warnings** drop out of terse and are written in normal prose — the same auto-clarity
+  clause Caveman carries. A squeezed data-loss warning is the one failure worth spending lines on.
+- **The ten depth phrases** still loosen the cap: `step by step`, `step-by-step`, `walkthrough`,
+  `explain why`, `in detail`, `full guide`, `detailed guide`, `break it down`, `tutorial`,
+  `comprehensive` (`user_asks_for_detail_depth`,
+  [ollama_prompts.py:908](../py_modules/backend/services/ollama_prompts.py#L908)).
+- **The character step-aside does not** — see the table above.
+
+**Free alongside the three lines:** the existing fenced panels (`bonsai-strategy-branches`,
+`bonsai-strategy-checklist`, the TDP `json` block, `bonsai-cite`), code blocks and file paths, and
+pictures once anything can draw one. The `<bonsai-status>` line never counted — it is stripped
+before display ([stripAssistantDisplayTags.ts](../src/utils/stripAssistantDisplayTags.ts)) and shown
+as a streaming blurb, so it is not in the reply body at all.
+
+**Getting more is the branch picker, and that is the real work.** Every terse reply ends with the
+strategy branch fence; pressing an option gives three more lines and a fresh set of options, forever.
+Buttons are **stacked full-width** in the 300px column rather than squeezed into one row, because a
+full-width label can be a real phrase and the D-pad walk is then a straight line down. There is no
+separate *explain further* chip, and no exit control — the Ask field stays live throughout, so the
+menu is an offer rather than a trap. Today that fence is mandatory-once, Strategy-only, and
+explicitly banned on follow-ups
+([ollama_prompts.py:1317](../py_modules/backend/services/ollama_prompts.py#L1317)); all three have
+to change. Locked as **[D40](audit/maintainer-decisions-locked.md)**.
+
+**Enforcement is wording only** — nothing counts, nothing trims, nothing retries. Chosen with eyes
+open: a trim can chop a reply mid-thought, and a retry costs a second round trip on a device where
+that is slow. The cost is that the cap is a tendency rather than a guarantee, so it gets measured
+instead of asserted.
+
+**TERSE-01** counts lines across these ten questions — Speed mode, terse on — and passes at **8 of
+10**. Approved by the maintainer 2026-08-29. They get pinned as a frozen chip batch when the work
+starts, so each case is one press of A rather than a sentence thumb-typed on an on-screen keyboard.
+
+| # | Question | Why it is in the set |
+|---|---|---|
+| 1 | how do i beat the dreadnought | KB boss card |
+| 2 | what is the max tdp on a steam deck | short fact — should be one line |
+| 3 | my game stutters when i turn | troubleshooting, invites rambling |
+| 4 | should i cap fps at 30 or 40 | a choice — tempts pros and cons |
+| 5 | what does proton do | a definition — tempts a paragraph |
+| 6 | how do i deal with exploders | KB enemy card, and the known fence repro |
+| 7 | is 8 watts enough for this game | a judgement — tempts hedging |
+| 8 | what should i upgrade first | wide open; expected to fail first |
+| 9 | why did my save not carry over | a cause question |
+| 10 | how do i get more battery life | classic long-answer question |
+
+**None of the ten contains a depth phrase, and that is not incidental.** Any of the ten words listed
+above would loosen the cap on the very row written to measure it — the same reason `KB-ROUTER-01`'s
+four sentences contain neither *deck* nor *proton*. Keep that property if a question is ever swapped.
+
+**Known gap in the set:** none of the ten attaches a screenshot, so the *screenshots still get three
+lines* rule is asserted and unmeasured. Worth an eleventh row if it ever misbehaves; the maintainer
+chose the ten as they stand.
+
+**Not decided:** the on-screen wording of the toggle and its help line.
+
+**Pictures are exempt from the count, but nothing draws one.** The dungeon map and the boss outline
+the maintainer described belong to **KB visual maps** in the backlog, which stays parked on purpose.
+Terse ships without them.
+
+---
+
 ## Shipped, QA owed — why each was built this way
 
 Moved out of the roadmap's **Verify** section 2026-08-27. Each of these ships and works; what is
