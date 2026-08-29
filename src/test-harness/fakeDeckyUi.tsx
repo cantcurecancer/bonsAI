@@ -13,6 +13,7 @@ const STEAM_NAV_PROPS = new Set([
   "onButtonDown",
   "onButtonUp",
   "onCancel",
+  "onCancelButton",
   "onGamepadBlur",
   "onGamepadDirection",
   "onGamepadFocus",

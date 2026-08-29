@@ -196,8 +196,8 @@
       "role": ""
     },
     {
-      "path": "src/styles/sections/section-8.ts",
-      "lines": 383,
+      "path": "src/components/MainTabBonsaiAiMarkdownChunk.tsx",
+      "lines": 411,
       "role": ""
     }
   ]

@@ -11,7 +11,7 @@ import { Fragment, cloneElement, isValidElement, memo, useEffect, useMemo, useRe
 import ReactMarkdown from "react-markdown";
 import { Focusable } from "@decky/ui";
 
-import { registerSpoilerFence } from "../utils/spoilerFenceRegistry";
+import { focusSpoilerFence, registerSpoilerFence } from "../utils/spoilerFenceRegistry";
 import { isOkDeckButtonEvent } from "../utils/focusNavigation";
 import { isDrgSurvivorAppId, splitTextForDrgGlossaryTerms } from "../utils/drgGlossaryTermMatch";
 import { DrgGlossaryTermChip } from "./DrgGlossaryTermChip";
@@ -219,6 +219,34 @@ function BonsaiSpoilerFence(props: {
     [],
   );
 
+  /** The masked fence's node and the expanded header's node, for handing the ring across a toggle. */
+  const revealElRef = useRef<HTMLElement | null>(null);
+  const collapseElRef = useRef<HTMLElement | null>(null);
+  /*
+   * Set only by the gamepad toggle paths, never by a touch tap: toggling unmounts the Focusable
+   * the ring is sitting on, and Steam then leaves the ring unowned or drops it somewhere
+   * arbitrary — measured on device 2026-08-28 (SPOILER-B-01 run: A on the masked fence moved
+   * focus to "nothing"; the chip's B fix earlier caught the same drop landing on QAM chrome).
+   * The counterpart Focusable mounts in the same render, so once React commits, hand the ring to
+   * it with `focusSpoilerFence` — a plain `.focus()` on these nodes moves Steam's ring, measured
+   * on device 2026-08-04.
+   */
+  const restoreRingRef = useRef(false);
+  useEffect(() => {
+    if (!restoreRingRef.current) return;
+    restoreRingRef.current = false;
+    focusSpoilerFence(open ? collapseElRef.current : revealElRef.current);
+  }, [open]);
+  const gamepadReveal = () => {
+    restoreRingRef.current = true;
+    registerSpoilerFence(fenceIdRef.current, null);
+    setOpen(true);
+  };
+  const gamepadCollapse = () => {
+    restoreRingRef.current = true;
+    setOpen(false);
+  };
+
   if (!open) {
     // Mirror ContextChipLadder: Deck Focusable owns A / D-pad; native button is click-only.
     return (
@@ -226,19 +254,18 @@ function BonsaiSpoilerFence(props: {
         className="bonsai-spoiler-reveal-target"
         // Registered only while masked: once revealed there is nothing left to navigate to, and a
         // stale entry would make D-pad Down park on a fence that no longer hides anything.
-        ref={(el: HTMLElement | null) => registerSpoilerFence(fenceIdRef.current, el)}
-        onActivate={() => {
-          registerSpoilerFence(fenceIdRef.current, null);
-          setOpen(true);
+        ref={(el: HTMLElement | null) => {
+          revealElRef.current = el;
+          registerSpoilerFence(fenceIdRef.current, el);
         }}
+        onActivate={gamepadReveal}
         onButtonDown={(evt: unknown) => {
           /* A only. `onButtonDown` fires for every button, so anything else has to fall through to
              navigation — otherwise the press meant to move focus past a spoiler reveals it, and a
              spoiler you did not want to see cannot be skipped. Blacklisting the directions was not
              enough: the argument is a GamepadEvent, so the direction predicates never matched it. */
           if (!isOkDeckButtonEvent(evt)) return false;
-          registerSpoilerFence(fenceIdRef.current, null);
-          setOpen(true);
+          gamepadReveal();
           return true;
         }}
         style={{
@@ -300,13 +327,31 @@ function BonsaiSpoilerFence(props: {
     >
       <Focusable
         className="bonsai-spoiler-collapse-target"
-        onActivate={() => setOpen(false)}
+        ref={(el: HTMLElement | null) => {
+          collapseElRef.current = el;
+        }}
+        onActivate={gamepadCollapse}
         onButtonDown={(evt: unknown) => {
           /* Same rule as the masked fence: A collapses, every other button navigates. */
           if (!isOkDeckButtonEvent(evt)) return false;
-          setOpen(false);
+          gamepadCollapse();
           return true;
         }}
+        /*
+         * B re-hides the spoiler instead of backing out of the pane — and only `onCancelButton`
+         * can deliver that, per the glossary chip's on-device instrumentation (2026-08-28,
+         * DrgGlossaryTermChip.tsx): `onButtonDown` receives B but returning true does not stop
+         * Steam's back-out, while `onCancelButton` + preventDefault consumes it; the handler's
+         * mere presence also eats B even when it does nothing. Attaching it here is safe without
+         * the chip's conditional-spread dance because this Focusable only exists while the
+         * spoiler is expanded — once collapsed it unmounts and B backs out as Steam intends.
+         */
+        {...({
+          onCancelButton: (e: unknown) => {
+            gamepadCollapse();
+            (e as { preventDefault?: () => void })?.preventDefault?.();
+          },
+        } as Record<string, unknown>)}
         style={{ marginBottom: 8 }}
       >
         <button
