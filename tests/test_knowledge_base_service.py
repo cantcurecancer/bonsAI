@@ -1922,8 +1922,11 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
             f"{section['name']!r} is a structured card but this line has no known label: {line[:60]!r}",
           )
     # Fails loudly if the seed ever loses the structured cards, which would make the loop above
-    # pass by iterating over nothing.
-    self.assertEqual(structured, 16)
+    # pass by iterating over nothing. Exact on purpose, so it catches a drop as well as a gain --
+    # the cost is that adding structured cards edits this line, which is a deliberate checkpoint.
+    # 16 (Phase 4 track 2, two sample titles) -> 22 on 2026-08-29, when State of Emergency gained
+    # six cards written from the maintainer's own answers to the corpus gap sheet.
+    self.assertEqual(structured, 22)
 
 
   def test_fusion_never_lists_the_same_card_twice(self):

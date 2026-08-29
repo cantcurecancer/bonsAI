@@ -1673,6 +1673,66 @@
       "source_url": "",
       "source_license": "bonsAI-maintainer",
       "source_version": "seed-1.1"
+    },
+    {
+      "section_id": 136,
+      "game_id": 6,
+      "section_type": "enemy",
+      "name": "Rocket launcher enemies",
+      "card": "Summary: Late in a round, enemies start showing up with rocket launchers. They are the most dangerous thing on screen and the usual reason a strong run ends.\nTips: Treat one as the priority target the moment it appears, ahead of whatever crowd you are already fighting.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": "seed-1.2"
+    },
+    {
+      "section_id": 137,
+      "game_id": 6,
+      "section_type": "item",
+      "name": "Grenade launcher",
+      "card": "Summary: The most forgiving of the heavy weapons to actually use on a controller.\nUses: A good default when you want damage without fighting the aiming.\nTips: How easy a weapon is to handle on a pad matters more here than its raw damage.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": "seed-1.2"
+    },
+    {
+      "section_id": 138,
+      "game_id": 6,
+      "section_type": "item",
+      "name": "Rocket launcher",
+      "card": "Summary: High damage, and the easiest weapon in the game to hurt yourself with.\nUses: Best used at range, into a crowd you are not standing in.\nTips: Fired at close quarters it will take your own health down. Misusing it costs more than the extra damage wins.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": "seed-1.2"
+    },
+    {
+      "section_id": 139,
+      "game_id": 6,
+      "section_type": "item",
+      "name": "Flamethrower",
+      "card": "Summary: A close-range crowd weapon.\nUses: The suggested approach is to move through a swarm rather than fire into it from outside - circling inside the crowd while it burns.\nTips: Treat this as a tactic to try rather than a settled one. It is an untested lead, not a verified rule.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": "seed-1.2"
+    },
+    {
+      "section_id": 140,
+      "game_id": 6,
+      "section_type": "mechanic",
+      "name": "Causing chaos",
+      "card": "Summary: Kaos mode scores you on chaos, and new players almost always cause too little of it.\nTips: The most common mistake in the first ten minutes is playing carefully. Damage, crowds and destruction are the point, not something that happens on the way to an objective.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": "seed-1.2"
+    },
+    {
+      "section_id": 141,
+      "game_id": 6,
+      "section_type": "mechanic",
+      "name": "Round time and the +15s pickups",
+      "card": "Summary: A round runs on a timer, and pickups scattered around the level add +15 seconds each.\nTips: Knowing when to break off and go for time, instead of staying in a fight, is the other thing new players get wrong. A round you extend is worth more than a crowd you finish.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": "seed-1.2"
     }
   ],
   "genre_patterns": [
