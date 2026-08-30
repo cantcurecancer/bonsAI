@@ -186,6 +186,15 @@ export function useMainTabPayload({
     desktopAskVerboseLogging,
     lastRequestId,
     lastExchange,
+    chatSlotSummaries,
+    activeChatSlotId,
+    onChatSlotCreate,
+    onChatSlotSelect,
+    onChatSlotRename,
+    onChatSlotDelete,
+    onBeforeNestedDeckyModal,
+    onCompleteNestedDeckyModalClose,
+    askStopped,
   } = props;
 
   // Dependency list preserved from index.tsx, with the names it depended on translated to the
@@ -294,6 +303,15 @@ export function useMainTabPayload({
         desktopAskVerboseLogging={desktopAskVerboseLogging}
         lastRequestId={lastRequestId}
         lastExchange={lastExchange}
+        chatSlotSummaries={chatSlotSummaries}
+        activeChatSlotId={activeChatSlotId}
+        onChatSlotCreate={onChatSlotCreate}
+        onChatSlotSelect={onChatSlotSelect}
+        onChatSlotRename={onChatSlotRename}
+        onChatSlotDelete={onChatSlotDelete}
+        onBeforeNestedDeckyModal={onBeforeNestedDeckyModal}
+        onCompleteNestedDeckyModalClose={onCompleteNestedDeckyModalClose}
+        askStopped={askStopped}
       />
     ),
     // ANY NEW PROP MUST BE ADDED TO THIS LIST. It is hand-maintained and nothing
@@ -361,6 +379,15 @@ export function useMainTabPayload({
       onMicInput,
       onOpenScreenshotBrowser,
       onTakeScreenshot,
+      chatSlotSummaries,
+      activeChatSlotId,
+      onChatSlotCreate,
+      onChatSlotSelect,
+      onChatSlotRename,
+      onChatSlotDelete,
+      onBeforeNestedDeckyModal,
+      onCompleteNestedDeckyModalClose,
+      askStopped,
     ]
   );
 }
