@@ -196,7 +196,7 @@ export function ChatSlotRow({
                 <span className="bonsai-chat-slot-ghost bonsai-chat-slot-ghost--prev">{prevSlot.label}</span>
               ) : null}
               <span
-                className={`bonsai-chat-slot-title${focusStop === "title" ? " bonsai-chat-slot-title--active-stop" : ""}`}
+                className={`bonsai-chat-slot-title${focusStop === "title" ? " bonsai-chat-slot-title--active-stop" : ""}${isCreatePosition ? " bonsai-chat-slot-title--create" : ""}`}
               >
                 {centerLabel}
               </span>
@@ -212,7 +212,7 @@ export function ChatSlotRow({
                 <span className="bonsai-chat-slot-ghost bonsai-chat-slot-ghost--next">{nextSlot.label}</span>
               ) : null}
             </div>
-            {orderedSlots.length > 0 ? (
+            {orderedSlots.length > 0 && !isCreatePosition ? (
               <div className="bonsai-chat-slot-dots" aria-hidden>
                 {orderedSlots.slice(0, MAX_DOTS).map((slot) => (
                   <span

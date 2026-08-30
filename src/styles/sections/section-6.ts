@@ -576,7 +576,7 @@ export function buildSection6Section(): string {
         }
         .bonsai-scope .bonsai-chat-slot-title {
           font-weight: 700;
-          font-size: ${uiScalePx(12)};
+          font-size: ${uiScalePx(13)};
           line-height: 1.2;
           color: rgba(200, 214, 230, 0.72);
           white-space: nowrap;
@@ -585,9 +585,16 @@ export function buildSection6Section(): string {
           max-width: 55%;
         }
         .bonsai-scope .bonsai-chat-slot-row--focused .bonsai-chat-slot-title {
-          font-size: ${uiScalePx(19)};
+          font-size: ${uiScalePx(14)};
           color: #f2f7fc;
           text-shadow: 0 0 16px rgba(156, 231, 255, 0.3);
+        }
+        /* The create position keeps one quiet size whether the row is focused or not,
+           so it must follow the --focused title rule to win over it. */
+        .bonsai-scope .bonsai-chat-slot-title--create {
+          font-weight: 700;
+          font-size: ${uiScalePx(13)};
+          color: rgba(200, 214, 230, 0.45);
         }
         .bonsai-scope .bonsai-chat-slot-delete {
           flex: 0 0 auto;
