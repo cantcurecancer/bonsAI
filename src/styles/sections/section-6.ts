@@ -555,6 +555,13 @@ export function buildSection6Section(): string {
           background: rgba(18, 26, 34, 0.55);
           box-shadow: 0 0 12px 1px rgba(156, 231, 255, 0.25);
         }
+        /* Carousel boundary: the pill for a direction that cannot move dims out. */
+        .bonsai-scope .bonsai-chat-slot-row--focused .bonsai-chat-slot-bumper-pill--dead {
+          border-color: rgba(168, 182, 198, 0.28);
+          color: rgba(168, 182, 198, 0.4);
+          background: transparent;
+          box-shadow: none;
+        }
         .bonsai-scope .bonsai-chat-slot-center {
           flex: 1 1 auto;
           min-width: 0;

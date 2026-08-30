@@ -188,7 +188,13 @@ export function ChatSlotRow({
         }}
       >
         <div className="bonsai-chat-slot-row-inner">
-          {focused ? <span className="bonsai-chat-slot-bumper-pill">LB</span> : null}
+          {focused ? (
+            <span
+              className={`bonsai-chat-slot-bumper-pill${carouselIndex === 0 ? " bonsai-chat-slot-bumper-pill--dead" : ""}`}
+            >
+              LB
+            </span>
+          ) : null}
           <div className="bonsai-chat-slot-center">
             <div className="bonsai-chat-slot-title-row">
               {showGhosts && prevSlot ? (
@@ -222,7 +228,13 @@ export function ChatSlotRow({
               </div>
             ) : null}
           </div>
-          {focused ? <span className="bonsai-chat-slot-bumper-pill">RB</span> : null}
+          {focused ? (
+            <span
+              className={`bonsai-chat-slot-bumper-pill${carouselIndex >= positionCount - 1 ? " bonsai-chat-slot-bumper-pill--dead" : ""}`}
+            >
+              RB
+            </span>
+          ) : null}
         </div>
       </Focusable>
     </div>
