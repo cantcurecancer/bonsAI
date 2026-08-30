@@ -197,6 +197,22 @@ export function ChatSlotRow({
       <Focusable
         {...({
           navRef,
+          /*
+            Steam treats a `Focusable` as a CONTAINER unless something marks it as a stop, and a
+            container with no focusable children is skipped entirely. This row's children are all
+            plain spans, and its A handling lives on `onButtonDown` rather than `onActivate` — so
+            it rendered correctly and was unreachable by D-pad in both directions.
+
+            Measured on device 2026-08-30 (deck_runSequence, six presses each way): Down went tab
+            strip -> preset chips and Up went preset chips -> tab strip, never landing on the row;
+            the row's div carried no `tabindex` while every working Focusable div in the panel
+            (e.g. `.bonsai-ai-character-avatar`) carried `tabindex="0"`.
+
+            `focusable` marks the stop without adding a second activation path, so `onButtonDown`
+            stays the single owner of A / LB / RB and its create-vs-rename-vs-delete branching is
+            untouched.
+          */
+          focusable: true,
           onMoveLeft: () => {
             if (focusStop === "delete") {
               setFocusStop("title");
