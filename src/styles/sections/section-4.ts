@@ -51,13 +51,19 @@ export function buildSection4Section(): string {
           probe V1 reported 15.99px on each side, against a 300px QAM column. Rows opting into
           full bleed must not inherit it.
 
-          Matches exactly two nodes: the row wrapper holding a full-bleed row, and the section
-          holding that wrapper. :has() is verified supported on the Deck's CEF in the same run.
-          Keyed on .bonsai-full-bleed-row so only rows that asked for edge-to-edge are affected —
-          other tabs do not use that class.
+          Matches the row wrapper holding a full-bleed row, and the section holding that
+          wrapper. :has() is verified supported on the Deck's CEF in the same run. Keyed on
+          .bonsai-full-bleed-row so only rows that asked for edge-to-edge are affected — other
+          tabs do not use that class.
+
+          The .bonsai-main-tab-column line: the Main tab wraps its rows in a fill column + bottom
+          dock (useMainTabColumnFill), which puts the PanelSection two divs further from its
+          full-bleed rows — out of range of both :has() patterns below. Without this line the
+          section's 16px side padding comes back on Main only, which is exactly the original bug.
         */
         .bonsai-scope div:has(> .bonsai-full-bleed-row),
-        .bonsai-scope div:has(> div > .bonsai-full-bleed-row) {
+        .bonsai-scope div:has(> div > .bonsai-full-bleed-row),
+        .bonsai-scope div:has(> .bonsai-main-tab-column) {
           padding-left: 0 !important;
           padding-right: 0 !important;
         }

@@ -28,6 +28,7 @@ import { MainTabUnifiedAskBar } from "./MainTabUnifiedAskBar";
 import { MainTabScreenshotBrowser } from "./MainTabScreenshotBrowser";
 import { MainTabChatTranscript } from "./MainTabChatTranscript";
 import { PermissionDenyAction } from "./PermissionDenyAction";
+import { useMainTabColumnFill } from "../hooks/useMainTabColumnFill";
 import { ChatSlotRow } from "../features/chat-slots/ChatSlotRow";
 import type { ChatSlotSummary } from "../utils/chatSlotsApi";
 import type { BonsaiCapabilityKey } from "../utils/permissionDeepLink";
@@ -152,10 +153,15 @@ export function MainTab(props: MainTabProps) {
   const presetCarouselHostRef = useRef<HTMLDivElement | null>(null);
   const [focusUnifiedTextField, setFocusUnifiedTextField] = useState(() => () => false);
   const [slotRowAtCreate, setSlotRowAtCreate] = useState(false);
+  /* Bottom-pins the preset/Ask dock: the column stretches to the scroll viewport's bottom edge
+     (measured — the offset crosses hashed Steam wrappers) and the dock carries margin-top: auto. */
+  const columnRef = useRef<HTMLDivElement | null>(null);
+  useMainTabColumnFill(columnRef);
 
   return (
     <>
       <PanelSection>
+        <div ref={columnRef} className="bonsai-main-tab-column">
         {props.onChatSlotCreate && props.onChatSlotSelect && props.onChatSlotRename && props.onChatSlotDelete ? (
           <PanelSectionRow>
             <ChatSlotRow
@@ -174,6 +180,7 @@ export function MainTab(props: MainTabProps) {
           </PanelSectionRow>
         ) : null}
         <MainTabChatTranscript {...props} showEmptySlotPreview={slotRowAtCreate} />
+        <div className="bonsai-main-tab-dock">
         <PanelSectionRow>
           <MainTabPresetRow
             suggestedPrompts={props.suggestedPrompts}
@@ -260,6 +267,8 @@ export function MainTab(props: MainTabProps) {
             </div>
           </PanelSectionRow>
         )}
+        </div>
+        </div>
       </PanelSection>
     </>
   );

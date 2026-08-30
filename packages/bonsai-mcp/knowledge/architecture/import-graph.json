@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 332,
-  "edgeCount": 791,
+  "fileCount": 333,
+  "edgeCount": 792,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -225,6 +225,7 @@
         "src/data/presets.ts",
         "src/data/replyMicroActions.ts",
         "src/features/chat-slots/ChatSlotRow.tsx",
+        "src/hooks/useMainTabColumnFill.ts",
         "src/types/backgroundAsk.ts",
         "src/types/bonsaiUi.ts",
         "src/utils/chatSlotsApi.ts",
@@ -1663,6 +1664,12 @@
       "importedBy": [
         "src/components/MainTabUnifiedAskBar.tsx",
         "src/hooks/useMainTabAskBarFocus.test.ts"
+      ]
+    },
+    "src/hooks/useMainTabColumnFill.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/components/MainTab.tsx"
       ]
     },
     "src/hooks/usePermissionJump.test.ts": {

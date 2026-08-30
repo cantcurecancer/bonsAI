@@ -517,6 +517,32 @@ export function buildSection6Section(): string {
           font-style: italic !important;
         }
 
+        /*
+          Main tab bottom dock. The column stretches to the scroll viewport's bottom edge
+          (min-height measured by useMainTabColumnFill — the offset to the viewport crosses
+          hashed Steam wrappers, so it cannot be a CSS constant) and the dock's margin-top: auto
+          pins presets + Ask bar + context line to the bottom. With a long transcript the column
+          outgrows the min-height and the dock scrolls in flow, exactly as before.
+        */
+        .bonsai-scope .bonsai-main-tab-column {
+          display: flex;
+          flex-direction: column;
+          width: 100%;
+          max-width: 100%;
+          min-width: 0;
+          box-sizing: border-box;
+          min-height: var(--bonsai-main-column-min-height, auto);
+        }
+        .bonsai-scope .bonsai-main-tab-dock {
+          display: flex;
+          flex-direction: column;
+          margin-top: auto;
+          width: 100%;
+          max-width: 100%;
+          min-width: 0;
+          box-sizing: border-box;
+        }
+
         /* Collapsed history: one "N earlier" pill standing in for the older archived turns. */
         .bonsai-scope .bonsai-chat-earlier-pill-row {
           display: flex;

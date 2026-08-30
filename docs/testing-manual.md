@@ -297,6 +297,7 @@ everything below assumes it passes. Plan:
 - [ ] **CHAT-SLOTS-V3-06b** (W16) A finishes while you are away: the ring turns solid green; returning to A clears it
 - [ ] **CHAT-SLOTS-V3-06c** (W16) QAM closed when the answer finishes: the reply-ready toast still appears (regression check on the completion watch)
 - [ ] **CHAT-SLOTS-V3-07** (W17) A slot with 3 archived turns: a **"3 earlier"** pill sits above the newest turn and is a D-pad stop; **A** expands it into header rows and focus lands on the first revealed row; with exactly 1 archived turn the header row shows with no pill
+- [ ] **CHAT-SLOTS-V3-08** (bottom dock) With a short or empty slot: preset chips, the Ask bar and the context line sit at the bottom of the panel with the empty space above them (between transcript and presets); the empty-slot preview stays directly under the slot row; the pane does not scroll when its content is short; a long transcript still scrolls with the Ask bar in flow at its end. Recheck the Rule 1 edges: every Main row still spans the full column width (the fill column moved the PanelSection out of the old `:has()` gutter fix's range — section-4 carries a dedicated line for it)
 
 ---
 
