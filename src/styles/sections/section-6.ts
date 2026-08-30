@@ -596,15 +596,29 @@ export function buildSection6Section(): string {
           font-size: ${uiScalePx(13)};
           color: rgba(200, 214, 230, 0.45);
         }
+        /* The quiet state carries the same 22x22 box and 1px transparent border as the
+           active stop, so activating the stop colours it in without nudging the row. */
         .bonsai-scope .bonsai-chat-slot-delete {
           flex: 0 0 auto;
-          font-size: ${uiScalePx(14)};
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: ${uiScalePx(22)};
+          height: ${uiScalePx(22)};
+          border-radius: ${uiScalePx(6)};
+          border: 1px solid transparent;
+          font-size: ${uiScalePx(15)};
+          font-weight: 700;
           line-height: 1;
           color: rgba(168, 182, 198, 0.55);
           opacity: 0.85;
         }
         .bonsai-scope .bonsai-chat-slot-delete--active-stop {
-          color: #9ce7ff;
+          color: #f16a5a;
+          border-color: rgba(224, 74, 58, 0.8);
+          background: rgba(26, 14, 12, 0.55);
+          box-shadow: 0 0 10px 1px rgba(224, 74, 58, 0.25);
+          opacity: 1;
         }
         .bonsai-scope .bonsai-chat-slot-ghost {
           flex: 1 1 0;

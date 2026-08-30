@@ -50,6 +50,9 @@ Declared as TypeScript constants in
 | `DECK_MENU_PANEL_BG` | `rgb(28,36,44)` | Inline popover surface |
 | `DECK_MENU_ROW_SELECTED_BG` | `rgb(40,50,62)` | Selected popover row |
 | `DECK_HIGHLIGHT_CYAN` | `#9ce7ff` | Sliders, links, active controls, section labels |
+| `#f16a5a` | `#f16a5a` | Chat-slot delete stop, glyph colour when it is the active D-pad stop ([section-6.ts](../src/styles/sections/section-6.ts) `.bonsai-chat-slot-delete--active-stop`) |
+| `#e04a3a` family | `rgba(224,74,58,0.8)` border, `rgba(224,74,58,0.25)` glow | Border and glow around that same stop |
+| `#f28b7d` | `#f28b7d` | **Reserved, no consumer** — mock 5c's hover shade for the delete control; 5c's custom modal footer was dropped by board 8d |
 
 ### Ask-mode accents
 
@@ -69,6 +72,9 @@ Three modes, each driving six CSS variables on the input host
 > the destructive-control colour (`.bonsai-pullmodels-delete-btn` uses
 > `rgba(248,113,113,0.45)` border on `rgba(48,24,26,0.65)`). Red on this surface means
 > "Expert mode" as often as it means "delete". Don't assume it reads as danger.
+> The chat-slot delete stop is a deliberate exception: it uses the `#f16a5a` /
+> `rgba(224,74,58,…)` family, a distinct red from the Expert accent, so a destructive stop
+> inside the slot row cannot be mistaken for an ask-mode cue.
 
 ### Text and neutrals
 
