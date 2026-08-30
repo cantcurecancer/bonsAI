@@ -524,13 +524,13 @@ export function buildSection6Section(): string {
         .bonsai-scope .bonsai-chat-slot-row-inner {
           display: flex;
           align-items: center;
-          gap: ${uiScalePx(8)}px;
-          padding: ${uiScalePx(8)}px;
+          gap: ${uiScalePx(8)};
+          padding: ${uiScalePx(8)};
           border-top: 1px solid rgba(255, 255, 255, 0.05);
           border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
         .bonsai-scope .bonsai-chat-slot-row--focused .bonsai-chat-slot-row-inner {
-          padding: ${uiScalePx(12)}px ${uiScalePx(8)}px;
+          padding: ${uiScalePx(12)} ${uiScalePx(8)};
           background: linear-gradient(180deg, rgba(28, 36, 44, 0.92), rgba(18, 26, 34, 0.55));
           border-top-color: rgba(156, 231, 255, 0.22);
           border-bottom-color: rgba(156, 231, 255, 0.22);
@@ -540,12 +540,12 @@ export function buildSection6Section(): string {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          min-width: ${uiScalePx(38)}px;
-          height: ${uiScalePx(26)}px;
-          border-radius: ${uiScalePx(8)}px;
+          min-width: ${uiScalePx(38)};
+          height: ${uiScalePx(26)};
+          border-radius: ${uiScalePx(8)};
           border: 1px solid rgba(168, 182, 198, 0.3);
           color: rgba(168, 182, 198, 0.62);
-          font-size: ${uiScalePx(11)}px;
+          font-size: ${uiScalePx(11)};
           font-weight: 700;
           letter-spacing: 0.04em;
         }
@@ -561,22 +561,22 @@ export function buildSection6Section(): string {
           text-align: center;
         }
         .bonsai-scope .bonsai-chat-slot-eyebrow {
-          font-size: ${uiScalePx(9)}px;
+          font-size: ${uiScalePx(9)};
           font-weight: 700;
           letter-spacing: 0.08em;
           color: #9ce7ff;
-          margin-bottom: ${uiScalePx(4)}px;
+          margin-bottom: ${uiScalePx(4)};
         }
         .bonsai-scope .bonsai-chat-slot-title-row {
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: ${uiScalePx(6)}px;
+          gap: ${uiScalePx(6)};
           min-width: 0;
         }
         .bonsai-scope .bonsai-chat-slot-title {
           font-weight: 700;
-          font-size: ${uiScalePx(12)}px;
+          font-size: ${uiScalePx(12)};
           line-height: 1.2;
           color: rgba(200, 214, 230, 0.72);
           white-space: nowrap;
@@ -585,13 +585,13 @@ export function buildSection6Section(): string {
           max-width: 55%;
         }
         .bonsai-scope .bonsai-chat-slot-row--focused .bonsai-chat-slot-title {
-          font-size: ${uiScalePx(19)}px;
+          font-size: ${uiScalePx(19)};
           color: #f2f7fc;
           text-shadow: 0 0 16px rgba(156, 231, 255, 0.3);
         }
         .bonsai-scope .bonsai-chat-slot-delete {
           flex: 0 0 auto;
-          font-size: ${uiScalePx(14)}px;
+          font-size: ${uiScalePx(14)};
           line-height: 1;
           color: rgba(168, 182, 198, 0.55);
           opacity: 0.85;
@@ -601,7 +601,7 @@ export function buildSection6Section(): string {
         }
         .bonsai-scope .bonsai-chat-slot-ghost {
           flex: 0 1 auto;
-          font-size: ${uiScalePx(11)}px;
+          font-size: ${uiScalePx(11)};
           color: rgba(200, 214, 230, 0.18);
           white-space: nowrap;
           overflow: hidden;
@@ -612,18 +612,18 @@ export function buildSection6Section(): string {
         .bonsai-scope .bonsai-chat-slot-dots {
           display: flex;
           justify-content: center;
-          gap: ${uiScalePx(6)}px;
-          margin-top: ${uiScalePx(6)}px;
+          gap: ${uiScalePx(6)};
+          margin-top: ${uiScalePx(6)};
         }
         .bonsai-scope .bonsai-chat-slot-dot {
-          width: ${uiScalePx(3)}px;
-          height: ${uiScalePx(3)}px;
+          width: ${uiScalePx(3)};
+          height: ${uiScalePx(3)};
           border-radius: 50%;
           background: rgba(143, 168, 196, 0.3);
         }
         .bonsai-scope .bonsai-chat-slot-dot--active {
-          width: ${uiScalePx(4)}px;
-          height: ${uiScalePx(4)}px;
+          width: ${uiScalePx(4)};
+          height: ${uiScalePx(4)};
           background: rgba(200, 214, 230, 0.5);
         }
         .bonsai-scope .bonsai-chat-slot-row--focused .bonsai-chat-slot-dot--active {
