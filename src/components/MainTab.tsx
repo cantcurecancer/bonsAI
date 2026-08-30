@@ -158,7 +158,6 @@ export function MainTab(props: MainTabProps) {
               onSelectSlot={props.onChatSlotSelect}
               onRenameSlot={props.onChatSlotRename}
               onDeleteSlot={props.onChatSlotDelete}
-              focusUnifiedTextField={focusUnifiedTextField}
               onBeforeNestedDeckyModal={props.onBeforeNestedDeckyModal}
               onCompleteNestedDeckyModalClose={props.onCompleteNestedDeckyModalClose}
             />

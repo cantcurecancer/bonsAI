@@ -274,12 +274,20 @@ suggestions → **decode**.
 
 ### CHAT-SLOTS-V2 — Named chat slots (P0)
 
-- [ ] **CHAT-SLOTS-V2-01** D-pad **Down** from tab strip (or Ask) reaches the slot row; **Down** from row reaches unified input; **Up** returns toward tabs; row is quiet at rest; with one slot, ghost neighbours hidden
+- [ ] **CHAT-SLOTS-V2-01** D-pad **Down** from tab strip (or Ask) reaches the slot row; **Down** from row reaches the transcript (the preset row when the slot is empty — the layout inverted in the v3 redesign, W2); **Up** returns toward tabs; row is quiet at rest; with one slot, ghost neighbours hidden
 - [ ] **CHAT-SLOTS-V2-02** `[+]` creates a slot; **A** on title opens rename; **Right** → **×** → ConfirmModal deletes; focus returns to row after each modal
 - [ ] **CHAT-SLOTS-V2-03** Ask in slot A → **LB/RB** to slot B mid-Ask → reply lands in **A**; reopen A — both Q and A present
 - [ ] **CHAT-SLOTS-V2-04** Close QAM mid-Ask → reopen → pending question visible (not empty transcript)
 - [ ] **CHAT-SLOTS-V2-05** With row focused: **LB/RB** cycle slots; blur row → **LB/RB** switch tabs — repeat with a game running and without; record P-0 result in [major-redesign.md](major-redesign.md) § 7 R1
 - [ ] **CHAT-SLOTS-V2-06** Carousel stops at `[+]` and at last slot (no wrap); dots track active slot at cap of 5
+
+### CHAT-SLOTS-V3 — Named chat slots redesign (P0)
+
+Run **CHAT-SLOTS-V2-05** (P-0 bumper suppression) first — it has never run on device, and
+everything below assumes it passes. Plan:
+[28-named-chat-slots-v3-implementation-plan.md](planning/28-named-chat-slots-v3-implementation-plan.md).
+
+- [ ] **CHAT-SLOTS-V3-01** (W2) **Down** from the slot row reaches the transcript's first stop; **Down** continues transcript → presets → ask bar; **Up** retraces; on an empty slot **Down** from the row reaches the presets. The context footnote renders below the ask bar
 
 ---
 

@@ -29,7 +29,6 @@ export type ChatSlotRowProps = {
   onSelectSlot: (slotId: string | null) => Promise<void>;
   onRenameSlot: (slotId: string, label: string) => Promise<boolean>;
   onDeleteSlot: (slotId: string) => Promise<boolean>;
-  focusUnifiedTextField: () => boolean;
   onBeforeNestedDeckyModal?: () => void;
   onCompleteNestedDeckyModalClose?: (close: () => void) => void;
 };
@@ -45,7 +44,6 @@ export function ChatSlotRow({
   onSelectSlot,
   onRenameSlot,
   onDeleteSlot,
-  focusUnifiedTextField,
   onBeforeNestedDeckyModal,
   onCompleteNestedDeckyModalClose,
 }: ChatSlotRowProps) {
@@ -162,10 +160,10 @@ export function ChatSlotRow({
             }
             return false;
           },
-          onMoveDown: () => {
-            focusUnifiedTextField();
-            return true;
-          },
+          // Layout is slot row -> transcript -> presets -> ask bar (D-A). Returning false
+          // lets Steam's spatial navigation descend into whatever is directly below,
+          // which is the transcript when it has content and the preset row when it does not.
+          onMoveDown: () => false,
         } as Record<string, unknown>)}
         className="bonsai-chat-slot-row-focus"
         onFocus={() => setFocused(true)}
