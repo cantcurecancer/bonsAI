@@ -225,6 +225,15 @@ seconds; anything that would otherwise have to be re-measured goes there rather 
   not skip them.** One walk down a finished Strategy reply reached both branch buttons, then **Helpful**, then **Retry** — nothing stepped
   over. **MICRO-04** passes.
 
+### Reading a long reply
+
+- ★★ **The end of a long reply is hidden behind the preset chips** — **OPEN, found by the maintainer 2026-08-30.** Scroll a long answer to
+  the bottom and the last lines never appear; the chip row and the Ask bar sit on top of them. **This is a regression from the same day's
+  sticky Ask dock** — the dock now floats over the transcript instead of scrolling away at its end, so the bottom of the scroll range still
+  stops where it always did and the final ~245px of content ends up underneath it. Nothing is lost, it just cannot be scrolled into view.
+  Likely one line: give the transcript bottom padding equal to the dock's measured height so the scroll range clears it (the dock's height
+  is already measured for the column fill). Do not hardcode 245 — it changes with chip rows, the attach row and UI scale.
+
 ### Small and cosmetic
 
 - ~~★ **After reopening the panel, a branch-pick turn's header shows the internal prompt**~~ — **FIXED at the desk 2026-08-28** with
@@ -507,6 +516,34 @@ alphabetical order the rest of the Backlog uses.
     be compositor-driven (`transform`, not `left`) and to stop when the chip is off screen.
   - **Nice to have:** pause the scroll while the chip has focus so a player reading it with the D-pad
     is not chasing moving text, or scroll only the focused chip.
+- ★★ **The game a chat belongs to, above its title**
+  - **Goal:** The slot row carries the game's name in quiet semi-transparent text above the
+    conversation title, so a chat says what it is about without the title having to spend characters
+    on it. Pairs with the 2026-08-30 change that stopped labels leading with the game name.
+  - **The slot stores an app *id*, not a name** (`origin_app_id`), so this needs the same id-to-name
+    resolution the context line under the Ask bar already does. Turns also carry a per-turn `app_id`,
+    which can disagree with the slot's origin — decide which one the row reports.
+  - **It costs a line of height**, which cuts against the vertical-space goal above. Worth deciding
+    whether it shows always, only while the row has focus, or only when the game differs from the
+    one running now.
+
+- ★★ **Replace the bonsAI tab icon with the redesign's**
+  - **Goal:** The Main tab's glyph becomes the redesign's mark rather than the current tree drawing,
+    which reads as a smudge at tab size. Expect to simplify it — flatter, more silhouette than
+    illustration — because it is rendered at **14px** on a 300px column.
+  - **It has to be an inline SVG path, not the PNG.** `BonsaiTreeTabIcon`
+    ([icons.tsx:61](../src/components/icons.tsx#L61)) draws inline so the glyph inherits `currentColor`
+    and the active-tab fill treatment; `assets/logo.png` cannot do either. Budget for a trace, not a
+    file swap. Geometry is pinned by `icons.bonsaiGeometry.test.tsx`, so update that in the same change.
+- ★★★ **Adjustable text size in Settings**
+  - **Goal:** A setting that scales the plugin's text so a reply can be made larger for reading at a
+    distance, or smaller to fit more on screen — the second of which serves the vertical-space goal
+    above.
+  - **The scaling hook already exists.** `uiScalePx()` is applied throughout the stylesheet, so the
+    mechanism is present; the work is exposing it as a setting, deciding what it does and does not
+    scale (icons and the 300px column width must not move — design-language Rules 1 and 6), and
+    paying the ~18-file plumbing cost one setting costs ([audit/03-friction.md](audit/03-friction.md)).
+
 - ★★★ **Search density UX** (match emphasis + tighter rows)
   - **Goal:** Tighter, more scannable search results with highlighted match tokens.
 - ★★★★ **SteamOS Share path** (capture → attach)

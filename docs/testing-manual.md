@@ -321,6 +321,17 @@ everything below assumes it passes. Plan:
   strip the `+` centre and every dot centre read **191.45** — off-line by **0**. The cause of the old misalignment was `align-items` on the
   dot row defaulting to `stretch` against fixed-height dots, so the glyph box hung below their line.
 
+- [x] **CHAT-SLOTS-V3-13** (strip rhythm + create position) Every marker in the dot strip — the leading `+` included — has the **same box
+  size**, sits on **one centre line**, and has **equal spacing**; compare `getBoundingClientRect()` widths, heights, centres and inter-box
+  gaps rather than eyeballing. At the `[+]` position **only the `+` is lit**: no slot dot carries `--active`. And on a slot whose content
+  does **not** overflow (the `[+]` slot is the reliable one), the dock is still flush — `gapUnderDock` 0, context line on screen  —
+  **PASS 2026-08-30 (automated).** Seven markers, all 5.99 x 5.99, all centred on one line, all six gaps exactly 6.0. At `[+]`:
+  `activeMarkers: ["create"]`, centre label `[+]`, `gapUnderDock` **0** with `overflows: false`. Two separate causes were behind the
+  original report: state was sized (3px quiet / 4px active / 6px ring), which reads as uneven spacing because a flex gap sits between
+  boxes; and the strip keyed off `activeSlotId`, which cycling to `[+]` deliberately leaves alone, so a slot dot stayed lit on top of the +.
+  The bottom gap was a **third**: Decky's PanelSection reserves 24px under itself, invisible whenever the dock is sticky but plain to see on
+  the short `[+]` transcript.
+
 
 ---
 

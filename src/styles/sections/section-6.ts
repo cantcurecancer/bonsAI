@@ -578,6 +578,17 @@ export function buildSection6Section(): string {
         .bonsai-scope .bonsai-decky-tabs-root [class*="TabContentsScroll"]:has(.bonsai-main-tab-dock) {
           padding-bottom: 0 !important;
         }
+        /*
+          Decky's PanelSection reserves 24px under itself. On a slot whose content overflows this
+          is invisible - the dock is sticky and pins to the scrollport edge regardless. On the [+]
+          slot, whose transcript is one line of placeholder, nothing overflows, so the dock sits at
+          its flow position and that 24px showed as dead space under the context line: a gap that
+          appeared on the new-chat screen and on no other. Measured on device 2026-08-30, 24px.
+          Same treatment and same scope as the padding above - Main only, by way of the dock.
+        */
+        .bonsai-scope .bonsai-decky-tabs-root [class*="TabContentsScroll"] div:has(> .bonsai-main-tab-column) {
+          margin-bottom: 0 !important;
+        }
 
         /* Collapsed history: one "N earlier" pill standing in for the older archived turns. */
         .bonsai-scope .bonsai-chat-earlier-pill-row {
@@ -870,14 +881,27 @@ export function buildSection6Section(): string {
           margin-top: ${uiScalePx(6)};
         }
         .bonsai-scope .bonsai-chat-slot-dot {
-          width: ${uiScalePx(3)};
-          height: ${uiScalePx(3)};
+          /*
+            Every marker in the strip is the SAME box, always. State is carried by fill, border and
+            colour only - never by size. Sizing by state (3px quiet, 4px active, 6px ring) made the
+            strip read as unevenly spaced even though the gap is constant, because a flex gap sits
+            between boxes: a 3px dot beside a 6px one leaves more visible air around the small one,
+            and the eye reads that as a wider gap rather than as a smaller dot. Maintainer,
+            2026-08-30: all the dots, and the + sign, equal in size and equal spacing.
+
+            The 1.5px border is reserved as transparent on the base rule so --pending can colour it
+            in without changing the box; border-box keeps the outer size at 6px either way, and the
+            default border-box background clip means a plain dot still paints solid across it.
+          */
+          flex: 0 0 auto;
+          box-sizing: border-box;
+          width: ${uiScalePx(6)};
+          height: ${uiScalePx(6)};
+          border: 1.5px solid transparent;
           border-radius: 50%;
           background: rgba(143, 168, 196, 0.3);
         }
         .bonsai-scope .bonsai-chat-slot-dot--active {
-          width: ${uiScalePx(4)};
-          height: ${uiScalePx(4)};
           background: rgba(200, 214, 230, 0.5);
         }
         /*
@@ -887,14 +911,15 @@ export function buildSection6Section(): string {
           slots, which left that position with no indicator at all.
         */
         .bonsai-scope .bonsai-chat-slot-dot--create {
-          /* A fixed box centred on the same line as the dots, rather than an auto-sized one that
-             inherited whatever the glyph's line box happened to be. width/height beat the
-             .bonsai-chat-slot-dot and --active rules on source order at equal specificity. */
+          /* Same 6px box as every other marker, so the strip's rhythm is uniform; the glyph is
+             centred inside it and sized to fit rather than the box being sized to the glyph. */
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          width: ${uiScalePx(9)};
-          height: ${uiScalePx(9)};
+          box-sizing: border-box;
+          width: ${uiScalePx(6)};
+          height: ${uiScalePx(6)};
+          border: 0;
           border-radius: 0;
           background: transparent;
           color: rgba(143, 168, 196, 0.5);
@@ -911,15 +936,11 @@ export function buildSection6Section(): string {
           color: #9ce7ff;
         }
         .bonsai-scope .bonsai-chat-slot-dot--pending {
-          width: ${uiScalePx(6)};
-          height: ${uiScalePx(6)};
           background: transparent;
-          border: 1.5px solid rgba(56, 189, 248, 0.9);
+          border-color: rgba(56, 189, 248, 0.9);
           box-shadow: 0 0 6px rgba(56, 189, 248, 0.5);
         }
         .bonsai-scope .bonsai-chat-slot-dot--unread {
-          width: ${uiScalePx(6)};
-          height: ${uiScalePx(6)};
           background: #4ade80;
           box-shadow: 0 0 6px rgba(74, 222, 128, 0.6);
         }

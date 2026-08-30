@@ -322,10 +322,16 @@ export function ChatSlotRow({
                 >
                   +
                 </span>
-                {orderedSlots.slice(0, MAX_DOTS).map((slot) => (
+                {/*
+                  Marked by CAROUSEL POSITION, not by the stored active slot id. Cycling onto [+]
+                  deliberately leaves the active slot alone, so keying off the id lit a slot dot at
+                  the create position on top of the +, saying two places were current at once.
+                  carouselIndex is what is on screen, so it is what the strip reports.
+                */}
+                {orderedSlots.slice(0, MAX_DOTS).map((slot, i) => (
                   <span
                     key={slot.id}
-                    className={`bonsai-chat-slot-dot${slot.id === activeSlotId ? " bonsai-chat-slot-dot--active" : ""}${slotStateClass(slot.id)}`}
+                    className={`bonsai-chat-slot-dot${i + 1 === carouselIndex ? " bonsai-chat-slot-dot--active" : ""}${slotStateClass(slot.id)}`}
                   />
                 ))}
               </div>

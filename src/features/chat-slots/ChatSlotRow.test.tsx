@@ -50,6 +50,17 @@ describe("ChatSlotRow dot language", () => {
     expect(classes.some((c) => c.includes("--unread"))).toBe(false);
   });
 
+  /*
+   * Cycling onto [+] deliberately does NOT change the active slot, so a strip keyed off
+   * `activeSlotId` lit a slot dot there on top of the +, claiming two positions were current at
+   * once. Seen on device 2026-08-30. The strip reports the carousel position instead.
+   */
+  it("lights only the create marker while the carousel sits at the create position", () => {
+    const { container } = renderRow({ activeSlotId: null });
+    expect(dotClasses(container).filter((c) => c.includes("--active"))).toHaveLength(0);
+    expect(container.querySelector(".bonsai-chat-slot-dot--create")?.className).toContain("--active");
+  });
+
   it("leads the strip with a create marker that is inactive while a slot is selected", () => {
     const { container } = renderRow();
     const create = container.querySelector(".bonsai-chat-slot-dot--create");
