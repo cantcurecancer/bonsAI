@@ -70,4 +70,14 @@ describe("characterUiAccent", () => {
     const noAccent = buildBonsaiScopeAccentInlineStyle(null) as Record<string, string>;
     expect(noAccent["--bonsai-ui-tab-active-icon"]).toBeUndefined();
   });
+
+  it("answer-card wash lifts the accent 40% toward white at 11% alpha", () => {
+    // #6c3483 is the darkest accent in the map (bg3_shadowheart) — the case the lift exists for.
+    // 108+(255-108)*.4=166.8 -> 167; 52+(255-52)*.4=133.2 -> 133; 131+(255-131)*.4=180.6 -> 181.
+    const style = buildBonsaiScopeAccentInlineStyle({ main: "#6c3483", subtle: "#3a1c47" }) as Record<
+      string,
+      string
+    >;
+    expect(style["--bonsai-chat-ai-bubble-wash"]).toBe("rgba(167, 133, 181, 0.11)");
+  });
 });

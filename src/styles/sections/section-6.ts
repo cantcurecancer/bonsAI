@@ -311,11 +311,17 @@ export function buildSection6Section(): string {
         .bonsai-scope .bonsai-chat-ai-bubble.bonsai-glass-panel {
           border-radius: 10px !important;
           border: 1px solid var(--bonsai-chat-ai-bubble-border, rgba(46, 135, 83, 0.48)) !important;
-          background: linear-gradient(
-            180deg,
-            var(--bonsai-chat-ai-bubble-bg-top, rgba(46, 135, 83, 0.12)) 0%,
-            var(--bonsai-chat-ai-bubble-bg-bottom, rgba(18, 52, 34, 0.55)) 100%
-          ) !important;
+          background:
+            linear-gradient(
+              0deg,
+              var(--bonsai-chat-ai-bubble-wash, rgba(130, 183, 152, 0.11)),
+              var(--bonsai-chat-ai-bubble-wash, rgba(130, 183, 152, 0.11))
+            ),
+            linear-gradient(
+              180deg,
+              var(--bonsai-chat-ai-bubble-bg-top, rgba(46, 135, 83, 0.12)) 0%,
+              var(--bonsai-chat-ai-bubble-bg-bottom, rgba(18, 52, 34, 0.55)) 100%
+            ) !important;
           color: var(--bonsai-chat-ai-bubble-text, #d4dde6) !important;
           overflow: hidden !important;
         }

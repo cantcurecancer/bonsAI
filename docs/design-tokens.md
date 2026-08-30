@@ -100,11 +100,20 @@ a literal fallback, so a character theme can retint it:
 ```
 border-radius: 10px
 border:        1px solid var(--bonsai-chat-ai-bubble-border, rgba(46,135,83,0.48))
-background:    linear-gradient(180deg,
+background:    linear-gradient(0deg,
+                 var(--bonsai-chat-ai-bubble-wash, rgba(130,183,152,0.11)),
+                 var(--bonsai-chat-ai-bubble-wash, rgba(130,183,152,0.11))),
+               linear-gradient(180deg,
                  var(--bonsai-chat-ai-bubble-bg-top,    rgba(46,135,83,0.12)) 0%,
                  var(--bonsai-chat-ai-bubble-bg-bottom, rgba(18,52,34,0.55)) 100%)
 color:         var(--bonsai-chat-ai-bubble-text, #d4dde6)
 ```
+
+`--bonsai-chat-ai-bubble-wash` is a constant flat layer over the gradient, not part of it:
+the accent lifted 40% toward white at 11% alpha. The lift is `v + (255 - v) * 0.4` per
+channel ([characterUiAccent.ts](../src/data/characterUiAccent.ts) `liftRgb`), applied at
+**every** accent rather than only dark ones, so the card reads the same way across the
+catalog. The fallback is forest green `#2e8753` lifted the same way, `rgb(130,183,152)`.
 
 Truncated bubbles use `.bonsai-chat-ai-bubble-inner--faded`, a
 `mask-image: linear-gradient(to bottom, #000 0%, #000 55%, transparent 100%)`.

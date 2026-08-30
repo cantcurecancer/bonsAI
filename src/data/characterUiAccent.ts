@@ -78,6 +78,15 @@ function darkenRgb(rgb: Rgb, factor: number): Rgb {
   };
 }
 
+/** Lifts a colour toward white so a dark accent still reads as a wash rather than a smudge. */
+function liftRgb(rgb: Rgb, factor: number): Rgb {
+  return {
+    r: Math.max(0, Math.min(255, Math.round(rgb.r + (255 - rgb.r) * factor))),
+    g: Math.max(0, Math.min(255, Math.round(rgb.g + (255 - rgb.g) * factor))),
+    b: Math.max(0, Math.min(255, Math.round(rgb.b + (255 - rgb.b) * factor))),
+  };
+}
+
 /** Darker / lower-chroma companion for borders and soft glows (not opacity-only on the same hue). */
 export function deriveSubtleHexFromMain(mainHex: string): string {
   const base = hexToRgb(mainHex);
@@ -120,6 +129,9 @@ function buildChatAiBubbleScopeVars(mainHex: string, subtleHex: string): CSSProp
     ["--bonsai-chat-ai-bubble-bg-bottom" as string]: r(dDeep, 0.45),
     ["--bonsai-chat-ai-bubble-text" as string]: "#d4dde6",
     ["--bonsai-chat-ai-bubble-chunk-border" as string]: r(m, 0.1),
+    // Constant 11%-alpha wash of the accent lifted 40% toward white, layered over the gradient
+    // above. Lifted at every accent, not conditionally on luminance (decision 8c -> B).
+    ["--bonsai-chat-ai-bubble-wash" as string]: r(liftRgb(m, 0.4), 0.11),
   };
 }
 
