@@ -335,19 +335,17 @@ export function buildSection6Section(): string {
           -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 55%, transparent 100%) !important;
           mask-image: linear-gradient(to bottom, #000 0%, #000 55%, transparent 100%) !important;
         }
+        /* Streaming keeps the accent border: it reads as the cyan glow plus the caret, not as a
+           border swap (item 12). The fence-wait sub-state drops its swap for the same reason. */
         .bonsai-scope .bonsai-chat-ai-bubble--stream-preview.bonsai-glass-panel {
-          border-color: var(--bonsai-stream-preview-border, rgba(56, 189, 248, 0.55)) !important;
           animation: bonsai-stream-preview-pulse var(--bonsai-stream-pulse-ms, 2000ms) ease-in-out infinite;
-        }
-        .bonsai-scope .bonsai-chat-ai-bubble--fence-wait.bonsai-glass-panel {
-          border-color: var(--bonsai-stream-preview-border, rgba(56, 189, 248, 0.55)) !important;
         }
         @keyframes bonsai-stream-preview-pulse {
           0%, 100% {
             box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.12);
           }
           50% {
-            box-shadow: 0 0 8px 1px rgba(56, 189, 248, 0.32);
+            box-shadow: 0 0 8px 1px rgba(56, 189, 248, 0.28);
           }
         }
         .bonsai-scope .bonsai-stream-fence-wait {
