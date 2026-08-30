@@ -187,14 +187,20 @@ export function ChatSlotRow({
   }, [focused, centerLabel]);
 
   return (
-    <div
-      className={`bonsai-chat-slot-row${focused ? " bonsai-chat-slot-row--focused" : ""}`}
-      ref={(el) => {
-        rowFocusElRef.current = el;
-        registerModalReturnFocusOwner("chat-slot-rename", el);
-      }}
-    >
+    <div className={`bonsai-chat-slot-row${focused ? " bonsai-chat-slot-row--focused" : ""}`}>
       <Focusable
+        /*
+          The return-focus registry must be handed THIS element, not the wrapper above it.
+          `focusOwnerById` resolves its target with
+          `el.matches(".Panel.Focusable") ? el : el.closest(".Panel.Focusable")` — from the plain
+          wrapper that walks UP to an ancestor container, so closing the rename modal put the ring
+          on the tab strip instead of the row. Measured on device 2026-08-30. This element is the
+          row's own `Panel Focusable`, so the ladder's first target hits it directly.
+        */
+        ref={(el: HTMLElement | null) => {
+          rowFocusElRef.current = el;
+          registerModalReturnFocusOwner("chat-slot-rename", el);
+        }}
         {...({
           navRef,
           /*

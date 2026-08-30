@@ -17,12 +17,10 @@ const SCROLL_CONTAINER_SELECTOR = '[class*="TabContentsScroll"]';
 /** Below this the pane is crushed/mid-relayout (same idea as tabBodyViewport's guards) — skip. */
 const MIN_FILL_PX = 120;
 /**
- * One bounded shrink pass: chrome below the column (PanelSection bottom padding, Steam wrappers)
- * would otherwise make an exactly-filled pane scrollable by a few px. A short pane's only
- * overflow IS that chrome, so subtracting a small measured overflow lands the fill exactly;
- * anything larger means the content genuinely overflows and min-height is moot anyway.
+ * Sanity bound on the measured chrome below the column. Anything larger is a mis-measure (a
+ * mid-relayout frame, a collapsed wrapper) and is ignored rather than subtracted.
  */
-const MAX_CHROME_CORRECTION_PX = 32;
+const MAX_CHROME_BELOW_PX = 200;
 
 export const MAIN_COLUMN_MIN_HEIGHT_VAR = "--bonsai-main-column-min-height";
 
@@ -55,24 +53,34 @@ export function useMainTabColumnFill(columnRef: React.RefObject<HTMLDivElement |
 
       const scrollRect = scroll.getBoundingClientRect();
       const columnRect = column.getBoundingClientRect();
-      const paddingBottom = parseFloat(getComputedStyle(scroll).paddingBottom) || 0;
-      /* Distance from the client-area origin to the column top, scroll position removed. */
+      /* Distances measured inside the scroll content, so the current scroll position drops out. */
       const topOffset = columnRect.top - scrollRect.top - scroll.clientTop + scroll.scrollTop;
-      let fill = Math.floor(scroll.clientHeight - topOffset - paddingBottom);
+      const columnBottom = topOffset + columnRect.height;
+      /*
+       * Chrome that sits BELOW the column inside the same scroll content — PanelSection bottom
+       * padding, Steam wrappers, the scroller's own padding-bottom. Measuring it directly is what
+       * makes this stable. The first version instead applied the fill, measured the leftover
+       * overflow and subtracted it, which oscillated: subtracting removed the overflow, the next
+       * observer pass recomputed the full fill, the overflow came back, and the dock visibly moved
+       * by those few pixels on every relayout.
+       */
+      const chromeBelow = scroll.scrollHeight - columnBottom;
+      const safeChrome = chromeBelow >= 0 && chromeBelow <= MAX_CHROME_BELOW_PX ? chromeBelow : 0;
+      const fill = Math.floor(scroll.clientHeight - topOffset - safeChrome);
 
       if (fill < MIN_FILL_PX) {
         column.style.removeProperty(MAIN_COLUMN_MIN_HEIGHT_VAR);
         return;
       }
 
-      column.style.setProperty(MAIN_COLUMN_MIN_HEIGHT_VAR, `${fill}px`);
-      /* Bounded chrome correction — see MAX_CHROME_CORRECTION_PX. Shrink only, never grow. */
-      const overflow = scroll.scrollHeight - scroll.clientHeight;
-      if (overflow > 0 && overflow <= MAX_CHROME_CORRECTION_PX) {
-        fill -= overflow;
-        if (fill >= MIN_FILL_PX) {
-          column.style.setProperty(MAIN_COLUMN_MIN_HEIGHT_VAR, `${fill}px`);
-        }
+      /*
+       * Idempotent: with the fill applied, content height is exactly topOffset + fill +
+       * chromeBelow == clientHeight, so re-measuring yields the same number and the value stops
+       * changing. Writing only on a real change also keeps the observer from re-entering.
+       */
+      const next = `${fill}px`;
+      if (column.style.getPropertyValue(MAIN_COLUMN_MIN_HEIGHT_VAR) !== next) {
+        column.style.setProperty(MAIN_COLUMN_MIN_HEIGHT_VAR, next);
       }
     };
 

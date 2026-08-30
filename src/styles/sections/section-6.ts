@@ -591,6 +591,24 @@ export function buildSection6Section(): string {
           color: rgba(143, 168, 196, 0.5);
         }
 
+        /*
+          While the slot row has focus the bumpers cycle SLOTS, not tabs — so Steam's own L1/R1
+          hints in the tab strip are telling the user something untrue, and the row's own LB/RB
+          pills put a second pair of shoulder glyphs on screen at the same time.
+
+          Matched by container rather than by wording. The wrapper classes are hashed
+          (design-language Rule 5) AND the aria-label is not stable either: the same two images
+          read L1 Button / R1 Button in one measurement and Left Shoulder / Right Shoulder in the
+          next, because Steam re-labels them for the active controller. What IS stable, in every
+          measurement on 2026-08-30, is that the tab strip's shoulder hints are the only
+          aria-labelled images anywhere inside .bonsai-decky-tabs-root. :has() is verified
+          supported on this CEF (Rule 5), and visibility rather than display keeps the strip's
+          layout from shifting when they go.
+        */
+        .bonsai-scope .bonsai-decky-tabs-root:has(.bonsai-chat-slot-row--focused) img[aria-label] {
+          visibility: hidden;
+        }
+
         /* Named chat slots row (Main tab, under tab strip) */
         .bonsai-scope .bonsai-chat-slot-row {
           width: 100%;
@@ -618,7 +636,7 @@ export function buildSection6Section(): string {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          min-width: ${uiScalePx(38)};
+          min-width: ${uiScalePx(34)};
           height: ${uiScalePx(26)};
           border-radius: ${uiScalePx(8)};
           border: 1px solid rgba(168, 182, 198, 0.3);
@@ -652,18 +670,41 @@ export function buildSection6Section(): string {
           gap: ${uiScalePx(6)};
           min-width: 0;
         }
+        /*
+          Sized for READING THE NAME, not for hierarchy. The 300px column leaves the focused row
+          about 188px of centre once the two 34px bumper pills and their gaps are paid for, and the
+          delete box takes 22 of that. At the reviewed 14px with a 55% cap the title window measured
+          104px on device — roughly three words — which the maintainer rejected on 2026-08-30.
+          12px plus a 72% cap roughly doubles the characters that fit. Deliberate deviation from
+          decision D-B (700 14px focused / 13px quiet); focus emphasis now rests on colour and the
+          glow, which the focused rule still carries.
+        */
         .bonsai-scope .bonsai-chat-slot-title {
           font-weight: 700;
-          font-size: ${uiScalePx(13)};
+          font-size: ${uiScalePx(12)};
           line-height: 1.2;
           color: rgba(200, 214, 230, 0.72);
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
-          max-width: 55%;
+          max-width: 88%;
+        }
+        /*
+          Ghost neighbours stand down while the row is focused, and the title takes their room.
+          Measured 2026-08-30: focused, the centre block is ~196px of the 300px column once the
+          two pills and their gaps are paid, and the delete box takes 22 more. With both ghosts
+          present the title window was 88px whatever the font size — shrinking the type alone
+          bought nothing, because the ghosts simply absorbed what the cap gave up. Hidden, the
+          window is ~168px, which is what actually turns three words into a readable name.
+          They return the moment focus leaves, which is where they do their job: reading the
+          neighbours at a glance without cycling. Deliberate narrowing of decision D-D, which
+          kept ghosts at 300px but did not anticipate the focused row's pill cost.
+        */
+        .bonsai-scope .bonsai-chat-slot-row--focused .bonsai-chat-slot-ghost {
+          display: none;
         }
         .bonsai-scope .bonsai-chat-slot-row--focused .bonsai-chat-slot-title {
-          font-size: ${uiScalePx(14)};
+          font-size: ${uiScalePx(12)};
           color: #f2f7fc;
           text-shadow: 0 0 16px rgba(156, 231, 255, 0.3);
         }
@@ -730,7 +771,10 @@ export function buildSection6Section(): string {
           opacity: 1;
         }
         .bonsai-scope .bonsai-chat-slot-ghost {
-          flex: 1 1 0;
+          /* 0 1 auto + a cap, not 1 1 0: an equal split handed the ghosts every pixel the
+             title's max-width left behind, which is the other half of why so little name fit. */
+          flex: 0 1 auto;
+          max-width: 15%;
           min-width: 0;
           font-size: ${uiScalePx(11)};
           color: rgba(200, 214, 230, 0.28);
