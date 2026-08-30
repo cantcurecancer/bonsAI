@@ -846,23 +846,6 @@ questionLooksLikeTroubleshootingAsk(unifiedInput) ? (
     </div>
   </PanelSectionRow>
 )}
-{ollamaContext && (
-  <PanelSectionRow>
-    <div
-      className="bonsai-context-footnote"
-      style={{
-        fontSize: 10,
-        color: "#8fa8c4",
-        lineHeight: 1.35,
-        fontStyle: "italic",
-      }}
-    >
-      {ollamaContext.app_context === "active" && ollamaContext.app_id
-        ? `Context: active game AppID ${ollamaContext.app_id}`
-        : "Context: no active game detected"}
-    </div>
-  </PanelSectionRow>
-)}
     </>
   );
 }

@@ -71,13 +71,13 @@
       "role": ""
     },
     {
-      "path": "src/components/MainTabChatTranscript.tsx",
-      "lines": 869,
+      "path": "py_modules/backend/services/bonsai_stream_tags.py",
+      "lines": 858,
       "role": ""
     },
     {
-      "path": "py_modules/backend/services/bonsai_stream_tags.py",
-      "lines": 858,
+      "path": "src/components/MainTabChatTranscript.tsx",
+      "lines": 852,
       "role": ""
     },
     {

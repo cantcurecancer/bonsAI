@@ -164,6 +164,7 @@ export function MainTab(props: MainTabProps) {
             />
           </PanelSectionRow>
         ) : null}
+        <MainTabChatTranscript {...props} />
         <PanelSectionRow>
           <MainTabPresetRow
             suggestedPrompts={props.suggestedPrompts}
@@ -233,8 +234,23 @@ export function MainTab(props: MainTabProps) {
             <div style={{ color: "#81c784", fontSize: 13 }}>{props.navigationMessage}</div>
           </PanelSectionRow>
         )}
-
-        <MainTabChatTranscript {...props} />
+        {props.ollamaContext && (
+          <PanelSectionRow>
+            <div
+              className="bonsai-context-footnote"
+              style={{
+                fontSize: 10,
+                color: "#8fa8c4",
+                lineHeight: 1.35,
+                fontStyle: "italic",
+              }}
+            >
+              {props.ollamaContext.app_context === "active" && props.ollamaContext.app_id
+                ? `Context: active game AppID ${props.ollamaContext.app_id}`
+                : "Context: no active game detected"}
+            </div>
+          </PanelSectionRow>
+        )}
       </PanelSection>
     </>
   );
