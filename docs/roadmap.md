@@ -225,14 +225,28 @@ seconds; anything that would otherwise have to be re-measured goes there rather 
   not skip them.** One walk down a finished Strategy reply reached both branch buttons, then **Helpful**, then **Retry** — nothing stepped
   over. **MICRO-04** passes.
 
+### The tab strip
+
+- ★★ **The tab names never appear** — **OPEN, filed by the maintainer 2026-08-30:** the strip shows glyphs only, and *Main*, *Ollama*,
+  *Settings* and the rest are nowhere, though the mock-ups draw them. **Read the decision before writing any CSS:** this is not an
+  oversight, it is [R5](major-redesign.md) — *filled active glyph only, no micro labels, no width change, no height cost* — which the
+  backlog entry **Tab-strip micro labels + wide active cell** records as deliberately not built. So the fix is to **reopen R5** in
+  [audit/maintainer-decisions-locked.md](audit/maintainer-decisions-locked.md) first, and it needs settling alongside the collapsing tab
+  bar below, which wants the active tab readable at a glance and is the natural place for a name to live.
+
 ### Reading a long reply
 
-- ★★ **The end of a long reply is hidden behind the preset chips** — **OPEN, found by the maintainer 2026-08-30.** Scroll a long answer to
-  the bottom and the last lines never appear; the chip row and the Ask bar sit on top of them. **This is a regression from the same day's
-  sticky Ask dock** — the dock now floats over the transcript instead of scrolling away at its end, so the bottom of the scroll range still
-  stops where it always did and the final ~245px of content ends up underneath it. Nothing is lost, it just cannot be scrolled into view.
-  Likely one line: give the transcript bottom padding equal to the dock's measured height so the scroll range clears it (the dock's height
-  is already measured for the column fill). Do not hardcode 245 — it changes with chip rows, the attach row and UI scale.
+- ★★★ **A finished long reply is left scrolled to the top, with its end behind the preset chips** — **PARTLY FIXED 2026-08-30; the
+  auto-scroll half is still OPEN.** Fixed and verified: the dock no longer hides content it should not (the reading area is 371px of a
+  616px pane, and a fade above the dock now shows text passing under it rather than being sliced). **Not fixed:** after a long answer
+  settles the pane is still at `scrollTop 0` with the end below the fold. Four real Asks on device, ranges 435/872/1240px, scrollTop 0
+  every time. Three separate causes in `useStreamScrollPin` were found and fixed on the way, and each was real — the fold was measured at
+  the pane's bottom edge rather than the dock's top; the follow ran only when the text prop changed, so an answer that grows after that
+  commit was never followed; and submitting an Ask shrinks the transcript, whose clamp-to-zero scroll event read as "the user scrolled up"
+  and pinned the view at 0. **None of them was the whole story**, so the remaining cause is upstream: the hook's `enabled` gate
+  (`isAsking || isStreamingPreview` at [MainTabChatTranscript.tsx:270](../src/components/MainTabChatTranscript.tsx#L270)). Next session:
+  prove whether the hook runs at all during an Ask before changing anything else — everything downstream of that gate is now correct and
+  covered by tests. Row **CHAT-SLOTS-V3-14**.
 
 ### Small and cosmetic
 

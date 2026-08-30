@@ -332,6 +332,22 @@ everything below assumes it passes. Plan:
   The bottom gap was a **third**: Decky's PanelSection reserves 24px under itself, invisible whenever the dock is sticky but plain to see on
   the short `[+]` transcript.
 
+- [x] **CHAT-SLOTS-V3-14a** (strip rhythm, smaller markers) Every marker in the dot strip is the same size, on one centre line, with equal
+  gaps, and the markers are small rather than heavy  — **PASS 2026-08-30 (automated).** Seven markers at **3.99 x 3.99**, one centre line,
+  all six gaps exactly **6.0**. The residual oval look was the transparent 1.5px border reserved on the base rule: it gave each dot two edge
+  sets to snap independently at this device pixel ratio (1.28 measured), so the ring is an inset box-shadow now and the base rule has no
+  border at all.
+- [x] **CHAT-SLOTS-V3-14b** (one row height) The slot bar is the same height at `[+]` as on a populated slot  — **PASS 2026-08-30
+  (automated).** Title row **22** and delete box **22** on both. The bar used to shrink ~9px at `[+]`, because the 22px x set the line on a
+  slot and nothing did at the create position; the row now reserves the delete box's height whatever is in it.
+- [ ] **CHAT-SLOTS-V3-14c** (the game above the title) A chat created from now on shows its game's name in quiet text above the
+  conversation title; a chat created before this shows the line reserved but empty; `[+]` shows it empty. **Needs a slot created after
+  2026-08-30** — the name is only stored at creation, so every existing slot reads empty.
+- [ ] **CHAT-SLOTS-V3-14d** (the end of a long reply) After a long answer settles, its end is reachable and does not look cut off: text
+  visibly fades under the chips rather than being sliced, and the pane brings the end into view. **Fade PASSES** (18px gradient above the
+  dock, measured). **Auto-scroll FAILS** — four Asks, scroll ranges 435/872/1240px, `scrollTop` 0 every time. See the roadmap entry for the
+  three causes already fixed and where to look next.
+
 
 ---
 

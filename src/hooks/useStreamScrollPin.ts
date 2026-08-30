@@ -4,7 +4,8 @@
  *          scrolls up to read something behind it.
  * Used for: MainTab chat transcript anchor during background Ask streaming.
  * Solves: Auto-scroll fighting manual scroll-up during long replies, and its mirror image — text
- *         arriving below the fold with nothing bringing it into view.
+ *         arriving below the fold with nothing bringing it into view. "The fold" is the top of the
+ *         bottom-pinned dock, not the pane's bottom edge — see visibleBottom.
  * Does not: Find scroll containers — see chatPanelScroll.findTabContentsScroll.
  */
 import { useEffect, useLayoutEffect, useRef, type RefObject } from "react";
@@ -16,6 +17,27 @@ const FOLLOW_SLACK_PX = 48;
 /** A scroll position within this many pixels of one we set is treated as our own. */
 const SELF_SCROLL_EPSILON_PX = 1;
 
+/** The bottom-pinned preset/Ask dock, which covers the foot of the pane while content overflows. */
+const DOCK_SELECTOR = ".bonsai-main-tab-dock";
+
+/**
+ * The lowest point a reader can actually see inside the scroll pane.
+ *
+ * The Ask dock is `position: sticky; bottom: 0`, so whenever the content overflows it sits ON TOP
+ * of the bottom ~245px of the pane. Measuring the fold at the pane's own bottom edge therefore
+ * called the tail "in view" while it was behind the preset chips, and the follow stopped a dock's
+ * height short of the end of the answer — which on device 2026-08-30 looked exactly like a long
+ * reply being cut off mid-sentence. At the pane's maximum scroll the dock is back in normal flow
+ * below the transcript, where its top is past the tail anyway, so the same expression is right in
+ * both regimes and needs no special case.
+ */
+function visibleBottom(scroll: HTMLElement): number {
+  const paneBottom = scroll.getBoundingClientRect().bottom;
+  const dock = scroll.querySelector<HTMLElement>(DOCK_SELECTOR);
+  if (!dock) return paneBottom;
+  return Math.min(paneBottom, dock.getBoundingClientRect().top);
+}
+
 /**
  * Whether the user is still looking at the end of the transcript.
  *
@@ -26,7 +48,7 @@ const SELF_SCROLL_EPSILON_PX = 1;
  * latch the pin one frame after the first follow and stop the whole thing dead.
  */
 function transcriptTailIsInView(anchor: HTMLElement, scroll: HTMLElement): boolean {
-  const overshoot = anchor.getBoundingClientRect().bottom - scroll.getBoundingClientRect().bottom;
+  const overshoot = anchor.getBoundingClientRect().bottom - visibleBottom(scroll);
   return overshoot <= FOLLOW_SLACK_PX;
 }
 
@@ -47,6 +69,8 @@ export function useStreamScrollPin(
   const pinnedTopRef = useRef<number | null>(null);
   /** The last scrollTop this hook set, so its own scrolls are not read as the user's. */
   const selfWroteTopRef = useRef<number | null>(null);
+  /** Content height at the previous scroll event, to tell a clamp from a deliberate scroll. */
+  const lastScrollHeightRef = useRef(0);
 
   /*
    * Reset on every transition, including *into* streaming: a pin taken during the previous answer —
@@ -69,8 +93,23 @@ export function useStreamScrollPin(
     const scroll = findTabContentsScroll(anchor);
     if (!anchor || !scroll) return;
 
+    lastScrollHeightRef.current = scroll.scrollHeight;
+
     const onScroll = () => {
       const top = scroll.scrollTop;
+      /*
+       * A CLAMP, not the user. Submitting an Ask replaces a long transcript with one short turn,
+       * so the content collapses and the browser clamps scrollTop down to fit — which arrives as
+       * an ordinary scroll event at a position nobody chose. Reading that as "the user scrolled
+       * up" pinned the view at 0 for the whole answer, and every later pass then re-asserted 0.
+       *
+       * It is the normal path, not an edge case: reaching the ASK button by D-pad scrolls the pane
+       * on the way down, so the clamp is guaranteed. Measured on device 2026-08-30 - three long
+       * replies in a row settled with 872 to 1240px of scroll range and scrollTop still 0.
+       */
+      const shrank =
+        lastScrollHeightRef.current > 0 && scroll.scrollHeight < lastScrollHeightRef.current;
+      lastScrollHeightRef.current = scroll.scrollHeight;
       /*
        * Our own scroll, arriving late. `scroll` events are asynchronous, so by the time one lands
        * the reveal has usually added more text and the tail is below the fold again — reading that
@@ -87,6 +126,7 @@ export function useStreamScrollPin(
       /* The user has taken over, so the position we remember is no longer a useful comparison —
          keeping it would make a later scroll that happens to land there look like ours. */
       selfWroteTopRef.current = null;
+      if (shrank) return;
       pinnedTopRef.current = transcriptTailIsInView(anchor, scroll) ? null : top;
     };
 
@@ -111,40 +151,65 @@ export function useStreamScrollPin(
       selfWroteTopRef.current = scroll.scrollTop;
     };
 
-    if (pinnedTopRef.current != null) {
-      setScrollTop(pinnedTopRef.current);
-      return;
-    }
+    const tailBelowFold = () => anchor.getBoundingClientRect().bottom - visibleBottom(scroll);
 
-    const tailBelowFold = () =>
-      anchor.getBoundingClientRect().bottom - scroll.getBoundingClientRect().bottom;
+    const follow = () => {
+      if (pinnedTopRef.current != null) {
+        setScrollTop(pinnedTopRef.current);
+        return;
+      }
 
-    const overshoot = tailBelowFold();
-    if (overshoot <= 0) return;
+      const overshoot = tailBelowFold();
+      if (overshoot <= 0) return;
+
+      /*
+       * The QAM tab often grows with its content instead of scrolling, leaving scrollHeight equal
+       * to clientHeight. Assigning scrollTop there does nothing — worse, clamping to a max of 0
+       * would jump to the top — so the geometry nudge is the only thing that moves the view.
+       */
+      const max = panelScrollMax(scroll);
+      if (max <= 0) {
+        tryGeometryPanelScroll(anchor, "down");
+        selfWroteTopRef.current = scroll.scrollTop;
+        return;
+      }
+
+      setScrollTop(Math.min(max, scroll.scrollTop + overshoot));
+
+      /*
+       * Clamped at the container's maximum and the tail is still off screen, so this container
+       * cannot show it. Some ancestor can: on device the answer runs past the bottom edge while
+       * the panel reports itself fully scrolled. Hand it to the browser, which will move whichever
+       * ancestor actually has the range.
+       */
+      if (tailBelowFold() > 0) {
+        anchor.scrollIntoView({ block: "end", behavior: "auto" });
+        selfWroteTopRef.current = scroll.scrollTop;
+      }
+    };
+
+    follow();
 
     /*
-     * The QAM tab often grows with its content instead of scrolling, leaving scrollHeight equal to
-     * clientHeight. Assigning scrollTop there does nothing — worse, clamping to a max of 0 would
-     * jump to the top — so the geometry nudge is the only thing that moves the view.
+     * The text prop is not a reliable signal that the ANSWER has finished laying out. On the commit
+     * where it lands, the bubble is often still short — markdown, spoiler fences and glossary chips
+     * expand it over the frames that follow — so the one pass above can measure a pane that does
+     * not overflow yet, take the max <= 0 branch, and never run again, because nothing changes the
+     * prop afterwards. Measured on device 2026-08-30 with the preview off: the pane finished with
+     * 1240px of scroll range and scrollTop still 0, the whole answer below the fold.
+     *
+     * Watching the anchor closes that gap for free and costs nothing while the height is steady.
      */
-    const max = panelScrollMax(scroll);
-    if (max <= 0) {
-      tryGeometryPanelScroll(anchor, "down");
-      selfWroteTopRef.current = scroll.scrollTop;
-      return;
-    }
-
-    setScrollTop(Math.min(max, scroll.scrollTop + overshoot));
-
-    /*
-     * Clamped at the container's maximum and the tail is still off screen, so this container cannot
-     * show it. Some ancestor can: on device the answer runs past the bottom edge while the panel
-     * reports itself fully scrolled. Hand it to the browser, which will move whichever ancestor
-     * actually has the range.
-     */
-    if (tailBelowFold() > 0) {
-      anchor.scrollIntoView({ block: "end", behavior: "auto" });
-      selfWroteTopRef.current = scroll.scrollTop;
-    }
+    if (typeof ResizeObserver === "undefined") return;
+    let raf = 0;
+    const ro = new ResizeObserver(() => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(follow);
+    });
+    ro.observe(anchor);
+    return () => {
+      cancelAnimationFrame(raf);
+      ro.disconnect();
+    };
   }, [anchorRef, enabled, streamText]);
 }

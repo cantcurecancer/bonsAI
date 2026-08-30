@@ -20,6 +20,10 @@ MAX_TURNS_PER_SLOT = 200
 MAX_TURN_TEXT_LEN = 120_000
 MAX_LABEL_LEN = 120
 MAX_DISPLAY_TEXT_LEN = 300
+# The game's display name, kept alongside its app id so the slot row can show which game a chat
+# belongs to without a lookup. The id alone cannot be shown to a reader, and resolving it needs the
+# game to be running, which it usually is not by the time you are browsing old chats.
+MAX_APP_NAME_LEN = 48
 SLOTS_SUBDIR = "chat_slots"
 
 
@@ -147,6 +151,7 @@ def sanitize_slot(raw: Any) -> dict[str, Any] | None:
         "created_at": int(raw.get("created_at") or time.time()),
         "updated_at": int(raw.get("updated_at") or time.time()),
         "origin_app_id": str(raw.get("origin_app_id", "") or "").strip()[:32],
+        "origin_app_name": str(raw.get("origin_app_name", "") or "").strip()[:MAX_APP_NAME_LEN],
         "turns": turns,
     }
 
@@ -197,6 +202,9 @@ def load_index(settings_dir: str, logger: Any = None) -> dict[str, Any]:
                     "created_at": int(row.get("created_at") or 0),
                     "updated_at": int(row.get("updated_at") or 0),
                     "origin_app_id": str(row.get("origin_app_id", "") or "").strip()[:32],
+                    "origin_app_name": str(row.get("origin_app_name", "") or "").strip()[
+                        :MAX_APP_NAME_LEN
+                    ],
                     "turn_count": int(row.get("turn_count") or 0),
                 }
             )
@@ -270,6 +278,7 @@ def _upsert_index_row(index: dict[str, Any], slot: dict[str, Any]) -> dict[str, 
             "created_at": slot["created_at"],
             "updated_at": slot["updated_at"],
             "origin_app_id": slot.get("origin_app_id", ""),
+            "origin_app_name": slot.get("origin_app_name", ""),
             "turn_count": len(slot.get("turns") or []),
         }
     )
@@ -317,6 +326,9 @@ def create_slot(
         "created_at": now,
         "updated_at": now,
         "origin_app_id": str(origin_app_id or "").strip()[:32],
+        # Already passed in for the label heuristic; kept now rather than discarded, because the
+        # slot row shows the game above the title and nothing else records the NAME.
+        "origin_app_name": str(app_name or "").strip()[:MAX_APP_NAME_LEN],
         "turns": [],
     }
     save_slot(settings_dir, slot, logger)
@@ -436,6 +448,7 @@ def slot_to_rpc_payload(slot: dict[str, Any]) -> dict[str, Any]:
         "created_at": slot.get("created_at"),
         "updated_at": slot.get("updated_at"),
         "origin_app_id": slot.get("origin_app_id", ""),
+        "origin_app_name": slot.get("origin_app_name", ""),
         "turns": slot.get("turns") or [],
     }
 

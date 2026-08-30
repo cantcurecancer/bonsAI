@@ -186,6 +186,34 @@ class ChatSlotServiceTests(unittest.TestCase):
         assert saved is not None
         self.assertIsNone(saved["turns"][-1]["transparency"])
 
+    def test_slot_keeps_the_game_name_it_was_created_under(self):
+        """The slot row shows the game above the conversation title, and nothing else records the
+        NAME - ``origin_app_id`` cannot be shown to a reader, and resolving it needs the game to be
+        running, which it usually is not when you are browsing old chats.
+        """
+        slot = create_slot(
+            self.settings_dir,
+            first_question="How do I parry?",
+            app_name="Elden Ring",
+            origin_app_id="1245620",
+        )
+        self.assertEqual(slot["origin_app_name"], "Elden Ring")
+
+        reloaded = load_slot(self.settings_dir, slot["id"])
+        assert reloaded is not None
+        self.assertEqual(reloaded["origin_app_name"], "Elden Ring")
+
+        summaries = list_slot_summaries(self.settings_dir)
+        self.assertEqual(summaries[0]["origin_app_name"], "Elden Ring")
+
+    def test_slot_saved_before_the_game_name_existed_loads_with_an_empty_one(self):
+        slot = create_slot(self.settings_dir, label="legacy")
+        legacy = {k: v for k, v in slot.items() if k != "origin_app_name"}
+        save_slot(self.settings_dir, legacy)
+        reloaded = load_slot(self.settings_dir, slot["id"])
+        assert reloaded is not None
+        self.assertEqual(reloaded["origin_app_name"], "")
+
     def test_prune_at_cap(self):
         for i in range(MAX_CHAT_SLOTS + 2):
             create_slot(self.settings_dir, label=f"slot-{i}")

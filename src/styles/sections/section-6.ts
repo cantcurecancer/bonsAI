@@ -561,6 +561,26 @@ export function buildSection6Section(): string {
           backdrop-filter: blur(10px);
           border-top: 1px solid rgba(255, 255, 255, 0.06);
         }
+        /*
+          A short fade above the dock, so a reply that continues below it visibly passes UNDER the
+          chips instead of being sliced off at a hard edge. The dock covers 245px of a 616px pane
+          (measured 2026-08-30), which is a large share of the reading area to hide behind an edge
+          that looks like the end of the text. The fade says "there is more, keep scrolling"
+          without costing a row. The real cure is a shorter dock - see the vertical-space lane.
+
+          Absolute against the dock, which is positioned (sticky), and bottom: 100% puts it just
+          above the dock's own top edge rather than over its first row.
+        */
+        .bonsai-scope .bonsai-main-tab-dock::before {
+          content: "";
+          position: absolute;
+          left: 0;
+          right: 0;
+          bottom: 100%;
+          height: ${uiScalePx(18)};
+          pointer-events: none;
+          background: linear-gradient(180deg, rgba(18, 26, 34, 0) 0%, rgba(18, 26, 34, 0.85) 100%);
+        }
 
         /*
           Steam's scroll container carries padding-bottom: 40px (measured on device 2026-08-30).
@@ -668,12 +688,14 @@ export function buildSection6Section(): string {
           display: flex;
           align-items: center;
           gap: ${uiScalePx(8)};
-          padding: ${uiScalePx(8)};
+          /* Trimmed from 8 to 5 to pay for the game line above the title - see -slot-game. */
+          padding: ${uiScalePx(5)} ${uiScalePx(8)};
           border-top: 1px solid rgba(255, 255, 255, 0.05);
           border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
         .bonsai-scope .bonsai-chat-slot-row--focused .bonsai-chat-slot-row-inner {
-          padding: ${uiScalePx(12)} ${uiScalePx(8)};
+          /* Trimmed from 12 to 7 for the same reason as the resting padding above. */
+          padding: ${uiScalePx(7)} ${uiScalePx(8)};
           background: linear-gradient(180deg, rgba(28, 36, 44, 0.92), rgba(18, 26, 34, 0.55));
           border-top-color: rgba(156, 231, 255, 0.22);
           border-bottom-color: rgba(156, 231, 255, 0.22);
@@ -710,12 +732,45 @@ export function buildSection6Section(): string {
           min-width: 0;
           text-align: center;
         }
+        /*
+          The game a chat belongs to, in the band above the title the maintainer pointed at on
+          2026-08-30. Quiet on purpose: it is context, not the name of the thing. Always occupies
+          its line even when empty - slots saved before the name was kept have nothing to show, and
+          a line that comes and goes is the same row-height complaint in another form.
+
+          The row's vertical padding pays for it rather than the row growing: it was 12px top and
+          bottom while focused, and that padding IS the whitespace the band was drawn on.
+        */
+        .bonsai-scope .bonsai-chat-slot-game {
+          min-height: ${uiScalePx(11)};
+          font-size: ${uiScalePx(9)};
+          font-weight: 600;
+          letter-spacing: 0.06em;
+          text-transform: uppercase;
+          line-height: 1.2;
+          color: rgba(200, 214, 230, 0.32);
+          text-align: center;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          max-width: 100%;
+        }
+        .bonsai-scope .bonsai-chat-slot-row--focused .bonsai-chat-slot-game {
+          color: rgba(156, 231, 255, 0.45);
+        }
         .bonsai-scope .bonsai-chat-slot-title-row {
           display: flex;
           align-items: center;
           justify-content: center;
           gap: ${uiScalePx(6)};
           min-width: 0;
+          /*
+            Reserved to the delete box's height. Without it the row was two different heights: on a
+            slot the 22px x sets the line, at [+] there is no x so the line collapses to the title's
+            own 14px and the whole bar shrank by about nine pixels as you cycled onto the create
+            position. Measured on device 2026-08-30 - title row 23.56 with the x, 14.39 without.
+          */
+          min-height: ${uiScalePx(22)};
         }
         /*
           Sized for READING THE NAME, not for hierarchy. The 300px column leaves the focused row
@@ -797,6 +852,7 @@ export function buildSection6Section(): string {
            active stop, so activating the stop colours it in without nudging the row. */
         .bonsai-scope .bonsai-chat-slot-delete {
           flex: 0 0 auto;
+          box-sizing: border-box;
           display: inline-flex;
           align-items: center;
           justify-content: center;
@@ -878,26 +934,32 @@ export function buildSection6Section(): string {
           align-items: center;
           justify-content: center;
           gap: ${uiScalePx(6)};
+          gap: round(${uiScalePx(6)}, 1px);
           margin-top: ${uiScalePx(6)};
         }
         .bonsai-scope .bonsai-chat-slot-dot {
           /*
-            Every marker in the strip is the SAME box, always. State is carried by fill, border and
-            colour only - never by size. Sizing by state (3px quiet, 4px active, 6px ring) made the
-            strip read as unevenly spaced even though the gap is constant, because a flex gap sits
-            between boxes: a 3px dot beside a 6px one leaves more visible air around the small one,
-            and the eye reads that as a wider gap rather than as a smaller dot. Maintainer,
-            2026-08-30: all the dots, and the + sign, equal in size and equal spacing.
+            Every marker in the strip is the SAME box, always. State is carried by fill and colour
+            only - never by size. Sizing by state (3px quiet, 4px active, 6px ring) made the strip
+            read as unevenly spaced even though the gap is constant, because a flex gap sits between
+            boxes: a 3px dot beside a 6px one leaves more visible air around the small one.
 
-            The 1.5px border is reserved as transparent on the base rule so --pending can colour it
-            in without changing the box; border-box keeps the outer size at 6px either way, and the
-            default border-box background clip means a plain dot still paints solid across it.
+            No border here, deliberately. A transparent 1.5px border reserved for the pending ring
+            gave every dot TWO edge sets for the rasteriser to snap - the border box and the padding
+            box - and at this device pixel ratio (1.28 measured 2026-08-30) each dot lands on a
+            different sub-pixel phase, so the two snapped independently per dot and some circles came
+            out visibly oval. The ring is an inset box-shadow instead, which paints inside one box.
+
+            round() keeps the box and the gap on whole pixels at any UI scale, so the stride stays
+            integral rather than drifting a hundredth of a pixel per dot. The unrounded declaration
+            above it is the fallback for an engine without round(); Deck CEF has it (verified).
           */
           flex: 0 0 auto;
           box-sizing: border-box;
-          width: ${uiScalePx(6)};
-          height: ${uiScalePx(6)};
-          border: 1.5px solid transparent;
+          width: ${uiScalePx(4)};
+          height: ${uiScalePx(4)};
+          width: round(${uiScalePx(4)}, 1px);
+          height: round(${uiScalePx(4)}, 1px);
           border-radius: 50%;
           background: rgba(143, 168, 196, 0.3);
         }
@@ -911,19 +973,23 @@ export function buildSection6Section(): string {
           slots, which left that position with no indicator at all.
         */
         .bonsai-scope .bonsai-chat-slot-dot--create {
-          /* Same 6px box as every other marker, so the strip's rhythm is uniform; the glyph is
-             centred inside it and sized to fit rather than the box being sized to the glyph. */
+          /* Same box as every other marker, so the strip's rhythm is uniform; the glyph is centred
+             inside it and sized to fit rather than the box being sized to the glyph. */
           display: inline-flex;
           align-items: center;
           justify-content: center;
           box-sizing: border-box;
-          width: ${uiScalePx(6)};
-          height: ${uiScalePx(6)};
-          border: 0;
+          width: ${uiScalePx(4)};
+          height: ${uiScalePx(4)};
+          width: round(${uiScalePx(4)}, 1px);
+          height: round(${uiScalePx(4)}, 1px);
           border-radius: 0;
           background: transparent;
           color: rgba(143, 168, 196, 0.5);
-          font-size: ${uiScalePx(9)};
+          /* The glyph may overrun its 4px box, symmetrically, because the BOX is what the strip's
+             spacing is measured from - sizing the box to the glyph is what put the + off the line
+             in the first place. */
+          font-size: ${uiScalePx(8)};
           font-weight: 700;
           line-height: 1;
         }
@@ -937,12 +1003,11 @@ export function buildSection6Section(): string {
         }
         .bonsai-scope .bonsai-chat-slot-dot--pending {
           background: transparent;
-          border-color: rgba(56, 189, 248, 0.9);
-          box-shadow: 0 0 6px rgba(56, 189, 248, 0.5);
+          box-shadow: inset 0 0 0 1px rgba(56, 189, 248, 0.9), 0 0 5px rgba(56, 189, 248, 0.55);
         }
         .bonsai-scope .bonsai-chat-slot-dot--unread {
           background: #4ade80;
-          box-shadow: 0 0 6px rgba(74, 222, 128, 0.6);
+          box-shadow: 0 0 5px rgba(74, 222, 128, 0.65);
         }
         .bonsai-scope .bonsai-chat-slot-row--focused .bonsai-chat-slot-dot--active {
           background: #9ce7ff;

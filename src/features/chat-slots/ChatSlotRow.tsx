@@ -274,6 +274,12 @@ export function ChatSlotRow({
             </span>
           ) : null}
           <div className="bonsai-chat-slot-center">
+            {/*
+              Always rendered, empty or not. Slots saved before the name was kept have nothing to
+              show, and a line that appears on some rows and not others is the row-height bug the
+              min-height below was added to settle - so the band is reserved either way.
+            */}
+            <div className="bonsai-chat-slot-game">{isCreatePosition ? "" : (activeSlot?.origin_app_name ?? "")}</div>
             <div className="bonsai-chat-slot-title-row">
               {showGhosts && prevSlot && (prevSlot.id === generatingSlotId || unreadSlotIds?.has(prevSlot.id)) ? (
                 <span

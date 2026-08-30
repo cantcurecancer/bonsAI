@@ -46,6 +46,11 @@
       "role": ""
     },
     {
+      "path": "src/styles/sections/section-6.ts",
+      "lines": 1044,
+      "role": ""
+    },
+    {
       "path": "py_modules/backend/services/ollama_service.py",
       "lines": 1033,
       "role": "Prompt build, Ollama HTTP, streaming"
@@ -61,13 +66,8 @@
       "role": ""
     },
     {
-      "path": "src/styles/sections/section-6.ts",
-      "lines": 979,
-      "role": ""
-    },
-    {
       "path": "src/components/MainTabChatTranscript.tsx",
-      "lines": 926,
+      "lines": 939,
       "role": ""
     },
     {
@@ -161,13 +161,13 @@
       "role": ""
     },
     {
-      "path": "py_modules/backend/services/strategy_guide_parse.py",
-      "lines": 458,
+      "path": "py_modules/backend/services/chat_slot_service.py",
+      "lines": 468,
       "role": ""
     },
     {
-      "path": "py_modules/backend/services/chat_slot_service.py",
-      "lines": 455,
+      "path": "py_modules/backend/services/strategy_guide_parse.py",
+      "lines": 458,
       "role": ""
     },
     {

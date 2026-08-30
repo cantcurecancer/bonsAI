@@ -267,7 +267,20 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
   }, [earlierExpanded]);
 
   const chatMainColumnRef = useRef<HTMLDivElement | null>(null);
-  useStreamScrollPin(chatMainColumnRef, streamDisplayText, isStreamingPreview);
+  /*
+     Every Ask, not only the ones the streaming preview animates. Gating on `isStreamingPreview`
+     alone meant that with the preview off - or on an answer that lands in a single commit, which
+     a cached or short reply does - nothing ever brought the new text into view, so a long reply
+     settled with its end below the fold and the pane still at the top. Measured on device
+     2026-08-30: a 900px answer in a 616px pane, scrollTop 0, 176px of tail behind the dock.
+     `ollamaResponse` joins the change key for the same reason: with the preview off that, not
+     `streamDisplayText`, is what changes when the answer arrives.
+  */
+  useStreamScrollPin(
+    chatMainColumnRef,
+    isStreamingPreview ? streamDisplayText : ollamaResponse,
+    isAsking || isStreamingPreview,
+  );
 
   /*
    * Deliberately NOT gated on `expandedTurnKey === "live"`.

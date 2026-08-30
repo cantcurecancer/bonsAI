@@ -12,8 +12,8 @@ import type { ChatSlotSummary } from "../../utils/chatSlotsApi";
  */
 vi.mock("@decky/ui", async () => import("../../test-harness/fakeDeckyUi"));
 
-function summary(id: string, label: string): ChatSlotSummary {
-  return { id, label, created_at: 0, updated_at: 0 };
+function summary(id: string, label: string, originAppName?: string): ChatSlotSummary {
+  return { id, label, created_at: 0, updated_at: 0, origin_app_name: originAppName };
 }
 
 /* useMemo reverses `summaries`, so this renders as slot-c, slot-b, slot-a. */
@@ -39,6 +39,36 @@ function dotClasses(container: HTMLElement): string[] {
     .filter((el) => !el.className.includes("--create"))
     .map((el) => el.className);
 }
+
+describe("ChatSlotRow game line", () => {
+  it("shows the game a slot was opened under, above the title", () => {
+    const { container } = render(
+      <ChatSlotRow
+        summaries={[summary("a", "How do I parry?", "Elden Ring")]}
+        activeSlotId="a"
+        onCreateSlot={async () => undefined}
+        onSelectSlot={async () => undefined}
+        onRenameSlot={async () => true}
+        onDeleteSlot={async () => true}
+      />,
+    );
+    expect(container.querySelector(".bonsai-chat-slot-game")?.textContent).toBe("Elden Ring");
+  });
+
+  /* Reserved even when empty: a line that comes and goes is the row-height complaint in another
+     form, and slots saved before the name was kept have nothing to show. */
+  it("keeps the line in place for a slot with no stored game name", () => {
+    const { container } = renderRow();
+    const line = container.querySelector(".bonsai-chat-slot-game");
+    expect(line).not.toBeNull();
+    expect(line?.textContent).toBe("");
+  });
+
+  it("shows no game line at the create position", () => {
+    const { container } = renderRow({ activeSlotId: null });
+    expect(container.querySelector(".bonsai-chat-slot-game")?.textContent).toBe("");
+  });
+});
 
 describe("ChatSlotRow dot language", () => {
   it("marks only the active slot when nothing is generating or unread", () => {

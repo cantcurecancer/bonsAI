@@ -34,6 +34,8 @@ export type ChatSlotSummary = {
   created_at: number;
   updated_at: number;
   origin_app_id?: string;
+  /** Display name of the game the slot was opened under. Absent on slots saved before it was kept. */
+  origin_app_name?: string;
   turn_count?: number;
 };
 
