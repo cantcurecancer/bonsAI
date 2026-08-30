@@ -128,6 +128,7 @@ export function ChatSlotRow({
         <ConfirmModal
           strTitle="Delete chat slot?"
           strDescription={`Delete "${label}" and its transcript? This cannot be undone.`}
+          bDestructiveWarning
           strOKButtonText="Delete"
           strCancelButtonText="Cancel"
           onOK={() => {

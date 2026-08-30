@@ -23,13 +23,17 @@ export function ChatSlotRenameModal({ initialLabel, onCancel, onConfirm }: ChatS
       strTitle="Rename chat slot"
       strDescription={
         <BonsaiModalScope>
-          <TextField
-            label="Slot name"
-            value={label}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLabel(e.target.value)}
-          />
+          <div className="bonsai-chat-slot-modal-label">SLOT NAME</div>
+          <div className="bonsai-chat-slot-modal-field">
+            <TextField
+              value={label}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLabel(e.target.value)}
+              focusOnMount
+            />
+          </div>
         </BonsaiModalScope>
       }
+      bOKDisabled={!label.trim()}
       strOKButtonText="Save"
       strCancelButtonText="Cancel"
       onOK={() => {

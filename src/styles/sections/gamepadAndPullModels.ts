@@ -1,3 +1,5 @@
+import { buildChatSlotModalStylesheet } from "./chatSlotModal";
+
 export function buildGamepadFocusRingStylesheet(): string {
   /*
    * White, not the character accent — the maintainer's ask is "white focus rings everywhere, make
@@ -88,9 +90,9 @@ export function buildGamepadFocusRingStylesheet(): string {
   `;
 }
 
-/** Modal portal CSS (showModal outside QAM tree): gamepad rings + pull models table. */
+/** Modal portal CSS (showModal outside QAM tree): gamepad rings + pull models table + slot rename. */
 export function buildModalPortalStylesheet(): string {
-  return `${buildGamepadFocusRingStylesheet()}${buildPullModelsStylesheet()}`;
+  return `${buildGamepadFocusRingStylesheet()}${buildPullModelsStylesheet()}${buildChatSlotModalStylesheet()}`;
 }
 
 

@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 329,
-  "edgeCount": 783,
+  "fileCount": 330,
+  "edgeCount": 784,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -1967,8 +1967,16 @@
       ],
       "importedBy": []
     },
-    "src/styles/sections/gamepadAndPullModels.ts": {
+    "src/styles/sections/chatSlotModal.ts": {
       "imports": [],
+      "importedBy": [
+        "src/styles/sections/gamepadAndPullModels.ts"
+      ]
+    },
+    "src/styles/sections/gamepadAndPullModels.ts": {
+      "imports": [
+        "src/styles/sections/chatSlotModal.ts"
+      ],
       "importedBy": [
         "src/styles/bonsaiScopeStylesheet.ts",
         "src/styles/presetChipFocusRing.test.ts"
