@@ -145,6 +145,7 @@ export type MainTabProps = {
 export function MainTab(props: MainTabProps) {
   const presetCarouselHostRef = useRef<HTMLDivElement | null>(null);
   const [focusUnifiedTextField, setFocusUnifiedTextField] = useState(() => () => false);
+  const [slotRowAtCreate, setSlotRowAtCreate] = useState(false);
 
   return (
     <>
@@ -160,10 +161,11 @@ export function MainTab(props: MainTabProps) {
               onDeleteSlot={props.onChatSlotDelete}
               onBeforeNestedDeckyModal={props.onBeforeNestedDeckyModal}
               onCompleteNestedDeckyModalClose={props.onCompleteNestedDeckyModalClose}
+              onCreatePositionChange={setSlotRowAtCreate}
             />
           </PanelSectionRow>
         ) : null}
-        <MainTabChatTranscript {...props} />
+        <MainTabChatTranscript {...props} showEmptySlotPreview={slotRowAtCreate} />
         <PanelSectionRow>
           <MainTabPresetRow
             suggestedPrompts={props.suggestedPrompts}

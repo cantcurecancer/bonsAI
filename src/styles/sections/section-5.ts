@@ -120,9 +120,13 @@ export function buildSection5Section(): string {
           overflow: hidden !important;
         }
 
+        /* Matches the overlay span in section-6 (.bonsai-unified-input-strategy-placeholder):
+           the field has two placeholder render paths and they have to read the same. */
         .bonsai-scope .bonsai-unified-input-host input::placeholder,
         .bonsai-scope .bonsai-unified-input-host textarea::placeholder {
           font-size: ${uiScalePx(UNIFIED_TEXT_FONT_PX)} !important;
+          font-style: italic !important;
+          color: rgba(200, 214, 230, 0.45) !important;
         }
 
         /* Hide standard field labels to allow custom overlays */

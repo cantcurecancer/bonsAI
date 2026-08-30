@@ -70,7 +70,7 @@ export function buildSection6Section(): string {
         .bonsai-scope .bonsai-unified-input-strategy-placeholder {
           font-style: italic;
           font-size: 10px;
-          opacity: 0.4;
+          opacity: 0.45;
         }
 
         .bonsai-scope .bonsai-ai-response-stack {
@@ -511,6 +511,29 @@ export function buildSection6Section(): string {
         .bonsai-scope .bonsai-chat-feedback-row--rated {
           color: #8fa6bd !important;
           font-style: italic !important;
+        }
+
+        /* Empty slot / create-position preview, directly under the slot row. */
+        .bonsai-scope .bonsai-chat-empty-state {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: ${uiScalePx(8)};
+          padding: ${uiScalePx(14)} 0 ${uiScalePx(6)};
+        }
+        .bonsai-scope .bonsai-chat-empty-logo {
+          width: ${uiScalePx(52)};
+          height: ${uiScalePx(52)};
+          opacity: 0.16;
+          filter: grayscale(1) brightness(1.7);
+        }
+        .bonsai-scope .bonsai-chat-empty-caption {
+          font-style: italic;
+          font-size: ${uiScalePx(13)};
+          line-height: 1.55;
+          max-width: ${uiScalePx(210)};
+          text-align: center;
+          color: rgba(143, 168, 196, 0.5);
         }
 
         /* Named chat slots row (Main tab, under tab strip) */

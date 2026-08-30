@@ -7,6 +7,7 @@
  */
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { PanelSectionRow, Button, Focusable } from "@decky/ui";
+import bonsaiLogo from "../assets/icons/bonsai-logo.svg";
 import {
   BONSAI_CHAT_AI_BUBBLE_MAX_FRAC,
 } from "../features/unified-input/constants";
@@ -119,12 +120,20 @@ export type MainTabChatTranscriptProps = {
    * this only needs declaring here to type it.
    */
   onAskOllama?: (overrideQuestion?: string, opts?: { threadQuestionDisplay?: string }) => void | Promise<void>;
+  /**
+   * The slot row's carousel is sitting on the `[+]` create position. Cycling there deliberately
+   * does not change the active slot, so the transcript cannot see it any other way; while it is
+   * true the empty-slot preview stands in for the turn column even if the previous slot had
+   * content (the drawn behavior of board 8f).
+   */
+  showEmptySlotPreview?: boolean;
 };
 
 export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
   const {
     fullBleedRowStyle,
     isAsking,
+    showEmptySlotPreview = false,
     selectedAttachment,
     ollamaContext,
     unifiedInput,
@@ -442,7 +451,15 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
 
   return (
     <>
-{(askThreadCollapsed.length > 0 || showLiveTurn) && (
+{(showEmptySlotPreview || (askThreadCollapsed.length === 0 && !showLiveTurn)) && (
+  <PanelSectionRow>
+    <div className="bonsai-chat-empty-state" aria-hidden>
+      <img src={bonsaiLogo} className="bonsai-chat-empty-logo" alt="" />
+      <div className="bonsai-chat-empty-caption">Ask anything — this slot keeps its own history.</div>
+    </div>
+  </PanelSectionRow>
+)}
+{!showEmptySlotPreview && (askThreadCollapsed.length > 0 || showLiveTurn) && (
   <PanelSectionRow>
     <div
       ref={chatMainColumnRef}

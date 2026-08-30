@@ -31,6 +31,11 @@ export type ChatSlotRowProps = {
   onDeleteSlot: (slotId: string) => Promise<boolean>;
   onBeforeNestedDeckyModal?: () => void;
   onCompleteNestedDeckyModalClose?: (close: () => void) => void;
+  /**
+   * Fires when the carousel enters or leaves the `[+]` create position. Cycling there does not
+   * change the active slot, so this is the only signal the rest of the tab gets.
+   */
+  onCreatePositionChange?: (atCreate: boolean) => void;
 };
 
 type RowFocusStop = "title" | "delete";
@@ -46,6 +51,7 @@ export function ChatSlotRow({
   onDeleteSlot,
   onBeforeNestedDeckyModal,
   onCompleteNestedDeckyModalClose,
+  onCreatePositionChange,
 }: ChatSlotRowProps) {
   const orderedSlots = useMemo(() => [...summaries].reverse(), [summaries]);
   const positionCount = 1 + orderedSlots.length;
@@ -80,6 +86,10 @@ export function ChatSlotRow({
   const nextSlot =
     !isCreatePosition && carouselIndex < orderedSlots.length ? orderedSlots[carouselIndex] : null;
   const showGhosts = orderedSlots.length > 1;
+
+  useEffect(() => {
+    onCreatePositionChange?.(isCreatePosition);
+  }, [isCreatePosition, onCreatePositionChange]);
 
   const selectCarouselIndex = useCallback(
     async (index: number) => {
