@@ -190,7 +190,6 @@ export function ChatSlotRow({
         <div className="bonsai-chat-slot-row-inner">
           <span className="bonsai-chat-slot-bumper-pill">LB</span>
           <div className="bonsai-chat-slot-center">
-            {focused ? <div className="bonsai-chat-slot-eyebrow">CHAT SLOT</div> : null}
             <div className="bonsai-chat-slot-title-row">
               {showGhosts && prevSlot ? (
                 <span className="bonsai-chat-slot-ghost bonsai-chat-slot-ghost--prev">{prevSlot.label}</span>

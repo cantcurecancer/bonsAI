@@ -560,13 +560,6 @@ export function buildSection6Section(): string {
           min-width: 0;
           text-align: center;
         }
-        .bonsai-scope .bonsai-chat-slot-eyebrow {
-          font-size: ${uiScalePx(9)};
-          font-weight: 700;
-          letter-spacing: 0.08em;
-          color: #9ce7ff;
-          margin-bottom: ${uiScalePx(4)};
-        }
         .bonsai-scope .bonsai-chat-slot-title-row {
           display: flex;
           align-items: center;
