@@ -279,7 +279,7 @@ suggestions → **decode**.
 - [ ] **CHAT-SLOTS-V2-03** Ask in slot A → **LB/RB** to slot B mid-Ask → reply lands in **A**; reopen A — both Q and A present
 - [ ] **CHAT-SLOTS-V2-04** Close QAM mid-Ask → reopen → pending question visible (not empty transcript)
 - [ ] **CHAT-SLOTS-V2-05** With row focused: **LB/RB** cycle slots; blur row → **LB/RB** switch tabs — repeat with a game running and without; record P-0 result in [major-redesign.md](major-redesign.md) § 7 R1
-- [ ] **CHAT-SLOTS-V2-06** Carousel stops at `[+]` and at last slot (no wrap); dots track active slot at cap of 5
+- [ ] **CHAT-SLOTS-V2-06** Carousel stops at `[+]` and at last slot (no wrap); dots track active slot at cap of 8
 
 ### CHAT-SLOTS-V3 — Named chat slots redesign (P0)
 

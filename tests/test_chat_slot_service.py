@@ -184,7 +184,7 @@ class ChatSlotServiceTests(unittest.TestCase):
         assert saved is not None
         self.assertIsNone(saved["turns"][-1]["transparency"])
 
-    def test_prune_at_five_slots(self):
+    def test_prune_at_cap(self):
         for i in range(MAX_CHAT_SLOTS + 2):
             create_slot(self.settings_dir, label=f"slot-{i}")
         summaries = list_slot_summaries(self.settings_dir)

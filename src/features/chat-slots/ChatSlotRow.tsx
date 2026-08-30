@@ -35,7 +35,7 @@ export type ChatSlotRowProps = {
 
 type RowFocusStop = "title" | "delete";
 
-const MAX_DOTS = 5;
+const MAX_DOTS = 8;
 
 export function ChatSlotRow({
   summaries,
