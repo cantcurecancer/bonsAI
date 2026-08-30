@@ -1,5 +1,11 @@
 # Named chat slots v2 — implementation plan
 
+> **SUPERSEDED 2026-08-30 by
+> [28-named-chat-slots-v3-implementation-plan.md](28-named-chat-slots-v3-implementation-plan.md).**
+> The turn-8 design review closed every A/B board and reversed two decisions locked here
+> (Q6 reserved pill gutters → pills fully removed at rest; Q1 wash colour → accent lifted
+> 40% toward white). Do not implement from this file.
+
 Written 2026-08-28 against branch `experimental`. Source: the handoff bundle
 `Named Chat Slots Design(2).zip` (`README.md`, `Named chat slots.dc.html` turns 5/6/7,
 `Redesign audit vs experimental.dc.html`).
