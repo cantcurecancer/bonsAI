@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 331,
-  "edgeCount": 787,
+  "fileCount": 332,
+  "edgeCount": 791,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -282,6 +282,14 @@
       ],
       "importedBy": []
     },
+    "src/components/MainTabChatTranscript.earlierPill.test.tsx": {
+      "imports": [
+        "src/components/MainTabChatTranscript.tsx",
+        "src/test-harness/fakeDeckyUi.tsx",
+        "src/types/bonsaiUi.ts"
+      ],
+      "importedBy": []
+    },
     "src/components/MainTabChatTranscript.strategyPanels.test.tsx": {
       "imports": [
         "src/components/MainTabChatTranscript.tsx",
@@ -320,6 +328,7 @@
         "src/utils/drgGlossaryAsk.ts",
         "src/utils/inputTransparency.ts",
         "src/utils/liveTurnFocusGraph.ts",
+        "src/utils/navFocusRegistry.ts",
         "src/utils/permissionDeepLink.ts",
         "src/utils/troubleshootingAskHeuristic.ts",
         "src/utils/uiDocument.ts"
@@ -327,6 +336,7 @@
       "importedBy": [
         "src/components/MainTab.tsx",
         "src/components/MainTabChatTranscript.diagnostics.test.tsx",
+        "src/components/MainTabChatTranscript.earlierPill.test.tsx",
         "src/components/MainTabChatTranscript.strategyPanels.test.tsx"
       ]
     },
@@ -2123,6 +2133,7 @@
         "src/components/DrgGlossaryTermChip.test.tsx",
         "src/components/MainTabBonsaiAiMarkdownChunk.test.tsx",
         "src/components/MainTabChatTranscript.diagnostics.test.tsx",
+        "src/components/MainTabChatTranscript.earlierPill.test.tsx",
         "src/components/MainTabChatTranscript.strategyPanels.test.tsx",
         "src/components/ReplyCopyButton.test.tsx",
         "src/components/SessionContextStrip.test.tsx",
@@ -2190,6 +2201,7 @@
       ],
       "importedBy": [
         "src/components/MainTab.tsx",
+        "src/components/MainTabChatTranscript.earlierPill.test.tsx",
         "src/components/MainTabChatTranscript.strategyPanels.test.tsx",
         "src/components/MainTabChatTranscript.tsx",
         "src/components/MainTabScreenshotBrowser.tsx",
@@ -2961,6 +2973,7 @@
     "src/utils/navFocusRegistry.ts": {
       "imports": [],
       "importedBy": [
+        "src/components/MainTabChatTranscript.tsx",
         "src/components/MainTabPresetAnimatedChips.tsx",
         "src/components/SessionContextStrip.tsx",
         "src/features/chat-slots/ChatSlotRow.tsx",

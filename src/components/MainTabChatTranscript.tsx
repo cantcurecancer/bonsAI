@@ -5,13 +5,14 @@
  * Solves: Separates transcript layout/focus from Ask submit and poll logic.
  * Does not: Submit Asks or poll background status — receives props from useBonsaiAskOrchestration.
  */
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { PanelSectionRow, Button, Focusable } from "@decky/ui";
 import bonsaiLogo from "../assets/icons/bonsai-logo.svg";
 import {
   BONSAI_CHAT_AI_BUBBLE_MAX_FRAC,
 } from "../features/unified-input/constants";
 import { getUiDocument } from "../utils/uiDocument";
+import type { NavRefHolder } from "../utils/navFocusRegistry";
 import { formatAppliedTuningBannerText } from "../utils/appliedTuningText";
 import type { ModelPolicyDisclosurePayload } from "../data/modelPolicy";
 import { StrategyChecklistPanel } from "./StrategyChecklistPanel";
@@ -252,6 +253,19 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
     (showLiveResponse && expandedTurnKey === "live");
   const appliedTuningBannerText = formatAppliedTuningBannerText(lastApplied);
 
+  const [earlierExpanded, setEarlierExpanded] = useState(false);
+  const firstArchivedTurnNavRef = useRef<NavRefHolder["current"]>(null);
+  /* A slot switch (or a cleared thread) re-collapses: the pill is about this thread, not the user. */
+  const earlierIdentity = `${askThreadCollapsed.length}:${askThreadCollapsed[0]?.id ?? ""}`;
+  useEffect(() => {
+    setEarlierExpanded(false);
+  }, [earlierIdentity]);
+  /* Expanding unmounts the pill, so focus would be orphaned. Hand it to the first revealed row. */
+  useLayoutEffect(() => {
+    if (!earlierExpanded) return;
+    firstArchivedTurnNavRef.current?.TakeFocus?.(true);
+  }, [earlierExpanded]);
+
   const chatMainColumnRef = useRef<HTMLDivElement | null>(null);
   useStreamScrollPin(chatMainColumnRef, streamDisplayText, isStreamingPreview);
 
@@ -458,6 +472,26 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
     ? (transparencySnapshot?.ask_diagnostics ?? null)
     : null;
 
+  /*
+   * "N earlier" collapses the older archived turns behind one pill, so a long slot opens on its
+   * newest answer instead of a wall of headers.
+   *
+   * "Earlier" must never include the newest visible turn. On the ordinary path that turn is
+   * ARCHIVED, not live: after a completed Ask and after every QAM reopen `applySlotTranscript`
+   * archives every turn and points `expandedTurnKey` at the newest archived id, so `showLiveTurn`
+   * is false. Collapsing all archived turns there would hide the newest answer and leave the
+   * expanded key naming a row that is not on screen.
+   */
+  const earlierTurns = showLiveTurn ? askThreadCollapsed : askThreadCollapsed.slice(0, -1);
+  const earlierCount = earlierTurns.length;
+  const hidesEarlierTurns = earlierCount >= 2 && !earlierExpanded;
+  /* Index offset so each rendered turn keeps its position in `askThreadCollapsed` — the
+     transparency lookup and the newest-archived check both depend on it. */
+  const archivedRenderOffset = hidesEarlierTurns ? earlierCount : 0;
+  const archivedTurnsToRender = hidesEarlierTurns
+    ? askThreadCollapsed.slice(earlierCount)
+    : askThreadCollapsed;
+
   return (
     <>
 {(showEmptySlotPreview || (askThreadCollapsed.length === 0 && !showLiveTurn)) && (
@@ -483,7 +517,18 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
       }}
     >
       <div className="bonsai-chat-transcript">
-        {askThreadCollapsed.map((turn, turnIndex) => {
+        {hidesEarlierTurns ? (
+          <Focusable
+            className="bonsai-chat-earlier-pill-row"
+            onActivate={() => setEarlierExpanded(true)}
+            onOKButton={() => setEarlierExpanded(true)}
+          >
+            <span className="bonsai-chat-earlier-pill">{earlierCount} earlier</span>
+            <span className="bonsai-chat-earlier-rule" />
+          </Focusable>
+        ) : null}
+        {archivedTurnsToRender.map((turn, renderIndex) => {
+          const turnIndex = renderIndex + archivedRenderOffset;
           /* Hoisted out of the reply-actions IIFE below: the strategy panels need it too. */
           const isNewestArchivedTurn = turnIndex === askThreadCollapsed.length - 1;
           return (
@@ -491,6 +536,9 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
             key={turn.id}
             flow-children="vertical"
             className="bonsai-chat-turn-slot"
+            {...(renderIndex === 0
+              ? ({ navRef: firstArchivedTurnNavRef } as Record<string, unknown>)
+              : {})}
           >
             {buildTurnHeaderElement({
               turnId: turn.id,

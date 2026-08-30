@@ -61,6 +61,11 @@
       "role": ""
     },
     {
+      "path": "src/components/MainTabChatTranscript.tsx",
+      "lines": 926,
+      "role": ""
+    },
+    {
       "path": "src/components/MainTabPresetAnimatedChips.tsx",
       "lines": 924,
       "role": ""
@@ -68,11 +73,6 @@
     {
       "path": "py_modules/backend/services/local_ollama_setup_service.py",
       "lines": 915,
-      "role": ""
-    },
-    {
-      "path": "src/components/MainTabChatTranscript.tsx",
-      "lines": 878,
       "role": ""
     },
     {
@@ -91,13 +91,13 @@
       "role": ""
     },
     {
-      "path": "src/components/KnowledgeBaseSection.tsx",
-      "lines": 769,
+      "path": "src/styles/sections/section-6.ts",
+      "lines": 781,
       "role": ""
     },
     {
-      "path": "src/styles/sections/section-6.ts",
-      "lines": 756,
+      "path": "src/components/KnowledgeBaseSection.tsx",
+      "lines": 769,
       "role": ""
     },
     {

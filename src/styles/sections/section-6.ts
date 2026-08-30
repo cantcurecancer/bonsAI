@@ -517,6 +517,31 @@ export function buildSection6Section(): string {
           font-style: italic !important;
         }
 
+        /* Collapsed history: one "N earlier" pill standing in for the older archived turns. */
+        .bonsai-scope .bonsai-chat-earlier-pill-row {
+          display: flex;
+          align-items: center;
+          gap: ${uiScalePx(8)};
+          opacity: 0.55;
+          margin: ${uiScalePx(2)} 0 ${uiScalePx(6)};
+        }
+        .bonsai-scope .bonsai-chat-earlier-pill {
+          font-size: ${uiScalePx(10)};
+          font-weight: 600;
+          letter-spacing: 0.04em;
+          color: rgba(200, 214, 230, 0.85);
+          padding: ${uiScalePx(3)} ${uiScalePx(10)};
+          border-radius: 999px;
+          border: 1px solid rgba(255, 255, 255, 0.14);
+          background: rgba(18, 26, 34, 0.5);
+          white-space: nowrap;
+        }
+        .bonsai-scope .bonsai-chat-earlier-rule {
+          flex: 1;
+          height: 1px;
+          background: rgba(255, 255, 255, 0.09);
+        }
+
         /* Empty slot / create-position preview, directly under the slot row. */
         .bonsai-scope .bonsai-chat-empty-state {
           display: flex;

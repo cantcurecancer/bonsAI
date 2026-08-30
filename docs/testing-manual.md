@@ -296,6 +296,7 @@ everything below assumes it passes. Plan:
 - [ ] **CHAT-SLOTS-V3-06a** (W16) While away from slot A: A's dot is a hollow cyan ring; if A is the visible ghost neighbour, a cyan spark sits at that row edge, outside the ghost's fade
 - [ ] **CHAT-SLOTS-V3-06b** (W16) A finishes while you are away: the ring turns solid green; returning to A clears it
 - [ ] **CHAT-SLOTS-V3-06c** (W16) QAM closed when the answer finishes: the reply-ready toast still appears (regression check on the completion watch)
+- [ ] **CHAT-SLOTS-V3-07** (W17) A slot with 3 archived turns: a **"3 earlier"** pill sits above the newest turn and is a D-pad stop; **A** expands it into header rows and focus lands on the first revealed row; with exactly 1 archived turn the header row shows with no pill
 
 ---
 
