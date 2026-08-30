@@ -198,6 +198,13 @@ seconds; anything that would otherwise have to be re-measured goes there rather 
   navigation, and it reported success whenever the control merely existed — so two earlier attempts looked like they had worked.
   It now retries until the ring really moves (both cases needed a second try) and says so in the log. Detail: [roadmap-details.md](roadmap-details.md).
 
+- ★★★ **The bottom fifty pixels of every tab were hanging below the screen** — **FIXED at the desk 2026-08-30, device check owed.**
+  Anything in the last 50px of a tab could not be reached at all — not scrolled past, *clipped*, so no scroll position revealed it. It went
+  unnoticed for as long as it did because nothing ever deliberately sat there; the sticky Ask dock parks the context line exactly on that
+  edge, and it came back cut in half. The panel was pinned to the QAM host's full height at **every** level of the wrapper chain, which is
+  only correct for the level starting at the host's top; `.bonsai-scope` starts 50px lower, so it ended 50px past the bottom. Each level is
+  now pinned to its own top-to-host-bottom distance. Row **CHAT-SLOTS-V3-11**.
+
 ### Open, but measure before spending anything
 
 *Each of these was filed from an observation that later work may have already changed. Re-measure first; do not fix from the description.*
@@ -319,6 +326,41 @@ Code-fixed or shipped; on-Deck / qualitative QA still owed. Detail: [testing.md]
 Stars are **effort/risk**. Grouped by **theme**; within each lane sorted ascending by ★.
 
 **GitHub tracking:** Items rated **★★★★★** or **★★★★★★** include a placeholder link to **[bonsAI Issues](https://github.com/qd313/bonsAI/issues)** (replace with a specific issue URL when created).
+
+### Vertical space for the chat bubbles
+
+**Overarching goal, set by the maintainer 2026-08-30:** buy back as much vertical room for the chat bubbles as possible — every bit of
+height in the 300px column is worth something. Today most of it goes to chrome: a tab icon bar, a preset block, a button row under each
+answer, and a Session context bar. These four each hand some of it back, which is why this lane is listed **first** rather than in the
+alphabetical order the rest of the Backlog uses.
+
+- ★★ **Show details becomes a divider, not a chip**
+  - **Goal:** At the end of a reply, **Show details** stops being a button and becomes a full-width
+    divider with the label in the middle — `---------- Show details ↓ ----------`. It reads as the end of
+    the answer rather than as another control competing with it, and the row it currently shares stops
+    needing to exist.
+  - **Prior art in the same file:** the collapsed-history row (`.bonsai-chat-earlier-pill-row` + `-rule`)
+    is already a label centred on a hairline. Copy that shape rather than inventing one.
+
+- ★★★ **Copy sits in the answer's corner, not in a button row**
+  - **Goal:** **Copy** becomes a small semi-transparent icon in the corner of the answer bubble — the same weight as the microphone in the
+    Ask field — drawn as the standard two-overlapping-rounded-squares copy glyph, styled to the SteamOS motif. The button row under the
+    reply loses an entry and the transcript gains its height.
+  - **The hard part is focus, not paint.** Answer bubbles are not D-pad stops today, so a control inside one needs a way in and back out
+    (`.cursor/rules/decky-focus-graph.mdc`). Copy must not quietly become touch-only.
+- ★★★ **Session context folds into Show details**
+  - **Goal:** The **Session context (N turns)** bar stops being its own row and lives inside the **Show details** disclosure, so a settled
+    answer costs one collapsed control instead of two.
+  - **Shape not decided — workshop before building.** Open questions in [roadmap-details.md](roadmap-details.md).
+- ★★★★ **Preset chips on a single line**
+  - **Goal:** The preset chip block collapses to one line and the difference goes to the transcript.
+  - **Mostly an animation job, not a layout one.** Fade, carousel, static and decode all have to be re-timed for the new shape, and the
+    carousel's translateY maths is written against the current row height. Budget for the animations.
+- ★★★★ **The tab icon bar collapses when it is not in use**
+  - **Goal:** The tab strip stops holding full height while nobody is using it, while still answering *which tab am I on?* at a glance —
+    the sketch on the table is a thin bar of dashes showing your position in the carousel. Interacting with it opens the fuller strip.
+  - **Not designed yet — workshop it first.** The awkward requirement is staying readable **at rest**, not only when focused. Open
+    questions in [roadmap-details.md](roadmap-details.md).
 
 ### Ask / reply
 

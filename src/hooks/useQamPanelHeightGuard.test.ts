@@ -1,7 +1,7 @@
 import { renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { useQamPanelHeightGuard } from "./useQamPanelHeightGuard";
+import { fitHeightToHostBottom, useQamPanelHeightGuard } from "./useQamPanelHeightGuard";
 
 /**
  * Steam replaces the TabContentsScroll node on every tab switch (measured on device 2026-08-07,
@@ -45,6 +45,30 @@ function buildScope(): { scope: HTMLDivElement; wrapper: HTMLDivElement; pane: H
 
 /** Let MutationObserver callbacks (microtasks) run. */
 const flush = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
+
+/**
+ * Regression, measured on device 2026-08-30: the chain was pinned to the host's full height at
+ * every level. Only the topmost level starts at the host's top, so `.bonsai-scope` (top 64, host
+ * 14..766, height 752) reached 816 -- fifty pixels below an `overflow: hidden` ancestor. Those
+ * fifty pixels were not scrolled off, they were clipped, so no scroll position could reveal them
+ * and the Ask bar's context line sat inside them.
+ */
+describe("fitHeightToHostBottom", () => {
+  it("subtracts the chrome above the element instead of reusing the host height", () => {
+    expect(fitHeightToHostBottom(64, 766, 752)).toBe(702);
+    expect(fitHeightToHostBottom(48, 766, 752)).toBe(718);
+    // The level that does start at the host's top keeps the full height.
+    expect(fitHeightToHostBottom(14, 766, 752)).toBe(752);
+  });
+
+  it("falls back to the host height rather than pinning below the guard's own floor", () => {
+    // A mid-relayout frame that would compute an absurdly short panel.
+    expect(fitHeightToHostBottom(600, 766, 752)).toBe(752);
+    expect(fitHeightToHostBottom(Number.NaN, 766, 752)).toBe(752);
+    // An element measured above the host cannot buy itself extra height.
+    expect(fitHeightToHostBottom(-100, 766, 752)).toBe(752);
+  });
+});
 
 describe("useQamPanelHeightGuard", () => {
   beforeEach(() => {

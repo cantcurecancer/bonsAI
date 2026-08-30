@@ -562,6 +562,23 @@ export function buildSection6Section(): string {
           border-top: 1px solid rgba(255, 255, 255, 0.06);
         }
 
+        /*
+          Steam's scroll container carries padding-bottom: 40px (measured on device 2026-08-30).
+          Sticky pins to a scrollport's CONTENT box, not its padding box, so bottom: 0 parked the
+          dock 40px short of the panel's bottom edge - leaving exactly the dead strip at the bottom
+          that the dock was added to remove. Zeroing it costs no height (box-sizing is border-box,
+          and the element's height is pinned by --bonsai-tab-body-height either way); the 40px moves
+          from padding into the content box, so the transcript gets it.
+
+          Scoped by :has to the one tab that deliberately owns its bottom edge. Every other tab
+          keeps Steam's breathing room, because nothing has measured what removing it does there.
+          Lifting it panel-wide belongs to the vertical-space goal as its own measured change, not
+          as a side effect of this one.
+        */
+        .bonsai-scope .bonsai-decky-tabs-root [class*="TabContentsScroll"]:has(.bonsai-main-tab-dock) {
+          padding-bottom: 0 !important;
+        }
+
         /* Collapsed history: one "N earlier" pill standing in for the older archived turns. */
         .bonsai-scope .bonsai-chat-earlier-pill-row {
           display: flex;
@@ -807,15 +824,28 @@ export function buildSection6Section(): string {
            neighbouring title, and at 15% of the row it has to stay legible at two words. */
         .bonsai-scope .bonsai-chat-slot-ghost--create {
           /* Sizes to its content and does not shrink. Under the 15% cap the other ghosts share it
-             measured 28px on device, which ellipsized "+ New chat" down to "+ N…" — noise rather
-             than an indicator. A name ghost may truncate, because a partial name still hints at
-             which neighbour it is; this one means nothing unless it is readable. */
+             measured 28px on device, which ellipsized the old "+ New chat" wording down to
+             "+ N..." - noise rather than an indicator. A name ghost may truncate, because a
+             partial name still hints at which neighbour it is; this one means nothing unless it
+             is readable. It carries the same [+] token the create position shows as its centre
+             label, so cycling left onto it is one glyph growing rather than one label swapping
+             for another. */
           flex: 0 0 auto;
           max-width: none;
-          font-size: ${uiScalePx(10)};
+          font-size: ${uiScalePx(11)};
           color: rgba(156, 231, 255, 0.42);
           font-weight: 700;
           letter-spacing: 0.02em;
+          /* Clear of the title. The row gap alone (6px) read as a prefix ON the title rather
+             than as the neighbour to its left. */
+          margin-right: ${uiScalePx(8)};
+        }
+        /* No directional fade on the create ghost: the prev mask hides everything left of 55%
+           of the span, which on a three-character token eats the opening bracket. A name ghost
+           wants the fade because it is a fragment; this one is whole. */
+        .bonsai-scope .bonsai-chat-slot-ghost--prev.bonsai-chat-slot-ghost--create {
+          -webkit-mask-image: none;
+          mask-image: none;
         }
         .bonsai-scope .bonsai-chat-slot-ghost--prev {
           margin-left: ${uiScalePx(4)};
@@ -831,6 +861,10 @@ export function buildSection6Section(): string {
         }
         .bonsai-scope .bonsai-chat-slot-dots {
           display: flex;
+          /* Centre, not the default stretch. The dots carry an explicit 3px height and the +
+             marker is a glyph box roughly twice that, so under stretch they aligned on their
+             TOP edges and the + sat off the line the dots make. */
+          align-items: center;
           justify-content: center;
           gap: ${uiScalePx(6)};
           margin-top: ${uiScalePx(6)};
@@ -853,8 +887,14 @@ export function buildSection6Section(): string {
           slots, which left that position with no indicator at all.
         */
         .bonsai-scope .bonsai-chat-slot-dot--create {
-          width: auto;
-          height: auto;
+          /* A fixed box centred on the same line as the dots, rather than an auto-sized one that
+             inherited whatever the glyph's line box happened to be. width/height beat the
+             .bonsai-chat-slot-dot and --active rules on source order at equal specificity. */
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: ${uiScalePx(9)};
+          height: ${uiScalePx(9)};
           border-radius: 0;
           background: transparent;
           color: rgba(143, 168, 196, 0.5);

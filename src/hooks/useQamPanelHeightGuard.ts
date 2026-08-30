@@ -54,32 +54,73 @@ function pinFlexColumn(el: HTMLElement, px: string): void {
   el.style.flexDirection = "column";
 }
 
-function pinScopeChain(scope: HTMLElement, host: HTMLElement | null, px: string): void {
-  scope.style.setProperty("--bonsai-qam-lock-height", px);
-  scope.classList.add("bonsai-qam-height-locked");
+/**
+ * Height that puts an element's BOTTOM edge on the host's bottom edge, given where its own top
+ * already sits.
+ *
+ * The chain used to be pinned to the host's full height at every level, which is only right for
+ * the element that starts at the host's top. Every level below starts lower, so the same number
+ * hangs each one past the bottom by however much chrome sits above it. Measured on device
+ * 2026-08-30: host bottom 766, `.bonsai-scope` top 64 yet pinned to the host's 752 -> scope bottom
+ * 816, fifty pixels below a `overflow: hidden` ancestor that clips at 766. The scroll viewport
+ * inherits that overshoot from the scope, so the last 50px of every tab was unreachable: not
+ * scrolled off, clipped away, with no scrollbar position that could ever reveal it.
+ *
+ * `fallbackPx` (the host height, i.e. today's value) is returned whenever the measurement is not
+ * usable, so a mid-relayout frame can never pin the panel smaller than the guard's own floor.
+ */
+export function fitHeightToHostBottom(elTop: number, hostBottom: number, fallbackPx: number): number {
+  const fitted = Math.floor(hostBottom - elTop);
+  if (!Number.isFinite(fitted) || fitted < QAM_HOST_MIN_PX || fitted > fallbackPx) return fallbackPx;
+  return fitted;
+}
 
+/** Pins the chain and returns the height actually applied to the scope. */
+function pinScopeChain(scope: HTMLElement, host: HTMLElement | null, lockPx: number): number {
+  const scopeTop = scope.getBoundingClientRect().top;
+  const hostBottom = host ? host.getBoundingClientRect().bottom : scopeTop + lockPx;
+
+  const ancestors: HTMLElement[] = [];
   const qamHost = scope.parentElement;
-  if (qamHost?.classList.contains("decky-qam-scope")) {
-    pinFlexColumn(qamHost, px);
-  }
-
+  if (qamHost?.classList.contains("decky-qam-scope")) ancestors.push(qamHost);
   let walker: HTMLElement | null = scope.parentElement;
   while (walker && walker !== host) {
-    if (walker.classList.contains("decky-qam-scope") || walker.classList.contains("Panel")) {
-      pinFlexColumn(walker, px);
-    } else {
-      pinElementHeight(walker, px);
-    }
+    if (!ancestors.includes(walker)) ancestors.push(walker);
     walker = walker.parentElement;
   }
+
+  /* Every top is read before anything is written. pinFlexColumn sets `display`, so interleaving
+     reads and writes would force a reflow per element AND measure a half-applied layout. */
+  const tops = ancestors.map((el) => el.getBoundingClientRect().top);
+
+  const scopePx = fitHeightToHostBottom(scopeTop, hostBottom, lockPx);
+  scope.style.setProperty("--bonsai-qam-lock-height", `${scopePx}px`);
+  scope.classList.add("bonsai-qam-height-locked");
+
+  ancestors.forEach((el, i) => {
+    const px = `${fitHeightToHostBottom(tops[i], hostBottom, lockPx)}px`;
+    if (el.classList.contains("decky-qam-scope") || el.classList.contains("Panel")) {
+      pinFlexColumn(el, px);
+    } else {
+      pinElementHeight(el, px);
+    }
+  });
+
+  return scopePx;
 }
 
 /**
  * Bazzite / gamescope QAM can collapse `.bonsai-scope` to ~80px on pointer entry.
- * Lock scope to the stable QAM tab host height (~936px); never size from scroll content.
+ * Lock scope to the stable QAM tab host height; never size from scroll content. Each level of the
+ * chain is pinned to the distance from ITS OWN top to the host's bottom — see
+ * fitHeightToHostBottom for why the host height alone overshoots.
  */
 export function useQamPanelHeightGuard(scopeRef: React.RefObject<HTMLDivElement | null>): void {
   const lockedHeightRef = useRef(0);
+  /* What was last pinned onto the scope, which is the host height MINUS the chrome above it.
+     Sag has to be judged against this and not against the host height, or the scope reads as
+     permanently sagged and the guard re-pins on every pointer move. */
+  const fittedHeightRef = useRef(0);
 
   useLayoutEffect(() => {
     const scope = scopeRef.current;
@@ -103,12 +144,13 @@ export function useQamPanelHeightGuard(scopeRef: React.RefObject<HTMLDivElement 
 
       const lockPx = lockedHeightRef.current;
       const crushed = scopeH < CRUSHED_SCOPE_MAX_PX && lockPx >= QAM_HOST_MIN_PX;
-      const sagged = lockPx >= QAM_HOST_MIN_PX && scopeH < lockPx - LOCK_SAG_TOLERANCE_PX;
+      const fittedPx = fittedHeightRef.current;
+      const sagged = fittedPx >= QAM_HOST_MIN_PX && scopeH < fittedPx - LOCK_SAG_TOLERANCE_PX;
       const needsLock = crushed || sagged;
       const layoutStable = scopeH >= CRUSHED_SCOPE_MAX_PX;
 
       if (lockPx >= QAM_HOST_MIN_PX && (needsLock || layoutStable)) {
-        pinScopeChain(scope, host, `${lockPx}px`);
+        fittedHeightRef.current = pinScopeChain(scope, host, lockPx);
       }
       syncTabBodyViewportHeight(scope);
     };

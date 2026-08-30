@@ -45,6 +45,8 @@ export type ChatSlotRowProps = {
 type RowFocusStop = "title" | "delete";
 
 const MAX_DOTS = 8;
+/** What the create position shows, both as the centre label and as the ghost to a slot's left. */
+const CREATE_LABEL = "[+]";
 
 export function ChatSlotRow({
   summaries,
@@ -161,7 +163,7 @@ export function ChatSlotRow({
     return "";
   };
 
-  const centerLabel = isCreatePosition ? "[+]" : (activeSlot?.label ?? "New chat");
+  const centerLabel = isCreatePosition ? CREATE_LABEL : (activeSlot?.label ?? "New chat");
 
   // CSS cannot detect overflow, and `text-overflow: ellipsis` clips the text so a plain
   // transform would only slide the ellipsized fragment. So measure here, publish the
@@ -281,7 +283,7 @@ export function ChatSlotRow({
               ) : null}
               {showGhosts && prevIsCreatePosition ? (
                 <span className="bonsai-chat-slot-ghost bonsai-chat-slot-ghost--prev bonsai-chat-slot-ghost--create">
-                  + New chat
+                  {CREATE_LABEL}
                 </span>
               ) : null}
               {showGhosts && prevSlot ? (

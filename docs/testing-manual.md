@@ -298,8 +298,29 @@ everything below assumes it passes. Plan:
 - [ ] **CHAT-SLOTS-V3-06c** (W16) QAM closed when the answer finishes: the reply-ready toast still appears (regression check on the completion watch)
 - [ ] **CHAT-SLOTS-V3-07** (W17) A slot with 3 archived turns: a **"3 earlier"** pill sits above the newest turn and is a D-pad stop; **A** expands it into header rows and focus lands on the first revealed row; with exactly 1 archived turn the header row shows with no pill
 - [x] **CHAT-SLOTS-V3-08** (bottom dock) With a short or empty slot: preset chips, the Ask bar and the context line sit at the bottom of the panel with the empty space above them (between transcript and presets); the empty-slot preview stays directly under the slot row; the pane does not scroll when its content is short; a long transcript still scrolls with the Ask bar in flow at its end. Recheck the Rule 1 edges: every Main row still spans the full column width (the fill column moved the PanelSection out of the old `:has()` gutter fix's range — section-4 carries a dedicated line for it)  — **PASS 2026-08-30 (automated).** Short slot: `scrollHeight == clientHeight` (667) so the pane does not scroll; dock bottom 749 = column bottom; context line last. Every row x=48 w=300, so the Rule 1 edges survived the new wrappers.
-- [x] **CHAT-SLOTS-V3-09** (sticky dock) With a transcript long enough to overflow the pane, the Ask bar, the ASK button and the context line all stay on screen while the transcript scrolls behind them; the dock has an opaque surface so nothing shows through it  — **PASS 2026-08-30 (automated).** `scrollHeight` 963 against a 667 viewport and both `askOnScreen` and `footOnScreen` true. Before the fix the same state put both off screen.
+- [x] **CHAT-SLOTS-V3-09** (sticky dock) With a transcript long enough to overflow the pane, the Ask bar, the ASK button and the context line all stay on screen while the transcript scrolls behind them; the dock has an opaque surface so nothing shows through it  — **PASS 2026-08-30 (automated).** `scrollHeight` 963 against a 667 viewport and both `askOnScreen` and `footOnScreen` true. Before the fix the same state put both off screen. **Correction, same day:** that pass was
+  measured against the scroll viewport's bottom edge, and the viewport itself was hanging 50px below the screen (see **CHAT-SLOTS-V3-11**),
+  so "on screen" was measured against the wrong edge. The sticky behaviour was right; the reference was not. Re-check against
+  `window.innerHeight` when V3-11 is run.
 - [x] **CHAT-SLOTS-V3-10** (new-chat affordances) On the **first** slot with the row at rest, a blurred **+ New chat** ghost sits left of the title and is not truncated; the dot strip leads with a **+** marking the create position, and that + is the active marker while the carousel is at `[+]`  — **PASS 2026-08-30 (automated).** Ghost renders "+ New chat" at 55px untruncated; strip shows 7 markers for 6 slots (1 create + 6). Slot titles created from now on lead with the question, not the game name — **existing slots keep their stored labels**, so this only shows on newly created chats.
+- [x] **CHAT-SLOTS-V3-11** (panel height) Nothing the plugin draws sits below the visible screen: with a transcript long enough to
+  overflow, read `.bonsai-scope`, the `TabContentsScroll` viewport, the Ask bar and the context line, and confirm every `bottom` is
+  `<= window.innerHeight` — **measured against the window, not against the scroll viewport, which was the reference that hid this the
+  first time**. Then confirm the context line is fully readable (its `height` unclipped, not a sliver) and that the pane still recovers
+  its height after a pointer enters the panel (the sag guard this change touches)  — **PASS 2026-08-30 (automated).**
+  `window.innerHeight` 766; scope, scroll viewport, dock and context line all bottom at **765**, so nothing hangs below the screen — the
+  same read before the fix put the scope and the viewport at **816**. Context line 13px tall and whole, not a sliver. The 40px strip left
+  under the dock turned out to be a **second, separate cause**: Steam's scroll container carries `padding-bottom: 40px` and sticky pins to
+  a scrollport's *content* box, so `bottom: 0` stopped 40px short. Zeroed for the Main tab only; `gapUnderDock` is now **0** with the pane
+  genuinely overflowing (scrollHeight 652 > clientHeight 616). Pointer-sag recheck still owed.
+- [x] **CHAT-SLOTS-V3-12** (create affordances, revised) On a slot at rest, the ghost to the left of the title reads exactly `[+]` — the
+  same token the create position uses as its centre label — is not truncated, has no directional fade eating its opening bracket, and has
+  clear space between it and the title rather than reading as a prefix on it. In the dot strip, the leading `+` sits on the **same
+  horizontal centre line** as the dots beside it (compare `getBoundingClientRect()` centres, not eyeballed)  — **PASS 2026-08-30
+  (automated).** Ghost text exactly `[+]`, 14px wide, `truncated: false`, `mask-image: none`, and 14px of clear space to the title. In the
+  strip the `+` centre and every dot centre read **191.45** — off-line by **0**. The cause of the old misalignment was `align-items` on the
+  dot row defaulting to `stretch` against fixed-height dots, so the glyph box hung below their line.
+
 
 ---
 
