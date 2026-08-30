@@ -291,6 +291,8 @@ everything below assumes it passes. Plan:
 - [ ] **CHAT-SLOTS-V3-02** (W10) A slot named longer than about 12 characters: the focused title sweeps end to end and snaps back on a ~6s cycle; quiet rows never move; with Steam's reduced-motion setting on (if it is exposed), no sweep
 - [ ] **CHAT-SLOTS-V3-03** (W3+W11) A fresh slot and the `[+]` position both show the 52px silhouette and caption under the row; `[+]` shows no dots; the first Ask replaces the preview with the live turn
 - [ ] **CHAT-SLOTS-V3-04** (W14) Rename: cyan field, **Save** disabled while the name is empty, caret in the field on open; delete confirm shows Steam's destructive styling; both modals still survive a QAM close/reopen and return focus to the row. If `focusOnMount` fights the modal-survival focus dance, remove it and note that here
+- [ ] **CHAT-SLOTS-V3-05a** (W15) Ask in slot A, **LB** to slot B mid-stream: B shows B's own content (or the empty-slot preview) and zero of A's tokens; the ask bar still reads busy
+- [ ] **CHAT-SLOTS-V3-05b** (W15) Return to A mid-stream: the question, the partial text and the caret are all back within one poll
 
 ---
 

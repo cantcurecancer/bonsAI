@@ -75,6 +75,13 @@ export type BackgroundRequestStatus = {
   thinking_unsupported?: boolean;
   /** Model that answered, used to warn about unsupported thinking once per model. */
   model?: string | null;
+  /**
+   * Named chat slot this request belongs to, so a poll can tell whether the tokens it is about
+   * to paint belong to the slot the user is looking at. Set at accept time and carried on the
+   * state dict, so it is still present on the terminal poll — `_chat_slot_by_request` is popped
+   * before then.
+   */
+  chat_slot_id?: string | null;
 };
 
 export type PresetCarouselInjectPayload = {

@@ -36,6 +36,11 @@ def new_background_state() -> dict[str, Any]:
         "thinking_summary": None,
         "thinking_unsupported": False,
         "model": None,
+        # Which named chat slot this request belongs to, so a poll can tell whether the
+        # tokens it is about to paint are the slot the user is currently looking at.
+        # It rides the state dict rather than being looked up per poll, because
+        # `_chat_slot_by_request` is popped at terminal — before the frontend polls it.
+        "chat_slot_id": None,
     }
 
 
@@ -47,6 +52,7 @@ def pending_background_state(
     app_context: str,
     started_at: float,
     response: str = "Thinking...",
+    chat_slot_id: Optional[str] = None,
 ) -> dict[str, Any]:
     """State published when an Ask is admitted and a background task is about to run."""
     state = new_background_state()
@@ -59,6 +65,7 @@ def pending_background_state(
             "app_context": app_context,
             "response": response,
             "started_at": started_at,
+            "chat_slot_id": chat_slot_id,
         }
     )
     return state

@@ -195,6 +195,7 @@ export function useMainTabPayload({
     onBeforeNestedDeckyModal,
     onCompleteNestedDeckyModalClose,
     askStopped,
+    isForeignPendingAsk,
   } = props;
 
   // Dependency list preserved from index.tsx, with the names it depended on translated to the
@@ -312,6 +313,7 @@ export function useMainTabPayload({
         onBeforeNestedDeckyModal={onBeforeNestedDeckyModal}
         onCompleteNestedDeckyModalClose={onCompleteNestedDeckyModalClose}
         askStopped={askStopped}
+        isForeignPendingAsk={isForeignPendingAsk}
       />
     ),
     // ANY NEW PROP MUST BE ADDED TO THIS LIST. It is hand-maintained and nothing
@@ -388,6 +390,7 @@ export function useMainTabPayload({
       onBeforeNestedDeckyModal,
       onCompleteNestedDeckyModalClose,
       askStopped,
+      isForeignPendingAsk,
     ]
   );
 }

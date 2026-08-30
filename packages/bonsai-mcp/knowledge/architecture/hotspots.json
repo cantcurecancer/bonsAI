@@ -2,12 +2,17 @@
   "hotspots": [
     {
       "path": "main.py",
-      "lines": 3182,
+      "lines": 3183,
       "role": "Decky RPC entrypoints and orchestration"
     },
     {
       "path": "py_modules/backend/services/knowledge_base_service.py",
       "lines": 1950,
+      "role": ""
+    },
+    {
+      "path": "src/hooks/useBonsaiAskOrchestration.ts",
+      "lines": 1549,
       "role": ""
     },
     {
@@ -17,13 +22,8 @@
     },
     {
       "path": "src/index.tsx",
-      "lines": 1521,
+      "lines": 1523,
       "role": "Plugin root: tabs, scoped CSS, RPC wiring, Settings"
-    },
-    {
-      "path": "src/hooks/useBonsaiAskOrchestration.ts",
-      "lines": 1500,
-      "role": ""
     },
     {
       "path": "py_modules/backend/services/ollama_prompts.py",
@@ -72,7 +72,7 @@
     },
     {
       "path": "src/components/MainTabChatTranscript.tsx",
-      "lines": 869,
+      "lines": 878,
       "role": ""
     },
     {

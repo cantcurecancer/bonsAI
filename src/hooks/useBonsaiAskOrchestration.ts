@@ -230,6 +230,13 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
   const [isAsking, setIsAsking] = useState(false);
   /** Stop was pressed: show a small notice beside the kept answer instead of replacing it. */
   const [askStopped, setAskStopped] = useState(false);
+  /*
+   * A pending poll belongs to a slot the user is no longer looking at. The ask bar still has to
+   * know the backend is busy (`isAsking` stays true), but the transcript must not draw a live
+   * turn for it — otherwise the slot the user IS looking at grows an empty live header and the
+   * empty-slot preview can never render.
+   */
+  const [isForeignPendingAsk, setIsForeignPendingAsk] = useState(false);
   /** Set on Stop until the `cancelled` status lands, so a late terminal result cannot overwrite it. */
   const stopRequestedRef = useRef(false);
 
@@ -498,9 +505,37 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
         return;
       }
 
+      /*
+       * Which slot these tokens belong to. Until the backend started sending `chat_slot_id`
+       * the frontend could not tell, so cycling slots mid-stream painted slot A's answer into
+       * slot B. When it is foreign we actively write the quiet values rather than merely
+       * skipping the paint: nothing else clears A's paint after a switch — `selectSlot` /
+       * `applySlotTranscript` reset the archived thread but not the live paint.
+       */
+      const payloadSlotId = typeof status.chat_slot_id === "string" ? status.chat_slot_id : null;
+      const activeSlotIdNow = a.activeSlotIdRef?.current ?? null;
+      const paintsForeignSlot = Boolean(
+        payloadSlotId && activeSlotIdNow && payloadSlotId !== activeSlotIdNow,
+      );
+
       if (status.status === "pending") {
         setOllamaContext({ app_id: appId, app_context: appContext });
         setIsAsking(true);
+        setIsForeignPendingAsk(paintsForeignSlot);
+        if (paintsForeignSlot) {
+          // Returning to the origin slot flips this back to false and the next poll repaints
+          // question, partial and caret on its own — that is the restore-on-return behavior.
+          setOllamaResponse("");
+          setThinkingSummary(null);
+          setIsStreamingPreview(false);
+          setIsStreamSettling(false);
+          setLastApplied(null);
+          setElapsedSeconds(null);
+          setStrategyGuideBranches(null);
+          setModelPolicyDisclosure(null);
+          setPresetCarouselInject(null);
+          return;
+        }
         /*
          * Refill the live header only when it is blank. A remount mid-Ask (QAM close/reopen
          * while still thinking) starts askThreadDisplayQuestion over at "" — the in-memory ref
@@ -587,14 +622,22 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
         const terminalText = buildResponseText(status.response ?? "No response text.", applied);
         setOllamaContext({ app_id: appId, app_context: appContext });
         setIsAsking(false);
-        setShortcutSetupVariant(
-          status.status === "completed" && status.success ? status.shortcut_setup ?? null : null,
-        );
-        setOllamaResponse(terminalText);
+        setIsForeignPendingAsk(false);
+        if (!paintsForeignSlot) {
+          setShortcutSetupVariant(
+            status.status === "completed" && status.success ? status.shortcut_setup ?? null : null,
+          );
+          setOllamaResponse(terminalText);
+        }
         setLastApplied(applied);
         setElapsedSeconds(Number.isFinite(status.elapsed_seconds) ? status.elapsed_seconds : null);
 
-        if (streamPreviewActiveRef.current) {
+        if (paintsForeignSlot) {
+          // The answer belongs to a slot the user left. Never settle a stream that is not on
+          // screen — `setIsStreamSettling(true)` here would animate slot B's card.
+          setIsStreamingPreview(false);
+          setIsStreamSettling(false);
+        } else if (streamPreviewActiveRef.current) {
           // T3: snap smooth reveal to full text in stream bubble, then swap to terminal layout (may change later).
           setIsStreamSettling(true);
         } else {
@@ -611,7 +654,7 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
           // pending, or the poll loop was never reached — e.g. the mount-restore effect's
           // one-shot status.status === "completed" read on reopen). Never fires once a real
           // caption is already showing.
-          if (q) {
+          if (q && !paintsForeignSlot) {
             setAskThreadDisplayQuestion((prev) => prev || q);
           }
           const answer = buildResponseText(status.response ?? "No response text.", applied);
@@ -651,18 +694,23 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
             }
             const displayQ = (pendingThreadQuestionDisplayRef.current?.trim() || q).trim();
             pendingThreadQuestionDisplayRef.current = null;
-            setLastExchange({
-              question: displayQ,
-              answer,
-              originalQuestion: q,
-              model:
-                disc && typeof disc === "object" && typeof (disc as ModelPolicyDisclosurePayload).model === "string"
-                  ? (disc as ModelPolicyDisclosurePayload).model
-                  : null,
-              attachments: lastAskContextRef.current.attachments,
-              spoilerConsentEffective: status.strategy_spoiler_consent_effective ?? false,
-              askMode: lastAskContextRef.current.askMode,
-            });
+            // Skipped for a foreign slot: otherwise the slot on screen grows a feedback/retry
+            // row that would act on another slot's answer. The origin slot's feedback row stays
+            // empty until a later reload — accepted.
+            if (!paintsForeignSlot) {
+              setLastExchange({
+                question: displayQ,
+                answer,
+                originalQuestion: q,
+                model:
+                  disc && typeof disc === "object" && typeof (disc as ModelPolicyDisclosurePayload).model === "string"
+                    ? (disc as ModelPolicyDisclosurePayload).model
+                    : null,
+                attachments: lastAskContextRef.current.attachments,
+                spoilerConsentEffective: status.strategy_spoiler_consent_effective ?? false,
+                askMode: lastAskContextRef.current.askMode,
+              });
+            }
             lastStrategyAskQuestionRef.current = q;
             setStrategyGuideBranches(normalizeStrategyGuideBranches(status.strategy_guide_branches));
             const checklistPayload = normalizeStrategyChecklist(status.strategy_checklist);
@@ -1471,6 +1519,7 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
     askThreadDisplayQuestion,
     isAsking,
     askStopped,
+    isForeignPendingAsk,
     isStreamingPreview,
     isStreamSettling,
     streamDisplayText,

@@ -238,57 +238,57 @@
     {
       "name": "dbg_fe_log",
       "domain": "debug",
-      "line": 2756
+      "line": 2757
     },
     {
       "name": "get_background_game_ai_status",
       "domain": "ask",
-      "line": 2769
+      "line": 2770
     },
     {
       "name": "abort_background_game_ai",
       "domain": "ask",
-      "line": 2794
+      "line": 2795
     },
     {
       "name": "forget_background_game_ai",
       "domain": "ask",
-      "line": 2853
+      "line": 2854
     },
     {
       "name": "ask_ollama",
       "domain": "ollama",
-      "line": 2948
+      "line": 2949
     },
     {
       "name": "get_voice_engine_status",
       "domain": "voice",
-      "line": 3015
+      "line": 3016
     },
     {
       "name": "install_voice_engine",
       "domain": "voice",
-      "line": 3023
+      "line": 3024
     },
     {
       "name": "get_voice_install_status",
       "domain": "voice",
-      "line": 3073
+      "line": 3074
     },
     {
       "name": "start_voice_transcription",
       "domain": "voice",
-      "line": 3077
+      "line": 3078
     },
     {
       "name": "stop_voice_transcription",
       "domain": "voice",
-      "line": 3136
+      "line": 3137
     },
     {
       "name": "get_voice_transcription_status",
       "domain": "voice",
-      "line": 3156
+      "line": 3157
     }
   ]
 }

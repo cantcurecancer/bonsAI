@@ -16,7 +16,7 @@ from backend.services.background_request_state import (
     pending_background_state,
 )
 
-# The 20 keys the status poller and the frontend expect on every background state.
+# The 21 keys the status poller and the frontend expect on every background state.
 EXPECTED_KEYS = {
     "status",
     "request_id",
@@ -38,6 +38,7 @@ EXPECTED_KEYS = {
     "thinking_summary",
     "thinking_unsupported",
     "model",
+    "chat_slot_id",
 }
 
 
@@ -65,6 +66,7 @@ class TestBackgroundStateShape(unittest.TestCase):
         self.assertIsNone(state["partial_response"])
         self.assertIs(state["streaming"], False)
         self.assertIsNone(state["thinking_summary"])
+        self.assertIsNone(state["chat_slot_id"])
 
     def test_every_constructor_agrees_on_the_key_set(self):
         """The regression this module exists to prevent.
@@ -116,6 +118,25 @@ class TestPendingState(unittest.TestCase):
         self.assertEqual(state["started_at"], 1234.5)
         self.assertIsNone(state["completed_at"])
         self.assertIsNone(state["success"])
+        self.assertIsNone(state["chat_slot_id"])
+
+    def test_pending_carries_the_chat_slot_id(self):
+        """The id has to ride the state dict, not `_chat_slot_by_request`.
+
+        That map is popped when a request finishes, before the frontend polls the terminal
+        status — exactly when the unread-dot logic needs to know which slot the answer
+        belongs to. Riding the state means the terminal write's `**self._background_state`
+        spread carries it through for free.
+        """
+        state = pending_background_state(
+            request_id=7,
+            question="q",
+            app_id="7",
+            app_context="active",
+            started_at=1.0,
+            chat_slot_id="abc",
+        )
+        self.assertEqual(state["chat_slot_id"], "abc")
 
     def test_pending_response_placeholder_is_the_thinking_string(self):
         """The frontend treats this exact string as a placeholder, not as an answer."""

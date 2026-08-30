@@ -124,6 +124,8 @@ export type MainTabProps = {
   streamDisplayText?: string;
   /** Stop was pressed on this turn: show the Stopped notice beside whatever text was kept. */
   askStopped?: boolean;
+  /** A pending Ask belongs to another chat slot: the ask bar shows busy, the transcript does not. */
+  isForeignPendingAsk?: boolean;
   thinkingSummary?: string | null;
   desktopAskVerboseLogging?: boolean;
   lastRequestId?: number | null;

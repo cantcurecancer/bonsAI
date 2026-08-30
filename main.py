@@ -2684,14 +2684,15 @@ class Plugin:
                 settings=pre_settings,
             )
             self._publish_thinking_phase(request_id, opening_blurb)
+            chat_slot_id = Plugin._parse_chat_slot_id(question)
             self._background_state = pending_background_state(
                 request_id=request_id,
                 question=parsed_question,
                 app_id=app_id,
                 app_context=app_context,
                 started_at=time.time(),
+                chat_slot_id=chat_slot_id or None,
             )
-            chat_slot_id = Plugin._parse_chat_slot_id(question)
             if chat_slot_id:
                 await self._chat_slots_record_user_turn(
                     slot_id=chat_slot_id,

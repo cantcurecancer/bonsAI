@@ -127,6 +127,12 @@ export type MainTabChatTranscriptProps = {
    * content (the drawn behavior of board 8f).
    */
   showEmptySlotPreview?: boolean;
+  /**
+   * The pending Ask belongs to a different chat slot. `isAsking` still has to be true — the ask
+   * bar is genuinely busy — but this slot must not grow a live turn header for someone else's
+   * question, which would also hide the empty-slot preview.
+   */
+  isForeignPendingAsk?: boolean;
 };
 
 export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
@@ -134,6 +140,7 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
     fullBleedRowStyle,
     isAsking,
     showEmptySlotPreview = false,
+    isForeignPendingAsk = false,
     selectedAttachment,
     ollamaContext,
     unifiedInput,
@@ -240,7 +247,9 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
    * carried through get_background_game_ai_status.
    */
   const showLiveTurn =
-    Boolean(liveQuestion) || isAsking || (showLiveResponse && expandedTurnKey === "live");
+    Boolean(liveQuestion) ||
+    (isAsking && !isForeignPendingAsk) ||
+    (showLiveResponse && expandedTurnKey === "live");
   const appliedTuningBannerText = formatAppliedTuningBannerText(lastApplied);
 
   const chatMainColumnRef = useRef<HTMLDivElement | null>(null);
