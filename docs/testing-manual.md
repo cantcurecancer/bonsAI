@@ -288,6 +288,7 @@ everything below assumes it passes. Plan:
 [28-named-chat-slots-v3-implementation-plan.md](planning/28-named-chat-slots-v3-implementation-plan.md).
 
 - [ ] **CHAT-SLOTS-V3-01** (W2) **Down** from the slot row reaches the transcript's first stop; **Down** continues transcript → presets → ask bar; **Up** retraces; on an empty slot **Down** from the row reaches the presets. The context footnote renders below the ask bar
+- [ ] **CHAT-SLOTS-V3-02** (W10) A slot named longer than about 12 characters: the focused title sweeps end to end and snaps back on a ~6s cycle; quiet rows never move; with Steam's reduced-motion setting on (if it is exposed), no sweep
 
 ---
 

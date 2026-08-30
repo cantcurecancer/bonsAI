@@ -5,7 +5,7 @@
  * Solves: Named slot switching without a modal picker; explicit focus graph for D-pad.
  * Does not: Submit Asks — orchestration hook owns the Ask path.
  */
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { ConfirmModal, Focusable, showModal } from "@decky/ui";
 
 import type { ChatSlotSummary } from "../../utils/chatSlotsApi";
@@ -135,6 +135,32 @@ export function ChatSlotRow({
 
   const centerLabel = isCreatePosition ? "[+]" : (activeSlot?.label ?? "New chat");
 
+  // CSS cannot detect overflow, and `text-overflow: ellipsis` clips the text so a plain
+  // transform would only slide the ellipsized fragment. So measure here, publish the
+  // distance as a CSS var, and let the stylesheet attach the sweep only when it is needed.
+  // Known accepted edge: this re-runs on [focused, centerLabel] only, so a resize with both
+  // unchanged (a UI-scale change, or a ghost mounting from a summaries refresh) can leave a
+  // stale distance until the next focus change. No ResizeObserver unless device QA shows it.
+  const titleWindowRef = useRef<HTMLSpanElement | null>(null);
+  const titleInnerRef = useRef<HTMLSpanElement | null>(null);
+  const [titleOverflows, setTitleOverflows] = useState(false);
+
+  useLayoutEffect(() => {
+    const win = titleWindowRef.current;
+    const inner = titleInnerRef.current;
+    if (!focused || !win || !inner) {
+      setTitleOverflows(false);
+      return;
+    }
+    const overflow = inner.scrollWidth - win.clientWidth;
+    if (overflow > 1) {
+      win.style.setProperty("--bonsai-slot-title-overflow", `${overflow}px`);
+      setTitleOverflows(true);
+    } else {
+      setTitleOverflows(false);
+    }
+  }, [focused, centerLabel]);
+
   return (
     <div
       className={`bonsai-chat-slot-row${focused ? " bonsai-chat-slot-row--focused" : ""}`}
@@ -201,9 +227,12 @@ export function ChatSlotRow({
                 <span className="bonsai-chat-slot-ghost bonsai-chat-slot-ghost--prev">{prevSlot.label}</span>
               ) : null}
               <span
-                className={`bonsai-chat-slot-title${focusStop === "title" ? " bonsai-chat-slot-title--active-stop" : ""}${isCreatePosition ? " bonsai-chat-slot-title--create" : ""}`}
+                ref={titleWindowRef}
+                className={`bonsai-chat-slot-title${focusStop === "title" ? " bonsai-chat-slot-title--active-stop" : ""}${isCreatePosition ? " bonsai-chat-slot-title--create" : ""}${titleOverflows ? " bonsai-chat-slot-title--overflowing" : ""}`}
               >
-                {centerLabel}
+                <span ref={titleInnerRef} className="bonsai-chat-slot-title-inner">
+                  {centerLabel}
+                </span>
               </span>
               {!isCreatePosition ? (
                 <span

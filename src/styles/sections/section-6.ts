@@ -596,6 +596,27 @@ export function buildSection6Section(): string {
           font-size: ${uiScalePx(13)};
           color: rgba(200, 214, 230, 0.45);
         }
+        .bonsai-scope .bonsai-chat-slot-title-inner {
+          display: inline-block;
+          white-space: nowrap;
+        }
+        .bonsai-scope .bonsai-chat-slot-row--focused .bonsai-chat-slot-title--overflowing {
+          text-overflow: clip;
+        }
+        .bonsai-scope .bonsai-chat-slot-row--focused .bonsai-chat-slot-title--overflowing .bonsai-chat-slot-title-inner {
+          animation: bonsai-slot-title-scrub 6s ease-in-out infinite;
+        }
+        @keyframes bonsai-slot-title-scrub {
+          0% { transform: translateX(0); }
+          75% { transform: translateX(calc(-1 * var(--bonsai-slot-title-overflow, 0px))); }
+          83% { transform: translateX(calc(-1 * var(--bonsai-slot-title-overflow, 0px))); }
+          100% { transform: translateX(0); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .bonsai-scope .bonsai-chat-slot-title-inner {
+            animation: none !important;
+          }
+        }
         /* The quiet state carries the same 22x22 box and 1px transparent border as the
            active stop, so activating the stop colours it in without nudging the row. */
         .bonsai-scope .bonsai-chat-slot-delete {
