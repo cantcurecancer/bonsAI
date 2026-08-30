@@ -667,12 +667,22 @@ export function buildSection6Section(): string {
           color: #f2f7fc;
           text-shadow: 0 0 16px rgba(156, 231, 255, 0.3);
         }
-        /* The create position keeps one quiet size whether the row is focused or not,
-           so it must follow the --focused title rule to win over it. */
-        .bonsai-scope .bonsai-chat-slot-title--create {
+        /*
+          The create position keeps one quiet size whether the row is focused or not.
+
+          Both selectors are needed. The --focused .bonsai-chat-slot-title rule above is three
+          classes (0-3-0); a lone .bonsai-chat-slot-title--create is two (0-2-0), so it loses on
+          specificity no matter where it sits in the file — source order only breaks ties.
+          Measured on device 2026-08-30: the focused create position computed 14px / #f2f7fc,
+          the focused title's values, instead of this rule's. The second selector matches the
+          focused rule's specificity and wins on order. Same trap the dot rules below guard.
+        */
+        .bonsai-scope .bonsai-chat-slot-title--create,
+        .bonsai-scope .bonsai-chat-slot-row--focused .bonsai-chat-slot-title--create {
           font-weight: 700;
           font-size: ${uiScalePx(13)};
           color: rgba(200, 214, 230, 0.45);
+          text-shadow: none;
         }
         .bonsai-scope .bonsai-chat-slot-title-inner {
           display: inline-block;

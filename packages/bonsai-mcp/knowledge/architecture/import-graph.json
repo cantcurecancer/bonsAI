@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 333,
-  "edgeCount": 792,
+  "fileCount": 334,
+  "edgeCount": 794,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -1173,11 +1173,19 @@
         "src/index.tsx"
       ]
     },
+    "src/features/chat-slots/ChatSlotRenameModal.test.tsx": {
+      "imports": [
+        "src/features/chat-slots/ChatSlotRenameModal.tsx",
+        "src/test-harness/fakeDeckyUi.tsx"
+      ],
+      "importedBy": []
+    },
     "src/features/chat-slots/ChatSlotRenameModal.tsx": {
       "imports": [
         "src/components/BonsaiModalScope.tsx"
       ],
       "importedBy": [
+        "src/features/chat-slots/ChatSlotRenameModal.test.tsx",
         "src/features/chat-slots/useChatSlotRenameModal.tsx"
       ]
     },
@@ -2144,6 +2152,7 @@
         "src/components/MainTabChatTranscript.strategyPanels.test.tsx",
         "src/components/ReplyCopyButton.test.tsx",
         "src/components/SessionContextStrip.test.tsx",
+        "src/features/chat-slots/ChatSlotRenameModal.test.tsx",
         "src/features/chat-slots/ChatSlotRow.test.tsx",
         "src/test-harness/setup.ts",
         "src/utils/buildReplyActionsElement.test.tsx"

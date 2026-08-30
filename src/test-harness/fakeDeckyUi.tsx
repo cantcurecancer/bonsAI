@@ -137,12 +137,26 @@ export const ConfirmModal = React.forwardRef<HTMLDivElement, StubProps>(function
     // Not DOM handlers — spreading them onto a div only earns an "Unknown event handler" warning.
     onOK: _onOK,
     onCancel: _onCancel,
+    /*
+     * Re-exposed as data attributes. React drops an unknown camelCase prop whose value is a
+     * boolean (it warns "Received `true` for a non-boolean attribute" and renders nothing), so
+     * spreading these would make them untestable AND noisy. They are the supported way to ask
+     * Steam for a disabled OK button and a destructive footer, so a test needs to see them.
+     */
+    bOKDisabled,
+    bDestructiveWarning,
     ...rest
   },
   ref
 ) {
   return (
-    <div ref={ref} data-decky-ui="ConfirmModal" {...withoutSteamNavProps(rest)}>
+    <div
+      ref={ref}
+      data-decky-ui="ConfirmModal"
+      data-ok-disabled={bOKDisabled ? "true" : "false"}
+      data-destructive={bDestructiveWarning ? "true" : "false"}
+      {...withoutSteamNavProps(rest)}
+    >
       <div data-decky-ui="ConfirmModalTitle">{strTitle as React.ReactNode}</div>
       <div data-decky-ui="ConfirmModalDescription">{strDescription as React.ReactNode}</div>
       {children as React.ReactNode}
