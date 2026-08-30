@@ -188,7 +188,7 @@ export function ChatSlotRow({
         }}
       >
         <div className="bonsai-chat-slot-row-inner">
-          <span className="bonsai-chat-slot-bumper-pill">LB</span>
+          {focused ? <span className="bonsai-chat-slot-bumper-pill">LB</span> : null}
           <div className="bonsai-chat-slot-center">
             <div className="bonsai-chat-slot-title-row">
               {showGhosts && prevSlot ? (
@@ -222,7 +222,7 @@ export function ChatSlotRow({
               </div>
             ) : null}
           </div>
-          <span className="bonsai-chat-slot-bumper-pill">RB</span>
+          {focused ? <span className="bonsai-chat-slot-bumper-pill">RB</span> : null}
         </div>
       </Focusable>
     </div>
