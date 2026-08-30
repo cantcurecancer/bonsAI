@@ -339,6 +339,24 @@ in [audit/maintainer-decisions-locked.md](audit/maintainer-decisions-locked.md).
 | R4 | Does the layout inversion ship, and separately (§ 4.4)? | **Yes, separately — after the width bug.** P-0b then P-7. Slots do not wait on it, and it can be dropped without touching P-1…P-6. |
 | R5 | Tab-strip treatment (§ 4.5) | **Filled active only (2b/b).** No micro labels, no width change, no 6px height cost. One CSS rule. |
 
+### Turn-8 review (2026-08-29/30) — what it confirmed
+
+The turn-8 design review closed every open A/B board. Implementation plan:
+[planning/28-named-chat-slots-v3-implementation-plan.md](planning/28-named-chat-slots-v3-implementation-plan.md),
+which supersedes plan 27 and wins wherever the two disagree.
+
+- **R3** — the cap is **8**, the top of R3's 5–8 range. Dots cover all 8; nothing from § 2.4 comes
+  back with it.
+- **D5** — taken **literally** (board 8a → B): the LB/RB pills are removed from the quiet row
+  entirely, not reserved as empty gutters. This reverses plan 27's locked decision 6. The title
+  re-cutting on focus edges is the accepted cost.
+- **Ghost neighbours** stay at 300px (board 8b → A), restyled quiet and edge-masked rather than
+  pushed off the row.
+- **Answer surface** — a constant 11%-alpha wash of the accent **lifted 40% toward white**, layered
+  over the shipped gradient (board 8c → B). This reverses plan 27's flat wash colour.
+- **R5 stands.** The tab-strip micro labels (board 6b) and the first-run ghost "New chat" label
+  (board 6c) are recorded on the roadmap as deliberately-not-built futures.
+
 ### Consequences of R3 and R5
 
 - § 2.4 (scale beyond ~8 slots) is **not implemented**. Delete the counter,

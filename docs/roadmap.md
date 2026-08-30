@@ -402,7 +402,7 @@ Stars are **effort/risk**. Grouped by **theme**; within each lane sorted ascendi
 - ★★★★★ **Named chat slots** (labeled threads — redesign only)
   - **GitHub:** [bonsAI Issues](https://github.com/qd313/bonsAI/issues) — issue TBD.
   - **Goal:** Up to 8 named, persistent chats with Main-tab LB/RB carousel (option C). Do not re-ship old mini-list picker.
-  - **Status:** Code landed 2026-08-09 (storage, RPC, row UI). **The row never rendered in the composed plugin between `dba34e7` (2026-08-03, step-8 payload-hook extraction) and 2026-08-30** — `useMainTabPayload` dropped all six chat-slot props, both nested-modal callbacks and `askStopped`; W0 of [28-named-chat-slots-v3-implementation-plan.md](planning/28-named-chat-slots-v3-implementation-plan.md) threads them through, so the V2 QA rows are runnable on device for the first time. **Redesign v3 landing 2026-08-30** ([28-named-chat-slots-v3-implementation-plan.md](planning/28-named-chat-slots-v3-implementation-plan.md)) — the Main tab layout inverts to slot row → transcript → presets → Ask bar → context line, and the background status payload now carries `chat_slot_id` so a mid-stream slot switch can never paint one slot's tokens into another. **On-Deck QA open** — all **CHAT-SLOTS-V2-01…06** and the **CHAT-SLOTS-V3** rows must pass before Completed. **P-0 bumper spike** result still pending on device ([major-redesign.md](major-redesign.md) § 7 R1).
+  - **Status:** Code landed 2026-08-09 (storage, RPC, row UI). **The row never rendered in the composed plugin between `dba34e7` (2026-08-03, step-8 payload-hook extraction) and 2026-08-30** — `useMainTabPayload` dropped all six chat-slot props, both nested-modal callbacks and `askStopped`; W0 of [28-named-chat-slots-v3-implementation-plan.md](planning/28-named-chat-slots-v3-implementation-plan.md) threads them through, so the V2 QA rows are runnable on device for the first time. **Redesign v3 landed 2026-08-30** ([28-named-chat-slots-v3-implementation-plan.md](planning/28-named-chat-slots-v3-implementation-plan.md)) — the Main tab layout inverts to slot row → transcript → presets → Ask bar → context line, and the background status payload now carries `chat_slot_id` so a mid-stream slot switch can never paint one slot's tokens into another. All 19 commits W0–W18 are in; every gate green. **What is left is device QA:** run **CHAT-SLOTS-V2-05** (the P-0 bumper spike, never yet run) first, then the rest of V2 and all of **CHAT-SLOTS-V3-01…07**. **On-Deck QA open** — all **CHAT-SLOTS-V2-01…06** and the **CHAT-SLOTS-V3** rows must pass before Completed. **P-0 bumper spike** result still pending on device ([major-redesign.md](major-redesign.md) § 7 R1).
   - **Unblocked 2026-08-16** (`d167f8e`). The data-loss bug that made all six rows unrunnable — every turn dropped before it reached `chat_slots/` — is fixed; run the one-Ask persistence check in [Verify](#verify) before starting 01…06.
   - **Design:** [major-redesign.md](major-redesign.md), [07-named-chat-slots-postmortem.md](planning/07-named-chat-slots-postmortem.md).
 - ★★★★★ **On-Deck model benchmark** (measured routing order)
@@ -419,6 +419,20 @@ Stars are **effort/risk**. Grouped by **theme**; within each lane sorted ascendi
   - **Depends on:** Thinking effort control Phase 1 (shipped).
 
 ### Focus / Deck UI
+
+- ★★ **Tab-strip micro labels + wide active cell** (including a full SETTINGS label)
+  - **Goal:** The active tab cell widens and carries a small text label under the icon, so the
+    current tab is readable without decoding the glyph.
+  - **Drawn as board 6b-A in the chat-slots design doc; deliberately NOT built.** Locked decision
+    **R5** ([major-redesign.md](major-redesign.md) § 7) stands: filled active glyph only, no micro
+    labels, no width change, no height cost. Shipping this later means reopening R5 in
+    [audit/maintainer-decisions-locked.md](audit/maintainer-decisions-locked.md) first — not just
+    writing the CSS.
+- ★★ **First-run ghost "New chat" label at the create position**
+  - **Goal:** On a fresh install the `[+]` position carries a faint "New chat" hint, so the first
+    thing a new user sees says what the button does.
+  - **Board 6c-A; deliberately not built.** Locked decision: the create position is the literal
+    `[+]`, re-confirmed on board 8f. Same rule as above — reopen the decision before building it.
 
 - ★★★ **Chip labels too long for the column autoscroll** (Netflix-style marquee)
   - **Goal:** A preset or corpus chip whose label does not fit the 300px QAM column scrolls its text
