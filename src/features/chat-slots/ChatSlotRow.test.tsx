@@ -33,8 +33,11 @@ function renderRow(overrides: Partial<React.ComponentProps<typeof ChatSlotRow>> 
   );
 }
 
+/* Slot dots only — the leading create marker is a separate affordance, asserted on its own below. */
 function dotClasses(container: HTMLElement): string[] {
-  return Array.from(container.querySelectorAll(".bonsai-chat-slot-dot")).map((el) => el.className);
+  return Array.from(container.querySelectorAll(".bonsai-chat-slot-dot"))
+    .filter((el) => !el.className.includes("--create"))
+    .map((el) => el.className);
 }
 
 describe("ChatSlotRow dot language", () => {
@@ -45,6 +48,14 @@ describe("ChatSlotRow dot language", () => {
     expect(classes.filter((c) => c.includes("--active"))).toHaveLength(1);
     expect(classes.some((c) => c.includes("--pending"))).toBe(false);
     expect(classes.some((c) => c.includes("--unread"))).toBe(false);
+  });
+
+  it("leads the strip with a create marker that is inactive while a slot is selected", () => {
+    const { container } = renderRow();
+    const create = container.querySelector(".bonsai-chat-slot-dot--create");
+    expect(create).not.toBeNull();
+    expect(create?.textContent).toBe("+");
+    expect(create?.className).not.toContain("--active");
   });
 
   it("gives the generating slot the pending ring", () => {

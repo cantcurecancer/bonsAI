@@ -152,15 +152,24 @@ def sanitize_slot(raw: Any) -> dict[str, Any] | None:
 
 
 def heuristic_slot_label(first_question: str, app_name: str = "") -> str:
+    """Name a slot after what was ASKED, not after where it was asked.
+
+    The label used to be f"{app_name}: {question}". In the slot row that reads as a column of
+    identical prefixes — every chat opened while the same game is running begins with the same
+    twenty-odd characters, and the part that actually distinguishes them is pushed past the
+    ellipsis. Reported by the maintainer on 2026-08-30 looking at a row of "Deep Rock Galactic:
+    Survivor: …" entries; the row window is ~167px, so the game name alone could consume it.
+
+    The game is not lost: it is stored per slot as `origin_app_id`, shown by the context line, and
+    carried on every turn. Falling back to the game name only when there is no question keeps a
+    slot created before its first Ask from being nameless.
+    """
     q = str(first_question or "").strip()
     name = str(app_name or "").strip()
-    if name:
-        if q:
-            trunc = q[:60] + ("…" if len(q) > 60 else "")
-            return f"{name}: {trunc}"[:MAX_LABEL_LEN]
-        return name[:MAX_LABEL_LEN]
     if q:
         return (q[: MAX_LABEL_LEN - 1] + "…") if len(q) > MAX_LABEL_LEN else q
+    if name:
+        return name[:MAX_LABEL_LEN]
     return "New chat"
 
 

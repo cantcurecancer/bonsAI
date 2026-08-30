@@ -533,14 +533,33 @@ export function buildSection6Section(): string {
           box-sizing: border-box;
           min-height: var(--bonsai-main-column-min-height, auto);
         }
+        /*
+          Sticky, not merely bottom-aligned. margin-top: auto parks the dock at the bottom while
+          the transcript is short, but a long one simply pushed it past the fold — measured
+          2026-08-30 with a single answer on screen, scrollHeight 957 against a 667 viewport, so
+          the Ask bar and the context line were both off screen. Sticking it to the scrollport's
+          bottom edge keeps the input reachable no matter how long the thread grows, which is what
+          the mocks draw.
+
+          It needs its own surface because nothing above it is opaque: the scroll container, the
+          scope and the QAM pane all compute to rgba(0,0,0,0) and the panel's colour comes from
+          Steam's chrome further up, so without this the transcript would scroll through the dock.
+        */
         .bonsai-scope .bonsai-main-tab-dock {
           display: flex;
           flex-direction: column;
           margin-top: auto;
+          position: sticky;
+          bottom: 0;
+          z-index: 2;
           width: 100%;
           max-width: 100%;
           min-width: 0;
           box-sizing: border-box;
+          background: rgba(18, 26, 34, 0.92);
+          -webkit-backdrop-filter: blur(10px);
+          backdrop-filter: blur(10px);
+          border-top: 1px solid rgba(255, 255, 255, 0.06);
         }
 
         /* Collapsed history: one "N earlier" pill standing in for the older archived turns. */
@@ -784,6 +803,20 @@ export function buildSection6Section(): string {
           text-overflow: ellipsis;
           pointer-events: none;
         }
+        /* Slightly brighter and unblurred-looking than a name ghost: it is a destination, not a
+           neighbouring title, and at 15% of the row it has to stay legible at two words. */
+        .bonsai-scope .bonsai-chat-slot-ghost--create {
+          /* Sizes to its content and does not shrink. Under the 15% cap the other ghosts share it
+             measured 28px on device, which ellipsized "+ New chat" down to "+ N…" — noise rather
+             than an indicator. A name ghost may truncate, because a partial name still hints at
+             which neighbour it is; this one means nothing unless it is readable. */
+          flex: 0 0 auto;
+          max-width: none;
+          font-size: ${uiScalePx(10)};
+          color: rgba(156, 231, 255, 0.42);
+          font-weight: 700;
+          letter-spacing: 0.02em;
+        }
         .bonsai-scope .bonsai-chat-slot-ghost--prev {
           margin-left: ${uiScalePx(4)};
           text-align: left;
@@ -812,6 +845,30 @@ export function buildSection6Section(): string {
           width: ${uiScalePx(4)};
           height: ${uiScalePx(4)};
           background: rgba(200, 214, 230, 0.5);
+        }
+        /*
+          The far-left marker is the create position, drawn as a + rather than a dot so the strip
+          says where "new chat" lives instead of only counting existing slots. It is why the strip
+          now renders at the create position too — W3 hid it there when the strip described only
+          slots, which left that position with no indicator at all.
+        */
+        .bonsai-scope .bonsai-chat-slot-dot--create {
+          width: auto;
+          height: auto;
+          border-radius: 0;
+          background: transparent;
+          color: rgba(143, 168, 196, 0.5);
+          font-size: ${uiScalePx(9)};
+          font-weight: 700;
+          line-height: 1;
+        }
+        .bonsai-scope .bonsai-chat-slot-dot--create.bonsai-chat-slot-dot--active {
+          background: transparent;
+          color: #9ce7ff;
+        }
+        .bonsai-scope .bonsai-chat-slot-row--focused .bonsai-chat-slot-dot--create.bonsai-chat-slot-dot--active {
+          background: transparent;
+          color: #9ce7ff;
         }
         .bonsai-scope .bonsai-chat-slot-dot--pending {
           width: ${uiScalePx(6)};

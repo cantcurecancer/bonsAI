@@ -33,7 +33,9 @@ class ChatSlotServiceTests(unittest.TestCase):
             first_question="How do I parry?",
             app_name="Elden Ring",
         )
-        self.assertIn("Elden Ring", slot["label"])
+        # The question names the slot; the game does not prefix it. A column of chats from one
+        # game shared an identical opening otherwise, which is what the row shows at a glance.
+        self.assertEqual(slot["label"], "How do I parry?")
         sid = slot["id"]
         append_turn(
             self.settings_dir,
@@ -209,7 +211,13 @@ class ChatSlotServiceTests(unittest.TestCase):
 
     def test_heuristic_label(self):
         self.assertIn("foo", heuristic_slot_label("foo bar baz", ""))
-        self.assertIn("Game", heuristic_slot_label("question", "Game"))
+        # The question leads, and the game name is NOT prefixed onto it: a row of chats from one
+        # game used to share the same opening twenty characters and read as identical at a glance.
+        self.assertEqual(heuristic_slot_label("question", "Game"), "question")
+        self.assertNotIn("Game", heuristic_slot_label("question", "Game"))
+        # Only a slot with no question yet falls back to the game name.
+        self.assertEqual(heuristic_slot_label("", "Game"), "Game")
+        self.assertEqual(heuristic_slot_label("", ""), "New chat")
 
     def test_wipe_all(self):
         create_slot(self.settings_dir, label="a")

@@ -89,6 +89,9 @@ export function ChatSlotRow({
   const isCreatePosition = carouselIndex === 0;
   const activeSlot = isCreatePosition ? null : orderedSlots[carouselIndex - 1] ?? null;
   const prevSlot = carouselIndex > 1 ? orderedSlots[carouselIndex - 2] : null;
+  /* Position 0 is the create slot, so the first real slot's left neighbour IS "new chat". Without
+     this the leftmost slot looked like the end of the carousel with nothing to its left. */
+  const prevIsCreatePosition = carouselIndex === 1;
   const nextSlot =
     !isCreatePosition && carouselIndex < orderedSlots.length ? orderedSlots[carouselIndex] : null;
   const showGhosts = orderedSlots.length > 1;
@@ -276,6 +279,11 @@ export function ChatSlotRow({
                   aria-hidden
                 />
               ) : null}
+              {showGhosts && prevIsCreatePosition ? (
+                <span className="bonsai-chat-slot-ghost bonsai-chat-slot-ghost--prev bonsai-chat-slot-ghost--create">
+                  + New chat
+                </span>
+              ) : null}
               {showGhosts && prevSlot ? (
                 <span className="bonsai-chat-slot-ghost bonsai-chat-slot-ghost--prev">{prevSlot.label}</span>
               ) : null}
@@ -305,8 +313,13 @@ export function ChatSlotRow({
                 />
               ) : null}
             </div>
-            {orderedSlots.length > 0 && !isCreatePosition ? (
+            {orderedSlots.length > 0 ? (
               <div className="bonsai-chat-slot-dots" aria-hidden>
+                <span
+                  className={`bonsai-chat-slot-dot bonsai-chat-slot-dot--create${isCreatePosition ? " bonsai-chat-slot-dot--active" : ""}`}
+                >
+                  +
+                </span>
                 {orderedSlots.slice(0, MAX_DOTS).map((slot) => (
                   <span
                     key={slot.id}
