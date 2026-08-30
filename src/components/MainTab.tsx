@@ -142,6 +142,10 @@ export type MainTabProps = {
   onChatSlotDelete?: (slotId: string) => Promise<boolean>;
   onBeforeNestedDeckyModal?: () => void;
   onCompleteNestedDeckyModalClose?: (close: () => void) => void;
+  /** Slot the backend is generating for, or null. Drives the hollow cyan ring in the slot row. */
+  generatingSlotId?: string | null;
+  /** Slots that finished an answer while the user was elsewhere. Drives the solid green dot. */
+  unreadSlotIds?: ReadonlySet<string>;
 };
 
 export function MainTab(props: MainTabProps) {
@@ -164,6 +168,8 @@ export function MainTab(props: MainTabProps) {
               onBeforeNestedDeckyModal={props.onBeforeNestedDeckyModal}
               onCompleteNestedDeckyModalClose={props.onCompleteNestedDeckyModalClose}
               onCreatePositionChange={setSlotRowAtCreate}
+              generatingSlotId={props.generatingSlotId}
+              unreadSlotIds={props.unreadSlotIds}
             />
           </PanelSectionRow>
         ) : null}

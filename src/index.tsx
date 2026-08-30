@@ -149,6 +149,13 @@ const Content: React.FC = () => {
   const activeSlotIdRef = useRef<string | null>(
     peekBonsaiSessionPendingRestore()?.activeSlotId ?? loadActiveChatSlotId(),
   );
+  /*
+   * Slot activity for the row's dot language: hollow cyan ring = generating, solid green =
+   * finished while the user was elsewhere. Session-lived only — the QAM-closed case is already
+   * covered by the reply-ready toast, so nothing here needs to persist.
+   */
+  const [generatingSlotId, setGeneratingSlotId] = useState<string | null>(null);
+  const [unreadSlotIds, setUnreadSlotIds] = useState<ReadonlySet<string>>(() => new Set<string>());
   const reloadSlotTranscriptRef = useRef<(() => Promise<void>) | null>(null);
   /* Same indirection as the ref above: `useChatSlots` owns this but is declared after the
    * orchestration hook, because it needs that hook's thread setters. */
@@ -478,6 +485,15 @@ const Content: React.FC = () => {
     onSlotTurnsChanged: () => {
       void reloadSlotTranscriptRef.current?.();
     },
+    onGeneratingSlotChange: setGeneratingSlotId,
+    onSlotAnswerFinished: (slotId) => {
+      setUnreadSlotIds((prev) => {
+        if (prev.has(slotId)) return prev;
+        const next = new Set(prev);
+        next.add(slotId);
+        return next;
+      });
+    },
   });
 
   const chatSlots = useChatSlots({
@@ -493,6 +509,18 @@ const Content: React.FC = () => {
   useEffect(() => {
     void chatSlots.refreshSummaries();
   }, [chatSlots.refreshSummaries]);
+
+  /* Arriving at a slot is what marks it read. */
+  useEffect(() => {
+    const id = chatSlots.activeSlotId;
+    if (!id) return;
+    setUnreadSlotIds((prev) => {
+      if (!prev.has(id)) return prev;
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
+  }, [chatSlots.activeSlotId]);
 
   isAskingRef.current = isAsking;
 
@@ -1208,6 +1236,8 @@ const Content: React.FC = () => {
     onChatSlotDelete: chatSlots.deleteSlot,
     onBeforeNestedDeckyModal: captureSessionBeforeModal,
     onCompleteNestedDeckyModalClose: finalizeShowModalAndRestoreActiveTab,
+    generatingSlotId,
+    unreadSlotIds,
   });
 
 

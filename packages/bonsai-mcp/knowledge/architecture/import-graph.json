@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 330,
-  "edgeCount": 784,
+  "fileCount": 331,
+  "edgeCount": 787,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -1170,6 +1170,14 @@
         "src/features/chat-slots/useChatSlotRenameModal.tsx"
       ]
     },
+    "src/features/chat-slots/ChatSlotRow.test.tsx": {
+      "imports": [
+        "src/features/chat-slots/ChatSlotRow.tsx",
+        "src/test-harness/fakeDeckyUi.tsx",
+        "src/utils/chatSlotsApi.ts"
+      ],
+      "importedBy": []
+    },
     "src/features/chat-slots/ChatSlotRow.tsx": {
       "imports": [
         "src/features/chat-slots/useChatSlotBumpers.ts",
@@ -1180,7 +1188,8 @@
         "src/utils/navFocusRegistry.ts"
       ],
       "importedBy": [
-        "src/components/MainTab.tsx"
+        "src/components/MainTab.tsx",
+        "src/features/chat-slots/ChatSlotRow.test.tsx"
       ]
     },
     "src/features/chat-slots/useChatSlotBumpers.ts": {
@@ -2117,6 +2126,7 @@
         "src/components/MainTabChatTranscript.strategyPanels.test.tsx",
         "src/components/ReplyCopyButton.test.tsx",
         "src/components/SessionContextStrip.test.tsx",
+        "src/features/chat-slots/ChatSlotRow.test.tsx",
         "src/test-harness/setup.ts",
         "src/utils/buildReplyActionsElement.test.tsx"
       ]
@@ -2579,6 +2589,7 @@
       ],
       "importedBy": [
         "src/components/MainTab.tsx",
+        "src/features/chat-slots/ChatSlotRow.test.tsx",
         "src/features/chat-slots/ChatSlotRow.tsx",
         "src/hooks/useChatSlots.test.ts",
         "src/hooks/useChatSlots.ts",

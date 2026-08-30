@@ -142,6 +142,10 @@ export type UseBonsaiAskOrchestrationArgs = {
   ensureActiveSlotForAsk?: (question: string) => Promise<string | null>;
   /** Reload slot transcript from disk after terminal Ask completion. */
   onSlotTurnsChanged?: () => void;
+  /** Which slot the backend is generating for right now, or null when nothing is pending. */
+  onGeneratingSlotChange?: (slotId: string | null) => void;
+  /** A slot the user was not looking at just finished an answer — it is now unread. */
+  onSlotAnswerFinished?: (slotId: string) => void;
 };
 
 export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
@@ -522,6 +526,7 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
         setOllamaContext({ app_id: appId, app_context: appContext });
         setIsAsking(true);
         setIsForeignPendingAsk(paintsForeignSlot);
+        a.onGeneratingSlotChange?.(payloadSlotId);
         if (paintsForeignSlot) {
           // Returning to the origin slot flips this back to false and the next poll repaints
           // question, partial and caret on its own — that is the restore-on-return behavior.
@@ -613,6 +618,7 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
         pendingArchiveTurnRef.current = null;
         pendingThreadQuestionDisplayRef.current = null;
         void refreshInputTransparency();
+        a.onGeneratingSlotChange?.(null);
         a.onSlotTurnsChanged?.();
         return;
       }
@@ -623,6 +629,10 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
         setOllamaContext({ app_id: appId, app_context: appContext });
         setIsAsking(false);
         setIsForeignPendingAsk(false);
+        a.onGeneratingSlotChange?.(null);
+        if (paintsForeignSlot && payloadSlotId && status.status === "completed" && status.success) {
+          a.onSlotAnswerFinished?.(payloadSlotId);
+        }
         if (!paintsForeignSlot) {
           setShortcutSetupVariant(
             status.status === "completed" && status.success ? status.shortcut_setup ?? null : null,

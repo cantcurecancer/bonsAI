@@ -28,6 +28,7 @@
     "src/data/steam-input-lexicon.test.ts",
     "src/data/strategyGuideFollowup.test.ts",
     "src/data/uiScaleProfile.test.ts",
+    "src/features/chat-slots/ChatSlotRow.test.tsx",
     "src/features/plugin-shell/modalReturnFocusRegistry.test.ts",
     "src/features/plugin-shell/tabTitles.test.tsx",
     "src/features/preset-carousel/carouselState.test.ts",

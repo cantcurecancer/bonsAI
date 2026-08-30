@@ -36,6 +36,10 @@ export type ChatSlotRowProps = {
    * change the active slot, so this is the only signal the rest of the tab gets.
    */
   onCreatePositionChange?: (atCreate: boolean) => void;
+  /** Slot the backend is generating for right now, or null. */
+  generatingSlotId?: string | null;
+  /** Slots that finished an answer while the user was looking at a different slot. */
+  unreadSlotIds?: ReadonlySet<string>;
 };
 
 type RowFocusStop = "title" | "delete";
@@ -52,6 +56,8 @@ export function ChatSlotRow({
   onBeforeNestedDeckyModal,
   onCompleteNestedDeckyModalClose,
   onCreatePositionChange,
+  generatingSlotId = null,
+  unreadSlotIds,
 }: ChatSlotRowProps) {
   const orderedSlots = useMemo(() => [...summaries].reverse(), [summaries]);
   const positionCount = 1 + orderedSlots.length;
@@ -144,6 +150,14 @@ export function ChatSlotRow({
     [onBeforeNestedDeckyModal, onCompleteNestedDeckyModalClose, onDeleteSlot],
   );
 
+  /* Pending wins over unread: a slot cannot be both, but a stale unread entry must not
+     outrank the ring the user is watching fill. */
+  const slotStateClass = (slotId: string): string => {
+    if (slotId === generatingSlotId) return " bonsai-chat-slot-dot--pending";
+    if (unreadSlotIds?.has(slotId)) return " bonsai-chat-slot-dot--unread";
+    return "";
+  };
+
   const centerLabel = isCreatePosition ? "[+]" : (activeSlot?.label ?? "New chat");
 
   // CSS cannot detect overflow, and `text-overflow: ellipsis` clips the text so a plain
@@ -234,6 +248,12 @@ export function ChatSlotRow({
           ) : null}
           <div className="bonsai-chat-slot-center">
             <div className="bonsai-chat-slot-title-row">
+              {showGhosts && prevSlot && (prevSlot.id === generatingSlotId || unreadSlotIds?.has(prevSlot.id)) ? (
+                <span
+                  className={`bonsai-chat-slot-ghost-spark${prevSlot.id === generatingSlotId ? " bonsai-chat-slot-ghost-spark--pending" : " bonsai-chat-slot-ghost-spark--unread"}`}
+                  aria-hidden
+                />
+              ) : null}
               {showGhosts && prevSlot ? (
                 <span className="bonsai-chat-slot-ghost bonsai-chat-slot-ghost--prev">{prevSlot.label}</span>
               ) : null}
@@ -256,13 +276,19 @@ export function ChatSlotRow({
               {showGhosts && nextSlot ? (
                 <span className="bonsai-chat-slot-ghost bonsai-chat-slot-ghost--next">{nextSlot.label}</span>
               ) : null}
+              {showGhosts && nextSlot && (nextSlot.id === generatingSlotId || unreadSlotIds?.has(nextSlot.id)) ? (
+                <span
+                  className={`bonsai-chat-slot-ghost-spark${nextSlot.id === generatingSlotId ? " bonsai-chat-slot-ghost-spark--pending" : " bonsai-chat-slot-ghost-spark--unread"}`}
+                  aria-hidden
+                />
+              ) : null}
             </div>
             {orderedSlots.length > 0 && !isCreatePosition ? (
               <div className="bonsai-chat-slot-dots" aria-hidden>
                 {orderedSlots.slice(0, MAX_DOTS).map((slot) => (
                   <span
                     key={slot.id}
-                    className={`bonsai-chat-slot-dot${slot.id === activeSlotId ? " bonsai-chat-slot-dot--active" : ""}`}
+                    className={`bonsai-chat-slot-dot${slot.id === activeSlotId ? " bonsai-chat-slot-dot--active" : ""}${slotStateClass(slot.id)}`}
                   />
                 ))}
               </div>

@@ -293,6 +293,9 @@ everything below assumes it passes. Plan:
 - [ ] **CHAT-SLOTS-V3-04** (W14) Rename: cyan field, **Save** disabled while the name is empty, caret in the field on open; delete confirm shows Steam's destructive styling; both modals still survive a QAM close/reopen and return focus to the row. If `focusOnMount` fights the modal-survival focus dance, remove it and note that here
 - [ ] **CHAT-SLOTS-V3-05a** (W15) Ask in slot A, **LB** to slot B mid-stream: B shows B's own content (or the empty-slot preview) and zero of A's tokens; the ask bar still reads busy
 - [ ] **CHAT-SLOTS-V3-05b** (W15) Return to A mid-stream: the question, the partial text and the caret are all back within one poll
+- [ ] **CHAT-SLOTS-V3-06a** (W16) While away from slot A: A's dot is a hollow cyan ring; if A is the visible ghost neighbour, a cyan spark sits at that row edge, outside the ghost's fade
+- [ ] **CHAT-SLOTS-V3-06b** (W16) A finishes while you are away: the ring turns solid green; returning to A clears it
+- [ ] **CHAT-SLOTS-V3-06c** (W16) QAM closed when the answer finishes: the reply-ready toast still appears (regression check on the completion watch)
 
 ---
 

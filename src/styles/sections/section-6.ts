@@ -708,8 +708,47 @@ export function buildSection6Section(): string {
           height: ${uiScalePx(4)};
           background: rgba(200, 214, 230, 0.5);
         }
+        .bonsai-scope .bonsai-chat-slot-dot--pending {
+          width: ${uiScalePx(6)};
+          height: ${uiScalePx(6)};
+          background: transparent;
+          border: 1.5px solid rgba(56, 189, 248, 0.9);
+          box-shadow: 0 0 6px rgba(56, 189, 248, 0.5);
+        }
+        .bonsai-scope .bonsai-chat-slot-dot--unread {
+          width: ${uiScalePx(6)};
+          height: ${uiScalePx(6)};
+          background: #4ade80;
+          box-shadow: 0 0 6px rgba(74, 222, 128, 0.6);
+        }
         .bonsai-scope .bonsai-chat-slot-row--focused .bonsai-chat-slot-dot--active {
           background: #9ce7ff;
+        }
+        /* Active + generating is the common case right after cycling, and the focused-row
+           --active rule above (specificity 0-3-0) would otherwise fill the ring solid cyan
+           exactly when the user is looking at it. */
+        .bonsai-scope .bonsai-chat-slot-row--focused .bonsai-chat-slot-dot--pending {
+          background: transparent;
+        }
+        .bonsai-scope .bonsai-chat-slot-row--focused .bonsai-chat-slot-dot--unread {
+          background: #4ade80;
+        }
+        /* Sits outside the ghost span so the ghost's mask and blur cannot eat it. */
+        .bonsai-scope .bonsai-chat-slot-ghost-spark {
+          flex: 0 0 auto;
+          width: ${uiScalePx(6)};
+          height: ${uiScalePx(6)};
+          border-radius: 50%;
+          align-self: center;
+        }
+        .bonsai-scope .bonsai-chat-slot-ghost-spark--pending {
+          background: transparent;
+          border: 1.5px solid rgba(56, 189, 248, 0.9);
+          box-shadow: 0 0 6px rgba(56, 189, 248, 0.5);
+        }
+        .bonsai-scope .bonsai-chat-slot-ghost-spark--unread {
+          background: #4ade80;
+          box-shadow: 0 0 6px rgba(74, 222, 128, 0.6);
         }
 
         `;
