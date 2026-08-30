@@ -607,14 +607,27 @@ export function buildSection6Section(): string {
           color: #9ce7ff;
         }
         .bonsai-scope .bonsai-chat-slot-ghost {
-          flex: 0 1 auto;
+          flex: 1 1 0;
+          min-width: 0;
           font-size: ${uiScalePx(11)};
-          color: rgba(200, 214, 230, 0.18);
+          color: rgba(200, 214, 230, 0.28);
+          filter: blur(0.7px);
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
-          max-width: 22%;
           pointer-events: none;
+        }
+        .bonsai-scope .bonsai-chat-slot-ghost--prev {
+          margin-left: ${uiScalePx(4)};
+          text-align: left;
+          -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 55%);
+          mask-image: linear-gradient(90deg, transparent 0%, #000 55%);
+        }
+        .bonsai-scope .bonsai-chat-slot-ghost--next {
+          margin-right: ${uiScalePx(4)};
+          text-align: right;
+          -webkit-mask-image: linear-gradient(90deg, #000 45%, transparent 100%);
+          mask-image: linear-gradient(90deg, #000 45%, transparent 100%);
         }
         .bonsai-scope .bonsai-chat-slot-dots {
           display: flex;
