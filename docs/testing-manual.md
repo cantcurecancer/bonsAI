@@ -343,10 +343,13 @@ everything below assumes it passes. Plan:
 - [ ] **CHAT-SLOTS-V3-14c** (the game above the title) A chat created from now on shows its game's name in quiet text above the
   conversation title; a chat created before this shows the line reserved but empty; `[+]` shows it empty. **Needs a slot created after
   2026-08-30** — the name is only stored at creation, so every existing slot reads empty.
-- [ ] **CHAT-SLOTS-V3-14d** (the end of a long reply) After a long answer settles, its end is reachable and does not look cut off: text
+- [x] **CHAT-SLOTS-V3-14d** (the end of a long reply) After a long answer settles, its end is reachable and does not look cut off: text
   visibly fades under the chips rather than being sliced, and the pane brings the end into view. **Fade PASSES** (18px gradient above the
-  dock, measured). **Auto-scroll FAILS** — four Asks, scroll ranges 435/872/1240px, `scrollTop` 0 every time. See the roadmap entry for the
-  three causes already fixed and where to look next.
+  dock, measured 2026-08-30). **Auto-scroll PASSES 2026-08-31** — the long proton Ask driven by bridge: tail in view every frame while
+  streaming (overshoot −40px where it had been stuck at +165px), and after the post-Ask rebuild yanked the pane to 0 the delivery passes
+  landed it at 574 of a 602 max, last line 80px above the dock. Root cause and fix (scrollIntoView instead of scrollTop writes, plus a
+  1.2s delivery window) in the roadmap entry. Worth one human pass for feel: no visible jitter while streaming, and scrolling up
+  mid-answer still holds.
 
 
 ---

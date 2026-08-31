@@ -236,17 +236,20 @@ seconds; anything that would otherwise have to be re-measured goes there rather 
 
 ### Reading a long reply
 
-- ★★★ **A finished long reply is left scrolled to the top, with its end behind the preset chips** — **PARTLY FIXED 2026-08-30; the
-  auto-scroll half is still OPEN.** Fixed and verified: the dock no longer hides content it should not (the reading area is 371px of a
-  616px pane, and a fade above the dock now shows text passing under it rather than being sliced). **Not fixed:** after a long answer
-  settles the pane is still at `scrollTop 0` with the end below the fold. Four real Asks on device, ranges 435/872/1240px, scrollTop 0
-  every time. Three separate causes in `useStreamScrollPin` were found and fixed on the way, and each was real — the fold was measured at
-  the pane's bottom edge rather than the dock's top; the follow ran only when the text prop changed, so an answer that grows after that
-  commit was never followed; and submitting an Ask shrinks the transcript, whose clamp-to-zero scroll event read as "the user scrolled up"
-  and pinned the view at 0. **None of them was the whole story**, so the remaining cause is upstream: the hook's `enabled` gate
-  (`isAsking || isStreamingPreview` at [MainTabChatTranscript.tsx:270](../src/components/MainTabChatTranscript.tsx#L270)). Next session:
-  prove whether the hook runs at all during an Ask before changing anything else — everything downstream of that gate is now correct and
-  covered by tests. Row **CHAT-SLOTS-V3-14**.
+- ~~★★★ **A finished long reply is left scrolled to the top, with its end behind the preset chips**~~ — **FIXED and proven on-Deck
+  2026-08-31.** The suspected `enabled` gate was innocent: a tracer build showed the follow running hundreds of times per answer. The
+  real cause, measured on device, is that **assigning `scrollTop` on Steam's TabContentsScroll is a no-op** — Steam's own scroller
+  re-asserts its recorded position around every commit, so ~300 consecutive follow writes each read back the value they started from
+  while the pane crept down only by exactly the content growth per frame. The one mover Steam adopts is `scrollIntoView`, which the same
+  trace caught visibly moving the pane. Two changes in `useStreamScrollPin`, both unit-tested: every scroll now goes through
+  `anchor.scrollIntoView({block:"end"})` with `scroll-margin-bottom` standing in for "align to the dock's top rather than the covered
+  pane bottom" (plus a tripwire test that fails if anyone reintroduces a direct write — jsdom would happily pass it); and a **1.2s
+  delivery window** after the Ask ends, because the final text and "follow off" land in the same commit and the slot reload then rebuilds
+  the transcript with the pane back at 0 — timed passes at 300/900ms re-deliver the tail after that rebuild, and scroll churn inside the
+  window is not taken as a user pin. Verified with the long proton Ask driven by bridge: tail in view every frame while streaming
+  (overshoot −40px, previously +165px), and after the rebuild's yank to 0 the delivery landed the pane at 574 of 602 with the last line
+  80px above the dock. The 2026-08-30 fixes (fold at the dock's top, ResizeObserver on the anchor, shrink-clamp guard) all stand and all
+  contributed. Row **CHAT-SLOTS-V3-14**.
 
 ### Small and cosmetic
 

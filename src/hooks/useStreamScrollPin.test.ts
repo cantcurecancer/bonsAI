@@ -9,6 +9,13 @@ const VIEWPORT_BOTTOM = 250;
  * jsdom has no layout, so the parts the hook reads are modelled by hand: a scroll container with a
  * settable scrollTop and a fixed 0–250 viewport, and an anchor whose on-screen rect moves as the
  * container scrolls, the way a real one does.
+ *
+ * scrollIntoView is modelled rather than spied into a void, because on device it is the ONLY way
+ * the hook can move the pane — Steam's scroller erases direct scrollTop writes (measured
+ * 2026-08-31). The model does what Chrome does with `block: "end"`: put the anchor's bottom at the
+ * viewport bottom minus its scroll-margin-bottom, clamped to the scroll range. It deliberately
+ * fires no scroll event — neither does jsdom — so late self-scroll events are delivered by hand
+ * via emitScroll where a test needs one.
  */
 function makeTranscript(opts: { contentBottom: number; scrollHeight?: number }) {
   const scroll = document.createElement("div");
@@ -16,11 +23,13 @@ function makeTranscript(opts: { contentBottom: number; scrollHeight?: number }) 
 
   let scrollTop = 0;
   let contentBottom = opts.contentBottom;
+  let directWrites = 0;
 
   Object.defineProperty(scroll, "scrollTop", {
     configurable: true,
     get: () => scrollTop,
     set: (next: number) => {
+      directWrites += 1;
       scrollTop = next;
       scroll.dispatchEvent(new Event("scroll"));
     },
@@ -39,7 +48,11 @@ function makeTranscript(opts: { contentBottom: number; scrollHeight?: number }) 
   anchor.className = "bonsai-chat-main-column";
   /* Document-space bottom minus how far we have scrolled — i.e. where it actually appears. */
   anchor.getBoundingClientRect = () => rect(0 - scrollTop, contentBottom - scrollTop);
-  const scrollIntoView = vi.fn();
+  const scrollIntoView = vi.fn(() => {
+    const margin = parseFloat(anchor.style.scrollMarginBottom || "0") || 0;
+    const max = Math.max(0, (opts.scrollHeight ?? 2000) - VIEWPORT_BOTTOM);
+    scrollTop = Math.max(0, Math.min(max, contentBottom - (VIEWPORT_BOTTOM - margin)));
+  });
   anchor.scrollIntoView = scrollIntoView;
   scroll.appendChild(anchor);
   document.body.appendChild(scroll);
@@ -47,6 +60,7 @@ function makeTranscript(opts: { contentBottom: number; scrollHeight?: number }) 
   return {
     anchorRef: { current: anchor },
     scroll,
+    anchor,
     scrollIntoView,
     /* A scroll event delivered after the fact, carrying a position nobody moved to since. Real
        scroll events are asynchronous; this is what one looks like arriving late. */
@@ -61,6 +75,9 @@ function makeTranscript(opts: { contentBottom: number; scrollHeight?: number }) 
     },
     get scrollTop() {
       return scrollTop;
+    },
+    get directWrites() {
+      return directWrites;
     },
   };
 }
@@ -89,6 +106,7 @@ function mount(t: ReturnType<typeof makeTranscript>, enabled = true) {
 describe("stream scroll follow", () => {
   afterEach(() => {
     cleanup();
+    vi.useRealTimers();
     document.body.innerHTML = "";
   });
 
@@ -120,6 +138,27 @@ describe("stream scroll follow", () => {
     act(() => rerender({ text: "short" }));
 
     expect(t.scrollTop).toBe(0);
+    expect(t.scrollIntoView).not.toHaveBeenCalled();
+  });
+
+  /*
+   * Steam's TabContentsScroll ignores scrollTop assignment: its own scroller re-asserts the value
+   * it has recorded around every commit, so a direct write is erased before paint — measured on
+   * device 2026-08-31, ~300 consecutive writes with zero effect. Everything this hook does must
+   * therefore go through scrollIntoView, which Steam adopts. A direct write here would pass every
+   * jsdom test and be a no-op on the Deck; this test is the tripwire for that regression.
+   */
+  it("moves the pane only via scrollIntoView, never by assigning scrollTop", () => {
+    const t = makeTranscript({ contentBottom: 400 });
+    const { rerender } = mount(t);
+
+    act(() => rerender({ text: "first tokens" }));
+    t.grow(120);
+    act(() => rerender({ text: "first second" }));
+
+    expect(t.scrollTop).toBe(270); // it moved...
+    expect(t.directWrites).toBe(0); // ...and not by writing scrollTop
+    expect(t.scrollIntoView).toHaveBeenCalledWith({ block: "end", behavior: "auto" });
   });
 
   /*
@@ -190,10 +229,10 @@ describe("stream scroll follow", () => {
 
   /*
    * On device the answer ran past the bottom edge while the panel reported itself fully scrolled —
-   * the QAM's scroll range does not always cover its own content. Assigning scrollTop cannot go
-   * further, so the browser is asked to move whichever ancestor can.
+   * the QAM's scroll range does not always cover its own content. scrollIntoView clamps to the
+   * range it has; asking is still right, because the browser may move an ancestor that can.
    */
-  it("hands off to the browser when the panel will not scroll far enough", () => {
+  it("still asks the browser when the panel will not scroll far enough", () => {
     const t = makeTranscript({ contentBottom: 400, scrollHeight: 300 });
     const { rerender } = mount(t);
 
@@ -201,15 +240,6 @@ describe("stream scroll follow", () => {
 
     expect(t.scrollTop).toBe(50); // clamped at the container's maximum
     expect(t.scrollIntoView).toHaveBeenCalledWith({ block: "end", behavior: "auto" });
-  });
-
-  it("does not hand off when the panel got there on its own", () => {
-    const t = makeTranscript({ contentBottom: 400 });
-    const { rerender } = mount(t);
-
-    act(() => rerender({ text: "first" }));
-
-    expect(t.scrollIntoView).not.toHaveBeenCalled();
   });
 
   /* A pin taken during the previous answer, or by the scrollIntoView that fires as a turn opens,
@@ -237,6 +267,7 @@ describe("stream scroll follow", () => {
     act(() => rerender({ text: "first" }));
 
     expect(t.scrollTop).toBe(0);
+    expect(t.scrollIntoView).not.toHaveBeenCalled();
   });
 
   it("is a no-op without a scroll container", () => {
@@ -249,5 +280,73 @@ describe("stream scroll follow", () => {
         initialProps: { text: "tokens" },
       })
     ).not.toThrow();
+  });
+});
+
+/*
+ * The delivery window. The completion poll disables the follow in the SAME commit that lands the
+ * final answer text, and the slot reload then rebuilds the transcript with the pane back at 0 —
+ * so on device every scroll taken while streaming was thrown away ~50ms after the last token
+ * (measured 2026-08-31: scrollTop 0, 366px of answer below the fold, every run). For a short
+ * window after the Ask ends the hook keeps delivering the tail, and ignores the scroll churn the
+ * rebuild causes.
+ */
+describe("post-answer delivery", () => {
+  afterEach(() => {
+    cleanup();
+    vi.useRealTimers();
+    document.body.innerHTML = "";
+  });
+
+  function mountAsk(t: ReturnType<typeof makeTranscript>) {
+    return renderHook(
+      ({ text, on }: { text: string; on: boolean }) => useStreamScrollPin(t.anchorRef, text, on),
+      { initialProps: { text: "streaming", on: true } }
+    );
+  }
+
+  it("delivers the tail on the commit that ends the Ask", () => {
+    const t = makeTranscript({ contentBottom: 400 });
+    const { rerender } = mountAsk(t);
+    expect(t.scrollTop).toBe(150);
+
+    // Growth the streaming passes never saw: the final text and "follow off" land together.
+    t.grow(200);
+    act(() => rerender({ text: "final answer text", on: false }));
+
+    expect(t.scrollTop).toBe(350);
+  });
+
+  it("re-delivers after the slot rebuild yanks the pane back to the top", () => {
+    vi.useFakeTimers();
+    const t = makeTranscript({ contentBottom: 400 });
+    const { rerender } = mountAsk(t);
+
+    act(() => rerender({ text: "final answer text", on: false }));
+    expect(t.scrollTop).toBe(150);
+
+    // The rebuild: Steam lands the pane at 0. Not the user, and must not pin.
+    act(() => t.userScrollTo(0));
+    act(() => vi.advanceTimersByTime(400));
+
+    expect(t.scrollTop).toBe(150);
+  });
+
+  it("stops delivering once the window has passed", () => {
+    vi.useFakeTimers();
+    const t = makeTranscript({ contentBottom: 400 });
+    const { rerender } = mountAsk(t);
+
+    act(() => rerender({ text: "final answer text", on: false }));
+    act(() => vi.advanceTimersByTime(2000));
+    const callsAfterWindow = t.scrollIntoView.mock.calls.length;
+
+    // Idle life goes on: a slot switch swaps the text while the follow is off.
+    act(() => t.userScrollTo(0));
+    t.grow(300);
+    act(() => rerender({ text: "a different slot's answer", on: false }));
+
+    expect(t.scrollIntoView.mock.calls.length).toBe(callsAfterWindow);
+    expect(t.scrollTop).toBe(0);
   });
 });

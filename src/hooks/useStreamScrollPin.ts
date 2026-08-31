@@ -9,7 +9,7 @@
  * Does not: Find scroll containers — see chatPanelScroll.findTabContentsScroll.
  */
 import { useEffect, useLayoutEffect, useRef, type RefObject } from "react";
-import { findTabContentsScroll, panelScrollMax, tryGeometryPanelScroll } from "../utils/chatPanelScroll";
+import { findTabContentsScroll } from "../utils/chatPanelScroll";
 
 /** How far the end of the transcript may sit below the fold and still count as "being watched". */
 const FOLLOW_SLACK_PX = 48;
@@ -19,6 +19,21 @@ const SELF_SCROLL_EPSILON_PX = 1;
 
 /** The bottom-pinned preset/Ask dock, which covers the foot of the pane while content overflows. */
 const DOCK_SELECTOR = ".bonsai-main-tab-dock";
+
+/**
+ * How long after an Ask ends the hook keeps delivering the answer's tail into view.
+ *
+ * The completion poll disables the follow and lands the final text in the SAME React commit
+ * (useBonsaiAskOrchestration sets both under one batch), and the slot reload that follows rebuilds
+ * the transcript with the pane back at 0 — so every scroll taken while streaming is thrown away
+ * about 50ms after the last token. Measured on device 2026-08-31: pane at scrollTop 0 with 366px
+ * of answer below the fold, every run. The window covers that rebuild plus the markdown/glossary
+ * layout that finishes over the following frames.
+ */
+const DELIVERY_WINDOW_MS = 1200;
+
+/** When the delivery passes run, counted from the commit that ended the Ask. */
+const DELIVERY_PASS_DELAYS_MS = [300, 900];
 
 /**
  * The lowest point a reader can actually see inside the scroll pane.
@@ -54,7 +69,17 @@ function transcriptTailIsInView(anchor: HTMLElement, scroll: HTMLElement): boole
 
 /**
  * While tokens stream in, keep the newest text on screen — unless the user has scrolled up, in which
- * case hold exactly where they left off.
+ * case hold exactly where they left off. After the Ask ends, keep delivering for a short window so
+ * the slot-reload rebuild cannot leave the answer below the fold.
+ *
+ * HOW it scrolls matters more than when: assigning `scrollTop` on Steam's TabContentsScroll is a
+ * no-op on device. Steam's own scroller re-asserts its recorded position around every commit, so a
+ * direct write is erased before paint — measured on device 2026-08-31, three hundred consecutive
+ * follow passes each wrote top+165px and each read back the value it started from, while the pane
+ * crept downward only by exactly the content growth per frame. `scrollIntoView` is the one mover
+ * Steam's scroller adopts (same trace: the expand-turn scrollIntoView visibly moved the pane), so
+ * every scroll here goes through it, with `scroll-margin-bottom` standing in for "align to the
+ * fold instead of the covered pane bottom".
  *
  * Both halves are driven by the same scroll listener, so touch and D-pad behave identically: the
  * D-pad's own panel steps set `scrollTop`, which fires `scroll` like a swipe does. Stepping down
@@ -71,6 +96,17 @@ export function useStreamScrollPin(
   const selfWroteTopRef = useRef<number | null>(null);
   /** Content height at the previous scroll event, to tell a clamp from a deliberate scroll. */
   const lastScrollHeightRef = useRef(0);
+  /** Whether the previous commit had the follow enabled — catches the commit that ends an Ask. */
+  const wasEnabledRef = useRef(false);
+  /** Wall-clock end of the post-Ask delivery window; 0 when no delivery is owed. */
+  const deliverUntilRef = useRef(0);
+
+  /*
+   * Computed during render, consumed by the effects of this same commit: the commit where enabled
+   * flips false is ALSO the commit where the final answer text lands, so the effects below must
+   * treat it as one more active pass rather than returning early.
+   */
+  const justEnded = wasEnabledRef.current && !enabled;
 
   /*
    * Reset on every transition, including *into* streaming: a pin taken during the previous answer —
@@ -87,7 +123,7 @@ export function useStreamScrollPin(
   }, [anchorRef, enabled]);
 
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled && !justEnded) return;
 
     const anchor = anchorRef.current;
     const scroll = findTabContentsScroll(anchor);
@@ -127,6 +163,15 @@ export function useStreamScrollPin(
          keeping it would make a later scroll that happens to land there look like ours. */
       selfWroteTopRef.current = null;
       if (shrank) return;
+      /*
+       * Inside the delivery window the pane is being yanked around by the post-Ask slot reload —
+       * Steam lands it back at 0 as the transcript is rebuilt — and none of that is the user.
+       * Taking a pin from it would freeze the view at the top, which is the exact failure the
+       * delivery exists to prevent. The cost is that a real scroll in the first second after an
+       * answer does not pin; the pass at the end of the window brings the tail back and the user
+       * scrolls again from there.
+       */
+      if (Date.now() < deliverUntilRef.current) return;
       pinnedTopRef.current = transcriptTailIsInView(anchor, scroll) ? null : top;
     };
 
@@ -139,23 +184,25 @@ export function useStreamScrollPin(
    * scroll after paint shows one frame of the new text below the fold before it snaps up.
    */
   useLayoutEffect(() => {
-    if (!enabled) return;
+    if (enabled) {
+      deliverUntilRef.current = 0;
+    } else if (justEnded) {
+      deliverUntilRef.current = Date.now() + DELIVERY_WINDOW_MS;
+    }
+    const delivering = !enabled && Date.now() < deliverUntilRef.current;
+    if (!enabled && !delivering) return;
+
     const anchor = anchorRef.current;
     const scroll = findTabContentsScroll(anchor);
     if (!anchor || !scroll) return;
-
-    /** Record before assigning as well as after: a synchronous listener sees the pre-set value. */
-    const setScrollTop = (next: number) => {
-      selfWroteTopRef.current = next;
-      scroll.scrollTop = next;
-      selfWroteTopRef.current = scroll.scrollTop;
-    };
 
     const tailBelowFold = () => anchor.getBoundingClientRect().bottom - visibleBottom(scroll);
 
     const follow = () => {
       if (pinnedTopRef.current != null) {
-        setScrollTop(pinnedTopRef.current);
+        /* The user's position. Steam's scroller recorded it when they scrolled, so unlike a
+           position of our own choosing it does not need re-asserting — holding here means only
+           "do not scroll". */
         return;
       }
 
@@ -163,53 +210,55 @@ export function useStreamScrollPin(
       if (overshoot <= 0) return;
 
       /*
-       * The QAM tab often grows with its content instead of scrolling, leaving scrollHeight equal
-       * to clientHeight. Assigning scrollTop there does nothing — worse, clamping to a max of 0
-       * would jump to the top — so the geometry nudge is the only thing that moves the view.
+       * "End of the anchor at the fold", said in the only vocabulary scrollIntoView has: it aligns
+       * to the pane's bottom edge, which the dock covers, and scroll-margin-bottom is the knob
+       * that moves that target up by the covered strip. Recomputed every pass because the strip is
+       * ~245px while the dock overlays and 0 once the pane is at max scroll with the dock back in
+       * normal flow.
        */
-      const max = panelScrollMax(scroll);
-      if (max <= 0) {
-        tryGeometryPanelScroll(anchor, "down");
-        selfWroteTopRef.current = scroll.scrollTop;
-        return;
-      }
-
-      setScrollTop(Math.min(max, scroll.scrollTop + overshoot));
-
-      /*
-       * Clamped at the container's maximum and the tail is still off screen, so this container
-       * cannot show it. Some ancestor can: on device the answer runs past the bottom edge while
-       * the panel reports itself fully scrolled. Hand it to the browser, which will move whichever
-       * ancestor actually has the range.
-       */
-      if (tailBelowFold() > 0) {
-        anchor.scrollIntoView({ block: "end", behavior: "auto" });
-        selfWroteTopRef.current = scroll.scrollTop;
-      }
+      const covered = scroll.getBoundingClientRect().bottom - visibleBottom(scroll);
+      anchor.style.scrollMarginBottom = `${Math.max(0, Math.ceil(covered))}px`;
+      anchor.scrollIntoView({ block: "end", behavior: "auto" });
+      selfWroteTopRef.current = scroll.scrollTop;
     };
 
     follow();
 
+    if (enabled) {
+      /*
+       * The text prop is not a reliable signal that the ANSWER has finished laying out. On the
+       * commit where it lands, the bubble is often still short — markdown, spoiler fences and
+       * glossary chips expand it over the frames that follow — so the one pass above can measure a
+       * pane that does not overflow yet and never run again, because nothing changes the prop
+       * afterwards. Watching the anchor closes that gap for free while the height is steady.
+       */
+      if (typeof ResizeObserver === "undefined") return;
+      let raf = 0;
+      const ro = new ResizeObserver(() => {
+        cancelAnimationFrame(raf);
+        raf = requestAnimationFrame(follow);
+      });
+      ro.observe(anchor);
+      return () => {
+        cancelAnimationFrame(raf);
+        ro.disconnect();
+      };
+    }
+
     /*
-     * The text prop is not a reliable signal that the ANSWER has finished laying out. On the commit
-     * where it lands, the bubble is often still short — markdown, spoiler fences and glossary chips
-     * expand it over the frames that follow — so the one pass above can measure a pane that does
-     * not overflow yet, take the max <= 0 branch, and never run again, because nothing changes the
-     * prop afterwards. Measured on device 2026-08-30 with the preview off: the pane finished with
-     * 1240px of scroll range and scrollTop still 0, the whole answer below the fold.
-     *
-     * Watching the anchor closes that gap for free and costs nothing while the height is steady.
+     * Delivery passes, timed rather than observed: the slot reload's own expand-turn
+     * scrollIntoView fires one animation frame after its commit, and whichever scroll runs LAST
+     * wins against Steam's scroller — so the passes are placed after it, not raced against it via
+     * a ResizeObserver that would also keep firing on unrelated layout for as long as it lived.
+     * Idempotent by construction: each pass scrolls only if the tail is still below the fold and
+     * the user has not pinned.
      */
-    if (typeof ResizeObserver === "undefined") return;
-    let raf = 0;
-    const ro = new ResizeObserver(() => {
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(follow);
-    });
-    ro.observe(anchor);
-    return () => {
-      cancelAnimationFrame(raf);
-      ro.disconnect();
-    };
+    const timers = DELIVERY_PASS_DELAYS_MS.map((ms) => window.setTimeout(follow, ms));
+    return () => timers.forEach((timer) => window.clearTimeout(timer));
   }, [anchorRef, enabled, streamText]);
+
+  /* Declared last so every effect in this commit still sees the PREVIOUS commit's value. */
+  useLayoutEffect(() => {
+    wasEnabledRef.current = enabled;
+  });
 }
