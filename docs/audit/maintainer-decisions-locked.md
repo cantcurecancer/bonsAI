@@ -2664,3 +2664,66 @@ already in the corpus and is covered by the ATTRIBUTIONS *Accuracy* section — 
 not authoritative, and wrong ones get fixed forward. It also means, per the note closing
 [corpus-gap-answers-2026-08-29.md](corpus-gap-answers-2026-08-29.md), that **whoever wrote them can
 never write a blind eval row for them.** Six cards' worth of blind-row capacity was spent here.
+
+### D40 — OPEN (raised 2026-08-31) — The eval allows one right answer per question. The corpus has outgrown that.
+
+**Evidence:** [kb-eval-after-depth-2026-08-31.md](kb-eval-after-depth-2026-08-31.md). Adding 13
+cards regressed 7 eval cases and improved none. **Five of the seven are cases where more than one
+card is a fair answer**, and the fixture can only name one.
+
+The clearest is `V2-S-SOE-03`, *"how to get more time"*. It expects `Kaos mode and Revolution mode`,
+which is what State of Emergency had when it owned five cards and that one was the only thing
+resembling an answer. Retrieval now returns `Round time and the +15s pickups` — a card written from
+the maintainer's own words about that exact confusion. **The answer got better and the number went
+down.**
+
+This will happen again on every depth pass, and it gets worse as the corpus improves, which makes it
+a measurement bug rather than a content bug.
+
+**Options, in plain language:**
+
+1. **Let a row list several acceptable cards.** `expect_section` becomes a list; a hit is any of
+   them. Cheapest change, and it matches how a reply actually works — three cards are injected, not
+   one. Risk: a lazily-written list of four cards makes a row impossible to fail.
+2. **Keep one expected card but score top-3 only**, dropping top-1 as a headline. Honest about what
+   the product does, but throws away the signal that says *"the best card came first"*.
+3. **Leave it, and treat the score as a floor** rather than a measurement — every future number is
+   read as "at least this good".
+4. **Split the rows instead**: where two cards are both fair, write two questions that separate
+   them. Most work, best fixture, and it is the only option that makes the eval sharper rather than
+   more forgiving.
+
+**Constraint that is not negotiable:** whatever is chosen, `V2-S-SOE-07` and `V2-S-SOE-09` are
+**holdout** rows that were seen to fail. Rewriting either one now converts the ship gate into a
+mirror. If option 1 or 4 is taken, it is applied to `tune` and to *unread* holdout rows, and those
+two are left alone or retired outright.
+
+### D41 — OPEN (raised 2026-08-31) — A card named after a category outranks the cards inside it
+
+**One real regression** came out of the Hades split. `V2-S-HADES-02` asks *"which weapon is
+easiest"* and expects `Stygian Blade`, whose card says *"the safest thing to learn on"*. It now
+returns `Weapon aspects`, `Shield of Chaos`, `Adamant Rail` — the right card is not in the top three
+at all.
+
+The cause is plain: **`Weapon aspects` contains the word *weapon* and the six weapons do not.** They
+are named `Stygian Blade`, `Eternal Spear` and so on. Before the split, one card was called
+*Starting weapons* and won the same match honestly, because it *was* the answer.
+
+**What must not be done:** rewording the Blade card to say *"easiest"*, or renaming `Weapon aspects`
+to dodge the match. Both are fitting the corpus to a test question, and this repo has already
+recorded that failure mode once ([00-phase0.md](00-phase0.md)).
+
+**The real question:** should a card whose name is a *category* sit in the same pool as cards that
+are *instances* of that category? Options:
+
+1. **Accept it.** One tune row is wrong; the shipped `rrf` arm may well rank it correctly, and this
+   was never measured per-case for `rrf` — the per-case data only exists for the keyword arm.
+   **Measure `rrf` per-case before deciding anything.** Cheapest and most likely correct first step.
+2. **Give instance cards their category word.** Name them `Stygian Blade (weapon)` and so on. Fixes
+   retrieval generally rather than for one question, at the cost of clumsier chip labels — and chip
+   width is already a known problem on a 300px column.
+3. **Fold `Weapon aspects` into the mechanic it belongs beside** (`Mirror of Night`, `Darkness, keys
+   and gems`) so the category name stops competing with the instances.
+
+**Recommended first step is (1)** — the finding rests entirely on the keyword arm, which is not what
+ships, and the tooling does not currently write per-case results for the fusion arms.
