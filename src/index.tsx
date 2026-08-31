@@ -155,6 +155,19 @@ const Content: React.FC = () => {
    * covered by the reply-ready toast, so nothing here needs to persist.
    */
   const [generatingSlotId, setGeneratingSlotId] = useState<string | null>(null);
+  /* Ref twin for the never-used-slot sweep (D42): the sweep runs inside stable callbacks and must
+     see the CURRENT generating slot, not the one from whichever render created the callback. Both
+     writers below are useCallback([]) on purpose — the bare setter used to be passed directly, and
+     an inline arrow here re-armed an orchestration effect every render into an update loop. */
+  const generatingSlotIdRef = useRef<string | null>(null);
+  const onGeneratingSlotChange = useCallback((slotId: string | null) => {
+    generatingSlotIdRef.current = slotId;
+    setGeneratingSlotId(slotId);
+  }, []);
+  const isSlotGenerating = useCallback(
+    (slotId: string) => generatingSlotIdRef.current === slotId,
+    [],
+  );
   const [unreadSlotIds, setUnreadSlotIds] = useState<ReadonlySet<string>>(() => new Set<string>());
   const reloadSlotTranscriptRef = useRef<(() => Promise<void>) | null>(null);
   /* Same indirection as the ref above: `useChatSlots` owns this but is declared after the
@@ -485,7 +498,7 @@ const Content: React.FC = () => {
     onSlotTurnsChanged: () => {
       void reloadSlotTranscriptRef.current?.();
     },
-    onGeneratingSlotChange: setGeneratingSlotId,
+    onGeneratingSlotChange,
     onSlotAnswerFinished: (slotId) => {
       setUnreadSlotIds((prev) => {
         if (prev.has(slotId)) return prev;
@@ -502,6 +515,7 @@ const Content: React.FC = () => {
     setAskThreadCollapsed,
     setAskThreadDisplayQuestion,
     setExpandedTurnKey,
+    isSlotGenerating,
   });
   reloadSlotTranscriptRef.current = chatSlots.reloadActiveSlotTranscript;
   ensureActiveSlotForAskRef.current = chatSlots.ensureActiveSlotForAsk;

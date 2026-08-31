@@ -29,6 +29,7 @@ import { MainTabScreenshotBrowser } from "./MainTabScreenshotBrowser";
 import { MainTabChatTranscript } from "./MainTabChatTranscript";
 import { PermissionDenyAction } from "./PermissionDenyAction";
 import { useMainTabColumnFill } from "../hooks/useMainTabColumnFill";
+import { useDockClearanceOnFocus } from "../hooks/useDockClearanceOnFocus";
 import { ChatSlotRow } from "../features/chat-slots/ChatSlotRow";
 import type { ChatSlotSummary } from "../utils/chatSlotsApi";
 import type { BonsaiCapabilityKey } from "../utils/permissionDeepLink";
@@ -157,6 +158,8 @@ export function MainTab(props: MainTabProps) {
      (measured — the offset crosses hashed Steam wrappers) and the dock carries margin-top: auto. */
   const columnRef = useRef<HTMLDivElement | null>(null);
   useMainTabColumnFill(columnRef);
+  /* Focus landing behind the bottom dock gets lifted above it — see the hook's header. */
+  useDockClearanceOnFocus(columnRef);
 
   /*
    * Asking at the [+] position creates the chat FIRST, so the panel lands on the new slot and the

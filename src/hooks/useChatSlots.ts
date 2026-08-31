@@ -5,7 +5,7 @@
  * Solves: Single owner for slot CRUD and active selection without useEffect ref lag.
  * Does not: Submit Asks or poll background status — orchestration hook owns that.
  */
-import { useCallback, useState, type Dispatch, type RefObject, type SetStateAction } from "react";
+import { useCallback, useRef, useState, type Dispatch, type RefObject, type SetStateAction } from "react";
 import { Router } from "@decky/ui";
 
 import type { AskThreadCollapsedTurn, AskThreadExpandedTurnKey } from "../types/bonsaiUi";
@@ -27,6 +27,8 @@ export type UseChatSlotsArgs = {
   setAskThreadDisplayQuestion: Dispatch<SetStateAction<string>>;
   setExpandedTurnKey: Dispatch<SetStateAction<AskThreadExpandedTurnKey>>;
   resetLiveAskPresentation?: () => void;
+  /** True while the backend is generating into this slot. A slot mid-answer is never swept. */
+  isSlotGenerating?: (slotId: string) => boolean;
 };
 
 export function useChatSlots({
@@ -36,11 +38,16 @@ export function useChatSlots({
   setAskThreadDisplayQuestion,
   setExpandedTurnKey,
   resetLiveAskPresentation,
+  isSlotGenerating,
 }: UseChatSlotsArgs) {
   const [summaries, setSummaries] = useState<ChatSlotSummary[]>([]);
   const [activeSlotId, setActiveSlotIdState] = useState<string | null>(
     initialActiveSlotId ?? activeSlotIdRef.current,
   );
+  /** Mirror of `summaries` for callbacks that must not re-close over the list on every refresh. */
+  const summariesRef = useRef<ChatSlotSummary[]>([]);
+  /** Turns on screen for the active slot; -1 until a transcript has been applied. */
+  const activeSlotTurnCountRef = useRef(-1);
 
   /*
    * The one place the active slot changes, which is why the persistence goes here rather than at
@@ -65,6 +72,8 @@ export function useChatSlots({
   const applySlotTranscript = useCallback(
     (turns: Parameters<typeof turnsToCollapsedTurns>[0], fallbackAppId = "") => {
       const { collapsed, pendingQuestion } = turnsToCollapsedTurns(turns, fallbackAppId);
+      /* A pending question counts: a slot whose first answer is still being written is in use. */
+      activeSlotTurnCountRef.current = collapsed.length + (pendingQuestion ? 1 : 0);
       setAskThreadCollapsed(collapsed);
       setAskThreadDisplayQuestion(pendingQuestion ?? "");
       setExpandedTurnKey(pendingQuestion ? "live" : collapsed.length > 0 ? collapsed[collapsed.length - 1]!.id : "live");
@@ -75,9 +84,31 @@ export function useChatSlots({
 
   const refreshSummaries = useCallback(async () => {
     const rows = await listChatSlots();
+    summariesRef.current = rows;
     setSummaries(rows);
     return rows;
   }, []);
+
+  /*
+   * The dingleberry sweep (decision D42, option 2, locked 2026-08-31): a chat that was created
+   * and then never used — zero turns, still wearing the default "New chat" name — deletes itself
+   * when the user switches away from it. Left alone, such a chat sits in the rotation forever
+   * looking almost identical to the [+] screen, which is how "there are two new chat screens"
+   * got reported. A renamed empty chat is kept (the rename says "I mean to use this"), and a slot
+   * the backend is generating into is never touched: its first turns simply have not landed yet.
+   */
+  const sweepIfNeverUsed = useCallback(
+    (slotId: string, turnCount: number) => {
+      if (turnCount !== 0) return;
+      if (isSlotGenerating?.(slotId)) return;
+      const label = summariesRef.current.find((s) => s.id === slotId)?.label ?? "";
+      if (label !== "New chat") return;
+      void deleteChatSlot(slotId).then((ok) => {
+        if (ok) void refreshSummaries();
+      });
+    },
+    [isSlotGenerating, refreshSummaries],
+  );
 
   const reloadActiveSlotTranscript = useCallback(async () => {
     /*
@@ -90,6 +121,7 @@ export function useChatSlots({
     void refreshSummaries();
     const sid = activeSlotIdRef.current;
     if (!sid) {
+      activeSlotTurnCountRef.current = -1;
       setAskThreadCollapsed([]);
       setAskThreadDisplayQuestion("");
       setExpandedTurnKey("live");
@@ -102,17 +134,23 @@ export function useChatSlots({
 
   const selectSlot = useCallback(
     async (slotId: string | null) => {
+      /* Captured before anything below overwrites them: they describe the slot being LEFT. */
+      const leavingId = activeSlotIdRef.current;
+      const leavingTurnCount = activeSlotTurnCountRef.current;
       setActiveSlot(slotId);
       if (!slotId) {
+        activeSlotTurnCountRef.current = -1;
         setAskThreadCollapsed([]);
         setAskThreadDisplayQuestion("");
         setExpandedTurnKey("live");
         resetLiveAskPresentation?.();
-        return;
+      } else {
+        const slot = await getChatSlot(slotId);
+        if (slot) applySlotTranscript(slot.turns, slot.origin_app_id ?? "");
       }
-      const slot = await getChatSlot(slotId);
-      if (!slot) return;
-      applySlotTranscript(slot.turns, slot.origin_app_id ?? "");
+      if (leavingId && leavingId !== slotId) {
+        sweepIfNeverUsed(leavingId, leavingTurnCount);
+      }
     },
     [
       applySlotTranscript,
@@ -121,6 +159,7 @@ export function useChatSlots({
       setAskThreadCollapsed,
       setAskThreadDisplayQuestion,
       setExpandedTurnKey,
+      sweepIfNeverUsed,
     ],
   );
 

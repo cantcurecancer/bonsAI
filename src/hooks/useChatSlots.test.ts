@@ -1,5 +1,5 @@
 import { act, renderHook } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { useChatSlots } from "./useChatSlots";
 
@@ -211,6 +211,110 @@ describe("useChatSlots", () => {
       });
 
       expect(window.localStorage.getItem("bonsai:active-chat-slot")).toBe("new-slot");
+    });
+  });
+
+  /*
+   * The dingleberry sweep (D42, locked 2026-08-31): a chat created and never used — zero turns,
+   * still named "New chat" — deletes itself when the user switches away. A rename or a pending
+   * answer both mean "in use" and protect the slot.
+   */
+  describe("the never-used slot sweep", () => {
+    const SUMMARY_ROWS = [
+      { id: "empty", label: "New chat", created_at: 0, updated_at: 0 },
+      { id: "draft", label: "Draft ideas", created_at: 0, updated_at: 0 },
+      { id: "used", label: "Real chat", created_at: 0, updated_at: 0 },
+    ];
+
+    function mockSlots() {
+      vi.mocked(chatSlotsApi.listChatSlots).mockImplementation(async () => SUMMARY_ROWS as never);
+      vi.mocked(chatSlotsApi.getChatSlot).mockImplementation(async (id: string) =>
+        ({
+          id,
+          label: SUMMARY_ROWS.find((r) => r.id === id)?.label ?? "",
+          created_at: 0,
+          updated_at: 0,
+          turns:
+            id === "used"
+              ? [
+                  { role: "user", text: "q" },
+                  { role: "assistant", text: "a" },
+                ]
+              : [],
+        }) as never,
+      );
+    }
+
+    function renderSwept(isSlotGenerating?: (slotId: string) => boolean) {
+      return renderHook(() =>
+        useChatSlots({
+          activeSlotIdRef: { current: null },
+          setAskThreadCollapsed: vi.fn(),
+          setAskThreadDisplayQuestion: vi.fn(),
+          setExpandedTurnKey: vi.fn(),
+          isSlotGenerating,
+        }),
+      );
+    }
+
+    async function visitThenLeave(
+      result: { current: ReturnType<typeof useChatSlots> },
+      visited: string,
+    ) {
+      await act(async () => {
+        await result.current.refreshSummaries();
+        await result.current.selectSlot(visited);
+        await result.current.selectSlot("used");
+      });
+    }
+
+    afterEach(() => {
+      vi.mocked(chatSlotsApi.listChatSlots).mockImplementation(async () => []);
+      vi.mocked(chatSlotsApi.getChatSlot).mockImplementation(async () => null);
+      vi.mocked(chatSlotsApi.deleteChatSlot).mockClear();
+    });
+
+    it("deletes an empty 'New chat' when the user switches away from it", async () => {
+      mockSlots();
+      const { result } = renderSwept();
+
+      await visitThenLeave(result, "empty");
+
+      expect(chatSlotsApi.deleteChatSlot).toHaveBeenCalledWith("empty");
+    });
+
+    it("keeps an empty chat the user renamed — the rename says they mean to use it", async () => {
+      mockSlots();
+      const { result } = renderSwept();
+
+      await visitThenLeave(result, "draft");
+
+      expect(chatSlotsApi.deleteChatSlot).not.toHaveBeenCalled();
+    });
+
+    it("keeps a chat with turns", async () => {
+      mockSlots();
+      const { result } = renderSwept();
+
+      await act(async () => {
+        await result.current.refreshSummaries();
+        await result.current.selectSlot("used");
+        await result.current.selectSlot("draft");
+      });
+
+      expect(chatSlotsApi.deleteChatSlot).not.toHaveBeenCalled();
+    });
+
+    /* The Ask-from-[+] flow creates the chat and pops to it BEFORE the first turn lands, so for a
+       few seconds a generating chat is empty and named "New chat" — exactly what the sweep hunts.
+       Deleting it would lose the answer being written. */
+    it("never sweeps a chat the backend is generating into", async () => {
+      mockSlots();
+      const { result } = renderSwept((slotId) => slotId === "empty");
+
+      await visitThenLeave(result, "empty");
+
+      expect(chatSlotsApi.deleteChatSlot).not.toHaveBeenCalled();
     });
   });
 });

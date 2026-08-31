@@ -267,12 +267,23 @@ seconds; anything that would otherwise have to be re-measured goes there rather 
   4. **A finished chat kept saying "New chat"** — the backend renames a slot after its first question, but nothing refreshed the row's list
      when an answer archived, so the label (and the recency ordering) stayed stale. `reloadActiveSlotTranscript` refreshes the summaries now.
   The **second** "new chat screen" was real data: a saved slot still labelled "New chat" because it was created (A on [+]) and then asked in
-  from the [+] position — its ask landed there and renamed it, closing that instance. Whether never-used slots should be cleaned up
-  automatically is an open maintainer call in
-  [audit/maintainer-decisions-locked.md](audit/maintainer-decisions-locked.md). The 2026-08-31 screenshot of "chips under the response
-  occluded" is the same root cause, not a scroll regression: that answer completed while the user was parked on [+], where the transcript —
-  and therefore the bring-the-end-into-view pass — does not exist. With asks popping to their slot that path is gone; reopen only if it
-  recurs while ON a slot. Rows **CHAT-SLOTS-V3-15a/b/c**.
+  from the [+] position — its ask landed there and renamed it, closing that instance. Rows **CHAT-SLOTS-V3-15a/b/c**.
+
+- ~~★★ **A never-used chat lingers in the rotation**~~ — **FIXED under D42 (locked 2026-08-31, option 2) and proven on-Deck the same
+  evening.** A chat with zero turns still named "New chat" deletes itself when the user switches away from it. A renamed empty chat is kept
+  (the rename says "I mean to use this"), and a chat the backend is generating into is never touched — the Ask-from-[+] flow makes a chat
+  that is briefly empty and default-named while its first answer is being written. Evidence `runs/V3-21-sweep-empty-chat.json`: A on [+]
+  created "New chat", one RB later it was gone. Row **CHAT-SLOTS-V3-15e**.
+
+- ~~★★★ **A focused control at the end of a reply sits behind the preset chips**~~ — **FIXED and measured on-Deck 2026-08-31**
+  (`recordings/DeckRecord_20260831_193132_game.mkv` is the report). Steam scrolls a newly focused element into the PANE, but the dock covers
+  the pane's bottom ~246px and Steam cannot know that — so walking down to Helpful / Show details / the branch buttons landed the focus ring
+  behind the chips. `useDockClearanceOnFocus` (mounted on the Main column) now watches focus arrive, and anything landing under the dock is
+  lifted above it with the same scrollIntoView-plus-scroll-margin mechanism the stream follow uses — two idempotent passes, one frame after
+  Steam's own scroll and one 150ms later in case Steam re-asserts. Measured: on the long battery answer, Show details took focus at 56px
+  ABOVE the dock's top edge with the 252px margin applied; on a short transcript nothing fires because nothing is covered. This also
+  self-adjusts when the dock gets shorter (the planned one-line preset chips): every number is measured live, none is baked in. Row
+  **CHAT-SLOTS-V3-15f**.
 
 ### Small and cosmetic
 

@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 335,
-  "edgeCount": 798,
+  "fileCount": 337,
+  "edgeCount": 801,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -225,6 +225,7 @@
         "src/data/presets.ts",
         "src/data/replyMicroActions.ts",
         "src/features/chat-slots/ChatSlotRow.tsx",
+        "src/hooks/useDockClearanceOnFocus.ts",
         "src/hooks/useMainTabColumnFill.ts",
         "src/types/backgroundAsk.ts",
         "src/types/bonsaiUi.ts",
@@ -1638,6 +1639,21 @@
         "src/index.tsx"
       ]
     },
+    "src/hooks/useDockClearanceOnFocus.test.ts": {
+      "imports": [
+        "src/hooks/useDockClearanceOnFocus.ts"
+      ],
+      "importedBy": []
+    },
+    "src/hooks/useDockClearanceOnFocus.ts": {
+      "imports": [
+        "src/utils/chatPanelScroll.ts"
+      ],
+      "importedBy": [
+        "src/components/MainTab.tsx",
+        "src/hooks/useDockClearanceOnFocus.test.ts"
+      ]
+    },
     "src/hooks/useIntentPacks.ts": {
       "imports": [
         "src/utils/deckyCall.ts",
@@ -2599,6 +2615,7 @@
         "src/utils/uiDocument.ts"
       ],
       "importedBy": [
+        "src/hooks/useDockClearanceOnFocus.ts",
         "src/hooks/useStreamScrollPin.ts",
         "src/utils/answerBubbleNavigation.ts",
         "src/utils/buildReplyActionsElement.tsx",

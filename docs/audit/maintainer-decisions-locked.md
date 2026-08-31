@@ -2728,7 +2728,7 @@ are *instances* of that category? Options:
 **Recommended first step is (1)** — the finding rests entirely on the keyword arm, which is not what
 ships, and the tooling does not currently write per-case results for the fusion arms.
 
-### D42 — OPEN (raised 2026-08-31) — Should never-used chats clean themselves up?
+### D42 — LOCKED 2026-08-31 — Never-used chats clean themselves up (option 2)
 
 Pressing A on the [+] position creates a chat immediately, named "New chat". If the user then
 never asks anything in it, that empty chat stays in the rotation forever — and on the strip it is
@@ -2748,4 +2748,10 @@ Options:
    existence with its first question (asks from [+] already work this way now). No empties can
    exist at all; changes a shipped affordance, needs the focus graph checked.
 
-No recommendation locked; (1) is the default until decided.
+**Locked the same day: option 2, sweep on leave.** Maintainer's words: "YES! Definitely don't
+leave those dingleberries." Implemented in `useChatSlots.sweepIfNeverUsed` with both protections —
+a renamed empty chat is kept, and a chat the backend is generating into is never touched (the
+Ask-from-[+] flow makes a chat that is briefly empty AND named "New chat" while the first answer
+is being written; sweeping it would lose that answer). Proven on-Deck the same evening:
+`runs/V3-21-sweep-empty-chat.json` — A on [+] created "New chat", one RB away and it was gone
+from the rotation.

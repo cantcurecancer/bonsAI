@@ -363,6 +363,14 @@ everything below assumes it passes. Plan:
 - [ ] **CHAT-SLOTS-V3-15d** (label updates live) Ask the first question in a fresh chat while staying on it: the row's title should
   change from "New chat" to the question as the answer archives, without closing the panel. The refresh is in code
   (`reloadActiveSlotTranscript`) and the rename was verified across a reopen; the live in-place update still wants one human glance.
+- [x] **CHAT-SLOTS-V3-15e** (the dingleberry sweep, D42) A on [+] creates "New chat"; switch away without asking and it deletes itself —
+  **PASS 2026-08-31 driven by bridge** (`runs/V3-21-sweep-empty-chat.json`): created at position 1, one RB later gone from the rotation.
+  Protections covered by unit tests: a renamed empty chat stays, a generating chat stays, a chat with turns stays.
+- [x] **CHAT-SLOTS-V3-15f** (focus never hides behind the chips) Walk D-pad down a LONG reply to Show details / Copy / Helpful: the
+  focused control must sit above the dock, not behind it — **PASS 2026-08-31**: on the battery answer Show details took focus 56px above
+  the dock's top (scroll-margin 252px applied by the lift); on a short reply the lift correctly does nothing (29px naturally clear, no
+  margin written). Worth one human pass on feel: the lift lands one frame after Steam's own focus scroll, so watch for any visible
+  double-hop when stepping through a long answer.
 
 
 ---

@@ -40,6 +40,7 @@
     "src/hooks/useBonsaiAskOrchestration.test.ts",
     "src/hooks/useBonsaiPluginShell.test.ts",
     "src/hooks/useChatSlots.test.ts",
+    "src/hooks/useDockClearanceOnFocus.test.ts",
     "src/hooks/useKidsLock.test.ts",
     "src/hooks/useMainTabAskBarFocus.test.ts",
     "src/hooks/usePermissionJump.test.ts",
