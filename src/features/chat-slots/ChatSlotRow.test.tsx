@@ -16,7 +16,8 @@ function summary(id: string, label: string, originAppName?: string): ChatSlotSum
   return { id, label, created_at: 0, updated_at: 0, origin_app_name: originAppName };
 }
 
-/* useMemo reverses `summaries`, so this renders as slot-c, slot-b, slot-a. */
+/* Rendered in the order given: the backend sends most-recently-updated first, and the row keeps
+   that order — "a" is the newest chat and the leftmost dot, "c" the oldest and the rightmost. */
 const SUMMARIES = [summary("a", "Alpha"), summary("b", "Beta"), summary("c", "Gamma")];
 
 function renderRow(overrides: Partial<React.ComponentProps<typeof ChatSlotRow>> = {}) {
@@ -67,6 +68,30 @@ describe("ChatSlotRow game line", () => {
   it("shows no game line at the create position", () => {
     const { container } = renderRow({ activeSlotId: null });
     expect(container.querySelector(".bonsai-chat-slot-game")?.textContent).toBe("");
+  });
+});
+
+describe("ChatSlotRow carousel order", () => {
+  /*
+   * The strip runs new -> old, left to right, with [+] leftmost: from the chat a user was just in
+   * (usually the newest), "new chat" is ONE LB press away. The order used to be reversed, which
+   * put [+] beside the OLDEST chat — reaching it meant LB-ing the whole ring, and the 8-dot cap
+   * trimmed the newest chats instead of the oldest. Reported on device 2026-08-31.
+   */
+  it("puts the newest chat on the leftmost dot, one step from the [+] marker", () => {
+    const { container } = renderRow({ activeSlotId: "a" });
+    const classes = dotClasses(container);
+    expect(classes[0]).toContain("--active");
+    expect(classes[1]).not.toContain("--active");
+    expect(classes[2]).not.toContain("--active");
+    // Its left-hand ghost is the create position, not another chat.
+    expect(container.querySelector(".bonsai-chat-slot-ghost--create")).not.toBeNull();
+  });
+
+  it("puts the oldest chat on the rightmost dot", () => {
+    const { container } = renderRow({ activeSlotId: "c" });
+    const classes = dotClasses(container);
+    expect(classes[2]).toContain("--active");
   });
 });
 

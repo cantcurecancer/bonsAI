@@ -5,7 +5,7 @@
  * Solves: Named slot switching without a modal picker; explicit focus graph for D-pad.
  * Does not: Submit Asks — orchestration hook owns the Ask path.
  */
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ConfirmModal, Focusable, showModal } from "@decky/ui";
 
 import type { ChatSlotSummary } from "../../utils/chatSlotsApi";
@@ -61,7 +61,15 @@ export function ChatSlotRow({
   generatingSlotId = null,
   unreadSlotIds,
 }: ChatSlotRowProps) {
-  const orderedSlots = useMemo(() => [...summaries].reverse(), [summaries]);
+  /*
+   * Summaries arrive most-recently-updated first (chat_slot_service sorts by updated_at, newest
+   * first) and are used in that order: position 1 / the leftmost dot is the newest chat, with the
+   * [+] create position at 0 directly to its left. This used to be reversed, which put [+] next to
+   * the OLDEST chat — so from the chat a user was just in, reaching "new chat" meant LB-ing past
+   * every older chat in the ring, and the 8-dot cap trimmed the newest chats instead of the oldest.
+   * Reported on device 2026-08-31.
+   */
+  const orderedSlots = summaries;
   const positionCount = 1 + orderedSlots.length;
 
   const slotIndexFromId = useCallback(

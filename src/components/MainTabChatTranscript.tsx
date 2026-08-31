@@ -892,6 +892,13 @@ questionLooksLikeTroubleshootingAsk(unifiedInput) ? (
  * desktopAskVerboseLogging, now rendered inside the "Developer details" chip by ContextChipLadder
  * (see devDiagnosticsForLiveSnapshot above) instead of a second adjacent disclosure control.
  */}
+{/*
+ * Hidden at the [+] create position. The strip describes the ACTIVE slot, which cycling onto [+]
+ * deliberately does not change — so it read "Session context (N turns)" on a screen whose whole
+ * message is "this slot keeps its own history". Measured on device 2026-08-31; one of the two
+ * things that made [+] and a real empty slot look like interchangeable "new chat screens".
+ */}
+{!showEmptySlotPreview && (
 <PanelSectionRow>
   <SessionContextStrip
     liveTurn={
@@ -910,7 +917,8 @@ questionLooksLikeTroubleshootingAsk(unifiedInput) ? (
     onMoveUp={() => focusUpFromBelowContextChipLadder(queryLiveTurnSlot())}
   />
 </PanelSectionRow>
-{canSaveDesktopNote && (
+)}
+{canSaveDesktopNote && !showEmptySlotPreview && (
   <PanelSectionRow>
     <div className="bonsai-save-chat-desktop-row">
       <Button

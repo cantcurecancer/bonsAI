@@ -2727,3 +2727,25 @@ are *instances* of that category? Options:
 
 **Recommended first step is (1)** — the finding rests entirely on the keyword arm, which is not what
 ships, and the tooling does not currently write per-case results for the fusion arms.
+
+### D42 — OPEN (raised 2026-08-31) — Should never-used chats clean themselves up?
+
+Pressing A on the [+] position creates a chat immediately, named "New chat". If the user then
+never asks anything in it, that empty chat stays in the rotation forever — and on the strip it is
+almost indistinguishable from the [+] screen itself, which is how "there are two new chat screens"
+got reported on 2026-08-31. The 2026-08-31 fixes make asks from [+] create-and-name a chat
+properly, so new empties can now only come from A-create followed by walking away.
+
+Options:
+
+1. **Do nothing.** The × on the row already deletes one. Empty chats are rare after the fix, and a
+   user who created one on purpose keeps it. Cheapest; the confusion case mostly died with the fix.
+2. **Sweep on leave.** When the user switches away from a chat that has zero turns AND still has
+   the default "New chat" name, delete it quietly. A renamed empty chat is kept, treating the
+   rename as "I mean to use this". Risk: a delete the user did not ask for, even if what is
+   deleted is by definition empty.
+3. **Stop creating on A.** Make A on [+] only focus the Ask field, so a chat only ever comes into
+   existence with its first question (asks from [+] already work this way now). No empties can
+   exist at all; changes a shipped affordance, needs the focus graph checked.
+
+No recommendation locked; (1) is the default until decided.

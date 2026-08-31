@@ -5,7 +5,7 @@
  * Solves: Keeps Main-tab layout thin; Ask logic stays in hooks and child components.
  * Does not: Submit Asks, poll RPC, or own focus graphs — see MainTabUnifiedAskBar and MainTabChatTranscript.
  */
-import React, { useRef, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import { PanelSection, PanelSectionRow, Button } from "@decky/ui";
 import type { PresetPrompt } from "../data/presets";
 import type {
@@ -158,6 +158,25 @@ export function MainTab(props: MainTabProps) {
   const columnRef = useRef<HTMLDivElement | null>(null);
   useMainTabColumnFill(columnRef);
 
+  /*
+   * Asking at the [+] position creates the chat FIRST, so the panel lands on the new slot and the
+   * whole answer plays out where the user is looking: thinking blurbs, then the stream, then the
+   * chips. Without this, [+] was only a view — cycling there leaves the active slot alone by
+   * design — so an Ask submitted from it went into whichever slot the user came from, behind an
+   * empty-state screen that hides that slot's transcript. Measured on device 2026-08-31: the
+   * answer "never showed up" until the user LB'd back and found it in the old chat.
+   */
+  const { onAskOllama: submitAsk, onChatSlotCreate } = props;
+  const onAskOllama = useCallback(
+    async (overrideQuestion?: string, opts?: { threadQuestionDisplay?: string }) => {
+      if (slotRowAtCreate && onChatSlotCreate) {
+        await onChatSlotCreate();
+      }
+      return submitAsk(overrideQuestion, opts);
+    },
+    [slotRowAtCreate, onChatSlotCreate, submitAsk],
+  );
+
   return (
     <>
       <PanelSection>
@@ -200,6 +219,7 @@ export function MainTab(props: MainTabProps) {
 
         <MainTabUnifiedAskBar
           {...props}
+          onAskOllama={onAskOllama}
           presetCarouselHostRef={presetCarouselHostRef}
           onFocusHandlersReady={({ focusUnifiedTextField: fn }) => {
             setFocusUnifiedTextField(() => fn);

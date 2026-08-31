@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 334,
-  "edgeCount": 794,
+  "fileCount": 335,
+  "edgeCount": 798,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -291,6 +291,15 @@
       ],
       "importedBy": []
     },
+    "src/components/MainTabChatTranscript.emptySlotPreview.test.tsx": {
+      "imports": [
+        "src/components/MainTabChatTranscript.tsx",
+        "src/test-harness/fakeDeckyUi.tsx",
+        "src/types/bonsaiUi.ts",
+        "src/utils/inputTransparency.ts"
+      ],
+      "importedBy": []
+    },
     "src/components/MainTabChatTranscript.strategyPanels.test.tsx": {
       "imports": [
         "src/components/MainTabChatTranscript.tsx",
@@ -338,6 +347,7 @@
         "src/components/MainTab.tsx",
         "src/components/MainTabChatTranscript.diagnostics.test.tsx",
         "src/components/MainTabChatTranscript.earlierPill.test.tsx",
+        "src/components/MainTabChatTranscript.emptySlotPreview.test.tsx",
         "src/components/MainTabChatTranscript.strategyPanels.test.tsx"
       ]
     },
@@ -2149,6 +2159,7 @@
         "src/components/MainTabBonsaiAiMarkdownChunk.test.tsx",
         "src/components/MainTabChatTranscript.diagnostics.test.tsx",
         "src/components/MainTabChatTranscript.earlierPill.test.tsx",
+        "src/components/MainTabChatTranscript.emptySlotPreview.test.tsx",
         "src/components/MainTabChatTranscript.strategyPanels.test.tsx",
         "src/components/ReplyCopyButton.test.tsx",
         "src/components/SessionContextStrip.test.tsx",
@@ -2218,6 +2229,7 @@
       "importedBy": [
         "src/components/MainTab.tsx",
         "src/components/MainTabChatTranscript.earlierPill.test.tsx",
+        "src/components/MainTabChatTranscript.emptySlotPreview.test.tsx",
         "src/components/MainTabChatTranscript.strategyPanels.test.tsx",
         "src/components/MainTabChatTranscript.tsx",
         "src/components/MainTabScreenshotBrowser.tsx",
@@ -2867,6 +2879,7 @@
         "src/components/ContextChipLadder.tsx",
         "src/components/MainTab.tsx",
         "src/components/MainTabChatTranscript.diagnostics.test.tsx",
+        "src/components/MainTabChatTranscript.emptySlotPreview.test.tsx",
         "src/components/MainTabChatTranscript.tsx",
         "src/components/SessionContextStrip.test.tsx",
         "src/components/SessionContextStrip.tsx",

@@ -251,6 +251,29 @@ seconds; anything that would otherwise have to be re-measured goes there rather 
   80px above the dock. The 2026-08-30 fixes (fold at the dock's top, ResizeObserver on the anchor, shrink-clamp guard) all stand and all
   contributed. Row **CHAT-SLOTS-V3-14**.
 
+### The chat slot carousel
+
+- ~~★★★ **Two "new chat screens", and an Ask sent from one of them vanished**~~ — **FIXED and proven on-Deck 2026-08-31.** Reported as one
+  bug, untangled into four, all fixed the same evening:
+  1. **The strip ran backwards.** The backend lists slots newest-first, but the row reversed them — so the dots ran old→new with [+] beside
+     the OLDEST chat, reaching "new chat" meant LB-ing the whole ring, and the 8-dot cap trimmed the newest chats. Now: leftmost dot = the
+     most recently saved chat, [+] one LB press to its left. Verified on device: two LBs from the second-newest chat landed on [+].
+  2. **[+] was only a view, so asking from it submitted into the slot you came from** — behind an empty-state screen that hides that slot's
+     transcript. That is why the answer "never showed up". Now an Ask at [+] creates the chat first and the panel pops to it; verified live:
+     new slot appeared at dot 1 with the blinking pending ring, thinking blurb on screen ("…is in good hands now…"), answer streamed in
+     place, and the scroll delivery landed the end 80px above the chips (731 of 759).
+  3. **[+] leaked the old slot's chrome** — "Session context (N turns)" and Save chat rendered on a screen whose whole message is "this slot
+     keeps its own history". Both hidden at [+] now, gated in MainTabChatTranscript.
+  4. **A finished chat kept saying "New chat"** — the backend renames a slot after its first question, but nothing refreshed the row's list
+     when an answer archived, so the label (and the recency ordering) stayed stale. `reloadActiveSlotTranscript` refreshes the summaries now.
+  The **second** "new chat screen" was real data: a saved slot still labelled "New chat" because it was created (A on [+]) and then asked in
+  from the [+] position — its ask landed there and renamed it, closing that instance. Whether never-used slots should be cleaned up
+  automatically is an open maintainer call in
+  [audit/maintainer-decisions-locked.md](audit/maintainer-decisions-locked.md). The 2026-08-31 screenshot of "chips under the response
+  occluded" is the same root cause, not a scroll regression: that answer completed while the user was parked on [+], where the transcript —
+  and therefore the bring-the-end-into-view pass — does not exist. With asks popping to their slot that path is gone; reopen only if it
+  recurs while ON a slot. Rows **CHAT-SLOTS-V3-15a/b/c**.
+
 ### Small and cosmetic
 
 - ~~★ **After reopening the panel, a branch-pick turn's header shows the internal prompt**~~ — **FIXED at the desk 2026-08-28** with

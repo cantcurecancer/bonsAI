@@ -80,6 +80,14 @@ export function useChatSlots({
   }, []);
 
   const reloadActiveSlotTranscript = useCallback(async () => {
+    /*
+     * The slot list is stale the moment an answer archives: appending the first turn renames the
+     * slot after its question (chat_slot_service.append_turn), and every append bumps updated_at,
+     * which is the row's ordering. Without this the row kept saying "New chat" over a finished
+     * conversation — seen on device 2026-08-31. Fire-and-forget: the transcript below must not
+     * wait on the list.
+     */
+    void refreshSummaries();
     const sid = activeSlotIdRef.current;
     if (!sid) {
       setAskThreadCollapsed([]);
@@ -90,7 +98,7 @@ export function useChatSlots({
     const slot = await getChatSlot(sid);
     if (!slot) return;
     applySlotTranscript(slot.turns, slot.origin_app_id ?? "");
-  }, [applySlotTranscript, setAskThreadCollapsed, setAskThreadDisplayQuestion, setExpandedTurnKey]);
+  }, [applySlotTranscript, refreshSummaries, setAskThreadCollapsed, setAskThreadDisplayQuestion, setExpandedTurnKey]);
 
   const selectSlot = useCallback(
     async (slotId: string | null) => {

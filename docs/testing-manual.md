@@ -350,6 +350,19 @@ everything below assumes it passes. Plan:
   landed it at 574 of a 602 max, last line 80px above the dock. Root cause and fix (scrollIntoView instead of scrollTop writes, plus a
   1.2s delivery window) in the roadmap entry. Worth one human pass for feel: no visible jitter while streaming, and scrolling up
   mid-answer still holds.
+- [x] **CHAT-SLOTS-V3-15a** (carousel order) The leftmost dot is the most recently saved chat and [+] sits one LB press to its left;
+  the rightmost dot is the oldest — **PASS 2026-08-31 driven by bridge**: active slot read at dot 2, two LB presses landed on [+]
+  (`runs/V3-20-lb-to-create` steps), dot order read structurally before and after.
+- [x] **CHAT-SLOTS-V3-15b** (ask from [+]) Submitting an Ask at the [+] position creates a chat, pops the panel to it, and the whole
+  answer plays out there — **PASS 2026-08-31**: one second after A on ASK the new slot existed at dot 1 with the blinking pending
+  ring and the thinking blurb on screen; the answer streamed in place and settled with its end 80px above the chips (scroll 731 of
+  759). After a plugin reopen the chat is titled by its first question with [+] as its left ghost. Evidence
+  `runs/V3-20-ask-from-create.json`.
+- [x] **CHAT-SLOTS-V3-15c** (the [+] screen shows nothing slot-specific) At [+]: title `[+]`, create marker lit, empty-state art, and
+  NO session-context strip, NO Save chat, no transcript — **PASS 2026-08-31**, read structurally on device.
+- [ ] **CHAT-SLOTS-V3-15d** (label updates live) Ask the first question in a fresh chat while staying on it: the row's title should
+  change from "New chat" to the question as the answer archives, without closing the panel. The refresh is in code
+  (`reloadActiveSlotTranscript`) and the rename was verified across a reopen; the live in-place update still wants one human glance.
 
 
 ---
