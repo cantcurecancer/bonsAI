@@ -1219,11 +1219,71 @@
       "section_id": 89,
       "game_id": 7,
       "section_type": "mechanic",
-      "name": "Starting weapons",
-      "card": "The Stygian Blade is the safest thing to learn on — short reach, forgiving timing. The Shield of Chaos is the most survivable, because holding block turns a mistake into nothing. The Rail and the Bow reward staying at range but punish you for standing still. Each weapon also has aspects unlocked later that change how it plays entirely.",
+      "name": "Weapon aspects",
+      "card": "Each weapon has alternate aspects, bought with Titan Blood, that change how it plays rather than just its numbers — a different attack, a different special, sometimes a different role entirely. The last aspect for each weapon unlocks later in the story. Judging a weapon by its starting form alone is why people write one off early.",
       "source_url": "",
       "source_license": "bonsAI-maintainer",
       "source_version": null
+    },
+    {
+      "section_id": 143,
+      "game_id": 7,
+      "section_type": "item",
+      "name": "Stygian Blade",
+      "card": "The safest thing to learn on — short reach, forgiving timing, and a three-hit combo that recovers quickly enough to get out of. Its dash-strike closes distance, so you can play it aggressively without committing to standing still. If you do not know which to take, take this one.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": "seed-1.2"
+    },
+    {
+      "section_id": 144,
+      "game_id": 7,
+      "section_type": "item",
+      "name": "Shield of Chaos",
+      "card": "The most survivable weapon, because holding block turns a mistake into nothing rather than reducing it. Blocking also sets up a rush that closes distance and hits hard, so defence and offence are the same button. A good pick for a boss you keep dying to.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": "seed-1.2"
+    },
+    {
+      "section_id": 145,
+      "game_id": 7,
+      "section_type": "item",
+      "name": "Heart-Seeking Bow",
+      "card": "Rewards staying at range and punishes standing still. Shots charge before they fire, so the rhythm is back away, charge, release — firing early is what makes the bow feel weak. Its special fires a spread that works close up, which is the answer when something reaches you.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": "seed-1.2"
+    },
+    {
+      "section_id": 146,
+      "game_id": 7,
+      "section_type": "item",
+      "name": "Eternal Spear",
+      "card": "The longest reach of the six, which is the whole point of it — you can hit things before they are in range to hit you. Its spin attack sweeps everything around you and is the answer to being surrounded. The special throws the spear and pulls it back, hitting on the way out and the way in.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": "seed-1.2"
+    },
+    {
+      "section_id": 147,
+      "game_id": 7,
+      "section_type": "item",
+      "name": "Twin Fists of Malphon",
+      "card": "The fastest weapon and the shortest reach, so it asks you to stand inside everything. Because it lands so many hits, it stacks boons that trigger on hit far faster than anything else — which is what makes it strong once you know what you are doing, and punishing before then.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": "seed-1.2"
+    },
+    {
+      "section_id": 148,
+      "game_id": 7,
+      "section_type": "item",
+      "name": "Adamant Rail",
+      "card": "A gun, so it has a magazine and a reload — the one weapon where running dry at the wrong moment is what kills you. It rewards staying at range and punishes standing still. Its special lobs a bomb, so unlike the bow it has an answer to a crowd.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": "seed-1.2"
     },
     {
       "section_id": 90,

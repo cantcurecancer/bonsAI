@@ -20,7 +20,9 @@ first measurement — is **deferred at the maintainer's request** pending more d
 more questions; it is not waiting on a decision today and nothing about the weights changes until it
 is. **D37**, the blind holdout rows, was endorsed and locked
 2026-08-29, and the measurement it was gating was run the same day (see D37 for the numbers and the
-two findings that came out of them). Before that, D18 — raised 2026-08-05 by the step 11 friction test — was locked as
+two findings that came out of them). **D39 and D40 are locked 2026-08-29 as well** — D39 by the
+corpus gap sheet, and **D40** in discovery for **Terse mode**, before a line of code for it exists.
+Before that, D18 — raised 2026-08-05 by the step 11 friction test — was locked as
 option A on 2026-08-27 and implemented the same day.
 **D32, D34 and D35 are all locked and implemented** (2026-08-27) — three separate causes of the one
 *Clear cache* bug, which is now fixed and confirmed on device. **D33 is locked and implemented**
@@ -2567,3 +2569,98 @@ Three ways out, none of them started, none needing a decision before the corpus 
 
 Recommendation is (1). It is the only one that ends with six real cards, and it is the option that
 does not spend the maintainer's time on a game they have told us they do not know well.
+
+---
+
+### D40 — LOCKED (2026-08-29) — Terse mode's branch menu appears on every reply and never stops. The branch fence is mandatory-once and banned on follow-ups. Which rule wins?
+
+**Locked in discovery with the maintainer on 2026-08-29, before any code exists.** Roadmap entry:
+**Terse mode** under Backlog → Ask / reply; full shape in
+[roadmap-details.md](../roadmap-details.md).
+
+**Why it was asked.** Terse caps a Speed answer at three lines, so it needs a way to get the rest.
+The maintainer chose the existing strategy branch picker over a new *explain further* chip — reusing
+a control that already renders and is already D-pad reachable. But the picker as built is close to
+the opposite of what terse needs. Today it is **Strategy-mode only**, **mandatory on the first
+turn**, and the prompt explicitly forbids repeating it — *"Do NOT repeat this branching fence when
+the user later sends a message starting with [Strategy follow-up]"*
+([ollama_prompts.py:1317](../../py_modules/backend/services/ollama_prompts.py#L1317)). Terse needs it
+in Speed, on every reply, without end.
+
+**Four shapes were drawn out for the maintainer, who picked B:**
+
+| | Buttons appear | Pressing one leads to | Picked |
+|---|---|---|---|
+| A | every reply | one more reply, then the trail ends | |
+| **B** | **every reply** | **another set of buttons, forever** | **yes** |
+| C | only when there is more to say | one more reply, then ends | |
+| D | only when there is more to say | another set, forever | |
+
+**Why B.** It is the version you can play a whole session with and never touch the on-screen
+keyboard, which on a couch is the point of the feature. **C was rejected on a specific ground rather
+than taste:** enforcement is wording only, so a missing button row is ambiguous — you cannot tell
+*"there was nothing more to say"* from *"the model forgot to offer"*.
+
+**What is locked:**
+
+- The branch fence becomes **repeatable** and available **outside Strategy mode**. This decision
+  *widens* the fence; it does not delete the existing Strategy rule, which stays once-only until
+  someone measures a reason to change it.
+- Buttons are **stacked full-width** in the 300px column, not squeezed into a single row.
+- **No separate *explain further* chip.** The menu already does that job, and two controls for one
+  intention is one more thing to reach with the D-pad.
+- **No exit control.** The Ask field stays live throughout, so the menu is an offer, not a trap.
+
+**What this decision does not cover**, both build-time questions rather than maintainer calls: how
+many options a terse menu should offer (Strategy's fence allows 2–8), and how a repeating fence
+interacts with the spoiler rule that currently requires every `bonsai-spoiler` block to sit **above**
+the branch fence on a first turn
+([ollama_prompts.py:454](../../py_modules/backend/services/ollama_prompts.py#L454)).
+
+**Also settled in the same session and deliberately given no number of their own**, because nothing
+in the existing code or docs argues with them: terse overrides the reply-style slider and the AI
+character inside Speed; it is off by default; it changes output only and never thinking effort; and
+it keeps Caveman's destructive-warning and depth-phrase escapes but not its character step-aside.
+
+#### D39 follow-up, correction (2026-08-31) — "source the Hades wiki" was bad advice; the split shipped anyway
+
+**The recommendation above was wrong, and this repo had already proved it wrong.** It said a Hades
+wiki under CC-BY-SA-3.0 was precedented. There is no such wiki:
+
+| Source | Licence | Verdict |
+|---|---|---|
+| `hades.fandom.com` | **CC BY-NC-SA 3.0** | NonCommercial — excluded by D20 since 2026-08-14 |
+| `hades.wiki.fextralife.com` | "Custom License" | not a free licence; never a candidate |
+| `hades.wiki.gg` | — | does not exist |
+
+Worse, the Fandom case is a **trap this project already walked into and marked**: the archive.org
+item for that snapshot advertises **CC BY-SA 3.0**, while the wiki's own `siteinfo` inside the
+snapshot says **CC BY-NC-SA 3.0**. Checked 2026-08-09, resolved in favour of the stricter one, and
+written down in three places — D20, ATTR-1.2 in
+[15-corpus-licensing-attribution-plan.md](../planning/15-corpus-licensing-attribution-plan.md), and
+the body of commit `ac03617`. Anyone who trusts the item metadata files NC content under a free
+licence. **Read D20 before proposing a source, not after.**
+
+**The blocker was never real.** Commit `ac03617` settled how the seven unsourceable titles get
+content — *"maintainer-authored where [dumps] do not [exist]"* — and Hades is one of the seven.
+Every Hades card in the corpus, section 89 included, was already written that way. So splitting it
+needs no new standing, no new licence, and no game knowledge from the maintainer that the existing
+card did not already require.
+
+**Shipped.** Section 89 becomes `mechanic` **Weapon aspects**, carrying the one sentence in the old
+card that was never about a single weapon. Six new `item` cards, sections 143–148, one per Infernal
+Arm: Stygian Blade, Shield of Chaos, Heart-Seeking Bow, Eternal Spear, Twin Fists of Malphon,
+Adamant Rail. The Spear and the Fists appear in the corpus for the first time. Each card keeps the
+old card's judgement where it made one — the Blade is still *"the safest thing to learn on"*, the
+Shield still *"turns a mistake into nothing"*.
+
+Hades goes 8 cards to 14, and gains an `item` kind it did not have, so its chip pool can interleave
+four kinds instead of three. `V2-S-HADES-02` (*"which weapon is easiest"*) repoints from
+*Starting weapons* to **Stygian Blade** — on `tune`, no holdout row touched. 890 Python tests pass.
+
+**What is genuinely weaker here, and should be said rather than buried:** these six carry
+`fallback_no_source`, so nothing external backs them. That is the same standing as the 74 cards
+already in the corpus and is covered by the ATTRIBUTIONS *Accuracy* section — cards are distilled,
+not authoritative, and wrong ones get fixed forward. It also means, per the note closing
+[corpus-gap-answers-2026-08-29.md](corpus-gap-answers-2026-08-29.md), that **whoever wrote them can
+never write a blind eval row for them.** Six cards' worth of blind-row capacity was spent here.
