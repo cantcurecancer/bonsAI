@@ -410,6 +410,10 @@ everything below assumes it passes. Plan:
   the carousel only auto-advances for 60s after opening and the run had used that window); fade goes out/in in about half a second
   each with no long blank; static swaps on hold; decode scrambles and locks one chip. Also confirm the three game-specific seeds all
   appear in turn (they now queue through the one slot) and that a frozen QA batch walks in order past its third entry.
+- [ ] **PRESET-ONE-LINE-02** (the row matches the mockup) One row, **three chips side by side**, each a third of the width, ~30px
+  tall, long labels marquee-scrolling inside their third ([major-redesign.md § 2.3](major-redesign.md)) — **FAIL 2026-08-31, filed by
+  the maintainer on sight:** the row shows one chip. 01a above measured the height of what was built, not whether it was the right
+  thing; this row is the one that has to pass before the feature is called done.
 
 
 ---

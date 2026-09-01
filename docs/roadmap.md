@@ -21,6 +21,23 @@ Status tags: **OPEN** · **PARTIAL**. Fixed entries move to [archive/roadmap-bug
 intact. Long-form investigation notes live in [roadmap-details.md](roadmap-details.md) — an entry here should be readable in a few
 seconds; anything that would otherwise have to be re-measured goes there rather than being deleted.
 
+### The preset chips
+
+- ★★★★ **The one-line preset row was built the wrong shape — one chip, where the mockup has three side by side** — **OPEN, filed by the
+  maintainer 2026-08-31, the same day it shipped.** Commit `fc1b245` ("Preset chips on a single line") collapsed the three stacked rows
+  into one row that shows **one chip at a time**. That is not the design. The mockup — [major-redesign.md § 2.3](major-redesign.md) —
+  specifies **three chips across in one row, side by side, each a third of the width (`flex: 1 1 0`), 30px tall, with the label
+  marquee-scrolling sideways when it overflows its third.** The vertical-space gain (dock 245 → 161px) is real and stays; the layout is
+  not done and the feature is not finished.
+  - **What a fix needs:** three slots across one row; a per-chip horizontal marquee for long labels (new — listed as new work in
+    [major-redesign.md § 5](major-redesign.md)); the four animation modes re-thought for three narrow chips rather than one wide one;
+    and a decision on the `singleSlotRotation` queue and `nextFrozenPresetAfter` from `fc1b245` — both were written to fit a single
+    chip and will need to go or change once three are on screen again.
+  - **How it went wrong, so it does not repeat:** the roadmap entry said "single line" and the build took the words, not the drawing.
+    Anything covered by the redesign doc gets checked against the mockup before code is written — and the maintainer should not have
+    to spend a round explaining a picture that was already in the repo.
+  - Row **PRESET-ONE-LINE-02**.
+
 ### Blocking a feature on the couch
 
 - ~~★★★ **You can get stuck inside the Session context panel**~~ — **FIXED, and confirmed on device 2026-08-27.**
@@ -417,7 +434,10 @@ alphabetical order the rest of the Backlog uses.
   - **Goal:** The **Session context (N turns)** bar stops being its own row and lives inside the **Show details** disclosure, so a settled
     answer costs one collapsed control instead of two.
   - **Shape not decided — workshop before building.** Open questions in [roadmap-details.md](roadmap-details.md).
-- ~~★★★★ **Preset chips on a single line**~~ — **SHIPPED and measured on-Deck 2026-08-31.** The chip block went from 118px (three
+- ★★★★ **Preset chips on a single line** — **built the wrong shape 2026-08-31; NOT done. Reopened as a bug the same day** — see
+  *The preset chips* under [Bugs](#bugs). What shipped shows one chip; the mockup ([major-redesign.md § 2.3](major-redesign.md)) has
+  **three side by side**. Keep the height gain, redo the layout. The paragraph below records what `fc1b245` actually did, and stands
+  only as the measurement baseline. The chip block went from 118px (three
   34px rows plus gaps — the single largest piece of the dock) to one 34px row; the dock went **245 → 161px** and the transcript's
   reading area **371 → 455px (+23%)**, measured live after deploy. What changed, per mode: **carousel** keeps its five-row history but
   the window is one row — the focused row is the visible row (`carouselTrackOffsetPx` is now `index × row`, viewport `max-height: 34px`),
