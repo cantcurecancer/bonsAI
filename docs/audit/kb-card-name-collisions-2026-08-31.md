@@ -117,3 +117,50 @@ maintainer judged it. The judgement stands on its own merits — no card answers
 measures nothing — but it is a **holdout** row, and retiring a holdout row after watching it
 fail is exactly the move that turns a ship gate into a mirror. It is therefore left in place
 here and flagged for a deliberate decision, not quietly deleted.
+
+---
+
+## Follow-up the same day: both fixes made, and the trial proved something sharper
+
+**1. State of Emergency rename.** `Rocket launcher enemies` → **`Late-round rocket enemies`**,
+matching the maintainer's own words (*"any late-round enemy with a rocket launcher"*). The clash
+with the `Rocket launcher` weapon card beside it is gone.
+
+**2. The comparison card exists, and it works.** Hades gained **`Weapon choice`** — not the old
+card restored, but a card doing the job the six per-weapon cards cannot: which one to start with
+and why. Asked *"which weapon is easiest"*, retrieval now returns:
+
+| Position | Card |
+|---|---|
+| 1 | **Weapon choice** |
+| 2 | Weapon aspects |
+| 3 | Shield of Chaos |
+
+**The right card is now first. The test still marks it wrong**, because the expected answer is
+recorded as `Stygian Blade`.
+
+**That single row is the clearest evidence yet for D40.** Retrieval returns the ideal answer to
+the question and scores zero, purely because the fixture allows one right answer and names a
+different one. No argument makes the case better than this does.
+
+**It has deliberately not been repointed.** The row sits on `tune`, so repointing would be
+allowed — but it was seen to fail first, and it is worth more as evidence than as a passing
+test. Whoever settles D40 should look at this row before anything else.
+
+### A second thing worth keeping
+
+`V2-S-RDR2-02` (*"horse keeps dying"*, Red Dead Redemption 2) **fixed itself.** It regressed when
+the corpus grew to 146 cards, and returned to first place at 147 — with no Red Dead card touched
+at any point. It was collateral from corpus-wide word weighting all along, exactly as suspected.
+
+**The lesson is about method, not Red Dead:** a single case moving at this corpus size is noise,
+and chasing one would have meant "fixing" something that was going to correct itself. Judge on
+the aggregate and on cases that fail *for a reason you can name*.
+
+### Aggregate effect of the two new cards
+
+Nothing moved. Tune keyword first-place 63.1% → 63.7%; the shipped `rrf` arm unchanged at 66.1%
+first / 89.9% top-three; holdout identical across all four arms. The cards fill a hole without
+costing anything measurable.
+
+Second run of the day: `kb-embed-bakeoff-2026-08-31b-arms.md`.

@@ -1286,6 +1286,16 @@
       "source_version": "seed-1.2"
     },
     {
+      "section_id": 149,
+      "game_id": 7,
+      "section_type": "mechanic",
+      "name": "Weapon choice",
+      "card": "Take the Stygian Blade first: it is the most forgiving of the six and asks the least of you. The Shield of Chaos is the next easiest, because holding block turns a mistake into nothing. Of the rest, the Eternal Spear is the safest, since its reach keeps you out of trouble. Leave the Twin Fists of Malphon until later — they are the fastest, but they need you standing inside everything. The Heart-Seeking Bow and the Adamant Rail both want range and punish standing still, and the Rail can leave you reloading at the worst possible moment.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": "seed-1.3"
+    },
+    {
       "section_id": 90,
       "game_id": 7,
       "section_type": "mechanic",
@@ -1749,7 +1759,7 @@
       "section_id": 136,
       "game_id": 6,
       "section_type": "enemy",
-      "name": "Rocket launcher enemies",
+      "name": "Late-round rocket enemies",
       "card": "Summary: Late in a round, enemies start showing up with rocket launchers. They are the most dangerous thing on screen and the usual reason a strong run ends.\nTips: Treat one as the priority target the moment it appears, ahead of whatever crowd you are already fighting.",
       "source_url": "",
       "source_license": "bonsAI-maintainer",
