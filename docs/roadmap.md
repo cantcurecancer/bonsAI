@@ -417,10 +417,17 @@ alphabetical order the rest of the Backlog uses.
   - **Goal:** The **Session context (N turns)** bar stops being its own row and lives inside the **Show details** disclosure, so a settled
     answer costs one collapsed control instead of two.
   - **Shape not decided — workshop before building.** Open questions in [roadmap-details.md](roadmap-details.md).
-- ★★★★ **Preset chips on a single line**
-  - **Goal:** The preset chip block collapses to one line and the difference goes to the transcript.
-  - **Mostly an animation job, not a layout one.** Fade, carousel, static and decode all have to be re-timed for the new shape, and the
-    carousel's translateY maths is written against the current row height. Budget for the animations.
+- ~~★★★★ **Preset chips on a single line**~~ — **SHIPPED and measured on-Deck 2026-08-31.** The chip block went from 118px (three
+  34px rows plus gaps — the single largest piece of the dock) to one 34px row; the dock went **245 → 161px** and the transcript's
+  reading area **371 → 455px (+23%)**, measured live after deploy. What changed, per mode: **carousel** keeps its five-row history but
+  the window is one row — the focused row is the visible row (`carouselTrackOffsetPx` is now `index × row`, viewport `max-height: 34px`),
+  and a D-pad step onto a clipped neighbour slides it into view; **fade / static / decode** went from three independent slots to one, with
+  fade re-timed 2000/1000 → 500/500ms because a single chip left the row blank for three seconds per cycle. Two behaviours the shrink would
+  have silently broken were fixed in the same change: the three contextual seeds now **queue through** the one slot instead of two of them
+  never appearing (`singleSlotRotation`), and a frozen QA batch walks in **round-robin** — the old "first entry not on screen" picker relied
+  on three chips being excluded and ping-ponged between the first two (`nextFrozenPresetAfter`). Free-play sweep run after deploy: 16
+  presses from the panel top through the transcript, both trailing rows, all four carousel history rows and the Ask bar, every stop
+  visible. Rows **PRESET-ONE-LINE-01a/b**.
 - ★★★★ **The tab icon bar collapses when it is not in use**
   - **Goal:** The tab strip stops holding full height while nobody is using it, while still answering *which tab am I on?* at a glance —
     the sketch on the table is a thin bar of dashes showing your position in the carousel. Interacting with it opens the fuller strip.

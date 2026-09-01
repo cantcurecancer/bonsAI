@@ -28,27 +28,30 @@ export function clampHistory(history: PresetPrompt[]): PresetPrompt[] {
   return history.slice(trim);
 }
 
-/** translateY offset so `focusIndex` row sits in the middle visible slot. */
+/**
+ * translateY offset that puts the `focusIndex` row in the ONE visible slot.
+ *
+ * The window used to be three rows with the focused one centred (`max(0, i - 1) * row`); since
+ * 2026-08-31 the chip row is a single line — the whole block went from 118px to one chip so the
+ * transcript could have the difference — so the focused row is the visible row.
+ */
 export function carouselTrackOffsetPx(focusIndex: number): number {
-  return Math.max(0, focusIndex - 1) * CAROUSEL_ROW_HEIGHT_PX;
+  return Math.max(0, focusIndex) * CAROUSEL_ROW_HEIGHT_PX;
 }
 
 /**
- * The three texts actually on screen, centred on `focusIndex` — the same window
- * `carouselTrackOffsetPx` scrolls to.
+ * The texts actually on screen — with a one-row window, the focused chip alone.
  *
  * Distinct from "every text in history" on purpose. History runs to CAROUSEL_HISTORY_MAX and the
- * window shows three of it, so a chip can be in history and off screen. Anything asking "is the
+ * window shows one of it, so a chip can be in history and off screen. Anything asking "is the
  * user currently seeing one of these?" must ask this, not the history set.
  */
 export function visibleWindowTexts(
   history: readonly PresetPrompt[],
   focusIndex: number,
 ): Set<string> {
-  return new Set(
-    [history[focusIndex - 1]?.text, history[focusIndex]?.text, history[focusIndex + 1]?.text]
-      .filter((t): t is string => Boolean(t)),
-  );
+  const text = history[focusIndex]?.text;
+  return new Set(text ? [text] : []);
 }
 
 export type CarouselAdvanceResult = {
@@ -123,8 +126,9 @@ export function mergeContextualSeeds(
   return { history: clamped, focusIndex: safeFocus };
 }
 
+/** Focus starts on the FIRST contextual seed: with one visible row there is no middle to centre. */
 export function buildInitialCarouselState(
   contextual: [PresetPrompt, PresetPrompt, PresetPrompt],
 ): { history: PresetPrompt[]; focusIndex: number } {
-  return { history: [...contextual], focusIndex: 1 };
+  return { history: [...contextual], focusIndex: 0 };
 }

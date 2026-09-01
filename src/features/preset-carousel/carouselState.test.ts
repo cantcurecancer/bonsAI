@@ -2,11 +2,13 @@ import { describe, expect, it } from "vitest";
 import type { PresetPrompt } from "../../data/presets";
 import {
   advanceCarouselFocus,
+  buildInitialCarouselState,
   CAROUSEL_HISTORY_MAX,
   CAROUSEL_ROW_HEIGHT_PX,
   carouselTrackOffsetPx,
   clampHistory,
   mergeContextualSeeds,
+  visibleWindowTexts,
 } from "./carouselState";
 
 function p(text: string): PresetPrompt {
@@ -14,11 +16,23 @@ function p(text: string): PresetPrompt {
 }
 
 describe("carouselState", () => {
-  it("carouselTrackOffsetPx centers focus row", () => {
+  /* One visible row since 2026-08-31: the focused row IS the window, so each index is one row
+     further down the track. (It used to centre the focus row in a three-row window.) */
+  it("carouselTrackOffsetPx puts the focused row in the single visible slot", () => {
     expect(carouselTrackOffsetPx(0)).toBe(0);
-    expect(carouselTrackOffsetPx(1)).toBe(0);
-    expect(carouselTrackOffsetPx(2)).toBe(CAROUSEL_ROW_HEIGHT_PX);
-    expect(carouselTrackOffsetPx(4)).toBe(3 * CAROUSEL_ROW_HEIGHT_PX);
+    expect(carouselTrackOffsetPx(1)).toBe(CAROUSEL_ROW_HEIGHT_PX);
+    expect(carouselTrackOffsetPx(2)).toBe(2 * CAROUSEL_ROW_HEIGHT_PX);
+    expect(carouselTrackOffsetPx(4)).toBe(4 * CAROUSEL_ROW_HEIGHT_PX);
+  });
+
+  it("visibleWindowTexts is the focused chip alone", () => {
+    const h = [p("a"), p("b"), p("c")];
+    expect([...visibleWindowTexts(h, 1)]).toEqual(["b"]);
+    expect([...visibleWindowTexts(h, 5)]).toEqual([]);
+  });
+
+  it("the carousel opens on the first contextual seed", () => {
+    expect(buildInitialCarouselState([p("a"), p("b"), p("c")]).focusIndex).toBe(0);
   });
 
   it("clampHistory trims to CAROUSEL_HISTORY_MAX", () => {

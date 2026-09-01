@@ -1,11 +1,13 @@
 /**
  * Title: Preset animated chips
- * Purpose: Fade or carousel preset prompt chips with running-game contextual seeding.
+ * Purpose: Fade, carousel, static or decode ONE preset prompt chip with running-game contextual seeding.
  * Used for: MainTabPresetRow when presetChipAnimation is fade, carousel, static, or decode.
- * Solves: Timed slot fades, carousel track motion, and Deck-focusable chip buttons in one module.
+ * Solves: Timed slot swaps, carousel track motion, and Deck-focusable chip buttons in one module,
+ *         on a single row — the block used to be three rows and was the largest piece of the
+ *         bottom dock (118px of 245px, measured 2026-08-31); the difference now goes to the transcript.
  * Does not: Persist selected presets or submit asks — parent setUnifiedInput handles composer text.
  */
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Button, Focusable } from "@decky/ui";
 import type { AskModeId } from "../data/askMode";
 import {
@@ -27,25 +29,37 @@ import {
   visibleWindowTexts,
 } from "../features/preset-carousel/carouselState";
 import { pickCarouselChipWithSessionRag } from "../features/preset-carousel/composePresetSeedsWithSessionRag";
+import {
+  nextSingleSlotPreset,
+  startSingleSlotRotation,
+  type SingleSlotRotation,
+} from "../features/preset-carousel/singleSlotRotation";
 import { BONSAI_FOREST_GREEN } from "../features/unified-input/constants";
 import { joinPresetWithRunningGame } from "../utils/joinPresetWithRunningGame";
 import { registerNavFocus, type NavRefHolder } from "../utils/navFocusRegistry";
 import { elementHasFocus } from "../utils/uiDocument";
 
+/*
+ * Re-timed for one row (2026-08-31). With three chips, a 2s fade-out and 1s fade-in on one of
+ * them cost nothing — the other two were still there. With one chip the same timings left the row
+ * blank for three seconds per cycle, so both halves are short and symmetric now.
+ */
 /** Fade-in duration (ms); must match the slot wrapper transition when opacity increases. */
-export const PRESET_CAROUSEL_FADE_IN_MS = 1000;
+export const PRESET_CAROUSEL_FADE_IN_MS = 500;
 /** Fade-out duration (ms); must match the slot wrapper transition when opacity decreases. */
-export const PRESET_CAROUSEL_FADE_OUT_MS = 2000;
+export const PRESET_CAROUSEL_FADE_OUT_MS = 500;
 /** Carousel schedules new preset cycles for this long after mount/re-seed; in-flight fades still complete, then no more swaps until remount. */
 export const PRESET_CAROUSEL_ACTIVE_MS = 60_000;
+/** Delay before the first prompt appears after mount / re-seed, so the row settles before it moves. */
+const PRESET_SLOT_FIRST_DELAY_MS = 750;
 
 /** Milliseconds between locked characters in decode mode (must feel close to live answer streaming). */
 export const PRESET_DECODE_CHAR_MS = 42;
 /**
  * How often the still-churning glyphs reshuffle, ms. Throttled well below frame rate on purpose:
- * the reveal loop runs one shared `requestAnimationFrame` per tick across all three slots, but
- * only writes to the DOM on this cadence (or on a lock advance / caret blink) so a churning chip
- * does not repaint three times per 16ms frame on Deck hardware.
+ * the reveal loop runs one `requestAnimationFrame` per tick but only writes to the DOM on this
+ * cadence (or on a lock advance / caret blink) so a churning chip does not repaint every 16ms
+ * frame on Deck hardware.
  */
 const PRESET_DECODE_CHURN_REFRESH_MS = 55;
 /** Caret blink period, ms. */
@@ -94,8 +108,8 @@ export function composeDecodeText(
   return prefix + boundaryChar + tail;
 }
 
-/** Per-slot decode animation state, owned by the reveal effect's closure — never React state, so a
- *  lock advance or churn refresh never triggers a re-render. See `MainTabPresetDecodeSlots`. */
+/** Decode animation state, owned by the reveal effect's closure — never React state, so a lock
+ *  advance or churn refresh never triggers a re-render. See `MainTabPresetDecodeSlot`. */
 type DecodeSlotAnim = {
   prompt: PresetPrompt;
   /** `performance.now()` when this prompt's reveal began. */
@@ -111,15 +125,10 @@ type DecodeSlotAnim = {
 
 type SlotFade = { opacity: number; transitionMs: number };
 
-const initialSlotFade = (): [SlotFade, SlotFade, SlotFade] => [
-  { opacity: 0, transitionMs: PRESET_CAROUSEL_FADE_IN_MS },
-  { opacity: 0, transitionMs: PRESET_CAROUSEL_FADE_IN_MS },
-  { opacity: 0, transitionMs: PRESET_CAROUSEL_FADE_IN_MS },
-];
-
-/** Stagger first fade-in start per slot so chips animate at different times. */
-const PRESET_SLOT_STAGGER_MS: readonly [number, number, number] = [750, 1300, 1700];
-
+/**
+ * Three contextual seeds still arrive from upstream (and a frozen QA batch is applied at count
+ * 3), even though one chip shows at a time — the single-slot rotation queues the rest.
+ */
 function normalizeThreeSeeds(
   seeds: PresetPrompt[],
   samplerOptions?: PresetSamplerOptions,
@@ -138,9 +147,9 @@ export type MainTabPresetAnimatedChipsProps = {
   /** When upstream presets change (e.g. after ask), carousel re-seeds from this list. */
   seeds: PresetPrompt[];
   setUnifiedInput: React.Dispatch<React.SetStateAction<string>>;
-  /** When false, chips stay fully opaque and prompts rotate after hold without opacity transitions. */
+  /** When false, the chip stays fully opaque and prompts rotate after hold without opacity transitions. */
   fadeAnimationEnabled?: boolean;
-  /** fade = opacity crossfade; carousel = vertical stack with middle focus; static = no opacity animation; decode = Ghost in the Shell scramble-to-resolve reveal. */
+  /** fade = opacity crossfade; carousel = vertical stack with one visible row; static = no opacity animation; decode = Ghost in the Shell scramble-to-resolve reveal. */
   animationMode?: PresetChipAnimationMode;
   /** If a preset declares `preferAskMode`, apply it when the chip is chosen. */
   onPreferAskMode?: (mode: AskModeId) => void;
@@ -149,6 +158,60 @@ export type MainTabPresetAnimatedChipsProps = {
   /** When true, KB-advice static seeds are excluded from timer-driven re-samples. */
   useLocalKnowledgeBase?: boolean;
 };
+
+function PresetChipLabel({ p }: { p: PresetPrompt }) {
+  return (
+    <span className="bonsai-preset-chip-label">
+      {p.testChip ? (
+        <span
+          className="bonsai-preset-chip-test-badge"
+          style={{
+            marginRight: 6,
+            fontSize: 9,
+            letterSpacing: "0.06em",
+            textTransform: "uppercase",
+            fontWeight: 700,
+            // Deliberately not the accent colour the Tip badge uses. A frozen batch is a QA
+            // state, and it has to be obvious at a glance that the carousel is not showing what
+            // the plugin would have chosen.
+            color: "#f0b232",
+          }}
+        >
+          Test
+        </span>
+      ) : null}
+      {p.ragTip ? (
+        <span
+          className="bonsai-preset-chip-tip-badge"
+          style={{
+            marginRight: 6,
+            fontSize: 9,
+            letterSpacing: "0.06em",
+            textTransform: "uppercase",
+            fontWeight: 700,
+            color: `var(--bonsai-ui-accent-main, ${BONSAI_FOREST_GREEN})`,
+          }}
+        >
+          Tip
+        </span>
+      ) : null}
+      {p.text}
+      {p.beta ? (
+        <span
+          style={{
+            marginLeft: 6,
+            fontSize: 10,
+            fontStyle: "italic",
+            color: `var(--bonsai-ui-accent-main, ${BONSAI_FOREST_GREEN})`,
+            fontWeight: 600,
+          }}
+        >
+          [beta]
+        </span>
+      ) : null}
+    </span>
+  );
+}
 
 function PresetChipButton(props: {
   preset: PresetPrompt;
@@ -178,55 +241,7 @@ function PresetChipButton(props: {
         transition: "opacity 420ms ease, transform 420ms ease, color 420ms ease",
       }}
     >
-      <span className="bonsai-preset-chip-label">
-        {p.testChip ? (
-          <span
-            className="bonsai-preset-chip-test-badge"
-            style={{
-              marginRight: 6,
-              fontSize: 9,
-              letterSpacing: "0.06em",
-              textTransform: "uppercase",
-              fontWeight: 700,
-              // Deliberately not the accent colour the Tip badge uses. A frozen batch is a QA
-              // state, and it has to be obvious at a glance that the carousel is not showing what
-              // the plugin would have chosen.
-              color: "#f0b232",
-            }}
-          >
-            Test
-          </span>
-        ) : null}
-        {p.ragTip ? (
-          <span
-            className="bonsai-preset-chip-tip-badge"
-            style={{
-              marginRight: 6,
-              fontSize: 9,
-              letterSpacing: "0.06em",
-              textTransform: "uppercase",
-              fontWeight: 700,
-              color: `var(--bonsai-ui-accent-main, ${BONSAI_FOREST_GREEN})`,
-            }}
-          >
-            Tip
-          </span>
-        ) : null}
-        {p.text}
-        {p.beta ? (
-          <span
-            style={{
-              marginLeft: 6,
-              fontSize: 10,
-              fontStyle: "italic",
-              color: `var(--bonsai-ui-accent-main, ${BONSAI_FOREST_GREEN})`,
-              fontWeight: 600,
-            }}
-          >
-            [beta]
-          </span>
-        ) : null}
-      </span>
+      <PresetChipLabel p={p} />
     </Button>
   );
 }
@@ -238,10 +253,10 @@ function prefersReducedMotion(): boolean {
 
 /**
  * The label's text is owned by the reveal effect below, written straight to this span's
- * `textContent` via `setLabelRef` \u2014 never through React state. The JSX child here is only what
- * paints during a slot's stagger delay, before its first `beginSlot` call; every frame after that
- * (the initial scramble included, since `beginSlot` also writes on start) bypasses React entirely,
- * which is the point of the rewrite (see the module header comment on frame cost).
+ * `textContent` via `setLabelRef` — never through React state. The JSX child here is only what
+ * paints during the first delay, before the first `begin` call; every frame after that (the
+ * initial scramble included, since `begin` also writes on start) bypasses React entirely, which
+ * is the point of the rewrite (see the module header comment on frame cost).
  */
 function DecodePresetChipButton(props: {
   preset: PresetPrompt;
@@ -255,7 +270,7 @@ function DecodePresetChipButton(props: {
       className="bonsai-preset-glass bonsai-preset-glass--decode"
       focusable
       onClick={() => {
-        // Always the real prompt, never whatever is mid-churn on screen \u2014 the text is known from
+        // Always the real prompt, never whatever is mid-churn on screen — the text is known from
         // frame 0, so there is no "partial" to accidentally submit.
         setUnifiedInput(joinPresetWithRunningGame(p.text));
         if (p.preferAskMode && onPreferAskMode) {
@@ -269,7 +284,7 @@ function DecodePresetChipButton(props: {
       }}
     >
       <span className="bonsai-preset-chip-label">
-        <span ref={setLabelRef}>{"\u00a0"}</span>
+        <span ref={setLabelRef}>{" "}</span>
         {p.beta ? (
           <span
             style={{
@@ -289,20 +304,18 @@ function DecodePresetChipButton(props: {
 }
 
 /**
- * Ghost in the Shell title-sequence reveal: each chip arrives as a full-width block of scrambled
+ * Ghost in the Shell title-sequence reveal: the chip arrives as a full-width block of scrambled
  * glyphs (reserving the prompt's final character width from frame 0, so the chip never reflows)
  * that lock into the real prompt left to right behind a blinking block caret, then hold and move
- * to the next prompt. Replaces the old per-character typewriter (`stream` mode) \u2014 see the module
- * header on `PresetChipAnimationMode` and CLAUDE.md's chip-decode notes for why this is a rewrite
- * of this one function rather than new plumbing.
+ * to the next prompt.
  *
- * Per-slot animation state lives in a plain object inside the effect closure (`DecodeSlotAnim`),
- * not React state, and a single shared `requestAnimationFrame` loop drives all three slots,
- * writing straight to each label's `textContent` through a ref. `slots` React state still exists,
- * but only changes once per prompt cycle (when a new prompt begins) \u2014 that's the frequency a
- * Button's onClick closure and beta badge need, not per-frame.
+ * Animation state lives in a plain object inside the effect closure (`DecodeSlotAnim`), not React
+ * state, and a `requestAnimationFrame` loop writes straight to the label's `textContent` through
+ * a ref. `slot` React state still exists, but only changes once per prompt cycle (when a new
+ * prompt begins) — that's the frequency a Button's onClick closure and beta badge need, not
+ * per-frame.
  */
-function MainTabPresetDecodeSlots(
+function MainTabPresetDecodeSlot(
   props: Omit<MainTabPresetAnimatedChipsProps, "fadeAnimationEnabled" | "animationMode">,
 ) {
   const { seeds, setUnifiedInput, onPreferAskMode, useLocalKnowledgeBase = false } = props;
@@ -310,47 +323,28 @@ function MainTabPresetDecodeSlots(
   const seedsKey = seedsKeyFrom(seeds);
   const reducedMotion = prefersReducedMotion();
 
-  const [slots, setSlots] = useState<[PresetPrompt, PresetPrompt, PresetPrompt]>(() =>
-    normalizeThreeSeeds(seeds, samplerOptions),
-  );
-  const slotsRef = useRef(slots);
-  slotsRef.current = slots;
+  const [slot, setSlot] = useState<PresetPrompt>(() => normalizeThreeSeeds(seeds, samplerOptions)[0]);
 
-  const labelRefs = useRef<[HTMLSpanElement | null, HTMLSpanElement | null, HTMLSpanElement | null]>([
-    null,
-    null,
-    null,
-  ]);
-  /** Stable per-slot ref callbacks \u2014 an inline arrow per render would churn ref identity and
-   *  briefly null the target between renders for no reason (`slots` only updates once a cycle). */
-  const labelRefSetters = useMemo(
-    () =>
-      [
-        (el: HTMLSpanElement | null) => {
-          labelRefs.current[0] = el;
-        },
-        (el: HTMLSpanElement | null) => {
-          labelRefs.current[1] = el;
-        },
-        (el: HTMLSpanElement | null) => {
-          labelRefs.current[2] = el;
-        },
-      ] as const,
-    [],
-  );
+  const labelRef = useRef<HTMLSpanElement | null>(null);
+  const setLabelRef = useCallback((el: HTMLSpanElement | null) => {
+    labelRef.current = el;
+  }, []);
 
   useEffect(() => {
     const initial = normalizeThreeSeeds(seeds, samplerOptions);
-    setSlots(initial);
-    slotsRef.current = initial;
+    const started = startSingleSlotRotation(initial);
+    let rotation: SingleSlotRotation = started.rotation;
+    const first = started.first ?? initial[0];
+    setSlot(first);
 
     const sessionEnd = performance.now() + PRESET_CAROUSEL_ACTIVE_MS;
     let cancelled = false;
     const mayStartNextCycle = (): boolean => !cancelled && performance.now() < sessionEnd;
 
-    const pickNextForSlot = (slotIndex: number, current: PresetPrompt): PresetPrompt => {
-      const otherTexts = slotsRef.current.filter((_, j) => j !== slotIndex).map((s) => s.text);
-      return getRandomPresetExcluding(new Set([...otherTexts, current.text]), samplerOptions);
+    const pickNext = (current: PresetPrompt): PresetPrompt => {
+      const step = nextSingleSlotPreset(current, rotation, samplerOptions);
+      rotation = step.rotation;
+      return step.next;
     };
 
     const timeouts: number[] = [];
@@ -362,75 +356,49 @@ function MainTabPresetDecodeSlots(
       timeouts.push(id);
     };
 
-    // prefers-reduced-motion: reduce \u2014 swap the text in instantly, no churn, no caret blink.
-    // Each slot still keeps its own stagger before its first appearance (flavor shared with every
-    // other mode, not part of the "churn" the rule is about); every swap after that is instant.
+    // prefers-reduced-motion: reduce — swap the text in instantly, no churn, no caret blink.
     if (reducedMotion) {
-      const beginReducedSlot = (slotIndex: 0 | 1 | 2, prompt: PresetPrompt) => {
-        slotsRef.current = [...slotsRef.current];
-        slotsRef.current[slotIndex] = prompt;
-        setSlots([slotsRef.current[0]!, slotsRef.current[1]!, slotsRef.current[2]!]);
-        const el = labelRefs.current[slotIndex];
-        if (el) el.textContent = prompt.text;
-      };
-
-      const runReducedSlot = (slotIndex: 0 | 1 | 2, prompt: PresetPrompt, firstDelay: number) => {
+      const runReduced = (prompt: PresetPrompt, firstDelay: number) => {
         pushTimeout(() => {
-          beginReducedSlot(slotIndex, prompt);
+          setSlot(prompt);
+          if (labelRef.current) labelRef.current.textContent = prompt.text;
           pushTimeout(() => {
             if (!mayStartNextCycle()) return;
-            const nextPrompt = pickNextForSlot(slotIndex, prompt);
-            runReducedSlot(slotIndex, nextPrompt, 0);
+            runReduced(pickNext(prompt), 0);
           }, holdMsForPresetText(prompt.text));
         }, firstDelay);
       };
-
-      runReducedSlot(0, initial[0]!, PRESET_SLOT_STAGGER_MS[0]);
-      runReducedSlot(1, initial[1]!, PRESET_SLOT_STAGGER_MS[1]);
-      runReducedSlot(2, initial[2]!, PRESET_SLOT_STAGGER_MS[2]);
-
+      runReduced(first, PRESET_SLOT_FIRST_DELAY_MS);
       return () => {
         cancelled = true;
         timeouts.forEach((id) => window.clearTimeout(id));
       };
     }
 
-    // Full decode path. One shared rAF loop drives all three slots; DOM writes are throttled to
-    // a lock advance, a churn refresh, or a caret blink \u2014 not every frame. See the module header.
-    const state: [DecodeSlotAnim | null, DecodeSlotAnim | null, DecodeSlotAnim | null] = [null, null, null];
+    // Full decode path. DOM writes are throttled to a lock advance, a churn refresh, or a caret
+    // blink — not every frame. See the module header.
+    let anim: DecodeSlotAnim | null = null;
     let rafId = 0;
     let lastChurnRefresh = 0;
     let lastBlinkToggle = 0;
     let caretOn = true;
 
-    const beginSlot = (slotIndex: 0 | 1 | 2, prompt: PresetPrompt, now: number) => {
+    const begin = (prompt: PresetPrompt, now: number) => {
       const churn = makeDecodeChurn(prompt.text.length);
-      state[slotIndex] = {
-        prompt,
-        startAt: now,
-        churn,
-        lastRevealedCount: -1,
-        resolved: false,
-        holdEndAt: 0,
-      };
-      slotsRef.current = [...slotsRef.current];
-      slotsRef.current[slotIndex] = prompt;
-      setSlots([slotsRef.current[0]!, slotsRef.current[1]!, slotsRef.current[2]!]);
-      // Frame 0: the label is already mounted (every chip renders at t=0; only its first
-      // `beginSlot` call is staggered), so paint the full-length scramble immediately rather than
-      // waiting for the next rAF tick.
-      const el = labelRefs.current[slotIndex];
-      if (el) el.textContent = composeDecodeText(prompt.text, 0, churn, true);
+      anim = { prompt, startAt: now, churn, lastRevealedCount: -1, resolved: false, holdEndAt: 0 };
+      setSlot(prompt);
+      // Frame 0: the label is already mounted (the chip renders at t=0; only its first `begin`
+      // call is delayed), so paint the full-length scramble immediately rather than waiting for
+      // the next rAF tick.
+      if (labelRef.current) labelRef.current.textContent = composeDecodeText(prompt.text, 0, churn, true);
     };
 
-    const processSlot = (slotIndex: 0 | 1 | 2, now: number, churnDue: boolean, blinkDue: boolean) => {
-      const anim = state[slotIndex];
+    const process = (now: number, churnDue: boolean, blinkDue: boolean) => {
       if (!anim) return;
 
       if (anim.resolved) {
         if (now >= anim.holdEndAt && mayStartNextCycle()) {
-          const nextPrompt = pickNextForSlot(slotIndex, anim.prompt);
-          beginSlot(slotIndex, nextPrompt, now);
+          begin(pickNext(anim.prompt), now);
         }
         return;
       }
@@ -442,8 +410,7 @@ function MainTabPresetDecodeSlots(
       if (revealedCount >= text.length) {
         anim.resolved = true;
         anim.holdEndAt = now + holdMsForPresetText(text);
-        const el = labelRefs.current[slotIndex];
-        if (el) el.textContent = text;
+        if (labelRef.current) labelRef.current.textContent = text;
         return;
       }
 
@@ -452,8 +419,9 @@ function MainTabPresetDecodeSlots(
       }
       if (revealedCount !== anim.lastRevealedCount || churnDue || blinkDue) {
         anim.lastRevealedCount = revealedCount;
-        const el = labelRefs.current[slotIndex];
-        if (el) el.textContent = composeDecodeText(text, revealedCount, anim.churn, caretOn);
+        if (labelRef.current) {
+          labelRef.current.textContent = composeDecodeText(text, revealedCount, anim.churn, caretOn);
+        }
       }
     };
 
@@ -465,16 +433,12 @@ function MainTabPresetDecodeSlots(
         caretOn = !caretOn;
         lastBlinkToggle = now;
       }
-      processSlot(0, now, churnDue, blinkDue);
-      processSlot(1, now, churnDue, blinkDue);
-      processSlot(2, now, churnDue, blinkDue);
+      process(now, churnDue, blinkDue);
       if (churnDue) lastChurnRefresh = now;
       rafId = window.requestAnimationFrame(tick);
     };
 
-    pushTimeout(() => beginSlot(0, initial[0]!, performance.now()), PRESET_SLOT_STAGGER_MS[0]);
-    pushTimeout(() => beginSlot(1, initial[1]!, performance.now()), PRESET_SLOT_STAGGER_MS[1]);
-    pushTimeout(() => beginSlot(2, initial[2]!, performance.now()), PRESET_SLOT_STAGGER_MS[2]);
+    pushTimeout(() => begin(first, performance.now()), PRESET_SLOT_FIRST_DELAY_MS);
     rafId = window.requestAnimationFrame(tick);
 
     return () => {
@@ -485,22 +449,14 @@ function MainTabPresetDecodeSlots(
   }, [seedsKey, seeds, reducedMotion, useLocalKnowledgeBase]);
 
   return (
-    <>
-      {slots.map((p, i) => (
-        <div
-          key={`preset-decode-slot-${i}`}
-          className="bonsai-preset-carousel-slot"
-          data-bonsai-preset-visible="true"
-        >
-          <DecodePresetChipButton
-            preset={p}
-            setLabelRef={labelRefSetters[i]!}
-            setUnifiedInput={setUnifiedInput}
-            onPreferAskMode={onPreferAskMode}
-          />
-        </div>
-      ))}
-    </>
+    <div className="bonsai-preset-carousel-slot" data-bonsai-preset-visible="true">
+      <DecodePresetChipButton
+        preset={slot}
+        setLabelRef={setLabelRef}
+        setUnifiedInput={setUnifiedInput}
+        onPreferAskMode={onPreferAskMode}
+      />
+    </div>
   );
 }
 
@@ -586,9 +542,12 @@ function MainTabPresetVerticalCarousel(
   /**
    * Focus model: the Steam DOM focus (white ring) is the single source of truth. Every chip is
    * focusable; D-pad moves between them natively, and each chip's onFocus syncs `focusIndex`
-   * (blue highlight + track centering) to itself. The previous design moved `focusIndex` via
+   * (blue highlight + track position) to itself. The previous design moved `focusIndex` via
    * parent onMoveUp/onMoveDown without moving DOM focus, which left the white ring one row
    * behind the blue row — the "two outlines, the white one actually selects" confusion.
+   *
+   * With one visible row (2026-08-31) the rows above and below are clipped but still focusable,
+   * so a D-pad step lands on a hidden chip and the track slides it into the window.
    */
   const onChipFocus = useCallback(
     (i: number) => {
@@ -647,16 +606,11 @@ function MainTabPresetVerticalCarousel(
 }
 
 /**
- * Three preset suggestion chips with independent fade in/out cycles.
- * Hold time after each fade-in scales with prompt length; fade durations are fixed.
- * After `PRESET_CAROUSEL_ACTIVE_MS` no new cycles start; any fade already in progress runs to completion, then the carousel rests until remount.
+ * One preset suggestion chip that fades out, swaps and fades back in — or, in static mode, just
+ * swaps. Hold time after each appearance scales with prompt length; fade durations are fixed.
+ * After `PRESET_CAROUSEL_ACTIVE_MS` no new cycles start; any fade already in progress runs to
+ * completion, then the chip rests until remount.
  */
-const staticSlotFade = (): [SlotFade, SlotFade, SlotFade] => [
-  { opacity: 1, transitionMs: 0 },
-  { opacity: 1, transitionMs: 0 },
-  { opacity: 1, transitionMs: 0 },
-];
-
 function MainTabPresetAnimatedChipsInner(props: MainTabPresetAnimatedChipsProps) {
   const {
     seeds,
@@ -681,7 +635,7 @@ function MainTabPresetAnimatedChipsInner(props: MainTabPresetAnimatedChipsProps)
   }
   if (animationMode === "decode") {
     return (
-      <MainTabPresetDecodeSlots
+      <MainTabPresetDecodeSlot
         seeds={seeds}
         setUnifiedInput={setUnifiedInput}
         onPreferAskMode={onPreferAskMode}
@@ -693,17 +647,17 @@ function MainTabPresetAnimatedChipsInner(props: MainTabPresetAnimatedChipsProps)
   const staticMode = animationMode === "static" || !fadeAnimationEnabled;
   const seedsKey = seedsKeyFrom(seeds);
 
-  const [slots, setSlots] = useState<[PresetPrompt, PresetPrompt, PresetPrompt]>(() =>
-    normalizeThreeSeeds(seeds, samplerOptions),
+  const [slot, setSlot] = useState<PresetPrompt>(() => normalizeThreeSeeds(seeds, samplerOptions)[0]);
+  const [slotFade, setSlotFade] = useState<SlotFade>(() =>
+    staticMode ? { opacity: 1, transitionMs: 0 } : { opacity: 0, transitionMs: PRESET_CAROUSEL_FADE_IN_MS },
   );
-  const [slotFade, setSlotFade] = useState<[SlotFade, SlotFade, SlotFade]>(initialSlotFade);
-  const slotsRef = useRef(slots);
-  slotsRef.current = slots;
 
   useEffect(() => {
     const initial = normalizeThreeSeeds(seeds, samplerOptions);
-    setSlots(initial);
-    slotsRef.current = initial;
+    const started = startSingleSlotRotation(initial);
+    let rotation: SingleSlotRotation = started.rotation;
+    const first = started.first ?? initial[0];
+    setSlot(first);
 
     const sessionEnd = performance.now() + PRESET_CAROUSEL_ACTIVE_MS;
     const timeouts: number[] = [];
@@ -720,85 +674,50 @@ function MainTabPresetAnimatedChipsInner(props: MainTabPresetAnimatedChipsProps)
       timeouts.push(id);
     };
 
-    const pickNextForSlot = (slotIndex: number, current: PresetPrompt): PresetPrompt => {
-      const otherTexts = slotsRef.current.filter((_, j) => j !== slotIndex).map((s) => s.text);
-      return getRandomPresetExcluding(new Set([...otherTexts, current.text]), samplerOptions);
+    const pickNext = (current: PresetPrompt): PresetPrompt => {
+      const step = nextSingleSlotPreset(current, rotation, samplerOptions);
+      rotation = step.rotation;
+      return step.next;
     };
 
     if (staticMode) {
-      setSlotFade(staticSlotFade());
-      const runSlotStatic = (slotIndex: 0 | 1 | 2) => {
-        const loop = (prompt: PresetPrompt) => {
-          const hold = holdMsForPresetText(prompt.text);
-          pushTimeout(() => {
-            if (!mayStartNextCycle()) return;
-            const nextPrompt = pickNextForSlot(slotIndex, prompt);
-            slotsRef.current = [...slotsRef.current];
-            slotsRef.current[slotIndex] = nextPrompt;
-            setSlots([slotsRef.current[0]!, slotsRef.current[1]!, slotsRef.current[2]!]);
-            loop(nextPrompt);
-          }, hold);
-        };
-        loop(initial[slotIndex]!);
+      setSlotFade({ opacity: 1, transitionMs: 0 });
+      const loop = (prompt: PresetPrompt) => {
+        pushTimeout(() => {
+          if (!mayStartNextCycle()) return;
+          const next = pickNext(prompt);
+          setSlot(next);
+          loop(next);
+        }, holdMsForPresetText(prompt.text));
       };
-      runSlotStatic(0);
-      runSlotStatic(1);
-      runSlotStatic(2);
+      loop(first);
       return () => {
         cancelled = true;
         timeouts.forEach((id) => window.clearTimeout(id));
       };
     }
 
-    setSlotFade(initialSlotFade());
+    const loop = (prompt: PresetPrompt, firstDelay: number) => {
+      setSlot(prompt);
+      setSlotFade({ opacity: 0, transitionMs: PRESET_CAROUSEL_FADE_OUT_MS });
 
-    const runSlot = (slotIndex: 0 | 1 | 2) => {
-      const stagger = PRESET_SLOT_STAGGER_MS[slotIndex];
-
-      const loop = (prompt: PresetPrompt, firstStagger: number) => {
-        slotsRef.current = [...slotsRef.current];
-        slotsRef.current[slotIndex] = prompt;
-        setSlots([slotsRef.current[0]!, slotsRef.current[1]!, slotsRef.current[2]!]);
-
-        setSlotFade((prev) => {
-          const next = [...prev] as [SlotFade, SlotFade, SlotFade];
-          next[slotIndex] = { opacity: 0, transitionMs: PRESET_CAROUSEL_FADE_OUT_MS };
-          return next;
-        });
+      pushTimeout(() => {
+        setSlotFade({ opacity: 1, transitionMs: PRESET_CAROUSEL_FADE_IN_MS });
 
         pushTimeout(() => {
-          setSlotFade((prev) => {
-            const next = [...prev] as [SlotFade, SlotFade, SlotFade];
-            next[slotIndex] = { opacity: 1, transitionMs: PRESET_CAROUSEL_FADE_IN_MS };
-            return next;
-          });
-
           pushTimeout(() => {
-            const hold = holdMsForPresetText(prompt.text);
+            setSlotFade({ opacity: 0, transitionMs: PRESET_CAROUSEL_FADE_OUT_MS });
 
             pushTimeout(() => {
-              setSlotFade((prev) => {
-                const next = [...prev] as [SlotFade, SlotFade, SlotFade];
-                next[slotIndex] = { opacity: 0, transitionMs: PRESET_CAROUSEL_FADE_OUT_MS };
-                return next;
-              });
-
-              pushTimeout(() => {
-                if (!mayStartNextCycle()) return;
-                const nextPrompt = pickNextForSlot(slotIndex, prompt);
-                loop(nextPrompt, 0);
-              }, PRESET_CAROUSEL_FADE_OUT_MS);
-            }, hold);
-          }, PRESET_CAROUSEL_FADE_IN_MS);
-        }, firstStagger);
-      };
-
-      loop(initial[slotIndex]!, stagger);
+              if (!mayStartNextCycle()) return;
+              loop(pickNext(prompt), 0);
+            }, PRESET_CAROUSEL_FADE_OUT_MS);
+          }, holdMsForPresetText(prompt.text));
+        }, PRESET_CAROUSEL_FADE_IN_MS);
+      }, firstDelay);
     };
 
-    runSlot(0);
-    runSlot(1);
-    runSlot(2);
+    loop(first, PRESET_SLOT_FIRST_DELAY_MS);
 
     return () => {
       cancelled = true;
@@ -806,92 +725,36 @@ function MainTabPresetAnimatedChipsInner(props: MainTabPresetAnimatedChipsProps)
     };
   }, [seedsKey, seeds, staticMode, useLocalKnowledgeBase]);
 
+  const presetInteractive = staticMode || slotFade.opacity > 0;
   return (
-    <>
-      {slots.map((p, i) => {
-        const slotOpacity = slotFade[i]?.opacity ?? 0;
-        const presetInteractive = staticMode || slotOpacity > 0;
-        return (
-          <div
-            key={`preset-slot-${i}`}
-            className="bonsai-preset-carousel-slot"
-            data-bonsai-preset-visible={presetInteractive ? "true" : "false"}
-            style={{
-              opacity: slotOpacity,
-              transition: `opacity ${slotFade[i]?.transitionMs ?? PRESET_CAROUSEL_FADE_IN_MS}ms ease-in-out`,
-            }}
-          >
-            <Button
-              key={`${i}-${p.text}`}
-              className="bonsai-preset-glass"
-              focusable={presetInteractive}
-              onClick={() => {
-                setUnifiedInput(joinPresetWithRunningGame(p.text));
-                if (p.preferAskMode && onPreferAskMode) {
-                  onPreferAskMode(p.preferAskMode);
-                }
-              }}
-              style={{
-                width: "100%",
-                minHeight: 34,
-                fontSize: 12,
-                color: "#c4d3e2",
-              }}
-            >
-              <span className="bonsai-preset-chip-label">
-            {p.testChip ? (
-          <span
-            className="bonsai-preset-chip-test-badge"
-            style={{
-              marginRight: 6,
-              fontSize: 9,
-              letterSpacing: "0.06em",
-              textTransform: "uppercase",
-              fontWeight: 700,
-              // Deliberately not the accent colour the Tip badge uses. A frozen batch is a QA
-              // state, and it has to be obvious at a glance that the carousel is not showing what
-              // the plugin would have chosen.
-              color: "#f0b232",
-            }}
-          >
-            Test
-          </span>
-        ) : null}
-        {p.ragTip ? (
-              <span
-                className="bonsai-preset-chip-tip-badge"
-                style={{
-                  marginRight: 6,
-                  fontSize: 9,
-                  letterSpacing: "0.06em",
-                  textTransform: "uppercase",
-                  fontWeight: 700,
-                  color: `var(--bonsai-ui-accent-main, ${BONSAI_FOREST_GREEN})`,
-                }}
-              >
-                Tip
-              </span>
-            ) : null}
-                {p.text}
-                {p.beta && (
-                  <span
-                    style={{
-                      marginLeft: 6,
-                      fontSize: 10,
-                      fontStyle: "italic",
-                      color: `var(--bonsai-ui-accent-main, ${BONSAI_FOREST_GREEN})`,
-                      fontWeight: 600,
-                    }}
-                  >
-                    [beta]
-                  </span>
-                )}
-              </span>
-            </Button>
-          </div>
-        );
-      })}
-    </>
+    <div
+      className="bonsai-preset-carousel-slot"
+      data-bonsai-preset-visible={presetInteractive ? "true" : "false"}
+      style={{
+        opacity: slotFade.opacity,
+        transition: `opacity ${slotFade.transitionMs}ms ease-in-out`,
+      }}
+    >
+      <Button
+        key={slot.text}
+        className="bonsai-preset-glass"
+        focusable={presetInteractive}
+        onClick={() => {
+          setUnifiedInput(joinPresetWithRunningGame(slot.text));
+          if (slot.preferAskMode && onPreferAskMode) {
+            onPreferAskMode(slot.preferAskMode);
+          }
+        }}
+        style={{
+          width: "100%",
+          minHeight: 34,
+          fontSize: 12,
+          color: "#c4d3e2",
+        }}
+      >
+        <PresetChipLabel p={slot} />
+      </Button>
+    </div>
   );
 }
 

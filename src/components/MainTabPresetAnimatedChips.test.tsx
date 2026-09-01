@@ -76,10 +76,19 @@ describe("MainTabPresetAnimatedChips memo gate", () => {
     expect(screen.queryByText("alpha")).toBeTruthy();
   });
 
-  it("keeps decode-mode chips focusable while glyphs are still churning", () => {
+  it("keeps the decode-mode chip focusable while glyphs are still churning", () => {
     const { container } = renderChips({ animationMode: "decode" });
     const slots = container.querySelectorAll('[data-bonsai-preset-visible="true"]');
-    expect(slots).toHaveLength(3);
+    expect(slots).toHaveLength(1);
+  });
+
+  /* One chip on screen since 2026-08-31 (the row used to be three). */
+  it("renders exactly one chip in every single-slot mode", () => {
+    for (const mode of ["static", "fade", "decode"] as const) {
+      const { container, unmount } = renderChips({ animationMode: mode });
+      expect(container.querySelectorAll(".bonsai-preset-carousel-slot")).toHaveLength(1);
+      unmount();
+    }
   });
 
   it("every prop in the props type is compared by presetChipsPropsEqual", () => {
@@ -226,8 +235,8 @@ describe("MainTabPresetAnimatedChips decode mode", () => {
       );
 
       // The reduced-motion path only ever uses setTimeout (never requestAnimationFrame), so
-      // advancing fake timers past every slot's stagger delay is enough to settle all three —
-      // no rAF-timing ambiguity to worry about here.
+      // advancing fake timers past the slot's stagger delay is enough to settle it — no
+      // rAF-timing ambiguity to worry about here.
       act(() => {
         vi.advanceTimersByTime(2000);
       });
@@ -235,12 +244,9 @@ describe("MainTabPresetAnimatedChips decode mode", () => {
       const labels = Array.from(
         container.querySelectorAll(".bonsai-preset-glass--decode .bonsai-preset-chip-label > span"),
       );
-      expect(labels).toHaveLength(3);
-      const texts = labels.map((el) => el.textContent).sort();
-      expect(texts).toEqual(["alpha", "bravo", "charlie"]);
-      for (const text of texts) {
-        expect(text).not.toContain(PRESET_DECODE_CARET_CHAR);
-      }
+      expect(labels).toHaveLength(1);
+      expect(labels[0]?.textContent).toBe("alpha");
+      expect(labels[0]?.textContent).not.toContain(PRESET_DECODE_CARET_CHAR);
     } finally {
       vi.useRealTimers();
     }

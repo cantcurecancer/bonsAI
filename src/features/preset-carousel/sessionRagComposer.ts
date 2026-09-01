@@ -126,7 +126,7 @@ export function composeSessionPresets({
 export type PickNextCarouselChipArgs = {
   /** Every text in carousel history. A chip already here is never picked again. */
   historyTexts: ReadonlySet<string>;
-  /** The three texts on screen right now — see carouselState.visibleWindowTexts. */
+  /** The text(s) on screen right now — see carouselState.visibleWindowTexts. */
   visibleTexts: ReadonlySet<string>;
   ragCandidates: SessionRagChipCandidate[];
   /** What to show when no RAG chip is chosen; the caller binds this to getRandomPresetExcluding. */

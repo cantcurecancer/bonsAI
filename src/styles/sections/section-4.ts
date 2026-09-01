@@ -115,12 +115,19 @@ export function buildSection4Section(): string {
           width: 100% !important;
           min-width: 0 !important;
         }
+        /*
+          ONE chip row. The viewport used to be 118px (three 34px rows plus gaps) and it was the
+          single largest piece of the 245px dock — measured on device 2026-08-31, the dock covered
+          40% of a 616px pane. One row hands ~84px back to the transcript. The track still holds
+          the carousel's history; the rows above and below the focused one are simply clipped, and
+          carouselTrackOffsetPx slides the focused row into this window.
+        */
         .bonsai-scope .bonsai-preset-carousel-vertical {
           display: flex !important;
           flex-direction: column !important;
           width: 100% !important;
           min-width: 0 !important;
-          max-height: 118px !important;
+          max-height: 34px !important;
           overflow: hidden !important;
         }
         .bonsai-scope .bonsai-preset-carousel-track {

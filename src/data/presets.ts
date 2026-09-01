@@ -55,9 +55,9 @@ export const TEMP_PRESET_CAROUSEL_FROZEN = false;
  * threading a parameter through `getRandomPresets`, `getContextualPresets` and
  * `getRandomPresetExcluding` plus every caller, for a value that is global by nature.
  *
- * Fewer than three entries is treated as off — the carousel has three slots and a short freeze
- * would silently mix frozen and sampled chips, which is the one thing a deterministic QA run
- * cannot have.
+ * Fewer than three entries is treated as off — a short freeze would silently mix frozen and
+ * sampled chips, which is the one thing a deterministic QA run cannot have. (The threshold dates
+ * from the three-slot row; the row is one chip since 2026-08-31 and the rule stays as a floor.)
  */
 let runtimeFrozenChipTexts: readonly string[] = [];
 
@@ -77,9 +77,24 @@ export function frozenTestChipsActive(): boolean {
 }
 
 /**
- * Frozen chip texts in order. The carousel has three slots, so the first three fill it and
- * rotation walks the rest in order — list more than three to stage a whole QA batch in one
- * deploy. Each entry must match a `text` in `PRESET_PROMPTS`; an entry that matches nothing is
+ * The frozen entry after `currentText`, wrapping at the end; null when no batch is in force.
+ *
+ * The single-line chip row (2026-08-31) shows one prompt at a time, so "first frozen entry not
+ * on screen" — the rule `getRandomPresetExcluding` uses — would ping-pong between the first two
+ * entries and never reach the rest of a batch. Round-robin from the current entry walks the
+ * whole batch in order, which is what a staged QA run needs.
+ */
+export function nextFrozenPresetAfter(currentText: string): PresetPrompt | null {
+  const frozen = frozenPresets();
+  if (frozen.length < 3) return null;
+  const idx = frozen.findIndex((p) => p.text === currentText);
+  return frozen[(idx + 1) % frozen.length] ?? null;
+}
+
+/**
+ * Frozen chip texts in order. The chip row walks the batch in this order (one chip on screen at a
+ * time since 2026-08-31; carousel mode keeps up to five in its history) — list more than three
+ * to stage a whole QA batch in one deploy. Each entry must match a `text` in `PRESET_PROMPTS`; an entry that matches nothing is
  * skipped, and if fewer than three resolve the freeze falls back to random sampling.
  */
 export const TEMP_CAROUSEL_FROZEN_TEXTS: readonly string[] = [

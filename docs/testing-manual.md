@@ -108,7 +108,8 @@ BPM (Desktop → Big Picture → QAM → bonsAI). Ollama reachable.
 - [ ] Ollama → Test connection — success or stable unreachable (no traceback)
 - [ ] Short Ask; reply in focusable chunks; D-pad through chunks
 - [ ] **Show details** / context chips when available (see bug CONTEXT-LADDER)
-- [ ] Three preset chips visible
+- [ ] One preset chip visible, on a single row (the block was three rows until 2026-08-31 — three
+  visible chips is now a regression, not the target)
 
 ### SMOKE-C — Permission gate (P0)
 
@@ -184,9 +185,10 @@ suggestions → **decode**.
       whatever is on screen mid-churn)
 - [ ] After hold, chip clears and samples a new prompt
 - [ ] With OS **prefers-reduced-motion: reduce**, chips swap instantly (no scramble, no caret)
-- [ ] **Frame-rate feel:** with three chips churning at once, the QAM column does not stutter —
-      watch for dropped frames/jank on real Deck hardware specifically, since the desk can only
-      confirm the loop is throttled, not how it actually performs
+- [ ] **Frame-rate feel:** while the chip churns, the QAM column does not stutter — watch for
+      dropped frames/jank on real Deck hardware specifically, since the desk can only confirm the
+      loop is throttled, not how it actually performs (one chip since 2026-08-31; this used to
+      be three churning at once, so a regression here would be a surprise)
 
 ### SMOKE-F — Deterministic commands (P2)
 
@@ -398,6 +400,16 @@ everything below assumes it passes. Plan:
   the dock's top (scroll-margin 252px applied by the lift); on a short reply the lift correctly does nothing (29px naturally clear, no
   margin written). Worth one human pass on feel: the lift lands one frame after Steam's own focus scroll, so watch for any visible
   double-hop when stepping through a long answer.
+- [x] **PRESET-ONE-LINE-01a** (the row is one chip) The preset block is a single 34px row; the dock is ~161px and the transcript's
+  reading area ~455px — **PASS 2026-08-31, measured after deploy:** dock 245 → 161, chip viewport 118 → 34, reading area 371 → 455,
+  one slot visible with the carousel's other history rows clipped. Free-play sweep (QA-FREE-PLAY-01): 16 presses top to ASK, every
+  stop visible; Show details took focus 113px above the dock.
+- [ ] **PRESET-ONE-LINE-01b** (every mode still moves) Cycle Developer → preset chip animation through **carousel / fade / static /
+  decode** and watch one full swap in each: carousel slides the next row into the single window on its own within ~6s of opening
+  (the D-pad-driven slide was verified by bridge — four history rows stepped into view — but the TIMER-driven slide was not, because
+  the carousel only auto-advances for 60s after opening and the run had used that window); fade goes out/in in about half a second
+  each with no long blank; static swaps on hold; decode scrambles and locks one chip. Also confirm the three game-specific seeds all
+  appear in turn (they now queue through the one slot) and that a frozen QA batch walks in order past its third entry.
 
 
 ---
