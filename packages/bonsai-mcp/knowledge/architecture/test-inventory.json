@@ -36,6 +36,7 @@
     "src/features/plugin-shell/tabTitles.test.tsx",
     "src/features/preset-carousel/carouselState.test.ts",
     "src/features/preset-carousel/sessionRagComposer.test.ts",
+    "src/features/preset-carousel/singleSlotRotation.test.ts",
     "src/hooks/useBackgroundGameAi.test.ts",
     "src/hooks/useBonsaiAskOrchestration.test.ts",
     "src/hooks/useBonsaiPluginShell.test.ts",

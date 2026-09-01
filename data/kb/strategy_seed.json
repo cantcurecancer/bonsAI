@@ -939,6 +939,59 @@
       "crawled_at": "2026-06-18"
     },
     {
+      "section_id": 150,
+      "game_id": 8,
+      "section_type": "enemy",
+      "name": "Cyberpsychos",
+      "card": "Cyberpsychosis is what happens when someone takes on more chrome than they can carry: they stop identifying with people and start seeing them as weak and inferior. A cyberpsycho has the strength and speed all that hardware buys and no regard for their own life or anyone else's, which makes them dangerous out of proportion to where you meet them. There is no talking one down — Night City's answer is MaxTac, a police unit that exists to put them down with overwhelming force.",
+      "source_url": "https://cyberpunk.fandom.com/wiki/Cyberpsychosis",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-06-18"
+    },
+    {
+      "section_id": 151,
+      "game_id": 8,
+      "section_type": "mechanic",
+      "name": "Ripperdocs",
+      "card": "Ripperdocs are the technicians who install cyberware, somewhere between a surgeon, a techie and a tattoo artist. Most operate legally; some will fit illegal military-grade hardware for the right price. The cheap ones in Little China or out past Rancho Coronado will happily chip you a second-hand piece of junk with a virus thrown in free. Corporate rippers are free and spotless, which is fine if you trust the people you work for with access to your brain.",
+      "source_url": "https://cyberpunk.fandom.com/wiki/Ripperdoc",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-06-18"
+    },
+    {
+      "section_id": 152,
+      "game_id": 8,
+      "section_type": "mechanic",
+      "name": "Quickhacks",
+      "card": "Quickhacks are programs you install in a cyberdeck and fire at enemies or devices. Each costs RAM, takes an upload time before it lands, and runs for a set duration, so a netrunner build is really a question of how much RAM you have and how quickly it comes back. Combat hacks do damage, control hacks disable, covert hacks keep you undetected and cost the least, and ultimates are the strongest and the most expensive. Buy them from netrunner vendors, loot them from enemy netrunners, or win them out of Breach Protocol.",
+      "source_url": "https://cyberpunk.fandom.com/wiki/Cyberpunk_2077_Quickhacks",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-06-18"
+    },
+    {
+      "section_id": 153,
+      "game_id": 8,
+      "section_type": "item",
+      "name": "Iconic weapons",
+      "card": "The unique named weapons, usually tied to a character or a quest rather than found in a shop. Each has an effect no other weapon has, and each can be upgraded to keep pace with your level instead of being outgrown. That is why holding on to one you like generally beats chasing bigger numbers on a random drop.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": "seed-1.3"
+    },
+    {
+      "section_id": 154,
+      "game_id": 8,
+      "section_type": "mechanic",
+      "name": "Choosing a build",
+      "card": "Attributes decide more than perks do, so the early choice worth thinking about is which two to raise. Body and Reflexes make a straightforward fighter and forgive mistakes. Intelligence is the netrunner route: quickhacks do the work before a fight starts, but you are fragile once one begins badly. Technical Ability quietly helps every build, because it opens crafting and the cyberware you actually want. Cool rewards patience and stealth and punishes being caught. Spreading points evenly is the one choice that reliably goes badly — the perks worth having sit behind attribute thresholds, and an even spread reaches none of them.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": "seed-1.3"
+    },
+    {
       "section_id": 63,
       "game_id": 9,
       "section_type": "mechanic",
@@ -1124,6 +1177,48 @@
       "source_license": "CC-BY-SA-3.0",
       "source_version": null,
       "crawled_at": "2025-06-01"
+    },
+    {
+      "section_id": 160,
+      "game_id": 5,
+      "section_type": "mechanic",
+      "name": "Choosing a build",
+      "card": "Your S.P.E.C.I.A.L. points at the start matter more than anything picked later, because the perks sit underneath them. Intelligence is the quiet strong pick: it raises how fast you level, so every other perk arrives sooner. Strength with Endurance makes a melee or heavy-weapons survivor that forgives mistakes. Agility with Perception is the sniper and V.A.T.S. route, which kills things before they arrive and folds if they get through. Charisma is the settlement and speech build and is the weakest of the five early, though it pays off later. Every stat can still be raised with bobbleheads and level-ups, so pick for the first ten hours being enjoyable rather than optimising a character you have not met yet.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": "seed-1.3"
+    },
+    {
+      "section_id": 161,
+      "game_id": 5,
+      "section_type": "enemy",
+      "name": "Feral ghouls",
+      "card": "Irradiated former humans, fast, and they almost never travel alone. The head is the reliable weakness. Take a leg off one and it stops attacking altogether, while taking both arms off does not. They lie among rubble playing dead and climb out of ductwork and windows, so a room that looks clear often is not — though while one is still climbing in it cannot fight back. They deal radiation damage as well as physical, and in heavily irradiated places like the Glowing Sea they regenerate as you shoot them.",
+      "source_url": "https://fallout.fandom.com/wiki/Feral_ghoul_(Fallout_4)",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2025-06-01"
+    },
+    {
+      "section_id": 162,
+      "game_id": 5,
+      "section_type": "item",
+      "name": "Stimpaks and chems",
+      "card": "A stimpak heals a share of your health rather than a flat amount, and repairs crippled limbs. The Medic perk is what makes them worth carrying: across its ranks it takes the heal from 30% up to 100% and speeds the injection up. Two things change in Survival mode and both matter — a stimpak takes fifty seconds to work instead of five, and it starts having weight. Healing mid-fight stops being an option there; you have to break contact first.",
+      "source_url": "https://fallout.fandom.com/wiki/Stimpak_(Fallout_4)",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2025-06-01"
+    },
+    {
+      "section_id": 163,
+      "game_id": 5,
+      "section_type": "enemy",
+      "name": "Legendary enemies",
+      "card": "A legendary enemy has a star beside its name and is otherwise an ordinary creature with a much deeper health bar. What catches people out is the mutation: at around half health it heals itself completely and gains a new ability, so the fight is roughly twice as long as it first looks and spending everything on the first half is the mistake. Each one drops a weapon or armour piece carrying a random legendary effect, which is the main way good gear enters a playthrough.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": "seed-1.3"
     },
     {
       "section_id": 80,
@@ -1464,6 +1559,56 @@
       "source_url": "",
       "source_license": "bonsAI-maintainer",
       "source_version": null
+    },
+    {
+      "section_id": 155,
+      "game_id": 11,
+      "section_type": "enemy",
+      "name": "Legendary animals",
+      "card": "There is one legendary animal per species, each in a fixed place on the map, and each drops a pelt no ordinary animal gives. The Trapper is the only person who turns those pelts into clothing; the fence takes the trinkets. They absorb far more punishment than a normal animal of the same size, so bring a rifle matched to the target rather than whatever is already in your hands.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": "seed-1.3"
+    },
+    {
+      "section_id": 156,
+      "game_id": 11,
+      "section_type": "item",
+      "name": "Tonics and provisions",
+      "card": "Health, stamina and Dead Eye each sit on top of a core, and eating and tonics act on both parts. Food keeps the cores from draining; tonics refill the bar, and the gold-labelled ones also fortify the core so it drains more slowly for a while. Carry a few of each before a long ride or a fight — most early deaths are somebody with a full satchel who never opened it.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": "seed-1.3"
+    },
+    {
+      "section_id": 157,
+      "game_id": 11,
+      "section_type": "mechanic",
+      "name": "Horse breeds",
+      "card": "Breeds differ in speed, in stamina, and in how easily they spook at gunfire or predators. Draft horses carry more and panic less but are slow; racing breeds are quick and fragile. Arabians and the war breeds are the ones worth saving for, though an Arabian bolts easily until its bond comes up. Early on the bond matters more than the stat line: a bonded horse handles better and comes when you whistle from further away.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": "seed-1.3"
+    },
+    {
+      "section_id": 158,
+      "game_id": 11,
+      "section_type": "mechanic",
+      "name": "Satchel upgrades",
+      "card": "Pearson crafts satchel upgrades at camp once you bring him the pelts and the camp can afford it, and each tier raises how much of everything you can carry. The last one, the Legend of the East satchel, wants perfect pelts from a long list of animals, which is the real reason people care about clean kills. Upgrading early is worth more than it sounds, because running out of room is what stops most people restocking before they ride out.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": "seed-1.3"
+    },
+    {
+      "section_id": 159,
+      "game_id": 11,
+      "section_type": "mechanic",
+      "name": "Coming from GTA",
+      "card": "If Grand Theft Auto is your reference point, the adjustment is that this game is slow on purpose. Arthur has weight, horses take time to turn, and picking something up is an animation rather than an instant. Shooting your way through a town works for about ninety seconds, and then the law arrives and stays. Wanted levels do not simply expire either: a witness who sees your face turns into a bounty you pay off at a post office. Cover your face for anything illegal, ride rather than sprint, and treat camp as somewhere you go back to rather than a menu.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": "seed-1.3"
     },
     {
       "section_id": 107,

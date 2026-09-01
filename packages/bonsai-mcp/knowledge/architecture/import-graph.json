@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 337,
-  "edgeCount": 801,
+  "fileCount": 339,
+  "edgeCount": 805,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -366,6 +366,7 @@
         "src/data/presets.ts",
         "src/features/preset-carousel/carouselState.ts",
         "src/features/preset-carousel/composePresetSeedsWithSessionRag.ts",
+        "src/features/preset-carousel/singleSlotRotation.ts",
         "src/features/unified-input/constants.ts",
         "src/utils/joinPresetWithRunningGame.ts",
         "src/utils/navFocusRegistry.ts",
@@ -1027,6 +1028,8 @@
         "src/features/preset-carousel/composePresetSeedsWithSessionRag.ts",
         "src/features/preset-carousel/sessionRagComposer.test.ts",
         "src/features/preset-carousel/sessionRagComposer.ts",
+        "src/features/preset-carousel/singleSlotRotation.test.ts",
+        "src/features/preset-carousel/singleSlotRotation.ts",
         "src/hooks/useBonsaiAskOrchestration.ts",
         "src/index.tsx",
         "src/utils/bonsaiSessionSurvival.ts"
@@ -1467,6 +1470,22 @@
         "src/features/preset-carousel/sessionRagComposer.test.ts",
         "src/hooks/useBonsaiAskOrchestration.ts",
         "src/utils/sessionRagChipCandidates.ts"
+      ]
+    },
+    "src/features/preset-carousel/singleSlotRotation.test.ts": {
+      "imports": [
+        "src/data/presets.ts",
+        "src/features/preset-carousel/singleSlotRotation.ts"
+      ],
+      "importedBy": []
+    },
+    "src/features/preset-carousel/singleSlotRotation.ts": {
+      "imports": [
+        "src/data/presets.ts"
+      ],
+      "importedBy": [
+        "src/components/MainTabPresetAnimatedChips.tsx",
+        "src/features/preset-carousel/singleSlotRotation.test.ts"
       ]
     },
     "src/features/unified-input/constants.ts": {

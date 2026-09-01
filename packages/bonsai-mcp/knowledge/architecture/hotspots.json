@@ -71,11 +71,6 @@
       "role": ""
     },
     {
-      "path": "src/components/MainTabPresetAnimatedChips.tsx",
-      "lines": 924,
-      "role": ""
-    },
-    {
       "path": "py_modules/backend/services/local_ollama_setup_service.py",
       "lines": 915,
       "role": ""
@@ -93,6 +88,11 @@
     {
       "path": "py_modules/backend/services/transparency_service.py",
       "lines": 789,
+      "role": ""
+    },
+    {
+      "path": "src/components/MainTabPresetAnimatedChips.tsx",
+      "lines": 787,
       "role": ""
     },
     {

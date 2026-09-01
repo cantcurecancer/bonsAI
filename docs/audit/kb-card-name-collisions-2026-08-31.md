@@ -164,3 +164,77 @@ first / 89.9% top-three; holdout identical across all four arms. The cards fill 
 costing anything measurable.
 
 Second run of the day: `kb-embed-bakeoff-2026-08-31b-arms.md`.
+
+---
+
+## The rest of the batch: 14 more cards, and what they cost
+
+Corpus 147 → **161 sections**. Five sourced from wikis already used here, nine written by hand.
+Report: `kb-embed-bakeoff-2026-08-31c-arms.md`.
+
+| Game | Card | Where it came from |
+|---|---|---|
+| Cyberpunk 2077 | Cyberpsychos | `cyberpunk.fandom.com/wiki/Cyberpsychosis`, CC-BY-SA-3.0 |
+| Cyberpunk 2077 | Ripperdocs | `cyberpunk.fandom.com/wiki/Ripperdoc`, CC-BY-SA-3.0 |
+| Cyberpunk 2077 | Quickhacks | `cyberpunk.fandom.com/wiki/Cyberpunk_2077_Quickhacks`, CC-BY-SA-3.0 |
+| Cyberpunk 2077 | Iconic weapons | written by hand — no wiki page exists |
+| Cyberpunk 2077 | **Choosing a build** | written by hand — the comparison card |
+| Fallout 4 | Feral ghouls | `fallout.fandom.com/wiki/Feral_ghoul_(Fallout_4)`, CC-BY-SA-3.0 |
+| Fallout 4 | Stimpaks and chems | `fallout.fandom.com/wiki/Stimpak_(Fallout_4)`, CC-BY-SA-3.0 |
+| Fallout 4 | Legendary enemies | written by hand — the wiki page is only a redirect |
+| Fallout 4 | **Choosing a build** | written by hand — the comparison card |
+| Red Dead Redemption 2 | Legendary animals, Tonics and provisions, Horse breeds, Satchel upgrades | all written by hand |
+| Red Dead Redemption 2 | **Coming from GTA** | written by hand — the comparison card, in the maintainer's own framing |
+
+**Red Dead is entirely hand-written on purpose.** Its only wiki snapshot is 2020-02-23 and the
+pages for these subjects are stubs — `Legendary_Animals` is 206 bytes, `Horse_Breeds` is 423. That
+matches what commit `ac03617` found in August; nothing has changed.
+
+Worth recording for next time: the Fallout page for legendary drops exists, but under
+`Fallout 4 legendary weapon effects` — the obvious title is a redirect. Extracting it means
+another pass over a 471 MB dump, which is why that card is hand-written today rather than never.
+
+### No new name collisions
+
+The whole-corpus probe re-run at 161 cards: **156 come first, 5 come second, none is missing.**
+State of Emergency's clash is gone. The five that remain are the same harmless ones from before —
+Portal 2's `Gels`, two Left 4 Dead 2 pairs, `The Director`, and an Ocarina of Time pair.
+
+Notably `Horse breeds` does **not** collide with the existing `Horse bonding`, which was the one
+new pair worth worrying about.
+
+### Cost, and one regression that is mine
+
+Four cases regressed against the 147-card run, none improved, and all four still land in the top
+three. Two are noise and two are worth naming:
+
+- **`V2-BLINDT-50`, Cyberpunk 2077** — *"which implant suits a melee build"*. Expected `Berserk`,
+  which is genuinely the melee operating system and says so. It now returns `Choosing a build`,
+  `Sandevistan`, `Adam Smasher`, and **Berserk drops out of the top three entirely**. My new card
+  absorbed the word *build*, and the query's three words — implant, melee, build — now sit in
+  three different cards. **This is a real loss caused by a card I added.**
+- **`V2-S-RDR2-06`** — *"how to get a better horse early"*. Expected `Horse bonding`, now returns
+  the new `Horse breeds` first. That is arguably the better answer, so it is D40 again rather than
+  a defect.
+
+**Nothing was changed in response.** There is a tempting content argument for editing the
+Cyberpunk build card — it covers attributes and never mentions the two operating systems, which
+are the biggest build decision in the game, so it is arguably incomplete on its own merits. That
+may well be true. **It is deliberately not being done today**, because the observation arrived
+attached to a failing test row and the whole point of the last several commits is that a card
+edit prompted by a failing row is indistinguishable from rigging. It is recorded here to be
+decided cold, by someone who has not just watched that row fail.
+
+### Aggregate
+
+| | 147 cards | 161 cards |
+|---|---|---|
+| shipped arm, practice set, first place | 66.1% | 65.5% |
+| shipped arm, practice set, top three | 89.9% | 88.7% |
+| shipped arm, sealed set, first place | 54.3% | 54.3% |
+| shipped arm, sealed set, top three | 78.3% | 76.1% |
+
+Two more cases out of 92 on the sealed set, same direction as every card addition so far: a denser
+corpus costs first place slowly and top-three slowly. Whether that trade is worth 14 cards
+covering four subjects the corpus could not answer at all is a judgement call, not a number, and
+it is the maintainer's.
