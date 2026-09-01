@@ -321,6 +321,11 @@ seconds; anything that would otherwise have to be re-measured goes there rather 
 
 Code-fixed or shipped; on-Deck / qualitative QA still owed. Detail: [testing.md](testing.md), [testing-manual.md](testing-manual.md). Full writeups: [archive/roadmap-bugs-fixed.md](archive/roadmap-bugs-fixed.md).
 
+**Every Main-tab UI change also owes the free-play sweep** — standing row **QA-FREE-PLAY-01** in
+[testing-manual.md](testing-manual.md): walk the whole pane like a user and require every focused stop to also be *visible*
+(not behind the dock). Added 2026-08-31 after scripted checks twice passed bugs that free use found in seconds; the DPS
+visibility-oracle plan (decky-plugin-studio planning/06) will turn it into one tool call.
+
 **This list is a curated front page, not the QA queue.** [testing.md](testing.md) holds **92** rows, of which **13 are Verified** and 55 Open / 15 Partial (counted 2026-08-17). Work the rows below first because they carry the most recent fixes; when picking up anything else, read testing.md rather than assuming an absence here means coverage.
 
 **The 2026-08-23 parallel bug session left seven fixes proven only at a desk.** Their on-Deck run is planned as two batches of six frozen test chips, grouped by game, in [20-frozen-chip-qa-batches.md](planning/20-frozen-chip-qa-batches.md) — question wording agreed and not to be reworded. Note that a pinned batch **suppresses session RAG chips**, so corpus-chip rows cannot pass until it is cleared.

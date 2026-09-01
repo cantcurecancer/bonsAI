@@ -38,6 +38,33 @@ story-shaped titles, that is a finding about the default, not a reason to specia
 
 ---
 
+## Standing row: the free-play sweep
+
+**QA-FREE-PLAY-01** — run after ANY change to the Main tab's layout, scrolling, focus graph, or
+the dock, before the change is called verified. Standing rule from the maintainer 2026-08-31,
+after two bugs in two days that every scripted check passed and free use found in seconds.
+
+Emulate a user, not a test plan: with a LONG reply on screen —
+
+1. Scroll around the reply (up into it, back down), then D-pad walk from the top of the pane to
+   the very bottom, one press at a time — through the answer, its trailing chips (Show details /
+   Copy / Helpful / branch buttons), the session context strip, into the dock, to ASK.
+2. At **every** stop, two checks, and both must pass — they are different facts:
+   - **Focused** — the ring is on the control (`deck_readFocus` / walk result).
+   - **Visible** — a person could see it: the focused rect sits inside the pane AND above the
+     dock's top edge, and an `elementFromPoint` probe at the rect's centre hits the control
+     itself, not something covering it (`deck_readPage`).
+3. Repeat the walk on at least one other carousel position (LB/RB), and once more after the
+   reply finishes if it was streaming.
+
+A stop that is focused but not visible is a **FAIL of this row**, whatever the scripted rows say.
+This is the manual interim for the DPS visibility oracle + `deck_sweep`
+(decky-plugin-studio `docs/planning/06-visibility-oracle-and-free-play-sweep.md`); when that
+ships, this row becomes one tool call diffed against a committed baseline, and this row's wording
+becomes its acceptance test.
+
+---
+
 ## Focus graph (mandatory before shipping new controls)
 
 Policy: `bonsai://policy/decky-ui-focus`. Patterns: `bonsai://architecture/focus-graph-patterns`.
