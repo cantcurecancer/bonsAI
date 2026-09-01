@@ -1,0 +1,119 @@
+# Do cards shadow each other? Checked all 146 — mostly no, and the real problem is different
+
+Written for whoever picks this up next. It reverses a guess made earlier the same day.
+
+**The claim being tested:** that adding cards made search worse because new cards *shadow*
+old ones — in particular that Hades' `Weapon aspects` was stealing the question
+*"which weapon is easiest"* from the `Stygian Blade` card, because it has the word
+*weapon* in its name and the six weapons do not.
+
+**Result: that claim is wrong.** The evidence is below, and so is what is actually going on.
+
+## The check
+
+For each of the 146 cards, ask the **shipped search** for that card using its own name as the
+question, with that card's game running. Then see whether the card comes back first.
+
+Run it with `python scripts/probe_card_name_collisions.py`. Raw output:
+`build/card-name-collisions.json`.
+
+This is deliberately not a name-against-name text comparison. A text comparison misses the
+interesting cases — State of Emergency's `Causing chaos` outranks `Kaos mode and Revolution
+mode` for a question about chaos mode, and those two names have **no letters in common on that
+word** (*chaos* vs *Kaos*). The collision lives in the card's body, which only the real search
+sees.
+
+## Result
+
+| Outcome | Cards |
+|---|---|
+| Found itself in **first** place | **140** |
+| Found itself in second place | 6 |
+| Not found at all | **0** |
+
+**`Stygian Blade` is one of the 140.** Ask for it by name and it comes first, with
+`Weapon aspects` nowhere near it. So the shadowing theory does not survive contact with the
+data.
+
+### The six that came second
+
+| Game | Card | Beaten by | Does it matter? |
+|---|---|---|---|
+| State of Emergency | `Rocket launcher` (the weapon) | `Rocket launcher enemies` | **Yes — fix this one.** Two cards, nearly the same name, added four days ago. Someone asking about the weapon gets the enemies card |
+| Portal 2 | `Gels` | `Repulsion Gel` | **Yes, mildly.** A card about the whole category, beaten by one member of it. Pre-existing, nobody added it recently |
+| Left 4 Dead 2 | `Hunter` | `Playing as the Hunter` | No. Both cards are about the Hunter; either answer is useful |
+| Left 4 Dead 2 | `Boomer` | `Playing as the Boomer` | No. Same |
+| Left 4 Dead 2 | `The Director` | `Tank` | No. Still second, and nobody types "The Director" |
+| Ocarina of Time | `Adult dungeon order` | `Shadow Temple invisible floors` | No. Noise |
+
+So the honest count of real name collisions across the whole corpus is **two**, and only one of
+them was introduced by recent work.
+
+## What is actually wrong, then
+
+Go back to the failing question. Hades, *"which weapon is easiest"*.
+
+Before the split, one card was called **Starting weapons** and it compared all of them in one
+paragraph — *"the Stygian Blade is the safest thing to learn on… the Shield of Chaos is the most
+survivable… the Rail and the Bow reward staying at range"*. That card answered the question,
+and the search found it.
+
+The split replaced it with six cards, each describing **one** weapon well. Nothing was left that
+**compares** them.
+
+**So the split did not create a collision. It deleted the only card that answered a comparison
+question.** The six new cards answer *"tell me about the Spear"*. Nothing now answers
+*"which one should I pick"*.
+
+This is worth stating carefully because it is the opposite of the earlier guess: the corpus did
+not get noisier, it got a **hole**.
+
+### The same hole was reported independently, before any of this
+
+On the corpus gap sheet the maintainer asked, unprompted and twice, for:
+
+> "Pros and cons of different builds, make cards designed around early game (or even character
+> design)" — for **Cyberpunk 2077** and again for **Fallout 4**
+
+and for Red Dead Redemption 2:
+
+> "Give very basic advice for total noobs. Explain this game to someone familiar to GTA but
+> not RDR"
+
+Those are the same shape: **compare the options and tell me where to start.** Every card in the
+corpus today is about one thing — an enemy, an item, an area. None compares things, and none is
+about starting out. The failing Hades question is the first hard evidence that this gap costs
+real answers, rather than just being a nice-to-have.
+
+## What to do about it
+
+**Recommended, and cheap:**
+
+1. **Rename State of Emergency's `Rocket launcher enemies`.** Two cards four words apart is a
+   genuine mistake made four days ago. Something like `Enemies with rocket launchers` removes
+   the clash. This is not fitting the corpus to a test — no eval question is involved.
+2. **Write one comparison card per game that needs one**, starting with Hades. Not a
+   restoration of the old card — a card that does the job the six cannot: which weapon to
+   start with, and why. The maintainer has already asked for this shape twice for other games.
+
+**Deliberately not recommended:**
+
+- **Renaming `Weapon aspects`.** The data says it is not stealing anything. Renaming it would
+  have been a fix for a problem that does not exist, aimed at making one test question pass.
+- **Rewording `Stygian Blade` to contain the word "easiest".** Same objection, more blatant.
+
+**Still undecided, and the bigger question:** the eval fixture allows exactly one correct card
+per question. Several questions now have two or three fair answers, so a better corpus scores
+worse. That is written up separately as D40 and is **not** resolved by anything here.
+
+## One eval question should be retired, and the maintainer said so, not the score
+
+`V2-S-SOE-07` asks *"i dont understand what the objectives actually want me to do"* for State of
+Emergency. It has no answer in any card and never could — as the maintainer put it, the player
+"would need to press start and read the objective."
+
+**Recorded carefully because the order matters:** this row was seen to fail *before* the
+maintainer judged it. The judgement stands on its own merits — no card answers it, so it
+measures nothing — but it is a **holdout** row, and retiring a holdout row after watching it
+fail is exactly the move that turns a ship gate into a mirror. It is therefore left in place
+here and flagged for a deliberate decision, not quietly deleted.
