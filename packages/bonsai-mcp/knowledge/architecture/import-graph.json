@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 340,
-  "edgeCount": 808,
+  "fileCount": 342,
+  "edgeCount": 811,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -1028,6 +1028,8 @@
         "src/features/preset-carousel/carouselState.ts",
         "src/features/preset-carousel/composePresetSeedsWithSessionRag.ts",
         "src/features/preset-carousel/presetRowLayout.ts",
+        "src/features/preset-carousel/presetSlotRotation.test.ts",
+        "src/features/preset-carousel/presetSlotRotation.ts",
         "src/features/preset-carousel/sessionRagComposer.test.ts",
         "src/features/preset-carousel/sessionRagComposer.ts",
         "src/features/preset-carousel/singleSlotRotation.test.ts",
@@ -1460,6 +1462,21 @@
       ],
       "importedBy": [
         "src/features/preset-carousel/sessionRagComposer.ts"
+      ]
+    },
+    "src/features/preset-carousel/presetSlotRotation.test.ts": {
+      "imports": [
+        "src/data/presets.ts",
+        "src/features/preset-carousel/presetSlotRotation.ts"
+      ],
+      "importedBy": []
+    },
+    "src/features/preset-carousel/presetSlotRotation.ts": {
+      "imports": [
+        "src/data/presets.ts"
+      ],
+      "importedBy": [
+        "src/features/preset-carousel/presetSlotRotation.test.ts"
       ]
     },
     "src/features/preset-carousel/sessionRagComposer.test.ts": {

@@ -57,7 +57,8 @@ export const TEMP_PRESET_CAROUSEL_FROZEN = false;
  *
  * Fewer than three entries is treated as off — a short freeze would silently mix frozen and
  * sampled chips, which is the one thing a deterministic QA run cannot have. (The threshold dates
- * from the three-slot row; the row is one chip since 2026-08-31 and the rule stays as a floor.)
+ * from the three-slot row; the row shows two chips since 2026-09-01 and the rule stays as a floor,
+ * because seeds are still drawn in threes.)
  */
 let runtimeFrozenChipTexts: readonly string[] = [];
 
@@ -79,10 +80,11 @@ export function frozenTestChipsActive(): boolean {
 /**
  * The frozen entry after `currentText`, wrapping at the end; null when no batch is in force.
  *
- * The single-line chip row (2026-08-31) shows one prompt at a time, so "first frozen entry not
- * on screen" — the rule `getRandomPresetExcluding` uses — would ping-pong between the first two
- * entries and never reach the rest of a batch. Round-robin from the current entry walks the
- * whole batch in order, which is what a staged QA run needs.
+ * With fewer than three chips on screen, "first frozen entry not on screen" — the rule
+ * `getRandomPresetExcluding` uses — cannot walk a batch: it ping-ponged between the first two
+ * entries when the row was one chip (2026-08-31). Round-robin from the last entry the row
+ * introduced walks the whole batch in order, which is what a staged QA run needs; the slot
+ * rotation (presetSlotRotation.ts) drives it and skips entries another chip is still showing.
  */
 export function nextFrozenPresetAfter(currentText: string): PresetPrompt | null {
   const frozen = frozenPresets();
@@ -92,10 +94,11 @@ export function nextFrozenPresetAfter(currentText: string): PresetPrompt | null 
 }
 
 /**
- * Frozen chip texts in order. The chip row walks the batch in this order (one chip on screen at a
- * time since 2026-08-31; carousel mode keeps up to five in its history) — list more than three
- * to stage a whole QA batch in one deploy. Each entry must match a `text` in `PRESET_PROMPTS`; an entry that matches nothing is
- * skipped, and if fewer than three resolve the freeze falls back to random sampling.
+ * Frozen chip texts in order. The chip row walks the batch in this order (two chips on screen at a
+ * time since 2026-09-01; carousel mode keeps up to five in its history) — list more than three to
+ * stage a whole QA batch in one deploy. Each entry must match a `text` in `PRESET_PROMPTS`; an
+ * entry that matches nothing is skipped, and if fewer than three resolve the freeze falls back to
+ * random sampling.
  */
 export const TEMP_CAROUSEL_FROZEN_TEXTS: readonly string[] = [
   "What are the best settings for 60fps?",
