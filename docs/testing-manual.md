@@ -108,8 +108,8 @@ BPM (Desktop → Big Picture → QAM → bonsAI). Ollama reachable.
 - [ ] Ollama → Test connection — success or stable unreachable (no traceback)
 - [ ] Short Ask; reply in focusable chunks; D-pad through chunks
 - [ ] **Show details** / context chips when available (see bug CONTEXT-LADDER)
-- [ ] One preset chip visible, on a single row (the block was three rows until 2026-08-31 — three
-  visible chips is now a regression, not the target)
+- [ ] Two preset chips visible, side by side on a single row (the block was three stacked rows until 2026-08-31 and one chip for
+  a day after that — one chip, or three, is a regression; D43 2026-09-01). The help chip, when showing, owns the whole row alone
 
 ### SMOKE-C — Permission gate (P0)
 
@@ -405,15 +405,57 @@ everything below assumes it passes. Plan:
   one slot visible with the carousel's other history rows clipped. Free-play sweep (QA-FREE-PLAY-01): 16 presses top to ASK, every
   stop visible; Show details took focus 113px above the dock.
 - [ ] **PRESET-ONE-LINE-01b** (every mode still moves) Cycle Developer → preset chip animation through **carousel / fade / static /
-  decode** and watch one full swap in each: carousel slides the next row into the single window on its own within ~6s of opening
-  (the D-pad-driven slide was verified by bridge — four history rows stepped into view — but the TIMER-driven slide was not, because
-  the carousel only auto-advances for 60s after opening and the run had used that window); fade goes out/in in about half a second
-  each with no long blank; static swaps on hold; decode scrambles and locks one chip. Also confirm the three game-specific seeds all
-  appear in turn (they now queue through the one slot) and that a frozen QA batch walks in order past its third entry.
-- [ ] **PRESET-ONE-LINE-02** (the row matches the mockup) One row, **three chips side by side**, each a third of the width, ~30px
-  tall, long labels marquee-scrolling inside their third ([major-redesign.md § 2.3](major-redesign.md)) — **FAIL 2026-08-31, filed by
-  the maintainer on sight:** the row shows one chip. 01a above measured the height of what was built, not whether it was the right
-  thing; this row is the one that has to pass before the feature is called done.
+  decode** and watch one full swap in each: carousel slides the next chip into the two-wide window from the right on its own within
+  ~6s of opening (the timer only runs for 60s after the chips mount, so watch straight away); fade takes one chip out over ~2s and
+  brings its replacement in over ~1s while the other chip stays put, never an empty row; static swaps on hold; decode scrambles and
+  locks both chips, staggered. Also confirm the three game-specific seeds all appear in turn (the third queues behind the two on
+  screen) and that a pinned QA batch of four or more walks in order past its third entry without ever showing one entry twice at once.
+- [ ] **PRESET-ONE-LINE-02** (the row matches the decision) One row, **two chips side by side**, each half the width less a 4px gap,
+  **30px** tall, radius 4; a label longer than its chip scrolls sideways inside it with a soft fade at the edges, and short labels do
+  not move. **Read the geometry from the live page** (`getBoundingClientRect` on the two `.bonsai-preset-glass` buttons and their
+  `.bonsai-preset-chip-text` children), not from a screenshot, and **record the button's computed side padding** — it is the one
+  number the width research in [planning/29-preset-row-three-thirds-plan.md § 3b](planning/29-preset-row-three-thirds-plan.md) could
+  not know, and it decides whether "~20 characters at a glance" is really 18 or 23. Write the numbers back into that plan.
+  **PASS on device 2026-09-01, read from the live page:** two chips **148 × 30 px** with a **4 px** gap on the 300 px column
+  (x=48, w=300), radius 4, side padding **8 px** (now set by the plugin, so the label room is known by construction), label room
+  **130.4 px** ≈ 20 characters; Steam's Marquee mounted on every label, **animating only the visible overflowing one** (`--duration`
+  = text width ÷ 25 px/s, 12.4 s for a 56-character prompt) and idle on short labels; the **Test** badge pinned at the left (23 px);
+  dock 157 px and reading area 458 px (one-chip row: 161 / 455). The help-chip half was not exercised (the help chip was already
+  dismissed on this device). History: **FAIL 2026-08-31** (one chip, filed by the maintainer on sight); rebuilt at the desk
+  2026-09-01 as two across (D43, the drawing's three chips would have left ~12 characters each). Also check: the help chip, when
+  showing, is the entire row and no suggestion chip is beside it; once dismissed, the two chips take the row.
+- [ ] **PRESET-ONE-LINE-03** (the D-pad reaches every chip and leaves cleanly, in every mode) From the Ask field press **Up**: the
+  ring must land on a chip (`gpfocus`, not just `activeElement`, per FOCUS-CHIP-RING-01) and **A must fill the Ask field** with that
+  chip's text. **Right/Left** step between the two chips; **Down** returns to the Ask field; **Up** leaves toward the transcript.
+  Repeat for fade / static / decode — before 2026-09-01 only carousel mode registered a nav handover and the other modes fell back
+  to a plain `focus()`, which is the mechanism behind the 2026-08-28 fake-ring bug. In **carousel** mode additionally: after a few
+  auto-advances press **Left** at the left chip — an earlier chip slides back into view and the blue current-chip marker and the
+  white ring sit on the same chip; **Right** walks forward again; Left at the very first chip in history holds still, no trap.
+  **Carousel mode PASS on device 2026-09-01, driven by the bridge:** `runs/PRESET-ONE-LINE-03-carousel-dpad-fixed-2.json` (11/11:
+  Up from the text field lands on a chip, Left at the oldest chip holds for three presses, Right walks all five history chips with
+  the window sliding, Down reaches the text field, Up returns to the last chip, Up again lands on **Session context**) and
+  `runs/PRESET-ONE-LINE-03-carousel-fresh-mount.json` (13/14 on a freshly opened panel: Down from the strip enters the row,
+  everything above repeats). **The first run failed 6/9** (`runs/PRESET-ONE-LINE-03-carousel-dpad.json`): Steam treated the row as a
+  column — Left left the plugin for the Quick Access rail and Down/Up stepped between chips — because the `flow-children`
+  container hint alone does nothing; every chip now carries explicit handlers (`presetRowNav.ts`). **Two misses fixed at the desk
+  afterwards and re-run 2026-09-02, 14/14** (`runs/PRESET-ONE-LINE-03-carousel-fresh-mount-2.json`): on a fresh panel, entering the
+  row had put the ring on the older visible chip rather than the marked one (the redirect ran inside Steam's own focus event; now
+  deferred a tick), and Down from a chip had put the caret in the text field while Steam bounced the ring to the next chip (a plain
+  `focus()` across containers; the field now registers a Steam nav node, `unified-input`). Both now land where they should, Right at
+  the newest chip holds, and Up from the text field returns to the marked chip. One Left press in that run (second-oldest to oldest
+  chip) did not move; the same transition passed in two probes at the rig's cadence (`…-oldest-chip-probe-a/b.json`), so it is a
+  one-off — if it recurs, a press in the tail of the 550 ms slide is the first suspect. Fade / static / decode share the same handler code and were not driven on device. The rig also reports the
+  ring "partially visible" for one settle after a slide — the 550 ms transition is still running when it measures; the next step
+  always reads 100 %.
+- [ ] **PRESET-ONE-LINE-04** (the scrolling is calm and cheap) With the knowledge base on and a covered game running (Half-Life 2 has
+  the longest label, 59 characters): both labels crawl slowly with a fade at the edges, the **Tip** badge stays pinned at the left
+  while the text scrolls, and a chip does not rotate away before its label has scrolled through once. Judge the speed by eye — "slow
+  and calm" was the maintainer's brief, and Steam's `Marquee` `speed` unit is undocumented, so the value in
+  `presetRowLayout.ts` (`PRESET_MARQUEE_SPEED`) is a first guess to be calibrated here and written back. Sample the frame rate the
+  way PRESET-STREAM-ANIM-01 did (8s of `requestAnimationFrame` timestamps) with **decode** mode on so both chips churn and then
+  scroll: expect a flat 60fps with no gap over ~50ms. Then with OS reduced motion on: no crawl, the label is cut off with an ellipsis,
+  decode swaps text instantly with no caret. **Partial 2026-09-02:** frame rate sampled in carousel mode with the labels scrolling
+  (no decode churn): 480 frames in 8017 ms (59.9 fps), 95th-percentile frame gap 16.8 ms, one gap of 50 ms, two labels scrolling at once — the same shape as the 2026-08-28 decode measurement (479 frames / 8002 ms, worst gap 50 ms). The speed-by-eye, decode and reduced-motion halves are still owed.
 
 
 ---

@@ -23,20 +23,20 @@ seconds; anything that would otherwise have to be re-measured goes there rather 
 
 ### The preset chips
 
-- ★★★★ **The one-line preset row was built the wrong shape — one chip, where the mockup has three side by side** — **OPEN, filed by the
-  maintainer 2026-08-31, the same day it shipped.** Commit `fc1b245` ("Preset chips on a single line") collapsed the three stacked rows
-  into one row that shows **one chip at a time**. That is not the design. The mockup — [major-redesign.md § 2.3](major-redesign.md) —
-  specifies **three chips across in one row, side by side, each a third of the width (`flex: 1 1 0`), 30px tall, with the label
-  marquee-scrolling sideways when it overflows its third.** The vertical-space gain (dock 245 → 161px) is real and stays; the layout is
-  not done and the feature is not finished.
-  - **What a fix needs:** three slots across one row; a per-chip horizontal marquee for long labels (new — listed as new work in
-    [major-redesign.md § 5](major-redesign.md)); the four animation modes re-thought for three narrow chips rather than one wide one;
-    and a decision on the `singleSlotRotation` queue and `nextFrozenPresetAfter` from `fc1b245` — both were written to fit a single
-    chip and will need to go or change once three are on screen again.
+- ★★★★ **The one-line preset row was built the wrong shape — one chip, where the mockup has three side by side** — **PARTIAL:
+  rebuilt at the desk 2026-09-01, on-Deck confirmation owed.** The row now shows **two chips side by side** (not the drawing's three —
+  decision **D43**: three left ~12 characters per chip on the 300px column, two leave ~20), 30px tall, and a label longer than its
+  chip **scrolls sideways** through Steam's own `Marquee`, slowly. The help chip owns the whole row until dismissed. Carousel mode is a
+  sideways two-wide window on its history (Left at the edge pulls earlier chips back). Plan and research:
+  [planning/29-preset-row-three-thirds-plan.md](planning/29-preset-row-three-thirds-plan.md).
+  - **On device 2026-09-01:** row **02 passed** (148 × 30 px chips, 8 px padding, ~20 characters of label, Steam's Marquee running on
+    the long visible label only) and row **03 passed in carousel mode** — after the first run caught Steam navigating the row as a
+    column (Left walked out of the plugin), fixed the same night with explicit handlers on every chip. The two follow-up fixes (entry
+    lands on the marked chip; Down reaches the text field through Steam's own transfer) passed on a fresh panel 2026-09-02, 14/14.
+    **Still owed:** rows **01b** (every mode) and **04** (scroll speed by eye, decode churn, reduced motion).
   - **How it went wrong, so it does not repeat:** the roadmap entry said "single line" and the build took the words, not the drawing.
     Anything covered by the redesign doc gets checked against the mockup before code is written — and the maintainer should not have
-    to spend a round explaining a picture that was already in the repo.
-  - Row **PRESET-ONE-LINE-02**.
+    to spend a round explaining a picture that was already in the repo. Filed 2026-08-31 against `fc1b245`.
 
 ### Blocking a feature on the couch
 
@@ -105,7 +105,9 @@ seconds; anything that would otherwise have to be re-measured goes there rather 
   (*Glyphid Dreadnought*, *Hollow Bough*, *Exploder*) where before only one could. One honest limit stands: the carousel stops advancing at
   `PRESET_CAROUSEL_ACTIVE_MS` 60s, so the guarantee cannot re-fire after that — it makes a corpus chip very likely to be on screen when
   rotation freezes, not certain. 8 unit tests in `sessionRagComposer.test.ts`.
-- ★★★ **The longest game chip labels overflow the QAM column, and are not truncated** — **CONFIRMED on device 2026-08-29 by direct
+- ★★★ **The longest game chip labels overflow the QAM column, and are not truncated** — **FIXED at the desk 2026-09-01 by the
+  preset-row rebuild: a long label now scrolls through Steam's `Marquee`, and the ellipsis fallback actually fires (the label is
+  `display: block` now). On-Deck confirm owed under PRESET-ONE-LINE-02/04.** Earlier: **CONFIRMED on device 2026-08-29 by direct
   measurement**, superseding the ~20px estimate first filed the same day. That estimate was wrong in the safe direction: **the real overflow
   is 86.6px.** With Half-Life 2 running, *"What should I know about Rocket-Propelled Grenade Launcher?"* rendered at **379.8px inside a
   300px slot** — 29% wider than the column, spilling 86.6px past its right edge. Read off the live element with `getBoundingClientRect`,
@@ -249,7 +251,9 @@ seconds; anything that would otherwise have to be re-measured goes there rather 
   oversight, it is [R5](major-redesign.md) — *filled active glyph only, no micro labels, no width change, no height cost* — which the
   backlog entry **Tab-strip micro labels + wide active cell** records as deliberately not built. So the fix is to **reopen R5** in
   [audit/maintainer-decisions-locked.md](audit/maintainer-decisions-locked.md) first, and it needs settling alongside the collapsing tab
-  bar below, which wants the active tab readable at a glance and is the natural place for a name to live.
+  bar below, which wants the active tab readable at a glance and is the natural place for a name to live. **Planned 2026-09-01:**
+  settled inside [planning/30-collapsing-tab-bar.md](planning/30-collapsing-tab-bar.md) — the thin bar names the active tab at rest
+  and the open strip names all six. R5 is reopened as **D44**.
 
 ### Reading a long reply
 
@@ -434,10 +438,11 @@ alphabetical order the rest of the Backlog uses.
   - **Goal:** The **Session context (N turns)** bar stops being its own row and lives inside the **Show details** disclosure, so a settled
     answer costs one collapsed control instead of two.
   - **Shape not decided — workshop before building.** Open questions in [roadmap-details.md](roadmap-details.md).
-- ★★★★ **Preset chips on a single line** — **built the wrong shape 2026-08-31; NOT done. Reopened as a bug the same day** — see
-  *The preset chips* under [Bugs](#bugs). What shipped shows one chip; the mockup ([major-redesign.md § 2.3](major-redesign.md)) has
-  **three side by side**. Keep the height gain, redo the layout. The paragraph below records what `fc1b245` actually did, and stands
-  only as the measurement baseline. The chip block went from 118px (three
+- ★★★★ **Preset chips on a single line** — **rebuilt 2026-09-01 as two chips side by side (D43); on-Deck confirmation owed** — see
+  *The preset chips* under [Bugs](#bugs) and [planning/29-preset-row-three-thirds-plan.md](planning/29-preset-row-three-thirds-plan.md).
+  The 2026-08-31 build showed one chip; the mockup ([major-redesign.md § 2.3](major-redesign.md)) has three side by side; the
+  maintainer chose two after the width research. The height gain stays. The paragraph below records what `fc1b245` actually did, and
+  stands only as the measurement baseline. The chip block went from 118px (three
   34px rows plus gaps — the single largest piece of the dock) to one 34px row; the dock went **245 → 161px** and the transcript's
   reading area **371 → 455px (+23%)**, measured live after deploy. What changed, per mode: **carousel** keeps its five-row history but
   the window is one row — the focused row is the visible row (`carouselTrackOffsetPx` is now `index × row`, viewport `max-height: 34px`),
@@ -451,8 +456,12 @@ alphabetical order the rest of the Backlog uses.
 - ★★★★ **The tab icon bar collapses when it is not in use**
   - **Goal:** The tab strip stops holding full height while nobody is using it, while still answering *which tab am I on?* at a glance —
     the sketch on the table is a thin bar of dashes showing your position in the carousel. Interacting with it opens the fuller strip.
-  - **Not designed yet — workshop it first.** The awkward requirement is staying readable **at rest**, not only when focused. Open
-    questions in [roadmap-details.md](roadmap-details.md).
+  - **Workshopped and planned 2026-09-01:** [planning/30-collapsing-tab-bar.md](planning/30-collapsing-tab-bar.md). Twelve
+    discovery decisions are recorded there (our own thin bar of dashes plus the active tab's name, opening to a floating strip only
+    while the ring is on it; Steam's `Tabs` stays underneath for LB/RB). **Build is gated on the device spike in its § 5 W1**: if
+    LB/RB stop working with Steam's bar hidden, work stops and comes back to the maintainer. Reopens R5 as **D44**. Folds in
+    *Tab-strip micro labels + wide active cell* below. The open questions that used to sit in [roadmap-details.md](roadmap-details.md)
+    are answered in the plan's § 3.
 
 ### Ask / reply
 
@@ -562,6 +571,9 @@ alphabetical order the rest of the Backlog uses.
     labels, no width change, no height cost. Shipping this later means reopening R5 in
     [audit/maintainer-decisions-locked.md](audit/maintainer-decisions-locked.md) first — not just
     writing the CSS.
+  - **Folded into [planning/30-collapsing-tab-bar.md](planning/30-collapsing-tab-bar.md) on 2026-09-01.** The labels ship on
+    that plan's open strip; the wide active cell is dropped (maintainer call in discovery). R5 is reopened there as **D44**. Do not
+    build this separately.
 - ★★ **First-run ghost "New chat" label at the create position**
   - **Goal:** On a fresh install the `[+]` position carries a faint "New chat" hint, so the first
     thing a new user sees says what the button does.
@@ -569,6 +581,11 @@ alphabetical order the rest of the Backlog uses.
     `[+]`, re-confirmed on board 8f. Same rule as above — reopen the decision before building it.
 
 - ★★★ **Chip labels too long for the column autoscroll** (Netflix-style marquee)
+  - **Shipped at the desk 2026-09-01** inside the preset-row rebuild (D43): every chip label that overflows scrolls through Steam's
+    own `Marquee` — the library's long-title crawl — slow and calm, badges pinned so **Tip** stays visible; reduced motion, or the
+    component missing from Steam's bundle, falls back to a working ellipsis. Decode chips scroll only once the reveal has settled, and
+    a chip never rotates out before its label has scrolled through once. **On-Deck confirm owed: PRESET-ONE-LINE-04** (feel, frame
+    rate, speed calibration). Everything below is the original brief and stays as the record of why.
   - **Goal:** A preset or corpus chip whose label does not fit the 300px QAM column scrolls its text
     gently and continuously — the slow, smooth title crawl media apps use — instead of being cut off.
     A cleaner read than truncation, and it lets a long card name be read in full without the user

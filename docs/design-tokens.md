@@ -89,7 +89,7 @@ Recurring inline values across the section files: `#e8eef5` and `#d4dde6` for bo
 | Class | Background | Border | Notes |
 |---|---|---|---|
 | `.bonsai-glass-panel` | `rgba(18,26,34,0.25)` | `1px solid rgba(255,255,255,0.07)` | The default card ([section-6.ts:17](../src/styles/sections/section-6.ts)) |
-| `.bonsai-preset-glass` | `rgba(18,26,34,0.22)` | `1px solid rgba(255,255,255,0.07)` | Preset chips; `box-shadow: none` |
+| `.bonsai-preset-glass` | `rgba(18,26,34,0.22)` | `1px solid rgba(255,255,255,0.07)` | Preset chips; `box-shadow: none`. Since 2026-09-01: **30px** tall, radius 4, `padding: 0 8px`, **two across** with a 4px gap (`presetRowLayout.ts`, decision D43), label scrolls through Steam's `Marquee` when it overflows ([section-4.ts](../src/styles/sections/section-4.ts)) |
 | Menu surface | `rgb(28,36,44)` | `1px solid rgba(255,255,255,0.08)` | Radius 6, `box-shadow: 0 8px 22px rgba(0,0,0,0.55)` |
 
 ### AI reply bubble

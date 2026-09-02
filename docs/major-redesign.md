@@ -339,6 +339,18 @@ in [audit/maintainer-decisions-locked.md](audit/maintainer-decisions-locked.md).
 | R4 | Does the layout inversion ship, and separately (§ 4.4)? | **Yes, separately — after the width bug.** P-0b then P-7. Slots do not wait on it, and it can be dropped without touching P-1…P-6. |
 | R5 | Tab-strip treatment (§ 4.5) | **Filled active only (2b/b).** No micro labels, no width change, no 6px height cost. One CSS rule. |
 
+### The preset row (§ 2.3) — decided 2026-09-01
+
+- **Two chips across, not three — D43.** § 2.3 draws three thirds. Measured against the real 300px
+  column, three chips leave ~12 characters of label each (no built-in suggestion is recognisable
+  until it scrolls); two leave ~20. The maintainer chose two. The research is in
+  [planning/29-preset-row-three-thirds-plan.md § 3b](planning/29-preset-row-three-thirds-plan.md).
+- **The help chip owns the row** until dismissed, then the suggestions take it — rather than the
+  green first third the drawing shows beside two suggestions.
+- **Marquee (§ 5) is built** with Steam's own `Marquee`, on every chip, slow and calm; 30px chips,
+  radius 4, as drawn. The "one chip" build of 2026-08-31 that prompted this is recorded on the
+  roadmap under *The preset chips*.
+
 ### Turn-8 review (2026-08-29/30) — what it confirmed
 
 The turn-8 design review closed every open A/B board. Implementation plan:
