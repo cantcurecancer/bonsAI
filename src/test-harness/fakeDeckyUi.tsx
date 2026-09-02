@@ -109,7 +109,27 @@ export const DropdownOption = stub("DropdownOption");
 export const ModalRoot = stub("ModalRoot");
 export const ProgressBar = stub("ProgressBar");
 export const Spinner = stub("Spinner");
-export const Marquee = stub("Marquee");
+/**
+ * Steam's scrolling label. Its own props (`play`, `speed`, `delay`, `fadeLength`, `resetOnPause`…)
+ * are dropped for the same reason the nav props are: they are not DOM attributes, and React prints a
+ * warning for each one that reaches a plain `div`. The children render as plain text so a test can
+ * still find the label by its prompt.
+ */
+const MARQUEE_PROPS = new Set(["play", "direction", "speed", "delay", "fadeLength", "center", "resetOnPause"]);
+export const Marquee = React.forwardRef<HTMLDivElement, StubProps>(function MarqueeStub(
+  { children, ...rest },
+  ref
+) {
+  const out: StubProps = {};
+  for (const [key, value] of Object.entries(rest)) {
+    if (!MARQUEE_PROPS.has(key)) out[key] = value;
+  }
+  return (
+    <div ref={ref} data-decky-ui="Marquee" {...withoutSteamNavProps(out)}>
+      {children as React.ReactNode}
+    </div>
+  );
+});
 
 export const Router = {
   MainRunningApp: { appid: 570, display_name: "Dota 2" },
