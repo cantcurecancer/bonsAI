@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
   "fileCount": 351,
-  "edgeCount": 846,
+  "edgeCount": 844,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -1379,8 +1379,7 @@
         "src/features/plugin-shell/TabIndicatorBar.test.tsx",
         "src/features/plugin-shell/TabIndicatorBar.tsx",
         "src/features/plugin-shell/tabTitles.test.tsx",
-        "src/index.tsx",
-        "src/styles/sections/section-1.ts"
+        "src/index.tsx"
       ]
     },
     "src/features/plugin-shell/tabs/useAboutTabPayload.tsx": {
@@ -1623,7 +1622,6 @@
         "src/hooks/useTabStripBodyOffset.ts",
         "src/index.tsx",
         "src/styles/sections/scopeBase.ts",
-        "src/styles/sections/section-1.ts",
         "src/styles/sections/section-3.ts",
         "src/styles/sections/section-4.ts",
         "src/styles/sections/section-5.ts",
@@ -2195,10 +2193,7 @@
       ]
     },
     "src/styles/sections/section-1.ts": {
-      "imports": [
-        "src/features/plugin-shell/tabTitles.tsx",
-        "src/features/unified-input/constants.ts"
-      ],
+      "imports": [],
       "importedBy": [
         "src/styles/bonsaiScopeStylesheet.ts"
       ]
