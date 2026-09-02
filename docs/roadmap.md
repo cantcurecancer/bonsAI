@@ -258,7 +258,10 @@ seconds; anything that would otherwise have to be re-measured goes there rather 
   [audit/maintainer-decisions-locked.md](audit/maintainer-decisions-locked.md) first, and it needs settling alongside the collapsing tab
   bar below, which wants the active tab readable at a glance and is the natural place for a name to live. **Planned 2026-09-01:**
   settled inside [planning/30-collapsing-tab-bar.md](planning/30-collapsing-tab-bar.md) — the thin bar names the active tab at rest
-  and the open strip names all six. R5 is reopened as **D44**.
+  and the open strip names all six. R5 is reopened as **D44**. **Fixed 2026-09-02:** the bar shows the active tab's name at rest
+  (11px caps in the character accent) and the open strip labels all six tabs (8px caps, PERMS and DEV as the short forms while
+  Developer is mounted). D44 locked. Rows **TAB-BAR-01…06** pass on the Deck; the by-eye legibility check (**TAB-BAR-07**) is the
+  maintainer's.
 
 ### Reading a long reply
 
@@ -470,6 +473,15 @@ alphabetical order the rest of the Backlog uses.
     LB/RB stop working with Steam's bar hidden, work stops and comes back to the maintainer. Reopens R5 as **D44**. Folds in
     *Tab-strip micro labels + wide active cell* below. The open questions that used to sit in [roadmap-details.md](roadmap-details.md)
     are answered in the plan's § 3.
+  - **Shipped 2026-09-02 (plan 30 W0–W6), on-Deck rows 07–10 owed.** The spike passed both halves — LB/RB kept switching with
+    Steam's header hidden, with and without a game running (the rig launched and exited Half-Life 2 itself, plan 07 in
+    decky-plugin-studio). Measured on the Deck: Steam's header row **80.66px → bonsAI's bar 20px**, the tab body's top **84.66 → 23.99px**,
+    the body **616 → 677px**. The one surprise: Steam keeps its hidden tab buttons as D-pad stops, so the bar is the strip's single focus
+    stop and every hop in and out of it is explicit (D55, option 1); a free-play sweep records zero focused-but-not-visible stops.
+    Left/Right and LB/RB on the bar wrap because Steam's bumpers wrap (D56). **Owed:** TAB-BAR-07 (legibility by eye) and -08 (touch)
+    need a person at the Deck; -09 (modal return) and -10 (UI scale Apply) are rig rows. **Not yet delivered against the goal:** the
+    transcript is still 412px — the reclaimed 61px went into Main's overflow and the gap above the dock, not the bubbles; what caps
+    the transcript is a Main-tab layout question (plan 30 § 8, *Why the transcript did not grow*) and the next step under this goal.
 
 ### Ask / reply
 
@@ -579,6 +591,8 @@ alphabetical order the rest of the Backlog uses.
     labels, no width change, no height cost. Shipping this later means reopening R5 in
     [audit/maintainer-decisions-locked.md](audit/maintainer-decisions-locked.md) first — not just
     writing the CSS.
+  - **Closed 2026-09-02, folded into plan 30:** the labels shipped on the open strip (8px caps under every icon) and the active
+    tab's name sits on the thin bar at rest; the wide active cell was dropped by the maintainer in discovery. R5 is superseded by D44.
   - **Folded into [planning/30-collapsing-tab-bar.md](planning/30-collapsing-tab-bar.md) on 2026-09-01.** The labels ship on
     that plan's open strip; the wide active cell is dropped (maintainer call in discovery). R5 is reopened there as **D44**. Do not
     build this separately.

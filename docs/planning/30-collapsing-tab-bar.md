@@ -1,6 +1,6 @@
 # Plan 30 — The tab bar collapses when it is not in use
 
-**Status:** decided 2026-09-01, build not started. Twelve discovery decisions answered by the maintainer
+**Status:** built and measured 2026-09-02 (W0–W7); rows TAB-BAR-07 (by eye), -08 (touch) and the desktop-note half of -09 are the maintainer's; D55 is open with option 1 built. Originally: decided 2026-09-01, build not started. Twelve discovery decisions answered by the maintainer
 (§ 3). Reopens locked decision **R5** as **D44** (open, answered in discovery, to be locked when the spike
 in § 5 passes). Written against branch `experimental` at `06b2d02`.
 **Fixes:** roadmap → Backlog → *Vertical space for the chat bubbles* → **The tab icon bar collapses when it
@@ -574,16 +574,45 @@ Filled in as they land. Nothing here is predicted.
 |---|---|---|---|
 | Header row height, Steam's | **80.66px** (Steam's header wrapper, 300px wide, the Tabs panel's first of two children; the hint-and-icons row inside it is 252px wide at x+24) — 2026-09-02, six tabs, Main active, ring on a chip, no game | n/a | n/a |
 | Leaf bottom relative to tabs root | 61.99–62.33px (leaves 40×44 at y+18) | n/a (leaves are display:none) | |
-| `TabContentsScroll` top relative to scope | 84.66px (`margin-top` 4px, `z-index` 1; 616px tall, `scrollHeight` 692 so Main overflows by 76px with the ring on a chip) | **23.99px** (bar 20 + reserve 4) — 60.67px higher than W0; 677px tall, `scrollHeight` 692 | |
+| `TabContentsScroll` top relative to scope | 84.66px (`margin-top` 4px, `z-index` 1; 616px tall, `scrollHeight` 692 so Main overflows by 76px with the ring on a chip) | **23.99px** (bar 20 + reserve 4) — 60.67px higher than W0; 677px tall, `scrollHeight` 692 | 23.99px once the bar is 20 (was 14.99 while it read 11) |
 | `--bonsai-tab-strip-reserve` | 4px (on the tabs root) | 4px, written once by the short-circuit | |
 | `--bonsai-tab-body-height` | 616px (on the scope) | **677px** (+61) | |
 | Transcript reading area (Main, chips showing) | 455px on 2026-08-31 after `fc1b245` ([roadmap.md](../roadmap.md), preset chips); **412px** on 2026-09-02 at W0 (`.bonsai-chat-transcript` clientHeight, two turns, session-context strip and frozen TEST chips showing, dock 157px) | **412px, unchanged.** The extra body height went into Main's overflow (76 → 15px) and the gap above the dock (60 → 41px), not into the transcript: `.bonsai-chat-transcript` is not sized from the viewport (see the W3 note below) | |
-| Thin bar height | n/a | **20px** (300 × 20 at the scope's top, padding 0 8px); dashes block 104px, name 125px at 11px, marks 12 × 9 at both ends; six dashes, active dash and name in the character accent (gold, rgba(241,196,15,.92)) | |
-| Open strip height and label size | n/a | n/a | |
+| Thin bar height | n/a | **20px** (300 × 20 at the scope's top, padding 0 8px); dashes block 104px, name 125px at 11px, marks 12 × 9 at both ends; six dashes, active dash and name in the character accent (gold, rgba(241,196,15,.92)) | 20px again after the height fix (see the W5 note); it had read 11px from W4 until then |
+| Open strip height and label size | n/a | n/a | **54px**, floating (`position: absolute`, z-index 3, 300 wide at the scope top); labels **8px caps** with the short forms on (six tabs): cells MAIN 38 / OLLAMA 43 / SETTINGS 48 / PERMS 38 / DEV 38 / ABOUT 38 wide, first cell at x+20, last cell ends at x+273, marks at x+6 and x+281 — `scrollWidth` 300 = `clientWidth`, nothing clipped |
 | Header-row selector | `.bonsai-scope .bonsai-decky-tabs-root > .Panel.Focusable > div:has(.bonsai-tab-title-leaf):has(img[aria-label]):not(:has([class*="TabContentsScroll"]))` — matches exactly the 300px header wrapper; no hashed token; `:has()` already relied on at section-6.ts:675 | matches exactly one element on device, `display: none` | |
 | First Downs from a fresh open | 1st → Decky's Back button (`<BUTTON>` in the "bonsAI v0.5.0" header); 2nd → Steam's strip, on the Main tab (`"Ask bonsAI"`); 3rd → the chat-slot row (unlabelled `Focusable`); 4th → the transcript's first turn. `runs/TAB-BAR-W0-first-downs.json`, 2026-09-02 | | |
 | B from inside the body | 1st B: chip → Steam's strip (Main tab); 2nd B: strip → panel closed, ring unowned, Decky list. `runs/TAB-BAR-W0-back-to-list*.json` | | |
 | W1 a–e results | see *W1 spike results* below | n/a | n/a |
+
+### W6 on the device (2026-09-02)
+
+225 lines of strip rules deleted from `section-1.ts` (the leaf box, icon shells and sizes, both rings,
+both drop-shadow blocks, the `[data-bonsai-active-tab]` marker); the tabs-root layout rules and the hiding
+rule stay, and `data-bonsai-active-tab` stays on the root because the on-Deck rows read it. Before/after
+fingerprint at rest, same read on the W5-fixed build and on the W6 build: **byte-identical** — bar
+`[48, 63.96, 300, 20]`, dashes `[78.08, 71.46, 103.89, 4.99]`, name `[191.97, 68.46, 125.05, 11]`, marks
+`[55.99 …]` / `[327.01 …]`, hidden strip `[48, 63.96, 300, 53.99]`, contents `[48, 87.95, 300, 676.99]`, slot
+row `[48, 87.95, 300, 54.53]`, transcript `[48, 154.48, 300, 411.96]`, dock `[48, 607.58, 300, 157.36]`,
+reserve 4px, body 677px. The injected stylesheet went from 154,705 to 141,956 bytes. The open state too: strip `[48, 63.96, 300, 53.99]`, absolute, no overflow, the six cells and both marks at the same x as the W5 read, and the body top still 87.95 with the strip open — the wrapper never grows.
+
+### W5 on the device (2026-09-02, builds 3f26f13 → 25fd29e → the height fix)
+
+Three reads of the open strip, because the first two found the same class of bug twice:
+`section-3.ts` resets every `.Panel.Focusable > div` to `position: relative !important` and every
+`.Panel.Focusable` to `height: auto !important`, and since W4 the bar is a `.Panel.Focusable`. The
+strip's `position: absolute` lost on both counts (first no `!important`, then on specificity: the reset
+is (0,3,1)), so it laid out in-flow after the marks, 104px wide and overflowing, the bar grew to 54px and
+the body moved down 34px. And the bar's own 20px lost to the height reset, so it had been **11px** —
+its tallest child — since W4; the W4 sweep printed `h: 11` and it went unread. Both fixes are (0,4,0)+
+`!important` rules of their own with stylesheet tripwires that also pin the reset they beat.
+
+| Row | Result | Evidence |
+|---|---|---|
+| **TAB-BAR-07** geometry half | Six cells with the short forms at 8px caps fit 300px with 27px to spare (last cell ends at x+273, the RB mark at x+281); no overflow; icon boxes 32px with the tree and bug at 30px, the others at 24px. **The by-eye half is the maintainer's**: `screenshots/DeckCapture_20260902_181005_game.png` (local, not tracked) shows the open strip — MAIN lit with the gold accent ring and fill, OLLAMA / SETTINGS / PERMS / DEV / ABOUT beside it, LB and RB at the ends, the slot row's dots just visible under the strip's bottom edge | `deck_readPage`, `runs/TAB-BAR-07-open-the-strip-3.json` |
+| **TAB-BAR-10** UI scale Apply | **PASS**, with one fix. Settings → *Apply UI scale* → A remounted the tabs subtree: the bar came back thin (`rest`), on Settings, at scale 1, 20px tall, and its Settings body root re-registered — Up from the top of the remounted body reached the bar. After a remount Steam parks the unowned ring inside the body (the acquire press landed on "Adjust UI automatically", not on Decky's Back button), which is Steam's `Tabs` restoring its own state and fine. **Found:** the 4px reserve is an inline style on the tabs root and left with it, so the body started flush under the bar (contents top 20, body 680); now declared in the stylesheet on the tabs root whenever the bar is mounted (commit *the 4px reserve lives in the stylesheet*). **Re-read after deploy:** Apply again → reserve computed `calc(4px * 1)` from the stylesheet with no inline value, body top 87.95 (24 relative to the scope), body 677px — fixed | `runs/TAB-BAR-10-ui-scale-apply.json`, `runs/TAB-BAR-10-after-apply-downs.json`, `runs/TAB-BAR-10-after-apply-ups.json` |
+| **TAB-BAR-09** modal return | **PASS** for the three openers the rig can drive: the character picker (Settings, *Ali G — Other*), the models hub (Ollama, *Browse and pull Ollama models*) and the chat-slot rename (Main) all returned the ring to the opener after B, visible, never the hidden header — better than PICKER-FOCUS-01's record, which had the models hub landing on the strip. The desktop-note opener sits behind the *Save files to Desktop* permission and was not run | `runs/TAB-BAR-09-character-picker-return.json`, `runs/TAB-BAR-09-models-hub-return.json`, `runs/TAB-BAR-09-slot-rename-return.json` |
+| Open state | Down onto the bar opens the strip (`data-bonsai-tab-bar-state="open"`, opacity 1, visible); the bar's accessible label reads "Main tab" | same |
 
 ### W4 on the device (2026-09-02, build 2bc7dd2 + 3dd5d98)
 

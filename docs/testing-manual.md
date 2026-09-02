@@ -460,6 +460,30 @@ everything below assumes it passes. Plan:
 
 ---
 
+### TAB-BAR — Collapsing tab bar (P0)
+
+Plan [30](planning/30-collapsing-tab-bar.md), decisions D44/D55/D56. Steam's tab header is hidden by one
+structural rule; a 20px bar above the tabs root shows the tab and is the strip's one focus stop; the
+full strip floats over the panel while the bar holds the ring. All rows are on-Deck. Evidence files
+under `runs/`; numbers in the plan's § 8.
+
+| Row | Scenario | Pass | Status |
+|---|---|---|---|
+| **TAB-BAR-01** | Height | Thin bar ≤ 24px including the gap; `TabContentsScroll` top at least 55px higher than the W0 baseline | ✅ 2026-09-02 — bar 20px, body top 23.99px vs 84.66 (`deck_readPage`) |
+| **TAB-BAR-02** | Reach | Fresh open: Down lands on Back, second Down on the bar (open, ring on the active cell); from the slot row Up lands on the bar | ✅ 2026-09-02 `runs/TAB-BAR-02-fresh-open-downs.json`, `runs/TAB-BAR-03-switch-on-the-bar.json` steps 1–2 |
+| **TAB-BAR-03** | Switch | On the bar Left/Right and LB/RB switch at once, wrapping at both ends (D56); LB/RB from inside the body switch, the dash and name follow, the bar stays thin | ✅ 2026-09-02 `runs/TAB-BAR-03-switch-on-the-bar.json` (11/11); body half `runs/TAB-BAR-W1a-*.json` |
+| **TAB-BAR-04** | Collapse | Down from the bar lands on the first control of each of the six tabs; Up from it returns to the bar; B inside a body lands on the bar | ✅ 2026-09-02 `runs/TAB-BAR-04-collapse-into-each-tab.json` (17/17), `runs/TAB-BAR-04b-b-from-body.json` |
+| **TAB-BAR-05** | No ghost stops | Free-play sweep top to bottom: `gpfocus` never names a hidden Steam tab element, every stop visible | ✅ 2026-09-02 `runs/TAB-BAR-05-sweep-main.json` — 23 stops, 0 focused-but-not-visible |
+| **TAB-BAR-06** | Slot-row takeover | While the slot row holds the ring the bar's LB/RB marks are hidden and the bar does not shift; they return when the ring leaves | ✅ 2026-09-02 `deck_readPage` around `runs/TAB-BAR-W3-slot-row-to-transcript.json` |
+| **TAB-BAR-07** | Legibility, by eye | Names on the open strip readable on the handheld at 8px caps; lit dash and name gold with Ali G / the TF2 Announcer, purple with Shadowheart, otherwise green; after a QAM close and reopen the bar shows the restored tab | ⏳ strip geometry measured (plan § 8); the by-eye half is the maintainer's: open bonsAI, press Down twice, look |
+| **TAB-BAR-08** | Touch | Tap on the thin bar opens the strip; a tab tap switches and closes it; a tap outside closes it | ⏳ needs a finger on the screen — the rig cannot tap |
+| **TAB-BAR-09** | Modal return | After the character picker closes on a non-Main tab, the ring lands on the opener or on the bar, never nowhere (re-runs PICKER-FOCUS-01's three openers) | ✅ 2026-09-02 for the character picker, the models hub and the chat-slot rename — all return to the opener (`runs/TAB-BAR-09-*.json`); ⏳ the desktop-note opener needs the *Save files to Desktop* permission on |
+| **TAB-BAR-10** | UI scale Apply | Settings → UI scale → Apply remounts the tabs subtree; the bar comes back thin, on the right tab, at the new scale | ✅ 2026-09-02 `runs/TAB-BAR-10-*.json` — thin, on Settings, scale 1, body root re-registered (Up from the top of Settings reaches the bar). The 4px gap under the bar was lost on remount, is now a stylesheet value, and survives an Apply (`runs/TAB-BAR-10-ui-scale-apply-2.json`, body top 24px after) |
+
+Also re-run because their landing spot changed: **DOC-SWEEP-01** (Settings Up → the bar now),
+**CHAT-SLOTS-V3-01** (the walk starts at the bar), **TAB-SWITCH-01** (the flicker fix must hold with
+the header hidden — `runs/TAB-BAR-W1a-*.json` show ten clean switches).
+
 ## Tier 3 — Heavy manual
 
 | Block | Notes |

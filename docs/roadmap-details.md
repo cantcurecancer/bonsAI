@@ -180,30 +180,13 @@ Open questions:
 
 ## The tab icon bar collapses when it is not in use
 
-Raised by the maintainer 2026-08-30 under the same goal: *"We need some kind of way of collapsing the tab icon bar when not in use. It's
-taking up too much vertical space."* Their own sketch: **a bar indicator with little dashes to indicate where you are in the carousel**,
-with the requirement that a user **can glance at any point and see what tab they are on**, and that interacting with it gives more context
-and information.
-
-The tension to workshop is in that pair of sentences. A dash strip is cheap in height but says only *3 of 6*; a glance is supposed to
-answer *which* tab, which is a name or a glyph, which costs height. Candidate resolutions, none chosen:
-
-- **Dashes plus one glyph.** The active tab keeps its icon; the others become dashes. Height falls to roughly one icon.
-- **Dashes plus one word.** The active tab's *name* instead of its glyph — more legible at a glance, and it would settle the long-standing
-  *full SETTINGS label* complaint, but reopens locked decision **R5** ([major-redesign.md](major-redesign.md) § 7).
-- **Collapse on idle only.** Full strip while the ring is anywhere in the panel, dashes after N seconds without input. Cheapest to read,
-  but the strip changing height under a settled panel moves everything below it — and the sticky Ask dock now sits at the bottom edge, so
-  a height change there is visible immediately.
-
-Constraints that are already known and should not have to be rediscovered:
-
-- **R5 is locked**: filled active glyph only, no micro labels, no width change, no height cost. Any option above that adds a label reopens
-  it in [audit/maintainer-decisions-locked.md](audit/maintainer-decisions-locked.md) first.
-- **LB/RB switch tabs**, and the strip is the only thing on screen that says so. A collapsed strip that drops the shoulder hints removes
-  the tab-switching affordance for anyone who has not memorised it — note that the row-focused rule already hides those glyphs while the
-  chat slot row holds the ring, so the two behaviours have to be designed together, not separately.
-- **Steam class names are hashed** (design-language Rule 5); the strip is ours, but anything measured around it must be measured on device.
-
+The open questions that lived here (dashes plus a glyph or a word, collapse on idle, the R5 lock, the
+LB/RB affordance, hashed Steam classes) were workshopped on 2026-09-01 and answered in
+[planning/30-collapsing-tab-bar.md](planning/30-collapsing-tab-bar.md) § 3, then built and measured on
+2026-09-02 (§ 8 there). The short version: our own 20px bar of dashes plus the active tab's name, opening
+to a floating strip of icons and names only while the D-pad ring is on it; Steam's `Tabs` stays underneath
+for LB/RB and the tab bodies; R5 reopened as **D44**, the ghost-stop finding is **D55**, the wrap
+correction **D56**.
 
 ## Shipped, QA owed — why each was built this way
 

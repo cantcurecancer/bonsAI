@@ -2798,7 +2798,7 @@ the live page and writes them into the plan's § 3b.
 [planning/29-preset-row-three-thirds-plan.md](../planning/29-preset-row-three-thirds-plan.md); the
 first deploy writes the measured padding and character counts back into that plan's § 3b.
 
-### D44 — OPEN (raised 2026-09-01, answered in discovery, not yet locked) — Reopen R5: the tab strip collapses to a thin bar and gets names
+### D44 — LOCKED 2026-09-02 — Reopen R5: the tab strip collapses to a thin bar and gets names (option 1, the discovery answer)
 
 **R5** ([major-redesign.md § 7](../major-redesign.md), 2026-08-09; re-confirmed in the turn-8 review
 2026-08-29/30) locked the tab strip as *filled active glyph only, no micro labels, no width change, no
@@ -2830,6 +2830,14 @@ The maintainer chose option 1 in discovery. **Lock it here once the device spike
 passes** (LB/RB still switch tabs with Steam's bar hidden). If the spike fails, the plan stops by the
 maintainer's own call and this entry records why. R5's other reason, whether 7px caps survive on a
 handheld, is a device check in the plan (**TAB-BAR-07**), not a paper decision.
+
+**Locked 2026-09-02: the spike passed.** With Steam's header wrapper hidden by a hash-free `display: none`
+rule, RB ×5 and LB ×5 from inside the body switched every tab and `currentTab` followed each press, both
+with no game running and with Half-Life 2 running (the rig launched and exited the game itself);
+evidence `runs/TAB-BAR-W1a-no-game.json` and `runs/TAB-BAR-W1a-with-game-2.json`, numbers in
+[planning/30-collapsing-tab-bar.md § 8](../planning/30-collapsing-tab-bar.md). The body gained the full
+80px (616 → 696px). What the spike also found — Steam's hidden tab button stays a focus stop — is a
+separate call, **D55** below.
 
 ---
 
@@ -2943,3 +2951,48 @@ GTA*). The maintainer asked for more explanation before deciding; the explanatio
 Today a Strategy first turn gives an orientation and a branch menu before tactics, by design.
 The maintainer asked for more explanation before deciding; the explanation is in the 2026-09-01
 session and will be copied here with the answer.
+
+### D55 — OPEN (raised 2026-09-02, recommendation given, plan 30 is being built under it) — Steam's hidden tab buttons stay focus stops: route around them, or stop plan 30?
+
+Plan 30's spike (§ 8 of [planning/30-collapsing-tab-bar.md](../planning/30-collapsing-tab-bar.md))
+hid Steam's tab header and then walked the D-pad. LB/RB kept working (that was the gate, and it
+passed). But the **active tab's hidden button is still a focus stop**: from a fresh open, Down lands
+on Decky's Back button, then on the invisible tab button, then on the body; Up from the top of a tab
+lands on the same invisible button; a free-play sweep of Settings recorded it twice and nothing else
+hidden. It behaves identically under `display: none` and under `height: 0; visibility: hidden`, so it
+is Steam's navigation tree — built from mounted `Focusable`s, not from layout — and no CSS removes it.
+The plan's risk table (§ 7) said: switch the property, and if both leave ghosts, stop.
+
+Options:
+
+1. **Route around it (recommended, and what W4 builds).** Our bar's Down does not return `false`
+   to Steam; it moves the ring itself to the current tab's first stop through `navFocusRegistry`,
+   and each tab's first stop moves Up to the bar the same way. One `Focusable` wrapper per tab body
+   in `index.tsx`'s tab list carries the `navRef`, so it is six registrations from one place, the
+   same hop the chat-slot row already uses. Add a small focus trap on the hidden header: if Steam
+   ever lands the ring on a hidden tab button by any other path (B from inside a body does exactly
+   that today), bounce it to our bar. Cost: one wrapper, one observer, and TAB-BAR-05 must show
+   zero focused-but-not-visible stops on every tab. Risk: the trap and the hops are ours to keep
+   working across Steam updates; the fail-safe stays — if the hiding rule ever stops matching,
+   Steam's strip reappears and the trap has nothing to catch.
+2. **Stop plan 30 here**, as § 7 literally says. Keeps Steam's strip and its 85px. The names bug
+   and the vertical-space item stay open.
+3. **Hide the header but leave the ghost**, shipping W3 only (the thin bar, no focus stop). Reclaims
+   the 80px at once; the ghost is one invisible Down between Decky's Back button and the body, and
+   Up from the top of a tab stops on it once. This is the "focused but not visible" bug class the
+   maintainer named on 2026-08-31, so it is listed only to be rejected.
+
+Built under option 1 from W4 on because the maintainer said "keep going" and option 1 is the plan's
+own § 4.5 fallback, applied in both directions. If the answer is 2, W2–W3 are harmless on their own
+and W4+ is reverted.
+
+### D56 — LOCKED 2026-09-02 (a corrected assumption, no maintainer input needed) — The collapsing tab bar's Left/Right wrap at the ends, because LB/RB do
+
+Plan 30's discovery notes assumed *"Left at the first tab and Right at the last do nothing, matching
+LB and RB."* Measured after W3 on the device (`runs/TAB-BAR-W3-shoulder-wrap.json`): **LB on Main
+goes to About and RB on About goes to Main.** Steam's `Tabs` defaults `wrapAround` to true and
+bonsAI never set it. So the half of the assumption about LB/RB was wrong, and the plan's own rule
+("matching LB and RB") decides the rest: the bar's Left, Right, LB and RB wrap the same way
+(`tabBarNav.ts`), measured passing in `runs/TAB-BAR-03-switch-on-the-bar.json`. The alternative —
+passing `wrapAround: false` to Steam so the bumpers stop at the ends — changes existing behaviour
+for every user and was not what anyone asked for. Reopen here if the wrap turns out to be a nuisance.

@@ -337,7 +337,7 @@ in [audit/maintainer-decisions-locked.md](audit/maintainer-decisions-locked.md).
 | R2 | Is one permanent Main focus stop acceptable (§ 4.2)? | **OPEN — decide on device at P-4.** Same call the postmortem deferred to its own P4; it cannot be made on paper. |
 | R3 | Slot cap (§ 4.3) | **Small cap, no pinning.** 5–8 slots. Dots stay dots — no numeric counter, no pinning, no hold-to-jump-5, no warning line. 1d is out of scope. |
 | R4 | Does the layout inversion ship, and separately (§ 4.4)? | **Yes, separately — after the width bug.** P-0b then P-7. Slots do not wait on it, and it can be dropped without touching P-1…P-6. |
-| R5 | Tab-strip treatment (§ 4.5) | **Filled active only (2b/b).** No micro labels, no width change, no 6px height cost. One CSS rule. |
+| R5 | Tab-strip treatment (§ 4.5) | **Filled active only (2b/b).** No micro labels, no width change, no 6px height cost. One CSS rule. **Reopened 2026-09-01 and superseded by D44 (locked 2026-09-02):** Steam's strip is hidden and replaced by bonsAI's own 20px bar with the active tab's name, opening to a labelled strip only while the ring is on it — [planning/30-collapsing-tab-bar.md](planning/30-collapsing-tab-bar.md). |
 
 ### The preset row (§ 2.3) — decided 2026-09-01
 
