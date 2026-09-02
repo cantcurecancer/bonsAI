@@ -35,6 +35,7 @@
     "src/features/plugin-shell/modalReturnFocusRegistry.test.ts",
     "src/features/plugin-shell/tabTitles.test.tsx",
     "src/features/preset-carousel/carouselState.test.ts",
+    "src/features/preset-carousel/presetRowNav.test.ts",
     "src/features/preset-carousel/presetSlotRotation.test.ts",
     "src/features/preset-carousel/sessionRagComposer.test.ts",
     "src/features/preset-carousel/singleSlotRotation.test.ts",

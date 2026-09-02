@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 342,
-  "edgeCount": 811,
+  "fileCount": 344,
+  "edgeCount": 812,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -1462,6 +1462,18 @@
       ],
       "importedBy": [
         "src/features/preset-carousel/sessionRagComposer.ts"
+      ]
+    },
+    "src/features/preset-carousel/presetRowNav.test.ts": {
+      "imports": [
+        "src/features/preset-carousel/presetRowNav.ts"
+      ],
+      "importedBy": []
+    },
+    "src/features/preset-carousel/presetRowNav.ts": {
+      "imports": [],
+      "importedBy": [
+        "src/features/preset-carousel/presetRowNav.test.ts"
       ]
     },
     "src/features/preset-carousel/presetSlotRotation.test.ts": {
