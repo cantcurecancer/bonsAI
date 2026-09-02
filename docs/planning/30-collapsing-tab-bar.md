@@ -193,7 +193,7 @@ Drawn at the real 300px width. Heights are CSS px before `--bonsai-ui-scale`.
 - **Dashes:** six (or five), each 14 × 3px with a 4px gap, so the block is about 104px. The active dash is
   the accent colour at full alpha and 2px taller; the others are `rgba(168,182,198,.35)`. The lit dash
   moves with `currentTab`; nothing else in the bar re-renders on a shoulder press.
-- **Name:** the active tab's short name, 11px small caps, accent colour, 10px after the dash block.
+- **Name:** the active tab's short name, 11px caps (upper-cased with 0.08em tracking rather than synthesized small caps, which render unevenly at this size), accent colour, 10px after the dash block.
   11px is the same size the chat-slot bumper pills use ([section-6.ts:703-715](../../src/styles/sections/section-6.ts)),
   and it is readable at rest, which is the whole requirement.
 - **LB and RB marks:** 9px caps at the far ends, `rgba(168,182,198,.62)`, the slot-row pill colour.
@@ -247,13 +247,13 @@ opened it. Nothing else opens it, and no timer closes it.
 | Trigger | From | To | What happens |
 |---|---|---|---|
 | Ring lands on the bar (Up from the panel, Down from Decky's header) | rest | open | Strip draws; our ring on the active cell |
-| Left / Right | open | open | Switch to the neighbour tab **at once**; at the ends do nothing; the press is always claimed (`return true`) so the ring never leaves sideways |
-| LB / RB, ring anywhere | either | same | Steam switches; `currentTab` updates; the lit dash and name follow; if open, the lit cell follows |
+| Left / Right | open | open | Switch to the neighbour tab **at once**; at the ends **wrap**, because LB and RB wrap on the device (measured after W3, `wrapAround` defaults to true in Steam's `Tabs`); the press is always claimed (`return true`) so the ring never leaves sideways |
+| LB / RB, ring anywhere | either | same | Steam switches while the ring is inside its `Tabs`; **on the bar itself the bar handles them** (it sits outside Steam's `Tabs`, so Steam never sees the press there) through `selectTab`, wrapping the same way; `currentTab` updates; the lit dash and name follow; if open, the lit cell follows |
 | Down | open | rest | `onMoveDown` returns `false`, so Steam's spatial navigation descends into the panel's first stop, exactly as the slot row does at [ChatSlotRow.tsx:252](../../src/features/chat-slots/ChatSlotRow.tsx) |
 | Up | open | leaves | `onMoveUp` returns `false`; Steam goes to Decky's Back button, as it does from the strip today |
 | Blur for any other reason (modal opens, QAM closes) | open | rest | `onBlur` clears the state |
 | A | open | open | No-op. Left/Right already switched. Not claimed |
-| B | open | Steam's | Not handled |
+| B | open | Steam's | Not handled on the bar. **Inside a tab body** B used to focus Steam's tab header; with the header hidden that is the ghost, so W4 passes `cancelSkipTabHeader` and routes B to the bar through `onCancelFromTabHeader` (§ 8, *What Steam's Tabs really accepts*) |
 | Tap on the thin bar | rest | open | `touchOpen` flag; no ring involved |
 | Tap on a cell | open | rest | Switch, then close |
 | Tap outside | open | rest | One `pointerdown` listener on the UI document, registered through `getUiDocument()` ([uiDocument.ts](../../src/utils/uiDocument.ts)), removed on close |
@@ -546,17 +546,45 @@ Filled in as they land. Nothing here is predicted.
 | What | Baseline (W0) | After W3 | After W5 |
 |---|---|---|---|
 | Header row height, Steam's | **80.66px** (Steam's header wrapper, 300px wide, the Tabs panel's first of two children; the hint-and-icons row inside it is 252px wide at x+24) — 2026-09-02, six tabs, Main active, ring on a chip, no game | n/a | n/a |
-| Leaf bottom relative to tabs root | 61.99–62.33px (leaves 40×44 at y+18) | | |
-| `TabContentsScroll` top relative to scope | 84.66px (`margin-top` 4px, `z-index` 1; 616px tall, `scrollHeight` 692 so Main overflows by 76px with the ring on a chip) | | |
-| `--bonsai-tab-strip-reserve` | 4px (on the tabs root) | | |
-| `--bonsai-tab-body-height` | 616px (on the scope) | | |
-| Transcript reading area (Main, chips showing) | 455px on 2026-08-31 after `fc1b245` ([roadmap.md](../roadmap.md), preset chips); **412px** on 2026-09-02 at W0 (`.bonsai-chat-transcript` clientHeight, two turns, session-context strip and frozen TEST chips showing, dock 157px) | | |
-| Thin bar height | n/a | | |
+| Leaf bottom relative to tabs root | 61.99–62.33px (leaves 40×44 at y+18) | n/a (leaves are display:none) | |
+| `TabContentsScroll` top relative to scope | 84.66px (`margin-top` 4px, `z-index` 1; 616px tall, `scrollHeight` 692 so Main overflows by 76px with the ring on a chip) | **23.99px** (bar 20 + reserve 4) — 60.67px higher than W0; 677px tall, `scrollHeight` 692 | |
+| `--bonsai-tab-strip-reserve` | 4px (on the tabs root) | 4px, written once by the short-circuit | |
+| `--bonsai-tab-body-height` | 616px (on the scope) | **677px** (+61) | |
+| Transcript reading area (Main, chips showing) | 455px on 2026-08-31 after `fc1b245` ([roadmap.md](../roadmap.md), preset chips); **412px** on 2026-09-02 at W0 (`.bonsai-chat-transcript` clientHeight, two turns, session-context strip and frozen TEST chips showing, dock 157px) | **412px, unchanged.** The extra body height went into Main's overflow (76 → 15px) and the gap above the dock (60 → 41px), not into the transcript: `.bonsai-chat-transcript` is not sized from the viewport (see the W3 note below) | |
+| Thin bar height | n/a | **20px** (300 × 20 at the scope's top, padding 0 8px); dashes block 104px, name 125px at 11px, marks 12 × 9 at both ends; six dashes, active dash and name in the character accent (gold, rgba(241,196,15,.92)) | |
 | Open strip height and label size | n/a | n/a | |
-| Header-row selector | `.bonsai-scope .bonsai-decky-tabs-root > .Panel.Focusable > div:has(.bonsai-tab-title-leaf):has(img[aria-label]):not(:has([class*="TabContentsScroll"]))` — matches exactly the 300px header wrapper; no hashed token; `:has()` already relied on at section-6.ts:675 | | |
+| Header-row selector | `.bonsai-scope .bonsai-decky-tabs-root > .Panel.Focusable > div:has(.bonsai-tab-title-leaf):has(img[aria-label]):not(:has([class*="TabContentsScroll"]))` — matches exactly the 300px header wrapper; no hashed token; `:has()` already relied on at section-6.ts:675 | matches exactly one element on device, `display: none` | |
 | First Downs from a fresh open | 1st → Decky's Back button (`<BUTTON>` in the "bonsAI v0.5.0" header); 2nd → Steam's strip, on the Main tab (`"Ask bonsAI"`); 3rd → the chat-slot row (unlabelled `Focusable`); 4th → the transcript's first turn. `runs/TAB-BAR-W0-first-downs.json`, 2026-09-02 | | |
 | B from inside the body | 1st B: chip → Steam's strip (Main tab); 2nd B: strip → panel closed, ring unowned, Decky list. `runs/TAB-BAR-W0-back-to-list*.json` | | |
 | W1 a–e results | see *W1 spike results* below | n/a | n/a |
+
+### W3 on the device (2026-09-02, build 72fa916)
+
+| Row | Result | Evidence |
+|---|---|---|
+| **TAB-BAR-01** height | **PASS.** Bar 20px, body top 23.99px (≤ 24 with the gap), 60.67px higher than W0's 84.66. Reading area not yet grown — see the note | `deck_readPage`, `screenshots/DeckCapture_20260902_082725_game.png` |
+| **TAB-BAR-06** slot-row takeover | **PASS.** Ring on the slot row: both marks `visibility: hidden`, bar and dash/name boxes byte-identical; ring on the transcript: both visible again | `deck_readPage` before and after `runs/TAB-BAR-W3-slot-row-to-transcript.json` |
+| Fresh-open Downs on this build | Back → hidden Main tab button (offscreen) → slot row → transcript. Expected: the bar is not a stop until W4 | `runs/TAB-BAR-W3-fresh-open-downs.json` |
+| **LB/RB wrap at the ends** | LB on Main → **About**; RB on About → **Main**. Steam's `Tabs` defaults `wrapAround` to true. The discovery assumption *"Left at the first tab and Right at the last do nothing, matching LB and RB"* was wrong about LB and RB, so the bar's Left/Right **wrap** to match them (D56 records the correction) | `runs/TAB-BAR-W3-shoulder-wrap.json` |
+
+**Why the transcript did not grow.** `.bonsai-chat-transcript` measured 412px at W0, after the spike and
+after W3. The Main column is filled to the viewport by `useMainTabColumnFill`, the dock is sticky, and
+the transcript's height comes from the column's flex layout with the slot row, the session-context
+strip and the dock around it; the 61px the bar reclaimed showed up as less overflow (76 → 15px) and a
+wider gap above the dock (60 → 41px). Growing the bubbles is the roadmap item's whole point, so W5 or W7
+has to look at what caps the transcript before the item closes; it is a Main-tab layout question, not a
+tab-bar one. Recorded here so the after-W5 column is read against 412, not against a hoped-for number.
+
+**What Steam's `Tabs` really accepts (read from its source through React's fiber, 2026-09-02).** Decky's
+types declare `tabs, activeTab, onShowTab, autoFocusContents`; the component (`GamepadTabbedPage`)
+also destructures `cancelSkipTabHeader`, `onCancelFromTabHeader`, `onFocusWithin`, `canBeHeaderBackground`,
+`wrapAround`, `bPinnedInOverlayView`, `belowHeaderTabsContent` and three library-sorting props. Two of
+them matter here. Its content `Focusable` gets `onCancelButton: !cancelSkipTabHeader && (() => header.TakeFocus())`
+— that is the measured "B from inside the body lands on the (now hidden) tab button" — and the page's
+outer `Focusable` gets `onCancelButton: onCancelFromTabHeader`. So W4 passes `cancelSkipTabHeader: true`
+and an `onCancelFromTabHeader` that hands the ring to our bar: B inside a body goes to the bar, never
+to the ghost. `wrapAround` stays at Steam's default; the bar wraps to match. No prop makes the header
+non-focusable, so the ghost stays and W4 routes around it as D55 says.
 
 ### W1 spike results (2026-09-02, `display: none` on the header wrapper, throwaway build)
 
