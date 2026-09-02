@@ -49,6 +49,8 @@ import { useUnifiedInputSurface } from "./features/unified-input/useUnifiedInput
 import { PluginErrorBoundary } from "./features/plugin-shell/PluginErrorBoundary";
 import { DECKY_TAB_TITLES, type BonsaiTabId } from "./features/plugin-shell/tabTitles";
 import { TabIndicatorBar } from "./features/plugin-shell/TabIndicatorBar";
+import { TabBodyFocusRoot, tabBodyNavFocusId } from "./features/plugin-shell/TabBodyFocusRoot";
+import { takeNavFocus } from "./utils/navFocusRegistry";
 import {
   loadActiveChatSlotId,
   loadSavedSearchQuery,
@@ -183,6 +185,7 @@ const Content: React.FC = () => {
     onCompleteDeckyModalClose,
     captureSessionBeforeModal,
     onTabsShowTab,
+    selectTab,
   } = useBonsaiPluginShell({
     getSessionSnapshot: () => sessionSnapshotRef.current(),
   });
@@ -1431,26 +1434,31 @@ const Content: React.FC = () => {
             </div>
           ),
         },
+        // Every body but Main sits in a TabBodyFocusRoot so the collapsing tab bar can hand the
+        // ring down into it and the body can hand it back up (plan 30 W4). Main's chat-slot row
+        // is already a registered stop and does both itself.
         {
           id: "ollama",
           title: DECKY_TAB_TITLES.ollama,
-          content: ollamaTab,
+          content: <TabBodyFocusRoot id="ollama">{ollamaTab}</TabBodyFocusRoot>,
         },
         {
           id: "settings",
           title: DECKY_TAB_TITLES.settings,
-          content: settingsTab,
+          content: <TabBodyFocusRoot id="settings">{settingsTab}</TabBodyFocusRoot>,
         },
         {
           id: "permissions",
           title: DECKY_TAB_TITLES.permissions,
           content: (
-            <div
-              className="bonsai-tab-panel-shell bonsai-tab-panel-shell--tight bonsai-settings-section-stack"
-              data-bonsai-tab-panel="permissions"
-            >
-              {permissionsTab}
-            </div>
+            <TabBodyFocusRoot id="permissions">
+              <div
+                className="bonsai-tab-panel-shell bonsai-tab-panel-shell--tight bonsai-settings-section-stack"
+                data-bonsai-tab-panel="permissions"
+              >
+                {permissionsTab}
+              </div>
+            </TabBodyFocusRoot>
           ),
         },
       ];
@@ -1458,19 +1466,21 @@ const Content: React.FC = () => {
         rows.push({
           id: "developer",
           title: DECKY_TAB_TITLES.developer,
-          content: developerTab,
+          content: <TabBodyFocusRoot id="developer">{developerTab}</TabBodyFocusRoot>,
         });
       }
       rows.push({
         id: "about",
         title: DECKY_TAB_TITLES.about,
         content: (
-          <div
-            className="bonsai-tab-panel-shell bonsai-tab-panel-shell--tight"
-            data-bonsai-tab-panel="about"
-          >
-            {aboutTab}
-          </div>
+          <TabBodyFocusRoot id="about">
+            <div
+              className="bonsai-tab-panel-shell bonsai-tab-panel-shell--tight"
+              data-bonsai-tab-panel="about"
+            >
+              {aboutTab}
+            </div>
+          </TabBodyFocusRoot>
         ),
       });
       return rows;
@@ -1479,6 +1489,27 @@ const Content: React.FC = () => {
   );
   /** The bar's dash count follows the mounted tabs — five without Developer, six with. */
   const tabBarIds = useMemo(() => deckyTabs.map((row) => row.id as BonsaiTabId), [deckyTabs]);
+  /**
+   * Down from the collapsing tab bar (plan 30 W4). Main's first stop is the chat-slot row, already a
+   * registered nav target; every other body is wrapped in a TabBodyFocusRoot. False when the target
+   * is not registered, and the bar lets Steam decide (the hidden-header trap covers that landing).
+   */
+  const tabBarExitDown = useCallback(
+    () => takeNavFocus(currentTab === "main" ? "chat-slot-row" : tabBodyNavFocusId(currentTab as BonsaiTabId)),
+    [currentTab],
+  );
+  /**
+   * B inside a tab body. Steam's `Tabs` would focus its own header — hidden now, so that is the
+   * ghost stop — unless `cancelSkipTabHeader` is set, in which case the press reaches this handler on
+   * the page's outer Focusable (read from Steam's source 2026-09-02, plan 30 § 8). The bar takes the
+   * ring and the press is consumed the way DrgGlossaryTermChip consumes B; if the bar is not
+   * registered the press is left alone and Steam backs out of the panel as it always could.
+   */
+  const onCancelFromTabHeader = useCallback((evt: unknown) => {
+    if (takeNavFocus("tab-bar")) {
+      (evt as { preventDefault?: () => void } | undefined)?.preventDefault?.();
+    }
+  }, []);
 
   return (
     <BonsaiPluginShell scopeRef={bonsaiScopeRef} scopeStyle={bonsaiScopeStyle}>
@@ -1504,13 +1535,22 @@ const Content: React.FC = () => {
           puts it on top; Steam's own header inside the root is hidden by section-1.ts.
         */}
         <React.Fragment key={`bonsai-tabs-gen-${uiScale.generation}`}>
-          <TabIndicatorBar tabIds={tabBarIds} currentTab={currentTab} />
+          <TabIndicatorBar
+            tabIds={tabBarIds}
+            currentTab={currentTab}
+            selectTab={selectTab}
+            exitDown={tabBarExitDown}
+          />
           <div className="bonsai-decky-tabs-root" data-bonsai-active-tab={currentTab}>
             <Tabs
               activeTab={currentTab}
               onShowTab={onTabsShowTab}
               tabs={deckyTabs}
-              {...({ autoFocusContents: false } as Record<string, unknown>)}
+              {...({
+                autoFocusContents: false,
+                cancelSkipTabHeader: true,
+                onCancelFromTabHeader,
+              } as Record<string, unknown>)}
             />
           </div>
         </React.Fragment>

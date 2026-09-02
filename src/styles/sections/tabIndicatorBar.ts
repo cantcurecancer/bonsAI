@@ -75,6 +75,18 @@ export function buildTabIndicatorBarSection(): string {
           height: ${uiScalePx(activeDashH)};
           background: ${ACCENT};
         }
+        /* Steam's own ring is suppressed on the bar's Focusable and drawn by us instead (design-tokens.md:
+           no catch-all gpfocus rule — this one is scoped to the bar). While the ring is on the bar the
+           lit dash carries a 2px accent ring; W5 replaces this placeholder with the open strip. */
+        .bonsai-scope .bonsai-tab-bar.gpfocus,
+        .bonsai-scope .bonsai-tab-bar:focus,
+        .bonsai-scope .bonsai-tab-bar:focus-visible {
+          outline: none !important;
+          box-shadow: none !important;
+        }
+        .bonsai-scope .bonsai-tab-bar.gpfocus .bonsai-tab-bar__dash--active {
+          box-shadow: 0 0 0 ${uiScalePx(2)} ${ACCENT};
+        }
         /* Caps at the size the slot-row bumper pills use; readable at rest is the whole requirement. */
         .bonsai-scope .bonsai-tab-bar__name {
           flex: 1 1 auto;

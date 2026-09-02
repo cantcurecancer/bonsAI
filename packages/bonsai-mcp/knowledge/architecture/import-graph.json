@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 346,
-  "edgeCount": 828,
+  "fileCount": 351,
+  "edgeCount": 844,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -1278,6 +1278,15 @@
         "src/index.tsx"
       ]
     },
+    "src/features/plugin-shell/TabBodyFocusRoot.tsx": {
+      "imports": [
+        "src/features/plugin-shell/tabTitles.tsx",
+        "src/utils/navFocusRegistry.ts"
+      ],
+      "importedBy": [
+        "src/index.tsx"
+      ]
+    },
     "src/features/plugin-shell/TabIndicatorBar.test.tsx": {
       "imports": [
         "src/features/plugin-shell/TabIndicatorBar.tsx",
@@ -1288,7 +1297,11 @@
     },
     "src/features/plugin-shell/TabIndicatorBar.tsx": {
       "imports": [
-        "src/features/plugin-shell/tabTitles.tsx"
+        "src/features/plugin-shell/modalReturnFocusRegistry.ts",
+        "src/features/plugin-shell/tabBarNav.ts",
+        "src/features/plugin-shell/tabTitles.tsx",
+        "src/features/plugin-shell/useHiddenTabHeaderTrap.ts",
+        "src/utils/navFocusRegistry.ts"
       ],
       "importedBy": [
         "src/features/plugin-shell/TabIndicatorBar.test.tsx",
@@ -1312,6 +1325,7 @@
         "src/components/SettingsTab.tsx",
         "src/features/chat-slots/ChatSlotRow.tsx",
         "src/features/chat-slots/useChatSlotRenameModal.tsx",
+        "src/features/plugin-shell/TabIndicatorBar.tsx",
         "src/features/plugin-shell/modalReturnFocusRegistry.test.ts",
         "src/hooks/useBonsaiPluginShell.ts"
       ]
@@ -1332,6 +1346,21 @@
         "src/index.tsx"
       ]
     },
+    "src/features/plugin-shell/tabBarNav.test.ts": {
+      "imports": [
+        "src/features/plugin-shell/tabBarNav.ts"
+      ],
+      "importedBy": []
+    },
+    "src/features/plugin-shell/tabBarNav.ts": {
+      "imports": [
+        "src/utils/focusNavigation.ts"
+      ],
+      "importedBy": [
+        "src/features/plugin-shell/TabIndicatorBar.tsx",
+        "src/features/plugin-shell/tabBarNav.test.ts"
+      ]
+    },
     "src/features/plugin-shell/tabTitles.test.tsx": {
       "imports": [
         "src/features/plugin-shell/tabTitles.tsx"
@@ -1344,6 +1373,7 @@
         "src/features/unified-input/constants.ts"
       ],
       "importedBy": [
+        "src/features/plugin-shell/TabBodyFocusRoot.tsx",
         "src/features/plugin-shell/TabIndicatorBar.test.tsx",
         "src/features/plugin-shell/TabIndicatorBar.tsx",
         "src/features/plugin-shell/tabTitles.test.tsx",
@@ -1425,6 +1455,25 @@
       ],
       "importedBy": [
         "src/index.tsx"
+      ]
+    },
+    "src/features/plugin-shell/useHiddenTabHeaderTrap.test.tsx": {
+      "imports": [
+        "src/features/plugin-shell/useHiddenTabHeaderTrap.ts",
+        "src/utils/navFocusRegistry.ts",
+        "src/utils/uiDocument.ts"
+      ],
+      "importedBy": []
+    },
+    "src/features/plugin-shell/useHiddenTabHeaderTrap.ts": {
+      "imports": [
+        "src/utils/bonsaiDebugIngest.ts",
+        "src/utils/navFocusRegistry.ts",
+        "src/utils/uiDocument.ts"
+      ],
+      "importedBy": [
+        "src/features/plugin-shell/TabIndicatorBar.tsx",
+        "src/features/plugin-shell/useHiddenTabHeaderTrap.test.tsx"
       ]
     },
     "src/features/plugin-shell/useOllamaConnectionState.ts": {
@@ -2024,6 +2073,7 @@
         "src/data/uiScaleProfile.ts",
         "src/features/model-routing/useRoutingOrderModal.ts",
         "src/features/plugin-shell/PluginErrorBoundary.tsx",
+        "src/features/plugin-shell/TabBodyFocusRoot.tsx",
         "src/features/plugin-shell/TabIndicatorBar.tsx",
         "src/features/plugin-shell/pluginStorage.ts",
         "src/features/plugin-shell/tabTitles.tsx",
@@ -2065,6 +2115,7 @@
         "src/utils/bonsaiSessionSurvival.ts",
         "src/utils/clearBonsaiBrowserStorage.ts",
         "src/utils/deckyCall.ts",
+        "src/utils/navFocusRegistry.ts",
         "src/utils/ollamaTabLocalSurvival.ts",
         "src/utils/settingsPayload.ts",
         "src/utils/settingsTabLocalSurvival.ts",
@@ -2540,6 +2591,7 @@
       "imports": [],
       "importedBy": [
         "src/components/BonsaiDebugOverlay.tsx",
+        "src/features/plugin-shell/useHiddenTabHeaderTrap.ts",
         "src/hooks/useBonsaiPluginShell.ts",
         "src/hooks/useQamPanelSideBleed.ts",
         "src/index.tsx"
@@ -2964,6 +3016,7 @@
         "src/components/deck/DeckFocusSlider.tsx",
         "src/features/chat-slots/ChatSlotRow.tsx",
         "src/features/chat-slots/useChatSlotBumpers.ts",
+        "src/features/plugin-shell/tabBarNav.ts",
         "src/utils/buildAnswerBubbleElement.tsx",
         "src/utils/buildReplyActionsElement.tsx",
         "src/utils/buildTurnHeaderElement.tsx",
@@ -3126,8 +3179,13 @@
         "src/components/MainTabUnifiedAskBar.tsx",
         "src/components/SessionContextStrip.tsx",
         "src/features/chat-slots/ChatSlotRow.tsx",
+        "src/features/plugin-shell/TabBodyFocusRoot.tsx",
+        "src/features/plugin-shell/TabIndicatorBar.tsx",
+        "src/features/plugin-shell/useHiddenTabHeaderTrap.test.tsx",
+        "src/features/plugin-shell/useHiddenTabHeaderTrap.ts",
         "src/hooks/useMainTabAskBarFocus.test.ts",
         "src/hooks/useMainTabAskBarFocus.ts",
+        "src/index.tsx",
         "src/utils/liveTurnFocusGraph.ts",
         "src/utils/navFocusRegistry.test.ts"
       ]
@@ -3512,6 +3570,8 @@
         "src/components/MainTabPresetAnimatedChips.tsx",
         "src/components/MainTabUnifiedAskBar.tsx",
         "src/features/plugin-shell/modalReturnFocusRegistry.ts",
+        "src/features/plugin-shell/useHiddenTabHeaderTrap.test.tsx",
+        "src/features/plugin-shell/useHiddenTabHeaderTrap.ts",
         "src/hooks/useBonsaiAskOrchestration.ts",
         "src/hooks/useMainTabAskBarFocus.test.ts",
         "src/hooks/useMainTabAskBarFocus.ts",

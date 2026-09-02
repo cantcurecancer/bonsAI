@@ -14,7 +14,7 @@ import {
   isBumperRightDeckEvent,
   isOkDeckButtonEvent,
 } from "../../utils/focusNavigation";
-import { registerNavFocus, type NavRefHolder } from "../../utils/navFocusRegistry";
+import { registerNavFocus, takeNavFocus, type NavRefHolder } from "../../utils/navFocusRegistry";
 import {
   rememberModalReturnFocus,
   registerModalReturnFocusOwner,
@@ -250,6 +250,10 @@ export function ChatSlotRow({
           // lets Steam's spatial navigation descend into whatever is directly below,
           // which is the transcript when it has content and the preset row when it does not.
           onMoveDown: () => false,
+          // Up goes to the collapsing tab bar (plan 30 W4). Steam's own answer for "above the
+          // row" is its hidden tab button — a stop nobody can see (runs/TAB-BAR-W1b-*.json) —
+          // so the hop is explicit. False when the bar is not registered, and Steam decides.
+          onMoveUp: () => takeNavFocus("tab-bar"),
         } as Record<string, unknown>)}
         className="bonsai-chat-slot-row-focus"
         onFocus={() => setFocused(true)}

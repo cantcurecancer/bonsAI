@@ -9,8 +9,10 @@
  * Does not: Measure heights or where the ring lands; jsdom has no layout and no gamepad. Those are
  *           the on-device rows TAB-BAR-01 … -06.
  */
-import { render } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { fireEvent, render } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
+
+import React from "react";
 
 import { TabIndicatorBar } from "./TabIndicatorBar";
 import { ALL_BONSAI_TAB_IDS, type BonsaiTabId } from "./tabTitles";
@@ -18,6 +20,19 @@ import { buildBonsaiScopeStylesheet } from "../../styles/bonsaiScopeStylesheet";
 
 const SIX = ALL_BONSAI_TAB_IDS;
 const FIVE: readonly BonsaiTabId[] = SIX.filter((id) => id !== "developer");
+
+/** The bar with the two callbacks W4 added, stubbed; tests that care pass their own. */
+function bar(props: Partial<React.ComponentProps<typeof TabIndicatorBar>> = {}) {
+  return (
+    <TabIndicatorBar
+      tabIds={SIX}
+      currentTab="main"
+      selectTab={vi.fn()}
+      exitDown={() => true}
+      {...props}
+    />
+  );
+}
 
 /** `[selector, declarations]` for every rule in a stylesheet, comments stripped. */
 function rulesOf(css: string): Array<[string, string]> {
@@ -39,15 +54,15 @@ function hasHashedToken(selector: string): boolean {
 
 describe("TabIndicatorBar at rest", () => {
   it("draws one dash per mounted tab, so the count follows the tab list rather than a constant", () => {
-    const six = render(<TabIndicatorBar tabIds={SIX} currentTab="main" />);
+    const six = render(bar({ tabIds: SIX, currentTab: "main" }));
     expect(six.container.querySelectorAll(".bonsai-tab-bar__dash")).toHaveLength(6);
     six.unmount();
-    const five = render(<TabIndicatorBar tabIds={FIVE} currentTab="main" />);
+    const five = render(bar({ tabIds: FIVE, currentTab: "main" }));
     expect(five.container.querySelectorAll(".bonsai-tab-bar__dash")).toHaveLength(5);
   });
 
   it("lights the active tab's dash and names it", () => {
-    const { container } = render(<TabIndicatorBar tabIds={SIX} currentTab="settings" />);
+    const { container } = render(bar({ tabIds: SIX, currentTab: "settings" }));
     const lit = container.querySelectorAll(".bonsai-tab-bar__dash--active");
     expect(lit).toHaveLength(1);
     expect(lit[0].getAttribute("data-bonsai-tab")).toBe("settings");
@@ -55,21 +70,32 @@ describe("TabIndicatorBar at rest", () => {
   });
 
   it("follows currentTab when it changes, which is what a shoulder press does", () => {
-    const { container, rerender } = render(<TabIndicatorBar tabIds={SIX} currentTab="main" />);
+    const { container, rerender } = render(bar({ tabIds: SIX, currentTab: "main" }));
     expect(container.querySelector(".bonsai-tab-bar__name")?.textContent).toBe("Main");
-    rerender(<TabIndicatorBar tabIds={SIX} currentTab="about" />);
+    rerender(bar({ tabIds: SIX, currentTab: "about" }));
     expect(container.querySelector(".bonsai-tab-bar__dash--active")?.getAttribute("data-bonsai-tab")).toBe("about");
     expect(container.querySelector(".bonsai-tab-bar__name")?.textContent).toBe("About");
   });
 
   it("lights nothing and names nothing for a tab that is not mounted, so a stale id never claims a tab", () => {
-    const { container } = render(<TabIndicatorBar tabIds={FIVE} currentTab="developer" />);
+    const { container } = render(bar({ tabIds: FIVE, currentTab: "developer" }));
     expect(container.querySelectorAll(".bonsai-tab-bar__dash--active")).toHaveLength(0);
     expect(container.querySelector(".bonsai-tab-bar__name")?.textContent).toBe("");
   });
 
+  it("opens while it holds the ring and closes the moment it loses it, with no timer", () => {
+    const { container } = render(bar());
+    const root = container.querySelector(".bonsai-tab-bar") as HTMLElement;
+    expect(root.getAttribute("data-bonsai-tab-bar-state")).toBe("rest");
+    fireEvent.focus(root);
+    expect(root.getAttribute("data-bonsai-tab-bar-state")).toBe("open");
+    expect(root.classList.contains("bonsai-tab-bar--open")).toBe(true);
+    fireEvent.blur(root);
+    expect(root.getAttribute("data-bonsai-tab-bar-state")).toBe("rest");
+  });
+
   it("carries the LB and RB marks, present in the markup whether or not they are visible", () => {
-    const { container } = render(<TabIndicatorBar tabIds={SIX} currentTab="main" />);
+    const { container } = render(bar({ tabIds: SIX, currentTab: "main" }));
     const marks = Array.from(container.querySelectorAll(".bonsai-tab-bar__shoulder")).map((el) => el.textContent);
     expect(marks).toEqual(["LB", "RB"]);
   });
