@@ -21,7 +21,18 @@ export function useMainTabAskBarFocus(
   refs: MainTabAskBarFocusRefs,
   showAiCharacterChrome: boolean,
 ) {
+  /**
+   * Into the Ask text field from another container (a preset chip, the help chip, the avatar).
+   *
+   * Steam's own transfer first: the field registers its nav node as "unified-input". A plain
+   * `focus()` across containers only moves `activeElement`; measured on device 2026-09-01, Down
+   * from a preset chip on a freshly opened panel put the caret in the field while Steam bounced the
+   * ring to the next chip in the row (runs/PRESET-ONE-LINE-03-carousel-fresh-mount.json, step 12).
+   * The DOM fallback stays for the frames before Steam populates the ref and for mouse/touch, and
+   * reports whether the ring actually followed, so a caller can let Steam take over when it did not.
+   */
   const focusUnifiedTextField = useCallback((): boolean => {
+    if (takeNavFocus("unified-input")) return true;
     const layer =
       refs.unifiedInputFieldLayerRef &&
       typeof refs.unifiedInputFieldLayerRef === "object" &&
@@ -31,7 +42,7 @@ export function useMainTabAskBarFocus(
     const field = layer?.querySelector<HTMLTextAreaElement | HTMLInputElement>("textarea, input");
     if (!field) return false;
     field.focus();
-    return true;
+    return elementHasGamepadFocus(field);
   }, [refs.unifiedInputFieldLayerRef]);
 
   const focusAttachPaperclip = useCallback((): boolean => {

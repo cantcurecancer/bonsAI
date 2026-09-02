@@ -13,7 +13,7 @@
  *           is focused that way and Steam's ring follows it — and this registry is not needed there.
  */
 
-export type NavFocusId = "session-context-strip" | "chat-slot-row" | "preset-carousel";
+export type NavFocusId = "session-context-strip" | "chat-slot-row" | "preset-carousel" | "unified-input";
 
 /** The object Steam assigns to a `navRef`: a thin wrapper over the nav node. */
 type SteamNavNode = { TakeFocus?: (gamepad?: boolean) => unknown };

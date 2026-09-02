@@ -49,6 +49,7 @@ import {
 import { PermissionDenyAction } from "./PermissionDenyAction";
 import type { BonsaiCapabilityKey } from "../utils/permissionDeepLink";
 import { useMainTabAskBarFocus } from "../hooks/useMainTabAskBarFocus";
+import { registerNavFocus, type NavRefHolder } from "../utils/navFocusRegistry";
 
 export type MainTabUnifiedAskBarProps = {
   fullBleedRowStyle: React.CSSProperties;
@@ -184,6 +185,18 @@ export function MainTabUnifiedAskBar(props: MainTabUnifiedAskBarProps) {
     onFocusHandlersReady?.({ focusUnifiedTextField });
   }, [onFocusHandlersReady, focusUnifiedTextField]);
 
+  /*
+   * The text field's own Steam nav node, so a hop from another container (a preset chip's Down,
+   * the help chip, the avatar) can use Steam's transfer instead of a plain `focus()` that only
+   * moves `activeElement` (navFocusRegistry). `navRef` is a real Steam Focusable prop that Decky's
+   * types omit; it rides in through the same cast as the move handlers.
+   */
+  const unifiedInputNavRef = useRef<NavRefHolder["current"]>(null);
+  useEffect(() => {
+    registerNavFocus("unified-input", unifiedInputNavRef);
+    return () => registerNavFocus("unified-input", null);
+  }, []);
+
   const toggleAskModeMenu = useCallback(() => {
     if (askModeToggleOnceRef.current) return;
     askModeToggleOnceRef.current = true;
@@ -252,6 +265,7 @@ export function MainTabUnifiedAskBar(props: MainTabUnifiedAskBarProps) {
             } as Record<string, unknown>)
           : {})}
         {...unifiedInputDeckNavHandlers}
+        {...({ navRef: unifiedInputNavRef } as Record<string, unknown>)}
         style={{
           width: "100%",
           minHeight: unifiedInputSurfacePx,

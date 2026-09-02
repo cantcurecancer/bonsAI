@@ -111,3 +111,67 @@ describe("focusFirstPresetChip", () => {
     expect(result.current.focusFirstPresetChip()).toBe(false);
   });
 });
+
+/** The Ask bar's text field with the ring parked elsewhere, the way a preset chip's Down finds it. */
+function buildTextField(): { layer: HTMLDivElement; field: HTMLTextAreaElement } {
+  const layer = document.createElement("div");
+  const field = document.createElement("textarea");
+  layer.appendChild(field);
+  document.body.appendChild(layer);
+  return { layer, field };
+}
+
+function renderTextFieldHelpers(layer: HTMLDivElement) {
+  return renderHook(() =>
+    useMainTabAskBarFocus(
+      {
+        unifiedInputFieldLayerRef: { current: layer },
+        attachActionHostRef: { current: null },
+        askBarHostRef: { current: null },
+        presetCarouselHostRef: { current: null },
+      },
+      false,
+    ),
+  );
+}
+
+/* Same honesty fix as focusFirstPresetChip, found from the other direction on 2026-09-01: Down from
+   a preset chip on a freshly opened panel put the caret in the field while Steam bounced the ring
+   to the next chip, because the hop was a plain focus() across containers. */
+describe("focusUnifiedTextField", () => {
+  beforeEach(() => {
+    resetNavFocusRegistry();
+    resetUiDocument();
+  });
+
+  afterEach(() => {
+    document.body.innerHTML = "";
+    resetNavFocusRegistry();
+    resetUiDocument();
+  });
+
+  it("uses Steam's own transfer when the text field has registered its nav node", () => {
+    const { layer, field } = buildTextField();
+    const takeFocus = vi.fn(() => true);
+    registerNavFocus("unified-input", { current: { TakeFocus: takeFocus } });
+    const { result } = renderTextFieldHelpers(layer);
+
+    expect(result.current.focusUnifiedTextField()).toBe(true);
+    expect(takeFocus).toHaveBeenCalledWith(true);
+    expect(document.activeElement).not.toBe(field);
+  });
+
+  it("reports failure when the ring stayed elsewhere and no nav node is registered", () => {
+    const { layer } = buildTextField();
+    putRingOnTabStrip();
+    const { result } = renderTextFieldHelpers(layer);
+    expect(result.current.focusUnifiedTextField()).toBe(false);
+  });
+
+  it("falls back to a plain focus() where nothing owns a ring at all", () => {
+    const { layer, field } = buildTextField();
+    const { result } = renderTextFieldHelpers(layer);
+    expect(result.current.focusUnifiedTextField()).toBe(true);
+    expect(document.activeElement).toBe(field);
+  });
+});
