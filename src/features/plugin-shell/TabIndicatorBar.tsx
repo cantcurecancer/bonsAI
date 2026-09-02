@@ -1,8 +1,8 @@
 /**
  * Title: Collapsing tab bar
  * Purpose: The thin bar that replaces Steam's tab strip — one dash per mounted tab with the active
- *          one lit, the active tab's name beside the dashes, and LB / RB marks at the two ends —
- *          and the one focus stop that stands in for the strip.
+ *          one lit, the active tab's name beside the dashes, LB / RB marks at the two ends — and the
+ *          full strip of icons and names that floats over the panel while the bar holds the ring.
  * Used for: index.tsx, mounted above `.bonsai-decky-tabs-root` while Steam's own header row is
  *           hidden by section-1.ts (plan 30, decisions D44 and D55).
  * Solves: Steam's strip cost 80.66px of the 701px column (measured 2026-09-02) and its icons never
@@ -10,16 +10,23 @@
  *         stayed in Steam's gamepad tree as invisible stops, so this bar takes the ring instead:
  *         Left/Right and LB/RB switch tabs, Down hands the ring to the current body, Up goes to
  *         Decky's Back button, and a trap bounces any landing on a hidden button back here.
- * Does not: Open into the full strip yet (W5), or switch tabs through Steam — `selectTab` from the
- *           shell owns the switch, and Steam's `Tabs` keeps owning LB / RB inside the bodies.
+ * Does not: Switch tabs through Steam — `selectTab` from the shell owns the switch, and Steam's
+ *           `Tabs` keeps owning LB / RB inside the bodies. Nor does it hold the strip open on a
+ *           timer: it is open exactly while the bar has the ring, or while a tap opened it.
  */
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Focusable } from "@decky/ui";
 
 import { registerNavFocus, type NavRefHolder } from "../../utils/navFocusRegistry";
+import { getUiDocument } from "../../utils/uiDocument";
 import { registerModalReturnFocusOwner } from "./modalReturnFocusRegistry";
 import { buildTabBarNavHandlers } from "./tabBarNav";
-import { BONSAI_TAB_SHORT_NAMES, type BonsaiTabId } from "./tabTitles";
+import {
+  BONSAI_TAB_SHORT_NAMES,
+  bonsaiTabStripIcon,
+  bonsaiTabStripLabel,
+  type BonsaiTabId,
+} from "./tabTitles";
 import { useHiddenTabHeaderTrap } from "./useHiddenTabHeaderTrap";
 
 export type TabIndicatorBarProps = {
@@ -36,15 +43,21 @@ export type TabIndicatorBarProps = {
 export function TabIndicatorBar({ tabIds, currentTab, selectTab, exitDown }: TabIndicatorBarProps): React.ReactElement {
   const current = tabIds.find((id) => id === currentTab);
   const name = current ? BONSAI_TAB_SHORT_NAMES[current] : "";
+  /* The static rule of plan 30 § 4.2: with Developer mounted, the two long names use their short forms. */
+  const useShortForms = tabIds.includes("developer");
 
   /*
-    `open` is true exactly while the bar's Focusable has the ring (plan 30 § 4.3: focus opens it,
-    anything that takes the ring away closes it, no timer). Steam sets DOM focus on a `focusable`
-    Focusable, which is what makes onFocus/onBlur fire here — the chat-slot row relies on the same
-    pair for its `--focused` class, measured on device 2026-09-02 (the bar's marks hid on cue).
+    Two ways to be open, no timer (plan 30 § 4.3). `focusOpen` is true exactly while the bar's
+    Focusable has the ring: Steam sets DOM focus on a `focusable` Focusable, which is what makes
+    onFocus/onBlur fire — the chat-slot row relies on the same pair, measured 2026-09-02.
+    `touchOpen` is a tap on the thin bar; a tap on a cell or anywhere else closes it, and taking
+    the ring closes it too, because the ring is then the truth.
   */
-  const [open, setOpen] = useState(false);
+  const [focusOpen, setFocusOpen] = useState(false);
+  const [touchOpen, setTouchOpen] = useState(false);
+  const open = focusOpen || touchOpen;
 
+  const rootRef = useRef<HTMLElement | null>(null);
   const navRef = useRef<NavRefHolder["current"]>(null);
   useEffect(() => {
     registerNavFocus("tab-bar", navRef);
@@ -53,7 +66,38 @@ export function TabIndicatorBar({ tabIds, currentTab, selectTab, exitDown }: Tab
 
   useHiddenTabHeaderTrap();
 
+  /*
+    One `pointerdown` listener on the UI document while a tap holds the strip open, removed the
+    moment it closes. Capture phase, so a tap on something that stops propagation still closes it.
+  */
+  useEffect(() => {
+    if (!touchOpen) return;
+    const doc = getUiDocument();
+    const onPointerDown = (evt: Event) => {
+      const root = rootRef.current;
+      if (root && evt.target instanceof Node && root.contains(evt.target)) return;
+      setTouchOpen(false);
+    };
+    doc.addEventListener("pointerdown", onPointerDown, true);
+    return () => doc.removeEventListener("pointerdown", onPointerDown, true);
+  }, [touchOpen]);
+
   const handlers = buildTabBarNavHandlers({ tabIds, currentTab, selectTab, exitDown });
+
+  const onRootClick = useCallback(() => {
+    // A tap on the thin bar opens it. While the ring is on the bar it is open already, and A is
+    // deliberately a no-op there (Left/Right did the switching), so the click changes nothing.
+    if (!focusOpen) setTouchOpen(true);
+  }, [focusOpen]);
+
+  const onCellClick = useCallback(
+    (id: BonsaiTabId) => (evt: React.MouseEvent) => {
+      evt.stopPropagation();
+      selectTab(id);
+      setTouchOpen(false);
+    },
+    [selectTab],
+  );
 
   return (
     <Focusable
@@ -62,12 +106,20 @@ export function TabIndicatorBar({ tabIds, currentTab, selectTab, exitDown }: Tab
         walks up to the nearest `.Panel.Focusable`, and this is the bar's own (the trap ChatSlotRow
         documents at its ref).
       */
-      ref={(el: HTMLElement | null) => registerModalReturnFocusOwner("tab-bar", el)}
+      ref={(el: HTMLElement | null) => {
+        rootRef.current = el;
+        registerModalReturnFocusOwner("tab-bar", el);
+      }}
       className={`bonsai-tab-bar${open ? " bonsai-tab-bar--open" : ""}`}
+      aria-label={name ? `${name} tab` : "Tabs"}
       data-bonsai-tab-bar-state={open ? "open" : "rest"}
       data-bonsai-tab-bar-tab={current ?? ""}
-      onFocus={() => setOpen(true)}
-      onBlur={() => setOpen(false)}
+      onFocus={() => {
+        setFocusOpen(true);
+        setTouchOpen(false);
+      }}
+      onBlur={() => setFocusOpen(false)}
+      onClick={onRootClick}
       {...({
         navRef,
         /*
@@ -104,6 +156,38 @@ export function TabIndicatorBar({ tabIds, currentTab, selectTab, exitDown }: Tab
       <span className="bonsai-tab-bar__shoulder bonsai-tab-bar__shoulder--r" aria-hidden="true">
         RB
       </span>
+      {/*
+        The open strip: absolutely positioned over the panel, so nothing below moves (plan 30
+        § 4.2). Always in the markup so opening and closing are a fade, never a mount; visibility
+        keeps a closed strip out of hit-testing. The cells are not focus stops — the bar is the
+        one stop and the lit cell is state — so they are plain elements for touch only.
+      */}
+      <div
+        className={`bonsai-tab-bar__strip${open ? " bonsai-tab-bar__strip--open" : ""}`}
+        aria-hidden={!open}
+      >
+        <span className="bonsai-tab-bar__shoulder bonsai-tab-bar__shoulder--l" aria-hidden="true">
+          LB
+        </span>
+        {tabIds.map((id) => (
+          <div
+            key={id}
+            role="button"
+            tabIndex={-1}
+            className={`bonsai-tab-bar__cell${id === current ? " bonsai-tab-bar__cell--active" : ""}`}
+            data-bonsai-tab={id}
+            onClick={onCellClick(id)}
+          >
+            <span className="bonsai-tab-bar__cell-icon" aria-hidden="true">
+              {bonsaiTabStripIcon(id)}
+            </span>
+            <span className="bonsai-tab-bar__cell-label">{bonsaiTabStripLabel(id, useShortForms)}</span>
+          </div>
+        ))}
+        <span className="bonsai-tab-bar__shoulder bonsai-tab-bar__shoulder--r" aria-hidden="true">
+          RB
+        </span>
+      </div>
     </Focusable>
   );
 }

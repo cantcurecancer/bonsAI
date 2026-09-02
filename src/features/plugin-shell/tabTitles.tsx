@@ -103,6 +103,30 @@ export function bonsaiTabStripLabel(id: BonsaiTabId, useShortForms: boolean): st
   return BONSAI_TAB_STRIP_LABELS[id];
 }
 
+/**
+ * The icon each open-strip cell shows (plan 30 § 4.2): the same components Steam's titles use,
+ * one size for the four ordinary tabs and a larger one for the tree and the bug, whose glyphs
+ * are drawn lighter. Sized for the strip's 32px icon box rather than the 36px title cell.
+ */
+export const BONSAI_TAB_STRIP_ICON_PX = 24;
+export const BONSAI_TAB_STRIP_LARGE_ICON_PX = 30;
+export function bonsaiTabStripIcon(id: BonsaiTabId): React.ReactElement {
+  switch (id) {
+    case "main":
+      return <BonsaiTreeTabIcon size={BONSAI_TAB_STRIP_LARGE_ICON_PX} />;
+    case "ollama":
+      return <OllamaTabIcon size={BONSAI_TAB_STRIP_ICON_PX} />;
+    case "settings":
+      return <GearIcon size={BONSAI_TAB_STRIP_ICON_PX} />;
+    case "permissions":
+      return <LockIcon size={BONSAI_TAB_STRIP_ICON_PX} />;
+    case "developer":
+      return <BugIcon size={BONSAI_TAB_STRIP_LARGE_ICON_PX} />;
+    case "about":
+      return <AboutTabTitleIcon size={BONSAI_TAB_STRIP_ICON_PX} />;
+  }
+}
+
 export function bonsaiTabIconTitle(classSuffix: BonsaiTabId, children: React.ReactNode): React.ReactElement {
   return (
     <div className="bonsai-tab-title-leaf" aria-label={BONSAI_TAB_ACCESSIBLE_NAMES[classSuffix]}>

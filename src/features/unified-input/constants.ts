@@ -115,6 +115,13 @@ export const TAB_BAR_NAME_PX = 11;
 export const TAB_BAR_LABEL_PX = 8;
 /** The LB / RB marks at the ends of the bar. */
 export const TAB_BAR_SHOULDER_MARK_PX = 9;
+/**
+ * The open strip's cells. Sized to fit six of them plus the two marks inside 300px with the short
+ * forms on (plan 30 § 4.2): a 32px icon box, 3px cell padding, 2px between cells.
+ */
+export const TAB_BAR_CELL_ICON_BOX_PX = 32;
+export const TAB_BAR_CELL_PAD_X_PX = 3;
+export const TAB_BAR_CELL_GAP_PX = 2;
 
 /** Deck inline menu popovers (ask mode, attach, accent intensity). */
 export const DECK_MENU_GAP_PX = 6;

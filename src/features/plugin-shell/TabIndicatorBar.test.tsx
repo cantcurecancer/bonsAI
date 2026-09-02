@@ -10,13 +10,14 @@
  *           the on-device rows TAB-BAR-01 … -06.
  */
 import { fireEvent, render } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import React from "react";
 
 import { TabIndicatorBar } from "./TabIndicatorBar";
 import { ALL_BONSAI_TAB_IDS, type BonsaiTabId } from "./tabTitles";
 import { buildBonsaiScopeStylesheet } from "../../styles/bonsaiScopeStylesheet";
+import { rememberUiDocument, resetUiDocument } from "../../utils/uiDocument";
 
 const SIX = ALL_BONSAI_TAB_IDS;
 const FIVE: readonly BonsaiTabId[] = SIX.filter((id) => id !== "developer");
@@ -96,8 +97,11 @@ describe("TabIndicatorBar at rest", () => {
 
   it("carries the LB and RB marks, present in the markup whether or not they are visible", () => {
     const { container } = render(bar({ tabIds: SIX, currentTab: "main" }));
-    const marks = Array.from(container.querySelectorAll(".bonsai-tab-bar__shoulder")).map((el) => el.textContent);
+    // The thin bar's own marks; the open strip carries its own pair (W5), read separately below.
+    const marks = Array.from(container.querySelectorAll(".bonsai-tab-bar > .bonsai-tab-bar__shoulder")).map((el) => el.textContent);
     expect(marks).toEqual(["LB", "RB"]);
+    const stripMarks = Array.from(container.querySelectorAll(".bonsai-tab-bar__strip > .bonsai-tab-bar__shoulder")).map((el) => el.textContent);
+    expect(stripMarks).toEqual(["LB", "RB"]);
   });
 });
 
@@ -126,5 +130,75 @@ describe("the rule that hides Steam's tab header", () => {
     expect(marksRule).toBeDefined();
     expect(marksRule?.[1]).toMatch(/visibility:\s*hidden/);
     expect(marksRule?.[1]).not.toMatch(/display:\s*none/);
+  });
+});
+
+describe("the open strip (plan 30 W5)", () => {
+  afterEach(() => {
+    resetUiDocument();
+  });
+
+  const strip = (container: HTMLElement) => container.querySelector(".bonsai-tab-bar__strip") as HTMLElement;
+
+  it("draws one cell per mounted tab with the active one lit, and follows currentTab", () => {
+    const { container, rerender } = render(bar({ tabIds: SIX, currentTab: "settings" }));
+    expect(container.querySelectorAll(".bonsai-tab-bar__cell")).toHaveLength(6);
+    expect(container.querySelector(".bonsai-tab-bar__cell--active")?.getAttribute("data-bonsai-tab")).toBe("settings");
+    rerender(bar({ tabIds: FIVE, currentTab: "about" }));
+    expect(container.querySelectorAll(".bonsai-tab-bar__cell")).toHaveLength(5);
+    expect(container.querySelector(".bonsai-tab-bar__cell--active")?.getAttribute("data-bonsai-tab")).toBe("about");
+  });
+
+  it("uses the short forms only while the Developer tab is mounted (the static rule of § 4.2)", () => {
+    const six = render(bar({ tabIds: SIX, currentTab: "main" }));
+    const sixLabels = Array.from(six.container.querySelectorAll(".bonsai-tab-bar__cell-label")).map((el) => el.textContent);
+    expect(sixLabels).toEqual(["MAIN", "OLLAMA", "SETTINGS", "PERMS", "DEV", "ABOUT"]);
+    six.unmount();
+    const five = render(bar({ tabIds: FIVE, currentTab: "main" }));
+    const fiveLabels = Array.from(five.container.querySelectorAll(".bonsai-tab-bar__cell-label")).map((el) => el.textContent);
+    expect(fiveLabels).toEqual(["MAIN", "OLLAMA", "SETTINGS", "PERMISSIONS", "ABOUT"]);
+  });
+
+  it("shows the strip while the bar holds the ring and hides it when the ring leaves", () => {
+    const { container } = render(bar());
+    const root = container.querySelector(".bonsai-tab-bar") as HTMLElement;
+    expect(strip(container).classList.contains("bonsai-tab-bar__strip--open")).toBe(false);
+    fireEvent.focus(root);
+    expect(strip(container).classList.contains("bonsai-tab-bar__strip--open")).toBe(true);
+    fireEvent.blur(root);
+    expect(strip(container).classList.contains("bonsai-tab-bar__strip--open")).toBe(false);
+  });
+
+  it("a tap on the thin bar opens the strip with no ring involved, and a tap outside closes it", () => {
+    const { container } = render(bar());
+    rememberUiDocument(container);
+    const root = container.querySelector(".bonsai-tab-bar") as HTMLElement;
+    fireEvent.click(root);
+    expect(root.getAttribute("data-bonsai-tab-bar-state")).toBe("open");
+    fireEvent.pointerDown(document.body);
+    expect(root.getAttribute("data-bonsai-tab-bar-state")).toBe("rest");
+  });
+
+  it("a tap on a cell switches through selectTab and closes the strip", () => {
+    const selectTab = vi.fn();
+    const { container } = render(bar({ selectTab }));
+    rememberUiDocument(container);
+    const root = container.querySelector(".bonsai-tab-bar") as HTMLElement;
+    fireEvent.click(root);
+    fireEvent.click(container.querySelector('.bonsai-tab-bar__cell[data-bonsai-tab="ollama"]') as HTMLElement);
+    expect(selectTab).toHaveBeenCalledWith("ollama");
+    expect(root.getAttribute("data-bonsai-tab-bar-state")).toBe("rest");
+  });
+
+  it("removes the outside-tap listener once the strip is closed", () => {
+    const { container, unmount } = render(bar());
+    rememberUiDocument(container);
+    const root = container.querySelector(".bonsai-tab-bar") as HTMLElement;
+    const removeSpy = vi.spyOn(document, "removeEventListener");
+    fireEvent.click(root);
+    fireEvent.pointerDown(document.body);
+    expect(removeSpy.mock.calls.some(([type]) => type === "pointerdown")).toBe(true);
+    removeSpy.mockRestore();
+    unmount();
   });
 });
