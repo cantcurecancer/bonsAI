@@ -445,17 +445,44 @@ def _strategy_spoiler_policy_block(
             "when the user has not opted in.\n"
             f"{low_risk}\n"
         )
+    # The fence-format sentences are subtractive too. Measured 2026-09-02 with
+    # scripts/eval_kb_answers.py (Deck model on the PC, 37 cases x 3 samples, two runs each):
+    # with the two sentences below in place, 28 of 96 low-risk / named-entity samples carried a
+    # fence around a harmless opening line ("This guide focuses on general tactics against the
+    # Tank.") even though the addendum says not to. The placement rule reads, to a 2B model, as
+    # an order that a block exists. Dropping only the placement rule removed every fence,
+    # including the ones due on ending questions (0 of 9). Replacing both sentences with one
+    # plain "do not fence" line on those turns cut misfires to 3 of 96 while the ending questions
+    # kept their fences (8 of 9). Story titles with no named entity are unchanged.
+    # docs/archive/research/kb-answer-eval-2026-09-02-fence-subtractive.md
+    if title_low_risk:
+        fence_rules = (
+            "Do not use ```bonsai-spoiler fences in this reply: nothing about this title's bosses, "
+            "enemies or waves is a story spoiler.\n"
+        )
+    elif entity:
+        fence_rules = (
+            f"Do not put anything about “{entity}” inside a ```bonsai-spoiler fence. Only if you must "
+            "mention a story event the user did not ask about, wrap that one thing in "
+            "```bonsai-spoiler ... ```"
+            + (" and place it above the branch fence" if include_strategy_ui_fences else "")
+            + ".\n"
+        )
+    else:
+        fence_rules = (
+            "Put unavoidably spoilery detail only inside ```bonsai-spoiler ... ``` fences "
+            "(opening line exactly ```bonsai-spoiler).\n"
+            + (
+                "On this first turn, every ```bonsai-spoiler block must appear **above** the opening ```bonsai-strategy-branches line; "
+                "the branch fence must still close the reply — no characters after its closing ```.\n"
+                if include_strategy_ui_fences
+                else ""
+            )
+        )
     return (
         "STRATEGY SPOILER POLICY (default): Coaching is spoiler-minimized by default; say so briefly in your opening. "
         f"{first_turn_avoid}"
-        "Put unavoidably spoilery detail only inside ```bonsai-spoiler ... ``` fences "
-        "(opening line exactly ```bonsai-spoiler).\n"
-        + (
-            "On this first turn, every ```bonsai-spoiler block must appear **above** the opening ```bonsai-strategy-branches line; "
-            "the branch fence must still close the reply — no characters after its closing ```.\n"
-            if include_strategy_ui_fences
-            else ""
-        )
+        + fence_rules
         + f"{low_risk}\n"
     )
 

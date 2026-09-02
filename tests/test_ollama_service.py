@@ -1386,6 +1386,63 @@ class OllamaServiceTests(unittest.TestCase):
         self.assertIn("```bonsai-spoiler", block)
         self.assertIn("late-game boss names", block)
 
+    def test_strategy_spoiler_policy_low_risk_title_replaces_fence_format_sentences(self):
+        """Measured 2026-09-02 (kb-answer-eval fence-subtractive): the placement rule made the
+        model fence a harmless opening line on every sample for Left 4 Dead 2. On a low-risk
+        title the two fence-format sentences are replaced by one plain "do not fence" line."""
+        block = _strategy_spoiler_policy_block(
+            False,
+            False,
+            asked_entity="",
+            kb_entity_match=False,
+            app_id="550",
+        )
+        self.assertIn("Do not use ```bonsai-spoiler fences in this reply", block)
+        self.assertNotIn("Put unavoidably spoilery detail", block)
+        self.assertNotIn("must appear **above**", block)
+        self.assertIn("LOW-SPOILER-RISK CONTEXT", block)
+
+    def test_strategy_spoiler_policy_named_entity_on_story_title_replaces_fence_format_sentences(self):
+        """Same measurement, story title: the thing the user named is never fenced, and the only
+        fence still allowed is for a story event they did not ask about."""
+        block = _strategy_spoiler_policy_block(
+            False,
+            False,
+            asked_entity="Theseus and Asterius",
+            kb_entity_match=True,
+            app_id="1145360",
+        )
+        self.assertIn("Do not put anything about “Theseus and Asterius” inside a ```bonsai-spoiler fence", block)
+        self.assertIn("place it above the branch fence", block)
+        self.assertNotIn("Put unavoidably spoilery detail", block)
+        self.assertNotIn("must appear **above**", block)
+        self.assertIn("NAMED-ENTITY CONSENT", block)
+        # The compact constitution (Speed/Expert) has no branch fence to place anything above.
+        compact = _strategy_spoiler_policy_block(
+            False,
+            False,
+            asked_entity="Theseus and Asterius",
+            kb_entity_match=True,
+            app_id="1145360",
+            include_strategy_ui_fences=False,
+        )
+        self.assertNotIn("branch fence", compact)
+        self.assertIn("Do not put anything about “Theseus and Asterius”", compact)
+
+    def test_strategy_spoiler_policy_story_title_no_entity_keeps_fence_format_sentences(self):
+        """The subtraction is scoped: a story title with nothing named keeps both original
+        sentences, because that is the arm that protected 8 of 9 ending questions."""
+        block = _strategy_spoiler_policy_block(
+            False,
+            False,
+            asked_entity="",
+            kb_entity_match=False,
+            app_id="1091500",
+        )
+        self.assertIn("Put unavoidably spoilery detail only inside ```bonsai-spoiler", block)
+        self.assertIn("must appear **above**", block)
+        self.assertNotIn("Do not use ```bonsai-spoiler fences", block)
+
     def test_strategy_spoiler_policy_low_risk_app_id_without_corpus_signals(self):
         """AppID alone must carry the signal: lookup_game_genres is empty with no KB corpus."""
         block = _strategy_spoiler_policy_block(

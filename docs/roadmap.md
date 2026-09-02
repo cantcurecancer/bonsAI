@@ -166,13 +166,18 @@ seconds; anything that would otherwise have to be re-measured goes there rather 
   The residue is judged acceptable because the model mostly ignores an irrelevant card. Tables, method and the D28 numbers:
   [roadmap-details.md](roadmap-details.md#ordinary-phrases-attach-game-cards).
 
-- ★★ **Spoiler warnings appear mid-reply on a game with no story** — **PARTIAL — the *when* is fixed, the *where* is not.** The fence now only
-  appears for questions the spoiler check actually flags, but it can still land in the middle of an answer rather than at the end. Root cause of
-  the remaining half is known: the asked-entity extractor returns nothing for the one question that fences.
-  Workaround while open: turn spoiler masking off in Settings. Detail: [roadmap-details.md](roadmap-details.md#the-spoiler-fence-on-a-no-story-game-lands-mid-reply).
-  **Freshly reproduced 2026-08-28** during the automated Batch A re-run: *"how do i beat the twins"* (DRG Survivor, Strategy) came back with
-  the tactic wrapped in a `bonsai-spoiler` fence between the opening prose and the closing prose — trace entry `2026-08-28T17:26` in the
-  Deck's ask-trace log. Still open, unchanged.
+- ★★ **Spoiler warnings appear mid-reply on a game with no story** — **FIXED in code 2026-09-02, measured on the PC; Deck confirmation owed.**
+  The cause was not the entity extractor after all. The first-turn policy told the model *where* a spoiler block "must appear", and a 2B model
+  reads that as an order that one exists — so it fenced a harmless opening line (*"This guide focuses on general tactics against the Tank."*)
+  on every sample for Left 4 Dead 2, even though the addendum two lines later said not to fence. Measured with the new answer eval
+  (`scripts/eval_kb_answers.py`, **KB-ANSWER-01**): **28 of 96** low-story / named-entity samples fenced before; dropping only the
+  placement sentence removed every fence including the ones due on ending questions (0 of 9); replacing both fence-format sentences with
+  one plain *"do not use spoiler fences in this reply"* line on those turns left **3 of 96** while ending questions kept their fences
+  (8 of 9), the same in two independent runs. That is what now ships in `_strategy_spoiler_policy_block`; story titles with nothing
+  named are untouched. Row **KB-ANSWER-02** for the Deck run. Prior history: the *when* was fixed earlier (the fence only appears for
+  flagged questions); workaround while the Deck run is owed: turn spoiler masking off in Settings.
+  Detail: [roadmap-details.md](roadmap-details.md#the-spoiler-fence-on-a-no-story-game-lands-mid-reply). The 2026-08-28 reproduction
+  (*"how do i beat the twins"*, DRG Survivor, trace `2026-08-28T17:26`) is the same shape.
 
 - ~~★ **An answer that arrives instantly loses its branch buttons and checklist**~~ — **NOT A BUG, settled 2026-08-28.** The path that
   builds its own result and drops the strategy payloads only ever runs for local commands — the sanitizer, shortcut setup and the VAC
@@ -326,7 +331,10 @@ seconds; anything that would otherwise have to be re-measured goes there rather 
   thumbs still yields to Steam (diverting there could skip the branch-picker chips that sit between); that leg stays two presses.
 - ★ **The question overlay is a few pixels out of line** with the native text field underneath it, most visible on a three-line question and on
   the empty-field placeholder.
-- ★ **Spoiler false-positive on a named entity** — **PARTIAL.** The mid-stream flash is fixed; the remaining case is narrow.
+- ★ **Spoiler false-positive on a named entity** — **FIXED in code 2026-09-02, measured on the PC; Deck confirmation owed.** Same root
+  cause and same fix as the no-story entry above: on a named-entity turn the prompt now says plainly that nothing about the named thing
+  goes inside a fence, and drops the placement rule that was read as an order to fence. Hades *"theseus and asterius keep killing me"*
+  and Ocarina *"how do i beat volvagia"* went from fenced on every sample to fenced on none. Row **KB-ANSWER-02**.
 - ★ **Focus ring gets clipped on grid layouts** — **OPEN, found 2026-08-27.** Tiles sit flush against the edge of their grid, so the
   highlight around a focused tile is cut off instead of drawn in full. Most visible on the AI character picker; check any other
   screen that lays tiles out in a grid. Needs each grid to leave a margin outside its own edge for the ring to fit.
@@ -653,6 +661,28 @@ alphabetical order the rest of the Backlog uses.
 
 ### Knowledge base
 
+- ★★★ **Answer-side eval shipped, and its first finding is already fixed in code** (2026-09-02).
+  `scripts/eval_kb_answers.py` (decision D45, row **KB-ANSWER-01**) runs the real Ask pipeline on the
+  PC with the Deck's model — 37 questions, three answers each, under three minutes — and scores
+  facts kept, contradictions, spoiler fences and the branch menu without a judge model. Baseline:
+  facts from the cards survive **90.9%**, the branch menu arrives **97%**, the expected card attaches
+  **100%**, but **28 of 96** samples where no fence was due carried one (nine cases fenced a harmless
+  opening line on every sample). The fix — replace the fence-format sentences with one plain "do not
+  fence" line on low-story and named-entity turns — measured **3 of 96** in two runs with the ending
+  questions still fenced, and ships in `_strategy_spoiler_policy_block`; the two PARTIAL spoiler
+  entries above carry the detail. Every prompt change from here ships with a before/after from this
+  harness (plan 30 W4/W6), not on feel.
+  [planning/30-kb-answer-quality-plan.md](planning/30-kb-answer-quality-plan.md) § 4.1,
+  [archive/research/kb-answer-eval-2026-09-02-baseline.md](archive/research/kb-answer-eval-2026-09-02-baseline.md),
+  [archive/research/kb-answer-eval-2026-09-02-fence-subtractive.md](archive/research/kb-answer-eval-2026-09-02-fence-subtractive.md).
+- ★★ **The *Update knowledge base* button may not fire from a controller press.** On 2026-09-02 a
+  bridge press with the focus ring verified on the button started no download and left no log line,
+  while the identical fetch-and-install code ran cleanly from the Deck over SSH minutes later
+  (Hugging Face reachable, checksum verified). So the network is not the cause; the suspect is the
+  button's `Focusable onOKButton` wiring. Needs one thumb press with eyes on the toast to settle.
+  The corpus itself is no longer behind: **`2026.09.01` (161 cards) was installed over SSH on
+  2026-09-02** at the maintainer's request, so on-Deck KB rows now run against the published corpus.
+  Plan 30 § 6 item 8.
 - ★★★ **Spoiler coverage should be a setting with tiers** — proposed by the maintainer on the corpus gap sheet, 2026-08-29:
   *"I think spoiler coverage should be matched to a future setting. On one setting, there's no spoiling of bosses/endings/chapters. On
   the another end it'll allow anything specifically asked by the user. On another it's anything past the intro/tutorial."* Today the fencing
