@@ -37,6 +37,14 @@ export function buildTabIndicatorBarSection(): string {
            column; Steam's own header underneath is display:none (section 1). The wrapper is 20px in
            every state so the two height hooks never see it change — the open strip (W5) floats.
            ========================================================================== */
+        /* The bar's height in its own (0,4,0) !important rule: section-3.ts sets every
+           .Panel.Focusable to height: auto !important, and the bar became one in W4. Measured
+           2026-09-02: the bar read 11px (its tallest child) from W4 until this rule. */
+        .bonsai-scope .bonsai-tab-bar.Panel.Focusable {
+          height: ${uiScalePx(TAB_BAR_REST_HEIGHT_PX)} !important;
+          min-height: ${uiScalePx(TAB_BAR_REST_HEIGHT_PX)} !important;
+          max-height: ${uiScalePx(TAB_BAR_REST_HEIGHT_PX)} !important;
+        }
         .bonsai-scope .bonsai-tab-bar {
           position: relative;
           flex: 0 0 auto;

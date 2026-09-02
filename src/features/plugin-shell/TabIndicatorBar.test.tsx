@@ -136,6 +136,14 @@ describe("the rule that hides Steam's tab header", () => {
     expect(reset).toBeDefined();
   });
 
+  it("keeps the bar 20px with an !important height, because section 3 sets every Panel.Focusable to height: auto", () => {
+    const heightRule = rules.find(([selector]) => selector === ".bonsai-scope .bonsai-tab-bar.Panel.Focusable");
+    expect(heightRule).toBeDefined();
+    expect(heightRule?.[1]).toMatch(/height:\s*calc\(20px \* var\(--bonsai-ui-scale, 1\)\)\s*!important/);
+    const reset = rules.find(([selector, decls]) => selector === ".bonsai-scope .Panel.Focusable" && /height:\s*auto\s*!important/.test(decls));
+    expect(reset).toBeDefined();
+  });
+
   it("hides the bar's LB/RB marks while the chat-slot row holds the ring, without moving anything", () => {
     const marksRule = rules.find(
       ([selector]) =>
