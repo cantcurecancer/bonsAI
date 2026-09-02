@@ -70,6 +70,21 @@ export function buildSection1Section(): string {
           overflow-y: auto !important;
         }
 
+        /* Plan 30 (D44): Steam's tab header — LB hint, icon carousel, RB hint — is hidden; the
+           collapsing bar above the tabs root shows the tab instead. Structural and hash-free: the
+           header wrapper is the Tabs panel's first child, the only child holding our title leaves
+           and both aria-labelled hint images and not TabContentsScroll (probe_deck_tab_bar.py,
+           2026-09-02). display:none, not height:0 + visibility:hidden — measured the same day:
+           both leave Steam's hidden tab button as a D-pad stop (its nav tree is mounted
+           Focusables, not layout), but only display:none takes the leaves out of layout, so
+           useTabStripBodyOffset does not reserve their 62px (variant B reserved 67px and reclaimed
+           nothing). Fail-safe by construction: if a Steam update stops this from matching, Steam's
+           own strip reappears above our bar and nothing else breaks. Steam keeps handling LB/RB
+           with the row hidden — TAB-BAR-W1a, with and without a game running. */
+        .bonsai-scope .bonsai-decky-tabs-root > .Panel.Focusable > div:has(.bonsai-tab-title-leaf):has(img[aria-label]):not(:has([class*="TabContentsScroll"])) {
+          display: none !important;
+        }
+
         /* Chip margin only — do not fix DialogButton width (stacks carousel vertically on Bazzite mount). */
         .bonsai-scope.bonsai-qam-strip-stable .bonsai-decky-tabs-root .bonsai-tab-title-leaf {
           margin-left: 0 !important;

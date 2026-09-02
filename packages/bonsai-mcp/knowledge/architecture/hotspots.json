@@ -12,7 +12,7 @@
     },
     {
       "path": "src/index.tsx",
-      "lines": 1567,
+      "lines": 1574,
       "role": "Plugin root: tabs, scoped CSS, RPC wiring, Settings"
     },
     {
@@ -27,7 +27,7 @@
     },
     {
       "path": "py_modules/backend/services/ollama_prompts.py",
-      "lines": 1446,
+      "lines": 1473,
       "role": ""
     },
     {
@@ -52,7 +52,7 @@
     },
     {
       "path": "src/styles/sections/section-6.ts",
-      "lines": 1044,
+      "lines": 1050,
       "role": ""
     },
     {

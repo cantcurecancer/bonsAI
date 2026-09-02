@@ -675,6 +675,12 @@ export function buildSection6Section(): string {
         .bonsai-scope .bonsai-decky-tabs-root:has(.bonsai-chat-slot-row--focused) img[aria-label] {
           visibility: hidden;
         }
+        /* The same idea for the collapsing tab bar's own LB/RB marks (plan 30 § 4.1): the bar sits
+           above the tabs root, so the container that sees both is the scope. visibility keeps the
+           bar's layout exactly where it was when the marks go. */
+        .bonsai-scope:has(.bonsai-chat-slot-row--focused) .bonsai-tab-bar__shoulder {
+          visibility: hidden;
+        }
 
         /* Named chat slots row (Main tab, under tab strip) */
         .bonsai-scope .bonsai-chat-slot-row {

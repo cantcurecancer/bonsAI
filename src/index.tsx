@@ -47,7 +47,8 @@ import {
 } from "./features/unified-input/constants";
 import { useUnifiedInputSurface } from "./features/unified-input/useUnifiedInputSurface";
 import { PluginErrorBoundary } from "./features/plugin-shell/PluginErrorBoundary";
-import { DECKY_TAB_TITLES } from "./features/plugin-shell/tabTitles";
+import { DECKY_TAB_TITLES, type BonsaiTabId } from "./features/plugin-shell/tabTitles";
+import { TabIndicatorBar } from "./features/plugin-shell/TabIndicatorBar";
 import {
   loadActiveChatSlotId,
   loadSavedSearchQuery,
@@ -1476,6 +1477,8 @@ const Content: React.FC = () => {
     },
     [showDeveloperTab, mainTab, ollamaTab, settingsTab, permissionsTab, developerTab, aboutTab]
   );
+  /** The bar's dash count follows the mounted tabs — five without Developer, six with. */
+  const tabBarIds = useMemo(() => deckyTabs.map((row) => row.id as BonsaiTabId), [deckyTabs]);
 
   return (
     <BonsaiPluginShell scopeRef={bonsaiScopeRef} scopeStyle={bonsaiScopeStyle}>
@@ -1495,18 +1498,22 @@ const Content: React.FC = () => {
           attribute is the only thing that changes on a tab switch — DECKY_TAB_TITLES stays
           referentially identical, so the strip itself does not re-render.
         */}
-        <div
-          key={`bonsai-tabs-gen-${uiScale.generation}`}
-          className="bonsai-decky-tabs-root"
-          data-bonsai-active-tab={currentTab}
-        >
-          <Tabs
-            activeTab={currentTab}
-            onShowTab={onTabsShowTab}
-            tabs={deckyTabs}
-            {...({ autoFocusContents: false } as Record<string, unknown>)}
-          />
-        </div>
+        {/*
+          The collapsing tab bar (plan 30) and the tabs root share one keyed fragment so a UI-scale
+          Apply remounts both together, and the bar comes before the root so the scope's flex column
+          puts it on top; Steam's own header inside the root is hidden by section-1.ts.
+        */}
+        <React.Fragment key={`bonsai-tabs-gen-${uiScale.generation}`}>
+          <TabIndicatorBar tabIds={tabBarIds} currentTab={currentTab} />
+          <div className="bonsai-decky-tabs-root" data-bonsai-active-tab={currentTab}>
+            <Tabs
+              activeTab={currentTab}
+              onShowTab={onTabsShowTab}
+              tabs={deckyTabs}
+              {...({ autoFocusContents: false } as Record<string, unknown>)}
+            />
+          </div>
+        </React.Fragment>
       </UiScaleProvider>
     </BonsaiPluginShell>
   );

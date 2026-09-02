@@ -15,6 +15,7 @@ import { buildSection6Section } from "./sections/section-6";
 import { buildSection7Section } from "./sections/section-7";
 import { buildSection8Section } from "./sections/section-8";
 import { buildSection9Section } from "./sections/section-9";
+import { buildTabIndicatorBarSection } from "./sections/tabIndicatorBar";
 import {
   buildGamepadFocusRingStylesheet,
   buildPullModelsStylesheet,
@@ -34,6 +35,7 @@ export function buildBonsaiScopeStylesheet(): string {
     buildSection7Section() +
     buildSection8Section() +
     buildSection9Section() +
+    buildTabIndicatorBarSection() +
     buildGamepadFocusRingStylesheet() +
     buildPullModelsStylesheet()
   );

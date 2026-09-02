@@ -34,6 +34,17 @@ export function useTabStripBodyOffset(scopeRef: React.RefObject<HTMLDivElement |
         return false;
       }
 
+      // Plan 30: with our own tab bar mounted, Steam's header is display:none and there is nothing
+      // here to measure — the leaves read 0, the "stable strip" test can never pass, and without
+      // this the hook spent 16 frames per pointer move before its fallback wrote the same 4px.
+      // The measuring path below stays for a scope without the bar (the Bazzite overlap it was
+      // written for is UNKNOWN on this hardware and there is no device to re-measure it on).
+      if (scope.querySelector(".bonsai-tab-bar")) {
+        tabsRoot.style.setProperty("--bonsai-tab-strip-reserve", `${TAB_STRIP_BODY_GAP_PX}px`);
+        syncTabBodyViewportHeight(scope);
+        return true;
+      }
+
       const tabsRootRect = tabsRoot.getBoundingClientRect();
       let stripBottomRel = 0;
       for (const leaf of leaves) {
