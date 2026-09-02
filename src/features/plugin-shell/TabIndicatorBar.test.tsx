@@ -144,6 +144,12 @@ describe("the rule that hides Steam's tab header", () => {
     expect(reset).toBeDefined();
   });
 
+  it("declares the 4px reserve in the stylesheet so a tabs-root remount cannot lose it", () => {
+    const reserveRule = rules.find(([selector]) => selector === ".bonsai-scope:has(.bonsai-tab-bar) .bonsai-decky-tabs-root");
+    expect(reserveRule).toBeDefined();
+    expect(reserveRule?.[1]).toMatch(/--bonsai-tab-strip-reserve:\s*calc\(4px \* var\(--bonsai-ui-scale, 1\)\)/);
+  });
+
   it("hides the bar's LB/RB marks while the chat-slot row holds the ring, without moving anything", () => {
     const marksRule = rules.find(
       ([selector]) =>

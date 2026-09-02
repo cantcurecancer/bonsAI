@@ -20,6 +20,7 @@ import {
   TAB_BAR_OPEN_HEIGHT_PX,
   TAB_BAR_REST_HEIGHT_PX,
   TAB_BAR_SHOULDER_MARK_PX,
+  TAB_STRIP_BODY_GAP_PX,
 } from "../../features/unified-input/constants";
 import { uiScalePx } from "./uiScalePx";
 
@@ -44,6 +45,14 @@ export function buildTabIndicatorBarSection(): string {
           height: ${uiScalePx(TAB_BAR_REST_HEIGHT_PX)} !important;
           min-height: ${uiScalePx(TAB_BAR_REST_HEIGHT_PX)} !important;
           max-height: ${uiScalePx(TAB_BAR_REST_HEIGHT_PX)} !important;
+        }
+        /* The 4px gap under the bar as a stylesheet value, not only the inline one the hook writes:
+           a UI-scale Apply remounts the tabs root and its inline --bonsai-tab-strip-reserve with it,
+           and with no pointer moving (a controller) the hook never re-wrote it — measured 2026-09-02,
+           the body started flush under the bar after Apply (TAB-BAR-10). Declared where the bar is
+           mounted, so a scope without the bar keeps the measuring path's value. */
+        .bonsai-scope:has(.bonsai-tab-bar) .bonsai-decky-tabs-root {
+          --bonsai-tab-strip-reserve: ${uiScalePx(TAB_STRIP_BODY_GAP_PX)};
         }
         .bonsai-scope .bonsai-tab-bar {
           position: relative;
