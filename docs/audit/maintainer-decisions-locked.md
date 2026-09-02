@@ -15,7 +15,7 @@ choices are, and what happens either way. **Locked calls (2026-08-02 for D1–D6
 [Maintainer decisions locked](#maintainer-decisions-locked--2026-08-02); implement
 from that section when it disagrees with an option above.
 
-**One deferred, none awaiting an answer.** **D38** — the fusion weights, raised 2026-08-29 by D37's
+**One deferred, two awaiting an answer.** **D45–D52 were locked 2026-09-01** from the knowledge-base answer-quality plan ([planning/30-kb-answer-quality-plan.md](../planning/30-kb-answer-quality-plan.md)); **D53 and D54 are open** pending an explanation the maintainer asked for. The eval "D40" of 2026-08-31 is **D40b** from 2026-09-01 (resolved by D51). **D38** — the fusion weights, raised 2026-08-29 by D37's
 first measurement — is **deferred at the maintainer's request** pending more data, more games and
 more questions; it is not waiting on a decision today and nothing about the weights changes until it
 is. **D37**, the blind holdout rows, was endorsed and locked
@@ -2667,6 +2667,8 @@ never write a blind eval row for them.** Six cards' worth of blind-row capacity 
 
 ### D40 — OPEN (raised 2026-08-31) — The eval allows one right answer per question. The corpus has outgrown that.
 
+> **Resolved by [D51](#d51--locked-2026-09-01--the-eval-may-hold-a-second-right-answer-resolves-the-eval-d40-which-becomes-d40b) on 2026-09-01: option 1, with a written reason per second card.** Numbering collision with the Terse-mode D40 above; this one is **D40b** from here on (D31 precedent).
+
 **Evidence:** [kb-eval-after-depth-2026-08-31.md](kb-eval-after-depth-2026-08-31.md). Adding 13
 cards regressed 7 eval cases and improved none. **Five of the seven are cases where more than one
 card is a fair answer**, and the fixture can only name one.
@@ -2755,3 +2757,189 @@ Ask-from-[+] flow makes a chat that is briefly empty AND named "New chat" while 
 is being written; sweeping it would lose that answer). Proven on-Deck the same evening:
 `runs/V3-21-sweep-empty-chat.json` — A on [+] created "New chat", one RB away and it was gone
 from the rotation.
+
+### D43 — LOCKED 2026-09-01 — Two chips across the preset row, or three? (option 1, two across)
+
+The one-chip preset row (`fc1b245`) is being redone to the drawing: chips side by side in one row,
+long labels scrolling sideways ([planning/29-preset-row-three-thirds-plan.md](../planning/29-preset-row-three-thirds-plan.md)).
+The drawing says **three** ([major-redesign.md:149](../major-redesign.md), "three chips, not four").
+The maintainer asked, 2026-09-01, whether **two** would be better given how narrow the QAM column is.
+
+**Measured, not predicted.** The column is 300 CSS px (docked 1080p; handheld unmeasured). With a
+4 px gap, three chips are ~97 px each and two are ~148 px. Label room is that minus Steam's
+`DialogButton` side padding, which this plugin does not override and has not been measured; at 8 px a
+side, three across leaves **~12 characters** and two across **~20** (6.45 px per character at 12 px,
+from PHASE4-CHIPS-01). The 43 built-in suggestions run 16 to 52 characters, median 35; corpus chips
+about 20 to 50, median ~30. So at three across **no suggestion is recognisable without watching it
+scroll** ("How do I fix", "What TDP sho"); at two across most are ("How do I fix stutter", "Why is my
+game crash"). Badged Tip/Test chips lose another ~21 px; the Couch and Immersive UI scales lose a
+further 15 to 22 %.
+
+**What two across costs:** one fewer suggestion on screen; the three contextual seeds no longer all
+show at once (a two-slot queue replaces the one-chip queue instead of deleting it); and **the corpus
+Tip guarantee silently breaks** unless it is changed, because it converts the *last* of the three
+seeds ([sessionRagComposer.ts:113-120](../../src/features/preset-carousel/sessionRagComposer.ts)),
+which would be the hidden one. It also departs from the drawing, which is why this is a decision and
+not a build choice.
+
+Options:
+
+1. **Two across (recommended).** Chips readable at a glance. Convert a visible slot for the Tip
+   guarantee; generalise the seed queue to two slots; record the departure in
+   `major-redesign.md § 7`.
+2. **Three across, as drawn.** Three fragments that make sense only in motion, three crawls at once.
+   Simplest code path: delete the one-chip queue, no guarantee change.
+3. **Three across, but only the focused chip scrolls.** Calmer than 2, still unreadable at rest.
+
+Whichever is chosen, the first deploy measures the button padding and the real character counts on
+the live page and writes them into the plan's § 3b.
+
+**Locked 2026-09-01 by the maintainer: option 1, two across.** Build per
+[planning/29-preset-row-three-thirds-plan.md](../planning/29-preset-row-three-thirds-plan.md); the
+first deploy writes the measured padding and character counts back into that plan's § 3b.
+
+### D44 — OPEN (raised 2026-09-01, answered in discovery, not yet locked) — Reopen R5: the tab strip collapses to a thin bar and gets names
+
+**R5** ([major-redesign.md § 7](../major-redesign.md), 2026-08-09; re-confirmed in the turn-8 review
+2026-08-29/30) locked the tab strip as *filled active glyph only, no micro labels, no width change, no
+height cost*. Two things have moved since. The maintainer set the vertical-space goal on 2026-08-30 and
+filed *the tab names never appear* as a bug the same day. And the collapsing bar was workshopped on
+2026-09-01: [planning/30-collapsing-tab-bar.md](../planning/30-collapsing-tab-bar.md), twelve decisions,
+all taken.
+
+What R5 protected, and what the plan does to each:
+
+- *No height cost.* The plan goes the other way: the strip drops from about 85px to about 20px at rest,
+  and the open strip floats over the panel, so it never costs the transcript anything.
+- *No micro labels.* The open strip carries a small name under every icon, shown only while the ring is
+  on the strip. The thin bar carries the active tab's name at a readable 11px the whole time.
+- *No width change.* Kept. There is no wide active cell; the maintainer dropped it in discovery.
+- *Filled active glyph.* Kept on the open strip.
+
+Options:
+
+1. **Reopen R5 as the plan says (the discovery answer, 2026-09-01).** Names on the thin bar and on the
+   open strip, no wide cell. R5's height objection is moot because the strip only opens while focused
+   and floats over the panel.
+2. **Keep R5's label ban and still collapse.** Dashes plus the active *icon* at rest, icons only when
+   open. Saves nearly the same height, but a glyph is what people said they cannot read, and the *tab
+   names never appear* bug stays open.
+3. **Leave R5 alone and do nothing.**
+
+The maintainer chose option 1 in discovery. **Lock it here once the device spike in the plan's § 5 W1
+passes** (LB/RB still switch tabs with Steam's bar hidden). If the spike fails, the plan stops by the
+maintainer's own call and this entry records why. R5's other reason, whether 7px caps survive on a
+handheld, is a device check in the plan (**TAB-BAR-07**), not a paper decision.
+
+---
+
+### D45 — LOCKED 2026-09-01 — What counts as a "better answer", and does a run on the PC count as evidence? (yes to both)
+
+Raised by [planning/30-kb-answer-quality-plan.md](../planning/30-kb-answer-quality-plan.md) § 3 Q1.
+The search half of the knowledge base is measured to the decimal; what the small model on the
+Deck writes from the cards has never been measured. The maintainer's on-Deck run of
+`PHASE4-CARDS-01` is the only data point (labels kept 1 of 6, content accurate 6 of 6).
+
+**Locked: yes.** A better answer is one that passes four judge-free checks: (a) it contains the
+card's key facts (a short must-mention list per question, copied from the card); (b) it says
+nothing the card contradicts (a short must-not-say list); (c) a spoiler fence appears only where
+the rules allow; (d) a Strategy first turn ends with the branch menu. The test runs on the
+maintainer PC with the Deck's own model tag (`gemma4:e2b-it-qat`, shipped temperature) and its
+numbers are the regression gate; the Deck run is for feel.
+
+**What it obliges.** Build `scripts/eval_kb_answers.py` (plan § 4.1) and baseline the current
+prompt before changing it. The two prompt trims the maintainer did not object to — dropping the
+citation-fence sentence (obeyed 1 time in 89 on device, unrendered by the UI) and sending the
+screenshot-reading rules only when an image is attached — ship only with a before/after from this
+test. Must-mention lists are written by someone who has read the card; that is fine here because
+these are not blind retrieval rows, but the same person must not also write new blind eval rows in
+that session.
+
+### D46 — LOCKED 2026-09-01 — The Deck's 4,096-token window: trim what we send, do not raise the window (option: trim)
+
+Measured 2026-09-01: Ollama `0.32.15` on the Deck loads `gemma4:e2b-it-qat` with
+`context_length: 4096`, nothing in the plugin sets one
+(`ollama_service.py:497-501` sends only `num_predict` and `temperature`), and a troubleshooting
+ask may attach 96 KiB of Proton logs (`proton_troubleshooting_logs.py:18`, ~25,000 tokens).
+Ollama keeps the end of an overlong prompt and drops the start silently. Not seen in the 161
+recorded asks (none attached logs); reachable by construction.
+
+**Locked: trim.** Cap the Proton log excerpt to a size that leaves room for cards and a reply
+(~6–8 KB, keeping the newest lines), cap the parent answer pasted into a follow-up-chip message,
+and log a warning whenever an estimated prompt plus `num_predict` would not fit the window.
+Raising the window with `num_ctx` is **not** done now; it may be tried later as a measured
+Developer experiment (VRAM and time-to-first-token with a game running) and needs its own call.
+
+### D47 — LOCKED 2026-09-01 — Follow-ups remember (yes)
+
+The model receives only the system prompt and the newest message (`ollama_ask_service.py:170`);
+a typed follow-up such as *"what about the second phase?"* has no entity to search and no idea
+what *the* refers to.
+
+**Locked: yes**, in the recommended order: first carry the previous turn's asked entity into
+retrieval when the new question names none (cheap, spends no window; transparency notes
+`carried_entity:…`); chat history as `messages` only after D46's budget shows how much room there
+is, and then trimmed to fit.
+
+### D48 — LOCKED 2026-09-01 — When no card matched a game question, the reply says so (yes)
+
+Today a reply looks the same whether it came from the notes or from the model's memory; only
+*Show details* knows. The maintainer's own Deck note (`bonsai-debug-wronginfo.md`, 2026-05-20)
+shows what a small model does with no notes: confident, wrong, tidy.
+
+**Locked: yes.** One muted plain line appended by **code, not the model** (same mechanism as the
+destructive-advice notice), only on explicit game asks (Strategy / Expert) where the corpus knows
+the game but nothing matched (`kb_attached=False` with coverage status `sections`). Not shown
+when the KB is off or the game is uncovered — the coverage chip already says that. Wording to be
+settled with the maintainer; it costs a line in a 300 px column, and a focus-graph check if it is
+a stop.
+
+### D49 — LOCKED 2026-09-01 — Publish the 161-card corpus now (yes)
+
+Both channels served `2026.08.22` (133 cards) on 2026-09-01; the seed holds 161. The 28 cards
+added since 2026-08-29 (State of Emergency, the Hades weapons and *Weapon choice*, the Half-Life
+2 antlion split, the Cyberpunk / Fallout 4 / Red Dead entity cards, three comparison cards) had
+never reached a device. **Locked: publish**, schema stays 3 so the Deck updates in place, and the
+Deck installs it before any on-Deck answer testing — otherwise the device tests the wrong corpus
+(the 2026-08-21 handoff's lesson). Release record: plan § Checklist W2.
+
+### D50 — LOCKED 2026-09-01 — Spoiler tiers confirmed
+
+Three tiers as the maintainer proposed on the 2026-08-29 gap sheet: **strict** (no bosses,
+endings or chapters), **default** (fence only named story beats and endings), **open** (anything
+the user asks about). **Confirmed:** the default tier is *"named story beats and endings"*, and
+naming a boss or item still unlocks it under **strict** (rule 7 of the spoiler constitution
+holds in every tier). Built after D45's test exists, so each tier's prompt wording is measured
+against the 8-of-41 low-story misfire set rather than eyeballed. Setting shape: plan § 4.5.
+
+### D51 — LOCKED 2026-09-01 — The eval may hold a second right answer (resolves the eval "D40", which becomes D40b)
+
+The eval "D40 — OPEN (raised 2026-08-31)" below shares its number with the Terse-mode D40 locked
+2026-08-29; following the D31 precedent, the eval one is **D40b** from here on. The maintainer
+agreed with the recommendation: **option 1** — a row may list a **second** acceptable card, on
+`tune` rows and on holdout rows *not yet seen to fail*, and only with a written `note` saying
+why the second card is fair; **retire `V2-S-SOE-07`** (no card can answer it, as the maintainer
+said on 2026-08-31); **leave `V2-S-SOE-09` alone**; use option 4 (split into two sharper
+questions) only where it is obvious. Any number measured after the fixture changes is a new
+series (R4).
+
+### D52 — LOCKED 2026-09-01 — Symptom-only troubleshooting questions get a meaning search, only when no topic routed
+
+*"the game drops me back to the library a few minutes in"* never reaches the tip sheet because it
+does not say *crash* (2 of the 4 blind compat holdout rows miss; filed 2026-08-28). The maintainer
+agreed with the recommendation: **option (b)** — when the topic router matches nothing and the
+phrase gate did not fire, run the meaning search over the tip sheet behind the second-signal gate.
+The 2026-08-18 measurement that removed a compat vector pass was taken *with* a routed topic and
+does not cover this case. Measure on the 17 holdout compat rows first and record the result here.
+
+### D53 — OPEN (raised 2026-09-01) — "Starting out" and comparison cards: a new kind, or leave them as `mechanic`?
+
+Three such cards exist as `mechanic` (*Choosing a build* ×2, *Weapon choice*, *Coming from
+GTA*). The maintainer asked for more explanation before deciding; the explanation is in the
+2026-09-01 session and will be copied here with the answer.
+
+### D54 — OPEN (raised 2026-09-01) — Strategy first turn: give the tactic first, then the menu?
+
+Today a Strategy first turn gives an orientation and a branch menu before tactics, by design.
+The maintainer asked for more explanation before deciding; the explanation is in the 2026-09-01
+session and will be copied here with the answer.
