@@ -19,6 +19,7 @@ import {
   PRESET_DECODE_CARET_CHAR,
 } from "./MainTabPresetAnimatedChips";
 import type { PresetPrompt } from "../data/presets";
+import { PRESET_VISIBLE_SLOTS } from "../features/preset-carousel/presetRowLayout";
 import { resetFakeDeckyRpc } from "../test-harness/fakeDeckyRpc";
 
 const seed = (text: string): PresetPrompt => ({ text, category: "general" });
@@ -76,19 +77,55 @@ describe("MainTabPresetAnimatedChips memo gate", () => {
     expect(screen.queryByText("alpha")).toBeTruthy();
   });
 
-  it("keeps the decode-mode chip focusable while glyphs are still churning", () => {
+  it("keeps the decode-mode chips focusable while glyphs are still churning", () => {
     const { container } = renderChips({ animationMode: "decode" });
     const slots = container.querySelectorAll('[data-bonsai-preset-visible="true"]');
-    expect(slots).toHaveLength(1);
+    expect(slots).toHaveLength(PRESET_VISIBLE_SLOTS);
   });
 
-  /* One chip on screen since 2026-08-31 (the row used to be three). */
-  it("renders exactly one chip in every single-slot mode", () => {
+  /* Two chips side by side since 2026-09-01 (D43). The row was one chip for a day (2026-08-31)
+     and three stacked rows before that. */
+  it("renders PRESET_VISIBLE_SLOTS chips side by side in fade / static / decode", () => {
     for (const mode of ["static", "fade", "decode"] as const) {
       const { container, unmount } = renderChips({ animationMode: mode });
-      expect(container.querySelectorAll(".bonsai-preset-carousel-slot")).toHaveLength(1);
+      const row = container.querySelector(".bonsai-preset-carousel-focus-root.bonsai-preset-across");
+      expect(row, `${mode}: the chips share one horizontal focus container`).toBeTruthy();
+      expect(row!.querySelectorAll(":scope > .bonsai-preset-carousel-slot")).toHaveLength(PRESET_VISIBLE_SLOTS);
       unmount();
     }
+  });
+
+  it("carousel mode is a window on the history with the focused chip marked", () => {
+    const { container } = renderChips({ animationMode: "carousel" });
+    expect(container.querySelector(".bonsai-preset-carousel-viewport")).toBeTruthy();
+    // Every seed is in the history track (clipped or not); exactly one carries the current marker.
+    expect(container.querySelectorAll(".bonsai-preset-carousel-track > .bonsai-preset-carousel-slot")).toHaveLength(3);
+    const focused = container.querySelectorAll(".bonsai-preset-carousel-slot--focus");
+    expect(focused).toHaveLength(1);
+    expect(focused[0]?.textContent).toContain("alpha");
+    // Only the two chips in the window are focus stops; the third is rendered for the slide but
+    // is not somewhere the ring can land (found on device 2026-09-01: a focusable off-screen first
+    // child made Steam skip the whole row on a fresh panel).
+    const visible = Array.from(container.querySelectorAll(".bonsai-preset-carousel-slot")).map((s) =>
+      s.getAttribute("data-bonsai-preset-visible"),
+    );
+    expect(visible).toEqual(["true", "true", "false"]);
+  });
+
+  /* The Tip badge exists to be seen at a glance (Phase 4 track 1); only the prompt text scrolls. */
+  it("keeps the Tip badge pinned outside the scrolling text", () => {
+    const { container } = render(
+      <MainTabPresetAnimatedChips
+        seeds={[{ ...seed("How do I beat Glyphid Dreadnought?"), ragTip: true }, seed("bravo"), seed("charlie")]}
+        setUnifiedInput={vi.fn()}
+        animationMode="static"
+      />,
+    );
+    const badge = container.querySelector(".bonsai-preset-chip-tip-badge");
+    expect(badge).toBeTruthy();
+    expect(badge!.closest(".bonsai-preset-chip-text")).toBeNull();
+    const text = container.querySelector(".bonsai-preset-chip-text--marquee");
+    expect(text?.textContent).toBe("How do I beat Glyphid Dreadnought?");
   });
 
   it("every prop in the props type is compared by presetChipsPropsEqual", () => {
@@ -222,7 +259,7 @@ describe("MainTabPresetAnimatedChips decode mode", () => {
     expect(setUnifiedInput).toHaveBeenCalledWith(expect.stringContaining("alpha"));
   });
 
-  it("prefers-reduced-motion swaps each chip's text in instantly, with no caret", () => {
+  it("prefers-reduced-motion swaps each chip's text in instantly, with no caret and no scroll", () => {
     mockReducedMotion(true);
     vi.useFakeTimers();
     try {
@@ -242,11 +279,15 @@ describe("MainTabPresetAnimatedChips decode mode", () => {
       });
 
       const labels = Array.from(
-        container.querySelectorAll(".bonsai-preset-glass--decode .bonsai-preset-chip-label > span"),
+        container.querySelectorAll(".bonsai-preset-glass--decode .bonsai-preset-chip-text"),
       );
-      expect(labels).toHaveLength(1);
-      expect(labels[0]?.textContent).toBe("alpha");
-      expect(labels[0]?.textContent).not.toContain(PRESET_DECODE_CARET_CHAR);
+      expect(labels).toHaveLength(PRESET_VISIBLE_SLOTS);
+      expect(labels.map((l) => l.textContent)).toEqual(["alpha", "bravo"]);
+      for (const label of labels) {
+        expect(label.textContent).not.toContain(PRESET_DECODE_CARET_CHAR);
+        // Reduced motion: the plain cut-off label, never the scrolling one.
+        expect(label.classList.contains("bonsai-preset-chip-text--marquee")).toBe(false);
+      }
     } finally {
       vi.useRealTimers();
     }

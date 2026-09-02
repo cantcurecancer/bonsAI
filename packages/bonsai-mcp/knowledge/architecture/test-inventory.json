@@ -38,7 +38,6 @@
     "src/features/preset-carousel/presetRowNav.test.ts",
     "src/features/preset-carousel/presetSlotRotation.test.ts",
     "src/features/preset-carousel/sessionRagComposer.test.ts",
-    "src/features/preset-carousel/singleSlotRotation.test.ts",
     "src/hooks/useBackgroundGameAi.test.ts",
     "src/hooks/useBonsaiAskOrchestration.test.ts",
     "src/hooks/useBonsaiPluginShell.test.ts",

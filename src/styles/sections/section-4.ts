@@ -1,4 +1,10 @@
 import { BONSAI_CHAT_RESPONSE_STACK_MARGIN_TOP_PX, BONSAI_FOREST_GREEN } from "../../features/unified-input/constants";
+import {
+  PRESET_CHIP_GAP_PX,
+  PRESET_CHIP_HEIGHT_PX,
+  PRESET_CHIP_SIDE_PADDING_PX,
+  PRESET_VISIBLE_SLOTS,
+} from "../../features/preset-carousel/presetRowLayout";
 import { uiScalePx } from "./uiScalePx";
 
 export function buildSection4Section(): string {
@@ -83,15 +89,64 @@ export function buildSection4Section(): string {
           margin-top: 0 !important;
         }
 
+        /*
+          One chip. Height and side padding are set here on purpose, not left to Steam's DialogButton
+          default: with two chips across a 300px column (D43, 2026-09-01) the label room is what
+          decides whether a prompt reads at a glance, and a width that comes from CSS can be reasoned
+          about (design-language rule 4) where Steam's padding could only be measured after the fact.
+          The drawing (major-redesign.md § 2.3) says 30px tall, radius 4.
+        */
         .bonsai-scope button.bonsai-preset-glass {
           max-width: 100% !important;
           min-width: 0 !important;
           overflow: hidden !important;
+          box-sizing: border-box !important;
+          min-height: ${PRESET_CHIP_HEIGHT_PX}px !important;
+          height: ${PRESET_CHIP_HEIGHT_PX}px !important;
+          padding: 0 ${PRESET_CHIP_SIDE_PADDING_PX}px !important;
+          border-radius: 4px !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: flex-start !important;
+          line-height: 1.2 !important;
         }
-        .bonsai-scope button.bonsai-preset-glass > div,
-        .bonsai-scope button.bonsai-preset-glass .bonsai-preset-chip-label {
+        .bonsai-scope button.bonsai-preset-glass > div {
+          width: 100% !important;
           max-width: 100% !important;
           min-width: 0 !important;
+          overflow: hidden !important;
+          display: flex !important;
+          align-items: center !important;
+        }
+        /*
+          The label is a row: badges pinned at the left, then the prompt text. The text either
+          scrolls (Steam's Marquee, which brings its own overflow handling and edge fade) or, when
+          the Marquee is unavailable or motion is reduced, is cut off with an ellipsis. The ellipsis
+          fallback is display:block on purpose — on the old display:inline span \`overflow\` did not
+          apply, the ellipsis could never fire, and a 59-character label simply ran 86px past the
+          column edge (measured on device 2026-08-29).
+        */
+        .bonsai-scope button.bonsai-preset-glass .bonsai-preset-chip-label {
+          display: flex !important;
+          align-items: center !important;
+          width: 100% !important;
+          max-width: 100% !important;
+          min-width: 0 !important;
+          overflow: hidden !important;
+          white-space: nowrap !important;
+          text-align: left !important;
+        }
+        .bonsai-scope button.bonsai-preset-glass .bonsai-preset-chip-test-badge,
+        .bonsai-scope button.bonsai-preset-glass .bonsai-preset-chip-tip-badge {
+          flex: 0 0 auto !important;
+        }
+        .bonsai-scope button.bonsai-preset-glass .bonsai-preset-chip-text {
+          flex: 1 1 auto !important;
+          min-width: 0 !important;
+          max-width: 100% !important;
+        }
+        .bonsai-scope button.bonsai-preset-glass .bonsai-preset-chip-text:not(.bonsai-preset-chip-text--marquee) {
+          display: block !important;
           overflow: hidden !important;
           text-overflow: ellipsis !important;
           white-space: nowrap !important;
@@ -116,27 +171,50 @@ export function buildSection4Section(): string {
           min-width: 0 !important;
         }
         /*
-          ONE chip row. The viewport used to be 118px (three 34px rows plus gaps) and it was the
-          single largest piece of the 245px dock — measured on device 2026-08-31, the dock covered
-          40% of a 616px pane. One row hands ~84px back to the transcript. The track still holds
-          the carousel's history; the rows above and below the focused one are simply clipped, and
-          carouselTrackOffsetPx slides the focused row into this window.
+          Chips side by side: PRESET_VISIBLE_SLOTS across one row, equal shares, a small gap. Two
+          rather than the drawing's three by decision D43 (2026-09-01): on the 300px column three
+          left ~12 characters per chip and two leave ~20. The row keeps the one-row height that the
+          2026-08-31 change bought (the block used to be three stacked rows, 118px of a 245px dock).
+          Width comes from flex, never from a measurement (design-language rule 4).
         */
-        .bonsai-scope .bonsai-preset-carousel-vertical {
+        .bonsai-scope .bonsai-preset-across {
           display: flex !important;
-          flex-direction: column !important;
+          flex-direction: row !important;
+          gap: ${PRESET_CHIP_GAP_PX}px !important;
           width: 100% !important;
           min-width: 0 !important;
-          max-height: 34px !important;
+        }
+        .bonsai-scope .bonsai-preset-across > .bonsai-preset-carousel-slot {
+          flex: 1 1 0 !important;
+          min-width: 0 !important;
+        }
+        /*
+          Sideways carousel. The track holds the whole history (up to five chips) as a flex row and
+          the viewport clips it to one row's width; the chips outside the window are simply clipped
+          and still focusable, so a D-pad step onto one slides it into view. Each chip is an equal
+          share of the viewport, and the slide is a calc on the window-start index the component
+          writes to --bonsai-preset-window-start: one step is (100% + gap) / N, which is exactly one
+          chip plus one gap for any N. No pixel is ever measured.
+        */
+        .bonsai-scope .bonsai-preset-carousel-viewport {
+          width: 100% !important;
+          min-width: 0 !important;
           overflow: hidden !important;
         }
         .bonsai-scope .bonsai-preset-carousel-track {
           display: flex !important;
-          flex-direction: column !important;
-          gap: 5px !important;
+          flex-direction: row !important;
+          gap: ${PRESET_CHIP_GAP_PX}px !important;
           width: 100% !important;
           min-width: 0 !important;
           will-change: transform !important;
+          transform: translateX(
+            calc(-1 * var(--bonsai-preset-window-start, 0) * (100% + ${PRESET_CHIP_GAP_PX}px) / ${PRESET_VISIBLE_SLOTS})
+          ) !important;
+        }
+        .bonsai-scope .bonsai-preset-carousel-track > .bonsai-preset-carousel-slot {
+          flex: 0 0 calc((100% - ${PRESET_CHIP_GAP_PX * (PRESET_VISIBLE_SLOTS - 1)}px) / ${PRESET_VISIBLE_SLOTS}) !important;
+          min-width: 0 !important;
         }
         /*
           The blue border marks which chip the carousel considers current. It is NOT a focus ring

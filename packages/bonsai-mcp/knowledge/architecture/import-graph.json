@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 344,
-  "edgeCount": 812,
+  "fileCount": 342,
+  "edgeCount": 815,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -356,6 +356,7 @@
       "imports": [
         "src/components/MainTabPresetAnimatedChips.tsx",
         "src/data/presets.ts",
+        "src/features/preset-carousel/presetRowLayout.ts",
         "src/test-harness/fakeDeckyRpc.ts"
       ],
       "importedBy": []
@@ -366,7 +367,9 @@
         "src/data/presets.ts",
         "src/features/preset-carousel/carouselState.ts",
         "src/features/preset-carousel/composePresetSeedsWithSessionRag.ts",
-        "src/features/preset-carousel/singleSlotRotation.ts",
+        "src/features/preset-carousel/presetRowLayout.ts",
+        "src/features/preset-carousel/presetRowNav.ts",
+        "src/features/preset-carousel/presetSlotRotation.ts",
         "src/features/unified-input/constants.ts",
         "src/utils/joinPresetWithRunningGame.ts",
         "src/utils/navFocusRegistry.ts",
@@ -1032,8 +1035,6 @@
         "src/features/preset-carousel/presetSlotRotation.ts",
         "src/features/preset-carousel/sessionRagComposer.test.ts",
         "src/features/preset-carousel/sessionRagComposer.ts",
-        "src/features/preset-carousel/singleSlotRotation.test.ts",
-        "src/features/preset-carousel/singleSlotRotation.ts",
         "src/hooks/useBonsaiAskOrchestration.ts",
         "src/index.tsx",
         "src/utils/bonsaiSessionSurvival.ts"
@@ -1432,13 +1433,15 @@
     "src/features/preset-carousel/carouselState.test.ts": {
       "imports": [
         "src/data/presets.ts",
-        "src/features/preset-carousel/carouselState.ts"
+        "src/features/preset-carousel/carouselState.ts",
+        "src/features/preset-carousel/presetRowLayout.ts"
       ],
       "importedBy": []
     },
     "src/features/preset-carousel/carouselState.ts": {
       "imports": [
-        "src/data/presets.ts"
+        "src/data/presets.ts",
+        "src/features/preset-carousel/presetRowLayout.ts"
       ],
       "importedBy": [
         "src/components/MainTabPresetAnimatedChips.tsx",
@@ -1461,7 +1464,12 @@
         "src/data/presets.ts"
       ],
       "importedBy": [
-        "src/features/preset-carousel/sessionRagComposer.ts"
+        "src/components/MainTabPresetAnimatedChips.test.tsx",
+        "src/components/MainTabPresetAnimatedChips.tsx",
+        "src/features/preset-carousel/carouselState.test.ts",
+        "src/features/preset-carousel/carouselState.ts",
+        "src/features/preset-carousel/sessionRagComposer.ts",
+        "src/styles/sections/section-4.ts"
       ]
     },
     "src/features/preset-carousel/presetRowNav.test.ts": {
@@ -1473,6 +1481,7 @@
     "src/features/preset-carousel/presetRowNav.ts": {
       "imports": [],
       "importedBy": [
+        "src/components/MainTabPresetAnimatedChips.tsx",
         "src/features/preset-carousel/presetRowNav.test.ts"
       ]
     },
@@ -1488,6 +1497,7 @@
         "src/data/presets.ts"
       ],
       "importedBy": [
+        "src/components/MainTabPresetAnimatedChips.tsx",
         "src/features/preset-carousel/presetSlotRotation.test.ts"
       ]
     },
@@ -1510,22 +1520,6 @@
         "src/features/preset-carousel/sessionRagComposer.test.ts",
         "src/hooks/useBonsaiAskOrchestration.ts",
         "src/utils/sessionRagChipCandidates.ts"
-      ]
-    },
-    "src/features/preset-carousel/singleSlotRotation.test.ts": {
-      "imports": [
-        "src/data/presets.ts",
-        "src/features/preset-carousel/singleSlotRotation.ts"
-      ],
-      "importedBy": []
-    },
-    "src/features/preset-carousel/singleSlotRotation.ts": {
-      "imports": [
-        "src/data/presets.ts"
-      ],
-      "importedBy": [
-        "src/components/MainTabPresetAnimatedChips.tsx",
-        "src/features/preset-carousel/singleSlotRotation.test.ts"
       ]
     },
     "src/features/unified-input/constants.ts": {
@@ -2136,6 +2130,7 @@
     },
     "src/styles/sections/section-4.ts": {
       "imports": [
+        "src/features/preset-carousel/presetRowLayout.ts",
         "src/features/unified-input/constants.ts",
         "src/styles/sections/uiScalePx.ts"
       ],
