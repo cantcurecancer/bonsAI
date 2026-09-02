@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 342,
-  "edgeCount": 815,
+  "fileCount": 343,
+  "edgeCount": 820,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -380,16 +380,27 @@
         "src/components/MainTabPresetRow.tsx"
       ]
     },
+    "src/components/MainTabPresetRow.test.tsx": {
+      "imports": [
+        "src/components/MainTabPresetRow.tsx",
+        "src/data/presets.ts",
+        "src/features/preset-carousel/presetRowLayout.ts",
+        "src/test-harness/fakeDeckyRpc.ts"
+      ],
+      "importedBy": []
+    },
     "src/components/MainTabPresetRow.tsx": {
       "imports": [
         "src/components/MainTabPresetAnimatedChips.tsx",
         "src/data/askMode.ts",
         "src/data/presets.ts",
         "src/features/plugin-shell/modalReturnFocusRegistry.ts",
+        "src/features/preset-carousel/presetRowLayout.ts",
         "src/utils/joinPresetWithRunningGame.ts"
       ],
       "importedBy": [
-        "src/components/MainTab.tsx"
+        "src/components/MainTab.tsx",
+        "src/components/MainTabPresetRow.test.tsx"
       ]
     },
     "src/components/MainTabScreenshotBrowser.tsx": {
@@ -1025,6 +1036,7 @@
         "src/components/MainTab.tsx",
         "src/components/MainTabPresetAnimatedChips.test.tsx",
         "src/components/MainTabPresetAnimatedChips.tsx",
+        "src/components/MainTabPresetRow.test.tsx",
         "src/components/MainTabPresetRow.tsx",
         "src/data/presets.test.ts",
         "src/features/preset-carousel/carouselState.test.ts",
@@ -1466,6 +1478,8 @@
       "importedBy": [
         "src/components/MainTabPresetAnimatedChips.test.tsx",
         "src/components/MainTabPresetAnimatedChips.tsx",
+        "src/components/MainTabPresetRow.test.tsx",
+        "src/components/MainTabPresetRow.tsx",
         "src/features/preset-carousel/carouselState.test.ts",
         "src/features/preset-carousel/carouselState.ts",
         "src/features/preset-carousel/sessionRagComposer.ts",
@@ -2209,6 +2223,7 @@
         "src/components/KnowledgeBaseSection.nomicPull.test.tsx",
         "src/components/KnowledgeBaseSection.test.tsx",
         "src/components/MainTabPresetAnimatedChips.test.tsx",
+        "src/components/MainTabPresetRow.test.tsx",
         "src/components/SettingsTab.mdns.test.ts",
         "src/components/VoiceInputSettingsSection.test.tsx",
         "src/hooks/useBackgroundGameAi.test.ts",

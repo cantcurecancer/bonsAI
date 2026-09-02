@@ -1,8 +1,11 @@
 /**
  * Title: Main tab preset row
- * Purpose: Top-of-Main row with help chip, animated preset carousel, and running-game join hints.
- * Used for: MainTab above the unified Ask bar for quick prompt seeding.
- * Solves: Wires preset animation modes and Ask-mode preference without bloating MainTab shell.
+ * Purpose: The suggestion row above the Ask bar: the help chip until it is dismissed, then the
+ *          animated preset chips, plus the running-game join hints and the agent-suggestion chip.
+ * Used for: MainTab, in the bottom dock, for quick prompt seeding.
+ * Solves: Wires preset animation modes and Ask-mode preference without bloating MainTab shell, and
+ *         gives the help chip the whole row (maintainer, 2026-09-01) instead of stacking it above
+ *         the chips — one row of height either way.
  * Does not: Own carousel timing math — see MainTabPresetAnimatedChips and presets data module.
  */
 import React, { useEffect, useRef } from "react";
@@ -10,6 +13,7 @@ import { Button } from "@decky/ui";
 import type { PresetPrompt } from "../data/presets";
 import type { AskModeId } from "../data/askMode";
 import { MainTabPresetAnimatedChips } from "./MainTabPresetAnimatedChips";
+import { PRESET_CHIP_HEIGHT_PX } from "../features/preset-carousel/presetRowLayout";
 import { joinPresetWithRunningGame } from "../utils/joinPresetWithRunningGame";
 import {
   registerModalReturnFocusOwner,
@@ -70,7 +74,13 @@ export function MainTabPresetRow({
       }
       style={{ display: "grid", minWidth: 0, width: "100%", boxSizing: "border-box" }}
     >
-      {showPluginHelpChip && (
+      {showPluginHelpChip ? (
+        /*
+         * The help chip owns the row until it is dismissed; the suggestion chips mount only after
+         * that. Two things follow: the Ask bar's Up press lands here first (useMainTabAskBarFocus
+         * looks for this chip before the carousel), and the chips' 60-second rotation window is
+         * not spent while the help chip is up.
+         */
         <Button
           className="bonsai-preset-glass bonsai-preset-help-chip"
           ref={(el: HTMLElement | null) => registerModalReturnFocusOwner("plugin-help", el)}
@@ -83,23 +93,24 @@ export function MainTabPresetRow({
           }}
           style={{
             width: "100%",
-            minHeight: 34,
+            minHeight: PRESET_CHIP_HEIGHT_PX,
             fontSize: 12,
           }}
           aria-label="How to use bonsAI — open quick start"
         >
           How to use bonsAI
         </Button>
+      ) : (
+        <MainTabPresetAnimatedChips
+          seeds={suggestedPrompts}
+          setUnifiedInput={setUnifiedInput}
+          fadeAnimationEnabled={presetChipAnimation === "fade" && presetChipFadeAnimationEnabled}
+          animationMode={presetChipAnimation}
+          onPreferAskMode={onPresetPreferAskMode}
+          onCarouselExitDown={focusUnifiedTextField}
+          useLocalKnowledgeBase={useLocalKnowledgeBase}
+        />
       )}
-      <MainTabPresetAnimatedChips
-        seeds={suggestedPrompts}
-        setUnifiedInput={setUnifiedInput}
-        fadeAnimationEnabled={presetChipAnimation === "fade" && presetChipFadeAnimationEnabled}
-        animationMode={presetChipAnimation}
-        onPreferAskMode={onPresetPreferAskMode}
-        onCarouselExitDown={focusUnifiedTextField}
-        useLocalKnowledgeBase={useLocalKnowledgeBase}
-      />
       {presetCarouselInject?.text?.trim() ? (
         <Button
           className="bonsai-preset-glass bonsai-pyro-inject-chip"
@@ -109,7 +120,7 @@ export function MainTabPresetRow({
           }}
           style={{
             width: "100%",
-            minHeight: 34,
+            minHeight: PRESET_CHIP_HEIGHT_PX,
             fontSize: 12,
             color: "#c4d3e2",
           }}
@@ -121,7 +132,7 @@ export function MainTabPresetRow({
         <div
           aria-hidden
           className="bonsai-preset-inject-placeholder"
-          style={{ minHeight: 34, visibility: "hidden" }}
+          style={{ minHeight: PRESET_CHIP_HEIGHT_PX, visibility: "hidden" }}
         />
       ) : null}
     </div>
