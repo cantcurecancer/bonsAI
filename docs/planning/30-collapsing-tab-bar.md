@@ -556,7 +556,38 @@ Filled in as they land. Nothing here is predicted.
 | Header-row selector | `.bonsai-scope .bonsai-decky-tabs-root > .Panel.Focusable > div:has(.bonsai-tab-title-leaf):has(img[aria-label]):not(:has([class*="TabContentsScroll"]))` — matches exactly the 300px header wrapper; no hashed token; `:has()` already relied on at section-6.ts:675 | | |
 | First Downs from a fresh open | 1st → Decky's Back button (`<BUTTON>` in the "bonsAI v0.5.0" header); 2nd → Steam's strip, on the Main tab (`"Ask bonsAI"`); 3rd → the chat-slot row (unlabelled `Focusable`); 4th → the transcript's first turn. `runs/TAB-BAR-W0-first-downs.json`, 2026-09-02 | | |
 | B from inside the body | 1st B: chip → Steam's strip (Main tab); 2nd B: strip → panel closed, ring unowned, Decky list. `runs/TAB-BAR-W0-back-to-list*.json` | | |
-| W1 a–e results | | | |
+| W1 a–e results | see *W1 spike results* below | n/a | n/a |
+
+### W1 spike results (2026-09-02, `display: none` on the header wrapper, throwaway build)
+
+| Check | Result | Evidence |
+|---|---|---|
+| **a** LB/RB from inside the body, **no game** | **PASS.** RB ×5 Main → Ollama → Settings → Permissions → Developer → About, LB ×5 back; `data-bonsai-active-tab` followed all ten presses. Steam put the ring on each tab's first control (Ollama "Run AI on this Deck", Settings "Adjust UI automatically", Permissions "Read game & screenshot context", Developer "Install seed knowledge base", About "Follow system"), every stop visible | `runs/TAB-BAR-W1a-no-game.json` |
+| **a** with a game running | **PASS.** Half-Life 2 (app id 220) launched by the rig (Home → Recent Games shelf → tile → Play, every A pressed on a control the read before it named); bonsAI's context line read *active game AppID 220*. From the transcript, RB ×5 and LB ×5 switched every tab and `data-bonsai-active-tab` followed all ten presses, every stop visible — the same landing controls as the no-game run. **Caveat that matters for the row wording:** from the chat-slot row the same ten presses switch nothing, with or without a game, because the row claims LB/RB to cycle slots by design (§ 2.4); "from inside the body" has to mean below the slot row | `runs/TAB-BAR-W1a-with-game-2.json` (pass), `runs/TAB-BAR-W1a-with-game.json` (the slot-row run, kept as the counter-example), `runs/LAUNCH-GAME-01…04*.json` |
+| **e** with a game running | scope 741px (the QAM is 40px taller over a game than on the Home screen); `TabContentsScroll` top 3.99px, body **736px**, reserve 4px | `deck_readPage` |
+| **b** Up from the top of a tab | Up from Settings' first control ("Adjust UI automatically") → **the hidden Settings tab button, FOCUSED BUT OFFSCREEN** → Decky's Back button → stops. Mirror image of (c): the active tab's hidden button is a stop between the body and the Back button in both directions. Down from the Back button → the hidden *active* tab's button (Permissions, when Permissions was active) → the body's first control | `runs/TAB-BAR-W1b-up-from-first-control.json`, `runs/TAB-BAR-W1b-up-from-settings-2.json` |
+| LB/RB with the ring on Decky's Back button | no switch, no move — expected; the row says "from inside the body" | `runs/TAB-BAR-W1b-up-from-settings-2.json` step 1 |
+| **c** Down twice from a fresh open | 1st → Decky's Back button; **2nd → Steam's hidden Main tab button, `"Ask bonsAI"`, FOCUSED BUT OFFSCREEN**; 3rd → slot row; 4th → transcript. `display: none` does **not** take Steam's tab buttons out of its focus graph — the walk is identical to W0's, the stop is just invisible now | `runs/TAB-BAR-W1c-fresh-open-downs.json` |
+| **d** free-play sweep, no ghost stops | Settings tab, DOWN then back UP: 29 stops recorded, 15 distinct, **2 focused-but-not-visible, both the hidden Settings tab button** (once each way). Every other stop visible. So the only ghost in free play is the active tab's hidden button on the vertical axis; no other hidden Steam element ever took the ring | `runs/TAB-BAR-W1d-sweep-settings.json` |
+| Caveat on all W1 rows | Two other sessions were driving the Deck in the same minutes (the ring moved between runs to KB controls in Ollama and Settings). Every run above starts with its own read, so each `from` → `to` chain is sound on its own; no cross-run assumption is used | `runs/TAB-BAR-W1b-up-from-settings.json` is the contaminated one, kept for the record |
+| **c/d** under variant B (`height: 0; overflow: clip; visibility: hidden`) | **Same ghost.** Second Down from a fresh open → the hidden Main tab button again, this time reported *clipped* rather than offscreen. And variant B is worse for layout: the leaves keep their 40×44 boxes inside the clipped wrapper, so `useTabStripBodyOffset` still reads a "stable" 62px strip and writes a **67px reserve** — the body starts at 67px and grows only to 633px. Both properties measured; `display: none` is the one to keep | `runs/TAB-BAR-W1c-variant-b.json`, `deck_readPage` |
+| **e** the two height variables | `--bonsai-tab-strip-reserve` 4px (unchanged, as § 4.6 predicted); `--bonsai-tab-body-height` **616 → 696px**; `TabContentsScroll` top **84.66 → 3.99px**; the hiding selector matched exactly one element. Main no longer overflows (scrollHeight 696 = clientHeight). The transcript stayed at 412px: the extra 80px absorbed the 76px overflow Main had at W0, so the reading area is unchanged until W3 lays the column out for the shorter bar | `deck_readPage` geometry, same fields as the probe |
+
+**Verdict (2026-09-02):** the gate passed in both halves; the spike is done and the rule reverted. The one
+finding that changes the build is the ghost stop, which survives both hiding properties, so it is Steam's
+navigation tree and not layout. The maintainer call it needs is written as **D55** in
+[maintainer-decisions-locked.md](../audit/maintainer-decisions-locked.md); the recommended option is built
+from W4 on. **D44 is locked** there with the spike result.
+
+What (c) means for the design: the plan hoped `display: none` would remove the hidden buttons from
+Steam's navigation. It does not. Steam's gamepad tree is built from mounted `Focusable`s, not from
+layout, so a hidden tab button is still a stop between Decky's Back button and the tab body. With our
+bar mounted above the tabs root the Up/Down path would read Back → our bar → **ghost** → body. That is
+the "focused but not visible" bug class by construction, so W4 cannot rely on Steam's spatial navigation
+for the bar's Down; it needs the explicit hops of § 4.5 in **both** directions (Down from the bar to the
+current tab's first stop, Up from each first stop to the bar), through `navFocusRegistry`. Left/Right on
+the ghost is not a concern: the bar claims Left/Right itself, and a shoulder press from anywhere in the
+body lands the ring inside the new tab's body (measured in (a)), never on a ghost.
 
 How W0 was measured (2026-09-02): [scripts/probe_deck_tab_bar.py](../../scripts/probe_deck_tab_bar.py), new
 in W0, run over SSH with the QAM open, cross-checked against `deck_readPage` on the same DOM. Scope and tabs
