@@ -94,10 +94,13 @@ export function buildTabIndicatorBarSection(): string {
            so the height hooks never see a change. Opacity fades; visibility keeps a closed strip
            out of hit-testing; nothing animates height. */
         .bonsai-scope .bonsai-tab-bar__strip {
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
+          /* !important on the placement: section-3.ts resets every .Panel.Focusable > div child to
+             position: relative !important, and the strip is exactly that — measured 2026-09-02,
+             the strip laid out in-flow, the bar grew to 54px and the body moved down 34px. */
+          position: absolute !important;
+          top: 0 !important;
+          left: 0 !important;
+          right: 0 !important;
           z-index: 3;
           box-sizing: border-box;
           height: ${uiScalePx(TAB_BAR_OPEN_HEIGHT_PX)};
