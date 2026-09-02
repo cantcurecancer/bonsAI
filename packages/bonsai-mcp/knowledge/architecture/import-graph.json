@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
   "fileCount": 351,
-  "edgeCount": 844,
+  "edgeCount": 846,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -1291,7 +1291,8 @@
       "imports": [
         "src/features/plugin-shell/TabIndicatorBar.tsx",
         "src/features/plugin-shell/tabTitles.tsx",
-        "src/styles/bonsaiScopeStylesheet.ts"
+        "src/styles/bonsaiScopeStylesheet.ts",
+        "src/utils/uiDocument.ts"
       ],
       "importedBy": []
     },
@@ -1301,7 +1302,8 @@
         "src/features/plugin-shell/tabBarNav.ts",
         "src/features/plugin-shell/tabTitles.tsx",
         "src/features/plugin-shell/useHiddenTabHeaderTrap.ts",
-        "src/utils/navFocusRegistry.ts"
+        "src/utils/navFocusRegistry.ts",
+        "src/utils/uiDocument.ts"
       ],
       "importedBy": [
         "src/features/plugin-shell/TabIndicatorBar.test.tsx",
@@ -3569,6 +3571,8 @@
         "src/components/MainTabChatTranscript.tsx",
         "src/components/MainTabPresetAnimatedChips.tsx",
         "src/components/MainTabUnifiedAskBar.tsx",
+        "src/features/plugin-shell/TabIndicatorBar.test.tsx",
+        "src/features/plugin-shell/TabIndicatorBar.tsx",
         "src/features/plugin-shell/modalReturnFocusRegistry.ts",
         "src/features/plugin-shell/useHiddenTabHeaderTrap.test.tsx",
         "src/features/plugin-shell/useHiddenTabHeaderTrap.ts",

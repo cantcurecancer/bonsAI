@@ -313,6 +313,33 @@ state, so Steam's spatial navigation never has to pick between them.
 - **Steam's own ring:** suppressed on the bar's `Focusable` with `outline: none`, and drawn by us on the
   lit cell. No catch-all `gpfocus` rule (design-tokens.md, *Two standing prohibitions*).
 
+#### 4.5.1 As built in W4 (2026-09-02), after the spike's ghost finding (D55)
+
+The spike showed Steam keeps its hidden tab buttons as D-pad stops (§ 8), so the entry and exit
+hops are explicit in both directions and nothing relies on Steam's spatial navigation reaching the
+bar or leaving it:
+
+- **Down from the bar** calls `takeNavFocus("chat-slot-row")` on Main and
+  `takeNavFocus("tab-body:<id>")` on every other tab; each of those bodies is wrapped in a
+  `TabBodyFocusRoot`, one `Focusable` per body whose `navRef` is registered under that id
+  (`index.tsx`, one place). The hop claims the press only when the ring moved; otherwise Steam
+  decides and the trap below catches a landing on the ghost.
+- **Up from a body** is the mirror: `ChatSlotRow.onMoveUp` and `TabBodyFocusRoot.onMoveUp` call
+  `takeNavFocus("tab-bar")`. A container's `onMoveUp` fires when no control inside can move up any
+  further, so one handler per body covers every first control without touching the controls.
+- **Left, Right, LB and RB on the bar** switch through `selectTab`, wrapping at the ends because
+  Steam's bumpers wrap (§ 8). The bumpers are handled by the bar itself: it sits outside Steam's
+  `Tabs`, so Steam never sees a bumper pressed while the ring is on it.
+- **B inside a body** reaches the bar through Steam's own hook: `cancelSkipTabHeader` stops the
+  content from focusing the (hidden) header, and `onCancelFromTabHeader` on the page's outer
+  `Focusable` calls `takeNavFocus("tab-bar")` and consumes the press. If the bar is not registered
+  the press is left alone and Steam backs out of the panel as before.
+- **The trap.** `useHiddenTabHeaderTrap` watches the tabs root for `gpfocus` landing on an element
+  that contains one of our title leaves — only Steam's tab buttons do — and hands the ring to the
+  bar. It is the safety net for paths nobody wired: a modal's return-focus miss, a Steam change.
+- **Steam's ring** on the bar is suppressed (`outline: none` on the bar's own `gpfocus`); while the
+  ring is on the bar the lit dash carries a 2px accent ring (the W4 placeholder for W5's strip).
+
 ### 4.6 The height hooks after the change
 
 - `useTabStripBodyOffset`: once Steam's header is `display: none`, the leaves measure 0, the "stable"
@@ -557,6 +584,22 @@ Filled in as they land. Nothing here is predicted.
 | First Downs from a fresh open | 1st → Decky's Back button (`<BUTTON>` in the "bonsAI v0.5.0" header); 2nd → Steam's strip, on the Main tab (`"Ask bonsAI"`); 3rd → the chat-slot row (unlabelled `Focusable`); 4th → the transcript's first turn. `runs/TAB-BAR-W0-first-downs.json`, 2026-09-02 | | |
 | B from inside the body | 1st B: chip → Steam's strip (Main tab); 2nd B: strip → panel closed, ring unowned, Decky list. `runs/TAB-BAR-W0-back-to-list*.json` | | |
 | W1 a–e results | see *W1 spike results* below | n/a | n/a |
+
+### W4 on the device (2026-09-02, build 2bc7dd2 + 3dd5d98)
+
+The first W4 pass was measured against the W3 bundle because the deploy had aborted mid-upload
+while the session was paused and the script's exit code was hidden behind a pipe; those runs
+(`runs/TAB-BAR-W4-b-from-ghost.json`, `-W4-fresh-open-downs.json`, `-W4-up-from-slot-row.json`) are
+W3 behaviour and are kept only as the record of that mistake. The rows below are on the verified
+W4 bundle (`grep -c bonsai-tab-body-root dist/index.js` on the Deck: 1).
+
+| Row | Result | Evidence |
+|---|---|---|
+| **TAB-BAR-02** reach | **PASS.** Fresh open: acquire press → Decky's Back button; Down → **the bar** (100% visible, `.bonsai-tab-bar` matched, accessible label "LBMainRB"); Down → the chat-slot row through the registry; Down → transcript. The hidden Main tab button was never visited. From the slot row, Up → the bar (`ChatSlotRow.onMoveUp`) | `runs/TAB-BAR-02-fresh-open-downs.json`, `runs/TAB-BAR-03-switch-on-the-bar.json` steps 1–2 |
+| **TAB-BAR-04** collapse | **PASS.** Down from the bar landed on each tab's first control — About "Follow system", Developer "Install seed knowledge base", Permissions "Read game & screenshot context", Settings "Adjust UI automatically", Ollama "Run AI on this Deck", Main the chat-slot row — and Up from each returned to the bar (`TabBodyFocusRoot.onMoveUp` / `ChatSlotRow.onMoveUp`). 17/17, every landing visible, the hidden header never visited | `runs/TAB-BAR-04-collapse-into-each-tab.json` |
+| **TAB-BAR-05** no ghost stops | **PASS.** Free-play sweep of Main from the slot row, DOWN to the Ask button and back UP: 23 stops recorded, 16 distinct, **0 focused-but-not-visible**; the UP leg ended slot row → the bar → Decky's Back button. The hidden header never took the ring. (5 unlabelled stops are the slot row and transcript containers, a pre-existing naming gap) | `runs/TAB-BAR-05-sweep-main.json` |
+| B inside a body | **PASS.** From the transcript, B landed on the bar (`cancelSkipTabHeader` + `onCancelFromTabHeader`), 100% visible; Down from the bar went back to the slot row. Before W4 the same press landed on the hidden header | `runs/TAB-BAR-04b-b-from-body.json` |
+| **TAB-BAR-03** switch | **PASS.** On the bar: Right ×5 walked Ollama → Settings → Permissions → Developer → About with the ring staying on the bar and the lit tab following; Right at About wrapped to Main; Left at Main wrapped to About; LB on the bar → Developer, RB → About (the bar handles the bumpers itself). Every landing visible | `runs/TAB-BAR-03-switch-on-the-bar.json` (11/11) |
 
 ### W3 on the device (2026-09-02, build 72fa916)
 
