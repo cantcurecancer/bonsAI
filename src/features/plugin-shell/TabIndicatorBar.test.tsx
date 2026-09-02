@@ -123,7 +123,11 @@ describe("the rule that hides Steam's tab header", () => {
   });
 
   it("floats the open strip with an !important placement, because section 3 resets every Panel child to relative", () => {
-    const stripRule = rules.find(([selector]) => selector === ".bonsai-scope .bonsai-tab-bar__strip");
+    // Specificity has to beat the reset's (0,3,1) as well as its !important, so the placement
+    // rule names the bar's Panel.Focusable classes on the way to the strip.
+    const stripRule = rules.find(
+      ([selector]) => selector === ".bonsai-scope .bonsai-tab-bar.Panel.Focusable > div.bonsai-tab-bar__strip",
+    );
     expect(stripRule).toBeDefined();
     expect(stripRule?.[1]).toMatch(/position:\s*absolute\s*!important/);
     expect(stripRule?.[1]).toMatch(/top:\s*0\s*!important/);

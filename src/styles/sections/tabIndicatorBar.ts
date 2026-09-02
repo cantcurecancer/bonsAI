@@ -93,14 +93,22 @@ export function buildTabIndicatorBarSection(): string {
         /* The open strip (plan 30 § 4.2): floats over the top of the panel, the wrapper stays 20px,
            so the height hooks never see a change. Opacity fades; visibility keeps a closed strip
            out of hit-testing; nothing animates height. */
-        .bonsai-scope .bonsai-tab-bar__strip {
-          /* !important on the placement: section-3.ts resets every .Panel.Focusable > div child to
-             position: relative !important, and the strip is exactly that — measured 2026-09-02,
-             the strip laid out in-flow, the bar grew to 54px and the body moved down 34px. */
+        /* The placement lives in its own rule with a specificity of (0,5,1): section-3.ts resets
+           every .Panel.Focusable > div child to position: relative !important at (0,3,1), and the
+           strip is exactly that child. Measured 2026-09-02 twice: at (0,2,0) without !important
+           the strip laid out in-flow (the bar grew to 54px, the body moved down 34px), and with
+           !important alone the reset still won on specificity. */
+        .bonsai-scope .bonsai-tab-bar.Panel.Focusable > div.bonsai-tab-bar__strip {
           position: absolute !important;
           top: 0 !important;
           left: 0 !important;
           right: 0 !important;
+        }
+        .bonsai-scope .bonsai-tab-bar__strip {
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
           z-index: 3;
           box-sizing: border-box;
           height: ${uiScalePx(TAB_BAR_OPEN_HEIGHT_PX)};
