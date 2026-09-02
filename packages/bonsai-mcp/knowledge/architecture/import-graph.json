@@ -1,9 +1,11 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 339,
-  "edgeCount": 805,
+  "fileCount": 340,
+  "edgeCount": 806,
   "cycles": [],
-  "orphans": [],
+  "orphans": [
+    "src/features/preset-carousel/presetRowLayout.ts"
+  ],
   "unresolved": [
     {
       "from": "src/components/AboutTab.tsx",
@@ -1026,6 +1028,7 @@
         "src/features/preset-carousel/carouselState.test.ts",
         "src/features/preset-carousel/carouselState.ts",
         "src/features/preset-carousel/composePresetSeedsWithSessionRag.ts",
+        "src/features/preset-carousel/presetRowLayout.ts",
         "src/features/preset-carousel/sessionRagComposer.test.ts",
         "src/features/preset-carousel/sessionRagComposer.ts",
         "src/features/preset-carousel/singleSlotRotation.test.ts",
@@ -1451,6 +1454,12 @@
         "src/features/preset-carousel/sessionRagComposer.test.ts",
         "src/hooks/useBonsaiAskOrchestration.ts"
       ]
+    },
+    "src/features/preset-carousel/presetRowLayout.ts": {
+      "imports": [
+        "src/data/presets.ts"
+      ],
+      "importedBy": []
     },
     "src/features/preset-carousel/sessionRagComposer.test.ts": {
       "imports": [
