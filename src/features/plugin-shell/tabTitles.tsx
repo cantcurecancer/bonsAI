@@ -54,6 +54,55 @@ export const BONSAI_TAB_ACCESSIBLE_NAMES: Readonly<Record<BonsaiTabId, string>> 
   about: "About bonsAI",
 };
 
+/**
+ * The short name the collapsed tab bar shows beside its dashes (plan 30 § 4.7). One word each, the
+ * way the tab is spoken about, not the accessible sentence above: the bar has room for one name at
+ * 11px and "Where AI runs" would wrap. Not translated — every label on this surface is an English
+ * literal today; the UI catalog holds toasts only.
+ */
+export const BONSAI_TAB_SHORT_NAMES: Readonly<Record<BonsaiTabId, string>> = {
+  main: "Main",
+  ollama: "Ollama",
+  settings: "Settings",
+  permissions: "Permissions",
+  developer: "Developer",
+  about: "About",
+};
+
+/** The caps label under each icon of the open strip. Same word as the short name, upper-cased once here. */
+export const BONSAI_TAB_STRIP_LABELS: Readonly<Record<BonsaiTabId, string>> = {
+  main: "MAIN",
+  ollama: "OLLAMA",
+  settings: "SETTINGS",
+  permissions: "PERMISSIONS",
+  developer: "DEVELOPER",
+  about: "ABOUT",
+};
+
+/**
+ * Short forms for the two labels that decide whether six cells fit 300px at 8px caps
+ * (plan 30 § 4.2). Only these two exist, on purpose: shortening a label that fits would be a copy
+ * change with no layout reason behind it. Whether they are used at all is settled on the device
+ * (TAB-BAR-07) and applied through `bonsaiTabStripLabel`.
+ */
+export const BONSAI_TAB_STRIP_SHORT_LABELS: Readonly<Partial<Record<BonsaiTabId, string>>> = {
+  permissions: "PERMS",
+  developer: "DEV",
+};
+
+/**
+ * The label a strip cell shows. `useShortForms` is the static rule from plan 30 § 4.2 — with the
+ * Developer tab mounted, the two long names use their short forms — decided from the mounted tab
+ * list, never by measuring text at runtime (design-language Rule 4).
+ */
+export function bonsaiTabStripLabel(id: BonsaiTabId, useShortForms: boolean): string {
+  if (useShortForms) {
+    const short = BONSAI_TAB_STRIP_SHORT_LABELS[id];
+    if (short) return short;
+  }
+  return BONSAI_TAB_STRIP_LABELS[id];
+}
+
 export function bonsaiTabIconTitle(classSuffix: BonsaiTabId, children: React.ReactNode): React.ReactElement {
   return (
     <div className="bonsai-tab-title-leaf" aria-label={BONSAI_TAB_ACCESSIBLE_NAMES[classSuffix]}>

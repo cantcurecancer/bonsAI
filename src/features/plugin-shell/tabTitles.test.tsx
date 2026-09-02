@@ -13,8 +13,12 @@ import { describe, expect, it } from "vitest";
 import {
   ALL_BONSAI_TAB_IDS,
   BONSAI_TAB_ACCESSIBLE_NAMES,
+  BONSAI_TAB_SHORT_NAMES,
+  BONSAI_TAB_STRIP_LABELS,
+  BONSAI_TAB_STRIP_SHORT_LABELS,
   DECKY_TAB_TITLES,
   bonsaiTabIconTitle,
+  bonsaiTabStripLabel,
 } from "./tabTitles";
 
 describe("decky tab titles", () => {
@@ -37,5 +41,34 @@ describe("decky tab titles", () => {
     const { container } = render(bonsaiTabIconTitle("settings", <span>ignored</span>));
     const leaf = container.querySelector(".bonsai-tab-title-leaf");
     expect(leaf?.getAttribute("aria-label")).toBe(BONSAI_TAB_ACCESSIBLE_NAMES.settings);
+  });
+});
+
+describe("collapsed tab bar names (plan 30)", () => {
+  it("gives every tab a short name and a strip label, including ones not always mounted", () => {
+    for (const id of ALL_BONSAI_TAB_IDS) {
+      expect(BONSAI_TAB_SHORT_NAMES[id]?.trim()).toBeTruthy();
+      expect(BONSAI_TAB_STRIP_LABELS[id]?.trim()).toBeTruthy();
+    }
+  });
+
+  it("says the same word on the thin bar and under the icon, so switching states never renames a tab", () => {
+    for (const id of ALL_BONSAI_TAB_IDS) {
+      expect(BONSAI_TAB_STRIP_LABELS[id]).toBe(BONSAI_TAB_SHORT_NAMES[id].toUpperCase());
+    }
+  });
+
+  it("has short forms only for the two names that decide whether six cells fit", () => {
+    expect(Object.keys(BONSAI_TAB_STRIP_SHORT_LABELS).sort()).toEqual(["developer", "permissions"]);
+    for (const [id, short] of Object.entries(BONSAI_TAB_STRIP_SHORT_LABELS)) {
+      expect(short.length).toBeLessThan(BONSAI_TAB_STRIP_LABELS[id as keyof typeof BONSAI_TAB_STRIP_LABELS].length);
+    }
+  });
+
+  it("applies the short forms only when asked, and only where one exists", () => {
+    expect(bonsaiTabStripLabel("permissions", true)).toBe("PERMS");
+    expect(bonsaiTabStripLabel("developer", true)).toBe("DEV");
+    expect(bonsaiTabStripLabel("permissions", false)).toBe("PERMISSIONS");
+    expect(bonsaiTabStripLabel("main", true)).toBe("MAIN");
   });
 });

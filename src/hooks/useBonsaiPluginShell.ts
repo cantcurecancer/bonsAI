@@ -164,6 +164,18 @@ export function useBonsaiPluginShell({ getSessionSnapshot }: UseBonsaiPluginShel
     setCurrentTab(tabID);
   }, []);
 
+  /**
+   * A tab chosen on bonsAI's own bar (plan 30). Sets the tab and clears the post-picker lock rather
+   * than going through `onTabsShowTab`: that lock exists to block Steam's spurious jump to Main
+   * after a modal closes, and a press on our bar is never spurious — redirecting it would be the
+   * bug, not the protection. Steam's shoulder switches keep going through `onTabsShowTab`.
+   */
+  const selectTab = useCallback((tabID: string) => {
+    bonsaiDebugLog("useBonsaiPluginShell:selectTab", "bar tab", "H3", { to: tabID });
+    postPickerTabLockRef.current = null;
+    setCurrentTab(tabID);
+  }, []);
+
   const prepareModalWithReturnTab = useCallback(
     (returnTab?: string) => {
       captureSessionBeforeModal();
@@ -181,5 +193,6 @@ export function useBonsaiPluginShell({ getSessionSnapshot }: UseBonsaiPluginShel
     captureSessionBeforeModal,
     prepareModalWithReturnTab,
     onTabsShowTab,
+    selectTab,
   };
 }

@@ -96,6 +96,26 @@ export const TAB_TITLE_DEBUG_TAB_CELL_PX = TAB_TITLE_TAB_CELL_PX;
 /** Horizontal margin on each tab title button (space between LB/RB strip icons). */
 export const TAB_TITLE_TAB_GAP_PX = -6;
 
+/**
+ * Plan 30 — the collapsing tab bar (docs/planning/30-collapsing-tab-bar.md § 4.8). CSS px before
+ * `--bonsai-ui-scale`; every use goes through `uiScalePx()`. The two heights are the point of the
+ * plan: Steam's strip cost 80.66px (measured 2026-09-02), the bar at rest costs 20.
+ */
+export const TAB_BAR_REST_HEIGHT_PX = 20;
+/** The floating strip while the ring is on the bar. Floats over the panel; the wrapper stays 20px. */
+export const TAB_BAR_OPEN_HEIGHT_PX = 54;
+export const TAB_BAR_DASH_W_PX = 14;
+export const TAB_BAR_DASH_H_PX = 3;
+/** The active dash is this much taller than the others. */
+export const TAB_BAR_DASH_ACTIVE_EXTRA_H_PX = 2;
+export const TAB_BAR_DASH_GAP_PX = 4;
+/** The active tab's name beside the dashes — the size the chat-slot bumper pills already use. */
+export const TAB_BAR_NAME_PX = 11;
+/** Names under the icons of the open strip. Settled on the device (TAB-BAR-07); 8 is the starting value. */
+export const TAB_BAR_LABEL_PX = 8;
+/** The LB / RB marks at the ends of the bar. */
+export const TAB_BAR_SHOULDER_MARK_PX = 9;
+
 /** Deck inline menu popovers (ask mode, attach, accent intensity). */
 export const DECK_MENU_GAP_PX = 6;
 export const DECK_MENU_ROW_PAD_X_PX = 10;

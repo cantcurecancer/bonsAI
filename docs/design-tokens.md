@@ -240,6 +240,9 @@ All from [unified-input/constants.ts](../src/features/unified-input/constants.ts
 | `BONSAI_PLUGIN_SIDE_PAD_PX` | 0 | Tab body horizontal inset (was 4 until 2026-08-15; rows read as short of the QAM edges on device) |
 | `TAB_TITLE_ICON_PX` / `..._TAB_CELL_PX` | 26 / 32 | LB/RB strip icon and its cell |
 | `TAB_STRIP_BODY_GAP_PX` | 4 | Gap under the LB/RB strip |
+| `TAB_BAR_REST_HEIGHT_PX` / `TAB_BAR_OPEN_HEIGHT_PX` | 20 / 54 | The collapsing tab bar (plan 30): thin at rest, the floating strip while the ring is on it |
+| `TAB_BAR_DASH_W_PX` / `TAB_BAR_DASH_H_PX` / `TAB_BAR_DASH_ACTIVE_EXTRA_H_PX` / `TAB_BAR_DASH_GAP_PX` | 14 / 3 / 2 / 4 | One dash per mounted tab; the active dash is taller |
+| `TAB_BAR_NAME_PX` / `TAB_BAR_LABEL_PX` / `TAB_BAR_SHOULDER_MARK_PX` | 11 / 8 / 9 | Active name at rest; names under the open strip's icons (device-settled, TAB-BAR-07); LB/RB marks |
 | `BONSAI_CHAT_INPUT_TO_TRANSCRIPT_GAP_PX` | 12 | Ask bar → transcript |
 | `BONSAI_CHAT_AI_BUBBLE_MAX_FRAC` | 0.92 | AI bubble width as a fraction of the column |
 

@@ -1,5 +1,5 @@
 import { renderHook, act } from "@testing-library/react";
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { useBonsaiPluginShell } from "./useBonsaiPluginShell";
 import {
@@ -200,5 +200,40 @@ describe("tab resume mode (D15 A/B/C behind one Developer control)", () => {
     saveLastTab("about");
     saveLastTab("");
     expect(window.localStorage.getItem(LAST_TAB_AT_STORAGE_KEY)).toBeNull();
+  });
+});
+
+describe("selectTab (plan 30: a tab chosen on bonsAI's own bar)", () => {
+  beforeEach(() => {
+    window.localStorage.clear();
+    vi.useFakeTimers();
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("switches the tab and clears the post-picker lock, so a later Steam switch is not redirected", () => {
+    const { result } = mount();
+    // Arm the lock the way a closing picker does: return to Settings, not Main.
+    act(() => result.current.prepareModalWithReturnTab("settings"));
+    act(() => result.current.finalizeShowModalAndRestoreActiveTab(() => {}));
+    act(() => {
+      vi.advanceTimersByTime(100);
+    });
+    expect(result.current.currentTab).toBe("settings");
+    // While the lock is live, Steam reporting Main is the spurious jump it exists to block.
+    act(() => result.current.onTabsShowTab("main"));
+    expect(result.current.currentTab).toBe("settings");
+    // A press on our bar is a deliberate choice: it lands, and it ends the lock.
+    act(() => result.current.selectTab("ollama"));
+    expect(result.current.currentTab).toBe("ollama");
+    act(() => result.current.onTabsShowTab("main"));
+    expect(result.current.currentTab).toBe("main");
+  });
+
+  it("persists the chosen tab like any other change", () => {
+    const { result } = mount();
+    act(() => result.current.selectTab("about"));
+    expect(loadLastTab()).toBe("about");
   });
 });
