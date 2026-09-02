@@ -40,8 +40,9 @@ describe("sessionRagComposer", () => {
   it("guarantees one RAG chip even when every roll loses (Phase 4 V1)", () => {
     // Before Phase 4 this returned three static chips. Rolling per slot at ~30% meant a player
     // with a covered game saw no sign the corpus existed about a third of the time (0.7^3), which
-    // is what the on-Deck discovery found. The last slot is the one converted, so a contextual
-    // first chip keeps its place.
+    // is what the on-Deck discovery found. The last slot ON SCREEN is the one converted — the
+    // second of three seeds while the row shows two (D43, 2026-09-01) — so a contextual first chip
+    // keeps its place and the guaranteed chip is not parked off screen in the third seed.
     const staticSeeds = [staticSeed("a"), staticSeed("b"), staticSeed("c")];
     const rolls = [0.99, 0.99, 0.99];
     const composed = composeSessionPresets({
@@ -49,7 +50,7 @@ describe("sessionRagComposer", () => {
       ragCandidates: [rag("RAG-1"), rag("RAG-2"), rag("RAG-3")],
       random: () => rolls.shift() ?? 0.99,
     });
-    expect(composed.map((p) => p.text)).toEqual(["a", "b", "RAG-1"]);
+    expect(composed.map((p) => p.text)).toEqual(["a", "RAG-1", "c"]);
   });
 
   it("still returns all static chips when there is nothing in the corpus to offer", () => {
@@ -72,7 +73,7 @@ describe("sessionRagComposer", () => {
       ],
       random: () => 0.99,
     });
-    expect(composed[2]!.text).toBe("How do I beat Glyphid Dreadnought?");
+    expect(composed[1]!.text).toBe("How do I beat Glyphid Dreadnought?");
   });
 
   it("badges game chips and leaves shared Deck tips unbadged (V4)", () => {
@@ -157,14 +158,16 @@ describe("QA probability override", () => {
     expect(out.map((p) => p.text)).toEqual(candidates.map((c) => c.text));
   });
 
-  it("at the default probability a losing roll still leaves one RAG chip (V1)", () => {
+  it("at the default probability a losing roll still leaves one RAG chip, on screen (V1)", () => {
     const out = composeSessionPresets({
       staticSeeds: seeds,
       ragCandidates: candidates,
       random: () => 0.99,
     });
-    expect(out.slice(0, 2).map((p) => p.text)).toEqual(seeds.slice(0, 2).map((s) => s.text));
-    expect(candidates.map((c) => c.text)).toContain(out[2]!.text);
+    // Slot two is the converted one: the last slot that is on screen with two chips across.
+    expect(out[0]!.text).toBe(seeds[0]!.text);
+    expect(out[2]!.text).toBe(seeds[2]!.text);
+    expect(candidates.map((c) => c.text)).toContain(out[1]!.text);
   });
 
   it("at probability 1 with fewer candidates than slots, remaining slots fall back to seeds", () => {

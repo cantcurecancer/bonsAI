@@ -1,11 +1,9 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
   "fileCount": 340,
-  "edgeCount": 806,
+  "edgeCount": 807,
   "cycles": [],
-  "orphans": [
-    "src/features/preset-carousel/presetRowLayout.ts"
-  ],
+  "orphans": [],
   "unresolved": [
     {
       "from": "src/components/AboutTab.tsx",
@@ -1459,7 +1457,9 @@
       "imports": [
         "src/data/presets.ts"
       ],
-      "importedBy": []
+      "importedBy": [
+        "src/features/preset-carousel/sessionRagComposer.ts"
+      ]
     },
     "src/features/preset-carousel/sessionRagComposer.test.ts": {
       "imports": [
@@ -1472,7 +1472,8 @@
     "src/features/preset-carousel/sessionRagComposer.ts": {
       "imports": [
         "src/data/askMode.ts",
-        "src/data/presets.ts"
+        "src/data/presets.ts",
+        "src/features/preset-carousel/presetRowLayout.ts"
       ],
       "importedBy": [
         "src/features/preset-carousel/composePresetSeedsWithSessionRag.ts",

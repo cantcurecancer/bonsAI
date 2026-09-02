@@ -7,6 +7,7 @@
  */
 import type { AskModeId } from "../../data/askMode";
 import type { PresetPrompt } from "../../data/presets";
+import { PRESET_VISIBLE_SLOTS } from "./presetRowLayout";
 
 /** Default per-slot probability of substituting a RAG candidate when available. */
 export const SESSION_RAG_CHIP_PROBABILITY = 0.3;
@@ -110,13 +111,16 @@ export function composeSessionPresets({
   // sign the corpus exists -- which is what Phase 4's discovery found on Deck. When candidates
   // exist, at least one slot is a RAG chip.
   //
-  // The *last* slot is the one converted, not the first: the first chip is the one a contextual
-  // reseed has deliberately chosen for the category the user just used, and overwriting that
-  // would trade one kind of relevance for another.
+  // The converted slot is the last one that is actually on screen — not the first, and not the
+  // last seed. The first chip is the one a contextual reseed has deliberately chosen for the
+  // category the user just used, and overwriting that would trade one kind of relevance for
+  // another. And seeds arrive in threes while the row shows PRESET_VISIBLE_SLOTS of them (two,
+  // D43 2026-09-01): converting the third seed would satisfy the guarantee somewhere nobody can
+  // see, which is the original Phase 4 discovery all over again.
   if (!out.some((prompt) => ragTexts.has(prompt.text))) {
     const forced = pickRag();
     if (forced) {
-      out[out.length - 1] = forced;
+      out[Math.min(out.length, PRESET_VISIBLE_SLOTS) - 1] = forced;
     }
   }
 
