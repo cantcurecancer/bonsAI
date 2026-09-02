@@ -1,0 +1,970 @@
+{
+ "version": 1,
+ "description": "Answer-side eval for the knowledge base (decision D45, plan 30 W1). Each case runs the real Ask pipeline (run_game_ai_request) against a local Ollama with the Deck's model tag and checks the reply without a judge model: must_mention (facts copied from the card, any-of groups), must_not_say (things the card contradicts), expect_fence (is a ```bonsai-spoiler fence present?), expect_branches (did a Strategy first turn end with the branch menu?), expect_card (the card that should attach, so a miss can be blamed on retrieval rather than on the model). Written by someone who read the cards on 2026-09-02 -- these are NOT blind retrieval rows and must never be copied into kb_eval_v2.json.",
+ "notes": [
+  "must_mention groups are any-of: the group passes when at least one alternative appears in the reply (case-insensitive).",
+  "expect_fence false on low-narrative titles and on questions that name the entity (spoiler constitution rule 7). true only where the question itself asks for a story beat or ending. null = not checked.",
+  "expect_branches true on Strategy first turns only. Speed and Expert never get a menu.",
+  "app_id \"\" with app_name set mimics an EmuDeck shortcut; retrieval resolves the title from the name.",
+  "expect_attached false marks a control case where nothing should attach at all.",
+  "Calibration edits after a run are allowed for must_mention synonyms only, and are dated in the case note. Never edit a case to make a failing check pass for any other reason."
+ ],
+ "cases": [
+  {
+   "id": "A-DRG-01",
+   "app_id": "2321470",
+   "app_name": "Deep Rock Galactic: Survivor",
+   "ask_mode": "strategy",
+   "question": "how do i beat the glyphid dreadnought",
+   "expect_card": "Glyphid Dreadnought",
+   "must_mention": [
+    [
+     "kite",
+     "kiting",
+     "keep moving",
+     "stay mobile",
+     "distance",
+     "keep away",
+     "back off"
+    ],
+    [
+     "weak point",
+     "weak points",
+     "armor plate",
+     "armour plate",
+     "plates",
+     "armor"
+    ]
+   ],
+   "must_not_say": [],
+   "expect_fence": false,
+   "expect_branches": true,
+   "note": "The seed card is two sentences; both facts should survive. 2026-09-02 calibration: the model renders 'kite between waves' as 'keep your distance', which is fair, so distance joined the group."
+  },
+  {
+   "id": "A-DRG-02",
+   "app_id": "2321470",
+   "app_name": "Deep Rock Galactic: Survivor",
+   "ask_mode": "strategy",
+   "question": "the dreadnought twins keep healing back up, what am i doing wrong",
+   "expect_card": "Dreadnought Twins",
+   "must_mention": [
+    [
+     "split",
+     "evenly",
+     "even",
+     "both",
+     "equal",
+     "same time"
+    ],
+    [
+     "health bar",
+     "health bars",
+     "health",
+     "heal"
+    ]
+   ],
+   "must_not_say": [
+    "kill one first",
+    "focus one first",
+    "burn one down first"
+   ],
+   "expect_fence": false,
+   "expect_branches": true,
+   "note": "The card's whole point: keep their health bars level or they turn immune and heal."
+  },
+  {
+   "id": "A-DRG-03",
+   "app_id": "2321470",
+   "app_name": "Deep Rock Galactic: Survivor",
+   "ask_mode": "expert",
+   "question": "what is nitra actually for",
+   "expect_card": "Nitra",
+   "must_mention": [
+    [
+     "weapon upgrade",
+     "upgrade",
+     "weapons",
+     "weapon"
+    ],
+    [
+     "shop",
+     "between-stage",
+     "between stage",
+     "supply pod",
+     "reroll",
+     "re-roll"
+    ]
+   ],
+   "must_not_say": [],
+   "expect_fence": false,
+   "expect_branches": false,
+   "note": "Expert mode: five-card budget, no menu."
+  },
+  {
+   "id": "A-L4D2-01",
+   "app_id": "550",
+   "app_name": "Left 4 Dead 2",
+   "ask_mode": "strategy",
+   "question": "how to beat tank",
+   "expect_card": "Tank",
+   "must_mention": [
+    [
+     "open",
+     "space",
+     "room",
+     "spread out"
+    ],
+    [
+     "punch",
+     "throw",
+     "throws",
+     "projectile",
+     "concrete",
+     "rock",
+     "car"
+    ]
+   ],
+   "must_not_say": [],
+   "expect_fence": false,
+   "expect_branches": true,
+   "note": "Fight in the open; anything he can punch becomes a projectile."
+  },
+  {
+   "id": "A-L4D2-02",
+   "app_id": "550",
+   "app_name": "Left 4 Dead 2",
+   "ask_mode": "strategy",
+   "question": "why did the witch suddenly attack me",
+   "expect_card": "The Witch",
+   "must_mention": [
+    [
+     "flashlight",
+     "light"
+    ],
+    [
+     "too close",
+     "close",
+     "startle",
+     "startled",
+     "disturb"
+    ]
+   ],
+   "must_not_say": [],
+   "expect_fence": false,
+   "expect_branches": true,
+   "note": "Flashlight or standing too close wakes her."
+  },
+  {
+   "id": "A-L4D2-03",
+   "app_id": "550",
+   "app_name": "Left 4 Dead 2",
+   "ask_mode": "speed",
+   "question": "tips for playing as the hunter in versus",
+   "expect_card": "Playing as the Hunter",
+   "must_mention": [
+    [
+     "pounce"
+    ],
+    [
+     "distance",
+     "height",
+     "run-up",
+     "run up",
+     "straggler",
+     "high ground"
+    ]
+   ],
+   "must_not_say": [],
+   "expect_fence": false,
+   "expect_branches": false,
+   "note": "Speed mode: one card, no menu."
+  },
+  {
+   "id": "A-P2-01",
+   "app_id": "620",
+   "app_name": "Portal 2",
+   "ask_mode": "strategy",
+   "question": "how do the gels work",
+   "expect_card": "Gels",
+   "must_mention": [
+    [
+     "blue",
+     "bounce",
+     "repulsion"
+    ],
+    [
+     "orange",
+     "speed",
+     "friction",
+     "propulsion"
+    ],
+    [
+     "white",
+     "conversion",
+     "portal"
+    ]
+   ],
+   "must_not_say": [],
+   "expect_fence": false,
+   "expect_branches": true,
+   "note": "Three gels; all three should be named or described. Portal 2 is protect_progression but a gel question names no story beat."
+  },
+  {
+   "id": "A-P2-02",
+   "app_id": "620",
+   "app_name": "Portal 2",
+   "ask_mode": "speed",
+   "question": "the excursion funnel keeps pushing me the wrong way",
+   "expect_card": "Excursion Funnel",
+   "must_mention": [
+    [
+     "reverse",
+     "reverses",
+     "button",
+     "switch",
+     "flip"
+    ]
+   ],
+   "must_not_say": [],
+   "expect_fence": false,
+   "expect_branches": false,
+   "note": "Look for the button that reverses it."
+  },
+  {
+   "id": "A-HL2-01",
+   "app_id": "220",
+   "app_name": "Half-Life 2",
+   "ask_mode": "strategy",
+   "question": "the antlions keep coming up out of the sand and killing me",
+   "expect_card": "Antlions",
+   "must_mention": [
+    [
+     "rock",
+     "rocks",
+     "stone"
+    ],
+    [
+     "vibration",
+     "vibrations",
+     "sand",
+     "footsteps"
+    ]
+   ],
+   "must_not_say": [],
+   "expect_fence": false,
+   "expect_branches": true,
+   "note": "Stay on the rocks; they hunt vibration. Enemy named by the user, so no fence is needed."
+  },
+  {
+   "id": "A-HL2-02",
+   "app_id": "220",
+   "app_name": "Half-Life 2",
+   "ask_mode": "speed",
+   "question": "how do i use the bugbait",
+   "expect_card": "Pheropod (bugbait)",
+   "must_mention": [
+    [
+     "throw",
+     "toss",
+     "lob"
+    ],
+    [
+     "swarm",
+     "attack",
+     "antlion",
+     "antlions"
+    ]
+   ],
+   "must_not_say": [],
+   "expect_fence": false,
+   "expect_branches": false,
+   "note": "Throw it and the antlions swarm what you marked."
+  },
+  {
+   "id": "A-HL2-03",
+   "app_id": "220",
+   "app_name": "Half-Life 2",
+   "ask_mode": "expert",
+   "question": "what can the gravity gun actually pick up and throw",
+   "expect_card": "Gravity Gun",
+   "must_mention": [
+    [
+     "barrel",
+     "barrels",
+     "sawblade",
+     "saw blade",
+     "radiator"
+    ],
+    [
+     "manhack",
+     "manhacks",
+     "scanner",
+     "scanners",
+     "grenade",
+     "grenades"
+    ]
+   ],
+   "must_not_say": [],
+   "expect_fence": false,
+   "expect_branches": false,
+   "note": "Objects yes, most enemies no, manhacks and scanners yes."
+  },
+  {
+   "id": "A-HADES-01",
+   "app_id": "1145360",
+   "app_name": "Hades",
+   "ask_mode": "strategy",
+   "question": "which weapon is easiest to start with",
+   "expect_card": "Weapon choice",
+   "must_mention": [
+    [
+     "stygian blade",
+     "stygian",
+     "blade",
+     "sword"
+    ]
+   ],
+   "must_not_say": [],
+   "expect_fence": false,
+   "expect_branches": true,
+   "note": "The comparison card written 2026-08-31 for exactly this question."
+  },
+  {
+   "id": "A-HADES-02",
+   "app_id": "1145360",
+   "app_name": "Hades",
+   "ask_mode": "strategy",
+   "question": "theseus and asterius keep killing me",
+   "expect_card": "Theseus and Asterius",
+   "must_mention": [
+    [
+     "asterius",
+     "bull"
+    ],
+    [
+     "charge",
+     "sidestep",
+     "side-step",
+     "dodge",
+     "step"
+    ],
+    [
+     "first"
+    ]
+   ],
+   "must_not_say": [],
+   "expect_fence": false,
+   "expect_branches": true,
+   "note": "Kill Asterius first; sidestep the charge. Bosses named by the user, so no fence."
+  },
+  {
+   "id": "A-HADES-03",
+   "app_id": "1145360",
+   "app_name": "Hades",
+   "ask_mode": "strategy",
+   "question": "i beat the final boss but the game just keeps going, is that the ending?",
+   "expect_card": "Heat and the Pact of Punishment",
+   "must_mention": [
+    [
+     "not the end",
+     "middle",
+     "continue",
+     "continues",
+     "keep going",
+     "more runs",
+     "several",
+     "several more",
+     "isn't the end",
+     "is not the end"
+    ]
+   ],
+   "must_not_say": [],
+   "expect_fence": true,
+   "expect_branches": true,
+   "note": "Asks about the ending on a story title: the detail should sit inside a spoiler fence."
+  },
+  {
+   "id": "A-CP77-01",
+   "app_id": "1091500",
+   "app_name": "Cyberpunk 2077",
+   "ask_mode": "expert",
+   "question": "what does the berserk operating system do",
+   "expect_card": "Berserk",
+   "must_mention": [
+    [
+     "quarter",
+     "25%",
+     "25 percent",
+     "a fourth",
+     "health"
+    ],
+    [
+     "damage taken",
+     "reduce",
+     "reduces",
+     "less damage",
+     "damage reduction",
+     "mitigat"
+    ]
+   ],
+   "must_not_say": [
+    "slows time",
+    "slow time",
+    "bullet time"
+   ],
+   "expect_fence": false,
+   "expect_branches": false,
+   "note": "Berserk is the melee OS; slowing time is Sandevistan, the card it must not be confused with."
+  },
+  {
+   "id": "A-CP77-02",
+   "app_id": "1091500",
+   "app_name": "Cyberpunk 2077",
+   "ask_mode": "strategy",
+   "question": "which attributes should i put points into for a first playthrough",
+   "expect_card": "Choosing a build",
+   "must_mention": [
+    [
+     "body",
+     "reflexes",
+     "intelligence",
+     "technical",
+     "cool"
+    ],
+    [
+     "spread",
+     "evenly",
+     "even",
+     "threshold",
+     "thresholds",
+     "focus",
+     "two"
+    ]
+   ],
+   "must_not_say": [],
+   "expect_fence": false,
+   "expect_branches": true,
+   "note": "Pick two attributes; an even spread is the one reliably bad choice."
+  },
+  {
+   "id": "A-CP77-03",
+   "app_id": "1091500",
+   "app_name": "Cyberpunk 2077",
+   "ask_mode": "strategy",
+   "question": "how does the main story end",
+   "expect_card": null,
+   "must_mention": [],
+   "must_not_say": [],
+   "expect_fence": true,
+   "expect_branches": true,
+   "note": "No card can answer this; the check is fence behaviour on a direct ending question."
+  },
+  {
+   "id": "A-CP77-04",
+   "app_id": "1091500",
+   "app_name": "Cyberpunk 2077",
+   "ask_mode": "expert",
+   "question": "how do i beat adam smasher",
+   "expect_card": "Adam Smasher",
+   "must_mention": [
+    [
+     "leg",
+     "legs"
+    ],
+    [
+     "cover",
+     "rocket",
+     "rockets",
+     "barrage"
+    ]
+   ],
+   "must_not_say": [],
+   "expect_fence": false,
+   "expect_branches": false,
+   "note": "Boss named by the user on a story title: rule 7 unlocks him, no fence."
+  },
+  {
+   "id": "A-FO4-01",
+   "app_id": "377160",
+   "app_name": "Fallout 4",
+   "ask_mode": "strategy",
+   "question": "how do i kill a deathclaw early",
+   "expect_card": "Deathclaw",
+   "must_mention": [
+    [
+     "distance",
+     "cover",
+     "range",
+     "keep away",
+     "high ground"
+    ],
+    [
+     "energy",
+     "laser",
+     "lasers",
+     "resist",
+     "resistant"
+    ]
+   ],
+   "must_not_say": [],
+   "expect_fence": false,
+   "expect_branches": true,
+   "note": "Distance and cover; energy weapons are the worst choice."
+  },
+  {
+   "id": "A-FO4-02",
+   "app_id": "377160",
+   "app_name": "Fallout 4",
+   "ask_mode": "strategy",
+   "question": "what special stats should i pick at the start",
+   "expect_card": "Choosing a build",
+   "must_mention": [
+    [
+     "intelligence"
+    ],
+    [
+     "strength",
+     "endurance",
+     "agility",
+     "perception",
+     "charisma"
+    ]
+   ],
+   "must_not_say": [],
+   "expect_fence": false,
+   "expect_branches": true,
+   "note": "Intelligence is the quiet strong pick because it speeds levelling."
+  },
+  {
+   "id": "A-FO4-03",
+   "app_id": "377160",
+   "app_name": "Fallout 4",
+   "ask_mode": "speed",
+   "question": "feral ghouls keep swarming me",
+   "expect_card": "Feral ghouls",
+   "must_mention": [
+    [
+     "head",
+     "headshot",
+     "headshots",
+     "leg",
+     "legs"
+    ]
+   ],
+   "must_not_say": [],
+   "expect_fence": false,
+   "expect_branches": false,
+   "note": "Head is the weakness; taking a leg stops the attack."
+  },
+  {
+   "id": "A-FO4-04",
+   "app_id": "377160",
+   "app_name": "Fallout 4",
+   "ask_mode": "expert",
+   "question": "my power armor suddenly stopped working properly",
+   "expect_card": "Power armor and fusion cores",
+   "must_mention": [
+    [
+     "fusion core",
+     "core",
+     "cores"
+    ],
+    [
+     "drain",
+     "drained",
+     "empty",
+     "ran out",
+     "run out",
+     "sprint",
+     "v.a.t.s",
+     "vats",
+     "encumber"
+    ]
+   ],
+   "must_not_say": [
+    "training perk",
+    "power armor training"
+   ],
+   "expect_fence": false,
+   "expect_branches": false,
+   "note": "The core is empty. No training perk exists in this game -- a Fallout 3 fact the model may bring in."
+  },
+  {
+   "id": "A-FO4-05",
+   "app_id": "377160",
+   "app_name": "Fallout 4",
+   "ask_mode": "strategy",
+   "question": "a legendary enemy healed back to full in the middle of the fight",
+   "expect_card": "Legendary enemies",
+   "must_mention": [
+    [
+     "half",
+     "mutate",
+     "mutates",
+     "mutation",
+     "heals",
+     "heal"
+    ],
+    [
+     "twice",
+     "longer",
+     "second half",
+     "save",
+     "don't spend",
+     "do not spend",
+     "hold back"
+    ]
+   ],
+   "must_not_say": [],
+   "expect_fence": false,
+   "expect_branches": true,
+   "note": "Mutation at half health; the fight is twice as long as it looks."
+  },
+  {
+   "id": "A-RDR2-01",
+   "app_id": "1174180",
+   "app_name": "Red Dead Redemption 2",
+   "ask_mode": "strategy",
+   "question": "i just came from gta, any tips before i start",
+   "expect_card": "Coming from GTA",
+   "must_mention": [
+    [
+     "slow",
+     "slower",
+     "slowly",
+     "weight",
+     "patience",
+     "patient",
+     "deliberate"
+    ],
+    [
+     "bounty",
+     "bounties",
+     "law",
+     "wanted",
+     "witness",
+     "witnesses",
+     "mask",
+     "cover your face",
+     "bandana"
+    ]
+   ],
+   "must_not_say": [],
+   "expect_fence": false,
+   "expect_branches": true,
+   "note": "The comparison card in the maintainer's own framing."
+  },
+  {
+   "id": "A-RDR2-02",
+   "app_id": "1174180",
+   "app_name": "Red Dead Redemption 2",
+   "ask_mode": "speed",
+   "question": "how do i raise honor",
+   "expect_card": "Honor",
+   "must_mention": [
+    [
+     "greet",
+     "greeting",
+     "help",
+     "helping",
+     "donat",
+     "bount",
+     "pay"
+    ]
+   ],
+   "must_not_say": [],
+   "expect_fence": false,
+   "expect_branches": false,
+   "note": "Small things done often."
+  },
+  {
+   "id": "A-RDR2-03",
+   "app_id": "1174180",
+   "app_name": "Red Dead Redemption 2",
+   "ask_mode": "strategy",
+   "question": "what happens to arthur at the end of the story",
+   "expect_card": null,
+   "must_mention": [],
+   "must_not_say": [],
+   "expect_fence": true,
+   "expect_branches": true,
+   "note": "Ending question on a story title; fence expected."
+  },
+  {
+   "id": "A-RDR2-04",
+   "app_id": "1174180",
+   "app_name": "Red Dead Redemption 2",
+   "ask_mode": "expert",
+   "question": "my horse keeps throwing me off",
+   "expect_card": "Horse bonding",
+   "must_mention": [
+    [
+     "bond",
+     "bonding"
+    ],
+    [
+     "feed",
+     "feeding",
+     "brush",
+     "brushing",
+     "pat",
+     "patting",
+     "calm",
+     "calming"
+    ]
+   ],
+   "must_not_say": [],
+   "expect_fence": false,
+   "expect_branches": false,
+   "note": "A high-bond horse stops throwing you."
+  },
+  {
+   "id": "A-SOE-01",
+   "app_id": "",
+   "app_name": "State of Emergency",
+   "ask_mode": "strategy",
+   "question": "how do i get more time in a round",
+   "expect_card": "Round time and the +15s pickups",
+   "must_mention": [
+    [
+     "pickup",
+     "pickups",
+     "pick-up",
+     "+15",
+     "15 seconds",
+     "fifteen",
+     "15s"
+    ]
+   ],
+   "must_not_say": [],
+   "expect_fence": false,
+   "expect_branches": true,
+   "note": "EmuDeck shortcut resolved by name. The maintainer's own gap-sheet answer."
+  },
+  {
+   "id": "A-SOE-02",
+   "app_id": "",
+   "app_name": "State of Emergency",
+   "ask_mode": "speed",
+   "question": "whats the difference between kaos mode and revolution mode",
+   "expect_card": "Kaos mode and Revolution mode",
+   "must_mention": [
+    [
+     "score",
+     "clock",
+     "timer",
+     "time"
+    ],
+    [
+     "story",
+     "mission",
+     "missions",
+     "campaign"
+    ]
+   ],
+   "must_not_say": [],
+   "expect_fence": false,
+   "expect_branches": false,
+   "note": "Score attack vs the story."
+  },
+  {
+   "id": "A-OOT-01",
+   "app_id": "",
+   "app_name": "The Legend of Zelda: Ocarina of Time",
+   "ask_mode": "strategy",
+   "question": "the shadow temple has floors missing everywhere",
+   "expect_card": "Shadow Temple invisible floors",
+   "must_mention": [
+    [
+     "lens of truth",
+     "lens"
+    ],
+    [
+     "magic",
+     "bursts",
+     "potion",
+     "potions",
+     "fairies",
+     "fairy"
+    ]
+   ],
+   "must_not_say": [],
+   "expect_fence": false,
+   "expect_branches": true,
+   "note": "Lens of Truth, used in bursts. Dungeon named by the user."
+  },
+  {
+   "id": "A-OOT-02",
+   "app_id": "",
+   "app_name": "The Legend of Zelda: Ocarina of Time",
+   "ask_mode": "strategy",
+   "question": "how do i beat volvagia",
+   "expect_card": "Volvagia",
+   "must_mention": [
+    [
+     "megaton hammer",
+     "hammer"
+    ],
+    [
+     "hookshot",
+     "head"
+    ]
+   ],
+   "must_not_say": [],
+   "expect_fence": false,
+   "expect_branches": true,
+   "note": "Boss named by the user."
+  },
+  {
+   "id": "A-BG3-01",
+   "app_id": "1086940",
+   "app_name": "Baldur's Gate 3",
+   "ask_mode": "strategy",
+   "question": "should i be long resting more often",
+   "expect_card": "Long rest",
+   "must_mention": [
+    [
+     "yes",
+     "more",
+     "often",
+     "camp supplies",
+     "supplies",
+     "plenty",
+     "plentiful"
+    ],
+    [
+     "companion",
+     "companions",
+     "story",
+     "scene",
+     "scenes",
+     "quest",
+     "quests",
+     "dialogue"
+    ]
+   ],
+   "must_not_say": [],
+   "expect_fence": false,
+   "expect_branches": true,
+   "note": "Rest more than feels right; it advances companion scenes."
+  },
+  {
+   "id": "A-BG3-02",
+   "app_id": "1086940",
+   "app_name": "Baldur's Gate 3",
+   "ask_mode": "expert",
+   "question": "what party composition should i use for a first run",
+   "expect_card": "Party composition",
+   "must_mention": [
+    [
+     "heal",
+     "healer",
+     "healing",
+     "cleric",
+     "druid"
+    ],
+    [
+     "trap",
+     "traps",
+     "lock",
+     "locks",
+     "rogue",
+     "ranger"
+    ],
+    [
+     "talk",
+     "talker",
+     "bard",
+     "paladin",
+     "charisma",
+     "face",
+     "persuasion",
+     "dialogue"
+    ]
+   ],
+   "must_not_say": [],
+   "expect_fence": false,
+   "expect_branches": false,
+   "note": "Someone to talk, someone to heal, someone for traps and locks."
+  },
+  {
+   "id": "A-SIMS4-01",
+   "app_id": "1222670",
+   "app_name": "The Sims 4",
+   "ask_mode": "speed",
+   "question": "fastest way to make money early",
+   "expect_card": "Making money",
+   "must_mention": [
+    [
+     "paint",
+     "painting",
+     "writing",
+     "write",
+     "novel",
+     "novels"
+    ]
+   ],
+   "must_not_say": [],
+   "expect_fence": false,
+   "expect_branches": false,
+   "note": "Painting and writing are the classic earners."
+  },
+  {
+   "id": "A-GTASA-01",
+   "app_id": "1547000",
+   "app_name": "Grand Theft Auto: San Andreas - The Definitive Edition",
+   "ask_mode": "speed",
+   "question": "how do i recruit more gang members",
+   "expect_card": "Respect",
+   "must_mention": [
+    [
+     "respect"
+    ],
+    [
+     "territory",
+     "territories",
+     "turf",
+     "mission",
+     "missions",
+     "tag",
+     "tags",
+     "green",
+     "clothes",
+     "clothing"
+    ]
+   ],
+   "must_not_say": [],
+   "expect_fence": false,
+   "expect_branches": false,
+   "note": "Respect sets the recruit cap."
+  },
+  {
+   "id": "A-NOCARD-01",
+   "app_id": "1245620",
+   "app_name": "ELDEN RING",
+   "ask_mode": "strategy",
+   "question": "how do i beat margit",
+   "expect_card": null,
+   "expect_attached": null,
+   "must_mention": [],
+   "must_not_say": [],
+   "expect_fence": null,
+   "expect_branches": true,
+   "note": "Uncovered game. Strategy mode deliberately attaches a genre fallback card (Soulslike basics, trust fallback_no_source) when the title is unknown, so attached=True is by design here; expect_card null records that no real card exists. Baseline 2026-09-02: the model fenced the whole tactic on all three samples. Baseline for the D48 no-notes line."
+  },
+  {
+   "id": "A-VAGUE-01",
+   "app_id": "1145360",
+   "app_name": "Hades",
+   "ask_mode": "strategy",
+   "question": "keep dying in tartarus",
+   "expect_card": null,
+   "must_mention": [],
+   "must_not_say": [],
+   "expect_fence": null,
+   "expect_branches": true,
+   "note": "Vague first turn: the orientation-plus-menu shape is the right one here (D54 baseline)."
+  }
+ ]
+}
