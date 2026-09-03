@@ -455,3 +455,551 @@ Small, and only worth doing if returning to that button matters.
 | Answer scroll choppy / jumps lines | one stop per paragraph, plus one for the safety notice |
 | D-pad skips branches and feedback (MICRO-04) | walk reached both branch buttons, then Helpful, then Retry |
 | Token streaming chunky under game load | **not run** — needs a game running, and starting one is not an automated step |
+
+---
+
+# Moved from the roadmap 2026-09-02 (open items)
+
+The roadmap cleanup of 2026-09-02 cut every entry to five lines. The original text of each open entry that was longer is here, verbatim, under a heading the roadmap links to.
+
+## The shipping retrieval arm loses to the vector half alone on rows nobody tuned against
+
+- ★★★★ **The shipping retrieval arm loses to the vector half alone on rows nobody tuned against** — found 2026-08-29 by the first
+  measurement against the 92-row blind holdout (**D37**, endorsed the same day). On `holdout`, `vector_only` scores **83.7% top-3 / 64.1%
+  top-1** against the shipping `rrf` arm's **79.3% / 56.5%** — **7.6 points of top-1**. On `tune` the two were level (91.5% top-3 each,
+  `rrf` marginally ahead on top-1). An arm that ties on the rows its weights were tuned on and loses by that much on rows written blind is
+  the textbook shape of **fusion weights that do not generalise**, and catching it is the whole reason a blind holdout exists.
+  **Filed as [D38](audit/maintainer-decisions-locked.md#d38--deferred-at-the-maintainers-request-raised-2026-08-29--what-ships-is-beaten-by-half-of-itself-on-the-blind-rows-how-should-that-be-acted-on)
+  and DEFERRED 2026-08-29 at the maintainer's request** — more data, more games and more questions
+  first. **No weight changes until it is answered, and never by tuning against holdout**, which would burn the only clean gate in the
+  fixture. The knot worth remembering: the weights were never tuned (equal, locked 2026-08-09), and `tune` rated the blend the best arm
+  available — so the one split it is legal to tune against said "change nothing" while the gate said otherwise. **Groundwork done:** 51
+  blind rows added to `tune`, which had none ([audit/kb-blind-tune-rows-2026-08-29.md](audit/kb-blind-tune-rows-2026-08-29.md)). Run of
+  record: [archive/research/kb-embed-bakeoff-2026-08-29-arms.md](archive/research/kb-embed-bakeoff-2026-08-29-arms.md).
+
+## Chip rotation is biased to the top of the candidate list
+
+- ★ **Chip rotation is biased to the top of the candidate list** — noticed 2026-08-29 while trying to make a long label appear. The
+  guarantee and the roll both take `available[0]`, the first candidate not already in history, and the backend returns candidates in rank
+  order. Across three 60s windows the same three chips came round every time (ranks 1–3) and ranks 4–6 never appeared. Not the old bug —
+  those chips are reachable now, where before only rank 1 ever showed — but it is why the long labels stayed unobserved. A shuffle among
+  eligible candidates, or a rotating start index, would spread it. **With the QA override on, all six appeared in 90s**, so the bias is in
+  the roll rather than in reachability.
+
+## A troubleshooting question that only describes the symptom reaches no tips
+
+- ★★ **A troubleshooting question that only describes the symptom reaches no tips** — found 2026-08-28 by the second batch of blind
+  holdout rows, before any of them were scored. The compat router reaches a question that **names** a topic and not one that only says
+  what is going wrong: *"the game drops me back to the library a few minutes in"* (`V2-BLIND-H55`) never routes, because the word *crash*
+  is absent; *"my controller works fine on the desktop but the game doesn't seem to see half my buttons"* (`V2-BLIND-H19`) never routes,
+  because the word *input* is absent. **Two of the four blind compat rows miss.** This is the D16 gate doing what it was specified to do —
+  word-boundary topic matching replaced the old literal `deck`/`proton` phrase gate — so it is a reach limit rather than a regression, and
+  the fix is a maintainer call, not a threshold tweak. Neither row was reworded to make it pass; both are named in the reach pin
+  (`tests/test_compat_topic_router.py`). Worth noting the shape: a card-derived question about crashes says *crash*, so this hole was
+  invisible until questions were written without reading the cards. Detail:
+  [audit/kb-blind-holdout-rows-batch2-2026-08-28.md](audit/kb-blind-holdout-rows-batch2-2026-08-28.md) § 5.
+
+
+## Unrelated questions still get game cards stapled on (2026-09-02 wording)
+
+See also [Ordinary phrases attach game cards](#ordinary-phrases-attach-game-cards) above.
+
+- ★★ **Unrelated questions still get game cards stapled on** — **PARTIAL; the maintainer chose to live with it 2026-08-27.** With a game running,
+  *"thank you very much"* still attaches a Nitra card and *"what time is it"* attaches three. Two of the six test phrases were fixed by the D28
+  floor change; the other two come from the keyword half, and raising that floor pushes against D25. Confirmed on hardware, card for card.
+  The residue is judged acceptable because the model mostly ignores an irrelevant card. Tables, method and the D28 numbers:
+  [roadmap-details.md](roadmap-details.md#ordinary-phrases-attach-game-cards).
+
+
+## Spoiler warnings appear mid-reply on a game with no story (2026-09-02 wording)
+
+See also [The spoiler fence on a no-story game lands mid-reply](#the-spoiler-fence-on-a-no-story-game-lands-mid-reply) above.
+
+- ★★ **Spoiler warnings appear mid-reply on a game with no story** — **FIXED in code 2026-09-02, measured on the PC; Deck confirmation owed.**
+  The cause was not the entity extractor after all. The first-turn policy told the model *where* a spoiler block "must appear", and a 2B model
+  reads that as an order that one exists — so it fenced a harmless opening line (*"This guide focuses on general tactics against the Tank."*)
+  on every sample for Left 4 Dead 2, even though the addendum two lines later said not to fence. Measured with the new answer eval
+  (`scripts/eval_kb_answers.py`, **KB-ANSWER-01**): **28 of 96** low-story / named-entity samples fenced before; dropping only the
+  placement sentence removed every fence including the ones due on ending questions (0 of 9); replacing both fence-format sentences with
+  one plain *"do not use spoiler fences in this reply"* line on those turns left **3 of 96** while ending questions kept their fences
+  (8 of 9), the same in two independent runs. That is what now ships in `_strategy_spoiler_policy_block`; story titles with nothing
+  named are untouched. Row **KB-ANSWER-02** for the Deck run. Prior history: the *when* was fixed earlier (the fence only appears for
+  flagged questions); workaround while the Deck run is owed: turn spoiler masking off in Settings.
+  Detail: [roadmap-details.md](roadmap-details.md#the-spoiler-fence-on-a-no-story-game-lands-mid-reply). The 2026-08-28 reproduction
+  (*"how do i beat the twins"*, DRG Survivor, trace `2026-08-28T17:26`) is the same shape.
+
+
+- ★ **Spoiler false-positive on a named entity** — **FIXED in code 2026-09-02, measured on the PC; Deck confirmation owed.** Same root
+  cause and same fix as the no-story entry above: on a named-entity turn the prompt now says plainly that nothing about the named thing
+  goes inside a fence, and drops the placement rule that was read as an order to fence. Hades *"theseus and asterius keep killing me"*
+  and Ocarina *"how do i beat volvagia"* went from fenced on every sample to fenced on none. Row **KB-ANSWER-02**.
+
+## Token streaming reveals text in chunks while a game is running
+
+- ★★ **Token streaming reveals text in chunks while a game is running** — **measured properly on device 2026-08-28 with DRG Survivor
+  actually running** (the condition earlier passes could not meet). Both halves of the old contradiction are real, at different moments:
+  tokens arrive in bursts, and *during a paint burst* the QAM overlay dropped to **47 fps** with a worst frame of **50 ms** (39 frames over
+  20 ms in a 3-second sample); *between bursts* it sat at a flat 60 fps, worst frame 17 ms. So the reveal is chunky because delivery is
+  bursty, not because painting is slow — the repaint of a burst costs about a quarter of the frame budget for as long as the burst lasts.
+  Overlay frames only: the rig reads the QAM's own page and cannot measure the game's frame rate — the maintainer's performance overlay is
+  the judge of whether the game itself stutters during a burst. Full numbers in [testing.md](testing.md) **STREAM-11**.
+
+## The tab names never appear
+
+- ★★ **The tab names never appear** — **OPEN, filed by the maintainer 2026-08-30:** the strip shows glyphs only, and *Main*, *Ollama*,
+  *Settings* and the rest are nowhere, though the mock-ups draw them. **Read the decision before writing any CSS:** this is not an
+  oversight, it is [R5](major-redesign.md) — *filled active glyph only, no micro labels, no width change, no height cost* — which the
+  backlog entry **Tab-strip micro labels + wide active cell** records as deliberately not built. So the fix is to **reopen R5** in
+  [audit/maintainer-decisions-locked.md](audit/maintainer-decisions-locked.md) first, and it needs settling alongside the collapsing tab
+  bar below, which wants the active tab readable at a glance and is the natural place for a name to live. **Planned 2026-09-01:**
+  settled inside [planning/30-collapsing-tab-bar.md](planning/30-collapsing-tab-bar.md) — the thin bar names the active tab at rest
+  and the open strip names all six. R5 is reopened as **D44**. **Fixed 2026-09-02:** the bar shows the active tab's name at rest
+  (11px caps in the character accent) and the open strip labels all six tabs (8px caps, PERMS and DEV as the short forms while
+  Developer is mounted). D44 locked. Rows **TAB-BAR-01…06** pass on the Deck; the by-eye legibility check (**TAB-BAR-07**) is the
+  maintainer's.
+
+
+## Down from the chat slot lands on the whole reply
+
+- ★★ **Down from the chat slot lands on the whole reply before it lands on its first section** — **OPEN, filed by the maintainer
+  2026-09-02.** Pressing Down from the slot row highlights the entire answer bubble as one big stop; only the next Down moves the ring onto
+  the first section of text. That is one wasted press per reply, and on a long answer the highlight is a wall of glow. The bubble is its own
+  D-pad stop with the sections nested inside it, so Steam parks on the outer box first. Fix: the bubble hands the ring straight to its first
+  section on the way in (`focusFirstAnswerChunk` already does this for Up-from-a-spoiler), or stops being a stop of its own. Check Up from
+  the reply buttons for the same double landing.
+
+
+## Small and cosmetic, as filed
+
+- ★ **The active chip in Show details is hard to spot** — no focus ring, and the "Chip 1 of 6" counter is easy to miss. Filed by the maintainer.
+
+- ★ **The question overlay is a few pixels out of line** with the native text field underneath it, most visible on a three-line question and on
+  the empty-field placeholder.
+
+- ★ **Focus ring gets clipped on grid layouts** — **OPEN, found 2026-08-27.** Tiles sit flush against the edge of their grid, so the
+  highlight around a focused tile is cut off instead of drawn in full. Most visible on the AI character picker; check any other
+  screen that lays tiles out in a grid. Needs each grid to leave a margin outside its own edge for the ring to fit.
+- ★★ **Focus ring styling is inconsistent** between plugin controls and Steam's own — **PARTIAL.** Modal scoping shipped; a blanket rule was
+  tried and reverted in favour of Steam's native outline.
+
+## Vertical space for the chat bubbles (the lane, as it read)
+
+### Vertical space for the chat bubbles
+
+**Overarching goal, set by the maintainer 2026-08-30:** buy back as much vertical room for the chat bubbles as possible — every bit of
+height in the 300px column is worth something. Today most of it goes to chrome: a tab icon bar, a preset block, a button row under each
+answer, and a Session context bar. These four each hand some of it back, which is why this lane is listed **first** rather than in the
+alphabetical order the rest of the Backlog uses.
+
+- ★★ **Show details becomes a divider, not a chip**
+  - **Goal:** At the end of a reply, **Show details** stops being a button and becomes a full-width
+    divider with the label in the middle — `---------- Show details ↓ ----------`. It reads as the end of
+    the answer rather than as another control competing with it, and the row it currently shares stops
+    needing to exist.
+  - **Prior art in the same file:** the collapsed-history row (`.bonsai-chat-earlier-pill-row` + `-rule`)
+    is already a label centred on a hairline. Copy that shape rather than inventing one.
+
+
+## A setting for one or two preset chips
+
+- ★★★ **A setting for one or two preset chips** — filed by the maintainer 2026-09-02.
+  - **Goal:** A Settings option chooses whether the preset row shows one chip or two side by side. Two stays the default (D43); one gives
+    the label the whole column, so most suggestions read at rest without scrolling.
+  - **The cost is plumbing, not the row:** the row already reads one constant for "how many across" (`PRESET_VISIBLE_SLOTS`, which the
+    carousel window, the seed queue and the corpus Tip guarantee all follow), so the render side is making that a live value. The setting
+    itself is the ~18-file, ~30-edit-point walk in CLAUDE.md, plus a QA row per chip mode. The 2026-08-31 one-chip build (`fc1b245`) is the
+    reference for how one across should behave.
+
+## Copy sits in the answer corner, not in a button row
+
+- ★★★ **Copy sits in the answer's corner, not in a button row**
+  - **Goal:** **Copy** becomes a small semi-transparent icon in the corner of the answer bubble — the same weight as the microphone in the
+    Ask field — drawn as the standard two-overlapping-rounded-squares copy glyph, styled to the SteamOS motif. The button row under the
+    reply loses an entry and the transcript gains its height.
+  - **The hard part is focus, not paint.** Answer bubbles are not D-pad stops today, so a control inside one needs a way in and back out
+    (`.cursor/rules/decky-focus-graph.mdc`). Copy must not quietly become touch-only.
+
+## Session context folds into Show details (roadmap wording)
+
+- ★★★ **Session context folds into Show details**
+  - **Goal:** The **Session context (N turns)** bar stops being its own row and lives inside the **Show details** disclosure, so a settled
+    answer costs one collapsed control instead of two.
+  - **Shape not decided — workshop before building.** Open questions in [roadmap-details.md](roadmap-details.md).
+
+## Fewer D-pad stops on a finished reply
+
+- ★★ **Fewer D-pad stops on a finished reply** — filed by the maintainer 2026-09-02.
+  - **Goal:** A finished answer gets one D-pad stop per paragraph today, so a long reply is ten or more Down presses before the ring
+    reaches the chips under it. Merge neighbouring paragraphs into bigger sections — roughly one screen of text each — so it is a few.
+  - **Streaming is untouched by design:** the live stream is split by a different routine (`prepareStreamMarkdown`) and the finished reply
+    is re-split once the stream closes (`splitResponseIntoChunks`), so the section size only changes after the answer is done. Code fences
+    stay whole, as now.
+
+## Preset chip expansion
+
+- ★★ **Preset chip expansion** (incremental content)
+  - **Goal:** Add or refresh preset strings as related features land. Wave 1 shipped four prompts; **PRESET-EXPAND-W1-01** open. [wave1.md](wave1.md).
+  - **Not in scope:** replacing `fade` default animation; session RAG chips (shipped).
+
+## Thinking tips replace the status blurb (Thinking effort Phase 2)
+
+- ★★ **Thinking effort control** — **Phase 1 shipped 2026-08-15; Phase 2 Backlog**
+  - **Phase 1 (shipped):** Ollama tab → **Thinking** row, Off / Brief / Balanced / Deep, defaulting **Off**. Sends `think: true` for all three on levels — named levels are gpt-oss-only and qwen3 / deepseek-r1 reject a string (**D21**, superseding doc 16) — with effort carried by the reserved budget (256 / 512 / 1024) added to `num_predict`. A model that cannot think gets one silent retry with thinking off, is remembered for the session, and the user is told once. On-Deck **THINK-EFFORT-04**, **THINK-EFFORT-05** Open.
+  - **Phase 2 (Backlog):** Replace the cosmetic `<bonsai-status>` blurb outright with hand-curated bonsAI tips — feature tips ("Ask-mode Speed trims replies for a quick answer") for generic asks, KB-strategy tips ("A run spent only kiting is a run that ends underpowered") for game-specific asks, selected contextually by current game/mode. Not a fallback for otherwise-empty moments — the generic filler copy goes away entirely. Data file shaped like `data/kb/strategy_seed.json`.
+  - **Not in scope:** Reply verbosity → token budgets; caveman / lowering `num_predict`; native gpt-oss levels (needs per-model capability detection — see D21).
+  - **Related:** **Reasoning display** (below) — once raw `thinking` streams live, it takes over the slot Phase 2 tips otherwise fill.
+
+## Make token streaming the default and drop the setting
+
+- ★★ **Make token streaming the default and drop the setting** (maintainer direction 2026-08-23)
+  - **Goal:** `bonsai_token_streaming_enabled` goes away and streaming is simply how replies
+    arrive. Stated by the maintainer 2026-08-23 as the intended end state, not a proposal.
+  - **Gate:** the outstanding streaming bugs are fixed and the reveal performs well on the Deck.
+    The live blocker is *Token streaming reveal is chunky under game load* in [Bugs](#bugs),
+    measured 2026-08-22 with a game running; the earlier idle-Deck measurement that called it
+    smooth does not cover this case.
+  - **What it shrinks:** every QA row currently written as "with streaming on and with it off"
+    loses half its work — **DESTRUCT-ADVICE-01** most directly, whose accepted limitation only
+    exists on the streaming path. Do not spend on hardening the non-streaming path meanwhile.
+  - **Two-language removal, so budget for the plumbing:** dropping a boolean is not the reverse of
+    adding one. Python is authoritative (**D13**), both settings contracts need the key gone, and
+    a Deck whose `settings.json` still carries it must not read as "the setting reset itself".
+
+## User-adjustable spoiler fencing (absorbed into the tiered setting)
+
+- ★★ **User-adjustable spoiler fencing** (hide by risk band)
+  - **Goal:** Settings control for tap-to-reveal / fence masking by estimated risk band.
+  - **Depends on:** spoiler confidence chip; shipped `strategy_spoiler_masking_enabled`.
+  - **Related:** [spoiler-constitution.md](planning/spoiler-constitution.md).
+
+## Ask / reply items with short entries, as filed
+
+- ★★★ **Custom model in Pull Models picker** (custom pull + Ask pin + New badges)
+  - **Goal:** Pull any valid Ollama-library tag; **Use for Ask** pin; **New** badge (≤30 days).
+  - **Depends on:** shipped Pull Models picker + living overlay merge.
+  - **Not in scope:** LAN/remote `ollama pull` (→ **LAN custom model pull**).
+- ★★★ **Dynamic keep-alive / smart unload** (research spike)
+  - **Goal:** Research-only: hold models loaded vs unload when a game takes focus on Deck APU? Spike decides go/no-go.
+  - **Not in scope:** production unload before spike doc.
+- ★★★ **Per-mode latency timeouts** (warn vs hard limit profiles)
+  - **Goal:** Separate warning and timeout values per selected mode.
+  - **Depends on:** Mode selector (shipped).
+
+- ★★★★ **Connection doctor** (guided first-Ask repair — candidate)
+  - **Status:** Candidate, not accepted — decide vs **Deck health snapshot** (shared probe set).
+  - **Goal:** **Fix this** on Ask failure walks probes → one next action with Ollama-tab deep link.
+  - **Source:** [13-roadmap-feature-ideas.md](planning/13-roadmap-feature-ideas.md) § B3.
+- ★★★★ **LAN custom model pull** (remote host — decision review)
+  - **Goal:** LAN Ask host: add/pull models not in catalog — blocked until mechanism chosen (R1–R4).
+  - **Depends on:** **Custom model in Pull Models picker**.
+- ★★★★ **Session context and user stash** (deck-first context)
+  - **Goal:** Live session facts + user-editable stash notes for Ask; no embeddings/cloud.
+  - **Not in scope:** vector DBs; cloud sync.
+
+## Speed-mode VRAM preload
+
+- ★★★★ **Speed-mode VRAM preload** (dev-toggle; keep a small model warm from boot)
+  - **Goal:** On plugin/daemon boot, preload the user's default Ask model into VRAM so the first Ask of a session skips the cold-load penalty. Ships behind a developer toggle first; graduates to user-facing only after the suspend/resume question below is answered on-device.
+  - **Model eligibility:** hard ceiling ≤3B params, but steered rather than merely gated — Pull Models picker surfaces vision/thinking-capable distilled models as "recommended for speed mode," and preload auto-substitutes the best shortlisted model if the user's chosen default doesn't qualify.
+  - **Sits alongside, not instead of:** the existing Ollama-tab Unload-delay slider (`ollama_keep_alive`, [ollamaKeepAlive.ts](../src/data/ollamaKeepAlive.ts)) — that setting still governs how long a model lingers after use; this only changes when the *first* load happens.
+  - **VRAM safety:** check pressure via existing TDP/telemetry chip data before every attempt; skip silently on pressure or an unreachable Ollama host, retry opportunistically next QAM open. No hard retry cap and no background polling — a skipped attempt costs nothing, so it can never contend with a running game.
+  - **Open questions:** whether VRAM/model residency survives Deck suspend/resume — boot-only preload may need to also fire on wake — needs on-device research before this can leave the developer toggle.
+  - **Related:** **Dynamic keep-alive / smart unload** (below) covers unloading on game focus, a separate question this feature doesn't answer.
+
+## Deck health snapshot, Local reply TTS, On-Deck model benchmark
+
+- ★★★★★ **Deck health snapshot** (full diagnostics + Ollama)
+  - **GitHub:** [bonsAI Issues](https://github.com/qd313/bonsAI/issues) — issue TBD.
+  - **Goal:** Read-only diagnostics dump to Desktop; Magic Ask `bonsai:diagnostics`.
+- ★★★★★ **Local reply TTS** (Phase 1–2 character voice)
+  - **GitHub:** [bonsAI Issues](https://github.com/qd313/bonsAI/issues) — issue TBD.
+  - **Goal:** Phase 1 offline TTS play/stop; Phase 2 character-aligned read-aloud (legal gate).
+
+- ★★★★★ **On-Deck model benchmark** (measured routing order)
+  - **GitHub:** [bonsAI Issues](https://github.com/qd313/bonsAI/issues) — issue TBD.
+  - **Goal:** Rank installed models by measured speed/completion; offer as try order (with confirmation).
+  - **Depends on:** shipped routing pickers; overlaps **Dynamic keep-alive** measurements.
+  - **Source:** [13-roadmap-feature-ideas.md](planning/13-roadmap-feature-ideas.md) § C1.
+
+## Reasoning display
+
+- ★★★★★ **Reasoning display** (real model `thinking`, not the status blurb)
+  - **GitHub:** [bonsAI Issues](https://github.com/qd313/bonsAI/issues) — issue TBD.
+  - **Goal:** Read and stream the model's actual `thinking`/reasoning content from Ollama — never consumed today; the Ollama tab only sends the `think` boolean and spends a hidden budget, nothing reads `message.thinking` back. Renders inline with the reply (italic, muted, single-line-truncated while streaming), collapses to a "12s · 340 tokens" summary once the reply completes, expandable to the full transcript. New **thinking** transparency chip shows effort level + actual token spend alongside the existing model/kb chips in `ContextChipLadder`.
+  - **No spoiler redaction inside the reasoning body** — the collapse/expand gesture is itself the consent fence, the same shape as an existing `` ```bonsai-spoiler `` fence ([spoilerFenceRegistry.ts](../src/utils/spoilerFenceRegistry.ts), [unwrapAskedEntitySpoilerFences.ts](../src/utils/unwrapAskedEntitySpoilerFences.ts)). A spoiler-risk caveat is instead surfaced once, as a dismissible notice the first time thinking-effort is turned on, plus an inline note on the first reasoning toggle a session sees.
+  - **Persistence:** stored per-turn in chat-slot storage so archived/restored turns keep their reasoning text — closes part of the existing "Session context strip never lists archived turns" bug ([chat_slot_service.py](../py_modules/backend/services/chat_slot_service.py)).
+  - **Spike required before build:** two open questions, either of which can fail without blocking the rest of the feature — (1) whether Ollama reasoning models interleave thinking with content per-paragraph, or emit one solid reasoning block before any content starts (decides whether **segmented per-paragraph reasoning** — a separate toggle under each paragraph rather than one end-of-turn block — is a real attribution or an approximate backend split of one block); (2) whether a single-line-truncated live display (cheap, current default design) or a bounded multi-line auto-scrolling pane (matches Claude/Cursor's live-thinking treatment, costs more of the 300px column) reads better once real local-model reasoning verbosity is seen on-device. If segmentation isn't feasible, falls back cleanly to the single end-of-turn block.
+  - **Depends on:** Thinking effort control Phase 1 (shipped).
+
+
+## First-run ghost New chat label
+
+- ★★ **First-run ghost "New chat" label at the create position**
+  - **Goal:** On a fresh install the `[+]` position carries a faint "New chat" hint, so the first
+    thing a new user sees says what the button does.
+  - **Board 6c-A; deliberately not built.** Locked decision: the create position is the literal
+    `[+]`, re-confirmed on board 8f. Same rule as above — reopen the decision before building it.
+
+
+## Replace the bonsAI tab icon
+
+- ★★ **Replace the bonsAI tab icon with the redesign's**
+  - **Goal:** The Main tab's glyph becomes the redesign's mark rather than the current tree drawing,
+    which reads as a smudge at tab size. Expect to simplify it — flatter, more silhouette than
+    illustration — because it is rendered at **14px** on a 300px column.
+  - **It has to be an inline SVG path, not the PNG.** `BonsaiTreeTabIcon`
+    ([icons.tsx:61](../src/components/icons.tsx#L61)) draws inline so the glyph inherits `currentColor`
+    and the active-tab fill treatment; `assets/logo.png` cannot do either. Budget for a trace, not a
+    file swap. Geometry is pinned by `icons.bonsaiGeometry.test.tsx`, so update that in the same change.
+
+## Adjustable text size in Settings
+
+- ★★★ **Adjustable text size in Settings**
+  - **Goal:** A setting that scales the plugin's text so a reply can be made larger for reading at a
+    distance, or smaller to fit more on screen — the second of which serves the vertical-space goal
+    above.
+  - **The scaling hook already exists.** `uiScalePx()` is applied throughout the stylesheet, so the
+    mechanism is present; the work is exposing it as a setting, deciding what it does and does not
+    scale (icons and the 300px column width must not move — design-language Rules 1 and 6), and
+    paying the ~18-file plumbing cost one setting costs ([audit/03-friction.md](audit/03-friction.md)).
+
+
+## Focus / Deck UI items with short entries, as filed
+
+- ★★★ **Search density UX** (match emphasis + tighter rows)
+  - **Goal:** Tighter, more scannable search results with highlighted match tokens.
+- ★★★★ **SteamOS Share path** (capture → attach)
+  - **Goal:** Faster path from SteamOS Share / capture flows into screenshot attach where APIs allow.
+- ★★★★ **SteamOS spin hint card** (immutable spins)
+  - **Goal:** Detection + deep link to troubleshooting for immutable spins.
+
+
+## The Update knowledge base button may not fire from a controller press
+
+- ★★ **The *Update knowledge base* button may not fire from a controller press.** On 2026-09-02 a
+  bridge press with the focus ring verified on the button started no download and left no log line,
+  while the identical fetch-and-install code ran cleanly from the Deck over SSH minutes later
+  (Hugging Face reachable, checksum verified). So the network is not the cause; the suspect is the
+  button's `Focusable onOKButton` wiring. Needs one thumb press with eyes on the toast to settle.
+  The corpus itself is no longer behind: **`2026.09.01` (161 cards) was installed over SSH on
+  2026-09-02** at the maintainer's request, so on-Deck KB rows now run against the published corpus.
+  Plan 30 § 6 item 8.
+
+## Spoiler coverage should be a setting with tiers
+
+- ★★★ **Spoiler coverage should be a setting with tiers** — proposed by the maintainer on the corpus gap sheet, 2026-08-29:
+  *"I think spoiler coverage should be matched to a future setting. On one setting, there's no spoiling of bosses/endings/chapters. On
+  the another end it'll allow anything specifically asked by the user. On another it's anything past the intro/tutorial."* Today the fencing
+  rule is fixed. **Half of it already ships:** their closing line — *"if the user asks about a boss or area specifically, they don't care
+  about spoilers"* — is Phase 4's locked spoiler rule (stay unfenced when the user named the thing), so the instinct matches the code. What
+  is new is wanting the rest exposed as a user choice. **Default if nothing is chosen, also from the sheet: fence only named story beats and
+  endings.** Needs a Settings control (and therefore a focus-graph entry), a tier the spoiler service reads, and prompt wording per tier.
+  [audit/corpus-gap-answers-2026-08-29.md](audit/corpus-gap-answers-2026-08-29.md) § 5.
+
+## The corpus has no starting out card
+
+- ★★★ **The corpus has no "starting out" card** — found 2026-08-29 by what the gap sheet's free-text answers asked for rather than by what it
+  asked about. Every strategy card is about a *thing*: an enemy, an item, an area, a mechanic. The maintainer asked twice for **build and
+  early-game guidance** ("pros and cons of different builds, make cards designed around early game, or even character design" — for both
+  Cyberpunk 2077 and Fallout 4) and once for **an orientation card pitched at someone who knows a neighbouring game** ("explain this game to
+  someone familiar to GTA but not RDR"). Neither shape fits the existing types cleanly. **Open question before any are written:** whether
+  this is a new `section_type` (which is a schema and chip-wording change) or lives as `mechanic` with a naming convention. Not smuggled in
+  under D39, which was only about four existing cards' kinds.
+
+
+## Eval fixture cannot see a recall failure
+
+- ★★ **Eval fixture cannot see a recall failure** (paraphrase rows)
+  - **Goal:** `kb_eval_v2` has **1** labeled case out of 138 where keyword search returns nothing, so the slice that proves the vector half adds recall is a sample of one. Measured 2026-08-18 by the re-aligned harness. Add paraphrase rows — questions that ask for a card without using its words — until that slice can gate a regression.
+  - **Starting material:** the 15 paraphrased questions in [audit/rag-vector-recall-floor-2026-08-18.md](audit/rag-vector-recall-floor-2026-08-18.md) are already written, measured and labelled with the card each one should return. `tests/fixtures/kb_eval_paraphrase_v0.json` (15 rows) exists but the arms run does not read it.
+  - **Needs a maintainer call first:** the v2 fixture is approved and the PR2 bake-off was measured against it — new rows change what the numbers mean, so decide whether they join v2, form a v3, or stay a separate reported slice.
+  - **Largely overtaken by the blind holdout rows, pending one measurement.** The 15 paraphrase rows joined v2 as `V2-PARA-*` under **D23** (all `tune`), and 56 blind rows joined as `V2-BLIND-*` under **D37** (all `holdout`) — 20 on 2026-08-28 and 36 later the same day, 18 of the second batch written as pure paraphrases sharing no vocabulary with their card. The keyword-blind slice was **3** labeled rows when last measured on 2026-08-28, up from 1. **It has not been re-counted since the second batch**, deliberately — no measurement was run while those rows were written. Re-count it on the next arms run before deciding whether this item is closed.
+
+## KB visual maps
+
+- ★★★ **KB visual maps** (strategy maps — later wave)
+  - **Goal:** Optional visual strategy maps in KB-grounded replies after brief callout cards exist. **Two shapes named by the maintainer 2026-08-29:** a **dungeon map**, and a **boss outline** with the limbs and weak points marked the way Fallout marks them — so a player sees where to aim instead of reading a sentence about it.
+  - **Still parked, and Terse mode does not un-park it.** Terse ships with no picture at all; its *pictures don't count against the three lines* clause is forward-looking. Nothing draws anything in a reply today — replies are `react-markdown` plus the existing fenced panels.
+  - **Open:** what a boss outline is *made of* — characters the model types out, a drawing shipped with the card, or one the plugin draws from the card's own `Weak points:` line. Undecided 2026-08-29. A **dungeon map has to be authored** either way, which puts it behind the WikiTeam / archive.org source policy and a corpus rebuild — the same wall Phase 4 track 3 sits behind.
+  - **Plan / depends on:** [17-kb-online-versus-strategy-content.md](planning/17-kb-online-versus-strategy-content.md) Stage 5; callout cards (OV-3.1). Phase 4 chip work remains orthogonal.
+
+## KB online / versus strategy content, and RAG Phase 5
+
+- ★★★★ **KB online / versus strategy content**
+  - **Goal:** Online multiplayer strategy — versus, co-op, map callouts — new `section_type` values + spoiler table updates. Tier lists parked. Visual maps later wave in same plan.
+  - **Plan:** [17-kb-online-versus-strategy-content.md](planning/17-kb-online-versus-strategy-content.md) (discovery locked 2026-08-09).
+  - **Source policy:** WikiTeam / archive.org dumps only; hybrid attribution (short chip + snapshot in `ATTRIBUTIONS.md`).
+- ★★★★ **RAG Deck query — corpus expansion (Phase 5)**
+  - **Goal:** Corpus maturity after Phase 4 sample paths; session chip vector ranking.
+  - **Status:** Seed deepening largely in remediation PR2; remainder depends Phase 4. [knowledge-base.md](knowledge-base.md) § Phase 5.
+
+## RAG Phase 4: extended retrieval
+
+- ★★★★ **RAG Deck query — extended retrieval (Phase 4)** — **tracks 1–2 shipped 2026-08-19, track 3 blocked**
+  - **Goal:** Richer retrieval shapes — chip visibility, structured cards, per-game compat tips.
+  - **Track 1 (shipped):** chip guarantee (≥1 corpus chip when candidates exist), game chips preferred over
+    shared Deck tips, **Tip** badge on game chips only. The chip pool now draws **one kind at a time** rather than filling from the highest-priority kind first: the track 2 cards took Ocarina of Time to six boss cards and its whole pool became six *"How do I beat X?"*, with its items and enemies unreachable and six boss names offered in a carousel a player is only browsing. Enemy and item cards get their own wording (*"How do I deal with X?"*, *"How do I use X?"*). Costs nothing where a title's cards are lopsided — Left 4 Dead 2 files seventeen cards as `mechanic` and returns the same six chips, reordered. On-Deck **PHASE4-CHIPS-01** — **badge direction passed 2026-08-29**: the **Tip** badge lands on the game chip only, never on a shared compat chip or a static seed. **The clipping direction is blocked** by the vanishing-corpus-chip bug in Bugs above, which keeps 5 of the 6 game chips off the screen, so no long label ever renders to measure.
+  - **Track 2 (shipped):** 16 structured cards for the two sample titles — 6 enemy, 6 item, 4 boss —
+    authored with labelled lines (`Summary:` / `Weak points:` / `Uses:` / `Phases:` / `Tips:`), plus a
+    conditional prompt clause that keeps those labels as light bullets in the reply. Corpus 117 → 133
+    sections. Measured against the built corpus with the real embedding model: of 18 questions naming or
+    describing a new card, **0 reached one before and 15 after** (16 once the type-recall preference was
+    narrowed, below). The misses are pure paraphrases sharing no word with the card —
+    `what do i do about the big one that tanks everything`, `something keeps grabbing me and sending me
+    to the start`. No regression on the six questions that already worked.
+    On-Deck **PHASE4-CARDS-01** — **not waiting on the device.** Its testing was completed 2026-08-22 (all six questions attach the right card first; the prose-only direction passes). What is left is a **maintainer call**, not a run: with `gemma4:e2b-it-qat` the bullets survive on 4 of 6 questions but the card's own labels on only 1 of 6, and whether to strengthen the prompt, route a larger model, or accept prose is the open question. Detail in [testing.md](testing.md).
+  - **Track 3 (blocked):** per-game troubleshooting tips need an `app_id` column on `compat_patterns` —
+    a **schema v4 bump and a corpus rebuild**, which by Decision 6 (no migration) makes every installed
+    corpus stale until re-downloaded. Retrieval side is already built: it is the same recall-plus-flat-
+    preference shape D22 introduced, so it reuses `preferred_ids` rather than adding a mechanism.
+    Plan: [18-phase4-track3-per-game-compat-tips.md](planning/18-phase4-track3-per-game-compat-tips.md).
+  - **Ship-shape lock relaxed:** Phase 4 was locked to ship all three tracks together. Two shipped without
+    the third because the blocker is a release action rather than effort, and the two that shipped are the
+    visible ones. **Maintainer call owed:** either accept the split or hold tracks 1–2 from the release
+    notes until track 3 lands. [knowledge-base.md](knowledge-base.md) § Phase 4.
+
+## RAG Phase 7, Community tip contribution, RAG Phase 8
+
+- ★★★★ **RAG Deck query — retrieval infra (Phase 7)**
+  - **Goal:** Optional sqlite-vss/ANN, auto-pull nomic, RRF extensions, vision→KB, demote, packs, intent retrieval.
+  - **Status:** FTS+vector shipped in remediation; the locked **meaning-fallback** track (vector list into RRF when FTS is empty/weak) shipped 2026-08-18 as the per-game recall pass — sqlite-vss/ANN is now an optimisation of a path that exists, not a prerequisite. Remainder docs only. [knowledge-base.md](knowledge-base.md) § Phase 7.
+- ★★★★★ **Community tip contribution** (corpus inbound path)
+  - **GitHub:** [bonsAI Issues](https://github.com/qd313/bonsAI/issues) — issue TBD.
+  - **Goal:** Reply → **Suggest as a tip** writes schema-valid card to Desktop + GitHub attach URL.
+  - **Depends on:** **RAG Phase 6** public publish — **shipped 2026-08-16, so this is unblocked** ([archive/roadmap-completed.md](archive/roadmap-completed.md)).
+  - **Source:** [13-roadmap-feature-ideas.md](planning/13-roadmap-feature-ideas.md) § C2.
+- ★★★★★★ **RAG Deck query — catalog corpus (Phase 8)**
+  - **GitHub:** [bonsAI Issues](https://github.com/qd313/bonsAI/issues) — issue TBD.
+  - **Goal:** Large offline catalog after Phase 6 publish (~top 1000 Steam, ~100 Deck, emulated slice).
+  - **Status:** Locked intent only. [knowledge-base.md](knowledge-base.md) § Phase 8.
+  - **Depends on:** Phase 6 (shipped 2026-08-16) + likely Phase 7 infra.
+
+
+## Permissions / safety items, as filed
+
+- ★★★★ **Web permission** (Ask live search + online deps)
+  - **Goal:** Opt-in capability for live web answers; offline Ask + local KB when off.
+  - **Status:** Discovery locked; docs only. [web-permission-discovery.md](planning/web-permission-discovery.md).
+  - **Depends on:** Capability Permission Center; Kids master lock (shipped — forces Web off when that key lands).
+
+- ★★★★★ **VAC Phase 2 opponent IDs** (lobby/session API research)
+  - **GitHub:** [bonsAI Issues](https://github.com/qd313/bonsAI/issues) — issue TBD.
+  - **Status:** Phase 1 complete; on-device QA in [Verify](#verify).
+  - **Goal:** Surface live opponent Steam identities for ban checks when metadata allows.
+
+
+## Platform / upstream items, as filed
+
+- ★★★★ **Llama.cpp provider spike** (Deck perf / replacement eval)
+  - **Goal:** Research-only go/no-go vs Deck-local Ollama. Deliverable: `docs/archive/spikes/llama-cpp-provider-eval.md`. Prior: [llama-cpp-provider.md](archive/spikes/llama-cpp-provider.md).
+- ★★★★ **Steam Input layout parse** (VDF → AI context)
+  - **Goal:** Parse controller VDF configs for actionable control context.
+  - **Not in scope:** editing/writing controller configs.
+
+## Controller macro test rig and live view
+
+- ★★★★★ **Controller macro test rig + live view** (real gamepad input; DPS-owned)
+  - **GitHub:** [bonsAI Issues](https://github.com/qd313/bonsAI/issues) — issue TBD.
+  - **Goal:** Close the last missing capability for unattended on-Deck QA — [01-qa-automation-plan.md](planning/01-qa-automation-plan.md) **F1**, "there is no input injection on the Deck." A bridge board the Deck sees as a real controller (wired USB on the dock by default, Bluetooth for handheld-geometry runs, both from day one), a macro runner whose steps are gated on real UI state (`gpfocus` markers, never `activeElement` — the P1-5 lesson), and one PipeWire pipeline teeing the QA `.mkv` to file **and** a live analyzer stream for a single encoder's APU cost.
+  - **Status:** **Discovery locked 2026-08-23** — decisions L1–L10, architecture, serial protocol, spikes and phasing in [19-controller-macro-test-rig.md](planning/19-controller-macro-test-rig.md). Board ordered 2026-08-24. Next concrete step: spikes S1–S3 (board bring-up, QAM Guide-chord from the bridge pad, tee-pipeline latency + scoped sudoers). **The V1 acceptance flow already ran in practice on 2026-08-28:** the Batch A re-run drove QAM chord → bonsAI panel → six frozen chips (real A-press each on chip and on **ask**) → reply-finished waits → ask-trace readback, unattended, with the existing bridge + CDP tooling — evidence in `runs/` and the KB-SPELLING-01 row. What V1 adds beyond that is the recording tee and the formalized safety interlocks.
+  - **This is one track of five.** The program plan — including the two tracks that need no hardware and should land first (CI gate, static focus checks, both above) — is [21-ai-owned-testing-program.md](planning/21-ai-owned-testing-program.md), with effort, milestones and the autonomy boundaries.
+  - **Owner split:** primitives (`deck_pad*`, `deck_macroRun`, `deck_stream*`, extension kill switch + always-visible agent-control status) land upstream in decky-plugin-studio per [AGENTS.md](../AGENTS.md); bonsAI keeps only its macro files and CDP assertions (`tests/macros/`). Answers findings-log **P1-5**; retires DPS's "Deck UI cannot be automated in v1" note.
+  - **V1 acceptance:** one unattended golden-path smoke — QAM chord → bonsAI tab → question via the existing injector → real A-press on Ask → reply-finished signal → recording, step log and plugin log land on the PC, no human touch after invocation.
+  - **Safety (locked):** QAM-open interlock (presses halt if the overlay closes), neutral-on-silence firmware watchdog, extension kill switch; dev tooling only, never shipped inside the plugin.
+  - **Depends on / related:** deliberately **not** blocked on **Frozen test chips** (typed-question path first; chip-select macros when chips land). Makes **STREAM-09 / D-PAD-SCROLL-02** and the chunky-streaming row repeatable, but corroborates rather than replaces the poll/paint timestamp instrumentation that row calls for.
+
+## The five-star and six-star platform items, as filed
+
+- ★★★★★ **Steam Controller copilot** (Ibex gen-2)
+  - **GitHub:** [bonsAI Issues](https://github.com/qd313/bonsAI/issues) — issue TBD.
+  - **Goal:** AI copy tuned to gen-2 hardware + Steam Input–aligned suggestions.
+- ★★★★★ **Wake-word listening** (beta; Deck first)
+  - **GitHub:** [bonsAI Issues](https://github.com/qd313/bonsAI/issues) — issue TBD.
+  - **Goal:** Opt-in always-on local wake **bonsAI** → STT → quiet Ask.
+  - **Depends on:** Whisper voice Ask; Reply ready toast; Voice STT session daemon (shipped).
+  - **Feasibility:** [10-wake-word-listening-feasibility.md](planning/10-wake-word-listening-feasibility.md).
+- ★★★★★★ **Deep mod AI hints** (install paths + compatdata)
+  - **GitHub:** [bonsAI Issues](https://github.com/qd313/bonsAI/issues) — issue TBD.
+  - **Goal:** Detect mod frameworks/files; mod-aware AI guidance. [12-deep-mod-ai-hints-feasibility.md](planning/12-deep-mod-ai-hints-feasibility.md).
+- ★★★★★★ **In-game answer surface** (no-QAM reply; overlay research)
+  - **GitHub:** [bonsAI Issues](https://github.com/qd313/bonsAI/issues) — issue TBD.
+  - **Goal:** Read answer without leaving game. Full overlay upstream-gated; unblocked slice: toast carries ~2 lines (suppress Strategy/fenced replies).
+  - **Source:** [13-roadmap-feature-ideas.md](planning/13-roadmap-feature-ideas.md) § C3.
+- ★★★★★★ **Native QAM shortcut tile** (under Decky; upstream research)
+  - **GitHub:** [bonsAI Issues](https://github.com/qd313/bonsAI/issues) — issue TBD.
+  - **Goal:** Separate QAM left-rail entry beneath Decky Loader icon.
+  - **Feasibility:** [11-native-qam-tile-feasibility.md](planning/11-native-qam-tile-feasibility.md).
+- ★★★★★★ **Remote Play diagnostics layer** (streaming host/client)
+  - **GitHub:** [bonsAI Issues](https://github.com/qd313/bonsAI/issues) — issue TBD.
+  - **Goal:** Streamed gameplay answers weight encode latency and host-vs-client fixes.
+  - **Related:** noted (not folded) in [09-steam-frame-companion-feasibility.md](planning/09-steam-frame-companion-feasibility.md) § B8.
+- ★★★★★★ **Steam Frame companion UX** (VR / LAN Deck)
+  - **GitHub:** [bonsAI Issues](https://github.com/qd313/bonsAI/issues) — issue TBD.
+  - **Goal:** Research-first companion workflows for Steam Frame. [09-steam-frame-companion-feasibility.md](planning/09-steam-frame-companion-feasibility.md).
+
+
+## Appendix (moved from the roadmap 2026-09-02)
+
+### Cross-feature dependency summary
+
+- **Mode selector (shipped)** → **Per-mode latency timeouts**; Strategy Guide path shipped as `strategy` Ask mode.
+- **Character voice roleplay (shipped)** → accent intensity, avatars, UI accent theme, Random “?”, running-game suggestions, Pyro easter egg (all shipped); → **Local reply TTS** Phase 2.
+- **Whisper voice Ask (shipped)** + mic → **Wake-word listening**.
+- **Reply ready toast (shipped)** → required for hands-free wake when QAM closed; → **In-game answer surface** (toast snippet is the unblocked slice).
+- **Capability Permission Center** → gates filesystem, Steam/Proton log + screenshot reads, mic, Steam Web API; → planned **Web permission** (Kids Lock forces off); → **Permission jump** shipped.
+- **Llama.cpp provider spike** → research-only; related **Dynamic keep-alive / smart unload**.
+- **Speed-mode VRAM preload** → boot-time preload, distinct from **Dynamic keep-alive / smart unload**'s unload-on-game-focus question; both are VRAM-residency decisions but answer different halves.
+- **Soft** `num_predict` **+ thinking budget** (shipped) → **Thinking effort control** (Phase 1 shipped 2026-08-15; Phase 2 bonsAI tips Backlog) → **Reasoning display** (raw `thinking`, Backlog; segmentation gated on its own spike).
+- **DRG Survivor glossary terms** → depends on the existing DRG Survivor KB seed content (`data/kb/strategy_seed.json`) and the shipped focus-graph D-pad convention.
+- **Preset carousel (shipped)** → **Preset chip expansion**; **Session RAG preset chips** (shipped).
+- **RAG / offline KB** → Phase 2–3 shipped → **retrieval quality remediation** (PR1/PR2 closed 2026-08-09; vector recall pass 2026-08-18) → Phase 4–8 Backlog; **KB visual maps** separate; **Spoiler constitution** runtime encoding shipped 2026-08-07; **Spoiler confidence chip** → fencing + unfenced feedback.
+- **Web permission** → citations / allowlist / freshness chip.
+- **Native QAM shortcut tile** → shorter path than Guide-chord macro docs ([troubleshooting.md](troubleshooting.md) §5).
+- **Steam Input jump Phase 1 (shipped)** → **Steam Input layout parse**.
+- **Offline intent packs (quiet)** → **Intent packs later review**.
+- **Deck health snapshot** ↔ **Connection doctor** — one probe stack, two presentations; decide before building either.
+- **Session RAG chip candidates RPC (shipped)** → **KB coverage chip**; adjacent to **RAG Phase 4** Track 1 visibility.
+- **User-owned model routing pickers (shipped)** → **On-Deck model benchmark**; overlaps **Dynamic keep-alive / smart unload**.
+- **RAG Phase 6 publish** (shipped 2026-08-16) → **Community tip contribution** (now unblocked).
+- **Permission jump** (shipped) → shared deep-link for **Connection doctor**.
+- **Ordinary phrases attach game cards** (floor retuned, D28) → **Card relevance has its second signal** (shipped 2026-08-28, see Verify) — the pool-margin gate covers the overlap the floor could not fix; the keyword half's two attachments remain by design under D25/D28.
+- **Controller macro test rig** (DPS-owned) → closes QA-plan F1 (on-device input) and findings-log P1-5; **Frozen test chips** → deterministic chip-select macros for it; corroborates **STREAM-09/11** measurement runs.
+
+```mermaid
+flowchart TD
+  modeSelector[ModeSelectorShipped] --> perModeProfiles[PerModeLatencyTimeouts]
+  modeSelector --> strategyPath[StrategyAskShipped]
+  strategyPath --> strategySafety[StrategySpoilersShipped]
+  visionFeature[GlobalScreenshotsVision] --> strategyPath
+  capabilityPermission[CapabilityPermissionCenter] --> modelPolicyTiers[ModelPolicyTiersShipped]
+  capabilityPermission --> webPermission[WebPermission]
+  kidsLock[KidsMasterLock] --> capabilityPermission
+  kidsLock -->|forces off| webPermission
+  webPermission -.->|may supersede zip| ragPhase6
+  characterVoice[CharacterVoiceShipped] --> localTts[LocalReplyTts]
+  whisperAsk[WhisperVoiceAskShipped] --> wakeWord[WakeWordListening]
+  nativeQam[NativeQamShortcutTile] -.->|shorter path| macroDocs[GuideChordMacroDocsArchived]
+  ragPhase3[RagPhase3Shipped] --> ragPhase4[RagPhase4]
+  ragPhase4 --> ragPhase5[RagPhase5Corpus]
+  ragPhase5 --> ragPhase6[RagPhase6Publish]
+  ragPhase6 --> ragPhase7[RagPhase7Infra]
+  ragPhase6 --> ragPhase8[RagPhase8Catalog]
+  ragPhase7 -.->|helps scale| ragPhase8
+  softBudget[SoftNumPredictBug] --> thinkingEffort[ThinkingEffortControl]
+  thinkingEffort --> reasoningDisplay[ReasoningDisplay]
+  capabilityPermission --> permissionJump[PermissionJump]
+  permissionJump -.->|shared deep link| connectionDoctor[ConnectionDoctorCandidate]
+  deckHealth[DeckHealthSnapshot] -.->|shared probe set| connectionDoctor
+  ragChipRpc[SessionRagChipRpcShipped] --> kbCoverageChip[KbCoverageChip]
+  ragPhase4 -.->|may absorb| kbCoverageChip
+  routingPickers[RoutingPickersShipped] --> modelBenchmark[OnDeckModelBenchmark]
+  ragPhase6 --> tipContribution[CommunityTipContribution]
+  replyToast[ReplyReadyToastShipped] --> inGameSurface[InGameAnswerSurface]
+```
+
+### Implementation notes
+
+#### Iconography pass — plugin list icon lesson
+
+Decky sizes icons via CSS `font-size`. Font Awesome works because it renders `<svg width="1em">`. An `<img>` with fixed pixels is ignored. Fix: inline SVG into `<svg width="1em" height="1em" fill="currentColor">` (`BonsaiSvgIcon`). Source SVG needs `viewBox` for scaling.
+

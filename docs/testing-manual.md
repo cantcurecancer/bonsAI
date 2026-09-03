@@ -1,6 +1,6 @@
 # bonsAI testing — manual (Deck / maintainer)
 
-On-device QA only. Automated gates: [testing-automated.md](testing-automated.md). Hub + slim coverage: [testing.md](testing.md). Roadmap Verify: [roadmap.md](roadmap.md#verify).
+On-device QA only. Automated gates: [testing-automated.md](testing-automated.md). Hub + slim coverage: [testing.md](testing.md). Roadmap: [roadmap.md](roadmap.md) (items fixed but not Deck-confirmed sit in its Verify section).
 
 Record **build id / git SHA** and **SteamOS** when marking Pass / Partial / Fail.
 
@@ -488,7 +488,7 @@ the header hidden — `runs/TAB-BAR-W1a-*.json` show ten clean switches).
 
 | Block | Notes |
 |-------|-------|
-| **QAMP on-Deck** | See § QAMP below — [Verify](roadmap.md#verify) |
+| **QAMP on-Deck** | See § QAMP below — **withdrawn from the roadmap 2026-09-02**: TDP apply was removed 2026-07-30, so the matrix has nothing to test until the feature returns |
 | **TDP boundary clamps** | 1W/3W/15W/20W + GPU-800 advisory (many preview PASS) |
 | **Background Ask full lifecycle** | Timeout, error, busy guard |
 | **Multi-game matrix** | Title-specific behavior |
@@ -536,4 +536,4 @@ the header hidden — `runs/TAB-BAR-W1a-*.json` show ten clean switches).
 
 ## Prompt-testing (qualitative)
 
-Broader matrices beyond Tier 0–1 smokes are **deferred** ([Verify](roadmap.md#verify)). Prefer: one smoke per area over long prompt lists. Old Tier 1 prompt checkboxes: [archive/testing-full-pre-2026-07-30.md](archive/testing-full-pre-2026-07-30.md).
+Broader matrices beyond Tier 0–1 smokes are **deferred** ([roadmap.md](roadmap.md), the `[QA]` **Deferred manual QA** entry). Prefer: one smoke per area over long prompt lists. Old Tier 1 prompt checkboxes: [archive/testing-full-pre-2026-07-30.md](archive/testing-full-pre-2026-07-30.md).

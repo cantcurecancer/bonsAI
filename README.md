@@ -88,7 +88,7 @@ For **Find LAN**, the Ollama host may need **Avahi/Bonjour** publishing — see 
 
 ## What's planned
 
-Upcoming work includes user notes stash, couch-distance readability, native QAM shortcut tile, RAG on a LAN PC, and more — see **[docs/roadmap.md](docs/roadmap.md#planned)**. Shipped feature detail: [docs/archive/roadmap-completed.md](docs/archive/roadmap-completed.md).
+Upcoming work includes user notes stash, couch-distance readability, native QAM shortcut tile, RAG on a LAN PC, and more — see **[docs/roadmap.md](docs/roadmap.md#features)**. Shipped feature detail: [docs/archive/roadmap-completed.md](docs/archive/roadmap-completed.md).
 
 ## Requirements
 
@@ -147,7 +147,7 @@ More docs: [development.md](docs/development.md) · [testing.md](docs/testing.md
 | [troubleshooting.md](docs/troubleshooting.md) | Power users | GPU, network, vision, permissions, QAM, deploy edge cases |
 | [development.md](docs/development.md) | Contributors | Deck-first setup, build/deploy, architecture, hotspots |
 | [testing.md](docs/testing.md) | QA / contributors | Testing hub — automated vs manual Deck QA |
-| [roadmap.md](docs/roadmap.md) | Planning | Bugs, Verify, themed Backlog |
+| [roadmap.md](docs/roadmap.md) | Planning | Bugs, Verify, Features, Done (sorted by stars) |
 | [archive/reports/](docs/archive/reports/) | Maintainers | Security / FOSS review snapshots |
 | [archive/](docs/archive/) | — | Historical research, plans, completed-feature detail |
 

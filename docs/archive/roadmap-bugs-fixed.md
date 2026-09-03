@@ -194,3 +194,310 @@ pointer where each used to be.
   - **Not the same as the two session-context bugs fixed today**, both of which stay fixed: the newest-turn double count, and the mid-Ask duplicate row. This one is about turns going *missing*, not being counted twice.
 - ~~★ **A focusable dead spot in the chip carousel swallows the A press**~~ — **NOT A BUG. Identified on device 2026-08-27 and withdrawn the same day.** The element is the plugin's own **tab bar**, not the carousel: `role="tab"`, `id="«rbu»main"`, `aria-selected="true"`, containing `.bonsai-tab-title-shell--main`, with five identical 60x57 siblings at x=194/256/318/380/442 — Main, Ollama, Settings, Permissions, Developer, About — plus two 24px scroll arrows. It reads as "empty text" because the tab titles are icon-only, so `innerText` is blank, and `deck_readFocus`'s `ownerText` then reports the whole panel beneath it, which is what made it look like a carousel child. **A does nothing there because it is the already-selected Main tab**, and re-selecting the current tab is correctly a no-op. Geometry settles it: the element sits at **y=76** and the carousel starts at **y=149**. **The lesson worth keeping:** `ownerText` is a *nearest labelled ancestor*, so for an unlabelled element it names a region the element may not belong to — check `id` / `role` / a `bonsai-*` class on the element itself before believing the region. Chip-press was separately confirmed working the same day: A on a TEST chip fills the Ask field verbatim and does not submit.
 - ★★★ **24 maintainer-written cards claimed `wiki_verified` — the strongest trust tier, with no wiki behind them** — **FIXED 2026-08-22, same day; QA-TRUST-TIER-01 Open on-Deck.** on device (`recordings/DeckRecord_20260822_17*_game.mkv`; *Show details → Local knowledge base* reads **Trust tier: wiki_verified** on every Deep Rock Survivor Ask). **The cards have no source at all:** `Exploder`, `Red Sugar` and `Dreadnought Twins` are all `source_url = ''`, `source_license = bonsAI-maintainer`. **Cause is a one-line ordering fault** — [`_trust_tier_for_row`](../py_modules/backend/services/knowledge_base_service.py#L598) tests `source_version` **before** `source_url`, and these cards carry `source_version = "seed-1.1"`, which is a *seed build tag*, not a wiki revision. So a card with no URL and a build tag outranks a real wiki card that lacks a revision. **Scope: 24 of the 74 maintainer-authored sections, across 9 titles** (`seed-1.0` and `seed-1.1`) — and it lands hardest on the **Phase 4 cards just published in `2026.08.22`**, 17 of the 24 being the new Deep Rock and Ocarina enemy/item/boss cards. **Why it matters more than a label:** the tier is stated to the *model* as well as the user ([ollama_prompts.py:1087](../py_modules/backend/services/ollama_prompts.py#L1087)), so the model is being told to trust unsourced advice as wiki-verified, and the block header takes the **weakest** tier present precisely so it cannot overstate its contents — that guard is being defeated one level down. Contrast Ocarina's older cards, which correctly read `fallback_no_source`. **Fixed by requiring the URL first** — both wiki tiers now demand a `source_url`, which is what the tier names always meant, and is what the compat sibling `_trust_tier_for_compat_row` already did (the sections path was the outlier, not the convention). **Measured against the real corpus before and after:** 74 maintainer cards now read `fallback_no_source` (24 of them were `wiki_verified`), and all **59** genuinely wiki-sourced cards are **unchanged** at `wiki_no_patch`. `wiki_verified` is now unclaimed by any card, which is correct and what `ATTRIBUTIONS.md` already told users: wiki cards are *"marked `wiki` rather than `wiki_verified`: we know which wiki and when, but not which game patch."* Behaviour now matches the documented intent. **No corpus re-publish needed** — the tier is derived at query time, so the fix reaches the already-installed `2026.08.22` corpus. Derivation had **no test at all** before this; 4 added in `test_knowledge_base_service.py`.
+
+---
+
+## Moved from the roadmap 2026-09-02
+
+Fixed, confirmed, or closed bugs moved out of the roadmap in the 2026-09-02 cleanup. Verbatim, so the measurements, the dead ends and the QA rows survive. The roadmap keeps a one-line entry in **Done** for each.
+
+### The preset row (the bug entry; the shipped feature is in roadmap-completed.md)
+
+- ★★★★ **The one-line preset row was built the wrong shape — one chip, where the mockup has three side by side** — **PARTIAL:
+  rebuilt at the desk 2026-09-01, on-Deck confirmation owed.** The row now shows **two chips side by side** (not the drawing's three —
+  decision **D43**: three left ~12 characters per chip on the 300px column, two leave ~20), 30px tall, and a label longer than its
+  chip **scrolls sideways** through Steam's own `Marquee`, slowly. The help chip owns the whole row until dismissed. Carousel mode is a
+  sideways two-wide window on its history (Left at the edge pulls earlier chips back). Plan and research:
+  [planning/29-preset-row-three-thirds-plan.md](planning/29-preset-row-three-thirds-plan.md).
+  - **On device 2026-09-01:** row **02 passed** (148 × 30 px chips, 8 px padding, ~20 characters of label, Steam's Marquee running on
+    the long visible label only) and row **03 passed in carousel mode** — after the first run caught Steam navigating the row as a
+    column (Left walked out of the plugin), fixed the same night with explicit handlers on every chip. The two follow-up fixes (entry
+    lands on the marked chip; Down reaches the text field through Steam's own transfer) passed on a fresh panel 2026-09-02, 14/14.
+    **Still owed:** rows **01b** (every mode) and **04** (scroll speed by eye, decode churn, reduced motion).
+  - **How it went wrong, so it does not repeat:** the roadmap entry said "single line" and the build took the words, not the drawing.
+    Anything covered by the redesign doc gets checked against the mockup before code is written — and the maintainer should not have
+    to spend a round explaining a picture that was already in the repo. Filed 2026-08-31 against `fc1b245`.
+
+
+### Blocking a feature on the couch
+
+- ~~★★★ **You can get stuck inside the Session context panel**~~ — **FIXED, and confirmed on device 2026-08-27.**
+  With *Show details* collapsed and *Session context* expanded, Down enters the panel and Up now walks back out to **Retry**,
+  then **Helpful**, then the branch buttons — nothing is stranded. Evidence: `runs/SESSION-CTX-TRAP-verify-2026-08-27.json`
+  (`escaped: true`, `neverReached: []`). The fix had sat unproven since 2026-08-23.
+
+- ~~★★★ **The D-pad may not escape the full-screen pickers**~~ — **audited on device 2026-08-28. Two pass, one fails badly.**
+  The character picker and the AI models hub (which is also where *Browse models* goes) both walk cleanly from the first control to
+  **OK** / **Pull selected** at the bottom; the top and bottom presses hold still rather than trapping you. The **try-order picker**
+  fails, and is now its own ★★★ entry below. Detail: [roadmap-details.md](roadmap-details.md).
+
+- ~~★★★ **Pressing down in the try-order picker reorders your models instead of moving the highlight**~~ — **FIXED and confirmed on device
+  2026-08-28**, the same day it was found. Down now moves the highlight, the list stays put, and three presses reach the buttons at the
+  bottom. Reordering moved to each row's own **Up**/**Down** buttons, which already worked. [D36](audit/maintainer-decisions-locked.md)
+  option 1, chosen by the maintainer.
+
+- ~~★★ **B does not close the try-order picker**~~ — **FIXED and confirmed on device 2026-08-28**, hours after it was found. B now closes
+  it on the first press. The picker was the only one not built on the shared modal frame, so it never inherited B, a title bar, or the
+  standard footer — it now uses the same frame as the models hub, which also settles the chrome complaint below.
+
+- ~~★★ **Choosing a character: focus ring now visible**~~ — **CLOSED.** The maintainer confirmed on device 2026-08-27 that focus is visible
+  and the picker is usable; the edge behaviour it was still waiting on passed the 2026-08-28 audit above. Nothing left open here.
+
+
+
+### Wrong or missing content in a reply
+
+- ★★★★ ~~**Corpus chips vanish about 21 seconds after the panel opens**~~ — **found on device and FIXED at the desk 2026-08-29; device
+  re-check owed.** Found while running **PHASE4-CHIPS-01**, and it was the exact failure the Phase 4 chip guarantee was written to prevent,
+  just delayed. **Measured, with DRG Survivor running:** a fresh panel open showed one game chip with its **Tip** badge in every 3s sample
+  from 0s to 21s; from 24s on, the badge count and the corpus-chip count were both **0** and stayed there — 42 more seconds in that run and
+  120 in an earlier one. Reproduced twice, once across a panel reopen. The backend was never at fault: probed directly against real settings
+  on the Deck, `get_session_rag_chip_candidates` returned **8 candidates** (6 `strategy` + 2 `compat`) throughout.
+  **Neither hypothesis in the first write-up was right** — the guarantee did not fail, and the candidate list did not go empty. The cause is
+  simpler and was found by reading the tick: `composeSessionPresets` applies the session-RAG mix **once, when the carousel is seeded**, and
+  the auto-advance tick then replenished itself straight from the static preset pool via `getRandomPresetExcluding`, which has no access to
+  RAG candidates at all. History caps at `CAROUSEL_HISTORY_MAX` 5 behind a 3-wide window, so at `CAROUSEL_STEP_MS` 5800 the seeded corpus
+  chip is carried out of the window after about four ticks — **~23s, against the ~21s measured** — and nothing could ever put another back.
+  **The fix** gives rotation the same guarantee the seeding had: `pickNextCarouselChip`
+  ([sessionRagComposer.ts](../src/features/preset-carousel/sessionRagComposer.ts)) forces a corpus chip when none is in the **visible
+  window** (not merely somewhere in history — that distinction is the bug), rolls the usual ~30% otherwise, dedupes against history, prefers
+  game chips over shared Deck tips, and stands down entirely while a frozen QA batch is pinned. Candidates reach the tick through a
+  module-level holder, following the precedent `runtimeFrozenChipTexts` sets in [presets.ts](../src/data/presets.ts) for the same reason —
+  the alternative was threading a list through six layers and a hand-written memo compare for a value that is global by nature.
+  **A second bug fixed with it:** only **one** of the 6 game chips could ever reach the screen; all six now rotate through as history trims.
+  **Confirmed on device 2026-08-29, same day**, after a full deploy (61 files verified) with DRG Survivor running: **240 seconds sampled
+  every 3s across three fresh panel opens, and a corpus chip was on screen in every single sample — zero gaps**, against the pre-fix
+  measurement of "gone from 24s and never back". Chip count rose from one to two on screen, and three different game chips appeared
+  (*Glyphid Dreadnought*, *Hollow Bough*, *Exploder*) where before only one could. One honest limit stands: the carousel stops advancing at
+  `PRESET_CAROUSEL_ACTIVE_MS` 60s, so the guarantee cannot re-fire after that — it makes a corpus chip very likely to be on screen when
+  rotation freezes, not certain. 8 unit tests in `sessionRagComposer.test.ts`.
+- ★★★ **The longest game chip labels overflow the QAM column, and are not truncated** — **FIXED at the desk 2026-09-01 by the
+  preset-row rebuild: a long label now scrolls through Steam's `Marquee`, and the ellipsis fallback actually fires (the label is
+  `display: block` now). On-Deck confirm owed under PRESET-ONE-LINE-02/04.** Earlier: **CONFIRMED on device 2026-08-29 by direct
+  measurement**, superseding the ~20px estimate first filed the same day. That estimate was wrong in the safe direction: **the real overflow
+  is 86.6px.** With Half-Life 2 running, *"What should I know about Rocket-Propelled Grenade Launcher?"* rendered at **379.8px inside a
+  300px slot** — 29% wider than the column, spilling 86.6px past its right edge. Read off the live element with `getBoundingClientRect`,
+  not predicted. The next widest chip that appeared, *"How do I beat Hunter-Chopper (helicopter)?"* at 268.3px, fits with 15.9px to spare,
+  so the cliff sits between those two.
+  **The label does not truncate**, which is the part worth acting on: it is `text-overflow: ellipsis` on a `display: inline` element, and
+  `overflow` does not apply to inline boxes, so the ellipsis can never fire and the text simply runs out of the column. Making truncation
+  actually work is the cheap fix and a prerequisite for the marquee item in Backlog → Focus / Deck UI.
+  **How it was finally caught**, recorded because the earlier attempt failed twice: the longest label in the whole corpus is Half-Life 2's
+  at **59 characters**, not the Ocarina one at 52 that `PHASE4-CHIPS-01` names, and it only rendered once the Developer *force session RAG
+  chips* override was made to reach rotation as well as seeding (below).
+
+- ★ ~~**"Force session RAG chips" only forced half the carousel**~~ — **FIXED 2026-08-29.** The Developer override set `ragProbability: 1`
+  on the compose path, so it forced the three seeded slots and then rotation went straight back to rolling 0.3. The half it did not force is
+  the half a QA row watching the carousel over time is actually reading — which is why the long-label check could not be run even with the
+  override on. The published candidate list now carries the probability with it, so the override reaches the tick too. Found by using it.
+
+- ★★ ~~**A finished reply forgets which game it was about**~~ — **FIXED and confirmed on device 2026-08-28.** Found on device the same
+  day while checking the new DRG Survivor glossary chips (`DRG-GLOSSARY-01`). The chips appear while the answer is still being written and
+  are **gone by the time it finishes**: measured 2 of them on screen at 30 characters in, none at the end, with the game running and the
+  turn's own snapshot naming it. The cause was one line — [chatSlotTurns.ts](../src/utils/chatSlotTurns.ts) rebuilt every turn from a saved
+  chat with `appId: ""`, and only the live branch passed the real value
+  ([MainTabChatTranscript.tsx:633](../src/components/MainTabChatTranscript.tsx)), so the reply on screen believed no game was running the
+  moment it settled.
+  **Fixed at the mapper, not per feature**, because the glossary was only the first thing to notice it — the asked-entity spoiler unwrap
+  reads the same value (`:286`), and anything added later that asks "which game was this turn about" would have hit it too. The AppID is
+  now recorded on the turn itself: `chat_slot_service.py` stores `app_id` per turn and `main.py` passes it from both writers (the question
+  on submit, the answer on completion, including a cancel). A restored turn reads its own AppID, then the question's, then the chat's
+  `origin_app_id` — that last step is the only guess, and it exists so chats saved before this change still answer sensibly instead of
+  answering `""`. Per-turn rather than per-chat because a saved chat outlives a play session: quit one game, start another, keep asking in
+  the same chat, and the older answers must keep the game they were asked under.
+  **Confirmed on hardware the same evening** with DRG Survivor running: 2 glossary chips mid-stream and still 2 after the reply finished
+  and was written to disk, which is the exact moment they used to vanish. The saved chat holds both states for comparison — this morning's
+  turn stored `app_id=''`, tonight's stored `app_id='2321470'`, in a chat whose `origin_app_id` is `''`, so the fallback cannot account for
+  it. Full run record in [testing.md](testing.md) under `DRG-GLOSSARY-01`.
+  Consent is deliberately *not* persisted per turn (it is a live decision), so a restored turn still re-fences.
+
+
+- ~~★ **An answer that arrives instantly loses its branch buttons and checklist**~~ — **NOT A BUG, settled 2026-08-28.** The path that
+  builds its own result and drops the strategy payloads only ever runs for local commands — the sanitizer, shortcut setup and the VAC
+  check — and none of those ask the model, so there is nothing to lose. The 2026-08-27 note guessed it was unreachable because replies are
+  slow; it is unreachable by construction. A comment at the line now says so, so it is not filed a third time.
+
+- ~~★ **The safety guard has not been checked with streaming turned off**~~ — **PASSES, confirmed on device 2026-08-28.** With streaming
+  off, a reply that walked through deleting a Proton prefix got the warning, worded the same as with streaming on. Took two questions:
+  the first time the model refused to advise deleting at all, so there was nothing to warn about — which is the guard behaving correctly,
+  not a pass. Detail: [roadmap-details.md](roadmap-details.md).
+
+
+### Fixed in code, then confirmed on the Deck
+
+- ~~★★ **A carousel chip showed a focus ring while the D-pad was on the tab strip above it**~~ — **FIXED and confirmed on device
+  2026-08-28**, the same day it was found (`FOCUS-CHIP-RING-01`). With the ring on a tab icon, no chip carries a highlight of any kind;
+  with the ring on a chip, the blue marker and the white ring are on that same chip; Up from the Ask row lands the real gamepad ring on a
+  chip and **A fills the Ask field** instead of switching tabs. The tab icons now answer to their own names — *Ask bonsAI*, *Where AI runs*,
+  and so on. Full run and evidence files in [testing.md](testing.md). Found during the automated Batch A run, and it fooled both parties at
+  once: the maintainer, watching the screen,
+  saw the ring on a chip; the automation, reading the real gamepad focus, saw it on a **tab icon**, and pressing A activated the tab rather
+  than the chip. Both halves named in the original entry turned out to be real and both are fixed. **The cause:** the carousel is its own
+  `Focusable`, so Up out of the Ask bar was crossing a navigation boundary with a plain `focus()` — which moves `activeElement` and leaves
+  Steam's ring behind, the failure `navFocusRegistry.ts` was written for in the first place. The chip then drew a ring off `:focus-visible`
+  (the DOM's idea of focus) while Steam routed the press somewhere else. It now hands over with `TakeFocus(true)` like the session context
+  strip does, and reports whether the ring actually followed instead of whether the element existed. **The paint is honest too:** the blue
+  current-row border and the white chip ring only draw when the carousel owns Steam's ring, with a `:not(:has(.gpfocus))` arm so the marker
+  still shows on desktop, on touch and in the in-IDE preview, where nothing owns a ring at all. **And the tab icons now have names** —
+  `aria-label` per tab, so a probe or a screen reader on the tab strip no longer reads back the whole tab's contents. Evidence for the
+  original find: `runs/probe-focus-1.json`, `runs/probe-strip-right.json`. New Settings/QAM focus work must check
+  `.cursor/rules/decky-focus-graph.mdc`.
+
+- ★★ **Focus lands on answer text that does nothing when you press A** — **audited on device 2026-08-28; the reported cause was wrong.** The
+  Developer chip's JSON sits inside the chip strip, so the ring never lands on it, and stopping on each paragraph is on purpose. The real one
+  was next door: a checklist the model got wrong is left in the reply as raw JSON, and *that* is its own stop that does nothing on A.
+  **Fixed the same day** — a rejected checklist block is now dropped from the reply, the way a rejected branch block already was.
+  Owed: one sighting on device of a reply where this happens. Detail: [roadmap-details.md](roadmap-details.md).
+- ~~★★ **Pickers return you to the right tab but not the right control**~~ — **FIXED and confirmed on device 2026-08-28.** Both cases that
+  had been failing since 2026-08-04 now land the highlight back on the button you opened the picker from. Two causes, both of them things
+  the focus rules already forbid: the code stamped `tabindex="-1"` on the opener and never put it back, quietly removing it from Steam's
+  navigation, and it reported success whenever the control merely existed — so two earlier attempts looked like they had worked.
+  It now retries until the ring really moves (both cases needed a second try) and says so in the log. Detail: [roadmap-details.md](roadmap-details.md).
+
+- ★★★ **The bottom fifty pixels of every tab were hanging below the screen** — **FIXED at the desk 2026-08-30, device check owed.**
+  Anything in the last 50px of a tab could not be reached at all — not scrolled past, *clipped*, so no scroll position revealed it. It went
+  unnoticed for as long as it did because nothing ever deliberately sat there; the sticky Ask dock parks the context line exactly on that
+  edge, and it came back cut in half. The panel was pinned to the QAM host's full height at **every** level of the wrapper chain, which is
+  only correct for the level starting at the host's top; `.bonsai-scope` starts 50px lower, so it ended 50px past the bottom. Each level is
+  now pinned to its own top-to-host-bottom distance. Row **CHAT-SLOTS-V3-11**.
+
+
+### Re-measured and closed
+
+- ~~★★ **Show details is missing on a live turn after a successful Ask**~~ — **re-measured on device 2026-08-28: it is there.** A completed
+  Strategy Ask showed **Show details** next to **Retry**, as part of the same action row. Closed on the measurement, not on the guess.
+- ~~★★ **Answer scrolling by D-pad feels choppy and jumps several lines**~~ — **re-measured on device 2026-08-28: fixed by the 2026-08-07
+  work.** Walking a three-paragraph reply gave one stop per paragraph, plus one for the safety notice — a readable step each press, not a
+  jump of several lines.
+
+- ~~★★ **The D-pad skips the branch buttons and the feedback row on a live Strategy turn**~~ — **re-measured on device 2026-08-28: it does
+  not skip them.** One walk down a finished Strategy reply reached both branch buttons, then **Helpful**, then **Retry** — nothing stepped
+  over. **MICRO-04** passes.
+
+
+### Reading a long reply
+
+- ~~★★★ **A finished long reply is left scrolled to the top, with its end behind the preset chips**~~ — **FIXED and proven on-Deck
+  2026-08-31.** The suspected `enabled` gate was innocent: a tracer build showed the follow running hundreds of times per answer. The
+  real cause, measured on device, is that **assigning `scrollTop` on Steam's TabContentsScroll is a no-op** — Steam's own scroller
+  re-asserts its recorded position around every commit, so ~300 consecutive follow writes each read back the value they started from
+  while the pane crept down only by exactly the content growth per frame. The one mover Steam adopts is `scrollIntoView`, which the same
+  trace caught visibly moving the pane. Two changes in `useStreamScrollPin`, both unit-tested: every scroll now goes through
+  `anchor.scrollIntoView({block:"end"})` with `scroll-margin-bottom` standing in for "align to the dock's top rather than the covered
+  pane bottom" (plus a tripwire test that fails if anyone reintroduces a direct write — jsdom would happily pass it); and a **1.2s
+  delivery window** after the Ask ends, because the final text and "follow off" land in the same commit and the slot reload then rebuilds
+  the transcript with the pane back at 0 — timed passes at 300/900ms re-deliver the tail after that rebuild, and scroll churn inside the
+  window is not taken as a user pin. Verified with the long proton Ask driven by bridge: tail in view every frame while streaming
+  (overshoot −40px, previously +165px), and after the rebuild's yank to 0 the delivery landed the pane at 574 of 602 with the last line
+  80px above the dock. The 2026-08-30 fixes (fold at the dock's top, ResizeObserver on the anchor, shrink-clamp guard) all stand and all
+  contributed. Row **CHAT-SLOTS-V3-14**.
+
+
+### The chat slot carousel
+
+- ~~★★★ **Two "new chat screens", and an Ask sent from one of them vanished**~~ — **FIXED and proven on-Deck 2026-08-31.** Reported as one
+  bug, untangled into four, all fixed the same evening:
+  1. **The strip ran backwards.** The backend lists slots newest-first, but the row reversed them — so the dots ran old→new with [+] beside
+     the OLDEST chat, reaching "new chat" meant LB-ing the whole ring, and the 8-dot cap trimmed the newest chats. Now: leftmost dot = the
+     most recently saved chat, [+] one LB press to its left. Verified on device: two LBs from the second-newest chat landed on [+].
+  2. **[+] was only a view, so asking from it submitted into the slot you came from** — behind an empty-state screen that hides that slot's
+     transcript. That is why the answer "never showed up". Now an Ask at [+] creates the chat first and the panel pops to it; verified live:
+     new slot appeared at dot 1 with the blinking pending ring, thinking blurb on screen ("…is in good hands now…"), answer streamed in
+     place, and the scroll delivery landed the end 80px above the chips (731 of 759).
+  3. **[+] leaked the old slot's chrome** — "Session context (N turns)" and Save chat rendered on a screen whose whole message is "this slot
+     keeps its own history". Both hidden at [+] now, gated in MainTabChatTranscript.
+  4. **A finished chat kept saying "New chat"** — the backend renames a slot after its first question, but nothing refreshed the row's list
+     when an answer archived, so the label (and the recency ordering) stayed stale. `reloadActiveSlotTranscript` refreshes the summaries now.
+  The **second** "new chat screen" was real data: a saved slot still labelled "New chat" because it was created (A on [+]) and then asked in
+  from the [+] position — its ask landed there and renamed it, closing that instance. Rows **CHAT-SLOTS-V3-15a/b/c**.
+
+- ~~★★ **A never-used chat lingers in the rotation**~~ — **FIXED under D42 (locked 2026-08-31, option 2) and proven on-Deck the same
+  evening.** A chat with zero turns still named "New chat" deletes itself when the user switches away from it. A renamed empty chat is kept
+  (the rename says "I mean to use this"), and a chat the backend is generating into is never touched — the Ask-from-[+] flow makes a chat
+  that is briefly empty and default-named while its first answer is being written. Evidence `runs/V3-21-sweep-empty-chat.json`: A on [+]
+  created "New chat", one RB later it was gone. Row **CHAT-SLOTS-V3-15e**.
+
+- ~~★★★ **A focused control at the end of a reply sits behind the preset chips**~~ — **FIXED and measured on-Deck 2026-08-31**
+  (`recordings/DeckRecord_20260831_193132_game.mkv` is the report). Steam scrolls a newly focused element into the PANE, but the dock covers
+  the pane's bottom ~246px and Steam cannot know that — so walking down to Helpful / Show details / the branch buttons landed the focus ring
+  behind the chips. `useDockClearanceOnFocus` (mounted on the Main column) now watches focus arrive, and anything landing under the dock is
+  lifted above it with the same scrollIntoView-plus-scroll-margin mechanism the stream follow uses — two idempotent passes, one frame after
+  Steam's own scroll and one 150ms later in case Steam re-asserts. Measured: on the long battery answer, Show details took focus at 56px
+  ABOVE the dock's top edge with the 252px margin applied; on a short transcript nothing fires because nothing is covered. This also
+  self-adjusts when the dock gets shorter (the planned one-line preset chips): every number is measured live, none is baked in. Row
+  **CHAT-SLOTS-V3-15f**.
+
+
+### Small and cosmetic
+
+- ~~★ **After reopening the panel, a branch-pick turn's header shows the internal prompt**~~ — **FIXED at the desk 2026-08-28** with
+  the same recipe as the per-turn game ID: the caption the user saw now rides on the saved turn (`display_text` through the Ask
+  payload's `display_question` → `append_turn` → `ChatSlotTurn` → `questionDisplay` on the collapsed turn), and the header prefers it
+  while spoiler unwrap, copy text and follow-up context keep reading the composed prompt. Chats saved before the change show the
+  composed prompt as before — the caption was never recorded, so there is nothing to restore for them. Covered by three mapper tests,
+  two persistence tests and one end-to-end RPC test. **Device check owed:** make a branch pick, reopen the panel, read the header.
+
+
+- ~~★ **B on an open glossary popup also backs the ring out of the reply**~~ — **FIXED and proven on-Deck 2026-08-28, and the mechanism is now measured, not guessed.** Instrumentation on the chip showed `onButtonDown` receives the B press and returning true does NOT stop Steam — the only handler Steam honors is `onCancelButton` with `preventDefault()`. One more measured subtlety: the handler's mere *presence* suppresses Steam's back-out even when it does nothing, so it is attached only while the popup is open. Result, verified press by press: first B closes the popup with the ring staying on the term; second B — handler gone — backs out of the pane normally.
+- ~~★ **Apply the same B fix to the spoiler fence**~~ — **FIXED and proven on-Deck 2026-08-28 late evening** (`runs/SPOILER-B-02-full-ladder.json`, 5/5). The premise needed one correction: the fence had **no** B handling at all (A-only `onButtonDown`), so B on an expanded spoiler backed the ring out of the whole pane. And the first device run exposed a second, older hole: **A-reveal dropped the ring entirely** — the masked Focusable unmounts on reveal and focus moved to "nothing" (`runs/SPOILER-B-01-reveal-collapse.json`). Both fixed in `BonsaiSpoilerFence`: `onCancelButton` + `preventDefault` on the collapse header re-hides on B (conditionality is free — that header only exists while expanded), and every gamepad toggle now hands the ring to the counterpart element via `focusSpoilerFence` once React commits (touch taps deliberately don't move the ring). Verified ladder: Down parks on the masked fence → A reveals, ring on *tap to hide* → B re-hides, ring back on *tap to show* → second B backs out to Ask. Row **SPOILER-FENCE-B-01**.
+- ~~★ **Reaching a glossary chip from below takes Up then Down, not one Up**~~ — **FIXED and proven on-Deck 2026-08-28 the same
+  evening** (`runs/DRG-GLOSSARY-03-one-press-up.json`: one Up from *Show details* landed on the nearest chip, 1/1). The reply-actions
+  row's Up handlers now try the glossary chip as their *last* fallback — after refinement chips and the thumbs row, so turns that have
+  those are unchanged — and cross into the bubble's navigation container with `TakeFocus` via a per-bubble nav handle in
+  `answerBubbleElRegistry`, the same shape the Ask-row fix used. One deliberate leftover: on a turn *with* a thumbs row, Up from the
+  thumbs still yields to Steam (diverting there could skip the branch-picker chips that sit between); that leg stays two presses.
+
+- ★★ **The model routing try-order modal** chrome does not match the other full-screen pickers — **cause found 2026-08-28: it is the only
+  picker not built on the shared modal frame.** Same root cause as the B entry above, so one change fixes both. The focus half of this
+  entry was fixed the same day under D36.
+
+
+### From the old Verify list, now confirmed
+
+- ★ **British spellings found nothing** — *armour* returned nothing while *armor* returned the card. Fixed 2026-08-19 by searching for **both** spellings rather than rewriting the question, so a British spelling can never lose a result an American one finds. **KB-SPELLING-01** owed on device.
+
+- ★★ **Unfenced spoiler feedback (thumbs-down category)** — shipped **and confirmed on device** 2026-08-28; **SPOILER-FEEDBACK-01** Verified. The chip is there, reachable, and the press reached the backend — `chip_id: "unfenced_spoiler"` landed in the feedback log, which is the `chip_id` bug proven fixed against the real RPC bridge. New refine chip **Unfenced spoiler** next to Bad information / Misidentified game/problem. Also fixed a pre-existing bug where `save_ask_feedback` was missing its `chip_id` parameter, so every refine chip failed silently on the real RPC bridge. Over-fenced sibling skipped — not free enough to bundle in. [spoiler-constitution.md](planning/spoiler-constitution.md).
+
+- ★★ **The destructive-advice guard** — built 2026-08-23, and **fixed and confirmed on device 2026-08-27** after it failed to fire on a real reply telling the user to delete a folder. It appends a visible safety notice to a finished reply that describes deleting saves, a Proton prefix or compatdata with no backup step. **Owed: the same check with token streaming off.**
+
+- ★★ **Session context header is not D-pad focusable** — fixed 2026-08-04; confirm on-Deck.
+- ★★ **Show diagnostics folded into Show details** — shipped 2026-08-28. The standalone **Show
+  diagnostics** button is gone; the raw `ask_diagnostics` JSON now lives behind the chip ladder's
+  **Developer details** chip, same verbose-logging gate as before. Desk-verified only (unit tests,
+  typecheck, build) when it shipped; **confirmed on device the same day — DIAG-FOLD-01 Verified.** No button matching "diagnostics"
+  survives anywhere, and the raw JSON is where it should be, on chip 6 of 6. The verbose-logging-**off** half was not re-run.
+  [testing.md](testing.md).
+
+- ★★★ **The eval harness scored every troubleshooting tip against the wrong vector** — fixed 2026-08-21. Two independent id sequences were used as one key, so tips were compared against unrelated vectors. Any eval number from before that date is void. [why](roadmap-details.md#shipped-qa-owed--why-each-was-built-this-way)
+- ★ **The eval harness's model sweep could not run at all** — fixed 2026-08-21. A required argument was added to the retrieval helper and two of its four callers were never updated, so the sweep crashed on entry. Any sweep result from before that date is void.
+
+- ★★★★ **Card relevance has its second signal (pool margin)** — shipped 2026-08-28, closing the backlog item that D28's thin 0.515 floor retune triggered. The vector recall pass now runs only when the game's best card either stands out from the rest of that game's cards by 0.0395 cosine or clears the floor by the same amount — a junk question is roughly equidistant from everything a game knows, so it fails both, while a genuine paraphrase singles a card out and a broad "how do i play this" question scores high outright. Measured before shipping: all six D28 ordinary phrases now get **zero** cards from the vector half (the two that attach through the keyword half stay, by design under D25/D28), the `kb_eval_v2` tune / tips slices are unchanged to the decimal, holdout gained one top-1 case without being tuned against, and D25's *"the boss"* / *"gels"* keep their cards. **On-Deck re-check done 2026-08-28 — the device matches the desk table card for card**, and **KB-SPELLING-01** is Verified (Deck); the run was driven end to end by the bridge board with the results read from the ask trace. Numbers and the two rejected candidate signals: [audit/kb-second-signal-2026-08-28.md](audit/kb-second-signal-2026-08-28.md).
+
+- **D-pad reachability sweep blind spot (2026-08-04)** — cross-file nested `Focusable` (spoiler fence) not visible to per-file static analysis; answer on-device per [testing-manual.md](testing-manual.md) focus rows.
+- **Reply-language snapshot RPC (2026-08-03 fix)** — verified via `probe_deck_rpc_surface.py`; UI translation spot-check optional.
+- **Session RAG / routing merge RPCs (2026-08-02)** — **SESSION-RAG-CHIPS-01** Verified; **ROUTING-MERGE-01** Open.
+- **Shell state + tab payload extractions (step 8)** — **SHELL-PAYLOAD-01** Open. Smoke: six tabs, one Ask, Ollama tab after Clear all plugin data.
+- **Token streaming Phase B — multi-stop navigation + scroll follow (2026-08-07)** — **STREAM-09**, **STREAM-FOLLOW-01** Open. [05-token-streaming-review.md § 3.2](planning/05-token-streaming-review.md).
+- **Voice input `status()` missing (2026-08-03 fix)** — on-Deck retry of live recording still needed. [archive/roadmap-bugs-fixed.md](archive/roadmap-bugs-fixed.md).
+
+### Platform / upstream
+
+- **`scripts/run_python_tests.py` exits 0 when tests fail** — **closed as NOT REPRODUCED 2026-09-02.** The script has ended with `sys.exit(0 if result.wasSuccessful() else 1)` since `25742f2` (2026-04-26), and a deliberately failing test added to `tests/` on 2026-09-02 made `python scripts/run_python_tests.py` exit **1**. The 2026-08-28 observation was real but its cause was not the script; if it recurs, record the exact command and shell. Original entry:
+
+- ★★★ **`scripts/run_python_tests.py` exits 0 when tests fail.** Found 2026-08-28: a run with one real `unittest` failure printed the
+  failure in full and then **exited with code 0**. Anything that checks the exit code rather than reading the output — a hook, a CI step,
+  an agent chaining `&&` — reads that run as green. CLAUDE.md states the four suites all pass on a clean tree and that any failure is a
+  regression, which is exactly the promise this quietly breaks. Fix is to propagate the runner's result; the value to check is already
+  computed, it is just not returned.
+
+- **The studio remote deploy bug (P1-8)** — **fixed upstream in DPS v0.3.9 and verified on device 2026-08-28** per [mcp-setup.md](../mcp-setup.md) § DPS findings log. Original entry:
+
+- ★★ **The studio's remote deploy leaves the plugin unreadable by its own backend** (upstream decky-plugin-studio). Found 2026-08-28:
+  `deck_deploy` (remote mode) copies `py_modules/`, `dist/`, `assets/`, `bin/`, `defaults/` onto the Deck as `drwx------ root:root`, so the
+  sandboxed plugin process cannot read its own Python and dies at import (`No module named 'backend'` in the loader log). The symptom is
+  maximally misleading — the frontend still renders (the loader serves it as root), settings fail to load, and D18's reset makes it look
+  like a settings bug; it cost three loader restarts before the log was read. `scripts/build.ps1` deploys do not do this (yesterday's
+  directories were `755`). Workaround until fixed upstream: `chmod -R u+rwX,go+rX ~/homebrew/plugins/bonsAI` on the Deck, then restart
+  `plugin_loader`. **When a deploy "didn't take", read the loader log before blaming settings.** Filed upstream 2026-08-28 as a
+  DPS `docs/ROADMAP.md` row; indexed as **P1-8** in [mcp-setup.md](mcp-setup.md) § DPS findings log.
+

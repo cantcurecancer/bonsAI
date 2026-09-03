@@ -345,3 +345,263 @@ whole, rationale included — the reasoning is why they were built the way they 
   - **Confirmation is part of the design, not politeness:** the maintainer wants to approve the
     exact question set before it is pinned, because a wrong sentence invalidates the row it was
     meant to test.
+
+---
+
+## Moved from the roadmap 2026-09-02
+
+Shipped features moved out of the roadmap in the 2026-09-02 cleanup, verbatim. Several still owe a Deck row; the roadmap keeps a five-line **VERIFY** entry for those and a one-line **Done** entry for the rest.
+
+### Preset row: one line, then two chips across with scrolling labels (D43)
+
+- ★★★★ **Preset chips on a single line** — **rebuilt 2026-09-01 as two chips side by side (D43); on-Deck confirmation owed** — see
+  *The preset chips* under [Bugs](#bugs) and [planning/29-preset-row-three-thirds-plan.md](planning/29-preset-row-three-thirds-plan.md).
+  The 2026-08-31 build showed one chip; the mockup ([major-redesign.md § 2.3](major-redesign.md)) has three side by side; the
+  maintainer chose two after the width research. The height gain stays. The paragraph below records what `fc1b245` actually did, and
+  stands only as the measurement baseline. The chip block went from 118px (three
+  34px rows plus gaps — the single largest piece of the dock) to one 34px row; the dock went **245 → 161px** and the transcript's
+  reading area **371 → 455px (+23%)**, measured live after deploy. What changed, per mode: **carousel** keeps its five-row history but
+  the window is one row — the focused row is the visible row (`carouselTrackOffsetPx` is now `index × row`, viewport `max-height: 34px`),
+  and a D-pad step onto a clipped neighbour slides it into view; **fade / static / decode** went from three independent slots to one, with
+  fade re-timed 2000/1000 → 500/500ms because a single chip left the row blank for three seconds per cycle. Two behaviours the shrink would
+  have silently broken were fixed in the same change: the three contextual seeds now **queue through** the one slot instead of two of them
+  never appearing (`singleSlotRotation`), and a frozen QA batch walks in **round-robin** — the old "first entry not on screen" picker relied
+  on three chips being excluded and ping-ponged between the first two (`nextFrozenPresetAfter`). Free-play sweep run after deploy: 16
+  presses from the panel top through the transcript, both trailing rows, all four carousel history rows and the Ask bar, every stop
+  visible. Rows **PRESET-ONE-LINE-01a/b**.
+- ★★★★ **The tab icon bar collapses when it is not in use**
+  - **Goal:** The tab strip stops holding full height while nobody is using it, while still answering *which tab am I on?* at a glance —
+    the sketch on the table is a thin bar of dashes showing your position in the carousel. Interacting with it opens the fuller strip.
+  - **Workshopped and planned 2026-09-01:** [planning/30-collapsing-tab-bar.md](planning/30-collapsing-tab-bar.md). Twelve
+    discovery decisions are recorded there (our own thin bar of dashes plus the active tab's name, opening to a floating strip only
+    while the ring is on it; Steam's `Tabs` stays underneath for LB/RB). **Build is gated on the device spike in its § 5 W1**: if
+    LB/RB stop working with Steam's bar hidden, work stops and comes back to the maintainer. Reopens R5 as **D44**. Folds in
+    *Tab-strip micro labels + wide active cell* below. The open questions that used to sit in [roadmap-details.md](roadmap-details.md)
+    are answered in the plan's § 3.
+  - **Shipped 2026-09-02 (plan 30 W0–W6), on-Deck rows 07–10 owed.** The spike passed both halves — LB/RB kept switching with
+    Steam's header hidden, with and without a game running (the rig launched and exited Half-Life 2 itself, plan 07 in
+    decky-plugin-studio). Measured on the Deck: Steam's header row **80.66px → bonsAI's bar 20px**, the tab body's top **84.66 → 23.99px**,
+    the body **616 → 677px**. The one surprise: Steam keeps its hidden tab buttons as D-pad stops, so the bar is the strip's single focus
+    stop and every hop in and out of it is explicit (D55, option 1); a free-play sweep records zero focused-but-not-visible stops.
+    Left/Right and LB/RB on the bar wrap because Steam's bumpers wrap (D56). **Owed:** TAB-BAR-07 (legibility by eye) and -08 (touch)
+    need a person at the Deck; -09 (modal return) and -10 (UI scale Apply) are rig rows. **Not yet delivered against the goal:** the
+    transcript is still 412px — the reclaimed 61px went into Main's overflow and the gap above the dock, not the bubbles; what caps
+    the transcript is a Main-tab layout question (plan 30 § 8, *Why the transcript did not grow*) and the next step under this goal.
+
+
+### Chip labels too long for the column autoscroll (the marquee brief)
+
+- ★★★ **Chip labels too long for the column autoscroll** (Netflix-style marquee)
+  - **Shipped at the desk 2026-09-01** inside the preset-row rebuild (D43): every chip label that overflows scrolls through Steam's
+    own `Marquee` — the library's long-title crawl — slow and calm, badges pinned so **Tip** stays visible; reduced motion, or the
+    component missing from Steam's bundle, falls back to a working ellipsis. Decode chips scroll only once the reveal has settled, and
+    a chip never rotates out before its label has scrolled through once. **On-Deck confirm owed: PRESET-ONE-LINE-04** (feel, frame
+    rate, speed calibration). Everything below is the original brief and stays as the record of why.
+  - **Goal:** A preset or corpus chip whose label does not fit the 300px QAM column scrolls its text
+    gently and continuously — the slow, smooth title crawl media apps use — instead of being cut off.
+    A cleaner read than truncation, and it lets a long card name be read in full without the user
+    doing anything.
+  - **Truncation is acceptable in the meantime.** This is a polish item, not a bug fix; the chip
+    being readable-but-clipped is a tolerable interim state and should not block anything.
+  - **The fit check must be measured at runtime against the real element — never predicted.**
+    Compare the rendered label's actual width against its actual container (`getBoundingClientRect`
+    / `scrollWidth` on the live node, re-checked when the text, the font or the container changes),
+    and only start scrolling when it genuinely overflows. Calculating expected width from character
+    counts, a font metric or a canvas measurement is explicitly out — this repo already has the
+    receipts for why: an earlier width prediction on this exact element was thrown off by the decode
+    animation's substituted glyphs, and design-language rule *measure layout on device* exists for
+    the same reason.
+  - **Why it is worth doing, measured on device 2026-08-29:** the corpus's longest chip label,
+    Half-Life 2's *"What should I know about Rocket-Propelled Grenade Launcher?"*, renders at
+    **379.8px inside the 300px slot** — 29% wider than the column, 86.6px past its right edge, read
+    off the live element rather than predicted. Truncation is not even the current behaviour: the
+    label is `text-overflow: ellipsis` on a `display: inline` element, where the ellipsis cannot
+    fire, so today a long label simply spills out. Making truncation work is the sensible first step
+    and a prerequisite for this.
+  - **What makes it more than a CSS animation**, and the reason for three stars rather than one:
+    it has to co-exist with the **decode** reveal (which rewrites the text glyph by glyph, so any
+    measurement or animation has to wait for the reveal to settle), with the fade and carousel
+    modes, and with D-pad focus — a scrolling label must not disturb the focus ring or the row
+    geometry the carousel's translateY math depends on. Deck frame budget is a real constraint here:
+    a paint burst on this panel already costs about a quarter of a frame, so the animation wants to
+    be compositor-driven (`transform`, not `left`) and to stop when the chip is off screen.
+  - **Nice to have:** pause the scroll while the chip has focus so a player reading it with the D-pad
+    is not chasing moving text, or scroll only the focused chip.
+
+### Copy reply to clipboard
+
+- ★★ **Copy reply to clipboard** (reply micro-action) — **Shipped 2026-08-28, on-Deck confirm Open**
+  - **Goal:** One reply action copies visible answer text to host clipboard. Done: Copy button in
+    the reply utility row, tries `navigator.clipboard.writeText` → `execCommand('copy')` → host RPC
+    (`wl-copy`/`xclip`) in that order, shows Copied / Copy failed on the button itself.
+  - **Spike:** [clipboard-spike-2026-08-28.md](audit/clipboard-spike-2026-08-28.md). **Settled on device 2026-08-28 —
+    COPY-REPLY-01/02 both Verified.** The browser path wins outright: `navigator.clipboard.writeText` succeeded, the host RPC was never
+    called, and the text survived closing and reopening the QAM. The Wayland worry turns out to be moot on stock SteamOS for a blunter
+    reason — **`wl-copy`, `xclip`, `xsel` and `wl-paste` are all absent from the device**, so the host-script fallback could not run even
+    if it were reached. Keep it for other setups, but it is not the path this Deck uses. Untestable here: whether another application can
+    paste the text, since there is no clipboard tool on the device to check with.
+  - **Source:** [13-roadmap-feature-ideas.md](planning/13-roadmap-feature-ideas.md) A2.
+
+### Thinking effort control, Phase 1
+
+- ★★ **Thinking effort control** — **Phase 1 shipped 2026-08-15; Phase 2 Backlog**
+  - **Phase 1 (shipped):** Ollama tab → **Thinking** row, Off / Brief / Balanced / Deep, defaulting **Off**. Sends `think: true` for all three on levels — named levels are gpt-oss-only and qwen3 / deepseek-r1 reject a string (**D21**, superseding doc 16) — with effort carried by the reserved budget (256 / 512 / 1024) added to `num_predict`. A model that cannot think gets one silent retry with thinking off, is remembered for the session, and the user is told once. On-Deck **THINK-EFFORT-04**, **THINK-EFFORT-05** Open.
+  - **Phase 2 (Backlog):** Replace the cosmetic `<bonsai-status>` blurb outright with hand-curated bonsAI tips — feature tips ("Ask-mode Speed trims replies for a quick answer") for generic asks, KB-strategy tips ("A run spent only kiting is a run that ends underpowered") for game-specific asks, selected contextually by current game/mode. Not a fallback for otherwise-empty moments — the generic filler copy goes away entirely. Data file shaped like `data/kb/strategy_seed.json`.
+  - **Not in scope:** Reply verbosity → token budgets; caveman / lowering `num_predict`; native gpt-oss levels (needs per-model capability detection — see D21).
+  - **Related:** **Reasoning display** (below) — once raw `thinking` streams live, it takes over the slot Phase 2 tips otherwise fill.
+
+### Named chat slots (v2 and the v3 redesign)
+
+- ★★★★★ **Named chat slots** (labeled threads — redesign only)
+  - **GitHub:** [bonsAI Issues](https://github.com/qd313/bonsAI/issues) — issue TBD.
+  - **Goal:** Up to 8 named, persistent chats with Main-tab LB/RB carousel (option C). Do not re-ship old mini-list picker.
+  - **Status:** Code landed 2026-08-09 (storage, RPC, row UI). **The row never rendered in the composed plugin between `dba34e7` (2026-08-03, step-8 payload-hook extraction) and 2026-08-30** — `useMainTabPayload` dropped all six chat-slot props, both nested-modal callbacks and `askStopped`; W0 of [28-named-chat-slots-v3-implementation-plan.md](planning/28-named-chat-slots-v3-implementation-plan.md) threads them through, so the V2 QA rows are runnable on device for the first time. **Redesign v3 landed 2026-08-30** ([28-named-chat-slots-v3-implementation-plan.md](planning/28-named-chat-slots-v3-implementation-plan.md)) — the Main tab layout inverts to slot row → transcript → presets → Ask bar → context line, and the background status payload now carries `chat_slot_id` so a mid-stream slot switch can never paint one slot's tokens into another. All 19 commits W0–W18 are in; every gate green. **What is left is device QA:** run **CHAT-SLOTS-V2-05** (the P-0 bumper spike, never yet run) first, then the rest of V2 and all of **CHAT-SLOTS-V3-01…08**. Follow-up 2026-08-30 after the first on-device look: the Main tab column now stretches to the scroll viewport's bottom edge and pins presets + Ask bar there (`useMainTabColumnFill` + `.bonsai-main-tab-dock`), matching the mockups' bottom-anchored Ask bar. **On-Deck QA open** — all **CHAT-SLOTS-V2-01…06** and the **CHAT-SLOTS-V3** rows must pass before Completed. **P-0 bumper spike** result still pending on device ([major-redesign.md](major-redesign.md) § 7 R1).
+  - **Unblocked 2026-08-16** (`d167f8e`). The data-loss bug that made all six rows unrunnable — every turn dropped before it reached `chat_slots/` — is fixed; run the one-Ask persistence check in [Verify](#verify) before starting 01…06.
+  - **Design:** [major-redesign.md](major-redesign.md), [07-named-chat-slots-postmortem.md](planning/07-named-chat-slots-postmortem.md).
+
+### Tab-strip micro labels + wide active cell (closed, folded into plan 30)
+
+- ★★ **Tab-strip micro labels + wide active cell** (including a full SETTINGS label)
+  - **Goal:** The active tab cell widens and carries a small text label under the icon, so the
+    current tab is readable without decoding the glyph.
+  - **Drawn as board 6b-A in the chat-slots design doc; deliberately NOT built.** Locked decision
+    **R5** ([major-redesign.md](major-redesign.md) § 7) stands: filled active glyph only, no micro
+    labels, no width change, no height cost. Shipping this later means reopening R5 in
+    [audit/maintainer-decisions-locked.md](audit/maintainer-decisions-locked.md) first — not just
+    writing the CSS.
+  - **Closed 2026-09-02, folded into plan 30:** the labels shipped on the open strip (8px caps under every icon) and the active
+    tab's name sits on the thin bar at rest; the wide active cell was dropped by the maintainer in discovery. R5 is superseded by D44.
+  - **Folded into [planning/30-collapsing-tab-bar.md](planning/30-collapsing-tab-bar.md) on 2026-09-01.** The labels ship on
+    that plan's open strip; the wide active cell is dropped (maintainer call in discovery). R5 is reopened there as **D44**. Do not
+    build this separately.
+
+### The game a chat belongs to, above its title (shipped 2026-08-30, row CHAT-SLOTS-V3-14c owed)
+
+- ★★ **The game a chat belongs to, above its title**
+  - **Goal:** The slot row carries the game's name in quiet semi-transparent text above the
+    conversation title, so a chat says what it is about without the title having to spend characters
+    on it. Pairs with the 2026-08-30 change that stopped labels leading with the game name.
+  - **The slot stores an app *id*, not a name** (`origin_app_id`), so this needs the same id-to-name
+    resolution the context line under the Ask bar already does. Turns also carry a per-turn `app_id`,
+    which can disagree with the slot's origin — decide which one the row reports.
+  - **It costs a line of height**, which cuts against the vertical-space goal above. Worth deciding
+    whether it shows always, only while the row has focus, or only when the game differs from the
+    one running now.
+
+
+### Answer-side eval (D45)
+
+- ★★★ **Answer-side eval shipped, and its first finding is already fixed in code** (2026-09-02).
+  `scripts/eval_kb_answers.py` (decision D45, row **KB-ANSWER-01**) runs the real Ask pipeline on the
+  PC with the Deck's model — 37 questions, three answers each, under three minutes — and scores
+  facts kept, contradictions, spoiler fences and the branch menu without a judge model. Baseline:
+  facts from the cards survive **90.9%**, the branch menu arrives **97%**, the expected card attaches
+  **100%**, but **28 of 96** samples where no fence was due carried one (nine cases fenced a harmless
+  opening line on every sample). The fix — replace the fence-format sentences with one plain "do not
+  fence" line on low-story and named-entity turns — measured **3 of 96** in two runs with the ending
+  questions still fenced, and ships in `_strategy_spoiler_policy_block`; the two PARTIAL spoiler
+  entries above carry the detail. Every prompt change from here ships with a before/after from this
+  harness (plan 30 W4/W6), not on feel.
+  [planning/30-kb-answer-quality-plan.md](planning/30-kb-answer-quality-plan.md) § 4.1,
+  [archive/research/kb-answer-eval-2026-09-02-baseline.md](archive/research/kb-answer-eval-2026-09-02-baseline.md),
+  [archive/research/kb-answer-eval-2026-09-02-fence-subtractive.md](archive/research/kb-answer-eval-2026-09-02-fence-subtractive.md).
+
+### DRG Survivor glossary terms
+
+- ★★★ **DRG Survivor glossary terms** (tap-to-define jargon) — shipped 2026-08-28 and **walked on device the same evening**. The morning
+  failure (chips vanish when the reply settles) was the per-turn game-ID bug, fixed and confirmed separately. The evening added the three
+  maintainer asks and proved them on hardware under **DRG-GLOSSARY-02**: full underline (skip-ink off, computed style read on device),
+  tap → temporary plain-language popup (peek 4s / full 10s, unit-tested; the tap itself needs one manual finger check), and consistent
+  D-pad reachability — the visited-once flag replaced with reading-order geometry, proven by a `deck_runSequence` that landed the ring on
+  the chip three passes running (`runs/DRG-GLOSSARY-02-dpad-consistency.json`). Two small D-pad warts found and filed above (B backs out
+  of the pane; from-below is Up-then-Down). Remaining: one touch tap, and the Explain-further auto-send on device.
+  - Two curated terms, "kiting" and "overclock," both read undefined in the shipped DRG Survivor cards. A DRG Survivor reply that uses one renders it as a tappable inline chip; a floating tooltip (not inline-push) shows a short peek on focus alone, the full definition on A, and an **explain further** chip that auto-sends a new Ask turn. Frontend-only data (`src/data/drgGlossaryTerms.ts`) — no Python retrieval needed for a two-term DRG-only list; the model prompt separately gets a small clause telling it the terms are tap-to-define so it doesn't stop to explain them.
+  - **Not in scope:** general jargon-detection across every game's KB content — DRG Survivor only, as planned.
+  - The D-pad walk (peek → A → full → B/direction dismiss → explain-further sends) is owed on-device — see **DRG-GLOSSARY-01** in [testing.md](testing.md).
+
+### Decode preset chip animation
+
+- ★★★ **Ghost in the Shell preset chip decode** — shipped 2026-08-28, replacing the `stream` typewriter mode (`decode` now fills that slot in the picker). Chips arrive as a full-width scrambled green block and lock into the real prompt left to right behind a blinking caret; a Deck whose settings still say `stream` maps forward to `decode` rather than silently resetting to fade. **PRESET-STREAM-ANIM-01** Partial — **measured on device 2026-08-28: a flat 60 fps with all three chips decoding** (479 frames in 8 s, worst gap 50 ms), characters locking every 33–50 ms, and the focus-during-churn walk clean. The three chips never advance in the same frame — they are staggered, so it is three chips mid-decode rather than three in step. **Only the feel is still owed**, and that is a person's call, not a rig's. Writeup: [archive/roadmap-completed.md](archive/roadmap-completed.md).
+
+### Withdrawn 2026-09-02: QAMP items
+
+Both entries tested **TDP apply**, which the permissions cleanup of 2026-07-30 removed (`apply_tdp` and the QAMP banner no longer exist in `main.py`, `py_modules/` or `src/`). Withdrawn rather than left open; restore if the feature ever comes back.
+
+- ★★★ **QAMP verification checklist** — per-game profile on/off, QAM Performance reopen, Steam restart/reboot, GPU-clock paths. [testing-manual.md](testing-manual.md) § QAMP.
+
+- ★★★★★ **QAMP Phase 2 profiles** (experimental Steam opt-in)
+  - **GitHub:** [bonsAI Issues](https://github.com/qd313/bonsAI/issues) — issue TBD.
+  - **Status:** Backlog-only. Phase 1 verification in [Verify](#verify).
+
+
+---
+
+## The Verify list as it read on 2026-09-02
+
+The roadmap no longer has a Verify section: each item that still owes a Deck check is a **VERIFY** entry in Bugs or Features, and the QA queue is [testing.md](../testing.md). The list is preserved here verbatim because several lines carry QA-row pointers and evidence that the shorter entries do not repeat.
+
+## Verify — shipped, QA owed
+
+Code-fixed or shipped; on-Deck / qualitative QA still owed. Detail: [testing.md](testing.md), [testing-manual.md](testing-manual.md). Full writeups: [archive/roadmap-bugs-fixed.md](archive/roadmap-bugs-fixed.md).
+
+**Every Main-tab UI change also owes the free-play sweep** — standing row **QA-FREE-PLAY-01** in
+[testing-manual.md](testing-manual.md): walk the whole pane like a user and require every focused stop to also be *visible*
+(not behind the dock). Added 2026-08-31 after scripted checks twice passed bugs that free use found in seconds; the DPS
+visibility-oracle plan (decky-plugin-studio planning/06) will turn it into one tool call.
+
+**This list is a curated front page, not the QA queue.** [testing.md](testing.md) holds **92** rows, of which **13 are Verified** and 55 Open / 15 Partial (counted 2026-08-17). Work the rows below first because they carry the most recent fixes; when picking up anything else, read testing.md rather than assuming an absence here means coverage.
+
+**The 2026-08-23 parallel bug session left seven fixes proven only at a desk.** Their on-Deck run is planned as two batches of six frozen test chips, grouped by game, in [20-frozen-chip-qa-batches.md](planning/20-frozen-chip-qa-batches.md) — question wording agreed and not to be reworded. Note that a pinned batch **suppresses session RAG chips**, so corpus-chip rows cannot pass until it is cleared.
+
+- ★★★ **Clear cache cleared the screen but not the session** — **fixed and device-confirmed 2026-08-27**, after three separate causes. Two halves stay owed: what a clear does to the **orphan chat slots** it leaves behind (one per clear-and-reask), and clearing **while a reply is still being written** — unit-tested, but not reproducible by hand because this model answers faster than the walk to the button. [why](roadmap-details.md#shipped-qa-owed--why-each-was-built-this-way)
+- ★ **A finished voice install survives "Clear all plugin data"** — **VOICE-CLEAR-01** Partial (backend verified; UI half open).
+- ★ **Bonsai pot ~1px right of canopy (tab + plugin-list icon)** — fix landed 2026-08-07 (Wave 1 D); **BONSAI-ICON-GEOM-01**. [wave1.md](wave1.md).
+- ★ **Developer toggle for "resume last tab" (D15 B)** — shipped 2026-08-04; **TAB-RESUME-MODE-01**, **TAB-RESUME-FOCUS-01** Open/Partial.
+- ★ **Install voice engine button when already ready** — fix landed 2026-08-07 (Wave 1 B); **VOICE-REINSTALL-01**. [wave1.md](wave1.md).
+- ★ **Rows span the QAM panel width** — bug **fixed 2026-08-16** (`0fcaf00`), measured on-Deck: unified host and Ask row `x=63.99 w=268.02` → `x=48 w=300`, 32px reclaimed. **ASK-WIDTH-01** still Open in testing.md — the *visual* walk was never run, only the probe. Confirm the three Main rows look flush and nothing overflows the 300px column. Writeup: [archive/roadmap-bugs-fixed.md](archive/roadmap-bugs-fixed.md); rule earned: [design-language.md](design-language.md) Rule 1.
+- ★ **British spellings found nothing** — *armour* returned nothing while *armor* returned the card. Fixed 2026-08-19 by searching for **both** spellings rather than rewriting the question, so a British spelling can never lose a result an American one finds. **KB-SPELLING-01** owed on device.
+- ★ **Static seed tells you to enable KB when it is already on** — fixed 2026-08-07 (Wave 2 F); **PRESET-KB-SEED-01**.
+- ★ **Thinking blurb italicizes emojis** — fix landed 2026-08-07 (Wave 1 A); **THINKING-EMOJI-01**. [wave1.md](wave1.md).
+- ★ **Thinking line vanishes mid-Ask (lazy status tag)** — fix landed 2026-08-08; **THINKING-SANITIZE-01**. [06-thinking-blurbs-review.md § 10.1](planning/06-thinking-blurbs-review.md#101-landed-2026-08-08--7-items-13).
+- ★ **Token streaming stutters once at start** — fix landed 2026-08-07 (Phase A); **STREAM-REVEAL-01**. [05-token-streaming-review.md § 3.1](planning/05-token-streaming-review.md).
+- ★ **VAC / `bonsai:vac-check` (Phase 1) — on-device QA** — implementation complete; finish **VAC-02…06** after Tier 0 **SMOKE-F** passes.
+- ★ **~22% of Asks show bare emoji for every phase change** — fix landed 2026-08-08; **THINKING-EMOJI-CLUSTER-01**.
+- ★★ **Asked-entity extraction (player typing patterns)** — fixed 2026-08-09; **STRAT-ENTITY-01**.
+- ★★ **Unfenced spoiler feedback (thumbs-down category)** — shipped **and confirmed on device** 2026-08-28; **SPOILER-FEEDBACK-01** Verified. The chip is there, reachable, and the press reached the backend — `chip_id: "unfenced_spoiler"` landed in the feedback log, which is the `chip_id` bug proven fixed against the real RPC bridge. New refine chip **Unfenced spoiler** next to Bad information / Misidentified game/problem. Also fixed a pre-existing bug where `save_ask_feedback` was missing its `chip_id` parameter, so every refine chip failed silently on the real RPC bridge. Over-fenced sibling skipped — not free enough to bundle in. [spoiler-constitution.md](planning/spoiler-constitution.md).
+- ★★ **Device QA — Tier 0–1** — execute Tier 0 smokes (SMOKE-A, C, F) then Tier 1 (SMOKE-B, E, H); update coverage with Pass / Partial / Fail + build id.
+- ★★ **Expert mode attached fewer knowledge cards than Strategy** — fixed 2026-08-18; **KB-EXPERT-01** owed, and it re-opens **KB-ASKMODE-01** for a re-run. The route flag asked for Strategy by name, so Expert silently took the small budget. [why](roadmap-details.md#shipped-qa-owed--why-each-was-built-this-way)
+- ★★ **KB compat retrieval phrase gate** — fixed 2026-08-06 (**D16**); **KB-ROUTER-01**. [audit/rag-pr2-signoff.md](audit/rag-pr2-signoff.md) § 2.
+- ★★ **Named chat slots persist a turn** — bug **fixed 2026-08-16** (`d167f8e`); **CHAT-SLOTS-V2-01…06** all Open and **gated on one check first**: run a single Ask, then confirm (1) no `chat_slots: no slot for request_id=` line in the plugin log and (2) `/home/deck/homebrew/settings/bonsAI/chat_slots/` now exists holding `index.json` plus a slot file with **both** question and answer. Only then run 01…06 — before the fix a reopen test read as "empty thread" and pointed nowhere. Writeup: [archive/roadmap-bugs-fixed.md](archive/roadmap-bugs-fixed.md).
+- ★★ **KB coverage chip says "no game running" instead of "could not be matched"** — fixed 2026-08-23; **KB-COVERAGE-NOAPP-01** Open on-Deck. Split the coverage status that used to conflate desktop context with an unmatched running game — see [testing.md](testing.md). Writeup: [archive/roadmap-bugs-fixed.md](archive/roadmap-bugs-fixed.md).
+- ★★ **The destructive-advice guard** — built 2026-08-23, and **fixed and confirmed on device 2026-08-27** after it failed to fire on a real reply telling the user to delete a folder. It appends a visible safety notice to a finished reply that describes deleting saves, a Proton prefix or compatdata with no backup step. **Owed: the same check with token streaming off.**
+- ★★ **Prompt testing pass** — broader systematic validation beyond shipped prompt-testing MVP matrices.
+- ★★ **Session context header is not D-pad focusable** — fixed 2026-08-04; confirm on-Deck.
+- ★★ **Show diagnostics folded into Show details** — shipped 2026-08-28. The standalone **Show
+  diagnostics** button is gone; the raw `ask_diagnostics` JSON now lives behind the chip ladder's
+  **Developer details** chip, same verbose-logging gate as before. Desk-verified only (unit tests,
+  typecheck, build) when it shipped; **confirmed on device the same day — DIAG-FOLD-01 Verified.** No button matching "diagnostics"
+  survives anywhere, and the raw JSON is where it should be, on chip 6 of 6. The verbose-logging-**off** half was not re-run.
+  [testing.md](testing.md).
+- ★★ **Thinking blurbs — three writers disagree** — fix landed 2026-08-08; re-verify **THINKING-COPY-01**, **THINKING-SLOW-01**, **THINKING-LIVE-01**, **THINKING-SPOILER-01**. [06-thinking-blurbs-review.md § 10](planning/06-thinking-blurbs-review.md#10-implementation-log).
+- ★★ **Wave 4 G slider direction handlers** — Deck-check: **ONBUTTONDOWN-AUDIT-01** (distinguish nothing happens vs double-step; cover Ollama keep-alive, Reply verbosity, Connection timeout sliders).
+- ★★ **Your tab is not remembered when you leave and reopen** — **TAB-RESUME-01** Partial (tab + scroll restore; focus-after-reopen separate).
+- ★★★ **D11 legacy-loader shim removal** — **D11-SHIM-01** Partial (RPC probe ok; Main-tab Ask UI pass open).
+- ★★★ **Ghost in the Shell preset chip decode** — shipped 2026-08-28, replacing the `stream` typewriter mode (`decode` now fills that slot in the picker). Chips arrive as a full-width scrambled green block and lock into the real prompt left to right behind a blinking caret; a Deck whose settings still say `stream` maps forward to `decode` rather than silently resetting to fade. **PRESET-STREAM-ANIM-01** Partial — **measured on device 2026-08-28: a flat 60 fps with all three chips decoding** (479 frames in 8 s, worst gap 50 ms), characters locking every 33–50 ms, and the focus-during-churn walk clean. The three chips never advance in the same frame — they are staggered, so it is three chips mid-decode rather than three in step. **Only the feel is still owed**, and that is a person's call, not a rig's. Writeup: [archive/roadmap-completed.md](archive/roadmap-completed.md).
+- ★★★ **KB coverage chip (Show details)** — shipped 2026-08-07 (Wave 3 I); **KB-COVERAGE-01 Partial.** On-Deck 2026-08-16 the live-turn ladder rendered and the chip read `KB: 9 sections` on a Portal 2 Strategy Ask. **Still open: the two negative cases** — KB off must read `KB: off`, and an uncovered title must read `KB: none for this game`. Distinct from the per-turn `kb` retrieval chip; this one is corpus honesty.
+- ★★★ **KB download Cancel** — shipped 2026-08-05; **KB-CANCEL-01 is not testable as written, and that is the blocker.** The whole download finishes in about a second on device, so there is no window to press Cancel in. Needs a slower fixture or a throttle before it can be QA'd at all. [why](roadmap-details.md#shipped-qa-owed--why-each-was-built-this-way)
+- ★★★ **Kids master lock** — shipped 2026-08-09; on-Deck **KIDS-LOCK-01**, **KIDS-FOCUS-01**, **KIDS-REGRESS-01** (and **KIDS-LOCK-02** if child account) Open. Live CEF Stage 0 confirmation still owed.
+- ★★★ **QAMP verification checklist** — per-game profile on/off, QAM Performance reopen, Steam restart/reboot, GPU-clock paths. [testing-manual.md](testing-manual.md) § QAMP.
+- ★★★ **Soft reply-length cap and thinking budget** — shipped 2026-08-10. Sub-checks: 02 verified, 01/03/04 automated with on-Deck confirmation owed, 05 needs a real thinking model. [why](roadmap-details.md#shipped-qa-owed--why-each-was-built-this-way)
+- ★★★ **Source attribution on knowledge chips** — shipped 2026-08-09; **KB-ATTRIB-01 Partial after 2026-08-16 — one sub-check looks like a fail** and needs a second look before it is called a bug. [why](roadmap-details.md#shipped-qa-owed--why-each-was-built-this-way)
+- ★★★ **The eval harness scored every troubleshooting tip against the wrong vector** — fixed 2026-08-21. Two independent id sequences were used as one key, so tips were compared against unrelated vectors. Any eval number from before that date is void. [why](roadmap-details.md#shipped-qa-owed--why-each-was-built-this-way)
+- ★ **The eval harness's model sweep could not run at all** — fixed 2026-08-21. A required argument was added to the retrieval helper and two of its four callers were never updated, so the sweep crashed on entry. Any sweep result from before that date is void.
+- ★★★ **The vector half of retrieval now has its own recall pass** — fixed 2026-08-18; **KB-RECALL-01** owed on device, **KB-RECALL-02** verified at the desk. It searches the game's cards directly instead of only re-ordering the keyword shortlist. [why](roadmap-details.md#shipped-qa-owed--why-each-was-built-this-way)
+- ★★★★ **Card relevance has its second signal (pool margin)** — shipped 2026-08-28, closing the backlog item that D28's thin 0.515 floor retune triggered. The vector recall pass now runs only when the game's best card either stands out from the rest of that game's cards by 0.0395 cosine or clears the floor by the same amount — a junk question is roughly equidistant from everything a game knows, so it fails both, while a genuine paraphrase singles a card out and a broad "how do i play this" question scores high outright. Measured before shipping: all six D28 ordinary phrases now get **zero** cards from the vector half (the two that attach through the keyword half stay, by design under D25/D28), the `kb_eval_v2` tune / tips slices are unchanged to the decimal, holdout gained one top-1 case without being tuned against, and D25's *"the boss"* / *"gels"* keep their cards. **On-Deck re-check done 2026-08-28 — the device matches the desk table card for card**, and **KB-SPELLING-01** is Verified (Deck); the run was driven end to end by the bridge board with the results read from the ask trace. Numbers and the two rejected candidate signals: [audit/kb-second-signal-2026-08-28.md](audit/kb-second-signal-2026-08-28.md).
+- ★★★★★ **Global quick-launch macro** — Guide-chord docs in [troubleshooting.md](troubleshooting.md) §5; verification checklist not run on hardware.
+- **D-pad reachability sweep blind spot (2026-08-04)** — cross-file nested `Focusable` (spoiler fence) not visible to per-file static analysis; answer on-device per [testing-manual.md](testing-manual.md) focus rows.
+- **Reply-language snapshot RPC (2026-08-03 fix)** — verified via `probe_deck_rpc_surface.py`; UI translation spot-check optional.
+- **Session RAG / routing merge RPCs (2026-08-02)** — **SESSION-RAG-CHIPS-01** Verified; **ROUTING-MERGE-01** Open.
+- **Shell state + tab payload extractions (step 8)** — **SHELL-PAYLOAD-01** Open. Smoke: six tabs, one Ask, Ollama tab after Clear all plugin data.
+- **Token streaming Phase B — multi-stop navigation + scroll follow (2026-08-07)** — **STREAM-09**, **STREAM-FOLLOW-01** Open. [05-token-streaming-review.md § 3.2](planning/05-token-streaming-review.md).
+- **Voice input `status()` missing (2026-08-03 fix)** — on-Deck retry of live recording still needed. [archive/roadmap-bugs-fixed.md](archive/roadmap-bugs-fixed.md).
+

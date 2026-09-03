@@ -9,7 +9,7 @@
 | [testing-manual.md](testing-manual.md) | Maintainers | On-Deck smokes, Tier 0–4 runbook, Deck-only checklists |
 | [test-evidence/](test-evidence/) | CI / agents | Preview-suite artifacts (`--write` / `--evidence`) — see [retention](#evidence-retention) |
 
-Related: [roadmap.md](roadmap.md) ([Bugs](roadmap.md#bugs), [Verify](roadmap.md#verify), [Backlog](roadmap.md#planned)), [development.md](development.md) (build/deploy), [troubleshooting.md](troubleshooting.md).
+Related: [roadmap.md](roadmap.md) ([Bugs](roadmap.md#bugs), [Verify](roadmap.md#verify), [Features](roadmap.md#features), [Done](roadmap.md#done-for-v050)), [development.md](development.md) (build/deploy), [troubleshooting.md](troubleshooting.md).
 
 ### Evidence retention
 
@@ -286,14 +286,16 @@ One smoke often covers many features. Status: **Verified** / **Partial** / **Ope
 
 ## Verify (from roadmap)
 
-These are **not** missing features — deferred maintainer testing:
+These are **not** missing features — deferred maintainer testing. The roadmap carries them in its [Verify § Features](roadmap.md#verify)
+list as the `[QA]` **Deferred manual QA** and `[platform]` **VAC check** entries:
 
-1. Device QA Tier 0–1 (formal Pass on current build)
+1. Device QA Tier 0–1 (formal Pass on current build) — **SMOKE-B is stale**: it tests TDP apply, removed 2026-07-30
 2. VAC-02…06 on-device
-3. QAMP verification matrix
-4. Broader prompt-testing pass
+3. Broader prompt-testing pass
 
-See [roadmap.md § Verify](roadmap.md#verify) and [testing-manual.md](testing-manual.md).
+The QAMP verification matrix was withdrawn 2026-09-02 for the same reason as SMOKE-B (no TDP apply to test).
+
+See [roadmap.md](roadmap.md) and [testing-manual.md](testing-manual.md).
 
 ---
 
