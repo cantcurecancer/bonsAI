@@ -2952,7 +2952,7 @@ Today a Strategy first turn gives an orientation and a branch menu before tactic
 The maintainer asked for more explanation before deciding; the explanation is in the 2026-09-01
 session and will be copied here with the answer.
 
-### D55 — OPEN (raised 2026-09-02, recommendation given, plan 30 is being built under it) — Steam's hidden tab buttons stay focus stops: route around them, or stop plan 30?
+### D55 — LOCKED 2026-09-03 (option 1, via D57 #8) — Steam's hidden tab buttons stay focus stops: route around them, or stop plan 30?
 
 Plan 30's spike (§ 8 of [planning/30-collapsing-tab-bar.md](../planning/30-collapsing-tab-bar.md))
 hid Steam's tab header and then walked the D-pad. LB/RB kept working (that was the gate, and it
@@ -2986,6 +2986,10 @@ Built under option 1 from W4 on because the maintainer said "keep going" and opt
 own § 4.5 fallback, applied in both directions. If the answer is 2, W2–W3 are harmless on their own
 and W4+ is reverted.
 
+**Locked 2026-09-03 on option 1** (D57 #8, the maintainer answered "ok" to the recommendation):
+TAB-BAR-01 to 06 pass under it on the device, so the hops and the trap stay. Reopen only if a Steam
+update breaks the hiding rule or the trap.
+
 ### D56 — LOCKED 2026-09-02 (a corrected assumption, no maintainer input needed) — The collapsing tab bar's Left/Right wrap at the ends, because LB/RB do
 
 Plan 30's discovery notes assumed *"Left at the first tab and Right at the last do nothing, matching
@@ -2996,3 +3000,92 @@ bonsAI never set it. So the half of the assumption about LB/RB was wrong, and th
 (`tabBarNav.ts`), measured passing in `runs/TAB-BAR-03-switch-on-the-bar.json`. The alternative —
 passing `wrapAround: false` to Steam so the bumpers stop at the ends — changes existing behaviour
 for every user and was not what anyone asked for. Reopen here if the wrap turns out to be a nuisance.
+
+### D57 — LOCKED 2026-09-03 (raised 2026-09-02) — The Deck verification round: nine calls before "go"
+
+[Plan 31](../planning/31-deck-verification-round.md) sorts every roadmap **Verify** row by what it needs
+from the device and puts them in a run order. Nothing in the code blocks the round. Checked over SSH on
+2026-09-02 at 23:42, without pressing a button: the Deck already runs this checkout (`main.py` and
+`dist/index.js` are byte-identical to the local build of 19:15, which post-dates the last code commit
+`cc110fb`), passwordless sudo works, the thinking model `qwen3.5:4b`, the embed model `nomic-embed-text`
+and corpus `2026.09.01` are installed, the voice engine binaries are present, and the knowledge base is
+on. What blocks the round is nine things only the maintainer can decide. Answer by number in chat; the
+answers get copied here.
+
+1. **The window.** Every row that touches the screen or the buttons runs one at a time: one device, one
+   focus ring, one bridge with no lock, and Steam's state (running game, settings, Ask mode) is global.
+   The other chat's DPS session has to stop for the whole block, or its presses corrupt the runs
+   (measured 2026-09-02, see the *one driver at a time* note). Proposed: two evening blocks (Session 1
+   with no game running, Session 2 with games) and about twenty minutes with you at the Deck for
+   Session 3. No deploy is needed unless code lands first; a deploy restarts Decky Loader.
+2. **Frozen chips.** Standing rule: you confirm the sentences before anything is pinned. Plan 31 § 4
+   lists two batches (11 and 12 sentences). The batch on the Deck right now has ten entries: the five
+   KB-ANSWER-02 sentences (kept, they are in batch 1) and five that no testing row names —
+   *"explain in detail how proton runs windows games on linux"*, *"name one deck tip"*, *"say hello"*,
+   *"name one proton tip"*, *"name one battery tip"*. Options: (a) drop those five and pin batch 1 as
+   written (recommended); (b) keep them, which leaves two free slots, so each batch goes in over several
+   re-pins with a panel close between.
+3. **Launching games from the PC.** Session 2 needs six titles running in turn. The KB-COVERAGE-NOAPP-01
+   row says "the plan forbids launching a game by automation"; where that rule comes from is UNKNOWN
+   (no plan file says it), and another session launched Half-Life 2 through the bridge on 2026-09-02.
+   Options: (a) the rig launches and exits games itself (`deck_launchGame` / `deck_exitGame`), so you are
+   not needed until Session 3 (recommended); (b) you launch each title when asked in chat. Either way,
+   one UNKNOWN to settle: how Ocarina of Time runs on this Deck. It is not a Steam install, and
+   STRAT-ENTITY-01's two King Dodongo sentences need it running; the Raphael sentence uses Baldur's
+   Gate 3, which is on the card.
+4. **Clear all plugin data.** Three owed checks need a real clear: VOICE-CLEAR-01's UI half,
+   TAB-RESUME-01's "next open is Main", and SHELL-PAYLOAD-01's Ollama tab after a clear. Per the
+   VOICE-CLEAR-01 row it wipes the real settings and the model records. Options: (a) yes, as the very
+   last step of the last session, after copying `settings.json`, `chat_slots` and `chat_threads` aside
+   over SSH and restoring them afterwards (recommended; a `settings.json.bak-preQA` from an earlier
+   round already sits next to the live file); (b) skip those three sub-checks this round.
+5. **A model pull for ROUTING-MERGE-01.** The row needs a custom setup profile that pulls a model — for
+   example `qwen2.5vl:3b`, about 3 GB — and then checks the try-order picker and the vision list. It is
+   the only row that adds files to the device. Options: (a) allow the pull; (b) defer the row
+   (recommended unless you want that model anyway).
+6. **SMOKE-B.** It tests TDP apply, removed 2026-07-30, and the *Deferred manual QA* entry still lists it
+   under Tier 1. Options: (a) retire it and drop it from Tier 1 (recommended); (b) rewrite it as a
+   suggestion-only banner check.
+7. **Scope.** Options: (a) the roadmap Verify rows plus the three re-runs the tab bar asked for
+   (DOC-SWEEP-01, CHAT-SLOTS-V3-01, TAB-SWITCH-01) (recommended); (b) also the *Open regression IDs*
+   list in testing-manual.md — about twenty-five more rows, the DRG spoiler set among them — as a
+   stretch if time remains.
+8. **Two product calls that sit inside Verify entries.** Neither blocks the run; both block moving the
+   entry to Done. **D55** (Steam's hidden tab buttons; built under option 1, and TAB-BAR-01 to 06 pass
+   under it): lock option 1, or not. **CHAT-SLOTS-V3-14c** (the game's name above the chat title): show
+   it always, or only while the row has focus. Recommendation: lock D55 on option 1; show the name only
+   on focus, because the roadmap entry itself says the line costs height that the vertical-space goal
+   wants back.
+9. **Your hands.** Which of the in-person rows happen in Session 3 and which stay open: TAB-BAR-07
+   (eyes), TAB-BAR-08 (touch), STREAM-FOLLOW-01's touch half, PRESET-ONE-LINE-04's speed-by-eye and
+   reduced-motion halves, ASK-WIDTH-01 and BONSAI-ICON-GEOM-01 by eye (the rig measures and takes the
+   PNG first), KB-ANSWER-02's feel run, CHAT-SLOTS-V3-15d's glance, the *Update knowledge base* thumb
+   press from the Bugs list, KIDS-LOCK-01 (Family View PIN on a spare adult account, then the rig runs
+   KIDS-FOCUS-01), KIDS-LOCK-02 (a child account; the row already allows it to stay Open), VAC-03 to 06
+   (you type the Steam Web API key, the rig drives the rest), and the quick-launch macro (Steam Input,
+   never run on hardware). Recommendation: schedule all of them except KIDS-LOCK-02 and the macro.
+
+**Answers, 2026-09-03, all nine locked** (the maintainer answered by number in chat):
+
+1. The window is open now; the other chat is done. The rig runs unattended for a few hours and the
+   maintainer checks back on progress in chat.
+2. Go: the five unnamed chips are dropped and the batches are pinned as written in plan 31 § 4.
+3. The rig launches and exits games. Ocarina of Time runs as **Ship of Harkinian**, a non-Steam
+   shortcut (`soh.appimage`, shortcut app id `2593781457`), and runs well. `deck_launchGame` needs it
+   on the Recent Games shelf; if it is not there, those sentences wait for the maintainer to play it
+   once.
+4. Yes: Clear all plugin data runs as its own last phase, after a copy of settings and chats is taken
+   aside (done 2026-09-03 00:48: `settings.json.bak-round31` and `~/bonsai-round31-chats.tgz`); the
+   rig waits for the words "clear it" in chat before running it.
+5. Left to the rig's judgment. Deferred: disk is not the problem (735 GB free under `/home`), but the
+   row needs a custom setup profile driven through the UI and is the only row that adds files to the
+   device; it runs only if the Verify rows finish with time left.
+6. SMOKE-B is retired and comes off Tier 1.
+7. Scope is the Verify rows plus the three tab-bar re-runs; the wider regression list only if time
+   remains.
+8. D55 locked on option 1. CHAT-SLOTS-V3-14c: the game's name above the chat title shows only while
+   the row has focus. That is a code change now owed; the entry stays in Verify until it ships and
+   passes on the device, and this round only confirms the name is stored and shown for a chat created
+   while a game runs.
+9. The in-person list is plan 31 § 7, written in plain terms with what is needed and when. The rig
+   never ticks those boxes; only the maintainer clears an item, after seeing it themselves.
