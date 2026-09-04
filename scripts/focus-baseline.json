@@ -29,9 +29,14 @@
     "src/components/SettingsTabUiScaleSection.tsx": {
       "page-search": 1
     },
-    "src/features/plugin-shell/modalReturnFocusRegistry.ts": {
-      "page-search": 2,
+    "src/features/plugin-shell/TabIndicatorBar.tsx": {
       "tabindex-removal": 1
+    },
+    "src/features/plugin-shell/modalReturnFocusRegistry.ts": {
+      "page-search": 2
+    },
+    "src/hooks/useDockClearanceOnFocus.ts": {
+      "page-search": 1
     },
     "src/hooks/useMainTabAskBarFocus.ts": {
       "page-search": 9
@@ -49,11 +54,14 @@
     "src/utils/chatPanelScroll.ts": {
       "ring-question": 1
     },
+    "src/utils/drgGlossaryTermRegistry.ts": {
+      "tabindex-removal": 1
+    },
     "src/utils/focusNavigation.ts": {
       "page-search": 3
     },
     "src/utils/liveTurnFocusGraph.ts": {
-      "page-search": 24,
+      "page-search": 22,
       "tabindex-removal": 1
     },
     "src/utils/permissionJumpRegistry.ts": {
