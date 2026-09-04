@@ -284,3 +284,196 @@ checklist (Steam Input; only if you use the macro).
   rows finish with time left.
 - **STREAM-11** (bursts with a game running): a Bugs entry that needs a call, not a Verify row.
 - The by-eye and touch halves listed in § 7: Session 3 only.
+
+## 11. Progress log, 2026-09-03
+
+Written as rows close; evidence file names are under `runs/`.
+
+- **00:48** Backups taken (`settings.json.bak-round31`, `~/bonsai-round31-chats.tgz`). The panel was
+  left open on Ollama by the other chat; closed it with B, B (`round31-close-panel-before-chip-edit`),
+  cleared the frozen batch over SSH with the panel closed, reopened with `deck_openPlugin`.
+- **Lane B** (`round31-laneB-probes-1.txt`): KB-EXPERT-01 probe half PASS (1 / 3 / 5 cards for both
+  questions), KB-ASKMODE-01 count half PASS (1 / 3 / 5, was 1 / 1 / 1), KB-RECALL-01 card half PASS
+  (all three sentences attach in Strategy), KB-ROUTER-01 retrieval half PASS (storage, steam_input,
+  anticheat, emudeck). Open question for Session 2: the probe reports Speed hits as `hybrid`, which
+  Show details labels *Keyword + meaning*, while KB-RECALL-01 expects *Keyword search* in Speed.
+- **SMOKE-A, first half:** the panel opens on Main with no crash; RB on the bar cycles Main → Ollama →
+  Settings → Permissions → Developer → About → Main (`SMOKE-A-02-tab-cycle-from-the-bar`);
+  TAB-MARKER-01's colour half holds — the bar's name reads gold (Ali G) while the ring is deep in the
+  Ollama body and the other cells stay grey; Test connection reads `Connected · Ollama v0.32.15 ·
+  4 models`, no traceback; two preset chips sit side by side at x 48 and x 200, 148 × 30 each; a
+  short Ask from the [+] position (`reply with only the word echo`, Strategy) created a new chat and
+  answered `echo` in 11.9 s with one bubble. The first run pressed RB on the slot row instead of the
+  bar (switched chats six times; walked back with LB × 7, `CHAT-SLOTS-round31-LB-to-create`), which
+  incidentally showed the *14 earlier* pill as a D-pad stop on an old chat (CHAT-SLOTS-V3-07's pill half).
+- **Note:** KB-ANSWER-02 was flipped to Verified (Deck) 2026-09-03 by the other session before the
+  hand-over (its five Asks are in the plugin log, 23:40 to 23:52), so batch 1 lines 7 to 11 now serve
+  only THINKING-SPOILER-01, SMOKE-E and KB-ATTRIB-01's date check. That session also holds uncommitted
+  code changes in this checkout; the Deck still runs `3b0e9d7`, checked by md5 before timing rows.
+- **SMOKE-A, second half — PASS on this build.** D-pad through the one-chunk reply, then Retry →
+  Show details (`SMOKE-A-05-show-details`): the ladder read *Chip 1 of 5 · KB: no game running ·
+  Reply style: balanced · Spoiler risk: med · Routed gemma4:e2b-it-qat · Developer details*, with the
+  coverage bullet *No game is running, so there is nothing to look up* — which also re-confirms
+  KB-COVERAGE-NOAPP-01's first half and CONTEXT-LADDER-01 on a live turn. The walk up from the Ask
+  button visited attach → avatar → chip → session strip → Retry → Helpful → answer → header → slot row
+  → bar → Decky Back, every stop visible.
+- **CLEAR-CACHE-01, main half PASS; two findings.** Settings → *Clear cache…* → *Clear*: the log shows
+  `forget_background_game_ai: stored answer dropped (stopped=False)` (01:05:05), Main then shows the
+  [+] position with 0 bubbles, 0 turns and no *echo* on screen (`CLEAR-CACHE-01-b-after-modal-back-to-main`).
+  **Orphan half, measured:** the saved chat stays — 8 slots on disk before and after, the *reply with
+  only the word echo* chat still in the carousel with its two turns; a clear moves the panel to [+] and
+  leaves the chat behind, so every clear-and-reask cycle leaves one more chat in the rotation.
+  **Finding, modal return:** when the *Clear cache* confirmation closes, the ring lands on Steam's hidden
+  *Settings* tab button (0 × 0, offscreen) — a focused-but-not-visible stop the D55 trap did not catch;
+  the next Down went to *Adjust UI automatically*, so it is one dead press, not a trap. TAB-BAR-09
+  covered three openers; this is a fourth. Close-and-reopen half and the mid-generation half follow.
+- **CLEAR-CACHE-01, reopen half PASS.** QAM closed with the real chord and reopened: the panel had
+  stayed mounted (Decky keeps it), Main still empty at [+]. Then a true remount — B to the bar, B to
+  the Decky list, `deck_openPlugin` — and Main came back on the Main tab (resume) at [+] with 0 bubbles,
+  0 turns, no *echo*, 9 dots (`CLEAR-CACHE-01-c-close-panel-for-remount`). Second finding of the same
+  class: after the chord reopen the ring sat on Steam's hidden *Main* tab button (offscreen), one dead
+  press again. Mid-generation half: deferred to the thinking-model step, where a Deep Ask is long
+  enough to walk to *Clear cache…* while it writes.
+- **CHAT-SLOTS-V3-01 re-run PASS** (`CHAT-SLOTS-V3-01-rerun-fresh-open-walk`): from a fresh open the
+  first Down lands on the bar (openPlugin had already spent a Down on the Decky list, so Decky's
+  Back is skipped — TAB-BAR-02's "Back first" holds only for a truly cold ring), Down → slot row →
+  preset chip (empty slot) → text field → ask, Down at ask stalls; Up: ask → attach → avatar → chip.
+  **Observation, not a Verify row:** Up on a preset chip steps back through the carousel's chip
+  history one chip per press (four presses here) before it leaves upward to the slot row
+  (`PRESET-ROW-up-from-chips-probe`); every stop was visible, but a user pressing Up to leave the
+  chips needs up to five presses. Worth a maintainer look; nothing in PRESET-ONE-LINE-03 forbids it.
+- **DOC-SWEEP-01 re-run PASS** (`DOC-SWEEP-01-settings-free-play`): Settings swept down and back
+  up, 15 controls in 31 presses, every stop visible, no ghost stop; Up from *Adjust UI automatically*
+  lands on the bar, then Decky's Back. **SHELL-PAYLOAD-01, Settings and Permissions halves:** both
+  render and every control takes the ring (`SHELL-PAYLOAD-01-permissions-sweep`: four toggles, all
+  visible). **KIDS-REGRESS-01 PASS:** with no parental controls the Permissions tab shows no banner
+  and its four toggles are live; the API key for the ban lookup lives under Developer → Integrations.
+- **SHELL-PAYLOAD-01, Developer half, with one finding** (`SHELL-PAYLOAD-01-developer-sweep`): 13
+  controls take the ring; the sweep flagged **the *Clear frozen test chips* button as focused but
+  clipped out of view** at the moment of its read, yet a DOM read a few seconds later found the
+  button 40 px tall with every ancestor `overflow: visible` — so this is either a read taken
+  mid-scroll or a real clip that depends on scroll position. **Re-measured at rest 01:23** (`TAB-RESUME-MODE-01-h-restore-C-and-remeasure-clear-chips-button`, then `deck_readFocus`): the ring
+  sits on the button, rect 64 × 635, 268 × 40, inside the pane, the button carries Steam's
+  `Disabled` class (no batch pinned), and the oracle still reads it as clipped at every probe point —
+  most likely because a disabled button has `pointer-events: none`, so `elementFromPoint` hits its
+  parent. The real finding is smaller than "invisible": **a disabled button takes the D-pad ring**, one
+  dead stop at the bottom of Developer whenever no batch is pinned. Bugs-list candidate, ★.
+- **TAB-RESUME-FOCUS-01 PASS** (`TAB-RESUME-FOCUS-01`): on the D15 row Right walks A → B → C and
+  stops at C, Left walks back, Up leaves to *Jump to Steam Input* in Diagnostics, Down re-enters on
+  A · Main, a second Down leaves to *App activity logging*; `tab_resume_mode` on disk stayed
+  `resume_recent` through all eight presses, so no button acted on a direction press. Note for the
+  row's wording: *Jump to Steam Input (running game)* sits between the debug HUD and the D15 row
+  even with no game running, so "Down from the HUD reaches the three buttons" takes two presses.
+- **TAB-RESUME-MODE-01, A · Main PASS:** A on the button wrote `tab_resume_mode: always_main`; left
+  the panel from About (B to the bar, B to the Decky list), reopened with `deck_openPlugin`: the bar
+  read *Main* (`TAB-RESUME-MODE-01-a-select-main-and-close`). Back on Developer, the A button was the
+  highlighted one, so the choice persisted. **C · 5 min, first half PASS:** selected C, left from
+  About, reopened within a minute: the bar read *About* (`TAB-RESUME-MODE-01-c-select-5min-and-close`).
+  The five-minute fallback half is run by closing from About (01:15) and waiting more than five
+  minutes before the reopen. Correction to the plan's § 2: the setting values are `always_main` = A,
+  `resume` = B, `resume_recent` = C, so the maintainer's setting before the round (`resume_recent`)
+  is **C**, not B; B is tested next and C is restored at the end.
+- **Lane B, second probe file** (`round31-laneB-probes-2.txt`): KB-ROUTER-01's other direction —
+  *"the slow-motion aiming barely lasts, how do I get more of it"* with Deep Rock Survivor in context
+  attaches strategy cards (Praetorian; Hollow Bough, Praetorian, Upgrades and overclocks in
+  Strategy), not a troubleshooting tip; *"raphael fight strategy"* on Baldur's Gate 3 attaches one
+  card (Sneak Attack — the corpus has no Raphael card, so the fence check on screen is the whole
+  test); *"how to raise a skill fast"* on The Sims 4 attaches *Raising a skill quickly*. Also learned:
+  the Deck's `ollama serve` writes stdout and stderr to `/dev/null`, so THINK-EFFORT-04's "capture the
+  400 body" half can only use what the plugin log records.
+- **TAB-RESUME-MODE-01, C · 5 min second half PASS:** closed from About at 01:15:21, reopened at
+  01:20:50 — the bar read *Main*, so the five-minute window fell back to Main as the label promises.
+  Back on Developer the C button was the highlighted one. **B · Resume PASS:** selected B (disk:
+  `resume`), left from About, reopened at 01:21:49 on *About*
+  (`TAB-RESUME-MODE-01-f-select-resume-and-close`). **TAB-RESUME-MODE-01 is complete**; C is being
+  restored. TAB-RESUME-01's known gap (first D-pad press after a reopen snaps to the top) is unchanged
+  and was never built, per its row. C restored on disk (`resume_recent`) at 01:23.
+- **PRESET-KB-SEED-01 PASS:** KB on, batch cleared, carousel mode, Main watched for 65 s straight
+  after the chips mounted: nine distinct chips came round and *Enable local knowledge base for better
+  game tips* was never one of them (poll log in the transcript; labels: find Ollama on my LAN, 60fps
+  settings, quick-launch chord, token streaming, input lag, Open Steam Input config, TDP for menus, get
+  past this part, FPS and battery). **PRESET-ONE-LINE-01b, carousel half:** the two-wide window
+  slid one chip in from the right at 1, 7, 12, 18, 24, 30, 35 and 41 s — a swap every six seconds —
+  then stopped, which matches the 60-second timer that runs from mount.
+- **PRESET-ONE-LINE-01b PASS, every mode still moves** (mode set from Developer's *Preset
+  animation* buttons by D-pad, watched on Main at 200 to 300 ms samples; `PRESET-ONE-LINE-01b-c/d/e`):
+  **fade** — the outgoing chip went 1.0 → 0 over about 1.4 s and its replacement 0 → 1 over about
+  0.9 s while the other chip stayed at full opacity; then the other slot did the same; the row never
+  had fewer than one visible chip. **static** — four instant swaps in 25 s, opacity always 1, both
+  chips always present. **decode** — the new label scrambles in with a caret and resolves left to
+  right over about 1.3 s while the other chip stays put; one 200 ms sample caught an empty label at
+  the very start of a swap. Carousel restored afterwards. The first attempt pressed RB on the chat-slot
+  row and switched chats instead of tabs (`PRESET-ONE-LINE-01b-a-set-fade`, harmless; the panel now
+  sits on an older chat until the next walk back to [+]).
+- **THINK-EFFORT-05 PASS** (`ONBUTTONDOWN-AUDIT-01-and-THINK-EFFORT-05-b`): Down from the Reply
+  style slider lands on the Thinking row at *Off*; Right walks Off → Brief → Balanced → Deep and stops
+  at Deep; Left walks back; Down leaves to *Custom timeouts*; Up returns to the Thinking row and a
+  second Up to the Reply style slider; no button acted on a direction press.
+- **ONBUTTONDOWN-AUDIT-01, sliders — FINDING, the "focus escapes" answer.** Left on the Reply style
+  slider stepped the value (Balanced → Caveman) **and** let the ring leave the panel onto Steam's
+  Quick Access tab rail (`#quickaccess_tab_999`); the next Right brought the ring back onto the slider
+  without stepping it. Left on the keep-alive slider did the same (240m → 120m, ring on the rail,
+  Right returned it). So the handler runs but the press is not consumed: one step, then Steam's own
+  navigation moves the ring out of the plugin to the left. Of the two outcomes the row was written to
+  tell apart, this is the "focus escapes" one. **Right is fine:** Right on the keep-alive slider
+  stepped 120m → 240m and Right on the Reply style slider stepped Caveman → Balanced, the ring
+  staying put both times (`ONBUTTONDOWN-AUDIT-01-c-right-steps-and-timeout-sliders`). With *Custom
+  timeouts* on there is one slider row (*Soft warning: 60s | Hard timeout: 180s*); Left on it also
+  sent the ring to the Quick Access rail, and its values did not change. So: **Left = one step and
+  the ring leaves the plugin; Right = one step, ring stays** — Steam has nothing to the right of the
+  panel, so only Left shows the unconsumed press. Bugs-list entry, ★★ `[focus]`. Reply style is
+  back on Balanced, keep-alive back on 240m, Custom timeouts back off (all three confirmed on disk).
+- **VAC-01 / SMOKE-F third command PASS:** with *Steam ban lookup* switched off by D-pad on
+  Permissions, `bonsai:vac-check` from the [+] position answered at once with the capability
+  message (*Steam Web API is off for bonsAI. Enable Permissions → Steam Web API, add your Web API
+  key under Developer → Integrations, then run: bonsai:vac-check 7656119…*), an *Open Permissions*
+  control under the reply, and no Ollama call in the plugin log (`start_background_game_ai: RPC
+  entry` at 01:34:31, nothing after it). **Finding:** the turn header of that command reply reads
+  `…` (the live title span holds an ellipsis) and the chat it created is titled *New chat* — the
+  live question is blank for a deterministic command reply, the same "…" symptom SMOKE-H's 2026-08-23
+  fix addressed for mid-thinking reopens.
+- **SMOKE-C / PERM-JUMP-01 FAIL on the first step: *Open Permissions* is not a D-pad stop.** The
+  button is on screen (115 × 34 px at y 497, between the reply actions and the session strip, a
+  `button.Focusable` with **no `tabindex`**), but Down from Retry or Copy jumps straight to the
+  session strip and Right from Copy stops (`PERM-JUMP-01-a-find-open-permissions`,
+  `runs/…` walks up and down never listed it). Same shape as the chat-slot row's 2026-08-30 bug:
+  a Focusable without a tab stop is a container to Steam. The jump-to-toggle and *Back to …* halves
+  cannot be driven until it is reachable; the ban-lookup toggle is switched back on by D-pad.
+  Bugs-list entry, ★★ `[focus]` `[perms]`.
+- **VAC-02 PASS:** ban lookup on again (disk: `steam_web_api: True`, no key saved), `bonsai:vac-check`
+  answered at once with *No Steam Web API key saved. Register a key at Steam Web API (see README),
+  paste it under Developer → Integrations → Steam Web API key, save, then try again* — no Ollama call
+  (log: `start_background_game_ai: RPC entry` 01:38:33, nothing after). The command replies replace
+  each other in the live turn (one turn slot, no *earlier* pill), and the header again reads `…`.
+- **Session 1 paused: the Deck went to sleep** (`deck_status` reports `deckReachable: false`, SSH
+  times out). Known behaviour after a long pause; no deploy is needed, the maintainer just wakes the
+  device. Everything that needs the screen or the buttons stops here. Settings are back as they were
+  found — `resume_recent`, carousel, Balanced, 240m, custom timeouts off, all five capabilities on —
+  and the frozen chip batch is still empty, so the round resumes cold at § 5 step 6: pin batch 1,
+  then the Speed chips.
+
+### Where session 1 stands
+
+| Row | Result |
+|---|---|
+| SMOKE-A | **PASS** |
+| SMOKE-F | third command **PASS** (VAC-01); the two sanitize commands and shortcut-setup owed |
+| VAC-01, VAC-02 | **PASS** |
+| SMOKE-C, PERM-JUMP-01 | **blocked** — *Open Permissions* is not a D-pad stop |
+| CLEAR-CACHE-01 | main, reopen and orphan halves **PASS**; mid-generation half owed |
+| CHAT-SLOTS-V3-01, DOC-SWEEP-01 | **PASS** (two of the three re-runs the tab bar asked for) |
+| TAB-SWITCH-01 | not started |
+| TAB-RESUME-01, -MODE-01, -FOCUS-01 | **PASS** — D15's three modes measured end to end |
+| PRESET-KB-SEED-01, PRESET-ONE-LINE-01b | **PASS** |
+| THINK-EFFORT-05 | **PASS** |
+| ONBUTTONDOWN-AUDIT-01 | **answered: focus escapes** — a bug, not a pass |
+| KIDS-REGRESS-01 | **PASS** |
+| SHELL-PAYLOAD-01 | five tabs pass; About and the Ollama-tab-after-clear check owed |
+| KB-EXPERT-01, KB-ASKMODE-01, KB-RECALL-01, KB-ROUTER-01 | probe halves **PASS** (lane B) |
+| Owed in session 1 | batch 1 chips (KB-ROUTER-01 and the two KB-COVERAGE cases on screen), the Strategy chips, the chat-slot rows that need real Asks, the streaming and thinking-line rows, THINK-EFFORT-04, the soft-cap rows, voice, and the ASK-WIDTH / icon measurements |
+
+**Six bugs found so far**, all filed to the roadmap: the ring landing on Steam's hidden tab button
+after a modal closes or the QAM reopens; Up on a preset chip walking back through the chip history;
+Left on the Ollama sliders stepping the value and then throwing the ring out of the plugin; the
+disabled *Clear frozen test chips* button taking the ring; *Open Permissions* not being reachable at
+all; and the blank `…` turn header on a deterministic command reply.
