@@ -547,3 +547,13 @@ measurements and the QA rows survive. The roadmap keeps a one-line entry in **Do
   where `vector_only` is the arm in question: leading and clearing every other arm, leading but
   overlapping one arm while still clearing the rest, and a check that every arm judged is named in
   the text. Desk-only; no Deck check applies.
+
+### A branch-pick turn keeps the caption you saw (verified on the Deck 2026-09-04)
+
+- ★ `[reply]` **After reopening the panel, a branch-pick turn's header shows the internal prompt** — **VERIFY.** Fixed at the desk
+  2026-08-28: the caption the user saw is saved with the turn. Owed: make a branch pick, reopen, read the header. Row
+  **CHAT-HEADER-CAPTION-01**. [Detail](archive/roadmap-bugs-fixed.md#moved-from-the-roadmap-2026-09-02).
+  - Verified on the Deck 2026-09-04: a Hades Strategy Ask produced a branch picker; picking *A. Dodging Asterius's charge*
+    gave a turn headed **"I'm at: Dodging Asterius's charge"**, and closing and reopening the Quick Access Menu left the
+    header reading exactly that. One transient sighting of the raw `[Strategy follow-up]` prompt in the expanded history
+    while another reply was streaming could not be reproduced; recorded in plan 31.
