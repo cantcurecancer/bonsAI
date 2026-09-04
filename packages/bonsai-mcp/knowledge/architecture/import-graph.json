@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 355,
-  "edgeCount": 850,
+  "fileCount": 356,
+  "edgeCount": 853,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -131,13 +131,22 @@
         "src/components/MainTabUnifiedAskBar.tsx"
       ]
     },
+    "src/components/ContextChipLadder.test.tsx": {
+      "imports": [
+        "src/components/ContextChipLadder.tsx",
+        "src/utils/inputTransparency.ts"
+      ],
+      "importedBy": []
+    },
     "src/components/ContextChipLadder.tsx": {
       "imports": [
+        "src/features/unified-input/constants.ts",
         "src/utils/contextChipsFromSnapshot.ts",
         "src/utils/focusNavigation.ts",
         "src/utils/inputTransparency.ts"
       ],
       "importedBy": [
+        "src/components/ContextChipLadder.test.tsx",
         "src/components/MainTabChatTranscript.tsx",
         "src/components/SessionContextStrip.tsx"
       ]
@@ -1639,6 +1648,7 @@
       "imports": [],
       "importedBy": [
         "src/components/AboutTab.tsx",
+        "src/components/ContextChipLadder.tsx",
         "src/components/MainTabAskModeMenuPopover.tsx",
         "src/components/MainTabAttachMenuPopover.tsx",
         "src/components/MainTabChatTranscript.tsx",
@@ -3074,6 +3084,7 @@
         "src/data/modelPolicy.ts"
       ],
       "importedBy": [
+        "src/components/ContextChipLadder.test.tsx",
         "src/components/ContextChipLadder.tsx",
         "src/components/MainTab.tsx",
         "src/components/MainTabChatTranscript.diagnostics.test.tsx",

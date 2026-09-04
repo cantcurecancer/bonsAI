@@ -24,14 +24,25 @@ import {
   chipHasAttribution,
   chipsFromSnapshot,
   CONTEXT_CHIP_SHOW_ALL_MAX,
-  tierBackground,
   tierBorderColor,
   windowRange,
 } from "../utils/contextChipsFromSnapshot";
 import { isOkDeckButtonEvent } from "../utils/focusNavigation";
+import { DECK_HIGHLIGHT_CYAN } from "../features/unified-input/constants";
 
 const deckNav = (handlers: Record<string, () => boolean | void>) =>
   handlers as unknown as Record<string, unknown>;
+
+// The ladder is one Focusable, so Steam's own ring lands on the whole row, never on a single
+// chip (roadmap: "The active chip in Show details is hard to spot") -- Left/Right just move
+// `activeIndex` within it. This is a manual "which one is showing below" cue, not the hardware
+// D-pad ring, so it deliberately does not reuse the reserved-for-real-focus white ring from
+// design-tokens.md; it uses DECK_HIGHLIGHT_CYAN, the token already meant for "active controls",
+// for both the glow and the fill. Kept off the chip's `border` property on purpose: that border
+// always shows the tier/attribution colour, active or not (see the `credited` comment below), so
+// the active cue layers on top of it via box-shadow instead of replacing it.
+const ACTIVE_CHIP_GLOW = `0 0 0 2px ${DECK_HIGHLIGHT_CYAN}, 0 0 8px rgba(156, 231, 255, 0.45)`;
+const ACTIVE_CHIP_FILL = "rgba(156, 231, 255, 0.22)";
 
 export type ContextChipLadderProps = {
   snapshot: TransparencySnapshot | ChatSlotTurnTransparency | null | undefined;
@@ -180,7 +191,15 @@ export function ContextChipLadder({
         return false;
       }}
     >
-      <div style={{ fontSize: 10, color: "#8fa6bd", marginBottom: 6 }}>
+      <div
+        style={{
+          fontSize: 10,
+          fontWeight: 700,
+          color: DECK_HIGHLIGHT_CYAN,
+          letterSpacing: "0.03em",
+          marginBottom: 6,
+        }}
+      >
         Chip {safeIndex + 1} of {chips.length}
       </div>
       <div
@@ -205,6 +224,11 @@ export function ContextChipLadder({
           return (
             <span
               key={chip.id}
+              className={
+                isActive
+                  ? "bonsai-chip-ladder-chip bonsai-chip-ladder-chip--active"
+                  : "bonsai-chip-ladder-chip"
+              }
               style={{
                 display: "inline-block",
                 boxSizing: "border-box",
@@ -215,8 +239,9 @@ export function ContextChipLadder({
                 padding: "4px 10px",
                 borderRadius: 999,
                 border: `1px solid ${credited ? ATTRIBUTION_ACCENT : tierBorderColor(chip.tier_class)}`,
+                boxShadow: isActive ? ACTIVE_CHIP_GLOW : undefined,
                 background: isActive
-                  ? tierBackground(chip.tier_class)
+                  ? ACTIVE_CHIP_FILL
                   : credited
                     ? ATTRIBUTION_ACCENT_SOFT
                     : "rgba(26, 34, 44, 0.88)",

@@ -46,8 +46,15 @@ from one star to six.
 - ★ `[chips]` **Chip rotation favours the top of the candidate list** — **OPEN.** The guarantee and the roll both take the first
   unseen candidate, so ranks 1 to 3 come round every minute and ranks 4 to 6 rarely appear. A shuffle among eligible candidates
   would spread it. Filed 2026-08-29; the code still picks `available[0]` (`sessionRagComposer.ts`).
+- ★ `[focus]` **Reordering in the try-order picker drops the highlight** — **OPEN, minor.** A on a row's Up or Down reorders
+  correctly but the ring disappears for one press. Row **PICKER-REORDER-02** failed 2026-08-28. Measure before trying a plain
+  `focus()` inside the list.
 - ★ `[focus]` **The active chip in Show details is hard to spot** — **OPEN.** No focus ring on the chip, and the "Chip 1 of 6"
   counter is a small grey line. The chips are plain spans inside one Focusable, so Steam's ring never lands on them.
+- ★ `[focus]` **The disabled Clear frozen test chips button still takes the D-pad ring** — **OPEN, filed 2026-09-03.**
+  With no batch pinned the button is disabled but is still a stop at the bottom of Developer, so leaving the tab costs one dead press.
+  The visibility oracle reports it clipped, most likely because a disabled button has `pointer-events: none` and `elementFromPoint`
+  hits its parent instead (`runs/TAB-RESUME-MODE-01-h-restore-C-and-remeasure-clear-chips-button.json`).
 - ★ `[focus]` **The focus ring is clipped on grid layouts** — **OPEN.** Tiles sit flush against their grid's edge, so the ring is
   cut off. Most visible on the character picker; each grid needs a margin outside its edge for the ring to fit.
 - ★ `[focus]` **Up from the preset chips walks back through the chip history before it leaves the row** — **OPEN, filed 2026-09-03.**
@@ -234,6 +241,11 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
 - ★ `[reply]` **After reopening the panel, a branch-pick turn's header shows the internal prompt** — **VERIFY.** Fixed at the desk
   2026-08-28: the caption the user saw is saved with the turn. Owed: make a branch pick, reopen, read the header. Row
   **CHAT-HEADER-CAPTION-01**. [Detail](archive/roadmap-bugs-fixed.md#moved-from-the-roadmap-2026-09-02).
+- ★ `[focus]` **The active chip in Show details is hard to spot** — **VERIFY.** Fixed at the desk 2026-09-04: the active chip
+  now carries a visible cyan border-glow and brighter fill, and the "Chip N of M" counter uses the section-label treatment
+  (cyan, bold, letter-spaced) instead of small grey text. Style only — the focus graph is unchanged, and Steam's ring still
+  lands on the ladder as a whole, never on a chip. Owed: a DOM read of the active class plus a screenshot for the
+  maintainer's eyes. Row **CONTEXT-LADDER-01**.
 - ★★ `[focus]` **A checklist the model got wrong was left in the reply as raw JSON**, its own D-pad stop that did nothing — **VERIFY.**
   Fixed 2026-08-28: a rejected checklist block is dropped, as a rejected branch block already was. Owed: one sighting on device of a
   reply where it happens. Row **STRAT-CHECKLIST-JSON-01**.

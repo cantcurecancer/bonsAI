@@ -74,6 +74,7 @@ All notable changes to this project are documented in this file.
   button. `ModelRoutingOrderModal.tsx`. Not checked on the Deck yet — On-Deck **PICKER-REORDER-02** in
   `docs/testing.md` decides.
 - **The KB retrieval bake-off's verdict only ever compared two of its four arms (no user-visible change):** `_arms_verdict` read just the `rrf` and `keyword` rows of the holdout table, so the 2026-08-29 run printed "no separation" while its own table showed `vector_only` well ahead. It now finds whichever arm has the best top-3 score, checks it against every other arm with the same locked non-overlap rule, and always names the arms it judged. `scripts/eval_kb_embed_models.py`; `tests/test_eval_kb_arms.py`.
+- **The chip you're looking at in Show details was hard to spot:** the current chip in the context chip ladder was only a faint background tint away from the others, and the "Chip N of M" counter above it was small grey text. The current chip now gets a visible cyan glow and brighter fill, and the counter reads in the same cyan/bold style used for section labels elsewhere. `ContextChipLadder.tsx`.
 
 ## [0.5.0] - 2026-07-15
 
