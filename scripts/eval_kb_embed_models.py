@@ -866,40 +866,86 @@ def _case_is_labeled(case: QueryCase) -> bool:
     return bool(case.expect_section.strip())
 
 
-def _arms_verdict(table: dict[str, Any]) -> str:
-    """Apply the locked non-overlapping-CI rule to holdout top-3.
+_ARM_LABELS: dict[str, str] = {
+    "keyword": "keyword",
+    "vector_only": "vector-only",
+    "rrf_rerank_only": "RRF-rerank-only",
+    "rrf": "RRF",
+}
 
-    Overlapping intervals mean the fixtures cannot tell the arms apart. That is a real result
-    and must be reported as one -- not rounded up to "RRF wins" because its point estimate is
-    higher.
+
+def _arm_label(arm: str) -> str:
+    return _ARM_LABELS.get(arm, arm)
+
+
+def _cap_first(text: str) -> str:
+    """Capitalize a label for the start of a sentence without mangling an acronym like RRF."""
+    return text if text[:1].isupper() else text[:1].upper() + text[1:]
+
+
+def _fmt_arm_ci(arm: str, data: dict[str, Any]) -> str:
+    lo, hi = data["top3_ci"]
+    return f"{_arm_label(arm)} {data['top3_pct']}% [{lo}, {hi}]"
+
+
+def _arms_verdict(table: dict[str, Any]) -> str:
+    """Judge every arm present in the holdout table, not just one hand-picked pair.
+
+    The 2026-08-29 run printed "no separation" while its own table showed `vector_only` well
+    ahead, because the old version only ever compared `rrf` against `keyword` regardless of what
+    else the table held. This names the arm with the best top-3 point estimate, then applies the
+    locked non-overlapping-CI rule between it and *every other* arm present.
+
+    Overlapping intervals mean the fixtures cannot tell the arms apart. That is a real result and
+    must be reported as one -- not rounded up to a win because a point estimate is higher. Still
+    works for a two-arm table (the shape every existing test and, previously, the report used).
     """
-    rrf = table.get("rrf") or {}
-    keyword = table.get("keyword") or {}
-    if not rrf or not keyword:
-        return "No verdict: an arm is missing from the holdout run."
-    if not rrf.get("n"):
+    present = {arm: data for arm, data in table.items() if data}
+    if len(present) < 2:
+        return "No verdict: fewer than two arms in the holdout run."
+    if not any(data.get("n") for data in present.values()):
         return (
             "No verdict: the holdout split has no labeled cases. Blind holdout rows must carry "
             "`expect_section` / `expect_topic` before they can gate fusion."
         )
-    rrf_lo, rrf_hi = rrf["top3_ci"]
-    kw_lo, kw_hi = keyword["top3_ci"]
-    if rrf_lo > kw_hi:
-        return (
-            f"RRF beats keyword on holdout top-3: {rrf['top3_pct']}% [{rrf_lo}, {rrf_hi}] vs "
-            f"{keyword['top3_pct']}% [{kw_lo}, {kw_hi}] — intervals do not overlap."
+
+    arms_judged = ", ".join(_arm_label(arm) for arm in present)
+    winner = max(present, key=lambda arm: present[arm]["top3_pct"])
+    winner_lo, _winner_hi = present[winner]["top3_ci"]
+
+    # The non-overlap rule, applied pairwise between the winner and every other arm -- not just
+    # the one arm the old code happened to hard-code.
+    cleared: list[str] = []
+    overlapping: list[str] = []
+    for arm in present:
+        if arm == winner:
+            continue
+        _lo, hi = present[arm]["top3_ci"]
+        (cleared if winner_lo > hi else overlapping).append(arm)
+
+    if not overlapping:
+        others = ", ".join(_arm_label(a) for a in cleared)
+        detail = " vs ".join(_fmt_arm_ci(a, present[a]) for a in [winner, *cleared])
+        verdict = (
+            f"{_cap_first(_arm_label(winner))} beats {others} on holdout top-3: {detail} — "
+            "intervals do not overlap."
         )
-    if kw_lo > rrf_hi:
-        return (
-            f"Keyword beats RRF on holdout top-3: {keyword['top3_pct']}% [{kw_lo}, {kw_hi}] vs "
-            f"{rrf['top3_pct']}% [{rrf_lo}, {rrf_hi}] — intervals do not overlap. "
-            "Fusion is not earning its embed cost on this corpus."
-        )
-    return (
-        f"No separation on holdout top-3: RRF {rrf['top3_pct']}% [{rrf_lo}, {rrf_hi}] vs "
-        f"keyword {keyword['top3_pct']}% [{kw_lo}, {kw_hi}] — intervals overlap, so these "
-        f"fixtures (n={rrf['n']}) cannot tell the arms apart. Not a tie; an unresolved question."
+        if winner == "keyword" and "rrf" in cleared:
+            verdict += " Fusion is not earning its embed cost on this corpus."
+        return f"{verdict} (Arms judged: {arms_judged}.)"
+
+    # Still an overlap even when the winner clears some arms but not all of them -- name it as
+    # one rather than rounding the partial win up to a clean beat.
+    detail = " vs ".join(_fmt_arm_ci(a, present[a]) for a in [winner, *overlapping])
+    verdict = (
+        f"No separation on holdout top-3: {detail} — intervals overlap, so these "
+        f"fixtures (n={present[winner]['n']}) cannot tell the arms apart. Not a tie; an "
+        "unresolved question."
     )
+    if cleared:
+        beaten = ", ".join(_fmt_arm_ci(a, present[a]) for a in cleared)
+        verdict += f" {_cap_first(_arm_label(winner))} does still clear {beaten}."
+    return f"{verdict} (Arms judged: {arms_judged}.)"
 
 
 def _gate_summary(cases: list[QueryCase]) -> dict[str, Any]:

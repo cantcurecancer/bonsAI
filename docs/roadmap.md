@@ -54,9 +54,6 @@ from one star to six.
   One earlier chip per press (four in the run) before the ring goes up to the slot row, so leaving the chips can take five presses;
   every stop was visible. Nothing in **PRESET-ONE-LINE-03** forbids it — the maintainer's call whether Up should leave the row at once
   (`runs/PRESET-ROW-up-from-chips-probe.json`, `runs/CHAT-SLOTS-V3-01-rerun-fresh-open-walk.json`).
-- ★ `[KB]` **The arms report's verdict only compares `rrf` against `keyword`** — **OPEN.** The 2026-08-29 run printed "no separation"
-  while its own table showed `vector_only` well ahead. Make the verdict look at every arm, or say which pair it judges
-  (`scripts/eval_kb_embed_models.py`, `_arms_verdict`).
 - ★★ `[chat]` **A command reply leaves the turn header blank and the chat titled *New chat*** — **OPEN, found 2026-09-03.** After
   `bonsai:vac-check` with the ban lookup off, the reply's turn header reads `…` and the chat it created stays *New chat*: the live
   question is blank for a deterministic command reply, so the header and the title have nothing to show. Same `…` symptom SMOKE-H's
@@ -329,6 +326,9 @@ on 2026-07-30 (`apply_tdp` no longer exists). Preserved in the archive.
 since April (`25742f2`), and a deliberate failing test exits 1 today. If it recurs, record the exact command and shell.
 
 **September 2026**
+- ★ `[KB]` **The KB arms report's verdict now judges every retrieval arm** — fixed at the desk 2026-09-04. It used to compare
+  only `rrf` against `keyword` and could print "no separation" while a third arm (`vector_only`) was well ahead in the same
+  table; desk-only, no Deck check applies. [Detail](archive/roadmap-bugs-fixed.md#moved-from-the-roadmap-2026-09-04).
 - ★★ `[tabs]` **Your tab is remembered when you leave and reopen** — D15's three-way choice verified on the Deck 2026-09-03
   (TAB-RESUME-01/-MODE-01/-FOCUS-01); the first-press focus snap stays open with the picker focus-restore item.
 - ★ `[chips]` **The static seed stops telling you to enable the knowledge base when it is already on** — verified on the Deck

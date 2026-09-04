@@ -73,6 +73,7 @@ All notable changes to this project are documented in this file.
   like a wasted one re-acquiring focus. The ring now goes straight back onto the moved row's own
   button. `ModelRoutingOrderModal.tsx`. Not checked on the Deck yet — On-Deck **PICKER-REORDER-02** in
   `docs/testing.md` decides.
+- **The KB retrieval bake-off's verdict only ever compared two of its four arms (no user-visible change):** `_arms_verdict` read just the `rrf` and `keyword` rows of the holdout table, so the 2026-08-29 run printed "no separation" while its own table showed `vector_only` well ahead. It now finds whichever arm has the best top-3 score, checks it against every other arm with the same locked non-overlap rule, and always names the arms it judged. `scripts/eval_kb_embed_models.py`; `tests/test_eval_kb_arms.py`.
 
 ## [0.5.0] - 2026-07-15
 

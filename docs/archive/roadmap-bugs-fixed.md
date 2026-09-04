@@ -531,3 +531,19 @@ measurements and the QA rows survive. The roadmap keeps a one-line entry in **Do
   (`notificationtoasts_uid2`) rather than the panel. The 2026-09-02 press stays unexplained; the
   likeliest reading is that the panel's state changed between the focus read and the press while a
   second session was also driving the Deck. Closed as not reproduced, not as a button bug.
+
+### The arms report's verdict only compared `rrf` against `keyword` (fixed 2026-09-04)
+
+- ★ `[KB]` **The arms report's verdict only compares `rrf` against `keyword`** — **FIXED 2026-09-04.**
+  The 2026-08-29 run printed "no separation" while its own table showed `vector_only` well ahead,
+  because `_arms_verdict` (`scripts/eval_kb_embed_models.py`) only ever read the `rrf` and `keyword`
+  entries of the holdout table, regardless of what else it held. It now names the arm with the best
+  top-3 point estimate, applies the locked non-overlapping-CI rule between that arm and every other
+  arm present (not one hard-coded pair), and always says which arms it judged. An overlap is still
+  reported as an overlap, never rounded up to a win because a point estimate is higher. Report text
+  only — no retrieval weight or fusion change (decision D38 forbids it). `tests/test_eval_kb_arms.py`
+  keeps its five original phrase assertions ("No separation", "RRF beats keyword", "Keyword beats
+  RRF", "not earning its embed cost", "holdout split has no labeled cases") and gains three cases
+  where `vector_only` is the arm in question: leading and clearing every other arm, leading but
+  overlapping one arm while still clearing the rest, and a check that every arm judged is named in
+  the text. Desk-only; no Deck check applies.

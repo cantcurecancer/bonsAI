@@ -51,6 +51,16 @@ class EvalArmsTests(unittest.TestCase):
         ]
         return mod._arms_table({"keyword": make(keyword_hits), "rrf": make(rrf_hits)})
 
+    def _multi_table(self, **hits_by_arm):
+        """Same as `_table`, but for any number of arms -- the shape production actually runs
+        (keyword, vector_only, rrf_rerank_only, rrf all at once), not just the rrf/keyword pair."""
+        mod = self.mod
+        make = lambda hits: [  # noqa: E731 - a local shorthand, not an abstraction
+            mod.QueryResult(case_id=str(i), hit_at_1=h, hit_at_3=h, fts_empty=False, embed_ms=0.0)
+            for i, h in enumerate(hits)
+        ]
+        return mod._arms_table({arm: make(hits) for arm, hits in hits_by_arm.items()})
+
     def test_bootstrap_ci_brackets_the_point_estimate(self):
         hits = [True] * 30 + [False] * 10
         lo, hi = self.mod._bootstrap_ci(hits)
@@ -87,6 +97,55 @@ class EvalArmsTests(unittest.TestCase):
     def test_empty_holdout_is_reported_as_ungated_not_as_a_tie(self):
         table = self._table([], [])
         self.assertIn("holdout split has no labeled cases", self.mod._arms_verdict(table))
+
+    def test_verdict_names_vector_only_when_it_leads_and_clears_every_other_arm(self):
+        """The exact shape of the 2026-08-29 bug: a third (and fourth) arm the old code never
+        looked at, since it only ever compared `rrf` against `keyword`."""
+        table = self._multi_table(
+            keyword=[False] * 20,
+            vector_only=[True] * 20,
+            rrf_rerank_only=[False] * 20,
+            rrf=[False] * 20,
+        )
+        verdict = self.mod._arms_verdict(table)
+        self.assertIn("Vector-only beats", verdict)
+        self.assertIn("keyword", verdict)
+        self.assertIn("RRF-rerank-only", verdict)
+        self.assertNotIn("No separation", verdict)
+
+    def test_verdict_still_calls_it_no_separation_when_vector_only_leads_but_overlaps_one_arm(
+        self,
+    ):
+        """Leading on point estimate is not the same as clearing every arm's interval. Reuses the
+        exact 90%-vs-95%-of-20 pairing `test_verdict_calls_an_overlap_an_overlap` already proved
+        overlaps, so this is the same rule applied with two extra arms in the table."""
+        table = self._multi_table(
+            keyword=[True] * 18 + [False] * 2,  # 90%
+            vector_only=[True] * 19 + [False] * 1,  # 95%, best point estimate on the table
+            rrf_rerank_only=[False] * 20,
+            rrf=[False] * 20,
+        )
+        verdict = self.mod._arms_verdict(table)
+        self.assertIn("No separation", verdict)
+        self.assertIn("vector-only", verdict)
+        self.assertNotIn("Vector-only beats keyword", verdict)
+        # Still reports the arms it does clear, rather than going silent on them.
+        self.assertIn("RRF-rerank-only", verdict)
+
+    def test_verdict_names_every_arm_it_judged(self):
+        """At minimum, the text must say which arms it judged -- true for a clean sweep and for
+        an overlap alike."""
+        clean = self.mod._arms_verdict(
+            self._multi_table(
+                keyword=[False] * 10,
+                vector_only=[True] * 10,
+                rrf_rerank_only=[False] * 10,
+                rrf=[False] * 10,
+            )
+        )
+        self.assertIn("Arms judged:", clean)
+        for label in ("keyword", "vector-only", "RRF-rerank-only", "RRF"):
+            self.assertIn(label, clean)
 
     def test_gate_reachability_comes_from_the_live_gate(self):
         """A phrase-list change must move this number, not leave a stale fixture boolean."""
