@@ -623,3 +623,23 @@ visibility-oracle plan (decky-plugin-studio planning/06) will turn it into one t
 - **Token streaming Phase B — multi-stop navigation + scroll follow (2026-08-07)** — **STREAM-09**, **STREAM-FOLLOW-01** Open. [05-token-streaming-review.md § 3.2](planning/05-token-streaming-review.md).
 - **Voice input `status()` missing (2026-08-03 fix)** — on-Deck retry of live recording still needed. [archive/roadmap-bugs-fixed.md](archive/roadmap-bugs-fixed.md).
 
+
+
+## Moved from the roadmap 2026-09-04
+
+- ★★ `[KB]` **Compat routing widened to word-boundary topics (D16)** — **VERIFY.** Fixed 2026-08-06. Row **KB-ROUTER-01**.
+  - Verified on the Deck 2026-09-04, Speed mode, no game running. All four KB-ROUTER-01 sentences routed to `compat_tips`
+    with `Source: shared troubleshooting tips`: the memory-card one, the online-kick one, the touchpad one and the
+    PlayStation 2 one (whose answer names EmuDeck). Evidence `runs/KB-ROUTER-01-q*.json`.
+
+- ★★★ `[KB]` **Source attribution on knowledge chips** — **VERIFY.** Shipped 2026-08-09. Both sub-checks closed on device; the
+  2026-08-14 capture-date check is still owed. Row **KB-ATTRIB-01**.
+  - The owed capture-date check passed on the Deck 2026-09-04: an antlions Strategy Ask printed
+    `combineoverwiki.net · CC-BY-SA-4.0 · as of 2026-08-09` over three named cards, trust tier `wiki_no_patch`.
+
+- ★ `[ui]` **Bonsai pot sits 1px right of the canopy** in the tab and plugin-list icon — **VERIFY.** Fixed 2026-08-07. Row
+  **BONSAI-ICON-GEOM-01**.
+  - Measured from a Deck capture 2026-09-04 rather than judged by eye. Tab strip: canopy x 9-29 (mid 19.0), stem 19,
+    pot rim 11-27 (mid 19.0), pot body 12-26 (mid 19.0). Decky plugin list: canopy widest 11-27 (mid 19.0), stem 19,
+    pot rim 12-26 (mid 19.0), body 13-25 (mid 19.0). Crops at `screenshots/round31-tree-icon-zoom.png` and
+    `screenshots/round31-decky-list.png`.

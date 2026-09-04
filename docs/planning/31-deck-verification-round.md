@@ -204,44 +204,93 @@ never ticks a box here; you tick it when you have seen the thing yourself and sa
 **When:** after Sessions 1 and 2 are done. The rig says so in chat and sets the panel up for each
 item as you reach it. About twenty minutes at the Deck, in this order.
 
+**Why any of this needs a person at all.** The rig drives the Deck through a controller board and
+reads the page back as data. That gives it three senses and no more: it knows where the focus ring
+is, what the page says, and how big things are in pixels. It cannot see the screen, it has no
+fingers, and it cannot type a secret. Every item below fails on one of those three gaps, and each
+one says which.
+
 - [ ] **Read the tab names.** Open bonsAI and press Down twice; the thin bar opens into the strip.
   Can you read all six names at that size? The lit dash and name should be gold with Ali G or the
   TF2 Announcer, purple with Shadowheart, green otherwise. Close the QAM and reopen it: the bar names
   the tab you were on. *(TAB-BAR-07)*
+  **Why you:** the rig can measure that the text is 11px and gold. It cannot tell you whether 11px
+  gold text is *readable* at arm's length on a 7-inch screen. That is a judgement about your eyes,
+  and screenshots on this device are broken, so it cannot even show you a picture instead.
+
 - [ ] **Tap the tab bar with a finger.** Tap the thin bar: the strip opens. Tap a tab: it switches and
   the strip closes. Open it again and tap outside it: it closes. *(TAB-BAR-08)*
+  **Why you:** the controller board can only send button presses. There is no way for it to produce a
+  touch event on the real screen, and faking one in the page would prove nothing — the whole point of
+  the row is that the real touch path works.
+
 - [ ] **Drag a streaming reply with a finger.** Ask something long with streaming on. While the answer
   is still arriving, drag the reply up: it must stay where you put it and not jump back down. Drag
   back to the bottom: it follows the new text again. *(STREAM-FOLLOW-01, touch half)*
+  **Why you:** same missing finger. The rig will have already checked the D-pad half of this row, so
+  all that is left is the drag.
+
 - [ ] **Watch the chip labels crawl.** With Half-Life 2 running and the knowledge base on, watch the
   two preset chips: the long label should crawl slowly and calmly, the *Tip* badge should stay
   still, and a chip should not swap out before its label has scrolled through once. Say whether it
   is too fast, too slow or right; the rig writes the speed back into the code. Then turn on reduced
   motion in Steam's accessibility settings and reopen: no crawl, the label is cut off with "…".
   Turn it back off. *(PRESET-ONE-LINE-04, by eye)*
+  **Why you:** the speed setting has no unit Steam documents, so the only way to pick a number is for
+  someone to watch it move and say "slower". The rig can confirm the animation is running; it cannot
+  have an opinion about how it feels.
+
 - [ ] **Look at the panel edges.** Main tab, character off: the chips, the text box and the Ask bar
   should reach the panel's edges with no gutter, all three lined up. Then character on. The rig's
   measurements and PNG are next to this item. *(ASK-WIDTH-01)*
+  **Why you:** the rig measures each row's width in pixels and will report them, but three rows can
+  each measure 300px and still look wrong together — a shadow, a border, one row sitting a pixel low.
+  Lining up by eye is the actual test.
+
 - [ ] **Look at the tree icon.** The pot should sit centred under the canopy, both in the tab strip
   and in Decky's plugin list. The rig leaves a PNG of each. *(BONSAI-ICON-GEOM-01)*
+  **Why you:** the bug was "the pot sits 1px right of the canopy". At that size, whether the fix looks
+  centred is a matter of what your eye reads as centred, not what the numbers say.
+
 - [ ] **Read the five spoiler-fence replies.** The rig leaves them in one chat slot. Four should read
   naturally with no hidden block; the Red Dead one should hide its ending behind a block. Does the
   fencing feel right? *(KB-ANSWER-02, feel)*
+  **Why you:** the rig already checked the mechanical half — five of five landed correctly on
+  2026-09-03. What is left is whether the answers *read* well to a player, which is taste.
+
 - [ ] **Watch a new chat get its title.** Make a new chat with [+], ask anything, stay on it: the row's
   title should change from *New chat* to your question when the answer lands, without closing the
   panel. *(CHAT-SLOTS-V3-15d)*
+  **Why you:** the rig can read the title before and after and see it change. What it cannot see is
+  the moment in between — whether the row flickers, jumps or redraws in a way that looks broken while
+  the text swaps.
+
 - [ ] **Press Update knowledge base with your thumb.** Ollama tab, D-pad to the button, press A with
   your eyes on the toast: does an update start? A bridge press did nothing on 2026-09-02. *(Bugs)*
+  **Why you:** this is the odd one out — the rig *did* press it and nothing happened. Either the
+  button is broken or the board's press is not landing the way a thumb does. Only a real press can
+  tell those two apart, and which one it is decides whether this is a bug at all.
+
 - [ ] **Turn on Family View.** On a spare adult account, set a Family View PIN and lock it. Open
   bonsAI → Permissions: a banner, greyed toggles, and privileged actions refused. Tell the rig it is
   locked; it runs the D-pad row. Unlock: the previous values come back. *(KIDS-LOCK-01, then the rig's
   KIDS-FOCUS-01)*
+  **Why you:** Family View is guarded by a PIN that only you know, and setting it up means going
+  through Steam's own account screens. The rig must not be the thing that can switch a parental lock
+  on and off. Once you have locked it, the rig takes over and walks the rows.
+
 - [ ] **Type your Steam Web API key.** Permissions → Steam ban lookup on; enter the key where the
   plugin asks. Tell the rig; it runs the four cases, you never type again. Remove the key afterwards
   if you like. *(VAC-03 to 06)*
+  **Why you:** it is a secret tied to your Steam account. It should be typed by you, into the device,
+  and never pass through a chat transcript or a script. After that one step the rig does the rest.
+
 - [ ] **Say "clear it".** The last phase: Clear all plugin data. The rig has already copied your
   settings and chats aside (`settings.json.bak-round31`, `~/bonsai-round31-chats.tgz`); it runs the
   three checks and restores them. It waits for that word.
+  **Why you:** it deletes your settings, your chats and the knowledge base in one press. Backups
+  exist and the rig will restore them, but a destructive action on your own device is your call to
+  make out loud, not the rig's to assume.
 
 Not scheduled, stay open: **KIDS-LOCK-02** (needs a child account) and the **quick-launch macro**
 checklist (Steam Input; only if you use the macro).
@@ -477,3 +526,202 @@ after a modal closes or the QAM reopens; Up on a preset chip walking back throug
 Left on the Ollama sliders stepping the value and then throwing the ring out of the plugin; the
 disabled *Clear frozen test chips* button taking the ring; *Open Permissions* not being reachable at
 all; and the blank `…` turn header on a deterministic command reply.
+
+### Session 1 resumed, 2026-09-04
+
+The Deck was woken by the maintainer. Deploy first: `main.py` and `dist/index.js` already matched
+HEAD, `ollama_service.py` did not (commit `bb377d7`), so `deck_deploy` ran and both service files
+now match. Ollama answers on 127.0.0.1:11434, v0.32.15, 4 models, corpus 2026.09.01 installed.
+
+**Screenshots are not broken after all.** `scripts/screenshot-deck.ps1 -Mode game` returns a full
+1920x1080 PNG through gamescope's atom path, and `scripts/record-deck.ps1` plus ffmpeg (already on
+the maintainer's PC) can measure motion. Section 7's "why you" reasons were rewritten around that:
+the eyes items shrink to a confirm-my-finding, the fingers and say-so items are unchanged.
+
+**KB-ROUTER-01 — PASS, all four sentences.** Speed mode, no game running, character voice on.
+Every one routed to `compat_tips` with `Source: shared troubleshooting tips`:
+
+| Sentence | Route |
+|---|---|
+| out of room, installs on the memory card | `compat_tips` |
+| play alone but online kicks me out | `compat_tips` |
+| only responds to the touchpad | `compat_tips` |
+| playstation 2 games at half speed | `compat_tips` (answer names EmuDeck) |
+
+Evidence: `runs/KB-ROUTER-01-q*.json`.
+
+**KB-COVERAGE-01, the `KB: off` half — PASS.** *Use local knowledge base* was turned off on the
+Ollama tab by D-pad, one Ask ran, and Show details read `KB: off` with the bullet *Local knowledge
+base is disabled in Settings.* and no retrieval bullets. The toggle was turned back on and the
+saved value re-read from disk (`use_local_knowledge_base: True`). `KB: no game running` was the
+chip on all four routing turns, which is the correct no-app reading.
+
+**New finding — a pinned batch of 11 shows only its first three sentences.**
+`applyTempFrozenCarousel` ends in `resolved.slice(0, count)` ([presets.ts:264](../../src/data/presets.ts)),
+and `count` is the three seeds the row asks for, so entries 4 to 11 only ever arrive if a chip
+rotates out on its own. Right from the last chip does not advance to them. A non-frozen chip is
+also on the row throughout (the screenshot chip, then *How can I optimize for battery life?*), so
+the batch does not replace the carousel the way the Developer help text says. Workaround used:
+re-pin three at a time, then close and reopen the panel.
+
+**Second path proven for verbatim questions.** `scripts/deck_send_ask.py` writes the field over CDP
+and prints VERIFIED; the Ask press stays a real button press. Much cheaper than walking the chip
+row, and it leaves the on-device path under test.
+
+#### Thinking, streaming and spoilers — 2026-09-04
+
+`qwen3.5:4b` is already installed and reports the `thinking` capability, so **D57 #5's model pull was
+not needed**. Forcing it first in `text_model_routing_order` (written with the panel closed) and
+setting Thinking to **Deep** on the Ollama tab by D-pad gave a real thinking run.
+
+- **THINK-EFFORT-04 — PASS.** Deep thinking, Strategy mode, the antlions question. 212 s to finish;
+  Show details reads `Routed qwen3.5:4b`. All four segments of the Thinking row (Off / Brief /
+  Balanced / Deep) took the ring by Left and Right, which re-confirms THINK-EFFORT-05.
+- **THINKING-SANITIZE-01 — PASS.** Among 32 sampled phases one came from the model's own reasoning:
+  *"Reviewing Antlion vibration hunting mechanics and sand trap safety..."* — the lazy status tag
+  survived rather than being scrubbed.
+- **THINKING-SLOW-01 — PASS.** The slow-path blurbs appeared in order and then cycled
+  ("Taking its time. Local models do that." → "Still going — long answers take a while on a
+  handheld." → "Not stuck, just slow silicon. Still writing." → "Still here. This one's a marathon.").
+- **THINKING-LIVE-01 — PASS**, the line updated throughout; one writer, no interleaving.
+- **Bare emoji:** none of the 32 phases contained an emoji, so the no-bare-emoji rule held. The
+  upright-emoji check (THINKING-EMOJI-01) still wants a turn that actually prints one.
+- **KB-ATTRIB-01 — the owed capture-date check PASSES.** The same turn's card list printed
+  `combineoverwiki.net · CC-BY-SA-4.0 · as of 2026-08-09` over three named cards (Antlions,
+  Sandtraps, Pheropod (bugbait)), trust tier `wiki_no_patch`.
+- **STREAM-09 — PASS.** The reply's sections are individual D-pad stops: three
+  `.bonsai-answer-stop` chunks, each `tabindex="0"`, each taking the ring in turn going Down.
+- **STREAM-REVEAL-01 — PASS.** Sampled every ~300 ms from the Ask press: first text on screen at
+  5.4 s, then 126 → 142 → 256 → 335 → 404 → 493 → 622 → 747 → 812 → 1025 → 1298 characters. Steady
+  growth, no freeze-then-dump.
+- **STREAM-FOLLOW-01, the D-pad half — PASS.** `scrollTop` stayed 0 while the answer fitted, then
+  tracked the growing `scrollHeight` (84 → 174 → 270 → 516 as height went 789 → 1220), holding a
+  constant ~55-85 px above the true bottom, which is the sticky Ask bar's height. The touch-drag
+  half stays with the maintainer.
+- **THINKING-SPOILER-01 and KB-ANSWER-02 (Red Dead) — PASS.** The ending question fenced:
+  *Spoiler — tap to show / Hidden until you reveal (Strategy Guide).*
+- **SMOKE-E tap-to-reveal — PASS.** A on the block revealed the hidden text and the label flipped to
+  *Spoiler — tap to hide*.
+
+Settings were put back afterwards: `ask_think_effort: off`, `text_model_routing_order: []`,
+`use_local_knowledge_base: true`, reply style Balanced, all re-read from disk.
+
+#### Five more defects found today
+
+1. **A pinned batch of eleven only ever shows three chips** (`presets.ts` `applyTempFrozenCarousel`
+   ends `resolved.slice(0, count)`), and a non-frozen chip sits on the row beside them.
+2. **After a panel remount the ring parks on a zero-size container** ("Ask bonsAI", then "Where AI
+   runs" on the Ollama tab) whose rect is 0x0 and which the visibility oracle calls OFFSCREEN — so
+   the first thing a person sees is a panel with no visible ring.
+3. **An answer stop can sit under the Ask input.** Walking up the Red Dead turn landed on a bubble
+   that was only 67% visible, covered by `.bonsai-unified-input-text-box`'s input.
+4. **Down does not move the ring off the spoiler block.** Once the ring is on
+   `.bonsai-spoiler-reveal-target`, Down reports the press arriving and nothing moving.
+5. **Going up skips the answer chunks.** Down walks the reply chunk by chunk; Up jumps from the
+   feedback buttons straight past them to the bubble and then the turn header. Same shape as
+   ONBUTTONDOWN-AUDIT-01.
+
+Also worth a look, not filed as a defect: a **212 s answer completed although the configured
+timeout is 180 s**, so the timeout is not a wall-clock deadline on the whole reply.
+
+#### Soft cap and the branch-pick header — 2026-09-04
+
+- **SOFT-PREDICT-01 — PASS.** Speed mode. A first attempt ("complete Half-Life 2 walkthrough") came
+  back at 2,697 characters and never reached the wall, so the prompt was replaced with "a numbered
+  list of 60 steam deck tips, each one a full paragraph". That one ran to **10,707 characters**, the
+  `Continuing` cue was caught in a 400 ms sampler while the reply streamed, and the finished text
+  contains no cue at all. Leaving the tab and coming back showed the saved history still clean.
+- **SOFT-PREDICT-03 — PARTIAL, and it found something.** The ring was parked on *Stop generation*
+  (which lives in the ask actions row, right of the mode chip, only while a reply is running), a
+  poll watched for the cue, and Stop was pressed inside that window. The half the 2026-08-15 fix
+  targets **passes**: generation ended, 3,628 characters of partial body were kept, and `Continuing`
+  appears nowhere in the kept text. But **the promised "Stopped" notice never appears** — the word
+  is absent from the turn, from the panel and from the whole page — and the stopped turn also loses
+  its *Helpful / Not really / Retry* buttons, keeping only *Show details* and *Copy*.
+- **CHAT-HEADER-CAPTION-01 — PASS.** A Hades Strategy Ask produced a branch picker
+  ("A. Dodging Asterius's charge" / "B. Dodging Theseus's spear attacks"). Picking A gave a turn
+  headed **"I'm at: Dodging Asterius's charge"**, and after closing the Quick Access Menu and
+  reopening it the header still read exactly that — the caption the user saw, not the internal
+  prompt. That closes the bug.
+- **KB-ANSWER-02, Hades case — unfenced**, as expected for a no-story-spoiler question.
+
+#### Tab switch, About, and the archive pill — 2026-09-04
+
+- **TAB-SWITCH-01 — PASS, measured.** Focus was parked deep in a scrolled Ollama panel, then RB was
+  pressed through the whole strip including the About → Main wrap, while a 16 ms sampler recorded
+  `scrollLeft`, `scrollWidth` and `clientWidth` for the tab bar and all five of its children.
+  **1,453 samples: `scrollLeft` never left 0 and `scrollWidth` never moved** (300 / 12 / 104 / 125 /
+  13 / 300 throughout) — no transient inflation to lurch against, so the `overflow: clip` fix holds.
+  The "focus parked on the tab icons" half is not runnable: Steam's own tab buttons are not focus
+  stops here, which is what D55 routed around.
+- **SHELL-PAYLOAD-01 — the About tab passes.** A full sweep found **7 controls, every one visible**,
+  no cycles, nothing focused-but-hidden: *Follow system*, *GitHub*, *Built on Ollama!*,
+  *Bugs & Feature Requests*, *Support my Steam Sale habit*, the About tab region and the back button
+  (`runs/SHELL-PAYLOAD-01-about-sweep.json`). All six tabs now render and take the ring; only the
+  Ollama-tab-after-Clear check is left, and that belongs to the final phase.
+- **CHAT-SLOTS-V3-07 — PASS.** The **"12 earlier"** pill sat above the newest turn and was a D-pad
+  stop; **A** expanded it into 13 header rows, the pill disappeared, and **focus landed on the first
+  revealed row**. The "exactly one archived turn shows a header row and no pill" sub-check needs a
+  slot with one archived turn and was not run.
+- **Chat switching by shoulder button works both ways** from the slot row: RB moved to the *reply
+  with only the word echo* slot and LB came back, each time with the right transcript.
+- **STRAT-CHECKLIST-JSON-01 — a positive sighting.** The Hades branch-pick reply rendered its
+  checklist as real items ("Identify the charge initiation animation", "Initiate a quick sidestep
+  maneuver", …), not as raw JSON. That is the good case, not proof the bad case is gone.
+
+**One sighting worth another look.** While the 40-tips Ask was in flight, a focus stop in the
+expanded history read **`[Strategy follow-up] I'm at: Dodging Asterius's charge. Ear…`** — the
+internal prompt, which is exactly the shape CHAT-HEADER-CAPTION-01 describes. It could not be
+reproduced afterwards: with the archive fully expanded all 14 headers are clean and turn 12 reads
+the caption *"I'm at: Dodging Asterius's charge"*, and the string appears nowhere in the transcript.
+Recorded as transient; the row's reopen check still passes.
+
+#### The chat-slot rows — one pass, one clear failure — 2026-09-04
+
+- **CHAT-SLOTS-V2-03 — PASS on its main claim.** A long Ravenholm Ask was started in slot A, the
+  ring was walked up to the slot row and **RB** switched to slot B mid-stream, then **LB** came back.
+  The reply landed in **A**: both the question and its 5,749-character answer are in A's transcript.
+- **CHAT-SLOTS-V3-05a — FAIL.** Slot B did **not** show only its own content. B's transcript is its
+  own two turns (*reply with only the word echo* → *echo*) followed by a **Strategy branch block
+  belonging to A's Ravenholm question**: *"Where are you at in … ? A. Just starting in the town area
+  / B. Dealing with a tough encounter or trap"*. It is still there after A's reply finished, so this
+  is not a mid-stream race — **the Strategy thread block renders in whichever slot is on screen,
+  regardless of which slot generated it.** The same shape was visible earlier: while viewing B, a
+  *"Dodging Asterius's Charge — Progress is saved for this game…"* block from A's Hades thread was
+  showing. Two further parts of the row also fail: B's **ask bar does not read busy** while A is
+  streaming (the button still says *ask*, no *Stop generation* control), and the branch question
+  renders its game name elided as **"Where are you at in … ?"**.
+- **Walking up with the archive expanded skips the chat slot row.** From the first archived header,
+  18 Up presses went to the tab bar and then Decky's own back button without the slot row taking the
+  ring. Coming back down, two Down presses reached it normally, so the row is reachable — the upward
+  path is the broken one. Same family as ONBUTTONDOWN-AUDIT-01.
+
+#### Expert mode, and the by-eye pre-checks — 2026-09-04
+
+- **KB-EXPERT-01 — PASS.** The antlions question was re-asked in **Expert** mode and the reply came
+  back grounded: `combineoverwiki.net · CC-BY-SA-4.0 · as of 2026-08-09`, trust tier `wiki_no_patch`,
+  over **five** cards — Antlions, Sandtraps, Pheropod (bugbait), **Ravenholm** and **Strider** —
+  against Strategy's three on the same sentence earlier the same session. Expert is no longer starved
+  of cards, which was the bug.
+- **BONSAI-ICON-GEOM-01 — measured, pot centred, both halves.** The icon was cropped out of a
+  capture and the lit pixels measured row by row. Tab strip: canopy spans x 9–29 (mid **19.0**),
+  stem at 19, pot rim 11–27 (mid **19.0**), pot body 12–26 (mid **19.0**). Decky's plugin list:
+  canopy widest 11–27 (mid **19.0**), stem 19, pot rim 12–26 (mid **19.0**), body 13–25 (mid
+  **19.0**). No one-pixel offset remains. Crops left at `screenshots/round31-tree-icon-zoom.png`
+  and `screenshots/round31-decky-list.png`.
+- **TAB-BAR-07, the rig's half — PASS.** With the strip open, all six names render in full — MAIN,
+  OLLAMA, SETTINGS, PERMS, DEV, ABOUT — the active one gold (correct for the Ali G character) and
+  the rest grey, nothing truncated (`screenshots/round31-tabstrip-names.png`). Whether that is
+  comfortable at arm's length is still the maintainer's call.
+- **ASK-WIDTH-01, the rig's half — PASS.** The panel measures 300 px (x 48 → 348) and the chat slot
+  row, transcript and chip row each span it exactly. The Ask button is 298.4 px (0.8 px inset a
+  side) and the inner actions row 294.5 px, which is the input's own padding rather than a gutter.
+- **The Show-details chip ladder steps rather than traps.** Down on `.bonsai-chip-ladder` advances
+  the ladder (Chip 1 of 6 → Chip 4 of 6 → …) and releases to *Session context* after the sixth, so
+  the earlier "Down does nothing" reading was the ladder working. It does scroll partly out of view
+  mid-way (measured 67% visible on one step).
+- **A latency warning fired on device:** *"65.8s (>60s): prefer GPU for Ollama, not CPU."* The words
+  are split across `<strong>` elements, which is why the harness's flattened label list showed it
+  with gaps — the string itself is fine.
+
+Mode was put back to **Strategy** afterwards.

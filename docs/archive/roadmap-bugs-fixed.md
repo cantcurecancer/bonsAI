@@ -531,3 +531,14 @@ measurements and the QA rows survive. The roadmap keeps a one-line entry in **Do
   (`notificationtoasts_uid2`) rather than the panel. The 2026-09-02 press stays unexplained; the
   likeliest reading is that the panel's state changed between the focus read and the press while a
   second session was also driving the Deck. Closed as not reproduced, not as a button bug.
+
+
+## Moved from the roadmap 2026-09-04
+
+- ★ `[reply]` **After reopening the panel, a branch-pick turn's header shows the internal prompt** — **VERIFY.** Fixed at the desk
+  2026-08-28: the caption the user saw is saved with the turn. Owed: make a branch pick, reopen, read the header. Row
+  **CHAT-HEADER-CAPTION-01**. [Detail](archive/roadmap-bugs-fixed.md#moved-from-the-roadmap-2026-09-02).
+  - Verified on the Deck 2026-09-04: a Hades Strategy Ask produced a branch picker; picking *A. Dodging Asterius's charge*
+    gave a turn headed **"I'm at: Dodging Asterius's charge"**, and closing and reopening the Quick Access Menu left the
+    header reading exactly that. One transient sighting of the raw `[Strategy follow-up]` prompt in the expanded history
+    while another reply was streaming could not be reproduced; recorded in plan 31.

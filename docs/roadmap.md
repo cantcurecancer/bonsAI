@@ -36,13 +36,42 @@ from one star to six.
 ## Bugs
 
 
+- ★★★★ `[chat]` **A Strategy thread's branch block shows in whichever chat slot you are looking at** — **OPEN, found 2026-09-04.**
+  Slot A was asked a long Ravenholm question; switching to slot B showed B's own two turns followed by A's branch picker,
+  *"Where are you at in … ? A. Just starting in the town area / B. Dealing with a tough encounter or trap"*. It is still in B after
+  A's reply finished, so it is not a mid-stream race — the block is not scoped to the slot that made it. Seen twice: a
+  *"Dodging Asterius's Charge — Progress is saved for this game…"* block from A's Hades thread also rendered while viewing B.
+  Breaks **CHAT-SLOTS-V3-05a**, whose whole point is that a slot shows zero of another slot's content.
+- ★★ `[reply]` **Stopping a reply leaves no "Stopped" notice** — **OPEN, found 2026-09-04.** Pressing *Stop generation* inside the
+  soft-continue window keeps the partial body correctly and strips the `Continuing…` cue (the 2026-08-15 fix works), but the small
+  **Stopped** notice **SOFT-PREDICT-03** asks for never appears — the word is absent from the turn, the panel and the whole page —
+  and the stopped turn also loses its *Helpful / Not really / Retry* buttons, keeping only *Show details* and *Copy*.
+- ★★ `[focus]` **After the panel remounts the ring parks on a zero-size container** — **OPEN, found 2026-09-04.** On a fresh mount
+  the ring lands on "Ask bonsAI" (Main) or "Where AI runs" (Ollama), both 0x0 rects that the visibility oracle calls OFFSCREEN, so
+  the panel opens with nothing highlighted until the first press.
+- ★★ `[focus]` **Up skips the answer sections and the chat slot row** — **OPEN, found 2026-09-04.** Down walks a reply chunk by
+  chunk (three `.bonsai-answer-stop` stops on one turn); Up jumps from the feedback buttons straight past them to the bubble and
+  the turn header. With the archive expanded, Up from the first archived header ran 18 presses to the tab bar and Decky's back
+  button without the chat slot row ever taking the ring, though two Downs reach it normally. Same family as **ONBUTTONDOWN-AUDIT-01**.
+- ★ `[focus]` **An answer section can take the ring while hidden behind the Ask box** — **OPEN, found 2026-09-04.** Walking up the
+  Red Dead turn landed on a bubble measured only 67% visible, covered by `.bonsai-unified-input-text-box`'s input.
+- ★ `[focus]` **Down does not move the ring off an unrevealed spoiler block** — **OPEN, found 2026-09-04.** With the ring on
+  `.bonsai-spoiler-reveal-target`, Down reports the press arriving and nothing moving. After the block is revealed, Down escapes
+  normally, so it is the hidden state that traps.
+- ★ `[reply]` **A branch question elides the game name** — **OPEN, found 2026-09-04.** The Ravenholm branch picker asked
+  *"Where are you at in … ?"* with the title replaced by an ellipsis.
 - ★ `[ask]` **The question overlay sits a few pixels off the native text field** — **OPEN.** Most visible on a three-line question
   and on the empty-field placeholder. Nothing has touched the overlay since 2026-08-07.
 - ★ `[chips]` **A frozen test-chip batch longer than the row cannot be reached after the first minute** — **OPEN, found 2026-09-03.**
   The row walks a pinned batch only while the carousel is active (60s, `PRESET_CAROUSEL_ACTIVE_MS`); an Ask does not restart it and
   Left/Right at the edge do not pull the next entry in. With ten chips pinned, 6–10 never came into view during **KB-ANSWER-02**, and
   four of five sentences went in through `scripts/deck_send_ask.py` instead. Fix: restart the walk on an Ask or D-pad entry, or let
-  the edge advance the batch. Until then, keep a batch to what the row shows in a minute.
+  the edge advance the batch. Until then, keep a batch to what the row shows in a minute. **More of the mechanism, 2026-09-04:** the row is only ever
+  seeded with the first three entries — `applyTempFrozenCarousel` ends `resolved.slice(0, count)` in `src/data/presets.ts`,
+  and `count` is the three seeds the row asks for — so entries 4 and beyond can only arrive by rotation, and Right at the last
+  chip does not advance to them. A non-frozen chip also stays on the row throughout (the screenshot chip, then *How can I
+  optimize for battery life?*), so a pinned batch does not replace the carousel the way the Developer help text says. The
+  workaround that worked all day was re-pinning three at a time and reopening the panel.
 - ★ `[chips]` **Chip rotation favours the top of the candidate list** — **OPEN.** The guarantee and the roll both take the first
   unseen candidate, so ranks 1 to 3 come round every minute and ranks 4 to 6 rarely appear. A shuffle among eligible candidates
   would spread it. Filed 2026-08-29; the code still picks `available[0]` (`sessionRagComposer.ts`).
@@ -243,9 +272,6 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
 
 ### Bugs that need verification
 
-- ★ `[reply]` **After reopening the panel, a branch-pick turn's header shows the internal prompt** — **VERIFY.** Fixed at the desk
-  2026-08-28: the caption the user saw is saved with the turn. Owed: make a branch pick, reopen, read the header. Row
-  **CHAT-HEADER-CAPTION-01**. [Detail](archive/roadmap-bugs-fixed.md#moved-from-the-roadmap-2026-09-02).
 - ★★ `[focus]` **A checklist the model got wrong was left in the reply as raw JSON**, its own D-pad stop that did nothing — **VERIFY.**
   Fixed 2026-08-28: a rejected checklist block is dropped, as a rejected branch block already was. Owed: one sighting on device of a
   reply where it happens. Row **STRAT-CHECKLIST-JSON-01**.
@@ -268,8 +294,6 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
   after Clear all plugin data. Row **SHELL-PAYLOAD-01**.
 - ★ `[platform]` **VAC check (`bonsai:vac-check`) on-device QA** — **VERIFY.** Implementation complete; run **VAC-02…06** after Tier 0
   **SMOKE-F** passes.
-- ★ `[ui]` **Bonsai pot sits 1px right of the canopy** in the tab and plugin-list icon — **VERIFY.** Fixed 2026-08-07. Row
-  **BONSAI-ICON-GEOM-01**.
 - ★ `[voice]` **Three voice fixes from early August** — **VERIFY.** A finished install survives *Clear all plugin data*
   (**VOICE-CLEAR-01**, backend half verified), the install button reads right when the engine is already ready
   (**VOICE-REINSTALL-01**), and the `status()` fix still wants one live recording retried on the Deck.
@@ -277,7 +301,6 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
   only chats created after that date carry the name. Row **CHAT-SLOTS-V3-14c**. It costs a line of height, which cuts against the
   vertical-space goal; decide whether it shows always or only when the row has focus.
 - ★★ `[KB]` **Asked-entity extraction reads how players actually type** — **VERIFY.** Fixed 2026-08-09. Row **STRAT-ENTITY-01**.
-- ★★ `[KB]` **Compat routing widened to word-boundary topics (D16)** — **VERIFY.** Fixed 2026-08-06. Row **KB-ROUTER-01**.
 - ★★ `[KB]` **Expert mode gets the same cards as Strategy** — **VERIFY.** Fixed 2026-08-18; the route flag asked for Strategy by
   name. Row **KB-EXPERT-01**, and **KB-ASKMODE-01** needs a re-run. [Why](roadmap-details.md#shipped-qa-owed--why-each-was-built-this-way).
 - ★★ `[QA]` **Deferred manual QA** — **VERIFY.** Tier 0 smokes (SMOKE-A, C, F) then Tier 1 (SMOKE-E, H), and a broader prompt-testing
@@ -292,8 +315,6 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
 - ★★★ `[KB]` **KB coverage chip in Show details** — **VERIFY.** The positive case passed on device. Owed: KB off reads `KB: off`, an
   uncovered title reads `KB: none for this game` (**KB-COVERAGE-01**), and an unmatched running game no longer says "no game
   running" (**KB-COVERAGE-NOAPP-01**, fixed 2026-08-23).
-- ★★★ `[KB]` **Source attribution on knowledge chips** — **VERIFY.** Shipped 2026-08-09. Both sub-checks closed on device; the
-  2026-08-14 capture-date check is still owed. Row **KB-ATTRIB-01**.
 - ★★★ `[KB]` **The vector half of retrieval has its own recall pass** — **VERIFY.** Fixed 2026-08-18; it searches the game's cards
   directly instead of re-ordering the keyword shortlist. Row **KB-RECALL-01** owed on device; **KB-RECALL-02** verified at the desk.
 - ★★★ `[perms]` **Kids master lock** — **VERIFY.** Shipped 2026-08-09. Rows **KIDS-LOCK-01**, **KIDS-FOCUS-01**, **KIDS-REGRESS-01**
@@ -329,6 +350,14 @@ on 2026-07-30 (`apply_tdp` no longer exists). Preserved in the archive.
 since April (`25742f2`), and a deliberate failing test exits 1 today. If it recurs, record the exact command and shell.
 
 **September 2026**
+- ★★ `[KB]` **Troubleshooting questions reach the compat cards** — D16's word-boundary routing verified on the Deck 2026-09-04
+  (KB-ROUTER-01, four sentences, every one routed to `compat_tips`).
+- ★★★ `[KB]` **Knowledge chips say where the card came from, and when** — the owed capture-date check passed on the Deck
+  2026-09-04 (KB-ATTRIB-01): `combineoverwiki.net · CC-BY-SA-4.0 · as of 2026-08-09`.
+- ★ `[ui]` **The bonsai pot sits centred under the canopy** — measured from a Deck capture 2026-09-04 (BONSAI-ICON-GEOM-01):
+  canopy, stem, pot rim and pot body all centre on the same pixel column, in the tab strip and in Decky's plugin list.
+- ★ `[reply]` **A branch-pick turn keeps the caption you saw** — verified on the Deck 2026-09-04 (CHAT-HEADER-CAPTION-01):
+  the header read *"I'm at: Dodging Asterius's charge"* before and after closing and reopening the panel.
 - ★★ `[tabs]` **Your tab is remembered when you leave and reopen** — D15's three-way choice verified on the Deck 2026-09-03
   (TAB-RESUME-01/-MODE-01/-FOCUS-01); the first-press focus snap stays open with the picker focus-restore item.
 - ★ `[chips]` **The static seed stops telling you to enable the knowledge base when it is already on** — verified on the Deck
