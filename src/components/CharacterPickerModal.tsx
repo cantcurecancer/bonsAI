@@ -50,6 +50,25 @@ export type CharacterPickerModalProps = {
  */
 const PICKER_AVATAR_PX = 26;
 
+/**
+ * Inner padding on each character grid column (roadmap: "The focus ring is clipped on grid
+ * layouts"). Every entry button stretches to its column's full width with zero inset, and the
+ * column div itself clips overflow -- so a focused button flush against the top, bottom, left or
+ * right edge of its column had its D-pad ring cut off before it could render: rings paint outside
+ * the element's own border box, but `overflow: hidden` does not know that and clips at the edge
+ * regardless. Padding inside that same clipping box gives the ring room to render without ever
+ * reaching the clip boundary.
+ *
+ * 6px covers either reference point at hand: bonsAI's own documented "outer ring" recipe
+ * (design-tokens.md, an outline plus two box-shadow layers) reaches about 5px past the element,
+ * and Steam's native ring on a plain, unstyled `Button` like this one -- the ring actually in
+ * play here, since this modal's buttons carry none of the specific classes that recipe targets --
+ * has been read on device as roughly 2-3px plus a soft glow. This is inner padding for the ring,
+ * not a decorative gutter (docs/design-language.md Rule 1); it costs a few px of label width on
+ * every entry, not just the ones at an edge, because every column clips independently.
+ */
+const PICKER_GRID_RING_PAD_PX = 6;
+
 const PICKER_COL_COUNT = CHARACTER_PICKER_COLUMNS.length;
 const LAST_PICKER_COL = PICKER_COL_COUNT - 1;
 /** Only show the spinner if resolving takes longer than this (avoids flash on fast path). */
@@ -671,7 +690,16 @@ export function CharacterPickerModal(props: CharacterPickerModalProps) {
             }}
           >
             {CHARACTER_PICKER_COLUMNS.map((sections, colIdx) => (
-              <div key={`picker-col-${colIdx}`} style={{ flex: 1, minWidth: 0, overflow: "hidden" }}>
+              <div
+                key={`picker-col-${colIdx}`}
+                className="bonsai-ai-char-grid-col"
+                style={{
+                  flex: 1,
+                  minWidth: 0,
+                  overflow: "hidden",
+                  padding: PICKER_GRID_RING_PAD_PX,
+                }}
+              >
                 {renderColumn(sections, colIdx)}
               </div>
             ))}

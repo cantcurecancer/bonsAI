@@ -55,8 +55,6 @@ from one star to six.
   With no batch pinned the button is disabled but is still a stop at the bottom of Developer, so leaving the tab costs one dead press.
   The visibility oracle reports it clipped, most likely because a disabled button has `pointer-events: none` and `elementFromPoint`
   hits its parent instead (`runs/TAB-RESUME-MODE-01-h-restore-C-and-remeasure-clear-chips-button.json`).
-- ★ `[focus]` **The focus ring is clipped on grid layouts** — **OPEN.** Tiles sit flush against their grid's edge, so the ring is
-  cut off. Most visible on the character picker; each grid needs a margin outside its edge for the ring to fit.
 - ★ `[focus]` **Up from the preset chips walks back through the chip history before it leaves the row** — **OPEN, filed 2026-09-03.**
   One earlier chip per press (four in the run) before the ring goes up to the slot row, so leaving the chips can take five presses;
   every stop was visible. Nothing in **PRESET-ONE-LINE-03** forbids it — the maintainer's call whether Up should leave the row at once
@@ -246,6 +244,10 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
   (cyan, bold, letter-spaced) instead of small grey text. Style only — the focus graph is unchanged, and Steam's ring still
   lands on the ladder as a whole, never on a chip. Owed: a DOM read of the active class plus a screenshot for the
   maintainer's eyes. Row **CONTEXT-LADDER-01**.
+- ★ `[focus]` **The focus ring is clipped on grid layouts** — **VERIFY.** Fixed at the desk 2026-09-04: each character-picker
+  grid column now carries 6px of inner padding so a focused tile's ring has room to render before the column's own
+  `overflow: hidden` clips it — most visible before the fix on an edge tile. Style only. Owed: a screenshot with the ring
+  visible on an edge tile. Row **CHAR-PICKER-RING-01**.
 - ★★ `[focus]` **A checklist the model got wrong was left in the reply as raw JSON**, its own D-pad stop that did nothing — **VERIFY.**
   Fixed 2026-08-28: a rejected checklist block is dropped, as a rejected branch block already was. Owed: one sighting on device of a
   reply where it happens. Row **STRAT-CHECKLIST-JSON-01**.

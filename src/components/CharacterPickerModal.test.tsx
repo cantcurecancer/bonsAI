@@ -54,3 +54,25 @@ describe("CharacterPickerModal avatars", () => {
     expect(viewBoxes).toEqual(["0 0 32 32"]);
   });
 });
+
+/**
+ * Roadmap: "The focus ring is clipped on grid layouts." Every entry button fills its column's
+ * full width with no inset, and the column itself clips overflow, so a focused button flush
+ * against its column's edge had its D-pad ring cut off before it could render. This pins the fix
+ * (padding inside the same box that clips) without asserting anything about the ring itself,
+ * which jsdom has no layout engine to paint or measure -- see design-language.md Rule 6.
+ */
+describe("CharacterPickerModal grid ring padding", () => {
+  const EXPECTED_GRID_RING_PAD_PX = 6;
+
+  it("gives every catalog column inner padding so an edge tile's ring has room to render", () => {
+    const { container } = renderPicker();
+    const columns = container.querySelectorAll<HTMLElement>(".bonsai-ai-char-grid-col");
+
+    // One column per CHARACTER_PICKER_COLUMNS entry -- more than one, so this is a real grid.
+    expect(columns.length).toBeGreaterThan(1);
+    for (const col of columns) {
+      expect(col.style.padding).toBe(`${EXPECTED_GRID_RING_PAD_PX}px`);
+    }
+  });
+});
