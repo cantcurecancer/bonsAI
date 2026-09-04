@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 353,
-  "edgeCount": 846,
+  "fileCount": 354,
+  "edgeCount": 847,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -150,6 +150,12 @@
         "src/features/plugin-shell/useDesktopNoteSaveModal.tsx"
       ]
     },
+    "src/components/DeveloperTab.test.tsx": {
+      "imports": [
+        "src/components/DeveloperTab.tsx"
+      ],
+      "importedBy": []
+    },
     "src/components/DeveloperTab.tsx": {
       "imports": [
         "src/components/PermissionDenyAction.tsx",
@@ -158,6 +164,7 @@
         "src/utils/permissionDeepLink.ts"
       ],
       "importedBy": [
+        "src/components/DeveloperTab.test.tsx",
         "src/components/OllamaTab.tsx",
         "src/components/OllamaWhereAiRunsSection.tsx",
         "src/features/model-routing/useRoutingOrderModal.ts",

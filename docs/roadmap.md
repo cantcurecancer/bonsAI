@@ -51,10 +51,6 @@ from one star to six.
   `focus()` inside the list.
 - ★ `[focus]` **The active chip in Show details is hard to spot** — **OPEN.** No focus ring on the chip, and the "Chip 1 of 6"
   counter is a small grey line. The chips are plain spans inside one Focusable, so Steam's ring never lands on them.
-- ★ `[focus]` **The disabled Clear frozen test chips button still takes the D-pad ring** — **OPEN, filed 2026-09-03.**
-  With no batch pinned the button is disabled but is still a stop at the bottom of Developer, so leaving the tab costs one dead press.
-  The visibility oracle reports it clipped, most likely because a disabled button has `pointer-events: none` and `elementFromPoint`
-  hits its parent instead (`runs/TAB-RESUME-MODE-01-h-restore-C-and-remeasure-clear-chips-button.json`).
 - ★ `[focus]` **The focus ring is clipped on grid layouts** — **OPEN.** Tiles sit flush against their grid's edge, so the ring is
   cut off. Most visible on the character picker; each grid needs a margin outside its edge for the ring to fit.
 - ★ `[focus]` **Up from the preset chips walks back through the chip history before it leaves the row** — **OPEN, filed 2026-09-03.**
@@ -233,6 +229,10 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
 
 ### Bugs that need verification
 
+- ★ `[focus]` **The disabled Clear frozen test chips button still takes the D-pad ring** — **VERIFY.** Fixed at the desk
+  2026-09-04: the button now renders only once a batch is pinned (the "0 pinned" text above it already explains the empty
+  state), so a disabled stop no longer sits at the bottom of Developer. Owed: a Developer sweep with no batch pinned shows
+  no stop named *Clear frozen test chips*. Row **DEV-CLEAR-CHIPS-01**.
 - ★ `[reply]` **After reopening the panel, a branch-pick turn's header shows the internal prompt** — **VERIFY.** Fixed at the desk
   2026-08-28: the caption the user saw is saved with the turn. Owed: make a branch pick, reopen, read the header. Row
   **CHAT-HEADER-CAPTION-01**. [Detail](archive/roadmap-bugs-fixed.md#moved-from-the-roadmap-2026-09-02).

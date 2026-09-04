@@ -65,6 +65,7 @@ export const PanelSectionRow = stub("PanelSectionRow");
 export const TextField = stub("TextField");
 export const ToggleField = stub("ToggleField");
 export const Button = stub("Button");
+export const ButtonItem = stub("ButtonItem");
 export const Focusable = stub("Focusable");
 export const Navigation = {
   OpenQuickAccessMenu: vi.fn(),

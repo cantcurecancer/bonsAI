@@ -63,6 +63,11 @@ All notable changes to this project are documented in this file.
   to Steam's Quick Access rail, so the very next press landed outside the plugin. Left and Right now
   claim the press themselves, so the ring stays on the slider. `DeckFocusSlider.tsx`. On-Deck
   **ONBUTTONDOWN-AUDIT-01** in `docs/testing.md`.
+- **The Developer tab's Clear frozen test chips button no longer costs a dead press when there is
+  nothing to clear:** with no batch pinned the button used to render disabled rather than disappear,
+  and a disabled button still takes the D-pad ring, so leaving Developer spent one press on it either
+  way. It now only renders once a batch is pinned. `DeveloperTab.tsx`. On-Deck **DEV-CLEAR-CHIPS-01**
+  in `docs/testing.md`.
 
 ## [0.5.0] - 2026-07-15
 

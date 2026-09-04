@@ -487,13 +487,11 @@ export const DeveloperTab: React.FC<DeveloperTabProps> = ({
                   ))}
                 </ol>
               ) : null}
-              <ButtonItem
-                layout="below"
-                disabled={devFrozenTestChips.length === 0}
-                onClick={() => setDevFrozenTestChips([])}
-              >
-                Clear frozen test chips
-              </ButtonItem>
+              {devFrozenTestChips.length > 0 ? (
+                <ButtonItem layout="below" onClick={() => setDevFrozenTestChips([])}>
+                  Clear frozen test chips
+                </ButtonItem>
+              ) : null}
             </div>
           </div>
         </PanelSectionRow>
