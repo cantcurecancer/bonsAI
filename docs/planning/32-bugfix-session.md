@@ -267,3 +267,37 @@ Written as things land.
   updated. Linter: all three findings read and found deliberate, baselined with a reason each in the commit — the tab bar's
   cells are touch targets and not stops by design; the dock lookup is geometry, not a focus target; the glossary chip only sets
   `tabindex` when none exists, the same guarded pattern `focusPanelEl` already carries. Gate green again.
+- **18:08, lane D landed** (`41c7513` on the landing branch `bugfix-32`): bug 4, the hidden tab button after a modal close or a
+  QAM reopen. The trap now checks what already holds the ring the instant it attaches and watches inserted nodes too; Clear cache
+  and Clear all plugin data register as return-focus owners. Eleven new tests; all five gates green after the pick. Row **TAB-BAR-11**.
+  Lane D also noticed, and did not touch, that *Clear all plugin data* never calls the pre-modal hook that *Clear cache* calls,
+  so the tab remembered for after that remount may be stale; no evidence of a visible symptom yet, worth a look if one is reported.
+- **18:15, lane B landed** (`d3d8e2a`, `f764819`, `54c44cf`): bug 2, the sliders now step on the move handlers and claim the
+  press; bug 6, the Clear frozen test chips button renders only when a batch is pinned; bug 7, the picker puts the ring back on the
+  moved row's button. Ten new tests; the test harness's Button and ButtonItem stubs became focusable so a `.focus()` can be observed
+  in tests at all. Lane B found the same slider bug in the Settings UI-scale section and is fixing it as a follow-up. Rows
+  **ONBUTTONDOWN-AUDIT-01**, **DEV-CLEAR-CHIPS-01**, **PICKER-REORDER-02**. Landing conflicts were the expected kind: both lanes added
+  adjacent roadmap and changelog lines; resolved by keeping both, sorted by the roadmap's own rule.
+- **18:18, lane E landed**: bug 12, the arms report's verdict now judges every arm in the table and names them (desk-only,
+  moved straight to Done and the archive); bug 8, the active Show details chip has a cyan glow and a readable counter; bug 9, each
+  character-picker column has 6 px of inner padding so the ring is not clipped. Six new tests. Rows **CONTEXT-LADDER-01** (sub-check)
+  and **CHAR-PICKER-RING-01**; both by eye on the device with a PNG.
+- **18:23, lane B's follow-up landed**: the Settings UI-scale slider had the same Left-escape bug and now steps on the move
+  handlers too, with six tests of its own. **ONBUTTONDOWN-AUDIT-01** now covers all four sliders.
+- **18:27, lane C landed**: bug 10, rotation picks at random within the top-priority band instead of always the first candidate;
+  bug 11, Right at the last chip pulls the next pinned-batch entry in (batch only) and a completed Ask restarts the sixty-second
+  walk in every mode. Nineteen new tests. Rows **CHIP-ROTATION-01**, **QA-FROZEN-CHIPS-02**. Lane C also noted, and did not touch,
+  that the carousel's own auto-advance scans a pinned batch from the start each time, so a short batch can repeat an entry
+  back to back; a candidate for a later pass, not a bug this round filed.
+- **18:31, landing hygiene** (`a7d3b2d`, `77551b5`): the conflict resolver kept both sides of every hunk, which is right when two
+  lanes add neighbouring lines and wrong when one side removed or rewrote a line. Three Bugs entries their lanes had moved to Verify
+  were still listed under Bugs, and the changelog carried both versions of the slider bullet. Both fixed; a tidy pass now runs after
+  every pick: a Bugs entry whose title already sits in Verify or Done is dropped, and both lists are re-sorted by the file's rule.
+- **18:44, the other chat's round merged in** (`16bdde9`): its session 2 landed seven new Bugs entries and moved four Verify rows to
+  Done while the lanes worked. Merged by hand where both sides touched the same lines.
+- **18:46, lane A landed** (`8f07f49`, `930f1b7`, `e2357ab`): bug 1, the Open Permissions button and the troubleshooting hint's two
+  buttons are D-pad stops and sit in the reply row's Down chain; bug 3, entering a reply from above lands on its first section through
+  Steam's own transfer, and Up from the reply buttons lands on the last section. Sixteen new tests. Rows **PERM-JUMP-01**, **SMOKE-C**,
+  **CHAT-REPLY-ENTRY-01**. The blank `…` header bug is traced, not fixed: a command reply is never saved to the chat slot on the
+  backend, so the reload that follows overwrites the live question with nothing (trace in roadmap-details.md); a backend lane takes it.
+  The Deck went quiet at 18:07; announced at 18:38; the device phase starts at 18:49 with all twelve fixes in one deploy.
