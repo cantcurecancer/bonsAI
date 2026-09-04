@@ -7,7 +7,7 @@
  *         screen as the row slides left and right.
  * Does not: Fetch RAG candidates — see sessionRagComposer and sessionRagChipCandidates.
  */
-import type { PresetPrompt } from "../../data/presets";
+import { getFrozenTestChips, nextFrozenPresetAfter, type PresetPrompt } from "../../data/presets";
 import { PRESET_VISIBLE_SLOTS } from "./presetRowLayout";
 
 /** Auto-advance interval for carousel mode (ms). */
@@ -81,6 +81,38 @@ export function advanceCarouselFocus(
   }
   const merged = clampHistory([...history, nextPreset]);
   return { history: merged, focusIndex: merged.length - 1 };
+}
+
+/**
+ * The next pinned QA batch entry not already in `history`, walking forward from the newest
+ * entry's text and wrapping at the end of the batch; null when no batch is pinned or every pinned
+ * entry is already represented in history.
+ *
+ * D58 #3: `CAROUSEL_HISTORY_MAX` caps how many chips the carousel remembers, and a batch longer
+ * than that cannot be reached by auto-advance alone once the user starts browsing it by hand —
+ * auto-advance stands down entirely while a chip has focus (see MainTabPresetAnimatedChips), and
+ * walking a pinned batch with the D-pad is exactly that. Right at the last chip calls this to pull
+ * the next entry in directly, the same way Left at the window's edge already pulls an earlier one
+ * back into view via `requestFocus`.
+ *
+ * Mirrors `nextFrozenNotOnScreen` in presetSlotRotation — the fade/static/decode modes' per-slot
+ * version of the same "batch longer than what is visible" problem — rather than importing it: that
+ * module documents itself as not driving carousel mode, and history (not a single slot's
+ * neighbours) is what the carousel needs to walk against.
+ */
+export function nextFrozenHistoryEntry(history: readonly PresetPrompt[]): PresetPrompt | null {
+  const last = history[history.length - 1];
+  if (!last) return null;
+  const exclude = new Set(history.map((p) => p.text));
+  let cursor = last.text;
+  const bound = getFrozenTestChips().length + 1;
+  for (let i = 0; i < bound; i++) {
+    const candidate = nextFrozenPresetAfter(cursor);
+    if (!candidate) return null;
+    if (!exclude.has(candidate.text)) return candidate;
+    cursor = candidate.text;
+  }
+  return null;
 }
 
 /**

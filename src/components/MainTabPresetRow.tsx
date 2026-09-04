@@ -8,7 +8,7 @@
  *         the chips — one row of height either way.
  * Does not: Own carousel timing math — see MainTabPresetAnimatedChips and presets data module.
  */
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Button } from "@decky/ui";
 import type { PresetPrompt } from "../data/presets";
 import type { AskModeId } from "../data/askMode";
@@ -63,6 +63,26 @@ export function MainTabPresetRow({
   const showInjectPlaceholder =
     isAsking && hadInjectChipRef.current && !presetCarouselInject?.text?.trim();
 
+  /*
+   * Every chip mode's 60-second walk (PRESET_CAROUSEL_ACTIVE_MS) stops scheduling new cycles that
+   * long after it starts, and normally restarts because a completed Ask reseeds `suggestedPrompts`
+   * with new text -- `seedsKeyFrom` changes, so the mode's own effect restarts. A pinned QA batch
+   * breaks that: it always resolves to its first three entries verbatim (data/presets.ts's
+   * `applyTempFrozenCarousel`), so the text never changes and the effect never restarts -- ten
+   * chips pinned and chips 6-10 never came into view (D58 #3, KB-ANSWER-02). This token is
+   * independent of the seed text, so it restarts the walk even when the reseed produced exactly
+   * the same three chips. Bumped on the Ask *completing* (isAsking true -> false), which is when
+   * useBonsaiAskOrchestration actually reseeds -- not on Ask start.
+   */
+  const wasAskingRef = useRef(isAsking);
+  const [askRestartToken, setAskRestartToken] = useState(0);
+  useEffect(() => {
+    if (wasAskingRef.current && !isAsking) {
+      setAskRestartToken((t) => t + 1);
+    }
+    wasAskingRef.current = isAsking;
+  }, [isAsking]);
+
   return (
     <div
       ref={presetCarouselHostRef}
@@ -109,6 +129,7 @@ export function MainTabPresetRow({
           onPreferAskMode={onPresetPreferAskMode}
           onCarouselExitDown={focusUnifiedTextField}
           useLocalKnowledgeBase={useLocalKnowledgeBase}
+          askRestartToken={askRestartToken}
         />
       )}
       {presetCarouselInject?.text?.trim() ? (

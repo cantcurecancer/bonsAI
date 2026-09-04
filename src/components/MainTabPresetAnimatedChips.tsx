@@ -15,6 +15,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Button, Focusable, Marquee, type MarqueeProps } from "@decky/ui";
 import type { AskModeId } from "../data/askMode";
 import {
+  frozenTestChipsActive,
   getRandomPresetExcluding,
   getRandomPresets,
   type PresetPrompt,
@@ -29,6 +30,7 @@ import {
   CAROUSEL_STEP_MS,
   carouselWindowStart,
   mergeContextualSeeds,
+  nextFrozenHistoryEntry,
   seedsKeyFrom,
   visibleWindowTexts,
 } from "../features/preset-carousel/carouselState";
@@ -174,6 +176,13 @@ export type MainTabPresetAnimatedChipsProps = {
   onCarouselExitDown?: () => boolean | void;
   /** When true, KB-advice static seeds are excluded from timer-driven re-samples. */
   useLocalKnowledgeBase?: boolean;
+  /**
+   * Bumped by MainTabPresetRow every time an Ask completes, so every mode's 60-second walk
+   * restarts even when the reseed produced the exact same three seeds. A pinned QA batch always
+   * returns its first three entries verbatim (`applyTempFrozenCarousel` in data/presets.ts), so
+   * `seedsKeyFrom` cannot tell an Ask happened from this alone (D58 #3).
+   */
+  askRestartToken?: number;
 };
 
 function prefersReducedMotion(): boolean {
@@ -376,6 +385,8 @@ function usePresetRowNav(
     isFocusable?: (index: number) => boolean;
     /** Bring a chip that is not a focus stop yet into the window; the caller focuses it once it is. */
     requestFocus?: (index: number) => boolean;
+    /** Right at the last chip; see buildChipNavHandlers and carouselState.nextFrozenHistoryEntry. */
+    advanceAtEnd?: () => boolean;
   },
 ) {
   const buttonRefs = useRef<(HTMLElement | null)[]>(Array.from({ length: maxCount }, () => null));
@@ -388,6 +399,7 @@ function usePresetRowNav(
   );
   const isFocusable = options?.isFocusable;
   const requestFocus = options?.requestFocus;
+  const advanceAtEnd = options?.advanceAtEnd;
   const focusChip = useCallback(
     (i: number): boolean => {
       if (isFocusable && !isFocusable(i)) return requestFocus ? requestFocus(i) : false;
@@ -408,8 +420,9 @@ function usePresetRowNav(
         // The session strip is the last stop above the dock whenever a reply is on screen. With
         // nothing registered (an empty chat), Steam's own navigation takes over.
         exitUp: () => takeNavFocus("session-context-strip"),
+        advanceAtEnd,
       }) as unknown as Record<string, unknown>,
-    [focusChip, exitDown],
+    [focusChip, exitDown, advanceAtEnd],
   );
   return { setButtonRef, handlersFor, focusChip };
 }
@@ -495,7 +508,14 @@ function DecodePresetChipButton(props: {
 function MainTabPresetDecodeSlots(
   props: Omit<MainTabPresetAnimatedChipsProps, "fadeAnimationEnabled" | "animationMode">,
 ) {
-  const { seeds, setUnifiedInput, onPreferAskMode, onCarouselExitDown, useLocalKnowledgeBase = false } = props;
+  const {
+    seeds,
+    setUnifiedInput,
+    onPreferAskMode,
+    onCarouselExitDown,
+    useLocalKnowledgeBase = false,
+    askRestartToken,
+  } = props;
   const samplerOptions = { useLocalKnowledgeBase };
   const seedsKey = seedsKeyFrom(seeds);
   const reducedMotion = prefersReducedMotion();
@@ -657,7 +677,10 @@ function MainTabPresetDecodeSlots(
       window.cancelAnimationFrame(rafId);
       timeouts.forEach((id) => window.clearTimeout(id));
     };
-  }, [seedsKey, seeds, reducedMotion, useLocalKnowledgeBase, slotCount]);
+    // askRestartToken restarts this whole effect on every completed Ask (D58 #3) even when
+    // seedsKey is unchanged, which is exactly what happens under a pinned QA batch: it always
+    // resolves to the same three chips, so seedsKey alone never signals that an Ask happened.
+  }, [seedsKey, seeds, reducedMotion, useLocalKnowledgeBase, slotCount, askRestartToken]);
 
   return (
     <PresetRowFocusRoot className="bonsai-preset-across">
@@ -691,7 +714,14 @@ function MainTabPresetDecodeSlots(
 function MainTabPresetSidewaysCarousel(
   props: Omit<MainTabPresetAnimatedChipsProps, "fadeAnimationEnabled" | "animationMode">,
 ) {
-  const { seeds, setUnifiedInput, onPreferAskMode, onCarouselExitDown, useLocalKnowledgeBase = false } = props;
+  const {
+    seeds,
+    setUnifiedInput,
+    onPreferAskMode,
+    onCarouselExitDown,
+    useLocalKnowledgeBase = false,
+    askRestartToken,
+  } = props;
   const samplerOptions = { useLocalKnowledgeBase };
   const seedsKey = seedsKeyFrom(seeds);
   const reducedMotion = prefersReducedMotion();
@@ -725,23 +755,54 @@ function MainTabPresetSidewaysCarousel(
     [windowStart],
   );
   const pendingFocusRef = useRef<number | null>(null);
+  /*
+   * A second trigger for the pending-focus effect below, alongside `focusIndex`. Needed because
+   * `advanceAtEnd` (right at the last chip, pulling in the next frozen entry) can leave
+   * `focusIndex`'s *number* unchanged: once history is already at CAROUSEL_HISTORY_MAX, appending
+   * trims the oldest entry off the front, so the newly-pulled chip lands at the same index the
+   * departing one held. Chips are keyed by text (`${i}-${preset.text}`), so React still remounts a
+   * fresh, unfocused DOM node there — an effect keyed only on `focusIndex` would never notice.
+   */
+  const [focusRequestTick, setFocusRequestTick] = useState(0);
   const requestFocus = useCallback(
     (i: number): boolean => {
       pendingFocusRef.current = i;
       pauseAuto();
       setCarousel((prev) => (i >= 0 && i < prev.history.length ? { ...prev, focusIndex: i } : prev));
+      setFocusRequestTick((t) => t + 1);
       return true;
     },
     [pauseAuto],
   );
-  const nav = usePresetRowNav(CAROUSEL_HISTORY_MAX, onCarouselExitDown, { isFocusable: inWindow, requestFocus });
+  const advanceAtEnd = useCallback((): boolean => {
+    // Right at the last chip normally just claims the move (presetRowNav) so Steam's own idea of
+    // "past it" -- the Quick Access rail -- never fires. A pinned QA batch longer than the row is
+    // the one case with a real "next" waiting: the 60s auto-advance timer alone cannot be relied
+    // on to pull it in, because auto-advance stands down entirely while a chip has focus, and
+    // walking a pinned batch by hand is exactly that (D58 #3). The normal carousel has no such
+    // fixed list to pull from ahead of the timer, so this stays scoped to a frozen batch.
+    if (!frozenTestChipsActive()) return false;
+    const next = nextFrozenHistoryEntry(history);
+    if (!next) return false;
+    const targetIndex = Math.min(history.length + 1, CAROUSEL_HISTORY_MAX) - 1;
+    pendingFocusRef.current = targetIndex;
+    pauseAuto();
+    setCarousel((prev) => advanceCarouselFocus(prev.history, prev.focusIndex, next));
+    setFocusRequestTick((t) => t + 1);
+    return true;
+  }, [history, pauseAuto]);
+  const nav = usePresetRowNav(CAROUSEL_HISTORY_MAX, onCarouselExitDown, {
+    isFocusable: inWindow,
+    requestFocus,
+    advanceAtEnd,
+  });
   const { focusChip } = nav;
   useEffect(() => {
     const pending = pendingFocusRef.current;
     if (pending === null) return;
     pendingFocusRef.current = null;
     focusChip(pending);
-  }, [focusIndex, focusChip]);
+  }, [focusRequestTick, focusChip]);
   /*
    * Entering from outside lands on the marked chip, so the blue marker and the white ring agree.
    * Deferred a tick on purpose: this runs inside Steam's own focus event, and a `focus()` issued
@@ -803,7 +864,13 @@ function MainTabPresetSidewaysCarousel(
       cancelled = true;
       window.clearTimeout(timeoutId);
     };
-  }, [seedsKey, useLocalKnowledgeBase]);
+    // askRestartToken restarts the 60s window on every completed Ask (D58 #3), independently of
+    // seedsKey: a pinned QA batch always reseeds to the same three chips, so seedsKey alone never
+    // signals that an Ask happened. Restarting only this effect (not the whole carousel) extends
+    // the deadline without touching history or focus, unlike fade/static/decode's full restart --
+    // the carousel has a persistent, browsable history worth keeping across an Ask; the other
+    // modes have no such state to preserve.
+  }, [seedsKey, useLocalKnowledgeBase, askRestartToken]);
 
   /**
    * Focus model: the Steam DOM focus (white ring) is the single source of truth. Every chip is
@@ -885,6 +952,7 @@ function MainTabPresetAnimatedChipsInner(props: MainTabPresetAnimatedChipsProps)
     onPreferAskMode,
     onCarouselExitDown,
     useLocalKnowledgeBase = false,
+    askRestartToken,
   } = props;
   const samplerOptions = { useLocalKnowledgeBase };
   if (animationMode === "carousel") {
@@ -895,6 +963,7 @@ function MainTabPresetAnimatedChipsInner(props: MainTabPresetAnimatedChipsProps)
         onPreferAskMode={onPreferAskMode}
         onCarouselExitDown={onCarouselExitDown}
         useLocalKnowledgeBase={useLocalKnowledgeBase}
+        askRestartToken={askRestartToken}
       />
     );
   }
@@ -906,6 +975,7 @@ function MainTabPresetAnimatedChipsInner(props: MainTabPresetAnimatedChipsProps)
         onPreferAskMode={onPreferAskMode}
         onCarouselExitDown={onCarouselExitDown}
         useLocalKnowledgeBase={useLocalKnowledgeBase}
+        askRestartToken={askRestartToken}
       />
     );
   }
@@ -1015,7 +1085,10 @@ function MainTabPresetAnimatedChipsInner(props: MainTabPresetAnimatedChipsProps)
       cancelled = true;
       timeouts.forEach((id) => window.clearTimeout(id));
     };
-  }, [seedsKey, seeds, staticMode, useLocalKnowledgeBase, slotCount]);
+    // askRestartToken restarts this whole effect on every completed Ask (D58 #3) even when
+    // seedsKey is unchanged, which is exactly what happens under a pinned QA batch: it always
+    // resolves to the same three chips, so seedsKey alone never signals that an Ask happened.
+  }, [seedsKey, seeds, staticMode, useLocalKnowledgeBase, slotCount, askRestartToken]);
 
   return (
     <PresetRowFocusRoot className="bonsai-preset-across">
@@ -1070,7 +1143,8 @@ function presetChipsPropsEqual(
     prev.fadeAnimationEnabled === next.fadeAnimationEnabled &&
     prev.onPreferAskMode === next.onPreferAskMode &&
     prev.onCarouselExitDown === next.onCarouselExitDown &&
-    prev.useLocalKnowledgeBase === next.useLocalKnowledgeBase
+    prev.useLocalKnowledgeBase === next.useLocalKnowledgeBase &&
+    prev.askRestartToken === next.askRestartToken
   );
 }
 

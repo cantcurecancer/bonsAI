@@ -16,9 +16,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   composeDecodeText,
   MainTabPresetAnimatedChips,
+  PRESET_CAROUSEL_ACTIVE_MS,
   PRESET_DECODE_CARET_CHAR,
 } from "./MainTabPresetAnimatedChips";
-import type { PresetPrompt } from "../data/presets";
+import { setFrozenTestChips, type PresetPrompt } from "../data/presets";
+import { CAROUSEL_STEP_MS, CAROUSEL_HISTORY_MAX } from "../features/preset-carousel/carouselState";
 import { PRESET_VISIBLE_SLOTS } from "../features/preset-carousel/presetRowLayout";
 import { resetFakeDeckyRpc } from "../test-harness/fakeDeckyRpc";
 
@@ -145,6 +147,7 @@ describe("MainTabPresetAnimatedChips memo gate", () => {
       "onPreferAskMode",
       "onCarouselExitDown",
       "useLocalKnowledgeBase",
+      "askRestartToken",
     ];
 
     // `setUnifiedInput` is deliberately not compared — it is a setState identity
@@ -291,5 +294,114 @@ describe("MainTabPresetAnimatedChips decode mode", () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+});
+
+/*
+ * D58 #3: a pinned QA batch always reseeds to its first three entries verbatim
+ * (`applyTempFrozenCarousel` in data/presets.ts), so `seedsKeyFrom` cannot tell an Ask happened
+ * from that alone -- the row's 60-second walk (`PRESET_CAROUSEL_ACTIVE_MS`) stopped restarting on
+ * an Ask, and chips past what the auto-advance had already reached before the user started
+ * browsing could never be reached. `askRestartToken` (bumped by MainTabPresetRow when an Ask
+ * completes) is the independent-of-text signal that restarts it.
+ */
+describe("MainTabPresetAnimatedChips askRestartToken (D58 #3: an Ask restarts the walk)", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+    setFrozenTestChips([]);
+  });
+
+  it("static mode: a bumped token restarts the walk even though the pinned seeds are unchanged", () => {
+    setFrozenTestChips(["q1", "q2", "q3", "q4", "q5"]);
+    vi.useFakeTimers();
+    const seeds = [seed("q1"), seed("q2"), seed("q3")];
+    const firstSlotText = (container: HTMLElement) =>
+      container.querySelectorAll(".bonsai-preset-carousel-slot .bonsai-preset-chip-text")[0]?.textContent;
+
+    const { container, rerender } = render(
+      <MainTabPresetAnimatedChips
+        seeds={seeds}
+        setUnifiedInput={vi.fn()}
+        animationMode="static"
+        askRestartToken={0}
+      />,
+    );
+    expect(firstSlotText(container)).toBe("q1");
+
+    // Comfortably past PRESET_CAROUSEL_ACTIVE_MS: rotation has moved on and then stopped
+    // scheduling further cycles.
+    act(() => {
+      vi.advanceTimersByTime(PRESET_CAROUSEL_ACTIVE_MS + 10_000);
+    });
+    const stalledAt = firstSlotText(container);
+    expect(stalledAt).not.toBe("q1");
+
+    // More time passing with no restart: the walk stays stopped where it left off.
+    act(() => {
+      vi.advanceTimersByTime(20_000);
+    });
+    expect(firstSlotText(container)).toBe(stalledAt);
+
+    // Same seeds -- a pinned batch always reseeds to the same three -- but the Ask completed, so
+    // MainTabPresetRow bumps the token. The whole effect restarts, the same as a fresh mount:
+    // "q1" reappearing is the proof, since rotation could not otherwise land back on it once it
+    // had moved past it.
+    rerender(
+      <MainTabPresetAnimatedChips
+        seeds={seeds}
+        setUnifiedInput={vi.fn()}
+        animationMode="static"
+        askRestartToken={1}
+      />,
+    );
+    expect(firstSlotText(container)).toBe("q1");
+  });
+
+  it("carousel mode: a bumped token restarts the 60s auto-advance without touching existing history", () => {
+    // More entries than the carousel's window keeps, so the auto-tick has real batch entries left
+    // to walk through rather than degenerating to repeats once the whole batch is on screen.
+    const batch = Array.from({ length: CAROUSEL_HISTORY_MAX + 3 }, (_, i) => `q${i + 1}`);
+    setFrozenTestChips(batch);
+    vi.useFakeTimers();
+    const seeds = [seed("q1"), seed("q2"), seed("q3")];
+    const newestText = (container: HTMLElement) =>
+      container.querySelector(".bonsai-preset-carousel-slot--focus")?.textContent ?? null;
+
+    const { container, rerender } = render(
+      <MainTabPresetAnimatedChips
+        seeds={seeds}
+        setUnifiedInput={vi.fn()}
+        animationMode="carousel"
+        askRestartToken={0}
+      />,
+    );
+
+    act(() => {
+      vi.advanceTimersByTime(PRESET_CAROUSEL_ACTIVE_MS + 5_000);
+    });
+    const stalledAt = newestText(container);
+
+    act(() => {
+      vi.advanceTimersByTime(20_000);
+    });
+    expect(newestText(container)).toBe(stalledAt);
+
+    // Bumping the token alone must not move anything: unlike static/decode, the carousel has a
+    // persistent, browsable history worth keeping across an Ask, so a restart only extends the
+    // ticker's deadline.
+    rerender(
+      <MainTabPresetAnimatedChips
+        seeds={seeds}
+        setUnifiedInput={vi.fn()}
+        animationMode="carousel"
+        askRestartToken={1}
+      />,
+    );
+    expect(newestText(container)).toBe(stalledAt);
+
+    act(() => {
+      vi.advanceTimersByTime(CAROUSEL_STEP_MS + 500);
+    });
+    expect(newestText(container)).not.toBe(stalledAt);
   });
 });

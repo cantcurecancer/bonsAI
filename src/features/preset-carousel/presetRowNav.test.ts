@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
 import { buildChipNavHandlers } from "./presetRowNav";
 
-function make(index: number, count: number) {
+function make(index: number, count: number, advanceAtEnd?: () => boolean) {
   const focusChip = vi.fn((_: number) => true);
   const exitDown = vi.fn(() => true);
   const exitUp = vi.fn(() => false);
-  const handlers = buildChipNavHandlers({ index, count, focusChip, exitDown, exitUp });
+  const handlers = buildChipNavHandlers({ index, count, focusChip, exitDown, exitUp, advanceAtEnd });
   return { handlers, focusChip, exitDown, exitUp };
 }
 
@@ -40,5 +40,41 @@ describe("preset row D-pad handlers", () => {
     const { handlers, exitUp } = make(1, 2);
     expect(handlers.onMoveUp()).toBe(false);
     expect(exitUp).toHaveBeenCalledTimes(1);
+  });
+
+  /*
+   * D58 #3: a pinned QA batch longer than the row could not be reached past the first minute
+   * because Right at the last chip only ever claimed the move. `advanceAtEnd` gets first refusal
+   * there now; the carousel wires it to pull the next batch entry in (MainTabPresetAnimatedChips).
+   */
+  describe("advanceAtEnd (D58 #3: a pinned batch longer than the row)", () => {
+    it("is called, instead of focusChip, when Right is pressed at the last chip", () => {
+      const advanceAtEnd = vi.fn(() => true);
+      const { handlers, focusChip } = make(1, 2, advanceAtEnd);
+      expect(handlers.onMoveRight()).toBe(true);
+      expect(advanceAtEnd).toHaveBeenCalledTimes(1);
+      expect(focusChip).not.toHaveBeenCalled();
+    });
+
+    it("still claims the move when advanceAtEnd finds nothing to pull in", () => {
+      const advanceAtEnd = vi.fn(() => false);
+      const { handlers } = make(1, 2, advanceAtEnd);
+      expect(handlers.onMoveRight()).toBe(true);
+      expect(advanceAtEnd).toHaveBeenCalledTimes(1);
+    });
+
+    it("is never called away from the last chip -- Right there still just walks chips", () => {
+      const advanceAtEnd = vi.fn(() => true);
+      const { handlers, focusChip } = make(0, 2, advanceAtEnd);
+      expect(handlers.onMoveRight()).toBe(true);
+      expect(focusChip).toHaveBeenLastCalledWith(1);
+      expect(advanceAtEnd).not.toHaveBeenCalled();
+    });
+
+    it("without advanceAtEnd, Right at the last chip still just holds (unchanged default)", () => {
+      const last = make(1, 2);
+      expect(last.handlers.onMoveRight()).toBe(true);
+      expect(last.focusChip).not.toHaveBeenCalled();
+    });
   });
 });

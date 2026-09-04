@@ -38,11 +38,6 @@ from one star to six.
 
 - ★ `[ask]` **The question overlay sits a few pixels off the native text field** — **OPEN.** Most visible on a three-line question
   and on the empty-field placeholder. Nothing has touched the overlay since 2026-08-07.
-- ★ `[chips]` **A frozen test-chip batch longer than the row cannot be reached after the first minute** — **OPEN, found 2026-09-03.**
-  The row walks a pinned batch only while the carousel is active (60s, `PRESET_CAROUSEL_ACTIVE_MS`); an Ask does not restart it and
-  Left/Right at the edge do not pull the next entry in. With ten chips pinned, 6–10 never came into view during **KB-ANSWER-02**, and
-  four of five sentences went in through `scripts/deck_send_ask.py` instead. Fix: restart the walk on an Ask or D-pad entry, or let
-  the edge advance the batch. Until then, keep a batch to what the row shows in a minute.
 - ★ `[focus]` **Reordering in the try-order picker drops the highlight** — **OPEN, minor.** A on a row's Up or Down reorders
   correctly but the ring disappears for one press. Row **PICKER-REORDER-02** failed 2026-08-28. Measure before trying a plain
   `focus()` inside the list.
@@ -225,6 +220,11 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
 
 ### Bugs that need verification
 
+- ★ `[chips]` **A frozen test-chip batch longer than the row cannot be reached after the first minute** — **VERIFY.**
+  Fixed at the desk 2026-09-04, Deck check owed: Right at the last visible chip now pulls the next pinned entry into
+  the carousel's history, mirroring how Left at the edge already pulls an earlier one back; and every mode's
+  60-second walk restarts when an Ask completes, even though a pinned batch always reseeds to the same three chips.
+  Row **QA-FROZEN-CHIPS-02**.
 - ★ `[chips]` **Chip rotation favours the top of the candidate list** — **VERIFY.** Fixed at the desk
   2026-09-04, Deck check owed: the guarantee and the roll both used to take the first unseen candidate every
   time, so ranks 1-3 came round every minute and ranks 4-6 rarely appeared; both now pick at random among the

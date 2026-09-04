@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
-import type { PresetPrompt } from "../../data/presets";
+import { afterEach, describe, expect, it } from "vitest";
+import { setFrozenTestChips, type PresetPrompt } from "../../data/presets";
 import {
   advanceCarouselFocus,
   buildInitialCarouselState,
@@ -7,6 +7,7 @@ import {
   carouselWindowStart,
   clampHistory,
   mergeContextualSeeds,
+  nextFrozenHistoryEntry,
   visibleWindowTexts,
 } from "./carouselState";
 import { PRESET_VISIBLE_SLOTS } from "./presetRowLayout";
@@ -101,5 +102,46 @@ describe("carouselState", () => {
     const merged = mergeContextualSeeds(history, triple, 2);
     expect([...visibleWindowTexts(merged.history, merged.focusIndex)]).toEqual(["new1", "new2"]);
     expect(merged.history[merged.focusIndex + 1]?.text).toBe("new3");
+  });
+
+  /*
+   * D58 #3: a pinned batch longer than the row could not be reached after the first minute --
+   * auto-advance stands down while a chip has focus, so once history filled to CAROUSEL_HISTORY_MAX
+   * chips 6+ of a longer batch never came in. Right at the last chip now calls this to pull the
+   * next batch entry in directly, the same way Left at the window's edge already pulls an earlier
+   * one back via `requestFocus`.
+   */
+  describe("nextFrozenHistoryEntry (D58 #3: a pinned batch longer than the row)", () => {
+    afterEach(() => setFrozenTestChips([]));
+
+    it("returns null when no batch is pinned", () => {
+      expect(nextFrozenHistoryEntry([p("a"), p("b")])).toBeNull();
+    });
+
+    it("returns null for empty history even with a batch pinned", () => {
+      setFrozenTestChips(["q1", "q2", "q3"]);
+      expect(nextFrozenHistoryEntry([])).toBeNull();
+    });
+
+    it("walks the batch forward from the newest history entry", () => {
+      setFrozenTestChips(["q1", "q2", "q3", "q4", "q5"]);
+      // As if q1/q2 already scrolled out of a history capped at CAROUSEL_HISTORY_MAX.
+      const history = [p("q3"), p("q4")];
+      expect(nextFrozenHistoryEntry(history)?.text).toBe("q5");
+    });
+
+    it("finds the one entry a capped history has evicted, wrapping past the newest", () => {
+      setFrozenTestChips(["q1", "q2", "q3", "q4", "q5", "q6"]);
+      // A 6-item batch with a 5-deep history: q1 fell out the front, so it is the only entry not
+      // already represented, reached only by wrapping past q6.
+      const history = [p("q2"), p("q3"), p("q4"), p("q5"), p("q6")];
+      expect(nextFrozenHistoryEntry(history)?.text).toBe("q1");
+    });
+
+    it("returns null once the whole (short) batch is already in history", () => {
+      setFrozenTestChips(["q1", "q2", "q3"]);
+      const history = [p("q1"), p("q2"), p("q3")];
+      expect(nextFrozenHistoryEntry(history)).toBeNull();
+    });
   });
 });

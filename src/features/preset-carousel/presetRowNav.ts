@@ -29,22 +29,34 @@ export type BuildChipNavHandlersArgs = {
   exitDown: () => boolean;
   /** Hand the ring to whatever sits above the row; true when it moved. */
   exitUp: () => boolean;
+  /**
+   * Right at the last chip normally just claims the move without moving (see below). A pinned QA
+   * batch longer than the row is the one case with a real "next" entry waiting (D58 #3): called
+   * only when `index` is already the last chip, and returning `true` means a new entry was pulled
+   * in (focus follows it once it renders — the caller's concern, not this one).
+   */
+  advanceAtEnd?: () => boolean;
 };
 
 /**
  * Returning `true` claims the move; `false` lets Steam's own navigation decide. Left at the first
- * chip and Right at the last both claim the move without moving: Steam's choice for "left of the
- * first chip" is the Quick Access rail, which walks the user out of the plugin by accident.
+ * chip and Right at the last both claim the move without moving by default: Steam's choice for
+ * "left of the first chip" is the Quick Access rail, which walks the user out of the plugin by
+ * accident. `advanceAtEnd`, when supplied, gets first refusal at the last chip.
  */
 export function buildChipNavHandlers(args: BuildChipNavHandlersArgs): ChipNavHandlers {
-  const { index, count, focusChip, exitDown, exitUp } = args;
+  const { index, count, focusChip, exitDown, exitUp, advanceAtEnd } = args;
   return {
     onMoveLeft: () => {
       if (index > 0) focusChip(index - 1);
       return true;
     },
     onMoveRight: () => {
-      if (index < count - 1) focusChip(index + 1);
+      if (index < count - 1) {
+        focusChip(index + 1);
+      } else {
+        advanceAtEnd?.();
+      }
       return true;
     },
     onMoveDown: () => exitDown(),

@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 357,
-  "edgeCount": 853,
+  "fileCount": 358,
+  "edgeCount": 857,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -372,6 +372,7 @@
       "imports": [
         "src/components/MainTabPresetAnimatedChips.tsx",
         "src/data/presets.ts",
+        "src/features/preset-carousel/carouselState.ts",
         "src/features/preset-carousel/presetRowLayout.ts",
         "src/test-harness/fakeDeckyRpc.ts"
       ],
@@ -396,6 +397,14 @@
         "src/components/MainTabPresetRow.tsx"
       ]
     },
+    "src/components/MainTabPresetRow.askRestart.test.tsx": {
+      "imports": [
+        "src/components/MainTabPresetRow.tsx",
+        "src/data/presets.ts",
+        "src/test-harness/fakeDeckyRpc.ts"
+      ],
+      "importedBy": []
+    },
     "src/components/MainTabPresetRow.test.tsx": {
       "imports": [
         "src/components/MainTabPresetRow.tsx",
@@ -416,6 +425,7 @@
       ],
       "importedBy": [
         "src/components/MainTab.tsx",
+        "src/components/MainTabPresetRow.askRestart.test.tsx",
         "src/components/MainTabPresetRow.test.tsx"
       ]
     },
@@ -1080,6 +1090,7 @@
         "src/components/MainTab.tsx",
         "src/components/MainTabPresetAnimatedChips.test.tsx",
         "src/components/MainTabPresetAnimatedChips.tsx",
+        "src/components/MainTabPresetRow.askRestart.test.tsx",
         "src/components/MainTabPresetRow.test.tsx",
         "src/components/MainTabPresetRow.tsx",
         "src/data/presets.test.ts",
@@ -1570,6 +1581,7 @@
         "src/features/preset-carousel/presetRowLayout.ts"
       ],
       "importedBy": [
+        "src/components/MainTabPresetAnimatedChips.test.tsx",
         "src/components/MainTabPresetAnimatedChips.tsx",
         "src/features/preset-carousel/carouselState.test.ts"
       ]
@@ -2350,6 +2362,7 @@
         "src/components/KnowledgeBaseSection.nomicPull.test.tsx",
         "src/components/KnowledgeBaseSection.test.tsx",
         "src/components/MainTabPresetAnimatedChips.test.tsx",
+        "src/components/MainTabPresetRow.askRestart.test.tsx",
         "src/components/MainTabPresetRow.test.tsx",
         "src/components/SettingsTab.mdns.test.ts",
         "src/components/VoiceInputSettingsSection.test.tsx",
