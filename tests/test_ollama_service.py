@@ -1328,6 +1328,32 @@ class OllamaServiceTests(unittest.TestCase):
         prompt = self._strategy_prompt_with_kb("413150")
         self.assertIn("Put spoilery walkthrough detail inside", prompt)
 
+    def test_prompt_window_warning_fires_only_when_prompt_plus_reply_would_not_fit(self):
+        """D46: the Deck runs a 4,096-token window and nothing sets num_ctx; an overlong prompt
+        loses its start silently. The POST site now logs a warning instead of saying nothing."""
+        from backend.services.ollama_service import (
+            ASSUMED_CONTEXT_WINDOW_TOKENS,
+            estimate_prompt_tokens,
+            prompt_window_warning,
+        )
+
+        small = [{"role": "system", "content": "x" * 3500}, {"role": "user", "content": "how do i beat the boss"}]
+        self.assertLess(estimate_prompt_tokens(small), 1100)
+        self.assertIsNone(prompt_window_warning(small, 800))
+
+        # ~96 KiB of attached logs, the old cap: about 28,000 tokens.
+        huge = [{"role": "system", "content": "e" * (96 * 1024)}, {"role": "user", "content": "it crashes"}]
+        warning = prompt_window_warning(huge, 800)
+        self.assertIsNotNone(warning)
+        self.assertIn(str(ASSUMED_CONTEXT_WINDOW_TOKENS), warning)
+        self.assertIn("drops its start", warning)
+
+        # The reply budget counts too: a prompt that fits alone can still overflow with num_predict.
+        edge = [{"role": "system", "content": "x" * int(3.5 * 3500)}]
+        self.assertIsNone(prompt_window_warning(edge, 500))
+        self.assertIsNotNone(prompt_window_warning(edge, 800))
+        self.assertEqual(ASSUMED_CONTEXT_WINDOW_TOKENS, 4096)
+
     def test_user_consents_strategy_spoilers_phrases(self):
         self.assertTrue(user_consents_strategy_spoilers("full spoilers please"))
         self.assertTrue(user_consents_strategy_spoilers("Spoilers are okay"))

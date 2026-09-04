@@ -1456,11 +1456,22 @@ def sanitize_reply_followup(raw: Any) -> Optional[dict]:
     }
 
 
+# Decision D46 (2026-09-01): the parent answer is pasted into the follow-up message, and a
+# Strategy reply can run to 1,600 tokens on its own. Against the Deck's 4,096-token window that
+# paste plus the system prompt plus the new reply budget did not fit, and Ollama drops the start
+# of the prompt silently. 1,500 characters (~400 tokens) keeps the orientation and the first
+# tactics, which is what a refinement chip refers back to.
+REPLY_FOLLOWUP_PARENT_ANSWER_MAX_CHARS = 1500
+_REPLY_FOLLOWUP_TRIM_MARK = " […earlier answer trimmed to fit the model's window]"
+
+
 def build_reply_followup_context_block(chip_id: str, parent_question: str, parent_answer: str) -> str:
     """Inject prior turn Q+A before the user's refinement message."""
     label = _REPLY_FOLLOWUP_CHIP_LABELS.get(chip_id, "Follow-up")
     pq = (parent_question or "").strip()
     pa = (parent_answer or "").strip()
+    if len(pa) > REPLY_FOLLOWUP_PARENT_ANSWER_MAX_CHARS:
+        pa = pa[:REPLY_FOLLOWUP_PARENT_ANSWER_MAX_CHARS].rstrip() + _REPLY_FOLLOWUP_TRIM_MARK
     return (
         "REPLY FOLLOW-UP CONTEXT\n"
         f"The user is refining their previous Ask ({label}).\n"

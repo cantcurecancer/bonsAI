@@ -88,7 +88,8 @@ Legend: ✅ done / fixed this session · ❌ blocked, or a bug found this sessio
 - ❌ **No context window is set on the Ollama request**, and the Proton-log path can send ~6×
   the window. `ollama_service.py:497-501` sends only `num_predict` and `temperature`;
   `proton_troubleshooting_logs.py:18` allows 96 KiB; `knowledge_base_service.py:1917` stacks logs
-  then cards under 100 KiB. Ollama keeps the tail and drops the head, silently.
+  then cards under 100 KiB. Ollama keeps the tail and drops the head, silently. **Fixed by W3
+  on 2026-09-03** (logs 4 KiB, follow-up paste 1,500 characters, overflow warning).
 - ❌ **The citation-fence instruction is dead.** Obeyed 1 time in 89 KB asks on device, and no
   frontend code handles `bonsai-cite` (grep of `src/` finds nothing), so the one time it fired the
   user saw a raw code box. `ollama_prompts.py:1182-1193`.
@@ -127,7 +128,10 @@ Legend: ✅ done / fixed this session · ❌ blocked, or a bug found this sessio
   the same day:** the identical fetch-and-install code ran cleanly from the Deck over SSH
   (Hugging Face reachable, checksum verified), so the network is not the cause — the suspect is
   the button itself (`Focusable onOKButton` on the Update row). Still needs one thumb press with
-  eyes on the toast to settle; the corpus itself is installed (W2b).
+  eyes on the toast to settle; the corpus itself is installed (W2b). **Settled 2026-09-03: the
+  button works** — a bridge press with the ring verified on it raised *Already up to date — Version
+  2026.09.01 is the latest* within half a second. The 09-02 press stays unexplained; treat it as
+  the one-driver lesson (§ 6 item 8), not as a button bug.
 - ❌ **`deck_captureScreenshot` is broken on this PC** — DPS cannot find its capture scripts
   directory — so the Update press could not be checked visually. A DPS install problem, not bonsAI.
 - ℹ️ Two things the run showed that are not bugs: an uncovered game (Elden Ring) in Strategy mode
@@ -154,8 +158,19 @@ Legend: ✅ done / fixed this session · ❌ blocked, or a bug found this sessio
   so the network is not the reason.
 - ✅ **W12a** Five confirmed sentences pinned as frozen test chips 2026-09-02 (**KB-ANSWER-02**), appended
   after the five chips another session already had in the batch (ten in rotation, the cap is twelve).
-- ⬜ **W3** Prompt budget guard: cap Proton logs and the follow-up parent answer so the prompt
-  always fits the window; log a warning when a prompt would have overflowed. *(D46)*
+- ✅ **W12b** **KB-ANSWER-02 run on the Deck 2026-09-03: 5 of 5 as expected** — four named-boss / no-story
+  questions with no spoiler fence and the branch menu, the Red Dead ending question with one collapsed
+  spoiler box. Deck-local model, character voice on, 20–25 s per answer. Details in testing.md; two
+  content slips and the chip-row rotation limit are in § 6.
+- ✅ **W3** Prompt budget guard shipped 2026-09-03 *(D46)*: attached Proton logs capped at **4 KiB**
+  (`TOTAL_LOG_BUDGET_BYTES`; the collector still scans 96 KiB, `RAW_READ_BUDGET_BYTES`, filters to
+  error-ish lines and keeps the newest), the follow-up chip's pasted parent answer capped at
+  **1,500 characters** (`REPLY_FOLLOWUP_PARENT_ANSWER_MAX_CHARS`), and `prompt_window_warning` logs
+  a warning at the POST site whenever prompt + `num_predict` exceeds the assumed 4,096-token window
+  (`ASSUMED_CONTEXT_WINDOW_TOKENS`). Why 4 KiB and not the 6–8 KiB first guessed: a Speed
+  troubleshooting Ask on the Deck already carries ~1,700 prompt tokens plus an 800-token reply
+  budget plus up to 2 KiB of tips, leaving ~1,000 tokens, and log lines run ~3 characters per token.
+  Three unit tests. `num_ctx` stays unset (a separate, measured call).
 - ✅ **W4a** Fence misfire fix shipped in code 2026-09-02, gated by W1: on low-narrative and
   named-entity turns the two fence-format sentences become one plain "do not fence" line
   (`_strategy_spoiler_policy_block`, three new unit tests). Misfires **28/96 → 3/96 and 5/96** in
@@ -570,13 +585,26 @@ holdout compat rows first.
    (`fetch_remote_manifest` + `install_corpus_from_manifest` into the SD-card path, then set
    `rag_corpus_version` in `settings.json`), which the plugin picks up on its next Ask because it
    reads settings from disk every time. For any future Deck window I will say which minutes I need
-   and ask you to hold the other chats first.
+   and ask you to hold the other chats first. **Done 2026-09-02/03: you chose (b); installed over
+   SSH, verified, and the UI label reads 2026.09.01. The Update button itself was re-tested on
+   2026-09-03 with the Deck held for me and works.**
 9. **The fence misfire is fixed in code, measured, and waiting for one Deck run.** The cheap
    experiment worked (§ 4.1 table): misfires 28/96 → 3/96 and 5/96 in two runs, ending questions
    still fenced. It ships in `_strategy_spoiler_policy_block` with unit tests. What it needs from
    you: the corpus install (item 8) and then a yes on the five frozen-chip sentences in
    **KB-ANSWER-02** (testing.md), which I will pin only after you confirm them. W4b (prompt diet)
-   and W6 (tiers) follow the same gate.
+   and W6 (tiers) follow the same gate. **Done 2026-09-03: confirmed on the Deck, 5 of 5.**
+10. **Your Deck answers with a character voice on (*Ali G*), and the PC harness measures with it off.**
+    On the five Deck runs the voice cost two facts: the Tank reply turned *a punch near a drop kills
+    you* into *kills him*, and the Volvagia reply never named the Megaton Hammer. The other three kept
+    their cards straight. Prompt size on the Deck was 1,880–2,074 tokens against the PC's 1,539 mean —
+    the character block is the difference. Worth a harness switch (`--character <preset>`) so the
+    numbers reflect what you actually ship yourself; cheap to add, and it would make the character
+    presets measurable the same way the prompt is.
+11. **A ten-chip frozen batch is only half reachable by thumb.** The chip row stops walking the batch
+    60 s after the panel opens and an Ask does not restart it, so chips 6–10 never appeared; four of the
+    five sentences went in through the typing script instead. Filed on the roadmap (★). Until it is
+    fixed, keep a pinned batch to five or reopen the panel to advance it.
 
 ## 7. Testing on the Deck — how the rows will be run
 

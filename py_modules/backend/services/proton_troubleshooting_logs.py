@@ -14,9 +14,18 @@ import re
 import sys
 from typing import Any, Optional
 
-# Total UTF-8 payload budget for all attached excerpts (between header/footer wrappers).
-TOTAL_LOG_BUDGET_BYTES = 96 * 1024
+# How much log text is *read and scanned* across all candidate files. Unchanged from the
+# original design: scanning is cheap, and the error-line filter below needs a wide net.
+RAW_READ_BUDGET_BYTES = 96 * 1024
 PER_FILE_TAIL_BYTES = 64 * 1024
+# How much of it is *attached* to the prompt (between header/footer wrappers), newest lines
+# kept. Decision D46 (2026-09-01): the Deck loads gemma4:e2b-it-qat with a 4,096-token window
+# and nothing sets num_ctx, so a prompt that does not fit loses its *start* silently -- the
+# identity, the rules and the cards. A Speed troubleshooting Ask already carries ~1,700 prompt
+# tokens plus an 800-token reply budget and up to 2 KiB of tips, which leaves roughly 1,000
+# tokens for logs; log lines run about three characters per token, so 4 KiB is the ceiling that
+# keeps the whole prompt inside the window. The old 96 KiB cap was ~25,000 tokens.
+TOTAL_LOG_BUDGET_BYTES = 4 * 1024
 
 _LINE_FILTER_RE = re.compile(
     r"(?i)(err|warn|fail|vk_|dxvk|vkd3d|wine|proton|assert|fatal)"
@@ -142,7 +151,10 @@ def collect_proton_troubleshooting_logs(app_id: str, *, home: Optional[str] = No
             candidates.append(path)
 
     parts: list[str] = []
-    budget_left = TOTAL_LOG_BUDGET_BYTES
+    # The collection loop scans up to RAW_READ_BUDGET_BYTES; the attach cap is applied once at
+    # the end by _maybe_filter_and_truncate, which keeps error-ish lines first and the newest
+    # TOTAL_LOG_BUDGET_BYTES of those, so a small cap still lands on the lines that matter.
+    budget_left = RAW_READ_BUDGET_BYTES
 
     for cand in candidates:
         if budget_left <= 0:

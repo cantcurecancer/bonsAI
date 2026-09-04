@@ -456,6 +456,44 @@ def _is_thinking_unsupported_error(status: Any, body: str) -> bool:
     return "not support" in text or "unsupported" in text or "does not accept" in text
 
 
+# Decision D46 (2026-09-01). Measured on the Deck: Ollama 0.32.15 loads gemma4:e2b-it-qat with
+# context_length 4096 and nothing here sets num_ctx. A prompt that does not fit is not rejected;
+# Ollama keeps the *end* and drops the *start*, which is the identity block, the rules and the
+# cards, and the user sees a confident answer with nothing behind it. This is the warning D46
+# asked for, in place of raising the window (a separate, measured call).
+ASSUMED_CONTEXT_WINDOW_TOKENS = 4096
+# Prose and log text on this model run about 3.5 characters per token; an estimate on the low
+# side of that keeps the warning honest rather than early.
+_PROMPT_CHARS_PER_TOKEN = 3.5
+
+
+def estimate_prompt_tokens(messages: list) -> int:
+    """Rough token count for the text of a chat request; images are not counted."""
+    chars = 0
+    for m in messages or []:
+        if isinstance(m, dict):
+            chars += len(str(m.get("content") or ""))
+    return int(chars / _PROMPT_CHARS_PER_TOKEN)
+
+
+def prompt_window_warning(
+    messages: list,
+    num_predict: int,
+    *,
+    window_tokens: int = ASSUMED_CONTEXT_WINDOW_TOKENS,
+) -> Optional[str]:
+    """One-line warning when prompt + reply budget would not fit the assumed window, else None."""
+    est = estimate_prompt_tokens(messages)
+    need = est + int(num_predict or 0)
+    if need <= window_tokens:
+        return None
+    return (
+        f"ask_ollama: prompt ~{est} tokens + num_predict {int(num_predict or 0)} = {need} exceeds the "
+        f"assumed {window_tokens}-token window by ~{need - window_tokens}; Ollama keeps the end of the "
+        "prompt and drops its start silently (identity, rules, cards). Trim what is attached (D46)."
+    )
+
+
 def _stream_ollama_chat_once(
     url: str,
     model_name: str,
@@ -500,6 +538,9 @@ def _stream_ollama_chat_once(
         },
     }
     payload = json.dumps(body_dict).encode("utf-8")
+    window_warning = prompt_window_warning(messages, num_predict)
+    if window_warning:
+        logger.warning(window_warning)
     logger.info(
         "ask_ollama: POST %s model=%s payload_bytes=%d num_predict=%d think=%s",
         url,
