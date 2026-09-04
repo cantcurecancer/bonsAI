@@ -47,9 +47,6 @@ from one star to six.
   One earlier chip per press (four in the run) before the ring goes up to the slot row, so leaving the chips can take five presses;
   every stop was visible. Nothing in **PRESET-ONE-LINE-03** forbids it — the maintainer's call whether Up should leave the row at once
   (`runs/PRESET-ROW-up-from-chips-probe.json`, `runs/CHAT-SLOTS-V3-01-rerun-fresh-open-walk.json`).
-- ★ `[KB]` **The arms report's verdict only compares `rrf` against `keyword`** — **OPEN.** The 2026-08-29 run printed "no separation"
-  while its own table showed `vector_only` well ahead. Make the verdict look at every arm, or say which pair it judges
-  (`scripts/eval_kb_embed_models.py`, `_arms_verdict`).
 - ★ `[reply]` **A branch question elides the game name** — **OPEN, found 2026-09-04.** The Ravenholm branch picker asked
   *"Where are you at in … ?"* with the title replaced by an ellipsis.
 - ★★ `[chat]` **A command reply leaves the turn header blank and the chat titled *New chat*** — **OPEN, cause found 2026-09-04 (desk
