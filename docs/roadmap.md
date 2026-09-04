@@ -256,10 +256,9 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
   (not only a later change), and the Clear cache / Clear all plugin data buttons register as return-focus owners, so the ring comes
   back to the button that opened the modal instead of wherever Steam defaults to. Row **TAB-BAR-11**.
 - ★★ `[focus]` **Left on the Ollama sliders steps the value and then throws the ring out of the plugin** — **VERIFY.**
-  Fixed at the desk 2026-09-04, Deck check owed. Reply style, keep-alive and connection-timeout sliders now claim Left/Right
-  on the move handlers themselves instead of stepping the value from inside the button-press handler, so Steam has nothing
-  left to carry off the slider. The Settings UI-scale slider has the same bug in a different file and stays open. Row
-  **ONBUTTONDOWN-AUDIT-01**.
+  Fixed at the desk 2026-09-04, Deck check owed. Reply style, keep-alive, connection-timeout and the Settings UI-scale
+  slider all now claim Left/Right on the move handlers themselves instead of stepping the value from inside the
+  button-press handler, so Steam has nothing left to carry off the slider. Row **ONBUTTONDOWN-AUDIT-01**.
 - ★★ `[reply]` **Spoiler fences wrapped harmless tactics on games with no story, and on bosses you named** — **VERIFIED on the
   Deck 2026-09-03.** Fixed 2026-09-02: on those turns the prompt now says plainly not to fence. Measured on the PC with the answer
   eval: 28 of 96 misfires before, 3 after, ending questions still fenced. Deck run **KB-ANSWER-02**, 5 of 5: Tank, antlions,

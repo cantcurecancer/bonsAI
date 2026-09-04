@@ -1,6 +1,6 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 356,
+  "fileCount": 357,
   "edgeCount": 853,
   "cycles": [],
   "orphans": [],
@@ -723,14 +723,20 @@
         "src/components/OllamaTab.tsx"
       ]
     },
+    "src/components/SettingsTabUiScaleSection.test.ts": {
+      "imports": [
+        "src/components/SettingsTabUiScaleSection.tsx"
+      ],
+      "importedBy": []
+    },
     "src/components/SettingsTabUiScaleSection.tsx": {
       "imports": [
         "src/components/SettingsTabUiScaleSlider.tsx",
-        "src/data/uiScaleProfile.ts",
-        "src/utils/focusNavigation.ts"
+        "src/data/uiScaleProfile.ts"
       ],
       "importedBy": [
-        "src/components/SettingsTab.tsx"
+        "src/components/SettingsTab.tsx",
+        "src/components/SettingsTabUiScaleSection.test.ts"
       ]
     },
     "src/components/SettingsTabUiScaleSlider.tsx": {
@@ -3049,7 +3055,6 @@
         "src/components/MainTabBonsaiAiMarkdownChunk.tsx",
         "src/components/MainTabUnifiedAskBar.tsx",
         "src/components/SessionContextStrip.tsx",
-        "src/components/SettingsTabUiScaleSection.tsx",
         "src/features/chat-slots/ChatSlotRow.tsx",
         "src/features/chat-slots/useChatSlotBumpers.ts",
         "src/features/plugin-shell/tabBarNav.ts",

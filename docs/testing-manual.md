@@ -161,13 +161,14 @@ failures:
 - [ ] All four `DeckFocusSlider` users, not just UI scale — **Ollama keep-alive**, **Reply verbosity**,
       **Connection timeout** share `buildDeckThumbNavHandlers` and changed with it
 
-**Fixed at the desk 2026-09-04** for the three `DeckFocusSlider` consumers — **Ollama keep-alive**,
-**Reply verbosity**, **Connection timeout**. It was the second outcome above: `buildDeckThumbNavHandlers`
-now steps on `onMoveLeft`/`onMoveRight` and returns `true` to claim the move, with no direction branch
-left in `onButtonDown` to double-step. Deck check owed: re-run the slider half of this row and confirm
-Left stays on the slider on all three. The **Settings → UI scale manual profile bridge** (the last
-bullet in the row above) has the identical shape in a different file (`SettingsTabUiScaleSection.tsx`)
-and was not touched here — it stays open.
+**Fixed at the desk 2026-09-04** for all four sliders — the three `DeckFocusSlider` consumers
+(**Ollama keep-alive**, **Reply verbosity**, **Connection timeout**) and the **Settings → UI scale
+manual profile bridge** (the last bullet in the row above). It was the second outcome above: both
+`buildDeckThumbNavHandlers` (`DeckFocusSlider.tsx`) and the UI-scale bridge's own `bridgeSliderNav`
+(pulled out into an exported `buildUiScaleBridgeNav`, `SettingsTabUiScaleSection.tsx`) now step on
+`onMoveLeft`/`onMoveRight` and return `true` to claim the move, with no direction branch left in
+`onButtonDown` to double-step. Deck check owed: re-run the slider half of this row and confirm Left
+stays on the slider on all four.
 
 ### DOC-SWEEP-01 — global document realm fixes (P1)
 

@@ -63,6 +63,12 @@ All notable changes to this project are documented in this file.
   to Steam's Quick Access rail, so the very next press landed outside the plugin. Left and Right now
   claim the press themselves, so the ring stays on the slider. `DeckFocusSlider.tsx`. On-Deck
   **ONBUTTONDOWN-AUDIT-01** in `docs/testing.md`.
+- **Left on the Ollama and UI-scale sliders no longer throws you out of the plugin:** pressing Left on
+  the Reply style, keep-alive, connection-timeout or Settings UI-scale slider stepped the value once
+  and then handed the D-pad ring to Steam's Quick Access rail, so the very next press landed outside
+  the plugin. Left and Right now claim the press themselves, so the ring stays on the slider.
+  `DeckFocusSlider.tsx`, `SettingsTabUiScaleSection.tsx`. On-Deck **ONBUTTONDOWN-AUDIT-01** in
+  `docs/testing.md`.
 - **The Developer tab's Clear frozen test chips button no longer costs a dead press when there is
   nothing to clear:** with no batch pinned the button used to render disabled rather than disappear,
   and a disabled button still takes the D-pad ring, so leaving Developer spent one press on it either

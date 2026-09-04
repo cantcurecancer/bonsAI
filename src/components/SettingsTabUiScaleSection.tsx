@@ -15,10 +15,6 @@ import {
   UI_SCALE_PROFILE_LABEL,
 } from "../data/uiScaleProfile";
 import { SettingsTabUiScaleSlider } from "./SettingsTabUiScaleSlider";
-import {
-  isDeckDirectionLeftEvent,
-  isDeckDirectionRightEvent,
-} from "../utils/focusNavigation";
 
 export type SettingsTabUiScaleSectionProps = {
   uiScaleAutoEnabled: boolean;
@@ -36,6 +32,38 @@ function focusInHost(host: HTMLElement | null): boolean {
   if (!target) return false;
   target.focus();
   return true;
+}
+
+export type UiScaleBridgeNavDeps = {
+  stepManualProfile: (delta: number) => boolean;
+  toggleBridgeSliderEditing: () => void;
+  focusAutoToggle: () => boolean;
+  focusResetButton: () => boolean;
+  focusApplyButton: () => boolean;
+};
+
+/**
+ * Left/Right claim the move on onMoveLeft/onMoveRight themselves, the same fix as
+ * buildDeckThumbNavHandlers (DeckFocusSlider.tsx): stepping from inside onButtonDown left the press
+ * unconsumed, so Steam's own navigation carried on left/right past the bridge after the value had
+ * already stepped once (ONBUTTONDOWN-AUDIT-01, measured 2026-09-03). `stepManualProfile` always
+ * returns true, so both handlers always claim the move. Pulled out as its own function, the same way
+ * `buildDeckThumbNavHandlers` is, so it can be unit-tested directly -- Steam nav props like
+ * `onMoveLeft` never reach the DOM through the test harness's Focusable stub, so a render-based test
+ * cannot call them.
+ */
+export function buildUiScaleBridgeNav(deps: UiScaleBridgeNavDeps): Record<string, unknown> {
+  const { stepManualProfile, toggleBridgeSliderEditing, focusAutoToggle, focusResetButton, focusApplyButton } = deps;
+  return {
+    onMoveLeft: () => stepManualProfile(-1),
+    onMoveRight: () => stepManualProfile(1),
+    onActivate: () => {
+      toggleBridgeSliderEditing();
+      return true;
+    },
+    onMoveUp: () => focusAutoToggle(),
+    onMoveDown: () => focusResetButton() || focusApplyButton(),
+  };
 }
 
 export const SettingsTabUiScaleSection: React.FC<SettingsTabUiScaleSectionProps> = ({
@@ -120,19 +148,13 @@ export const SettingsTabUiScaleSection: React.FC<SettingsTabUiScaleSectionProps>
 
   const bridgeSliderNav = useMemo(
     () =>
-      ({
-        onButtonDown: (button: unknown) => {
-          if (isDeckDirectionLeftEvent(button)) return stepManualProfile(-1);
-          if (isDeckDirectionRightEvent(button)) return stepManualProfile(1);
-          return false;
-        },
-        onActivate: () => {
-          setBridgeSliderEditing((prev) => !prev);
-          return true;
-        },
-        onMoveUp: () => focusAutoToggle(),
-        onMoveDown: () => focusResetButton() || focusApplyButton(),
-      }) as Record<string, unknown>,
+      buildUiScaleBridgeNav({
+        stepManualProfile,
+        toggleBridgeSliderEditing: () => setBridgeSliderEditing((prev) => !prev),
+        focusAutoToggle,
+        focusResetButton,
+        focusApplyButton,
+      }),
     [focusApplyButton, focusAutoToggle, focusResetButton, stepManualProfile],
   );
 
