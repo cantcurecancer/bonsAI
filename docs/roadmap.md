@@ -47,13 +47,18 @@ from one star to six.
   One earlier chip per press (four in the run) before the ring goes up to the slot row, so leaving the chips can take five presses;
   every stop was visible. Nothing in **PRESET-ONE-LINE-03** forbids it — the maintainer's call whether Up should leave the row at once
   (`runs/PRESET-ROW-up-from-chips-probe.json`, `runs/CHAT-SLOTS-V3-01-rerun-fresh-open-walk.json`).
+- ★ `[KB]` **The arms report's verdict only compares `rrf` against `keyword`** — **OPEN.** The 2026-08-29 run printed "no separation"
+  while its own table showed `vector_only` well ahead. Make the verdict look at every arm, or say which pair it judges
+  (`scripts/eval_kb_embed_models.py`, `_arms_verdict`).
 - ★ `[reply]` **A branch question elides the game name** — **OPEN, found 2026-09-04.** The Ravenholm branch picker asked
   *"Where are you at in … ?"* with the title replaced by an ellipsis.
-- ★★ `[chat]` **A command reply leaves the turn header blank and the chat titled *New chat*** — **OPEN, found 2026-09-03.** After
-  `bonsai:vac-check` with the ban lookup off, the reply's turn header reads `…` and the chat it created stays *New chat*: the live
-  question is blank for a deterministic command reply, so the header and the title have nothing to show. Same `…` symptom SMOKE-H's
-  2026-08-23 fix covered for mid-thinking reopens. Seen in `runs/SMOKE-C-b-press-ask-vac-check-off.json` and again on VAC-02.
-  Filed under D58 #9.
+- ★★ `[chat]` **A command reply leaves the turn header blank and the chat titled *New chat*** — **OPEN, cause found 2026-09-04 (desk
+  reading, not yet fixed).** After `bonsai:vac-check` with the ban lookup off, the reply's turn header reads `…` and the chat it
+  created stays *New chat*. Traced to the backend: the three local-command branches (sanitizer/shortcut/VAC) in
+  `_finalize_immediate_background_local_command` never call the chat-slot turn-persist step the normal Ask path does, so nothing is
+  saved to reload — and the frontend's post-completion reload (`useChatSlots.ts` `applySlotTranscript`) then unconditionally
+  overwrites the just-set live question with the empty result. Fix needs backend changes (`main.py`), outside this lane's frontend
+  ownership. Filed under D58 #9. [Detail](roadmap-details.md#a-command-reply-leaves-the-turn-header-blank-and-the-chat-titled-new-chat).
 - ★★ `[focus]` **After a modal closes or the QAM reopens, the ring can sit on a hidden Steam tab button** — **OPEN, filed 2026-09-03.**
   Closing the Clear cache confirmation, and closing the QAM then reopening it with the panel still mounted, both leave the ring on
   one of Steam's hidden tab buttons (0 × 0, offscreen): nothing lit, one dead press before the next control. The D55 focus trap

@@ -586,6 +586,42 @@ See also [The spoiler fence on a no-story game lands mid-reply](#the-spoiler-fen
   bubble.
 
 
+## A command reply leaves the turn header blank and the chat titled New chat
+
+- ★★ **A command reply leaves the turn header blank and the chat titled *New chat*** — **OPEN. Cause found 2026-09-04, a desk
+  reading (grep/read only, no device or backend test run) — not fixed.** After `bonsai:vac-check` with the ban lookup off, the reply's
+  turn header reads `…` and the chat it created stays *New chat* (`runs/SMOKE-C-b-press-ask-vac-check-off.json`, and again on VAC-02).
+  Same `…` fallback SMOKE-H's 2026-08-23 fix covered for mid-thinking reopens (`buildCollapsedTurnTitle(liveQuestion) || "…"` in
+  MainTabChatTranscript.tsx, where `liveQuestion = askThreadDisplayQuestion.trim()`).
+  **The live question is set correctly and then overwritten — it is not missing at the source.** `onAskOllama` in
+  `useBonsaiAskOrchestration.ts:1022` sets `askThreadDisplayQuestion` to the typed command text synchronously at submit, and a
+  `bonsai:vac-check` command resolves on the immediate-completion path (`onAskOllama` ~line 1199–1233: `start_background_game_ai`
+  answers `status: "completed"` in the same round trip, no polling) whose `terminal.question` is that same correct text — so
+  `applyBackgroundStatusToUi`'s own backfill (`useBonsaiAskOrchestration.ts:667-669`, guarded `prev || q`) never has anything to fix.
+  **The overwrite happens one step later.** That same completed branch calls `a.onSlotTurnsChanged?.()`
+  (`useBonsaiAskOrchestration.ts:782`), wired in `src/index.tsx:502-504` and `:524` to `useChatSlots.ts`'s
+  `reloadActiveSlotTranscript`, which fetches the active slot **from disk** (`getChatSlot`) and calls `applySlotTranscript` — and
+  `applySlotTranscript` (`useChatSlots.ts:72-83`) sets `askThreadDisplayQuestion` **unconditionally** to whatever `pendingQuestion` the
+  reloaded turns produce (`setAskThreadDisplayQuestion(pendingQuestion ?? "")`, no `prev ||` guard the way the backfill above has one).
+  **Why the reload finds nothing:** in `main.py`, the three local-command branches — sanitizer (`local_kinds.sanitizer`, ~line 2621),
+  shortcut setup (~line 2635) and VAC check (~line 2656) — each call `_finalize_immediate_background_local_command` and `return`
+  directly from inside `start_background_game_ai`, **before** reaching the normal flow's chat-slot persistence
+  (`_chat_slots_record_user_turn`, only called on the non-local-command path further down the same function). So a VAC-check
+  exchange is never written to the chat slot's turn list at all. The reload's `getChatSlot` therefore returns the slot exactly as it
+  was before the command ran — no new turn, so `turnsToCollapsedTurns` computes no pending question, and the unconditional
+  `setAskThreadDisplayQuestion("")` in `applySlotTranscript` wipes the correct value the submit-time set and the completed-branch
+  backfill had both gotten right. The same missing persistence step is why the chat's title never updates away from *New chat*:
+  `chat_slot_service.append_turn` — the thing that renames a slot after its first question, per the comment on
+  `reloadActiveSlotTranscript` in `useChatSlots.ts` — never runs either, because nothing was ever appended.
+  **Fix needs backend changes**, outside a frontend lane's ownership: the VAC (and likely shortcut, and — separately, deliberately or
+  not — sanitizer, which already passes `state_question=""` even in the state it does record) branches need to persist the user and
+  assistant turns to the chat slot the way the normal path does, before or as part of returning from
+  `_finalize_immediate_background_local_command`. Hardening `useChatSlots.ts`'s `applySlotTranscript` to guard its
+  `setAskThreadDisplayQuestion` the same way the backend-completion backfill does (`prev || pendingQuestion`) would stop the
+  *symptom* (the header) without fixing the *cause* (the chat's title, and the on-disk history, both still empty) — worth doing
+  defensively, but not a substitute for the backend fix.
+
+
 ## Small and cosmetic, as filed
 
 - ★ **The active chip in Show details is hard to spot** — no focus ring, and the "Chip 1 of 6" counter is easy to miss. Filed by the maintainer.
