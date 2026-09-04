@@ -59,30 +59,11 @@ from one star to six.
   saved to reload — and the frontend's post-completion reload (`useChatSlots.ts` `applySlotTranscript`) then unconditionally
   overwrites the just-set live question with the empty result. Fix needs backend changes (`main.py`), outside this lane's frontend
   ownership. Filed under D58 #9. [Detail](roadmap-details.md#a-command-reply-leaves-the-turn-header-blank-and-the-chat-titled-new-chat).
-- ★★ `[focus]` **After a modal closes or the QAM reopens, the ring can sit on a hidden Steam tab button** — **OPEN, filed 2026-09-03.**
-  Closing the Clear cache confirmation, and closing the QAM then reopening it with the panel still mounted, both leave the ring on
-  one of Steam's hidden tab buttons (0 × 0, offscreen): nothing lit, one dead press before the next control. The D55 focus trap
-  catches the B-from-body path but not these two; TAB-BAR-09 covered three openers and this is a fourth. Step 0 of
-  `runs/CLEAR-CACHE-01-b-after-modal-back-to-main.json` and `runs/CLEAR-CACHE-01-c-close-panel-for-remount.json`.
 - ★★ `[focus]` **After the panel remounts the ring parks on a zero-size container** — **OPEN, found 2026-09-04.** On a fresh mount
   the ring lands on "Ask bonsAI" (Main) or "Where AI runs" (Ollama), both 0x0 rects that the visibility oracle calls OFFSCREEN, so
   the panel opens with nothing highlighted until the first press.
-- ★★ `[focus]` **Down from the chat slot lands on the whole reply before its first section** — **OPEN, filed 2026-09-02.** One wasted
-  press per reply, and on a long answer the highlight is a wall of glow. The bubble is its own stop with the sections nested inside.
-  Fix: hand the ring to the first section on the way in (`focusFirstAnswerChunk` already does this for Up from a spoiler), and
-  check Up from the reply buttons for the same double landing. [Detail](roadmap-details.md#down-from-the-chat-slot-lands-on-the-whole-reply).
 - ★★ `[focus]` **Focus ring styling is inconsistent** between plugin controls and Steam's own — **PARTIAL.** Modal scoping shipped; a
   blanket rule was tried and reverted in favour of Steam's native outline.
-- ★★ `[focus]` **Left on the Ollama sliders steps the value and then throws the ring out of the plugin** — **OPEN, filed 2026-09-03.**
-  Reply style, keep-alive and the custom-timeout slider all do it; Right steps once and the ring stays put. The handler runs but the
-  press is not consumed, so Steam's own navigation carries on left and lands the ring on the Quick Access rail. Row
-  **ONBUTTONDOWN-AUDIT-01** is answered: "focus escapes", not "nothing happens"
-  (`runs/ONBUTTONDOWN-AUDIT-01-and-THINK-EFFORT-05-b.json`, `runs/ONBUTTONDOWN-AUDIT-01-c-right-steps-and-timeout-sliders.json`).
-- ★★ `[focus]` `[perms]` **The Open Permissions button under a blocked reply is not a D-pad stop** — **OPEN, filed 2026-09-03.**
-  After `bonsai:vac-check` with Steam ban lookup off, the reply's *Open Permissions* button renders (115 × 34 px, between the reply
-  actions and the session context strip) but Down from Retry or Copy jumps straight past it to the session strip and Right from Copy
-  stops, so a controller cannot reach it. It is a `button.Focusable` with no `tabindex`, the same shape as the chat-slot row's
-  2026-08-30 bug. Blocks **SMOKE-C** and **PERM-JUMP-01**, which both start by pressing it (`runs/PERM-JUMP-01-a-find-open-permissions.json`).
 - ★★ `[focus]` **Up skips the answer sections and the chat slot row** — **OPEN, found 2026-09-04.** Down walks a reply chunk by
   chunk (three `.bonsai-answer-stop` stops on one turn); Up jumps from the feedback buttons straight past them to the bubble and
   the turn header. With the archive expanded, Up from the first archived header ran 18 presses to the tab bar and Decky's back
