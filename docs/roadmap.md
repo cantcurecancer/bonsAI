@@ -38,15 +38,6 @@ from one star to six.
 
 - ★ `[ask]` **The question overlay sits a few pixels off the native text field** — **OPEN.** Most visible on a three-line question
   and on the empty-field placeholder. Nothing has touched the overlay since 2026-08-07.
-- ★ `[focus]` **Reordering in the try-order picker drops the highlight** — **OPEN, minor.** A on a row's Up or Down reorders
-  correctly but the ring disappears for one press. Row **PICKER-REORDER-02** failed 2026-08-28. Measure before trying a plain
-  `focus()` inside the list.
-- ★ `[focus]` **The active chip in Show details is hard to spot** — **OPEN.** No focus ring on the chip, and the "Chip 1 of 6"
-  counter is a small grey line. The chips are plain spans inside one Focusable, so Steam's ring never lands on them.
-- ★ `[focus]` **The disabled Clear frozen test chips button still takes the D-pad ring** — **OPEN, filed 2026-09-03.**
-  With no batch pinned the button is disabled but is still a stop at the bottom of Developer, so leaving the tab costs one dead press.
-  The visibility oracle reports it clipped, most likely because a disabled button has `pointer-events: none` and `elementFromPoint`
-  hits its parent instead (`runs/TAB-RESUME-MODE-01-h-restore-C-and-remeasure-clear-chips-button.json`).
 - ★ `[focus]` **Up from the preset chips walks back through the chip history before it leaves the row** — **OPEN, filed 2026-09-03.**
   One earlier chip per press (four in the run) before the ring goes up to the slot row, so leaving the chips can take five presses;
   every stop was visible. Nothing in **PRESET-ONE-LINE-03** forbids it — the maintainer's call whether Up should leave the row at once
@@ -234,22 +225,22 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
   after a move, the ring goes back onto the moved row's own button — the one just pressed when it stays enabled, the
   row's other button when that one is now disabled by landing at an end. Both buttons stay inside the one list, where
   a plain `focus()` is allowed. **Not measured on the Deck tonight — row PICKER-REORDER-02 decides.**
-- ★ `[focus]` **The disabled Clear frozen test chips button still takes the D-pad ring** — **VERIFY.** Fixed at the desk
-  2026-09-04: the button now renders only once a batch is pinned (the "0 pinned" text above it already explains the empty
-  state), so a disabled stop no longer sits at the bottom of Developer. Owed: a Developer sweep with no batch pinned shows
-  no stop named *Clear frozen test chips*. Row **DEV-CLEAR-CHIPS-01**.
-- ★ `[reply]` **After reopening the panel, a branch-pick turn's header shows the internal prompt** — **VERIFY.** Fixed at the desk
-  2026-08-28: the caption the user saw is saved with the turn. Owed: make a branch pick, reopen, read the header. Row
-  **CHAT-HEADER-CAPTION-01**. [Detail](archive/roadmap-bugs-fixed.md#moved-from-the-roadmap-2026-09-02).
 - ★ `[focus]` **The active chip in Show details is hard to spot** — **VERIFY.** Fixed at the desk 2026-09-04: the active chip
   now carries a visible cyan border-glow and brighter fill, and the "Chip N of M" counter uses the section-label treatment
   (cyan, bold, letter-spaced) instead of small grey text. Style only — the focus graph is unchanged, and Steam's ring still
   lands on the ladder as a whole, never on a chip. Owed: a DOM read of the active class plus a screenshot for the
   maintainer's eyes. Row **CONTEXT-LADDER-01**.
+- ★ `[focus]` **The disabled Clear frozen test chips button still takes the D-pad ring** — **VERIFY.** Fixed at the desk
+  2026-09-04: the button now renders only once a batch is pinned (the "0 pinned" text above it already explains the empty
+  state), so a disabled stop no longer sits at the bottom of Developer. Owed: a Developer sweep with no batch pinned shows
+  no stop named *Clear frozen test chips*. Row **DEV-CLEAR-CHIPS-01**.
 - ★ `[focus]` **The focus ring is clipped on grid layouts** — **VERIFY.** Fixed at the desk 2026-09-04: each character-picker
   grid column now carries 6px of inner padding so a focused tile's ring has room to render before the column's own
   `overflow: hidden` clips it — most visible before the fix on an edge tile. Style only. Owed: a screenshot with the ring
   visible on an edge tile. Row **CHAR-PICKER-RING-01**.
+- ★ `[reply]` **After reopening the panel, a branch-pick turn's header shows the internal prompt** — **VERIFY.** Fixed at the desk
+  2026-08-28: the caption the user saw is saved with the turn. Owed: make a branch pick, reopen, read the header. Row
+  **CHAT-HEADER-CAPTION-01**. [Detail](archive/roadmap-bugs-fixed.md#moved-from-the-roadmap-2026-09-02).
 - ★★ `[focus]` **A checklist the model got wrong was left in the reply as raw JSON**, its own D-pad stop that did nothing — **VERIFY.**
   Fixed 2026-08-28: a rejected checklist block is dropped, as a rejected branch block already was. Owed: one sighting on device of a
   reply where it happens. Row **STRAT-CHECKLIST-JSON-01**.
