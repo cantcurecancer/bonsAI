@@ -17,13 +17,16 @@
  *           comment in index.tsx). The fresh header can arrive already carrying `gpfocus`, before this
  *           effect has attached at all.
  *         - `TabIndicatorBar` and `.bonsai-decky-tabs-root` share one fragment key that only changes on
- *           a UI-scale Apply (`index.tsx`, the `bonsai-tabs-gen-` key), so a QAM chord close/reopen does
- *           not remount either one — this effect stays attached throughout. But Steam's own `Tabs` can
- *           still rebuild its header's child nodes on a visibility change, and a node born already
- *           carrying `gpfocus` produces a `childList` record, never an `attributes` one, so the old
- *           config (attributes-only) had nothing to catch.
+ *           a UI-scale Apply (`index.tsx:1537`, the `bonsai-tabs-gen-` key) — verified by reading that
+ *           file, not measured on device — so a QAM chord close/reopen does not remount either one and
+ *           this effect stays attached throughout. The leading theory, UNKNOWN until measured on
+ *           device, is that Steam's own `Tabs` still rebuilds its header's child nodes on the
+ *           visibility change: a node born already carrying `gpfocus` produces a `childList` record,
+ *           never an `attributes` one, which the old config (attributes-only) had no way to catch.
  *         Fixed by checking what already holds the ring the instant the trap turns on, and by watching
- *         insertions as well as class changes on nodes already in the tree.
+ *         insertions as well as class changes on nodes already in the tree — this covers the childList
+ *         theory above and any other way a hidden button could arrive already focused, without needing
+ *         the theory to be the confirmed mechanism.
  * Does not: Decide where the ring should be; it only bounces a landing on the ghost to the bar,
  *           and only when the bar's nav node is registered. Nothing here calls DOM `focus()`.
  */
