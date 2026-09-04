@@ -86,13 +86,13 @@ References: `SettingsTabUiScaleSection.tsx`, `OllamaTab.tsx`, `PullModelsModal.t
 | **SMOKE-A** | Golden path | 0 | S0, BPM | Shell, tabs, Ask, connection, D-pad chunks, presets |
 | **SMOKE-C** | Permission gate | 0 | S0 | Capability blocked-action toast |
 | **SMOKE-F** | Deterministic commands | 0 | S0, no model | Sanitizer, shortcut-setup, vac-check off |
-| **SMOKE-B** | TDP apply 8W | 1 | S1, game + Hardware | TDP, QAMP banner, game context |
+| **SMOKE-B** | TDP apply 8W — retired 2026-09-03, D57 #6: TDP apply was removed 2026-07-30 | — | — | — |
 | **SMOKE-E** | Strategy one-shot | 1 | S1 | Mode, spoilers, Spoilers OK |
 | **SMOKE-D** | Frozen carousel triple | 1 | S1 | Presets troubleshooting — **verified** |
 | **SMOKE-G** | Vision attach once | 1 | S1, Media | Attach + multimodal — **verified** |
 | **SMOKE-H** | Background Ask reopen | 1 | S1 | Close QAM while pending → restore |
 
-**Tier 0 (~15 min):** A → C → F · **Tier 1 (~20 min):** B → E → confirm D/G → H
+**Tier 0 (~15 min):** A → C → F · **Tier 1 (~20 min):** E → confirm D/G → H
 
 ---
 
@@ -102,16 +102,18 @@ BPM (Desktop → Big Picture → QAM → bonsAI). Ollama reachable.
 
 ### SMOKE-A — Golden path (P0)
 
-- [ ] Open plugin; no crash on first paint
-- [ ] LB/RB cycles Main → Ollama → Settings → Permissions → (Developer) → About
-- [ ] **TAB-MARKER-01** — active tab icon is accent-coloured while focus is deep in the tab body (D-pad down into the panel, then look at the strip without moving focus back up); other icons stay grey. Close and reopen the plugin — the restored tab is still marked. With an AI character selected the marker takes that character's colour, not green.
-- [ ] Ollama → Test connection — success or stable unreachable (no traceback)
-- [ ] Short Ask; reply in focusable chunks; D-pad through chunks
-- [ ] **Show details** / context chips when available (see bug CONTEXT-LADDER)
-- [ ] Two preset chips visible, side by side on a single row (the block was three stacked rows until 2026-08-31 and one chip for
-  a day after that — one chip, or three, is a regression; D43 2026-09-01). The help chip, when showing, owns the whole row alone
+- [x] Open plugin; no crash on first paint — PASS 2026-09-03 on build 3b0e9d7: the panel opened on Main with no crash
+- [x] LB/RB cycles Main → Ollama → Settings → Permissions → (Developer) → About — PASS 2026-09-03: RB on the bar cycles Main → Ollama → Settings → Permissions → Developer → About → Main (`runs/SMOKE-A-02-tab-cycle-from-the-bar.json`)
+- [x] **TAB-MARKER-01** — active tab icon is accent-coloured while focus is deep in the tab body (D-pad down into the panel, then look at the strip without moving focus back up); other icons stay grey. Close and reopen the plugin — the restored tab is still marked. With an AI character selected the marker takes that character's colour, not green. — PASS 2026-09-03: the collapsed bar's name reads gold (Ali G) while the ring is deep in the Ollama body and the other cells stay grey; the old icon strip is hidden by plan 30, so the marker is the bar's name colour now
+- [x] Ollama → Test connection — success or stable unreachable (no traceback) — PASS 2026-09-03: reads *Connected · Ollama v0.32.15 · 4 models*, no traceback
+- [x] Short Ask; reply in focusable chunks; D-pad through chunks — PASS 2026-09-03: *reply with only the word echo* answered *echo* in 11.9 s, one bubble, D-pad through the one chunk
+- [x] **Show details** / context chips when available (see bug CONTEXT-LADDER) — PASS 2026-09-03: the ladder read *Chip 1 of 5 · KB: no game running · Reply style: balanced · Spoiler risk: med · Routed gemma4:e2b-it-qat · Developer details* (`runs/SMOKE-A-05-show-details.json`)
+- [x] Two preset chips visible, side by side on a single row (the block was three stacked rows until 2026-08-31 and one chip for
+  a day after that — one chip, or three, is a regression; D43 2026-09-01). The help chip, when showing, owns the whole row alone — PASS 2026-09-03: two chips side by side at x 48 and x 200, 148 × 30 px each
 
 ### SMOKE-C — Permission gate (P0)
+
+**Blocked 2026-09-03:** the deny surface's *Open Permissions* button is not reachable by D-pad (roadmap Bugs, filed 2026-09-03), so the jump and the *Back to …* return cannot be driven until that is fixed. The deny half itself passes: `bonsai:vac-check` with Steam ban lookup off answered with the capability message and made no Ollama call.
 
 - [ ] Turn a capability **off** → blocked action → **Open Permissions** (or troubleshooting hint button) → lands on matching toggle → **Back to …** returns → no crash
 - [ ] Re-enable before Tier 1
@@ -119,6 +121,8 @@ BPM (Desktop → Big Picture → QAM → bonsAI). Ollama reachable.
 ### PERM-JUMP-01 — Permission jump D-pad (P0)
 
 Capability off for each row; trigger the deny surface; D-pad to **Open Permissions** → Permissions tab → matching toggle focused → **Back to …** → prior tab.
+
+**Blocked 2026-09-03:** the deny surface's *Open Permissions* button is not a D-pad stop (roadmap Bugs, filed 2026-09-03), so no row here can be driven until that is fixed.
 
 | Capability | Deny surface | Expected toggle |
 |------------|--------------|-----------------|
@@ -133,6 +137,8 @@ Capability off for each row; trigger the deny surface; D-pad to **Open Permissio
 ### ONBUTTONDOWN-AUDIT-01 — onButtonDown whitelist + direction handlers (P1)
 
 Wave 4 G — confirm D-pad directions do not trigger A-only actions; direction handlers fire on device.
+
+**Deck result 2026-09-03:** Left on the Reply style, keep-alive and custom-timeout sliders steps the value once and then lets the ring leave the plugin to the Quick Access rail; Right steps and stays. See [testing.md](testing.md) and the roadmap Bugs entry.
 
 - [ ] Collapsed **Context used · tap for details** hint: D-pad **Down** past it does **not** expand; **A** expands
 - [ ] Session context strip open: D-pad **Down** through turn rows does **not** change active row; **A** selects row
@@ -158,6 +164,8 @@ failures:
 ### DOC-SWEEP-01 — global document realm fixes (P1)
 
 Wave 4 H — confirm each path works on-Deck (SharedJSContext vs QAM popup document).
+
+Re-run 2026-09-03 after plan 30: Settings Up lands on the bar; full sweep every stop visible (`runs/DOC-SWEEP-01-settings-free-play.json`).
 
 - [ ] Submit Ask: focused field blurs before send (keyboard focus does not stick mid-Ask)
 - [ ] Attachment row: **Right** from preview → remove button; **Left** back
@@ -194,15 +202,16 @@ suggestions → **decode**.
 
 - [ ] `bonsai:disable-sanitize` / `bonsai:enable-sanitize` — confirmation; no Ollama call
 - [ ] `bonsai:shortcut-setup-deck` — fixed help; points to [troubleshooting.md](troubleshooting.md) §5
-- [ ] `bonsai:vac-check` with Steam Web API **off** → capability message only (**VAC-01**)
+- [x] `bonsai:vac-check` with Steam Web API **off** → capability message only (**VAC-01**) — PASS 2026-09-03: answered with the capability message naming Permissions → Steam Web API and Developer → Integrations, no Ollama call in the plugin log (`runs/SMOKE-C-b-press-ask-vac-check-off.json`)
 
 ---
 
 ## Tier 1 — Core shipped (S1)
 
-### SMOKE-B — TDP apply 8W (P0)
+### SMOKE-B — TDP apply 8W (retired)
 
-- [ ] Game running; Hardware permission on; Ask to set TDP 8W → apply + QAMP banner
+Retired 2026-09-03 under D57 #6: it tested TDP apply, which was removed 2026-07-30, so there is nothing left to run.
+Tier 1 now starts at SMOKE-E; the ID stays so older links still resolve.
 
 ### SMOKE-E — Strategy one-shot (P1)
 
@@ -243,7 +252,7 @@ suggestions → **decode**.
 
 ### VAC / `bonsai:vac-check`
 
-- [x] **VAC-01** Capability off — SMOKE-F
+- [x] **VAC-01** Capability off — SMOKE-F — PASS 2026-09-03: answered with the capability message naming Permissions → Steam Web API and Developer → Integrations, no Ollama call in the plugin log (`runs/SMOKE-C-b-press-ask-vac-check-off.json`)
 - [ ] **VAC-02** On, empty key — *preview PASS; confirm on Deck*
 - [ ] **VAC-03** Valid key + SteamID
 - [ ] **VAC-04** Profile URL
@@ -256,8 +265,8 @@ suggestions → **decode**.
 - [ ] **STRATEGY-PLACEHOLDER-01** Strategy mode, empty Ask — focus field; italic placeholder does not shift when fake caret appears
 - [ ] **ASK-CARET-CHAR-01** AI character on — focus empty Ask field; native caret aligns with placeholder/text (not left of `?` badge); D-pad Up from paperclip → avatar, Right → field; character-off path unchanged
 - [ ] **ASK-WIDTH-01** — **partial fix landed 2026-08-15, confirm on-Deck.** Main tab, AI character **off**: the preset chips, the input box and the Ask bar all reach the QAM panel edges, with no visible gutter between them and the panel interior; the three share identical left and right edges. Repeat with the character **on**; repeat after LB/RB away and back. If a gutter survives, run `scripts/probe_deck_ask_row_width.py` and read **V0** — it walks `.bonsai-scope` → `<body>`, prints each ancestor's padding/margin and the room it eats, and marks which are bonsAI's to target vs Steam/Decky's needing a named selector. V1–V5 cover the per-row measurement loop if the ancestors come back clean
-- [ ] **CONTEXT-LADDER-01** Live turn Show details reveals inline chip ladder
-- [ ] **KB-COVERAGE-01** After Ask, Show details includes `kb_coverage` chip: KB off → `KB: off`; KB on + DRG Survivor + seed corpus → `KB: N sections`; KB on + uncovered title → `KB: none for this game`. **Blocked until CONTEXT-LADDER-01 passes** on live turn
+- [x] **CONTEXT-LADDER-01** Live turn Show details reveals inline chip ladder — PASS 2026-09-03 on the echo turn, `runs/SMOKE-A-05-show-details.json`
+- [ ] **KB-COVERAGE-01** After Ask, Show details includes `kb_coverage` chip: KB off → `KB: off`; KB on + DRG Survivor + seed corpus → `KB: N sections`; KB on + uncovered title → `KB: none for this game` (the 2026-08-16 device run cleared the CONTEXT-LADDER-01 blocker; the two negative cases are in plan 31)
 - [ ] **CONTEXT-LADDER-03** D-pad: Show details / Retry **Down** → ladder focus (not session strip skip); **Left/Right** cycles chips; all chips visible when ≤6; **Up** from first chip → utility row; **Down** from last chip → session strip; **Developer details** chip reachable
 - [ ] **MICRO-04** Strategy live-turn D-pad: branches → feedback → utilities
 - [x] **D-PAD-SCROLL-02** Strategy reply: ~one readable step per D-pad Down. **Passed 2026-08-28** — one stop per paragraph
@@ -288,8 +297,8 @@ suggestions → **decode**.
 - [x] **PICKER-EDGE-01** Fullscreen pickers: from the first control press Up, from the last press Down, ring must still reach the confirm buttons. **Character picker and AI models hub pass (2026-08-28)**; try order fails
 - [x] **PICKER-REORDER-01** Try order: one press of Down moves the *highlight*, not the model. **Passed 2026-08-28** after D36 option 1. Vision list not driven separately
 - [x] **PICKER-B-CLOSE-01** Try order closes on B, from a row and from the footer. **Passed 2026-08-28** once it moved onto the shared modal frame
-- [ ] **TAB-RESUME-MODE-01** Developer → **Navigation → Tab to open on (D15)**: each stop changes where the *next* open lands — **A · Main** always Main, **B · Resume** the tab you left, **C · 5 min** the tab you left only within five minutes. Re-check the control after a reopen to confirm the choice persisted
-- [ ] **TAB-RESUME-FOCUS-01** D-pad the same row: Down from **On-screen debug HUD** reaches the three buttons, **Left/Right** moves between A/B/C, **Down** leaves the row for **App activity logging** below, **Up** returns to Diagnostics — no stop skipped and no button acting on a direction press
+- [x] **TAB-RESUME-MODE-01** Developer → **Navigation → Tab to open on (D15)**: each stop changes where the *next* open lands — **A · Main** always Main, **B · Resume** the tab you left, **C · 5 min** the tab you left only within five minutes. Re-check the control after a reopen to confirm the choice persisted — PASS 2026-09-03: A · Main → reopened on Main after leaving from About (`runs/TAB-RESUME-MODE-01-a-select-main-and-close.json`); C · 5 min → reopened on About within a minute (`runs/TAB-RESUME-MODE-01-c-select-5min-and-close.json`) and on Main after 5 m 29 s away (closed 01:15:21, reopened 01:20:50); B · Resume → reopened on About (`runs/TAB-RESUME-MODE-01-f-select-resume-and-close.json`); each choice was still highlighted on Developer after its reopen; on disk A = `always_main`, B = `resume`, C = `resume_recent`; the maintainer's setting (C) was restored.
+- [x] **TAB-RESUME-FOCUS-01** D-pad the same row: Down from **On-screen debug HUD** reaches the three buttons, **Left/Right** moves between A/B/C, **Down** leaves the row for **App activity logging** below, **Up** returns to Diagnostics — no stop skipped and no button acting on a direction press — **PASS 2026-09-03** (`runs/TAB-RESUME-FOCUS-01.json`): Right A → B → C and stops, Left back, Up to Jump to Steam Input in Diagnostics, Down re-enters on A · Main, second Down to App activity logging; `tab_resume_mode` on disk unchanged through eight presses. Note: Jump to Steam Input (running game) sits between the HUD and the row even with no game running, so Down from the HUD takes two presses
 - [ ] **TAB-SWITCH-01** Press **RB** repeatedly through the whole strip, with focus **deep in a scrolled** Settings or Ollama panel: the icon strip must not lurch sideways and drift back, and the content pane must not flash or jump. **RB is the case that mattered** — the fault was asymmetric and LB never showed it, so an LB-only pass proves nothing. Include the wraparound (**RB on About**, rightmost, which wraps to Main rather than doing nothing) since that is the longest strip travel. Repeat with focus parked **on the tab icons**. Fixed 2026-08-07 by `overflow: clip` in section-1.ts; if this regresses, re-run `scripts/probe_deck_tab_switch.py` and check whether `scrollLeft` on the tabs-root child stays 0 while `scrollWidth` collapses. Mechanism: [planning/03-lbrb-tab-flicker.md](planning/03-lbrb-tab-flicker.md) § 10
 - [ ] **ABOUT-LINKS-01** About tab: D-pad **down** from the reply-language dropdown must reach **all four** links in order — GitHub, Built on Ollama!, Bugs & Feature Requests, PayPal — with no stop skipped and no press swallowed, and **Up** must walk back the same way. Press **A** on one and confirm Steam's browser opens (it is bright). Fixed 2026-08-07: hand-rolled `Focusable` + `onMoveUp`/`onMoveDown` wrappers returned `true` (so Steam skipped default navigation) while moving focus with a plain DOM `.focus()`, which does not transfer gamepad focus across nav containers — presses were consumed and focus never moved, making every link unreachable. The same chain also skipped the two middle links outright
 - [ ] **QAM-BODY-RO-01** Switch tabs repeatedly (10+, through the taller Settings/Ollama panels), then D-pad to the **bottom** of a long panel: the pane must still reach its end and not be pinned to a stale height. Steam replaces the scroll node on every switch, so this is specifically about the 2nd switch onward — one switch proves nothing. Fixed 2026-08-08; if it regresses, `--bonsai-tab-body-height` will stop matching the live pane's `clientHeight` after a switch. **Re-run QAM-BAZZITE-01 and D-PAD-SCROLL-01 with this** — same measurement chain
@@ -298,7 +307,7 @@ suggestions → **decode**.
 - [ ] **SOFT-PREDICT-04** Strategy mode, an answer long enough to continue mid-branch (opens a `bonsai-strategy-branches` fence before hitting the length wall): confirm no half-rendered fence or stray JSON appears at any point in the stream, including right at the continue boundary
 - [ ] **SOFT-PREDICT-05** A real thinking model (e.g. a qwen3 variant) at the default `think: false`: confirm a visible reply still comes back — no empty-reply regression from the model spending the whole budget on hidden thinking
 - [ ] **THINK-EFFORT-04** Ollama → **Thinking**, with a real thinking model (qwen3 variant) installed: set each of Brief / Balanced / Deep and Ask → answers still arrive, latency grows with the level, and **no raw reasoning leaks into the reply body**. Then Ask on a non-thinking model (gemma / llama) → the answer still arrives, a *Thinking not supported* toast appears **once** (not on the second Ask), and a second model that also cannot think warns separately. **While here, read the Ollama log for the 400 body** and tighten `_is_thinking_unsupported_error` in `ollama_service.py` if the wording is stable — the matcher is loose on purpose because the string is not a stable API
-- [ ] **THINK-EFFORT-05** D-pad the **Thinking** row: **Down** from the Reply style slider reaches the four buttons, **Left/Right** moves between Off/Brief/Balanced/Deep, **Down** exits to **Custom timeouts** below, **Up** returns to the Reply style slider — no stop skipped, and no button acting on a direction press. Inserting this row rewired both neighbours, so check the Reply style slider's Down and the latency row's Up specifically
+- [x] **THINK-EFFORT-05** D-pad the **Thinking** row: **Down** from the Reply style slider reaches the four buttons, **Left/Right** moves between Off/Brief/Balanced/Deep, **Down** exits to **Custom timeouts** below, **Up** returns to the Reply style slider — no stop skipped, and no button acting on a direction press. Inserting this row rewired both neighbours, so check the Reply style slider's Down and the latency row's Up specifically — PASS 2026-09-03 (`runs/ONBUTTONDOWN-AUDIT-01-and-THINK-EFFORT-05-b.json`): Down from the Reply style slider reaches Off, Right walks Off → Brief → Balanced → Deep and stops, Left back, Down leaves to Custom timeouts, Up returns to the Thinking row then to the Reply style slider, no button acted on a direction press
 - [ ] **EXPERT-CAP-01** Expert-mode Ask with a long answer: it now runs to ~1200 tokens before a soft continue rather than ~800. Expert was silently capped at the Speed budget until 2026-08-15, so a long Expert reply should visibly need fewer `Continuing…` cues than before the fix
 
 ### CHAT-SLOTS-V2 — Named chat slots (P0)
@@ -316,7 +325,7 @@ Run **CHAT-SLOTS-V2-05** (P-0 bumper suppression) first — it has never run on 
 everything below assumes it passes. Plan:
 [28-named-chat-slots-v3-implementation-plan.md](planning/28-named-chat-slots-v3-implementation-plan.md).
 
-- [x] **CHAT-SLOTS-V3-01** (W2) **Down** from the slot row reaches the transcript's first stop; **Down** continues transcript → presets → ask bar; **Up** retraces; on an empty slot **Down** from the row reaches the presets. The context footnote renders below the ask bar  — **PASS 2026-08-30 (automated).** Empty slot: tab strip → row → presets. With a transcript: tab strip → row → turn header → answer → Show details → session context → presets. Up retraces. Evidence `runs/CHAT-SLOTS-V3-01-*.json`. Note the session-context strip is a stop between transcript and presets whenever it has content.
+- [x] **CHAT-SLOTS-V3-01** (W2) **Down** from the slot row reaches the transcript's first stop; **Down** continues transcript → presets → ask bar; **Up** retraces; on an empty slot **Down** from the row reaches the presets. The context footnote renders below the ask bar  — **PASS 2026-08-30 (automated).** Empty slot: tab strip → row → presets. With a transcript: tab strip → row → turn header → answer → Show details → session context → presets. Up retraces. Evidence `runs/CHAT-SLOTS-V3-01-*.json`. Note the session-context strip is a stop between transcript and presets whenever it has content. — re-run PASS 2026-09-03 with the walk starting at the bar (`runs/CHAT-SLOTS-V3-01-rerun-fresh-open-walk.json`)
 - [x] **CHAT-SLOTS-V3-02** (W10) A slot named longer than about 12 characters: the focused title sweeps end to end and snaps back on a ~6s cycle; quiet rows never move; with Steam's reduced-motion setting on (if it is exposed), no sweep  — **PASS 2026-08-30 (automated).** A 62-char slot name focused: `--overflowing` set, `bonsai-slot-title-scrub` 6s attached, `text-overflow: clip`, sweep distance 312px = measured overflow. Quiet row: no class, no animation. Reduced-motion not exercised.
 - [x] **CHAT-SLOTS-V3-03** (W3+W11) A fresh slot and the `[+]` position both show the 52px silhouette and caption under the row; `[+]` shows no dots; the first Ask replaces the preview with the live turn  — **PASS 2026-08-30 (automated).** `[+]` shows no dots and no ×; logo 52px @ .16 opacity; caption 13px italic, line-height 20.15 (13 × 1.55), max-width 210px, centred. Create title 13px / rgba(200,214,230,0.45) / no glow **after the specificity fix** — it computed 14px / #f2f7fc before it.
 - [x] **CHAT-SLOTS-V3-04** (W14) Rename: cyan field, **Save** disabled while the name is empty, caret in the field on open; delete confirm shows Steam's destructive styling; both modals still survive a QAM close/reopen and return focus to the row. If `focusOnMount` fights the modal-survival focus dance, remove it and note that here  — **PARTIAL 2026-08-30 (automated).** Styling exact: SLOT NAME 10px/700/1px tracking, field 36px / 8px radius / cyan `rgba(156,231,255,0.5)` border / `#9ce7ff` caret, zero inner glass panels, stock Save+Cancel footer, field pre-filled. `focusOnMount` lands the ring in the field and does **not** fight the survival dance. Save-disabled-while-empty needs the on-screen keyboard, so it is covered by `ChatSlotRenameModal.test.tsx` instead. Return focus **fixed and verified 2026-08-30**: the registry was handed the row's outer wrapper, whose `closest('.Panel.Focusable')` resolved UP to an ancestor container; it now gets the row's own Focusable, and after Cancel `gpfocus` is on `.bonsai-chat-slot-row-focus`.
@@ -404,12 +413,15 @@ everything below assumes it passes. Plan:
   reading area ~455px — **PASS 2026-08-31, measured after deploy:** dock 245 → 161, chip viewport 118 → 34, reading area 371 → 455,
   one slot visible with the carousel's other history rows clipped. Free-play sweep (QA-FREE-PLAY-01): 16 presses top to ASK, every
   stop visible; Show details took focus 113px above the dock.
-- [ ] **PRESET-ONE-LINE-01b** (every mode still moves) Cycle Developer → preset chip animation through **carousel / fade / static /
+- [x] **PRESET-ONE-LINE-01b** (every mode still moves) Cycle Developer → preset chip animation through **carousel / fade / static /
   decode** and watch one full swap in each: carousel slides the next chip into the two-wide window from the right on its own within
   ~6s of opening (the timer only runs for 60s after the chips mount, so watch straight away); fade takes one chip out over ~2s and
   brings its replacement in over ~1s while the other chip stays put, never an empty row; static swaps on hold; decode scrambles and
   locks both chips, staggered. Also confirm the three game-specific seeds all appear in turn (the third queues behind the two on
   screen) and that a pinned QA batch of four or more walks in order past its third entry without ever showing one entry twice at once.
+  — PASS 2026-09-03 by D-pad from Developer (`runs/PRESET-ONE-LINE-01b-c/d/e/f-*.json`): carousel slides one chip in from the right
+  every 6 s for the first minute; fade takes the outgoing chip 1→0 in about 1.4 s and the replacement 0→1 in about 0.9 s while the
+  other chip stays, row never empty; static swaps instantly; decode scrambles in with a caret and resolves left to right in about 1.3 s
 - [ ] **PRESET-ONE-LINE-02** (the row matches the decision) One row, **two chips side by side**, each half the width less a 4px gap,
   **30px** tall, radius 4; a label longer than its chip scrolls sideways inside it with a soft fade at the edges, and short labels do
   not move. **Read the geometry from the live page** (`getBoundingClientRect` on the two `.bonsai-preset-glass` buttons and their
@@ -477,7 +489,7 @@ under `runs/`; numbers in the plan's § 8.
 | **TAB-BAR-06** | Slot-row takeover | While the slot row holds the ring the bar's LB/RB marks are hidden and the bar does not shift; they return when the ring leaves | ✅ 2026-09-02 `deck_readPage` around `runs/TAB-BAR-W3-slot-row-to-transcript.json` |
 | **TAB-BAR-07** | Legibility, by eye | Names on the open strip readable on the handheld at 8px caps; lit dash and name gold with Ali G / the TF2 Announcer, purple with Shadowheart, otherwise green; after a QAM close and reopen the bar shows the restored tab | ⏳ strip geometry measured (plan § 8); the by-eye half is the maintainer's: open bonsAI, press Down twice, look |
 | **TAB-BAR-08** | Touch | Tap on the thin bar opens the strip; a tab tap switches and closes it; a tap outside closes it | ⏳ needs a finger on the screen — the rig cannot tap |
-| **TAB-BAR-09** | Modal return | After the character picker closes on a non-Main tab, the ring lands on the opener or on the bar, never nowhere (re-runs PICKER-FOCUS-01's three openers) | ✅ 2026-09-02 for the character picker, the models hub and the chat-slot rename — all return to the opener (`runs/TAB-BAR-09-*.json`); ⏳ the desktop-note opener needs the *Save files to Desktop* permission on |
+| **TAB-BAR-09** | Modal return | After the character picker closes on a non-Main tab, the ring lands on the opener or on the bar, never nowhere (re-runs PICKER-FOCUS-01's three openers) | ✅ 2026-09-02 for the character picker, the models hub and the chat-slot rename — all return to the opener (`runs/TAB-BAR-09-*.json`); ⏳ the desktop-note opener needs the *Save files to Desktop* permission on · ⏳ 2026-09-03: the Clear cache confirmation is a fourth opener and its return lands on the hidden Settings tab button (roadmap Bugs, filed 2026-09-03) |
 | **TAB-BAR-10** | UI scale Apply | Settings → UI scale → Apply remounts the tabs subtree; the bar comes back thin, on the right tab, at the new scale | ✅ 2026-09-02 `runs/TAB-BAR-10-*.json` — thin, on Settings, scale 1, body root re-registered (Up from the top of Settings reaches the bar). The 4px gap under the bar was lost on remount, is now a stylesheet value, and survives an Apply (`runs/TAB-BAR-10-ui-scale-apply-2.json`, body top 24px after) |
 
 Also re-run because their landing spot changed: **DOC-SWEEP-01** (Settings Up → the bar now),

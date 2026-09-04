@@ -536,6 +536,24 @@ Both entries tested **TDP apply**, which the permissions cleanup of 2026-07-30 r
 
 ---
 
+## Moved from the roadmap 2026-09-03
+
+Verify entries that passed on the Deck during [plan 31](../planning/31-deck-verification-round.md), moved out of the roadmap the same day, verbatim as they read there. The roadmap keeps a one-line **Done** entry for each.
+
+- ★★ `[tabs]` **Your tab is remembered when you leave and reopen** — **VERIFY.** Shipped 2026-08-04 with a three-way Developer choice
+  (D15). Rows **TAB-RESUME-01** (Partial), **TAB-RESUME-MODE-01**, **TAB-RESUME-FOCUS-01**.
+  - **Evidence, 2026-09-03 on build `3b0e9d7`:** `runs/TAB-RESUME-FOCUS-01.json`,
+    `runs/TAB-RESUME-MODE-01-a-select-main-and-close.json`, `runs/TAB-RESUME-MODE-01-c-select-5min-and-close.json`,
+    `runs/TAB-RESUME-MODE-01-f-select-resume-and-close.json`. The first-press-snaps-to-top focus gap is unchanged and stays
+    tracked with the picker focus-restore item.
+
+- ★ `[chips]` **The static seed stops telling you to enable the knowledge base when it is already on** — **VERIFY.** Fixed 2026-08-07.
+  Row **PRESET-KB-SEED-01**.
+  - **Evidence, 2026-09-03:** KB on, no frozen batch, carousel mode, Main watched for 65 s straight after the chips mounted — nine
+    distinct chips came round and the seed never appeared (plan 31 § 11 poll log).
+
+---
+
 ## The Verify list as it read on 2026-09-02
 
 The roadmap no longer has a Verify section: each item that still owes a Deck check is a **VERIFY** entry in Bugs or Features, and the QA queue is [testing.md](../testing.md). The list is preserved here verbatim because several lines carry QA-row pointers and evidence that the shorter entries do not repeat.

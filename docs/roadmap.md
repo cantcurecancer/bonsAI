@@ -12,7 +12,7 @@ from one star to six.
 
 1. **An entry is at most five lines**, in plain language, and says what a user would notice. Anything longer goes to
    [roadmap-details.md](roadmap-details.md) (open) or [archive/](archive/) (finished) and is linked, never deleted.
-2. **Three lists for live work: [Bugs](#bugs), [Verify](#verify), [Features](#features).** A new entry goes straight into the
+2. **Three lists for live work: [Bugs](#bugs), [Features](#features), [Verify](#verify).** A new entry goes straight into the
    right list at its star position (ascending; within a star band by tag, then by title) with a tag. Do not add sub-headings
    beyond Verify's own **Bugs** / **Features** split.
 3. **Status words in Bugs and Features:** **OPEN** (nothing built) · **PARTIAL** (some of it built) · **ACCEPTED** (the
@@ -46,23 +46,53 @@ from one star to six.
   `focus()` inside the list.
 - ★ `[focus]` **The active chip in Show details is hard to spot** — **OPEN.** No focus ring on the chip, and the "Chip 1 of 6"
   counter is a small grey line. The chips are plain spans inside one Focusable, so Steam's ring never lands on them.
+- ★ `[focus]` **The disabled Clear frozen test chips button still takes the D-pad ring** — **OPEN, filed 2026-09-03.**
+  With no batch pinned the button is disabled but is still a stop at the bottom of Developer, so leaving the tab costs one dead press.
+  The visibility oracle reports it clipped, most likely because a disabled button has `pointer-events: none` and `elementFromPoint`
+  hits its parent instead (`runs/TAB-RESUME-MODE-01-h-restore-C-and-remeasure-clear-chips-button.json`).
 - ★ `[focus]` **The focus ring is clipped on grid layouts** — **OPEN.** Tiles sit flush against their grid's edge, so the ring is
   cut off. Most visible on the character picker; each grid needs a margin outside its edge for the ring to fit.
+- ★ `[focus]` **Up from the preset chips walks back through the chip history before it leaves the row** — **OPEN, filed 2026-09-03.**
+  One earlier chip per press (four in the run) before the ring goes up to the slot row, so leaving the chips can take five presses;
+  every stop was visible. Nothing in **PRESET-ONE-LINE-03** forbids it — the maintainer's call whether Up should leave the row at once
+  (`runs/PRESET-ROW-up-from-chips-probe.json`, `runs/CHAT-SLOTS-V3-01-rerun-fresh-open-walk.json`).
 - ★ `[KB]` **The arms report's verdict only compares `rrf` against `keyword`** — **OPEN.** The 2026-08-29 run printed "no separation"
   while its own table showed `vector_only` well ahead. Make the verdict look at every arm, or say which pair it judges
   (`scripts/eval_kb_embed_models.py`, `_arms_verdict`).
+- ★★ `[focus]` **After a modal closes or the QAM reopens, the ring can sit on a hidden Steam tab button** — **OPEN, filed 2026-09-03.**
+  Closing the Clear cache confirmation, and closing the QAM then reopening it with the panel still mounted, both leave the ring on
+  one of Steam's hidden tab buttons (0 × 0, offscreen): nothing lit, one dead press before the next control. The D55 focus trap
+  catches the B-from-body path but not these two; TAB-BAR-09 covered three openers and this is a fourth. Step 0 of
+  `runs/CLEAR-CACHE-01-b-after-modal-back-to-main.json` and `runs/CLEAR-CACHE-01-c-close-panel-for-remount.json`.
 - ★★ `[focus]` **Down from the chat slot lands on the whole reply before its first section** — **OPEN, filed 2026-09-02.** One wasted
   press per reply, and on a long answer the highlight is a wall of glow. The bubble is its own stop with the sections nested inside.
   Fix: hand the ring to the first section on the way in (`focusFirstAnswerChunk` already does this for Up from a spoiler), and
   check Up from the reply buttons for the same double landing. [Detail](roadmap-details.md#down-from-the-chat-slot-lands-on-the-whole-reply).
 - ★★ `[focus]` **Focus ring styling is inconsistent** between plugin controls and Steam's own — **PARTIAL.** Modal scoping shipped; a
   blanket rule was tried and reverted in favour of Steam's native outline.
+- ★★ `[focus]` **Left on the Ollama sliders steps the value and then throws the ring out of the plugin** — **OPEN, filed 2026-09-03.**
+  Reply style, keep-alive and the custom-timeout slider all do it; Right steps once and the ring stays put. The handler runs but the
+  press is not consumed, so Steam's own navigation carries on left and lands the ring on the Quick Access rail. Row
+  **ONBUTTONDOWN-AUDIT-01** is answered: "focus escapes", not "nothing happens"
+  (`runs/ONBUTTONDOWN-AUDIT-01-and-THINK-EFFORT-05-b.json`, `runs/ONBUTTONDOWN-AUDIT-01-c-right-steps-and-timeout-sliders.json`).
+- ★★ `[focus]` `[perms]` **The Open Permissions button under a blocked reply is not a D-pad stop** — **OPEN, filed 2026-09-03.**
+  After `bonsai:vac-check` with Steam ban lookup off, the reply's *Open Permissions* button renders (115 × 34 px, between the reply
+  actions and the session context strip) but Down from Retry or Copy jumps straight past it to the session strip and Right from Copy
+  stops, so a controller cannot reach it. It is a `button.Focusable` with no `tabindex`, the same shape as the chat-slot row's
+  2026-08-30 bug. Blocks **SMOKE-C** and **PERM-JUMP-01**, which both start by pressing it (`runs/PERM-JUMP-01-a-find-open-permissions.json`).
 - ★★ `[KB]` **A troubleshooting question that only describes the symptom reaches no tips** — **OPEN, maintainer call.** The router
   needs a topic word: *"the game drops me back to the library"* never routes because *crash* is absent. Two of four blind compat
   rows miss. A reach limit of the D16 gate, not a regression; neither row was reworded. [Detail](roadmap-details.md#a-troubleshooting-question-that-only-describes-the-symptom-reaches-no-tips).
-- ★★ `[KB]` **The *Update knowledge base* button may not fire from a controller press** — **OPEN.** A bridge press with the ring on
-  the button started nothing on 2026-09-02, while the same install code ran cleanly over SSH. On inspection the button has both
-  `onOKButton` and `onClick` wired, so it needs one thumb press with eyes on the toast to settle. [Detail](roadmap-details.md#the-update-knowledge-base-button-may-not-fire-from-a-controller-press).
+- ★★ `[KB]` **The *Update knowledge base* button may not fire from a controller press** — **CLOSED 2026-09-03, works.** A bridge
+  press with the ring read on the button (visible, y=641) raised the *Already up to date — Version 2026.09.01 is the latest* toast
+  within half a second. The 2026-09-02 press that started nothing stays unexplained; the likeliest reading is that the panel's
+  state changed between the focus read and the press, which is the one-driver rule in plan 30 § 6. If it recurs, poll the toast
+  layer (`notificationtoasts_uid2`), not the panel. [Detail](roadmap-details.md#the-update-knowledge-base-button-may-not-fire-from-a-controller-press).
+- ★ `[chips]` **A frozen test-chip batch longer than the row cannot be reached after the first minute** — **OPEN, found 2026-09-03.**
+  The row walks a pinned batch only while the carousel is active (60s, `PRESET_CAROUSEL_ACTIVE_MS`); an Ask does not restart it and
+  Left/Right at the edge do not pull the next entry in. With ten chips pinned, 6–10 never came into view during **KB-ANSWER-02**, and
+  four of five sentences went in through `scripts/deck_send_ask.py` instead. Fix: restart the walk on an Ask or D-pad entry, or let
+  the edge advance the batch. Until then, keep a batch to what the row shows in a minute.
 - ★★ `[KB]` **Unrelated questions still get game cards stapled on** — **ACCEPTED 2026-08-27.** With a game running, *"thank you very
   much"* still attaches a card. Raising the keyword floor pushes against D25, and the model mostly ignores an irrelevant card.
   [Detail](roadmap-details.md#ordinary-phrases-attach-game-cards).
@@ -219,18 +249,18 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
 - ★★ `[focus]` **A checklist the model got wrong was left in the reply as raw JSON**, its own D-pad stop that did nothing — **VERIFY.**
   Fixed 2026-08-28: a rejected checklist block is dropped, as a rejected branch block already was. Owed: one sighting on device of a
   reply where it happens. Row **STRAT-CHECKLIST-JSON-01**.
-- ★★ `[reply]` **Spoiler fences wrapped harmless tactics on games with no story, and on bosses you named** — **VERIFY.** Fixed
-  2026-09-02: on those turns the prompt now says plainly not to fence. Measured on the PC with the answer eval: 28 of 96 misfires
-  before, 3 after, ending questions still fenced. Owed: the Deck feel run, row **KB-ANSWER-02**. Workaround meanwhile: spoiler
-  masking off in Settings. [Detail](roadmap-details.md#the-spoiler-fence-on-a-no-story-game-lands-mid-reply).
-- ★★★ `[chat]` **Clear cache cleared the screen but not the session** — **VERIFY.** Fixed and confirmed 2026-08-27. Two halves owed:
-  what a clear does to the orphan chat slots it leaves behind, and clearing while a reply is still being written (unit-tested, not
-  reproducible by hand). Row **CLEAR-CACHE-01**. [Why](roadmap-details.md#shipped-qa-owed--why-each-was-built-this-way).
+- ★★ `[reply]` **Spoiler fences wrapped harmless tactics on games with no story, and on bosses you named** — **VERIFIED on the
+  Deck 2026-09-03.** Fixed 2026-09-02: on those turns the prompt now says plainly not to fence. Measured on the PC with the answer
+  eval: 28 of 96 misfires before, 3 after, ending questions still fenced. Deck run **KB-ANSWER-02**, 5 of 5: Tank, antlions,
+  Theseus and Asterius, Volvagia unfenced with the branch menu; the Red Dead ending question fenced. Deck-local model, character
+  voice on. [Detail](roadmap-details.md#the-spoiler-fence-on-a-no-story-game-lands-mid-reply).
+- ★★★ `[chat]` **Clear cache cleared the screen but not the session** — **VERIFY.** Fixed and confirmed 2026-08-27, and again on the
+  Deck 2026-09-03. The orphan half is measured: the chat stays behind after a clear, so each clear-and-reask cycle leaves one more
+  chat in the rotation — a follow-up, not a regression. Only the mid-generation half is still owed: clearing while a reply is still
+  being written (unit-tested, not reproducible by hand yet). Row **CLEAR-CACHE-01**. [Why](roadmap-details.md#shipped-qa-owed--why-each-was-built-this-way).
 
 ### Features that need verification
 
-- ★ `[chips]` **The static seed stops telling you to enable the knowledge base when it is already on** — **VERIFY.** Fixed 2026-08-07.
-  Row **PRESET-KB-SEED-01**.
 - ★ `[layout]` **Rows span the QAM panel width** — **VERIFY.** Fixed 2026-08-16 and measured by probe (268 to 300 px); the visual walk
   was never run. Confirm the Main rows look flush and nothing overflows the column. Row **ASK-WIDTH-01**.
 - ★ `[ollama]` **Pulled models join the model try order** — **VERIFY.** RPC wired 2026-08-02. Row **ROUTING-MERGE-01**.
@@ -246,14 +276,12 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
 - ★★ `[chat]` **The game a chat belongs to, above its title** — **VERIFY.** Shipped 2026-08-30 in quiet text above the slot title;
   only chats created after that date carry the name. Row **CHAT-SLOTS-V3-14c**. It costs a line of height, which cuts against the
   vertical-space goal; decide whether it shows always or only when the row has focus.
-- ★★ `[focus]` **Slider direction handlers (Wave 4 G)** — **VERIFY.** Distinguish "nothing happens" from "double step" on the Ollama
-  keep-alive, Reply verbosity and Connection timeout sliders. Row **ONBUTTONDOWN-AUDIT-01**.
 - ★★ `[KB]` **Asked-entity extraction reads how players actually type** — **VERIFY.** Fixed 2026-08-09. Row **STRAT-ENTITY-01**.
 - ★★ `[KB]` **Compat routing widened to word-boundary topics (D16)** — **VERIFY.** Fixed 2026-08-06. Row **KB-ROUTER-01**.
 - ★★ `[KB]` **Expert mode gets the same cards as Strategy** — **VERIFY.** Fixed 2026-08-18; the route flag asked for Strategy by
   name. Row **KB-EXPERT-01**, and **KB-ASKMODE-01** needs a re-run. [Why](roadmap-details.md#shipped-qa-owed--why-each-was-built-this-way).
 - ★★ `[QA]` **Deferred manual QA** — **VERIFY.** Tier 0 smokes (SMOKE-A, C, F) then Tier 1 (SMOKE-E, H), and a broader prompt-testing
-  pass. **SMOKE-B is stale**: it tests TDP apply, which was removed 2026-07-30.
+  pass. SMOKE-B was retired 2026-09-03 (D57 #6). Round in progress: [plan 31](planning/31-deck-verification-round.md).
 - ★★ `[reply]` **Thinking effort control, Phase 1** — **VERIFY.** Shipped 2026-08-15: Ollama tab **Thinking** row, Off / Brief /
   Balanced / Deep. Rows **THINK-EFFORT-04** (real thinking model) and **THINK-EFFORT-05** (D-pad) owed.
 - ★★ `[reply]` **Thinking line fixes from 2026-08-07/08** — **VERIFY.** Emoji upright, lazy status tag survives, no bare-emoji phase
@@ -261,8 +289,6 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
   **THINKING-SLOW-01**, **THINKING-LIVE-01**, **THINKING-SPOILER-01**. [Log](planning/06-thinking-blurbs-review.md#10-implementation-log).
 - ★★ `[reply]` **Token streaming Phase A/B** — **VERIFY.** Start stutter fixed, sections as D-pad stops, scroll follow. Rows
   **STREAM-REVEAL-01**, **STREAM-09**, **STREAM-FOLLOW-01**. [Review](planning/05-token-streaming-review.md).
-- ★★ `[tabs]` **Your tab is remembered when you leave and reopen** — **VERIFY.** Shipped 2026-08-04 with a three-way Developer choice
-  (D15). Rows **TAB-RESUME-01** (Partial), **TAB-RESUME-MODE-01**, **TAB-RESUME-FOCUS-01**.
 - ★★★ `[KB]` **KB coverage chip in Show details** — **VERIFY.** The positive case passed on device. Owed: KB off reads `KB: off`, an
   uncovered title reads `KB: none for this game` (**KB-COVERAGE-01**), and an unmatched running game no longer says "no game
   running" (**KB-COVERAGE-NOAPP-01**, fixed 2026-08-23).
@@ -277,8 +303,8 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
   automated with a Deck confirm owed; 05 needs a real thinking model. [Why](roadmap-details.md#shipped-qa-owed--why-each-was-built-this-way).
 - ★★★★ `[chips]` **Preset row: two chips across, with scrolling labels** — **VERIFY.** Rebuilt 2026-09-01 under D43. Two 30px chips
   side by side, a long label scrolls through Steam's `Marquee`, the help chip owns the row until dismissed. The dock went 245 to
-  161px. Rows 02 and 03 passed on device; owed **PRESET-ONE-LINE-01b** (every mode) and **04** (scroll feel, decode churn, reduced
-  motion). Closes the label-overflow bug. [Detail](archive/roadmap-completed.md#moved-from-the-roadmap-2026-09-02).
+  161px. Rows 02 and 03 passed on device; owed **04** only (scroll feel by eye, decode churn, reduced motion); 01b passed 2026-09-03.
+  Closes the label-overflow bug. [Detail](archive/roadmap-completed.md#moved-from-the-roadmap-2026-09-02).
 - ★★★★ `[tabs]` **The tab bar collapses when not in use, and names the tab** — **VERIFY.** Shipped 2026-09-02 (plan 30 W0 to W6): a
   20px bar with the active tab's name at rest, opening to a strip that labels all six. Steam's header 81px to 20px. Rows 01 to 06,
   09 and 10 pass; owed **TAB-BAR-07** (legibility by eye) and **08** (touch). Closes the "tab names never appear" bug and D44.
@@ -303,6 +329,15 @@ on 2026-07-30 (`apply_tdp` no longer exists). Preserved in the archive.
 since April (`25742f2`), and a deliberate failing test exits 1 today. If it recurs, record the exact command and shell.
 
 **September 2026**
+- ★★ `[tabs]` **Your tab is remembered when you leave and reopen** — D15's three-way choice verified on the Deck 2026-09-03
+  (TAB-RESUME-01/-MODE-01/-FOCUS-01); the first-press focus snap stays open with the picker focus-restore item.
+- ★ `[chips]` **The static seed stops telling you to enable the knowledge base when it is already on** — verified on the Deck
+  2026-09-03 (PRESET-KB-SEED-01).
+- Prompt budget guard (D46): attached Proton logs capped at 4 KiB newest-first, the follow-up paste capped at 1,500
+  characters, and a plugin-log warning whenever prompt plus reply budget would not fit the Deck's 4,096-token window,
+  2026-09-03.
+- Fence fix confirmed on the Deck (**KB-ANSWER-02**, 5 of 5) and the *Update knowledge base* button confirmed working from a
+  controller press, 2026-09-03.
 - Collapsing tab bar with tab names (plan 30 W0 to W6), 2026-09-02.
 - Preset row rebuilt: two chips across, scrolling labels, help chip owns the row (D43), 2026-09-01/02.
 - Spoiler fences no longer wrap harmless tactics on no-story games or named bosses, 2026-09-02.
