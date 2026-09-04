@@ -176,6 +176,11 @@
       "role": ""
     },
     {
+      "path": "src/utils/buildReplyActionsElement.tsx",
+      "lines": 433,
+      "role": ""
+    },
+    {
       "path": "py_modules/backend/services/desktop_note_service.py",
       "lines": 432,
       "role": ""
@@ -191,13 +196,8 @@
       "role": ""
     },
     {
-      "path": "src/utils/buildReplyActionsElement.tsx",
-      "lines": 424,
-      "role": ""
-    },
-    {
-      "path": "src/components/deck/DeckFocusSlider.tsx",
-      "lines": 418,
+      "path": "src/utils/answerBubbleNavigation.test.ts",
+      "lines": 420,
       "role": ""
     }
   ]

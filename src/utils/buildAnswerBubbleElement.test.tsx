@@ -96,6 +96,39 @@ describe("answer bubble section stops", () => {
   });
 
   /*
+   * Up from a revealed spoiler's collapse control (nothing masked left to park on) goes through
+   * `focusFirstAnswerChunk` — "back to the top of the answer" per the comment on `moveUp` below —
+   * which used to land on the bare bubble itself, a stop of its own. One press should reach the
+   * first real section instead, the same fix as Down from the turn header (roadmap: "Down from the
+   * chat slot lands on the whole reply before its first section").
+   */
+  it("Up from a revealed spoiler's collapse control lands on the first section, not the bare bubble", () => {
+    const el = buildAnswerBubbleElement({
+      body: FENCED_BODY,
+      streaming: false,
+      spoilerMaskingEnabled: true,
+      maxWidthCss: "100%",
+      answerKey: ANSWER_KEY,
+    });
+    expect(el).not.toBeNull();
+    const { container } = render(el!);
+    const stops = stopsIn(container);
+    expect(stops.length).toBeGreaterThan(1);
+
+    // The shape Decky actually renders for a revealed fence's collapse control: its own Focusable
+    // (MainTabBonsaiAiMarkdownChunk.tsx), so it carries "Panel Focusable" itself.
+    const collapse = document.createElement("div");
+    collapse.className = "bonsai-spoiler-collapse-target Panel Focusable";
+    collapse.tabIndex = -1;
+    stops[0]!.appendChild(collapse);
+    collapse.focus();
+
+    const onMoveUp = (el!.props as Record<string, unknown>).onMoveUp as () => boolean;
+    expect(onMoveUp()).toBe(true);
+    expect(document.activeElement).toBe(stops[0]);
+  });
+
+  /*
    * Directions ride `onMoveDown`/`onMoveUp` — the handlers Steam actually invokes for a D-pad
    * press on device. Measured 2026-08-27: a real press dispatches no DOM keyboard event into the
    * plugin, and the previous `onButtonDown`-only wiring never moved the ring on hardware, which

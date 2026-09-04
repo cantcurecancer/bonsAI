@@ -569,6 +569,21 @@ See also [The spoiler fence on a no-story game lands mid-reply](#the-spoiler-fen
   D-pad stop with the sections nested inside it, so Steam parks on the outer box first. Fix: the bubble hands the ring straight to its first
   section on the way in (`focusFirstAnswerChunk` already does this for Up-from-a-spoiler), or stops being a stop of its own. Check Up from
   the reply buttons for the same double landing.
+  **Fixed at the desk 2026-09-04, Deck check owed.** The turn header's Down already called `focusFirstAnswerChunk`, but that function's
+  own fallback focused the bubble itself — the plain `focus()` it used cannot carry Steam's gamepad ring across the boundary from the
+  header's container into the bubble's (confirmed by the bubble's own registered `navRef`), so the header's press consumed itself
+  landing one level too coarse, and only the *next* Down, now genuinely inside the bubble's container, walked into the first section.
+  `focusFirstAnswerChunk` now calls `takeAnswerBubbleNavFocus` first — the same transfer `upIntoGlossaryChip` in
+  buildReplyActionsElement.tsx already used for the reply row's own hop into this bubble — and then lands on the first
+  `.bonsai-answer-stop` via the registered-stop handles in `answerStopRegistry.ts`, not a page query. A masked spoiler still wins over
+  the first section when one is present; that priority is unchanged. Up did have the same double landing: `upIntoGlossaryChip`'s own
+  comment already documented it happening on the DRG glossary-chip path specifically ("Up from Show details yielded to Steam, which
+  landed on the bubble"), and the general case (no thumbs row, no glossary chip) shared it — a new `focusLastAnswerChunk` mirrors the
+  fix for that direction, wired in as `upFromRetry` / `upFromShowDetails`'s last fallback before yielding. Not yet measured on
+  device — this is a reading from the code and the existing on-device notes above, not a Deck run. New QA row
+  **CHAT-REPLY-ENTRY-01**: from the slot row, Down enters the turn header, Down again lands on the first `.bonsai-answer-stop` (never
+  the bare `.bonsai-chat-ai-bubble`), Down again reaches the second section; from Helpful, Up reaches the last section, not the bare
+  bubble.
 
 
 ## Small and cosmetic, as filed

@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { splitResponseIntoChunks } from "./splitResponseIntoChunks";
 import {
+  focusFirstAnswerChunk,
+  focusLastAnswerChunk,
   handleAnswerBubbleMoveDown,
   handleAnswerBubbleMoveUp,
 } from "./answerBubbleNavigation";
@@ -353,6 +355,65 @@ describe("walking answer sections with the D-pad", () => {
     bubble.focus();
 
     expect(moveDown(bubble)).toBe(false);
+    expect(document.activeElement).toBe(bubble);
+  });
+});
+
+/*
+ * Entering the bubble from outside it: the turn header's Down (buildTurnHeaderElement.tsx) and the
+ * reply-actions row's Up (buildReplyActionsElement.tsx) both hand off here. Before this fix the
+ * fallback landed on the bare bubble — a stop of its own — so the first press after Down (or Up)
+ * consumed one press just to arrive, and only the next press actually entered a section. Filed
+ * 2026-09-02: "Down from the chat slot lands on the whole reply before its first section."
+ */
+describe("focusFirstAnswerChunk / focusLastAnswerChunk", () => {
+  beforeEach(() => {
+    resetAnswerStopRegistry();
+    resetSpoilerFenceRegistry();
+    resetUiDocument();
+    registerAnswerBubbleEl(ANSWER_KEY, null);
+    document.body.innerHTML = "";
+  });
+
+  it("focusFirstAnswerChunk lands on the first section, not the bare bubble", () => {
+    const { bubble, stops } = threeSections();
+
+    expect(focusFirstAnswerChunk(ANSWER_KEY)).toBe(true);
+    expect(document.activeElement).toBe(stops[0]);
+    expect(document.activeElement).not.toBe(bubble);
+  });
+
+  it("focusLastAnswerChunk lands on the last section, not the bare bubble", () => {
+    const { bubble, stops } = threeSections();
+
+    expect(focusLastAnswerChunk(ANSWER_KEY)).toBe(true);
+    expect(document.activeElement).toBe(stops[stops.length - 1]);
+    expect(document.activeElement).not.toBe(bubble);
+  });
+
+  it("focusFirstAnswerChunk still prefers a masked spoiler over the first section", () => {
+    const { stops } = threeSections();
+    // The shape Decky actually renders (MainTabBonsaiAiMarkdownChunk.tsx): the reveal target is its
+    // own Focusable, so it carries "Panel Focusable" itself rather than relying on an ancestor's.
+    const reveal = document.createElement("div");
+    reveal.className = "bonsai-spoiler-reveal-target Panel Focusable";
+    stops[0]!.appendChild(reveal);
+
+    expect(focusFirstAnswerChunk(ANSWER_KEY)).toBe(true);
+    expect(document.activeElement).toBe(reveal);
+  });
+
+  it("focusFirstAnswerChunk falls back to the bubble when it has no registered sections", () => {
+    const { bubble } = buildBubble([]);
+
+    expect(focusFirstAnswerChunk(ANSWER_KEY)).toBe(true);
+    expect(document.activeElement).toBe(bubble);
+  });
+
+  it("focusLastAnswerChunk falls back to the bubble when it has no registered sections", () => {
+    const { bubble } = buildBubble([]);
+
+    expect(focusLastAnswerChunk(ANSWER_KEY)).toBe(true);
     expect(document.activeElement).toBe(bubble);
   });
 });

@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
   "fileCount": 359,
-  "edgeCount": 860,
+  "edgeCount": 863,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -2503,6 +2503,7 @@
         "src/utils/answerBubbleNavigation.ts",
         "src/utils/buildAnswerBubbleElement.test.tsx",
         "src/utils/buildAnswerBubbleElement.tsx",
+        "src/utils/buildReplyActionsElement.test.tsx",
         "src/utils/buildReplyActionsElement.tsx"
       ]
     },
@@ -2567,7 +2568,8 @@
         "src/utils/answerBubbleNavigation.ts",
         "src/utils/answerStopRegistry.test.ts",
         "src/utils/buildAnswerBubbleElement.test.tsx",
-        "src/utils/buildAnswerBubbleElement.tsx"
+        "src/utils/buildAnswerBubbleElement.tsx",
+        "src/utils/buildReplyActionsElement.test.tsx"
       ]
     },
     "src/utils/appDesktopLog.test.ts": {
@@ -2775,7 +2777,10 @@
     "src/utils/buildReplyActionsElement.test.tsx": {
       "imports": [
         "src/test-harness/fakeDeckyUi.tsx",
-        "src/utils/buildReplyActionsElement.tsx"
+        "src/utils/answerBubbleElRegistry.ts",
+        "src/utils/answerStopRegistry.ts",
+        "src/utils/buildReplyActionsElement.tsx",
+        "src/utils/uiDocument.ts"
       ],
       "importedBy": []
     },
@@ -3652,6 +3657,7 @@
         "src/utils/answerStopRegistry.test.ts",
         "src/utils/answerStopRegistry.ts",
         "src/utils/buildAnswerBubbleElement.tsx",
+        "src/utils/buildReplyActionsElement.test.tsx",
         "src/utils/buildReplyActionsElement.tsx",
         "src/utils/chatPanelScroll.ts",
         "src/utils/drgGlossaryTermRegistry.ts",

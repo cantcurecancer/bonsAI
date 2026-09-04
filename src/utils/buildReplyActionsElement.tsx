@@ -32,7 +32,7 @@ import {
   getRegisteredAnswerBubble,
   takeAnswerBubbleNavFocus,
 } from "./answerBubbleElRegistry";
-import { elementIsWithinViewportOf } from "./answerBubbleNavigation";
+import { elementIsWithinViewportOf, focusLastAnswerChunk } from "./answerBubbleNavigation";
 import {
   findNextDrgGlossaryTermChipInView,
   focusDrgGlossaryTermChip,
@@ -272,17 +272,26 @@ export function buildReplyActionsElement(
     takeAnswerBubbleNavFocus(replyKey);
     return focusDrgGlossaryTermChip(chip);
   };
+  /*
+   * Last of all: the answer bubble's own last section, when nothing above claimed the press
+   * (typically no thumbs row and no glossary chip in view). Same double-landing shape as Down from
+   * the turn header — filed 2026-09-02, "Down from the chat slot lands on the whole reply before
+   * its first section" — approached from underneath: without this, Up yielded to Steam and landed
+   * on the bare bubble, and only a second Up walked into its last `.bonsai-answer-stop`.
+   */
   const upFromRetry = () => {
     const slot = liveSlot();
     if (showChipRows && focusLastReplyChip(slot)) return true;
     if (focusReplyHelpful(slot)) return true;
-    return upIntoGlossaryChip();
+    if (upIntoGlossaryChip()) return true;
+    return focusLastAnswerChunk(replyKey);
   };
   const upFromShowDetails = () => {
     const slot = liveSlot();
     if (showChipRows && focusLastReplyChip(slot)) return true;
     if (focusReplyNotReally(slot)) return true;
-    return upIntoGlossaryChip();
+    if (upIntoGlossaryChip()) return true;
+    return focusLastAnswerChunk(replyKey);
   };
 
   if (!showFeedback && !showUtilityRow && !showChipRows && rating === null) {

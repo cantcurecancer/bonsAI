@@ -17,6 +17,7 @@ import {
   getRegisteredAnswerBubble,
   registerAnswerBubbleEl,
   resolveFocusedAnswerBubble,
+  takeAnswerBubbleNavFocus,
 } from "./answerBubbleElRegistry";
 import { elementHasFocus, getUiDocument } from "./uiDocument";
 
@@ -86,6 +87,24 @@ function focusPanelEl(el: HTMLElement): boolean {
   return elementHasFocus(el);
 }
 
+/**
+ * Hand the ring into this bubble from outside it (the turn header's Down, or the bubble's own Up
+ * when parked on a spoiler fence going back to the top) and land on its first section, not the
+ * bare bubble.
+ *
+ * `takeAnswerBubbleNavFocus` first: the bubble is a different navigation container from the header
+ * (confirmed by its own `navRef` — see answerBubbleElRegistry.ts), so a plain `focus()` across that
+ * boundary moves `activeElement` while Steam's ring stays on the header, the same failure mode
+ * `upIntoGlossaryChip` in buildReplyActionsElement.tsx already works around for the reply row's own
+ * hop into this bubble. Best-effort by design — `focusPanelEl` right after is what actually lands
+ * and verifies focus, on whichever element is correct once inside.
+ *
+ * Before this fix the fallback focused the bubble itself (`el`), which is a stop of its own: Down
+ * from the header parked there, and only a second Down descended into `.bonsai-answer-stop` — one
+ * wasted press per reply, filed 2026-09-02 ("Down from the chat slot lands on the whole reply
+ * before its first section"). The masked-spoiler-first check above this is unchanged: an unrevealed
+ * fence anywhere in the bubble still wins over the first section, exactly as before.
+ */
 export function focusFirstAnswerChunk(answerKey: string): boolean {
   const el =
     resolveFocusedAnswerBubble() ??
@@ -93,8 +112,33 @@ export function focusFirstAnswerChunk(answerKey: string): boolean {
     findAnswerBubbleByKey(answerKey);
   if (!el) return false;
   registerAnswerBubbleEl(answerKey, el);
+  takeAnswerBubbleNavFocus(answerKey);
   const spoiler = el.querySelector<HTMLElement>(".bonsai-spoiler-reveal-target");
   if (spoiler && focusPanelEl(spoiler)) return true;
+  // Registered handles, not a page query — same registry the section walk itself reads.
+  const stops = orderedAnswerStops(answerKey, el);
+  if (stops.length && focusAnswerStop(stops[0]!)) return true;
+  return focusPanelEl(el);
+}
+
+/**
+ * The reverse of `focusFirstAnswerChunk`, for entering from below: the reply-actions row's Up, when
+ * no thumbs/chips/glossary chip claims the press first (buildReplyActionsElement.tsx), used to yield
+ * to Steam's own move and land on the bare bubble rather than its last section — the same double
+ * landing `focusFirstAnswerChunk` had on the way in, just approached from underneath. Same
+ * TakeFocus-then-focus shape; see that function's comment for why the transfer is needed.
+ */
+export function focusLastAnswerChunk(answerKey: string): boolean {
+  const el =
+    resolveFocusedAnswerBubble() ??
+    getRegisteredAnswerBubble(answerKey) ??
+    findAnswerBubbleByKey(answerKey);
+  if (!el) return false;
+  registerAnswerBubbleEl(answerKey, el);
+  takeAnswerBubbleNavFocus(answerKey);
+  // Registered handles, not a page query — same registry the section walk itself reads.
+  const stops = orderedAnswerStops(answerKey, el);
+  if (stops.length && focusAnswerStop(stops[stops.length - 1]!)) return true;
   return focusPanelEl(el);
 }
 

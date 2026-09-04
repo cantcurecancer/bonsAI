@@ -54,6 +54,11 @@ from one star to six.
   question is blank for a deterministic command reply, so the header and the title have nothing to show. Same `…` symptom SMOKE-H's
   2026-08-23 fix covered for mid-thinking reopens. Seen in `runs/SMOKE-C-b-press-ask-vac-check-off.json` and again on VAC-02.
   Filed under D58 #9.
+- ★★ `[focus]` **After a modal closes or the QAM reopens, the ring can sit on a hidden Steam tab button** — **OPEN, filed 2026-09-03.**
+  Closing the Clear cache confirmation, and closing the QAM then reopening it with the panel still mounted, both leave the ring on
+  one of Steam's hidden tab buttons (0 × 0, offscreen): nothing lit, one dead press before the next control. The D55 focus trap
+  catches the B-from-body path but not these two; TAB-BAR-09 covered three openers and this is a fourth. Step 0 of
+  `runs/CLEAR-CACHE-01-b-after-modal-back-to-main.json` and `runs/CLEAR-CACHE-01-c-close-panel-for-remount.json`.
 - ★★ `[focus]` **After the panel remounts the ring parks on a zero-size container** — **OPEN, found 2026-09-04.** On a fresh mount
   the ring lands on "Ask bonsAI" (Main) or "Where AI runs" (Ollama), both 0x0 rects that the visibility oracle calls OFFSCREEN, so
   the panel opens with nothing highlighted until the first press.
@@ -274,6 +279,12 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
   desk 2026-09-04, Deck check owed: the trap now bounces a hidden tab button that already holds the ring the instant it attaches
   (not only a later change), and the Clear cache / Clear all plugin data buttons register as return-focus owners, so the ring comes
   back to the button that opened the modal instead of wherever Steam defaults to. Row **TAB-BAR-11**.
+- ★★ `[focus]` **Down from the chat slot lands on the whole reply before its first section** — **VERIFY**, fixed at the desk
+  2026-09-04, Deck check owed (read at the desk, not yet measured on device). `focusFirstAnswerChunk` now hands the ring into the
+  bubble's navigation container (`takeAnswerBubbleNavFocus`, the same transfer the reply row's glossary-chip hop already used) and
+  lands on the first `.bonsai-answer-stop` instead of the bare bubble; a masked spoiler still wins when one is present, unchanged.
+  Up from the reply buttons got the same fix in reverse (`focusLastAnswerChunk`) for the matching double landing on the way in from
+  below. New QA row **CHAT-REPLY-ENTRY-01**. [Detail](roadmap-details.md#down-from-the-chat-slot-lands-on-the-whole-reply).
 - ★★ `[focus]` **Left on the Ollama sliders steps the value and then throws the ring out of the plugin** — **VERIFY.**
   Fixed at the desk 2026-09-04, Deck check owed. Reply style, keep-alive, connection-timeout and the Settings UI-scale
   slider all now claim Left/Right on the move handlers themselves instead of stepping the value from inside the
