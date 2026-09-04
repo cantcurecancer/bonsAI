@@ -3090,7 +3090,7 @@ answers get copied here.
 9. The in-person list is plan 31 § 7, written in plain terms with what is needed and when. The rig
    never ticks those boxes; only the maintainer clears an item, after seeing it themselves.
 
-### D58 — LOCKED 2026-09-04, #2 still open (raised 2026-09-04) — The bug-fixing session: nine calls before "go"
+### D58 — LOCKED 2026-09-04 (raised 2026-09-04) — The bug-fixing session: nine calls before "go"
 
 [Plan 32](../planning/32-bugfix-session.md) sorts the roadmap's twenty Bugs entries into thirteen to fix
 now, two that need a call, two that are research for another conversation, and three that are
@@ -3133,12 +3133,11 @@ copied here.
    lane A try it only after its own two bugs, stopping if the cause takes more than an hour to find
    (recommended); (b) file it and leave it; (c) do not file it.
 
-**Answers, 2026-09-04, eight of nine locked** (the maintainer answered by number in chat; #2 waits on a
-mockup they asked for):
+**Answers, 2026-09-04, all nine locked** (the maintainer answered by number in chat; #2 after a mockup):
 
 1. All thirteen.
-2. Open. The maintainer asked to see the behaviour before choosing; a mockup was published the same
-   evening and the answer is copied here when it arrives.
+2. (a): Up leaves the row at once; Left keeps walking the history. Answered 2026-09-04 at 18:50 after
+   an interactive mockup. The maintainer also asked for a visible end-of-row cue, filed as a Features entry.
 3. The recommendation: Right at the last visible chip pulls the next batch entry in, and an Ask restarts
    the sixty-second walk.
 4. Accepted. The entry is marked **ACCEPTED 2026-09-04** and stays in Bugs under that word; the

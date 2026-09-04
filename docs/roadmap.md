@@ -103,6 +103,11 @@ replace it with a specific issue when one exists.
   revived under Developer. Not in scope: re-shipping Proton journal inject without a redesign.
 - ★★ `[chat]` **First-run ghost "New chat" label at the create position** — **OPEN, parked by decision.** The create position is the
   literal `[+]`, re-confirmed on board 8f and again in the v3 rows. Reopen that decision before building it.
+- ★★ `[chips]` **A visible cue when the chip row runs out of chips** — **OPEN, filed 2026-09-04 by the maintainer.** When Left or
+  Right on the preset chips reaches the first or last chip, nothing on screen says so; a stopped ring and a stopped list look the
+  same. Wanted: a short glow or bounce at the blocked edge, the way Android lights up the end of a list you scroll past, for both
+  the D-pad and a finger. Any effect with the same meaning is fine. Must respect reduced motion and stay inside the 300 px column;
+  the row's edge behaviour itself (Left/Right hold still, Right pulls the next pinned entry in) does not change.
 - ★★ `[chips]` **Preset chip expansion** — **OPEN, incremental.** Add or refresh preset strings as features land. Wave 1 shipped four
   prompts; row **PRESET-EXPAND-W1-01** still owed. Not in scope: replacing the `fade` default; session RAG chips (shipped).
 - ★★ `[focus]` **Fewer D-pad stops on a finished reply** — **OPEN, filed 2026-09-02.** A finished answer gets one stop per paragraph,
