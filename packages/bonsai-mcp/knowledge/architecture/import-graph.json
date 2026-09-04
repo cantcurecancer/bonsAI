@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 351,
-  "edgeCount": 844,
+  "fileCount": 352,
+  "edgeCount": 846,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -642,6 +642,13 @@
       ],
       "importedBy": []
     },
+    "src/components/SettingsTab.modalReturnFocus.test.tsx": {
+      "imports": [
+        "src/components/SettingsTab.tsx",
+        "src/features/plugin-shell/modalReturnFocusRegistry.ts"
+      ],
+      "importedBy": []
+    },
     "src/components/SettingsTab.tsx": {
       "imports": [
         "src/components/SettingsTabAccentIntensityMenuPopover.tsx",
@@ -657,6 +664,7 @@
         "src/utils/settingsTabLocalSurvival.ts"
       ],
       "importedBy": [
+        "src/components/SettingsTab.modalReturnFocus.test.tsx",
         "src/features/plugin-shell/tabs/useSettingsTabPayload.tsx"
       ]
     },
@@ -1324,6 +1332,7 @@
         "src/components/MainTabChatTranscript.tsx",
         "src/components/MainTabPresetRow.tsx",
         "src/components/OllamaWhereAiRunsSection.tsx",
+        "src/components/SettingsTab.modalReturnFocus.test.tsx",
         "src/components/SettingsTab.tsx",
         "src/features/chat-slots/ChatSlotRow.tsx",
         "src/features/chat-slots/useChatSlotRenameModal.tsx",

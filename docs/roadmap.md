@@ -69,11 +69,6 @@ from one star to six.
   question is blank for a deterministic command reply, so the header and the title have nothing to show. Same `…` symptom SMOKE-H's
   2026-08-23 fix covered for mid-thinking reopens. Seen in `runs/SMOKE-C-b-press-ask-vac-check-off.json` and again on VAC-02.
   Filed under D58 #9.
-- ★★ `[focus]` **After a modal closes or the QAM reopens, the ring can sit on a hidden Steam tab button** — **OPEN, filed 2026-09-03.**
-  Closing the Clear cache confirmation, and closing the QAM then reopening it with the panel still mounted, both leave the ring on
-  one of Steam's hidden tab buttons (0 × 0, offscreen): nothing lit, one dead press before the next control. The D55 focus trap
-  catches the B-from-body path but not these two; TAB-BAR-09 covered three openers and this is a fourth. Step 0 of
-  `runs/CLEAR-CACHE-01-b-after-modal-back-to-main.json` and `runs/CLEAR-CACHE-01-c-close-panel-for-remount.json`.
 - ★★ `[focus]` **Down from the chat slot lands on the whole reply before its first section** — **OPEN, filed 2026-09-02.** One wasted
   press per reply, and on a long answer the highlight is a wall of glow. The bubble is its own stop with the sections nested inside.
   Fix: hand the ring to the first section on the way in (`focusFirstAnswerChunk` already does this for Up from a spoiler), and
@@ -249,6 +244,10 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
 - ★★ `[focus]` **A checklist the model got wrong was left in the reply as raw JSON**, its own D-pad stop that did nothing — **VERIFY.**
   Fixed 2026-08-28: a rejected checklist block is dropped, as a rejected branch block already was. Owed: one sighting on device of a
   reply where it happens. Row **STRAT-CHECKLIST-JSON-01**.
+- ★★ `[focus]` **After a modal closes or the QAM reopens, the ring can sit on a hidden Steam tab button** — **VERIFY.** Fixed at the
+  desk 2026-09-04, Deck check owed: the trap now bounces a hidden tab button that already holds the ring the instant it attaches
+  (not only a later change), and the Clear cache / Clear all plugin data buttons register as return-focus owners, so the ring comes
+  back to the button that opened the modal instead of wherever Steam defaults to. Row **TAB-BAR-11**.
 - ★★ `[reply]` **Spoiler fences wrapped harmless tactics on games with no story, and on bosses you named** — **VERIFIED on the
   Deck 2026-09-03.** Fixed 2026-09-02: on those turns the prompt now says plainly not to fence. Measured on the PC with the answer
   eval: 28 of 96 misfires before, 3 after, ending questions still fenced. Deck run **KB-ANSWER-02**, 5 of 5: Tank, antlions,

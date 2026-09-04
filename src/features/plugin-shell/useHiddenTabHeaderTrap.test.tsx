@@ -74,4 +74,38 @@ describe("useHiddenTabHeaderTrap", () => {
     await tick();
     expect(takeFocus).not.toHaveBeenCalled();
   });
+
+  it("bounces a hidden tab button that already holds gpfocus the moment the trap attaches", async () => {
+    // A remount (the Clear cache confirmation closing) can hand the ring to the hidden button
+    // before this effect ever runs, so there is no later mutation for the observer to see.
+    hiddenButton.classList.add("gpfocus");
+    render(<Host />);
+    await tick();
+    expect(takeFocus).toHaveBeenCalledWith(true);
+  });
+
+  it("does not bounce on attach when gpfocus sits on a real body control", async () => {
+    bodyButton.classList.add("gpfocus");
+    render(<Host />);
+    await tick();
+    expect(takeFocus).not.toHaveBeenCalled();
+  });
+
+  it("bounces when a fresh hidden tab button is inserted already holding gpfocus", async () => {
+    // A QAM chord close/reopen does not remount this component (TabIndicatorBar and the tabs root
+    // share one fragment key that only changes on a UI-scale Apply), so the effect stays attached
+    // the whole time -- but Steam's own header can still rebuild its child nodes, and a node born
+    // with `gpfocus` already set produces a childList record, never an attributes one.
+    render(<Host />);
+    const header = document.querySelector(".header") as HTMLElement;
+    const fresh = document.createElement("div");
+    fresh.className = "Panel Focusable gpfocus";
+    fresh.setAttribute("data-test", "fresh-hidden-tab");
+    const leaf = document.createElement("div");
+    leaf.className = "bonsai-tab-title-leaf";
+    fresh.appendChild(leaf);
+    header.appendChild(fresh);
+    await tick();
+    expect(takeFocus).toHaveBeenCalledWith(true);
+  });
 });

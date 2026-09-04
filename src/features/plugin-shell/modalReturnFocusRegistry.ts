@@ -20,7 +20,10 @@ export type ModalReturnFocusId =
   | "ollama-models-hub"
   | "chat-slot-rename"
   /** The collapsing tab bar (plan 30): where a picker's return lands when its opener is gone. */
-  | "tab-bar";
+  | "tab-bar"
+  /** Settings -> Data's two confirm-modal openers (plan 32 bug 4). */
+  | "settings-clear-cache"
+  | "settings-clear-all-data";
 
 const owners = new Map<ModalReturnFocusId, HTMLElement>();
 let pendingReturn: ModalReturnFocusId | null = null;

@@ -476,7 +476,9 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
         }}
       >
         <Button
+          ref={(el: HTMLElement | null) => registerModalReturnFocusOwner("settings-clear-cache", el)}
           onClick={() => {
+            rememberModalReturnFocus("settings-clear-cache");
             onBeforeDeckyModal();
             const handle = showModal(
               <ConfirmModal
@@ -508,7 +510,9 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
           Clear cache...
         </Button>
         <Button
+          ref={(el: HTMLElement | null) => registerModalReturnFocusOwner("settings-clear-all-data", el)}
           onClick={() => {
+            rememberModalReturnFocus("settings-clear-all-data");
             const handle = showModal(
               <ConfirmModal
                 strTitle="Clear all plugin data?"

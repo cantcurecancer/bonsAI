@@ -175,4 +175,42 @@ describe("modal return-focus registry", () => {
 
     expect(restoreModalReturnFocus()).toBe(true);
   });
+
+  // Settings -> Data's two confirm-modal openers (plan 32 bug 4): Clear cache... and
+  // Clear all data... never armed the registry before, so Steam picked the return focus itself and
+  // landed on a hidden tab button (runs/CLEAR-CACHE-01-b and -c).
+  it("round-trips the settings-clear-cache id", () => {
+    const el = mountButton();
+    const focus = vi.spyOn(el, "focus");
+    registerModalReturnFocusOwner("settings-clear-cache", el);
+    rememberModalReturnFocus("settings-clear-cache");
+
+    expect(restoreModalReturnFocus()).toBe(true);
+    expect(focus).toHaveBeenCalled();
+  });
+
+  it("round-trips the settings-clear-all-data id", () => {
+    const el = mountButton();
+    const focus = vi.spyOn(el, "focus");
+    registerModalReturnFocusOwner("settings-clear-all-data", el);
+    rememberModalReturnFocus("settings-clear-all-data");
+
+    expect(restoreModalReturnFocus()).toBe(true);
+    expect(focus).toHaveBeenCalled();
+  });
+
+  it("keeps the two settings ids independent", () => {
+    const cache = mountButton();
+    const clearAll = mountButton();
+    const cacheFocus = vi.spyOn(cache, "focus");
+    const clearAllFocus = vi.spyOn(clearAll, "focus");
+    registerModalReturnFocusOwner("settings-clear-cache", cache);
+    registerModalReturnFocusOwner("settings-clear-all-data", clearAll);
+
+    rememberModalReturnFocus("settings-clear-all-data");
+    restoreModalReturnFocus();
+
+    expect(clearAllFocus).toHaveBeenCalled();
+    expect(cacheFocus).not.toHaveBeenCalled();
+  });
 });
