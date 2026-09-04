@@ -17,6 +17,12 @@ export type PermissionDenyActionProps = {
   /** Tighter layout for screenshot browser and chat rows. */
   compact?: boolean;
   buttonLabel?: string;
+  /**
+   * Hands back the rendered Button's own node. Lets a caller with its own D-pad focus graph (the
+   * chat transcript's reply-row Down/Up chain, for one) register this as a jump target without
+   * this component knowing anything about that graph.
+   */
+  buttonRef?: (el: HTMLElement | null) => void;
 };
 
 export function PermissionDenyAction({
@@ -25,6 +31,7 @@ export function PermissionDenyAction({
   onJump,
   compact = false,
   buttonLabel = "Open Permissions",
+  buttonRef,
 }: PermissionDenyActionProps) {
   const text = message ?? PERMISSION_DENY_MESSAGES[capability];
   return (
@@ -40,7 +47,16 @@ export function PermissionDenyAction({
     >
       <div>{text}</div>
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        {/*
+         * `focusable` makes this a genuine D-pad stop. Without it, Steam treats the row as a
+         * pass-through container rather than a Focusable leaf, so Down/Up jump straight past it —
+         * measured 2026-09-03 (runs/PERM-JUMP-01-a-find-open-permissions.json): Down from Retry or
+         * Copy landed on the session context strip and Right from Copy did not move at all. Same
+         * shape as the chat-slot row's 2026-08-30 bug (ChatSlotRow.tsx).
+         */}
         <Button
+          focusable
+          ref={buttonRef}
           onClick={() => onJump(capability)}
           style={{ fontSize: 11, padding: compact ? "4px 10px" : "6px 12px", minHeight: 34 }}
         >

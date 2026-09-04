@@ -46,7 +46,9 @@ import type { AskModeId } from "../data/askMode";
 import type { LastExchangeSnapshot } from "../types/backgroundAsk";
 import type { ReplyMicroActionId } from "../data/replyMicroActions";
 import {
-  focusDownFromReplyUtilityRow,
+  focusContextChipLadder,
+  focusContextHint,
+  focusDeckOwner,
   focusReplyUtilityRow,
   focusSessionContextStrip,
   focusUpFromBelowContextChipLadder,
@@ -135,6 +137,62 @@ export type MainTabChatTranscriptProps = {
    */
   isForeignPendingAsk?: boolean;
 };
+
+/*
+ * Registered at mount by the two rows below, rather than looked up by query: the troubleshooting
+ * Ask hint's "Open Permissions" button, and the vac-check capability deny action's own button
+ * (PermissionDenyAction forwards it through `buttonRef`). A page query would work too — both are
+ * genuine Decky Buttons — but the focus-pattern linter's page-search rule asks for a registered
+ * handle instead, matching replyStopRegistry and the row-level refs in buildReplyActionsElement.
+ * Module-level rather than per-render state: only one Main tab transcript is ever mounted at a
+ * time, the same assumption replyStopRegistry makes.
+ */
+let troubleshootingPermHintButtonEl: HTMLElement | null = null;
+let vacDenyActionButtonEl: HTMLElement | null = null;
+
+export type ChatPermissionHintRowId = "troubleshooting" | "deny-action";
+
+/** Ref callback target for the two permission-hint rows' buttons — see the module comment above. */
+export function registerChatPermissionHintButton(
+  which: ChatPermissionHintRowId,
+  el: HTMLElement | null
+): void {
+  if (which === "troubleshooting") troubleshootingPermHintButtonEl = el;
+  else vacDenyActionButtonEl = el;
+}
+
+/**
+ * The troubleshooting Ask hint's "Open Permissions" button, or the vac-check capability deny
+ * action's "Open Permissions" button — whichever is mounted. Both render as top-level rows below
+ * the transcript (outside any turn's own Focusable), between the reply actions row and the session
+ * context strip, so neither is a document-order neighbor of the reply row the way the chip ladder
+ * is. A plain focus, exactly like focusContextChipLadder / focusContextHint — both targets are
+ * genuine Decky Buttons (`focusable`), the same category of target those helpers already carry
+ * gpfocus for reliably.
+ */
+export function focusChatPermissionHintRow(): boolean {
+  if (focusDeckOwner(troubleshootingPermHintButtonEl)) return true;
+  return focusDeckOwner(vacDenyActionButtonEl);
+}
+
+/**
+ * Down from the reply utility row (Retry / Show details / Copy): this turn's own chip ladder or
+ * collapsed hint first (closest, inside the turn's own Focusable), then whichever permission-hint
+ * row is mounted just below the transcript, then the session context strip.
+ *
+ * Replaces a plain call to `focusDownFromReplyUtilityRow`, which only tried the ladder and hint
+ * before falling to the strip — silently skipping the permission-hint rows because they are not
+ * inside the live/turn slot `focusContextChipLadder`/`focusContextHint` search under. Filed
+ * 2026-09-03: "The Open Permissions button under a blocked reply is not a D-pad stop"
+ * (runs/PERM-JUMP-01-a-find-open-permissions.json — Down from Retry or Copy jumped straight to the
+ * session strip).
+ */
+export function focusDownFromReplyUtilityRowOrPermHint(liveSlot: HTMLElement | null): boolean {
+  if (focusContextChipLadder(liveSlot)) return true;
+  if (focusContextHint(liveSlot)) return true;
+  if (focusChatPermissionHintRow()) return true;
+  return focusSessionContextStrip();
+}
 
 export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
   const {
@@ -629,7 +687,7 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
                        falls through to the next focusable in document order — the session context
                        strip — and the chips become unreachable from above. */
                     onMoveDownFromUtility: () =>
-                      focusDownFromReplyUtilityRow(queryTurnSlot(turn.id)),
+                      focusDownFromReplyUtilityRowOrPermHint(queryTurnSlot(turn.id)),
                   });
                 })()}
                 {transparencyDetailsOpen &&
@@ -756,7 +814,7 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
                         })
                     : undefined,
                   onMoveDownFromUtility: () =>
-                    focusDownFromReplyUtilityRow(queryLiveTurnSlot()),
+                    focusDownFromReplyUtilityRowOrPermHint(queryLiveTurnSlot()),
                 })
               : null}
             {renderInlineLadder ? (
@@ -819,50 +877,84 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
 !troubleshootingPermHintDismissed &&
 questionLooksLikeTroubleshootingAsk(unifiedInput) ? (
   <PanelSectionRow>
-    <div
-      className="bonsai-full-bleed-row"
-      style={{
-        ...fullBleedRowStyle,
-        fontSize: 11,
-        color: "#c8d8ea",
-        lineHeight: 1.4,
-        display: "flex",
-        flexDirection: "column",
-        gap: 6,
-      }}
+    {/*
+     * Wrapped in its own Focusable so Down/Up can be caught here: a Decky `Button` does not
+     * forward `onMoveUp`/`onMoveDown`, and this row sits outside the live turn's own Focusable, so
+     * Steam's default fallback (proven elsewhere in this file to skip nearby rows and jump straight
+     * to the session strip) cannot be trusted to land here. `flow-children="horizontal"` keeps
+     * Left/Right between Open Permissions and Dismiss.
+     */}
+    <Focusable
+      className="bonsai-chat-troubleshoot-perm-hint-row"
+      flow-children="horizontal"
+      {...({
+        onMoveUp: () => focusUpFromBelowContextChipLadder(queryLiveTurnSlot()),
+        onMoveDown: () => focusSessionContextStrip(),
+      } as Record<string, unknown>)}
     >
-      <div>
-        Troubleshooting Ask detected. Enable <strong>Read game & screenshot context</strong> in Permissions
-        to auto-attach Proton logs and screenshots (never turned on automatically).
-      </div>
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-        {onNavigateToPermissions ? (
+      <div
+        className="bonsai-full-bleed-row"
+        style={{
+          ...fullBleedRowStyle,
+          fontSize: 11,
+          color: "#c8d8ea",
+          lineHeight: 1.4,
+          display: "flex",
+          flexDirection: "column",
+          gap: 6,
+        }}
+      >
+        <div>
+          Troubleshooting Ask detected. Enable <strong>Read game & screenshot context</strong> in Permissions
+          to auto-attach Proton logs and screenshots (never turned on automatically).
+        </div>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          {onNavigateToPermissions ? (
+            <Button
+              focusable
+              ref={(el: HTMLElement | null) => registerChatPermissionHintButton("troubleshooting", el)}
+              onClick={() => onNavigateToPermissions("steam_logs_read")}
+              style={{ fontSize: 11, padding: "4px 10px", minHeight: 34 }}
+            >
+              Open Permissions
+            </Button>
+          ) : null}
           <Button
-            onClick={() => onNavigateToPermissions("steam_logs_read")}
+            focusable
+            onClick={() => setTroubleshootingPermHintDismissed(true)}
             style={{ fontSize: 11, padding: "4px 10px", minHeight: 34 }}
           >
-            Open Permissions
+            Dismiss
           </Button>
-        ) : null}
-        <Button
-          onClick={() => setTroubleshootingPermHintDismissed(true)}
-          style={{ fontSize: 11, padding: "4px 10px", minHeight: 34 }}
-        >
-          Dismiss
-        </Button>
+        </div>
       </div>
-    </div>
+    </Focusable>
   </PanelSectionRow>
 ) : null}
 {!isAsking && onNavigateToPermissions && isVacCheckCapabilityDenyResponse(ollamaResponse) ? (
   <PanelSectionRow>
-    <div className="bonsai-full-bleed-row" style={fullBleedRowStyle}>
-      <PermissionDenyAction
-        capability="steam_web_api"
-        onJump={onNavigateToPermissions}
-        compact
-      />
-    </div>
+    {/*
+     * Same reasoning as the troubleshooting hint's wrapper just above: this row sits outside the
+     * live turn's own Focusable, between the reply actions row and the session context strip, and
+     * PermissionDenyAction's own Button cannot forward onMoveUp/onMoveDown itself.
+     */}
+    <Focusable
+      className="bonsai-chat-vac-deny-row"
+      flow-children="horizontal"
+      {...({
+        onMoveUp: () => focusUpFromBelowContextChipLadder(queryLiveTurnSlot()),
+        onMoveDown: () => focusSessionContextStrip(),
+      } as Record<string, unknown>)}
+    >
+      <div className="bonsai-full-bleed-row" style={fullBleedRowStyle}>
+        <PermissionDenyAction
+          capability="steam_web_api"
+          buttonRef={(el) => registerChatPermissionHintButton("deny-action", el)}
+          onJump={onNavigateToPermissions}
+          compact
+        />
+      </div>
+    </Focusable>
   </PanelSectionRow>
 ) : null}
 {isAsking && showSlowWarning && !isStreamingPreview && (
@@ -914,7 +1006,10 @@ questionLooksLikeTroubleshootingAsk(unifiedInput) ? (
     archivedTurns={askThreadCollapsed}
     highlightTurnId={sessionHighlightTurnId ?? (transparencyDetailsOpen ? "live" : null)}
     onHighlightClear={() => setSessionHighlightTurnId(null)}
-    onMoveUp={() => focusUpFromBelowContextChipLadder(queryLiveTurnSlot())}
+    onMoveUp={() => {
+      if (focusChatPermissionHintRow()) return true;
+      return focusUpFromBelowContextChipLadder(queryLiveTurnSlot());
+    }}
   />
 </PanelSectionRow>
 )}

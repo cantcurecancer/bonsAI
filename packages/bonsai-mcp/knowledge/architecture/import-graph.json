@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 358,
-  "edgeCount": 857,
+  "fileCount": 359,
+  "edgeCount": 860,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -317,6 +317,13 @@
       ],
       "importedBy": []
     },
+    "src/components/MainTabChatTranscript.permissionHintFocus.test.ts": {
+      "imports": [
+        "src/components/MainTabChatTranscript.tsx",
+        "src/test-harness/fakeDeckyUi.tsx"
+      ],
+      "importedBy": []
+    },
     "src/components/MainTabChatTranscript.strategyPanels.test.tsx": {
       "imports": [
         "src/components/MainTabChatTranscript.tsx",
@@ -365,6 +372,7 @@
         "src/components/MainTabChatTranscript.diagnostics.test.tsx",
         "src/components/MainTabChatTranscript.earlierPill.test.tsx",
         "src/components/MainTabChatTranscript.emptySlotPreview.test.tsx",
+        "src/components/MainTabChatTranscript.permissionHintFocus.test.ts",
         "src/components/MainTabChatTranscript.strategyPanels.test.tsx"
       ]
     },
@@ -567,7 +575,8 @@
     },
     "src/components/PermissionDenyAction.test.tsx": {
       "imports": [
-        "src/components/PermissionDenyAction.tsx"
+        "src/components/PermissionDenyAction.tsx",
+        "src/test-harness/fakeDeckyUi.tsx"
       ],
       "importedBy": []
     },
@@ -2385,7 +2394,9 @@
         "src/components/MainTabChatTranscript.diagnostics.test.tsx",
         "src/components/MainTabChatTranscript.earlierPill.test.tsx",
         "src/components/MainTabChatTranscript.emptySlotPreview.test.tsx",
+        "src/components/MainTabChatTranscript.permissionHintFocus.test.ts",
         "src/components/MainTabChatTranscript.strategyPanels.test.tsx",
+        "src/components/PermissionDenyAction.test.tsx",
         "src/components/ReplyCopyButton.test.tsx",
         "src/components/SessionContextStrip.test.tsx",
         "src/features/chat-slots/ChatSlotRenameModal.test.tsx",

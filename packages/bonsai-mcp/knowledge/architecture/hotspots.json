@@ -61,6 +61,11 @@
       "role": ""
     },
     {
+      "path": "src/components/MainTabChatTranscript.tsx",
+      "lines": 1042,
+      "role": ""
+    },
+    {
       "path": "src/data/characterPlaceholderEmoticonGrids.ts",
       "lines": 1024,
       "role": ""
@@ -68,11 +73,6 @@
     {
       "path": "src/hooks/useBonsaiAskOrchestration.test.ts",
       "lines": 1022,
-      "role": ""
-    },
-    {
-      "path": "src/components/MainTabChatTranscript.tsx",
-      "lines": 947,
       "role": ""
     },
     {

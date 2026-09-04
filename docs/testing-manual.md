@@ -115,6 +115,8 @@ BPM (Desktop → Big Picture → QAM → bonsAI). Ollama reachable.
 
 **Blocked 2026-09-03:** the deny surface's *Open Permissions* button is not reachable by D-pad (roadmap Bugs, filed 2026-09-03), so the jump and the *Back to …* return cannot be driven until that is fixed. The deny half itself passes: `bonsai:vac-check` with Steam ban lookup off answered with the capability message and made no Ollama call.
 
+**Fixed at the desk 2026-09-04, Deck check owed:** the button is a genuine D-pad stop now and joins the reply row's Down/Up chain — see PERM-JUMP-01 below.
+
 - [ ] Turn a capability **off** → blocked action → **Open Permissions** (or troubleshooting hint button) → lands on matching toggle → **Back to …** returns → no crash
 - [ ] Re-enable before Tier 1
 
@@ -123,6 +125,8 @@ BPM (Desktop → Big Picture → QAM → bonsAI). Ollama reachable.
 Capability off for each row; trigger the deny surface; D-pad to **Open Permissions** → Permissions tab → matching toggle focused → **Back to …** → prior tab.
 
 **Blocked 2026-09-03:** the deny surface's *Open Permissions* button is not a D-pad stop (roadmap Bugs, filed 2026-09-03), so no row here can be driven until that is fixed.
+
+**Fixed at the desk 2026-09-04, Deck check owed:** `PermissionDenyAction`'s button and the troubleshooting Ask hint's button are genuine D-pad stops now (`focusable`), and both join the reply row's Down/Up chain — Down from Retry/Show details/Copy reaches whichever is mounted, Down from it reaches the session context strip, and Up returns either way. Expect: Down from Copy lands on **Open Permissions**, visible; the jump and *Back to …* halves below still need a device pass.
 
 | Capability | Deny surface | Expected toggle |
 |------------|--------------|-----------------|
