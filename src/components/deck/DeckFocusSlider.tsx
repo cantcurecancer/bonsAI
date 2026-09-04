@@ -7,7 +7,6 @@
  */
 import React, { useCallback, useMemo, useRef, useState } from "react";
 import { Focusable } from "@decky/ui";
-import { isDeckDirectionLeftEvent, isDeckDirectionRightEvent } from "../../utils/focusNavigation";
 
 export type DeckSliderThumbVisualState = {
   focused: boolean;
@@ -36,15 +35,21 @@ export function assignDeckSliderThumbHostRef(
   }
 }
 
+/**
+ * Left/Right must claim the move on `onMoveLeft`/`onMoveRight` themselves rather than step the
+ * value from inside `onButtonDown`. Measured on device 2026-09-03 (ONBUTTONDOWN-AUDIT-01): stepping
+ * from `onButtonDown` still let Steam's own navigation carry that same press out of the container,
+ * because `onButtonDown`'s return value does not consume a direction the way a `Focusable` move
+ * handler does -- so Left stepped the value once and then the ring left the plugin for the Quick
+ * Access rail. Defaulting to `true` claims the move even when the callback returns void, the same
+ * choice `buildChipNavHandlers` (preset-carousel/presetRowNav.ts) makes at the ends of the chip row.
+ */
 export function buildDeckThumbNavHandlers(nav: DeckFocusSliderThumbNavProps): Record<string, unknown> {
   return {
     onMoveUp: () => nav.onMoveUp?.() ?? false,
     onMoveDown: () => nav.onMoveDown?.() ?? false,
-    onButtonDown: (button: unknown) => {
-      if (isDeckDirectionLeftEvent(button)) return nav.onMoveLeft() ?? true;
-      if (isDeckDirectionRightEvent(button)) return nav.onMoveRight() ?? true;
-      return false;
-    },
+    onMoveLeft: () => nav.onMoveLeft() ?? true,
+    onMoveRight: () => nav.onMoveRight() ?? true,
   };
 }
 

@@ -20,6 +20,7 @@
     "src/components/SettingsTab.mdns.test.ts",
     "src/components/SettingsTab.modalReturnFocus.test.tsx",
     "src/components/VoiceInputSettingsSection.test.tsx",
+    "src/components/deck/DeckFocusSlider.test.ts",
     "src/components/icons.bonsaiGeometry.test.tsx",
     "src/data/bonsaiSettingsContract.test.ts",
     "src/data/bonsaiSettingsHostileContract.test.ts",

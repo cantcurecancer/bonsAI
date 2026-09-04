@@ -75,11 +75,6 @@ from one star to six.
   check Up from the reply buttons for the same double landing. [Detail](roadmap-details.md#down-from-the-chat-slot-lands-on-the-whole-reply).
 - ★★ `[focus]` **Focus ring styling is inconsistent** between plugin controls and Steam's own — **PARTIAL.** Modal scoping shipped; a
   blanket rule was tried and reverted in favour of Steam's native outline.
-- ★★ `[focus]` **Left on the Ollama sliders steps the value and then throws the ring out of the plugin** — **OPEN, filed 2026-09-03.**
-  Reply style, keep-alive and the custom-timeout slider all do it; Right steps once and the ring stays put. The handler runs but the
-  press is not consumed, so Steam's own navigation carries on left and lands the ring on the Quick Access rail. Row
-  **ONBUTTONDOWN-AUDIT-01** is answered: "focus escapes", not "nothing happens"
-  (`runs/ONBUTTONDOWN-AUDIT-01-and-THINK-EFFORT-05-b.json`, `runs/ONBUTTONDOWN-AUDIT-01-c-right-steps-and-timeout-sliders.json`).
 - ★★ `[focus]` `[perms]` **The Open Permissions button under a blocked reply is not a D-pad stop** — **OPEN, filed 2026-09-03.**
   After `bonsai:vac-check` with Steam ban lookup off, the reply's *Open Permissions* button renders (115 × 34 px, between the reply
   actions and the session context strip) but Down from Retry or Copy jumps straight past it to the session strip and Right from Copy
@@ -248,6 +243,11 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
   desk 2026-09-04, Deck check owed: the trap now bounces a hidden tab button that already holds the ring the instant it attaches
   (not only a later change), and the Clear cache / Clear all plugin data buttons register as return-focus owners, so the ring comes
   back to the button that opened the modal instead of wherever Steam defaults to. Row **TAB-BAR-11**.
+- ★★ `[focus]` **Left on the Ollama sliders steps the value and then throws the ring out of the plugin** — **VERIFY.**
+  Fixed at the desk 2026-09-04, Deck check owed. Reply style, keep-alive and connection-timeout sliders now claim Left/Right
+  on the move handlers themselves instead of stepping the value from inside the button-press handler, so Steam has nothing
+  left to carry off the slider. The Settings UI-scale slider has the same bug in a different file and stays open. Row
+  **ONBUTTONDOWN-AUDIT-01**.
 - ★★ `[reply]` **Spoiler fences wrapped harmless tactics on games with no story, and on bosses you named** — **VERIFIED on the
   Deck 2026-09-03.** Fixed 2026-09-02: on those turns the prompt now says plainly not to fence. Measured on the PC with the answer
   eval: 28 of 96 misfires before, 3 after, ending questions still fenced. Deck run **KB-ANSWER-02**, 5 of 5: Tank, antlions,
