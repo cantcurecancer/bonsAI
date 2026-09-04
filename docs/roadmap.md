@@ -43,9 +43,6 @@ from one star to six.
   Left/Right at the edge do not pull the next entry in. With ten chips pinned, 6–10 never came into view during **KB-ANSWER-02**, and
   four of five sentences went in through `scripts/deck_send_ask.py` instead. Fix: restart the walk on an Ask or D-pad entry, or let
   the edge advance the batch. Until then, keep a batch to what the row shows in a minute.
-- ★ `[chips]` **Chip rotation favours the top of the candidate list** — **OPEN.** The guarantee and the roll both take the first
-  unseen candidate, so ranks 1 to 3 come round every minute and ranks 4 to 6 rarely appear. A shuffle among eligible candidates
-  would spread it. Filed 2026-08-29; the code still picks `available[0]` (`sessionRagComposer.ts`).
 - ★ `[focus]` **Reordering in the try-order picker drops the highlight** — **OPEN, minor.** A on a row's Up or Down reorders
   correctly but the ring disappears for one press. Row **PICKER-REORDER-02** failed 2026-08-28. Measure before trying a plain
   `focus()` inside the list.
@@ -228,6 +225,11 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
 
 ### Bugs that need verification
 
+- ★ `[chips]` **Chip rotation favours the top of the candidate list** — **VERIFY.** Fixed at the desk
+  2026-09-04, Deck check owed: the guarantee and the roll both used to take the first unseen candidate every
+  time, so ranks 1-3 came round every minute and ranks 4-6 rarely appeared; both now pick at random among the
+  eligible candidates, keeping game chips ahead of generic Deck tips. Row **CHIP-ROTATION-01**.
+  [Detail](roadmap-details.md#chip-rotation-is-biased-to-the-top-of-the-candidate-list).
 - ★ `[focus]` **Reordering in the try-order picker drops the highlight** — **VERIFY.** Fixed at the desk 2026-09-04:
   after a move, the ring goes back onto the moved row's own button — the one just pressed when it stays enabled, the
   row's other button when that one is now disabled by landing at an end. Both buttons stay inside the one list, where

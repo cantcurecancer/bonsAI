@@ -52,6 +52,27 @@ function orderCandidates(candidates: SessionRagChipCandidate[]): SessionRagChipC
 }
 
 /**
+ * Random pick among the eligible candidates that share the top priority band.
+ *
+ * `available` is already `orderCandidates`-ordered, so its head run of game candidates (or, once
+ * those are exhausted, its head run of compat ones) is the band `available[0]` belongs to — that is
+ * the slice this picks within. This is what stops rotation defaulting to `available[0]` every time:
+ * ranks 1-3 came back every minute while ranks 4-6 waited for 1-3 to be shown and fall out of
+ * history, which happened rarely because 1-3 kept winning first (filed 2026-08-29, "Chip rotation
+ * favours the top of the candidate list"). The game-before-compat preference itself is untouched —
+ * a compat candidate is never picked while a game one is still eligible.
+ */
+function pickFromAvailable(
+  available: readonly SessionRagChipCandidate[],
+  random: () => number,
+): SessionRagChipCandidate {
+  const topBandIsGame = isGameCandidate(available[0]!);
+  const band = available.filter((c) => isGameCandidate(c) === topBandIsGame);
+  const index = Math.min(band.length - 1, Math.floor(random() * band.length));
+  return band[index]!;
+}
+
+/**
  * For each static seed slot, independently roll for a RAG substitute (~30% default).
  * Dedupes chip texts; never invents RAG when the candidate pool is empty.
  */
@@ -153,6 +174,9 @@ export type PickNextCarouselChipArgs = {
  * The two text sets are not interchangeable. Dedupe reads `historyTexts` so a chip is not repeated
  * while it is still remembered; the guarantee reads `visibleTexts`, because a corpus chip sitting
  * in history off screen is exactly the state the user complains about.
+ *
+ * Which eligible candidate wins — the guarantee pick and the roll pick alike — is a random draw
+ * within the top-priority band (see `pickFromAvailable`), not always the first entry.
  */
 export function pickNextCarouselChip({
   historyTexts,
@@ -169,10 +193,13 @@ export function pickNextCarouselChip({
   if (available.length === 0) {
     return staticFallback();
   }
-  // The guarantee, at rotation time: nothing on screen is from the corpus, so the next chip is.
+  // The guarantee, at rotation time: nothing on screen is from the corpus, so the next chip is —
+  // whichever eligible candidate the random pick lands on, not always the top-ranked one.
   const corpusOnScreen = ragCandidates.some((c) => visibleTexts.has(c.text));
   if (!corpusOnScreen) {
-    return toPresetPrompt(available[0]!);
+    return toPresetPrompt(pickFromAvailable(available, random));
   }
-  return random() < ragProbability ? toPresetPrompt(available[0]!) : staticFallback();
+  return random() < ragProbability
+    ? toPresetPrompt(pickFromAvailable(available, random))
+    : staticFallback();
 }

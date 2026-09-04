@@ -484,7 +484,9 @@ The roadmap cleanup of 2026-09-02 cut every entry to five lines. The original te
   order. Across three 60s windows the same three chips came round every time (ranks 1–3) and ranks 4–6 never appeared. Not the old bug —
   those chips are reachable now, where before only rank 1 ever showed — but it is why the long labels stayed unobserved. A shuffle among
   eligible candidates, or a rotating start index, would spread it. **With the QA override on, all six appeared in 90s**, so the bias is in
-  the roll rather than in reachability.
+  the roll rather than in reachability. **Fixed at the desk 2026-09-04:** `pickNextCarouselChip` now draws at random among the eligible
+  candidates that share the top priority band (game chips before generic Deck tips), instead of always `available[0]`; the corpus
+  guarantee is unchanged, it just no longer forces the same top-ranked candidate every time. Deck check owed, row **CHIP-ROTATION-01**.
 
 ## A troubleshooting question that only describes the symptom reaches no tips
 

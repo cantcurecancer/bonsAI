@@ -171,6 +171,11 @@
       "role": ""
     },
     {
+      "path": "src/features/preset-carousel/sessionRagComposer.test.ts",
+      "lines": 457,
+      "role": ""
+    },
+    {
       "path": "py_modules/backend/services/desktop_note_service.py",
       "lines": 432,
       "role": ""
@@ -193,11 +198,6 @@
     {
       "path": "src/components/deck/DeckFocusSlider.tsx",
       "lines": 418,
-      "role": ""
-    },
-    {
-      "path": "src/components/MainTabBonsaiAiMarkdownChunk.tsx",
-      "lines": 411,
       "role": ""
     }
   ]

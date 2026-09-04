@@ -230,6 +230,9 @@ describe("pickNextCarouselChip — the rotation half of the guarantee", () => {
     // The bug this closes, measured on device 2026-08-29: the seeded corpus chip was carried out
     // of the three-slot window within about four ticks and rotation could only ever replace it
     // with another static preset, so it never came back for the rest of the session.
+    // Which of the two (both eligible, same band) is picked is now a random draw — see the
+    // "favours the top of the candidate list" tests below — so this only pins the guarantee
+    // itself: some corpus chip, not the static fallback.
     const picked = pickNextCarouselChip({
       historyTexts: new Set(["a", "b", "c"]),
       visibleTexts: new Set(["a", "b", "c"]),
@@ -237,7 +240,7 @@ describe("pickNextCarouselChip — the rotation half of the guarantee", () => {
       staticFallback: fallback,
       random: () => 0.99,
     });
-    expect(picked.text).toBe("How do I beat Glyphid Dreadnought?");
+    expect(candidates.map((c) => c.text)).toContain(picked.text);
     expect(picked.ragTip).toBe(true);
   });
 
@@ -327,15 +330,93 @@ describe("pickNextCarouselChip — the rotation half of the guarantee", () => {
 
   it("draws from the published candidate list when none is passed", () => {
     setSessionRagCarouselCandidates(candidates);
-    expect(
-      pickCarouselChipWithSessionRag({
-        historyTexts: new Set(["a", "b", "c"]),
-        visibleTexts: new Set(["a", "b", "c"]),
-        staticFallback: fallback,
-        random: () => 0.99,
-      }).text,
-    ).toBe("How do I beat Glyphid Dreadnought?");
+    const picked = pickCarouselChipWithSessionRag({
+      historyTexts: new Set(["a", "b", "c"]),
+      visibleTexts: new Set(["a", "b", "c"]),
+      staticFallback: fallback,
+      random: () => 0.99,
+    });
+    expect(candidates.map((c) => c.text)).toContain(picked.text);
     setSessionRagCarouselCandidates([]);
+  });
+
+  describe("favours the top of the candidate list (the bug, 2026-08-29)", () => {
+    const ranked = [
+      rag("rank 1"),
+      rag("rank 2"),
+      rag("rank 3"),
+      rag("rank 4"),
+      rag("rank 5"),
+      rag("rank 6"),
+    ];
+    const rankedTexts = new Set(ranked.map((c) => c.text));
+
+    it("can pick ranks 4 to 6, not just the top three of the list", () => {
+      // Before the fix this always returned "rank 1" (available[0]) no matter what `random`
+      // returned, so ranks 4-6 could only ever surface once ranks 1-3 had already been shown and
+      // fallen out of history — which is why they "rarely appear" on device.
+      const pickAt = (r: number) =>
+        pickNextCarouselChip({
+          historyTexts: new Set(),
+          visibleTexts: new Set(),
+          ragCandidates: ranked,
+          staticFallback: fallback,
+          random: () => r,
+        }).text;
+
+      expect(pickAt(0.51)).toBe("rank 4");
+      expect(pickAt(0.68)).toBe("rank 5");
+      expect(pickAt(0.85)).toBe("rank 6");
+    });
+
+    it("still forces a corpus chip, never the static fallback, whichever candidate the roll lands on", () => {
+      for (const r of [0, 0.2, 0.4, 0.6, 0.8, 0.999]) {
+        const picked = pickNextCarouselChip({
+          historyTexts: new Set(),
+          visibleTexts: new Set(), // nothing on screen is corpus -> the guarantee must still fire
+          ragCandidates: ranked,
+          staticFallback: fallback,
+          random: () => r,
+        });
+        expect(rankedTexts.has(picked.text)).toBe(true);
+        expect(picked.ragTip).toBe(true);
+      }
+    });
+
+    it("the roll (corpus already on screen) can also land past the top three", () => {
+      const onScreen = new Set(["rank 1"]);
+      const rolls = [0, 0.85]; // first call wins the roll, second call picks within the band
+      const picked = pickNextCarouselChip({
+        historyTexts: onScreen,
+        visibleTexts: onScreen,
+        ragCandidates: ranked,
+        staticFallback: fallback,
+        random: () => rolls.shift() ?? 0,
+      });
+      // "rank 1" is already on screen (excluded from `available`), leaving ranks 2-6; a high
+      // roll lands on the last of those five: "rank 6".
+      expect(picked.text).toBe("rank 6");
+    });
+
+    it("never lets the random draw cross into the compat band while a game candidate is unseen", () => {
+      const mixed = [
+        rag("game rank 1"),
+        rag("game rank 2"),
+        rag("game rank 3"),
+        rag("compat rank 1", "troubleshooting"),
+        rag("compat rank 2", "troubleshooting"),
+      ];
+      for (const r of [0, 0.2, 0.4, 0.6, 0.8, 0.999]) {
+        const picked = pickNextCarouselChip({
+          historyTexts: new Set(),
+          visibleTexts: new Set(),
+          ragCandidates: mixed,
+          staticFallback: fallback,
+          random: () => r,
+        });
+        expect(picked.text.startsWith("game rank")).toBe(true);
+      }
+    });
   });
 });
 
