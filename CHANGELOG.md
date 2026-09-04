@@ -68,6 +68,11 @@ All notable changes to this project are documented in this file.
   and a disabled button still takes the D-pad ring, so leaving Developer spent one press on it either
   way. It now only renders once a batch is pinned. `DeveloperTab.tsx`. On-Deck **DEV-CLEAR-CHIPS-01**
   in `docs/testing.md`.
+- **Reordering models in the try-order picker no longer drops the highlight:** pressing Up or Down on
+  a row reordered the list correctly but left the D-pad ring owned by nothing, so the next press looked
+  like a wasted one re-acquiring focus. The ring now goes straight back onto the moved row's own
+  button. `ModelRoutingOrderModal.tsx`. Not checked on the Deck yet — On-Deck **PICKER-REORDER-02** in
+  `docs/testing.md` decides.
 
 ## [0.5.0] - 2026-07-15
 

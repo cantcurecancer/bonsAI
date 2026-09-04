@@ -5,11 +5,12 @@
  * Solves: Drag-free Deck-friendly reorder UI with policy-tier and VRAM filters applied.
  * Does not: Pull models or persist settings — parent supplies catalog and commits saved order.
  */
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button, ConfirmModal, Focusable } from "@decky/ui";
 import type { ModelPolicyTierId } from "../data/modelPolicy";
 import type { PullModelEntry } from "../data/pullModelCatalog";
 import { BonsaiModalScope } from "./BonsaiModalScope";
+import { elementHasFocus } from "../utils/uiDocument";
 import {
   buildPickerOrder,
   DEFAULT_TEXT_ROUTING_SEED,
@@ -18,6 +19,8 @@ import {
   isVisionCapableTag,
   licenseClassAllowed,
 } from "../utils/modelRoutingOrder";
+
+type RowMoveDirection = "up" | "down";
 
 export type ModelRoutingOrderKind = "text" | "vision";
 
@@ -88,6 +91,46 @@ export function ModelRoutingOrderModal({
       return copy;
     });
   }, []);
+
+  /*
+   * Row buttons keyed by tag, so the ring can be put back on the moved row's own button after a
+   * reorder. Measured on device 2026-08-28: after A on a row's Up/Down, the two rows swap correctly
+   * but nothing owns `gpfocus` for the next press -- the button the ring was on is now a different
+   * row, and it re-acquires on the moved model's own button rather than the one you just pressed.
+   * A plain `.focus()` is safe here because the button's own row Focusable never leaves the outer
+   * list Focusable; the reorder only changes its sibling position, not its container.
+   */
+  const rowButtonRefs = useRef(new Map<string, Partial<Record<RowMoveDirection, HTMLElement | null>>>());
+  const pendingFocusRef = useRef<{ tag: string; dir: RowMoveDirection } | null>(null);
+
+  const setRowButtonRef = useCallback((tag: string, dir: RowMoveDirection, el: HTMLElement | null) => {
+    const entry = rowButtonRefs.current.get(tag) ?? {};
+    entry[dir] = el;
+    rowButtonRefs.current.set(tag, entry);
+  }, []);
+
+  const moveAndKeepHighlight = useCallback(
+    (tag: string, index: number, delta: number, dir: RowMoveDirection) => {
+      pendingFocusRef.current = { tag, dir };
+      move(index, delta);
+    },
+    [move],
+  );
+
+  useEffect(() => {
+    const pending = pendingFocusRef.current;
+    if (!pending) return;
+    pendingFocusRef.current = null;
+    const refs = rowButtonRefs.current.get(pending.tag);
+    if (!refs) return;
+    const primary = pending.dir === "up" ? refs.up : refs.down;
+    const secondary = pending.dir === "up" ? refs.down : refs.up;
+    primary?.focus();
+    // The primary button is disabled when the row landed at that end (index 0 for Up, the last
+    // index for Down); a disabled button refuses DOM focus, so `elementHasFocus` catches that
+    // rather than re-deriving the edge condition the `disabled` prop below already encodes.
+    if (!elementHasFocus(primary ?? null)) secondary?.focus();
+  }, [order]);
 
   const onReset = useCallback(() => {
     const seed = kind === "vision" ? DEFAULT_VISION_ROUTING_SEED : DEFAULT_TEXT_ROUTING_SEED;
@@ -174,16 +217,18 @@ export function ModelRoutingOrderModal({
                     <Button
                       className="bonsai-chat-secondary-btn"
                       disabled={index === 0}
-                      onClick={() => move(index, -1)}
+                      onClick={() => moveAndKeepHighlight(row.tag, index, -1, "up")}
                       aria-label={`Move ${row.tag} up`}
+                      ref={(el: HTMLElement | null) => setRowButtonRef(row.tag, "up", el)}
                     >
                       Up
                     </Button>
                     <Button
                       className="bonsai-chat-secondary-btn"
                       disabled={index >= rows.length - 1}
-                      onClick={() => move(index, 1)}
+                      onClick={() => moveAndKeepHighlight(row.tag, index, 1, "down")}
                       aria-label={`Move ${row.tag} down`}
+                      ref={(el: HTMLElement | null) => setRowButtonRef(row.tag, "down", el)}
                     >
                       Down
                     </Button>

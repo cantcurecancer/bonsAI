@@ -46,9 +46,6 @@ from one star to six.
 - ★ `[chips]` **Chip rotation favours the top of the candidate list** — **OPEN.** The guarantee and the roll both take the first
   unseen candidate, so ranks 1 to 3 come round every minute and ranks 4 to 6 rarely appear. A shuffle among eligible candidates
   would spread it. Filed 2026-08-29; the code still picks `available[0]` (`sessionRagComposer.ts`).
-- ★ `[focus]` **Reordering in the try-order picker drops the highlight** — **OPEN, minor.** A on a row's Up or Down reorders
-  correctly but the ring disappears for one press. Row **PICKER-REORDER-02** failed 2026-08-28. Measure before trying a plain
-  `focus()` inside the list.
 - ★ `[focus]` **The active chip in Show details is hard to spot** — **OPEN.** No focus ring on the chip, and the "Chip 1 of 6"
   counter is a small grey line. The chips are plain spans inside one Focusable, so Steam's ring never lands on them.
 - ★ `[focus]` **The focus ring is clipped on grid layouts** — **OPEN.** Tiles sit flush against their grid's edge, so the ring is
@@ -229,6 +226,10 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
 
 ### Bugs that need verification
 
+- ★ `[focus]` **Reordering in the try-order picker drops the highlight** — **VERIFY.** Fixed at the desk 2026-09-04:
+  after a move, the ring goes back onto the moved row's own button — the one just pressed when it stays enabled, the
+  row's other button when that one is now disabled by landing at an end. Both buttons stay inside the one list, where
+  a plain `focus()` is allowed. **Not measured on the Deck tonight — row PICKER-REORDER-02 decides.**
 - ★ `[focus]` **The disabled Clear frozen test chips button still takes the D-pad ring** — **VERIFY.** Fixed at the desk
   2026-09-04: the button now renders only once a batch is pinned (the "0 pinned" text above it already explains the empty
   state), so a disabled stop no longer sits at the bottom of Developer. Owed: a Developer sweep with no batch pinned shows

@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 354,
-  "edgeCount": 847,
+  "fileCount": 355,
+  "edgeCount": 850,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -461,14 +461,23 @@
         "src/components/OllamaModelsHubModal.tsx"
       ]
     },
+    "src/components/ModelRoutingOrderModal.test.tsx": {
+      "imports": [
+        "src/components/ModelRoutingOrderModal.tsx",
+        "src/utils/uiDocument.ts"
+      ],
+      "importedBy": []
+    },
     "src/components/ModelRoutingOrderModal.tsx": {
       "imports": [
         "src/components/BonsaiModalScope.tsx",
         "src/data/modelPolicy.ts",
         "src/data/pullModelCatalog.ts",
-        "src/utils/modelRoutingOrder.ts"
+        "src/utils/modelRoutingOrder.ts",
+        "src/utils/uiDocument.ts"
       ],
       "importedBy": [
+        "src/components/ModelRoutingOrderModal.test.tsx",
         "src/features/model-routing/useRoutingOrderModal.ts"
       ]
     },
@@ -3586,6 +3595,8 @@
         "src/components/MainTabChatTranscript.tsx",
         "src/components/MainTabPresetAnimatedChips.tsx",
         "src/components/MainTabUnifiedAskBar.tsx",
+        "src/components/ModelRoutingOrderModal.test.tsx",
+        "src/components/ModelRoutingOrderModal.tsx",
         "src/features/plugin-shell/TabIndicatorBar.test.tsx",
         "src/features/plugin-shell/TabIndicatorBar.tsx",
         "src/features/plugin-shell/modalReturnFocusRegistry.ts",

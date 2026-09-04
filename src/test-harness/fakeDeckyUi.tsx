@@ -60,12 +60,44 @@ function stub(name: string) {
   });
 }
 
+/*
+ * Button and ButtonItem, and only these two, are focusable stubs: on device Decky wires a real
+ * button into Steam's nav graph and stamps `tabindex="0"` itself once it registers the node (the
+ * focus-graph policy documents this), so a button is always programmatically focusable there, and a
+ * *disabled* one refuses focus the way any disabled native control does. jsdom enforces the native
+ * rule that a plain `<div>` with no tabindex ignores `.focus()` entirely, so without this a test
+ * calling `.focus()` on a stubbed button -- exactly what putting the ring back on a button after a
+ * picker reorder needs -- would silently no-op and `document.activeElement` would never move,
+ * whether or not the code under test is correct. Reading `disabled` off the real props (not a fixed
+ * default) is what lets a test also prove the disabled-button fallback path: `tabIndex` is only
+ * omitted, never forced, so a caller's own `tabIndex` still wins. The other stubs are containers, not
+ * focus stops, and are left as plain, non-focusable divs.
+ */
+function focusableButtonStub(name: string) {
+  return React.forwardRef<HTMLDivElement, StubProps>(function DeckyUiButtonStub(
+    { children, ...rest },
+    ref
+  ) {
+    const disabled = Boolean((rest as { disabled?: unknown }).disabled);
+    return (
+      <div
+        ref={ref}
+        data-decky-ui={name}
+        tabIndex={disabled ? undefined : -1}
+        {...withoutSteamNavProps(rest)}
+      >
+        {children as React.ReactNode}
+      </div>
+    );
+  });
+}
+
 export const PanelSection = stub("PanelSection");
 export const PanelSectionRow = stub("PanelSectionRow");
 export const TextField = stub("TextField");
 export const ToggleField = stub("ToggleField");
-export const Button = stub("Button");
-export const ButtonItem = stub("ButtonItem");
+export const Button = focusableButtonStub("Button");
+export const ButtonItem = focusableButtonStub("ButtonItem");
 export const Focusable = stub("Focusable");
 export const Navigation = {
   OpenQuickAccessMenu: vi.fn(),
