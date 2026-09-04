@@ -501,3 +501,33 @@ Fixed, confirmed, or closed bugs moved out of the roadmap in the 2026-09-02 clea
   `plugin_loader`. **When a deploy "didn't take", read the loader log before blaming settings.** Filed upstream 2026-08-28 as a
   DPS `docs/ROADMAP.md` row; indexed as **P1-8** in [mcp-setup.md](mcp-setup.md) § DPS findings log.
 
+
+## Moved from the roadmap 2026-09-04
+
+Closed or fixed bugs moved out of the roadmap during the 2026-09-04 bug-fixing session ([plan 32](../planning/32-bugfix-session.md)). Verbatim, so the
+measurements and the QA rows survive. The roadmap keeps a one-line entry in **Done** for each.
+
+### The Update knowledge base button (closed 2026-09-03, works)
+
+- ★★ `[KB]` **The *Update knowledge base* button may not fire from a controller press** — **CLOSED 2026-09-03, works.** A bridge
+  press with the ring read on the button (visible, y=641) raised the *Already up to date — Version 2026.09.01 is the latest* toast
+  within half a second. The 2026-09-02 press that started nothing stays unexplained; the likeliest reading is that the panel's
+  state changed between the focus read and the press, which is the one-driver rule in plan 30 § 6. If it recurs, poll the toast
+  layer (`notificationtoasts_uid2`), not the panel. Detail below, moved from roadmap-details.md.
+
+#### The detail entry, as it read in roadmap-details.md
+
+- ★★ **The *Update knowledge base* button may not fire from a controller press.** On 2026-09-02 a
+  bridge press with the focus ring verified on the button started no download and left no log line,
+  while the identical fetch-and-install code ran cleanly from the Deck over SSH minutes later
+  (Hugging Face reachable, checksum verified). So the network is not the cause; the suspect is the
+  button's `Focusable onOKButton` wiring. Needs one thumb press with eyes on the toast to settle.
+  The corpus itself is no longer behind: **`2026.09.01` (161 cards) was installed over SSH on
+  2026-09-02** at the maintainer's request, so on-Deck KB rows now run against the published corpus.
+  Plan 30 § 6 item 8.
+- **Resolved 2026-09-03 — the button works.** With the Deck held for one driver, a bridge press with
+  the ring read on *Update knowledge base* (visible, y=641) raised the *Already up to date — Version
+  2026.09.01 is the latest* toast within half a second, read from the toast layer
+  (`notificationtoasts_uid2`) rather than the panel. The 2026-09-02 press stays unexplained; the
+  likeliest reading is that the panel's state changed between the focus read and the press while a
+  second session was also driving the Deck. Closed as not reproduced, not as a button bug.

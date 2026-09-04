@@ -38,6 +38,11 @@ from one star to six.
 
 - ★ `[ask]` **The question overlay sits a few pixels off the native text field** — **OPEN.** Most visible on a three-line question
   and on the empty-field placeholder. Nothing has touched the overlay since 2026-08-07.
+- ★ `[chips]` **A frozen test-chip batch longer than the row cannot be reached after the first minute** — **OPEN, found 2026-09-03.**
+  The row walks a pinned batch only while the carousel is active (60s, `PRESET_CAROUSEL_ACTIVE_MS`); an Ask does not restart it and
+  Left/Right at the edge do not pull the next entry in. With ten chips pinned, 6–10 never came into view during **KB-ANSWER-02**, and
+  four of five sentences went in through `scripts/deck_send_ask.py` instead. Fix: restart the walk on an Ask or D-pad entry, or let
+  the edge advance the batch. Until then, keep a batch to what the row shows in a minute.
 - ★ `[chips]` **Chip rotation favours the top of the candidate list** — **OPEN.** The guarantee and the roll both take the first
   unseen candidate, so ranks 1 to 3 come round every minute and ranks 4 to 6 rarely appear. A shuffle among eligible candidates
   would spread it. Filed 2026-08-29; the code still picks `available[0]` (`sessionRagComposer.ts`).
@@ -59,6 +64,11 @@ from one star to six.
 - ★ `[KB]` **The arms report's verdict only compares `rrf` against `keyword`** — **OPEN.** The 2026-08-29 run printed "no separation"
   while its own table showed `vector_only` well ahead. Make the verdict look at every arm, or say which pair it judges
   (`scripts/eval_kb_embed_models.py`, `_arms_verdict`).
+- ★★ `[chat]` **A command reply leaves the turn header blank and the chat titled *New chat*** — **OPEN, found 2026-09-03.** After
+  `bonsai:vac-check` with the ban lookup off, the reply's turn header reads `…` and the chat it created stays *New chat*: the live
+  question is blank for a deterministic command reply, so the header and the title have nothing to show. Same `…` symptom SMOKE-H's
+  2026-08-23 fix covered for mid-thinking reopens. Seen in `runs/SMOKE-C-b-press-ask-vac-check-off.json` and again on VAC-02.
+  Filed under D58 #9.
 - ★★ `[focus]` **After a modal closes or the QAM reopens, the ring can sit on a hidden Steam tab button** — **OPEN, filed 2026-09-03.**
   Closing the Clear cache confirmation, and closing the QAM then reopening it with the panel still mounted, both leave the ring on
   one of Steam's hidden tab buttons (0 × 0, offscreen): nothing lit, one dead press before the next control. The D55 focus trap
@@ -83,23 +93,13 @@ from one star to six.
 - ★★ `[KB]` **A troubleshooting question that only describes the symptom reaches no tips** — **OPEN, maintainer call.** The router
   needs a topic word: *"the game drops me back to the library"* never routes because *crash* is absent. Two of four blind compat
   rows miss. A reach limit of the D16 gate, not a regression; neither row was reworded. [Detail](roadmap-details.md#a-troubleshooting-question-that-only-describes-the-symptom-reaches-no-tips).
-- ★★ `[KB]` **The *Update knowledge base* button may not fire from a controller press** — **CLOSED 2026-09-03, works.** A bridge
-  press with the ring read on the button (visible, y=641) raised the *Already up to date — Version 2026.09.01 is the latest* toast
-  within half a second. The 2026-09-02 press that started nothing stays unexplained; the likeliest reading is that the panel's
-  state changed between the focus read and the press, which is the one-driver rule in plan 30 § 6. If it recurs, poll the toast
-  layer (`notificationtoasts_uid2`), not the panel. [Detail](roadmap-details.md#the-update-knowledge-base-button-may-not-fire-from-a-controller-press).
-- ★ `[chips]` **A frozen test-chip batch longer than the row cannot be reached after the first minute** — **OPEN, found 2026-09-03.**
-  The row walks a pinned batch only while the carousel is active (60s, `PRESET_CAROUSEL_ACTIVE_MS`); an Ask does not restart it and
-  Left/Right at the edge do not pull the next entry in. With ten chips pinned, 6–10 never came into view during **KB-ANSWER-02**, and
-  four of five sentences went in through `scripts/deck_send_ask.py` instead. Fix: restart the walk on an Ask or D-pad entry, or let
-  the edge advance the batch. Until then, keep a batch to what the row shows in a minute.
 - ★★ `[KB]` **Unrelated questions still get game cards stapled on** — **ACCEPTED 2026-08-27.** With a game running, *"thank you very
   much"* still attaches a card. Raising the keyword floor pushes against D25, and the model mostly ignores an irrelevant card.
   [Detail](roadmap-details.md#ordinary-phrases-attach-game-cards).
-- ★★ `[reply]` **Token streaming reveals text in bursts while a game is running** — **OPEN, needs a call.** Measured 2026-08-28 with
+- ★★ `[reply]` **Token streaming reveals text in bursts while a game is running** — **ACCEPTED 2026-09-04 (D58 #4).** Measured 2026-08-28 with
   a game running: tokens arrive in bursts, and during a burst the overlay drops to 47 fps; between bursts it is a flat 60. Delivery
-  is bursty, painting is not slow. The game's own frame rate is unmeasured. Decide whether this is acceptable; it gates making
-  streaming the default. Row **STREAM-11**. [Detail](roadmap-details.md#token-streaming-reveals-text-in-chunks-while-a-game-is-running).
+  is bursty, painting is not slow. The game's own frame rate is unmeasured. Accepted as a nice-to-have; reopen only if the game's own frame rate is measured
+  and suffers. Making streaming the default stays a separate feature call. Row **STREAM-11**. [Detail](roadmap-details.md#token-streaming-reveals-text-in-chunks-while-a-game-is-running).
 - ★★★★ `[KB]` **The shipping retrieval arm loses to the vector half alone on rows nobody tuned against** — **OPEN, deferred under
   D38.** On the blind holdout, `vector_only` beats the shipping `rrf` blend by 7.6 points of top-1; on the tuning rows they tie.
   No weight changes until D38 is answered, and never by tuning against holdout. Groundwork done: 51 blind rows added to `tune`.
@@ -337,7 +337,7 @@ since April (`25742f2`), and a deliberate failing test exits 1 today. If it recu
   characters, and a plugin-log warning whenever prompt plus reply budget would not fit the Deck's 4,096-token window,
   2026-09-03.
 - Fence fix confirmed on the Deck (**KB-ANSWER-02**, 5 of 5) and the *Update knowledge base* button confirmed working from a
-  controller press, 2026-09-03.
+  controller press, 2026-09-03. [Detail](archive/roadmap-bugs-fixed.md#moved-from-the-roadmap-2026-09-04).
 - Collapsing tab bar with tab names (plan 30 W0 to W6), 2026-09-02.
 - Preset row rebuilt: two chips across, scrolling labels, help chip owns the row (D43), 2026-09-01/02.
 - Spoiler fences no longer wrap harmless tactics on no-story games or named bosses, 2026-09-02.

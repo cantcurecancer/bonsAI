@@ -774,23 +774,6 @@ alphabetical order the rest of the Backlog uses.
   - **Goal:** Detection + deep link to troubleshooting for immutable spins.
 
 
-## The Update knowledge base button may not fire from a controller press
-
-- ★★ **The *Update knowledge base* button may not fire from a controller press.** On 2026-09-02 a
-  bridge press with the focus ring verified on the button started no download and left no log line,
-  while the identical fetch-and-install code ran cleanly from the Deck over SSH minutes later
-  (Hugging Face reachable, checksum verified). So the network is not the cause; the suspect is the
-  button's `Focusable onOKButton` wiring. Needs one thumb press with eyes on the toast to settle.
-  The corpus itself is no longer behind: **`2026.09.01` (161 cards) was installed over SSH on
-  2026-09-02** at the maintainer's request, so on-Deck KB rows now run against the published corpus.
-  Plan 30 § 6 item 8.
-- **Resolved 2026-09-03 — the button works.** With the Deck held for one driver, a bridge press with
-  the ring read on *Update knowledge base* (visible, y=641) raised the *Already up to date — Version
-  2026.09.01 is the latest* toast within half a second, read from the toast layer
-  (`notificationtoasts_uid2`) rather than the panel. The 2026-09-02 press stays unexplained; the
-  likeliest reading is that the panel's state changed between the focus read and the press while a
-  second session was also driving the Deck. Closed as not reproduced, not as a button bug.
-
 ## Spoiler coverage should be a setting with tiers
 
 - ★★★ **Spoiler coverage should be a setting with tiers** — proposed by the maintainer on the corpus gap sheet, 2026-08-29:

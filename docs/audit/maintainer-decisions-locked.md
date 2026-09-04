@@ -3089,3 +3089,66 @@ answers get copied here.
    while a game runs.
 9. The in-person list is plan 31 § 7, written in plain terms with what is needed and when. The rig
    never ticks those boxes; only the maintainer clears an item, after seeing it themselves.
+
+### D58 — LOCKED 2026-09-04, #2 still open (raised 2026-09-04) — The bug-fixing session: nine calls before "go"
+
+[Plan 32](../planning/32-bugfix-session.md) sorts the roadmap's twenty Bugs entries into thirteen to fix
+now, two that need a call, two that are research for another conversation, and three that are
+bookkeeping. It puts the thirteen into five lanes that run at once and one serial Deck phase. Nothing
+in the code blocks it. Checked read-only on 2026-09-04: the Deck already runs this checkout (hashes
+match), the rig is armed and the board is on `COM7`, no frozen batch is pinned, tests are green here,
+and the focus linter is red on a clean tree with three findings newer than its baseline. What blocks
+the session is nine things only the maintainer can decide. Answer by number in chat; the answers get
+copied here.
+
+1. **Scope.** (a) all thirteen fixable entries in plan 32 § 2a (recommended); (b) the nine `[focus]`
+   entries only, leaving the two chip entries, the arms report and the overlay for another day.
+2. **Up from the preset chips.** Today one Up press steps back one chip through the carousel history
+   and can take five presses to leave the row. (a) Up leaves the row at once, Left keeps walking the
+   history (recommended); (b) keep it as it is and close the entry as accepted.
+3. **A frozen batch longer than the row.** (a) Right at the last visible chip pulls the next batch
+   entry in, and an Ask restarts the sixty-second walk (recommended: it fixes both ways the batch
+   got stuck on 2026-09-03); (b) only the Ask restarts the walk; (c) only the edge advances.
+4. **Streaming in bursts with a game running.** Measured 2026-08-28: the overlay drops to 47 fps only
+   during a burst and is flat 60 otherwise; the game's own frame rate is unmeasured. (a) accept it and
+   move the entry to ACCEPTED (recommended: it is a nice-to-have by the earlier call, and it does not
+   gate anything this session); (b) keep it open until the game-side frames are measured with the
+   maintainer's FPS overlay.
+5. **Focus ring styling, PARTIAL.** (a) skip this session (recommended); (b) include a small pass.
+6. **The focus linter's three new findings.** (a) the orchestrator triages each in Phase 0: fix what
+   is a real defect, baseline what is deliberate with a one-line reason in the commit, and file a
+   Bugs entry for anything real that is not a one-line fix (recommended); (b) baseline all three now
+   and look later; (c) leave the linter red and skip it as a gate.
+7. **Models.** (a) Fable at max as the orchestrator and Sonnet 5 at high effort in all five lanes
+   (recommended; the two subtle fixes are decided by device measurement, not by the model); (b) Opus
+   for lanes A and D, Sonnet elsewhere.
+8. **The Deck window.** The session needs the device for two short blocks: about half an hour of
+   measurements early on, then about two hours of verification after the fixes land, with one deploy
+   in between that restarts Decky Loader. Every other chat has to stay off the buttons for both
+   blocks, and the maintainer should not be playing on it. (a) the window is open now and the rig
+   may also carry on into plan 31 § 5 step 6 afterwards if time remains (recommended); (b) the two
+   bug blocks only, plan 31 waits; (c) not tonight.
+9. **The unfiled sixth bug from session 1** — a deterministic command reply (`bonsai:vac-check`)
+   leaves the turn header reading `…` and the chat titled *New chat*. (a) file it in Phase 0 and let
+   lane A try it only after its own two bugs, stopping if the cause takes more than an hour to find
+   (recommended); (b) file it and leave it; (c) do not file it.
+
+**Answers, 2026-09-04, eight of nine locked** (the maintainer answered by number in chat; #2 waits on a
+mockup they asked for):
+
+1. All thirteen.
+2. Open. The maintainer asked to see the behaviour before choosing; a mockup was published the same
+   evening and the answer is copied here when it arrives.
+3. The recommendation: Right at the last visible chip pulls the next batch entry in, and an Ask restarts
+   the sixty-second walk.
+4. Accepted. The entry is marked **ACCEPTED 2026-09-04** and stays in Bugs under that word; the
+   STREAM-11 row says so.
+5. Skipped this session.
+6. Yes: the orchestrator triages the three findings in Phase 0. Outcome: all three are deliberate and are
+   baselined, each with a written reason in the commit and in plan 32 § 10.
+7. Sonnet 5 at high effort in every lane.
+8. Yes, when the device is free. Another chat is driving the Deck for several hours from about 17:00, so
+   the desk half runs now and the Deck half waits. The rig watches the `runs/` folder and the tunnel
+   registry; after thirty quiet minutes it announces in chat and proceeds ten minutes later unless told
+   to wait. It may carry on into plan 31's remaining rows afterwards.
+9. Yes: filed in Phase 0 as a ★★ `[chat]` entry; lane A may try it after its own two bugs, one hour cap.
