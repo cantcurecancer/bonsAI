@@ -43,24 +43,6 @@ from one star to six.
 - ★ `[focus]` **Down does not move the ring off an unrevealed spoiler block** — **OPEN, found 2026-09-04.** With the ring on
   `.bonsai-spoiler-reveal-target`, Down reports the press arriving and nothing moving. After the block is revealed, Down escapes
   normally, so it is the hidden state that traps.
-- ★ `[focus]` **Reordering in the try-order picker drops the highlight** — **OPEN, minor.** A on a row's Up or Down reorders
-  correctly but the ring disappears for one press. Row **PICKER-REORDER-02** failed 2026-08-28. Measure before trying a plain
-  `focus()` inside the list.
-- ★ `[focus]` **The active chip in Show details is hard to spot** — **OPEN.** No focus ring on the chip, and the "Chip 1 of 6"
-  counter is a small grey line. The chips are plain spans inside one Focusable, so Steam's ring never lands on them.
-- ★ `[focus]` **The disabled Clear frozen test chips button still takes the D-pad ring** — **OPEN, filed 2026-09-03.**
-  With no batch pinned the button is disabled but is still a stop at the bottom of Developer, so leaving the tab costs one dead press.
-  The visibility oracle reports it clipped, most likely because a disabled button has `pointer-events: none` and `elementFromPoint`
-  hits its parent instead (`runs/TAB-RESUME-MODE-01-h-restore-C-and-remeasure-clear-chips-button.json`).
-- ★ `[focus]` **The focus ring is clipped on grid layouts** — **OPEN.** Tiles sit flush against their grid's edge, so the ring is
-  cut off. Most visible on the character picker; each grid needs a margin outside its edge for the ring to fit.
-- ★ `[focus]` **Up from the preset chips walks back through the chip history before it leaves the row** — **OPEN, filed 2026-09-03.**
-  One earlier chip per press (four in the run) before the ring goes up to the slot row, so leaving the chips can take five presses;
-  every stop was visible. Nothing in **PRESET-ONE-LINE-03** forbids it — the maintainer's call whether Up should leave the row at once
-  (`runs/PRESET-ROW-up-from-chips-probe.json`, `runs/CHAT-SLOTS-V3-01-rerun-fresh-open-walk.json`).
-- ★ `[KB]` **The arms report's verdict only compares `rrf` against `keyword`** — **OPEN.** The 2026-08-29 run printed "no separation"
-  while its own table showed `vector_only` well ahead. Make the verdict look at every arm, or say which pair it judges
-  (`scripts/eval_kb_embed_models.py`, `_arms_verdict`).
 - ★ `[reply]` **A branch question elides the game name** — **OPEN, found 2026-09-04.** The Ravenholm branch picker asked
   *"Where are you at in … ?"* with the title replaced by an ellipsis.
 - ★★ `[chat]` **A command reply leaves the turn header blank and the chat titled *New chat*** — **OPEN, found 2026-09-03.** After
@@ -68,18 +50,9 @@ from one star to six.
   question is blank for a deterministic command reply, so the header and the title have nothing to show. Same `…` symptom SMOKE-H's
   2026-08-23 fix covered for mid-thinking reopens. Seen in `runs/SMOKE-C-b-press-ask-vac-check-off.json` and again on VAC-02.
   Filed under D58 #9.
-- ★★ `[focus]` **After a modal closes or the QAM reopens, the ring can sit on a hidden Steam tab button** — **OPEN, filed 2026-09-03.**
-  Closing the Clear cache confirmation, and closing the QAM then reopening it with the panel still mounted, both leave the ring on
-  one of Steam's hidden tab buttons (0 × 0, offscreen): nothing lit, one dead press before the next control. The D55 focus trap
-  catches the B-from-body path but not these two; TAB-BAR-09 covered three openers and this is a fourth. Step 0 of
-  `runs/CLEAR-CACHE-01-b-after-modal-back-to-main.json` and `runs/CLEAR-CACHE-01-c-close-panel-for-remount.json`.
 - ★★ `[focus]` **After the panel remounts the ring parks on a zero-size container** — **OPEN, found 2026-09-04.** On a fresh mount
   the ring lands on "Ask bonsAI" (Main) or "Where AI runs" (Ollama), both 0x0 rects that the visibility oracle calls OFFSCREEN, so
   the panel opens with nothing highlighted until the first press.
-- ★★ `[focus]` **Down from the chat slot lands on the whole reply before its first section** — **OPEN, filed 2026-09-02.** One wasted
-  press per reply, and on a long answer the highlight is a wall of glow. The bubble is its own stop with the sections nested inside.
-  Fix: hand the ring to the first section on the way in (`focusFirstAnswerChunk` already does this for Up from a spoiler), and
-  check Up from the reply buttons for the same double landing. [Detail](roadmap-details.md#down-from-the-chat-slot-lands-on-the-whole-reply).
 - ★★ `[focus]` **Focus ring styling is inconsistent** between plugin controls and Steam's own — **PARTIAL.** Modal scoping shipped; a
   blanket rule was tried and reverted in favour of Steam's native outline.
 - ★★ `[focus]` **Up skips the answer sections and the chat slot row** — **OPEN, found 2026-09-04.** Down walks a reply chunk by
