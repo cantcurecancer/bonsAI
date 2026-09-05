@@ -165,11 +165,11 @@ replace it with a specific issue when one exists.
 - ★★ `[reply]` **Make token streaming the default and drop the setting** — **OPEN, maintainer direction 2026-08-23.** Gated on the
   burst finding under Bugs. Halves every "streaming on and off" QA row. A two-language removal: Python is authoritative (D13), both
   settings contracts lose the key, and an old `settings.json` must not read as a reset. [Detail](roadmap-details.md#make-token-streaming-the-default-and-drop-the-setting).
-- ★★ `[reply]` **The answer's first lines in the reply-ready toast** — **OPEN, planned 2026-09-05, nothing built.** When an
-  answer finishes while the menu is closed, the toast says only *Reply ready*. It would carry the question and the first lines of
-  the answer instead, so a short answer is read without leaving the game; tap still opens the panel. Speed and Expert only; any
-  answer holding a hidden block keeps today's toast. Measure first: nobody has recorded the toast showing over a running game.
-  The buildable slice of **In-game answer surface**. [Plan](planning/38-toast-answer-lines.md), decisions **D63**.
+- ★★ `[reply]` **The answer's first lines in the reply-ready toast** — **OPEN, planned 2026-09-05, calls locked (D63).** When an
+  answer finishes while the menu is closed, the toast says only *Reply ready*. It would carry your question and the first lines
+  of the answer, in every mode, so a short answer is read without leaving the game; tap still opens the panel. Any hidden block
+  is skipped, and if nothing safe is left the toast stays as it is. Queued for a later session; the first step then is a Deck
+  measurement, since nobody has recorded the toast showing over a running game. [Plan and mockup](planning/38-toast-answer-lines.md).
 - ★★ `[reply]` **Thinking tips replace the status blurb (Phase 2)** — **OPEN.** Hand-curated bonsAI tips, feature tips for generic
   asks and KB-strategy tips for game asks, chosen by current game and mode. The generic filler copy goes away entirely. Data file
   shaped like `data/kb/strategy_seed.json`. Superseded by **Reasoning display** once real thinking streams.
@@ -202,8 +202,10 @@ replace it with a specific issue when one exists.
 - ★★★ `[ui]` **Adjustable text size in Settings** — **OPEN.** `uiScalePx()` already runs through the stylesheet; the work is exposing it,
   deciding what must not scale (icons, the 300px column), and paying the settings plumbing. [Detail](roadmap-details.md#adjustable-text-size-in-settings).
 - ★★★ `[ui]` **Search density** — **OPEN.** Tighter, more scannable results with highlighted match tokens.
-- ★★★★ `[ask]` **Connection doctor** — **OPEN, candidate.** **Fix this** on an Ask failure walks the probes to one next action with an
-  Ollama-tab deep link. Decide against **Deck health snapshot** first; they share a probe set.
+- ★★★★ `[ask]` **Connection doctor** — **OPEN, planned 2026-09-05, calls pending (D64).** When an Ask fails, a **Fix this** button
+  runs the checks the plugin already has, shows the one that failed, and offers the one thing to do next with a button that
+  lands you on that control on the Ollama tab. **Save a report** inside it writes a plain file to the Desktop, which is the
+  **Deck health snapshot** folded in; the first call in D64 is whether to keep them as one. [Plan](planning/39-connection-doctor.md).
 - ★★★★ `[ask]` **Session context and user stash** — **OPEN.** Live session facts plus user-editable notes for Ask. No embeddings, no cloud.
 - ★★★★ `[ollama]` **LAN custom model pull** — **OPEN.** Blocked until a mechanism is chosen (R1 to R4). Depends on **Custom model in
   the Pull Models picker**.
@@ -218,7 +220,10 @@ replace it with a specific issue when one exists.
   configs.
 - ★★★★ `[ui]` **SteamOS Share path** — **OPEN.** Faster path from Share and capture flows into screenshot attach where APIs allow.
 - ★★★★ `[ui]` **SteamOS spin hint card** — **OPEN.** Detect immutable spins and deep-link to troubleshooting.
-- ★★★★★ `[ask]` **Deck health snapshot** — **OPEN.** Read-only diagnostics dump to Desktop; Magic Ask `bonsai:diagnostics`.
+- ★★★★★ `[ask]` **Deck health snapshot** — **OPEN, proposed to fold into Connection doctor (D64).** A read-only report of the
+  setup written to the Desktop, plus a typed command that does the same. Planned 2026-09-05 as the **Save a report** button and the
+  typed command inside the doctor, since both share one set of checks. Retires into that entry if the first call in D64 says one
+  feature. [Plan](planning/39-connection-doctor.md).
 - ★★★★★ `[ollama]` **On-Deck model benchmark** — **OPEN.** Rank installed models by measured speed and completion; offer as try order
   with confirmation.
 - ★★★★★ `[perms]` **VAC Phase 2: opponent IDs** — **OPEN, research.** Surface live opponent identities for ban checks when metadata allows.
