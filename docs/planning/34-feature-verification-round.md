@@ -370,3 +370,44 @@ and Deep Rock is now a fifth over it — but a fix session should not assume eve
 **Third sighting of the stale footnote.** With Sifu closed and Ship of Harkinian running, the line under
 the Ask bar still read Sifu's number until an Ask ran, then corrected itself. It also showed Deep Rock's
 number while Sifu ran. Same cause as the filed bug: the line only updates from an Ask's status poll.
+
+### Block 2 — the developer commands, and a free walk of all six screens
+
+**The three developer commands pass**, completing that part of the deferred-QA entry. Each answered
+instantly with no model call:
+
+| Typed | Answer |
+|---|---|
+| `bonsai:disable-sanitize` | *Input sanitization is disabled for future asks. Send bonsai:enable-sanitize (exact line, Ask field) to turn it back on.* |
+| `bonsai:enable-sanitize` | *Input sanitization is enabled again for future asks.* |
+| `bonsai:shortcut-setup-deck` | The fixed recipe — *bonsAI cannot create Steam Input macros automatically (no supported API; your controller stays under your control)* — pointing at troubleshooting §5, then the numbered steps. |
+
+One thing worth knowing for anyone driving this: **the first Ask press right after a reply lands does
+nothing.** The ring is briefly unowned, so that press places it instead of acting; the second submits.
+Same family as the known "nothing is highlighted when the panel opens" entry. A left-stick click is a
+free way to check where the ring is before pressing, since it moves nothing.
+
+**The free walk of every screen — 64 stops, one failure, and it is one already on the list.**
+
+| Screen | Stops | Every stop visible? |
+|---|---|---|
+| Main | 15 | **No — one answer section only 33% visible**, covered by the Ask box's input |
+| Ollama | 15 | yes |
+| Settings | 13 | yes |
+| Permissions | 4 | yes |
+| Developer | 12 | yes |
+| About | 5 | yes |
+
+No cycles anywhere. The single failure reproduces the ★ entry filed 2026-09-04 — an answer section takes
+the ring while hidden behind the Ask box — so it is a confirmation, not a new bug.
+
+Two things the sweeps closed or confirmed on the way:
+
+- **VOICE-REINSTALL-01 passes.** The Settings sweep found the button labelled **Reinstall voice engine**,
+  not *Install* — which is the ready state this row asks about — reachable by D-pad and fully visible. Not
+  pressed, because the row says pressing it re-downloads.
+- **The disabled *Clear frozen test chips* fix holds.** With no batch pinned, the Developer sweep walked
+  12 stops and none of them was that button.
+
+Three unnamed stops on Main (the answer chunks) and one on Developer (a text field) carry no accessible
+name. Not a failure by any row, but worth knowing: a sweep cannot tell you what they are.

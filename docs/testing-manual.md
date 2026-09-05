@@ -225,8 +225,8 @@ suggestions → **decode**.
 
 ### SMOKE-F — Deterministic commands (P2)
 
-- [ ] `bonsai:disable-sanitize` / `bonsai:enable-sanitize` — confirmation; no Ollama call
-- [ ] `bonsai:shortcut-setup-deck` — fixed help; points to [troubleshooting.md](troubleshooting.md) §5
+- [x] `bonsai:disable-sanitize` / `bonsai:enable-sanitize` — confirmation; no Ollama call — **PASS (Deck) 2026-09-05.** *disable* answered *Input sanitization is disabled for future asks. Send bonsai:enable-sanitize (exact line, Ask field) to turn it back on.*; *enable* answered *Input sanitization is enabled again for future asks.* Both instant, no model call.
+- [x] `bonsai:shortcut-setup-deck` — fixed help; points to [troubleshooting.md](troubleshooting.md) §5 — **PASS (Deck) 2026-09-05.** Answered with the fixed recipe: *bonsAI cannot create Steam Input macros automatically (no supported API; your controller stays under your control)*, pointing at troubleshooting §5, followed by the numbered steps. Skips the model. **Note:** the first Ask press after a reply lands did nothing — the ring is briefly unowned, so that press places it instead of acting; the second press submitted. Same family as the known unowned-ring entry.
 - [x] `bonsai:vac-check` with Steam Web API **off** → capability message only (**VAC-01**) — PASS 2026-09-03: answered with the capability message naming Permissions → Steam Web API and Developer → Integrations, no Ollama call in the plugin log (`runs/SMOKE-C-b-press-ask-vac-check-off.json`)
 
 ---
