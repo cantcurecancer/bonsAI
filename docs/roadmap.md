@@ -45,11 +45,6 @@ from one star to six.
   normally, so it is the hidden state that traps.
 - ★ `[reply]` **A branch question elides the game name** — **OPEN, found 2026-09-04.** The Ravenholm branch picker asked
   *"Where are you at in … ?"* with the title replaced by an ellipsis.
-- ★★ `[chat]` **A command reply leaves the turn header blank and the chat titled *New chat*** — **OPEN, found 2026-09-03.** After
-  `bonsai:vac-check` with the ban lookup off, the reply's turn header reads `…` and the chat it created stays *New chat*: the live
-  question is blank for a deterministic command reply, so the header and the title have nothing to show. Same `…` symptom SMOKE-H's
-  2026-08-23 fix covered for mid-thinking reopens. Seen in `runs/SMOKE-C-b-press-ask-vac-check-off.json` and again on VAC-02.
-  Filed under D58 #9.
 - ★★ `[focus]` **After the panel remounts the ring parks on a zero-size container** — **OPEN, found 2026-09-04.** On a fresh mount
   the ring lands on "Ask bonsAI" (Main) or "Where AI runs" (Ollama), both 0x0 rects that the visibility oracle calls OFFSCREEN, so
   the panel opens with nothing highlighted until the first press.
