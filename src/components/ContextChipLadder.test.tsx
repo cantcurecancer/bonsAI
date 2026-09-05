@@ -66,10 +66,59 @@ describe("ContextChipLadder active chip", () => {
       ".bonsai-chip-ladder-chip:not(.bonsai-chip-ladder-chip--active)",
     ) as HTMLElement;
 
-    // A visible ring (box-shadow) marks the active chip; the inactive one gets none.
-    expect(active.style.boxShadow).not.toBe("");
-    expect(inactive.style.boxShadow).toBe("");
-    // The fills differ -- the active chip's is not the same background as an inactive one.
+    // The fill and the border both mark the active chip; the inactive one gets neither.
     expect(active.style.background).not.toBe(inactive.style.background);
+    expect(active.style.border).not.toBe(inactive.style.border);
+  });
+
+  /*
+   * One colour on the row (maintainer, 2026-09-05, after seeing it on device). The active cue used
+   * to be a cyan box-shadow layered over borders that were already green / orange / red (model
+   * licence tier) or tan (the chip carries a credit) -- six colours on one row, with the white
+   * D-pad ring competing against all of them. These two cases pin the new rule: nothing on the row
+   * is coloured except the chip you are on, and no chip carries a ring.
+   */
+  it("paints no ring on any chip, so nothing on the row imitates the D-pad highlight", () => {
+    const snapshot = snapshotWith([
+      chip({ id: "kb", rank: 1, label: "Keyword + meaning" }),
+      chip({ id: "routing", rank: 2, label: "Routed gemma3" }),
+    ]);
+    const { container } = render(<ContextChipLadder snapshot={snapshot} />);
+
+    for (const el of container.querySelectorAll<HTMLElement>(".bonsai-chip-ladder-chip")) {
+      expect(el.style.boxShadow).toBe("");
+    }
+  });
+
+  it("gives every chip but the active one the same border, whatever its tier or credit", () => {
+    const snapshot = snapshotWith([
+      chip({ id: "kb", rank: 1, label: "Keyword + meaning" }),
+      chip({ id: "routing", rank: 2, label: "Routed gemma3", tier_class: "open_weight" }),
+      chip({ id: "policy", rank: 3, label: "Model policy", tier_class: "non_foss" }),
+      chip({
+        id: "corpus",
+        rank: 4,
+        label: "Knowledge cards",
+        body: {
+          title: "Knowledge cards",
+          paths: [],
+          bullets: [],
+          attribution: [{ source: "combineoverwiki.net", license: "CC-BY-SA-4.0", cards: [] }],
+        } as unknown as ContextChip["body"],
+      }),
+    ]);
+    const { container } = render(<ContextChipLadder snapshot={snapshot} />);
+
+    const borders = new Set(
+      [
+        ...container.querySelectorAll<HTMLElement>(
+          ".bonsai-chip-ladder-chip:not(.bonsai-chip-ladder-chip--active)",
+        ),
+      ].map((el) => el.style.border),
+    );
+    expect(borders.size).toBe(1);
+    const only = [...borders][0]!;
+    // Not green, orange, red or tan: the tier and credit colours are gone from the row.
+    expect(only).not.toMatch(/74, 222, 128|251, 146, 60|248, 113, 113|214, 174, 116/);
   });
 });

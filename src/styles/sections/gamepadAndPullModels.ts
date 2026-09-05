@@ -51,6 +51,15 @@ export function buildGamepadFocusRingStylesheet(): string {
         .bonsai-scope .bonsai-unified-input-host .bonsai-attach-menu-floater button.bonsai-attach-menu-item-btn:focus-visible {
           ${ringInset}
         }
+        /* The character picker's tiles. Added 2026-09-05: these are Decky \`Button\`s with no class
+           of their own, so no rule here matched them and they fell back to the browser's own hairline
+           focus ring — a different look from every other control in the plugin, and unreadable against
+           the tile's own border. The maintainer saw it on device and called it: "why is the AI
+           character screen have rings that are yellow? they should be white". Not a catch-all (see the
+           note above): the selector names this one grid, whose column already carries 6px of padding
+           for exactly this ring (PICKER_GRID_RING_PAD_PX). */
+        .bonsai-scope .bonsai-ai-char-grid-col button.gpfocus,
+        .bonsai-scope .bonsai-ai-char-grid-col button:focus-visible,
         .bonsai-scope button.bonsai-chat-secondary-btn.gpfocus,
         .bonsai-scope button.bonsai-chat-secondary-btn:focus-visible,
         .bonsai-scope button.bonsai-preset-glass.gpfocus,

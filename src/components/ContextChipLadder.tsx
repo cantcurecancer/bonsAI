@@ -21,10 +21,8 @@ import {
   chipBodyPaths,
   chipBodyTitle,
   chipDevJson,
-  chipHasAttribution,
   chipsFromSnapshot,
   CONTEXT_CHIP_SHOW_ALL_MAX,
-  tierBorderColor,
   windowRange,
 } from "../utils/contextChipsFromSnapshot";
 import { isOkDeckButtonEvent } from "../utils/focusNavigation";
@@ -37,12 +35,19 @@ const deckNav = (handlers: Record<string, () => boolean | void>) =>
 // chip (roadmap: "The active chip in Show details is hard to spot") -- Left/Right just move
 // `activeIndex` within it. This is a manual "which one is showing below" cue, not the hardware
 // D-pad ring, so it deliberately does not reuse the reserved-for-real-focus white ring from
-// design-tokens.md; it uses DECK_HIGHLIGHT_CYAN, the token already meant for "active controls",
-// for both the glow and the fill. Kept off the chip's `border` property on purpose: that border
-// always shows the tier/attribution colour, active or not (see the `credited` comment below), so
-// the active cue layers on top of it via box-shadow instead of replacing it.
-const ACTIVE_CHIP_GLOW = `0 0 0 2px ${DECK_HIGHLIGHT_CYAN}, 0 0 8px rgba(156, 231, 255, 0.45)`;
+// design-tokens.md; it uses DECK_HIGHLIGHT_CYAN, the token already meant for "active controls".
+//
+// One colour on the row, chosen by the maintainer 2026-09-05 after seeing it on device: the first
+// version of this cue added a cyan glow *on top of* borders that were already green, orange, red or
+// tan (model licence tier, and whether the chip carries a credit), so six colours could share one
+// row and the white D-pad ring had to compete with all of them -- "went from ambiguous focus to too
+// much noise". Now every chip carries the same flat border and only the active one is filled. The
+// glow is gone with the rest: a 2px cyan ring around a chip read as a focus ring, which is exactly
+// the confusion the change is meant to remove. Tier and credit are still shown, in words, in the
+// panel that opens below the row (see ChipExpandedBody) -- they were never row-only information.
 const ACTIVE_CHIP_FILL = "rgba(156, 231, 255, 0.22)";
+const ACTIVE_CHIP_BORDER = DECK_HIGHLIGHT_CYAN;
+const CHIP_BORDER = "rgba(96, 118, 144, 0.55)";
 
 export type ContextChipLadderProps = {
   snapshot: TransparencySnapshot | ChatSlotTurnTransparency | null | undefined;
@@ -194,8 +199,10 @@ export function ContextChipLadder({
       <div
         style={{
           fontSize: 10,
-          fontWeight: 700,
-          color: DECK_HIGHLIGHT_CYAN,
+          fontWeight: 600,
+          // Grey, not cyan: the counter is a caption, and the only thing on this row allowed to be
+          // coloured is the chip you are on.
+          color: "rgba(159, 183, 213, 0.9)",
           letterSpacing: "0.03em",
           marginBottom: 6,
         }}
@@ -218,9 +225,6 @@ export function ContextChipLadder({
           const isActive = idx === safeIndex;
           const truncated = !isActive && !showAllChips;
           const far = truncated && Math.abs(idx - safeIndex) >= 2;
-          // Credit has to be visible without selecting the chip, and the fill below only
-          // paints on the active one — so the accent goes on the border, which always renders.
-          const credited = chipHasAttribution(chip);
           return (
             <span
               key={chip.id}
@@ -236,15 +240,11 @@ export function ContextChipLadder({
                 maxWidth: "100%",
                 flex: "0 0 auto",
                 fontSize: isActive ? 11 : 10,
+                fontWeight: isActive ? 600 : 400,
                 padding: "4px 10px",
                 borderRadius: 999,
-                border: `1px solid ${credited ? ATTRIBUTION_ACCENT : tierBorderColor(chip.tier_class)}`,
-                boxShadow: isActive ? ACTIVE_CHIP_GLOW : undefined,
-                background: isActive
-                  ? ACTIVE_CHIP_FILL
-                  : credited
-                    ? ATTRIBUTION_ACCENT_SOFT
-                    : "rgba(26, 34, 44, 0.88)",
+                border: `1px solid ${isActive ? ACTIVE_CHIP_BORDER : CHIP_BORDER}`,
+                background: isActive ? ACTIVE_CHIP_FILL : "rgba(26, 34, 44, 0.88)",
                 color: "#e2e8f0",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
