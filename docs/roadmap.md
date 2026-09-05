@@ -59,6 +59,10 @@ hook gives a gentle heads-up when a session starts work outside this.
 - ★★ `[focus]` **After the panel remounts the ring parks on a zero-size container** — **OPEN, found 2026-09-04.** On a fresh mount
   the ring lands on "Ask bonsAI" (Main) or "Where AI runs" (Ollama), both 0x0 rects that the visibility oracle calls OFFSCREEN, so
   the panel opens with nothing highlighted until the first press.
+  **Measured again 2026-09-05** on builds 3 and 4 (four fresh mounts, two of them after a Decky loader restart): the reading was
+  not a 0x0 stop but **no ring at all** — the rig's own report each time was *the ring is unowned, so the first D-pad press will
+  place it rather than move it*, and that press then landed on the tab bar, visible. Same thing to look at (nothing is
+  highlighted when the panel opens), so the fix is to place the ring on mount rather than to move it off a bad element.
 - ★★ `[focus]` **Focus ring styling is inconsistent** between plugin controls and Steam's own — **PARTIAL.** Modal scoping shipped; a
   blanket rule was tried and reverted in favour of Steam's native outline.
 - ★★ `[focus]` **Up skips the answer sections and the chat slot row** — **OPEN, found 2026-09-04.** Down walks a reply chunk by
