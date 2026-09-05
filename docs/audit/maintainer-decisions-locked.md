@@ -3555,8 +3555,9 @@ rides along), a Mario pack (Super Mario 64, Mario Kart 64, Paper Mario: The Thou
 Melee, Fallout: New Vegas, Pikmin 2. Palworld and Devil May Cry 3 were dropped by the maintainer. The maintainer asked
 whether a wiki that declares no licence could be assumed usable: no — silence means all rights reserved by default, and
 the publish tool refuses a card without a licence. Brotato turned out to declare **CC BY-SA 4.0 in its page footer**
-(the machine-readable field is empty), so it is usable if wanted; it is not in the nine. Owed: the screen walk when the
-Deck is free.
+(the machine-readable field is empty), so it is usable if wanted; it is not in the nine. The screen walk was done the
+same evening once the Deck was free: ten of the eleven games are on the device (Steam installs, or shortcuts in the
+Nintendo 64 and GameCube collections), Fallout: New Vegas is owned but not installed, and the pick stands (plan 40 § 3).
 
 **Answers, 2026-09-05 (the maintainer answered in chat), all seven locked:**
 

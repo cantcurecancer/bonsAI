@@ -4,8 +4,9 @@ Written 2026-09-05, after the maintainer said yes to a one-off tranche of new ti
 base and asked for the list to come from their own Steam library. Plain language on purpose. Decision
 D69 in the decisions file; roadmap entry under Knowledge base and RAG § Next.
 
-**Status 2026-09-05: the library is read, the wikis are checked, and the titles are picked (§ 6). Owed: the
-screen walk when the Deck is free, then the cards.**
+**Status 2026-09-05, evening: the library is read, the wikis are checked, the titles are picked (§ 6) and the
+screen walk is done (end of § 3). Ten of the eleven games are on the Deck; Fallout: New Vegas needs installing.
+Owed: the cards.**
 
 ---
 
@@ -32,11 +33,11 @@ sorted by hours, marks what is installed, and can look up names for games that a
 installed. It reads files only, so it never competes with a session driving the screen. The full list
 is in `build/deck-library.json` (not committed; re-run the script to refresh it).
 
-**B. The screen walk — owed, when the Deck is free.** Open the Library, walk the shelf with the D-pad
-through the rig and the controller bridge, read each tile off the page. What it adds over A: what is
-actually on the shelf right now, the collections you made, and anything hidden. What it cannot add:
-hours (the client keeps none for shortcuts) or games you own but removed. Use it to confirm the
-shortlist in § 6, not to enumerate.
+**B. The screen walk — done 2026-09-05, evening, once you said the Deck was free.** The Library was open
+with nothing running; the rig walked the Recent Games shelf with the D-pad tile by tile, and the collections
+and the hidden list were read off the same page. What it added over A: what is actually on the shelf right
+now, the collections you made, and what is hidden. Findings at the end of § 3. Nothing in them changes the
+pick in § 6; one title (Fallout: New Vegas) needs installing before its cards can be judged on the Deck.
 
 ## 3. What the read found
 
@@ -97,6 +98,46 @@ last-played date, so they are ranked by recency and by what you said: there is g
 | GameCube / Wii (8) | **Super Smash Bros. Melee**, **Paper Mario: The Thousand-Year Door**, **Pikmin 2**, Mario Party 6 and 7, Wind Waker, Twilight Princess, Skyward Sword | not through Steam |
 | Switch / Wii U (10) | Breath of the Wild (three ways), Tears of the Kingdom, DLC entries | BotW April 2026; TotK Dec 2023 |
 | Others | Crash Bandicoot (PS1), Demolition Man, Road Rash, ToeJam & Earl (Genesis), Dynamite Cop (Dreamcast) | Demolition Man May 2026; Crash Oct 2024 |
+
+### What the screen walk added (2026-09-05, evening, Deck free)
+
+Done with the controller rig once you said the Deck was free. The Library home was open with nothing running.
+The ring walked the Recent Games shelf tile by tile (twenty presses right, then twenty back so it ended where
+it started), and the collections and the hidden list were read off the same page. Evidence:
+`runs/plan40-library-shelf-walk.json`.
+
+**The Recent Games shelf, in order, right now:** Deep Rock Galactic: Survivor, Ship of Harkinian, Sifu,
+Half-Life 2, Left 4 Dead 2, Fallout 4, Portal 2, Baldur's Gate 3, State of Emergency, Cyberpunk 2077,
+Spider-Man Remastered, Wreckfest, Dead Space, GTA San Andreas (Definitive), Hades, Team Fortress 2, The
+Invincible, The Red Strings Club, 7 Days to Die, Demolition Man; then the "View more in your Library" button.
+Twenty tiles. None of the nine picked titles is on it: the shelf is this summer, the pick is your back
+catalogue. That is fine; the cards are for games you go back to.
+
+**Collections you made:** Favorites (Battlefield 6 Open Beta, Cyberpunk 2077, Deep Rock Galactic: Survivor,
+Left 4 Dead 2, Palworld, Stardew Valley, Team Fortress 2) and one empty one called "Switch". The rest are the
+ROM manager's: Nintendo 64 (44 games), PlayStation 2 (17), GameCube (6), Switch through Ryujinx (5) and through
+Yuzu (4), Genesis (3), Wii (2), PlayStation (1), Dreamcast (1), and an "Emulation" folder holding the 20
+emulators themselves. 397 games sit in no collection. **Hidden:** three entries, none a game that matters here
+(a friend's pass, a mod manager, Valve's test app).
+
+**The nine, as they sit on the device:**
+
+| Title | On the Deck | Hours | Note |
+|---|---|---|---|
+| Black Mesa | installed (Steam) | 2 | last opened Dec 2025 |
+| Hollow Knight | installed (Steam) | 13 | last opened Jul 2024 |
+| Grand Theft Auto V | Enhanced edition installed (Steam) | 38, plus 233 | the 233 are on the Legacy edition, owned but not installed; the cards cover both |
+| Grand Theft Auto IV | installed (Steam) | 103 | Complete Edition, last opened Dec 2025 |
+| DOOM Eternal | installed (Steam), plus a shortcut copy | under 1 | last opened Feb 2026 |
+| Doom 64 | two shortcuts, one in the Nintendo 64 collection | — | rides along with Eternal's source |
+| Super Mario 64, Mario Kart 64 | shortcuts, Nintendo 64 collection | — | each appears twice (two ROM-manager runs) |
+| Paper Mario: TTYD, Super Smash Bros. Melee, Pikmin 2 | shortcuts, GameCube collection | — | each appears twice |
+| **Fallout: New Vegas** | **owned, not installed** | 13 | last opened Jan 2025; **install it before judging its cards on the Deck** |
+
+So ten of the eleven games are on the device today and one needs an install. Nothing in the walk changes the
+pick. The doubled shortcuts are harmless for the cards, but the plugin will see two tiles with the same name
+for each emulated title, which is worth remembering when a chip or a test row names one. Brotato, if you want
+it as a tenth, is installed with 31 hours.
 
 ## 4. Which games make good candidates
 
@@ -191,7 +232,8 @@ The pick is made (§ 6). Now:
 
 - ✅ Step one A: library read over SSH, 2026-09-05 (90 Steam games with playtime, 121 shortcuts).
 - ✅ Step three: wiki check per candidate (§ 5).
-- ⬜ Maintainer says the Deck is free; step one B: the screen walk confirms the shelf and the collections.
+- ✅ Step one B: the screen walk, 2026-09-05 evening, once the Deck was free (end of § 3). Ten of eleven on the device;
+  New Vegas needs installing.
 - ✅ Maintainer picked the tranche, 2026-09-05 (§ 6); recorded in the decisions file under D69.
 - ⬜ Cards written (one session); blind questions written (another); release.
 
