@@ -14,6 +14,9 @@ import {
   UNIFIED_TEXT_FONT_PX,
   UNIFIED_TEXT_INSET_LEFT_PX,
   UNIFIED_TEXT_INSET_TOP_PX,
+  UNIFIED_TEXT_OVERLAY_FALLBACK_FONT_FAMILY,
+  UNIFIED_TEXT_OVERLAY_FALLBACK_OVERFLOW_WRAP,
+  UNIFIED_TEXT_OVERLAY_FALLBACK_WHITE_SPACE,
 } from "./constants";
 import { readUiScaleFromElement } from "../../data/uiScaleProfile";
 
@@ -51,8 +54,6 @@ export function useUnifiedInputSurface(currentTab: string, unifiedInput: string)
     if (hostW < 40) return;
     const field = (layer ?? host).querySelector<HTMLTextAreaElement | HTMLInputElement>("textarea, input");
     setUsesNativeMultilineField(field?.tagName === "TEXTAREA");
-    const fieldCw = field && field.clientWidth > 0 ? field.clientWidth : 0;
-    const textWidth = Math.max(0, fieldCw > 0 ? fieldCw : hostW);
     /*
      * Measure against the element the overlay is actually positioned against, not `layer`.
      *
@@ -65,6 +66,16 @@ export function useUnifiedInputSurface(currentTab: string, unifiedInput: string)
     const container = (measure.offsetParent as HTMLElement | null) ?? layer ?? host;
     const cr = container.getBoundingClientRect();
     const fr = field?.getBoundingClientRect();
+    /*
+     * `getBoundingClientRect().width`, not `clientWidth` -- clientWidth rounds to an integer pixel
+     * and excludes the border, so it can read narrower than what the field actually renders at.
+     * Measured on device 2026-09-04 (roadmap: "The question overlay sits a few pixels off the
+     * native text field"): field border-box 274.463px, rounded clientWidth 274px. A mirror sized
+     * from the rounded number wraps a long line one character sooner than the real field does,
+     * which is what drifted the caret and typed-text overlay on a three-line question.
+     */
+    const fieldCw = fr && fr.width > 0 ? fr.width : 0;
+    const textWidth = Math.max(0, fieldCw > 0 ? fieldCw : hostW);
     const overlayLeft = field && fr ? fr.left - cr.left : UNIFIED_TEXT_INSET_LEFT_PX;
     const overlayTop = field && fr ? fr.top - cr.top : UNIFIED_TEXT_INSET_TOP_PX;
     measure.style.left = `${overlayLeft}px`;
@@ -74,6 +85,28 @@ export function useUnifiedInputSurface(currentTab: string, unifiedInput: string)
     layerEl.style.setProperty("--bonsai-unified-field-left", `${Math.round(overlayLeft * 100) / 100}px`);
     layerEl.style.setProperty("--bonsai-unified-field-top", `${Math.round(overlayTop * 100) / 100}px`);
     layerEl.style.setProperty("--bonsai-unified-field-width", `${Math.round(textWidth * 100) / 100}px`);
+    /*
+     * Copy the field's own wrapping and font stack onto the mirrors rather than letting them
+     * declare their own. Measured on device 2026-09-04: the field's `white-space` and
+     * `overflow-wrap` come out as `normal` (no mid-word wrap) while the mirrors had hard-coded
+     * `pre-wrap` / `anywhere`, and the field's font-family stack omits "Arial" where the mirrors'
+     * ambient inheritance includes it -- dormant while Motiva Sans is installed, but not on a Deck
+     * where it is missing. Reading the live field is the only way this cannot drift again: these
+     * values are not something bonsAI's own CSS sets on the field to begin with.
+     */
+    const fieldStyle = field ? window.getComputedStyle(field) : null;
+    layerEl.style.setProperty(
+      "--bonsai-unified-field-white-space",
+      fieldStyle?.whiteSpace || UNIFIED_TEXT_OVERLAY_FALLBACK_WHITE_SPACE,
+    );
+    layerEl.style.setProperty(
+      "--bonsai-unified-field-overflow-wrap",
+      fieldStyle?.overflowWrap || UNIFIED_TEXT_OVERLAY_FALLBACK_OVERFLOW_WRAP,
+    );
+    layerEl.style.setProperty(
+      "--bonsai-unified-field-font-family",
+      fieldStyle?.fontFamily || UNIFIED_TEXT_OVERLAY_FALLBACK_FONT_FAMILY,
+    );
     const sh = measure.scrollHeight;
     const uiScale = readUiScaleFromElement(bonsaiScopeRef.current);
     const bodyMinPx = UNIFIED_TEXT_BODY_MIN_PX * uiScale;

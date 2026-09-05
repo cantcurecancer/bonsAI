@@ -36,8 +36,6 @@ from one star to six.
 ## Bugs
 
 
-- ★ `[ask]` **The question overlay sits a few pixels off the native text field** — **OPEN.** Most visible on a three-line question
-  and on the empty-field placeholder. Nothing has touched the overlay since 2026-08-07.
 - ★ `[focus]` **An answer section can take the ring while hidden behind the Ask box** — **OPEN, found 2026-09-04.** Walking up the
   Red Dead turn landed on a bubble measured only 67% visible, covered by `.bonsai-unified-input-text-box`'s input.
 - ★ `[focus]` **Down does not move the ring off an unrevealed spoiler block** — **OPEN, found 2026-09-04.** With the ring on
@@ -222,6 +220,16 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
 
 ### Bugs that need verification
 
+- ★ `[ask]` **The question overlay sits a few pixels off the native text field** — **VERIFY.** Fixed at the desk
+  2026-09-04: measured 22:00 (build `49241e7`), the field and its two mirrors differed on `white-space`,
+  `overflow-wrap`, font-family (dormant while Motiva Sans is installed) and width (274.463px vs a
+  `clientWidth`-rounded 274px) — enough to wrap a long line one character sooner in the mirrors. They now copy the
+  field's own computed style each pass. Owed: the same read after the fix, within 0.1px. Row **ASK-OVERLAY-01**.
+- ★ `[chips]` **A frozen test-chip batch longer than the row cannot be reached after the first minute** — **VERIFY.**
+  Fixed at the desk 2026-09-04, Deck check owed: Right at the last visible chip now pulls the next pinned entry into
+  the carousel's history, mirroring how Left at the edge already pulls an earlier one back; and every mode's
+  60-second walk restarts when an Ask completes, even though a pinned batch always reseeds to the same three chips.
+  Row **QA-FROZEN-CHIPS-02**.
 - ★ `[chips]` **Chip rotation favours the top of the candidate list** — **VERIFY.** Fixed at the desk
   2026-09-04, Deck check owed: the guarantee and the roll both used to take the first unseen candidate every
   time, so ranks 1-3 came round every minute and ranks 4-6 rarely appeared; both now pick at random among the

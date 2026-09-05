@@ -5,6 +5,9 @@ import {
   UNIFIED_TEXT_INSET_RIGHT_PX,
   UNIFIED_TEXT_INSET_TOP_PX,
   UNIFIED_TEXT_LINE_HEIGHT,
+  UNIFIED_TEXT_OVERLAY_FALLBACK_FONT_FAMILY,
+  UNIFIED_TEXT_OVERLAY_FALLBACK_OVERFLOW_WRAP,
+  UNIFIED_TEXT_OVERLAY_FALLBACK_WHITE_SPACE,
 } from "../../features/unified-input/constants";
 import { uiScalePx } from "./uiScalePx";
 
@@ -77,10 +80,22 @@ export function buildSection5Section(): string {
           vertical-align: top !important;
         }
 
+        /*
+          The mirrors must copy the field's own wrapping and font stack, never declare their own
+          (roadmap: "The question overlay sits a few pixels off the native text field") -- a
+          mismatch here wraps a long line one character sooner than the real field does and drifts
+          the caret/typed-text overlay off it. useUnifiedInputSurface.ts reads the live field's
+          computed style on every measure pass and writes these three custom properties; the
+          fallbacks below (matching the constants of the same name) only apply before that first
+          pass has run.
+        */
         .bonsai-scope .bonsai-unified-input-host .bonsai-unified-input-measure,
         .bonsai-scope .bonsai-unified-input-host .bonsai-unified-input-text-overlay {
           padding: ${uiScalePx(UNIFIED_TEXT_INSET_TOP_PX)} ${uiScalePx(UNIFIED_TEXT_INSET_RIGHT_PX)} ${uiScalePx(UNIFIED_TEXT_INSET_BOTTOM_PX)} ${uiScalePx(UNIFIED_TEXT_INSET_LEFT_PX)} !important;
           box-sizing: border-box !important;
+          white-space: var(--bonsai-unified-field-white-space, ${UNIFIED_TEXT_OVERLAY_FALLBACK_WHITE_SPACE}) !important;
+          overflow-wrap: var(--bonsai-unified-field-overflow-wrap, ${UNIFIED_TEXT_OVERLAY_FALLBACK_OVERFLOW_WRAP}) !important;
+          font-family: var(--bonsai-unified-field-font-family, ${UNIFIED_TEXT_OVERLAY_FALLBACK_FONT_FAMILY}) !important;
         }
 
         .bonsai-scope .bonsai-unified-input-host.bonsai-unified-input--ai-character {

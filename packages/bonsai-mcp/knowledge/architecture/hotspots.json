@@ -46,14 +46,14 @@
       "role": ""
     },
     {
+      "path": "src/components/MainTabUnifiedAskBar.tsx",
+      "lines": 1080,
+      "role": ""
+    },
+    {
       "path": "py_modules/backend/services/ollama_service.py",
       "lines": 1074,
       "role": "Prompt build, Ollama HTTP, streaming"
-    },
-    {
-      "path": "src/components/MainTabUnifiedAskBar.tsx",
-      "lines": 1073,
-      "role": ""
     },
     {
       "path": "src/styles/sections/section-6.ts",

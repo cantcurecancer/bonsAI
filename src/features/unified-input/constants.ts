@@ -32,6 +32,18 @@ export const UNIFIED_TEXT_INSET_TOP_PX = 6;
 export const UNIFIED_TEXT_INSET_BOTTOM_PX = 2;
 /** Gap (px) between text body and bottom icon strip in overlay. */
 export const UNIFIED_TEXT_OVERLAY_BOTTOM_GAP_PX = 0;
+/**
+ * Fallback wrap + font stack for the caret overlay and hidden measure div, used only before the
+ * first measure pass has copied the real values from the native field's own computed style (see
+ * `useUnifiedInputSurface.ts`). The mirrors must never declare their own wrapping or font-family —
+ * a mismatch there wraps a long line one character sooner than the real field does, at a fraction
+ * of a pixel narrower, and drifts the caret/typed-text overlay off it (roadmap: "The question
+ * overlay sits a few pixels off the native text field"). `inherit` is a safe font-family fallback
+ * since these divs sit under `.bonsai-scope`, which already carries Steam's own font stack.
+ */
+export const UNIFIED_TEXT_OVERLAY_FALLBACK_WHITE_SPACE = "pre-wrap";
+export const UNIFIED_TEXT_OVERLAY_FALLBACK_OVERFLOW_WRAP = "anywhere";
+export const UNIFIED_TEXT_OVERLAY_FALLBACK_FONT_FAMILY = "inherit";
 /** Ask primary label (slightly darker than prior `#eef4fb` for calmer contrast). */
 export const ASK_LABEL_COLOR = "#a8b4c4";
 /** Same chroma as `ASK_LABEL_COLOR` at 50% opacity (e.g. mode selector label to match Ask bar family). */

@@ -238,6 +238,12 @@ export function MainTabUnifiedAskBar(props: MainTabUnifiedAskBarProps) {
 
   const unifiedTextFieldBody = (
     <>
+      {/*
+        No `whiteSpace` / `overflowWrap` here on purpose -- section-5.ts sets both `!important`
+        from `--bonsai-unified-field-*` custom properties that useUnifiedInputSurface.ts copies
+        off the real field's own computed style on every measure pass, so this mirror always
+        wraps exactly the way the field does rather than declaring a guess of its own.
+      */}
       <div
         ref={unifiedInputMeasureRef}
         className="bonsai-unified-input-measure"
@@ -246,8 +252,6 @@ export function MainTabUnifiedAskBar(props: MainTabUnifiedAskBarProps) {
           position: "absolute",
           visibility: "hidden",
           pointerEvents: "none",
-          whiteSpace: "pre-wrap",
-          overflowWrap: "anywhere",
           lineHeight: UNIFIED_TEXT_LINE_HEIGHT,
           fontSize: UNIFIED_TEXT_FONT_PX,
         }}
@@ -315,6 +319,11 @@ export function MainTabUnifiedAskBar(props: MainTabUnifiedAskBarProps) {
           }
         }}
       />
+      {/*
+        Same as the measure div above: no `whiteSpace` / `overflowWrap` here, section-5.ts sets
+        both from the field's own computed style so this overlay never wraps a line differently
+        than the real field underneath it does.
+      */}
       {!usesNativeMultilineField && (
         <div
           className="bonsai-unified-input-text-overlay"
@@ -323,8 +332,6 @@ export function MainTabUnifiedAskBar(props: MainTabUnifiedAskBarProps) {
             position: "absolute",
             bottom: UNIFIED_INPUT_ICON_STRIP_PX + UNIFIED_TEXT_OVERLAY_BOTTOM_GAP_PX,
             color: isUnifiedInputFocused ? "rgba(248, 250, 252, 0.98)" : "rgba(220, 232, 244, 0.95)",
-            whiteSpace: "pre-wrap",
-            overflowWrap: "anywhere",
             lineHeight: UNIFIED_TEXT_LINE_HEIGHT,
             fontSize: UNIFIED_TEXT_FONT_PX,
           }}
