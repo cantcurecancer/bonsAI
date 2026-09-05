@@ -159,6 +159,11 @@ replace it with a specific issue when one exists.
 - ★★ `[reply]` **Make token streaming the default and drop the setting** — **OPEN, maintainer direction 2026-08-23.** Gated on the
   burst finding under Bugs. Halves every "streaming on and off" QA row. A two-language removal: Python is authoritative (D13), both
   settings contracts lose the key, and an old `settings.json` must not read as a reset. [Detail](roadmap-details.md#make-token-streaming-the-default-and-drop-the-setting).
+- ★★ `[reply]` **The answer's first lines in the reply-ready toast** — **OPEN, planned 2026-09-05, nothing built.** When an
+  answer finishes while the menu is closed, the toast says only *Reply ready*. It would carry the question and the first lines of
+  the answer instead, so a short answer is read without leaving the game; tap still opens the panel. Speed and Expert only; any
+  answer holding a hidden block keeps today's toast. Measure first: nobody has recorded the toast showing over a running game.
+  The buildable slice of **In-game answer surface**. [Plan](planning/38-toast-answer-lines.md), decisions **D63**.
 - ★★ `[reply]` **Thinking tips replace the status blurb (Phase 2)** — **OPEN.** Hand-curated bonsAI tips, feature tips for generic
   asks and KB-strategy tips for game asks, chosen by current game and mode. The generic filler copy goes away entirely. Data file
   shaped like `data/kb/strategy_seed.json`. Superseded by **Reasoning display** once real thinking streams.
@@ -255,8 +260,9 @@ replace it with a specific issue when one exists.
 - ★★★★★★ `[platform]` **Remote Play diagnostics layer** — **OPEN.** Streamed-gameplay answers weight encode latency and host-vs-client
   fixes. Noted in [09-steam-frame-companion-feasibility.md](planning/09-steam-frame-companion-feasibility.md) § B8.
 - ★★★★★★ `[platform]` **Steam Frame companion UX** — **OPEN, research first.** [Feasibility](planning/09-steam-frame-companion-feasibility.md).
-- ★★★★★★ `[reply]` **In-game answer surface** — **OPEN.** Read an answer without leaving the game. The full overlay is upstream-gated;
-  the unblocked slice is a toast carrying two lines.
+- ★★★★★★ `[reply]` **In-game answer surface** — **OPEN, split 2026-09-05.** Read an answer without leaving the game. The full overlay
+  is upstream-gated and stays here as research. The unblocked slice, the toast carrying the answer's first lines, is its own ★★
+  entry above, planned in [38](planning/38-toast-answer-lines.md).
 
 ---
 

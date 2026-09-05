@@ -3286,3 +3286,48 @@ code was written.
 measured cause yet, so the routing policy keeps them off a helper lane. The session's own driver takes
 them, after a device measurement, and if that measurement does not name a cause they are written up with
 their numbers rather than guessed at.
+
+### D63 — OPEN (raised 2026-09-05) — The answer's first lines in the toast: six calls before "go"
+
+Raised while planning [planning/38-toast-answer-lines.md](../planning/38-toast-answer-lines.md), the first of
+the six features the maintainer picked on 2026-09-05. Today, when an answer finishes while the menu is
+closed, a small notification says *Reply ready* and *Tap to open*. The plan changes its words so it carries
+the question and the first lines of the answer, and a short answer can be read without leaving the game.
+
+**Before any of these matter:** nobody has recorded that notification showing over a running game. Its five
+test rows were archived unchecked on 2026-07-30. The plan's first step is a measurement on the Deck of
+whether it shows, where, and how much text fits. If it does not show, the entry is blocked and none of the
+calls below are needed.
+
+1. **Which answers get the preview?**
+   - Option 1 (recommended): Speed and Expert. Strategy keeps today's notification, because Strategy
+     answers are built around menus and hidden spoilers that a notification cannot show safely.
+   - Option 2: every mode, with the hidden-block rule as the only guard.
+   - Option 3: Speed only.
+2. **What does the title say?**
+   - Option 1 (recommended): your question, cut to fit. *Reply ready* says nothing once the body holds
+     the answer.
+   - Option 2: *Reply ready*, as today.
+3. **How long does it stay on screen?**
+   - Option 1 (recommended): eight seconds, enough to read two lines.
+   - Option 2: today's four seconds.
+   - Option 3: Steam's own default.
+4. **A setting to turn the preview off, or always on?**
+   - Option 1 (recommended): always on in v1. The notification already shows over the game today; only
+     its words change. A setting costs about eighteen files and a Settings row, and can be added later
+     without undoing anything.
+   - Option 2: a setting now. The case for it: anyone looking at the screen reads the answer, so a person
+     streaming or playing on a shared TV may want it quiet.
+5. **An extra guard for story games?** The code already knows which games are story-heavy.
+   - Option 1 (recommended): not in v1. Speed answers on story games rarely spoil, and the guard would
+     hide the preview on the games where a quick answer is most wanted. Revisit if a leak is ever seen.
+   - Option 2: withhold the preview on story games unless the question named the thing it asks about.
+6. **Where does this sit in the Deck queue?** The bug session holds the Deck; the feature session is next.
+   - Option 1 (recommended): third, after both.
+   - Option 2: ask the feature session to fold the three measurements into its own Deck block.
+   - Option 3: the maintainer runs the first measurement by eye and reports what they see.
+
+**Consequence if unanswered.** Nothing is built until 1 to 3 are answered. 4 to 6 have defaults that
+hold: always on, no story-game guard, third in the queue. Whatever the hidden-block rule decides, a
+notification that would have shown a hidden spoiler shows today's words instead; withholding is the safe
+direction and every doubt resolves to it.
