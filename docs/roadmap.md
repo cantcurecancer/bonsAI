@@ -357,8 +357,8 @@ person is still coverage: thirteen games, and every other game gets the model's 
 
 1. The bug-fixing session running today owns the knowledge-base code files. Let it land the two bugs it holds before
    touching them.
-2. When you say the Deck is free: read your Steam library and shortlist titles with usable wikis (the new-titles entry
-   under Next). Until then the sweep, the prompt diet and the eval tooling need no Deck.
+2. Pick the new titles from the shortlist in plan 40 § 6; the screen walk that confirms the shelf waits for the Deck
+   to be free. The sweep, the prompt diet and the eval tooling need no Deck.
 3. Then work **Next** from the top: the prompt diet, the "not in my notes" line, symptom-only troubleshooting, the eval
    tooling and the weight sweep, spoiler tiers, follow-ups remembering, and one corpus release that carries everything
    needing a rebuild.
@@ -474,11 +474,11 @@ for the Deck to be free). Anything new goes here, one line each, with what it de
   thirteen titles still have no enemy or item cards, so "how do I deal with X" works for two games. Next: 40–60 entity cards
   in tranches with a quality read from you after the first; then chip ranking by meaning. Card authors cannot write blind
   test questions, so content and eval rows go in separate sessions. [Plan](planning/28-phase5-corpus-depth.md).
-- ★★★★ `[KB]` **A first tranche of new titles from your Steam library** — **OPEN, decided 2026-09-05, needs the Deck.**
-  Five to ten games you pick from your own library, as the bridge between depth on thirteen and the catalog. Step one, when
-  you say the Deck is free: read the library (a file read over SSH is exact; the screen walk with the rig confirms it),
-  then check each candidate's wiki for licence, size and an archive dump. Step two: you pick. Cards in one session, blind
-  questions in another. [Plan](planning/40-new-titles-from-the-library.md). (D69)
+- ★★★★ `[KB]` **A first tranche of new titles from your Steam library** — **OPEN, library read and wikis checked 2026-09-05.**
+  Ninety Steam games with playtime and 121 shortcuts read over SSH; every candidate's wiki checked for licence and a dump.
+  Recommended eight: Black Mesa (confirmed by you), Hollow Knight, GTA V, GTA IV, DOOM Eternal, Palworld, a Mario pack, Devil
+  May Cry 3. Stardew, Brotato and the Zelda titles have no usable wiki. Owed: the screen walk when the Deck is free, then
+  your pick. [Plan](planning/40-new-titles-from-the-library.md) § 6. (D69)
 - ★★★★ `[KB]` **KB online / versus strategy content** — **OPEN, discovery locked 2026-08-09.** Multiplayer questions
   (roles, callouts, co-op) get cards; today they get nothing specific. New card kinds and a spoiler table update, Left 4
   Dead 2 first, then Counter-Strike 2, from archive dumps only. Two to three weeks. [Plan](planning/17-kb-online-versus-strategy-content.md).

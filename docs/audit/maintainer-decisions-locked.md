@@ -3540,6 +3540,14 @@ maintainer will say when it frees up. The method, the wiki checklist and the gam
 [planning/40-new-titles-from-the-library.md](../planning/40-new-titles-from-the-library.md). The title list itself is
 recorded there when the read is done, and the maintainer picks from it.
 
+**Read done 2026-09-05 over SSH (files only, no screen):** 90 Steam games with playtime, 121 non-Steam shortcuts (108
+emulated). Every candidate's wiki was checked for licence and an archive dump; the table is plan 40 § 5. **Black Mesa is
+confirmed by the maintainer as the first title.** Recommended with it: Hollow Knight, Grand Theft Auto V, Grand Theft
+Auto IV, DOOM Eternal (Doom 64 rides along), Palworld, a Mario pack (Super Mario 64, Mario Kart 64, Paper Mario TTYD),
+Devil May Cry 3; options Melee, Sifu, Fallout: New Vegas, Crash Bandicoot, Pikmin 2. Stardew Valley (NonCommercial
+wiki), Brotato (no licence declared) and every Zelda title (GFDL) have no usable wiki and would be maintainer-written.
+Owed: the screen walk when the Deck is free, and the pick.
+
 **Answers, 2026-09-05 (the maintainer answered in chat), all seven locked:**
 
 1. **One feature.** The doctor, with **Save a report** inside it. The five-star **Deck health snapshot** entry
