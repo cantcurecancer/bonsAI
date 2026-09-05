@@ -347,6 +347,29 @@ first.
 
 **Waiting on:** helper W's two commits.
 
+### The final merge, worked out in advance
+
+This is written now because working it out at the end, tired, is how work gets lost here.
+
+**The problem.** Three other sessions committed onto this branch while it held the shared working copy,
+and then went on developing the *same documents* on the shared branch. So this branch is now carrying
+**older copies of four documents that other people are still writing.** A careless merge that prefers
+this branch would quietly roll their afternoon back.
+
+**Which way each file goes:**
+
+| File | Take | Why |
+|---|---|---|
+| The reply-ready toast plan, the knowledge base status report, the knowledge base answer plan, the decisions list | **theirs, whole** | Nobody here touched them. This branch only holds a stale snapshot. Fifty-eight and a hundred and fifty-two lines behind respectively. |
+| This plan | **mine, whole** | It exists nowhere else. |
+| The roadmap, the testing document, the changelog | **hand-merged, entry by entry** | Both sides have real, different work in all three. This is the only place judgement is needed. |
+
+**The safe order.** Merge the shared branch into this one *first*, taking their side for every file in
+the first row, and resolve the three shared documents by hand. Then the branch is a superset and the
+final step is a fast-forward with nothing to decide. Never resolve the roadmap by taking one whole
+side — the merge earlier today would have deleted eight entries that way, and one of them had been
+renamed rather than removed, which is invisible unless each is checked by name.
+
 ### A mistake worth writing down: three sessions, one working copy
 
 **What happened.** Cutting this session's branch in the shared working copy moved every other session
