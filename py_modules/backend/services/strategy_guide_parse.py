@@ -145,6 +145,30 @@ def _repair_truncated_json(blob: str) -> str:
     return s
 
 
+# Placeholder text the model sometimes copies straight out of the prompt's worked example instead
+# of filling it in. Seen on the Deck 2026-09-04 and again 2026-09-05: the picker asked
+# "Where are you at in … ?" with the game's name replaced by three dots. The prompt example was
+# rewritten the same day so there is nothing left to copy; this is the belt to that pair of braces,
+# because a picker whose question has a hole where the game's name belongs tells the player nothing.
+_ELLIPSIS_CHARS = ("…", "...")
+
+# Matches an ellipsis standing on its own as a word -- whitespace on both sides -- which is what a
+# copied placeholder looks like. Deliberately NOT a plain "contains an ellipsis" test: a real
+# question may legitimately trail off ("So, where are you...?"), and dropping that picker would be
+# worse than showing it. The hole always has a space either side because it stands in for a word.
+_STANDALONE_ELLIPSIS = re.compile(r"\s(?:…|\.\.\.)\s")
+
+
+def _is_ellipsis_placeholder(text: str) -> bool:
+    """True when the text is a bare ellipsis, or still has one standing in for a missing word."""
+    stripped = (text or "").strip()
+    if not stripped:
+        return True
+    if stripped in _ELLIPSIS_CHARS:
+        return True
+    return bool(_STANDALONE_ELLIPSIS.search(stripped))
+
+
 def _normalize_branch_payload(data: dict[str, Any] | None) -> dict[str, Any] | None:
     if data is None:
         return None
@@ -168,6 +192,12 @@ def _normalize_branch_payload(data: dict[str, Any] | None) -> dict[str, Any] | N
         normalized.append({"id": oid, "label": lab})
 
     if len(normalized) < _MIN_OPTIONS:
+        return None
+    # Same shape as the floor check above: an unusable block is dropped rather than shown. A
+    # question that still carries the example's ellipsis, or any option label that does, means the
+    # model echoed the template instead of answering, and the player would be asked to choose
+    # between two sets of dots.
+    if _is_ellipsis_placeholder(q) or any(_is_ellipsis_placeholder(o["label"]) for o in normalized):
         return None
     return {"question": q.strip(), "options": normalized}
 

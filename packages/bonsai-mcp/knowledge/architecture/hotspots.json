@@ -151,6 +151,11 @@
       "role": ""
     },
     {
+      "path": "py_modules/backend/services/strategy_guide_parse.py",
+      "lines": 488,
+      "role": ""
+    },
+    {
       "path": "src/styles/sections/gamepadAndPullModels.ts",
       "lines": 485,
       "role": ""
@@ -168,11 +173,6 @@
     {
       "path": "src/components/MainTabPresetAnimatedChips.test.tsx",
       "lines": 460,
-      "role": ""
-    },
-    {
-      "path": "py_modules/backend/services/strategy_guide_parse.py",
-      "lines": 458,
       "role": ""
     },
     {
