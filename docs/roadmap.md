@@ -79,6 +79,14 @@ hook gives a gentle heads-up when a session starts work outside this.
   who walks past something and presses Up to go back does not return to it; they land somewhere they never visited. Related to the
   two-star entry about Up skipping sections, but sharper: the two directions disagree about what the reply's stops are.
   Evidence `runs/round35-spoiler-block-down-and-up.json`.
+- ★ `[layout]` **The question bubble sits about 35 pixels in from the left, with nothing in the gap** — **OPEN,
+  reported by the maintainer and measured on the Deck 2026-09-05.** The bubble showing what you typed is pushed against the
+  right edge and the strip down its left side is empty. The answer below it nearly fills the column, so the two do not line up
+  and it reads as lopsided. **Measured: 35 pixels of empty space on the left, none on the right, and nothing sitting in the
+  gap.** The cause is the bubble's own width cap — it may never be wider than 88% of the row, so a long question stops there
+  and the rest stays blank however much it has to say. A right-aligned bubble is meant to read as *yours*, so the call is how
+  much of an inset to keep rather than whether to keep any, and the maintainer asked for it tightened. One rule, then a look on
+  the device: the column is 300 pixels wide and a gutter is a bug here until proven otherwise.
 - ★★ `[focus]` **After the panel remounts the ring parks on a zero-size container** — **OPEN, found 2026-09-04.** On a fresh mount
   the ring lands on "Ask bonsAI" (Main) or "Where AI runs" (Ollama), both 0x0 rects that the visibility oracle calls OFFSCREEN, so
   the panel opens with nothing highlighted until the first press.
@@ -162,9 +170,11 @@ replace it with a specific issue when one exists.
 - ★★ `[reply]` **Thinking tips replace the status blurb (Phase 2)** — **OPEN.** Hand-curated bonsAI tips, feature tips for generic
   asks and KB-strategy tips for game asks, chosen by current game and mode. The generic filler copy goes away entirely. Data file
   shaped like `data/kb/strategy_seed.json`. Superseded by **Reasoning display** once real thinking streams.
-- ★★ `[ui]` **Replace the bonsAI tab icon with the redesign's** — **OPEN.** Flatter, more silhouette, because it renders at 14px. It
-  has to be an inline SVG path, not the PNG, so it inherits `currentColor` (`BonsaiTreeTabIcon`). Update `icons.bonsaiGeometry.test.tsx`
-  in the same change.
+- ★★ `[ui]` **Replace the bonsAI tab icon with the redesign's** — **OPEN, and no longer waiting on a drawing.** Flatter,
+  more silhouette, because it renders at 14px. **Checked 2026-09-05: the redesign document never actually draws one**, and the
+  maintainer has said they do not want to supply one. So whoever builds it proposes a shape and the maintainer approves it by
+  eye — a shape is not something to settle from a description or by reaching for a stronger model. It has to be an inline SVG
+  path rather than the PNG so it takes the colour around it. Update the icon geometry test in the same change.
 - ★★★ `[chips]` **Decode preset chip animation** — **VERIFY, feel only.** Shipped 2026-08-28. Measured on device: a flat 60 fps with
   all chips decoding. Whether it feels right is a person's call. Row **PRESET-STREAM-ANIM-01**.
 - ★★★ `[layout]` **Copy sits in the answer's corner, not in a button row** — **OPEN.** A small semi-transparent copy glyph in the
