@@ -791,6 +791,10 @@ The roadmap entry is removed; this note is what remains of it.
 - ★★★★★ **Local reply TTS** (Phase 1–2 character voice)
   - **GitHub:** [bonsAI Issues](https://github.com/qd313/bonsAI/issues) — issue TBD.
   - **Goal:** Phase 1 offline TTS play/stop; Phase 2 character-aligned read-aloud (legal gate).
+  - **Memo 2026-09-05:** [42-read-aloud-feasibility.md](planning/42-read-aloud-feasibility.md). SteamOS ships a voice since 3.7.13;
+    the natural voice is the sherpa-onnx runner (Apache 2.0, 28 MB) plus one Piper voice (63 MB); playback goes out through the
+    background program the way the microphone comes in. The legal gate is one rule: stock voices only, never a real person's voice.
+    Calls open as D74, including a split into Phase 1 (three stars) and Phase 2 (two stars).
 
 - ★★★★★ **On-Deck model benchmark** (measured routing order)
   - **GitHub:** [bonsAI Issues](https://github.com/qd313/bonsAI/issues) — issue TBD.

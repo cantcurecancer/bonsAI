@@ -3749,3 +3749,43 @@ its Expert group are one roadmap entry.
 
 **Consequence worth recording.** The report that carries these numbers is a page rebuilt from the test
 reports, not a document, so the next bake-off refreshes it rather than replacing it.
+
+### D74 — OPEN (raised 2026-09-05) — Reading answers aloud: six calls before anything is built
+
+Raised by the feasibility memo [planning/42-read-aloud-feasibility.md](../planning/42-read-aloud-feasibility.md),
+the fourth of the six features planned one at a time on 2026-09-05. What the memo found, in one breath: the Deck
+has had a voice of its own since SteamOS 3.7.13 (June 2025, added for Steam's screen reader); the plugin's
+microphone code already knows how to reach the Deck's sound system from the background program; a natural
+voice is one Apache 2.0 runner program (28 MB) plus one voice file (63 MB), no compile, no container. The one
+unknown is speed beside a running game, and that is a Deck measurement, not a guess.
+
+**What a person will notice.** A **Read aloud** button under the answer. Sound starts within about a second,
+keeps going when the menu closes, and stops on a second press or a new question. Hidden spoiler blocks are
+never read. With a character selected, later, the voice matches the character's type.
+
+**The calls.** Each has a recommendation; none is locked.
+
+1. **Which voice in Phase 1?** (a) the Deck's own voice only, no download, robotic; (b) the natural voice only,
+   which needs a download before the button does anything; (c) both, the Deck's own voice from day one and
+   the natural voice as an optional download that takes over once installed. *Recommended: (c).*
+2. **Read new answers automatically when the menu is closed?** (a) yes, in Phase 1, as an off-by-default
+   setting; (b) later. *Recommended: (a).* The in-game case is where listening beats reading.
+3. **A hidden spoiler block is skipped: say so, or stay silent?** (a) one short phrase, *a spoiler is hidden
+   here*; (b) silence. *Recommended: (a).*
+4. **Phase 2's rule: stock voices only, never a copy of a real person's voice.** Yes closes the legal gate
+   for good; no reopens it with lawyers. *Recommended: yes.*
+5. **Split the roadmap entry** into Phase 1, read aloud (three stars) and Phase 2, a voice per character
+   (two stars, after Phase 1), retiring the five-star line? *Recommended: yes.* The five stars priced not
+   knowing any of the above.
+6. **Voice licences.** Every Piper voice carries the licence of the recordings behind it. (a) ship only
+   voices whose recordings are public domain or attribution-only, name them in About; (b) any voice that
+   works. *Recommended: (a).* A voice is a model, and the plugin's tiers are about models.
+
+**What is not a call.** Sound leaves through the background program, the way the microphone comes in;
+the screen side is the fallback if that fails on the device. The text read is the toast preview's text
+(plan 38's helper) split into sentences. Tables and code are announced in one phrase, not read out. Ollama
+cannot speak and nothing on its roadmap changes that.
+
+**Before any build, whatever the answers:** Deck rows TTS-FEAS-01 to 03 in the memo, under half an hour
+over SSH, when the Deck is free. Row 05, the natural voice beside Deep Rock Survivor, decides whether the
+natural voice is the default or an option.

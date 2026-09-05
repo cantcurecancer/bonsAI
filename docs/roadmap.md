@@ -223,7 +223,11 @@ replace it with a specific issue when one exists.
   Planned: three lines at the answer's size show the model's own newest sentences, fold to one line with the seconds when the
   answer starts, open to the full text; Show details gets a thinking chip; and the thinking is also spent deciding what counts
   as a spoiler for you. The Deck's default model can think. A test runs on the PC first, then the Deck. [Plan](planning/40-reasoning-display.md).
-- ★★★★★ `[voice]` **Local reply TTS** — **OPEN.** Phase 1 offline play/stop; Phase 2 character-aligned read-aloud (legal gate).
+- ★★★★★ `[voice]` **Local reply TTS** — **OPEN, memo written 2026-09-05, calls open (D74).** Press a button under an answer and the
+  Deck reads it out, menu open or closed, nothing sent anywhere. The memo found the Deck has had a voice of its own since June 2025,
+  the plugin's microphone code already reaches the Deck's sound system, and a natural voice is one 90 MB download with no compile.
+  Speed beside a game is unmeasured; six Deck checks wait on the device. Six questions for the maintainer, including whether to
+  split this into read aloud (three stars) and a voice per character (two stars). [Memo](planning/42-read-aloud-feasibility.md).
 - ★★★★★ `[voice]` **Wake-word listening** — **OPEN, beta.** Opt-in always-on local wake **bonsAI**, then STT, then a quiet Ask.
   [Feasibility](planning/10-wake-word-listening-feasibility.md).
 - ★★★★★★ `[platform]` **Deep mod AI hints** — **OPEN.** Detect mod frameworks and files; mod-aware guidance.
