@@ -163,6 +163,18 @@ const PRESET_PROMPTS: PresetPrompt[] = [
   { text: "Help me beat this boss or encounter", category: "strategy", preferAskMode: "strategy" },
   { text: "How do I use strategy mode?", category: "strategy", preferAskMode: "strategy" },
   { text: "What's ahead (without spoilers)?", category: "strategy", preferAskMode: "strategy" },
+  // Wave 2 refresh (roadmap "Preset chip expansion"): shipped features from mid-August/September
+  // 2026 with no chip yet. Wave 1 (2026-08-07) already covers Ollama LAN discovery, the
+  // quick-launch chord and token streaming — see the "ollama"/"controls" entries above and the
+  // beta streaming pair below. All plain informational asks about the plugin itself, so none
+  // carry ragTip (that badge is a claim the knowledge base covers the running game) or
+  // preferAskMode (none of these need a different Ask mode to answer well).
+  { text: "How do I turn on Thinking mode?", category: "general" },
+  { text: "What does Kids master lock do?", category: "general" },
+  { text: "What is Caveman reply style?", category: "general" },
+  { text: "Where do your game tips come from?", category: "general" },
+  { text: "How do I start a new named chat?", category: "general" },
+  { text: "How do I ask about a game that isn't running?", category: "general" },
   // Roadmap previews (honest beta; click only fills input).
   { text: "How do I enable token streaming?", category: "general", beta: true },
   { text: "What should I expect while answers stream in?", category: "general", beta: true },
