@@ -707,6 +707,9 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
                       ? (rating) => onReplyFeedback?.(rating)
                       : () => {},
                     showFeedback: showFeedbackHere,
+                    /* A stopped turn shows the thumbs greyed out: half an answer is not something
+                       to rate, and the rating is saved. Retry below stays live. */
+                    ratingUnavailable: isNewestStoppedArchivedTurn,
                     /*
                      * `onRetryLastResponse` reads `lastExchange?.question`, which is exactly what
                      * a stop clears to null — it would resend nothing, or whatever happens to be

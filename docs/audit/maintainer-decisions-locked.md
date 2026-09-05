@@ -3343,8 +3343,12 @@ direction and every doubt resolves to it.
 2. **The title: pick from mockups drawn on the real shape.** Published the same day:
    [Reply Toast Options](https://claude.ai/code/artifact/0590a00d-d48b-42ce-85be-0376c1bddf53). Five options in the two-slot
    shape Decky really draws, with a table of what is known from the code against what is assumed until
-   measured. **The pick itself is still owed** and is the only open item on this entry.
-3. **Time on screen: a slider on that page**, two to twelve seconds, to play with before choosing.
+   measured. **Picked later the same day: *bonsAI*, "for now".**
+3. **Time on screen: eight seconds**, picked from the slider on that page.
+
+   **Added the same day:** the maintainer expects Steam's popup to give less room than the mockup assumes.
+   The measurement in the plan is therefore required before any build and runs on two screens with
+   screenshots: the Deck's own screen, and a 24-inch 1080p monitor with the Deck docked.
 4. **No setting for now.** Always on.
 5. **No story-game guard for now.**
 6. **Not queued for the Deck.** The entry stays in the roadmap, ready to implement later; the measurement runs
@@ -3574,3 +3578,147 @@ Deck is free.
 **Consequence worth recording.** With one entry point, the doctor is reachable only after an Ask has failed.
 Someone who wants to check a healthy setup before asking anything cannot; if that turns out to matter, a
 button on the Ollama tab is a small later addition, noted in the plan's out-of-scope list.
+
+### D70 — LOCKED 2026-09-05 (raised 2026-09-05) — Showing the model's real thinking: seven calls before "go"
+
+Numbered 70 on purpose: the feature-building chat's branch already holds D65 to D69, so this skips past
+them to avoid two entries with one number when the branches meet.
+
+Raised while planning [planning/40-reasoning-display.md](../planning/40-reasoning-display.md), the third of
+the six features the maintainer picked on 2026-09-05. Today the plugin asks a thinking model to think, pays
+the reserved budget for it, and throws the thinking away: the streaming reader never looks at that field.
+The line under your question shows a stock phrase for the whole wait, which was 212 seconds on the Deck's
+thinking model at the Deep level. The plan puts the model's own latest sentence on that line, folds it to
+"Thought for N s" when the answer starts, and lets you open the whole thing. A test to find out runs first.
+
+1. **The live shape, while the model thinks.**
+   - Option 1 (recommended): one line that replaces the stock phrase with the model's newest sentence.
+     No growth, no cost to the transcript's height.
+   - Option 2: a three-line pane that scrolls. Costs height the transcript does not have.
+   - Option 3: nothing live; only the fold after the answer.
+2. **After the answer starts.**
+   - Option 1 (recommended): the line folds to *Thought for N s*, a D-pad stop that opens the full text.
+   - Option 2: no fold; only a chip in Show details.
+   - Option 3: the reasoning stays open above the answer.
+3. **Spoilers inside the reasoning.** The model may reason about an ending before deciding to hide it.
+   - Option 1 (recommended): no masking inside; the closed fold is the fence, like a hidden spoiler
+     block; one notice the first time thinking is turned on. The test's Red Dead capture informs this.
+   - Option 2: no live reasoning in Strategy mode; the stock phrases stay there.
+4. **Saved with the chat.**
+   - Option 1 (recommended): yes, capped at a few thousand characters, so a reopened chat keeps the fold.
+   - Option 2: live only.
+5. **A thinking chip in Show details** with the level, seconds and tokens.
+   - Option 1 (recommended): yes.
+   - Option 2: no.
+6. **The two-star "thinking tips" entry**, hand-written phrases for the same line.
+   - Option 1 (recommended): retire it. Real thinking replaces the phrases where a thinking model runs;
+     the phrases stay as they are everywhere else.
+   - Option 2: keep both.
+7. **Where the test runs.**
+   - Option 1 (recommended): pull the Deck's small Qwen model onto this PC, about three gigabytes, and run
+     the whole test at the desk with no Deck time.
+   - Option 2: on the Deck, when it is free.
+   - Option 3: on the PC's large Qwen model now, which answers the order and spoiler questions but not the
+     Deck's speed.
+
+**Consequence if unanswered.** Nothing is built until 1 to 3 are answered. 4 to 7 have defaults that hold:
+saved and capped, chip yes, tips retired, test on the PC with the Deck's model once the pull is allowed.
+
+**Answers, 2026-09-05 (the maintainer answered in chat):**
+
+1. **Three lines**, each the height of a line of the answer, not one status line.
+2. **The fold shows the seconds and no token count**, and must not read "Thought for", which is too close
+   to Claude's wording. Alternatives are put to the maintainer in D71.
+3. **Live reasoning in Strategy mode too.** Accept the spoiler risk; warn the person once.
+4. Saved with the chat, capped (default held).
+5. A chip in Show details (default held); the token count lives on the chip only.
+6. **Retire the two-star thinking-tips entry.**
+7. **Test on this PC first** to knock out obvious bugs, **then verify on the Deck.** The Deck's own default
+   Gemma 4 build is on this PC already and, checked the same day, it thinks; no pull is needed.
+
+**Two things the maintainer added, both now in the plan.** First, they do not accept that thinking is paid
+for and thrown away; the plan gives the reasoning a second job. Second, that job is spoilers: the model is
+told to weigh, inside its thinking, what counts as a spoiler under the person's chosen tier and to end
+with a verdict line the plugin reads. How far that verdict reaches is D71.
+
+**Correction worth recording.** The plan's first draft said the Deck's default model could not think.
+Ollama lists the thinking capability on the exact Gemma 4 build the Deck runs. The feature therefore
+shows for anyone who turns thinking on.
+
+### D71 — LOCKED 2026-09-05 (raised 2026-09-05) — The folded line's wording, and how far the spoiler verdict reaches
+
+Raised from the maintainer's answers to D70, plan [40](../planning/40-reasoning-display.md).
+
+1. **What the folded line says** once the answer starts. Seconds only, no token count, and not "Thought
+   for". Candidates, with the opened block's label after the slash:
+   - Option 1 (recommended): *Worked it out in 41 s* / *See the working* and *Hide the working*. Plain,
+     active, and "the working" is the schoolroom phrase for showing your steps, which nobody else uses.
+   - Option 2: *Reasoned for 41 s* / *Show reasoning*.
+   - Option 3: *41 s of thinking* / *Open* and *Close*.
+   - Option 4: *Mulled it over for 41 s*, and later a version in each AI character's own voice, the way
+     the status phrases already take the character's tone.
+2. **How far the spoiler verdict reaches.** The model ends its thinking with a verdict line: what in the
+   answer counts as a spoiler under the person's tier, and what it fenced.
+   - Option 1 (recommended to start): the verdict becomes the model's risk opinion for the *Spoiler risk*
+     chip, replacing the after-the-fact tag, and the chip's detail says so. The answer itself is not
+     touched. Safe, small, and the answer test says whether the extra thinking also cuts fence misfires.
+   - Option 2: the verdict also gates the answer. A high verdict on a story game, with no consent given,
+     holds the whole answer behind one tap-to-reveal until the person opens it. Stronger, and a real
+     change to what people see; only after option 1 has been measured.
+   - Option 3: chip only, and the model is not asked to weigh spoilers at all; the reasoning is shown
+     but given no second job.
+3. **The one-time notice's shape.** A short confirm the first time thinking is turned on, saying the
+   thinking is shown unmasked and may mention things the answer will hide (recommended); or a line
+   under the Thinking row only, no confirm.
+
+**Consequence if unanswered.** Nothing is built until 1 and 2 are answered. 3 defaults to the confirm.
+
+**Answers, 2026-09-05 (the maintainer answered in chat):**
+
+1. **The folded line reads *Show reasoning*, with the seconds,** when no AI character is selected. When one
+   is selected, the line is written in the character's voice instead, seconds kept, "if it works": the
+   mockup in the plan's test shows three characters' versions and the maintainer judges. The plain line is
+   the fallback.
+2. **The verdict feeds the Spoiler risk chip first**, replacing the after-the-fact tag; the answer is not
+   held back in this step. The answer test decides whether holding an answer back is the next step.
+3. **A confirm the first time thinking is turned on.**
+
+### D72 — LOCKED 2026-09-05 (raised 2026-09-05) — Newer models for the Deck: what to pull and measure
+
+Raised from the maintainer's question while answering D70, and written up in
+[planning/41-deck-model-survey.md](../planning/41-deck-model-survey.md). The short answer: this quarter's
+releases are mostly large; the small candidates worth measuring are Granite 4.2 (3b and 8b, new, thinks,
+no images), the bigger Gemma 4 sibling (e4b), Qwen 3.5 at 2b, and LFM 2.5 8b (fast, text only). Nothing
+on paper is known to beat today's Gemma 4; only a measurement can say.
+
+1. **Pull the five candidates onto this PC** for the answer test, about 21 gigabytes in all.
+   - Option 1 (recommended): yes, all five.
+   - Option 2: a shorter list, named by the maintainer.
+   - Option 3: not now.
+2. **Which modes to re-pick.**
+   - Option 1 (recommended): all three, each with its own candidates.
+   - Option 2: Strategy only, where the quality gap shows most.
+3. **Is image support a must for Speed and Strategy?** If yes, Granite and LFM drop out of those modes.
+   - Option 1 (recommended): not a must for Speed; a must for any mode that takes screenshots today.
+   - Option 2: a must everywhere; only Gemma and Qwen sizes stay.
+
+**Consequence if unanswered.** Nothing is pulled. The survey stays as the first input to the on-Deck model
+benchmark entry, which is where the measurement belongs.
+
+**Answers, 2026-09-05 (the maintainer answered in chat):**
+
+1. **Pull the five: yes.** Pulled onto this PC the same day.
+2. **All three modes, in a new frame.** Today's Gemma 4 build is accepted as the best speed for the cost and
+   becomes the **Strategy** model. **Expert** wants the best-answering model that fits the Deck at all, even
+   if much slower: Gemma 4 12B and Qwen 3.5 9B were pulled as well for that search, beside Granite 4.2 8B.
+   **Speed** wants a small model that beats the current pick on speed for the quality: LFM 2.5, Granite 4.2
+   3B, Qwen 3.5 2B. The maintainer asked for data on recent releases; the survey now carries the makers'
+   published figures with sources.
+3. **Images are not a must for Speed.** Checked the same day: they are not a must for any text pick,
+   because screenshot questions route through their own model list.
+
+**Added by the maintainer: is nomic still the right embedding model?** As far as the desk can tell, yes:
+the plugin's own bake-off found six models equal on finding the right card and nomic the fastest, and
+Ollama's shelf has nothing newer than eight months. The one thing a swap could buy is the Deck's 0.8 to 1.1
+seconds per question, and only a smaller model with equal recall buys it. Three untested small ones were
+pulled for one sweep with the existing script; the result decides whether a swap is even proposed.

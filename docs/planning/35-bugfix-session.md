@@ -223,3 +223,79 @@ restarting the loader does — because restarting the loader is the one thing th
 
 It is a hypothesis until it is proved. But it is a specific one with a small fix behind it, and it is
 much more than the entry had this morning.
+
+### Block 4 — the checking pass on the Deck, 2026-09-05
+
+Deployed once; the bundle and both backend files hash the same here and on the device, so every
+reading below is about the code that landed today.
+
+**The answer paragraph hidden behind the bottom bar — PASS.** Walked a reply down and back up: every
+stop fully visible, both directions. Before the fix the same walk had two stops a person could not
+see, at a third and two thirds visible. Evidence `runs/round35-CHECK-dock-clearance-after-fix.json`.
+
+**The question you asked — PASS.** A 57-letter question now shows in full, wrapped over two lines,
+with no dots at the end. The room set aside is five lines' worth and the fade sits on the last line.
+Read off the live screen.
+
+**The line under the question box — PASS.** Started a game, opened the panel fresh, pressed nothing:
+the line read *active game* and named it. Before, it said no game was running until you asked
+something.
+
+**The glow at the end of the chip row — PASS on the mechanical half.** Pressed Left twice at the first
+chip and Right twice at the last: the glow fired on exactly those four presses and on none of the
+four presses that moved. It lasts a third of a second, which is shorter than a round trip to the
+device, so a plain read misses it — it took a recorder to catch. Whether it *looks* right is the
+maintainer's call and is on their checklist.
+
+**Speed mode — PASS, and the numbers are stark.** Asked the same question of the deployed backend in
+all three modes with the game running:
+
+| Mode | Search used | Time on the slow search |
+|---|---|---|
+| Speed | quick keyword lookup only | **0 ms** |
+| Strategy | keyword and meaning | 1473 ms |
+| Expert | keyword and meaning | 53 ms |
+
+Speed does the cheap lookup and nothing else, and the other two are untouched.
+
+**A finding for the open "search got slower" bug.** Those two hybrid numbers are the same search on
+the same question moments apart: 1473 ms the first time, 53 ms the second. So the cost is dominated
+by whether the embedding model is already warm, not by the search itself. Last night's 1.09-second
+readings are very likely warm-up being counted as search time. Anyone re-measuring that bug should
+ask a throwaway question first and time the second one.
+
+**Two things the checks turned up on the way.**
+- Show details and Copy are not reachable by walking down; they sit to the right of Retry. Not new
+  and not a failure by any row, but it makes scripted checking slower and is worth knowing.
+- One press onto a chip mid-slide read a third visible. It did not repeat in the sweeps either side,
+  so it is recorded here rather than filed.
+
+### Block 4b — the rating correction, and what the device said about greyed buttons
+
+The maintainer read the stopped-reply fix and pushed back: a half-written answer is not something to
+rate, and the rating is saved, so rating one quietly spoils the feedback they read later. They are
+right. Helpful and Not really are now greyed out on a stopped turn; Retry stays live, because it is
+the button a person actually wants after stopping something. A turn that finished normally is
+untouched, with a test that fails if that changes.
+
+**One measurement that matters for this, taken on the device today.** While a question is in flight
+the Ask button is greyed out — and it **still takes the highlight**. So a greyed-out button in this
+plugin is a stop that does nothing when pressed. That means the newly greyed thumbs will be dead
+stops too. It is the same shape as the greyed *Clear frozen test chips* button fixed on 2026-09-04,
+where the answer was to render nothing at all. Here the maintainer asked for greyed rather than gone,
+so the fix has to be to skip them with the D-pad instead. **Filed, not fixed** — it needs its own
+change and its own device check.
+
+**The stopped-reply check itself is still owed.** Three attempts: the first two answers finished
+before the rig could reach Stop, and on the third the highlight was dropped mid-answer, which is the
+open "pressing Ask drops the highlight" bug getting in the way of checking something else. The Stop
+control is an icon in the question box's corner rather than a stop on the way down, which is what
+made it slow to reach.
+
+### Where the device was left
+
+Every setting read back off disk and identical to the backup taken at the start. Deep Rock Galactic:
+Survivor is **still running** — the exit tool refused to guess its way through the confirm dialog,
+which is the safe behaviour, so closing it is one thumb press whenever the maintainer is next at the
+Deck. Nothing else was changed. **All plugin data was NOT wiped**: the maintainer asked to be messaged
+right before, and no reply came, so under their own rule it did not happen.

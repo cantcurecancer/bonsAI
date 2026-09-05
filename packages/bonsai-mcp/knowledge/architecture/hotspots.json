@@ -57,7 +57,7 @@
     },
     {
       "path": "src/components/MainTabChatTranscript.tsx",
-      "lines": 1111,
+      "lines": 1114,
       "role": ""
     },
     {
@@ -176,13 +176,13 @@
       "role": ""
     },
     {
-      "path": "src/features/preset-carousel/sessionRagComposer.test.ts",
-      "lines": 457,
+      "path": "src/utils/buildReplyActionsElement.tsx",
+      "lines": 461,
       "role": ""
     },
     {
-      "path": "src/utils/buildReplyActionsElement.tsx",
-      "lines": 452,
+      "path": "src/features/preset-carousel/sessionRagComposer.test.ts",
+      "lines": 457,
       "role": ""
     },
     {

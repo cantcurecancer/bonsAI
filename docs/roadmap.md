@@ -50,9 +50,23 @@ hook gives a gentle heads-up when a session starts work outside this.
 ## Bugs
 
 
-- ★ `[focus]` **Pressing Ask with an empty question box drops the highlight** — **OPEN, found 2026-09-05.** A on the Ask button
-  with nothing typed correctly sends nothing, and leaves nothing highlighted at all — the page's own focus falls back to the
-  document body. One more press puts it back. Same family as the empty highlight on opening, and likely the same fix.
+- ★ `[focus]` **A greyed-out button still takes the highlight, so the D-pad lands on something that does nothing** —
+  **OPEN, measured 2026-09-05.** Watched on the device while a question was in flight: the Ask button is greyed and the
+  highlight still lands on it. It is not one button — it is how greyed buttons behave here, so it now also applies to the
+  Helpful and Not really buttons that were greyed on a stopped reply the same day. The greyed *Clear frozen test chips*
+  button had the same problem and was fixed by removing it; that is not open here, because the maintainer asked for greyed
+  rather than gone. So the fix is to step over them with the D-pad instead. Evidence `runs/round35-CHECK-stop-press.json`.
+- ★ `[focus]` **Left on the collapsed-history row throws the highlight out of the plugin** — **OPEN, found 2026-09-05,
+  confirmed twice.** With the highlight on the *N earlier* row above a chat, Left hands it to Steam's Quick Access rail and
+  the person is out of bonsAI entirely. Right brings it back, but nothing says so. Same shape as the Ollama sliders fixed on
+  2026-09-04: the row does not claim the press, so Steam's own idea of "past the edge" fires. Left should either walk the
+  history or hold still. Evidence `runs/round35-BUG-left-from-earlier-pill-leaves-plugin.json`,
+  `runs/round35-BUG-left-from-earlier-pill-retry.json`.
+- ★ `[focus]` **Pressing Ask drops the highlight** — **OPEN, found 2026-09-05, widened the same day.** Filed first as an
+  empty-box problem; it is not. **Every** press of the Ask button leaves nothing highlighted — with a real question and with an
+  empty box alike, measured four times. The page's own focus falls back to the document body, so the next press has to place the
+  highlight again before it can move it. On a fresh panel that placing press lands on Decky's back arrow, above the plugin. Same
+  family as nothing being highlighted when the panel opens, and likely the same fix.
 - ★ `[focus]` **Down does not move the ring off an unrevealed spoiler block** — **OPEN, found 2026-09-04, did not reproduce
   2026-09-05.** With the ring on the hidden block, Down reported the press arriving and nothing moving. Retried today on a fresh
   Red Dead ending reply with a real hidden block on screen: **Down left it normally**, straight onto the branch picker's first
@@ -141,10 +155,10 @@ replace it with a specific issue when one exists.
 - ★★ `[layout]` **Show details becomes a divider, not a chip** — **OPEN.** A full-width rule with the label in the middle reads as the
   end of the answer and frees the row it shares. Copy the collapsed-history row's shape (`.bonsai-chat-earlier-pill-row`).
 - ★★ `[reply]` **The answer's first lines in the reply-ready toast** — **OPEN, planned 2026-09-05, calls locked (D63).** When an
-  answer finishes while the menu is closed, the toast says only *Reply ready*. It would carry your question and the first lines
-  of the answer, in every mode, so a short answer is read without leaving the game; tap still opens the panel. Any hidden block
-  is skipped, and if nothing safe is left the toast stays as it is. Queued for a later session; the first step then is a Deck
-  measurement, since nobody has recorded the toast showing over a running game. [Plan and mockup](planning/38-toast-answer-lines.md).
+  answer finishes while the menu is closed, the toast says only *Reply ready*. It would read *bonsAI* over the first lines of
+  the answer, in every mode, for eight seconds, so a short answer is read without leaving the game; tap still opens the panel.
+  Hidden blocks are skipped; if nothing safe is left the toast stays as it is. **Measure first, on two screens with screenshots:**
+  the Deck's own screen and a 24-inch 1080p monitor; the popup is expected to be small. [Plan and mockup](planning/38-toast-answer-lines.md).
 - ★★ `[reply]` **Thinking tips replace the status blurb (Phase 2)** — **OPEN.** Hand-curated bonsAI tips, feature tips for generic
   asks and KB-strategy tips for game asks, chosen by current game and mode. The generic filler copy goes away entirely. Data file
   shaped like `data/kb/strategy_seed.json`. Superseded by **Reasoning display** once real thinking streams.
@@ -193,14 +207,18 @@ replace it with a specific issue when one exists.
 - ★★★★ `[ui]` **SteamOS spin hint card** — **OPEN.** Detect immutable spins and deep-link to troubleshooting.
 - ★★★★★ `[ollama]` **On-Deck model benchmark** — **OPEN.** Rank installed models by measured speed and completion; offer as try order
   with confirmation.
+  **First input, 2026-09-05:** a desk survey of this quarter's models that fit the Deck, and what to measure, in
+  [41-deck-model-survey.md](planning/41-deck-model-survey.md); the calls are D72.
 - ★★★★★ `[perms]` **VAC Phase 2: opponent IDs** — **OPEN, research.** Surface live opponent identities for ban checks when metadata allows.
 - ★★★★★ `[platform]` **Controller macro test rig and live view** — **OPEN, discovery locked 2026-08-23, board ordered.** A bridge board
   the Deck sees as a real controller, a macro runner gated on real UI state, and one recording pipeline. Primitives land upstream in
   decky-plugin-studio. Next: spikes S1 to S3. [Plan](planning/19-controller-macro-test-rig.md), [program](planning/21-ai-owned-testing-program.md).
 - ★★★★★ `[platform]` **Steam Controller copilot (Ibex gen-2)** — **OPEN.** AI copy tuned to gen-2 hardware.
-- ★★★★★ `[reply]` **Reasoning display** — **OPEN, spike first.** Stream the model's real `thinking` inline, collapse to a summary,
-  expand on demand, with a transparency chip. Two open questions: whether models interleave thinking with content, and whether a
-  single truncated line or a bounded pane reads better. [Detail](roadmap-details.md#reasoning-display).
+- ★★★★★ `[reply]` **Reasoning display** — **OPEN, planned 2026-09-05, calls locked (D70, D71).** The plugin asks a
+  thinking model to think and throws the thinking away; the line under your question shows a stock phrase for the whole wait.
+  Planned: three lines at the answer's size show the model's own newest sentences, fold to one line with the seconds when the
+  answer starts, open to the full text; Show details gets a thinking chip; and the thinking is also spent deciding what counts
+  as a spoiler for you. The Deck's default model can think. A test runs on the PC first, then the Deck. [Plan](planning/40-reasoning-display.md).
 - ★★★★★ `[voice]` **Local reply TTS** — **OPEN.** Phase 1 offline play/stop; Phase 2 character-aligned read-aloud (legal gate).
 - ★★★★★ `[voice]` **Wake-word listening** — **OPEN, beta.** Opt-in always-on local wake **bonsAI**, then STT, then a quiet Ask.
   [Feasibility](planning/10-wake-word-listening-feasibility.md).
@@ -228,41 +246,15 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
 
 ### Bugs that need verification
 
-- ★ `[focus]` **An answer paragraph can take the highlight while it is hidden behind the bottom bar** — **OPEN, found
-  2026-09-04, measured 2026-09-05.** The bar hides the bottom 157px of the pane; the reply's last paragraph overlaps it by 41px,
-  leaving a third to two thirds of it on screen. **The existing fix runs and the pane never moves:** the element carries the right
-  164px scroll margin, and the pane sits at 0 with 277px of room. The same pane scrolls fine for other controls on the same walk.
-  Correction to the original note: walking down the coverer is a preset chip, walking up it is the question box — it is the whole
-  bar, and a fix must work both ways. Evidence `runs/round35-answer-stop-under-dock.json`, `runs/round35-control-main-walk.json`.
-  **VERIFY.** Fixed at the desk 2026-09-05: the lift that pulls a covered paragraph clear now re-checks at 150, 300 and 900 milliseconds instead of giving up after the first, matching the only timing this repo has already seen beat this device. Owed on the Deck: walk a three-paragraph reply down and back up and require every paragraph fully visible. Row **QA-FREE-PLAY-01**.
-- ★ `[main]` **The footnote under the Ask bar says no active game until the first Ask** — **OPEN, found 2026-09-04** during
-  CHIP-ROTATION-01: with Half-Life 2 running and the carousel already showing that game's chips, the line read *Context: no active
-  game detected* for the whole 96-second sample. The line only changes when an Ask's status poll reports a game (`index.tsx` starts
-  it inactive; `useBonsaiAskOrchestration.ts` updates it from the poll), so on a fresh mount it reports a detection that never ran.
-  Evidence `runs/CHIP-ROTATION-01-carousel-sample-half-life-2.json`.
-  **VERIFY.** Fixed at the desk 2026-09-05: the line now checks for a running game the moment the panel opens, using the same source the suggestion chips already read, instead of waiting for the first question. Row **CHIP-ROTATION-01**.
 - ★ `[reply]` **A branch question elides the game name** — **OPEN, found 2026-09-04.** The Ravenholm branch picker asked
   *"Where are you at in … ?"* with the title replaced by an ellipsis.
   **VERIFY.** Fixed at the desk 2026-09-05, both halves: the prompt’s worked example no longer contains dots to copy, and a picker that still has a hole where a name belongs is dropped rather than shown. Owed on the Deck: a Strategy question that ends in a picker names its game.
-- ★★ `[chat]` **The question you just asked is cut to one line** — **OPEN, filed 2026-09-05 by the maintainer.** The bubble above a
-  reply shows roughly the first 48 letters of what you typed and then stops, and it does that the moment you ask, not only on older
-  turns. Wanted: an open turn shows the whole question, wrapped, up to five lines; a closed turn keeps the single line. The full text
-  rides along with the turn being open, so A and a tap already do it and no new D-pad stop appears. Cut twice today — the code chops
-  at 60 letters, the one-line rule chops again at about 48, and the second nearly always wins.
-  **VERIFY.** Fixed at the desk 2026-09-05 under D60: an open turn shows the whole question, wrapped, up to five lines with the last line fading; a closed turn keeps the single cut line. No new D-pad stop. Owed on the Deck: ask a long question and look at the bubble open and closed.
 - ★★ `[reply]` **Stopping a reply leaves no "Stopped" notice** — **OPEN, found 2026-09-04.** Pressing *Stop generation* inside the
   soft-continue window keeps the partial body correctly and strips the `Continuing…` cue (the 2026-08-15 fix works), but the small
   **Stopped** notice **SOFT-PREDICT-03** asks for never appears — the word is absent from the turn, the panel and the whole page —
   and the stopped turn also loses its *Helpful / Not really / Retry* buttons, keeping only *Show details* and *Copy*.
   **VERIFY.** Fixed at the desk 2026-09-05. The notice was only ever drawn while the turn still counted as live, and a stopped turn is saved to the chat straight away, so it never got the chance. It now shows on the settled turn, and Helpful / Not really / Retry come back with it — Retry re-asks that turn’s own question. Row **SOFT-PREDICT-03**.
-- ★★★ `[KB]` **A quick question asked while a game is running pays for the slow search it was meant to skip** —
-  **OPEN, found 2026-09-05.** Speed mode is supposed to do the cheap keyword lookup only. On the Deck, with Deep Rock Survivor
-  running, two of three Speed questions ran the meaning search as well: Show details read *Keyword + meaning* and the turn spent
-  **1140 ms** and **944 ms** embedding, where the row requires *Keyword search* and no embed time at all. The third question read
-  *Knowledge base (skipped)* with no embed, so the pattern is that whenever the keyword search finds anything, the meaning search
-  runs too, whatever mode you picked. Breaks the Speed half of **KB-RECALL-01**; settles the open question lane B raised
-  2026-09-03. Evidence `runs/round34-drg-speed-q*.json`, log in [plan 34](planning/34-feature-verification-round.md).
-  **VERIFY.** Fixed at the desk 2026-09-05 under D62 #2: Speed does the quick keyword lookup and nothing else. Strategy and Expert are untouched. Owed on the Deck: a Speed question with a covered game running reads *Keyword search* with no time spent on the meaning search, and lands about a second sooner. Row **KB-RECALL-01**, Speed half.
+  **Corrected the same day at the maintainer's word:** Helpful and Not really now show **greyed out** on a stopped turn — half an answer is not something to rate, and the rating is saved. Retry stays live. The greyed buttons will take a dead D-pad press, which is filed separately above. **The Deck check is still owed:** three attempts, two answers finished before Stop could be reached and one lost the highlight mid-answer.
 - ★★★★ `[chat]` **A Strategy thread's branch block shows in whichever chat slot you are looking at** — **OPEN, found 2026-09-04.**
   Slot A was asked a long Ravenholm question; switching to slot B showed B's own two turns followed by A's branch picker,
   *"Where are you at in … ? A. Just starting in the town area / B. Dealing with a tough encounter or trap"*. It is still in B after
@@ -514,6 +506,20 @@ on 2026-07-30 (`apply_tdp` no longer exists). Preserved in the archive.
 since April (`25742f2`), and a deliberate failing test exits 1 today. If it recurs, record the exact command and shell.
 
 **September 2026**
+- ★★★ `[KB]` **A quick question stops paying for the slow search** — Speed mode now does the fast keyword lookup and
+  nothing else, which takes about a second off every Speed question. Measured on the Deck 2026-09-05, same question and game
+  in all three modes: Speed spent **0 ms** on the slow search, Strategy 1473 ms, Expert 53 ms. Strategy and Expert are
+  unchanged. The trade the maintainer accepted is that a Speed answer loses the cards only the slower search finds (D62 #2).
+- ★★ `[chat]` **The question you asked shows in full** — open a turn and the whole thing is there, wrapped over up to five
+  lines with the last one fading; close it and it goes back to a single line. It used to be cut twice and you never saw more
+  than about 48 letters. Confirmed on the Deck 2026-09-05: a 57-letter question wrapped over two lines with no dots (D60).
+- ★ `[main]` **The line under the question box knows a game is running before you ask** — it used to say no game was
+  running until your first question, even with a game open and its own chips on screen. Confirmed on the Deck 2026-09-05:
+  started a game, opened the panel, pressed nothing, and the line named the game (CHIP-ROTATION-01).
+- ★ `[focus]` **An answer paragraph no longer takes the highlight while hidden behind the bottom bar** — the step that
+  lifts it clear now tries again at 300 and 900 milliseconds instead of giving up after the first go. Confirmed on the Deck
+  2026-09-05: walking a reply down and back up, every stop fully visible, where the same walk before the fix had two a
+  person could not see.
 - ★★ `[KB]` **Asking about a boss by name works the way people actually type** — *king dodongo fight* now names the boss
   just as *how do I beat king dodongo* does, so its tactics come through unfenced; a vague question still names nothing and stays
   fenced. All seven sentences confirmed on the Deck 2026-09-05.

@@ -48,6 +48,11 @@ function baseProps(overrides: Partial<MainTabChatTranscriptProps>): MainTabChatT
   };
 }
 
+/** Decky's Button may render a real <button> or a div wrapper; read whichever says disabled. */
+function isDisabled(el: HTMLElement): boolean {
+  return (el as HTMLButtonElement).disabled === true || el.hasAttribute("disabled");
+}
+
 describe("stopped turn — notice and reply actions restored on the archived turn", () => {
   const stoppedTurn: AskThreadCollapsedTurn = {
     id: "stopped-1",
@@ -69,6 +74,41 @@ describe("stopped turn — notice and reply actions restored on the archived tur
     expect(() => getByLabelText("Mark reply helpful")).not.toThrow();
     expect(() => getByLabelText("Mark reply not helpful")).not.toThrow();
     expect(() => getByLabelText("Retry same prompt")).not.toThrow();
+  });
+
+  /*
+   * The maintainer read the first version of this fix and pushed back: half an answer is not
+   * something to rate, and the rating is saved, so it would quietly spoil the feedback they read
+   * later. The buttons stay on screen and greyed — not removed — so the row does not shift.
+   */
+  it("greys out Helpful and Not really on a stopped turn, and leaves Retry live", () => {
+    const { getByLabelText } = render(
+      <MainTabChatTranscript
+        {...baseProps({
+          askThreadCollapsed: [stoppedTurn],
+          expandedTurnKey: stoppedTurn.id,
+          askStopped: true,
+        })}
+      />
+    );
+    expect(isDisabled(getByLabelText("Mark reply helpful"))).toBe(true);
+    expect(isDisabled(getByLabelText("Mark reply not helpful"))).toBe(true);
+    expect(isDisabled(getByLabelText("Retry same prompt"))).toBe(false);
+  });
+
+  it("leaves rating alone on a turn that finished normally", () => {
+    const { getByLabelText } = render(
+      <MainTabChatTranscript
+        {...baseProps({
+          askThreadCollapsed: [stoppedTurn],
+          expandedTurnKey: stoppedTurn.id,
+          askStopped: false,
+          lastExchange: { question: stoppedTurn.question, answer: stoppedTurn.answer },
+        })}
+      />
+    );
+    expect(isDisabled(getByLabelText("Mark reply helpful"))).toBe(false);
+    expect(isDisabled(getByLabelText("Mark reply not helpful"))).toBe(false);
   });
 
   it("Retry re-asks this turn's own question, not a stale lastExchange", () => {
