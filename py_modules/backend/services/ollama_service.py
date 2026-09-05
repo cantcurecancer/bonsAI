@@ -10,6 +10,7 @@ ollama_ask_budgets.
 
 import json
 import os
+import re
 import shutil
 import signal
 import socket
@@ -158,6 +159,88 @@ def probe_ollama_health(base: str, deadline: float) -> dict[str, Any]:
         ps_snapshots = []
 
     return {"version": version_local, "models": models_local, "ps_loaded": ps_snapshots}
+
+
+# Boot-time preload (roadmap: Speed-mode VRAM preload, developer switch first) only ever warms a
+# model at or under this size, so the switch can never accidentally load a big model at startup.
+PRELOAD_MAX_PARAMETER_BILLIONS = 3.0
+
+
+def parse_parameter_size_billions(raw: Any) -> Optional[float]:
+    """Parse Ollama's ``details.parameter_size`` (``"3.8B"``, ``"893M"``) into billions of params.
+
+    Anything that does not match returns ``None`` -- an unparsable or missing size is treated as
+    unknown, never as "small enough", so preload never guesses at a model it cannot measure.
+    """
+    if not isinstance(raw, str):
+        return None
+    match = re.match(r"^\s*([0-9]+(?:\.[0-9]+)?)\s*([BM])\s*$", raw.strip(), re.IGNORECASE)
+    if not match:
+        return None
+    value = float(match.group(1))
+    return value if match.group(2).upper() == "B" else value / 1000.0
+
+
+def pick_preload_model(tags_models: Any) -> Optional[str]:
+    """First installed model at or under ``PRELOAD_MAX_PARAMETER_BILLIONS``, else ``None``.
+
+    ``tags_models`` is the ``models`` list from ``GET /api/tags`` -- each entry carries a
+    ``details.parameter_size`` string. A model whose size is missing or unparsable is skipped
+    rather than guessed at, matching ``parse_parameter_size_billions``.
+    """
+    if not isinstance(tags_models, list):
+        return None
+    for entry in tags_models:
+        if not isinstance(entry, dict):
+            continue
+        name = entry.get("name") or entry.get("model")
+        if not isinstance(name, str) or not name.strip():
+            continue
+        details = entry.get("details")
+        size_b = (
+            parse_parameter_size_billions(details.get("parameter_size"))
+            if isinstance(details, dict)
+            else None
+        )
+        if size_b is not None and size_b <= PRELOAD_MAX_PARAMETER_BILLIONS:
+            return name
+    return None
+
+
+def preload_ask_model_sync(base_http: str, logger: Any, *, timeout_seconds: float = 20.0) -> None:
+    """Best-effort warm of a small installed model into Ollama's memory, once, at boot.
+
+    Reads the installed model list from ``GET /api/tags``, picks the first entry at or under
+    ``PRELOAD_MAX_PARAMETER_BILLIONS`` billion parameters (``pick_preload_model``), and sends a
+    zero-token ``POST /api/generate`` (empty ``prompt``) -- Ollama's documented way to load a
+    model into memory without generating anything.
+
+    Never raises. A missing host, no eligible small model installed, or the host declining the
+    warm request for lack of memory are all silent no-ops here on purpose: the roadmap entry
+    calls for "skip silently -- no error, no toast, no stuck status line," because this is a
+    startup nicety, never something the plugin should surface as broken. There is no retry and no
+    polling loop behind this; the caller runs it once, at boot, and never again.
+    """
+    try:
+        tags_req = urllib.request.Request(f"{base_http.rstrip('/')}/api/tags", method="GET")
+        with urllib.request.urlopen(tags_req, timeout=min(5.0, timeout_seconds)) as resp:
+            tags_data = json.loads(resp.read().decode("utf-8"))
+        model = pick_preload_model(tags_data.get("models") if isinstance(tags_data, dict) else None)
+        if not model:
+            logger.info("preload_ask_model: no eligible small model installed, skipping")
+            return
+        body = json.dumps({"model": model, "prompt": ""}).encode("utf-8")
+        gen_req = urllib.request.Request(
+            f"{base_http.rstrip('/')}/api/generate",
+            data=body,
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        with urllib.request.urlopen(gen_req, timeout=timeout_seconds) as resp:
+            resp.read()
+        logger.info("preload_ask_model: warmed %s", model)
+    except Exception as exc:
+        logger.info("preload_ask_model: skipped (%s)", exc)
 
 
 def close_ollama_chat_response(response: Any, logger: Any) -> bool:

@@ -373,5 +373,19 @@
       "reply_verbosity": "detailed",
       "desktop_app_log_level": "verbose"
     }
+  },
+  {
+    "name": "an old settings file predating the boot preload switch loads it off and leaves everything else untouched",
+    "input": {
+      "reply_verbosity": "detailed",
+      "desktop_app_log_level": "verbose",
+      "preset_chip_animation": "carousel"
+    },
+    "expected": {
+      "dev_preload_ask_model": false,
+      "reply_verbosity": "detailed",
+      "desktop_app_log_level": "verbose",
+      "preset_chip_animation": "carousel"
+    }
   }
 ]

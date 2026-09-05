@@ -2,7 +2,7 @@
   "hotspots": [
     {
       "path": "main.py",
-      "lines": 3208,
+      "lines": 3251,
       "role": "Decky RPC entrypoints and orchestration"
     },
     {
@@ -17,7 +17,7 @@
     },
     {
       "path": "src/index.tsx",
-      "lines": 1614,
+      "lines": 1620,
       "role": "Plugin root: tabs, scoped CSS, RPC wiring, Settings"
     },
     {
@@ -51,6 +51,11 @@
       "role": ""
     },
     {
+      "path": "py_modules/backend/services/ollama_service.py",
+      "lines": 1157,
+      "role": "Prompt build, Ollama HTTP, streaming"
+    },
+    {
       "path": "src/components/MainTabChatTranscript.tsx",
       "lines": 1111,
       "role": ""
@@ -64,11 +69,6 @@
       "path": "src/components/MainTabUnifiedAskBar.tsx",
       "lines": 1080,
       "role": ""
-    },
-    {
-      "path": "py_modules/backend/services/ollama_service.py",
-      "lines": 1074,
-      "role": "Prompt build, Ollama HTTP, streaming"
     },
     {
       "path": "src/data/characterPlaceholderEmoticonGrids.ts",
@@ -116,13 +116,13 @@
       "role": ""
     },
     {
-      "path": "src/components/MainTabPresetAnimatedChips.test.tsx",
-      "lines": 568,
+      "path": "src/hooks/usePluginSettings.ts",
+      "lines": 576,
       "role": ""
     },
     {
-      "path": "src/hooks/usePluginSettings.ts",
-      "lines": 566,
+      "path": "src/components/MainTabPresetAnimatedChips.test.tsx",
+      "lines": 568,
       "role": ""
     },
     {
@@ -137,12 +137,12 @@
     },
     {
       "path": "py_modules/backend/services/settings_service.py",
-      "lines": 537,
+      "lines": 540,
       "role": "Load/save/merge settings.json"
     },
     {
       "path": "src/components/DeveloperTab.tsx",
-      "lines": 521,
+      "lines": 532,
       "role": ""
     },
     {
@@ -152,12 +152,12 @@
     },
     {
       "path": "src/utils/settingsContracts.test.ts",
-      "lines": 508,
+      "lines": 509,
       "role": ""
     },
     {
       "path": "src/data/bonsaiSettingsNormalizers.ts",
-      "lines": 497,
+      "lines": 498,
       "role": ""
     },
     {

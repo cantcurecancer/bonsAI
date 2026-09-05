@@ -53,6 +53,7 @@ export function toBonsaiSettingsPayload(
     bonsai_token_streaming_enabled: input.bonsaiTokenStreamingEnabled,
     show_onscreen_debug_hud: input.showOnscreenDebugHud,
     dev_force_session_rag_chips: input.devForceSessionRagChips,
+    dev_preload_ask_model: input.devPreloadAskModel,
     tab_resume_mode: input.tabResumeMode,
     named_ollama_hosts: input.namedOllamaHosts,
     dev_frozen_test_chips: input.devFrozenTestChips,

@@ -46,6 +46,8 @@ export function useDeveloperTabPayload({
   setShowOnscreenDebugHud,
   devForceSessionRagChips,
   setDevForceSessionRagChips,
+  devPreloadAskModel,
+  setDevPreloadAskModel,
   devFrozenTestChips,
   setDevFrozenTestChips,
   ragHybridRetrievalEnabled,
@@ -85,6 +87,8 @@ export function useDeveloperTabPayload({
         setShowOnscreenDebugHud={setShowOnscreenDebugHud}
         devForceSessionRagChips={devForceSessionRagChips}
         setDevForceSessionRagChips={setDevForceSessionRagChips}
+        devPreloadAskModel={devPreloadAskModel}
+        setDevPreloadAskModel={setDevPreloadAskModel}
         devFrozenTestChips={devFrozenTestChips}
         setDevFrozenTestChips={setDevFrozenTestChips}
         ragHybridRetrievalEnabled={ragHybridRetrievalEnabled}
@@ -108,6 +112,7 @@ export function useDeveloperTabPayload({
       bonsaiTokenStreamingEnabled,
       showOnscreenDebugHud,
       devForceSessionRagChips,
+      devPreloadAskModel,
       devFrozenTestChips,
       ragHybridRetrievalEnabled,
       tabResumeMode,

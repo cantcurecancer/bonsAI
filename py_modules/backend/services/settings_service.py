@@ -350,6 +350,9 @@ _SIMPLE_FIELDS: dict[str, Any] = {
     "show_onscreen_debug_hud": _bool_default_false,
     # QA only: forces every eligible preset-carousel slot to a session RAG chip.
     "dev_force_session_rag_chips": _bool_default_false,
+    # Speed-mode VRAM preload: warm the default Ask model at boot instead of on the first
+    # question. Developer switch first (roadmap); off by default.
+    "dev_preload_ask_model": _bool_default_false,
     "desktop_app_log_level": _enum(_VALID_DESKTOP_APP_LOG_LEVELS, "off", strip=True),
     # Defaults to "resume" rather than an off-like value: D15 option B is the locked
     # behavior, and this control exists to compare the alternatives, not to gate it.

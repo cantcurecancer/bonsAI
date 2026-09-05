@@ -98,6 +98,9 @@ export type DeveloperTabProps = {
   setShowOnscreenDebugHud: (v: boolean) => void;
   devForceSessionRagChips: boolean;
   setDevForceSessionRagChips: (v: boolean) => void;
+  /** Warm the default Ask model into memory at boot so the first question skips the cold load. */
+  devPreloadAskModel: boolean;
+  setDevPreloadAskModel: (v: boolean) => void;
   /** QA: exact questions pinned into the preset carousel, in order. Empty means normal sampling. */
   devFrozenTestChips: string[];
   setDevFrozenTestChips: (v: string[]) => void;
@@ -136,6 +139,8 @@ export const DeveloperTab: React.FC<DeveloperTabProps> = ({
   setShowOnscreenDebugHud,
   devForceSessionRagChips,
   setDevForceSessionRagChips,
+  devPreloadAskModel,
+  setDevPreloadAskModel,
   devFrozenTestChips,
   setDevFrozenTestChips,
   ragHybridRetrievalEnabled,
@@ -200,6 +205,12 @@ export const DeveloperTab: React.FC<DeveloperTabProps> = ({
               description="Shows a small translucent log at the bottom of the plugin (focus, tab changes, ingest). Off by default so Settings and connection UI stay readable."
               checked={showOnscreenDebugHud}
               onChange={(checked) => setShowOnscreenDebugHud(checked)}
+            />
+            <ToggleField
+              label="Warm the Ask model at boot"
+              description="Loads the default Ask model into memory when the plugin starts, so the first question skips the cold load. Only ever warms a model of 3B parameters or under, and skips quietly if memory is tight — no error, no stuck status line."
+              checked={devPreloadAskModel}
+              onChange={(checked) => setDevPreloadAskModel(checked)}
             />
           </div>
         </PanelSectionRow>

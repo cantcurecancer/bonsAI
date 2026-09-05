@@ -136,6 +136,12 @@ export type BonsaiSettings = {
    * `SESSION_RAG_CHIP_PROBABILITY`. Makes SESSION-RAG-CHIPS-01 deterministic; not a user feature.
    */
   dev_force_session_rag_chips: boolean;
+  /**
+   * Developer-tab switch: warm the default Ask model into memory at plugin boot so the first
+   * question does not pay the cold-load cost. Off by default; the backend only ever warms a
+   * model of 3B parameters or under and skips silently when memory is tight.
+   */
+  dev_preload_ask_model: boolean;
   /** Which tab a reopen lands on — the three D15 options behind one Developer-tab control. */
   tab_resume_mode: TabResumeMode;
   /** Labeled ``host:port`` presets for quick Connection switching (max 4). */
@@ -197,6 +203,7 @@ export type BonsaiSettingsSnapshotInput = {
   bonsaiTokenStreamingEnabled: boolean;
   showOnscreenDebugHud: boolean;
   devForceSessionRagChips: boolean;
+  devPreloadAskModel: boolean;
   tabResumeMode: TabResumeMode;
   namedOllamaHosts: NamedOllamaHost[];
   devFrozenTestChips: string[];
@@ -233,6 +240,7 @@ export const DEFAULT_DESKTOP_ASK_VERBOSE_LOGGING = false;
 export const DEFAULT_BONSAI_TOKEN_STREAMING_ENABLED = false;
 export const DEFAULT_SHOW_ONSCREEN_DEBUG_HUD = false;
 export const DEFAULT_DEV_FORCE_SESSION_RAG_CHIPS = false;
+export const DEFAULT_DEV_PRELOAD_ASK_MODEL = false;
 /** D15 option B, the locked decision — a fresh install resumes the tab you left. */
 export const DEFAULT_TAB_RESUME_MODE: TabResumeMode = "resume";
 export const TAB_RESUME_MODE_OPTIONS: TabResumeMode[] = ["always_main", "resume", "resume_recent"];
