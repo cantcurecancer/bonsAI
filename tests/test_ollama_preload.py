@@ -193,6 +193,39 @@ class PreloadAskModelSyncTests(unittest.TestCase):
         self.assertEqual(mock_urlopen.call_count, 1)
 
     @patch("backend.services.ollama_service.urllib.request.urlopen")
+    def test_an_empty_saved_order_still_uses_the_order_ask_would_build(
+        self, mock_urlopen: MagicMock
+    ) -> None:
+        """The maintainer's Deck, measured 2026-09-05 (PRELOAD-01).
+
+        The saved try order was ``[]``. Reading only the saved order would fall back to guessing
+        and warm ``qwen2.5:1.5b`` at 1.5B, but Ask's own resolver builds
+        ``["gemma4:e2b-it-qat", "qwen2.5:1.5b", ...]`` from what is installed, so Ask's first
+        model is the 4.6B one. Warming nothing is the right answer, and warming the 1.5B model is
+        the wrong one: no question would have reached it.
+        """
+        tags_body = json.dumps(
+            {
+                "models": [
+                    {"name": "qwen2.5:1.5b", "details": {"parameter_size": "1.5B"}},
+                    {"name": "qwen3.5:4b", "details": {"parameter_size": "4.7B"}},
+                    {"name": "gemma4:e2b-it-qat", "details": {"parameter_size": "4.6B"}},
+                    {"name": "nomic-embed-text:latest", "details": {"parameter_size": "137M"}},
+                ]
+            }
+        ).encode("utf-8")
+        mock_urlopen.return_value = _Resp(tags_body)
+
+        preload_ask_model_sync(
+            "http://127.0.0.1:11434",
+            _Logger(),
+            settings={"text_model_routing_order": []},
+        )
+
+        # Only /api/tags was fetched: no warm request went out at all.
+        self.assertEqual(mock_urlopen.call_count, 1)
+
+    @patch("backend.services.ollama_service.urllib.request.urlopen")
     def test_unreachable_host_is_swallowed_silently(self, mock_urlopen: MagicMock) -> None:
         mock_urlopen.side_effect = urllib.error.URLError("connection refused")
 

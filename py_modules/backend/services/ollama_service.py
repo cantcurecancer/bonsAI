@@ -29,6 +29,7 @@ from backend.ollama_connectivity import (
     is_loopback_ollama_base,
     ollama_http_base_from_pc_ip_field,
 )
+from backend.ollama_routing import resolve_routing_order
 from backend.ollama_urls import normalize_ollama_base
 
 from backend.services.bonsai_stream_tags import extract_bonsai_status
@@ -251,7 +252,7 @@ def preload_ask_model_sync(
     logger: Any,
     *,
     timeout_seconds: float = 20.0,
-    try_order: Any = None,
+    settings: Any = None,
 ) -> None:
     """Best-effort warm of a small installed model into Ollama's memory, once, at boot.
 
@@ -271,10 +272,20 @@ def preload_ask_model_sync(
         tags_req = urllib.request.Request(f"{base_http.rstrip('/')}/api/tags", method="GET")
         with urllib.request.urlopen(tags_req, timeout=min(5.0, timeout_seconds)) as resp:
             tags_data = json.loads(resp.read().decode("utf-8"))
-        model = pick_preload_model(
-            tags_data.get("models") if isinstance(tags_data, dict) else None,
-            try_order,
-        )
+        models_list = tags_data.get("models") if isinstance(tags_data, dict) else None
+        # Ask's own resolver, so the warm-up and the Ask agree on which model comes first. It
+        # covers the case a saved order cannot: an empty order (never set, which is the state on
+        # a fresh install and was the state on the maintainer's Deck) still resolves to the
+        # order Ask would build for itself from what is installed.
+        try_order = None
+        if isinstance(settings, dict):
+            installed = [
+                str(e.get("name") or e.get("model") or "")
+                for e in (models_list or [])
+                if isinstance(e, dict)
+            ]
+            try_order = resolve_routing_order(False, settings, [t for t in installed if t])
+        model = pick_preload_model(models_list, try_order)
         if not model:
             logger.info("preload_ask_model: no eligible small model installed, skipping")
             return

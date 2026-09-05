@@ -376,13 +376,7 @@ class Plugin:
             _, _, base = normalize_ollama_base(pc_ip)
         except Exception:
             return
-        try_order = settings.get("text_model_routing_order")
-        await asyncio.to_thread(
-            preload_ask_model_sync,
-            base,
-            logger,
-            try_order=try_order if isinstance(try_order, list) else None,
-        )
+        await asyncio.to_thread(preload_ask_model_sync, base, logger, settings=settings)
 
     async def _unload(self):
         """Run plugin shutdown logging for Decky unload events."""
