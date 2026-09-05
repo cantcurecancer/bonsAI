@@ -355,3 +355,7 @@ Written as things land.
   with a plain cross-container focus (`permissionJumpRegistry.ts:49-73`, which also reports success unconditionally). Back with lane A
   as `bugfix32-lane-a3`. Note for future runs: a restored turn carries neither the thumbs row nor the deny surface, so both of these
   checks need a live reply.
+- **03:50 to 04:05, regression sweeps on build 4:** two rig sweeps of the Main tab, one from the reply and one from the plugin
+  title downward, walked 19 controls each with **every stop visible and no cycles** after five focus fixes landed in one night
+  (`runs/QA-FREE-PLAY-01-build4-main-sweep.json`, `runs/QA-FREE-PLAY-01-build4-main-sweep-full-height.json`). Noted on the
+  free-play standing row. The two glance-owed pictures (bugs 8 and 9) were sent to the maintainer.
