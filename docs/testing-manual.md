@@ -57,6 +57,13 @@ Emulate a user, not a test plan: with a LONG reply on screen —
 3. Repeat the walk on at least one other carousel position (LB/RB), and once more after the
    reply finishes if it was streaming.
 
+**Run 2026-09-05 on the fourth build of plan 32 (code `517804a`), after five focus fixes landed in one night:** a full Down/Up
+sweep of the Main tab on a chat holding a blocked command reply walked 19 controls in 25 presses over two legs — the bar, the
+chat slot row, the turn header, all four answer sections, Helpful, Retry, Open Permissions, the session context strip, Save chat
+to Desktop, a chip, the Ask field and ask. **Every stop visible, no cycles, nothing focused behind the dock**
+(`runs/QA-FREE-PLAY-01-build4-main-sweep.json`). Three of the stops carry no name of their own; all three are answer sections.
+Not a substitute for the by-hand pass, which still owes the touchscreen and a streaming reply.
+
 A stop that is focused but not visible is a **FAIL of this row**, whatever the scripted rows say.
 This is the manual interim for the DPS visibility oracle + `deck_sweep`
 (decky-plugin-studio `docs/planning/06-visibility-oracle-and-free-play-sweep.md`); when that
