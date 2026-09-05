@@ -91,6 +91,17 @@ hook gives a gentle heads-up when a session starts work outside this.
   a game running: tokens arrive in bursts, and during a burst the overlay drops to 47 fps; between bursts it is a flat 60. Delivery
   is bursty, painting is not slow. The game's own frame rate is unmeasured. Accepted as a nice-to-have; reopen only if the game's own frame rate is measured
   and suffers. Making streaming the default stays a separate feature call. Row **STREAM-11**. [Detail](roadmap-details.md#token-streaming-reveals-text-in-chunks-while-a-game-is-running).
+- ★★★ `[KB]` **A quick question asked while a game is running pays for the slow search it was meant to skip** —
+  **OPEN, found 2026-09-05.** Speed mode is supposed to do the cheap keyword lookup only. On the Deck, with Deep Rock Survivor
+  running, two of three Speed questions ran the meaning search as well: Show details read *Keyword + meaning* and the turn spent
+  **1140 ms** and **944 ms** embedding, where the row requires *Keyword search* and no embed time at all. The third question read
+  *Knowledge base (skipped)* with no embed, so the pattern is that whenever the keyword search finds anything, the meaning search
+  runs too, whatever mode you picked. Breaks the Speed half of **KB-RECALL-01**; settles the open question lane B raised
+  2026-09-03. Evidence `runs/round34-drg-speed-q*.json`, log in [plan 34](planning/34-feature-verification-round.md).
+- ★★★ `[KB]` **The meaning search got about a fifth slower** — **OPEN, found 2026-09-05.** Three Strategy questions on the same
+  game measured **1079, 1094 and 1090 ms** to embed, against the **793–900 ms** band recorded when the recall pass shipped on
+  2026-08-18. Same corpus, same model, same device. Every game question a person asks now waits about a fifth of a second longer
+  than the row's own numbers say it should. Cause unmeasured. Evidence `runs/round34-drg-q*.json`.
 - ★★★★ `[chat]` **A Strategy thread's branch block shows in whichever chat slot you are looking at** — **OPEN, found 2026-09-04.**
   Slot A was asked a long Ravenholm question; switching to slot B showed B's own two turns followed by A's branch picker,
   *"Where are you at in … ? A. Just starting in the town area / B. Dealing with a tough encounter or trap"*. It is still in B after
@@ -278,8 +289,6 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
   name. Row **KB-EXPERT-01**, and **KB-ASKMODE-01** needs a re-run. [Why](roadmap-details.md#shipped-qa-owed--why-each-was-built-this-way).
 - ★★ `[QA]` **Deferred manual QA** — **VERIFY.** Tier 0 smokes (SMOKE-A, C, F) then Tier 1 (SMOKE-E, H), and a broader prompt-testing
   pass. SMOKE-B was retired 2026-09-03 (D57 #6). Round in progress: [plan 31](planning/31-deck-verification-round.md).
-- ★★ `[reply]` **Thinking effort control, Phase 1** — **VERIFY.** Shipped 2026-08-15: Ollama tab **Thinking** row, Off / Brief /
-  Balanced / Deep. Rows **THINK-EFFORT-04** (real thinking model) and **THINK-EFFORT-05** (D-pad) owed.
 - ★★ `[reply]` **Thinking line fixes from 2026-08-07/08** — **VERIFY.** Emoji upright, lazy status tag survives, no bare-emoji phase
   changes, one writer. Rows **THINKING-EMOJI-01**, **THINKING-SANITIZE-01**, **THINKING-EMOJI-CLUSTER-01**, **THINKING-COPY-01**,
   **THINKING-SLOW-01**, **THINKING-LIVE-01**, **THINKING-SPOILER-01**. [Log](planning/06-thinking-blurbs-review.md#10-implementation-log).
@@ -288,8 +297,11 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
 - ★★★ `[KB]` **KB coverage chip in Show details** — **VERIFY.** The positive case passed on device. Owed: KB off reads `KB: off`, an
   uncovered title reads `KB: none for this game` (**KB-COVERAGE-01**), and an unmatched running game no longer says "no game
   running" (**KB-COVERAGE-NOAPP-01**, fixed 2026-08-23).
-- ★★★ `[KB]` **The vector half of retrieval has its own recall pass** — **VERIFY.** Fixed 2026-08-18; it searches the game's cards
-  directly instead of re-ordering the keyword shortlist. Row **KB-RECALL-01** owed on device; **KB-RECALL-02** verified at the desk.
+- ★★★ `[KB]` **The vector half of retrieval has its own recall pass** — **VERIFY, and half of it failed on the Deck 2026-09-05.**
+  Fixed 2026-08-18; it searches the game's cards directly instead of re-ordering the keyword shortlist. **What passed:** in Strategy
+  all three questions read *Keyword + meaning*, which is the label the row asks for. **What failed:** the same questions in Speed also
+  ran the meaning search, and the Strategy timings came in about a fifth over the row's band — both filed as their own bugs above.
+  Row **KB-RECALL-01** stays owed; **KB-RECALL-02** verified at the desk.
 - ★★★ `[perms]` **Kids master lock** — **VERIFY.** Shipped 2026-08-09. Rows **KIDS-LOCK-01**, **KIDS-FOCUS-01**, **KIDS-REGRESS-01**
   (and **KIDS-LOCK-02** with a child account). Live CEF Stage 0 confirmation still owed.
 - ★★★ `[platform]` **Legacy-loader shim removal (D11)** — **VERIFY.** RPC probe passed; the Main-tab Ask pass is open. Row **D11-SHIM-01**.
@@ -323,6 +335,9 @@ on 2026-07-30 (`apply_tdp` no longer exists). Preserved in the archive.
 since April (`25742f2`), and a deliberate failing test exits 1 today. If it recurs, record the exact command and shell.
 
 **September 2026**
+- ★★ `[reply]` **Choose how hard the AI thinks** — an Off / Brief / Balanced / Deep row on the Ollama tab. Both Deck checks
+  passed (the D-pad walk 2026-09-03, a real thinking model 2026-09-04); the entry had simply never been moved.
+  [Detail](archive/roadmap-completed.md#moved-from-the-roadmap-2026-09-05).
 - ★★ `[focus]` **Show details tells you where you are without a wall of colour** — you failed the first version on the Deck
   2026-09-05 ("too much noise"); rebuilt to one colour on the row and passed on the second look (CONTEXT-LADDER-01). [Detail](archive/roadmap-bugs-fixed.md#moved-from-the-roadmap-2026-09-04).
 - ★ `[focus]` **The character picker uses the plugin's own white highlight** — you failed the first version on the Deck 2026-09-05

@@ -222,3 +222,46 @@ About twenty minutes.
 ## 8. Progress log
 
 Written as rows close.
+
+### Block 1a — Deep Rock Galactic: Survivor, 2026-09-05 05:0x
+
+Build check first: the Deck was already running the newest build. Both bundles and **all 57 Python
+files** matched this checkout byte for byte, so no deploy and no loader restart was needed.
+
+**Keep-awake, measured.** A left-stick click through the bridge is a real controller press that moves
+nothing — the ring stayed on the same control across two presses
+(`runs/round34-keepawake-L3-inertness.json`). That is the idle-timer reset, at no cost. A redeploy every
+45 minutes was rejected: it restarts the plugin and would break any check in flight.
+
+**KB-RECALL-01, the on-screen half — the Strategy label PASSES, the timing and the whole Speed half
+FAIL.** Six Asks, one fresh chat, game running, read off the Show details ladder:
+
+| Question | Mode | Retrieval label | Embed |
+|---|---|---|---|
+| how do i kill the big armoured bug boss | Strategy | Keyword + meaning | **1078.87 ms** |
+| which character is best for a beginner | Strategy | Keyword + meaning | **1094.34 ms** |
+| tips for the thorny plant level | Strategy | Keyword + meaning | **1090.17 ms** |
+| how do i kill the big armoured bug boss | **Speed** | **Keyword + meaning** | **1140.40 ms** |
+| which character is best for a beginner | **Speed** | Knowledge base (skipped), `no_hit` | none |
+| tips for the thorny plant level | **Speed** | **Keyword + meaning** | **943.70 ms** |
+
+Evidence: `runs/round34-drg-*.json`. All six turns also read `Trust tier: fallback_no_source`,
+`KB: 13 sections`, `Routed gemma4:e2b-it-qat`.
+
+1. **Strategy prints the right label.** All three read *Keyword + meaning*, which is what the row asks
+   for. That half passes.
+2. **Strategy is slower than the row's band.** 1079, 1094 and 1090 ms against the 793–900 ms the row
+   records from 2026-08-18 — about 200 ms per question more than when it was measured.
+3. **Speed runs the meaning search too, and this is the failure the row was written to catch.** Two of
+   the three Speed questions read *Keyword + meaning* and spent 1140 ms and 944 ms embedding. The row
+   requires *Keyword search* with **no** embed time in Speed, and says in as many words that a non-zero
+   embed there means the gate leaked. It has. The third question read *Knowledge base (skipped)* with
+   `no_hit`, so the pattern is: **when the keyword search finds anything at all, the meaning search runs
+   as well, whatever mode you are in.** That settles the open question lane B raised on 2026-09-03.
+
+Filed as a Bugs entry. **KB-RECALL-01 stays in Verify**; the Strategy label half is recorded as passing.
+
+**Smaller notes from the same block.** The preset chip in the ask row has no accessible name in Speed
+mode — the walk reported it as an unnamed button three times, where in Strategy the same position reads
+its label. And the footnote under the Ask bar read *Context: active game AppID 2321470* — the number,
+not the game's name.

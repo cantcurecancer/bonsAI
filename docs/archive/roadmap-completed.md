@@ -643,3 +643,20 @@ visibility-oracle plan (decky-plugin-studio planning/06) will turn it into one t
     pot rim 11-27 (mid 19.0), pot body 12-26 (mid 19.0). Decky plugin list: canopy widest 11-27 (mid 19.0), stem 19,
     pot rim 12-26 (mid 19.0), body 13-25 (mid 19.0). Crops at `screenshots/round31-tree-icon-zoom.png` and
     `screenshots/round31-decky-list.png`.
+
+## Moved from the roadmap 2026-09-05
+
+### Thinking effort control, Phase 1
+
+★★ `[reply]` Shipped 2026-08-15: an Ollama tab **Thinking** row with Off / Brief / Balanced / Deep.
+
+Both owed Deck checks had in fact passed before this entry was moved; nobody had moved it.
+
+- **THINK-EFFORT-05 — PASS 2026-09-03.** Down from the Reply style slider reaches the row at *Off*; Right walks
+  Off → Brief → Balanced → Deep and stops; Left walks back; Down leaves to *Custom timeouts*; Up returns. No button
+  acted on a direction press. `runs/ONBUTTONDOWN-AUDIT-01-and-THINK-EFFORT-05-b.json`.
+- **THINK-EFFORT-04 — PASS 2026-09-04.** `qwen3.5:4b` forced first in the try order with Thinking on **Deep**: a 212 s
+  answer arrived, Show details read `Routed qwen3.5:4b`, and no reasoning leaked into the reply body. All four segments
+  took the ring, which re-confirmed the D-pad row.
+
+Found already-passed during plan 34's reconciliation pass, 2026-09-05, and moved the same day.
