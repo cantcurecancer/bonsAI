@@ -77,4 +77,42 @@ describe("preset row D-pad handlers", () => {
       expect(last.focusChip).not.toHaveBeenCalled();
     });
   });
+
+  /*
+   * D58 #2: Up used to be a single `takeNavFocus("session-context-strip")` call; it is now a
+   * two-step fallback (strip, then the always-mounted chat slot row -- see usePresetRowNav in
+   * MainTabPresetAnimatedChips.tsx, which is where the two `takeNavFocus` targets actually live).
+   * `onMoveUp` itself does not know or care how many steps `exitUp` tries internally -- it just
+   * forwards the boolean -- and these pin that contract so a future third fallback step needs no
+   * change here either.
+   */
+  describe("onMoveUp forwards whatever exitUp decides (D58 #2)", () => {
+    it("reports true when exitUp's fallback chain finds a target", () => {
+      const first = vi.fn(() => false);
+      const second = vi.fn(() => true);
+      const exitUp = () => first() || second();
+      const handlers = buildChipNavHandlers({
+        index: 0,
+        count: 2,
+        focusChip: vi.fn(() => true),
+        exitDown: vi.fn(() => true),
+        exitUp,
+      });
+      expect(handlers.onMoveUp()).toBe(true);
+      expect(first).toHaveBeenCalledTimes(1);
+      expect(second).toHaveBeenCalledTimes(1);
+    });
+
+    it("reports false, letting Steam decide, when every step in the chain declines", () => {
+      const exitUp = () => false || false;
+      const handlers = buildChipNavHandlers({
+        index: 0,
+        count: 2,
+        focusChip: vi.fn(() => true),
+        exitDown: vi.fn(() => true),
+        exitUp,
+      });
+      expect(handlers.onMoveUp()).toBe(false);
+    });
+  });
 });

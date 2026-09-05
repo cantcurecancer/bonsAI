@@ -11,17 +11,19 @@
  * among the highest costs in this repo. These tests exist so the next person to add a
  * prop and forget the comparator finds out from a red suite rather than from a Deck.
  */
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, renderHook, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   composeDecodeText,
   MainTabPresetAnimatedChips,
   PRESET_CAROUSEL_ACTIVE_MS,
   PRESET_DECODE_CARET_CHAR,
+  usePresetRowNav,
 } from "./MainTabPresetAnimatedChips";
 import { setFrozenTestChips, type PresetPrompt } from "../data/presets";
 import { CAROUSEL_STEP_MS, CAROUSEL_HISTORY_MAX } from "../features/preset-carousel/carouselState";
 import { PRESET_VISIBLE_SLOTS } from "../features/preset-carousel/presetRowLayout";
+import { registerNavFocus, resetNavFocusRegistry } from "../utils/navFocusRegistry";
 import { resetFakeDeckyRpc } from "../test-harness/fakeDeckyRpc";
 
 const seed = (text: string): PresetPrompt => ({ text, category: "general" });
@@ -403,5 +405,55 @@ describe("MainTabPresetAnimatedChips askRestartToken (D58 #3: an Ask restarts th
       vi.advanceTimersByTime(CAROUSEL_STEP_MS + 500);
     });
     expect(newestText(container)).not.toBe(stalledAt);
+  });
+});
+
+/*
+ * D58 #2: Up from any chip used to leave `onMoveUp` unclaimed whenever the session context strip
+ * was not registered (an empty chat has none), and Steam's own fallback then walked one chip to
+ * the left per press -- four wasted presses before a fifth finally reached the chat slot row
+ * (runs/PRESET-ROW-up-from-chips-probe.json). `usePresetRowNav` is shared by every animation mode,
+ * so fixing its `exitUp` composition here covers fade, static, decode and carousel at once.
+ */
+describe("usePresetRowNav exitUp (D58 #2: Up leaves the row at once)", () => {
+  afterEach(() => {
+    resetNavFocusRegistry();
+  });
+
+  function upHandler() {
+    const { result } = renderHook(() => usePresetRowNav(2));
+    const handlers = result.current.handlersFor(0, 2);
+    return handlers.onMoveUp as () => boolean;
+  }
+
+  it("leaves the move to Steam when neither the strip nor the chat slot row is registered", () => {
+    expect(upHandler()()).toBe(false);
+  });
+
+  it("hands off to the session context strip when a reply is on screen", () => {
+    registerNavFocus("session-context-strip", { current: { TakeFocus: () => true } });
+    expect(upHandler()()).toBe(true);
+  });
+
+  it("falls back to the always-mounted chat slot row when there is no strip (an empty chat)", () => {
+    registerNavFocus("chat-slot-row", { current: { TakeFocus: () => true } });
+    expect(upHandler()()).toBe(true);
+  });
+
+  it("tries the strip first even when both are registered", () => {
+    const strip = vi.fn(() => true);
+    const slotRow = vi.fn(() => true);
+    registerNavFocus("session-context-strip", { current: { TakeFocus: strip } });
+    registerNavFocus("chat-slot-row", { current: { TakeFocus: slotRow } });
+
+    expect(upHandler()()).toBe(true);
+    expect(strip).toHaveBeenCalledTimes(1);
+    expect(slotRow).not.toHaveBeenCalled();
+  });
+
+  it("falls all the way through when the strip is registered but declines the move", () => {
+    registerNavFocus("session-context-strip", { current: { TakeFocus: () => false } });
+    registerNavFocus("chat-slot-row", { current: { TakeFocus: () => true } });
+    expect(upHandler()()).toBe(true);
   });
 });

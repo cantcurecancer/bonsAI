@@ -377,7 +377,7 @@ function PresetRowFocusRoot(props: {
  *
  * `maxCount` sizes the ref array once so the ref callbacks keep their identity across renders.
  */
-function usePresetRowNav(
+export function usePresetRowNav(
   maxCount: number,
   exitDown?: () => boolean | void,
   options?: {
@@ -417,9 +417,14 @@ function usePresetRowNav(
         count,
         focusChip,
         exitDown: () => exitDown?.() === true,
-        // The session strip is the last stop above the dock whenever a reply is on screen. With
-        // nothing registered (an empty chat), Steam's own navigation takes over.
-        exitUp: () => takeNavFocus("session-context-strip"),
+        // The session strip is the last stop above the dock whenever a reply is on screen; with
+        // nothing registered (an empty chat), fall back to the always-mounted chat slot row
+        // (ChatSlotRow.tsx) rather than let Steam's own navigation take over. D58 #2, measured
+        // 2026-09-03: leaving that unclaimed made Steam's own multi-step fallback walk one chip
+        // to the left per Up press -- four wasted presses before a fifth finally reached the slot
+        // row (runs/PRESET-ROW-up-from-chips-probe.json). Trying both here, in order, claims the
+        // move on the first press instead.
+        exitUp: () => takeNavFocus("session-context-strip") || takeNavFocus("chat-slot-row"),
         advanceAtEnd,
       }) as unknown as Record<string, unknown>,
     [focusChip, exitDown, advanceAtEnd],

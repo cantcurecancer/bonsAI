@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
   "fileCount": 359,
-  "edgeCount": 863,
+  "edgeCount": 864,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -382,7 +382,8 @@
         "src/data/presets.ts",
         "src/features/preset-carousel/carouselState.ts",
         "src/features/preset-carousel/presetRowLayout.ts",
-        "src/test-harness/fakeDeckyRpc.ts"
+        "src/test-harness/fakeDeckyRpc.ts",
+        "src/utils/navFocusRegistry.ts"
       ],
       "importedBy": []
     },
@@ -3246,6 +3247,7 @@
       "imports": [],
       "importedBy": [
         "src/components/MainTabChatTranscript.tsx",
+        "src/components/MainTabPresetAnimatedChips.test.tsx",
         "src/components/MainTabPresetAnimatedChips.tsx",
         "src/components/MainTabUnifiedAskBar.tsx",
         "src/components/SessionContextStrip.tsx",
