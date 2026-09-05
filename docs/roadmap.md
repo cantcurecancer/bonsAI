@@ -140,9 +140,6 @@ replace it with a specific issue when one exists.
   Streaming is untouched: the finished reply is re-split once the stream closes. Code fences stay whole.
 - ★★ `[layout]` **Show details becomes a divider, not a chip** — **OPEN.** A full-width rule with the label in the middle reads as the
   end of the answer and frees the row it shares. Copy the collapsed-history row's shape (`.bonsai-chat-earlier-pill-row`).
-- ★★ `[reply]` **Make token streaming the default and drop the setting** — **OPEN, maintainer direction 2026-08-23.** Gated on the
-  burst finding under Bugs. Halves every "streaming on and off" QA row. A two-language removal: Python is authoritative (D13), both
-  settings contracts lose the key, and an old `settings.json` must not read as a reset. [Detail](roadmap-details.md#make-token-streaming-the-default-and-drop-the-setting).
 - ★★ `[reply]` **The answer's first lines in the reply-ready toast** — **OPEN, planned 2026-09-05, calls locked (D63).** When an
   answer finishes while the menu is closed, the toast says only *Reply ready*. It would carry your question and the first lines
   of the answer, in every mode, so a short answer is read without leaving the game; tap still opens the panel. Any hidden block
@@ -500,6 +497,8 @@ Everything shipped since v0.4.9 (2026-07-08), one line each, newest first. Detai
 [archive/roadmap-completed.md](archive/roadmap-completed.md), [archive/roadmap-bugs-fixed.md](archive/roadmap-bugs-fixed.md).
 
 **Verified on the Deck 2026-09-05 (round 36):**
+- ★★ `[reply]` **Replies always arrive word by word** — streaming is how replies work now, and the Developer switch for it is
+  gone. [Detail](archive/roadmap-completed.md#round-36-2026-09-05)
 - ★★ `[chips]` **Preset chip expansion** — six new suggestion chips for the things that shipped since early August. Both waves
   checked in one sitting. [Detail](archive/roadmap-completed.md#round-36-2026-09-05)
 - ★★★ `[chips]` **One suggestion chip instead of two** — a Settings switch, off by default, gives one chip the whole column.
