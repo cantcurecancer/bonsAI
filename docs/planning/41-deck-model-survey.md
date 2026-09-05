@@ -8,10 +8,16 @@ model that fits the Deck at all** for **Expert**, however slow; and look for a *
 today's Speed pick** on speed for the quality. Also: is nomic still the right embedding model? The calls
 are **D72**, locked; the embedding question is rolled into this plan rather than getting its own.
 
+**The living report:** [model-bakeoff-report.html](../archive/research/model-bakeoff-report.html) in the
+repo, rebuilt from the test reports by `scripts/build_model_bakeoff_report.py`, with a published copy at
+[Deck Model Bake-off, Sept 2026](https://claude.ai/code/artifact/e774ee2c-bc68-4fa8-b231-2b62afff16f9). Re-run a test, rebuild, and the page
+updates; older runs stay selectable. The licence and size facts live in `data/model_bakeoff/roster.json`,
+the Deck run sheet in `data/model_bakeoff/deck-runs.json`.
+
 **Where it stands:** the PC half of the bake-off ran on 2026-09-05 for all eight chat models, and the
-embedding sweep ran the same day and settled the nomic question. The Deck half has not run. § 4 has the
-numbers, § 5 the finding that changes the picture, § 6 the embedding result, § 7 the rules for a switch,
-§ 8 what runs next.
+embedding sweep ran the same day and settled the nomic question. The Deck half has not run; another chat
+holds the Deck and this one gets it when they are done. § 4 has the numbers, § 5 the finding that changes
+the picture, § 6 the embedding result, § 7 the rules for a switch, § 8 what runs next, § 9 the calls.
 
 ---
 
@@ -139,8 +145,11 @@ Written so a lane can run the Deck rows and read a verdict off them without a pe
 - **Any mode.** Facts kept within 2 points of today's or better, nothing-contradicted within 5 points,
   and **fence when due at nine of nine** on half A with the prompt that would ship. Until then, no
   switch, whatever the speed.
-- **Expert.** Loads beside Deep Rock Survivor without the game stuttering; two words a second or better
-  on the Deck; then the best facts and fence numbers wins. Slow is allowed; not loading is not.
+- **Expert.** The maintainer's call of 2026-09-05 (D73): the models that beat today's Gemma 4 on the answer
+  test are offered first for Expert in the model picker, in bake-off order, even though they hide spoilers
+  less reliably; Expert is the long, thorough mode and the person chose it. The Deck rows still decide
+  which of them load beside a game and how slow "much slower" is. Loads beside Deep Rock Survivor without
+  the game stuttering; two words a second or better; then the best facts and fence numbers first.
 - **Speed.** Time to the first word no worse than today's and words per second better than today's on
   the Deck, with thinking Off; then the best facts number wins.
 - **Strategy.** Stays Gemma 4 E2B by the maintainer's call. Re-open only if an Expert winner also beats
@@ -163,10 +172,25 @@ Written so a lane can run the Deck rows and read a verdict off them without a pe
    - **BAKEOFF-04** The maintainer's read, three answers per mode from the best two.
    Frozen chips, to confirm before pinning: *how do i kill the big armoured bug boss*; *what does the
    pickaxe do*; *give me ten tips for a new player*.
-3. **Prompt re-tune for the Expert front-runner** (§ 5, way 1), or wait for the reasoning verdict (way 2).
-   The maintainer's call once the Deck numbers are in.
+3. **No prompt re-tune against another model for now** (the maintainer, 2026-09-05): not worth it until
+   stronger models come out; then swapping and targeting more than one model gets considered. Way 2 in
+   § 5, the reasoning verdict, is the route that does not need per-model tuning.
+4. **The picker and the licence list learn the Sept 2026 models** (roadmap entry, D73): Gemma 4 moved to
+   Apache 2.0 in April and the plugin still files it as open-weight; Granite and Liquid are not in the list
+   at all, so on the default open-source-only tier the plugin would not route to them. Expert's picker
+   group gets the bake-off winners in order.
 
-## 9. Sources
+## 9. What the maintainer decided — D73, locked 2026-09-05
+
+1. **Stronger models first for Expert.** The models that beat today's Gemma 4 on the answer test go to the
+   front of the Expert group in the model picker, in bake-off order: Gemma 4 12B, Qwen 3.5 9B, Granite 4.2 8B,
+   then Gemma 4 E4B and LFM 2.5. Local, Deck-run; the Deck rows still say which load beside a game.
+2. **Gemma 4 E2B stays the Strategy model.** Best speed for the cost, and the only one that protects
+   spoilers every time on today's prompt.
+3. **No tuning against another model yet.** Revisit when stronger models come out.
+4. **The report is a living page**, rebuilt from the test reports, with licences shown per model.
+
+## 10. Sources
 
 Ollama library pages for each model, this PC's Ollama, Ollama's thinking documentation; IBM Granite 4.2
 figures from the [eesel summary](https://www.eesel.ai/blog/granite-4-2) and the
@@ -177,7 +201,7 @@ small-model figures from [Artificial Analysis](https://artificialanalysis.ai/art
 LFM 2.5 table and speeds from [Liquid AI's announcement](https://www.liquid.ai/blog/lfm2-5-8b-a1b);
 the July embedding bake-off and the eight answer-test reports from the repo's own archive.
 
-## 10. Progress log
+## 11. Progress log
 
 - **2026-09-05** — Survey written from Ollama's pages and this PC's Ollama.
 - **2026-09-05, later** — Reworked to the maintainer's frame; makers' figures added with sources; ten
@@ -186,3 +210,7 @@ the July embedding bake-off and the eight answer-test reports from the repo's ow
   this PC; the spoiler finding in § 5 came out of it. Half B's first try failed on the 30-million model's
   width; the second try ran clean and nomic won by 13 points, so it stays. Half C, the Deck, not run.
   Switch rules written so the Deck half has a finish line.
+- **2026-09-05, evening** — The living report built and published. D73 locked: stronger models first for
+  Expert in the picker, Gemma 4 E2B stays for Strategy, no per-model tuning yet. Found on the way: the
+  plugin's licence list is behind (Gemma 4 is Apache 2.0 now; Granite and Liquid unknown to it), filed as
+  a roadmap entry. Qwen 3.5 4B, the other model on the Deck, pulled and put through the answer test too.

@@ -3722,3 +3722,30 @@ the plugin's own bake-off found six models equal on finding the right card and n
 Ollama's shelf has nothing newer than eight months. The one thing a swap could buy is the Deck's 0.8 to 1.1
 seconds per question, and only a smaller model with equal recall buys it. Three untested small ones were
 pulled for one sweep with the existing script; the result decides whether a swap is even proposed.
+
+### D73 — LOCKED 2026-09-05 (raised 2026-09-05) — Expert mode offers the stronger Deck-run models first; the licence list catches up
+
+Raised and answered in the same exchange, after the PC half of the bake-off in
+[planning/41-deck-model-survey.md](../planning/41-deck-model-survey.md). The maintainer's words: the stronger
+models over today's Gemma 4 should be prioritised for Expert mode, local and Deck-run, in the model picker;
+today's Gemma 4 is the best for Strategy; it is not worth tuning against another model yet, and once
+stronger models come out, swapping and targeting more will be considered.
+
+**What a person will notice.** In the model picker's Expert group, the models that answered best on the
+answer test come first: Gemma 4 12B, Qwen 3.5 9B, Granite 4.2 8B, then Gemma 4 E4B and LFM 2.5. Strategy
+keeps Gemma 4 E2B. Nothing changes for Speed until its own candidates are measured on the Deck.
+
+**The caveat, recorded once.** On today's prompt those stronger models hide a story spoiler far less often
+than Gemma 4 E2B: six times in nine for Gemma 4 12B, two or fewer for the rest, against nine of nine. The
+maintainer chose to prioritise them for Expert anyway; Expert is the long, thorough mode and the person
+picks it. The route that fixes this without tuning per model is the reasoning verdict in plan 40.
+
+**Found on the way, and part of the same build.** The plugin's licence list files the whole Gemma family as
+open-weight; Gemma 4 has been Apache 2.0 since April 2026, an OSI licence, so it belongs with the open-source
+families. Granite and Liquid are not in the list at all, so on the default open-source-only tier the plugin
+would treat them as unknown and not route to them. Liquid's licence is Apache-based but caps free use at
+ten million a year in revenue, so it is open-weight, not open source. The list, the picker's catalogue and
+its Expert group are one roadmap entry.
+
+**Consequence worth recording.** The report that carries these numbers is a page rebuilt from the test
+reports, not a document, so the next bake-off refreshes it rather than replacing it.
