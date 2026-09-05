@@ -257,12 +257,10 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
 - ★★ `[focus]` **A checklist the model got wrong was left in the reply as raw JSON**, its own D-pad stop that did nothing — **VERIFY.**
   Fixed 2026-08-28: a rejected checklist block is dropped, as a rejected branch block already was. Owed: one sighting on device of a
   reply where it happens. Row **STRAT-CHECKLIST-JSON-01**.
-- ★★ `[focus]` **After a modal closes or the QAM reopens, the ring can sit on a hidden Steam tab button** — **VERIFY.** Fixed at the
-  desk 2026-09-04, Deck check owed: the trap now bounces a hidden tab button that already holds the ring the instant it attaches
-  (not only a later change), and the Clear cache / Clear all plugin data buttons register as return-focus owners, so the ring comes
-  back to the button that opened the modal instead of wherever Steam defaults to. **Same evening on build 49241e7, a suspend/resume
-  showed the trap had never actually bounced anything on device: its `instanceof` checks fail on a node from Steam's own document,
-  now fixed to duck-type instead. Deck re-check still owed.** Row **TAB-BAR-11**.
+- ★★ `[focus]` **After a modal closes or the QAM reopens, the ring can sit on a hidden Steam tab button** — **VERIFY, both measured
+  paths pass on the Deck 2026-09-04.** Closing the Clear cache confirmation returns the ring to the Clear cache button; after the
+  trap's node check was made realm-safe, a chord close and reopen left the ring on Decky's back button, visible. Owed: the
+  suspend-and-resume remount, which the rig cannot force. Row **TAB-BAR-11**.
 - ★★ `[focus]` **Down from the chat slot lands on the whole reply before its first section** — **VERIFY, Down path passed on the
   Deck 2026-09-04.** From the chat row, Down lands on the turn header and then on the first stop inside the answer, never on the
   bare bubble. Owed: the Up half on a reply without a branch picker (with one, Up from the picker skips the answer, a separate

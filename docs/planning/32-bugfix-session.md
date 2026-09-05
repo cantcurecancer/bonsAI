@@ -319,3 +319,8 @@ Written as things land.
   overlay's box sits on the field's box exactly, but the mirrors wrap with `pre-wrap` and `overflow-wrap: anywhere` where the field
   uses `normal`, use a different fallback font stack, and are half a pixel narrower; lane E is building the fix. Lanes B2, D2 and
   F landed meanwhile (`99761f1`, `d86b694`, `7d73711`); the second deploy follows the last check on this build.
+- **22:05 to 22:14, Deck block 4:** bug 8 **measured** (one chip of six lit, bold cyan counter; glance owed); bug 1 **fails**: the
+  button renders as a stop, but the strip's Up hop into its row is a plain focus across containers, the ring was lost, and the helper
+  stamped the row `tabindex="-1"`; back with lane A for a registered-nav-node version. **22:14, second deploy** (`f9a4c17`, code
+  at `d86b694`): lane B's picker redo, lane D's realm-safe trap, lane C's bug 5 and lane F's backend fix for the blank command header
+  are on the device; 61 files verified, hashes match. Lanes A2 (Open Permissions redo) and E2 (overlay mirror) still building.
