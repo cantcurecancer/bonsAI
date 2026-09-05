@@ -359,3 +359,7 @@ Written as things land.
   title downward, walked 19 controls each with **every stop visible and no cycles** after five focus fixes landed in one night
   (`runs/QA-FREE-PLAY-01-build4-main-sweep.json`, `runs/QA-FREE-PLAY-01-build4-main-sweep-full-height.json`). Noted on the
   free-play standing row. The two glance-owed pictures (bugs 8 and 9) were sent to the maintainer.
+- **04:05 to 04:15, Deck block 10, bug 4:** a Decky loader restart gave a third, harder remount path, and it **passes** — the ring
+  lands on the tab bar, then the chat slot row, and Right does not park on a zero-size button. With the modal return and the chord
+  reopen already passing, every remount path the rig can drive is clean, so bug 4 moves to Done with one honest gap recorded: a real
+  suspend and resume cannot be driven, because waking the Deck needs its power button and the bridge is only a gamepad.

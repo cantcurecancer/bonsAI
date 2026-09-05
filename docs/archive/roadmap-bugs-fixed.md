@@ -639,3 +639,13 @@ measurements and the QA rows survive. The roadmap keeps a one-line entry in **Do
   - **Deck 2026-09-04:** Down from the chat row lands on the turn header and then on the first section, never the bare bubble (`runs/CHAT-REPLY-ENTRY-01-down-from-slot-row.json`).
   - **Deck 2026-09-04, second measurement:** Up from Helpful still landed on the bare bubble (`runs/CHAT-REPLY-ENTRY-01-up-from-helpful-lands-on-bubble.json`) — the desk fix had reached only the Retry row, and every ordinary reply sits under a thumbs row whose own Up yielded to Steam.
   - **Deck 2026-09-05, after the thumbs-row fix:** Up from Helpful lands on the last section, visible (`runs/CHAT-REPLY-ENTRY-01-build4-up-from-helpful-passes.json`).
+
+### After a modal closed or the QAM reopened, the ring could sit on a hidden Steam tab button (verified on the Deck 2026-09-04 and 2026-09-05)
+
+- ★★ `[focus]` **After a modal closes or the QAM reopens, the ring can sit on a hidden Steam tab button** — **VERIFY, both measured
+  paths pass on the Deck 2026-09-04.** Closing the Clear cache confirmation returns the ring to the Clear cache button; after the
+  trap's node check was made realm-safe, a chord close and reopen left the ring on Decky's back button, visible. Owed: the
+  suspend-and-resume remount, which the rig cannot force. Row **TAB-BAR-11**.
+  - **Deck 2026-09-04:** closing the Clear cache confirmation returns the ring to the *Clear cache* button; the chord reopen lands on a visible control, twice. The first attempt failed because the trap's node check was a cross-realm `instanceof Element`, false for every node in the popup document; the fix duck-types instead.
+  - **Deck 2026-09-05:** after a full Decky loader restart the first press lands on the tab bar and the second on the chat slot row, and Right does not park on a zero-size tab button (`runs/TAB-BAR-11-build4-after-loader-restart.json`).
+  - **Not measured:** a real suspend and resume, which is how it was first seen. The bridge is a gamepad and waking a sleeping Deck needs the power button, so the rig cannot drive that path.

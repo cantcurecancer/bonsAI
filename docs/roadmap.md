@@ -248,10 +248,6 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
 - ★★ `[focus]` **A checklist the model got wrong was left in the reply as raw JSON**, its own D-pad stop that did nothing — **VERIFY.**
   Fixed 2026-08-28: a rejected checklist block is dropped, as a rejected branch block already was. Owed: one sighting on device of a
   reply where it happens. Row **STRAT-CHECKLIST-JSON-01**.
-- ★★ `[focus]` **After a modal closes or the QAM reopens, the ring can sit on a hidden Steam tab button** — **VERIFY, both measured
-  paths pass on the Deck 2026-09-04.** Closing the Clear cache confirmation returns the ring to the Clear cache button; after the
-  trap's node check was made realm-safe, a chord close and reopen left the ring on Decky's back button, visible. Owed: the
-  suspend-and-resume remount, which the rig cannot force. Row **TAB-BAR-11**.
 - ★★ `[focus]` `[perms]` **The Open Permissions button under a blocked reply is not a D-pad stop** — **VERIFY, four of
   five steps passed on the Deck 2026-09-05.** The button is a stop both ways now, A opens the Permissions tab, and *Back to
   Main* comes back to the reply with the ring on the button. The one step left: the ring lands on *Back to Main* instead of
@@ -332,6 +328,8 @@ on 2026-07-30 (`apply_tdp` no longer exists). Preserved in the archive.
 since April (`25742f2`), and a deliberate failing test exits 1 today. If it recurs, record the exact command and shell.
 
 **September 2026**
+- ★★ `[focus]` **After a modal closes or the panel remounts, the ring no longer sits on a hidden tab button** — verified on
+  the Deck on all three paths the rig can drive: modal return, QAM reopen and a loader restart (TAB-BAR-11). A real suspend and resume still wants a by-hand look. [Detail](archive/roadmap-bugs-fixed.md#moved-from-the-roadmap-2026-09-04).
 - ★★ `[focus]` **Entering a reply from above or below lands on a section, not the whole bubble** — verified on the Deck:
   Down from the chat row reaches the first section (2026-09-04) and Up from Helpful the last (2026-09-05), after the thumbs row's own Up was fixed (CHAT-REPLY-ENTRY-01). [Detail](archive/roadmap-bugs-fixed.md#moved-from-the-roadmap-2026-09-04).
 - ★ `[focus]` **Reordering in the try-order picker keeps the highlight and keeps the picker open** — verified on the Deck
