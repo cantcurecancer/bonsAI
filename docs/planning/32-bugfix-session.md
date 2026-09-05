@@ -368,3 +368,7 @@ Written as things land.
   landed as `d9d952d`. On build 5 the whole permissions row **passes**: the button is a stop, A lands the ring on *Steam ban lookup*,
   A turns the capability on (the saved settings agree), and *Back to Main* returns to the reply with the ring on the button. Bug 1 is
   Done, which closes the last of the thirteen. Turning the toggle on was also the restore the maintainer wanted.
+- **05:05, the Deck put back as it was found:** Steam ban lookup on, the three chips the other session had pinned back in place
+  (*my playstation 2 games run at half speed on the handheld*, *what should I do next*, *reply with only the word echo*), reply
+  style balanced, keep-alive 240m, custom timeouts off, thinking off, automatic UI scale on, knowledge base on, no game running,
+  panel on Main. The vac-check chat now holds four turns from tonight's checks, which is the one visible difference.
