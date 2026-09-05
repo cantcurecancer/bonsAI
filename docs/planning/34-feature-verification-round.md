@@ -265,3 +265,43 @@ Filed as a Bugs entry. **KB-RECALL-01 stays in Verify**; the Strategy label half
 mode — the walk reported it as an unnamed button three times, where in Strategy the same position reads
 its label. And the footnote under the Ask bar read *Context: active game AppID 2321470* — the number,
 not the game's name.
+
+### Block 1b — the uncovered-title checks blocked, and a serious focus trap found
+
+**Black Mesa could not be launched.** It is not on the Recent Games shelf, and the launcher refuses
+rather than hunting the library — correct behaviour, but it blocks the three uncovered-title checks as
+plan 31 wrote them. **Good news in the same read: Ship of Harkinian *is* on the shelf**, so the Ocarina
+sentences plan 31 marked as contingent are runnable tonight.
+
+The corpus covers eleven games (read from the manifest on the card: Baldur's Gate 3, Cyberpunk 2077,
+Hades, Red Dead Redemption 2, The Sims 4, GTA San Andreas Definitive, Half-Life 2, Deep Rock Survivor,
+Fallout 4, Left 4 Dead 2, Portal 2, plus one non-Steam title). **Sifu** was chosen as the uncovered
+stand-in: installed, on the shelf, and absent from that list.
+
+**Launcher note worth keeping:** it only ever walks right along the shelf, so if the ring is parked at
+the far end a launch refuses with "not on the shelf" even when the game is there. Reset the ring
+leftward first. Cost 70 s to learn.
+
+**Then the coverage checks were blocked by a focus trap, which is the real find of the block.**
+
+Reopening the panel on the Deep Rock chat and pressing Down from the top: title → tab bar → chat row →
+the *5 earlier* pill → the question → the answer, and then nothing. **Ten Down presses, no movement.**
+The answer's own Helpful, Retry, Show details and Copy buttons, the preset chips, the question box and
+the **Ask button** are all on screen below and unreachable. Only Up escapes.
+
+Ruled out: the ask mode (identical in Speed and Strategy, set with the panel closed between runs), and
+the two commits since plan 32's clean sweeps (neither touches the transcript).
+
+**The cause, measured.** The answer highlights game words — *kite* and *kiting* — and each is a focus
+stop of its own (`tabindex="0"`, `Focusable`) nested **inside** the answer bubble, which is also a focus
+stop, alongside three answer-chunk stops. At the moment of the trap Steam's ring was on the bubble while
+the page's own focus was on a highlighted word: `gpfocus` and `activeElement` disagreed on every press.
+That is why plan 32's free-play sweeps were clean — no game was running, so no words were highlighted.
+**The trap appears exactly when the knowledge base has done its job.**
+
+A second, related trap was seen once on a brand new chat: the ring reached the question box and Down,
+Left and Right all did nothing. Not yet pinned to a trigger — an identical walk earlier the same night
+was fine.
+
+Both filed. The Sifu coverage checks are deferred to the quiet block, where the panel can be driven
+without a restored answer in the way.
