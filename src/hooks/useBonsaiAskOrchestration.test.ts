@@ -10,7 +10,12 @@
 import { renderHook, act } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { toaster } from "@decky/api";
-import { useBonsaiAskOrchestration, type UseBonsaiAskOrchestrationArgs } from "./useBonsaiAskOrchestration";
+import {
+  useBonsaiAskOrchestration,
+  resolveInitialOllamaContext,
+  type UseBonsaiAskOrchestrationArgs,
+} from "./useBonsaiAskOrchestration";
+import { Router } from "@decky/ui";
 import { getRpcCallLog, resetFakeDeckyRpc, setRpcHandler } from "../test-harness/fakeDeckyRpc";
 import { idleBackgroundStatusFixture } from "../test-harness/rpcFixtures";
 import { THINKING_BLURB_PLACEHOLDER } from "../utils/thinkingSummaryText";
@@ -1017,5 +1022,193 @@ describe("useBonsaiAskOrchestration", () => {
       expect(result.current.strategyChecklist).toBeNull();
       vi.useRealTimers();
     });
+  });
+});
+
+/*
+ * CHIP-ROTATION-01: with a game already running when the panel mounts, the Ask-bar footnote
+ * read "Context: no active game detected" for a full 96-second sample even though the preset
+ * carousel already showed that game's own chips — the footnote used to start blank/stale and
+ * wait for an Ask's status poll to correct it. `resolveInitialOllamaContext` is what the
+ * `ollamaContext` state now initializes from, so these are a direct spec for the mount-time fix.
+ */
+describe("resolveInitialOllamaContext", () => {
+  it("reports the running game immediately, not a stale survived snapshot", () => {
+    expect(resolveInitialOllamaContext("220", { app_id: "", app_context: "none" })).toEqual({
+      app_id: "220",
+      app_context: "active",
+    });
+  });
+
+  it("falls back to a survived context when nothing is running", () => {
+    const survived: ReturnType<typeof resolveInitialOllamaContext> = {
+      app_id: "570",
+      app_context: "active",
+    };
+    expect(resolveInitialOllamaContext("", survived)).toBe(survived);
+  });
+
+  it("degrades quietly to null when nothing is running and nothing survived", () => {
+    expect(resolveInitialOllamaContext("", undefined)).toBeNull();
+    expect(resolveInitialOllamaContext("   ", null)).toBeNull();
+  });
+});
+
+describe("ollamaContext on mount (CHIP-ROTATION-01)", () => {
+  const originalMainRunningApp = Router.MainRunningApp;
+
+  afterEach(() => {
+    (Router as { MainRunningApp: typeof Router.MainRunningApp }).MainRunningApp =
+      originalMainRunningApp;
+  });
+
+  it("shows the running game right away, before any Ask status poll resolves", () => {
+    resetFakeDeckyRpc();
+    // Never resolves — if the footnote depended on this poll, it would stay wrong forever.
+    setRpcHandler("get_background_game_ai_status", () => new Promise(() => {}));
+    (Router as { MainRunningApp: typeof Router.MainRunningApp }).MainRunningApp = {
+      appid: 220,
+      display_name: "Half-Life 2",
+    } as unknown as typeof Router.MainRunningApp;
+
+    const { result } = renderHook(() => useBonsaiAskOrchestration(makeArgs()));
+
+    expect(result.current.ollamaContext).toEqual({ app_id: "220", app_context: "active" });
+  });
+
+  it("degrades quietly to no active game when nothing is running", () => {
+    resetFakeDeckyRpc();
+    setRpcHandler("get_background_game_ai_status", () => new Promise(() => {}));
+    (Router as { MainRunningApp: typeof Router.MainRunningApp }).MainRunningApp = undefined as unknown as typeof Router.MainRunningApp;
+
+    const { result } = renderHook(() => useBonsaiAskOrchestration(makeArgs()));
+
+    // No crash and no false "active game" claim — whether that reads as the plain "no active
+    // game detected" footnote or as no footnote row at all is an existing, separate choice
+    // (both already render fine); this bug is specifically about a running game being missed.
+    expect(result.current.ollamaContext?.app_context).not.toBe("active");
+  });
+});
+
+/*
+ * CHAT-SLOTS-V3-05a: a Strategy branch block asked in one chat slot showed up while a different
+ * slot was on screen, and stayed there after the owning slot's answer had already finished — not
+ * a mid-stream race, a plain missing slot check on this one piece of state.
+ */
+describe("strategyGuideBranches stays with the slot that asked (CHAT-SLOTS-V3-05a)", () => {
+  /*
+   * Gated by an explicit flag rather than a call counter: the mount-restore effect also fires
+   * its own one-shot `get_background_game_ai_status` read (see the "mount restore" section of
+   * the hook), so a plain "the Nth call completes" counter can reach "completed" earlier than
+   * the test expects, from a caller that has nothing to do with the submitted Ask. Flipping the
+   * flag by hand, after moving `activeSlotIdRef`, is what pins the ordering the bug depends on:
+   * the branch options must land while the user is already looking at slot B.
+   */
+  function makeSlotABranchStatusHandler(requestId: number) {
+    let readyToComplete = false;
+    setRpcHandler("get_background_game_ai_status", () => {
+      const base = {
+        ...idleBackgroundStatusFixture(),
+        question: "where am i in ravenholm",
+        request_id: requestId,
+        chat_slot_id: "slot-a",
+      };
+      if (!readyToComplete) return { ...base, status: "pending" };
+      return {
+        ...base,
+        status: "completed",
+        success: true,
+        response: "You're past the church.",
+        strategy_guide_branches: {
+          question: "Where are you at in Ravenholm?",
+          options: [
+            { id: "a", label: "Just starting in the town area" },
+            { id: "b", label: "Dealing with a tough encounter or trap" },
+          ],
+        },
+      };
+    });
+    return () => {
+      readyToComplete = true;
+    };
+  }
+
+  it("does not show slot A's branch block while slot B is on screen", async () => {
+    vi.useFakeTimers();
+    const activeSlotIdRef = { current: "slot-a" as string | null };
+    setRpcHandler("start_background_game_ai", () => ({
+      accepted: true,
+      status: "pending",
+      request_id: 501,
+    }));
+    const completeSlotAAsk = makeSlotABranchStatusHandler(501);
+
+    const { result, rerender } = renderHook(() =>
+      useBonsaiAskOrchestration(makeArgs({ askMode: "strategy", activeSlotIdRef })),
+    );
+
+    let pending: Promise<void> | undefined;
+    act(() => {
+      pending = result.current.onAskOllama("where am i in ravenholm");
+    });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(100);
+    });
+    await act(async () => {
+      await pending;
+    });
+
+    // The user leaves slot A for slot B before A's poll delivers the branch options.
+    activeSlotIdRef.current = "slot-b";
+    completeSlotAAsk();
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(5000);
+    });
+
+    expect(result.current.strategyGuideBranches).toBeNull();
+
+    // Switching back to slot A brings its own branch block back — it was never lost, just
+    // not slot B's to show.
+    activeSlotIdRef.current = "slot-a";
+    rerender();
+
+    expect(result.current.strategyGuideBranches?.question).toBe("Where are you at in Ravenholm?");
+
+    vi.useRealTimers();
+  });
+
+  it("still shows the branch block when it belongs to the slot on screen", async () => {
+    vi.useFakeTimers();
+    const activeSlotIdRef = { current: "slot-a" as string | null };
+    setRpcHandler("start_background_game_ai", () => ({
+      accepted: true,
+      status: "pending",
+      request_id: 502,
+    }));
+    const completeSlotAAsk = makeSlotABranchStatusHandler(502);
+
+    const { result } = renderHook(() =>
+      useBonsaiAskOrchestration(makeArgs({ askMode: "strategy", activeSlotIdRef })),
+    );
+
+    let pending: Promise<void> | undefined;
+    act(() => {
+      pending = result.current.onAskOllama("where am i in ravenholm");
+    });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(100);
+    });
+    await act(async () => {
+      await pending;
+    });
+    completeSlotAAsk();
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(5000);
+    });
+
+    expect(result.current.strategyGuideBranches?.question).toBe("Where are you at in Ravenholm?");
+
+    vi.useRealTimers();
   });
 });

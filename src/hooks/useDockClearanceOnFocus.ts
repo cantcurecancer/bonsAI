@@ -20,6 +20,23 @@ const DOCK_SELECTOR = ".bonsai-main-tab-dock";
 const CLEARANCE_PAD_PX = 6;
 
 /**
+ * Delays for the repeat passes after the first one, counted from the triggering focus event.
+ *
+ * Used to be a single pass at 150ms. Round 35 (2026-09-05) measured a reply's last paragraph on
+ * the device: the margin was written correctly, scrollIntoView was called, and the pane still read
+ * scrollTop 0 at ~300ms AND ~900ms after the press — the same paragraph, covered from either
+ * direction, by the chips walking down or the question box walking up. One early pass was not
+ * catching whatever moves the pane back. The only other place this repo has proof of a scroll
+ * getting undone after a correct scrollIntoView call is useStreamScrollPin's post-Ask rebuild,
+ * where the fix was the same idea at these same two later delays (`DELIVERY_PASS_DELAYS_MS`,
+ * proven on-Deck 2026-08-31 — docs/archive/roadmap-bugs-fixed.md, row CHAT-SLOTS-V3-14). Reusing
+ * that schedule here rather than inventing a new one: it is the one timing this repo has already
+ * seen win against this device's behaviour. Every pass re-measures and only scrolls if the element
+ * is still covered, so a pass that finds nothing to do costs nothing.
+ */
+const SETTLE_PASS_DELAYS_MS = [150, 300, 900];
+
+/**
  * The lift itself, exported for tests. Returns true when it scrolled.
  *
  * `block: "end"` is deliberate: to the browser an element behind the dock is already fully inside
@@ -49,11 +66,12 @@ export function liftAboveDock(el: HTMLElement): boolean {
 /**
  * Watch focus arriving anywhere under `columnRef` and lift whatever lands behind the dock.
  *
- * Two passes per focus: one animation frame after the event, so Steam's own focus scroll has
- * finished and the lift measures the settled position — and one more shortly after, because
- * Steam's scroller can re-assert its recorded position a few frames later (the same behaviour
- * that eats direct scrollTop writes). Both passes are idempotent: they measure first and scroll
- * only if the element is still covered.
+ * One pass an animation frame after the event, so Steam's own focus scroll has finished and the
+ * lift measures the settled position, then a series of repeat passes at `SETTLE_PASS_DELAYS_MS`
+ * because whatever re-asserts a stale scroll position on this device does not always stop after
+ * one correction (round 35 measurement, see that constant's comment). Every pass is idempotent:
+ * it measures first and scrolls only if the element is still covered, so this is safe to run
+ * whether or not an earlier pass already did the job.
  */
 export function useDockClearanceOnFocus(columnRef: RefObject<HTMLElement | null>): void {
   useEffect(() => {
@@ -61,26 +79,32 @@ export function useDockClearanceOnFocus(columnRef: RefObject<HTMLElement | null>
     if (!column) return;
 
     let raf = 0;
-    let settleTimer = 0;
+    let settleTimers: number[] = [];
+
+    const clearPending = () => {
+      cancelAnimationFrame(raf);
+      settleTimers.forEach((timer) => window.clearTimeout(timer));
+      settleTimers = [];
+    };
 
     const onFocusIn = (event: FocusEvent) => {
       const el = event.target as HTMLElement | null;
       if (!el) return;
-      cancelAnimationFrame(raf);
-      window.clearTimeout(settleTimer);
+      clearPending();
       raf = requestAnimationFrame(() => {
         if (!el.isConnected) return;
         liftAboveDock(el);
-        settleTimer = window.setTimeout(() => {
-          if (el.isConnected) liftAboveDock(el);
-        }, 150);
+        settleTimers = SETTLE_PASS_DELAYS_MS.map((delayMs) =>
+          window.setTimeout(() => {
+            if (el.isConnected) liftAboveDock(el);
+          }, delayMs)
+        );
       });
     };
 
     column.addEventListener("focusin", onFocusIn);
     return () => {
-      cancelAnimationFrame(raf);
-      window.clearTimeout(settleTimer);
+      clearPending();
       column.removeEventListener("focusin", onFocusIn);
     };
   }, [columnRef]);

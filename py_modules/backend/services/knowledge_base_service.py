@@ -1375,6 +1375,11 @@ def retrieve_knowledge_context(
         # gets a higher relevance bar and no genre-card consolation prize -- see
         # IMPLICIT_ROUTE_RELEVANCE_FLOOR and the fallback branch below.
         implicit_route = (ask_mode or "").strip().lower() not in _DECLARED_GAME_ASK_MODES
+        # D62 #2: Speed promises the cheap keyword lookup only. Before this, nomic_ready never
+        # looked at ask_mode, so Speed paid the same embed round trip as Strategy/Expert
+        # whenever the keyword half found anything at all (measured on the Deck: ~1 second
+        # added to two of three Speed questions). Strategy and Expert are untouched.
+        speed_mode = (ask_mode or "speed").strip().lower() == "speed"
 
         if domain == "compat":
             has_vectors = corpus_has_usable_compat_vectors(conn, manifest)
@@ -1382,6 +1387,7 @@ def retrieve_knowledge_context(
                 hybrid_enabled
                 and has_vectors
                 and variant_ok
+                and not speed_mode
                 and nomic_embed_available(pc_ip, model=DEFAULT_EMBEDDING_MODEL)
             )
             t_fts = time.perf_counter()
@@ -1418,6 +1424,7 @@ def retrieve_knowledge_context(
                 hybrid_enabled
                 and has_vectors
                 and variant_ok
+                and not speed_mode
                 and nomic_embed_available(pc_ip, model=DEFAULT_EMBEDDING_MODEL)
             )
             t_fts = time.perf_counter()

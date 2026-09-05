@@ -99,6 +99,31 @@ function initialExpandedTurnKeyFromSurvival(): AskThreadExpandedTurnKey {
   return "live";
 }
 
+/**
+ * The Ask-bar footnote's game context, resolved once at mount rather than left to wait for the
+ * first Ask's status poll. Measured (CHIP-ROTATION-01, runs/CHIP-ROTATION-01-carousel-sample-half-life-2.json):
+ * with Half-Life 2 already running, the footnote read "Context: no active game detected" for a
+ * full 96-second sample while the preset carousel already showed Half-Life 2's own chips — the
+ * carousel detects the running game on mount (`Router.MainRunningApp`, same id `trackedRunningAppId`
+ * tracks) but the footnote used to start from the last survived snapshot (or nothing) and only
+ * ever got corrected once an Ask's status poll ran.
+ *
+ * `liveAppId` is the same id the preset carousel already reads on mount — when it names a running
+ * game, that wins outright. Only when nothing is running does a modal-remount's survived context
+ * apply, so a mid-Ask restore (disclaimer modal, tab switch) is unaffected. No repeating poll is
+ * added; this runs once, at the `useState` initializer.
+ */
+export function resolveInitialOllamaContext(
+  liveAppId: string,
+  survived: OllamaContextUi | null | undefined,
+): OllamaContextUi {
+  const trimmed = liveAppId.trim();
+  if (trimmed) {
+    return { app_id: trimmed, app_context: "active" };
+  }
+  return survived ?? null;
+}
+
 /** Maps RPC poll payloads into Main-tab AI presentation state (pending vs terminal branches differ sharply). */
 export type UseBonsaiAskOrchestrationArgs = {
   desktopDebugNoteAutoSave: boolean;
@@ -162,14 +187,27 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
 
   // --- Presentation state (survival restore on mount) ---
   const [ollamaResponse, setOllamaResponse] = useState(() => survivalPeek?.ollamaResponse ?? "");
-  const [ollamaContext, setOllamaContext] = useState<OllamaContextUi>(
-    () => survivalPeek?.ollamaContext ?? null
+  const [ollamaContext, setOllamaContext] = useState<OllamaContextUi>(() =>
+    resolveInitialOllamaContext(
+      trackedRunningAppId || (Router.MainRunningApp?.appid?.toString() ?? ""),
+      survivalPeek?.ollamaContext,
+    ),
   );
   const [lastExchange, setLastExchange] = useState<LastExchangeSnapshot | null>(
     () => survivalPeek?.lastExchange ?? null
   );
   const [strategyGuideBranches, setStrategyGuideBranches] = useState<StrategyGuideBranchesPayload | null>(
     () => survivalPeek?.strategyGuideBranches ?? null
+  );
+  /*
+   * Which chat slot's Ask produced the current `strategyGuideBranches` payload. A background
+   * poll answers a specific slot's question no matter which slot is on screen when it lands, so
+   * the branch block belongs to whichever slot asked it — not to whichever slot happens to be
+   * active when the payload is exposed below. Nothing needs to touch this on every one of the
+   * clear-to-null sites: a null payload has no owner worth checking.
+   */
+  const strategyGuideBranchesOwnerSlotIdRef = useRef<string | null>(
+    survivalPeek?.strategyGuideBranches ? survivalPeek?.activeSlotId ?? null : null,
   );
 
   const [modelPolicyDisclosure, setModelPolicyDisclosure] = useState<ModelPolicyDisclosurePayload | null>(
@@ -722,7 +760,20 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
               });
             }
             lastStrategyAskQuestionRef.current = q;
-            setStrategyGuideBranches(normalizeStrategyGuideBranches(status.strategy_guide_branches));
+            /*
+             * Tag the payload with the slot that asked it, whether or not that is the slot on
+             * screen right now — CHAT-SLOTS-V3-05a: a Strategy branch block from slot A's poll
+             * used to paint straight into the shared state and show up in slot B, because this
+             * write (unlike `setLastExchange` just above) never checked `paintsForeignSlot`.
+             * The exposed value below hides it again the moment the owner and the active slot
+             * disagree, so it reappears correctly if the user switches back to slot A instead
+             * of leaking into whichever slot happens to be on screen when the poll lands.
+             */
+            const branchesForThisSlot = normalizeStrategyGuideBranches(status.strategy_guide_branches);
+            if (branchesForThisSlot) {
+              strategyGuideBranchesOwnerSlotIdRef.current = payloadSlotId ?? activeSlotIdNow;
+            }
+            setStrategyGuideBranches(branchesForThisSlot);
             const checklistPayload = normalizeStrategyChecklist(status.strategy_checklist);
             /*
              * The mode the REQUEST ran under, not the mode the panel is showing now.
@@ -1457,6 +1508,11 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
     setSuggestedPrompts(snap.suggestedPrompts);
     setLastTransparency(snap.lastTransparency);
     setModelPolicyDisclosure(snap.modelPolicyDisclosure);
+    // Same ownership tag the poll path writes: a restored branch block belongs to whichever
+    // slot was active when the snapshot was taken, not to whatever slot restores it.
+    strategyGuideBranchesOwnerSlotIdRef.current = snap.strategyGuideBranches
+      ? snap.activeSlotId ?? null
+      : null;
     setStrategyGuideBranches(snap.strategyGuideBranches);
     setStrategyChecklist(snap.strategyChecklist ?? null);
     setElapsedSeconds(snap.elapsedSeconds);
@@ -1501,12 +1557,29 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
     setLiveReplyChipError(null);
   }, [invalidateRequests, isAsking, syncOllamaContextFromRunningApp]);
 
+  /*
+   * The read-side half of CHAT-SLOTS-V3-05a's fix: hide the branch block the instant its owning
+   * slot and the slot on screen disagree, rather than trust every past and future write site to
+   * have remembered to check. Missing ids (no chat-slots caller, or a legacy payload with no
+   * owner recorded) fall back to showing it — same permissive default `paintsForeignSlot` uses
+   * above, so nothing regresses for a caller that never wires slots in.
+   */
+  const activeSlotIdForExposure = a.activeSlotIdRef?.current ?? null;
+  const strategyGuideBranchesOwner = strategyGuideBranchesOwnerSlotIdRef.current;
+  const exposedStrategyGuideBranches =
+    strategyGuideBranches &&
+    strategyGuideBranchesOwner &&
+    activeSlotIdForExposure &&
+    strategyGuideBranchesOwner !== activeSlotIdForExposure
+      ? null
+      : strategyGuideBranches;
+
   return {
     ollamaResponse,
     ollamaContext,
     lastExchange,
     setLastExchange,
-    strategyGuideBranches,
+    strategyGuideBranches: exposedStrategyGuideBranches,
     strategyChecklist,
     modelPolicyDisclosure,
     presetCarouselInject,

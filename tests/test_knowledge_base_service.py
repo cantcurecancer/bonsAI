@@ -823,6 +823,44 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
     self.assertEqual(result.retrieval_method, "hybrid")
     self.assertIn("Dreadnought", result.text_block)
 
+  def test_speed_mode_never_pays_for_the_meaning_search(self):
+    """D62 #2: Speed does the cheap keyword lookup and nothing else.
+
+    Same setup as test_hybrid_retrieval_reranks_when_nomic_available (nomic installed,
+    vectors on disk, keyword half finds a hit) but asked in Speed mode. Before this fix, the
+    decision to embed never looked at ask_mode, so Speed paid the same embed round trip as
+    Strategy whenever the keyword half found anything at all -- measured on the Deck as
+    ~1 second added to two of three Speed questions (KB-RECALL-01).
+    """
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    with mock.patch(
+      "backend.services.knowledge_base_service.nomic_embed_available",
+      return_value=True,
+    ), mock.patch(
+      "backend.services.knowledge_base_service.corpus_has_usable_section_vectors",
+      return_value=True,
+    ), mock.patch(
+      "backend.services.knowledge_base_service.embed_texts",
+      return_value=[[1.0, 0.0] + [0.0] * 766],
+    ) as embed:
+      result = retrieve_knowledge_context(
+        settings,
+        ask_mode="speed",
+        question="Glyphid Dreadnought weak point",
+        app_id="2321470",
+        app_name="Deep Rock Galactic: Survivor",
+        domain="strategy",
+        pc_ip="127.0.0.1:11434",
+      )
+    embed.assert_not_called()
+    self.assertTrue(result.attached)
+    self.assertEqual(result.retrieval_method, "keyword")
+    self.assertIn("Dreadnought", result.text_block)
+    self.assertEqual(result.timing_ms.get("embed_ms"), 0)
+
   def test_hybrid_embed_failure_falls_back_to_keyword_embed_unavailable(self):
     settings = {
       "use_local_knowledge_base": True,
@@ -1217,6 +1255,35 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
     # Strongest keyword hits survive fusion rather than being displaced by the vectors.
     self.assertTrue(topics[0].startswith("[Tip: crash]"))
 
+  def test_speed_mode_never_pays_for_the_meaning_search_compat(self):
+    """D62 #2, compat domain half. Both nomic_ready branches must gate on ask_mode alike."""
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    with mock.patch(
+      "backend.services.knowledge_base_service.nomic_embed_available",
+      return_value=True,
+    ), mock.patch(
+      "backend.services.knowledge_base_service.corpus_has_usable_compat_vectors",
+      return_value=True,
+    ), mock.patch(
+      "backend.services.knowledge_base_service.embed_texts",
+      return_value=[[1.0, 0.0] + [0.0] * 766],
+    ) as embed:
+      result = retrieve_knowledge_context(
+        settings,
+        ask_mode="speed",
+        question="why is my game crashing proton issue",
+        app_id="",
+        app_name="",
+        domain="compat",
+        pc_ip="127.0.0.1:11434",
+      )
+    embed.assert_not_called()
+    self.assertTrue(result.attached)
+    self.assertEqual(result.retrieval_method, "keyword")
+
   def test_routed_topic_tip_wins_over_a_keyword_match_on_another_topic(self):
     """D22, and the bug it fixes.
 
@@ -1354,9 +1421,12 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
       "backend.services.knowledge_base_service.embed_texts",
       side_effect=OllamaEmbedError("timeout"),
     ):
+      # Expert, not Speed: since D62 #2, Speed never attempts the embed at all (its own
+      # test is test_speed_mode_never_pays_for_the_meaning_search_compat), so this needs a
+      # declared mode to reach the embed-failure fallback path being pinned here.
       result = retrieve_knowledge_context(
         settings,
-        ask_mode="speed",
+        ask_mode="expert",
         question="proton crash deck sleep",
         app_id="",
         app_name="",

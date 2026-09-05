@@ -36,6 +36,15 @@ export type BuildChipNavHandlersArgs = {
    * in (focus follows it once it renders — the caller's concern, not this one).
    */
   advanceAtEnd?: () => boolean;
+  /**
+   * Fired the instant a Left/Right press is claimed *without* moving anywhere — Left at the first
+   * chip, or Right at the last chip when `advanceAtEnd` finds nothing to pull in. Never fires when
+   * `advanceAtEnd` does pull a new entry in (that press moved something; it is not "the end").
+   * Purely a signal for a caller-owned visual cue (the chip-row-out-of-chips glow, roadmap `[chips]`
+   * ★★, 2026-09-04) — it changes nothing about the move itself, which is why it is a separate,
+   * optional callback rather than folded into the return value.
+   */
+  onBlockedEdge?: (direction: "left" | "right") => void;
 };
 
 /**
@@ -45,17 +54,22 @@ export type BuildChipNavHandlersArgs = {
  * accident. `advanceAtEnd`, when supplied, gets first refusal at the last chip.
  */
 export function buildChipNavHandlers(args: BuildChipNavHandlersArgs): ChipNavHandlers {
-  const { index, count, focusChip, exitDown, exitUp, advanceAtEnd } = args;
+  const { index, count, focusChip, exitDown, exitUp, advanceAtEnd, onBlockedEdge } = args;
   return {
     onMoveLeft: () => {
-      if (index > 0) focusChip(index - 1);
+      if (index > 0) {
+        focusChip(index - 1);
+      } else {
+        onBlockedEdge?.("left");
+      }
       return true;
     },
     onMoveRight: () => {
       if (index < count - 1) {
         focusChip(index + 1);
       } else {
-        advanceAtEnd?.();
+        const pulledInNext = advanceAtEnd?.() ?? false;
+        if (!pulledInNext) onBlockedEdge?.("right");
       }
       return true;
     },

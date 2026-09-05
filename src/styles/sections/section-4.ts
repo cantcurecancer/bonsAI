@@ -1,5 +1,6 @@
 import { BONSAI_CHAT_RESPONSE_STACK_MARGIN_TOP_PX, BONSAI_FOREST_GREEN } from "../../features/unified-input/constants";
 import {
+  PRESET_CHIP_BLOCKED_EDGE_FLASH_MS,
   PRESET_CHIP_GAP_PX,
   PRESET_CHIP_HEIGHT_PX,
   PRESET_CHIP_SIDE_PADDING_PX,
@@ -232,6 +233,44 @@ export function buildSection4Section(): string {
         .bonsai-scope .bonsai-preset-carousel-focus-root:has(.gpfocus) .bonsai-preset-carousel-slot--focus .bonsai-preset-glass,
         :root:not(:has(.gpfocus)) .bonsai-scope .bonsai-preset-carousel-slot--focus .bonsai-preset-glass {
           border-color: rgba(56, 189, 248, 0.45) !important;
+        }
+
+        /*
+          The "ran out of chips" edge cue (roadmap [chips], filed 2026-09-04). Left/Right already
+          claims the move at both row edges without moving anything (presetRowNav.ts's
+          onBlockedEdge, called only when the press was claimed-and-blocked, never when a pinned
+          batch pulled a new entry in) so Steam's own idea of "past the end" -- the Quick Access
+          rail -- never fires; the gap this closes is that the claimed-and-blocked press looked
+          identical on screen to a stall. usePresetRowNav (MainTabPresetAnimatedChips.tsx) flags
+          exactly the one chip that just claimed a blocked press with this class for
+          PRESET_CHIP_BLOCKED_EDGE_FLASH_MS, then clears it. Same cyan family as the gamepad-ring
+          and current-chip-marker glows elsewhere in this file and in gamepadAndPullModels.ts, so
+          it reads as "the plugin's own focus-adjacent accent", not a new colour.
+
+          Border/box-shadow only, no transform and no width change, so the chip's own box never
+          grows -- and .bonsai-preset-row-host (above) clips overflow besides, so even the shadow's
+          blur cannot spill past the 300px column.
+
+          A plain transition, not @keyframes: section-6.ts's base \`.bonsai-preset-glass\` rule sets
+          \`box-shadow: none !important\`, and a running CSS animation cannot out-rank a static
+          !important declaration (only a transition can) -- so a keyframe-based glow here would
+          simply never paint. The transition lives only on this modifier rule, not on the bare
+          \`.bonsai-preset-glass\`, so removing the class also removes the transition and cannot
+          touch the unrelated dimmed/undimmed fade the carousel already runs inline.
+        */
+        .bonsai-scope button.bonsai-preset-glass.bonsai-preset-chip-blocked-edge {
+          transition: border-color ${Math.round(PRESET_CHIP_BLOCKED_EDGE_FLASH_MS * 0.45)}ms ease-out,
+            box-shadow ${Math.round(PRESET_CHIP_BLOCKED_EDGE_FLASH_MS * 0.45)}ms ease-out;
+          border-color: rgba(56, 189, 248, 0.85) !important;
+          box-shadow: 0 0 8px 1px rgba(56, 189, 248, 0.45) !important;
+        }
+        /* Reduced motion: no ramp, just the same glow held for the same window and then removed
+           by the JS timeout -- a state change, not movement. Scoped to this one selector so it
+           cannot silence any other control's transition. */
+        @media (prefers-reduced-motion: reduce) {
+          .bonsai-scope button.bonsai-preset-glass.bonsai-preset-chip-blocked-edge {
+            transition: none !important;
+          }
         }
 
         /* Settings search hits — same horizontal track as unified host so results line up under the textarea. */

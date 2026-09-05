@@ -25,6 +25,14 @@ export const PRESET_CHIP_GAP_PX = 4;
 /** Set explicitly so the label room is known by construction rather than by Steam's button default. */
 export const PRESET_CHIP_SIDE_PADDING_PX = 8;
 
+/**
+ * How long the "ran out of chips" edge glow stays on screen (roadmap `[chips]` ★★, filed
+ * 2026-09-04). One `usePresetRowNav` state clears the cue after this many ms so a second press at
+ * the same edge always starts the glow fresh rather than extending a still-running one. The CSS
+ * transition in section-4.ts ramps in over a fraction of this window — see the comment there.
+ */
+export const PRESET_CHIP_BLOCKED_EDGE_FLASH_MS = 320;
+
 /*
  * Steam Marquee settings. "Slow and calm" per the maintainer (2026-09-01). The units are Steam's and
  * undocumented; these are calibrated on device (row PRESET-ONE-LINE-04) and only ever change here.

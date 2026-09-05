@@ -22,7 +22,10 @@ import {
 } from "./MainTabPresetAnimatedChips";
 import { setFrozenTestChips, type PresetPrompt } from "../data/presets";
 import { CAROUSEL_STEP_MS, CAROUSEL_HISTORY_MAX } from "../features/preset-carousel/carouselState";
-import { PRESET_VISIBLE_SLOTS } from "../features/preset-carousel/presetRowLayout";
+import {
+  PRESET_CHIP_BLOCKED_EDGE_FLASH_MS,
+  PRESET_VISIBLE_SLOTS,
+} from "../features/preset-carousel/presetRowLayout";
 import { registerNavFocus, resetNavFocusRegistry } from "../utils/navFocusRegistry";
 import { resetFakeDeckyRpc } from "../test-harness/fakeDeckyRpc";
 
@@ -455,5 +458,110 @@ describe("usePresetRowNav exitUp (D58 #2: Up leaves the row at once)", () => {
     registerNavFocus("session-context-strip", { current: { TakeFocus: () => false } });
     registerNavFocus("chat-slot-row", { current: { TakeFocus: () => true } });
     expect(upHandler()()).toBe(true);
+  });
+});
+
+/*
+ * ★★ `[chips]`, filed 2026-09-04: nothing on screen said Left/Right had reached the end of the
+ * row, so a stopped highlight there read exactly like a stalled one. `presetRowNav.test.ts` pins
+ * the pure signal (`onBlockedEdge`); these pin the hook-level wiring shared by every animation mode
+ * -- which chip gets flagged, that it clears itself, and that it never fires away from an edge.
+ */
+describe("usePresetRowNav blocked-edge cue (chip row out of chips, filed 2026-09-04)", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  /* `handlersFor` returns `Record<string, unknown>` (it is spread as raw props onto a Decky
+     Button), so the handler needs the same cast `upHandler` above uses. */
+  function press(nav: { handlersFor: (i: number, c: number) => Record<string, unknown> }, direction: "onMoveLeft" | "onMoveRight", index: number, count: number) {
+    const handler = nav.handlersFor(index, count)[direction] as () => boolean;
+    handler();
+  }
+
+  it("flags the first chip when Left is claimed there, and clears it once the flash window passes", () => {
+    vi.useFakeTimers();
+    const { result } = renderHook(() => usePresetRowNav(3));
+
+    expect(result.current.isBlockedEdge(0)).toBe(false);
+    act(() => {
+      press(result.current, "onMoveLeft", 0, 3);
+    });
+    expect(result.current.isBlockedEdge(0)).toBe(true);
+    // No other chip is flagged at the same time.
+    expect(result.current.isBlockedEdge(1)).toBe(false);
+    expect(result.current.isBlockedEdge(2)).toBe(false);
+
+    act(() => {
+      vi.advanceTimersByTime(PRESET_CHIP_BLOCKED_EDGE_FLASH_MS - 1);
+    });
+    expect(result.current.isBlockedEdge(0)).toBe(true);
+
+    act(() => {
+      vi.advanceTimersByTime(1);
+    });
+    expect(result.current.isBlockedEdge(0)).toBe(false);
+  });
+
+  it("flags the last chip when Right is claimed there", () => {
+    vi.useFakeTimers();
+    const { result } = renderHook(() => usePresetRowNav(3));
+
+    act(() => {
+      press(result.current, "onMoveRight", 2, 3);
+    });
+    expect(result.current.isBlockedEdge(2)).toBe(true);
+    expect(result.current.isBlockedEdge(0)).toBe(false);
+  });
+
+  it("never flags a chip for a move that actually walked to a neighbour", () => {
+    vi.useFakeTimers();
+    const { result } = renderHook(() => usePresetRowNav(3));
+
+    act(() => {
+      press(result.current, "onMoveLeft", 1, 3);
+    });
+    expect(result.current.isBlockedEdge(0)).toBe(false);
+    expect(result.current.isBlockedEdge(1)).toBe(false);
+
+    act(() => {
+      press(result.current, "onMoveRight", 0, 3);
+    });
+    expect(result.current.isBlockedEdge(1)).toBe(false);
+  });
+
+  /* D58 #3: Right at the last chip of a pinned batch pulls the next entry in instead of holding
+     still. That is not "the row ran out" -- the roadmap entry says this edge behaviour must not
+     change -- so the cue must stay off. */
+  it("does not flag the chip when advanceAtEnd pulls a new entry in", () => {
+    vi.useFakeTimers();
+    const advanceAtEnd = vi.fn(() => true);
+    const { result } = renderHook(() => usePresetRowNav(3, undefined, { advanceAtEnd }));
+
+    act(() => {
+      press(result.current, "onMoveRight", 2, 3);
+    });
+    expect(advanceAtEnd).toHaveBeenCalledTimes(1);
+    expect(result.current.isBlockedEdge(2)).toBe(false);
+  });
+
+  it("restarts the flash window on a second press at the same edge rather than letting it lapse early", () => {
+    vi.useFakeTimers();
+    const { result } = renderHook(() => usePresetRowNav(3));
+
+    act(() => {
+      press(result.current, "onMoveLeft", 0, 3);
+    });
+    act(() => {
+      vi.advanceTimersByTime(PRESET_CHIP_BLOCKED_EDGE_FLASH_MS - 10);
+    });
+    // A second press just before the first flash would have cleared restarts the window.
+    act(() => {
+      press(result.current, "onMoveLeft", 0, 3);
+    });
+    act(() => {
+      vi.advanceTimersByTime(20);
+    });
+    expect(result.current.isBlockedEdge(0)).toBe(true);
   });
 });

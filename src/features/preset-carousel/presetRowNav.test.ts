@@ -79,6 +79,113 @@ describe("preset row D-pad handlers", () => {
   });
 
   /*
+   * ★★ `[chips]`, filed 2026-09-04: nothing on screen said Left/Right had hit the end of the row.
+   * The row already claims the move at both edges (above) so Steam's own ring never leaves the
+   * plugin; `onBlockedEdge` is the signal a caller-owned visual cue hangs off, fired at the exact
+   * moment a press is claimed-and-blocked rather than claimed-and-moved.
+   */
+  describe("onBlockedEdge (chip row out of chips cue, filed 2026-09-04)", () => {
+    it("fires with 'left' when Left is claimed at the first chip", () => {
+      const onBlockedEdge = vi.fn();
+      const { handlers } = make(0, 3);
+      const withCue = buildChipNavHandlers({
+        index: 0,
+        count: 3,
+        focusChip: vi.fn(() => true),
+        exitDown: vi.fn(() => true),
+        exitUp: vi.fn(() => false),
+        onBlockedEdge,
+      });
+      expect(withCue.onMoveLeft()).toBe(true);
+      expect(onBlockedEdge).toHaveBeenCalledTimes(1);
+      expect(onBlockedEdge).toHaveBeenCalledWith("left");
+      // The plain handlers (no onBlockedEdge supplied) still behave exactly as before.
+      expect(handlers.onMoveLeft()).toBe(true);
+    });
+
+    it("does not fire on Left away from the first chip", () => {
+      const onBlockedEdge = vi.fn();
+      const handlers = buildChipNavHandlers({
+        index: 1,
+        count: 3,
+        focusChip: vi.fn(() => true),
+        exitDown: vi.fn(() => true),
+        exitUp: vi.fn(() => false),
+        onBlockedEdge,
+      });
+      expect(handlers.onMoveLeft()).toBe(true);
+      expect(onBlockedEdge).not.toHaveBeenCalled();
+    });
+
+    it("fires with 'right' when Right is claimed at the last chip and nothing advances", () => {
+      const onBlockedEdge = vi.fn();
+      const handlers = buildChipNavHandlers({
+        index: 2,
+        count: 3,
+        focusChip: vi.fn(() => true),
+        exitDown: vi.fn(() => true),
+        exitUp: vi.fn(() => false),
+        onBlockedEdge,
+      });
+      expect(handlers.onMoveRight()).toBe(true);
+      expect(onBlockedEdge).toHaveBeenCalledTimes(1);
+      expect(onBlockedEdge).toHaveBeenCalledWith("right");
+    });
+
+    it("fires with 'right' when advanceAtEnd exists but finds nothing to pull in", () => {
+      const onBlockedEdge = vi.fn();
+      const advanceAtEnd = vi.fn(() => false);
+      const handlers = buildChipNavHandlers({
+        index: 2,
+        count: 3,
+        focusChip: vi.fn(() => true),
+        exitDown: vi.fn(() => true),
+        exitUp: vi.fn(() => false),
+        advanceAtEnd,
+        onBlockedEdge,
+      });
+      expect(handlers.onMoveRight()).toBe(true);
+      expect(advanceAtEnd).toHaveBeenCalledTimes(1);
+      expect(onBlockedEdge).toHaveBeenCalledTimes(1);
+      expect(onBlockedEdge).toHaveBeenCalledWith("right");
+    });
+
+    /* Constraint from the roadmap entry: a pinned QA batch pulling its next entry in at the last
+       chip is not "the row ran out" — the row's own edge behaviour there does not change, and the
+       cue must not fire and contradict it. */
+    it("does not fire when advanceAtEnd pulls a new entry in", () => {
+      const onBlockedEdge = vi.fn();
+      const advanceAtEnd = vi.fn(() => true);
+      const handlers = buildChipNavHandlers({
+        index: 2,
+        count: 3,
+        focusChip: vi.fn(() => true),
+        exitDown: vi.fn(() => true),
+        exitUp: vi.fn(() => false),
+        advanceAtEnd,
+        onBlockedEdge,
+      });
+      expect(handlers.onMoveRight()).toBe(true);
+      expect(advanceAtEnd).toHaveBeenCalledTimes(1);
+      expect(onBlockedEdge).not.toHaveBeenCalled();
+    });
+
+    it("does not fire on Right away from the last chip", () => {
+      const onBlockedEdge = vi.fn();
+      const handlers = buildChipNavHandlers({
+        index: 0,
+        count: 3,
+        focusChip: vi.fn(() => true),
+        exitDown: vi.fn(() => true),
+        exitUp: vi.fn(() => false),
+        onBlockedEdge,
+      });
+      expect(handlers.onMoveRight()).toBe(true);
+      expect(onBlockedEdge).not.toHaveBeenCalled();
+    });
+  });
+
+  /*
    * D58 #2: Up used to be a single `takeNavFocus("session-context-strip")` call; it is now a
    * two-step fallback (strip, then the always-mounted chat slot row -- see usePresetRowNav in
    * MainTabPresetAnimatedChips.tsx, which is where the two `takeNavFocus` targets actually live).

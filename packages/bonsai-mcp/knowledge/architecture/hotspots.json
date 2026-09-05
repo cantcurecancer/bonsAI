@@ -7,7 +7,12 @@
     },
     {
       "path": "py_modules/backend/services/knowledge_base_service.py",
-      "lines": 1950,
+      "lines": 1957,
+      "role": ""
+    },
+    {
+      "path": "src/hooks/useBonsaiAskOrchestration.ts",
+      "lines": 1632,
       "role": ""
     },
     {
@@ -16,18 +21,13 @@
       "role": "Plugin root: tabs, scoped CSS, RPC wiring, Settings"
     },
     {
-      "path": "src/hooks/useBonsaiAskOrchestration.ts",
-      "lines": 1559,
-      "role": ""
-    },
-    {
       "path": "py_modules/backend/services/voice_transcription_service.py",
       "lines": 1524,
       "role": ""
     },
     {
       "path": "py_modules/backend/services/ollama_prompts.py",
-      "lines": 1484,
+      "lines": 1489,
       "role": ""
     },
     {
@@ -36,13 +36,28 @@
       "role": ""
     },
     {
+      "path": "src/components/MainTabPresetAnimatedChips.tsx",
+      "lines": 1215,
+      "role": ""
+    },
+    {
+      "path": "src/hooks/useBonsaiAskOrchestration.test.ts",
+      "lines": 1215,
+      "role": ""
+    },
+    {
       "path": "src/components/OllamaWhereAiRunsSection.tsx",
       "lines": 1174,
       "role": ""
     },
     {
-      "path": "src/components/MainTabPresetAnimatedChips.tsx",
-      "lines": 1157,
+      "path": "src/components/MainTabChatTranscript.tsx",
+      "lines": 1111,
+      "role": ""
+    },
+    {
+      "path": "src/styles/sections/section-6.ts",
+      "lines": 1081,
       "role": ""
     },
     {
@@ -56,23 +71,8 @@
       "role": "Prompt build, Ollama HTTP, streaming"
     },
     {
-      "path": "src/components/MainTabChatTranscript.tsx",
-      "lines": 1050,
-      "role": ""
-    },
-    {
-      "path": "src/styles/sections/section-6.ts",
-      "lines": 1050,
-      "role": ""
-    },
-    {
       "path": "src/data/characterPlaceholderEmoticonGrids.ts",
       "lines": 1024,
-      "role": ""
-    },
-    {
-      "path": "src/hooks/useBonsaiAskOrchestration.test.ts",
-      "lines": 1022,
       "role": ""
     },
     {
@@ -116,6 +116,11 @@
       "role": ""
     },
     {
+      "path": "src/components/MainTabPresetAnimatedChips.test.tsx",
+      "lines": 568,
+      "role": ""
+    },
+    {
       "path": "src/hooks/usePluginSettings.ts",
       "lines": 566,
       "role": ""
@@ -156,6 +161,11 @@
       "role": ""
     },
     {
+      "path": "py_modules/backend/services/strategy_guide_parse.py",
+      "lines": 488,
+      "role": ""
+    },
+    {
       "path": "py_modules/backend/services/knowledge_base_schema.py",
       "lines": 470,
       "role": ""
@@ -163,16 +173,6 @@
     {
       "path": "py_modules/backend/services/chat_slot_service.py",
       "lines": 468,
-      "role": ""
-    },
-    {
-      "path": "src/components/MainTabPresetAnimatedChips.test.tsx",
-      "lines": 460,
-      "role": ""
-    },
-    {
-      "path": "py_modules/backend/services/strategy_guide_parse.py",
-      "lines": 458,
       "role": ""
     },
     {

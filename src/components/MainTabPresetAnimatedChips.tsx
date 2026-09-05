@@ -36,6 +36,7 @@ import {
 } from "../features/preset-carousel/carouselState";
 import { pickCarouselChipWithSessionRag } from "../features/preset-carousel/composePresetSeedsWithSessionRag";
 import {
+  PRESET_CHIP_BLOCKED_EDGE_FLASH_MS,
   PRESET_CHIP_HEIGHT_PX,
   PRESET_MARQUEE_DELAY_S,
   PRESET_MARQUEE_FADE_LENGTH,
@@ -51,7 +52,7 @@ import {
 import { BONSAI_FOREST_GREEN } from "../features/unified-input/constants";
 import { joinPresetWithRunningGame } from "../utils/joinPresetWithRunningGame";
 import { buildChipNavHandlers } from "../features/preset-carousel/presetRowNav";
-import { registerNavFocus, takeNavFocus, type NavRefHolder } from "../utils/navFocusRegistry";
+import { registerNavFocus, unregisterNavFocus, takeNavFocus, type NavRefHolder } from "../utils/navFocusRegistry";
 import { elementHasFocus } from "../utils/uiDocument";
 
 /*
@@ -284,11 +285,23 @@ function PresetChipButton(props: {
   focusable?: boolean;
   buttonRef?: (el: HTMLElement | null) => void;
   navHandlers?: Record<string, unknown>;
+  /** The chip row just claimed a Left/Right press without moving anywhere -- ran out of chips. */
+  blockedEdge?: boolean;
 }) {
-  const { preset: p, setUnifiedInput, onPreferAskMode, scroll, dimmed, focusable = true, buttonRef, navHandlers } = props;
+  const {
+    preset: p,
+    setUnifiedInput,
+    onPreferAskMode,
+    scroll,
+    dimmed,
+    focusable = true,
+    buttonRef,
+    navHandlers,
+    blockedEdge,
+  } = props;
   return (
     <Button
-      className="bonsai-preset-glass"
+      className={"bonsai-preset-glass" + (blockedEdge ? " bonsai-preset-chip-blocked-edge" : "")}
       ref={buttonRef}
       {...(navHandlers ?? {})}
       focusable={focusable}
@@ -339,7 +352,7 @@ function PresetRowFocusRoot(props: {
   const rootRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     registerNavFocus("preset-carousel", navRef);
-    return () => registerNavFocus("preset-carousel", null);
+    return () => unregisterNavFocus("preset-carousel", navRef);
   }, []);
   const { onEnterFromOutside } = props;
   const onFocus = useCallback(
@@ -410,6 +423,30 @@ export function usePresetRowNav(
     },
     [isFocusable, requestFocus],
   );
+  /*
+   * Which chip, if any, should show the "ran out of chips" edge cue right now (roadmap `[chips]`
+   * ★★, filed 2026-09-04). `buildChipNavHandlers`' `onBlockedEdge` fires only on a Left/Right press
+   * that was claimed *without moving anything* -- exactly the case that used to leave the screen
+   * looking identical to a stall. A timeout clears it after PRESET_CHIP_BLOCKED_EDGE_FLASH_MS so a
+   * second press at the same edge always restarts the cue rather than extending one already
+   * running out.
+   */
+  const [blockedEdgeChip, setBlockedEdgeChip] = useState<{ index: number; token: number } | null>(null);
+  const blockedEdgeTimeoutRef = useRef<number | null>(null);
+  const flagBlockedEdge = useCallback((index: number) => {
+    if (blockedEdgeTimeoutRef.current !== null) window.clearTimeout(blockedEdgeTimeoutRef.current);
+    setBlockedEdgeChip((prev) => ({ index, token: (prev?.token ?? 0) + 1 }));
+    blockedEdgeTimeoutRef.current = window.setTimeout(() => {
+      setBlockedEdgeChip(null);
+      blockedEdgeTimeoutRef.current = null;
+    }, PRESET_CHIP_BLOCKED_EDGE_FLASH_MS);
+  }, []);
+  useEffect(
+    () => () => {
+      if (blockedEdgeTimeoutRef.current !== null) window.clearTimeout(blockedEdgeTimeoutRef.current);
+    },
+    [],
+  );
   const handlersFor = useCallback(
     (index: number, count: number): Record<string, unknown> =>
       buildChipNavHandlers({
@@ -426,10 +463,13 @@ export function usePresetRowNav(
         // move on the first press instead.
         exitUp: () => takeNavFocus("session-context-strip") || takeNavFocus("chat-slot-row"),
         advanceAtEnd,
+        onBlockedEdge: () => flagBlockedEdge(index),
       }) as unknown as Record<string, unknown>,
-    [focusChip, exitDown, advanceAtEnd],
+    [focusChip, exitDown, advanceAtEnd, flagBlockedEdge],
   );
-  return { setButtonRef, handlersFor, focusChip };
+  /** True for the one chip that should carry the edge-cue class right now. */
+  const isBlockedEdge = useCallback((index: number) => blockedEdgeChip?.index === index, [blockedEdgeChip]);
+  return { setButtonRef, handlersFor, focusChip, isBlockedEdge };
 }
 
 /**
@@ -449,11 +489,26 @@ function DecodePresetChipButton(props: {
   onPreferAskMode?: (mode: AskModeId) => void;
   buttonRef?: (el: HTMLElement | null) => void;
   navHandlers?: Record<string, unknown>;
+  /** The chip row just claimed a Left/Right press without moving anywhere -- ran out of chips. */
+  blockedEdge?: boolean;
 }) {
-  const { preset: p, resolved, scroll, setLabelRef, setUnifiedInput, onPreferAskMode, buttonRef, navHandlers } = props;
+  const {
+    preset: p,
+    resolved,
+    scroll,
+    setLabelRef,
+    setUnifiedInput,
+    onPreferAskMode,
+    buttonRef,
+    navHandlers,
+    blockedEdge,
+  } = props;
   return (
     <Button
-      className="bonsai-preset-glass bonsai-preset-glass--decode"
+      className={
+        "bonsai-preset-glass bonsai-preset-glass--decode" +
+        (blockedEdge ? " bonsai-preset-chip-blocked-edge" : "")
+      }
       ref={buttonRef}
       {...(navHandlers ?? {})}
       focusable
@@ -704,6 +759,7 @@ function MainTabPresetDecodeSlots(
             onPreferAskMode={onPreferAskMode}
             buttonRef={nav.setButtonRef[i]}
             navHandlers={nav.handlersFor(i, slots.length)}
+            blockedEdge={nav.isBlockedEdge(i)}
           />
         </div>
       ))}
@@ -931,6 +987,7 @@ function MainTabPresetSidewaysCarousel(
                   focusable={visible}
                   buttonRef={nav.setButtonRef[i]}
                   navHandlers={nav.handlersFor(i, history.length)}
+                  blockedEdge={nav.isBlockedEdge(i)}
                 />
               </div>
             );
@@ -1119,6 +1176,7 @@ function MainTabPresetAnimatedChipsInner(props: MainTabPresetAnimatedChipsProps)
               focusable={presetInteractive}
               buttonRef={nav.setButtonRef[i]}
               navHandlers={nav.handlersFor(i, slots.length)}
+              blockedEdge={nav.isBlockedEdge(i)}
             />
           </div>
         );

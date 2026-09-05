@@ -6,7 +6,13 @@
  * Does not: Own tab routing — useBonsaiPluginShell / index.tsx call setCurrentTab.
  */
 import type { PermissionFocusTargetId } from "./permissionDeepLink";
-import { registerNavFocus, takeNavFocus, type NavFocusId, type NavRefHolder } from "./navFocusRegistry";
+import {
+  registerNavFocus,
+  unregisterNavFocus,
+  takeNavFocus,
+  type NavFocusId,
+  type NavRefHolder,
+} from "./navFocusRegistry";
 
 let pendingReturnTab: string | null = null;
 let pendingFocusTarget: PermissionFocusTargetId | null = null;
@@ -39,8 +45,16 @@ function permissionRowNavFocusId(id: PermissionFocusTargetId): NavFocusId {
  * `session-context-strip` exist to work around. Measured on device 2026-09-05 (build 4/517804a,
  * PERM-JUMP-01 step 3): the ring landed on "Back to Main" instead of the armed toggle.
  */
-export function registerPermissionRowNavFocus(id: PermissionFocusTargetId, holder: NavRefHolder | null): void {
+export function registerPermissionRowNavFocus(id: PermissionFocusTargetId, holder: NavRefHolder): void {
   registerNavFocus(permissionRowNavFocusId(id), holder);
+}
+
+/** Cleanup half of the above. Identity-checked — see `unregisterNavFocus`. */
+export function unregisterPermissionRowNavFocus(
+  id: PermissionFocusTargetId,
+  holder: NavRefHolder
+): void {
+  unregisterNavFocus(permissionRowNavFocusId(id), holder);
 }
 
 /** Arm a jump: remember where to return and which Permissions row should receive focus. */

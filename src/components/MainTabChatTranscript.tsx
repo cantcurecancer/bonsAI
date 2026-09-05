@@ -12,14 +12,14 @@ import {
   BONSAI_CHAT_AI_BUBBLE_MAX_FRAC,
 } from "../features/unified-input/constants";
 import { getUiDocument } from "../utils/uiDocument";
-import { registerNavFocus, takeNavFocus, type NavRefHolder } from "../utils/navFocusRegistry";
+import { registerNavFocus, unregisterNavFocus, takeNavFocus, type NavRefHolder } from "../utils/navFocusRegistry";
 import { formatAppliedTuningBannerText } from "../utils/appliedTuningText";
 import type { ModelPolicyDisclosurePayload } from "../data/modelPolicy";
 import { StrategyChecklistPanel } from "./StrategyChecklistPanel";
 import { PermissionDenyAction } from "./PermissionDenyAction";
 import { isVacCheckCapabilityDenyResponse } from "../utils/permissionDeepLink";
 import type { BonsaiCapabilityKey } from "../utils/permissionDeepLink";
-import { isPendingPlaceholderResponse } from "../utils/askThinkingPhases";
+import { isPendingPlaceholderResponse, isStopNoticeResponse } from "../utils/askThinkingPhases";
 import { BonsaiChatSecondaryButton } from "./BonsaiChatSecondaryButton";
 import { buildReplyActionsElement } from "../utils/buildReplyActionsElement";
 import { archivedTurnTransparency } from "../utils/archivedTurnTransparency";
@@ -27,7 +27,7 @@ import { buildAnswerBubbleElement } from "../utils/buildAnswerBubbleElement";
 import { buildAnswerCopyText } from "../utils/answerCopyText";
 import { buildThinkingBlurbTextElement } from "../utils/buildThinkingBlurbTextElement";
 import { buildTurnHeaderElement } from "../utils/buildTurnHeaderElement";
-import { buildCollapsedTurnTitle } from "../utils/chatTurnTitle";
+import { buildCollapsedTurnTitle, buildExpandedTurnTitle } from "../utils/chatTurnTitle";
 import { ContextChipLadder } from "./ContextChipLadder";
 import { SessionContextStrip } from "./SessionContextStrip";
 import { transparencyUiAvailable } from "../utils/contextChipsFromSnapshot";
@@ -320,11 +320,11 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
   const vacDenyRowNavRef = useRef<NavRefHolder["current"]>(null);
   useEffect(() => {
     registerNavFocus("chat-perm-hint-troubleshoot", troubleshootHintNavRef);
-    return () => registerNavFocus("chat-perm-hint-troubleshoot", null);
+    return () => unregisterNavFocus("chat-perm-hint-troubleshoot", troubleshootHintNavRef);
   }, []);
   useEffect(() => {
     registerNavFocus("chat-perm-hint-deny", vacDenyRowNavRef);
-    return () => registerNavFocus("chat-perm-hint-deny", null);
+    return () => unregisterNavFocus("chat-perm-hint-deny", vacDenyRowNavRef);
   }, []);
 
   const chatMainColumnRef = useRef<HTMLDivElement | null>(null);
@@ -605,6 +605,19 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
           const turnIndex = renderIndex + archivedRenderOffset;
           /* Hoisted out of the reply-actions IIFE below: the strategy panels need it too. */
           const isNewestArchivedTurn = turnIndex === askThreadCollapsed.length - 1;
+          /*
+           * A stopped Ask is persisted to the chat slot like any other turn (main.py records the
+           * assistant turn on both cancel paths), so the reload this triggers (onSlotTurnsChanged)
+           * archives it exactly like a completed Ask — expandedTurnKey moves off "live" onto this
+           * turn's own id. `askStopped` survives that reload (only cleared by the next Ask or by
+           * Clear cache), so it is still readable here; it is the render gate below that stopped
+           * looking in the right place. `isStopNoticeResponse` tells a real kept draft apart from
+           * the backend's own placeholder text ("Request cancelled.") for the no-draft case — the
+           * deliberate "an empty stop shows nothing" behaviour from useBonsaiAskOrchestration.ts
+           * stays preserved here rather than re-decided.
+           */
+          const isNewestStoppedArchivedTurn =
+            isNewestArchivedTurn && askStopped && !isStopNoticeResponse(turn.answer);
           return (
           <Focusable
             key={turn.id}
@@ -616,12 +629,33 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
           >
             {buildTurnHeaderElement({
               turnId: turn.id,
-              title: buildCollapsedTurnTitle(turn.questionDisplay || turn.question),
+              /* D60: an open turn shows the whole question (CSS caps it visually at five lines
+                 with a fade on the last line); a closed turn keeps today's single cut line. */
+              title:
+                expandedTurnKey === turn.id
+                  ? buildExpandedTurnTitle(turn.questionDisplay || turn.question)
+                  : buildCollapsedTurnTitle(turn.questionDisplay || turn.question),
               expanded: expandedTurnKey === turn.id,
               onActivate: () => onTurnActivate?.(turn.id),
             })}
             {expandedTurnKey === turn.id ? (
               <>
+                {isNewestStoppedArchivedTurn ? (
+                  /* Same status, same placement as the live-turn Stopped notice below — a
+                     stopped turn just does not stay "live" long enough to reach it. */
+                  <div
+                    className="bonsai-chat-status-line bonsai-chat-stopped-line"
+                    role="status"
+                    style={{
+                      color: "#9fb7d5",
+                      fontSize: 12,
+                      lineHeight: 1.35,
+                      marginBottom: 8,
+                    }}
+                  >
+                    Stopped — partial answer kept.
+                  </div>
+                ) : null}
                 {renderAnswerBubble(
                   turn.answer,
                   false,
@@ -653,8 +687,15 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
                  * archived branch to render the control instead of assuming it stays live-only.
                  */}
                 {(() => {
+                  /* Restores Helpful / Not really / Retry on a stopped turn (roadmap: "Stopping a
+                     reply leaves no 'Stopped' notice"). `lastExchange` is cleared to null on
+                     cancel (useBonsaiAskOrchestration.ts), which is right for its own job — it
+                     means "no completed exchange to refine" — but it also silently dropped these
+                     buttons for a turn that has a perfectly good kept answer sitting right on it. */
                   const showFeedbackHere =
-                    isNewestArchivedTurn && !isAsking && Boolean(lastExchange?.answer?.trim());
+                    isNewestArchivedTurn &&
+                    !isAsking &&
+                    (Boolean(lastExchange?.answer?.trim()) || isNewestStoppedArchivedTurn);
                   const transparencyAvailableHere = transparencyUiAvailable(
                     archivedTransparencyFor(turn, turnIndex)
                   );
@@ -666,7 +707,23 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
                       ? (rating) => onReplyFeedback?.(rating)
                       : () => {},
                     showFeedback: showFeedbackHere,
-                    onRetry: showFeedbackHere ? onRetryLastResponse : undefined,
+                    /*
+                     * `onRetryLastResponse` reads `lastExchange?.question`, which is exactly what
+                     * a stop clears to null — it would resend nothing, or whatever happens to be
+                     * sitting in the Ask field, rather than this turn's own question. `turn.question`
+                     * is right there on the turn already being displayed, so the stopped case
+                     * re-asks it directly through the same `onAskOllama` entry point Retry itself
+                     * calls, instead of going through the stale exchange snapshot.
+                     */
+                    onRetry: !showFeedbackHere
+                      ? undefined
+                      : isNewestStoppedArchivedTurn
+                        ? () => {
+                            void onAskOllama?.(turn.question, {
+                              threadQuestionDisplay: turn.questionDisplay || turn.question,
+                            });
+                          }
+                        : onRetryLastResponse,
                     transparencyOpen: transparencyDetailsOpen,
                     onToggleTransparency: transparencyAvailableHere
                       ? makeToggleTransparencyDetails(turn.id)
@@ -731,7 +788,11 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
             {buildTurnHeaderElement({
               turnId: "live",
               variant: "live",
-              title: buildCollapsedTurnTitle(liveQuestion) || "…",
+              /* Same open/closed split as the archived-turn header above (D60). */
+              title:
+                (expandedTurnKey === "live"
+                  ? buildExpandedTurnTitle(liveQuestion)
+                  : buildCollapsedTurnTitle(liveQuestion)) || "…",
               expanded: expandedTurnKey === "live",
               isStreaming: isStreamingPreview,
               onActivate: () => onTurnActivate?.("live"),

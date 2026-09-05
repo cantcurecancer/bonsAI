@@ -249,5 +249,56 @@ class HideIncompleteChecklistFenceTests(unittest.TestCase):
         self.assertEqual(hide_incomplete_strategy_checklist_fence(raw), raw)
 
 
+class BranchEllipsisPlaceholderTests(unittest.TestCase):
+    """A picker that still carries the prompt example's ellipsis is dropped, not shown.
+
+    Seen on the Deck 2026-09-04 and 2026-09-05: the picker read "Where are you at in … ?" with
+    the game's name replaced by three dots. The prompt example was rewritten so there is nothing
+    left to copy; this is the second half, so an echo never reaches the screen.
+    """
+
+    def _fence(self, payload: str) -> str:
+        return (
+            "Some coaching first.\n\n"
+            "```bonsai-strategy-branches\n" + payload + "\n```\n"
+        )
+
+    def test_a_real_picker_still_comes_through(self):
+        payload = (
+            '{"question":"Where are you at in Half-Life 2?",'
+            '"options":[{"id":"a","label":"Just arrived at the station"},'
+            '{"id":"b","label":"Fighting through Ravenholm"}]}'
+        )
+        _visible, branches = extract_strategy_guide_branches(self._fence(payload))
+        self.assertIsNotNone(branches)
+        self.assertEqual(branches["question"], "Where are you at in Half-Life 2?")
+        self.assertEqual(len(branches["options"]), 2)
+
+    def test_a_question_that_is_still_the_placeholder_is_dropped(self):
+        payload = (
+            '{"question":"Where are you at in … ?",'
+            '"options":[{"id":"a","label":"Just starting out"},'
+            '{"id":"b","label":"Stuck on a boss"}]}'
+        )
+        _visible, branches = extract_strategy_guide_branches(self._fence(payload))
+        self.assertIsNone(branches)
+
+    def test_option_labels_that_are_still_placeholders_are_dropped(self):
+        payload = (
+            '{"question":"Where are you at in Hades?",'
+            '"options":[{"id":"a","label":"…"},{"id":"b","label":"…"}]}'
+        )
+        _visible, branches = extract_strategy_guide_branches(self._fence(payload))
+        self.assertIsNone(branches)
+
+    def test_three_plain_dots_count_as_the_placeholder(self):
+        payload = (
+            '{"question":"Where are you at in ... ?",'
+            '"options":[{"id":"a","label":"Early game"},{"id":"b","label":"Late game"}]}'
+        )
+        _visible, branches = extract_strategy_guide_branches(self._fence(payload))
+        self.assertIsNone(branches)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   registerNavFocus,
+  unregisterNavFocus,
   resetNavFocusRegistry,
   takeNavFocus,
   type NavRefHolder,
@@ -67,10 +68,12 @@ describe("nav focus registry", () => {
   });
 
   it("forgets a target on unmount", () => {
-    registerNavFocus("chat-slot-row", steamNavRef(() => true));
+    const row = steamNavRef(() => true);
+    registerNavFocus("chat-slot-row", row);
     expect(takeNavFocus("chat-slot-row")).toBe(true);
 
-    registerNavFocus("chat-slot-row", null);
+    // The unmount cleanup names the holder it registered, so it can only drop its own entry.
+    unregisterNavFocus("chat-slot-row", row);
 
     expect(takeNavFocus("chat-slot-row")).toBe(false);
   });

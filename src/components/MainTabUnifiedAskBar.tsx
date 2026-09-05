@@ -49,7 +49,7 @@ import {
 import { PermissionDenyAction } from "./PermissionDenyAction";
 import type { BonsaiCapabilityKey } from "../utils/permissionDeepLink";
 import { useMainTabAskBarFocus } from "../hooks/useMainTabAskBarFocus";
-import { registerNavFocus, type NavRefHolder } from "../utils/navFocusRegistry";
+import { registerNavFocus, unregisterNavFocus, type NavRefHolder } from "../utils/navFocusRegistry";
 
 export type MainTabUnifiedAskBarProps = {
   fullBleedRowStyle: React.CSSProperties;
@@ -194,7 +194,7 @@ export function MainTabUnifiedAskBar(props: MainTabUnifiedAskBarProps) {
   const unifiedInputNavRef = useRef<NavRefHolder["current"]>(null);
   useEffect(() => {
     registerNavFocus("unified-input", unifiedInputNavRef);
-    return () => registerNavFocus("unified-input", null);
+    return () => unregisterNavFocus("unified-input", unifiedInputNavRef);
   }, []);
 
   const toggleAskModeMenu = useCallback(() => {
