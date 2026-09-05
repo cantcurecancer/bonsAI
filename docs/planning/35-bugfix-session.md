@@ -269,3 +269,33 @@ ask a throwaway question first and time the second one.
   and not a failure by any row, but it makes scripted checking slower and is worth knowing.
 - One press onto a chip mid-slide read a third visible. It did not repeat in the sweeps either side,
   so it is recorded here rather than filed.
+
+### Block 4b — the rating correction, and what the device said about greyed buttons
+
+The maintainer read the stopped-reply fix and pushed back: a half-written answer is not something to
+rate, and the rating is saved, so rating one quietly spoils the feedback they read later. They are
+right. Helpful and Not really are now greyed out on a stopped turn; Retry stays live, because it is
+the button a person actually wants after stopping something. A turn that finished normally is
+untouched, with a test that fails if that changes.
+
+**One measurement that matters for this, taken on the device today.** While a question is in flight
+the Ask button is greyed out — and it **still takes the highlight**. So a greyed-out button in this
+plugin is a stop that does nothing when pressed. That means the newly greyed thumbs will be dead
+stops too. It is the same shape as the greyed *Clear frozen test chips* button fixed on 2026-09-04,
+where the answer was to render nothing at all. Here the maintainer asked for greyed rather than gone,
+so the fix has to be to skip them with the D-pad instead. **Filed, not fixed** — it needs its own
+change and its own device check.
+
+**The stopped-reply check itself is still owed.** Three attempts: the first two answers finished
+before the rig could reach Stop, and on the third the highlight was dropped mid-answer, which is the
+open "pressing Ask drops the highlight" bug getting in the way of checking something else. The Stop
+control is an icon in the question box's corner rather than a stop on the way down, which is what
+made it slow to reach.
+
+### Where the device was left
+
+Every setting read back off disk and identical to the backup taken at the start. Deep Rock Galactic:
+Survivor is **still running** — the exit tool refused to guess its way through the confirm dialog,
+which is the safe behaviour, so closing it is one thumb press whenever the maintainer is next at the
+Deck. Nothing else was changed. **All plugin data was NOT wiped**: the maintainer asked to be messaged
+right before, and no reply came, so under their own rule it did not happen.
