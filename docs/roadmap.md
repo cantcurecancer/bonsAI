@@ -212,10 +212,11 @@ replace it with a specific issue when one exists.
 - ★★★ `[ui]` **Adjustable text size in Settings** — **OPEN.** `uiScalePx()` already runs through the stylesheet; the work is exposing it,
   deciding what must not scale (icons, the 300px column), and paying the settings plumbing. [Detail](roadmap-details.md#adjustable-text-size-in-settings).
 - ★★★ `[ui]` **Search density** — **OPEN.** Tighter, more scannable results with highlighted match tokens.
-- ★★★★ `[ask]` **Connection doctor** — **OPEN, planned 2026-09-05, calls pending (D64).** When an Ask fails, a **Fix this** button
-  runs the checks the plugin already has, shows the one that failed, and offers the one thing to do next with a button that
-  lands you on that control on the Ollama tab. **Save a report** inside it writes a plain file to the Desktop, which is the
-  **Deck health snapshot** folded in; the first call in D64 is whether to keep them as one. [Plan](planning/39-connection-doctor.md).
+- ★★★★ `[ask]` **Connection doctor** — **OPEN, planned 2026-09-05, calls locked (D64).** When an Ask fails, a **Fix this** button
+  under the failed reply runs the checks the plugin already has, shows the one that failed, and offers the one thing to do
+  next with a button that lands you on that control on the Ollama tab. It only offers; nothing changes without a press.
+  **Save a report** inside it, and a typed command, write a read-only report of the setup to the Desktop: the former
+  **Deck health snapshot**, folded in here. [Plan](planning/39-connection-doctor.md).
 - ★★★★ `[ask]` **Session context and user stash** — **OPEN.** Live session facts plus user-editable notes for Ask. No embeddings, no cloud.
 - ★★★★ `[KB]` **KB online / versus strategy content** — **OPEN, discovery locked 2026-08-09.** Versus, co-op and map callouts as new
   `section_type` values. WikiTeam / archive.org dumps only. [Plan](planning/17-kb-online-versus-strategy-content.md).
@@ -239,10 +240,6 @@ replace it with a specific issue when one exists.
   configs.
 - ★★★★ `[ui]` **SteamOS Share path** — **OPEN.** Faster path from Share and capture flows into screenshot attach where APIs allow.
 - ★★★★ `[ui]` **SteamOS spin hint card** — **OPEN.** Detect immutable spins and deep-link to troubleshooting.
-- ★★★★★ `[ask]` **Deck health snapshot** — **OPEN, proposed to fold into Connection doctor (D64).** A read-only report of the
-  setup written to the Desktop, plus a typed command that does the same. Planned 2026-09-05 as the **Save a report** button and the
-  typed command inside the doctor, since both share one set of checks. Retires into that entry if the first call in D64 says one
-  feature. [Plan](planning/39-connection-doctor.md).
 - ★★★★★ `[KB]` **Community tip contribution** — **OPEN, unblocked.** Reply → **Suggest as a tip** writes a schema-valid card to Desktop
   plus a GitHub attach URL. Phase 6 publish shipped 2026-08-16.
 - ★★★★★ `[ollama]` **On-Deck model benchmark** — **OPEN.** Rank installed models by measured speed and completion; offer as try order

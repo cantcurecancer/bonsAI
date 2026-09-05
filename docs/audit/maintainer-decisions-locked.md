@@ -3350,7 +3350,7 @@ direction and every doubt resolves to it.
 mode, so the backend change the plan had as its first step is gone; the whole feature is frontend text work
 on files no session owns today.
 
-### D64 — OPEN (raised 2026-09-05) — The connection doctor and the health report: seven calls before "go"
+### D64 — LOCKED 2026-09-05 (raised 2026-09-05) — The connection doctor and the health report: seven calls before "go"
 
 Raised while planning [planning/39-connection-doctor.md](../planning/39-connection-doctor.md), the second of
 the six features the maintainer picked on 2026-09-05. Today a failed Ask shows an error line and a
@@ -3393,3 +3393,24 @@ and the five-star **Deck health snapshot**; the earlier feature review said not 
 
 **Consequence if unanswered.** Nothing is built until 1 to 3 are answered. 4 to 7 have defaults that hold:
 typed command yes, the full report, consent asked for again at the time, four stars.
+
+**Answers, 2026-09-05 (the maintainer answered in chat), all seven locked:**
+
+1. **One feature.** The doctor, with **Save a report** inside it. The five-star **Deck health snapshot** entry
+   retires into the four-star **Connection doctor** entry; its text stays in the long notes.
+2. **Fix this lives under the failed reply**, and nowhere else. No Ollama-tab entry point, no separate
+   notification path. A tap on the failed notification already opens the panel on that reply.
+3. **Offers only.** One press per action. The one exception that already exists stays: the connection test
+   starts the on-Deck runtime by itself.
+4. **A typed command for the report:** yes, the same shape as the VAC check.
+5. **The report holds the full list:** version and build, the Deck's address, where the AI runs and what the
+   checks found, the host's version and models, the install phase, every permission, knowledge base and voice
+   engine state, scrubbed settings, the last Ask's routing details and the length of the last question, the
+   last two hundred log lines.
+6. **Consent to break the Deck's setup for the checks:** yes, when the Deck is free and nobody is playing;
+   everything restored and read back afterwards.
+7. **Four stars.**
+
+**Consequence worth recording.** With one entry point, the doctor is reachable only after an Ask has failed.
+Someone who wants to check a healthy setup before asking anything cannot; if that turns out to matter, a
+button on the Ollama tab is a small later addition, noted in the plan's out-of-scope list.
