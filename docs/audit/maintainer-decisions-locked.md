@@ -3287,7 +3287,7 @@ measured cause yet, so the routing policy keeps them off a helper lane. The sess
 them, after a device measurement, and if that measurement does not name a cause they are written up with
 their numbers rather than guessed at.
 
-### D63 — OPEN (raised 2026-09-05) — The answer's first lines in the toast: six calls before "go"
+### D63 — LOCKED 2026-09-05 (raised 2026-09-05) — The answer's first lines in the toast: six calls before "go"
 
 Raised while planning [planning/38-toast-answer-lines.md](../planning/38-toast-answer-lines.md), the first of
 the six features the maintainer picked on 2026-09-05. Today, when an answer finishes while the menu is
@@ -3331,3 +3331,65 @@ calls below are needed.
 hold: always on, no story-game guard, third in the queue. Whatever the hidden-block rule decides, a
 notification that would have shown a hidden spoiler shows today's words instead; withholding is the safe
 direction and every doubt resolves to it.
+
+**Answers, 2026-09-05 (the maintainer answered in chat):**
+
+1. **Every mode, best effort.** Hidden blocks, branch menus and checklists are left out of the preview and the
+   first lines of what remains are shown; if nothing safe remains, today's notification shows.
+2. **The title: pick from mockups drawn on the real shape.** Published the same day:
+   [Reply Toast Options](https://claude.ai/code/artifact/0590a00d-d48b-42ce-85be-0376c1bddf53). Five options in the two-slot
+   shape Decky really draws, with a table of what is known from the code against what is assumed until
+   measured. **The pick itself is still owed** and is the only open item on this entry.
+3. **Time on screen: a slider on that page**, two to twelve seconds, to play with before choosing.
+4. **No setting for now.** Always on.
+5. **No story-game guard for now.**
+6. **Not queued for the Deck.** The entry stays in the roadmap, ready to implement later; the measurement runs
+   first when it is picked up.
+
+**Consequence worth recording.** With every mode treated alike, the toast no longer needs to know the Ask
+mode, so the backend change the plan had as its first step is gone; the whole feature is frontend text work
+on files no session owns today.
+
+### D64 — OPEN (raised 2026-09-05) — The connection doctor and the health report: seven calls before "go"
+
+Raised while planning [planning/39-connection-doctor.md](../planning/39-connection-doctor.md), the second of
+the six features the maintainer picked on 2026-09-05. Today a failed Ask shows an error line and a
+notification, and nothing else: no button, no next step. The plan adds a **Fix this** button that runs the
+checks the plugin already has, shows the one that failed, and offers the one thing to do next with a button
+that lands you on that control. Two roadmap entries share these checks, the four-star **Connection doctor**
+and the five-star **Deck health snapshot**; the earlier feature review said not to build two check stacks.
+
+1. **One feature or two?**
+   - Option 1 (recommended): one. The doctor, with **Save a report** inside it, which is the snapshot's whole
+     job. The five-star entry retires into the four-star one.
+   - Option 2: keep both entries and build them separately.
+2. **Where does Fix this live?**
+   - Option 1 (recommended): under the failed reply; a tap on the *Ask failed* notification lands there too;
+     and **Check my setup** on the Ollama tab, so it can run without a failure first.
+   - Option 2: the Ollama tab only.
+3. **Does the doctor act, or only offer?**
+   - Option 1 (recommended): it only offers, one press per action. The single exception already exists: the
+     connection test starts the on-Deck runtime by itself. Nothing else changes a setting without a press.
+   - Option 2: let it fill in a network address it found, and start the runtime, on its own.
+4. **A typed command for the report?**
+   - Option 1 (recommended): yes, the same shape as the VAC check; needs no model.
+   - Option 2: the button only.
+5. **What goes in the report?**
+   - Option 1 (recommended): plugin version and build; the Deck's network address; where the AI runs and what
+     the checks found, with the host's version, installed and loaded models; the on-Deck install's phase; every
+     permission's state; knowledge base installed and version; voice engine ready or not; the settings with
+     secret-looking values removed; the last Ask's routing details and time taken, and the length of the last
+     question rather than its words; the last two hundred lines of the plugin log. Read-only throughout.
+   - Option 2: the same without the log tail.
+   - Option 3: the same with the last question's words included.
+6. **Consent to break the Deck's setup for the checks.** The rows need a wrong address, the on-Deck runtime
+   stopped, a missing model first in the try order, and the file-write permission off, each restored and read
+   back off disk afterwards.
+   - Option 1 (recommended): yes, when the Deck is free and nobody is playing on it.
+   - Option 2: the maintainer runs those rows.
+7. **Stars.**
+   - Option 1 (recommended): the merged entry stays at four; the report is small once the checks exist.
+   - Option 2: five, keeping the snapshot's weight.
+
+**Consequence if unanswered.** Nothing is built until 1 to 3 are answered. 4 to 7 have defaults that hold:
+typed command yes, the full report, consent asked for again at the time, four stars.
