@@ -230,10 +230,6 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
   the carousel's history, mirroring how Left at the edge already pulls an earlier one back; and every mode's
   60-second walk restarts when an Ask completes, even though a pinned batch always reseeds to the same three chips.
   Row **QA-FROZEN-CHIPS-02**.
-- ★ `[focus]` **Reordering in the try-order picker drops the highlight** — **VERIFY, two fixes failed on the Deck 2026-09-04, a
-  third applied the same night.** Any button press inside the picker closed it, Reset included: the buttons are plain submit
-  buttons inside the modal's form, so an A press submitted it. Row Up/Down and Reset clicks now call `preventDefault()`, on top
-  of the Steam-transfer refocus the second attempt added. **Still not measured on the Deck.** Row **PICKER-REORDER-02**.
 - ★ `[focus]` **The active chip in Show details is hard to spot** — **VERIFY, measured on the Deck 2026-09-04, your glance owed.** The
   active chip now carries a cyan glow and a brighter fill, and the *Chip 1 of 6* counter is bold cyan; on the device exactly one chip
   carried the highlight. Picture for your eyes: `screenshots/DeckCapture_20260904_220827_game.png`. Row **CONTEXT-LADDER-01**.
@@ -334,6 +330,8 @@ on 2026-07-30 (`apply_tdp` no longer exists). Preserved in the archive.
 since April (`25742f2`), and a deliberate failing test exits 1 today. If it recurs, record the exact command and shell.
 
 **September 2026**
+- ★ `[focus]` **Reordering in the try-order picker keeps the highlight and keeps the picker open** — verified on the Deck
+  2026-09-04 on the third fix: A on a row's Down button moves the row and the ring follows it (PICKER-REORDER-02). [Detail](archive/roadmap-bugs-fixed.md#moved-from-the-roadmap-2026-09-04).
 - ★ `[ask]` **The question overlay now sits exactly on the native text field** — verified on the Deck 2026-09-04: the field and
   its two mirrors agree on wrapping, font and width to 0.02 px, empty and with a two-line question (ASK-OVERLAY-01). [Detail](archive/roadmap-bugs-fixed.md#moved-from-the-roadmap-2026-09-04).
 - ★ `[chips]` **Chip rotation reaches past the top three of the candidate list** — verified on the Deck 2026-09-04 with Half-Life 2

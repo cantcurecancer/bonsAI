@@ -618,3 +618,11 @@ measurements and the QA rows survive. The roadmap keeps a one-line entry in **Do
   `clientWidth`-rounded 274px) — enough to wrap a long line one character sooner in the mirrors. They now copy the
   field's own computed style each pass. Owed: the same read after the fix, within 0.1px. Row **ASK-OVERLAY-01**.
   - **Deck 2026-09-04, third build of plan 32:** field and mirrors read the same `white-space`, `overflow-wrap` and font stack; widths within 0.012 px; the placeholder mirror fits inside the field; a 58-character question wraps into the same two lines in the overlay and the measuring mirror (`runs/ASK-OVERLAY-01-build3-measurements.json`).
+
+### Reordering in the try-order picker dropped the highlight (verified on the Deck 2026-09-04)
+
+- ★ `[focus]` **Reordering in the try-order picker drops the highlight** — **VERIFY, two fixes failed on the Deck 2026-09-04, a
+  third applied the same night.** Any button press inside the picker closed it, Reset included: the buttons are plain submit
+  buttons inside the modal's form, so an A press submitted it. Row Up/Down and Reset clicks now call `preventDefault()`, on top
+  of the Steam-transfer refocus the second attempt added. **Still not measured on the Deck.** Row **PICKER-REORDER-02**.
+  - **Deck 2026-09-04, third build of plan 32:** the first two fixes failed on the device because every button inside the picker was a plain submit button inside Steam's modal form, so an A press closed the picker; with the submit stopped, A on a row's Down button moves the row, the ring stays on that row's Down button and the picker stays open (`runs/PICKER-REORDER-02-build3-a-keeps-picker-open.json`).

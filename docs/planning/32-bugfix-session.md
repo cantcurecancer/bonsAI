@@ -341,3 +341,6 @@ Written as things land.
   lane E's overlay mirror; 61 files verified, both hashes match. Bug 13 **passes** by the row's own recipe: empty field and a
   two-line question, the field and its two mirrors agree on wrapping, font and width to 0.012 px (Done). Bug 7's picker check is
   next on this build; bugs 1 and 3 wait for lane A's branch and a fourth deploy.
+- **22:47 to 22:57, Deck block 8, bug 7:** on build 3 the picker check **passes**: A on the first row's Down button moved the row to
+  second place, the ring stayed on that row's Down button, visible, and the picker stayed open; the order was put back and the
+  picker closed with B, nothing saved (Done). All three device-verified fixes from lane B now hold.
