@@ -154,9 +154,6 @@ replace it with a specific issue when one exists.
 - ★★ `[ui]` **Replace the bonsAI tab icon with the redesign's** — **OPEN.** Flatter, more silhouette, because it renders at 14px. It
   has to be an inline SVG path, not the PNG, so it inherits `currentColor` (`BonsaiTreeTabIcon`). Update `icons.bonsaiGeometry.test.tsx`
   in the same change.
-- ★★★ `[chips]` **A setting for one or two preset chips** — **OPEN, filed 2026-09-02.** Two stays the default (D43); one gives the label
-  the whole column. The row already reads one constant (`PRESET_VISIBLE_SLOTS`); the cost is the ~18-file settings plumbing plus a QA
-  row per mode. The 2026-08-31 one-chip build (`fc1b245`) is the reference. [Detail](roadmap-details.md#a-setting-for-one-or-two-preset-chips).
 - ★★★ `[chips]` **Decode preset chip animation** — **VERIFY, feel only.** Shipped 2026-08-28. Measured on device: a flat 60 fps with
   all chips decoding. Whether it feels right is a person's call. Row **PRESET-STREAM-ANIM-01**.
 - ★★★ `[layout]` **Copy sits in the answer's corner, not in a button row** — **OPEN.** A small semi-transparent copy glyph in the
@@ -186,9 +183,6 @@ replace it with a specific issue when one exists.
 - ★★★★ `[ask]` **Session context and user stash** — **OPEN.** Live session facts plus user-editable notes for Ask. No embeddings, no cloud.
 - ★★★★ `[ollama]` **LAN custom model pull** — **OPEN.** Blocked until a mechanism is chosen (R1 to R4). Depends on **Custom model in
   the Pull Models picker**.
-- ★★★★ `[ollama]` **Speed-mode VRAM preload** — **OPEN, developer toggle first.** Preload the default Ask model at boot so the first
-  Ask skips the cold load. Models of 3B or under, skip silently under VRAM pressure, no background polling. Open question: does
-  residency survive suspend? [Detail](roadmap-details.md#speed-mode-vram-preload).
 - ★★★★ `[perms]` **Web permission** — **OPEN, discovery locked.** Opt-in live web answers; offline Ask and local KB when off. Kids
   lock forces it off. [Discovery](planning/web-permission-discovery.md).
 - ★★★★ `[platform]` **Llama.cpp provider spike** — **OPEN, research only.** Go or no-go against Deck-local Ollama. Prior:
@@ -321,6 +315,11 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
 - ★★★ `[platform]` **Legacy-loader shim removal (D11)** — **VERIFY.** RPC probe passed; the Main-tab Ask pass is open. Row **D11-SHIM-01**.
 - ★★★ `[reply]` **Soft reply-length cap and thinking budget** — **VERIFY.** Shipped 2026-08-10. Sub-check 02 verified; 01, 03 and 04
   automated with a Deck confirm owed; 05 needs a real thinking model. [Why](roadmap-details.md#shipped-qa-owed--why-each-was-built-this-way).
+- ★★★★ `[ollama]` **Speed-mode VRAM preload** — **VERIFY.** Shipped 2026-09-05 behind a Developer switch, off by default.
+  With it on, the default Ask model is loaded into memory when the plugin starts, so the first question does not pay the cold load.
+  Only warms a model of 3B or under, skips quietly when memory is tight, runs once and never polls. **It cannot slow start-up** — the
+  warm-up is scheduled and the plugin moves on, proved by a test that would time out if it ever waited. Rows **PRELOAD-01**,
+  **PRELOAD-02**. Still open, deliberately untouched: whether the model stays in memory after the Deck sleeps.
 - ★★★★ `[chips]` **Preset row: two chips across, with scrolling labels** — **VERIFY.** Rebuilt 2026-09-01 under D43. Two 30px chips
   side by side, a long label scrolls through Steam's `Marquee`, the help chip owns the row until dismissed. The dock went 245 to
   161px. Rows 02 and 03 passed on device; owed **04** only (scroll feel by eye, decode churn, reduced motion); 01b passed 2026-09-03.
@@ -403,6 +402,11 @@ for the Deck to be free). Anything new goes here, one line each, with what it de
   passed 2026-09-05.** In Strategy all three questions read *Keyword + meaning*, which is what the row asks for. The Speed
   half is the entry above; the timing over band is the slowdown bug. Row **KB-RECALL-01** stays owed until both close;
   **KB-RECALL-02** verified at the desk.
+- ★★★ `[chips]` **A setting for one or two preset chips** — **VERIFY.** Shipped 2026-09-05. A Settings switch, off by
+  default, shows one suggestion chip with the whole column instead of two sharing it. Two stays what everyone sees unless they turn
+  it on. Left and Right still move through the suggestions, and the out-of-suggestions glow still lights up with a single chip, where
+  first and last are the same chip. Rows **PRESET-SLOTS-01**, **PRESET-SLOTS-02**. Known and not fixed: with one chip a long label may
+  be held on screen longer than it needs to be, because the hold time is still worked out from the two-chip width.
 - ★★★ `[KB]` **DRG Survivor glossary terms** — **VERIFY, one touch tap owed.** Shipped 2026-08-28 and walked on device:
   underline, popup, D-pad reachability, B, one-press Up. Rows **DRG-GLOSSARY-01…04**.
   [Detail](archive/roadmap-completed.md#moved-from-the-roadmap-2026-09-02).
