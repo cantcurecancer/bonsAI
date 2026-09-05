@@ -235,6 +235,69 @@ class ChatSlotOwnershipTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(user_turns[0]["display_text"], "I'm at: the twins")
         self.assertEqual(user_turns[0]["text"], "[Strategy follow-up] I'm at: the twins")
 
+    async def test_vac_check_deny_reply_persists_turn_and_renames_slot(self) -> None:
+        """Regression: a deterministic local command (bonsai:vac-check, ban lookup off) used to
+        return from _finalize_immediate_background_local_command without ever touching the chat
+        slot. The slot never gained a first turn, so its title stayed the "New chat" default and
+        a later transcript reload found nothing -- which is what blanked the turn header back to
+        "..." on the frontend (traced in docs/roadmap-details.md).
+        """
+        slot = create_slot(self.tmp)
+        sid = slot["id"]
+        self.assertEqual(slot["label"], "New chat")
+
+        with patch.object(Plugin, "load_settings", return_value={}):
+            ack = await self.plugin.start_background_game_ai(
+                {
+                    "question": "bonsai:vac-check",
+                    "PcIp": "",
+                    "chat_slot_id": sid,
+                }
+            )
+
+        self.assertTrue(ack.get("accepted"))
+        self.assertEqual(ack.get("status"), "completed")
+
+        loaded = load_slot(self.tmp, sid)
+        self.assertIsNotNone(loaded)
+        assert loaded is not None
+        self.assertEqual(len(loaded["turns"]), 2)
+        user_turn, assistant_turn = loaded["turns"]
+        self.assertEqual(user_turn["role"], "user")
+        self.assertEqual(user_turn["text"], "bonsai:vac-check")
+        self.assertEqual(assistant_turn["role"], "assistant")
+        self.assertIn("Steam Web API is off", assistant_turn["text"])
+        self.assertEqual(loaded["label"], "bonsai:vac-check")
+        self.assertNotEqual(loaded["label"], "New chat")
+
+    async def test_shortcut_setup_reply_also_persists_to_chat_slot(self) -> None:
+        """Same fix, second call site: sanitizer / shortcut-setup / VAC check all finalize through
+        the same shared helper, so a passed chat_slot_id has to reach every one of them, not just
+        the VAC branch the bug report happened to name.
+        """
+        slot = create_slot(self.tmp)
+        sid = slot["id"]
+
+        with patch.object(Plugin, "load_settings", return_value={}):
+            ack = await self.plugin.start_background_game_ai(
+                {
+                    "question": "bonsai:shortcut-setup-deck",
+                    "PcIp": "",
+                    "chat_slot_id": sid,
+                }
+            )
+
+        self.assertTrue(ack.get("accepted"))
+        self.assertEqual(ack.get("shortcut_setup"), "deck")
+
+        loaded = load_slot(self.tmp, sid)
+        assert loaded is not None
+        self.assertEqual(len(loaded["turns"]), 2)
+        self.assertEqual(loaded["turns"][0]["role"], "user")
+        self.assertEqual(loaded["turns"][0]["text"], "bonsai:shortcut-setup-deck")
+        self.assertEqual(loaded["turns"][1]["role"], "assistant")
+        self.assertEqual(loaded["label"], "bonsai:shortcut-setup-deck")
+
     async def test_unknown_request_id_logs_fault(self) -> None:
         self.plugin._background_request_seq = 9999
         self.plugin._background_state = {

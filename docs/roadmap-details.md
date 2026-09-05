@@ -621,6 +621,24 @@ See also [The spoiler fence on a no-story game lands mid-reply](#the-spoiler-fen
   *symptom* (the header) without fixing the *cause* (the chat's title, and the on-disk history, both still empty) — worth doing
   defensively, but not a substitute for the backend fix.
 
+  **Fixed at the desk 2026-09-04, Deck check owed.** `_finalize_immediate_background_local_command` (`main.py`) now takes an
+  optional `chat_slot_id` and, when one is active, persists the exchange through the same two steps the normal path's own
+  completion uses — `_chat_slots_record_user_turn` then `_chat_slots_record_assistant_turn`, the latter carrying
+  `transparency_snapshot_for_chat_slot`'s trimmed snapshot, the same helper `game_ai_request.py` already uses for its own
+  immediate-command rows. `chat_slot_id` is now parsed once in `start_background_game_ai` before the three local-command
+  branches (previously parsed only on the normal path, further down the same method) and threaded into all three call sites
+  (sanitizer, shortcut, VAC), so each of them gains a first turn and `chat_slot_service.append_turn`'s rename-off-*New chat*
+  rule now fires for them too. **No frontend change was needed.** `useChatSlots.ts`'s `applySlotTranscript` still overwrites
+  `askThreadDisplayQuestion` unconditionally on reload, but that write only matters while `expandedTurnKey === "live"`; once
+  the reload finds a complete user+assistant pair, `turnsToCollapsedTurns` (already covered by `chatSlotTurns.test.ts`'s
+  "returns empty pending when turns end on assistant") reports no pending question, so `applySlotTranscript` points
+  `expandedTurnKey` at the newly archived turn's own id instead — and that turn's header reads `turn.question` directly
+  (`MainTabChatTranscript.tsx:616`), never the live-question path that used to show `…`. Two new backend tests in
+  `tests/test_chat_slot_ownership.py`: `test_vac_check_deny_reply_persists_turn_and_renames_slot` and
+  `test_shortcut_setup_reply_also_persists_to_chat_slot`. New QA row **CMD-REPLY-TITLE-01**: from the [+] position with the
+  ban lookup off, send `bonsai:vac-check`; the turn header reads the command, not `…`; the chat's title in the slot row is
+  the command, not *New chat*; after a QAM close and reopen the header still reads it.
+
 
 ## Small and cosmetic, as filed
 

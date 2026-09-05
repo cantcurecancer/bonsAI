@@ -136,6 +136,7 @@ from backend.services.transparency_service import (
     build_immediate_command_snapshot,
     build_sanitizer_block_snapshot,
     build_voice_transcribe_snapshot,
+    transparency_snapshot_for_chat_slot,
 )
 from backend.services.tdp_service import clean_env
 from backend.services.local_ollama_setup_service import (
@@ -2201,29 +2202,48 @@ class Plugin:
         sanitizer_reason_codes: list,
         state_question: str,
         meta: str,
+        chat_slot_id: str = "",
         shortcut_setup_for_state: Any = _OMIT_SHORTCUT_SETUP_FIELD,
         shortcut_setup_for_response: Any = _OMIT_SHORTCUT_SETUP_FIELD,
     ) -> dict:
         """Persist transparency, publish ``completed`` background state, and return the RPC body.
 
         Local keyword branches (sanitizer / shortcut / VAC) never spawn ``_run_background_request``; they must
-        still mint a monotonic ``request_id`` so UI polling and Desktop autosave dedupe stay consistent.
+        still mint a monotonic ``request_id`` so UI polling and Desktop autosave dedupe stay consistent. They
+        also never reach the normal path's own chat-slot persistence further down ``start_background_game_ai``
+        (guarded there on ``has_local_command`` being false), so when a slot is active this records the same
+        user+assistant turn pair that path would have. Without it the slot never gets a first turn, its title
+        never leaves "New chat", and the transcript reload that follows finds nothing to show.
         """
         self._background_request_seq += 1
         request_id = self._background_request_seq
         now = time.time()
-        await self._persist_input_transparency(
-            Plugin._immediate_command_transparency_snapshot(
-                route=transparency_route,
-                parsed_question=parsed_question,
-                resp=resp,
-                sanitizer_action=sanitizer_action,
-                sanitizer_reason_codes=sanitizer_reason_codes,
+        snapshot = Plugin._immediate_command_transparency_snapshot(
+            route=transparency_route,
+            parsed_question=parsed_question,
+            resp=resp,
+            sanitizer_action=sanitizer_action,
+            sanitizer_reason_codes=sanitizer_reason_codes,
+            app_id=app_id,
+            app_name=app_name,
+            pc_ip=pc_ip,
+        )
+        await self._persist_input_transparency(snapshot)
+        if chat_slot_id:
+            await self._chat_slots_record_user_turn(
+                slot_id=chat_slot_id,
+                question=parsed_question,
+                request_id=request_id,
+                attachments=[],
                 app_id=app_id,
                 app_name=app_name,
-                pc_ip=pc_ip,
             )
-        )
+            await self._chat_slots_record_assistant_turn(
+                slot_id=chat_slot_id,
+                response_text=resp,
+                transparency=transparency_snapshot_for_chat_slot(snapshot),
+                app_id=app_id,
+            )
         self._background_state = completed_local_command_state(
             request_id=request_id,
             question=state_question,
@@ -2592,6 +2612,9 @@ class Plugin:
         # read while holding _background_lock would stall a concurrent Cancel.
         if pre_settings is None:
             pre_settings = await self.load_settings()
+        # Parsed once here (rather than only further down, on the normal path) so the local-command
+        # branches below can persist to the same active slot before they return.
+        chat_slot_id = Plugin._parse_chat_slot_id(question)
 
         async with self._background_lock:
             if (
@@ -2630,6 +2653,7 @@ class Plugin:
                         sanitizer_reason_codes=[],
                         state_question="",
                         meta="sanitizer_keyword",
+                        chat_slot_id=chat_slot_id,
                     )
 
             if local_kinds.shortcut:
@@ -2649,6 +2673,7 @@ class Plugin:
                         sanitizer_reason_codes=[],
                         state_question=parsed_question,
                         meta="shortcut_setup",
+                        chat_slot_id=chat_slot_id,
                         shortcut_setup_for_state=variant,
                         shortcut_setup_for_response=variant,
                     )
@@ -2669,6 +2694,7 @@ class Plugin:
                         sanitizer_reason_codes=[],
                         state_question=parsed_question,
                         meta="vac_check",
+                        chat_slot_id=chat_slot_id,
                         shortcut_setup_for_state=None,
                     )
 
@@ -2684,7 +2710,6 @@ class Plugin:
                 settings=pre_settings,
             )
             self._publish_thinking_phase(request_id, opening_blurb)
-            chat_slot_id = Plugin._parse_chat_slot_id(question)
             self._background_state = pending_background_state(
                 request_id=request_id,
                 question=parsed_question,

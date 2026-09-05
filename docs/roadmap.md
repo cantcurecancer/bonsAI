@@ -250,10 +250,10 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
   2026-09-04: the button now renders only once a batch is pinned (the "0 pinned" text above it already explains the empty
   state), so a disabled stop no longer sits at the bottom of Developer. Owed: a Developer sweep with no batch pinned shows
   no stop named *Clear frozen test chips*. Row **DEV-CLEAR-CHIPS-01**.
-- ★ `[focus]` **The focus ring is clipped on grid layouts** — **VERIFY, measured on the Deck 2026-09-04, your glance owed.** Each
-  character-picker column now carries 6 px of inner padding; on the device the top-left tile sits 6 px inside the column that clips,
-  and Steam's ring there is under a pixel wide, so it has room on every side. Picture for your eyes:
-  `screenshots/DeckCapture_20260904_214941_game.png`. Row **CHAR-PICKER-RING-01**.
+- ★ `[focus]` **The focus ring is clipped on grid layouts** — **VERIFY.** Fixed at the desk 2026-09-04: each character-picker
+  grid column now carries 6px of inner padding so a focused tile's ring has room to render before the column's own
+  `overflow: hidden` clips it — most visible before the fix on an edge tile. Style only. Owed: a screenshot with the ring
+  visible on an edge tile. Row **CHAR-PICKER-RING-01**.
 - ★ `[focus]` **Up from the preset chips walks back through the chip history before it leaves the row** — **VERIFY.**
   Fixed at the desk 2026-09-04 (D58 #2): Up now tries the session context strip first, same as before, and falls
   back to the always-mounted chat slot row when no strip is registered (an empty chat), instead of leaving the
@@ -262,6 +262,11 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
 - ★ `[reply]` **After reopening the panel, a branch-pick turn's header shows the internal prompt** — **VERIFY.** Fixed at the desk
   2026-08-28: the caption the user saw is saved with the turn. Owed: make a branch pick, reopen, read the header. Row
   **CHAT-HEADER-CAPTION-01**. [Detail](archive/roadmap-bugs-fixed.md#moved-from-the-roadmap-2026-09-02).
+- ★★ `[chat]` **A command reply leaves the turn header blank and the chat titled *New chat*** — **VERIFY.**
+  Fixed at the desk 2026-09-04, Deck check owed: the sanitizer, shortcut-setup and VAC-check replies now save their question
+  and reply to the active chat slot the same way a normal Ask's completed turn does, so the slot gets a first turn, renames
+  itself off *New chat*, and the header reads the command instead of `…`. Row **CMD-REPLY-TITLE-01**.
+  [Detail](roadmap-details.md#a-command-reply-leaves-the-turn-header-blank-and-the-chat-titled-new-chat).
 - ★★ `[focus]` **A checklist the model got wrong was left in the reply as raw JSON**, its own D-pad stop that did nothing — **VERIFY.**
   Fixed 2026-08-28: a rejected checklist block is dropped, as a rejected branch block already was. Owed: one sighting on device of a
   reply where it happens. Row **STRAT-CHECKLIST-JSON-01**.
