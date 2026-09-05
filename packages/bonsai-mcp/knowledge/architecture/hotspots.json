@@ -17,7 +17,7 @@
     },
     {
       "path": "src/hooks/useBonsaiAskOrchestration.ts",
-      "lines": 1559,
+      "lines": 1587,
       "role": ""
     },
     {
@@ -51,6 +51,11 @@
       "role": ""
     },
     {
+      "path": "src/hooks/useBonsaiAskOrchestration.test.ts",
+      "lines": 1092,
+      "role": ""
+    },
+    {
       "path": "src/styles/sections/section-6.ts",
       "lines": 1081,
       "role": ""
@@ -68,11 +73,6 @@
     {
       "path": "src/data/characterPlaceholderEmoticonGrids.ts",
       "lines": 1024,
-      "role": ""
-    },
-    {
-      "path": "src/hooks/useBonsaiAskOrchestration.test.ts",
-      "lines": 1022,
       "role": ""
     },
     {

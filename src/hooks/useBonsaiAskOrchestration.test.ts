@@ -10,7 +10,12 @@
 import { renderHook, act } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { toaster } from "@decky/api";
-import { useBonsaiAskOrchestration, type UseBonsaiAskOrchestrationArgs } from "./useBonsaiAskOrchestration";
+import {
+  useBonsaiAskOrchestration,
+  resolveInitialOllamaContext,
+  type UseBonsaiAskOrchestrationArgs,
+} from "./useBonsaiAskOrchestration";
+import { Router } from "@decky/ui";
 import { getRpcCallLog, resetFakeDeckyRpc, setRpcHandler } from "../test-harness/fakeDeckyRpc";
 import { idleBackgroundStatusFixture } from "../test-harness/rpcFixtures";
 import { THINKING_BLURB_PLACEHOLDER } from "../utils/thinkingSummaryText";
@@ -1017,5 +1022,70 @@ describe("useBonsaiAskOrchestration", () => {
       expect(result.current.strategyChecklist).toBeNull();
       vi.useRealTimers();
     });
+  });
+});
+
+/*
+ * CHIP-ROTATION-01: with a game already running when the panel mounts, the Ask-bar footnote
+ * read "Context: no active game detected" for a full 96-second sample even though the preset
+ * carousel already showed that game's own chips — the footnote used to start blank/stale and
+ * wait for an Ask's status poll to correct it. `resolveInitialOllamaContext` is what the
+ * `ollamaContext` state now initializes from, so these are a direct spec for the mount-time fix.
+ */
+describe("resolveInitialOllamaContext", () => {
+  it("reports the running game immediately, not a stale survived snapshot", () => {
+    expect(resolveInitialOllamaContext("220", { app_id: "", app_context: "none" })).toEqual({
+      app_id: "220",
+      app_context: "active",
+    });
+  });
+
+  it("falls back to a survived context when nothing is running", () => {
+    const survived: ReturnType<typeof resolveInitialOllamaContext> = {
+      app_id: "570",
+      app_context: "active",
+    };
+    expect(resolveInitialOllamaContext("", survived)).toBe(survived);
+  });
+
+  it("degrades quietly to null when nothing is running and nothing survived", () => {
+    expect(resolveInitialOllamaContext("", undefined)).toBeNull();
+    expect(resolveInitialOllamaContext("   ", null)).toBeNull();
+  });
+});
+
+describe("ollamaContext on mount (CHIP-ROTATION-01)", () => {
+  const originalMainRunningApp = Router.MainRunningApp;
+
+  afterEach(() => {
+    (Router as { MainRunningApp: typeof Router.MainRunningApp }).MainRunningApp =
+      originalMainRunningApp;
+  });
+
+  it("shows the running game right away, before any Ask status poll resolves", () => {
+    resetFakeDeckyRpc();
+    // Never resolves — if the footnote depended on this poll, it would stay wrong forever.
+    setRpcHandler("get_background_game_ai_status", () => new Promise(() => {}));
+    (Router as { MainRunningApp: typeof Router.MainRunningApp }).MainRunningApp = {
+      appid: 220,
+      display_name: "Half-Life 2",
+    } as unknown as typeof Router.MainRunningApp;
+
+    const { result } = renderHook(() => useBonsaiAskOrchestration(makeArgs()));
+
+    expect(result.current.ollamaContext).toEqual({ app_id: "220", app_context: "active" });
+  });
+
+  it("degrades quietly to no active game when nothing is running", () => {
+    resetFakeDeckyRpc();
+    setRpcHandler("get_background_game_ai_status", () => new Promise(() => {}));
+    (Router as { MainRunningApp: typeof Router.MainRunningApp }).MainRunningApp = undefined as unknown as typeof Router.MainRunningApp;
+
+    const { result } = renderHook(() => useBonsaiAskOrchestration(makeArgs()));
+
+    // No crash and no false "active game" claim — whether that reads as the plain "no active
+    // game detected" footnote or as no footnote row at all is an existing, separate choice
+    // (both already render fine); this bug is specifically about a running game being missed.
+    expect(result.current.ollamaContext?.app_context).not.toBe("active");
   });
 });

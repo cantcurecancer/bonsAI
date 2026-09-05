@@ -99,6 +99,31 @@ function initialExpandedTurnKeyFromSurvival(): AskThreadExpandedTurnKey {
   return "live";
 }
 
+/**
+ * The Ask-bar footnote's game context, resolved once at mount rather than left to wait for the
+ * first Ask's status poll. Measured (CHIP-ROTATION-01, runs/CHIP-ROTATION-01-carousel-sample-half-life-2.json):
+ * with Half-Life 2 already running, the footnote read "Context: no active game detected" for a
+ * full 96-second sample while the preset carousel already showed Half-Life 2's own chips — the
+ * carousel detects the running game on mount (`Router.MainRunningApp`, same id `trackedRunningAppId`
+ * tracks) but the footnote used to start from the last survived snapshot (or nothing) and only
+ * ever got corrected once an Ask's status poll ran.
+ *
+ * `liveAppId` is the same id the preset carousel already reads on mount — when it names a running
+ * game, that wins outright. Only when nothing is running does a modal-remount's survived context
+ * apply, so a mid-Ask restore (disclaimer modal, tab switch) is unaffected. No repeating poll is
+ * added; this runs once, at the `useState` initializer.
+ */
+export function resolveInitialOllamaContext(
+  liveAppId: string,
+  survived: OllamaContextUi | null | undefined,
+): OllamaContextUi {
+  const trimmed = liveAppId.trim();
+  if (trimmed) {
+    return { app_id: trimmed, app_context: "active" };
+  }
+  return survived ?? null;
+}
+
 /** Maps RPC poll payloads into Main-tab AI presentation state (pending vs terminal branches differ sharply). */
 export type UseBonsaiAskOrchestrationArgs = {
   desktopDebugNoteAutoSave: boolean;
@@ -162,8 +187,11 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
 
   // --- Presentation state (survival restore on mount) ---
   const [ollamaResponse, setOllamaResponse] = useState(() => survivalPeek?.ollamaResponse ?? "");
-  const [ollamaContext, setOllamaContext] = useState<OllamaContextUi>(
-    () => survivalPeek?.ollamaContext ?? null
+  const [ollamaContext, setOllamaContext] = useState<OllamaContextUi>(() =>
+    resolveInitialOllamaContext(
+      trackedRunningAppId || (Router.MainRunningApp?.appid?.toString() ?? ""),
+      survivalPeek?.ollamaContext,
+    ),
   );
   const [lastExchange, setLastExchange] = useState<LastExchangeSnapshot | null>(
     () => survivalPeek?.lastExchange ?? null
