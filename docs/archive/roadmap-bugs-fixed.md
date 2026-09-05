@@ -672,3 +672,23 @@ measurements and the QA rows survive. The roadmap keeps a one-line entry in **Do
   one step.
   - Three fixes, each found by a device measurement the one before it passed at the desk: the button had to become a real stop; the hop into its row had to use Steam's own transfer instead of a DOM focus and a stamped tab index; and the jump itself had the same fault one file further on, in `permissionJumpRegistry.ts`, which also reported success unconditionally so its retry could never fire.
   - **Deck 2026-09-05, fifth build:** Up from the ask button reaches the button in six presses; A opens the Permissions tab with the ring on *Steam ban lookup*; A turns the capability on (the saved settings agree); *Back to Main* returns with the ring on the button (`runs/PERM-JUMP-01-build5-toggle-and-back.json`, `runs/PERM-JUMP-01-build5-toggle-on-and-back-to-main.json`).
+
+### Show details had too many colours to tell what was highlighted (passed the maintainer's look 2026-09-05)
+
+- ★★ `[focus]` **Show details has too many colours to tell what is highlighted** — **failed your look 2026-09-05:** *"so many
+  different colour ring outlines going on I can't tell what's in focus — we went from ambiguous focus to too much noise"*. The row
+  could paint six colours at once: green, orange or red for the model's licence, tan when the chip carries a credit, grey-blue for
+  the rest, a cyan glow and fill on the current chip, and a bold cyan counter above — with the white highlight competing against all
+  of it. **Fixed at the desk 2026-09-05, your look owed:** one colour on the row. Every chip gets the same flat border, only the
+  current one is filled, the glow is gone, and the counter is grey. Licence and credit still show, in words, in the panel that opens
+  under the row. Row **CONTEXT-LADDER-01**.
+  - **Maintainer, second look 2026-09-05: pass.** The row now carries one flat border on every chip, a cyan fill only on the one you are on, no glow anywhere, and a grey counter; the licence and the credit still show, in words, in the panel that opens underneath. Picture `screenshots/DeckCapture_20260905_041120_game.png`.
+
+### The character picker's highlight was the browser's hairline, not the plugin's white ring (passed the maintainer's look 2026-09-05)
+
+- ★ `[focus]` **The character picker's highlight is the browser's hairline, not the plugin's white ring** — **failed your look
+  2026-09-05.** The tiles are plain buttons with no styling of their own, so nothing in the plugin's own rules matched them and the
+  browser drew its default ring. On the day you looked it came out gold, tinted by the Ali G accent; a fresh picture the next
+  morning shows it white but hairline-thin. **Fixed at the desk 2026-09-05, your look owed again:** the tiles now get the same white
+  ring as every other control, and the column already has room for it. Row **CHAR-PICKER-RING-01**.
+  - **Maintainer, second look 2026-09-05: pass.** The focused tile takes the plugin's own white ring with its soft outer glow, in the room the column already reserved. Picture `screenshots/DeckCapture_20260905_041028_game.png`.

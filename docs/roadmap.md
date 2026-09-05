@@ -54,18 +54,6 @@ hook gives a gentle heads-up when a session starts work outside this.
   game detected* for the whole 96-second sample. The line only changes when an Ask's status poll reports a game (`index.tsx` starts
   it inactive; `useBonsaiAskOrchestration.ts` updates it from the poll), so on a fresh mount it reports a detection that never ran.
   Evidence `runs/CHIP-ROTATION-01-carousel-sample-half-life-2.json`.
-- ★ `[focus]` **The character picker's highlight is the browser's hairline, not the plugin's white ring** — **failed your look
-  2026-09-05.** The tiles are plain buttons with no styling of their own, so nothing in the plugin's own rules matched them and the
-  browser drew its default ring. On the day you looked it came out gold, tinted by the Ali G accent; a fresh picture the next
-  morning shows it white but hairline-thin. **Fixed at the desk 2026-09-05, your look owed again:** the tiles now get the same white
-  ring as every other control, and the column already has room for it. Row **CHAR-PICKER-RING-01**.
-- ★★ `[focus]` **Show details has too many colours to tell what is highlighted** — **failed your look 2026-09-05:** *"so many
-  different colour ring outlines going on I can't tell what's in focus — we went from ambiguous focus to too much noise"*. The row
-  could paint six colours at once: green, orange or red for the model's licence, tan when the chip carries a credit, grey-blue for
-  the rest, a cyan glow and fill on the current chip, and a bold cyan counter above — with the white highlight competing against all
-  of it. **Fixed at the desk 2026-09-05, your look owed:** one colour on the row. Every chip gets the same flat border, only the
-  current one is filled, the glow is gone, and the counter is grey. Licence and credit still show, in words, in the panel that opens
-  under the row. Row **CONTEXT-LADDER-01**.
 - ★ `[reply]` **A branch question elides the game name** — **OPEN, found 2026-09-04.** The Ravenholm branch picker asked
   *"Where are you at in … ?"* with the title replaced by an ellipsis.
 - ★★ `[chat]` **The question you just asked is cut to one line** — **OPEN, filed 2026-09-05 by the maintainer.** The bubble above a
@@ -335,6 +323,10 @@ on 2026-07-30 (`apply_tdp` no longer exists). Preserved in the archive.
 since April (`25742f2`), and a deliberate failing test exits 1 today. If it recurs, record the exact command and shell.
 
 **September 2026**
+- ★★ `[focus]` **Show details tells you where you are without a wall of colour** — you failed the first version on the Deck
+  2026-09-05 ("too much noise"); rebuilt to one colour on the row and passed on the second look (CONTEXT-LADDER-01). [Detail](archive/roadmap-bugs-fixed.md#moved-from-the-roadmap-2026-09-04).
+- ★ `[focus]` **The character picker uses the plugin's own white highlight** — you failed the first version on the Deck 2026-09-05
+  ("rings that are yellow, they should be white"); the tiles now take the same white ring as everything else and passed on the second look (CHAR-PICKER-RING-01). [Detail](archive/roadmap-bugs-fixed.md#moved-from-the-roadmap-2026-09-04).
 - ★★ `[focus]` `[perms]` **A blocked reply's Open Permissions button works end to end on the D-pad** — verified on the Deck
   2026-09-05: the button is a stop, A lands on the matching toggle, A turns it on, and *Back to Main* returns to the reply (PERM-JUMP-01). [Detail](archive/roadmap-bugs-fixed.md#moved-from-the-roadmap-2026-09-04).
 - ★★ `[focus]` **After a modal closes or the panel remounts, the ring no longer sits on a hidden tab button** — verified on
