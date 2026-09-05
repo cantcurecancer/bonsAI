@@ -4,8 +4,8 @@ Written 2026-09-05, after the maintainer said yes to a one-off tranche of new ti
 base and asked for the list to come from their own Steam library. Plain language on purpose. Decision
 D69 in the decisions file; roadmap entry under Knowledge base and RAG § Next.
 
-**Status 2026-09-05: the library is read and the wikis are checked (§ 5, § 6). Owed: the screen walk
-when the Deck is free, and your pick of five to ten titles (§ 7).**
+**Status 2026-09-05: the library is read, the wikis are checked, and the titles are picked (§ 6). Owed: the
+screen walk when the Deck is free, then the cards.**
 
 ---
 
@@ -134,40 +134,49 @@ for: the Hades Fandom wiki is NonCommercial, the Zelda wikis are GFDL, the Baldu
 | **Gran Turismo 4**, **Banjo-Kazooie**, **NFS Underground 2** | Fandom wikis exist; no main dump found for GT or Banjo; NFS dump Jul 2022 declares no licence | none / unclear | **Maybe.** Request dumps; confirm licences |
 | **Hogwarts Legacy** | Harry Potter Fandom dump is from 2020 (before the game); a speedrun wiki (CC BY-SA 4.0, Aug 2026) is narrow | none useful | **No usable source today** |
 | **Stardew Valley** | The official wiki declares CC BY-NC-SA (NonCommercial) on its 2019, 2023 and 2025 dumps; the Fandom copy is 4 MB and stale | not usable | **No wiki source.** Your second most played single-player game. Option: cards you write yourself from play, as the Ocarina cards were, credited to nobody and labelled so |
-| **Brotato** | The wiki declares no licence at all | May 2025, 47 MB | **No wiki source.** Same option as Stardew |
+| **Brotato** | brotato.wiki.spellsandguns.com: the machine-readable licence field is empty, but the page footer links **CC BY-SA 4.0** (read 2026-09-05). The archive item lists no licence, so record the footer as the evidence | May 2025, 47 MB | **Usable**, on the footer. Note the empty field in the credit line's provenance |
 | **Majora's Mask, Breath of the Wild, Tears of the Kingdom, Wind Waker, Twilight Princess, Skyward Sword** | Both Zelda wikis are GFDL | not usable | **No wiki source.** Same option; the Ocarina cards already went this way |
 | Detroit, Death Stranding, The Red Strings Club, It Takes Two | — | — | **No.** Story or co-op story |
 | CS2, TF2, PUBG, CS:S, Left 4 Dead, Golf With Your Friends | — | — | **Versus plan (17).** Note the hours: these five are most of what you play |
 
-## 6. Recommended tranche
+## 6. The tranche, as picked by you on 2026-09-05
 
-Ranked by how much you play it, how good the source is, and how well the game fits cards. The first
-eight are the recommendation; the rest are options.
+From a recommended eight you dropped Palworld and Devil May Cry 3 and added Super Smash Bros. Melee,
+Fallout: New Vegas and Pikmin 2. Nine entries, eleven games:
 
-1. **Black Mesa** — confirmed. Source cleared.
+1. **Black Mesa** — source cleared (the Half-Life wiki already in the corpus).
 2. **Hollow Knight** — the best wiki in the list; bosses, charms, areas; little to fence.
 3. **Grand Theft Auto V** — your most played single-player game outside the corpus; source cleared.
 4. **Grand Theft Auto IV** — same source, a hundred hours.
-5. **DOOM Eternal**, with Doom 64 riding along — one excellent source, two of your titles.
-6. **Palworld** — your one favourited shortcut; pals, bosses, tech; read the wiki live.
-7. **A Mario pack**: Super Mario 64, Mario Kart 64, Paper Mario: The Thousand-Year Door — one source
+5. **DOOM Eternal**, with **Doom 64** riding along — one excellent source, two of your titles.
+6. **A Mario pack**: Super Mario 64, Mario Kart 64, Paper Mario: The Thousand-Year Door — one source
    covers all three, and it is the strongest of the emulated shelf.
-8. **Devil May Cry 3** — bosses and styles; played last October.
+7. **Super Smash Bros. Melee** — SmashWiki; characters, matchups, techniques.
+8. **Fallout: New Vegas** — source already in hand from Fallout 4.
+9. **Pikmin 2** — Pikipedia; the 2014 dump is fine for a 2004 game.
 
-Options for slots nine and ten: **Super Smash Bros. Melee**, **Sifu** (after a fresh dump), **Fallout:
-New Vegas** (cheap, source in hand), **Crash Bandicoot**, **Pikmin 2**.
+Dropped: Palworld, Devil May Cry 3. Still available if wanted: **Brotato** (usable after all, on its
+footer licence), **Sifu** (after a fresh dump), **Crash Bandicoot**, **God of War**.
 
-Three of your most played games have no usable wiki: **Stardew Valley**, **Brotato**, and the **Zelda**
-titles. If you want any of them in, the cards are written from your own play with no source line, the
-way the Ocarina cards were. That is allowed and honest; it just earns the weaker trust label.
+Two of your most played games still have no usable wiki: **Stardew Valley** and the **Zelda** titles. If
+you want either in, the cards are written from your own play with no source line, the way the Ocarina
+cards were. That is allowed and honest; it just earns the weaker trust label.
+
+**On "no licence declared, assume the best":** that logic is flawed, and it is worth saying why once.
+When a work states no licence, the law's default is all rights reserved to its authors; silence is not
+permission. Our corpus is published as one CC BY-SA work, and we cannot re-licence someone else's text
+into it. The publish tool also refuses a card with no licence, so it would have failed the gate anyway.
+The right moves are: read the footer and the wiki's copyright page (which is what settled Brotato), ask
+the wiki's admins for a statement, or write the cards from your own play and credit nobody. Facts about
+a game are not copyrightable; the wiki's wording is.
 
 And the hours say the versus plan matters: Counter-Strike 2, Team Fortress 2, PUBG and Counter-Strike:
 Source are about five thousand hours between them. That plan already has Counter-Strike 2 as its stage
 four.
 
-## 7. Step four — you pick, then the rules for writing
+## 7. The rules for writing
 
-You choose five to ten from § 6. Then:
+The pick is made (§ 6). Now:
 
 - **Cards in one session, blind test questions in another.** Whoever writes a card can never write its
   blind question; the test method depends on it.
@@ -183,7 +192,7 @@ You choose five to ten from § 6. Then:
 - ✅ Step one A: library read over SSH, 2026-09-05 (90 Steam games with playtime, 121 shortcuts).
 - ✅ Step three: wiki check per candidate (§ 5).
 - ⬜ Maintainer says the Deck is free; step one B: the screen walk confirms the shelf and the collections.
-- ⬜ Maintainer picks the tranche (§ 6); titles recorded here and in the decisions file.
+- ✅ Maintainer picked the tranche, 2026-09-05 (§ 6); recorded in the decisions file under D69.
 - ⬜ Cards written (one session); blind questions written (another); release.
 
 ## Sources

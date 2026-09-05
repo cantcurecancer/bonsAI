@@ -3517,7 +3517,7 @@ touching what ships. New titles then add data either way.
 **Locked 2026-09-05: the maintainer said yes.** Build the sweep, run it on the tuning questions only, confirm once on
 the blind set if it agrees, then change the weights. Recorded on the roadmap under the eval-tooling entry.
 
-### D69 — LOCKED 2026-09-05 (title list to come) — A first tranche of new titles before the catalog
+### D69 — LOCKED 2026-09-05 (titles picked the same day) — A first tranche of new titles before the catalog
 
 Phase 5's lock (2026-07-30) says no new titles until the catalog phase. The weights call above
 wants more games, and coverage is the biggest limit on answer quality for a real person: thirteen
@@ -3546,7 +3546,13 @@ confirmed by the maintainer as the first title.** Recommended with it: Hollow Kn
 Auto IV, DOOM Eternal (Doom 64 rides along), Palworld, a Mario pack (Super Mario 64, Mario Kart 64, Paper Mario TTYD),
 Devil May Cry 3; options Melee, Sifu, Fallout: New Vegas, Crash Bandicoot, Pikmin 2. Stardew Valley (NonCommercial
 wiki), Brotato (no licence declared) and every Zelda title (GFDL) have no usable wiki and would be maintainer-written.
-Owed: the screen walk when the Deck is free, and the pick.
+**The pick, 2026-09-05:** Black Mesa, Hollow Knight, Grand Theft Auto V, Grand Theft Auto IV, DOOM Eternal (Doom 64
+rides along), a Mario pack (Super Mario 64, Mario Kart 64, Paper Mario: The Thousand-Year Door), Super Smash Bros.
+Melee, Fallout: New Vegas, Pikmin 2. Palworld and Devil May Cry 3 were dropped by the maintainer. The maintainer asked
+whether a wiki that declares no licence could be assumed usable: no — silence means all rights reserved by default, and
+the publish tool refuses a card without a licence. Brotato turned out to declare **CC BY-SA 4.0 in its page footer**
+(the machine-readable field is empty), so it is usable if wanted; it is not in the nine. Owed: the screen walk when the
+Deck is free.
 
 **Answers, 2026-09-05 (the maintainer answered in chat), all seven locked:**
 

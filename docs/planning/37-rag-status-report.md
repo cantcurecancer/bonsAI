@@ -107,7 +107,7 @@ switch) have never been run on the Deck.
 **Your calls.** All five were decided on 5 September: "starting out" cards get their own kind; the answer-first
 shape is tested on the PC and then the Deck before a decision; structured cards stay prose; the blend-weight sweep runs
 now and the weights change if it agrees; and a first tranche of new titles comes from your own Steam library. The
-library was read the same day and the wikis checked; eight titles are recommended in plan 40 and your pick is owed.
+library was read the same day, the wikis checked, and nine titles picked (plan 40 § 6).
 
 ## 5. Next phases: what each buys, and what it costs
 
@@ -161,8 +161,8 @@ them straight; what remains is coverage, follow-up memory, and the things the te
 1. **The Deck and the knowledge-base files are held by the bug-fixing session** started today. Its
    lane owns the prompt text, the knowledge-base service and the embedding service. Knowledge-base
    code edits should wait for it or go through it.
-2. **Your pick of the new titles**, from the eight recommended in plan 40, and the screen walk that
-   confirms the shelf once the Deck is free. The five calls themselves were all decided on 5 September.
+2. **The screen walk that confirms the shelf**, once the Deck is free. The five calls and the title pick
+   were all decided on 5 September; the card writing needs no Deck.
 3. **The "no new titles" rule** for Phase 5 is reopened for one tranche only; the catalog stays its own
    phase.
 4. **Any schema change is a release that stales every installed corpus.** Per-game tips, a new card
