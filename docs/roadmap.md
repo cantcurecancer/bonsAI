@@ -31,6 +31,13 @@ from one star to six.
 **Every Main-tab UI change also owes the free-play sweep** (standing row **QA-FREE-PLAY-01** in
 [testing-manual.md](testing-manual.md)): walk the pane like a user and require every focused stop to also be visible.
 
+**Maintainer note (2026-09-05): pick the model before you pick up an item.** Rough guide, details and evidence in
+[planning/33-model-routing.md](planning/33-model-routing.md), policy in [AGENTS.md § 3](../AGENTS.md):
+★–★★ Sonnet 5 high · ★★★–★★★★ Opus xhigh plans, Sonnet lanes implement when the cause is known · ★★★★★+ Fable max
+plans only, Sonnet lanes build, Opus xhigh lands · `[focus]` `[layout]` `[ui]` measure on the Deck first, then Opus xhigh,
+never a lane without the measurement · docs and bookkeeping Sonnet or Opus medium · escalate a tier only after two device
+failures with a measurement. A prompt-time hook gives a gentle heads-up when a session starts work outside this.
+
 ---
 
 ## Bugs
@@ -225,18 +232,13 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
 
 ### Bugs that need verification
 
-- ★ `[chips]` **A frozen test-chip batch longer than the row cannot be reached after the first minute** — **VERIFY.**
-  Fixed at the desk 2026-09-04, Deck check owed: Right at the last visible chip now pulls the next pinned entry into
-  the carousel's history, mirroring how Left at the edge already pulls an earlier one back; and every mode's
-  60-second walk restarts when an Ask completes, even though a pinned batch always reseeds to the same three chips.
-  Row **QA-FROZEN-CHIPS-02**.
 - ★ `[focus]` **The active chip in Show details is hard to spot** — **VERIFY, measured on the Deck 2026-09-04, your glance owed.** The
   active chip now carries a cyan glow and a brighter fill, and the *Chip 1 of 6* counter is bold cyan; on the device exactly one chip
   carried the highlight. Picture for your eyes: `screenshots/DeckCapture_20260904_220827_game.png`. Row **CONTEXT-LADDER-01**.
-- ★ `[focus]` **The focus ring is clipped on grid layouts** — **VERIFY.** Fixed at the desk 2026-09-04: each character-picker
-  grid column now carries 6px of inner padding so a focused tile's ring has room to render before the column's own
-  `overflow: hidden` clips it — most visible before the fix on an edge tile. Style only. Owed: a screenshot with the ring
-  visible on an edge tile. Row **CHAR-PICKER-RING-01**.
+- ★ `[focus]` **The focus ring is clipped on grid layouts** — **VERIFY, measured on the Deck 2026-09-04, your glance owed.** Each
+  character-picker column now carries 6 px of inner padding; on the device the top-left tile sits 6 px inside the column that clips,
+  and Steam's ring there is under a pixel wide, so it has room on every side. Picture for your eyes:
+  `screenshots/DeckCapture_20260904_214941_game.png`. Row **CHAR-PICKER-RING-01**.
 - ★ `[reply]` **After reopening the panel, a branch-pick turn's header shows the internal prompt** — **VERIFY.** Fixed at the desk
   2026-08-28: the caption the user saw is saved with the turn. Owed: make a branch pick, reopen, read the header. Row
   **CHAT-HEADER-CAPTION-01**. [Detail](archive/roadmap-bugs-fixed.md#moved-from-the-roadmap-2026-09-02).
