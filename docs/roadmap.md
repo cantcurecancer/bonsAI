@@ -235,13 +235,9 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
   time, so ranks 1-3 came round every minute and ranks 4-6 rarely appeared; both now pick at random among the
   eligible candidates, keeping game chips ahead of generic Deck tips. Row **CHIP-ROTATION-01**.
   [Detail](roadmap-details.md#chip-rotation-is-biased-to-the-top-of-the-candidate-list).
-- ★ `[focus]` **Reordering in the try-order picker drops the highlight** — **VERIFY.** Fixed at the desk 2026-09-04:
-  after a move, the ring goes back onto the moved row's own button, using Steam's own focus transfer rather than a
-  plain `focus()`. **The first version of this fix failed on device the same night** (build 49241e7): the picker is
-  a modal, and relocating the focused row's DOM node during the reorder read to Steam as the node vanishing — the
-  ring left for a hidden tab button behind the modal, and doing that synchronously also stole the press and closed
-  the picker. Redone with `navRef`/`TakeFocus`, deferred past the press. **Still not measured on the Deck — row
-  PICKER-REORDER-02 decides.**
+- ★ `[focus]` **Reordering in the try-order picker drops the highlight** — **VERIFY, two fixes failed on the Deck 2026-09-04, cause
+  found.** Any button press inside the picker closes it, Reset included: the buttons are plain submit buttons inside the modal's form,
+  so an A press submits it. The lane is stopping the submit and keeping the Steam-transfer refocus. Row **PICKER-REORDER-02**.
 - ★ `[focus]` **The active chip in Show details is hard to spot** — **VERIFY, measured on the Deck 2026-09-04, your glance owed.** The
   active chip now carries a cyan glow and a brighter fill, and the *Chip 1 of 6* counter is bold cyan; on the device exactly one chip
   carried the highlight. Picture for your eyes: `screenshots/DeckCapture_20260904_220827_game.png`. Row **CONTEXT-LADDER-01**.

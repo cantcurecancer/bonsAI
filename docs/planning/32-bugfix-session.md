@@ -324,3 +324,8 @@ Written as things land.
   stamped the row `tabindex="-1"`; back with lane A for a registered-nav-node version. **22:14, second deploy** (`f9a4c17`, code
   at `d86b694`): lane B's picker redo, lane D's realm-safe trap, lane C's bug 5 and lane F's backend fix for the blank command header
   are on the device; 61 files verified, hashes match. Lanes A2 (Open Permissions redo) and E2 (overlay mirror) still building.
+- **22:16 to 22:40, Deck block 5 on build f9a4c17:** bug 4's chord reopen now lands on a visible control twice (Decky's back button,
+  then the bar); bug 5 **passes** both cases (Done); the blank command header **passes** on screen, on disk and across a reopen (Done);
+  bug 7's redo **fails** the same way, and the discriminating test showed the cause: any button press inside the picker submits the
+  modal's form and closes it, Reset included; lane B is stopping the submit. Lane E's overlay fix landed (`4f9a846`) for the third
+  deploy; lane A's Open Permissions redo is still building. The ban lookup stays off until PERM-JUMP-01 runs on the third build.
