@@ -1,8 +1,10 @@
 # bonsAI Roadmap
 
-Open bugs, work fixed but not yet confirmed on the Deck, planned features, and what shipped for v0.5.0. Four lists, each sorted
-from one star to six.
+Open bugs, work fixed but not yet confirmed on the Deck, planned features, and what shipped for v0.5.0. Four lists plus one
+section for the knowledge base, each sorted from one star to six.
 
+- **Knowledge base and RAG, all in one place:** [its own section](#knowledge-base-and-rag) — bugs, owed checks, next steps
+  and the calls waiting on the maintainer, with [a status report](planning/37-rag-status-report.md) kept in step with it.
 - **Long notes for open items:** [roadmap-details.md](roadmap-details.md)
 - **Shipped features, full detail:** [archive/roadmap-completed.md](archive/roadmap-completed.md) · **Fixed bugs, full detail:** [archive/roadmap-bugs-fixed.md](archive/roadmap-bugs-fixed.md)
 - **Maintainer decisions (D1 onward):** [audit/maintainer-decisions-locked.md](audit/maintainer-decisions-locked.md)
@@ -15,9 +17,10 @@ from one star to six.
 
 1. **An entry is at most five lines**, in plain language, and says what a user would notice. Anything longer goes to
    [roadmap-details.md](roadmap-details.md) (open) or [archive/](archive/) (finished) and is linked, never deleted.
-2. **Three lists for live work: [Bugs](#bugs), [Features](#features), [Verify](#verify).** A new entry goes straight into the
-   right list at its star position (ascending; within a star band by tag, then by title) with a tag. Do not add sub-headings
-   beyond Verify's own **Bugs** / **Features** split.
+2. **Three lists for live work: [Bugs](#bugs), [Features](#features), [Verify](#verify)** — except knowledge-base work,
+   which keeps its bugs, owed checks and plans together in [Knowledge base and RAG](#knowledge-base-and-rag). A new entry goes
+   straight into the right list at its star position (ascending; within a star band by tag, then by title) with a tag. Do not
+   add sub-headings beyond Verify's own **Bugs** / **Features** split and the knowledge-base section's own lists.
 3. **Status words in Bugs and Features:** **OPEN** (nothing built) · **PARTIAL** (some of it built) · **ACCEPTED** (the
    maintainer chose to live with it). Nothing else — as soon as something is fixed and unit-tested, it moves to **Verify**
    rather than taking a fourth status word.
@@ -90,12 +93,6 @@ hook gives a gentle heads-up when a session starts work outside this.
   **Half of this moved on 2026-09-05:** Up from the feedback buttons now lands on the reply's last section rather than skipping
   to the bubble (measured, CHAT-REPLY-ENTRY-01). What is still open is the archived-header half — Up from the first archived
   header runs to the tab bar without the chat slot row ever taking the ring.
-- ★★ `[KB]` **A troubleshooting question that only describes the symptom reaches no tips** — **OPEN, maintainer call.** The router
-  needs a topic word: *"the game drops me back to the library"* never routes because *crash* is absent. Two of four blind compat
-  rows miss. A reach limit of the D16 gate, not a regression; neither row was reworded. [Detail](roadmap-details.md#a-troubleshooting-question-that-only-describes-the-symptom-reaches-no-tips).
-- ★★ `[KB]` **Unrelated questions still get game cards stapled on** — **ACCEPTED 2026-08-27.** With a game running, *"thank you very
-  much"* still attaches a card. Raising the keyword floor pushes against D25, and the model mostly ignores an irrelevant card.
-  [Detail](roadmap-details.md#ordinary-phrases-attach-game-cards).
 - ★★ `[reply]` **Stopping a reply leaves no "Stopped" notice** — **OPEN, found 2026-09-04.** Pressing *Stop generation* inside the
   soft-continue window keeps the partial body correctly and strips the `Continuing…` cue (the 2026-08-15 fix works), but the small
   **Stopped** notice **SOFT-PREDICT-03** asks for never appears — the word is absent from the turn, the panel and the whole page —
@@ -128,27 +125,12 @@ hook gives a gentle heads-up when a session starts work outside this.
   gets back something that still looks alive, reports the press as handled, and moves nothing. That matches every symptom on record,
   including why only a loader restart clears it. Unproved. Evidence `runs/round35-trap-*.json`,
   [plan 35](planning/35-bugfix-session.md) § 7.
-- ★★★ `[KB]` **A quick question asked while a game is running pays for the slow search it was meant to skip** —
-  **OPEN, found 2026-09-05.** Speed mode is supposed to do the cheap keyword lookup only. On the Deck, with Deep Rock Survivor
-  running, two of three Speed questions ran the meaning search as well: Show details read *Keyword + meaning* and the turn spent
-  **1140 ms** and **944 ms** embedding, where the row requires *Keyword search* and no embed time at all. The third question read
-  *Knowledge base (skipped)* with no embed, so the pattern is that whenever the keyword search finds anything, the meaning search
-  runs too, whatever mode you picked. Breaks the Speed half of **KB-RECALL-01**; settles the open question lane B raised
-  2026-09-03. Evidence `runs/round34-drg-speed-q*.json`, log in [plan 34](planning/34-feature-verification-round.md).
-- ★★★ `[KB]` **The meaning search got about a fifth slower** — **OPEN, found 2026-09-05.** Three Strategy questions on the same
-  game measured **1079, 1094 and 1090 ms** to embed, against the **793–900 ms** band recorded when the recall pass shipped on
-  2026-08-18. Same corpus, same model, same device. Every game question a person asks now waits about a fifth of a second longer
-  than the row's own numbers say it should. Cause unmeasured. Evidence `runs/round34-drg-q*.json`.
 - ★★★★ `[chat]` **A Strategy thread's branch block shows in whichever chat slot you are looking at** — **OPEN, found 2026-09-04.**
   Slot A was asked a long Ravenholm question; switching to slot B showed B's own two turns followed by A's branch picker,
   *"Where are you at in … ? A. Just starting in the town area / B. Dealing with a tough encounter or trap"*. It is still in B after
   A's reply finished, so it is not a mid-stream race — the block is not scoped to the slot that made it. Seen twice: a
   *"Dodging Asterius's Charge — Progress is saved for this game…"* block from A's Hades thread also rendered while viewing B.
   Breaks **CHAT-SLOTS-V3-05a**, whose whole point is that a slot shows zero of another slot's content.
-- ★★★★ `[KB]` **The shipping retrieval arm loses to the vector half alone on rows nobody tuned against** — **OPEN, deferred under
-  D38.** On the blind holdout, `vector_only` beats the shipping `rrf` blend by 7.6 points of top-1; on the tuning rows they tie.
-  No weight changes until D38 is answered, and never by tuning against holdout. Groundwork done: 51 blind rows added to `tune`.
-  [Detail](roadmap-details.md#the-shipping-retrieval-arm-loses-to-the-vector-half-alone-on-rows-nobody-tuned-against).
 
 ---
 
@@ -178,9 +160,6 @@ replace it with a specific issue when one exists.
 - ★★ `[focus]` **Fewer D-pad stops on a finished reply** — **OPEN, filed 2026-09-02.** A finished answer gets one stop per paragraph,
   so a long reply is ten or more presses before the chips. Merge neighbouring paragraphs into sections of about one screen each.
   Streaming is untouched: the finished reply is re-split once the stream closes. Code fences stay whole.
-- ★★ `[KB]` **The eval fixture cannot see a recall failure** — **OPEN, one measurement owed.** The keyword-blind slice was 3 rows when
-  last counted (2026-08-28), before 36 more blind rows landed. Re-count it on the next arms run before calling this closed.
-  [Detail](roadmap-details.md#eval-fixture-cannot-see-a-recall-failure).
 - ★★ `[layout]` **Show details becomes a divider, not a chip** — **OPEN.** A full-width rule with the label in the middle reads as the
   end of the answer and frees the row it shares. Copy the collapsed-history row's shape (`.bonsai-chat-earlier-pill-row`).
 - ★★ `[reply]` **Make token streaming the default and drop the setting** — **OPEN, maintainer direction 2026-08-23.** Gated on the
@@ -202,20 +181,6 @@ replace it with a specific issue when one exists.
   row per mode. The 2026-08-31 one-chip build (`fc1b245`) is the reference. [Detail](roadmap-details.md#a-setting-for-one-or-two-preset-chips).
 - ★★★ `[chips]` **Decode preset chip animation** — **VERIFY, feel only.** Shipped 2026-08-28. Measured on device: a flat 60 fps with
   all chips decoding. Whether it feels right is a person's call. Row **PRESET-STREAM-ANIM-01**.
-- ★★★ `[KB]` **DRG Survivor glossary terms** — **VERIFY, one touch tap owed.** Shipped 2026-08-28 and walked on device: underline, popup,
-  D-pad reachability, B, one-press Up. Rows **DRG-GLOSSARY-01…04**. [Detail](archive/roadmap-completed.md#moved-from-the-roadmap-2026-09-02).
-- ★★★ `[KB]` **KB download Cancel** — **VERIFY, blocked.** Shipped 2026-08-05. The download finishes in about a second on device, so
-  there is no window to press Cancel in. Needs a slower fixture or a throttle. Row **KB-CANCEL-01**.
-- ★★★ `[KB]` **KB visual maps** — **OPEN.** Two shapes named by the maintainer 2026-08-29: a dungeon map, and a boss outline with weak
-  points marked. Nothing draws anything in a reply today. A dungeon map has to be authored, which sits behind the source policy and a
-  corpus rebuild. [Detail](roadmap-details.md#kb-visual-maps).
-- ★★★ `[KB]` **Spoiler coverage as a tiered setting** — **OPEN, maintainer proposal 2026-08-29.** One end fences nothing the user
-  asked about; the other fences bosses, endings and chapters; a middle tier fences anything past the intro. Default if nothing is
-  chosen: fence only named story beats and endings. Needs a Settings control, a focus-graph entry, and prompt wording per tier.
-  Absorbs the older "hide by risk band" idea. [Detail](roadmap-details.md#spoiler-coverage-should-be-a-setting-with-tiers).
-- ★★★ `[KB]` **The corpus has no "starting out" card** — **OPEN.** Every card is about a thing; the maintainer asked for build and
-  early-game guidance, and an orientation card for someone who knows a neighbouring game. Decide first whether that is a new
-  `section_type` or a `mechanic` naming convention. [Detail](roadmap-details.md#the-corpus-has-no-starting-out-card).
 - ★★★ `[layout]` **Copy sits in the answer's corner, not in a button row** — **OPEN.** A small semi-transparent copy glyph in the
   bubble's corner, the same weight as the microphone. The hard part is focus: bubbles need a way in and back out, and Copy must not
   become touch-only.
@@ -240,15 +205,6 @@ replace it with a specific issue when one exists.
 - ★★★★ `[ask]` **Connection doctor** — **OPEN, candidate.** **Fix this** on an Ask failure walks the probes to one next action with an
   Ollama-tab deep link. Decide against **Deck health snapshot** first; they share a probe set.
 - ★★★★ `[ask]` **Session context and user stash** — **OPEN.** Live session facts plus user-editable notes for Ask. No embeddings, no cloud.
-- ★★★★ `[KB]` **KB online / versus strategy content** — **OPEN, discovery locked 2026-08-09.** Versus, co-op and map callouts as new
-  `section_type` values. WikiTeam / archive.org dumps only. [Plan](planning/17-kb-online-versus-strategy-content.md).
-- ★★★★ `[KB]` **RAG Phase 4: extended retrieval** — **PARTIAL.** Tracks 1 and 2 shipped 2026-08-19 (chip guarantee, 16 structured
-  cards). Track 3 (per-game troubleshooting tips) needs a schema v4 bump and a corpus rebuild. Two maintainer calls owed: accept the
-  split, and whether to strengthen the prompt or accept prose on **PHASE4-CARDS-01**. [Detail](roadmap-details.md#rag-phase-4-extended-retrieval).
-- ★★★★ `[KB]` **RAG Phase 5: corpus expansion** — **OPEN.** Corpus maturity after Phase 4; session chip vector ranking.
-  [knowledge-base.md](knowledge-base.md) § Phase 5.
-- ★★★★ `[KB]` **RAG Phase 7: retrieval infra** — **OPEN.** Optional ANN index, auto-pull nomic, vision to KB, packs. The meaning
-  fallback shipped 2026-08-18, so ANN is an optimisation of a path that exists. [knowledge-base.md](knowledge-base.md) § Phase 7.
 - ★★★★ `[ollama]` **LAN custom model pull** — **OPEN.** Blocked until a mechanism is chosen (R1 to R4). Depends on **Custom model in
   the Pull Models picker**.
 - ★★★★ `[ollama]` **Speed-mode VRAM preload** — **OPEN, developer toggle first.** Preload the default Ask model at boot so the first
@@ -263,8 +219,6 @@ replace it with a specific issue when one exists.
 - ★★★★ `[ui]` **SteamOS Share path** — **OPEN.** Faster path from Share and capture flows into screenshot attach where APIs allow.
 - ★★★★ `[ui]` **SteamOS spin hint card** — **OPEN.** Detect immutable spins and deep-link to troubleshooting.
 - ★★★★★ `[ask]` **Deck health snapshot** — **OPEN.** Read-only diagnostics dump to Desktop; Magic Ask `bonsai:diagnostics`.
-- ★★★★★ `[KB]` **Community tip contribution** — **OPEN, unblocked.** Reply → **Suggest as a tip** writes a schema-valid card to Desktop
-  plus a GitHub attach URL. Phase 6 publish shipped 2026-08-16.
 - ★★★★★ `[ollama]` **On-Deck model benchmark** — **OPEN.** Rank installed models by measured speed and completion; offer as try order
   with confirmation.
 - ★★★★★ `[perms]` **VAC Phase 2: opponent IDs** — **OPEN, research.** Surface live opponent identities for ban checks when metadata allows.
@@ -278,8 +232,6 @@ replace it with a specific issue when one exists.
 - ★★★★★ `[voice]` **Local reply TTS** — **OPEN.** Phase 1 offline play/stop; Phase 2 character-aligned read-aloud (legal gate).
 - ★★★★★ `[voice]` **Wake-word listening** — **OPEN, beta.** Opt-in always-on local wake **bonsAI**, then STT, then a quiet Ask.
   [Feasibility](planning/10-wake-word-listening-feasibility.md).
-- ★★★★★★ `[KB]` **RAG Phase 8: catalog corpus** — **OPEN, intent only.** Large offline catalog (top 1000 Steam, 100 Deck, emulated
-  slice). [knowledge-base.md](knowledge-base.md) § Phase 8.
 - ★★★★★★ `[platform]` **Deep mod AI hints** — **OPEN.** Detect mod frameworks and files; mod-aware guidance.
   [Feasibility](planning/12-deep-mod-ai-hints-feasibility.md).
 - ★★★★★★ `[platform]` **Native QAM shortcut tile** — **OPEN, upstream research.** A separate left-rail entry beneath the Decky icon.
@@ -334,11 +286,6 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
   **THINKING-SLOW-01**, **THINKING-LIVE-01**, **THINKING-SPOILER-01**. [Log](planning/06-thinking-blurbs-review.md#10-implementation-log).
 - ★★ `[reply]` **Token streaming Phase A/B** — **VERIFY.** Start stutter fixed, sections as D-pad stops, scroll follow. Rows
   **STREAM-REVEAL-01**, **STREAM-09**, **STREAM-FOLLOW-01**. [Review](planning/05-token-streaming-review.md).
-- ★★★ `[KB]` **The vector half of retrieval has its own recall pass** — **VERIFY, and half of it failed on the Deck 2026-09-05.**
-  Fixed 2026-08-18; it searches the game's cards directly instead of re-ordering the keyword shortlist. **What passed:** in Strategy
-  all three questions read *Keyword + meaning*, which is the label the row asks for. **What failed:** the same questions in Speed also
-  ran the meaning search, and the Strategy timings came in about a fifth over the row's band — both filed as their own bugs above.
-  Row **KB-RECALL-01** stays owed; **KB-RECALL-02** verified at the desk.
 - ★★★ `[perms]` **Kids master lock** — **VERIFY.** Shipped 2026-08-09. Rows **KIDS-LOCK-01**, **KIDS-FOCUS-01**, **KIDS-REGRESS-01**
   (and **KIDS-LOCK-02** with a child account). Live CEF Stage 0 confirmation still owed.
 - ★★★ `[platform]` **Legacy-loader shim removal (D11)** — **VERIFY.** RPC probe passed; the Main-tab Ask pass is open. Row **D11-SHIM-01**.
@@ -357,6 +304,161 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
   [Detail](archive/roadmap-completed.md#moved-from-the-roadmap-2026-09-02).
 - ★★★★★ `[platform]` **Global quick-launch macro** — **VERIFY.** Guide-chord docs in [troubleshooting.md](troubleshooting.md) § 5; the
   checklist was never run on hardware.
+
+---
+
+## Knowledge base and RAG
+
+Everything about the game notes and the search that feeds them, in one place, so you can open this file and pick up
+where you left off. **Read first:** [the status report](planning/37-rag-status-report.md) — the zoomed-out picture, what
+each next step buys a person, and rough costs. It is kept in step with this section. Architecture:
+[knowledge-base.md](knowledge-base.md). The agreed answer-quality work: [plan 30](planning/30-kb-answer-quality-plan.md).
+
+Same rules as the lists above: five lines an entry, stars ascending in each list, a fix moves to **Deck check owed** and
+then to [Done](#done-for-v050) in the same commit. The one difference is that the knowledge base keeps its bugs, its owed
+checks and its plans together here instead of spread over three lists.
+
+**Where things stand (2026-09-05).** 161 cards over 13 games, plus 124 Deck tips. On questions written without seeing the
+cards, the right card is in the top three about four times in five and first about half the time. The Deck's own model
+keeps the card's facts nine times in ten and no longer hides plain tactics behind a spoiler box. The biggest limit for a
+person is still coverage: thirteen games, and every other game gets the model's memory plus one generic genre card.
+
+**Pick up here, in order.**
+
+1. The bug-fixing session running today owns the knowledge-base code files. Let it land the two bugs it holds before
+   touching them.
+2. Answer the calls in the next list. Three of them decide the shape of the work below.
+3. Then work **Next** from the top: the prompt diet, the "not in my notes" line, symptom-only troubleshooting, the eval
+   tooling and the weight sweep, spoiler tiers, follow-ups remembering, and one corpus release that carries everything
+   needing a rebuild.
+
+### Calls waiting on you
+
+- **"Starting out" cards: their own kind, or filed as mechanics?** Their own kind gives a new player a "how do I get
+  started" chip and lets "where do I start" find the card. Explained in [plan 30 § 3b](planning/30-kb-answer-quality-plan.md). (D53)
+- **A named question with a card attached: answer first, then the menu?** Today a Strategy first turn gives an orientation
+  and a menu before any tactics, even when you named the boss and its card matched. Worth trying only if the answer test
+  shows the current shape loses the card's facts. (D54)
+- **Structured cards: strengthen the prompt, route a bigger model, or accept prose?** With the Deck's small model the facts
+  survive on 6 of 6 questions but the labelled bullets on only 1 of 6. Row **PHASE4-CARDS-01**.
+- **The blend weights.** On realistic questions the meaning search alone puts the right card first nine points more often
+  than what ships. You deferred this on 2026-08-29 until there are more games and more questions. (D38)
+- **More games before the catalog?** Phase 5 says no new titles; the weights call above needs more games. One of the two has
+  to move.
+
+### Bugs
+
+- ★★ `[KB]` **Unrelated questions still get game cards stapled on** — **ACCEPTED 2026-08-27.** With a game running, *"thank
+  you very much"* still attaches a card. Raising the keyword floor costs real matches, and the model mostly ignores an
+  irrelevant card. [Detail](roadmap-details.md#ordinary-phrases-attach-game-cards).
+- ★★ `[KB]` **A troubleshooting question that only describes the symptom reaches no tips** — **OPEN, decided 2026-09-01,
+  not built.** *"The game drops me back to the library"* never reaches the crash tips because the word *crash* is absent;
+  two of four blind troubleshooting questions miss. Agreed fix: when no topic matched, let the meaning search run over the
+  tip sheet, measured on the 17 blind troubleshooting rows first. About a day. (D52)
+  [Detail](roadmap-details.md#a-troubleshooting-question-that-only-describes-the-symptom-reaches-no-tips).
+- ★★★ `[KB]` **The meaning search got about a fifth slower** — **OPEN, found 2026-09-05.** Three Strategy questions on the
+  same game took about 1.09 s each to embed, against the 0.79–0.90 s band recorded when the feature shipped. Same corpus,
+  same model, same device; every game question waits about a fifth of a second longer than it should. Cause unmeasured;
+  the bug session has it, time-boxed to one look. Evidence `runs/round34-drg-q*.json`.
+- ★★★★ `[KB]` **What ships loses to its own meaning half on questions nobody tuned against** — **OPEN, deferred.** On the
+  blind questions the meaning search alone puts the right card first 63% of the time; the shipping blend 54%. On the
+  tuning questions they tie. No weight changes until you decide, and never by tuning against the blind set. Groundwork
+  done: 51 blind rows added to the tuning set. [Detail](roadmap-details.md#the-shipping-retrieval-arm-loses-to-the-vector-half-alone-on-rows-nobody-tuned-against).
+
+### Deck check owed
+
+- ★ `[KB]` **Five checks from the August retrieval rework were never run on the Deck** — **VERIFY, or retire.** The corpus
+  format gate, the relevance floor, follow-ups searching the user's words, transparency matching what the model got, and
+  the Developer kill-switch. Either one evening with pinned test chips, or close them as superseded by the rows that
+  passed this week. Rows **KB-VARIANT-01**, **KB-FLOOR-01**, **KB-FOLLOWUP-01**, **KB-TRANSPARENCY-01**, **KB-KILLSWITCH-01**.
+- ★★★ `[KB]` **A quick question in Speed mode no longer pays for the slow search** — **VERIFY.** Fixed on the shared branch
+  2026-09-05 (`c72310a`): the meaning search now checks the mode first. Found the night before: two of three Speed questions
+  spent about a second embedding when the row requires none. Owed: the Speed half of **KB-RECALL-01**, with a covered game
+  running, reading *Keyword search* and no embed time.
+- ★★★ `[KB]` **The meaning search searches on its own instead of re-ordering keyword hits** — **VERIFY, Strategy half
+  passed 2026-09-05.** In Strategy all three questions read *Keyword + meaning*, which is what the row asks for. The Speed
+  half is the entry above; the timing over band is the slowdown bug. Row **KB-RECALL-01** stays owed until both close;
+  **KB-RECALL-02** verified at the desk.
+- ★★★ `[KB]` **DRG Survivor glossary terms** — **VERIFY, one touch tap owed.** Shipped 2026-08-28 and walked on device:
+  underline, popup, D-pad reachability, B, one-press Up. Rows **DRG-GLOSSARY-01…04**.
+  [Detail](archive/roadmap-completed.md#moved-from-the-roadmap-2026-09-02).
+- ★★★ `[KB]` **KB download Cancel** — **VERIFY, blocked.** Shipped 2026-08-05. The download finishes in about a second on
+  device, so there is no window to press Cancel in. Needs a slower fixture or a throttle. Row **KB-CANCEL-01**.
+
+### Next
+
+- ★ `[KB]` **Measure answers with the character voice on** — **OPEN, added 2026-09-05.** The Deck answers in a voice; the
+  answer test runs with it off, and five Deck runs lost two facts to the voice. One switch on the test, and the voice
+  presets become measurable the way the prompt is.
+- ★★ `[KB]` **Prompt diet** — **OPEN, agreed 2026-09-01.** The model reads about nine tokens of rules for every token of
+  knowledge. Drop the citation instruction (obeyed once in 89 asks, and the UI cannot show it), send screenshot rules only
+  when an image is attached, put the cards next to the question. About a day, measured before and after on the answer test.
+- ★★ `[KB]` **"Not in my notes" line** — **OPEN, agreed 2026-09-01.** When a game question matches no card, one muted line
+  built by code says the answer is general knowledge, so a person can tell notes from memory. Only on Strategy and Expert
+  asks for a covered game; never when the library is off or the game is uncovered. Wording to settle with you. (D48)
+- ★★ `[KB]` **Eval tooling: the weight sweep, per-question results for what ships, a second right answer** — **OPEN,
+  agreed 2026-09-01.** Nothing a user sees. It is what unblocks the weights call, and it stops every card batch reading as
+  a regression when two cards are both fair answers. No row uses the second-answer option yet. One to two days. (D51)
+- ★★ `[KB]` **The eval cannot yet prove the meaning search rescues many questions** — **OPEN, one measurement owed.** The
+  slice of questions the word search cannot answer at all was 3 rows when last counted, before 36 more blind rows landed.
+  Re-count it on the next search run before calling this closed. [Detail](roadmap-details.md#eval-fixture-cannot-see-a-recall-failure).
+- ★★ `[KB]` **Pull the embedding model as part of installing the library** — **OPEN, added 2026-09-05.** A person who
+  installs the library but never presses the pull button silently gets word search only, the weaker half by every
+  measurement. A button and a one-time hint exist today; make the pull part of the download flow, with consent, never
+  silent. Promoted out of Phase 7. One to two days.
+- ★★ `[KB]` **A latency budget for a game question** — **OPEN, added 2026-09-05.** The slowdown above was only caught because
+  one QA row happened to record a band. Write down the budget (embed time plus first token with a game running) so the next
+  regression fails a check instead of relying on luck.
+- ★★ `[KB]` **A measured context-window experiment** — **OPEN, research, added 2026-09-05.** The Deck's model runs with a
+  4,096-token window and a Strategy prompt already uses about half. Try 8,192 as a Developer experiment with a game
+  running, recording memory and time to first token, before it becomes a setting. Agreed as "later, its own call". (D46)
+- ★★★ `[KB]` **Follow-ups remember** — **OPEN, agreed 2026-09-01.** *"What about the second phase?"* should answer about the
+  boss you were just asking about; today the model gets only the newest message and the follow-up searches nothing. First
+  carry the previous turn's named thing into the search (a day); then chat history trimmed to the window (two more). (D47)
+- ★★★ `[KB]` **Spoiler coverage as a tiered setting** — **OPEN, tiers confirmed 2026-09-01.** Strict fences bosses, endings
+  and chapters; default fences only named story beats and endings; open fences nothing you asked about. Naming a boss still
+  unlocks it in every tier. Needs the settings plumbing, a prompt per tier measured on the answer test, a control with a
+  focus entry, and Deck QA. About three days. (D50) [Detail](roadmap-details.md#spoiler-coverage-should-be-a-setting-with-tiers).
+- ★★★ `[KB]` **The corpus has no "starting out" card** — **OPEN, waiting on your call.** Every card is about a thing; you
+  asked for build and early-game guidance, and an orientation card for someone who knows a neighbouring game. Three such
+  cards exist, filed as mechanics. Decide the kind first, then write the Cyberpunk, Fallout 4 and Red Dead ones.
+  [Detail](roadmap-details.md#the-corpus-has-no-starting-out-card).
+- ★★★ `[KB]` **Card style pass** — **OPEN, measure first, added 2026-09-05.** Rewrite the 139 prose cards as labelled short
+  lines, the shape the 16 structured cards use. Facts kept is already 92%, so the ceiling is low; do it only if the answer
+  test shows the labelled shape scores better. Two to three days of content plus a rebuild.
+- ★★★ `[KB]` **Deeper answer checks** — **OPEN, added 2026-09-05.** The answer test checks facts, contradictions, fences and
+  the menu, and cannot see whether a reply was helpful or whether the model admitted not knowing. Add a small set of
+  questions no card can answer, scored for an honest "I don't know", and a read by a person of ten replies a month.
+- ★★★ `[KB]` **The next corpus release carries everything that needs a rebuild** — **OPEN, added 2026-09-05.** Any format
+  change makes every installed library stale until re-downloaded, so per-game tips, the starting-out kind and the style pass
+  ride one release rather than three. Same format as today for anything that can wait.
+- ★★★ `[KB]` **KB visual maps** — **OPEN.** Two shapes you named 2026-08-29: a dungeon map, and a boss outline with weak
+  points marked. Nothing draws anything in a reply today. A dungeon map has to be authored, which sits behind the source
+  policy and a corpus rebuild. Research first. [Detail](roadmap-details.md#kb-visual-maps).
+- ★★★★ `[KB]` **RAG Phase 4: extended retrieval** — **PARTIAL.** The chip guarantee and 16 structured cards shipped
+  2026-08-19; the split was accepted 2026-08-21. Left: per-game Deck tips (content for seven titles collected, two quirks from
+  your own Deck), which need a format bump and a release — see the release entry above. Two to three days. The chip clipping
+  check waits on the preset-row work. [Detail](roadmap-details.md#rag-phase-4-extended-retrieval).
+- ★★★★ `[KB]` **RAG Phase 5: depth on the thirteen titles** — **PARTIAL.** 133 → 161 cards since 2026-08-29. Eleven of the
+  thirteen titles still have no enemy or item cards, so "how do I deal with X" works for two games. Next: 40–60 entity cards
+  in tranches with a quality read from you after the first; then chip ranking by meaning. Card authors cannot write blind
+  test questions, so content and eval rows go in separate sessions. [Plan](planning/28-phase5-corpus-depth.md).
+- ★★★★ `[KB]` **A first tranche of new titles** — **OPEN, needs a call, added 2026-09-05.** Five to ten games you choose,
+  as the bridge between depth on thirteen and the catalog. It serves users and it is the data the weights call is waiting
+  for. Blocked by Phase 5's "no new titles" rule until you reopen it.
+- ★★★★ `[KB]` **KB online / versus strategy content** — **OPEN, discovery locked 2026-08-09.** Multiplayer questions
+  (roles, callouts, co-op) get cards; today they get nothing specific. New card kinds and a spoiler table update, Left 4
+  Dead 2 first, then Counter-Strike 2, from archive dumps only. Two to three weeks. [Plan](planning/17-kb-online-versus-strategy-content.md).
+- ★★★★ `[KB]` **RAG Phase 7: retrieval infrastructure** — **OPEN.** Mostly nothing at 161 cards. What still matters: a
+  thumbs-down that stops a wrong card coming back (three days), add-on packs before any large catalog (five days or more),
+  a screenshot feeding the search (a short test to find out first). A nearest-neighbour index buys nothing until the corpus
+  is thousands of cards. The embedding-model pull is its own entry above. [knowledge-base.md](knowledge-base.md) § Phase 7.
+- ★★★★★ `[KB]` **Community tip contribution** — **OPEN, unblocked.** A reader turns a good reply into a proposed card with
+  one press: **Suggest as a tip** writes a valid card to the Desktop plus a GitHub attach link. Three to five days.
+- ★★★★★★ `[KB]` **RAG Phase 8: catalog corpus** — **OPEN, intent only.** The change that makes most people's games get
+  notes instead of the model's memory: about the top 1000 Steam titles, the top 100 on Deck, and an emulated slice. Months:
+  it cannot be hand-written (161 cards took six weeks), so it needs an ingestion pipeline from wiki dumps, per-source
+  licensing, a size budget, packs and the index. [knowledge-base.md](knowledge-base.md) § Phase 8.
 
 ---
 
