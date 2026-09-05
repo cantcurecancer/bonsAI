@@ -181,15 +181,11 @@ def parse_parameter_size_billions(raw: Any) -> Optional[float]:
     return value if match.group(2).upper() == "B" else value / 1000.0
 
 
-def pick_preload_model(tags_models: Any) -> Optional[str]:
-    """First installed model at or under ``PRELOAD_MAX_PARAMETER_BILLIONS``, else ``None``.
-
-    ``tags_models`` is the ``models`` list from ``GET /api/tags`` -- each entry carries a
-    ``details.parameter_size`` string. A model whose size is missing or unparsable is skipped
-    rather than guessed at, matching ``parse_parameter_size_billions``.
-    """
+def _installed_sizes(tags_models: Any) -> "dict[str, Optional[float]]":
+    """Installed model name -> billions of parameters, or ``None`` when Ollama did not say."""
+    out: "dict[str, Optional[float]]" = {}
     if not isinstance(tags_models, list):
-        return None
+        return out
     for entry in tags_models:
         if not isinstance(entry, dict):
             continue
@@ -197,21 +193,71 @@ def pick_preload_model(tags_models: Any) -> Optional[str]:
         if not isinstance(name, str) or not name.strip():
             continue
         details = entry.get("details")
-        size_b = (
+        out[name] = (
             parse_parameter_size_billions(details.get("parameter_size"))
             if isinstance(details, dict)
             else None
         )
-        if size_b is not None and size_b <= PRELOAD_MAX_PARAMETER_BILLIONS:
+    return out
+
+
+def pick_preload_model(tags_models: Any, try_order: Any = None) -> Optional[str]:
+    """The model Ask will actually reach for, when it is small enough to be worth warming.
+
+    **The try order decides which model; the size cap only decides whether to bother.** Warming
+    *some* small model is worse than warming none: it spends memory on a model no question will
+    touch and leaves the first question exactly as slow as before. Measured on the Deck
+    2026-09-05 (PRELOAD-01): the only installed model under the cap was ``qwen2.5:1.5b`` at 1.5B,
+    while Ask was routed to ``gemma4:e2b-it-qat`` at 4.6B. Picking "the first small one" would
+    have loaded a model that never answers anything.
+
+    So when Ask's first installed model is over ``PRELOAD_MAX_PARAMETER_BILLIONS``, the answer is
+    ``None``. Warming nothing is the honest outcome of the roadmap's "models of 3B or under" —
+    not warming something else instead.
+
+    ``try_order`` is ``text_model_routing_order`` from settings. With none given (a fresh install
+    that has never saved one) this falls back to the first small installed model, skipping
+    embedding models: they are small enough to pass any cap and can never answer a question, so
+    on this Deck the 137M ``nomic-embed-text`` would otherwise have been a candidate.
+
+    A model whose size Ollama did not report is skipped rather than guessed at.
+    """
+    sizes = _installed_sizes(tags_models)
+    if not sizes:
+        return None
+
+    def small_enough(name: str) -> bool:
+        size_b = sizes.get(name)
+        return size_b is not None and size_b <= PRELOAD_MAX_PARAMETER_BILLIONS
+
+    if isinstance(try_order, list):
+        for wanted in try_order:
+            if not isinstance(wanted, str) or not wanted.strip():
+                continue
+            if wanted not in sizes:
+                continue  # in the try order but not installed: Ask would fall through it too
+            return wanted if small_enough(wanted) else None
+
+    for name in sizes:
+        if "embed" in name.lower():
+            continue
+        if small_enough(name):
             return name
     return None
 
 
-def preload_ask_model_sync(base_http: str, logger: Any, *, timeout_seconds: float = 20.0) -> None:
+def preload_ask_model_sync(
+    base_http: str,
+    logger: Any,
+    *,
+    timeout_seconds: float = 20.0,
+    try_order: Any = None,
+) -> None:
     """Best-effort warm of a small installed model into Ollama's memory, once, at boot.
 
-    Reads the installed model list from ``GET /api/tags``, picks the first entry at or under
-    ``PRELOAD_MAX_PARAMETER_BILLIONS`` billion parameters (``pick_preload_model``), and sends a
+    Reads the installed model list from ``GET /api/tags``, picks the model Ask would actually reach
+    for when it is at or under ``PRELOAD_MAX_PARAMETER_BILLIONS`` billion parameters
+    (``pick_preload_model``), and sends a
     zero-token ``POST /api/generate`` (empty ``prompt``) -- Ollama's documented way to load a
     model into memory without generating anything.
 
@@ -225,7 +271,10 @@ def preload_ask_model_sync(base_http: str, logger: Any, *, timeout_seconds: floa
         tags_req = urllib.request.Request(f"{base_http.rstrip('/')}/api/tags", method="GET")
         with urllib.request.urlopen(tags_req, timeout=min(5.0, timeout_seconds)) as resp:
             tags_data = json.loads(resp.read().decode("utf-8"))
-        model = pick_preload_model(tags_data.get("models") if isinstance(tags_data, dict) else None)
+        model = pick_preload_model(
+            tags_data.get("models") if isinstance(tags_data, dict) else None,
+            try_order,
+        )
         if not model:
             logger.info("preload_ask_model: no eligible small model installed, skipping")
             return

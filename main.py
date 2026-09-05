@@ -348,9 +348,14 @@ class Plugin:
         Off by default (``dev_preload_ask_model``), so an ordinary boot calls
         ``preload_ask_model_sync`` zero times and changes nothing. On, this resolves the same
         host a connection test would use — the fixed loopback address when Ask is routed to this
-        Deck, else the first labeled host — and hands off to ``preload_ask_model_sync``, which
-        picks a model of 3B parameters or under and is itself silent on any failure (unreachable
-        host, no eligible small model, or the host declining for lack of memory).
+        Deck, else the first labeled host — and hands off to ``preload_ask_model_sync``.
+
+        **The saved try order goes with it**, because warming the wrong model is worse than
+        warming none: it spends memory on something no question will reach and leaves the first
+        question exactly as slow. Without the order, the warm-up picks whichever small model
+        happens to be installed, which on the maintainer's Deck was a 1.5B model while Ask was
+        routed to a 4.6B one. Silent on any failure (unreachable host, Ask's model too big to be
+        worth warming, or the host declining for lack of memory).
         """
         try:
             settings = await self.load_settings()
@@ -371,7 +376,13 @@ class Plugin:
             _, _, base = normalize_ollama_base(pc_ip)
         except Exception:
             return
-        await asyncio.to_thread(preload_ask_model_sync, base, logger)
+        try_order = settings.get("text_model_routing_order")
+        await asyncio.to_thread(
+            preload_ask_model_sync,
+            base,
+            logger,
+            try_order=try_order if isinstance(try_order, list) else None,
+        )
 
     async def _unload(self):
         """Run plugin shutdown logging for Decky unload events."""

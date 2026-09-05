@@ -107,6 +107,56 @@ class PickPreloadModelTests(unittest.TestCase):
         self.assertIsNone(pick_preload_model("not-a-list"))
 
 
+class PickPreloadModelTryOrderTests(unittest.TestCase):
+    """The try order decides which model; the size cap only decides whether to bother.
+
+    Warming *some* small model is worse than warming none: it spends memory on a model no
+    question will reach and leaves the first question exactly as slow. Found on the Deck
+    2026-09-05 (PRELOAD-01) with the four models below actually installed.
+    """
+
+    DECK_2026_09_05 = [
+        {"name": "qwen2.5:1.5b", "details": {"parameter_size": "1.5B"}},
+        {"name": "qwen3.5:4b", "details": {"parameter_size": "4.7B"}},
+        {"name": "gemma4:e2b-it-qat", "details": {"parameter_size": "4.6B"}},
+        {"name": "nomic-embed-text:latest", "details": {"parameter_size": "137M"}},
+    ]
+
+    def test_ask_model_over_the_cap_warms_nothing_rather_than_something_else(self):
+        """The exact Deck case: Ask routed to a 4.6B model, a 1.5B one also installed."""
+        picked = pick_preload_model(
+            self.DECK_2026_09_05, ["gemma4:e2b-it-qat", "qwen3.5:4b"]
+        )
+        self.assertIsNone(picked)
+
+    def test_ask_model_under_the_cap_is_the_one_warmed(self):
+        picked = pick_preload_model(self.DECK_2026_09_05, ["qwen2.5:1.5b", "qwen3.5:4b"])
+        self.assertEqual(picked, "qwen2.5:1.5b")
+
+    def test_an_entry_in_the_order_that_is_not_installed_is_stepped_over(self):
+        """Ask falls through a try-order entry it cannot use, and so does the warm-up."""
+        picked = pick_preload_model(
+            self.DECK_2026_09_05, ["never-pulled:7b", "qwen2.5:1.5b"]
+        )
+        self.assertEqual(picked, "qwen2.5:1.5b")
+
+    def test_without_a_try_order_an_embedding_model_is_never_warmed(self):
+        """A fresh install has no saved order. An embedding model passes any size cap and can
+        never answer a question, so it must not be the fallback pick."""
+        picked = pick_preload_model(
+            [
+                {"name": "nomic-embed-text:latest", "details": {"parameter_size": "137M"}},
+                {"name": "qwen2.5:1.5b", "details": {"parameter_size": "1.5B"}},
+            ],
+            None,
+        )
+        self.assertEqual(picked, "qwen2.5:1.5b")
+
+    def test_without_a_try_order_falls_back_to_the_first_small_chat_model(self):
+        picked = pick_preload_model(self.DECK_2026_09_05, None)
+        self.assertEqual(picked, "qwen2.5:1.5b")
+
+
 class PreloadAskModelSyncTests(unittest.TestCase):
     @patch("backend.services.ollama_service.urllib.request.urlopen")
     def test_warms_the_first_eligible_small_model(self, mock_urlopen: MagicMock) -> None:
