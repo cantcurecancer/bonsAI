@@ -295,10 +295,6 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
 - ★★ `[chat]` **The game a chat belongs to, above its title** — **VERIFY.** Shipped 2026-08-30 in quiet text above the slot title;
   only chats created after that date carry the name. Row **CHAT-SLOTS-V3-14c**. It costs a line of height, which cuts against the
   vertical-space goal; decide whether it shows always or only when the row has focus.
-- ★★ `[chips]` **Preset chip expansion** — **VERIFY.** Wave 2 shipped 2026-09-05: six new chips pointing at thinking mode, the kids
-  lock, the Caveman reply style, where game tips come from, named chats, and asking about a game that is not running. Wave 1's row
-  **PRESET-EXPAND-W1-01** is still owed as well, so both waves want the same walk. Row **PRESET-EXPAND-W2-01**. Incremental by
-  design: when the next batch of features needs chips, file it fresh rather than reopening this.
 - ★★ `[QA]` **Deferred manual QA** — **VERIFY.** Tier 0 smokes (SMOKE-A, C, F) then Tier 1 (SMOKE-E, H), and a broader prompt-testing
   pass. SMOKE-B was retired 2026-09-03 (D57 #6). Round in progress: [plan 31](planning/31-deck-verification-round.md).
 - ★★ `[reply]` **Thinking line fixes from 2026-08-07/08** — **VERIFY.** Emoji upright, lazy status tag survives, no bare-emoji phase
@@ -306,20 +302,24 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
   **THINKING-SLOW-01**, **THINKING-LIVE-01**, **THINKING-SPOILER-01**. [Log](planning/06-thinking-blurbs-review.md#10-implementation-log).
 - ★★ `[reply]` **Token streaming Phase A/B** — **VERIFY.** Start stutter fixed, sections as D-pad stops, scroll follow. Rows
   **STREAM-REVEAL-01**, **STREAM-09**, **STREAM-FOLLOW-01**. [Review](planning/05-token-streaming-review.md).
-- ★★★ `[ollama]` **Custom model in the Pull Models picker** — **VERIFY.** Shipped 2026-09-05. A field at the top of the picker takes
-  any Ollama-library name and pulls it, and a made-up name comes back with a reason instead of nothing happening. A star on each
-  installed model makes it the one Ask reaches for first. Anything pulled in the last thirty days carries a **New** label. LAN pull
-  untouched. Rows **PULL-CUSTOM-01**, **PULL-CUSTOM-02**, **PULL-PIN-01**, **PULL-NEW-BADGE-01**.
+- ★★★ `[ollama]` **Custom model in the Pull Models picker** — **VERIFY, half checked on the Deck 2026-09-05.** A field at the
+  top of the picker takes any Ollama-library name; a star makes a model the one Ask reaches for; anything pulled in the last thirty
+  days carries a **New** label. **What passed:** the field is reachable and 530px wide, and a made-up name now explains itself
+  before showing the command's own words. **Two bugs were found and fixed on the device** — every already-installed model was
+  labelled New, and the field was 50px wide. **Still owed:** pulling a real model through it (**PULL-CUSTOM-01**), the star
+  (**PULL-PIN-01**), and whether *Clear all plugin data* takes the labels (**PULL-NEW-BADGE-01**, not authorised this session).
 - ★★★ `[perms]` **Kids master lock** — **VERIFY.** Shipped 2026-08-09. Rows **KIDS-LOCK-01**, **KIDS-FOCUS-01**, **KIDS-REGRESS-01**
   (and **KIDS-LOCK-02** with a child account). Live CEF Stage 0 confirmation still owed.
 - ★★★ `[platform]` **Legacy-loader shim removal (D11)** — **VERIFY.** RPC probe passed; the Main-tab Ask pass is open. Row **D11-SHIM-01**.
 - ★★★ `[reply]` **Soft reply-length cap and thinking budget** — **VERIFY.** Shipped 2026-08-10. Sub-check 02 verified; 01, 03 and 04
   automated with a Deck confirm owed; 05 needs a real thinking model. [Why](roadmap-details.md#shipped-qa-owed--why-each-was-built-this-way).
-- ★★★★ `[ollama]` **Speed-mode VRAM preload** — **VERIFY.** Shipped 2026-09-05 behind a Developer switch, off by default.
-  With it on, the default Ask model is loaded into memory when the plugin starts, so the first question does not pay the cold load.
-  Only warms a model of 3B or under, skips quietly when memory is tight, runs once and never polls. **It cannot slow start-up** — the
-  warm-up is scheduled and the plugin moves on, proved by a test that would time out if it ever waited. Rows **PRELOAD-01**,
-  **PRELOAD-02**. Still open, deliberately untouched: whether the model stays in memory after the Deck sleeps.
+- ★★★★ `[ollama]` **Speed-mode VRAM preload** — **VERIFY, the mechanism proved on the Deck 2026-09-05, the timing not.**
+  A Developer switch, off by default, loads the model Ask will use into memory at start-up. **A bug was found and fixed on the
+  device:** it warmed the first small model installed rather than the one Ask reaches for, which on this Deck were different, so it
+  spent memory on a model no question would touch. It now uses Ask's own resolver, and warms nothing when Ask's model is over the
+  three-billion cap — which is what happens on this Deck, confirmed. **Still owed:** the timing comparison (**PRELOAD-01**), which
+  needs a Deck whose Ask model is under the cap, and the memory-pressure case (**PRELOAD-02**). Open and untouched: whether the
+  model survives the Deck sleeping.
 - ★★★★ `[chips]` **Preset row: two chips across, with scrolling labels** — **VERIFY.** Rebuilt 2026-09-01 under D43. Two 30px chips
   side by side, a long label scrolls through Steam's `Marquee`, the help chip owns the row until dismissed. The dock went 245 to
   161px. Rows 02 and 03 passed on device; owed **04** only (scroll feel by eye, decode churn, reduced motion); 01b passed 2026-09-03.
@@ -402,11 +402,6 @@ for the Deck to be free). Anything new goes here, one line each, with what it de
   passed 2026-09-05.** In Strategy all three questions read *Keyword + meaning*, which is what the row asks for. The Speed
   half is the entry above; the timing over band is the slowdown bug. Row **KB-RECALL-01** stays owed until both close;
   **KB-RECALL-02** verified at the desk.
-- ★★★ `[chips]` **A setting for one or two preset chips** — **VERIFY.** Shipped 2026-09-05. A Settings switch, off by
-  default, shows one suggestion chip with the whole column instead of two sharing it. Two stays what everyone sees unless they turn
-  it on. Left and Right still move through the suggestions, and the out-of-suggestions glow still lights up with a single chip, where
-  first and last are the same chip. Rows **PRESET-SLOTS-01**, **PRESET-SLOTS-02**. Known and not fixed: with one chip a long label may
-  be held on screen longer than it needs to be, because the hold time is still worked out from the two-chip width.
 - ★★★ `[KB]` **DRG Survivor glossary terms** — **VERIFY, one touch tap owed.** Shipped 2026-08-28 and walked on device:
   underline, popup, D-pad reachability, B, one-press Up. Rows **DRG-GLOSSARY-01…04**.
   [Detail](archive/roadmap-completed.md#moved-from-the-roadmap-2026-09-02).
@@ -503,6 +498,12 @@ for the Deck to be free). Anything new goes here, one line each, with what it de
 
 Everything shipped since v0.4.9 (2026-07-08), one line each, newest first. Detail: [CHANGELOG.md](../CHANGELOG.md),
 [archive/roadmap-completed.md](archive/roadmap-completed.md), [archive/roadmap-bugs-fixed.md](archive/roadmap-bugs-fixed.md).
+
+**Verified on the Deck 2026-09-05 (round 36):**
+- ★★ `[chips]` **Preset chip expansion** — six new suggestion chips for the things that shipped since early August. Both waves
+  checked in one sitting. [Detail](archive/roadmap-completed.md#round-36-2026-09-05)
+- ★★★ `[chips]` **One suggestion chip instead of two** — a Settings switch, off by default, gives one chip the whole column.
+  [Detail](archive/roadmap-completed.md#round-36-2026-09-05)
 
 **Withdrawn 2026-09-02:** *QAMP Phase 2 profiles* and the *QAMP verification checklist*. Both tested TDP apply, which was removed
 on 2026-07-30 (`apply_tdp` no longer exists). Preserved in the archive.
