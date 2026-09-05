@@ -29,8 +29,6 @@ function baseProps(overrides: Partial<DeveloperTabProps> = {}): DeveloperTabProp
     setPresetChipAnimation: () => {},
     steamWebApiKey: "",
     setSteamWebApiKey: () => {},
-    bonsaiTokenStreamingEnabled: false,
-    setBonsaiTokenStreamingEnabled: () => {},
     showOnscreenDebugHud: false,
     setShowOnscreenDebugHud: () => {},
     devForceSessionRagChips: false,

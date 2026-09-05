@@ -17,7 +17,7 @@
     },
     {
       "path": "src/index.tsx",
-      "lines": 1627,
+      "lines": 1621,
       "role": "Plugin root: tabs, scoped CSS, RPC wiring, Settings"
     },
     {
@@ -116,13 +116,13 @@
       "role": ""
     },
     {
-      "path": "src/hooks/usePluginSettings.ts",
-      "lines": 584,
+      "path": "py_modules/backend/services/intent_pack_service.py",
+      "lines": 581,
       "role": ""
     },
     {
-      "path": "py_modules/backend/services/intent_pack_service.py",
-      "lines": 581,
+      "path": "src/hooks/usePluginSettings.ts",
+      "lines": 574,
       "role": ""
     },
     {
@@ -137,17 +137,12 @@
     },
     {
       "path": "py_modules/backend/services/settings_service.py",
-      "lines": 542,
+      "lines": 541,
       "role": "Load/save/merge settings.json"
     },
     {
       "path": "src/components/DeveloperTab.tsx",
-      "lines": 532,
-      "role": ""
-    },
-    {
-      "path": "src/utils/settingsContracts.test.ts",
-      "lines": 512,
+      "lines": 522,
       "role": ""
     },
     {
@@ -156,8 +151,13 @@
       "role": ""
     },
     {
+      "path": "src/utils/settingsContracts.test.ts",
+      "lines": 508,
+      "role": ""
+    },
+    {
       "path": "src/data/bonsaiSettingsNormalizers.ts",
-      "lines": 499,
+      "lines": 498,
       "role": ""
     },
     {
@@ -191,13 +191,13 @@
       "role": ""
     },
     {
-      "path": "py_modules/backend/services/ollama_ask_service.py",
-      "lines": 429,
+      "path": "py_modules/backend/services/ai_character_service.py",
+      "lines": 426,
       "role": ""
     },
     {
-      "path": "py_modules/backend/services/ai_character_service.py",
-      "lines": 426,
+      "path": "py_modules/backend/services/ollama_ask_service.py",
+      "lines": 420,
       "role": ""
     }
   ]

@@ -51,7 +51,6 @@ export function toBonsaiSettingsPayload(
     strategy_spoiler_masking_enabled: input.strategySpoilerMaskingEnabled,
     strategy_spoiler_auto_reveal_after_consent: input.strategySpoilerAutoRevealAfterConsent,
     steam_web_api_key: input.steamWebApiKey.trim().slice(0, STEAM_WEB_API_KEY_MAX_LEN),
-    bonsai_token_streaming_enabled: input.bonsaiTokenStreamingEnabled,
     show_onscreen_debug_hud: input.showOnscreenDebugHud,
     dev_force_session_rag_chips: input.devForceSessionRagChips,
     dev_preload_ask_model: input.devPreloadAskModel,

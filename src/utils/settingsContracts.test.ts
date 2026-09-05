@@ -276,7 +276,6 @@ describe("settings contracts", () => {
       strategySpoilerMaskingEnabled: false,
       strategySpoilerAutoRevealAfterConsent: false,
       steamWebApiKey: "abc",
-      bonsaiTokenStreamingEnabled: true,
       showOnscreenDebugHud: false, devForceSessionRagChips: false, devPreloadAskModel: false, devFrozenTestChips: [],
       tabResumeMode: "resume",
       namedOllamaHosts: [],
@@ -305,7 +304,6 @@ describe("settings contracts", () => {
     expect(p.strategy_spoiler_auto_reveal_after_consent).toBe(false);
     expect(p.steam_web_api_key).toBe("abc");
     expect(p.show_developer_tab).toBe(true);
-    expect(p.bonsai_token_streaming_enabled).toBe(true);
   });
 
   it("toBonsaiSettingsPayload merges patch over base (character picker path)", () => {
@@ -341,7 +339,6 @@ describe("settings contracts", () => {
       strategySpoilerMaskingEnabled: DEFAULT_STRATEGY_SPOILER_MASKING_ENABLED,
       strategySpoilerAutoRevealAfterConsent: false,
       steamWebApiKey: "",
-      bonsaiTokenStreamingEnabled: false,
       showOnscreenDebugHud: false, devForceSessionRagChips: false, devPreloadAskModel: false, devFrozenTestChips: [],
       tabResumeMode: "resume" as const,
       namedOllamaHosts: [],
@@ -485,7 +482,6 @@ describe("settings contracts", () => {
       strategySpoilerMaskingEnabled: normalized.strategy_spoiler_masking_enabled,
       strategySpoilerAutoRevealAfterConsent: normalized.strategy_spoiler_auto_reveal_after_consent,
       steamWebApiKey: normalized.steam_web_api_key,
-      bonsaiTokenStreamingEnabled: normalized.bonsai_token_streaming_enabled,
       showOnscreenDebugHud: normalized.show_onscreen_debug_hud,
       devForceSessionRagChips: normalized.dev_force_session_rag_chips,
       devPreloadAskModel: normalized.dev_preload_ask_model,

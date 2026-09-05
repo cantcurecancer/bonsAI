@@ -382,7 +382,6 @@ const SIMPLE_FIELDS = {
   // Developer and Desktop logging opt-ins.
   desktop_debug_note_auto_save: boolDefaultFalse,
   desktop_ask_verbose_logging: boolDefaultFalse,
-  bonsai_token_streaming_enabled: boolDefaultFalse,
   show_onscreen_debug_hud: boolDefaultFalse,
   dev_force_session_rag_chips: boolDefaultFalse,
   dev_preload_ask_model: boolDefaultFalse,

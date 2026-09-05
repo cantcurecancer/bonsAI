@@ -40,8 +40,6 @@ export function useDeveloperTabPayload({
   setPresetChipAnimation,
   steamWebApiKey,
   setSteamWebApiKey,
-  bonsaiTokenStreamingEnabled,
-  setBonsaiTokenStreamingEnabled,
   showOnscreenDebugHud,
   setShowOnscreenDebugHud,
   devForceSessionRagChips,
@@ -81,8 +79,6 @@ export function useDeveloperTabPayload({
         setPresetChipAnimation={setPresetChipAnimation}
         steamWebApiKey={steamWebApiKey}
         setSteamWebApiKey={setSteamWebApiKey}
-        bonsaiTokenStreamingEnabled={bonsaiTokenStreamingEnabled}
-        setBonsaiTokenStreamingEnabled={setBonsaiTokenStreamingEnabled}
         showOnscreenDebugHud={showOnscreenDebugHud}
         setShowOnscreenDebugHud={setShowOnscreenDebugHud}
         devForceSessionRagChips={devForceSessionRagChips}
@@ -109,7 +105,6 @@ export function useDeveloperTabPayload({
       presetChipFadeAnimationEnabled,
       presetChipAnimation,
       steamWebApiKey,
-      bonsaiTokenStreamingEnabled,
       showOnscreenDebugHud,
       devForceSessionRagChips,
       devPreloadAskModel,

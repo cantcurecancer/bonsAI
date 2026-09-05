@@ -256,7 +256,6 @@ async def run_ask_ollama(
         }
     ask_diagnostics["models_after_installed_filter"] = list(models_to_try)
 
-    token_streaming = settings.get("bonsai_token_streaming_enabled") is True
     on_delta_cb = None
     if isinstance(token_stream_request_id, int):
         stream_rid = token_stream_request_id
@@ -269,9 +268,7 @@ async def run_ask_ollama(
             # whole generation and stopped being true the moment tokens started.
             #
             # Skipped when the model emitted its own status tag, because that is strictly better
-            # copy and _update_partial_response is about to write it. Runs whether or not token
-            # streaming is on: with it off the user sees no text at all, so this is the only
-            # signal that generation started.
+            # copy and _update_partial_response is about to write it.
             if not announced_generating and not done and not thinking_summary and (text or "").strip():
                 announced_generating = True
                 plugin_inst._publish_thinking_phase_key(
@@ -283,13 +280,7 @@ async def run_ask_ollama(
                     character_enabled=bool(settings.get("ai_character_enabled")),
                     character_preset_id=rp_meta.resolved_preset_id,
                 )
-            plugin_inst._update_partial_response(
-                stream_rid,
-                text,
-                done,
-                thinking_summary,
-                update_partial=token_streaming,
-            )
+            plugin_inst._update_partial_response(stream_rid, text, done, thinking_summary)
 
         on_delta_cb = _on_delta
 

@@ -375,6 +375,20 @@
     }
   },
   {
+    "name": "a settings file still carrying the deleted streaming switch loads quietly and leaves the rest alone",
+    "input": {
+      "bonsai_token_streaming_enabled": true,
+      "reply_verbosity": "detailed",
+      "desktop_app_log_level": "verbose",
+      "ollama_local_on_deck": true
+    },
+    "expected": {
+      "reply_verbosity": "detailed",
+      "desktop_app_log_level": "verbose",
+      "ollama_local_on_deck": true
+    }
+  },
+  {
     "name": "an old settings file predating the boot preload switch loads it off and leaves everything else untouched",
     "input": {
       "reply_verbosity": "detailed",

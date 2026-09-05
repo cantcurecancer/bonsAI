@@ -25,7 +25,6 @@
           "args": [
             {
               "show_developer_tab": true,
-              "bonsai_token_streaming_enabled": true,
               "ask_mode": "speed"
             }
           ]
@@ -75,7 +74,6 @@
           "args": [
             {
               "show_developer_tab": true,
-              "bonsai_token_streaming_enabled": true,
               "ask_mode": "strategy",
               "strategy_spoiler_masking_enabled": true
             }
@@ -124,8 +122,7 @@
           "method": "save_settings",
           "args": [
             {
-              "show_developer_tab": true,
-              "bonsai_token_streaming_enabled": true
+              "show_developer_tab": true
             }
           ]
         },
@@ -185,8 +182,7 @@
           "method": "save_settings",
           "args": [
             {
-              "show_developer_tab": true,
-              "bonsai_token_streaming_enabled": true
+              "show_developer_tab": true
             }
           ]
         },
@@ -665,7 +661,6 @@
           "args": [
             {
               "show_developer_tab": true,
-              "bonsai_token_streaming_enabled": true,
               "ask_mode": "speed"
             }
           ]

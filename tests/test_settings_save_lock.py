@@ -38,7 +38,7 @@ class SettingsSaveLockTests(unittest.IsolatedAsyncioTestCase):
         self.settings_path = os.path.join(self.settings_dir, "settings.json")
         os.makedirs(self.settings_dir, exist_ok=True)
         with open(self.settings_path, "w", encoding="utf-8") as f:
-            json.dump({"ask_mode": "speed", "bonsai_token_streaming_enabled": False}, f)
+            json.dump({"ask_mode": "speed", "desktop_debug_note_auto_save": False}, f)
 
         self.plugin = Plugin()
         patcher = patch.object(Plugin, "_settings_path", return_value=self.settings_path)
@@ -66,7 +66,7 @@ class SettingsSaveLockTests(unittest.IsolatedAsyncioTestCase):
 
         with patch.object(self.plugin, "load_settings", side_effect=staggered_load):
             task_a = asyncio.create_task(
-                self.plugin.save_settings({"bonsai_token_streaming_enabled": True})
+                self.plugin.save_settings({"desktop_debug_note_auto_save": True})
             )
             await asyncio.wait_for(gate_a.wait(), timeout=2.0)
             task_b = asyncio.create_task(self.plugin.save_settings({"ask_mode": "strategy"}))
@@ -75,7 +75,7 @@ class SettingsSaveLockTests(unittest.IsolatedAsyncioTestCase):
 
         with open(self.settings_path, encoding="utf-8") as f:
             saved = json.load(f)
-        self.assertTrue(saved.get("bonsai_token_streaming_enabled"))
+        self.assertTrue(saved.get("desktop_debug_note_auto_save"))
         self.assertEqual(saved.get("ask_mode"), "strategy")
 
 

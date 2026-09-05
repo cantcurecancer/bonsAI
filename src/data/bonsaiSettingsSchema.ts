@@ -132,8 +132,6 @@ export type BonsaiSettings = {
   strategy_spoiler_auto_reveal_after_consent: boolean;
   /** Steam Web API key for GetPlayerBans (VAC check command); stored on device with plugin settings. */
   steam_web_api_key: string;
-  /** When true, Main tab shows progressive Ollama token streaming (Developer tab opt-in). */
-  bonsai_token_streaming_enabled: boolean;
   /** When true, show the translucent on-screen ingest debug HUD (Developer tab opt-in). */
   show_onscreen_debug_hud: boolean;
   /**
@@ -206,7 +204,6 @@ export type BonsaiSettingsSnapshotInput = {
   strategySpoilerMaskingEnabled: boolean;
   strategySpoilerAutoRevealAfterConsent: boolean;
   steamWebApiKey: string;
-  bonsaiTokenStreamingEnabled: boolean;
   showOnscreenDebugHud: boolean;
   devForceSessionRagChips: boolean;
   devPreloadAskModel: boolean;
@@ -243,7 +240,6 @@ export const DEFAULT_SCREENSHOT_ATTACHMENT_PRESET: ScreenshotAttachmentPreset = 
 export const DEFAULT_SCREENSHOT_MAX_DIMENSION: ScreenshotMaxDimension = 1280;
 export const DEFAULT_DESKTOP_DEBUG_NOTE_AUTO_SAVE = false;
 export const DEFAULT_DESKTOP_ASK_VERBOSE_LOGGING = false;
-export const DEFAULT_BONSAI_TOKEN_STREAMING_ENABLED = false;
 export const DEFAULT_SHOW_ONSCREEN_DEBUG_HUD = false;
 export const DEFAULT_DEV_FORCE_SESSION_RAG_CHIPS = false;
 export const DEFAULT_DEV_PRELOAD_ASK_MODEL = false;
