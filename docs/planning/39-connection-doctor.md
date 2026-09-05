@@ -2,10 +2,10 @@
 
 Written 2026-09-05, before any code. The second of the six features the maintainer picked to plan. Two
 roadmap entries share one set of checks: the **Connection doctor** (four stars) and the **Deck health
-snapshot** (five stars). The earlier feature review said plainly: do not build two check stacks. This plan
-proposes one feature with the report inside it, and puts that call to the maintainer first. The decisions
-are **D64** in [maintainer-decisions-locked.md](../audit/maintainer-decisions-locked.md). Nothing in § 6
-starts until they are answered.
+snapshot** (five stars). The earlier feature review said plainly: do not build two check stacks. The
+maintainer locked the calls the same day: one feature, with the report inside it. The decisions are **D64**
+in [maintainer-decisions-locked.md](../audit/maintainer-decisions-locked.md). § 6 can start whenever this
+is picked up.
 
 Read first: [CLAUDE.md](../../CLAUDE.md); the model and effort table in [AGENTS.md](../../AGENTS.md) § 3;
 [13-roadmap-feature-ideas.md](13-roadmap-feature-ideas.md) § B3, where the doctor was first drawn;
@@ -55,7 +55,8 @@ order*, or *Give it more time*. Pressing the button lands you on that control on
 ring already on it, and a *Back to Main* button waits at the top. Beside the action sits **Save a
 report**, which writes a plain text file to the Desktop folder for a bug report, and nothing else.
 
-The same list can be opened any time from the Ollama tab as **Check my setup**, without a failure first.
+The button lives under the failed reply and nowhere else (locked 2026-09-05). A tap on the *Ask failed*
+notification already opens the panel on that reply, so it is one press away from there as well.
 
 ## 3. The checks, in order, and the one next action each
 
@@ -87,27 +88,19 @@ whether the voice engine is ready; the settings with anything secret-looking rem
 already exists); the last Ask's routing details, model tried and time taken, and the length of the last
 question, not its words; the last two hundred lines of the plugin log. Read-only throughout.
 
-## 5. What the maintainer decides — D64
+## 5. What the maintainer decided — D64, locked 2026-09-05
 
-1. **One feature or two.** One, the doctor with **Save a report** inside it, and the five-star snapshot
-   entry retired into it (recommended). Or keep both as separate entries.
-2. **Where Fix this lives.** Under the failed reply, and a tap on the *Ask failed* notification lands
-   there too, plus **Check my setup** on the Ollama tab (recommended). Or the Ollama tab only.
-3. **Offers only, or acts.** Offers only, keeping the one existing exception (recommended). Or let it
-   fill a found network address and start the runtime without a press.
-4. **A typed command for the report.** Yes, the same shape as the VAC check (recommended). Or the button
-   only.
-5. **What the report includes.** The list in § 4 (recommended). The two lines worth a look: the plugin
-   log tail, and the last question's length rather than its words.
-6. **Consent to break the Deck's setup during the checks.** The rows in § 7 need a wrong address, the
-   on-Deck runtime stopped, a missing model in the try order, and the file-write permission off, each
-   restored and read back afterwards. Yes, when the Deck is free and no one is playing on it
-   (recommended). Or the maintainer runs those rows.
-7. **Stars.** The merged entry stays at four (recommended); the report is small once the checks exist.
+Answered in chat the same day the plan was written.
 
-Nothing is built until 1 to 3 are answered. 4 to 7 have defaults that hold.
+1. **One feature.** The doctor, with **Save a report** inside it. The five-star snapshot entry retires into it.
+2. **Fix this lives under the failed reply**, and nowhere else.
+3. **Offers only.** One press per action; the one existing exception stays.
+4. **A typed command for the report:** yes.
+5. **The report holds everything listed in § 4.**
+6. **Consent to break the Deck's setup for the checks:** yes, when the Deck is free and nobody is playing.
+7. **Four stars.**
 
-## 6. Build steps, after D64
+## 6. Build steps, when this is picked up
 
 One thing per commit, all four gates green between commits. The Ollama tab and the failed-reply row are
 not owned by either session running today, but the plugin's root file is; step 1 waits for that.
@@ -117,9 +110,9 @@ not owned by either session running today, but the plugin's root file is; step 1
 | 1 | One backend call that runs the checks in § 3 in order and returns the list with a verdict and the next action's id. Reuses the existing probes; adds no new one. Tests for every row of the table, with the probes faked. | Sonnet 5 high lane | the bug session's root-file helper to land |
 | 2 | The doctor panel: the list, the sentence, the action button, **Save a report**, **Back**. Focus graph entry first, then the control. Tests for the list states and the button labels. | Opus xhigh, after a device measurement of the failed-reply row | step 1 |
 | 3 | The Ollama-tab jump: each target control registers itself the way the Permissions rows do; the action button arms the jump; *Back to Main* returns. Tests mirror the Permissions jump's. | Sonnet 5 high lane | step 2 |
-| 4 | **Fix this** on the failed reply, and the notification tap landing on the doctor. **Check my setup** on the Ollama tab. | same lane | step 2 |
+| 4 | **Fix this** on the failed reply. | same lane | step 2 |
 | 5 | The report writer and the typed command. Tests: every section present, secrets scrubbed, the question's words absent, permission off refused with the jump offered. | Sonnet 5 high lane | step 1 |
-| 6 | Docs: both roadmap entries settle into one in Verify naming the rows below; rows in the manual test doc; a changelog line; the troubleshooting doc points at **Fix this** first. | the session's own driver | steps 2 to 5 |
+| 6 | Docs: the roadmap entry moves to Verify naming the rows below; rows in the manual test doc; a changelog line; the troubleshooting doc points at **Fix this** first. | the session's own driver | steps 2 to 5 |
 | 7 | The Deck rows in § 7. | whoever holds the Deck, Opus xhigh reads the results | step 6 and a free Deck |
 
 ## 7. Proving it on the Deck
@@ -133,8 +126,9 @@ Every row starts from a deliberately broken setup and ends with it restored and 
   asked to start, **Test again** passes within a few seconds.
 - **DOCTOR-03** A model that is not installed placed first in the try order: check 6 fails; **Fix the
   try order** lands the ring inside the picker; *Back to Main* returns.
-- **DOCTOR-04** Everything healthy: **Check my setup** from the Ollama tab shows every tick and the
-  "looks fine" sentence.
+- **DOCTOR-04** Everything healthy but the Ask still failed (a give-up time set very short): every check
+  ticks, the sentence says the setup looks fine, and **Give it more time** lands the ring on the timeout
+  settings.
 - **DOCTOR-05** **Save a report** with the file-write permission on: the file appears in the Desktop
   folder with every section, no secret values, and no question text. With it off: the button explains
   and offers the Permissions jump.
@@ -169,3 +163,5 @@ Written as work lands.
 
 - **2026-09-05** — Plan written. D64 raised. Roadmap: both entries point here; nothing moved until the
   first call is answered.
+- **2026-09-05, later** — D64 locked, all seven. Roadmap: the snapshot entry retired into the doctor's; the
+  doctor's entry rewritten to the locked shape. Nothing built. Waits for the maintainer's "proceed" to build.

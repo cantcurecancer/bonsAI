@@ -757,7 +757,7 @@ alphabetical order the rest of the Backlog uses.
   - **Depends on:** Mode selector (shipped).
 
 - ★★★★ **Connection doctor** (guided first-Ask repair — candidate)
-  - **Status:** Candidate, not accepted — decide vs **Deck health snapshot** (shared probe set).
+  - **Status:** Accepted 2026-09-05 (D64) as one feature with the snapshot folded in. Planned in [39-connection-doctor.md](planning/39-connection-doctor.md).
   - **Goal:** **Fix this** on Ask failure walks probes → one next action with Ollama-tab deep link.
   - **Source:** [13-roadmap-feature-ideas.md](planning/13-roadmap-feature-ideas.md) § B3.
 - ★★★★ **LAN custom model pull** (remote host — decision review)
@@ -782,6 +782,8 @@ alphabetical order the rest of the Backlog uses.
 - ★★★★★ **Deck health snapshot** (full diagnostics + Ollama)
   - **GitHub:** [bonsAI Issues](https://github.com/qd313/bonsAI/issues) — issue TBD.
   - **Goal:** Read-only diagnostics dump to Desktop; Magic Ask `bonsai:diagnostics`.
+  - **Folded 2026-09-05 (D64):** into **Connection doctor** as its **Save a report** button and typed command. The roadmap entry is
+    retired; this note is what remains of it. [39-connection-doctor.md](planning/39-connection-doctor.md).
 - ★★★★★ **Local reply TTS** (Phase 1–2 character voice)
   - **GitHub:** [bonsAI Issues](https://github.com/qd313/bonsAI/issues) — issue TBD.
   - **Goal:** Phase 1 offline TTS play/stop; Phase 2 character-aligned read-aloud (legal gate).
