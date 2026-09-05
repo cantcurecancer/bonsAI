@@ -165,3 +165,61 @@ have that, so I do them.
 ## 7. Progress log
 
 Written as work lands.
+
+### Block 1 — the four navigation bugs measured, 2026-09-05
+
+The device is running exactly this checkout: the bundle and the backend file both hash the same here
+and there, so everything below is about the code we are changing. Five helpers were working at the
+desk throughout.
+
+**Nothing is highlighted when the panel opens. Reproduced first time, and it is worse than the entry
+says.** Left the panel, opened it again from the Decky list, read the screen before pressing anything:
+nothing owned the highlight at all. Pressed Down once — the highlight appeared on **Decky's own back
+arrow at the very top of the panel**, outside bonsAI entirely. So opening the plugin and pressing Down
+costs a person two presses before they are anywhere useful, and the first one puts them further from
+the chat than where they started. The entry guessed the highlight lands on the tab bar; today it
+landed a row above that, outside the plugin.
+
+**An answer paragraph hidden behind the bottom bar. Reproduced twice, and the cause is now named.**
+The bar's top edge is at 648 and the pane's visible bottom is 805, so the bar hides the bottom 157
+pixels. The last paragraph of the reply sits at 588 to 689 — 41 pixels of it behind the bar, leaving
+between a third and two thirds of it on screen depending on how tall the chip label is that day.
+
+The fix for this already exists in the tree and **it runs, it computes the right number, and the pane
+never moves.** With the highlight on that paragraph the element carried a 164-pixel scroll margin,
+which is exactly the right answer for a 157-pixel bar plus its own 6-pixel pad. So the fix fired and
+got as far as asking the pane to scroll. The pane's scroll position was 0, with 277 pixels of room
+available. On the same walk the pane scrolled perfectly well for other controls — it reached 216 and
+277 when the highlight was on the Helpful and Save-chat buttons. So the pane scrolls; this one lift
+produces nothing. That is now a helper's question, with both leads written into its brief.
+
+One correction to the entry: it says the question box covers the paragraph. Both cover it. Walking
+down, the coverer is a preset chip; walking up, it is the question box. It is the bottom bar as a
+whole, and a fix has to work from both directions.
+
+**Pressing Ask with an empty question box drops the highlight.** Found by accident and worth filing.
+A on the Ask button with nothing typed correctly sends nothing — and leaves nothing highlighted, with
+the page's own focus falling back to the document body. One more press puts it back. Small, but it is
+the same family as the opening bug and probably the same fix.
+
+**The stuck panel: not reproduced, in three deliberate attempts.** Tried leaving with B and reopening
+from the Decky list; tried the button-then-cancel path around the question box; tried switching
+through all six tabs and back six times, then walking the whole panel top to bottom. Every walk
+reached the Ask button. Two of the three attempts are the exact path the entry describes.
+
+What came out of it instead is a **named mechanism that fits every symptom on record**, found by
+reading rather than pressing. There is a registry that hands the highlight between the separate parts
+of the panel, and it lives outside the panel — one table for the whole plugin, keyed by fixed names
+like "the question box" or "the chip row", not by which copy of the panel is on screen. Two things
+follow. When the panel closes and opens, a stale entry can survive, because the table is only emptied
+when the plugin's code is loaded fresh. And when a handler asks that table to move the highlight, it
+gets back an object that still looks alive and still has a working method on it, so the handler
+reports the press as handled — **and nothing moves**, because the thing it moved the highlight to
+belongs to a copy of the panel that is gone.
+
+That is, line for line, what the entry describes: the press arrives, nothing moves, Steam's highlight
+and the page's own focus sit on different things, reopening the panel does not clear it, and
+restarting the loader does — because restarting the loader is the one thing that empties that table.
+
+It is a hypothesis until it is proved. But it is a specific one with a small fix behind it, and it is
+much more than the entry had this morning.

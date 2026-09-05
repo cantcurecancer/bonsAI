@@ -47,8 +47,15 @@ hook gives a gentle heads-up when a session starts work outside this.
 ## Bugs
 
 
-- ★ `[focus]` **An answer section can take the ring while hidden behind the Ask box** — **OPEN, found 2026-09-04.** Walking up the
-  Red Dead turn landed on a bubble measured only 67% visible, covered by `.bonsai-unified-input-text-box`'s input.
+- ★ `[focus]` **An answer paragraph can take the highlight while it is hidden behind the bottom bar** — **OPEN, found
+  2026-09-04, measured 2026-09-05.** The bar hides the bottom 157px of the pane; the reply's last paragraph overlaps it by 41px,
+  leaving a third to two thirds of it on screen. **The existing fix runs and the pane never moves:** the element carries the right
+  164px scroll margin, and the pane sits at 0 with 277px of room. The same pane scrolls fine for other controls on the same walk.
+  Correction to the original note: walking down the coverer is a preset chip, walking up it is the question box — it is the whole
+  bar, and a fix must work both ways. Evidence `runs/round35-answer-stop-under-dock.json`, `runs/round35-control-main-walk.json`.
+- ★ `[focus]` **Pressing Ask with an empty question box drops the highlight** — **OPEN, found 2026-09-05.** A on the Ask button
+  with nothing typed correctly sends nothing, and leaves nothing highlighted at all — the page's own focus falls back to the
+  document body. One more press puts it back. Same family as the empty highlight on opening, and likely the same fix.
 - ★ `[focus]` **Down does not move the ring off an unrevealed spoiler block** — **OPEN, found 2026-09-04.** With the ring on
   `.bonsai-spoiler-reveal-target`, Down reports the press arriving and nothing moving. After the block is revealed, Down escapes
   normally, so it is the hidden state that traps.
@@ -71,6 +78,9 @@ hook gives a gentle heads-up when a session starts work outside this.
   not a 0x0 stop but **no ring at all** — the rig's own report each time was *the ring is unowned, so the first D-pad press will
   place it rather than move it*, and that press then landed on the tab bar, visible. Same thing to look at (nothing is
   highlighted when the panel opens), so the fix is to place the ring on mount rather than to move it off a bad element.
+  **Measured again 2026-09-05 on a fresh open, and it is worse than written:** nothing owned the highlight, and the first Down put
+  it on **Decky's own back arrow at the top of the panel, outside bonsAI entirely**. So opening the plugin costs two presses before
+  a person is anywhere useful, and the first one moves them away from the chat. Evidence `runs/round35-trap-attempt-1-after-b-reopen.json`.
 - ★★ `[focus]` **Focus ring styling is inconsistent** between plugin controls and Steam's own — **PARTIAL.** Modal scoping shipped; a
   blanket rule was tried and reverted in favour of Steam's native outline.
 - ★★ `[focus]` **Up skips the answer sections and the chat slot row** — **OPEN, found 2026-09-04.** Down walks a reply chunk by
@@ -110,6 +120,14 @@ hook gives a gentle heads-up when a session starts work outside this.
   `runs/round34-BUG-down-walk-strategy-mode-control.json` (trapped, other mode), `runs/round34-BUG-empty-chat-input-trap.json`
   (trapped, empty chat), `runs/round34-BUG-down-walk-after-loader-restart.json` and
   `runs/round34-BUG-input-to-ask-final-check.json` (clean after the restart).
+  **2026-09-05, three deliberate attempts, not reproduced:** leaving with B and reopening from the Decky list; a button-then-cancel
+  around the question box; and switching through all six tabs and back six times before walking the panel top to bottom. Every walk
+  reached the Ask button. **A mechanism was found by reading instead.** The table that hands the highlight between the panel's parts
+  lives outside the panel and is keyed by fixed names, not by which copy of the panel is on screen; it is only emptied when the
+  plugin's code loads fresh. A stale entry therefore survives a panel reopen, and the handler that asks it to move the highlight
+  gets back something that still looks alive, reports the press as handled, and moves nothing. That matches every symptom on record,
+  including why only a loader restart clears it. Unproved. Evidence `runs/round35-trap-*.json`,
+  [plan 35](planning/35-bugfix-session.md) § 7.
 - ★★★ `[KB]` **A quick question asked while a game is running pays for the slow search it was meant to skip** —
   **OPEN, found 2026-09-05.** Speed mode is supposed to do the cheap keyword lookup only. On the Deck, with Deep Rock Survivor
   running, two of three Speed questions ran the meaning search as well: Show details read *Keyword + meaning* and the turn spent
