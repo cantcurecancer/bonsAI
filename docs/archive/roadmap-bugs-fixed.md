@@ -557,3 +557,11 @@ measurements and the QA rows survive. The roadmap keeps a one-line entry in **Do
     gave a turn headed **"I'm at: Dodging Asterius's charge"**, and closing and reopening the Quick Access Menu left the
     header reading exactly that. One transient sighting of the raw `[Strategy follow-up]` prompt in the expanded history
     while another reply was streaming could not be reproduced; recorded in plan 31.
+
+### Left on the Ollama sliders threw the ring out of the plugin (verified on the Deck 2026-09-04)
+
+- ★★ `[focus]` **Left on the Ollama sliders steps the value and then throws the ring out of the plugin** — **VERIFY.**
+  Fixed at the desk 2026-09-04, Deck check owed. Reply style, keep-alive, connection-timeout and the Settings UI-scale
+  slider all now claim Left/Right on the move handlers themselves instead of stepping the value from inside the
+  button-press handler, so Steam has nothing left to carry off the slider. Row **ONBUTTONDOWN-AUDIT-01**.
+  - **Deck 2026-09-04, build 49241e7:** Left on the Reply style slider stepped once and the ring stayed; the same on keep-alive (240m to 120m and back); the custom-timeout thumb held the ring. The UI-scale bridge was not a stop with automatic scaling on, so that fourth slider is unit-tested only. Evidence files under `runs/ONBUTTONDOWN-AUDIT-01-e/f/g-*.json`.

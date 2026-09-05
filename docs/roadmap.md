@@ -237,10 +237,10 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
   time, so ranks 1-3 came round every minute and ranks 4-6 rarely appeared; both now pick at random among the
   eligible candidates, keeping game chips ahead of generic Deck tips. Row **CHIP-ROTATION-01**.
   [Detail](roadmap-details.md#chip-rotation-is-biased-to-the-top-of-the-candidate-list).
-- ★ `[focus]` **Reordering in the try-order picker drops the highlight** — **VERIFY.** Fixed at the desk 2026-09-04:
-  after a move, the ring goes back onto the moved row's own button — the one just pressed when it stays enabled, the
-  row's other button when that one is now disabled by landing at an end. Both buttons stay inside the one list, where
-  a plain `focus()` is allowed. **Not measured on the Deck tonight — row PICKER-REORDER-02 decides.**
+- ★ `[focus]` **Reordering in the try-order picker drops the highlight** — **VERIFY, first fix failed on the Deck 2026-09-04.** Fixed at
+  the desk 2026-09-04 with a plain focus after the move; on the device A on a row's Down button reordered the row, the ring left the
+  picker for a hidden tab button, and the picker closed. Back with its lane for a version that uses Steam's own transfer and keeps the
+  picker open. Row **PICKER-REORDER-02**.
 - ★ `[focus]` **The active chip in Show details is hard to spot** — **VERIFY.** Fixed at the desk 2026-09-04: the active chip
   now carries a visible cyan border-glow and brighter fill, and the "Chip N of M" counter uses the section-label treatment
   (cyan, bold, letter-spaced) instead of small grey text. Style only — the focus graph is unchanged, and Steam's ring still
@@ -250,10 +250,10 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
   2026-09-04: the button now renders only once a batch is pinned (the "0 pinned" text above it already explains the empty
   state), so a disabled stop no longer sits at the bottom of Developer. Owed: a Developer sweep with no batch pinned shows
   no stop named *Clear frozen test chips*. Row **DEV-CLEAR-CHIPS-01**.
-- ★ `[focus]` **The focus ring is clipped on grid layouts** — **VERIFY.** Fixed at the desk 2026-09-04: each character-picker
-  grid column now carries 6px of inner padding so a focused tile's ring has room to render before the column's own
-  `overflow: hidden` clips it — most visible before the fix on an edge tile. Style only. Owed: a screenshot with the ring
-  visible on an edge tile. Row **CHAR-PICKER-RING-01**.
+- ★ `[focus]` **The focus ring is clipped on grid layouts** — **VERIFY, measured on the Deck 2026-09-04, your glance owed.** Each
+  character-picker column now carries 6 px of inner padding; on the device the top-left tile sits 6 px inside the column that clips,
+  and Steam's ring there is under a pixel wide, so it has room on every side. Picture for your eyes:
+  `screenshots/DeckCapture_20260904_214941_game.png`. Row **CHAR-PICKER-RING-01**.
 - ★ `[focus]` **Up from the preset chips walks back through the chip history before it leaves the row** — **VERIFY.**
   Fixed at the desk 2026-09-04 (D58 #2): Up now tries the session context strip first, same as before, and falls
   back to the always-mounted chat slot row when no strip is registered (an empty chat), instead of leaving the
@@ -265,20 +265,16 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
 - ★★ `[focus]` **A checklist the model got wrong was left in the reply as raw JSON**, its own D-pad stop that did nothing — **VERIFY.**
   Fixed 2026-08-28: a rejected checklist block is dropped, as a rejected branch block already was. Owed: one sighting on device of a
   reply where it happens. Row **STRAT-CHECKLIST-JSON-01**.
-- ★★ `[focus]` **After a modal closes or the QAM reopens, the ring can sit on a hidden Steam tab button** — **VERIFY.** Fixed at the
-  desk 2026-09-04, Deck check owed: the trap now bounces a hidden tab button that already holds the ring the instant it attaches
-  (not only a later change), and the Clear cache / Clear all plugin data buttons register as return-focus owners, so the ring comes
-  back to the button that opened the modal instead of wherever Steam defaults to. Row **TAB-BAR-11**.
+- ★★ `[focus]` **After a modal closes or the QAM reopens, the ring can sit on a hidden Steam tab button** — **VERIFY, half passed on the
+  Deck 2026-09-04.** Closing the Clear cache confirmation now returns the ring to the Clear cache button (passes). After a remount the
+  ring still parks on a hidden tab button: the trap's node check is a cross-realm `instanceof`, so it never matches on the device. Back
+  with its lane. Row **TAB-BAR-11**.
 - ★★ `[focus]` **Down from the chat slot lands on the whole reply before its first section** — **VERIFY**, fixed at the desk
   2026-09-04, Deck check owed (read at the desk, not yet measured on device). `focusFirstAnswerChunk` now hands the ring into the
   bubble's navigation container (`takeAnswerBubbleNavFocus`, the same transfer the reply row's glossary-chip hop already used) and
   lands on the first `.bonsai-answer-stop` instead of the bare bubble; a masked spoiler still wins when one is present, unchanged.
   Up from the reply buttons got the same fix in reverse (`focusLastAnswerChunk`) for the matching double landing on the way in from
   below. New QA row **CHAT-REPLY-ENTRY-01**. [Detail](roadmap-details.md#down-from-the-chat-slot-lands-on-the-whole-reply).
-- ★★ `[focus]` **Left on the Ollama sliders steps the value and then throws the ring out of the plugin** — **VERIFY.**
-  Fixed at the desk 2026-09-04, Deck check owed. Reply style, keep-alive, connection-timeout and the Settings UI-scale
-  slider all now claim Left/Right on the move handlers themselves instead of stepping the value from inside the
-  button-press handler, so Steam has nothing left to carry off the slider. Row **ONBUTTONDOWN-AUDIT-01**.
 - ★★ `[focus]` `[perms]` **The Open Permissions button under a blocked reply is not a D-pad stop** — **VERIFY**, fixed at the desk
   2026-09-04, Deck check owed. The button (and the troubleshooting Ask hint's matching button) is a genuine D-pad stop now —
   `focusable`, same shape as the chat-slot row's 2026-08-30 fix — and joins the Down/Up chain: Down from the reply row reaches
@@ -359,6 +355,8 @@ on 2026-07-30 (`apply_tdp` no longer exists). Preserved in the archive.
 since April (`25742f2`), and a deliberate failing test exits 1 today. If it recurs, record the exact command and shell.
 
 **September 2026**
+- ★★ `[focus]` **Left on the Ollama sliders no longer throws the ring out of the plugin** — verified on the Deck 2026-09-04 on the Reply
+  style, keep-alive and custom-timeout sliders (ONBUTTONDOWN-AUDIT-01); the UI-scale slider got the same fix, unit-tested only. [Detail](archive/roadmap-bugs-fixed.md#moved-from-the-roadmap-2026-09-04).
 - ★ `[KB]` **The KB arms report's verdict now judges every retrieval arm** — fixed at the desk 2026-09-04. It used to compare
   only `rrf` against `keyword` and could print "no separation" while a third arm (`vector_only`) was well ahead in the same
   table; desk-only, no Deck check applies. [Detail](archive/roadmap-bugs-fixed.md#moved-from-the-roadmap-2026-09-04).
