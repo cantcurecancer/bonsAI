@@ -60,10 +60,28 @@ describe("computeUpdatedPullRecord", () => {
   });
 
   it("records a tag installed for the first time on a later run as new", () => {
-    // storedRecord is {} (not null) -- this browser has run before, just never saw this tag.
-    const record = computeUpdatedPullRecord(new Set(["qwen2.5:1.5b"]), {}, now);
+    // A later run is a record that already holds at least one tag. It used to be written as {}
+    // here, but an empty record now counts as a first run -- see the two-pass case below.
+    const stored: PullModelPullRecord = { "gemma4:e2b-it-qat": now - 10_000 };
+    const record = computeUpdatedPullRecord(new Set(["gemma4:e2b-it-qat", "qwen2.5:1.5b"]), stored, now);
     expect(isRecentPullModelTag(record, "qwen2.5:1.5b", now)).toBe(true);
     expect(record["qwen2.5:1.5b"]).toBe(now);
+  });
+
+  it("does not badge already-installed models New when the first pass ran before the model list loaded", () => {
+    // The Deck failure, 2026-09-05 (PULL-NEW-BADGE-01). The modal renders once before the
+    // connection test answers, so pass one sees an empty installed set. If that pass persists a
+    // record, pass two -- the one that actually has the models -- reads a non-null record,
+    // concludes it is not a first run, and stamps every pre-existing model as pulled today. All
+    // four models on the device wore a "New" label they had not earned.
+    const passOne = computeUpdatedPullRecord(new Set(), null, now);
+    expect(Object.keys(passOne)).toHaveLength(0);
+
+    const installed = new Set(["qwen2.5:1.5b", "qwen3.5:4b", "gemma4:e2b-it-qat", "nomic-embed-text:latest"]);
+    const passTwo = computeUpdatedPullRecord(installed, passOne, now);
+    for (const tag of installed) {
+      expect(isRecentPullModelTag(passTwo, tag, now)).toBe(false);
+    }
   });
 
   it("keeps an existing timestamp rather than overwriting it on a later observation", () => {

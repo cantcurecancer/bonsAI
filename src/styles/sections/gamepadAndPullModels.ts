@@ -178,8 +178,16 @@ export function buildPullModelsStylesheet(): string {
           gap: 6px;
           width: 100%;
         }
+        /* The row is a flex row at full width, but a flex child does not stretch unless told to,
+           and Steam's DialogInput does not tell it to. Measured on the Deck 2026-09-05
+           (PULL-CUSTOM-01): the row was 569px and the field inside it was 50px, so a model name
+           you had just typed was almost entirely unreadable. min-width:0 as well, or the input's
+           own intrinsic width stops it shrinking inside the row on a narrow dialog. */
+        .bonsai-scope .bonsai-pullmodels-custom-tag-row .DialogInput_Wrapper,
         .bonsai-scope .bonsai-pullmodels-custom-tag-row .DialogInput,
         .bonsai-scope .bonsai-pullmodels-custom-tag-row input {
+          flex: 1 1 auto !important;
+          min-width: 0 !important;
           font-size: 11px !important;
           min-height: 26px !important;
         }

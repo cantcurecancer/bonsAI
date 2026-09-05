@@ -55,9 +55,22 @@ const LOCAL_LOOPBACK_CONNECTION_TEST_RPC_EXTRA_MS = 42000;
  * everything else, with no separate line needed there.
  *
  * A fresh install must not badge every already-installed model "New": the first time this ever
- * runs in a browser (`storedRecord === null`, i.e. the key was never written) every currently
- * installed tag is seeded as already-old rather than "just pulled". Only a tag that appears
- * installed on a *later* run, with no prior record, is genuinely new.
+ * runs in a browser every currently installed tag is seeded as already-old rather than "just
+ * pulled". Only a tag that appears installed on a *later* run, with no prior record, is genuinely
+ * new.
+ *
+ * **An empty record counts as that first run, and that is not a nicety.** Measured on the Deck
+ * 2026-09-05 (PULL-NEW-BADGE-01): all four already-installed models were stamped with today's
+ * date and would have worn a "New" label for a month. The modal renders once before the
+ * connection test answers, so the first pass has an *empty* installed set and persisted `{}`.
+ * The second pass — the one that actually has the tags — then read a non-null record, concluded
+ * it was not a first run, and stamped every pre-existing model as just pulled. Testing only
+ * `storedRecord === null` cannot see that, because by then the key exists.
+ *
+ * The accepted consequence, on a Deck with **no** models at all: the very first model pulled is
+ * not badged New, because a flat tag-to-timestamp record cannot tell "never looked" from "looked
+ * and there was nothing". A missing badge once on an empty Deck is a far better failure than
+ * every model on a full one wearing it for thirty days.
  */
 export type PullModelPullRecord = Record<string, number>;
 export { PULL_MODEL_NEW_BADGE_STORAGE_KEY };
@@ -69,7 +82,7 @@ export function computeUpdatedPullRecord(
   now: number
 ): PullModelPullRecord {
   const next: PullModelPullRecord = { ...(storedRecord ?? {}) };
-  const isFirstRunEver = storedRecord === null;
+  const isFirstRunEver = storedRecord === null || Object.keys(storedRecord).length === 0;
   for (const tag of installedTags) {
     if (tag in next) continue;
     next[tag] = isFirstRunEver ? now - PULL_MODEL_NEW_BADGE_WINDOW_MS - 1 : now;
@@ -296,6 +309,9 @@ export function PullModelsModal(props: PullModelsModalProps) {
 
   // "New" badge bookkeeping — see the block comment above computeUpdatedPullRecord.
   useEffect(() => {
+    /* Nothing to record before the connection test answers, and writing an empty record here is
+       what caused the Deck failure described above — so do not write one. */
+    if (installedTags.size === 0) return;
     try {
       const raw = window.localStorage.getItem(PULL_MODEL_NEW_BADGE_STORAGE_KEY);
       const stored: PullModelPullRecord | null = raw === null ? null : (JSON.parse(raw) as PullModelPullRecord);

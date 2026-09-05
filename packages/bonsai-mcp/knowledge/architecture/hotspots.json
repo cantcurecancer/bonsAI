@@ -77,7 +77,7 @@
     },
     {
       "path": "py_modules/backend/services/local_ollama_setup_service.py",
-      "lines": 915,
+      "lines": 941,
       "role": ""
     },
     {
@@ -132,7 +132,7 @@
     },
     {
       "path": "src/styles/sections/gamepadAndPullModels.ts",
-      "lines": 543,
+      "lines": 551,
       "role": ""
     },
     {
