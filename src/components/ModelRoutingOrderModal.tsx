@@ -11,6 +11,7 @@ import type { ModelPolicyTierId } from "../data/modelPolicy";
 import type { PullModelEntry } from "../data/pullModelCatalog";
 import { BonsaiModalScope } from "./BonsaiModalScope";
 import { elementHasFocus } from "../utils/uiDocument";
+import type { NavRefHolder } from "../utils/navFocusRegistry";
 import {
   buildPickerOrder,
   DEFAULT_TEXT_ROUTING_SEED,
@@ -21,6 +22,56 @@ import {
 } from "../utils/modelRoutingOrder";
 
 type RowMoveDirection = "up" | "down";
+export type RowButtonRefs = Partial<Record<RowMoveDirection, HTMLElement | null>>;
+
+/*
+ * Device rerun 2026-09-04 (PICKER-REORDER-02, build 49241e7) found the first fix's plain `.focus()`
+ * insufficient: the picker is a `ModalDialogOverlay`, rows are keyed by tag, and React relocating the
+ * *focused* row's DOM node during the reorder reads to Steam's focus manager as that node going away
+ * -- it fell back to a hidden Ollama tab button behind the picker rather than following the move.
+ * `takeRowFocus` below is Steam's own transfer instead, the same one `PresetRowFocusRoot`
+ * (MainTabPresetAnimatedChips.tsx) uses to hand the ring into the carousel from outside it.
+ *
+ * A same-day addendum found worse: calling that transfer synchronously, in the same effect that ran
+ * right after the reorder committed, stole the release half of the very A press that triggered the
+ * reorder -- Steam's own press/release bookkeeping (roughly an 80ms hold, per the working theory)
+ * lost track of what it was activating and fell through to the ConfirmModal's default OK, so the
+ * press that was supposed to move the highlight instead saved and closed the picker. `moveAndKeepHighlight`
+ * now defers the whole transfer past that window (`REORDER_FOCUS_TRANSFER_DELAY_MS`) before calling
+ * either of the two functions below, and `focusRowButton` waits one more tick after `takeRowFocus`
+ * -- the same two-step `onEnterFromOutside` uses (Steam's transfer needs a tick to land before an
+ * in-container `focus()` is safe on top of it).
+ */
+export const REORDER_FOCUS_TRANSFER_DELAY_MS = 150;
+
+/**
+ * Steam's own transfer onto the moved row's container. Needed because a plain `.focus()` on the
+ * button does not hold the ring here even though both rows stay inside one list `Focusable` -- see
+ * the block comment above. Swallows a throw the same way `takeNavFocus` (navFocusRegistry.ts) does;
+ * `focusRowButton` still runs next either way.
+ */
+export function takeRowFocus(holder: NavRefHolder | undefined): void {
+  try {
+    holder?.current?.TakeFocus?.(true);
+  } catch {
+    /* best-effort; focusRowButton below still runs */
+  }
+}
+
+/**
+ * In-container focus on the moved row's same-direction button, called after `takeRowFocus` has put
+ * Steam's ring on the row itself -- safe as a plain `.focus()` at that point because both buttons are
+ * the row's direct siblings. Falls back to the row's other button when the same-direction one is now
+ * disabled (the row landed at an end): a disabled button refuses DOM focus, so `elementHasFocus`
+ * catches that rather than re-deriving the edge condition the `disabled` prop already encodes.
+ */
+export function focusRowButton(refs: RowButtonRefs | undefined, dir: RowMoveDirection): void {
+  if (!refs) return;
+  const primary = dir === "up" ? refs.up : refs.down;
+  const secondary = dir === "up" ? refs.down : refs.up;
+  primary?.focus();
+  if (!elementHasFocus(primary ?? null)) secondary?.focus();
+}
 
 export type ModelRoutingOrderKind = "text" | "vision";
 
@@ -92,16 +143,16 @@ export function ModelRoutingOrderModal({
     });
   }, []);
 
-  /*
-   * Row buttons keyed by tag, so the ring can be put back on the moved row's own button after a
-   * reorder. Measured on device 2026-08-28: after A on a row's Up/Down, the two rows swap correctly
-   * but nothing owns `gpfocus` for the next press -- the button the ring was on is now a different
-   * row, and it re-acquires on the moved model's own button rather than the one you just pressed.
-   * A plain `.focus()` is safe here because the button's own row Focusable never leaves the outer
-   * list Focusable; the reorder only changes its sibling position, not its container.
-   */
-  const rowButtonRefs = useRef(new Map<string, Partial<Record<RowMoveDirection, HTMLElement | null>>>());
-  const pendingFocusRef = useRef<{ tag: string; dir: RowMoveDirection } | null>(null);
+  // Row buttons and row nav nodes, both keyed by tag, so the ring can be put back on the moved
+  // row's own button after a reorder -- see the block comment above `takeRowFocus`.
+  const rowButtonRefs = useRef(new Map<string, RowButtonRefs>());
+  const rowNavRefs = useRef(new Map<string, NavRefHolder>());
+  const isMountedRef = useRef(true);
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   const setRowButtonRef = useCallback((tag: string, dir: RowMoveDirection, el: HTMLElement | null) => {
     const entry = rowButtonRefs.current.get(tag) ?? {};
@@ -109,28 +160,30 @@ export function ModelRoutingOrderModal({
     rowButtonRefs.current.set(tag, entry);
   }, []);
 
+  /** Steam populates `.current` once the row's Focusable mounts and registers as a nav node. */
+  const getRowNavRefHolder = useCallback((tag: string): NavRefHolder => {
+    let holder = rowNavRefs.current.get(tag);
+    if (!holder) {
+      holder = { current: null };
+      rowNavRefs.current.set(tag, holder);
+    }
+    return holder;
+  }, []);
+
   const moveAndKeepHighlight = useCallback(
     (tag: string, index: number, delta: number, dir: RowMoveDirection) => {
-      pendingFocusRef.current = { tag, dir };
       move(index, delta);
+      window.setTimeout(() => {
+        if (!isMountedRef.current) return;
+        takeRowFocus(rowNavRefs.current.get(tag));
+        window.setTimeout(() => {
+          if (!isMountedRef.current) return;
+          focusRowButton(rowButtonRefs.current.get(tag), dir);
+        }, 0);
+      }, REORDER_FOCUS_TRANSFER_DELAY_MS);
     },
     [move],
   );
-
-  useEffect(() => {
-    const pending = pendingFocusRef.current;
-    if (!pending) return;
-    pendingFocusRef.current = null;
-    const refs = rowButtonRefs.current.get(pending.tag);
-    if (!refs) return;
-    const primary = pending.dir === "up" ? refs.up : refs.down;
-    const secondary = pending.dir === "up" ? refs.down : refs.up;
-    primary?.focus();
-    // The primary button is disabled when the row landed at that end (index 0 for Up, the last
-    // index for Down); a disabled button refuses DOM focus, so `elementHasFocus` catches that
-    // rather than re-deriving the edge condition the `disabled` prop below already encodes.
-    if (!elementHasFocus(primary ?? null)) secondary?.focus();
-  }, [order]);
 
   const onReset = useCallback(() => {
     const seed = kind === "vision" ? DEFAULT_VISION_ROUTING_SEED : DEFAULT_TEXT_ROUTING_SEED;
@@ -192,6 +245,10 @@ export function ModelRoutingOrderModal({
                     key={row.tag}
                     className="bonsai-model-routing-row"
                     flow-children="horizontal"
+                    /* `navRef` is a real Steam Focusable prop that Decky's types omit -- same gap as
+                       `onMoveDown`, so it goes through the cast the repo already uses for those
+                       (PresetRowFocusRoot, ChatSlotRow, TabIndicatorBar). */
+                    {...({ navRef: getRowNavRefHolder(row.tag) } as Record<string, unknown>)}
                     style={{
                       display: "flex",
                       alignItems: "center",

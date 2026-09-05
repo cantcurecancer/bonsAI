@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
   "fileCount": 359,
-  "edgeCount": 864,
+  "edgeCount": 866,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -492,6 +492,7 @@
     "src/components/ModelRoutingOrderModal.test.tsx": {
       "imports": [
         "src/components/ModelRoutingOrderModal.tsx",
+        "src/utils/navFocusRegistry.ts",
         "src/utils/uiDocument.ts"
       ],
       "importedBy": []
@@ -502,6 +503,7 @@
         "src/data/modelPolicy.ts",
         "src/data/pullModelCatalog.ts",
         "src/utils/modelRoutingOrder.ts",
+        "src/utils/navFocusRegistry.ts",
         "src/utils/uiDocument.ts"
       ],
       "importedBy": [
@@ -3250,6 +3252,8 @@
         "src/components/MainTabPresetAnimatedChips.test.tsx",
         "src/components/MainTabPresetAnimatedChips.tsx",
         "src/components/MainTabUnifiedAskBar.tsx",
+        "src/components/ModelRoutingOrderModal.test.tsx",
+        "src/components/ModelRoutingOrderModal.tsx",
         "src/components/SessionContextStrip.tsx",
         "src/features/chat-slots/ChatSlotRow.tsx",
         "src/features/plugin-shell/TabBodyFocusRoot.tsx",
