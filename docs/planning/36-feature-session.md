@@ -370,6 +370,34 @@ final step is a fast-forward with nothing to decide. Never resolve the roadmap b
 side — the merge earlier today would have deleted eight entries that way, and one of them had been
 renamed rather than removed, which is invisible unless each is checked by name.
 
+### The device block, 2026-09-05
+
+**Four features checked, seven bugs found, all seven fixed.** Not one of the seven was visible at the
+desk. Every one needed the device.
+
+| Found on the Deck | What a person would have hit |
+|---|---|
+| Every already-installed model labelled **New** | All four models on the device wore a label they had not earned, for a month |
+| The typing box 50 pixels wide in a 569-pixel row | A model name you had just typed was unreadable |
+| The failure message led with the exit code | The one sentence you could act on came last, after spinner characters |
+| The same message repeated itself four times | Ollama redraws inside one line, so splitting on lines never saw it |
+| The boot warm-up loaded the wrong model | It warmed the first small model, not the one Ask uses — memory spent, first question no faster |
+| The first fix for that read a setting that is usually empty | So it still guessed, and still picked the wrong model |
+| The embedding model offered as one Ask could use | One press would have pointed Ask at something that cannot reply |
+
+**Two of my own checks were wrong and are corrected in place, with the reason.** Asking for three new
+chips in one minute is impossible by design — the suggestion row only offers new prompts for the first
+minute after the panel opens, then freezes on what it is showing. And the pull picker closing when you
+press Pull is correct: the pull runs in the background and you watch it on the Ollama tab.
+
+**One finding retracted.** A model installed on the device looked missing from the picker. It is not —
+the picker shows only the essentials by default and that model sits behind the filter. The answer was in
+the feature's own test file.
+
+**The device was left as it was found.** The settings file matches the copy taken at the start apart from
+the new switches at their defaults, the try order changed by starring a model is back to empty, and the
+model pulled to test the field was removed.
+
 ### A mistake worth writing down: three sessions, one working copy
 
 **What happened.** Cutting this session's branch in the shared working copy moved every other session
