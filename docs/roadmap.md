@@ -41,6 +41,11 @@ from one star to six.
 - ★ `[focus]` **Down does not move the ring off an unrevealed spoiler block** — **OPEN, found 2026-09-04.** With the ring on
   `.bonsai-spoiler-reveal-target`, Down reports the press arriving and nothing moving. After the block is revealed, Down escapes
   normally, so it is the hidden state that traps.
+- ★ `[main]` **The footnote under the Ask bar says no active game until the first Ask** — found on the Deck 2026-09-04 during
+  CHIP-ROTATION-01: with Half-Life 2 running and the carousel already showing that game's chips, the line read *Context: no active
+  game detected* for the whole 96-second sample. The line only changes when an Ask's status poll reports a game (index.tsx starts it
+  as inactive; useBonsaiAskOrchestration.ts updates it from the poll), so on a fresh mount it reports a detection that never ran.
+  Evidence `runs/CHIP-ROTATION-01-carousel-sample-half-life-2.json`.
 - ★ `[reply]` **A branch question elides the game name** — **OPEN, found 2026-09-04.** The Ravenholm branch picker asked
   *"Where are you at in … ?"* with the title replaced by an ellipsis.
 - ★★ `[focus]` **After the panel remounts the ring parks on a zero-size container** — **OPEN, found 2026-09-04.** On a fresh mount
@@ -230,11 +235,6 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
   the carousel's history, mirroring how Left at the edge already pulls an earlier one back; and every mode's
   60-second walk restarts when an Ask completes, even though a pinned batch always reseeds to the same three chips.
   Row **QA-FROZEN-CHIPS-02**.
-- ★ `[chips]` **Chip rotation favours the top of the candidate list** — **VERIFY.** Fixed at the desk
-  2026-09-04, Deck check owed: the guarantee and the roll both used to take the first unseen candidate every
-  time, so ranks 1-3 came round every minute and ranks 4-6 rarely appeared; both now pick at random among the
-  eligible candidates, keeping game chips ahead of generic Deck tips. Row **CHIP-ROTATION-01**.
-  [Detail](roadmap-details.md#chip-rotation-is-biased-to-the-top-of-the-candidate-list).
 - ★ `[focus]` **Reordering in the try-order picker drops the highlight** — **VERIFY, two fixes failed on the Deck 2026-09-04, a
   third applied the same night.** Any button press inside the picker closed it, Reset included: the buttons are plain submit
   buttons inside the modal's form, so an A press submitted it. Row Up/Down and Reset clicks now call `preventDefault()`, on top
@@ -339,6 +339,8 @@ on 2026-07-30 (`apply_tdp` no longer exists). Preserved in the archive.
 since April (`25742f2`), and a deliberate failing test exits 1 today. If it recurs, record the exact command and shell.
 
 **September 2026**
+- ★ `[chips]` **Chip rotation reaches past the top three of the candidate list** — verified on the Deck 2026-09-04 with Half-Life 2
+  running: ranks 2, 3, 4 and 5 of its eight chips came round inside 30 seconds and rank 1 did not (CHIP-ROTATION-01). [Detail](archive/roadmap-bugs-fixed.md#moved-from-the-roadmap-2026-09-04).
 - ★★ `[chat]` **A command reply keeps its question as the header and titles the chat** — verified on the Deck 2026-09-04: the VAC
   check reply is saved to the chat like any other turn, so the header and the chat title read the command (CMD-REPLY-TITLE-01). [Detail](archive/roadmap-bugs-fixed.md#moved-from-the-roadmap-2026-09-04).
 - ★ `[focus]` **Up from a preset chip leaves the row in one press** — verified on the Deck 2026-09-04 on an empty chat (to the chat row)

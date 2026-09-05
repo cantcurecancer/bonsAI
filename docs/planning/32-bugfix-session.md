@@ -331,3 +331,9 @@ Written as things land.
   deploy; lane A's Open Permissions redo is still building. The ban lookup stays off until PERM-JUMP-01 runs on the third build.
   Bug 3's Up half **fails** (22:29): on a reply with no picker, Up from Helpful lands on the bare bubble, because the thumbs row's
   Up handler still yields to Steam and the new fallback only reached the Retry row; back with lane A as a third commit on its branch.
+- **22:31 to 22:47, Deck block 6, bug 10:** the frozen batch was cleared over SSH with the panel unmounted, the rig launched
+  Half-Life 2 (second try; the first read the home shelf before it had a ring), the plugin was reopened over the game and the
+  carousel sampled for 96 s untouched. Ranks 2, 3, 4 and 5 of the game's eight chips came round in the first 30 s and rank 1 never
+  did, so bug 10 **passes** (Done); the game was exited by the rig afterwards. One new finding filed: the footnote under the Ask bar
+  said *no active game detected* the whole time a game was running. Lane B's third picker fix (`b04387b`, the form-submit stop)
+  passed the six gates and is on experimental as `c4e16fc`; the third deploy follows.

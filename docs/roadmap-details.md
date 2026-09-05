@@ -486,7 +486,7 @@ The roadmap cleanup of 2026-09-02 cut every entry to five lines. The original te
   eligible candidates, or a rotating start index, would spread it. **With the QA override on, all six appeared in 90s**, so the bias is in
   the roll rather than in reachability. **Fixed at the desk 2026-09-04:** `pickNextCarouselChip` now draws at random among the eligible
   candidates that share the top priority band (game chips before generic Deck tips), instead of always `available[0]`; the corpus
-  guarantee is unchanged, it just no longer forces the same top-ranked candidate every time. Deck check owed, row **CHIP-ROTATION-01**.
+  guarantee is unchanged, it just no longer forces the same top-ranked candidate every time. **Verified on the Deck 2026-09-04** (Half-Life 2: ranks 2 to 5 inside 30 s, rank 1 absent), row **CHIP-ROTATION-01**.
 
 ## A troubleshooting question that only describes the symptom reaches no tips
 

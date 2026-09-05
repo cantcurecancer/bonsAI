@@ -600,3 +600,12 @@ measurements and the QA rows survive. The roadmap keeps a one-line entry in **Do
   itself off *New chat*, and the header reads the command instead of `…`. Row **CMD-REPLY-TITLE-01**.
   [Detail](roadmap-details.md#a-command-reply-leaves-the-turn-header-blank-and-the-chat-titled-new-chat).
   - **Deck 2026-09-04, build f9a4c17:** header and slot title both read *bonsai:vac-check*, the slot file on disk carried the label and both turns, and a chord close and reopen kept the header. The backend now saves a local command reply to the active chat the way a normal Ask does (lane F).
+
+### Chip rotation favoured the top of the candidate list (verified on the Deck 2026-09-04)
+
+- ★ `[chips]` **Chip rotation favours the top of the candidate list** — **VERIFY.** Fixed at the desk
+  2026-09-04, Deck check owed: the guarantee and the roll both used to take the first unseen candidate every
+  time, so ranks 1-3 came round every minute and ranks 4-6 rarely appeared; both now pick at random among the
+  eligible candidates, keeping game chips ahead of generic Deck tips. Row **CHIP-ROTATION-01**.
+  [Detail](roadmap-details.md#chip-rotation-is-biased-to-the-top-of-the-candidate-list).
+  - **Deck 2026-09-04, build f9a4c17:** with Half-Life 2 running and the frozen batch cleared, the carousel showed ranks 2, 3, 4 and 5 of the game's eight chips inside 30 seconds and rank 1 never came round (`runs/CHIP-ROTATION-01-carousel-sample-half-life-2.json`).
