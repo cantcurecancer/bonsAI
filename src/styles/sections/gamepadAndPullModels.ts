@@ -166,6 +166,36 @@ export function buildPullModelsStylesheet(): string {
           font-size: 10px !important;
           font-weight: 700 !important;
         }
+        .bonsai-scope .bonsai-pullmodels-custom-tag {
+          display: flex;
+          flex-direction: column;
+          gap: 3px;
+        }
+        .bonsai-scope .bonsai-pullmodels-custom-tag-row {
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+          gap: 6px;
+          width: 100%;
+        }
+        .bonsai-scope .bonsai-pullmodels-custom-tag-row .DialogInput,
+        .bonsai-scope .bonsai-pullmodels-custom-tag-row input {
+          font-size: 11px !important;
+          min-height: 26px !important;
+        }
+        .bonsai-scope .bonsai-pullmodels-custom-pull-btn {
+          flex-shrink: 0 !important;
+          min-height: 26px !important;
+          padding: 2px 10px !important;
+        }
+        .bonsai-scope .bonsai-pullmodels-custom-pull-btn[disabled] {
+          opacity: 0.45 !important;
+        }
+        .bonsai-scope .bonsai-pullmodels-custom-tag-hint {
+          font-size: 9px;
+          color: #6b7c90;
+          line-height: 1.3;
+        }
         .bonsai-scope .bonsai-pullmodels-filters {
           display: flex;
           flex-direction: column;
@@ -316,10 +346,28 @@ export function buildPullModelsStylesheet(): string {
         }
         .bonsai-scope .bonsai-pullmodels-tag-name {
           min-width: 0;
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          overflow: hidden;
+        }
+        .bonsai-scope .bonsai-pullmodels-tag-name-text {
+          min-width: 0;
           font-weight: 700;
           color: #f0f6fc;
           overflow: hidden;
           text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        .bonsai-scope .bonsai-pullmodels-new-badge {
+          flex-shrink: 0;
+          font-size: 8px;
+          font-weight: 700;
+          letter-spacing: 0.04em;
+          padding: 1px 4px;
+          border-radius: 3px;
+          color: #0b1622;
+          background: var(--bonsai-pullmodels-accent);
           white-space: nowrap;
         }
         .bonsai-scope .bonsai-pullmodels-foss-slot {
@@ -425,6 +473,16 @@ export function buildPullModelsStylesheet(): string {
           color: var(--bonsai-pullmodels-accent) !important;
           font-size: 14px !important;
           font-weight: 700 !important;
+        }
+        /* "Use for Ask" pin -- installed rows repurpose the same slot button (no new column, no new
+           focus stop; see PullModelsModal.tsx pinModelForAsk). Gold like the rating stars, not the
+           installed cyan or the Expert/destructive red, so it reads as its own state. */
+        .bonsai-scope .bonsai-pullmodels-slot--installed.bonsai-pullmodels-slot--pinned,
+        .bonsai-scope .bonsai-pullmodels-slot--installed.bonsai-pullmodels-slot--pinned.DialogButton {
+          color: #fcd34d !important;
+        }
+        .bonsai-scope .bonsai-pullmodels-slot--installed[disabled] {
+          opacity: 0.5 !important;
         }
         .bonsai-scope .bonsai-pullmodels-delete-btn {
           width: 24px !important;

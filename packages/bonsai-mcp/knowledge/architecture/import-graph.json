@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 363,
-  "edgeCount": 879,
+  "fileCount": 364,
+  "edgeCount": 882,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -646,6 +646,14 @@
         "src/features/plugin-shell/usePluginHelpModal.tsx"
       ]
     },
+    "src/components/PullModelsModal.test.tsx": {
+      "imports": [
+        "src/components/PullModelsModal.tsx",
+        "src/test-harness/fakeDeckyRpc.ts",
+        "src/test-harness/rpcFixtures.ts"
+      ],
+      "importedBy": []
+    },
     "src/components/PullModelsModal.tsx": {
       "imports": [
         "src/components/BonsaiModalScope.tsx",
@@ -659,7 +667,8 @@
         "src/utils/pullModelRecommendations.ts"
       ],
       "importedBy": [
-        "src/components/OllamaModelsHubModal.tsx"
+        "src/components/OllamaModelsHubModal.tsx",
+        "src/components/PullModelsModal.test.tsx"
       ]
     },
     "src/components/ReplyCopyButton.test.tsx": {
@@ -2409,6 +2418,7 @@
         "src/components/MainTabPresetAnimatedChips.test.tsx",
         "src/components/MainTabPresetRow.askRestart.test.tsx",
         "src/components/MainTabPresetRow.test.tsx",
+        "src/components/PullModelsModal.test.tsx",
         "src/components/SettingsTab.mdns.test.ts",
         "src/components/VoiceInputSettingsSection.test.tsx",
         "src/hooks/useBackgroundGameAi.test.ts",
@@ -2453,6 +2463,7 @@
         "src/types/backgroundAsk.ts"
       ],
       "importedBy": [
+        "src/components/PullModelsModal.test.tsx",
         "src/hooks/useBackgroundGameAi.test.ts",
         "src/hooks/useBonsaiAskOrchestration.test.ts",
         "src/hooks/usePluginSettings.test.ts",

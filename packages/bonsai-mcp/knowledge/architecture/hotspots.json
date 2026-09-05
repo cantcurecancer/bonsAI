@@ -31,6 +31,11 @@
       "role": ""
     },
     {
+      "path": "src/components/PullModelsModal.tsx",
+      "lines": 1356,
+      "role": ""
+    },
+    {
       "path": "src/components/OllamaWhereAiRunsSection.tsx",
       "lines": 1174,
       "role": ""
@@ -38,11 +43,6 @@
     {
       "path": "src/components/MainTabPresetAnimatedChips.tsx",
       "lines": 1157,
-      "role": ""
-    },
-    {
-      "path": "src/components/PullModelsModal.tsx",
-      "lines": 1104,
       "role": ""
     },
     {
@@ -126,6 +126,11 @@
       "role": ""
     },
     {
+      "path": "src/styles/sections/gamepadAndPullModels.ts",
+      "lines": 543,
+      "role": ""
+    },
+    {
       "path": "py_modules/backend/services/settings_service.py",
       "lines": 537,
       "role": "Load/save/merge settings.json"
@@ -148,11 +153,6 @@
     {
       "path": "src/data/bonsaiSettingsNormalizers.ts",
       "lines": 497,
-      "role": ""
-    },
-    {
-      "path": "src/styles/sections/gamepadAndPullModels.ts",
-      "lines": 485,
       "role": ""
     },
     {

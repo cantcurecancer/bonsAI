@@ -5,8 +5,8 @@
  * Solves: Large catalog UI with D-pad focus graph separate from inline Settings rows.
  * Does not: Persist routing try-order — see ModelRoutingOrderModal.
  */
-import { useCallback, useEffect, useMemo, useRef, useState, type RefCallback } from "react";
-import { Button, ConfirmModal, Focusable, showModal } from "@decky/ui";
+import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent, type RefCallback } from "react";
+import { Button, ConfirmModal, Focusable, TextField, showModal } from "@decky/ui";
 import { toaster } from "@decky/api";
 import {
   PULL_MODEL_FILTER_OPTIONS,
@@ -36,12 +36,58 @@ import { usePullModelCatalog } from "../hooks/usePullModelCatalog";
 import {
   getCatalogTags,
   isCatalogModelTagInList,
+  isPlausibleOllamaPullTag,
   mergePullModelCatalog,
 } from "../utils/mergePullModelCatalog";
 import { PULL_MODEL_CATALOG } from "../data/pullModelCatalog";
 
 const TEST_CONNECTION_TIMEOUT_SECONDS = 10;
 const LOCAL_LOOPBACK_CONNECTION_TEST_RPC_EXTRA_MS = 42000;
+
+/**
+ * Local record of when each tag was first seen installed, for the "New" badge (30 days).
+ *
+ * No pull ever recorded a timestamp anywhere before this — checked main.py, the local Ollama
+ * setup service, and settings.json. Rather than teach the backend a new history file (main.py's
+ * pull path is outside this feature's owned files), the badge is tracked here, client-side, keyed
+ * by tag. `bonsai:`-prefixed so `clearBonsaiBrowserStorage` (Clear all plugin data) takes it with
+ * everything else, with no separate line needed there.
+ *
+ * A fresh install must not badge every already-installed model "New": the first time this ever
+ * runs in a browser (`storedRecord === null`, i.e. the key was never written) every currently
+ * installed tag is seeded as already-old rather than "just pulled". Only a tag that appears
+ * installed on a *later* run, with no prior record, is genuinely new.
+ */
+export type PullModelPullRecord = Record<string, number>;
+export const PULL_MODEL_NEW_BADGE_STORAGE_KEY = "bonsai:pull-model-new-badge-v1";
+export const PULL_MODEL_NEW_BADGE_WINDOW_MS = 30 * 24 * 60 * 60 * 1000;
+
+export function computeUpdatedPullRecord(
+  installedTags: ReadonlySet<string>,
+  storedRecord: PullModelPullRecord | null,
+  now: number
+): PullModelPullRecord {
+  const next: PullModelPullRecord = { ...(storedRecord ?? {}) };
+  const isFirstRunEver = storedRecord === null;
+  for (const tag of installedTags) {
+    if (tag in next) continue;
+    next[tag] = isFirstRunEver ? now - PULL_MODEL_NEW_BADGE_WINDOW_MS - 1 : now;
+  }
+  return next;
+}
+
+export function isRecentPullModelTag(record: PullModelPullRecord, tag: string, now: number): boolean {
+  const seenAt = record[tag];
+  if (typeof seenAt !== "number" || !Number.isFinite(seenAt)) return false;
+  const age = now - seenAt;
+  return age >= 0 && age <= PULL_MODEL_NEW_BADGE_WINDOW_MS;
+}
+
+/** Minimal shape this modal needs from `load_settings` / `save_settings` — see bonsaiSettingsSchema.ts for the rest. */
+type PullModelsRoutingOrderSettings = {
+  text_model_routing_order?: string[];
+  vision_model_routing_order?: string[];
+};
 
 type CatalogMetadataResponse = {
   source?: "live" | "offline";
@@ -151,10 +197,17 @@ export function PullModelsModal(props: PullModelsModalProps) {
   const [refreshingMeta, setRefreshingMeta] = useState(false);
   const [pullBusy, setPullBusy] = useState(false);
   const [deleteBusyTag, setDeleteBusyTag] = useState<string | null>(null);
+  const [customTagInput, setCustomTagInput] = useState("");
+  const [customPullBusy, setCustomPullBusy] = useState(false);
+  const [pinnedAskTag, setPinnedAskTag] = useState<string | null>(null);
+  const [pinBusyTag, setPinBusyTag] = useState<string | null>(null);
+  const [pullRecord, setPullRecord] = useState<PullModelPullRecord>({});
   const stretchConfirmedRef = useRef<Set<string>>(new Set());
   const openWeightTierConfirmedRef = useRef<Set<string>>(new Set());
   const shellRef = useRef<HTMLDivElement | null>(null);
   const filterChipRefs = useRef<(HTMLElement | null)[]>([]);
+  const recommendChipRefs = useRef<(HTMLElement | null)[]>([]);
+  const customPullBtnRef = useRef<HTMLElement | null>(null);
   const installedOnlyRef = useRef<HTMLElement | null>(null);
   const fossOnlyRef = useRef<HTMLElement | null>(null);
   const essentialsOnlyRef = useRef<HTMLElement | null>(null);
@@ -215,6 +268,43 @@ export function PullModelsModal(props: PullModelsModalProps) {
   useEffect(() => {
     void refreshInstalledAndMeta(false);
   }, [refreshInstalledAndMeta]);
+
+  // Seed "which model is Ask using" once on open, from the saved text try-order's first entry —
+  // the same field ModelRoutingOrderModal edits and merge_pulled_tags_into_routing_orders appends
+  // to. Best-effort: a failed load just leaves nothing pinned rather than blocking the picker.
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const settings = await callDeckyWithTimeout<[], PullModelsRoutingOrderSettings>(
+          "load_settings",
+          [],
+          DECKY_RPC_TIMEOUT_MS
+        );
+        const order = Array.isArray(settings.text_model_routing_order) ? settings.text_model_routing_order : [];
+        const head = typeof order[0] === "string" ? order[0].trim() : "";
+        if (!cancelled) setPinnedAskTag(head || null);
+      } catch {
+        /* best-effort */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // "New" badge bookkeeping — see the block comment above computeUpdatedPullRecord.
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(PULL_MODEL_NEW_BADGE_STORAGE_KEY);
+      const stored: PullModelPullRecord | null = raw === null ? null : (JSON.parse(raw) as PullModelPullRecord);
+      const updated = computeUpdatedPullRecord(installedTags, stored, Date.now());
+      window.localStorage.setItem(PULL_MODEL_NEW_BADGE_STORAGE_KEY, JSON.stringify(updated));
+      setPullRecord(updated);
+    } catch {
+      /* localStorage unavailable or corrupt — the badge just doesn't show */
+    }
+  }, [installedTags]);
 
   const otherInstalledTags = useMemo(() => {
     const out: string[] = [];
@@ -338,6 +428,20 @@ export function PullModelsModal(props: PullModelsModalProps) {
     list[i]?.focus();
     list[i]?.scrollIntoView({ block: "nearest", inline: "nearest" });
     return true;
+  }, []);
+
+  const focusRecommendChip = useCallback((index: number): boolean => {
+    const list = recommendChipRefs.current.filter(Boolean) as HTMLElement[];
+    if (!list.length) return false;
+    const i = Math.max(0, Math.min(index, list.length - 1));
+    list[i]?.focus();
+    list[i]?.scrollIntoView({ block: "nearest", inline: "nearest" });
+    return true;
+  }, []);
+
+  const focusCustomPullButton = useCallback((): boolean => {
+    customPullBtnRef.current?.focus();
+    return Boolean(customPullBtnRef.current);
   }, []);
 
   const focusRowCell = useCallback((rowIndex: number, cell: "select" | "delete"): boolean => {
@@ -561,6 +665,50 @@ export function PullModelsModal(props: PullModelsModalProps) {
     ]
   );
 
+  /**
+   * "Use for Ask" — moves this tag to the front of the saved text try-order (and the vision one
+   * too, for a tag the catalog already knows is vision-capable), the same field
+   * ModelRoutingOrderModal reorders and resolve_routing_order() reads first. Reuses the existing
+   * `load_settings` / `save_settings` RPCs directly rather than adding a new one — `save_settings`
+   * merges a partial payload into the settings already on disk (main.py:784-799), so only the
+   * changed order(s) need to be sent.
+   */
+  const pinModelForAsk = useCallback(
+    async (entry: PullModelEntry | null, tag: string) => {
+      if (pinBusyTag) return;
+      setPinBusyTag(tag);
+      try {
+        const current = await callDeckyWithTimeout<[], PullModelsRoutingOrderSettings>(
+          "load_settings",
+          [],
+          DECKY_RPC_TIMEOUT_MS
+        );
+        const textOrder = Array.isArray(current.text_model_routing_order) ? current.text_model_routing_order : [];
+        const patch: PullModelsRoutingOrderSettings = {
+          text_model_routing_order: [tag, ...textOrder.filter((t) => t !== tag)],
+        };
+        if (entry?.tags.includes("vision")) {
+          const visionOrder = Array.isArray(current.vision_model_routing_order)
+            ? current.vision_model_routing_order
+            : [];
+          patch.vision_model_routing_order = [tag, ...visionOrder.filter((t) => t !== tag)];
+        }
+        await callDeckyWithTimeout<[PullModelsRoutingOrderSettings], unknown>(
+          "save_settings",
+          [patch],
+          DECKY_RPC_TIMEOUT_MS
+        );
+        setPinnedAskTag(tag);
+        toaster.toast({ title: "Now used for Ask", body: tag, duration: 3000 });
+      } catch (e) {
+        toaster.toast({ title: "Could not pin model", body: formatDeckyRpcError(e), duration: 4000 });
+      } finally {
+        setPinBusyTag(null);
+      }
+    },
+    [pinBusyTag]
+  );
+
   const confirmDelete = useCallback(
     (tag: string, sizeGb: number) => {
       if (activeRoutingTag && activeRoutingTag === tag) {
@@ -724,6 +872,47 @@ export function PullModelsModal(props: PullModelsModalProps) {
     onBeforeNestedDeckyModal,
   ]);
 
+  /**
+   * Type-any-tag pull. Deliberately a separate one-off RPC call rather than folding into
+   * `selectedTags` + "Pull selected" — that queue assumes every tag resolves to a `PullModelEntry`
+   * (size, license tier, blurb) for the confirm dialogs and the total-size footer, which a typed
+   * tag does not have. `pull_ollama_models` already validates the tag against the Ollama registry
+   * before starting anything (`_start_custom_ollama_pull` -> `partition_pull_tags_by_registry`,
+   * main.py:1799-1819) and returns an actionable `reason` when it is not published there — this
+   * just surfaces that reason in a toast instead of leaving a typo or a made-up name to fail silently.
+   */
+  const onPullCustomTag = useCallback(async () => {
+    const tag = customTagInput.trim();
+    if (!tag || !isPlausibleOllamaPullTag(tag) || customPullBusy || pullBusy) return;
+    setCustomPullBusy(true);
+    try {
+      const res = await callDeckyWithTimeout<[string[]], { accepted?: boolean; reason?: string }>(
+        "pull_ollama_models",
+        [[tag]],
+        DECKY_RPC_TIMEOUT_MS
+      );
+      if (res.accepted) {
+        toaster.toast({
+          title: "Pull started",
+          body: `${tag} — watch progress in Settings.`,
+          duration: 5000,
+        });
+        setCustomTagInput("");
+        onPullAccepted();
+      } else {
+        toaster.toast({
+          title: "Pull not started",
+          body: res.reason || "Setup busy or local Ollama is off.",
+          duration: 6000,
+        });
+      }
+    } catch (e) {
+      toaster.toast({ title: "Pull failed", body: formatDeckyRpcError(e), duration: 5000 });
+    } finally {
+      setCustomPullBusy(false);
+    }
+  }, [customTagInput, customPullBusy, pullBusy, onPullAccepted]);
+
   const bindSelectRef =
     (rowIndex: number): RefCallback<HTMLElement> =>
     (el) => {
@@ -772,6 +961,9 @@ export function PullModelsModal(props: PullModelsModalProps) {
       .filter(Boolean)
       .join(" ");
 
+    const pinned = pinnedAskTag === entry.tag;
+    const isNew = installed && isRecentPullModelTag(pullRecord, entry.tag, Date.now());
+
     return (
       <div key={entry.tag} className={rowClass} role="row">
         <div className="bonsai-pullmodels-col bonsai-pullmodels-col--pull" role="cell">
@@ -779,12 +971,16 @@ export function PullModelsModal(props: PullModelsModalProps) {
             <Button
               ref={bindSelectRef(rowIndex)}
               focusable
-              className="bonsai-pullmodels-slot bonsai-pullmodels-slot--installed"
-              aria-label={`Installed ${entry.tag}`}
-              onClick={(ev) => ev.stopPropagation()}
+              className={`bonsai-pullmodels-slot bonsai-pullmodels-slot--installed${pinned ? " bonsai-pullmodels-slot--pinned" : ""}`}
+              disabled={pinBusyTag === entry.tag}
+              aria-label={pinned ? `${entry.tag} is used for Ask` : `Use ${entry.tag} for Ask`}
+              onClick={(ev) => {
+                ev.stopPropagation();
+                void pinModelForAsk(entry, entry.tag);
+              }}
               {...(navSelect as Record<string, unknown>)}
             >
-              *
+              {pinned ? "★" : "☆"}
             </Button>
           ) : (
             <Button
@@ -802,8 +998,11 @@ export function PullModelsModal(props: PullModelsModalProps) {
         <div className="bonsai-pullmodels-col bonsai-pullmodels-col--model" role="cell">
           <span className="bonsai-pullmodels-model-line">
             <span className="bonsai-pullmodels-tag-name">
-              {entry.tag}
-              {isDeprioritizedOllamaTag(entry.tag) ? " !" : ""}
+              <span className="bonsai-pullmodels-tag-name-text">
+                {entry.tag}
+                {isDeprioritizedOllamaTag(entry.tag) ? " !" : ""}
+              </span>
+              {isNew ? <span className="bonsai-pullmodels-new-badge">New</span> : null}
             </span>
             <span
               className="bonsai-pullmodels-foss-slot"
@@ -855,6 +1054,8 @@ export function PullModelsModal(props: PullModelsModalProps) {
     const sizeGb = liveSizeGbByTag[tag] ?? 0;
     const deleteDisabled = Boolean(activeRoutingTag && activeRoutingTag === tag) || deleteBusyTag === tag;
     const navDelete = rowNavHandlers(rowIndex, "delete", true);
+    const pinned = pinnedAskTag === tag;
+    const isNew = isRecentPullModelTag(pullRecord, tag, Date.now());
 
     return (
       <div
@@ -866,17 +1067,24 @@ export function PullModelsModal(props: PullModelsModalProps) {
           <Button
             ref={bindSelectRef(rowIndex)}
             focusable
-            className="bonsai-pullmodels-slot bonsai-pullmodels-slot--installed"
-            aria-label={`Installed ${tag}`}
-            onClick={(ev) => ev.stopPropagation()}
+            className={`bonsai-pullmodels-slot bonsai-pullmodels-slot--installed${pinned ? " bonsai-pullmodels-slot--pinned" : ""}`}
+            disabled={pinBusyTag === tag}
+            aria-label={pinned ? `${tag} is used for Ask` : `Use ${tag} for Ask`}
+            onClick={(ev) => {
+              ev.stopPropagation();
+              void pinModelForAsk(null, tag);
+            }}
             {...(rowNavHandlers(rowIndex, "select", true) as Record<string, unknown>)}
           >
-            *
+            {pinned ? "★" : "☆"}
           </Button>
         </div>
         <div className="bonsai-pullmodels-col bonsai-pullmodels-col--model" role="cell">
           <span className="bonsai-pullmodels-model-line">
-            <span className="bonsai-pullmodels-tag-name">{tag}</span>
+            <span className="bonsai-pullmodels-tag-name">
+              <span className="bonsai-pullmodels-tag-name-text">{tag}</span>
+              {isNew ? <span className="bonsai-pullmodels-new-badge">New</span> : null}
+            </span>
             <span className="bonsai-pullmodels-foss-slot" aria-hidden={true} />
           </span>
         </div>
@@ -950,18 +1158,60 @@ export function PullModelsModal(props: PullModelsModalProps) {
             </span>
           </div>
 
+          <div className="bonsai-pullmodels-custom-tag">
+            <Focusable flow-children="horizontal" className="bonsai-pullmodels-custom-tag-row">
+              <TextField
+                label=""
+                value={customTagInput}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => setCustomTagInput(e.target.value)}
+                {...({ placeholder: "Custom model tag, e.g. llama3.2:3b" } as unknown as Record<string, unknown>)}
+                style={{ flex: "1 1 auto", minWidth: 0 }}
+              />
+              <Button
+                ref={(el) => {
+                  customPullBtnRef.current = el;
+                }}
+                className="bonsai-pullmodels-chip bonsai-pullmodels-custom-pull-btn"
+                disabled={!isPlausibleOllamaPullTag(customTagInput) || customPullBusy || pullBusy}
+                onClick={(ev) => {
+                  ev.stopPropagation();
+                  ev.preventDefault();
+                  void onPullCustomTag();
+                }}
+                aria-label="Pull custom model tag"
+                {...({
+                  onMoveDown: () =>
+                    (recommendedEntries.length > 0 ? focusRecommendChip(0) : focusFilterChip(0)),
+                } as unknown as Record<string, unknown>)}
+              >
+                {customPullBusy ? "…" : "Pull"}
+              </Button>
+            </Focusable>
+            {customTagInput.trim() && !isPlausibleOllamaPullTag(customTagInput) ? (
+              <div className="bonsai-pullmodels-custom-tag-hint">
+                Use lowercase letters, digits, . _ - and an optional :tag
+              </div>
+            ) : null}
+          </div>
+
           {recommendedEntries.length > 0 ? (
             <div className="bonsai-pullmodels-recommend">
               <div className="bonsai-pullmodels-recommend-title">Suggested</div>
               <Focusable flow-children="horizontal" className="bonsai-pullmodels-recommend-row">
-                {recommendedEntries.map((entry) => {
+                {recommendedEntries.map((entry, chipIndex) => {
                   const selected = selectedTags.has(entry.tag);
                   return (
                     <Button
                       key={`rec-${entry.tag}`}
+                      ref={(el) => {
+                        recommendChipRefs.current[chipIndex] = el;
+                      }}
                       className={`bonsai-pullmodels-chip${selected ? " bonsai-pullmodels-chip--active" : ""}`}
                       onClick={(ev) => toggleSelected(entry, ev)}
                       aria-label={selected ? `Remove ${entry.tag} from queue` : `Queue ${entry.tag}`}
+                      {...(chipIndex === 0
+                        ? ({ onMoveUp: () => focusCustomPullButton() } as unknown as Record<string, unknown>)
+                        : {})}
                     >
                       {entry.tag}
                     </Button>
@@ -987,6 +1237,8 @@ export function PullModelsModal(props: PullModelsModalProps) {
                   {...({
                     onMoveLeft: () => (chipIndex > 0 ? focusFilterChip(chipIndex - 1) : false),
                     onMoveRight: () => (chipIndex < lastFilterIndex ? focusFilterChip(chipIndex + 1) : false),
+                    onMoveUp: () =>
+                      chipIndex === 0 && recommendedEntries.length === 0 ? focusCustomPullButton() : false,
                     onMoveDown: () => focusInstalledOnlyToggle() || focusRowCell(0, "select") || focusFooterPull(),
                   } as unknown as Record<string, unknown>)}
                 >

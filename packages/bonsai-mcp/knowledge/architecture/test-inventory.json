@@ -22,6 +22,7 @@
     "src/components/PermissionDenyAction.test.tsx",
     "src/components/PermissionsTab.permissionRowNavRegistration.test.tsx",
     "src/components/PermissionsTab.test.tsx",
+    "src/components/PullModelsModal.test.tsx",
     "src/components/ReplyCopyButton.test.tsx",
     "src/components/SessionContextStrip.test.tsx",
     "src/components/SettingsTab.mdns.test.ts",
