@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { act, cleanup, renderHook } from "@testing-library/react";
 
-import { liftAboveDock } from "./useDockClearanceOnFocus";
+import { liftAboveDock, useDockClearanceOnFocus } from "./useDockClearanceOnFocus";
 
 /*
  * jsdom has no layout, so the three rects the lift reads are stubbed: a 0–616 scroll pane, a dock
@@ -97,5 +98,149 @@ describe("liftAboveDock", () => {
     document.body.appendChild(orphan);
 
     expect(liftAboveDock(orphan)).toBe(false);
+  });
+});
+
+/*
+ * Round 35, 2026-09-05: on the last paragraph of a reply the hook writes the correct
+ * scroll-margin-bottom and calls scrollIntoView — read live off the device with the ring on that
+ * paragraph — and the pane still reads scrollTop 0 at ~300ms and ~900ms after the press, while the
+ * SAME mechanism reached scrollTop 216 and 277 for other controls in the same walk. The one other
+ * place this repo has seen a scroll get undone after a correct scrollIntoView call is
+ * useStreamScrollPin's post-Ask rebuild, proven on-Deck 2026-08-31 (docs/archive/roadmap-bugs-fixed.md,
+ * row CHAT-SLOTS-V3-14): a single early pass was not enough there either, and delivery passes timed
+ * at 300ms and 900ms were what won. These tests model the same kind of revert — something else sets
+ * scrollTop back to 0 between passes — and check the hook keeps re-correcting through that whole
+ * window rather than giving up after its first (previously only) settle pass at 150ms.
+ */
+describe("useDockClearanceOnFocus", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+    cleanup();
+    document.body.innerHTML = "";
+  });
+
+  /** Same rect stub as liftAboveDock's own tests, plus a settable scrollTop and a scrollIntoView
+   *  that actually moves it (modelled the way useStreamScrollPin.test.ts models Chrome's
+   *  `block: "end"` + scroll-margin-bottom), so a later pass can be checked against an earlier one. */
+  function makeScene() {
+    const scroll = document.createElement("div");
+    scroll.className = "TabContentsScroll";
+    let scrollTop = 0;
+    Object.defineProperty(scroll, "scrollTop", {
+      configurable: true,
+      get: () => scrollTop,
+      set: (next: number) => {
+        scrollTop = next;
+      },
+    });
+    scroll.getBoundingClientRect = () => rect(0, 616);
+
+    const column = document.createElement("div");
+    scroll.appendChild(column);
+
+    const dock = document.createElement("div");
+    dock.className = "bonsai-main-tab-dock";
+    dock.getBoundingClientRect = () => rect(370, 616);
+    column.appendChild(dock);
+
+    const elDocBottom = 428; // document-space bottom at scrollTop 0 — 12px behind the dock's top
+    const el = document.createElement("div");
+    el.setAttribute("tabindex", "0");
+    el.getBoundingClientRect = () => rect(400 - scrollTop, elDocBottom - scrollTop);
+    const scrollIntoView = vi.fn(() => {
+      const margin = parseFloat(el.style.scrollMarginBottom || "0") || 0;
+      const max = 277; // matches the on-device "how far the pane COULD scroll" reading
+      scrollTop = Math.max(0, Math.min(max, elDocBottom + margin - 616));
+    });
+    el.scrollIntoView = scrollIntoView;
+    column.appendChild(el);
+    document.body.appendChild(scroll);
+
+    return {
+      column,
+      el,
+      scrollIntoView,
+      revert: () => {
+        scrollTop = 0;
+      },
+      get scrollTop() {
+        return scrollTop;
+      },
+    };
+  }
+
+  it("re-corrects a lift that gets undone, all the way out to the 900ms pass", () => {
+    vi.spyOn(window, "requestAnimationFrame").mockImplementation((cb) => {
+      cb(0);
+      return 0;
+    });
+    vi.useFakeTimers();
+
+    const t = makeScene();
+    renderHook(() => useDockClearanceOnFocus({ current: t.column }));
+
+    act(() => {
+      t.el.dispatchEvent(new FocusEvent("focusin", { bubbles: true }));
+    });
+    // The rAF pass ran synchronously (mocked above) and lifted the element.
+    expect(t.scrollTop).toBeGreaterThan(0);
+
+    // Something else (the device behaviour under investigation) yanks the pane back to 0 before
+    // the previously-only settle pass at 150ms.
+    t.revert();
+    act(() => {
+      vi.advanceTimersByTime(150);
+    });
+    expect(t.scrollTop).toBeGreaterThan(0);
+
+    // Reverted again, past the old single-pass window — only a pass scheduled beyond 150ms can
+    // still catch this.
+    t.revert();
+    act(() => {
+      vi.advanceTimersByTime(150); // total 300ms
+    });
+    expect(t.scrollTop).toBeGreaterThan(0);
+
+    // And once more, out to where the device readings were actually taken.
+    t.revert();
+    act(() => {
+      vi.advanceTimersByTime(600); // total 900ms
+    });
+    expect(t.scrollTop).toBeGreaterThan(0);
+  });
+
+  it("does not schedule passes forever — a later focus elsewhere stops the old element's schedule", () => {
+    vi.spyOn(window, "requestAnimationFrame").mockImplementation((cb) => {
+      cb(0);
+      return 0;
+    });
+    vi.useFakeTimers();
+
+    const t = makeScene();
+    renderHook(() => useDockClearanceOnFocus({ current: t.column }));
+
+    act(() => {
+      t.el.dispatchEvent(new FocusEvent("focusin", { bubbles: true }));
+    });
+    const callsAfterFirstFocus = t.scrollIntoView.mock.calls.length;
+
+    // Focus leaves this element (e.g. moves to the dock's own controls) before the schedule
+    // finishes; the abandoned passes must not keep firing against a stale target.
+    const other = document.createElement("div");
+    other.setAttribute("tabindex", "0");
+    other.getBoundingClientRect = () => rect(0, 20); // clear of the dock — nothing to lift
+    other.scrollIntoView = vi.fn();
+    t.column.appendChild(other);
+    act(() => {
+      other.dispatchEvent(new FocusEvent("focusin", { bubbles: true }));
+    });
+
+    t.scrollIntoView.mockClear();
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    expect(t.scrollIntoView).not.toHaveBeenCalled();
+    expect(callsAfterFirstFocus).toBeGreaterThan(0);
   });
 });
