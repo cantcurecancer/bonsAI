@@ -313,3 +313,9 @@ Written as things land.
   **measured**: 6 px of room around the top-left tile, ring visible in the capture; the maintainer's glance closes it. The picker's
   saved order was and is the default. Lane C's bug 5 and lane F's backend fix for the blank command header landed meanwhile
   (`68cd3d0`, `7d73711`); both need the second deploy.
+- **22:05 to 22:15, Deck block 2 and 3:** bug 6 **passes** (Developer sweep, 14 stops, no Clear button, moved to Done); bug 11
+  **passes** both halves (Right at the edge walked the eleven-sentence batch to its tail, the walk restarted after an Ask; Done);
+  bug 3's Down path **passes** (header, then the first stop inside the answer, never the bare bubble); bug 13 **measured**: the
+  overlay's box sits on the field's box exactly, but the mirrors wrap with `pre-wrap` and `overflow-wrap: anywhere` where the field
+  uses `normal`, use a different fallback font stack, and are half a pixel narrower; lane E is building the fix. Lanes B2, D2 and
+  F landed meanwhile (`99761f1`, `d86b694`, `7d73711`); the second deploy follows the last check on this build.

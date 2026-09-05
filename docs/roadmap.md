@@ -222,11 +222,6 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
 
 ### Bugs that need verification
 
-- ★ `[chips]` **A frozen test-chip batch longer than the row cannot be reached after the first minute** — **VERIFY.**
-  Fixed at the desk 2026-09-04, Deck check owed: Right at the last visible chip now pulls the next pinned entry into
-  the carousel's history, mirroring how Left at the edge already pulls an earlier one back; and every mode's
-  60-second walk restarts when an Ask completes, even though a pinned batch always reseeds to the same three chips.
-  Row **QA-FROZEN-CHIPS-02**.
 - ★ `[chips]` **Chip rotation favours the top of the candidate list** — **VERIFY.** Fixed at the desk
   2026-09-04, Deck check owed: the guarantee and the roll both used to take the first unseen candidate every
   time, so ranks 1-3 came round every minute and ranks 4-6 rarely appeared; both now pick at random among the
@@ -270,12 +265,10 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
   back to the button that opened the modal instead of wherever Steam defaults to. **Same evening on build 49241e7, a suspend/resume
   showed the trap had never actually bounced anything on device: its `instanceof` checks fail on a node from Steam's own document,
   now fixed to duck-type instead. Deck re-check still owed.** Row **TAB-BAR-11**.
-- ★★ `[focus]` **Down from the chat slot lands on the whole reply before its first section** — **VERIFY**, fixed at the desk
-  2026-09-04, Deck check owed (read at the desk, not yet measured on device). `focusFirstAnswerChunk` now hands the ring into the
-  bubble's navigation container (`takeAnswerBubbleNavFocus`, the same transfer the reply row's glossary-chip hop already used) and
-  lands on the first `.bonsai-answer-stop` instead of the bare bubble; a masked spoiler still wins when one is present, unchanged.
-  Up from the reply buttons got the same fix in reverse (`focusLastAnswerChunk`) for the matching double landing on the way in from
-  below. New QA row **CHAT-REPLY-ENTRY-01**. [Detail](roadmap-details.md#down-from-the-chat-slot-lands-on-the-whole-reply).
+- ★★ `[focus]` **Down from the chat slot lands on the whole reply before its first section** — **VERIFY, Down path passed on the
+  Deck 2026-09-04.** From the chat row, Down lands on the turn header and then on the first stop inside the answer, never on the
+  bare bubble. Owed: the Up half on a reply without a branch picker (with one, Up from the picker skips the answer, a separate
+  bug filed 2026-09-04). Row **CHAT-REPLY-ENTRY-01**.
 - ★★ `[focus]` `[perms]` **The Open Permissions button under a blocked reply is not a D-pad stop** — **VERIFY**, fixed at the desk
   2026-09-04, Deck check owed. The button (and the troubleshooting Ask hint's matching button) is a genuine D-pad stop now —
   `focusable`, same shape as the chat-slot row's 2026-08-30 fix — and joins the Down/Up chain: Down from the reply row reaches
@@ -356,6 +349,8 @@ on 2026-07-30 (`apply_tdp` no longer exists). Preserved in the archive.
 since April (`25742f2`), and a deliberate failing test exits 1 today. If it recurs, record the exact command and shell.
 
 **September 2026**
+- ★ `[chips]` **A pinned test batch longer than the row now reaches its tail, and an Ask restarts the walk** — verified on the Deck
+  2026-09-04 with the eleven-sentence batch (QA-FROZEN-CHIPS-02). [Detail](archive/roadmap-bugs-fixed.md#moved-from-the-roadmap-2026-09-04).
 - ★ `[focus]` **The greyed-out Clear frozen test chips button no longer takes a dead press** — verified on the Deck 2026-09-04: with no
   batch pinned the button is gone and a Developer sweep finds no such stop (DEV-CLEAR-CHIPS-01). [Detail](archive/roadmap-bugs-fixed.md#moved-from-the-roadmap-2026-09-04).
 - ★★ `[focus]` **Left on the Ollama sliders no longer throws the ring out of the plugin** — verified on the Deck 2026-09-04 on the Reply

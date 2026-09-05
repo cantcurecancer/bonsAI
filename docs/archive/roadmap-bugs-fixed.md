@@ -573,3 +573,12 @@ measurements and the QA rows survive. The roadmap keeps a one-line entry in **Do
   state), so a disabled stop no longer sits at the bottom of Developer. Owed: a Developer sweep with no batch pinned shows
   no stop named *Clear frozen test chips*. Row **DEV-CLEAR-CHIPS-01**.
   - **Deck 2026-09-04, build 49241e7:** with a batch pinned the button is a visible stop; A clears the batch and the button unmounts; a full Developer sweep afterwards walked 14 stops, every one visible, none a Clear button (`runs/DEV-CLEAR-CHIPS-01-sweep-no-batch.json`). Follow-up worth a look: after the press the ring is unowned until the next press.
+
+### A frozen test-chip batch longer than the row could not be reached after the first minute (verified on the Deck 2026-09-04)
+
+- ★ `[chips]` **A frozen test-chip batch longer than the row cannot be reached after the first minute** — **VERIFY.**
+  Fixed at the desk 2026-09-04, Deck check owed: Right at the last visible chip now pulls the next pinned entry into
+  the carousel's history, mirroring how Left at the edge already pulls an earlier one back; and every mode's
+  60-second walk restarts when an Ask completes, even though a pinned batch always reseeds to the same three chips.
+  Row **QA-FROZEN-CHIPS-02**.
+  - **Deck 2026-09-04, build 49241e7:** with plan 31 batch 1 pinned, Right at the newest chip pulled sentences 6 to 11 in one by one; after an Ask the sixty-second walk restarted and the row changed ten times in twenty seconds (`runs/QA-FROZEN-CHIPS-02-right-at-edge-pulls-next-entry.json`).
