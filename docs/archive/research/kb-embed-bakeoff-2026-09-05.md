@@ -23,9 +23,10 @@ Scoring uses `max(ask_mode top_k, 3)` so top-3 is meaningful when fixtures use s
 
 | Model | Bare top-1 | Bare top-3 | Prompted top-1 | Prompted top-3 | Mean embed ms | FTS empty % |
 |-------|------------|------------|----------------|----------------|---------------|-------------|
-| nomic-embed-text | 61.9% | 84.2% | 61.5% | 84.2% | 16.3 | 0.0% |
-| embeddinggemma | 45.4% | 71.2% | 45.4% | 71.2% | 34.3 | 1.2% |
-| granite-embedding:278m | 49.2% | 71.5% | 49.2% | 71.5% | 39.0 | 1.2% |
+| nomic-embed-text | 61.9% | 84.2% | 61.5% | 84.2% | 16.2 | 0.0% |
+| nomic-embed-text-v2-moe | 46.5% | 71.5% | 45.8% | 71.9% | 34.0 | 1.2% |
+| embeddinggemma | 45.4% | 71.2% | 45.4% | 71.2% | 35.2 | 1.2% |
+| granite-embedding:278m | 49.2% | 71.5% | 49.2% | 71.5% | 32.9 | 1.2% |
 
 ## Retrieval arms — keyword vs vector-only vs RRF
 
@@ -99,6 +100,7 @@ A fixture's `domain` is what we want retrieval to do. `should_retrieve_knowledge
 | Model | Hybrid bare top-3 | Hybrid prompted top-3 | Vector-only bare top-3 | Vector-only prompted top-3 |
 |-------|-------------------|----------------------|------------------------|----------------------------|
 | nomic-embed-text | 71.4% | 71.4% | 57.1% | 57.1% |
+| nomic-embed-text-v2-moe | 71.4% | 71.4% | 85.7% | 71.4% |
 | embeddinggemma | 71.4% | 71.4% | 85.7% | 85.7% |
 | granite-embedding:278m | 71.4% | 71.4% | 71.4% | 71.4% |
 

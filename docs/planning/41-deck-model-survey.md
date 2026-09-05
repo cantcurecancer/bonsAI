@@ -129,10 +129,16 @@ is baked 768 wide, and the recall pass refuses the mismatch by design. **Second 
 | Embedding model | Right card in the first three | Right card first | Time per question on this PC |
 |---|---|---|---|
 | **nomic** (today) | **84.2%** | 61.5% | 16 ms |
+| nomic v2 (mixture-of-experts, multilingual) | 71.9% | 45.8% | 34 ms |
 | EmbeddingGemma | 71.2% | 45.4% | 34 ms |
 | Granite Embedding 278m | 71.5% | 49.2% | 39 ms |
 
-Nomic finds the right card 13 points more often than either newcomer and takes half the time. The locked rule
+Nomic finds the right card 12 to 13 points more often than any of the three others and takes half the time.
+**Nomic v2**, asked about by the maintainer, was in July's bake-off and tied v1 there on the old seed corpus; on
+today's corpus it loses by 12 points on English and is twice as slow. Its one strength is other languages: on
+the small Spanish probe, searching by meaning alone, v2 and EmbeddingGemma found the card 86 percent of the time
+against v1's 57. The corpus is English and the plugin searches keywords first, so that strength does not reach
+a person today; it would matter only if the knowledge base ever went multilingual. The locked rule
 needs a 5-point win to switch; the newcomers lose by 13. The 30-million model was not measured, because it
 needs the corpus re-baked at its width, and with its 278-million sibling this far behind that re-bake is not
 worth paying for. Report: `docs/archive/research/kb-embed-bakeoff-2026-09-05.md`. One aside for the
@@ -214,7 +220,9 @@ the July embedding bake-off and the eight answer-test reports from the repo's ow
   pulls started.
 - **2026-09-05, later still** — Turned into the bake-off. Half A ran for all eight models in 51 minutes on
   this PC; the spoiler finding in § 5 came out of it. Half B's first try failed on the 30-million model's
-  width; the second try ran clean and nomic won by 13 points, so it stays. Half C, the Deck, not run.
+  width; the second try ran clean and nomic won by 13 points, so it stays. A third run in the evening added
+  nomic v2 at the maintainer's request: 12 points behind on English, twice as slow, ahead only on Spanish.
+  Half C, the Deck, not run.
   Switch rules written so the Deck half has a finish line.
 - **2026-09-05, evening** — The living report built and published. D73 locked: stronger models first for
   Expert in the picker, Gemma 4 E2B stays for Strategy, no per-model tuning yet. Found on the way: the
