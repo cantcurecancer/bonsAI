@@ -302,12 +302,12 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
   **THINKING-SLOW-01**, **THINKING-LIVE-01**, **THINKING-SPOILER-01**. [Log](planning/06-thinking-blurbs-review.md#10-implementation-log).
 - ★★ `[reply]` **Token streaming Phase A/B** — **VERIFY.** Start stutter fixed, sections as D-pad stops, scroll follow. Rows
   **STREAM-REVEAL-01**, **STREAM-09**, **STREAM-FOLLOW-01**. [Review](planning/05-token-streaming-review.md).
-- ★★★ `[ollama]` **Custom model in the Pull Models picker** — **VERIFY, half checked on the Deck 2026-09-05.** A field at the
-  top of the picker takes any Ollama-library name; a star makes a model the one Ask reaches for; anything pulled in the last thirty
-  days carries a **New** label. **What passed:** the field is reachable and 530px wide, and a made-up name now explains itself
-  before showing the command's own words. **Two bugs were found and fixed on the device** — every already-installed model was
-  labelled New, and the field was 50px wide. **Still owed:** pulling a real model through it (**PULL-CUSTOM-01**), the star
-  (**PULL-PIN-01**), and whether *Clear all plugin data* takes the labels (**PULL-NEW-BADGE-01**, not authorised this session).
+- ★★★ `[ollama]` **Custom model in the Pull Models picker** — **VERIFY, one check owed and it needs your permission.**
+  Shipped and walked on the Deck 2026-09-05. A typed library name that is not in the built-in list pulls and installs; a made-up
+  one explains itself; the star pins a model for Ask and reaches the settings file; a freshly pulled model is the only one badged
+  **New**. **Three bugs were found on the device and fixed:** every installed model wrongly labelled New, a typing field 50 pixels
+  wide, and the embedding model offered as one Ask could use. Owed: whether *Clear all plugin data* takes the New labels with it
+  (**PULL-NEW-BADGE-01**) — not run, because wiping data was not authorised. Rows **PULL-CUSTOM-01**, **02**, **PULL-PIN-01** pass.
 - ★★★ `[perms]` **Kids master lock** — **VERIFY.** Shipped 2026-08-09. Rows **KIDS-LOCK-01**, **KIDS-FOCUS-01**, **KIDS-REGRESS-01**
   (and **KIDS-LOCK-02** with a child account). Live CEF Stage 0 confirmation still owed.
 - ★★★ `[platform]` **Legacy-loader shim removal (D11)** — **VERIFY.** RPC probe passed; the Main-tab Ask pass is open. Row **D11-SHIM-01**.
