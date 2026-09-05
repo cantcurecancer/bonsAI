@@ -47,30 +47,21 @@ hook gives a gentle heads-up when a session starts work outside this.
 ## Bugs
 
 
-- ★ `[focus]` **An answer paragraph can take the highlight while it is hidden behind the bottom bar** — **OPEN, found
-  2026-09-04, measured 2026-09-05.** The bar hides the bottom 157px of the pane; the reply's last paragraph overlaps it by 41px,
-  leaving a third to two thirds of it on screen. **The existing fix runs and the pane never moves:** the element carries the right
-  164px scroll margin, and the pane sits at 0 with 277px of room. The same pane scrolls fine for other controls on the same walk.
-  Correction to the original note: walking down the coverer is a preset chip, walking up it is the question box — it is the whole
-  bar, and a fix must work both ways. Evidence `runs/round35-answer-stop-under-dock.json`, `runs/round35-control-main-walk.json`.
 - ★ `[focus]` **Pressing Ask with an empty question box drops the highlight** — **OPEN, found 2026-09-05.** A on the Ask button
   with nothing typed correctly sends nothing, and leaves nothing highlighted at all — the page's own focus falls back to the
   document body. One more press puts it back. Same family as the empty highlight on opening, and likely the same fix.
-- ★ `[focus]` **Down does not move the ring off an unrevealed spoiler block** — **OPEN, found 2026-09-04.** With the ring on
-  `.bonsai-spoiler-reveal-target`, Down reports the press arriving and nothing moving. After the block is revealed, Down escapes
-  normally, so it is the hidden state that traps.
-- ★ `[main]` **The footnote under the Ask bar says no active game until the first Ask** — **OPEN, found 2026-09-04** during
-  CHIP-ROTATION-01: with Half-Life 2 running and the carousel already showing that game's chips, the line read *Context: no active
-  game detected* for the whole 96-second sample. The line only changes when an Ask's status poll reports a game (`index.tsx` starts
-  it inactive; `useBonsaiAskOrchestration.ts` updates it from the poll), so on a fresh mount it reports a detection that never ran.
-  Evidence `runs/CHIP-ROTATION-01-carousel-sample-half-life-2.json`.
-- ★ `[reply]` **A branch question elides the game name** — **OPEN, found 2026-09-04.** The Ravenholm branch picker asked
-  *"Where are you at in … ?"* with the title replaced by an ellipsis.
-- ★★ `[chat]` **The question you just asked is cut to one line** — **OPEN, filed 2026-09-05 by the maintainer.** The bubble above a
-  reply shows roughly the first 48 letters of what you typed and then stops, and it does that the moment you ask, not only on older
-  turns. Wanted: an open turn shows the whole question, wrapped, up to five lines; a closed turn keeps the single line. The full text
-  rides along with the turn being open, so A and a tap already do it and no new D-pad stop appears. Cut twice today — the code chops
-  at 60 letters, the one-line rule chops again at about 48, and the second nearly always wins.
+- ★ `[focus]` **Down does not move the ring off an unrevealed spoiler block** — **OPEN, found 2026-09-04, did not reproduce
+  2026-09-05.** With the ring on the hidden block, Down reported the press arriving and nothing moving. Retried today on a fresh
+  Red Dead ending reply with a real hidden block on screen: **Down left it normally**, straight onto the branch picker's first
+  button, and every stop on the walk was fully visible. So the hidden state does not trap on its own. Most likely the same
+  underlying fault as the stuck panel below — both are a hop that dies only sometimes — and best closed with it rather than
+  chased separately. Evidence `runs/round35-spoiler-block-down-and-up.json`.
+- ★ `[focus]` **Walking down a reply and walking back up visit different stops** — **OPEN, found 2026-09-05.** On one reply,
+  Down went question, hidden spoiler block, branch A, branch B, Helpful — never stopping on either paragraph of the answer. Up
+  from Helpful went both paragraphs, then the question — never stopping on the spoiler block or the branch buttons. So a person
+  who walks past something and presses Up to go back does not return to it; they land somewhere they never visited. Related to the
+  two-star entry about Up skipping sections, but sharper: the two directions disagree about what the reply's stops are.
+  Evidence `runs/round35-spoiler-block-down-and-up.json`.
 - ★★ `[focus]` **After the panel remounts the ring parks on a zero-size container** — **OPEN, found 2026-09-04.** On a fresh mount
   the ring lands on "Ask bonsAI" (Main) or "Where AI runs" (Ollama), both 0x0 rects that the visibility oracle calls OFFSCREEN, so
   the panel opens with nothing highlighted until the first press.
@@ -96,10 +87,6 @@ hook gives a gentle heads-up when a session starts work outside this.
 - ★★ `[KB]` **Unrelated questions still get game cards stapled on** — **ACCEPTED 2026-08-27.** With a game running, *"thank you very
   much"* still attaches a card. Raising the keyword floor pushes against D25, and the model mostly ignores an irrelevant card.
   [Detail](roadmap-details.md#ordinary-phrases-attach-game-cards).
-- ★★ `[reply]` **Stopping a reply leaves no "Stopped" notice** — **OPEN, found 2026-09-04.** Pressing *Stop generation* inside the
-  soft-continue window keeps the partial body correctly and strips the `Continuing…` cue (the 2026-08-15 fix works), but the small
-  **Stopped** notice **SOFT-PREDICT-03** asks for never appears — the word is absent from the turn, the panel and the whole page —
-  and the stopped turn also loses its *Helpful / Not really / Retry* buttons, keeping only *Show details* and *Copy*.
 - ★★ `[reply]` **Token streaming reveals text in bursts while a game is running** — **ACCEPTED 2026-09-04 (D58 #4).** Measured 2026-08-28 with
   a game running: tokens arrive in bursts, and during a burst the overlay drops to 47 fps; between bursts it is a flat 60. Delivery
   is bursty, painting is not slow. The game's own frame rate is unmeasured. Accepted as a nice-to-have; reopen only if the game's own frame rate is measured
@@ -126,25 +113,16 @@ hook gives a gentle heads-up when a session starts work outside this.
   lives outside the panel and is keyed by fixed names, not by which copy of the panel is on screen; it is only emptied when the
   plugin's code loads fresh. A stale entry therefore survives a panel reopen, and the handler that asks it to move the highlight
   gets back something that still looks alive, reports the press as handled, and moves nothing. That matches every symptom on record,
-  including why only a loader restart clears it. Unproved. Evidence `runs/round35-trap-*.json`,
+  including why only a loader restart clears it. Evidence `runs/round35-trap-*.json`,
   [plan 35](planning/35-bugfix-session.md) § 7.
-- ★★★ `[KB]` **A quick question asked while a game is running pays for the slow search it was meant to skip** —
-  **OPEN, found 2026-09-05.** Speed mode is supposed to do the cheap keyword lookup only. On the Deck, with Deep Rock Survivor
-  running, two of three Speed questions ran the meaning search as well: Show details read *Keyword + meaning* and the turn spent
-  **1140 ms** and **944 ms** embedding, where the row requires *Keyword search* and no embed time at all. The third question read
-  *Knowledge base (skipped)* with no embed, so the pattern is that whenever the keyword search finds anything, the meaning search
-  runs too, whatever mode you picked. Breaks the Speed half of **KB-RECALL-01**; settles the open question lane B raised
-  2026-09-03. Evidence `runs/round34-drg-speed-q*.json`, log in [plan 34](planning/34-feature-verification-round.md).
+  **A fix for that mechanism landed 2026-09-05** — a departing part of the panel can no longer unregister the one on
+  screen — but **the entry stays here, not in Verify**, because the fault never reproduced on demand, so nothing proved
+  the fix against it. It closes only when the panel is driven hard over time and the state does not come back. The
+  unrevealed-spoiler entry above is most likely the same fault and closes with it.
 - ★★★ `[KB]` **The meaning search got about a fifth slower** — **OPEN, found 2026-09-05.** Three Strategy questions on the same
   game measured **1079, 1094 and 1090 ms** to embed, against the **793–900 ms** band recorded when the recall pass shipped on
   2026-08-18. Same corpus, same model, same device. Every game question a person asks now waits about a fifth of a second longer
   than the row's own numbers say it should. Cause unmeasured. Evidence `runs/round34-drg-q*.json`.
-- ★★★★ `[chat]` **A Strategy thread's branch block shows in whichever chat slot you are looking at** — **OPEN, found 2026-09-04.**
-  Slot A was asked a long Ravenholm question; switching to slot B showed B's own two turns followed by A's branch picker,
-  *"Where are you at in … ? A. Just starting in the town area / B. Dealing with a tough encounter or trap"*. It is still in B after
-  A's reply finished, so it is not a mid-stream race — the block is not scoped to the slot that made it. Seen twice: a
-  *"Dodging Asterius's Charge — Progress is saved for this game…"* block from A's Hades thread also rendered while viewing B.
-  Breaks **CHAT-SLOTS-V3-05a**, whose whole point is that a slot shows zero of another slot's content.
 - ★★★★ `[KB]` **The shipping retrieval arm loses to the vector half alone on rows nobody tuned against** — **OPEN, deferred under
   D38.** On the blind holdout, `vector_only` beats the shipping `rrf` blend by 7.6 points of top-1; on the tuning rows they tie.
   No weight changes until D38 is answered, and never by tuning against holdout. Groundwork done: 51 blind rows added to `tune`.
@@ -168,11 +146,6 @@ replace it with a specific issue when one exists.
   One check owed first: the question bubble turns its own outline off and gets no ring rule, so look on the Deck at what focus shows.
 - ★★ `[chat]` **First-run ghost "New chat" label at the create position** — **OPEN, parked by decision.** The create position is the
   literal `[+]`, re-confirmed on board 8f and again in the v3 rows. Reopen that decision before building it.
-- ★★ `[chips]` **A visible cue when the chip row runs out of chips** — **OPEN, filed 2026-09-04 by the maintainer.** When Left or
-  Right on the preset chips reaches the first or last chip, nothing on screen says so; a stopped ring and a stopped list look the
-  same. Wanted: a short glow or bounce at the blocked edge, the way Android lights up the end of a list you scroll past, for both
-  the D-pad and a finger. Any effect with the same meaning is fine. Must respect reduced motion and stay inside the 300 px column;
-  the row's edge behaviour itself (Left/Right hold still, Right pulls the next pinned entry in) does not change.
 - ★★ `[chips]` **Preset chip expansion** — **OPEN, incremental.** Add or refresh preset strings as features land. Wave 1 shipped four
   prompts; row **PRESET-EXPAND-W1-01** still owed. Not in scope: replacing the `fade` default; session RAG chips (shipped).
 - ★★ `[focus]` **Fewer D-pad stops on a finished reply** — **OPEN, filed 2026-09-02.** A finished answer gets one stop per paragraph,
@@ -298,6 +271,48 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
 
 ### Bugs that need verification
 
+- ★ `[focus]` **An answer paragraph can take the highlight while it is hidden behind the bottom bar** — **OPEN, found
+  2026-09-04, measured 2026-09-05.** The bar hides the bottom 157px of the pane; the reply's last paragraph overlaps it by 41px,
+  leaving a third to two thirds of it on screen. **The existing fix runs and the pane never moves:** the element carries the right
+  164px scroll margin, and the pane sits at 0 with 277px of room. The same pane scrolls fine for other controls on the same walk.
+  Correction to the original note: walking down the coverer is a preset chip, walking up it is the question box — it is the whole
+  bar, and a fix must work both ways. Evidence `runs/round35-answer-stop-under-dock.json`, `runs/round35-control-main-walk.json`.
+  **VERIFY.** Fixed at the desk 2026-09-05: the lift that pulls a covered paragraph clear now re-checks at 150, 300 and 900 milliseconds instead of giving up after the first, matching the only timing this repo has already seen beat this device. Owed on the Deck: walk a three-paragraph reply down and back up and require every paragraph fully visible. Row **QA-FREE-PLAY-01**.
+- ★ `[main]` **The footnote under the Ask bar says no active game until the first Ask** — **OPEN, found 2026-09-04** during
+  CHIP-ROTATION-01: with Half-Life 2 running and the carousel already showing that game's chips, the line read *Context: no active
+  game detected* for the whole 96-second sample. The line only changes when an Ask's status poll reports a game (`index.tsx` starts
+  it inactive; `useBonsaiAskOrchestration.ts` updates it from the poll), so on a fresh mount it reports a detection that never ran.
+  Evidence `runs/CHIP-ROTATION-01-carousel-sample-half-life-2.json`.
+  **VERIFY.** Fixed at the desk 2026-09-05: the line now checks for a running game the moment the panel opens, using the same source the suggestion chips already read, instead of waiting for the first question. Row **CHIP-ROTATION-01**.
+- ★ `[reply]` **A branch question elides the game name** — **OPEN, found 2026-09-04.** The Ravenholm branch picker asked
+  *"Where are you at in … ?"* with the title replaced by an ellipsis.
+  **VERIFY.** Fixed at the desk 2026-09-05, both halves: the prompt’s worked example no longer contains dots to copy, and a picker that still has a hole where a name belongs is dropped rather than shown. Owed on the Deck: a Strategy question that ends in a picker names its game.
+- ★★ `[chat]` **The question you just asked is cut to one line** — **OPEN, filed 2026-09-05 by the maintainer.** The bubble above a
+  reply shows roughly the first 48 letters of what you typed and then stops, and it does that the moment you ask, not only on older
+  turns. Wanted: an open turn shows the whole question, wrapped, up to five lines; a closed turn keeps the single line. The full text
+  rides along with the turn being open, so A and a tap already do it and no new D-pad stop appears. Cut twice today — the code chops
+  at 60 letters, the one-line rule chops again at about 48, and the second nearly always wins.
+  **VERIFY.** Fixed at the desk 2026-09-05 under D60: an open turn shows the whole question, wrapped, up to five lines with the last line fading; a closed turn keeps the single cut line. No new D-pad stop. Owed on the Deck: ask a long question and look at the bubble open and closed.
+- ★★ `[reply]` **Stopping a reply leaves no "Stopped" notice** — **OPEN, found 2026-09-04.** Pressing *Stop generation* inside the
+  soft-continue window keeps the partial body correctly and strips the `Continuing…` cue (the 2026-08-15 fix works), but the small
+  **Stopped** notice **SOFT-PREDICT-03** asks for never appears — the word is absent from the turn, the panel and the whole page —
+  and the stopped turn also loses its *Helpful / Not really / Retry* buttons, keeping only *Show details* and *Copy*.
+  **VERIFY.** Fixed at the desk 2026-09-05. The notice was only ever drawn while the turn still counted as live, and a stopped turn is saved to the chat straight away, so it never got the chance. It now shows on the settled turn, and Helpful / Not really / Retry come back with it — Retry re-asks that turn’s own question. Row **SOFT-PREDICT-03**.
+- ★★★ `[KB]` **A quick question asked while a game is running pays for the slow search it was meant to skip** —
+  **OPEN, found 2026-09-05.** Speed mode is supposed to do the cheap keyword lookup only. On the Deck, with Deep Rock Survivor
+  running, two of three Speed questions ran the meaning search as well: Show details read *Keyword + meaning* and the turn spent
+  **1140 ms** and **944 ms** embedding, where the row requires *Keyword search* and no embed time at all. The third question read
+  *Knowledge base (skipped)* with no embed, so the pattern is that whenever the keyword search finds anything, the meaning search
+  runs too, whatever mode you picked. Breaks the Speed half of **KB-RECALL-01**; settles the open question lane B raised
+  2026-09-03. Evidence `runs/round34-drg-speed-q*.json`, log in [plan 34](planning/34-feature-verification-round.md).
+  **VERIFY.** Fixed at the desk 2026-09-05 under D62 #2: Speed does the quick keyword lookup and nothing else. Strategy and Expert are untouched. Owed on the Deck: a Speed question with a covered game running reads *Keyword search* with no time spent on the meaning search, and lands about a second sooner. Row **KB-RECALL-01**, Speed half.
+- ★★★★ `[chat]` **A Strategy thread's branch block shows in whichever chat slot you are looking at** — **OPEN, found 2026-09-04.**
+  Slot A was asked a long Ravenholm question; switching to slot B showed B's own two turns followed by A's branch picker,
+  *"Where are you at in … ? A. Just starting in the town area / B. Dealing with a tough encounter or trap"*. It is still in B after
+  A's reply finished, so it is not a mid-stream race — the block is not scoped to the slot that made it. Seen twice: a
+  *"Dodging Asterius's Charge — Progress is saved for this game…"* block from A's Hades thread also rendered while viewing B.
+  Breaks **CHAT-SLOTS-V3-05a**, whose whole point is that a slot shows zero of another slot's content.
+  **VERIFY.** Fixed at the desk 2026-09-05: the branch block is tagged with the chat that asked for it and hidden the moment that chat is not the one on screen, so switching back brings it home rather than leaking it. Row **CHAT-SLOTS-V3-05a**.
 - ★★ `[focus]` **A checklist the model got wrong was left in the reply as raw JSON**, its own D-pad stop that did nothing — **VERIFY.**
   Fixed 2026-08-28: a rejected checklist block is dropped, as a rejected branch block already was. Owed: one sighting on device of a
   reply where it happens. Row **STRAT-CHECKLIST-JSON-01**.
@@ -307,6 +322,8 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
   being written (unit-tested, not reproducible by hand yet). Row **CLEAR-CACHE-01**. [Why](roadmap-details.md#shipped-qa-owed--why-each-was-built-this-way).
 
 ### Features that need verification
+
+- ★★ `[chips]` **A glow when the chip row runs out of chips** — **VERIFY.** Built at the desk 2026-09-05 under D62 #3: press Left or Right past the first or last suggestion chip and that chip glows briefly, the way a phone lights up the end of a list. Nothing about the row’s existing edge behaviour changes. Reduced motion keeps the cue and drops the movement. **No measurement closes this one** — whether it reads as *end of list* rather than *error* is the maintainer’s call from a recording, and it is on their checklist.
 
 - ★ `[layout]` **Rows span the QAM panel width** — **VERIFY.** Fixed 2026-08-16 and measured by probe (268 to 300 px); the visual walk
   was never run. Confirm the Main rows look flush and nothing overflows the column. Row **ASK-WIDTH-01**.
