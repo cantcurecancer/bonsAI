@@ -56,6 +56,11 @@ hook gives a gentle heads-up when a session starts work outside this.
   Evidence `runs/CHIP-ROTATION-01-carousel-sample-half-life-2.json`.
 - ★ `[reply]` **A branch question elides the game name** — **OPEN, found 2026-09-04.** The Ravenholm branch picker asked
   *"Where are you at in … ?"* with the title replaced by an ellipsis.
+- ★★ `[chat]` **The question you just asked is cut to one line** — **OPEN, filed 2026-09-05 by the maintainer.** The bubble above a
+  reply shows roughly the first 48 letters of what you typed and then stops, and it does that the moment you ask, not only on older
+  turns. Wanted: an open turn shows the whole question, wrapped, up to five lines; a closed turn keeps the single line. The full text
+  rides along with the turn being open, so A and a tap already do it and no new D-pad stop appears. Cut twice today — the code chops
+  at 60 letters, the one-line rule chops again at about 48, and the second nearly always wins.
 - ★★ `[focus]` **After the panel remounts the ring parks on a zero-size container** — **OPEN, found 2026-09-04.** On a fresh mount
   the ring lands on "Ask bonsAI" (Main) or "Where AI runs" (Ollama), both 0x0 rects that the visibility oracle calls OFFSCREEN, so
   the panel opens with nothing highlighted until the first press.
@@ -108,6 +113,11 @@ replace it with a specific issue when one exists.
 
 - ★ `[ask]` **Intent packs later review** — **OPEN.** Decide whether the quiet intent-pack search aliases are deleted, left quiet, or
   revived under Developer. Not in scope: re-shipping Proton journal inject without a redesign.
+- ★★ `[chat]` **A quiet cue that a cut question can be opened** — **OPEN, filed 2026-09-05 by the maintainer.** When the ring lands on
+  a question bubble that has been cut short, nothing on screen says the rest is there. Chosen 2026-09-05 from four drawn options: the
+  text fades out at the right-hand edge instead of ending in three dots, only while the ring is on it, nothing for a finger. Nothing
+  is added and nothing shifts. The same fade already sits in the stylesheet with no user, written for cut-off answer bubbles.
+  One check owed first: the question bubble turns its own outline off and gets no ring rule, so look on the Deck at what focus shows.
 - ★★ `[chat]` **First-run ghost "New chat" label at the create position** — **OPEN, parked by decision.** The create position is the
   literal `[+]`, re-confirmed on board 8f and again in the v3 rows. Reopen that decision before building it.
 - ★★ `[chips]` **A visible cue when the chip row runs out of chips** — **OPEN, filed 2026-09-04 by the maintainer.** When Left or

@@ -3174,3 +3174,44 @@ AGENTS.md § 3; the roadmap carries a six-line rough guide. **4 (a), locked late
 condition:** Haiku 4.5 is on trial for read-only lookups, every use logged in plan 33 § 4a and grep-confirmed;
 if Sonnet or Opus has to step in more than twice in ten uses, it is dropped.
 
+### D60 — LOCKED 2026-09-05 (raised 2026-09-05) — The question bubble: how much of your question shows, and how you know there is more
+
+Raised by the maintainer in chat: *"the users question in the chat bubble gets truncated immediately after an
+ask. I think the whole prompt should be there, only collapse it when looking at earlier turns."*
+
+What the bubble does today, before any change: the question is cut twice. The code chops it at 60 letters,
+then the one-line rule chops it again at whatever fits the bubble — about 48 letters at this size — so the
+second cut nearly always wins and the 60-letter one is never seen. The same cut applies to the turn you just
+asked as to a turn from an hour ago; nothing looks at whether the turn is open. Pressing A on the bubble
+already opens and closes the answer, so A was not free.
+
+Four calls, answered in chat the same day:
+
+1. **The A button clash.** (a) tie the whole question to the turn being open, so A already does both
+   (recommended); (b) give the question its own open and close, which adds a D-pad stop to every turn and
+   pushes against the "fewer stops on a reply" item.
+2. **How much of a long question shows when the turn is open.** (a) all of it; (b) a cap, and if so what.
+3. **What the cue looks like when the ring lands on a cut question.** Four options were drawn against the
+   plugin's real colours and column: (A) the text fades out at the right-hand edge instead of ending in three
+   dots; (B) a small arrow slides in on the left; (C) the three dots brighten and breathe; (D) a hairline
+   appears under the text.
+4. **Does the cue show for a finger too?** (a) ring only; (b) both.
+
+**Answers, 2026-09-05:** 1 (a). 2 — **a cap of five lines**, with the last line fading out. 3 — **option A**,
+after a correction: A and C were first recommended together, and the maintainer spotted from the drawing that
+only one effect was visible. Both cues live in the same few pixels at the bubble's right edge, and the fade
+goes fully see-through there, so it rubbed the dots out. A on its own is the only option that adds nothing and
+shifts nothing. 4 (a), ring only.
+
+The drawings are kept at [docs/demos/question-bubble-cue-mockups.html](../demos/question-bubble-cue-mockups.html) —
+open it in a browser. It carries the four options, the wrong pairing, and two pairings that do work, so nobody
+has to re-draw them to understand why A won.
+
+**Two notes for whoever builds this.** The fade wanted here already exists in the stylesheet, written for
+cut-off answer bubbles and currently used by nothing; the one in there starts halfway down and would wash out
+three of the five lines, so it needs pulling back. And **one check is owed before the cue is built**: the
+question bubble switches its own outline off and is not on the list of controls that get the plugin's ring, so
+what it actually shows when focused has to be looked at on the Deck. Every version of this cue is triggered by
+focus.
+
+Both halves are on the roadmap as two-star chat entries — the cut question under Bugs, the cue under Features.
