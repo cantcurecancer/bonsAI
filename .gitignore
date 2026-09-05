@@ -29,7 +29,6 @@ bower_components
 *.iml
 
 # Agent / IDE local instruction files (not part of the plugin bundle)
-CLAUDE.md
 AGENTS.md
 .claude/
 .cursorrules
