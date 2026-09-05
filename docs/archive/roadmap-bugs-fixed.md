@@ -565,3 +565,11 @@ measurements and the QA rows survive. The roadmap keeps a one-line entry in **Do
   slider all now claim Left/Right on the move handlers themselves instead of stepping the value from inside the
   button-press handler, so Steam has nothing left to carry off the slider. Row **ONBUTTONDOWN-AUDIT-01**.
   - **Deck 2026-09-04, build 49241e7:** Left on the Reply style slider stepped once and the ring stayed; the same on keep-alive (240m to 120m and back); the custom-timeout thumb held the ring. The UI-scale bridge was not a stop with automatic scaling on, so that fourth slider is unit-tested only. Evidence files under `runs/ONBUTTONDOWN-AUDIT-01-e/f/g-*.json`.
+
+### The disabled Clear frozen test chips button took the D-pad ring (verified on the Deck 2026-09-04)
+
+- ★ `[focus]` **The disabled Clear frozen test chips button still takes the D-pad ring** — **VERIFY.** Fixed at the desk
+  2026-09-04: the button now renders only once a batch is pinned (the "0 pinned" text above it already explains the empty
+  state), so a disabled stop no longer sits at the bottom of Developer. Owed: a Developer sweep with no batch pinned shows
+  no stop named *Clear frozen test chips*. Row **DEV-CLEAR-CHIPS-01**.
+  - **Deck 2026-09-04, build 49241e7:** with a batch pinned the button is a visible stop; A clears the batch and the button unmounts; a full Developer sweep afterwards walked 14 stops, every one visible, none a Clear button (`runs/DEV-CLEAR-CHIPS-01-sweep-no-batch.json`). Follow-up worth a look: after the press the ring is unowned until the next press.

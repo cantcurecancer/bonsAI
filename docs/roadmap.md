@@ -241,10 +241,6 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
   (cyan, bold, letter-spaced) instead of small grey text. Style only — the focus graph is unchanged, and Steam's ring still
   lands on the ladder as a whole, never on a chip. Owed: a DOM read of the active class plus a screenshot for the
   maintainer's eyes. Row **CONTEXT-LADDER-01**.
-- ★ `[focus]` **The disabled Clear frozen test chips button still takes the D-pad ring** — **VERIFY.** Fixed at the desk
-  2026-09-04: the button now renders only once a batch is pinned (the "0 pinned" text above it already explains the empty
-  state), so a disabled stop no longer sits at the bottom of Developer. Owed: a Developer sweep with no batch pinned shows
-  no stop named *Clear frozen test chips*. Row **DEV-CLEAR-CHIPS-01**.
 - ★ `[focus]` **The focus ring is clipped on grid layouts** — **VERIFY.** Fixed at the desk 2026-09-04: each character-picker
   grid column now carries 6px of inner padding so a focused tile's ring has room to render before the column's own
   `overflow: hidden` clips it — most visible before the fix on an edge tile. Style only. Owed: a screenshot with the ring
@@ -355,6 +351,8 @@ on 2026-07-30 (`apply_tdp` no longer exists). Preserved in the archive.
 since April (`25742f2`), and a deliberate failing test exits 1 today. If it recurs, record the exact command and shell.
 
 **September 2026**
+- ★ `[focus]` **The greyed-out Clear frozen test chips button no longer takes a dead press** — verified on the Deck 2026-09-04: with no
+  batch pinned the button is gone and a Developer sweep finds no such stop (DEV-CLEAR-CHIPS-01). [Detail](archive/roadmap-bugs-fixed.md#moved-from-the-roadmap-2026-09-04).
 - ★★ `[focus]` **Left on the Ollama sliders no longer throws the ring out of the plugin** — verified on the Deck 2026-09-04 on the Reply
   style, keep-alive and custom-timeout sliders (ONBUTTONDOWN-AUDIT-01); the UI-scale slider got the same fix, unit-tested only. [Detail](archive/roadmap-bugs-fixed.md#moved-from-the-roadmap-2026-09-04).
 - ★ `[KB]` **The KB arms report's verdict now judges every retrieval arm** — fixed at the desk 2026-09-04. It used to compare

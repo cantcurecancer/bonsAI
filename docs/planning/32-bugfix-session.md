@@ -301,3 +301,15 @@ Written as things land.
   **CHAT-REPLY-ENTRY-01**. The blank `…` header bug is traced, not fixed: a command reply is never saved to the chat slot on the
   backend, so the reload that follows overwrites the live question with nothing (trace in roadmap-details.md); a backend lane takes it.
   The Deck went quiet at 18:07; announced at 18:38; the device phase starts at 18:49 with all twelve fixes in one deploy.
+- **18:49, deployed** build `49241e7` (twelve fixes plus the other chat's round) with `scripts/build.ps1`; 61 files verified, hashes
+  matched, panel reopened. **19:00 to 21:33, the session limit.** All three lanes still running and this session stopped on the
+  usage limit; the Deck suspended at some point and resumed at 21:23; the panel remounted on Main with the ring on the hidden Main
+  tab button, which became the first device finding once work resumed.
+- **21:35 to 22:05, Deck block 1** (results committed as `cc7b855`): bug 2 **passes** on the Reply style, keep-alive and
+  custom-timeout sliders (moved to Done); the UI-scale bridge is not a stop while automatic scaling is on, so it stays unit-tested
+  only. Bug 7 **fails**: A on a row's Down button reordered the row, the ring left the picker for a hidden tab button and the picker
+  closed; back with lane B for a Steam-transfer version. Bug 4 is **half**: the Clear cache return lands on the Clear cache button
+  (passes), the remount trap never fires because its node check is a cross-realm `instanceof` (fails); back with lane D. Bug 9
+  **measured**: 6 px of room around the top-left tile, ring visible in the capture; the maintainer's glance closes it. The picker's
+  saved order was and is the default. Lane C's bug 5 and lane F's backend fix for the blank command header landed meanwhile
+  (`68cd3d0`, `7d73711`); both need the second deploy.
