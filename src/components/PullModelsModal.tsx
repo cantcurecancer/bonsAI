@@ -27,6 +27,7 @@ import {
 } from "../data/pullModelCatalog";
 import { isDeprioritizedOllamaTag } from "../data/deprioritizedModels";
 import { OLLAMA_LOCAL_ON_DECK_DEFAULT_PCIP } from "../data/bonsaiSettingsSchema";
+import { PULL_MODEL_NEW_BADGE_STORAGE_KEY } from "../data/storageKeys";
 import { callDeckyWithTimeout, DECKY_RPC_TIMEOUT_MS, formatDeckyRpcError } from "../utils/deckyCall";
 import type { ModelPolicyTierId } from "../data/modelPolicy";
 import { disclosureSummaryForSourceClass } from "../data/modelPolicy";
@@ -59,7 +60,7 @@ const LOCAL_LOOPBACK_CONNECTION_TEST_RPC_EXTRA_MS = 42000;
  * installed on a *later* run, with no prior record, is genuinely new.
  */
 export type PullModelPullRecord = Record<string, number>;
-export const PULL_MODEL_NEW_BADGE_STORAGE_KEY = "bonsai:pull-model-new-badge-v1";
+export { PULL_MODEL_NEW_BADGE_STORAGE_KEY };
 export const PULL_MODEL_NEW_BADGE_WINDOW_MS = 30 * 24 * 60 * 60 * 1000;
 
 export function computeUpdatedPullRecord(

@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
   "fileCount": 364,
-  "edgeCount": 882,
+  "edgeCount": 883,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -661,6 +661,7 @@
         "src/data/deprioritizedModels.ts",
         "src/data/modelPolicy.ts",
         "src/data/pullModelCatalog.ts",
+        "src/data/storageKeys.ts",
         "src/hooks/usePullModelCatalog.ts",
         "src/utils/deckyCall.ts",
         "src/utils/mergePullModelCatalog.ts",
@@ -1262,6 +1263,7 @@
     "src/data/storageKeys.ts": {
       "imports": [],
       "importedBy": [
+        "src/components/PullModelsModal.tsx",
         "src/features/plugin-shell/pluginStorage.ts",
         "src/features/plugin-shell/tabs/useAboutTabPayload.tsx",
         "src/hooks/useBonsaiPluginShell.test.ts",

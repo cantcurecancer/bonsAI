@@ -33,5 +33,13 @@ export const LOCAL_RUNTIME_BETA_DISMISSED_STORAGE_KEY = "bonsai:local-runtime-be
  */
 export const ACTIVE_CHAT_SLOT_STORAGE_KEY = "bonsai:active-chat-slot";
 
+/**
+ * When each installed Ollama tag was first seen installed, so the pull picker can badge a model
+ * **New** for 30 days. Client-side on purpose: nothing on disk records when a pull happened, and
+ * a stale badge is worth less than a settings round-trip. `bonsai:`-prefixed so
+ * `clearBonsaiBrowserStorage` takes it with *Clear all plugin data*.
+ */
+export const PULL_MODEL_NEW_BADGE_STORAGE_KEY = "bonsai:pull-model-new-badge-v1";
+
 export const GITHUB_ISSUES_URL = "https://github.com/qd313/bonsAI/issues";
 export const OLLAMA_UPSTREAM_REPO_URL = "https://github.com/ollama/ollama";
