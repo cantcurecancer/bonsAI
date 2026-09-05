@@ -53,7 +53,12 @@ under 10B in spring. LFM 2.5 is 8B on disk with 1B active per word, so it should
 on its maker's table it makes things up far less than the others. Granite 4.2 is the only genuinely new
 small family this quarter.
 
-**Left off, and why.** Qwen 3.8 Flash-Next is 105 gigabytes. Qwen 3.6 starts at 27B. Nemotron 3.5
+**Where the newer Qwens are.** Checked tag by tag on 2026-09-05: Qwen 3.6 comes only as 27B and 35B, smallest
+download 17 gigabytes; Qwen 3.8 only as 27B, 18 gigabytes; Qwen 3.8 Flash-Next is 105 gigabytes; Qwen 3.7 exists
+only as an online service with no weights to download. The Qwen team has released nothing under 9B since the
+Qwen 3.5 small models of March, so Qwen 3.5 is the newest Qwen that fits the Deck.
+
+**Left off, and why.** The Qwen 3.6, 3.7 and 3.8 lines, above. Nemotron 3.5
 Lightning, Laguna XS 2.1, Muse Glimmer and Cohere's North Mini are 30B-plus mixtures at 18 gigabytes and up.
 Ornith 1.5 9B neither thinks nor uses tools. Phi 4 Mini and the DeepSeek distils are 2025 models.
 
@@ -67,7 +72,7 @@ Ornith 1.5 9B neither thinks nor uses tools. Phi 4 Mini and the DeepSeek distils
 
 ## 4. Half A, the answer test, PC, 2026-09-05
 
-Every model ran the same 37 cases three times. "Fence when due" is the spoiler check: on a story-beat
+Every model ran the same 37 cases three times; Qwen 3.5 4B, the other model already on the Deck, was added in the evening. "Fence when due" is the spoiler check: on a story-beat
 question, did a hidden block appear at all. Minutes are the run's own clock on this PC's graphics card
 and say nothing about the Deck; they do rank the models against each other.
 
@@ -77,6 +82,7 @@ and say nothing about the Deck; they do rank the models against each other.
 | Gemma 4 E4B | 98.0% | 100% | 100% | 22.2% (2 of 9) | 98.5% | 86.5% | 4.0 |
 | Gemma 4 12B | 96.0% | 77.8% | 100% | 66.7% (6 of 9) | 92.4% | 81.1% | 13.5 |
 | Qwen 3.5 2B | 88.9% | 100% | 100% | 0% (0 of 9) | 50.0% | 45.9% | 5.6 |
+| Qwen 3.5 4B (on the Deck) | 98.0% | 88.9% | 99.0% | 33.3% (3 of 9) | 98.5% | 81.1% | 5.7 |
 | Qwen 3.5 9B | 97.0% | 88.9% | 100% | 11.1% (1 of 9) | 100% | 83.8% | 5.2 |
 | Granite 4.2 3B | 96.0% | 100% | 100% | 22.2% (2 of 9) | 98.5% | 81.1% | 5.9 |
 | Granite 4.2 8B | 96.0% | 100% | 100% | 22.2% (2 of 9) | 100% | 83.8% | 6.3 |
@@ -92,8 +98,8 @@ percent; today it is 92.7. The fix that landed on 2026-09-02 is in, and it worke
 **Every candidate answers facts a little better than today's model, and none of them protects spoilers.**
 Facts kept runs 96 to 98 percent against today's 91, and the candidates almost never wrap tactics in a
 fence by mistake. But on the nine story-beat questions where a hidden block is due, today's Gemma 4 puts
-one there every time, Gemma 4 12B two times in three, and every other candidate two times in nine or
-fewer. Qwen 3.5 2B never does, and it also drops the Strategy menu half the time, so it is out.
+one there every time, Gemma 4 12B two times in three, Qwen 3.5 4B one time in three, and every other
+candidate two times in nine or fewer. Qwen 3.5 2B never does, and it also drops the Strategy menu half the time, so it is out.
 
 The likely reason is not that the models are worse. The spoiler rules in the prompt were tuned on Gemma 4
 E2B across three rounds of the answer test; the other models read the same instruction and do not act on
