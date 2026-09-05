@@ -372,3 +372,10 @@ Written as things land.
   (*my playstation 2 games run at half speed on the handheld*, *what should I do next*, *reply with only the word echo*), reply
   style balanced, keep-alive 240m, custom timeouts off, thinking off, automatic UI scale on, knowledge base on, no game running,
   panel on Main. The vac-check chat now holds four turns from tonight's checks, which is the one visible difference.
+- **2026-09-05, the maintainer's look: two fails, both rebuilt and passed the same morning.** The character picker's highlight was
+  the browser's own hairline rather than the plugin's white ring — gold on the build that was photographed, because it took the tint
+  from the active character. The Show details row could carry six colours at once, so the highlight had nothing to stand out against;
+  it is one colour on the row now, chosen by the maintainer from three options. Sixth deploy, both measured on the device, both
+  pictured, both passed on the second look. **That closes the session: all thirteen fixed, twelve of them checked on the Deck.**
+  Still owed, and agreed as follow-ups rather than session work: a real sleep and wake (requested in the studio's own roadmap), and a
+  long streaming reply plus a touchscreen pass for the free-play row.
