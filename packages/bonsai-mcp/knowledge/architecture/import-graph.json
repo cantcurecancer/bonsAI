@@ -1,6 +1,6 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 359,
+  "fileCount": 360,
   "edgeCount": 866,
   "cycles": [],
   "orphans": [],
@@ -1376,6 +1376,10 @@
         "src/features/plugin-shell/TabIndicatorBar.test.tsx",
         "src/index.tsx"
       ]
+    },
+    "src/features/plugin-shell/jsdom.d.ts": {
+      "imports": [],
+      "importedBy": []
     },
     "src/features/plugin-shell/modalReturnFocusRegistry.test.ts": {
       "imports": [

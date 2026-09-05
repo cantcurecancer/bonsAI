@@ -264,10 +264,12 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
 - ★★ `[focus]` **A checklist the model got wrong was left in the reply as raw JSON**, its own D-pad stop that did nothing — **VERIFY.**
   Fixed 2026-08-28: a rejected checklist block is dropped, as a rejected branch block already was. Owed: one sighting on device of a
   reply where it happens. Row **STRAT-CHECKLIST-JSON-01**.
-- ★★ `[focus]` **After a modal closes or the QAM reopens, the ring can sit on a hidden Steam tab button** — **VERIFY, half passed on the
-  Deck 2026-09-04.** Closing the Clear cache confirmation now returns the ring to the Clear cache button (passes). After a remount the
-  ring still parks on a hidden tab button: the trap's node check is a cross-realm `instanceof`, so it never matches on the device. Back
-  with its lane. Row **TAB-BAR-11**.
+- ★★ `[focus]` **After a modal closes or the QAM reopens, the ring can sit on a hidden Steam tab button** — **VERIFY.** Fixed at the
+  desk 2026-09-04, Deck check owed: the trap now bounces a hidden tab button that already holds the ring the instant it attaches
+  (not only a later change), and the Clear cache / Clear all plugin data buttons register as return-focus owners, so the ring comes
+  back to the button that opened the modal instead of wherever Steam defaults to. **Same evening on build 49241e7, a suspend/resume
+  showed the trap had never actually bounced anything on device: its `instanceof` checks fail on a node from Steam's own document,
+  now fixed to duck-type instead. Deck re-check still owed.** Row **TAB-BAR-11**.
 - ★★ `[focus]` **Down from the chat slot lands on the whole reply before its first section** — **VERIFY**, fixed at the desk
   2026-09-04, Deck check owed (read at the desk, not yet measured on device). `focusFirstAnswerChunk` now hands the ring into the
   bubble's navigation container (`takeAnswerBubbleNavFocus`, the same transfer the reply row's glossary-chip hop already used) and

@@ -5,11 +5,20 @@
  * Used for: plan 30 W4 (TAB-BAR-05 is the on-device half).
  * Solves: The trap is a MutationObserver, which is easy to leave watching the wrong thing.
  * Does not: Prove Steam accepts the handover; jsdom has no gamepad tree.
+ *
+ * The realm-crossing tests below build their DOM in a second, genuinely separate `JSDOM` instance
+ * rather than `document.implementation.createHTMLDocument()`, which was tried first and measured
+ * (2026-09-04) NOT to reproduce the bug: a node built there is still `instanceof Element` true in
+ * this project's jsdom, because it shares this file's own `Element`/`Node` constructors -- jsdom does
+ * not mint a second one for a second `Document` instance the way a real iframe or a separate `JSDOM`
+ * does. A real `new JSDOM(...)` gives a node whose `instanceof Element` (checked from this file) is
+ * false, the same way a QuickAccess popup-document node is foreign to SharedJSContext's own `Element`.
  */
 import { render } from "@testing-library/react";
+import { JSDOM } from "jsdom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { useHiddenTabHeaderTrap } from "./useHiddenTabHeaderTrap";
+import { isElementLike, useHiddenTabHeaderTrap } from "./useHiddenTabHeaderTrap";
 import { registerNavFocus, resetNavFocusRegistry } from "../../utils/navFocusRegistry";
 import { rememberUiDocument, resetUiDocument } from "../../utils/uiDocument";
 
@@ -107,5 +116,64 @@ describe("useHiddenTabHeaderTrap", () => {
     header.appendChild(fresh);
     await tick();
     expect(takeFocus).toHaveBeenCalledWith(true);
+  });
+
+  describe("across a genuine realm boundary (2026-09-04 device finding)", () => {
+    let other: JSDOM;
+
+    afterEach(() => {
+      other?.window.close();
+    });
+
+    it("isElementLike accepts a foreign-realm element and rejects a non-element", () => {
+      other = new JSDOM(`<div id="el"></div>`);
+      const foreignEl = other.window.document.getElementById("el");
+      // Sanity: this really is a different realm from this file's own, the way a QuickAccess
+      // popup-document node is foreign to SharedJSContext.
+      expect(foreignEl instanceof Element).toBe(false);
+      expect(isElementLike(foreignEl)).toBe(true);
+      expect(isElementLike({ nodeType: 1 })).toBe(false); // has nodeType but no classList/querySelector
+      expect(isElementLike(null)).toBe(false);
+      expect(isElementLike("not a node")).toBe(false);
+    });
+
+    it("bounces a class change on an existing hidden button when root and target are both foreign", async () => {
+      // Reproduces the 2026-09-04 device finding exactly: a RIGHT press moved gpfocus from the
+      // hidden Main button to the already-existing hidden Ollama button
+      // (runs/TAB-BAR-11-a-after-suspend-resume-hidden-button.json) -- an attributes mutation on a
+      // pre-existing node, which the old `instanceof Element` guard silently dropped because every
+      // node this observer is ever handed is foreign to this module's own realm, not just some of
+      // them.
+      other = new JSDOM(
+        `<div class="bonsai-decky-tabs-root"><div data-test="foreign-hidden" class="Panel Focusable"><div class="bonsai-tab-title-leaf"></div></div></div>`,
+      );
+      const foreignRoot = other.window.document.querySelector(".bonsai-decky-tabs-root");
+      const foreignHidden = other.window.document.querySelector('[data-test="foreign-hidden"]');
+      expect(foreignHidden instanceof Element).toBe(false);
+      rememberUiDocument(foreignRoot as unknown as Node);
+
+      render(<Host />);
+      foreignHidden!.classList.add("gpfocus");
+      await tick();
+      expect(takeFocus).toHaveBeenCalledWith(true);
+    });
+
+    it("bounces a fresh foreign-realm node inserted already holding gpfocus", async () => {
+      other = new JSDOM(`<div class="bonsai-decky-tabs-root"><div class="header"></div></div>`);
+      const foreignRoot = other.window.document.querySelector(".bonsai-decky-tabs-root");
+      const foreignHeader = other.window.document.querySelector(".header")!;
+      rememberUiDocument(foreignRoot as unknown as Node);
+
+      render(<Host />);
+      const fresh = other.window.document.createElement("div");
+      fresh.className = "Panel Focusable gpfocus";
+      const leaf = other.window.document.createElement("div");
+      leaf.className = "bonsai-tab-title-leaf";
+      fresh.appendChild(leaf);
+      expect(fresh instanceof Element).toBe(false);
+      foreignHeader.appendChild(fresh);
+      await tick();
+      expect(takeFocus).toHaveBeenCalledWith(true);
+    });
   });
 });

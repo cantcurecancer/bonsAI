@@ -27,7 +27,20 @@ import {
   bonsaiTabStripLabel,
   type BonsaiTabId,
 } from "./tabTitles";
-import { useHiddenTabHeaderTrap } from "./useHiddenTabHeaderTrap";
+import { isElementLike, useHiddenTabHeaderTrap } from "./useHiddenTabHeaderTrap";
+
+/**
+ * Is `target` inside `root`? Exported so its own test can construct both nodes directly rather than
+ * through a render: `root` and `target` both come from the QuickAccess popup document in production,
+ * a different realm than this module's own (SharedJSContext), and a normal jsdom render cannot
+ * reproduce that split -- React needs `root` and its descendants in the same document to begin with,
+ * which is exactly what makes them the same realm there. Duck-typed the same way as
+ * `useHiddenTabHeaderTrap.ts`'s `isElementLike`, and for the same reason: `instanceof Node` is false
+ * for a node born in a different realm than the one asking.
+ */
+export function isPointerInsideTabBar(root: HTMLElement | null, target: EventTarget | null): boolean {
+  return !!root && isElementLike(target) && root.contains(target);
+}
 
 export type TabIndicatorBarProps = {
   /** The mounted tabs in strip order — five without Developer, six with. */
@@ -69,13 +82,19 @@ export function TabIndicatorBar({ tabIds, currentTab, selectTab, exitDown }: Tab
   /*
     One `pointerdown` listener on the UI document while a tap holds the strip open, removed the
     moment it closes. Capture phase, so a tap on something that stops propagation still closes it.
+
+    `evt.target` is a node from the QuickAccess popup document, and this module runs in
+    SharedJSContext -- two different realms, each with its own `Node` constructor -- so
+    `evt.target instanceof Node` was always false and every pointerdown closed the strip
+    immediately, including one landing inside it. Same bug as useHiddenTabHeaderTrap.ts
+    (runs/TAB-BAR-11-a-after-suspend-resume-hidden-button.json), same fix: duck-type instead
+    (isPointerInsideTabBar above).
   */
   useEffect(() => {
     if (!touchOpen) return;
     const doc = getUiDocument();
     const onPointerDown = (evt: Event) => {
-      const root = rootRef.current;
-      if (root && evt.target instanceof Node && root.contains(evt.target)) return;
+      if (isPointerInsideTabBar(rootRef.current, evt.target)) return;
       setTouchOpen(false);
     };
     doc.addEventListener("pointerdown", onPointerDown, true);

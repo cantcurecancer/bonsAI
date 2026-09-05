@@ -29,12 +29,42 @@
  *         the theory to be the confirmed mechanism.
  * Does not: Decide where the ring should be; it only bounces a landing on the ghost to the bar,
  *           and only when the bar's nav node is registered. Nothing here calls DOM `focus()`.
+ *
+ * Realm bug found on device 2026-09-04 (runs/TAB-BAR-11-a-after-suspend-resume-hidden-button.json):
+ * after a suspend/resume remount, a RIGHT press moved `gpfocus` from the hidden Main button to the
+ * already-existing hidden Ollama button and nothing bounced it, even though a DOM read at that moment
+ * showed every condition the matcher needs was true. The observer callback brand-checked
+ * `record.target` / added nodes with `instanceof Element`, and every node this observer is ever
+ * handed comes from the QuickAccess popup document while this module runs in SharedJSContext — two
+ * different realms, each with its own `Element`/`Node` constructor (uiDocument.ts: "Never brand-check
+ * a node that crossed a realm boundary"). `instanceof` is false for a node born in the other one, so
+ * the guard silently dropped every record it was ever handed; the passes recorded for TAB-BAR-05/09
+ * came entirely from the explicit hops (the bar's Down, each body's Up, `onCancelFromTabHeader`), not
+ * from this trap. Fixed by duck-typing instead: `nodeType` plus the two methods actually called.
  */
 import { useEffect } from "react";
 
 import { bonsaiDebugLog } from "../../utils/bonsaiDebugIngest";
 import { takeNavFocus } from "../../utils/navFocusRegistry";
 import { getUiDocument } from "../../utils/uiDocument";
+
+/**
+ * Stands in for `instanceof Element`, which is false for a node from a different realm than this
+ * module's own (see the header comment above). Checks the exact shape this file reads — an element
+ * node with `classList` and `querySelector` — rather than a constructor identity that a cross-realm
+ * node can never satisfy. Exported because `TabIndicatorBar.tsx`'s own `pointerdown` listener reads
+ * `evt.target` from the same UI document and had the identical `instanceof Node` bug.
+ */
+export function isElementLike(value: unknown): value is Element {
+  if (!value || typeof value !== "object") return false;
+  const candidate = value as { nodeType?: unknown; classList?: unknown; querySelector?: unknown };
+  return (
+    candidate.nodeType === 1 &&
+    typeof candidate.querySelector === "function" &&
+    !!candidate.classList &&
+    typeof (candidate.classList as { contains?: unknown }).contains === "function"
+  );
+}
 
 /**
  * Steam's tab button is the only element that can carry `gpfocus` AND contain one of our title
@@ -48,7 +78,7 @@ function isHiddenTabButton(el: Element): boolean {
 function findHiddenTabButton(el: Element): Element | null {
   if (isHiddenTabButton(el)) return el;
   const nested = el.querySelector(".gpfocus");
-  return nested && isHiddenTabButton(nested) ? nested : null;
+  return nested && isElementLike(nested) && isHiddenTabButton(nested) ? nested : null;
 }
 
 export function useHiddenTabHeaderTrap(onBounce?: (bounced: boolean) => void): void {
@@ -75,7 +105,7 @@ export function useHiddenTabHeaderTrap(onBounce?: (bounced: boolean) => void): v
       for (const record of records) {
         if (record.type === "childList") {
           for (const node of record.addedNodes) {
-            if (node instanceof Element && findHiddenTabButton(node)) {
+            if (isElementLike(node) && findHiddenTabButton(node)) {
               bounce();
               return;
             }
@@ -83,7 +113,7 @@ export function useHiddenTabHeaderTrap(onBounce?: (bounced: boolean) => void): v
           continue;
         }
         const target = record.target;
-        if (target instanceof Element && isHiddenTabButton(target)) {
+        if (isElementLike(target) && isHiddenTabButton(target)) {
           bounce();
           return;
         }

@@ -10,11 +10,12 @@
  *           the on-device rows TAB-BAR-01 … -06.
  */
 import { fireEvent, render } from "@testing-library/react";
+import { JSDOM } from "jsdom";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import React from "react";
 
-import { TabIndicatorBar } from "./TabIndicatorBar";
+import { isPointerInsideTabBar, TabIndicatorBar } from "./TabIndicatorBar";
 import { ALL_BONSAI_TAB_IDS, type BonsaiTabId } from "./tabTitles";
 import { buildBonsaiScopeStylesheet } from "../../styles/bonsaiScopeStylesheet";
 import { rememberUiDocument, resetUiDocument } from "../../utils/uiDocument";
@@ -228,5 +229,41 @@ describe("the open strip (plan 30 W5)", () => {
     expect(removeSpy.mock.calls.some(([type]) => type === "pointerdown")).toBe(true);
     removeSpy.mockRestore();
     unmount();
+  });
+});
+
+describe("isPointerInsideTabBar across a genuine realm boundary (2026-09-04 device finding)", () => {
+  // `root` and `evt.target` both come from the QuickAccess popup document in production, a
+  // different realm than this module's own (SharedJSContext), so `evt.target instanceof Node` was
+  // always false there -- every pointerdown closed the open strip immediately, including one landing
+  // on a cell inside it. A normal render cannot reproduce that split: React needs `root` and its
+  // descendants in the same document to begin with, which is exactly what makes them the same realm
+  // in jsdom. This constructs both nodes directly in a second, genuinely separate `JSDOM` instance,
+  // the same technique as useHiddenTabHeaderTrap.test.tsx's realm tests.
+  let other: JSDOM;
+
+  afterEach(() => {
+    other?.window.close();
+  });
+
+  it("treats a foreign-realm descendant of root as inside", () => {
+    other = new JSDOM(`<div id="root"><div id="cell"></div></div>`);
+    const foreignRoot = other.window.document.getElementById("root") as unknown as HTMLElement;
+    const foreignCell = other.window.document.getElementById("cell");
+    expect(foreignCell instanceof Node).toBe(false); // sanity: this really is a foreign realm
+
+    expect(isPointerInsideTabBar(foreignRoot, foreignCell)).toBe(true);
+  });
+
+  it("treats a foreign-realm node outside root as outside", () => {
+    other = new JSDOM(`<div id="root"></div>`);
+    const foreignRoot = other.window.document.getElementById("root") as unknown as HTMLElement;
+    expect(isPointerInsideTabBar(foreignRoot, other.window.document.body)).toBe(false);
+  });
+
+  it("is false with no root, and false for a non-element target", () => {
+    expect(isPointerInsideTabBar(null, document.body)).toBe(false);
+    expect(isPointerInsideTabBar(document.body, null)).toBe(false);
+    expect(isPointerInsideTabBar(document.body, "not a node" as unknown as EventTarget)).toBe(false);
   });
 });
