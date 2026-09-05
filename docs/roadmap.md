@@ -79,14 +79,6 @@ hook gives a gentle heads-up when a session starts work outside this.
   who walks past something and presses Up to go back does not return to it; they land somewhere they never visited. Related to the
   two-star entry about Up skipping sections, but sharper: the two directions disagree about what the reply's stops are.
   Evidence `runs/round35-spoiler-block-down-and-up.json`.
-- ★ `[layout]` **The question bubble sits about 35 pixels in from the left, with nothing in the gap** — **OPEN,
-  reported by the maintainer and measured on the Deck 2026-09-05.** The bubble showing what you typed is pushed against the
-  right edge and the strip down its left side is empty. The answer below it nearly fills the column, so the two do not line up
-  and it reads as lopsided. **Measured: 35 pixels of empty space on the left, none on the right, and nothing sitting in the
-  gap.** The cause is the bubble's own width cap — it may never be wider than 88% of the row, so a long question stops there
-  and the rest stays blank however much it has to say. A right-aligned bubble is meant to read as *yours*, so the call is how
-  much of an inset to keep rather than whether to keep any, and the maintainer asked for it tightened. One rule, then a look on
-  the device: the column is 300 pixels wide and a gutter is a bug here until proven otherwise.
 - ★★ `[focus]` **After the panel remounts the ring parks on a zero-size container** — **OPEN, found 2026-09-04.** On a fresh mount
   the ring lands on "Ask bonsAI" (Main) or "Where AI runs" (Ollama), both 0x0 rects that the visibility oracle calls OFFSCREEN, so
   the panel opens with nothing highlighted until the first press.
@@ -255,6 +247,13 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
 [Done](#done-for-v050), the full entry into the matching archive file, drop it from here.
 
 ### Bugs that need verification
+- ★ `[platform]` **Clear all plugin data left three things behind** — **VERIFY.** Found 2026-09-05 when the maintainer
+  asked for the wipe to be best-effort. Three flags remembering that the plugin had already warned about a knowledge base problem
+  are spelled with an underscore where everything else uses a colon, and the wipe only looked for the colon. After wiping
+  everything the plugin still believed it had warned you, so it stayed quiet when it should have spoken up. Fixed to match the
+  bare word, which catches both spellings and clears the old ones off devices that already carry them. The New labels in the pull
+  picker go with it. Three tests. Row **CLEAR-ALL-PREFIX-01**; **not run on the device**, because doing so destroys the
+  maintainer's chats and settings and that was not asked for.
 
 - ★ `[reply]` **A branch question elides the game name** — **OPEN, found 2026-09-04.** The Ravenholm branch picker asked
   *"Where are you at in … ?"* with the title replaced by an ellipsis.
@@ -502,6 +501,9 @@ Everything shipped since v0.4.9 (2026-07-08), one line each, newest first. Detai
 [archive/roadmap-completed.md](archive/roadmap-completed.md), [archive/roadmap-bugs-fixed.md](archive/roadmap-bugs-fixed.md).
 
 **Verified on the Deck 2026-09-05 (round 36):**
+- ★ `[layout]` **The question bubble lines up with the answer below it** — it used to sit further in from the left than
+  the answer sat from the right, which read as lopsided. Both are now the same width and mirrored.
+  [Detail](archive/roadmap-bugs-fixed.md#round-36-2026-09-05)
 - ★★ `[reply]` **Replies always arrive word by word** — streaming is how replies work now, and the Developer switch for it is
   gone. [Detail](archive/roadmap-completed.md#round-36-2026-09-05)
 - ★★ `[chips]` **Preset chip expansion** — six new suggestion chips for the things that shipped since early August. Both waves
