@@ -344,3 +344,14 @@ Written as things land.
 - **22:47 to 22:57, Deck block 8, bug 7:** on build 3 the picker check **passes**: A on the first row's Down button moved the row to
   second place, the ring stayed on that row's Down button, visible, and the picker stayed open; the order was put back and the
   picker closed with B, nothing saved (Done). All three device-verified fixes from lane B now hold.
+- **02:40 to 03:35, landing and the fourth deploy:** lane B's third picker fix and lane A's two (the Open Permissions redo and the
+  thumbs-row Up) landed on the landing branch; the six gates passed (962 frontend tests, 901 backend, focus baseline 77); the
+  conflicts were all in generated snapshots and in doc rows I had already updated from the device, so they were resolved to the
+  measured side and the snapshots regenerated. One tidy commit put right two roadmap entries an earlier whole-file resolution had
+  resurrected or reverted. Build 4 (`517804a`) deployed, 61 files verified, hashes match.
+- **03:35 to 03:50, Deck block 9:** bug 3 **passes** both halves now (Up from Helpful lands on the last section; Done). Bug 1 is
+  **four of five**: the button is a stop both ways, A opens the Permissions tab, *Back to Main* returns to the reply with the ring on
+  the button — but the ring lands on *Back to Main* rather than the Steam ban lookup toggle, because the jump still focuses its row
+  with a plain cross-container focus (`permissionJumpRegistry.ts:49-73`, which also reports success unconditionally). Back with lane A
+  as `bugfix32-lane-a3`. Note for future runs: a restored turn carries neither the thumbs row nor the deny surface, so both of these
+  checks need a live reply.

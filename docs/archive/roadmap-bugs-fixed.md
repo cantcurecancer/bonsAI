@@ -626,3 +626,16 @@ measurements and the QA rows survive. The roadmap keeps a one-line entry in **Do
   buttons inside the modal's form, so an A press submitted it. Row Up/Down and Reset clicks now call `preventDefault()`, on top
   of the Steam-transfer refocus the second attempt added. **Still not measured on the Deck.** Row **PICKER-REORDER-02**.
   - **Deck 2026-09-04, third build of plan 32:** the first two fixes failed on the device because every button inside the picker was a plain submit button inside Steam's modal form, so an A press closed the picker; with the submit stopped, A on a row's Down button moves the row, the ring stays on that row's Down button and the picker stays open (`runs/PICKER-REORDER-02-build3-a-keeps-picker-open.json`).
+
+### Down from the chat slot landed on the whole reply before its first section (verified on the Deck 2026-09-04 and 2026-09-05)
+
+- ★★ `[focus]` **Down from the chat slot lands on the whole reply before its first section** — **VERIFY, Down path passed on the
+  Deck 2026-09-04.** From the chat row, Down lands on the turn header and then on the first stop inside the answer, never on the
+  bare bubble. **The Up half failed on a cleaner re-measurement the same day** (a reply with no branch picker, ring on Helpful,
+  Up landed on the bare bubble): the first fix only reached the utility row's Up (Retry / Show details), and every ordinary reply
+  uses the thumbs row (Helpful / Not really) instead, whose own Up was still a bare "yield to Steam". **Redone at the desk
+  2026-09-04, Deck check owed again:** the thumbs row's Up now gets the same last-resort chain (glossary chip, then the bubble's
+  last section). Row **CHAT-REPLY-ENTRY-01**.
+  - **Deck 2026-09-04:** Down from the chat row lands on the turn header and then on the first section, never the bare bubble (`runs/CHAT-REPLY-ENTRY-01-down-from-slot-row.json`).
+  - **Deck 2026-09-04, second measurement:** Up from Helpful still landed on the bare bubble (`runs/CHAT-REPLY-ENTRY-01-up-from-helpful-lands-on-bubble.json`) — the desk fix had reached only the Retry row, and every ordinary reply sits under a thumbs row whose own Up yielded to Steam.
+  - **Deck 2026-09-05, after the thumbs-row fix:** Up from Helpful lands on the last section, visible (`runs/CHAT-REPLY-ENTRY-01-build4-up-from-helpful-passes.json`).

@@ -252,21 +252,11 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
   paths pass on the Deck 2026-09-04.** Closing the Clear cache confirmation returns the ring to the Clear cache button; after the
   trap's node check was made realm-safe, a chord close and reopen left the ring on Decky's back button, visible. Owed: the
   suspend-and-resume remount, which the rig cannot force. Row **TAB-BAR-11**.
-- ★★ `[focus]` **Down from the chat slot lands on the whole reply before its first section** — **VERIFY, Down path passed on the
-  Deck 2026-09-04.** From the chat row, Down lands on the turn header and then on the first stop inside the answer, never on the
-  bare bubble. **The Up half failed on a cleaner re-measurement the same day** (a reply with no branch picker, ring on Helpful,
-  Up landed on the bare bubble): the first fix only reached the utility row's Up (Retry / Show details), and every ordinary reply
-  uses the thumbs row (Helpful / Not really) instead, whose own Up was still a bare "yield to Steam". **Redone at the desk
-  2026-09-04, Deck check owed again:** the thumbs row's Up now gets the same last-resort chain (glossary chip, then the bubble's
-  last section). Row **CHAT-REPLY-ENTRY-01**.
-- ★★ `[focus]` `[perms]` **The Open Permissions button under a blocked reply is not a D-pad stop** — **VERIFY, first fix failed on
-  the Deck 2026-09-04.** The button is built as a stop now, but the hops into its row used a plain focus across containers: Up from
-  the session strip lost the ring, and the helper stamped the row with a tab index that removes it from Steam's graph. Back with its
-  lane for a registered-nav-node version. Rows **PERM-JUMP-01**, **SMOKE-C**.
-  **Redone at the desk 2026-09-04, Deck check owed again.** Both permission-hint rows now register a `navRef` (new ids
-  `chat-perm-hint-troubleshoot` / `chat-perm-hint-deny` in `navFocusRegistry.ts`) and the hop is `takeNavFocus` only — no page
-  query, no plain `focus()`, no tabindex of any kind. `focusDeckOwner` itself no longer stamps a tabindex onto a genuine
-  `.Panel.Focusable`, which is what corrupted the row the first time.
+- ★★ `[focus]` `[perms]` **The Open Permissions button under a blocked reply is not a D-pad stop** — **VERIFY, four of
+  five steps passed on the Deck 2026-09-05.** The button is a stop both ways now, A opens the Permissions tab, and *Back to
+  Main* comes back to the reply with the ring on the button. The one step left: the ring lands on *Back to Main* instead of
+  the matching toggle, because the jump still focuses its row with a plain cross-container focus. Back with its lane. Row
+  **PERM-JUMP-01**.
 - ★★ `[reply]` **Spoiler fences wrapped harmless tactics on games with no story, and on bosses you named** — **VERIFIED on the
   Deck 2026-09-03.** Fixed 2026-09-02: on those turns the prompt now says plainly not to fence. Measured on the PC with the answer
   eval: 28 of 96 misfires before, 3 after, ending questions still fenced. Deck run **KB-ANSWER-02**, 5 of 5: Tank, antlions,
@@ -342,6 +332,8 @@ on 2026-07-30 (`apply_tdp` no longer exists). Preserved in the archive.
 since April (`25742f2`), and a deliberate failing test exits 1 today. If it recurs, record the exact command and shell.
 
 **September 2026**
+- ★★ `[focus]` **Entering a reply from above or below lands on a section, not the whole bubble** — verified on the Deck:
+  Down from the chat row reaches the first section (2026-09-04) and Up from Helpful the last (2026-09-05), after the thumbs row's own Up was fixed (CHAT-REPLY-ENTRY-01). [Detail](archive/roadmap-bugs-fixed.md#moved-from-the-roadmap-2026-09-04).
 - ★ `[focus]` **Reordering in the try-order picker keeps the highlight and keeps the picker open** — verified on the Deck
   2026-09-04 on the third fix: A on a row's Down button moves the row and the ring follows it (PICKER-REORDER-02). [Detail](archive/roadmap-bugs-fixed.md#moved-from-the-roadmap-2026-09-04).
 - ★ `[ask]` **The question overlay now sits exactly on the native text field** — verified on the Deck 2026-09-04: the field and
