@@ -596,6 +596,11 @@ def try_restart_ollama_user_service(shell_log: Callable[[str], None]) -> None:
 leaves them; a failure after ten redraws otherwise repeats one word ten times."""
 _SPINNER_FRAME_RE = re.compile(r"[⠀-⣿]+")
 _REPEATED_BLANKS_RE = re.compile(r"\s{2,}")
+"""A phrase repeated back to back, which is what a redraw looks like once the spinner frame
+between the copies is gone. Ollama redraws with a carriage return rather than a newline, so the
+repeats sit inside one line and splitting on lines does not see them. Bounded to 38 characters so
+the backtracking stays cheap on the 480-character tail this is used on."""
+_REPEATED_PHRASE_RE = re.compile(r"(?<!\S)(\S.{1,38}?\S)(?:\s+\1)+(?!\S)")
 
 
 def _format_ollama_pull_failure(tag: str, code: int, tail_lines: list[str]) -> str:
@@ -619,7 +624,7 @@ def _format_ollama_pull_failure(tag: str, code: int, tail_lines: list[str]) -> s
         line = _REPEATED_BLANKS_RE.sub(" ", _SPINNER_FRAME_RE.sub("", raw_line)).strip()
         if line and (not cleaned or cleaned[-1] != line):
             cleaned.append(line)
-    tail_text = " ".join(cleaned)
+    tail_text = _REPEATED_PHRASE_RE.sub(r"\1", " ".join(cleaned))
     tail_snip = tail_text[-480:] if tail_text else ""
 
     low = tail_text.casefold()

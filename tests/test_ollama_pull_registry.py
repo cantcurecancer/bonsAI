@@ -53,6 +53,23 @@ class OllamaPullFailureFormatTests(unittest.TestCase):
         self.assertEqual(msg.count("pulling manifest"), 1, msg)
         self.assertNotIn("⠋", msg)
 
+    def test_redraws_inside_one_line_collapse_too(self):
+        """Ollama redraws with a carriage return, so the repeats arrive inside a single line.
+
+        This is what the Deck actually sent on 2026-09-05: splitting on lines saw one line and
+        left four copies of "pulling manifest" in the message.
+        """
+        msg = _format_ollama_pull_failure(
+            "some:tag",
+            1,
+            [
+                "pulling manifest ⠋ pulling manifest ⠙ pulling manifest ⠹ pulling manifest "
+                "Error: pull model manifest: file does not exist"
+            ],
+        )
+        self.assertEqual(msg.count("pulling manifest"), 1, msg)
+        self.assertTrue(msg.startswith("Tag «some:tag»"), msg[:60])
+
 
 class PartitionPullTagsTests(unittest.TestCase):
     def test_partition_live_registry(self):
