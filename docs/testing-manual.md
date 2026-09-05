@@ -4,6 +4,12 @@ On-device QA only. Automated gates: [testing-automated.md](testing-automated.md)
 
 Record **build id / git SHA** and **SteamOS** when marking Pass / Partial / Fail.
 
+**The short list of what only the maintainer can settle** — a finger on the glass, a secret only they
+hold, or a matter of taste — lives as a tickable page:
+[Twelve Checks Only You Can Do](https://claude.ai/code/artifact/3e5ec678-b219-439d-b952-139d75ff2db4).
+Sessions add to it rather than leaving such a finding in a chat. The rows it names stay the authority;
+the page is the maintainer's view of them.
+
 Historical full checklist (pre–2026-07-30 split): [archive/testing-full-pre-2026-07-30.md](archive/testing-full-pre-2026-07-30.md).
 
 ---

@@ -3248,3 +3248,41 @@ had 23 entries owing a device check and the round needed its edges drawn before 
 **Consequence worth recording.** Three entries cannot close overnight because they all depend on the data
 clear: the voice fixes, the shell and tab payload extraction, and the reopen half of the cache-clear
 entry. They close in the morning in one short block.
+
+### D62 — LOCKED 2026-09-05 (raised 2026-09-05) — The second bug-fixing session: four calls before "go"
+
+Raised at the start of the session planned in
+[planning/35-bugfix-session.md](../planning/35-bugfix-session.md). Seventeen entries sat in the bug list;
+five of them were already settled one way or another, and the rest needed their edges drawn before any
+code was written.
+
+**Answers, 2026-09-05, all four locked** (the maintainer answered in chat):
+
+1. **Scope: all eleven fixable bugs.** The stuck panel, nothing highlighted when the panel opens, the
+   answer paragraph hidden behind the question box, the trapped unrevealed spoiler block, the branch
+   picker leaking between chats, the question cut off after 48 letters, the missing *Stopped* notice, the
+   wrong "no active game" line, the three dots where a game name belongs, Speed paying for the slow
+   search, and the search that got a fifth slower. **Out:** the ring-styling design call (skipped once
+   already under D58 #5), the router that needs a topic word, and the retrieval blend deferred under D38 —
+   all three are decisions and measurements, not fixes, and each wants its own conversation.
+2. **Speed mode does the quick keyword lookup and nothing else**, which is what its test row has always
+   said. Takes about a second off every Speed question on the device. The trade the maintainer accepted:
+   a Speed answer loses the cards that only the meaning search finds — the ones whose wording does not
+   match the question. Strategy and Expert are untouched. If Speed answers get visibly worse, the fallback
+   already sketched is to run the meaning search only when the keyword hits are thin, which is a threshold
+   somebody has to pick and measure.
+3. **Both paired features are in.** The fade on a cut question (chosen 2026-09-05 under D60, and nearly
+   free alongside the cut-question fix, same file, the fade already unused in the stylesheet), **and** the
+   glow at the end of the chip row. **Worth recording about the second one:** it is motion, so no
+   measurement closes it — it ends on the maintainer's own checklist as a picture or a recording to judge,
+   not in the done list.
+4. **Wiping all plugin data is authorised, with a message first.** The session sends word right before
+   pressing it and waits. **If no reply comes before the run ends, the wipe does not happen** — three
+   entries stay open rather than a destructive step going ahead unanswered. Backups were taken in round
+   34 block 0 and are still beside the settings file and in the home directory; they are restored
+   immediately afterwards and read back off disk to prove it.
+
+**Consequence worth recording.** Two of the eleven — the stuck panel and the unhighlighted open — have no
+measured cause yet, so the routing policy keeps them off a helper lane. The session's own driver takes
+them, after a device measurement, and if that measurement does not name a cause they are written up with
+their numbers rather than guessed at.

@@ -1,0 +1,167 @@
+# 35 — The second bug-fixing session
+
+Written 2026-09-05, before any fix was started. The maintainer asked for a plan first: what to fix, in
+what order, what runs side by side, how each fix is proven on the Deck, and what needs their decision.
+The decisions are **D62** in [maintainer-decisions-locked.md](../audit/maintainer-decisions-locked.md).
+Nothing in § 4 starts until they are answered.
+
+Read first: [CLAUDE.md](../../CLAUDE.md); the ground rules and the focus law at the top of
+[26-thursday-bugfix-sesh.md](26-thursday-bugfix-sesh.md); [32-bugfix-session.md](32-bugfix-session.md),
+which is the same shape and worked; [34-feature-verification-round.md](34-feature-verification-round.md)
+§ 8 for what the device proved last night and how it was left.
+
+**The maintainer's own checklist of things only a person can judge lives here:**
+[Twelve Checks Only You Can Do](https://claude.ai/code/artifact/3e5ec678-b219-439d-b952-139d75ff2db4).
+It is the standing list. Anything this session finds that needs their eyes gets added to it, and the
+same link goes into [roadmap.md](../roadmap.md) and [testing-manual.md](../testing-manual.md) so it
+cannot get lost.
+
+---
+
+## 1. What is true right now (checked 2026-09-05, nothing pressed)
+
+- **The Deck answers, Ollama answers, the controller board is on COM7, and the rig is armed.** The
+  debug tunnel is not running and gets started in block 0.
+- **The tree is clean** on the working branch, nothing untracked.
+- **Last night's round left the device as it found it** — every setting read back off disk, all five
+  permissions on, no game running, nothing pinned. Backups for a data wipe are already in place beside
+  the settings file and in the home directory.
+- **One thing was deliberately not done last night:** wiping all plugin data. The maintainer was asleep
+  and chose not to authorise a destructive step in advance. Three items still wait on it.
+- **Seventeen entries sit in the bug list.** Two are already accepted, two are decisions rather than
+  fixes, and one is a design call that was skipped once. That leaves twelve that can actually be fixed.
+
+## 2. The bug list, sorted by what happens to each
+
+### 2a. Fix this session — eleven entries
+
+Ordered by how much a person would notice, not by star count.
+
+| # | What a person sees | What is already known | The fix, in one line | Lane |
+|---|---|---|---|---|
+| 1 | **The panel gets stuck: pressing Down stops half way and the Ask button cannot be reached at all.** Only restarting the loader clears it. | Reproduced four times last night, on a chat with history and on an empty one, in both modes. At the moment it sticks, Steam's ring and the page's own idea of focus are on *different* elements every time. Reopening the panel does not clear it; a loader restart does. | Unknown until measured. The signature to chase is the two-owner disagreement. **Measured on the Deck before a line is written.** | me |
+| 2 | **Nothing is highlighted when the panel opens.** The first press places the ring instead of moving it. | Re-measured yesterday on two builds and four fresh opens: the ring is simply unowned, not parked on a bad element. | Place the ring on mount instead of trying to move it off something. Probably the same machinery as #1. | me, with #1 |
+| 3 | **An answer paragraph can take the highlight while it is hidden behind the question box.** | Seen twice, most recently in the free walk of all six screens: one paragraph only a third visible. The dock-clearance helper exists and did not cover it. | Make the scroll-into-view step account for the question box, not just the dock. | D, after the measurement |
+| 4 | **On an unrevealed spoiler block, Down does nothing.** After it is revealed, Down escapes normally. | The press arrives and nothing moves. It is the hidden state that traps. | Give the hidden block a Down that hands the ring on. | E, after the measurement |
+| 5 | **A branch picker from one chat shows up while you are looking at another chat.** | Seen twice with two different games. The block is held as one piece of state for the whole panel, not one per chat, so switching chats does not always clear it. | Scope the branch block to the chat that made it. | B |
+| 6 | **The question you just asked is cut off after about 48 letters.** | Cut twice: once at 60 letters when the label is built, then again at 48 by the one-line rule. The second nearly always wins. The maintainer has already chosen what it should do. | An open turn shows the whole question, wrapped, up to five lines; a closed turn keeps one line. | A |
+| 7 | **Stopping a reply leaves no sign it was stopped**, and the stopped turn loses its Helpful / Not really / Retry buttons. | The *Stopped* text is written but only rendered while the turn still counts as live, so it vanishes the moment the turn settles. | Show the notice on the settled turn too, and keep the three buttons. | A |
+| 8 | **The line under the question box says no game is running, even when one is** — until you ask something. | It starts out saying that and only changes when an Ask's status check reports a game. On a fresh open, no check has run. | Check once on mount instead of waiting for the first question. | B |
+| 9 | **A branch question says "Where are you at in … ?"** with the game's name replaced by three dots. | The example in the prompt literally contains those three dots, and the model copies them. | Change the example so there is nothing to copy, and drop a branch block that still has them. | C |
+| 10 | **A quick question in Speed mode pays for the slow search it was meant to skip.** Two of three Speed questions spent about a second on it. | Confirmed in the code: the decision to run the meaning search never looks at which mode you picked. | Depends on the maintainer's answer (§ 3, question 2). | C |
+| 11 | **Every game question waits about a fifth of a second longer than it used to.** | Three questions measured at roughly 1.09 seconds against the 0.79–0.90 band recorded when the feature shipped. Same corpus, same model, same device. Cause unmeasured. | **Time-boxed.** One bounded look for the cause. If it is not obvious, write the numbers down and stop. | C |
+
+Two small features are in scope only if the maintainer says yes (§ 3, question 3): the fade cue for a cut
+question, which pairs with #6 and costs almost nothing extra, and a glow at the end of the chip row when
+it runs out.
+
+### 2b. Not this session, and why
+
+- **The highlight ring looks different from Steam's own** — a design call, skipped once already. Skip again.
+- **The retrieval blend loses to one half of itself** — a measurement and a decision, not a fix. Its own conversation.
+- **A troubleshooting question that only names the symptom finds nothing** — same: a decision about how far
+  the router should reach.
+- **Unrelated questions get game cards stapled on** — the maintainer accepted this.
+- **Text arrives in bursts while a game runs** — the maintainer accepted this.
+
+## 3. What the maintainer decided, 2026-09-05
+
+Locked as **D62** in [maintainer-decisions-locked.md](../audit/maintainer-decisions-locked.md).
+
+| # | Question | Answer |
+|---|---|---|
+| 1 | How much of the list? | **All eleven.** The three that are decisions rather than fixes stay out and want their own conversation. |
+| 2 | What should Speed mode do? | **The quick keyword lookup and nothing else**, which is what its test row always said. About a second comes off every Speed question; the trade is that a Speed answer loses the cards only the meaning search finds. |
+| 3 | The two paired features? | **Both in.** The fade on a cut question, and the glow at the end of the chip row. The glow is motion, so no measurement closes it — it ends on the maintainer's checklist to judge. |
+| 4 | Wiping all plugin data? | **Yes, with a message right before, and a wait.** If no reply comes before the run ends, the wipe does not happen and three entries stay open. |
+
+## 4. Order of work, and what runs side by side
+
+### Block 0 — hygiene, me alone, about twenty minutes
+
+1. Put the maintainer's checklist link into the roadmap and the manual test docs so it cannot get lost.
+2. Update the lane brief: the newer policy says lanes hand back code and tests only, and the person
+   running the session moves every roadmap, test and changelog line. The brief on disk still tells lanes
+   to move them, which is what caused the doc clashes last time.
+3. Start the debug tunnel, confirm the Deck is running this exact checkout by hash, and confirm the four
+   gates are green before anything changes.
+
+### Block 1 — three lanes start, and I go to the Deck
+
+The lanes need no device. While they work, I measure the highlight family, which is one setup for four bugs.
+
+| Lane | Bugs | Files it owns |
+|---|---|---|
+| A | 6, then the fade cue that pairs with it, then 7 | the chat transcript, the one-line title helper, the reply button row |
+| B | 5, then 8 | the ask orchestration hook, the Main tab body |
+| C | 9, then 10, then 11 | the prompt text, the knowledge base service, the embedding service, their tests |
+
+My measurements, in this order: how the stuck state is entered and what the two focus owners disagree
+about (#1 and #2 together); what covers the hidden paragraph and by how much (#3); what happens on the
+hidden spoiler block's Down (#4). Each is a short run with its evidence saved.
+
+### Block 2 — two more lanes, once the measurements name a cause
+
+| Lane | Bugs | Files it owns |
+|---|---|---|
+| D | 3 | the dock-clearance helper and its scroll step |
+| E | 4 | the spoiler block component |
+| F | the glow at the end of the chip row | the preset chip row and its edge handling |
+
+Lane F needs no measurement and no device, but the policy caps this at five lanes at once, so it starts
+when the first of A, B or C reports back rather than at the same time as D and E.
+
+I take #1 and #2 myself. The policy is explicit: highlight and layout bugs go to a helper lane only when
+a measurement has already named the cause, and for these two it has not.
+
+One bug is left over on purpose — **Up from an archived chat header runs past the chat row to the tab
+bar**. It touches the same file as lane A, so it goes after lane A lands rather than fighting it.
+
+### Block 3 — landing, me alone
+
+Each lane's commits are read as diffs, then taken onto the branch one at a time, oldest first. The four
+gates plus the highlight linter run after every one. I move the roadmap, test and changelog lines myself,
+in one commit per landing — never the lanes, which is what kept clashing last time.
+
+The review question for every highlight fix is the one written down after the last four failures: does
+this go through a real move handler or Steam's own hand-off, or is it a browser key event the device
+never sends? If it is the second, it is dead on the device however green the tests are.
+
+### Block 4 — the checking pass on the Deck, me alone, one thing at a time
+
+1. Deploy once, reopen the panel (the first open after a deploy always fails, by design), prove the
+   bundle by hash.
+2. Check each fix in the order the fixes landed, with the stuck panel first.
+3. A pass moves three things in one commit: the roadmap line into the done list, the full entry into the
+   archive, the test row ticked. A failure is written down with its evidence and the entry stays put.
+4. Then the wider walk: every screen, every stop reachable **and** visible, with a game running for the
+   knowledge base checks.
+5. Wiping all plugin data goes last and only with the maintainer's word.
+
+### Block 5 — the report
+
+Everything found and not fixed goes into the bug list with evidence. Anything that needs the maintainer's
+eyes is added to their checklist. A short written summary at the end of the run.
+
+## 5. Who does what
+
+**Me: Opus at extra-high effort. Lanes: Sonnet 5 at high effort, five at most.** That is exactly what the
+policy asks for a bug-fixing session, with one refinement that matters here: a highlight or layout bug
+only goes to a lane once a device measurement has named its cause. Two of this session's bugs will not
+have that, so I do them.
+
+## 6. Rules for this session
+
+1. One fix per commit, behaviour-preserving, all four gates plus the highlight linter green between commits.
+2. Lanes hand back code, tests and one paragraph. They never touch the roadmap, the test docs or the
+   changelog, never touch the Deck, and never push.
+3. Every lane checks it is building on the right base before it does anything.
+4. A failure on the device is written down with its evidence file named, not argued with.
+5. If a device result contradicts the code, check the installed build's hashes before believing it.
+6. Settings go back the way they were found, read off disk to prove it, at the end of every device block.
+7. Do not sink time into a bug that turns out to be hard. Make a good effort, write down what was learned,
+   move on.
+
+## 7. Progress log
+
+Written as work lands.
