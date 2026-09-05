@@ -104,11 +104,10 @@ or accept prose); the chip clipping direction (behind preset-row work). Five old
 August retrieval rework (schema gate, relevance floor, follow-up search, transparency, the kill
 switch) have never been run on the Deck.
 
-**Your calls that are open.** Whether "starting out" and comparison cards get their own kind or stay
-filed as mechanics. Whether a Strategy first turn on a named thing with a card should answer first and
-then show the menu. The structured-cards prompt question above. The blend weights, once the data you
-asked for exists. And the Phase 5 rule of "no new titles", which collides with "more games" being
-the data the weights decision needs.
+**Your calls.** Decided on 5 September: "starting out" cards get their own kind; the answer-first shape is tested on
+the PC and then the Deck before a decision; structured cards stay prose. Two remain, each with a recommendation written
+down in the decisions file and waiting on a yes: run the blend-weight sweep now and change the weights if it agrees, and a
+one-off tranche of five to ten new titles you choose.
 
 ## 5. Next phases: what each buys, and what it costs
 
@@ -162,8 +161,8 @@ them straight; what remains is coverage, follow-up memory, and the things the te
 1. **The Deck and the knowledge-base files are held by the bug-fixing session** started today. Its
    lane owns the prompt text, the knowledge-base service and the embedding service. Knowledge-base
    code edits should wait for it or go through it.
-2. **Your open calls** (section 4): the card kind, tactic-first, the structured-cards prompt, and the
-   blend weights once the data exists.
+2. **Two calls waiting on a yes** (section 4): the blend-weight sweep, and the first tranche of new
+   titles. The other three were decided on 5 September.
 3. **The "no new titles" rule** for Phase 5 versus the "more games" you asked for before deciding the
    weights. One of the two has to move.
 4. **Any schema change is a release that stales every installed corpus.** Per-game tips, a new card
@@ -218,7 +217,7 @@ and the five August checks ★ under Deck check owed.
 - [knowledge-base.md](../knowledge-base.md) — architecture, phase locks, the recall pass
 - [30-kb-answer-quality-plan.md](30-kb-answer-quality-plan.md) — the answer-quality plan and its checklist
 - [28-phase5-corpus-depth.md](28-phase5-corpus-depth.md), [18-phase4-track3-per-game-compat-tips.md](18-phase4-track3-per-game-compat-tips.md), [17-kb-online-versus-strategy-content.md](17-kb-online-versus-strategy-content.md)
-- [maintainer-decisions-locked.md](../audit/maintainer-decisions-locked.md) — D27, D38, D40b, D41, D45–D54
+- [maintainer-decisions-locked.md](../audit/maintainer-decisions-locked.md) — D27, D38, D40b, D41, D45–D54, D65–D69
 - [kb-embed-bakeoff-2026-08-31c-arms.md](../archive/research/kb-embed-bakeoff-2026-08-31c-arms.md) — latest search numbers
 - [kb-answer-eval-2026-09-02-shipped-fence-fix.md](../archive/research/kb-answer-eval-2026-09-02-shipped-fence-fix.md) — latest answer numbers
 - [34-feature-verification-round.md](34-feature-verification-round.md), [35-bugfix-session.md](35-bugfix-session.md), [36-feature-session.md](36-feature-session.md) — this week's Deck findings and who owns which files

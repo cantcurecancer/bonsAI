@@ -336,24 +336,22 @@ person is still coverage: thirteen games, and every other game gets the model's 
 
 1. The bug-fixing session running today owns the knowledge-base code files. Let it land the two bugs it holds before
    touching them.
-2. Answer the calls in the next list. Three of them decide the shape of the work below.
+2. Say yes or no to the two recommendations in the next list; both have a recommendation written down.
 3. Then work **Next** from the top: the prompt diet, the "not in my notes" line, symptom-only troubleshooting, the eval
    tooling and the weight sweep, spoiler tiers, follow-ups remembering, and one corpus release that carries everything
    needing a rebuild.
 
 ### Calls waiting on you
 
-- **"Starting out" cards: their own kind, or filed as mechanics?** Their own kind gives a new player a "how do I get
-  started" chip and lets "where do I start" find the card. Explained in [plan 30 § 3b](planning/30-kb-answer-quality-plan.md). (D53)
-- **A named question with a card attached: answer first, then the menu?** Today a Strategy first turn gives an orientation
-  and a menu before any tactics, even when you named the boss and its card matched. Worth trying only if the answer test
-  shows the current shape loses the card's facts. (D54)
-- **Structured cards: strengthen the prompt, route a bigger model, or accept prose?** With the Deck's small model the facts
-  survive on 6 of 6 questions but the labelled bullets on only 1 of 6. Row **PHASE4-CARDS-01**.
-- **The blend weights.** On realistic questions the meaning search alone puts the right card first nine points more often
-  than what ships. You deferred this on 2026-08-29 until there are more games and more questions. (D38)
-- **More games before the catalog?** Phase 5 says no new titles; the weights call above needs more games. One of the two has
-  to move.
+**Decided 2026-09-05:** "starting out" cards get their own kind (D65); answer-first is tested both ways before a decision
+(D66, see the test entry under Next); structured cards stay prose (D67). Two remain, each with a recommendation:
+
+- **The blend weights.** On realistic questions the meaning search alone puts the right card first 63 times in 100; what
+  ships manages 54. Recommendation: build the weight sweep, run it on the tuning questions only, and change the weights if
+  it agrees; do not wait for new games first. Needs your yes. (D68)
+- **More games before the catalog?** Recommendation: yes, a one-off tranche of five to ten titles you choose — games you
+  play, with a usable wiki, popular on the Deck — cards in one session and blind questions in another. Needs your yes and
+  the title list. (D69)
 
 ### Bugs
 
@@ -402,6 +400,11 @@ person is still coverage: thirteen games, and every other game gets the model's 
 - ★★ `[KB]` **Prompt diet** — **OPEN, agreed 2026-09-01.** The model reads about nine tokens of rules for every token of
   knowledge. Drop the citation instruction (obeyed once in 89 asks, and the UI cannot show it), send screenshot rules only
   when an image is attached, put the cards next to the question. About a day, measured before and after on the answer test.
+- ★★ `[KB]` **Answer first, then the menu: test both shapes before deciding** — **OPEN, test decided 2026-09-05.** Today
+  a named question with a matching card gets a short orientation and the menu; the other shape gives the card's tactics
+  first and the same menu. PC first: an "answer first" variant on the answer test, the named-thing cases twice each way,
+  comparing facts kept, menu present and length. Then three pinned sentences on the Deck in both shapes for you to read.
+  Row **KB-ANSWER-03**. Examples and trade-offs in the decisions file. (D66)
 - ★★ `[KB]` **"Not in my notes" line** — **OPEN, agreed 2026-09-01.** When a game question matches no card, one muted line
   built by code says the answer is general knowledge, so a person can tell notes from memory. Only on Strategy and Expert
   asks for a covered game; never when the library is off or the game is uncovered. Wording to settle with you. (D48)
@@ -428,9 +431,10 @@ person is still coverage: thirteen games, and every other game gets the model's 
   and chapters; default fences only named story beats and endings; open fences nothing you asked about. Naming a boss still
   unlocks it in every tier. Needs the settings plumbing, a prompt per tier measured on the answer test, a control with a
   focus entry, and Deck QA. About three days. (D50) [Detail](roadmap-details.md#spoiler-coverage-should-be-a-setting-with-tiers).
-- ★★★ `[KB]` **The corpus has no "starting out" card** — **OPEN, waiting on your call.** Every card is about a thing; you
-  asked for build and early-game guidance, and an orientation card for someone who knows a neighbouring game. Three such
-  cards exist, filed as mechanics. Decide the kind first, then write the Cyberpunk, Fallout 4 and Red Dead ones.
+- ★★★ `[KB]` **"Starting out" cards get their own kind** — **OPEN, decided 2026-09-05, nothing built.** A new player gets
+  a *"How do I get started in Fallout 4?"* chip and *"where do I start"* finds the card. One new kind in the validator and
+  the two kind lists, one chip wording, a rescue phrase list, a rebuild; then re-type the three cards filed as mechanics and
+  write the Cyberpunk, Fallout 4 and Red Dead ones you asked for. Rides the bundled release. (D65)
   [Detail](roadmap-details.md#the-corpus-has-no-starting-out-card).
 - ★★★ `[KB]` **Card style pass** — **OPEN, measure first, added 2026-09-05.** Rewrite the 139 prose cards as labelled short
   lines, the shape the 16 structured cards use. Facts kept is already 92%, so the ceiling is low; do it only if the answer
@@ -445,9 +449,9 @@ person is still coverage: thirteen games, and every other game gets the model's 
   points marked. Nothing draws anything in a reply today. A dungeon map has to be authored, which sits behind the source
   policy and a corpus rebuild. Research first. [Detail](roadmap-details.md#kb-visual-maps).
 - ★★★★ `[KB]` **RAG Phase 4: extended retrieval** — **PARTIAL.** The chip guarantee and 16 structured cards shipped
-  2026-08-19; the split was accepted 2026-08-21. Left: per-game Deck tips (content for seven titles collected, two quirks from
-  your own Deck), which need a format bump and a release — see the release entry above. Two to three days. The chip clipping
-  check waits on the preset-row work. [Detail](roadmap-details.md#rag-phase-4-extended-retrieval).
+  2026-08-19; the split was accepted 2026-08-21 and prose replies were accepted 2026-09-05 (D67). Left: per-game Deck tips (content for seven titles collected, two quirks from
+  your own Deck), which need a format bump and a release — see the release entry above. Two to three days. The chip
+  clipping check waits on the preset-row work. [Detail](roadmap-details.md#rag-phase-4-extended-retrieval).
 - ★★★★ `[KB]` **RAG Phase 5: depth on the thirteen titles** — **PARTIAL.** 133 → 161 cards since 2026-08-29. Eleven of the
   thirteen titles still have no enemy or item cards, so "how do I deal with X" works for two games. Next: 40–60 entity cards
   in tranches with a quality read from you after the first; then chip ranking by meaning. Card authors cannot write blind
