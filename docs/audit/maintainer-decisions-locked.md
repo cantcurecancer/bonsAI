@@ -3418,3 +3418,48 @@ typed command yes, the full report, consent asked for again at the time, four st
 **Consequence worth recording.** With one entry point, the doctor is reachable only after an Ask has failed.
 Someone who wants to check a healthy setup before asking anything cannot; if that turns out to matter, a
 button on the Ollama tab is a small later addition, noted in the plan's out-of-scope list.
+
+### D70 — OPEN (raised 2026-09-05) — Showing the model's real thinking: seven calls before "go"
+
+Numbered 70 on purpose: the feature-building chat's branch already holds D65 to D69, so this skips past
+them to avoid two entries with one number when the branches meet.
+
+Raised while planning [planning/40-reasoning-display.md](../planning/40-reasoning-display.md), the third of
+the six features the maintainer picked on 2026-09-05. Today the plugin asks a thinking model to think, pays
+the reserved budget for it, and throws the thinking away: the streaming reader never looks at that field.
+The line under your question shows a stock phrase for the whole wait, which was 212 seconds on the Deck's
+thinking model at the Deep level. The plan puts the model's own latest sentence on that line, folds it to
+"Thought for N s" when the answer starts, and lets you open the whole thing. A test to find out runs first.
+
+1. **The live shape, while the model thinks.**
+   - Option 1 (recommended): one line that replaces the stock phrase with the model's newest sentence.
+     No growth, no cost to the transcript's height.
+   - Option 2: a three-line pane that scrolls. Costs height the transcript does not have.
+   - Option 3: nothing live; only the fold after the answer.
+2. **After the answer starts.**
+   - Option 1 (recommended): the line folds to *Thought for N s*, a D-pad stop that opens the full text.
+   - Option 2: no fold; only a chip in Show details.
+   - Option 3: the reasoning stays open above the answer.
+3. **Spoilers inside the reasoning.** The model may reason about an ending before deciding to hide it.
+   - Option 1 (recommended): no masking inside; the closed fold is the fence, like a hidden spoiler
+     block; one notice the first time thinking is turned on. The test's Red Dead capture informs this.
+   - Option 2: no live reasoning in Strategy mode; the stock phrases stay there.
+4. **Saved with the chat.**
+   - Option 1 (recommended): yes, capped at a few thousand characters, so a reopened chat keeps the fold.
+   - Option 2: live only.
+5. **A thinking chip in Show details** with the level, seconds and tokens.
+   - Option 1 (recommended): yes.
+   - Option 2: no.
+6. **The two-star "thinking tips" entry**, hand-written phrases for the same line.
+   - Option 1 (recommended): retire it. Real thinking replaces the phrases where a thinking model runs;
+     the phrases stay as they are everywhere else.
+   - Option 2: keep both.
+7. **Where the test runs.**
+   - Option 1 (recommended): pull the Deck's small Qwen model onto this PC, about three gigabytes, and run
+     the whole test at the desk with no Deck time.
+   - Option 2: on the Deck, when it is free.
+   - Option 3: on the PC's large Qwen model now, which answers the order and spoiler questions but not the
+     Deck's speed.
+
+**Consequence if unanswered.** Nothing is built until 1 to 3 are answered. 4 to 7 have defaults that hold:
+saved and capped, chip yes, tips retired, test on the PC with the Deck's model once the pull is allowed.
