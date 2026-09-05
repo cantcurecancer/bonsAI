@@ -11,14 +11,14 @@
       "role": ""
     },
     {
+      "path": "src/hooks/useBonsaiAskOrchestration.ts",
+      "lines": 1632,
+      "role": ""
+    },
+    {
       "path": "src/index.tsx",
       "lines": 1614,
       "role": "Plugin root: tabs, scoped CSS, RPC wiring, Settings"
-    },
-    {
-      "path": "src/hooks/useBonsaiAskOrchestration.ts",
-      "lines": 1587,
-      "role": ""
     },
     {
       "path": "py_modules/backend/services/voice_transcription_service.py",
@@ -28,6 +28,11 @@
     {
       "path": "py_modules/backend/services/ollama_prompts.py",
       "lines": 1489,
+      "role": ""
+    },
+    {
+      "path": "src/hooks/useBonsaiAskOrchestration.test.ts",
+      "lines": 1215,
       "role": ""
     },
     {
@@ -48,11 +53,6 @@
     {
       "path": "src/components/PullModelsModal.tsx",
       "lines": 1104,
-      "role": ""
-    },
-    {
-      "path": "src/hooks/useBonsaiAskOrchestration.test.ts",
-      "lines": 1092,
       "role": ""
     },
     {

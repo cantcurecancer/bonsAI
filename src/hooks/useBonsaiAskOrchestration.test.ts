@@ -1089,3 +1089,126 @@ describe("ollamaContext on mount (CHIP-ROTATION-01)", () => {
     expect(result.current.ollamaContext?.app_context).not.toBe("active");
   });
 });
+
+/*
+ * CHAT-SLOTS-V3-05a: a Strategy branch block asked in one chat slot showed up while a different
+ * slot was on screen, and stayed there after the owning slot's answer had already finished — not
+ * a mid-stream race, a plain missing slot check on this one piece of state.
+ */
+describe("strategyGuideBranches stays with the slot that asked (CHAT-SLOTS-V3-05a)", () => {
+  /*
+   * Gated by an explicit flag rather than a call counter: the mount-restore effect also fires
+   * its own one-shot `get_background_game_ai_status` read (see the "mount restore" section of
+   * the hook), so a plain "the Nth call completes" counter can reach "completed" earlier than
+   * the test expects, from a caller that has nothing to do with the submitted Ask. Flipping the
+   * flag by hand, after moving `activeSlotIdRef`, is what pins the ordering the bug depends on:
+   * the branch options must land while the user is already looking at slot B.
+   */
+  function makeSlotABranchStatusHandler(requestId: number) {
+    let readyToComplete = false;
+    setRpcHandler("get_background_game_ai_status", () => {
+      const base = {
+        ...idleBackgroundStatusFixture(),
+        question: "where am i in ravenholm",
+        request_id: requestId,
+        chat_slot_id: "slot-a",
+      };
+      if (!readyToComplete) return { ...base, status: "pending" };
+      return {
+        ...base,
+        status: "completed",
+        success: true,
+        response: "You're past the church.",
+        strategy_guide_branches: {
+          question: "Where are you at in Ravenholm?",
+          options: [
+            { id: "a", label: "Just starting in the town area" },
+            { id: "b", label: "Dealing with a tough encounter or trap" },
+          ],
+        },
+      };
+    });
+    return () => {
+      readyToComplete = true;
+    };
+  }
+
+  it("does not show slot A's branch block while slot B is on screen", async () => {
+    vi.useFakeTimers();
+    const activeSlotIdRef = { current: "slot-a" as string | null };
+    setRpcHandler("start_background_game_ai", () => ({
+      accepted: true,
+      status: "pending",
+      request_id: 501,
+    }));
+    const completeSlotAAsk = makeSlotABranchStatusHandler(501);
+
+    const { result, rerender } = renderHook(() =>
+      useBonsaiAskOrchestration(makeArgs({ askMode: "strategy", activeSlotIdRef })),
+    );
+
+    let pending: Promise<void> | undefined;
+    act(() => {
+      pending = result.current.onAskOllama("where am i in ravenholm");
+    });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(100);
+    });
+    await act(async () => {
+      await pending;
+    });
+
+    // The user leaves slot A for slot B before A's poll delivers the branch options.
+    activeSlotIdRef.current = "slot-b";
+    completeSlotAAsk();
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(5000);
+    });
+
+    expect(result.current.strategyGuideBranches).toBeNull();
+
+    // Switching back to slot A brings its own branch block back — it was never lost, just
+    // not slot B's to show.
+    activeSlotIdRef.current = "slot-a";
+    rerender();
+
+    expect(result.current.strategyGuideBranches?.question).toBe("Where are you at in Ravenholm?");
+
+    vi.useRealTimers();
+  });
+
+  it("still shows the branch block when it belongs to the slot on screen", async () => {
+    vi.useFakeTimers();
+    const activeSlotIdRef = { current: "slot-a" as string | null };
+    setRpcHandler("start_background_game_ai", () => ({
+      accepted: true,
+      status: "pending",
+      request_id: 502,
+    }));
+    const completeSlotAAsk = makeSlotABranchStatusHandler(502);
+
+    const { result } = renderHook(() =>
+      useBonsaiAskOrchestration(makeArgs({ askMode: "strategy", activeSlotIdRef })),
+    );
+
+    let pending: Promise<void> | undefined;
+    act(() => {
+      pending = result.current.onAskOllama("where am i in ravenholm");
+    });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(100);
+    });
+    await act(async () => {
+      await pending;
+    });
+    completeSlotAAsk();
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(5000);
+    });
+
+    expect(result.current.strategyGuideBranches?.question).toBe("Where are you at in Ravenholm?");
+
+    vi.useRealTimers();
+  });
+});
