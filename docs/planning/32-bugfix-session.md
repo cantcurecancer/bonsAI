@@ -363,3 +363,8 @@ Written as things land.
   lands on the tab bar, then the chat slot row, and Right does not park on a zero-size button. With the modal return and the chord
   reopen already passing, every remount path the rig can drive is clean, so bug 4 moves to Done with one honest gap recorded: a real
   suspend and resume cannot be driven, because waking the Deck needs its power button and the bridge is only a gamepad.
+- **04:15 to 05:05, the fifth deploy and Deck block 11:** lane A's third fix (`3d0b928`, the jump's own nav-node transfer) passed
+  the six gates — and tightened the focus linter's baseline from 77 to 74, because the rewrite removed three page searches — and
+  landed as `d9d952d`. On build 5 the whole permissions row **passes**: the button is a stop, A lands the ring on *Steam ban lookup*,
+  A turns the capability on (the saved settings agree), and *Back to Main* returns to the reply with the ring on the button. Bug 1 is
+  Done, which closes the last of the thirteen. Turning the toggle on was also the restore the maintainer wanted.

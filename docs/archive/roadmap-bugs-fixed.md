@@ -658,3 +658,17 @@ measurements and the QA rows survive. The roadmap keeps a one-line entry in **Do
   Theseus and Asterius, Volvagia unfenced with the branch menu; the Red Dead ending question fenced. Deck-local model, character
   voice on. [Detail](roadmap-details.md#the-spoiler-fence-on-a-no-story-game-lands-mid-reply).
   - Confirmed on the Deck as **KB-ANSWER-02**, 5 of 5, and recorded in the Done list; this copy was still sitting in the verify list after a docs merge, so it is filed here rather than dropped.
+
+### The Open Permissions button under a blocked reply was not a D-pad stop (verified on the Deck 2026-09-05)
+
+- ★★ `[focus]` `[perms]` **The Open Permissions button under a blocked reply is not a D-pad stop** — **VERIFY, four of
+  five steps passed on the Deck 2026-09-05.** The button is a stop both ways now, A opens the Permissions tab, and *Back to
+  Main* comes back to the reply with the ring on the button. The one step left: the ring lands on *Back to Main* instead of
+  the matching toggle, because the jump still focuses its row with a plain cross-container focus. Back with its lane. Row
+  **PERM-JUMP-01**.
+  **Redone at the desk 2026-09-05:** each Permissions row registers its own nav node (new ids `permissions-row-game-context-read`,
+  `-filesystem-write`, `-steam-web-api`, `-microphone-access`), the jump hands the ring over with Steam's own transfer instead of a
+  DOM focus, and the retry loop now retries on an honest failure instead of stopping at the first attempt. Deck check owed on that
+  one step.
+  - Three fixes, each found by a device measurement the one before it passed at the desk: the button had to become a real stop; the hop into its row had to use Steam's own transfer instead of a DOM focus and a stamped tab index; and the jump itself had the same fault one file further on, in `permissionJumpRegistry.ts`, which also reported success unconditionally so its retry could never fire.
+  - **Deck 2026-09-05, fifth build:** Up from the ask button reaches the button in six presses; A opens the Permissions tab with the ring on *Steam ban lookup*; A turns the capability on (the saved settings agree); *Back to Main* returns with the ring on the button (`runs/PERM-JUMP-01-build5-toggle-and-back.json`, `runs/PERM-JUMP-01-build5-toggle-on-and-back-to-main.json`).
