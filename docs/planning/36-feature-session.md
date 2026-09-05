@@ -311,8 +311,41 @@ none: all thirty-one existing cases cover a bad *value* for a setting that still
 code no longer knows about. Added as a thirty-second case. Both languages already did the right thing,
 so nothing changed except that it is now guarded.
 
-**Waiting on:** the other session to land its bug fixes, watched automatically. Wave two starts when
-its branch has been still for fifteen minutes.
+**The other session landed, and it changed this plan in two ways.** It put nine fixes down, and one of
+them is **the glow when the chip row runs out of chips** — which was on the shortlist here. It is
+theirs, it is built, and it comes out of this plan. The rest of what it landed is now merged in, so the
+files this session was avoiding are free.
+
+**The merge needed resolving by hand in three places, and this is the part worth keeping.** Neither
+side could be taken whole. They had moved four fixed bugs into the waiting list; a third session had
+reorganised every knowledge base entry into a section of its own. Taking either side would have
+silently deleted the other's work. Every entry was checked to still exist somewhere before anything
+was dropped — all eight did. The last one needed a second look: it had been **renamed to plainer
+wording**, not deleted, which is exactly how a careless resolution loses something.
+
+### Correction: wave two is one helper, not three
+
+The plan said three helpers. That was wrong, and the reason is the same one the plan itself wrote down
+two sections earlier: **every setting in this plugin funnels through the same handful of files.** Adding
+one is about seventeen edit points, six of them in a single file. Three helpers each adding a setting
+would spend their time colliding rather than building.
+
+So the three remaining features go through **one helper, in order**, each its own commit:
+
+| Order | Feature | Who |
+|---|---|---|
+| 1 | A first quick question that does not wait for the model to load | helper W |
+| 2 | One preset chip instead of two | helper W |
+| 3 | Streaming becomes the default, switch deleted | **me** — the risky one, and the map for it is already written |
+| 4 | Separate slow-warning and give-up times per Ask mode | **at risk** — see below |
+
+**The per-mode times feature is the one to drop if the session runs short**, and it should be said
+plainly now rather than discovered later. It is the largest of the six: the two existing values already
+run through sixteen files each, and going per mode triples them. It is also the least of the six for an
+ordinary person — it changes when a warning appears, not what the plugin can do. Everything else lands
+first.
+
+**Waiting on:** helper W's two commits.
 
 ### A mistake worth writing down: three sessions, one working copy
 
