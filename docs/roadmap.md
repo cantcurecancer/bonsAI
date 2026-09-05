@@ -267,11 +267,10 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
   Deck 2026-09-04.** From the chat row, Down lands on the turn header and then on the first stop inside the answer, never on the
   bare bubble. Owed: the Up half on a reply without a branch picker (with one, Up from the picker skips the answer, a separate
   bug filed 2026-09-04). Row **CHAT-REPLY-ENTRY-01**.
-- ★★ `[focus]` `[perms]` **The Open Permissions button under a blocked reply is not a D-pad stop** — **VERIFY**, fixed at the desk
-  2026-09-04, Deck check owed. The button (and the troubleshooting Ask hint's matching button) is a genuine D-pad stop now —
-  `focusable`, same shape as the chat-slot row's 2026-08-30 fix — and joins the Down/Up chain: Down from the reply row reaches
-  whichever permission-hint row is mounted, Down from it reaches the session strip, and Up returns either way. Owed:
-  **PERM-JUMP-01**'s first step and its jump/*Back to …* halves; unblocks **SMOKE-C**.
+- ★★ `[focus]` `[perms]` **The Open Permissions button under a blocked reply is not a D-pad stop** — **VERIFY, first fix failed on
+  the Deck 2026-09-04.** The button is built as a stop now, but the hops into its row used a plain focus across containers: Up from
+  the session strip lost the ring, and the helper stamped the row with a tab index that removes it from Steam's graph. Back with its
+  lane for a registered-nav-node version. Rows **PERM-JUMP-01**, **SMOKE-C**.
 - ★★ `[reply]` **Spoiler fences wrapped harmless tactics on games with no story, and on bosses you named** — **VERIFIED on the
   Deck 2026-09-03.** Fixed 2026-09-02: on those turns the prompt now says plainly not to fence. Measured on the PC with the answer
   eval: 28 of 96 misfires before, 3 after, ending questions still fenced. Deck run **KB-ANSWER-02**, 5 of 5: Tank, antlions,
