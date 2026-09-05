@@ -649,3 +649,12 @@ measurements and the QA rows survive. The roadmap keeps a one-line entry in **Do
   - **Deck 2026-09-04:** closing the Clear cache confirmation returns the ring to the *Clear cache* button; the chord reopen lands on a visible control, twice. The first attempt failed because the trap's node check was a cross-realm `instanceof Element`, false for every node in the popup document; the fix duck-types instead.
   - **Deck 2026-09-05:** after a full Decky loader restart the first press lands on the tab bar and the second on the chat slot row, and Right does not park on a zero-size tab button (`runs/TAB-BAR-11-build4-after-loader-restart.json`).
   - **Not measured:** a real suspend and resume, which is how it was first seen. The bridge is a gamepad and waking a sleeping Deck needs the power button, so the rig cannot drive that path.
+
+### Spoiler fences wrapped harmless tactics on games with no story, and on bosses you named (verified on the Deck 2026-09-02)
+
+- ★★ `[reply]` **Spoiler fences wrapped harmless tactics on games with no story, and on bosses you named** — **VERIFIED on the
+  Deck 2026-09-03.** Fixed 2026-09-02: on those turns the prompt now says plainly not to fence. Measured on the PC with the answer
+  eval: 28 of 96 misfires before, 3 after, ending questions still fenced. Deck run **KB-ANSWER-02**, 5 of 5: Tank, antlions,
+  Theseus and Asterius, Volvagia unfenced with the branch menu; the Red Dead ending question fenced. Deck-local model, character
+  voice on. [Detail](roadmap-details.md#the-spoiler-fence-on-a-no-story-game-lands-mid-reply).
+  - Confirmed on the Deck as **KB-ANSWER-02**, 5 of 5, and recorded in the Done list; this copy was still sitting in the verify list after a docs merge, so it is filed here rather than dropped.
