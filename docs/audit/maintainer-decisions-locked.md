@@ -15,7 +15,7 @@ choices are, and what happens either way. **Locked calls (2026-08-02 for D1–D6
 [Maintainer decisions locked](#maintainer-decisions-locked--2026-08-02); implement
 from that section when it disagrees with an option above.
 
-**One deferred, two awaiting a yes (D68, D69).** D53 and D54 were answered 2026-09-05 as D65 and D66; D67 closed the structured-cards call. **D45–D52 were locked 2026-09-01** from the knowledge-base answer-quality plan ([planning/30-kb-answer-quality-plan.md](../planning/30-kb-answer-quality-plan.md)); **D53 and D54 are open** pending an explanation the maintainer asked for. The eval "D40" of 2026-08-31 is **D40b** from 2026-09-01 (resolved by D51). **D38** — the fusion weights, raised 2026-08-29 by D37's
+**One deferred (D38, now being acted on through D68).** D53 and D54 were answered 2026-09-05 as D65 and D66; D67 closed the structured-cards call; D68 and D69 were locked the same day (D69 waits on a library read for its title list). **D45–D52 were locked 2026-09-01** from the knowledge-base answer-quality plan ([planning/30-kb-answer-quality-plan.md](../planning/30-kb-answer-quality-plan.md)); **D53 and D54 are open** pending an explanation the maintainer asked for. The eval "D40" of 2026-08-31 is **D40b** from 2026-09-01 (resolved by D51). **D38** — the fusion weights, raised 2026-08-29 by D37's
 first measurement — is **deferred at the maintainer's request** pending more data, more games and
 more questions; it is not waiting on a decision today and nothing about the weights changes until it
 is. **D37**, the blind holdout rows, was endorsed and locked
@@ -3492,7 +3492,7 @@ labelled card shape stays in the corpus (it costs nothing and the model never in
 prose cards), and the card style pass in the roadmap stays gated on the answer test showing it
 helps.
 
-### D68 — OPEN (raised 2026-09-05, recommendation made) — The blend weights: run the sweep now, and decide from it
+### D68 — LOCKED 2026-09-05 (raised the same day) — The blend weights: run the sweep now, and decide from it
 
 D38 was deferred on 2026-08-29 for "more data, more games, more questions". The maintainer asked
 for a recommendation on 2026-09-05.
@@ -3514,9 +3514,10 @@ titles (D69). Never tune against the blind set itself.
 blind rows in the tuning set), the sweep is cheap, and it settles whether the gap is real without
 touching what ships. New titles then add data either way.
 
-**Needs:** a yes from the maintainer.
+**Locked 2026-09-05: the maintainer said yes.** Build the sweep, run it on the tuning questions only, confirm once on
+the blind set if it agrees, then change the weights. Recorded on the roadmap under the eval-tooling entry.
 
-### D69 — OPEN (raised 2026-09-05, recommendation made) — A first tranche of new titles before the catalog
+### D69 — LOCKED 2026-09-05 (title list to come) — A first tranche of new titles before the catalog
 
 Phase 5's lock (2026-07-30) says no new titles until the catalog phase. The weights call above
 wants more games, and coverage is the biggest limit on answer quality for a real person: thirteen
@@ -3532,7 +3533,12 @@ the "no new titles" rule for the tranche.
 corpus release. **Buys:** notes for five to ten more games, more variety in the eval, and the data
 D68 may still want.
 
-**Needs:** a yes, and the title list.
+**Locked 2026-09-05: yes, and the titles come from the maintainer's own Steam library.** Their instruction: read the
+library from the Deck (walk the screen with the plugin-studio rig and the controller bridge), pull examples from it, and
+find which of those games have the best wikis we can use. **Not yet** — two other chats are steering the Deck first; the
+maintainer will say when it frees up. The method, the wiki checklist and the games already known to be on the Deck are in
+[planning/40-new-titles-from-the-library.md](../planning/40-new-titles-from-the-library.md). The title list itself is
+recorded there when the read is done, and the maintainer picks from it.
 
 **Answers, 2026-09-05 (the maintainer answered in chat), all seven locked:**
 

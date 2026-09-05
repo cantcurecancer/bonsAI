@@ -357,22 +357,18 @@ person is still coverage: thirteen games, and every other game gets the model's 
 
 1. The bug-fixing session running today owns the knowledge-base code files. Let it land the two bugs it holds before
    touching them.
-2. Say yes or no to the two recommendations in the next list; both have a recommendation written down.
+2. When you say the Deck is free: read your Steam library and shortlist titles with usable wikis (the new-titles entry
+   under Next). Until then the sweep, the prompt diet and the eval tooling need no Deck.
 3. Then work **Next** from the top: the prompt diet, the "not in my notes" line, symptom-only troubleshooting, the eval
    tooling and the weight sweep, spoiler tiers, follow-ups remembering, and one corpus release that carries everything
    needing a rebuild.
 
 ### Calls waiting on you
 
-**Decided 2026-09-05:** "starting out" cards get their own kind (D65); answer-first is tested both ways before a decision
-(D66, see the test entry under Next); structured cards stay prose (D67). Two remain, each with a recommendation:
-
-- **The blend weights.** On realistic questions the meaning search alone puts the right card first 63 times in 100; what
-  ships manages 54. Recommendation: build the weight sweep, run it on the tuning questions only, and change the weights if
-  it agrees; do not wait for new games first. Needs your yes. (D68)
-- **More games before the catalog?** Recommendation: yes, a one-off tranche of five to ten titles you choose — games you
-  play, with a usable wiki, popular on the Deck — cards in one session and blind questions in another. Needs your yes and
-  the title list. (D69)
+None open. **Decided 2026-09-05:** "starting out" cards get their own kind (D65); answer-first is tested both ways before
+a decision (D66, the test entry under Next); structured cards stay prose (D67); the blend-weight sweep runs now and the
+weights change if it agrees (D68); a first tranche of new titles comes from your own Steam library (D69, the read waits
+for the Deck to be free). Anything new goes here, one line each, with what it decides.
 
 ### Bugs
 
@@ -388,10 +384,10 @@ person is still coverage: thirteen games, and every other game gets the model's 
   same game took about 1.09 s each to embed, against the 0.79–0.90 s band recorded when the feature shipped. Same corpus,
   same model, same device; every game question waits about a fifth of a second longer than it should. Cause unmeasured;
   the bug session has it, time-boxed to one look. Evidence `runs/round34-drg-q*.json`.
-- ★★★★ `[KB]` **What ships loses to its own meaning half on questions nobody tuned against** — **OPEN, deferred.** On the
-  blind questions the meaning search alone puts the right card first 63% of the time; the shipping blend 54%. On the
-  tuning questions they tie. No weight changes until you decide, and never by tuning against the blind set. Groundwork
-  done: 51 blind rows added to the tuning set. [Detail](roadmap-details.md#the-shipping-retrieval-arm-loses-to-the-vector-half-alone-on-rows-nobody-tuned-against).
+- ★★★★ `[KB]` **What ships loses to its own meaning half on questions nobody tuned against** — **OPEN, decided 2026-09-05.**
+  On the blind questions the meaning search alone puts the right card first 63% of the time; the shipping blend 54%. Agreed:
+  build the weight sweep, run it on the tuning questions only, confirm once on the blind set if it agrees, then change the
+  weights. Never tune against the blind set. Groundwork done: 51 blind rows in the tuning set. (D68) [Detail](roadmap-details.md#the-shipping-retrieval-arm-loses-to-the-vector-half-alone-on-rows-nobody-tuned-against).
 
 ### Deck check owed
 
@@ -430,8 +426,9 @@ person is still coverage: thirteen games, and every other game gets the model's 
   built by code says the answer is general knowledge, so a person can tell notes from memory. Only on Strategy and Expert
   asks for a covered game; never when the library is off or the game is uncovered. Wording to settle with you. (D48)
 - ★★ `[KB]` **Eval tooling: the weight sweep, per-question results for what ships, a second right answer** — **OPEN,
-  agreed 2026-09-01.** Nothing a user sees. It is what unblocks the weights call, and it stops every card batch reading as
-  a regression when two cards are both fair answers. No row uses the second-answer option yet. One to two days. (D51)
+  agreed 2026-09-01, sweep go-ahead 2026-09-05.** Nothing a user sees. The sweep runs on the tuning questions and decides
+  the blend-weights bug above; the rest stops every card batch reading as a regression when two cards are both fair
+  answers. No row uses the second-answer option yet. One to two days. (D51, D68)
 - ★★ `[KB]` **The eval cannot yet prove the meaning search rescues many questions** — **OPEN, one measurement owed.** The
   slice of questions the word search cannot answer at all was 3 rows when last counted, before 36 more blind rows landed.
   Re-count it on the next search run before calling this closed. [Detail](roadmap-details.md#eval-fixture-cannot-see-a-recall-failure).
@@ -477,9 +474,11 @@ person is still coverage: thirteen games, and every other game gets the model's 
   thirteen titles still have no enemy or item cards, so "how do I deal with X" works for two games. Next: 40–60 entity cards
   in tranches with a quality read from you after the first; then chip ranking by meaning. Card authors cannot write blind
   test questions, so content and eval rows go in separate sessions. [Plan](planning/28-phase5-corpus-depth.md).
-- ★★★★ `[KB]` **A first tranche of new titles** — **OPEN, needs a call, added 2026-09-05.** Five to ten games you choose,
-  as the bridge between depth on thirteen and the catalog. It serves users and it is the data the weights call is waiting
-  for. Blocked by Phase 5's "no new titles" rule until you reopen it.
+- ★★★★ `[KB]` **A first tranche of new titles from your Steam library** — **OPEN, decided 2026-09-05, needs the Deck.**
+  Five to ten games you pick from your own library, as the bridge between depth on thirteen and the catalog. Step one, when
+  you say the Deck is free: read the library (a file read over SSH is exact; the screen walk with the rig confirms it),
+  then check each candidate's wiki for licence, size and an archive dump. Step two: you pick. Cards in one session, blind
+  questions in another. [Plan](planning/40-new-titles-from-the-library.md). (D69)
 - ★★★★ `[KB]` **KB online / versus strategy content** — **OPEN, discovery locked 2026-08-09.** Multiplayer questions
   (roles, callouts, co-op) get cards; today they get nothing specific. New card kinds and a spoiler table update, Left 4
   Dead 2 first, then Counter-Strike 2, from archive dumps only. Two to three weeks. [Plan](planning/17-kb-online-versus-strategy-content.md).
