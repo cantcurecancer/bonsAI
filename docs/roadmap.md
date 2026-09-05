@@ -47,6 +47,12 @@ hook gives a gentle heads-up when a session starts work outside this.
 ## Bugs
 
 
+- ★ `[focus]` **Left on the collapsed-history row throws the highlight out of the plugin** — **OPEN, found 2026-09-05,
+  confirmed twice.** With the highlight on the *N earlier* row above a chat, Left hands it to Steam's Quick Access rail and
+  the person is out of bonsAI entirely. Right brings it back, but nothing says so. Same shape as the Ollama sliders fixed on
+  2026-09-04: the row does not claim the press, so Steam's own idea of "past the edge" fires. Left should either walk the
+  history or hold still. Evidence `runs/round35-BUG-left-from-earlier-pill-leaves-plugin.json`,
+  `runs/round35-BUG-left-from-earlier-pill-retry.json`.
 - ★ `[focus]` **Pressing Ask drops the highlight** — **OPEN, found 2026-09-05, widened the same day.** Filed first as an
   empty-box problem; it is not. **Every** press of the Ask button leaves nothing highlighted — with a real question and with an
   empty box alike, measured four times. The page's own focus falls back to the document body, so the next press has to place the

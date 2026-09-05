@@ -51,6 +51,14 @@ export type BuildReplyActionsElementArgs = {
   rating: "up" | "down" | null;
   onRate: (rating: "up" | "down") => void;
   showFeedback: boolean;
+  /**
+   * The reply is not a finished answer — today that means Stop was pressed and only part of it was
+   * kept. Helpful / Not really are shown but greyed out; Retry stays live, because it is the button
+   * a person actually wants after stopping something. Rating a half-written answer says nothing
+   * about the reply and the rating is saved, so it would quietly spoil the feedback that gets read
+   * later. Maintainer's call, 2026-09-05.
+   */
+  ratingUnavailable?: boolean;
   onRetry?: () => void;
   transparencyOpen?: boolean;
   onToggleTransparency?: () => void;
@@ -116,6 +124,7 @@ export function buildReplyActionsElement(
     rating,
     onRate,
     showFeedback,
+    ratingUnavailable = false,
     onRetry,
     transparencyOpen,
     onToggleTransparency,
@@ -133,7 +142,7 @@ export function buildReplyActionsElement(
   const showChipRows = Boolean(onChip) && rating === "down";
   const showUtilityRow =
     Boolean(onRetry) || Boolean(onToggleTransparency) || Boolean(getAnswerCopyText);
-  const feedbackDisabled = askInFlight;
+  const feedbackDisabled = askInFlight || ratingUnavailable;
   const chipsInactive = chipsDisabled || chipUsed || askInFlight;
   const thumbsLocked = rating !== null;
 

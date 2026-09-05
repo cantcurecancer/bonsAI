@@ -223,3 +223,49 @@ restarting the loader does — because restarting the loader is the one thing th
 
 It is a hypothesis until it is proved. But it is a specific one with a small fix behind it, and it is
 much more than the entry had this morning.
+
+### Block 4 — the checking pass on the Deck, 2026-09-05
+
+Deployed once; the bundle and both backend files hash the same here and on the device, so every
+reading below is about the code that landed today.
+
+**The answer paragraph hidden behind the bottom bar — PASS.** Walked a reply down and back up: every
+stop fully visible, both directions. Before the fix the same walk had two stops a person could not
+see, at a third and two thirds visible. Evidence `runs/round35-CHECK-dock-clearance-after-fix.json`.
+
+**The question you asked — PASS.** A 57-letter question now shows in full, wrapped over two lines,
+with no dots at the end. The room set aside is five lines' worth and the fade sits on the last line.
+Read off the live screen.
+
+**The line under the question box — PASS.** Started a game, opened the panel fresh, pressed nothing:
+the line read *active game* and named it. Before, it said no game was running until you asked
+something.
+
+**The glow at the end of the chip row — PASS on the mechanical half.** Pressed Left twice at the first
+chip and Right twice at the last: the glow fired on exactly those four presses and on none of the
+four presses that moved. It lasts a third of a second, which is shorter than a round trip to the
+device, so a plain read misses it — it took a recorder to catch. Whether it *looks* right is the
+maintainer's call and is on their checklist.
+
+**Speed mode — PASS, and the numbers are stark.** Asked the same question of the deployed backend in
+all three modes with the game running:
+
+| Mode | Search used | Time on the slow search |
+|---|---|---|
+| Speed | quick keyword lookup only | **0 ms** |
+| Strategy | keyword and meaning | 1473 ms |
+| Expert | keyword and meaning | 53 ms |
+
+Speed does the cheap lookup and nothing else, and the other two are untouched.
+
+**A finding for the open "search got slower" bug.** Those two hybrid numbers are the same search on
+the same question moments apart: 1473 ms the first time, 53 ms the second. So the cost is dominated
+by whether the embedding model is already warm, not by the search itself. Last night's 1.09-second
+readings are very likely warm-up being counted as search time. Anyone re-measuring that bug should
+ask a throwaway question first and time the second one.
+
+**Two things the checks turned up on the way.**
+- Show details and Copy are not reachable by walking down; they sit to the right of Retry. Not new
+  and not a failure by any row, but it makes scripted checking slower and is worth knowing.
+- One press onto a chip mid-slide read a third visible. It did not repeat in the sweeps either side,
+  so it is recorded here rather than filed.
