@@ -300,7 +300,6 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
 - ★★ `[chat]` **The game a chat belongs to, above its title** — **VERIFY.** Shipped 2026-08-30 in quiet text above the slot title;
   only chats created after that date carry the name. Row **CHAT-SLOTS-V3-14c**. It costs a line of height, which cuts against the
   vertical-space goal; decide whether it shows always or only when the row has focus.
-- ★★ `[KB]` **Asked-entity extraction reads how players actually type** — **VERIFY.** Fixed 2026-08-09. Row **STRAT-ENTITY-01**.
 - ★★ `[QA]` **Deferred manual QA** — **VERIFY.** Tier 0 smokes (SMOKE-A, C, F) then Tier 1 (SMOKE-E, H), and a broader prompt-testing
   pass. SMOKE-B was retired 2026-09-03 (D57 #6). Round in progress: [plan 31](planning/31-deck-verification-round.md).
 - ★★ `[reply]` **Thinking line fixes from 2026-08-07/08** — **VERIFY.** Emoji upright, lazy status tag survives, no bare-emoji phase
@@ -346,6 +345,10 @@ on 2026-07-30 (`apply_tdp` no longer exists). Preserved in the archive.
 since April (`25742f2`), and a deliberate failing test exits 1 today. If it recurs, record the exact command and shell.
 
 **September 2026**
+- ★★ `[KB]` **Asking about a boss by name works the way people actually type** — *king dodongo fight* now names the boss
+  just as *how do I beat king dodongo* does, so its tactics come through unfenced; a vague question still names nothing and stays
+  fenced. All seven sentences confirmed on the Deck 2026-09-05.
+  [Detail](archive/roadmap-completed.md#moved-from-the-roadmap-2026-09-05).
 - ★★ `[KB]` **Expert mode gets as many cards as Strategy** — Expert was quietly starved of the knowledge base. Five cards
   against Strategy's three on the same question (2026-09-04), and the last owed check — an uncovered game attaching nothing —
   passed 2026-09-05. [Detail](archive/roadmap-completed.md#moved-from-the-roadmap-2026-09-05).

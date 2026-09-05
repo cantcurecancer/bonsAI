@@ -331,3 +331,42 @@ Three owed checks pass at once:
 
 **Two roadmap entries close:** *Expert mode gets as many cards as Strategy* and *Show details says what
 the knowledge base had for your game*. Both moved to Done with their full text archived.
+
+### Block 1d — the entity sentences, entry closed
+
+**Ocarina of Time had to be launched by hand.** It runs as the Ship of Harkinian shortcut, and the
+launcher matches a shelf tile by the app id inside its artwork — a non-Steam shortcut has none, so it
+walked straight past a tile whose name it had just printed. Driven by hand instead, with a read before
+each press confirming the ring was on a control labelled exactly *Play*. Worth fixing in the tool:
+**match a non-Steam shortcut by name when the tile carries no app id.**
+
+The plugin resolved the shortcut to the corpus game by alias (`alias:ship of harkinian`,
+`KB: 16 sections`), which is a small win in itself.
+
+**STRAT-ENTITY-01 — PASS, both halves.** The Show details ladder never prints the named entity, so the
+naming half cannot be read off the screen; it was read by calling the extractor on the build installed on
+the device. All seven sentences are right:
+
+| Sentence | Names | Wanted |
+|---|---|---|
+| `king dodongo fight` | `king dodongo` | the boss |
+| `how do I beat king dodongo` | `king dodongo` | the same as name-first |
+| `raphael fight strategy` | `raphael` | the boss |
+| `fire boss that flies out of holes` | nothing | nothing — it used to invent *fire* |
+| `how to raise a skill fast` | nothing | nothing — it used to invent *fast* |
+| `best build` | nothing | nothing |
+| `im stuck` | nothing | nothing |
+
+The wiring half was then proved on screen, in both directions, with the game running:
+**`king dodongo fight` came back unfenced** (zero spoiler blocks, tactics in plain text) and
+**`fire boss that flies out of holes` came back fenced** (*Spoiler — tap to show*). That contrast is the
+row's real test, and it means the extractor's answer reaches the fencing decision.
+
+**One number worth keeping.** Ocarina's embed took **784 ms** against Deep Rock's 1079–1094 ms earlier
+tonight, on 16 sections versus 13. So the slowdown filed in block 1a is not a flat global regression; it
+is something about that game's retrieval. The bug entry stands — the row's band was measured on Deep Rock
+and Deep Rock is now a fifth over it — but a fix session should not assume every game is affected.
+
+**Third sighting of the stale footnote.** With Sifu closed and Ship of Harkinian running, the line under
+the Ask bar still read Sifu's number until an Ask ran, then corrected itself. It also showed Deep Rock's
+number while Sifu ran. Same cause as the filed bug: the line only updates from an Ask's status poll.

@@ -690,3 +690,38 @@ The last row was the one that kept slipping. Black Mesa, the title plan 31 named
 Games shelf so the launcher refuses it; Sifu was used instead, checked against the eleven games the
 corpus actually covers. The reading is distinct from *no game running*, which was the point of the
 second half of the check.
+
+### Asked-entity extraction reads how players actually type
+
+★★ `[KB]` Fixed 2026-08-09. Asking about a boss **by name** is meant to keep that boss's tactics out of
+spoiler fences. The detector only understood verb-first sentences, so controller phrasing never fired it.
+
+**Verified on the Deck 2026-09-05, both halves.**
+
+*The naming half*, run against the extractor in the build installed on the device:
+
+| Sentence | Names | Wanted |
+|---|---|---|
+| `king dodongo fight` | `king dodongo` | the boss |
+| `how do I beat king dodongo` | `king dodongo` | the same as name-first |
+| `raphael fight strategy` | `raphael` | the boss |
+| `fire boss that flies out of holes` | nothing | nothing — it used to invent *fire* |
+| `how to raise a skill fast` | nothing | nothing — it used to invent *fast* |
+| `best build` | nothing | nothing |
+| `im stuck` | nothing | nothing |
+
+*The wiring half*, on screen with Ocarina of Time running as the Ship of Harkinian shortcut, which the
+plugin resolved to the corpus game by alias (`alias:ship of harkinian`, `KB: 16 sections`):
+
+- **`king dodongo fight` → unfenced.** Zero spoiler blocks in the reply; the boss's tactics are in plain
+  text, which is the whole point of the fix.
+- **`fire boss that flies out of holes` → fenced.** One spoiler block, *Spoiler — tap to show / Hidden
+  until you reveal (Strategy Guide)*.
+
+That contrast is the row's real test: the extractor's answer reaches the fencing decision, in both
+directions, on a real device with a real game running. The row existed because this wiring has no unit
+test.
+
+**Method note for a re-run:** the Show details ladder never prints the named entity, so this row cannot be
+read off the screen — the same limitation the card-count row hit. The naming half was read by calling the
+extractor on the deployed build over SSH; the screen shows only its consequence, the fence.
