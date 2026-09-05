@@ -162,10 +162,10 @@ replace it with a specific issue when one exists.
   burst finding under Bugs. Halves every "streaming on and off" QA row. A two-language removal: Python is authoritative (D13), both
   settings contracts lose the key, and an old `settings.json` must not read as a reset. [Detail](roadmap-details.md#make-token-streaming-the-default-and-drop-the-setting).
 - ★★ `[reply]` **The answer's first lines in the reply-ready toast** — **OPEN, planned 2026-09-05, calls locked (D63).** When an
-  answer finishes while the menu is closed, the toast says only *Reply ready*. It would carry your question and the first lines
-  of the answer, in every mode, so a short answer is read without leaving the game; tap still opens the panel. Any hidden block
-  is skipped, and if nothing safe is left the toast stays as it is. Queued for a later session; the first step then is a Deck
-  measurement, since nobody has recorded the toast showing over a running game. [Plan and mockup](planning/38-toast-answer-lines.md).
+  answer finishes while the menu is closed, the toast says only *Reply ready*. It would read *bonsAI* over the first lines of
+  the answer, in every mode, for eight seconds, so a short answer is read without leaving the game; tap still opens the panel.
+  Hidden blocks are skipped; if nothing safe is left the toast stays as it is. **Measure first, on two screens with screenshots:**
+  the Deck's own screen and a 24-inch 1080p monitor; the popup is expected to be small. [Plan and mockup](planning/38-toast-answer-lines.md).
 - ★★ `[reply]` **Thinking tips replace the status blurb (Phase 2)** — **OPEN.** Hand-curated bonsAI tips, feature tips for generic
   asks and KB-strategy tips for game asks, chosen by current game and mode. The generic filler copy goes away entirely. Data file
   shaped like `data/kb/strategy_seed.json`. Superseded by **Reasoning display** once real thinking streams.

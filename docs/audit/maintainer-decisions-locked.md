@@ -3339,8 +3339,12 @@ direction and every doubt resolves to it.
 2. **The title: pick from mockups drawn on the real shape.** Published the same day:
    [Reply Toast Options](https://claude.ai/code/artifact/0590a00d-d48b-42ce-85be-0376c1bddf53). Five options in the two-slot
    shape Decky really draws, with a table of what is known from the code against what is assumed until
-   measured. **The pick itself is still owed** and is the only open item on this entry.
-3. **Time on screen: a slider on that page**, two to twelve seconds, to play with before choosing.
+   measured. **Picked later the same day: *bonsAI*, "for now".**
+3. **Time on screen: eight seconds**, picked from the slider on that page.
+
+   **Added the same day:** the maintainer expects Steam's popup to give less room than the mockup assumes.
+   The measurement in the plan is therefore required before any build and runs on two screens with
+   screenshots: the Deck's own screen, and a 24-inch 1080p monitor with the Deck docked.
 4. **No setting for now.** Always on.
 5. **No story-game guard for now.**
 6. **Not queued for the Deck.** The entry stays in the roadmap, ready to implement later; the measurement runs
