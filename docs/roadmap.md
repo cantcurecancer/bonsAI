@@ -234,11 +234,9 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
   ring left for a hidden tab button behind the modal, and doing that synchronously also stole the press and closed
   the picker. Redone with `navRef`/`TakeFocus`, deferred past the press. **Still not measured on the Deck — row
   PICKER-REORDER-02 decides.**
-- ★ `[focus]` **The active chip in Show details is hard to spot** — **VERIFY.** Fixed at the desk 2026-09-04: the active chip
-  now carries a visible cyan border-glow and brighter fill, and the "Chip N of M" counter uses the section-label treatment
-  (cyan, bold, letter-spaced) instead of small grey text. Style only — the focus graph is unchanged, and Steam's ring still
-  lands on the ladder as a whole, never on a chip. Owed: a DOM read of the active class plus a screenshot for the
-  maintainer's eyes. Row **CONTEXT-LADDER-01**.
+- ★ `[focus]` **The active chip in Show details is hard to spot** — **VERIFY, measured on the Deck 2026-09-04, your glance owed.** The
+  active chip now carries a cyan glow and a brighter fill, and the *Chip 1 of 6* counter is bold cyan; on the device exactly one chip
+  carried the highlight. Picture for your eyes: `screenshots/DeckCapture_20260904_220827_game.png`. Row **CONTEXT-LADDER-01**.
 - ★ `[focus]` **The focus ring is clipped on grid layouts** — **VERIFY.** Fixed at the desk 2026-09-04: each character-picker
   grid column now carries 6px of inner padding so a focused tile's ring has room to render before the column's own
   `overflow: hidden` clips it — most visible before the fix on an edge tile. Style only. Owed: a screenshot with the ring
