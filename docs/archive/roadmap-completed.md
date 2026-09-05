@@ -660,3 +660,33 @@ Both owed Deck checks had in fact passed before this entry was moved; nobody had
   took the ring, which re-confirmed the D-pad row.
 
 Found already-passed during plan 34's reconciliation pass, 2026-09-05, and moved the same day.
+
+### Expert mode gets the same cards as Strategy
+
+★★ `[KB]` Fixed 2026-08-18. The route flag tested for Strategy by name, so Expert got the biggest card
+budget and the strictest relevance floor at once — the mode a stuck player picks for depth hid the most.
+
+- **By probe, 2026-09-03:** cards attached in Speed / Strategy / Expert went 1 / 3 / 5 for two questions
+  that were 2 / 1 and 3 / 1 before the fix; an off-topic sentence in Speed attached none.
+- **On screen, 2026-09-04:** the antlions question in Expert returned five cards against Strategy's three
+  on the same sentence, same source and trust tier.
+- **The last owed check, 2026-09-05:** with Sifu running — a game the corpus does not cover — a Deep Rock
+  boss question attached **no cards from any other game**. Show details read *Keyword search*, `unresolved`,
+  no embed time. That closes the companion row's uncovered-title case, whose noise direction had already
+  passed by probe.
+
+### Show details says what the knowledge base had for your game
+
+★★★ `[KB]` A coverage line in the Show details ladder. All four readings are now confirmed on the device:
+
+| Situation | Reads | Confirmed |
+|---|---|---|
+| A covered game is running | `KB: 13 sections` | 2026-08-16, again 2026-09-05 |
+| The knowledge base is switched off | `KB: off` | 2026-09-04 |
+| Nothing is running | `KB: no game running` | 2026-08-27, again 2026-09-03 |
+| A game the corpus does not cover | `KB: none for this game` | **2026-09-05** |
+
+The last row was the one that kept slipping. Black Mesa, the title plan 31 named, is not on the Recent
+Games shelf so the launcher refuses it; Sifu was used instead, checked against the eleven games the
+corpus actually covers. The reading is distinct from *no game running*, which was the point of the
+second half of the check.

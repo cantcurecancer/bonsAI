@@ -309,3 +309,25 @@ down; here it followed a game launch and several panel reopens.
 
 Both filed. The Sifu coverage checks are deferred to the quiet block, where the panel can be driven
 without a restored answer in the way.
+
+### Block 1c — the uncovered-game readings, two entries closed
+
+With **Sifu** running (installed, on the shelf, and absent from the eleven app ids in the corpus
+manifest), a fresh chat, Strategy mode, and the Deep Rock boss question asked deliberately so that a
+cross-game leak would show, the Show details ladder read:
+
+> Keyword search · **KB: none for this game** · Reply style: balanced · Spoiler risk: med ·
+> Routed gemma4:e2b-it-qat · Retrieval: **Keyword search** · Trust tier: fallback_no_source · **unresolved**
+
+Three owed checks pass at once:
+
+1. **The uncovered-title coverage reading** — `KB: none for this game`, and it reads differently from
+   `KB: no game running`, which was the whole point of the second half.
+2. **No cards borrowed from another game.** The answer was generic; nothing from Deep Rock attached even
+   though the question was word-for-word a Deep Rock question.
+3. **No embed time.** With no covered game to search, the meaning search correctly does not run — which
+   also confirms that *Keyword search* is a label the ladder really does print, so the Speed readings in
+   block 1a were the gate leaking rather than a label that never appears.
+
+**Two roadmap entries close:** *Expert mode gets as many cards as Strategy* and *Show details says what
+the knowledge base had for your game*. Both moved to Done with their full text archived.
