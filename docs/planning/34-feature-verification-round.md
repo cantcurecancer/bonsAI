@@ -292,16 +292,20 @@ the **Ask button** are all on screen below and unreachable. Only Up escapes.
 Ruled out: the ask mode (identical in Speed and Strategy, set with the panel closed between runs), and
 the two commits since plan 32's clean sweeps (neither touches the transcript).
 
-**The cause, measured.** The answer highlights game words — *kite* and *kiting* — and each is a focus
-stop of its own (`tabindex="0"`, `Focusable`) nested **inside** the answer bubble, which is also a focus
-stop, alongside three answer-chunk stops. At the moment of the trap Steam's ring was on the bubble while
-the page's own focus was on a highlighted word: `gpfocus` and `activeElement` disagreed on every press.
-That is why plan 32's free-play sweeps were clean — no game was running, so no words were highlighted.
-**The trap appears exactly when the knowledge base has done its job.**
+**First diagnosis, and the correction.** At the moment of the trap the answer's highlighted game words
+(*kite*, *kiting*) were each a focus stop nested inside the answer bubble, which is also a stop, and
+Steam's ring was on the bubble while the page's own focus was on a highlighted word. That looked like
+the cause. **It is not.** A full Decky loader restart was run as a control, and afterwards the identical
+walk on the identical chat went all the way down — through the answer, past *kite* and *kiting* as
+ordinary stops, past the settings block, Show details, the session strip and a chip, to the question box
+— and reached the **Ask button** on the very next press
+(`runs/round34-BUG-down-walk-after-loader-restart.json`, `runs/round34-BUG-input-to-ask-final-check.json`).
 
-A second, related trap was seen once on a brand new chat: the ring reached the question box and Down,
-Left and Right all did nothing. Not yet pinned to a trigger — an identical walk earlier the same night
-was fine.
+So the real finding is narrower and, for a fix session, more useful: **the panel can get into a state
+where Down stops half way and the Ask button cannot be reached, and reopening the panel does not clear
+it — only restarting the loader does.** The signature to chase is that Steam's ring and the page's own
+focus sat on different elements on every trapped press. How a person reaches that state is not pinned
+down; here it followed a game launch and several panel reopens.
 
 Both filed. The Sifu coverage checks are deferred to the quiet block, where the panel can be driven
 without a restored answer in the way.

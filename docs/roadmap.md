@@ -91,24 +91,22 @@ hook gives a gentle heads-up when a session starts work outside this.
   a game running: tokens arrive in bursts, and during a burst the overlay drops to 47 fps; between bursts it is a flat 60. Delivery
   is bursty, painting is not slow. The game's own frame rate is unmeasured. Accepted as a nice-to-have; reopen only if the game's own frame rate is measured
   and suffers. Making streaming the default stays a separate feature call. Row **STREAM-11**. [Detail](roadmap-details.md#token-streaming-reveals-text-in-chunks-while-a-game-is-running).
-- ★★★ `[focus]` **Reopen the plugin on a chat whose answer highlights a game word, and you cannot reach the Ask button** —
-  **OPEN, found 2026-09-05.** Close the panel and open it again on an existing chat. Press Down from the top: the ring goes
-  title → tab bar → chat row → the *earlier* pill → the question → the answer, and then **stops dead**. Ten Down presses moved
-  it nowhere. The answer's own Helpful, Retry, Show details and Copy buttons, the preset chips, the question box and the **Ask
-  button** are all on screen below it and none can be reached. Only Up escapes. Same in Speed and in Strategy, so the mode is not
-  the cause. **Why:** the answer highlights game words — here *kite* and *kiting* — and each is its own focus stop nested inside
-  the answer bubble, which is also a focus stop, alongside three answer-chunk stops. Steam's ring sits on the bubble while the
-  page's own focus sits on a highlighted word; the two disagree and Down is swallowed. It bites exactly when the knowledge base
-  has done its job, which is why earlier sweeps with no game running were clean. Evidence
-  `runs/round34-BUG-down-cannot-reach-ask-bar.json`, `runs/round34-BUG-down-walk-strategy-mode-control.json`,
-  `runs/round34-BUG-empty-chat-sweep-after-remount.json`.
-- ★★ `[focus]` **On a brand new chat the ring can get stuck in the question box** — **OPEN, found 2026-09-05.** At the [+]
-  position with a game running, the ring reached the question box and then Down, Left and Right all did nothing across seven
-  presses; only Up escaped, back to the preset chips. The Ask button, the attach button, the mode chip and the voice button sit
-  below it on screen and none was reachable. Seen once, right after the panel was reopened over a newly launched game; an
-  identical walk earlier the same night reached the Ask button normally, so the trigger is not yet pinned down. Likely the same
-  family as the entry above — Steam's ring and the page's own focus disagreeing. Evidence
-  `runs/round34-BUG-empty-chat-input-trap.json`.
+- ★★★ `[focus]` **The panel can get into a state where pressing Down stops half way and the Ask button is out of reach** —
+  **OPEN, found 2026-09-05.** After leaving the panel with B and opening it again from the Decky list, Down walked as far as the
+  answer and then stopped dead: ten presses, no movement, Left and Right dead too, only Up escaping. The answer's own buttons, the
+  preset chips, the question box and the **Ask button** were all on screen below and none could be reached. It happened on a chat
+  with history and again on a brand new empty chat, where the ring stuck in the question box instead. Same in Speed and in
+  Strategy, with the mode written while the panel was closed, so the mode is not the cause.
+  **What clears it: restarting the Decky loader, not reopening the panel.** After a loader restart the identical walk on the
+  identical chat went all the way down — through the answer, its highlighted words, the settings block, Show details, the session
+  strip, a chip, the question box — and reached the Ask button on the next press. So this is a **stale navigation state that a
+  panel reopen does not clear**, not a permanently trapping control. At the moment of the trap Steam's ring and the page's own
+  focus were on different elements every time (the answer bubble versus a highlighted word; the question box versus the Ask
+  button), which is the signature to chase. How a person gets into the state is not yet pinned down — it followed a game launch
+  and several panel reopens. Evidence, in order: `runs/round34-BUG-down-cannot-reach-ask-bar.json` (trapped, 10 presses),
+  `runs/round34-BUG-down-walk-strategy-mode-control.json` (trapped, other mode), `runs/round34-BUG-empty-chat-input-trap.json`
+  (trapped, empty chat), `runs/round34-BUG-down-walk-after-loader-restart.json` and
+  `runs/round34-BUG-input-to-ask-final-check.json` (clean after the restart).
 - ★★★ `[KB]` **A quick question asked while a game is running pays for the slow search it was meant to skip** —
   **OPEN, found 2026-09-05.** Speed mode is supposed to do the cheap keyword lookup only. On the Deck, with Deep Rock Survivor
   running, two of three Speed questions ran the meaning search as well: Show details read *Keyword + meaning* and the turn spent
