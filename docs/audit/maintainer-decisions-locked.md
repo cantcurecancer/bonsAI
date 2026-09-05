@@ -15,7 +15,7 @@ choices are, and what happens either way. **Locked calls (2026-08-02 for D1–D6
 [Maintainer decisions locked](#maintainer-decisions-locked--2026-08-02); implement
 from that section when it disagrees with an option above.
 
-**One deferred, two awaiting an answer.** **D45–D52 were locked 2026-09-01** from the knowledge-base answer-quality plan ([planning/30-kb-answer-quality-plan.md](../planning/30-kb-answer-quality-plan.md)); **D53 and D54 are open** pending an explanation the maintainer asked for. The eval "D40" of 2026-08-31 is **D40b** from 2026-09-01 (resolved by D51). **D38** — the fusion weights, raised 2026-08-29 by D37's
+**One deferred (D38, now being acted on through D68).** D53 and D54 were answered 2026-09-05 as D65 and D66; D67 closed the structured-cards call; D68 and D69 were locked the same day (D69 waits on a library read for its title list). **D45–D52 were locked 2026-09-01** from the knowledge-base answer-quality plan ([planning/30-kb-answer-quality-plan.md](../planning/30-kb-answer-quality-plan.md)); **D53 and D54 are open** pending an explanation the maintainer asked for. The eval "D40" of 2026-08-31 is **D40b** from 2026-09-01 (resolved by D51). **D38** — the fusion weights, raised 2026-08-29 by D37's
 first measurement — is **deferred at the maintainer's request** pending more data, more games and
 more questions; it is not waiting on a decision today and nothing about the weights changes until it
 is. **D37**, the blind holdout rows, was endorsed and locked
@@ -2942,11 +2942,15 @@ does not cover this case. Measure on the 17 holdout compat rows first and record
 
 ### D53 — OPEN (raised 2026-09-01) — "Starting out" and comparison cards: a new kind, or leave them as `mechanic`?
 
+> **Resolved by [D65](#d65--locked-2026-09-05--starting-out-and-comparison-cards-get-their-own-kind) on 2026-09-05: their own kind.**
+
 Three such cards exist as `mechanic` (*Choosing a build* ×2, *Weapon choice*, *Coming from
 GTA*). The maintainer asked for more explanation before deciding; the explanation is in the
 2026-09-01 session and will be copied here with the answer.
 
 ### D54 — OPEN (raised 2026-09-01) — Strategy first turn: give the tactic first, then the menu?
+
+> **Resolved by [D66](#d66--locked-2026-09-05--answer-first-then-the-menu-is-tested-both-ways-before-a-decision) on 2026-09-05: test both shapes first, then decide.**
 
 Today a Strategy first turn gives an orientation and a branch menu before tactics, by design.
 The maintainer asked for more explanation before deciding; the explanation is in the 2026-09-01
@@ -3397,6 +3401,162 @@ and the five-star **Deck health snapshot**; the earlier feature review said not 
 
 **Consequence if unanswered.** Nothing is built until 1 to 3 are answered. 4 to 7 have defaults that hold:
 typed command yes, the full report, consent asked for again at the time, four stars.
+
+### D65 — LOCKED 2026-09-05 — "Starting out" and comparison cards get their own kind
+
+Resolves D53. The maintainer chose **their own kind** (working name `guide`) over leaving them
+filed as mechanics.
+
+**What a person notices.** A new player gets a chip that says *"How do I get started in Fallout
+4?"* or *"Which weapon should I start with in Hades?"* instead of *"What should I know about
+Choosing a build?"*. A game with such a card always offers one of them, because the chip pool draws
+one kind at a time. And *"where do I start"* pulls the guide card into the search the way *"the
+boss"* pulls a boss card.
+
+**What it costs.** One value added to the allowed kinds (seed validator, the Python and TypeScript
+kind lists), one chip wording, one short rescue phrase list, a corpus rebuild. No format-version
+bump, because the column is free text. Then the three cards the maintainer asked for on the
+2026-08-29 gap sheet: Cyberpunk 2077 and Fallout 4 builds / early game, Red Dead *Coming from GTA*
+(the three that exist as mechanics are re-typed, not rewritten). Rides the next bundled corpus
+release (roadmap, Knowledge base and RAG § Next).
+
+### D66 — LOCKED 2026-09-05 — Answer first, then the menu, is tested both ways before a decision
+
+Resolves D54. The maintainer asked to **test both shapes and see which is better**, with examples
+and the trade-offs written down, and for anything that needs the Deck to be logged as a test to run
+before deciding. So this is a measured experiment, not a change.
+
+**The question.** When a Strategy first turn names a thing and its card matched — *"how do I beat
+the twins"* with the Dreadnought Twins card attached — should the reply answer straight from the
+card and then show the menu, instead of an orientation and then the menu?
+
+**Example A — what ships today.** A real reply from the answer test on the PC (the Deck's own
+model, corpus `2026.09.01`, 2026-09-02), then the branch menu:
+
+> Reviewing the strategy for the Dreadnought Twins. The key here is splitting the fire evenly, so
+> you don't burn one down too fast while the other heals the gap. The healing mechanic never
+> starts, so focus on managing the damage output between them.
+>
+> *Where are you at with the Twins?* — two to four choices, wording varies run to run.
+
+The two facts the card holds did reach this reply, in three sentences. On the Deck the same shape
+sometimes comes back as bullets (the 2026-08-22 run kept *Weak points / Phases / Tips* on this
+question) and sometimes as prose.
+
+**Example B — what "answer first" aims for.** Written by hand from the card to show the target,
+not model output:
+
+> **Dreadnought Twins:** two smaller Dreadnoughts at once. The Lacerator chases and leaps; the
+> Arbalest hangs back firing fireball spreads.
+> - **Weak point:** neither is as tough as a full Dreadnought on its own.
+> - **Watch for:** if their health bars drift apart, both turn immune while they heal the gap closed.
+> - **Do this:** split your fire evenly rather than burning one down, and the healing never starts.
+>
+> *Where are you at with the Twins?* — the same menu, unchanged.
+
+**For A (today).** Short. The menu narrows to your situation before the reply commits to tactics.
+Nothing is revealed beyond what is needed to branch, which is the safer default on story games.
+The small model already gets the card's facts in on this shape 92 times in 100 on the PC test.
+Fewer lines on a 300-pixel column before the menu.
+
+**Against A.** On a direct question with a matching card, the tactic can be thin — one or two
+sentences — and the full card only arrives after a branch pick, which is one more press and
+another twenty seconds on the Deck. The model spends its best tokens on the orientation.
+
+**For B (answer first).** A direct question gets a direct answer in one turn, with the card's facts
+laid out. Fewer presses. The named thing was asked for, so the spoiler rules already leave it
+unfenced.
+
+**Against B.** A longer first reply, so more scrolling before the menu on the Deck. A two-billion
+parameter model given one more condition sometimes gets both cases worse — answering first on a
+vague question too, or dropping the menu. If a card holds a story beat, more of it reaches the
+screen in one go.
+
+**The test, in two halves.**
+
+1. **PC first, no Deck needed.** Add an "answer first" prompt variant to the answer test (it has a
+   variant switch built for this) and run the cases that name a thing with a card — about twenty
+   of the thirty-seven — twice each way. Compare facts kept, menu present, fence misfires, and reply
+   length. A difference under five points is noise on this fixture. About a day.
+2. **Deck, for feel — logged as a test to run before deciding.** Three sentences the maintainer
+   confirms, pinned as test chips, asked once in each shape (a Developer toggle or two builds), with
+   the character voice on as they actually use it. The maintainer reads both and says which reads
+   better. Row **KB-ANSWER-03** in testing.md.
+
+Decision after both halves. Until then the shipped shape stays.
+
+### D67 — LOCKED 2026-09-05 — Structured cards: accept prose
+
+Closes the call left open by **PHASE4-CARDS-01** since 2026-08-22. With the Deck's small model the
+facts from the labelled cards survive on 6 of 6 questions, the bullets on 4 of 6, and the card's own
+labels (*Summary / Weak points / Uses / Phases / Tips*) on 1 of 6. The maintainer chose **accept
+prose**: the facts are what matter, the answer test now catches any drop in them, and neither a
+stronger prompt nor a larger routed model is worth its cost for label names. The row closes. The
+labelled card shape stays in the corpus (it costs nothing and the model never invents labels for
+prose cards), and the card style pass in the roadmap stays gated on the answer test showing it
+helps.
+
+### D68 — LOCKED 2026-09-05 (raised the same day) — The blend weights: run the sweep now, and decide from it
+
+D38 was deferred on 2026-08-29 for "more data, more games, more questions". The maintainer asked
+for a recommendation on 2026-09-05.
+
+**Where it stands.** On questions written without seeing the cards, the meaning search alone puts
+the right card first **63 times in 100**; what ships manages **54**. Three separate runs since
+2026-08-29 show the same direction. The tuning set, which had no blind questions at all when the
+gap was found, now holds 51 of them.
+
+**Recommendation: option A from D38, without waiting for new games.** Build the weight sweep (one
+to two days, already in the roadmap's eval-tooling entry), run it on the tuning questions only —
+the split it is legal to tune against — and let it say whether leaning toward the meaning search
+looks better there too. If it does, spend the one confirmation run on the blind set and change the
+weights: a one-line change that would land the right card first about nine points more often on
+realistic questions. If the tuning questions still say equal is best, stop and wait for the new
+titles (D69). Never tune against the blind set itself.
+
+**Why not wait for more games first.** Half the data the deferral asked for already exists (the
+blind rows in the tuning set), the sweep is cheap, and it settles whether the gap is real without
+touching what ships. New titles then add data either way.
+
+**Locked 2026-09-05: the maintainer said yes.** Build the sweep, run it on the tuning questions only, confirm once on
+the blind set if it agrees, then change the weights. Recorded on the roadmap under the eval-tooling entry.
+
+### D69 — LOCKED 2026-09-05 (titles picked the same day) — A first tranche of new titles before the catalog
+
+Phase 5's lock (2026-07-30) says no new titles until the catalog phase. The weights call above
+wants more games, and coverage is the biggest limit on answer quality for a real person: thirteen
+games have notes, every other game gets the model's memory plus one generic genre card.
+
+**Recommendation: yes, five to ten titles chosen by the maintainer, as a one-off tranche.** Pick
+games they play (so they can judge the cards), that have a wiki under a usable licence, and that
+are popular on the Deck. Author each title's cards in one session and its blind test questions in
+a different one, as the corpus rules already require. The catalog stays Phase 8; this only reopens
+the "no new titles" rule for the tranche.
+
+**Cost.** About a day per title for a first pass of six to ten cards with credit lines, plus one
+corpus release. **Buys:** notes for five to ten more games, more variety in the eval, and the data
+D68 may still want.
+
+**Locked 2026-09-05: yes, and the titles come from the maintainer's own Steam library.** Their instruction: read the
+library from the Deck (walk the screen with the plugin-studio rig and the controller bridge), pull examples from it, and
+find which of those games have the best wikis we can use. **Not yet** — two other chats are steering the Deck first; the
+maintainer will say when it frees up. The method, the wiki checklist and the games already known to be on the Deck are in
+[planning/40-new-titles-from-the-library.md](../planning/40-new-titles-from-the-library.md). The title list itself is
+recorded there when the read is done, and the maintainer picks from it.
+
+**Read done 2026-09-05 over SSH (files only, no screen):** 90 Steam games with playtime, 121 non-Steam shortcuts (108
+emulated). Every candidate's wiki was checked for licence and an archive dump; the table is plan 40 § 5. **Black Mesa is
+confirmed by the maintainer as the first title.** Recommended with it: Hollow Knight, Grand Theft Auto V, Grand Theft
+Auto IV, DOOM Eternal (Doom 64 rides along), Palworld, a Mario pack (Super Mario 64, Mario Kart 64, Paper Mario TTYD),
+Devil May Cry 3; options Melee, Sifu, Fallout: New Vegas, Crash Bandicoot, Pikmin 2. Stardew Valley (NonCommercial
+wiki), Brotato (no licence declared) and every Zelda title (GFDL) have no usable wiki and would be maintainer-written.
+**The pick, 2026-09-05:** Black Mesa, Hollow Knight, Grand Theft Auto V, Grand Theft Auto IV, DOOM Eternal (Doom 64
+rides along), a Mario pack (Super Mario 64, Mario Kart 64, Paper Mario: The Thousand-Year Door), Super Smash Bros.
+Melee, Fallout: New Vegas, Pikmin 2. Palworld and Devil May Cry 3 were dropped by the maintainer. The maintainer asked
+whether a wiki that declares no licence could be assumed usable: no — silence means all rights reserved by default, and
+the publish tool refuses a card without a licence. Brotato turned out to declare **CC BY-SA 4.0 in its page footer**
+(the machine-readable field is empty), so it is usable if wanted; it is not in the nine. Owed: the screen walk when the
+Deck is free.
 
 **Answers, 2026-09-05 (the maintainer answered in chat), all seven locked:**
 

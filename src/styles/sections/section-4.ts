@@ -209,12 +209,18 @@ export function buildSection4Section(): string {
           width: 100% !important;
           min-width: 0 !important;
           will-change: transform !important;
+          /*
+            --bonsai-preset-visible-slots lets the "one suggestion chip" setting override the
+            window width per render (MainTabPresetAnimatedChips writes it alongside
+            --bonsai-preset-window-start); the fallback is PRESET_VISIBLE_SLOTS, the shipped
+            default, for the rare case nothing wrote the variable.
+          */
           transform: translateX(
-            calc(-1 * var(--bonsai-preset-window-start, 0) * (100% + ${PRESET_CHIP_GAP_PX}px) / ${PRESET_VISIBLE_SLOTS})
+            calc(-1 * var(--bonsai-preset-window-start, 0) * (100% + ${PRESET_CHIP_GAP_PX}px) / var(--bonsai-preset-visible-slots, ${PRESET_VISIBLE_SLOTS}))
           ) !important;
         }
         .bonsai-scope .bonsai-preset-carousel-track > .bonsai-preset-carousel-slot {
-          flex: 0 0 calc((100% - ${PRESET_CHIP_GAP_PX * (PRESET_VISIBLE_SLOTS - 1)}px) / ${PRESET_VISIBLE_SLOTS}) !important;
+          flex: 0 0 calc((100% - ${PRESET_CHIP_GAP_PX}px * (var(--bonsai-preset-visible-slots, ${PRESET_VISIBLE_SLOTS}) - 1)) / var(--bonsai-preset-visible-slots, ${PRESET_VISIBLE_SLOTS})) !important;
           min-width: 0 !important;
         }
         /*

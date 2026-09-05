@@ -128,15 +128,10 @@ async def probe_stop(plugin, host: str) -> None:
         check("12.4 live abort", True, "SKIPPED - no reachable host")
         return
 
-    # The sandboxed settings start at defaults, where token streaming is off. Turn it on so the
-    # partial-response path is exercised too; this writes to the temp settings dir, not the real one.
-    try:
-        current = await plugin.load_settings()
-        current["bonsai_token_streaming_enabled"] = True
-        await plugin.save_settings(current)
-        check("12.4 token streaming enabled for the probe", True)
-    except Exception as exc:
-        check("12.4 token streaming enabled for the probe", False, f"{type(exc).__name__}: {exc}")
+    # Token streaming used to be a switch that defaulted off, so this probe turned it on to
+    # exercise the partial-response path. It is how replies always arrive now (2026-09-05), so
+    # there is nothing to turn on -- the path below is exercised either way.
+    check("12.4 token streaming is always on", True)
 
     started = await plugin.start_background_game_ai(
         "Write an extremely long, detailed, exhaustive guide to Steam Deck performance tuning. "

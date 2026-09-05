@@ -135,3 +135,16 @@ export function getCatalogTags(catalog: readonly PullModelEntry[]): string[] {
 export function isCatalogModelTagInList(catalog: readonly PullModelEntry[], tag: string): boolean {
   return catalog.some((e) => e.tag === tag);
 }
+
+/**
+ * Same shape check the backend runs (`OLLAMA_TAG_RE` / `is_valid_ollama_pull_tag` in
+ * `ollama_catalog_service.py`) so a typed custom tag can be sanity-checked before the round trip.
+ * This only rules out something that could never be a real Ollama tag (bad characters, empty,
+ * too long) — whether the tag actually exists in the Ollama library is a registry lookup the
+ * backend still owns (`partition_pull_tags_by_registry`), not something the frontend can know.
+ */
+export function isPlausibleOllamaPullTag(tag: string): boolean {
+  const t = tag.trim();
+  if (!t || t.length > 96) return false;
+  return TAG_RE.test(t);
+}

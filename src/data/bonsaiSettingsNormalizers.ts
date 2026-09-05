@@ -382,9 +382,10 @@ const SIMPLE_FIELDS = {
   // Developer and Desktop logging opt-ins.
   desktop_debug_note_auto_save: boolDefaultFalse,
   desktop_ask_verbose_logging: boolDefaultFalse,
-  bonsai_token_streaming_enabled: boolDefaultFalse,
   show_onscreen_debug_hud: boolDefaultFalse,
   dev_force_session_rag_chips: boolDefaultFalse,
+  dev_preload_ask_model: boolDefaultFalse,
+  preset_single_chip: boolDefaultFalse,
   // Trimmed before matching so a hand-edited `" verbose "` reads the same as in Python (D13).
   desktop_app_log_level: enumOf<DesktopAppLogLevel>(
     ["off", "default", "verbose"],

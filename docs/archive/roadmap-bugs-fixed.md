@@ -150,6 +150,10 @@ the `await`. Verified on-device: 21/21 RPCs ok, `bonsAI plugin loaded!`, zero lo
 
 ---
 
+## Round 36 (2026-09-05)
+
+- ★ **The question bubble lines up with the answer below it:** the bubble showing what you typed was pushed against the right edge with an empty strip down its left, and the answer below it sat almost flush, so the two did not line up. Reported by the maintainer, who put the gap at about 40 pixels. **Measured on the Deck: 35 pixels of empty space on the left, none on the right, and nothing sitting in the gap.** The cause was not a stray margin: both bubbles are capped as a share of the row, and the two caps disagreed — the answer stops at 92% of the row, the question stopped at 88%. On the 290-pixel row that is 23 pixels beside the answer and 35 beside the question. Setting the question to the same 92% makes them exactly mirrored, both 267 pixels wide, inset 23 on their own side, confirmed on the device after the change. **Some inset is kept on purpose:** the bubble is pushed right so it reads as *yours*, and with no inset at all a question would be indistinguishable from an answer. Whether 23 is still too much is a person's call. Row **CHAT-BUBBLE-MIRROR-01**.
+
 ## Moved from the roadmap 2026-08-27 (Bugs section cleanup)
 
 These were fixed and confirmed. They are here in full so the reasoning, the measurements and

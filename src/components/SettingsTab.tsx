@@ -92,6 +92,10 @@ export type SettingsTabProps = {
   strategySpoilerMaskingEnabled: boolean;
   setStrategySpoilerMaskingEnabled: (v: boolean) => void;
 
+  /** One suggestion chip with the whole column instead of two side by side. Off by default (D43). */
+  presetSingleChip: boolean;
+  setPresetSingleChip: (v: boolean) => void;
+
   voiceSttModel: VoiceSttModelId;
   setVoiceSttModel: (v: VoiceSttModelId) => void;
   microphoneAccessEnabled: boolean;
@@ -127,6 +131,8 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
   setShowDeveloperTab,
   strategySpoilerMaskingEnabled,
   setStrategySpoilerMaskingEnabled,
+  presetSingleChip,
+  setPresetSingleChip,
   voiceSttModel,
   setVoiceSttModel,
   microphoneAccessEnabled,
@@ -316,6 +322,16 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
             description="Strategy mode masks spoiler sections until you choose to reveal them."
             checked={strategySpoilerMaskingEnabled}
             onChange={(checked) => setStrategySpoilerMaskingEnabled(checked)}
+          />
+        </PanelSectionRow>
+      </PanelSection>
+      <PanelSection title="Suggestion chips">
+        <PanelSectionRow>
+          <ToggleField
+            label="Show one chip instead of two"
+            description="The suggestion row above the question box shows one chip with the whole column, so its label reads more before it needs to scroll. Off shows two chips side by side — the default."
+            checked={presetSingleChip}
+            onChange={(checked) => setPresetSingleChip(checked)}
           />
         </PanelSectionRow>
       </PanelSection>

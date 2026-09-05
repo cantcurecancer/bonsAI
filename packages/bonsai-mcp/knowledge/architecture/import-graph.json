@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 367,
-  "edgeCount": 888,
+  "fileCount": 370,
+  "edgeCount": 895,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -664,6 +664,15 @@
         "src/features/plugin-shell/usePluginHelpModal.tsx"
       ]
     },
+    "src/components/PullModelsModal.test.tsx": {
+      "imports": [
+        "src/components/PullModelsModal.tsx",
+        "src/data/pullModelCatalog.ts",
+        "src/test-harness/fakeDeckyRpc.ts",
+        "src/test-harness/rpcFixtures.ts"
+      ],
+      "importedBy": []
+    },
     "src/components/PullModelsModal.tsx": {
       "imports": [
         "src/components/BonsaiModalScope.tsx",
@@ -671,13 +680,15 @@
         "src/data/deprioritizedModels.ts",
         "src/data/modelPolicy.ts",
         "src/data/pullModelCatalog.ts",
+        "src/data/storageKeys.ts",
         "src/hooks/usePullModelCatalog.ts",
         "src/utils/deckyCall.ts",
         "src/utils/mergePullModelCatalog.ts",
         "src/utils/pullModelRecommendations.ts"
       ],
       "importedBy": [
-        "src/components/OllamaModelsHubModal.tsx"
+        "src/components/OllamaModelsHubModal.tsx",
+        "src/components/PullModelsModal.test.tsx"
       ]
     },
     "src/components/ReplyCopyButton.test.tsx": {
@@ -751,6 +762,7 @@
       ],
       "importedBy": [
         "src/components/SettingsTab.modalReturnFocus.test.tsx",
+        "src/components/SettingsTabPresetSingleChip.test.tsx",
         "src/features/plugin-shell/tabs/useSettingsTabPayload.tsx"
       ]
     },
@@ -783,6 +795,12 @@
       "importedBy": [
         "src/components/OllamaTab.tsx"
       ]
+    },
+    "src/components/SettingsTabPresetSingleChip.test.tsx": {
+      "imports": [
+        "src/components/SettingsTab.tsx"
+      ],
+      "importedBy": []
     },
     "src/components/SettingsTabUiScaleSection.test.ts": {
       "imports": [
@@ -1163,6 +1181,7 @@
       "imports": [],
       "importedBy": [
         "src/components/ModelRoutingOrderModal.tsx",
+        "src/components/PullModelsModal.test.tsx",
         "src/components/PullModelsModal.tsx",
         "src/features/model-routing/useRoutingOrderModal.ts",
         "src/hooks/usePullModelCatalog.ts",
@@ -1271,6 +1290,7 @@
     "src/data/storageKeys.ts": {
       "imports": [],
       "importedBy": [
+        "src/components/PullModelsModal.tsx",
         "src/features/plugin-shell/pluginStorage.ts",
         "src/features/plugin-shell/tabs/useAboutTabPayload.tsx",
         "src/hooks/useBonsaiPluginShell.test.ts",
@@ -1653,6 +1673,12 @@
         "src/hooks/useBonsaiAskOrchestration.ts"
       ]
     },
+    "src/features/preset-carousel/presetRowLayout.test.ts": {
+      "imports": [
+        "src/features/preset-carousel/presetRowLayout.ts"
+      ],
+      "importedBy": []
+    },
     "src/features/preset-carousel/presetRowLayout.ts": {
       "imports": [
         "src/data/presets.ts"
@@ -1664,6 +1690,7 @@
         "src/components/MainTabPresetRow.tsx",
         "src/features/preset-carousel/carouselState.test.ts",
         "src/features/preset-carousel/carouselState.ts",
+        "src/features/preset-carousel/presetRowLayout.test.ts",
         "src/features/preset-carousel/sessionRagComposer.ts",
         "src/styles/sections/section-4.test.ts",
         "src/styles/sections/section-4.ts"
@@ -2436,6 +2463,7 @@
         "src/components/MainTabPresetAnimatedChips.test.tsx",
         "src/components/MainTabPresetRow.askRestart.test.tsx",
         "src/components/MainTabPresetRow.test.tsx",
+        "src/components/PullModelsModal.test.tsx",
         "src/components/SettingsTab.mdns.test.ts",
         "src/components/VoiceInputSettingsSection.test.tsx",
         "src/hooks/useBackgroundGameAi.test.ts",
@@ -2482,6 +2510,7 @@
         "src/types/backgroundAsk.ts"
       ],
       "importedBy": [
+        "src/components/PullModelsModal.test.tsx",
         "src/hooks/useBackgroundGameAi.test.ts",
         "src/hooks/useBonsaiAskOrchestration.test.ts",
         "src/hooks/usePluginSettings.test.ts",

@@ -38,6 +38,8 @@ function buildProps(overrides: Partial<SettingsTabProps> = {}): SettingsTabProps
     setShowDeveloperTab: () => {},
     strategySpoilerMaskingEnabled: true,
     setStrategySpoilerMaskingEnabled: () => {},
+    presetSingleChip: false,
+    setPresetSingleChip: () => {},
     voiceSttModel: "tiny.en",
     setVoiceSttModel: () => {},
     microphoneAccessEnabled: false,

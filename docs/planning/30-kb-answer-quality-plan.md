@@ -81,7 +81,7 @@ Legend: ✅ done / fixed this session · ❌ blocked, or a bug found this sessio
 - ✅ Measured the last six asks in the plugin log: prompt 1808–1954 tokens, replies 154–430
   tokens, payload 8.5–9.1 KB, every one ended on `stop` (no cut-offs).
 - ✅ Measured 161 recorded asks in the Deck ask trace (numbers in § 2.3).
-- ✅ Maintainer answered Q1–Q8 (2026-09-01); recorded as D45–D52. Q9 / Q10 open as D53 / D54.
+- ✅ Maintainer answered Q1–Q8 (2026-09-01); recorded as D45–D52. Q9 / Q10 answered 2026-09-05: D65 (their own kind) and D66 (test both shapes first, row KB-ANSWER-03).
 
 ### Bugs and gaps found this session (not fixed)
 
@@ -140,7 +140,7 @@ Legend: ✅ done / fixed this session · ❌ blocked, or a bug found this sessio
   time in a round"* the right card was first all three times, yet the reply never mentioned the
   +15 s pickups — it paraphrased the vaguer Kaos-mode card beside it instead.
 
-### Work items (decisions in brackets; D53 / D54 still open)
+### Work items (decisions in brackets; D53 / D54 answered 2026-09-05 as D65 / D66)
 
 - ✅ **W1** Answer test harness shipped 2026-09-02: `scripts/eval_kb_answers.py` +
   `tests/fixtures/kb_answer_eval.json` (37 cases), runs the real Ask pipeline on the PC with
@@ -189,7 +189,7 @@ Legend: ✅ done / fixed this session · ❌ blocked, or a bug found this sessio
   (D38 item 2, D41 step 1, D40). *(D51)*
 - ⬜ **W9** Symptom-only troubleshooting reach (§ 4.8). *(D52)*
 - ⬜ **W10** Section type for "starting out" / comparison cards, then author the Cyberpunk /
-  Fallout / Red Dead ones the gap sheet asked for. *(D53, open)*
+  Fallout / Red Dead ones the gap sheet asked for. *(D53 → D65: their own kind, 2026-09-05)*
 - ⬜ **W11** Card style pass for small models: convert prose cards to labelled short lines
   (22 of 161 are labelled today). *After W1 shows it helps.*
 - ⬜ **W12** On-Deck QA rows owed for shipped KB work (§ 5, "Verify" rows), pinned as frozen
@@ -290,7 +290,7 @@ The model reads roughly **nine tokens of instruction for every token of knowledg
 ## 3. Questions for you (the decisions that change the work)
 
 Each has my recommendation. **Answered 2026-09-01:** Q1–Q8 are locked as **D45–D52** in
-`docs/audit/maintainer-decisions-locked.md`; Q9 and Q10 are open as **D53 / D54** (the maintainer asked
+`docs/audit/maintainer-decisions-locked.md`; Q9 and Q10 were open as **D53 / D54** until 2026-09-05, now **D65 / D66** (the maintainer had asked
 for more explanation — § 3b).
 
 **Q1 — What counts as a "better answer", and does a PC run count as evidence?**

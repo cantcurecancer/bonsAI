@@ -33,6 +33,8 @@ export type MainTabPresetRowProps = {
   focusUnifiedTextField: () => boolean;
   presetCarouselHostRef: React.RefObject<HTMLDivElement | null>;
   useLocalKnowledgeBase?: boolean;
+  /** "One suggestion chip" setting: the row shows one chip with the whole column. Off by default. */
+  presetSingleChip?: boolean;
 };
 
 export function MainTabPresetRow({
@@ -48,6 +50,7 @@ export function MainTabPresetRow({
   focusUnifiedTextField,
   presetCarouselHostRef,
   useLocalKnowledgeBase = false,
+  presetSingleChip = false,
 }: MainTabPresetRowProps) {
   const hadInjectChipRef = useRef(false);
   useEffect(() => {
@@ -130,6 +133,7 @@ export function MainTabPresetRow({
           onCarouselExitDown={focusUnifiedTextField}
           useLocalKnowledgeBase={useLocalKnowledgeBase}
           askRestartToken={askRestartToken}
+          presetSingleChip={presetSingleChip}
         />
       )}
       {presetCarouselInject?.text?.trim() ? (

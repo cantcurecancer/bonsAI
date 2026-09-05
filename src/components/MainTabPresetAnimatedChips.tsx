@@ -36,12 +36,12 @@ import {
 } from "../features/preset-carousel/carouselState";
 import { pickCarouselChipWithSessionRag } from "../features/preset-carousel/composePresetSeedsWithSessionRag";
 import {
+  effectivePresetVisibleSlots,
   PRESET_CHIP_BLOCKED_EDGE_FLASH_MS,
   PRESET_CHIP_HEIGHT_PX,
   PRESET_MARQUEE_DELAY_S,
   PRESET_MARQUEE_FADE_LENGTH,
   PRESET_MARQUEE_SPEED,
-  PRESET_VISIBLE_SLOTS,
   presetHoldMs,
 } from "../features/preset-carousel/presetRowLayout";
 import {
@@ -184,6 +184,12 @@ export type MainTabPresetAnimatedChipsProps = {
    * `seedsKeyFrom` cannot tell an Ask happened from this alone (D58 #3).
    */
   askRestartToken?: number;
+  /**
+   * "One suggestion chip" setting (roadmap `[chips]` ★★★): when true the row shows a single chip
+   * with the whole column instead of `PRESET_VISIBLE_SLOTS` side by side. Off (two chips) is the
+   * shipped default. See `effectivePresetVisibleSlots`.
+   */
+  presetSingleChip?: boolean;
 };
 
 function prefersReducedMotion(): boolean {
@@ -575,11 +581,12 @@ function MainTabPresetDecodeSlots(
     onCarouselExitDown,
     useLocalKnowledgeBase = false,
     askRestartToken,
+    presetSingleChip = false,
   } = props;
   const samplerOptions = { useLocalKnowledgeBase };
   const seedsKey = seedsKeyFrom(seeds);
   const reducedMotion = prefersReducedMotion();
-  const slotCount = PRESET_VISIBLE_SLOTS;
+  const slotCount = effectivePresetVisibleSlots(presetSingleChip);
   const nav = usePresetRowNav(slotCount, onCarouselExitDown);
 
   const [slots, setSlots] = useState<PresetPrompt[]>(() =>
@@ -782,10 +789,12 @@ function MainTabPresetSidewaysCarousel(
     onCarouselExitDown,
     useLocalKnowledgeBase = false,
     askRestartToken,
+    presetSingleChip = false,
   } = props;
   const samplerOptions = { useLocalKnowledgeBase };
   const seedsKey = seedsKeyFrom(seeds);
   const reducedMotion = prefersReducedMotion();
+  const visibleSlots = effectivePresetVisibleSlots(presetSingleChip);
   const contextualRef = useRef(normalizeThreeSeeds(seeds, samplerOptions));
   contextualRef.current = normalizeThreeSeeds(seeds, samplerOptions);
 
@@ -810,10 +819,10 @@ function MainTabPresetSidewaysCarousel(
    * (`requestFocus`): the window slides, the chip becomes a stop, and the effect below puts the ring
    * on it.
    */
-  const windowStart = carouselWindowStart(focusIndex);
+  const windowStart = carouselWindowStart(focusIndex, visibleSlots);
   const inWindow = useCallback(
-    (i: number) => i >= windowStart && i < windowStart + PRESET_VISIBLE_SLOTS,
-    [windowStart],
+    (i: number) => i >= windowStart && i < windowStart + visibleSlots,
+    [windowStart, visibleSlots],
   );
   const pendingFocusRef = useRef<number | null>(null);
   /*
@@ -910,7 +919,7 @@ function MainTabPresetSidewaysCarousel(
         // carried every corpus chip out of the window within about four ticks, permanently.
         const nextPreset = pickCarouselChipWithSessionRag({
           historyTexts: texts,
-          visibleTexts: visibleWindowTexts(prev.history, prev.focusIndex),
+          visibleTexts: visibleWindowTexts(prev.history, prev.focusIndex, visibleSlots),
           staticFallback: () => getRandomPresetExcluding(texts, samplerOptions),
         });
         const advanced = advanceCarouselFocus(prev.history, prev.focusIndex, nextPreset);
@@ -930,8 +939,10 @@ function MainTabPresetSidewaysCarousel(
     // signals that an Ask happened. Restarting only this effect (not the whole carousel) extends
     // the deadline without touching history or focus, unlike fade/static/decode's full restart --
     // the carousel has a persistent, browsable history worth keeping across an Ask; the other
-    // modes have no such state to preserve.
-  }, [seedsKey, useLocalKnowledgeBase, askRestartToken]);
+    // modes have no such state to preserve. visibleSlots restarts it too, so a mid-session flip of
+    // the one-chip setting reads the new window size on the next tick instead of the one captured
+    // when auto-advance last started.
+  }, [seedsKey, useLocalKnowledgeBase, askRestartToken, visibleSlots]);
 
   /**
    * Focus model: the Steam DOM focus (white ring) is the single source of truth. Every chip is
@@ -959,6 +970,9 @@ function MainTabPresetSidewaysCarousel(
           style={{
             /* The slide distance is a CSS calc on this index (section-4), never a measured px. */
             ["--bonsai-preset-window-start" as string]: String(windowStart),
+            /* How many chips share the row's width, per the same calc. Falls back to
+               PRESET_VISIBLE_SLOTS in the CSS itself when unset. */
+            ["--bonsai-preset-visible-slots" as string]: String(visibleSlots),
             transition: `transform ${CAROUSEL_SLIDE_MS}ms ease-in-out`,
           }}
         >
@@ -1015,6 +1029,7 @@ function MainTabPresetAnimatedChipsInner(props: MainTabPresetAnimatedChipsProps)
     onCarouselExitDown,
     useLocalKnowledgeBase = false,
     askRestartToken,
+    presetSingleChip = false,
   } = props;
   const samplerOptions = { useLocalKnowledgeBase };
   if (animationMode === "carousel") {
@@ -1026,6 +1041,7 @@ function MainTabPresetAnimatedChipsInner(props: MainTabPresetAnimatedChipsProps)
         onCarouselExitDown={onCarouselExitDown}
         useLocalKnowledgeBase={useLocalKnowledgeBase}
         askRestartToken={askRestartToken}
+        presetSingleChip={presetSingleChip}
       />
     );
   }
@@ -1038,13 +1054,14 @@ function MainTabPresetAnimatedChipsInner(props: MainTabPresetAnimatedChipsProps)
         onCarouselExitDown={onCarouselExitDown}
         useLocalKnowledgeBase={useLocalKnowledgeBase}
         askRestartToken={askRestartToken}
+        presetSingleChip={presetSingleChip}
       />
     );
   }
   const staticMode = animationMode === "static" || !fadeAnimationEnabled;
   const seedsKey = seedsKeyFrom(seeds);
   const reducedMotion = prefersReducedMotion();
-  const slotCount = PRESET_VISIBLE_SLOTS;
+  const slotCount = effectivePresetVisibleSlots(presetSingleChip);
   const nav = usePresetRowNav(slotCount, onCarouselExitDown);
 
   const [slots, setSlots] = useState<PresetPrompt[]>(() =>
@@ -1207,7 +1224,8 @@ function presetChipsPropsEqual(
     prev.onPreferAskMode === next.onPreferAskMode &&
     prev.onCarouselExitDown === next.onCarouselExitDown &&
     prev.useLocalKnowledgeBase === next.useLocalKnowledgeBase &&
-    prev.askRestartToken === next.askRestartToken
+    prev.askRestartToken === next.askRestartToken &&
+    prev.presetSingleChip === next.presetSingleChip
   );
 }
 

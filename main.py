@@ -29,6 +29,7 @@ from backend.services.ollama_service import (
     append_deck_tdp_sysfs_grounding,
     build_system_prompt,
     close_ollama_chat_response,
+    preload_ask_model_sync,
     probe_ollama_health,
     spawn_ollama_stop_thread,
 )
@@ -329,6 +330,53 @@ class Plugin:
         set_kids_lock_active(False)
         logger.info("bonsAI plugin loaded!")
         await self._maybe_app_log("plugin.lifecycle", "plugin loaded")
+        self._schedule_preload_ask_model()
+
+    def _schedule_preload_ask_model(self) -> None:
+        """Fire off the boot-time model warm-up without waiting on it.
+
+        ``asyncio.create_task`` returns as soon as the task is *scheduled*, not once it has
+        run, so this never adds time to ``_main`` even when the Ollama host is slow or
+        unreachable — the one hard requirement in the roadmap entry (speed-mode VRAM preload).
+        Runs once, right here, at boot; nothing polls for it afterwards.
+        """
+        asyncio.create_task(self._preload_ask_model_if_enabled())
+
+    async def _preload_ask_model_if_enabled(self) -> None:
+        """Warm a small installed model into memory, only when the developer switch is on.
+
+        Off by default (``dev_preload_ask_model``), so an ordinary boot calls
+        ``preload_ask_model_sync`` zero times and changes nothing. On, this resolves the same
+        host a connection test would use — the fixed loopback address when Ask is routed to this
+        Deck, else the first labeled host — and hands off to ``preload_ask_model_sync``.
+
+        **The saved try order goes with it**, because warming the wrong model is worse than
+        warming none: it spends memory on something no question will reach and leaves the first
+        question exactly as slow. Without the order, the warm-up picks whichever small model
+        happens to be installed, which on the maintainer's Deck was a 1.5B model while Ask was
+        routed to a 4.6B one. Silent on any failure (unreachable host, Ask's model too big to be
+        worth warming, or the host declining for lack of memory).
+        """
+        try:
+            settings = await self.load_settings()
+        except Exception:
+            return
+        if settings.get("dev_preload_ask_model") is not True:
+            return
+        pc_ip = ""
+        if settings.get("ollama_local_on_deck") is True:
+            pc_ip = DEFAULT_OLLAMA_PCIP
+        else:
+            named = settings.get("named_ollama_hosts") or []
+            if isinstance(named, list) and named and isinstance(named[0], dict):
+                pc_ip = str(named[0].get("host") or "").strip()
+        if not pc_ip:
+            return
+        try:
+            _, _, base = normalize_ollama_base(pc_ip)
+        except Exception:
+            return
+        await asyncio.to_thread(preload_ask_model_sync, base, logger, settings=settings)
 
     async def _unload(self):
         """Run plugin shutdown logging for Decky unload events."""

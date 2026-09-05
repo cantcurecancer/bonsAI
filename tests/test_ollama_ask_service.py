@@ -44,7 +44,6 @@ class _FakePlugin:
             "model_allow_high_vram_fallbacks": False,
             "screenshot_attachment_preset": "low",
             "ai_character_enabled": False,
-            "bonsai_token_streaming_enabled": False,
             "ollama_keep_alive": "",
         }
 

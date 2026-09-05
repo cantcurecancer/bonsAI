@@ -15,7 +15,7 @@ import {
   shouldIgnoreRestoredSettingsSnapshot,
   takeRestoredSettingsSnapshot,
 } from "../utils/bonsaiSessionSurvival";
-import { DEFAULT_AI_CHARACTER_ACCENT_INTENSITY, DEFAULT_AI_CHARACTER_CUSTOM_TEXT, DEFAULT_AI_CHARACTER_ENABLED, DEFAULT_AI_CHARACTER_PRESET_ID, DEFAULT_AI_CHARACTER_RANDOM, DEFAULT_ASK_MODE, DEFAULT_CAPABILITIES, DEFAULT_DESKTOP_ASK_VERBOSE_LOGGING, DEFAULT_DESKTOP_DEBUG_NOTE_AUTO_SAVE, DEFAULT_DESKTOP_APP_LOG_LEVEL, DEFAULT_INPUT_SANITIZER_USER_DISABLED, DEFAULT_LATENCY_WARNING_SECONDS, DEFAULT_MODEL_ALLOW_HIGH_VRAM_FALLBACKS, DEFAULT_MODEL_POLICY_TIER, DEFAULT_OLLAMA_KEEP_ALIVE, DEFAULT_REPLY_VERBOSITY, DEFAULT_ASK_THINK_EFFORT, type AskThinkEffortId, DEFAULT_REPLY_LANGUAGE, DEFAULT_OLLAMA_LOCAL_ON_DECK, DEFAULT_PRESET_CHIP_ANIMATION, DEFAULT_PRESET_CHIP_FADE_ANIMATION_ENABLED, DEFAULT_REQUEST_TIMEOUT_SECONDS, DEFAULT_SCREENSHOT_ATTACHMENT_PRESET, DEFAULT_SHOW_DEVELOPER_TAB, DEFAULT_BONSAI_TOKEN_STREAMING_ENABLED, DEFAULT_SHOW_ONSCREEN_DEBUG_HUD, DEFAULT_DEV_FORCE_SESSION_RAG_CHIPS, DEFAULT_TAB_RESUME_MODE, type TabResumeMode, type NamedOllamaHost, DEFAULT_STRATEGY_SPOILER_MASKING_ENABLED, DEFAULT_STRATEGY_SPOILER_AUTO_REVEAL_AFTER_CONSENT, DEFAULT_UNIFIED_INPUT_PERSISTENCE_MODE, DEFAULT_VOICE_STT_MODEL, type AskModeId, type BonsaiCapabilities, type BonsaiSettings, type BonsaiSettingsSnapshotInput, type DesktopAppLogLevel, type OllamaKeepAliveDuration, type ReplyVerbosityId, type ReplyLanguageId, type PresetChipAnimation, type ScreenshotAttachmentPreset, type UnifiedInputPersistenceMode, type VoiceSttModelId, type UiScaleProfileId, DEFAULT_UI_SCALE_AUTO_ENABLED, DEFAULT_UI_SCALE_MANUAL_PROFILE, DEFAULT_USE_LOCAL_KNOWLEDGE_BASE, DEFAULT_RAG_HYBRID_RETRIEVAL_ENABLED, DEFAULT_RAG_CORPUS_PATH, DEFAULT_RAG_CORPUS_VERSION } from "../data/bonsaiSettingsSchema";
+import { DEFAULT_AI_CHARACTER_ACCENT_INTENSITY, DEFAULT_AI_CHARACTER_CUSTOM_TEXT, DEFAULT_AI_CHARACTER_ENABLED, DEFAULT_AI_CHARACTER_PRESET_ID, DEFAULT_AI_CHARACTER_RANDOM, DEFAULT_ASK_MODE, DEFAULT_CAPABILITIES, DEFAULT_DESKTOP_ASK_VERBOSE_LOGGING, DEFAULT_DESKTOP_DEBUG_NOTE_AUTO_SAVE, DEFAULT_DESKTOP_APP_LOG_LEVEL, DEFAULT_INPUT_SANITIZER_USER_DISABLED, DEFAULT_LATENCY_WARNING_SECONDS, DEFAULT_MODEL_ALLOW_HIGH_VRAM_FALLBACKS, DEFAULT_MODEL_POLICY_TIER, DEFAULT_OLLAMA_KEEP_ALIVE, DEFAULT_REPLY_VERBOSITY, DEFAULT_ASK_THINK_EFFORT, type AskThinkEffortId, DEFAULT_REPLY_LANGUAGE, DEFAULT_OLLAMA_LOCAL_ON_DECK, DEFAULT_PRESET_CHIP_ANIMATION, DEFAULT_PRESET_CHIP_FADE_ANIMATION_ENABLED, DEFAULT_PRESET_SINGLE_CHIP, DEFAULT_REQUEST_TIMEOUT_SECONDS, DEFAULT_SCREENSHOT_ATTACHMENT_PRESET, DEFAULT_SHOW_DEVELOPER_TAB, DEFAULT_SHOW_ONSCREEN_DEBUG_HUD, DEFAULT_DEV_FORCE_SESSION_RAG_CHIPS, DEFAULT_DEV_PRELOAD_ASK_MODEL, DEFAULT_TAB_RESUME_MODE, type TabResumeMode, type NamedOllamaHost, DEFAULT_STRATEGY_SPOILER_MASKING_ENABLED, DEFAULT_STRATEGY_SPOILER_AUTO_REVEAL_AFTER_CONSENT, DEFAULT_UNIFIED_INPUT_PERSISTENCE_MODE, DEFAULT_VOICE_STT_MODEL, type AskModeId, type BonsaiCapabilities, type BonsaiSettings, type BonsaiSettingsSnapshotInput, type DesktopAppLogLevel, type OllamaKeepAliveDuration, type ReplyVerbosityId, type ReplyLanguageId, type PresetChipAnimation, type ScreenshotAttachmentPreset, type UnifiedInputPersistenceMode, type VoiceSttModelId, type UiScaleProfileId, DEFAULT_UI_SCALE_AUTO_ENABLED, DEFAULT_UI_SCALE_MANUAL_PROFILE, DEFAULT_USE_LOCAL_KNOWLEDGE_BASE, DEFAULT_RAG_HYBRID_RETRIEVAL_ENABLED, DEFAULT_RAG_CORPUS_PATH, DEFAULT_RAG_CORPUS_VERSION } from "../data/bonsaiSettingsSchema";
 import { normalizeLatencyWarningSeconds, normalizeRequestTimeoutSeconds, normalizeSettings } from "../data/bonsaiSettingsNormalizers";
 import { toBonsaiSettingsPayload } from "../utils/settingsPayload";
 import { saveTabResumeMode } from "../features/plugin-shell/pluginStorage";
@@ -31,6 +31,7 @@ function snapshotFromBonsaiSettings(normalized: BonsaiSettings): BonsaiSettingsS
     desktopAppLogLevel: normalized.desktop_app_log_level,
     presetChipFadeAnimationEnabled: normalized.preset_chip_fade_animation_enabled,
     presetChipAnimation: normalized.preset_chip_animation,
+    presetSingleChip: normalized.preset_single_chip,
     inputSanitizerUserDisabled: normalized.input_sanitizer_user_disabled,
     capabilities: normalized.capabilities,
     aiCharacterEnabled: normalized.ai_character_enabled,
@@ -53,9 +54,9 @@ function snapshotFromBonsaiSettings(normalized: BonsaiSettings): BonsaiSettingsS
     strategySpoilerMaskingEnabled: normalized.strategy_spoiler_masking_enabled,
     strategySpoilerAutoRevealAfterConsent: normalized.strategy_spoiler_auto_reveal_after_consent,
     steamWebApiKey: normalized.steam_web_api_key,
-    bonsaiTokenStreamingEnabled: normalized.bonsai_token_streaming_enabled,
     showOnscreenDebugHud: normalized.show_onscreen_debug_hud,
     devForceSessionRagChips: normalized.dev_force_session_rag_chips,
+    devPreloadAskModel: normalized.dev_preload_ask_model,
     devFrozenTestChips: normalized.dev_frozen_test_chips,
     tabResumeMode: normalized.tab_resume_mode,
     namedOllamaHosts: normalized.named_ollama_hosts,
@@ -104,6 +105,7 @@ export function usePluginSettings() {
     DEFAULT_PRESET_CHIP_FADE_ANIMATION_ENABLED
   );
   const [presetChipAnimation, setPresetChipAnimation] = useState<PresetChipAnimation>(DEFAULT_PRESET_CHIP_ANIMATION);
+  const [presetSingleChip, setPresetSingleChip] = useState<boolean>(DEFAULT_PRESET_SINGLE_CHIP);
   const [inputSanitizerUserDisabled, setInputSanitizerUserDisabled] = useState<boolean>(
     DEFAULT_INPUT_SANITIZER_USER_DISABLED
   );
@@ -136,12 +138,12 @@ export function usePluginSettings() {
     DEFAULT_STRATEGY_SPOILER_AUTO_REVEAL_AFTER_CONSENT
   );
   const [steamWebApiKey, setSteamWebApiKey] = useState<string>("");
-  const [bonsaiTokenStreamingEnabled, setBonsaiTokenStreamingEnabled] = useState<boolean>(
-    DEFAULT_BONSAI_TOKEN_STREAMING_ENABLED
-  );
   const [showOnscreenDebugHud, setShowOnscreenDebugHud] = useState<boolean>(DEFAULT_SHOW_ONSCREEN_DEBUG_HUD);
   const [devForceSessionRagChips, setDevForceSessionRagChips] = useState<boolean>(
     DEFAULT_DEV_FORCE_SESSION_RAG_CHIPS,
+  );
+  const [devPreloadAskModel, setDevPreloadAskModel] = useState<boolean>(
+    DEFAULT_DEV_PRELOAD_ASK_MODEL,
   );
   const [devFrozenTestChips, setDevFrozenTestChips] = useState<string[]>([]);
   const [tabResumeMode, setTabResumeMode] = useState<TabResumeMode>(DEFAULT_TAB_RESUME_MODE);
@@ -179,6 +181,7 @@ export function usePluginSettings() {
     desktopAppLogLevel,
     presetChipFadeAnimationEnabled,
     presetChipAnimation,
+    presetSingleChip,
     inputSanitizerUserDisabled,
     capabilities,
     aiCharacterEnabled,
@@ -201,9 +204,9 @@ export function usePluginSettings() {
     strategySpoilerMaskingEnabled,
     strategySpoilerAutoRevealAfterConsent,
     steamWebApiKey,
-    bonsaiTokenStreamingEnabled,
     showOnscreenDebugHud,
     devForceSessionRagChips,
+    devPreloadAskModel,
     devFrozenTestChips,
     tabResumeMode,
     namedOllamaHosts,
@@ -238,6 +241,7 @@ export function usePluginSettings() {
     setDesktopAskVerboseLogging(normalized.desktop_ask_verbose_logging);
     setDesktopAppLogLevel(normalized.desktop_app_log_level);
     setPresetChipAnimation(normalized.preset_chip_animation);
+    setPresetSingleChip(normalized.preset_single_chip);
     setPresetChipFadeAnimationEnabled(normalized.preset_chip_fade_animation_enabled);
     setInputSanitizerUserDisabled(normalized.input_sanitizer_user_disabled);
     setCapabilities(normalized.capabilities);
@@ -261,9 +265,9 @@ export function usePluginSettings() {
     setStrategySpoilerMaskingEnabled(normalized.strategy_spoiler_masking_enabled);
     setStrategySpoilerAutoRevealAfterConsent(normalized.strategy_spoiler_auto_reveal_after_consent);
     setSteamWebApiKey(normalized.steam_web_api_key);
-    setBonsaiTokenStreamingEnabled(normalized.bonsai_token_streaming_enabled);
     setShowOnscreenDebugHud(normalized.show_onscreen_debug_hud);
     setDevForceSessionRagChips(normalized.dev_force_session_rag_chips);
+    setDevPreloadAskModel(normalized.dev_preload_ask_model);
     setDevFrozenTestChips(normalized.dev_frozen_test_chips);
     setTabResumeMode(normalized.tab_resume_mode);
     setNamedOllamaHosts(normalized.named_ollama_hosts);
@@ -352,6 +356,7 @@ export function usePluginSettings() {
         setDesktopAskVerboseLogging(DEFAULT_DESKTOP_ASK_VERBOSE_LOGGING);
         setDesktopAppLogLevel(DEFAULT_DESKTOP_APP_LOG_LEVEL);
         setPresetChipAnimation(DEFAULT_PRESET_CHIP_ANIMATION);
+        setPresetSingleChip(DEFAULT_PRESET_SINGLE_CHIP);
         setPresetChipFadeAnimationEnabled(DEFAULT_PRESET_CHIP_FADE_ANIMATION_ENABLED);
         setInputSanitizerUserDisabled(DEFAULT_INPUT_SANITIZER_USER_DISABLED);
         setCapabilities(DEFAULT_CAPABILITIES);
@@ -377,9 +382,9 @@ export function usePluginSettings() {
         setStrategySpoilerMaskingEnabled(DEFAULT_STRATEGY_SPOILER_MASKING_ENABLED);
         setStrategySpoilerAutoRevealAfterConsent(DEFAULT_STRATEGY_SPOILER_AUTO_REVEAL_AFTER_CONSENT);
         setSteamWebApiKey("");
-        setBonsaiTokenStreamingEnabled(DEFAULT_BONSAI_TOKEN_STREAMING_ENABLED);
         setShowOnscreenDebugHud(DEFAULT_SHOW_ONSCREEN_DEBUG_HUD);
         setDevForceSessionRagChips(DEFAULT_DEV_FORCE_SESSION_RAG_CHIPS);
+        setDevPreloadAskModel(DEFAULT_DEV_PRELOAD_ASK_MODEL);
         setDevFrozenTestChips([]);
         setTabResumeMode(DEFAULT_TAB_RESUME_MODE);
         setNamedOllamaHosts([]);
@@ -427,6 +432,7 @@ export function usePluginSettings() {
     desktopAppLogLevel,
     presetChipFadeAnimationEnabled,
     presetChipAnimation,
+    presetSingleChip,
     inputSanitizerUserDisabled,
     capabilities,
     aiCharacterEnabled,
@@ -449,9 +455,9 @@ export function usePluginSettings() {
     strategySpoilerMaskingEnabled,
     strategySpoilerAutoRevealAfterConsent,
     steamWebApiKey,
-    bonsaiTokenStreamingEnabled,
     showOnscreenDebugHud,
     devForceSessionRagChips,
+    devPreloadAskModel,
     devFrozenTestChips,
     tabResumeMode,
     namedOllamaHosts,
@@ -478,6 +484,8 @@ export function usePluginSettings() {
     setPresetChipFadeAnimationEnabled,
     presetChipAnimation,
     setPresetChipAnimation,
+    presetSingleChip,
+    setPresetSingleChip,
     inputSanitizerUserDisabled,
     capabilities,
     setCapabilities,
@@ -521,13 +529,13 @@ export function usePluginSettings() {
     setStrategySpoilerAutoRevealAfterConsent,
     steamWebApiKey,
     setSteamWebApiKey,
-    bonsaiTokenStreamingEnabled,
-    setBonsaiTokenStreamingEnabled,
     showOnscreenDebugHud,
     devForceSessionRagChips,
+    devPreloadAskModel,
     devFrozenTestChips,
     setShowOnscreenDebugHud,
     setDevForceSessionRagChips,
+    setDevPreloadAskModel,
     setDevFrozenTestChips,
     tabResumeMode,
     setTabResumeMode,

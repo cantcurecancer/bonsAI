@@ -54,6 +54,22 @@ export type PullModelFilterId = (typeof PULL_MODEL_FILTER_OPTIONS)[number]["id"]
 export const PULL_MODEL_RATING_COLUMN_LABEL = "Deck fit";
 
 /** Daily-driver picks — stretch (Expert large) models may run but are slow on Deck CPU/RAM. */
+/**
+ * An installed tag that can only turn text into vectors, never answer a question.
+ *
+ * Used to keep the pull picker from offering **Use for Ask** on one. Found on the Deck
+ * 2026-09-05 (PULL-PIN-01): `nomic-embed-text:latest` is installed to serve the knowledge base
+ * and carried the same star as a chat model, so one press would have pointed Ask at something
+ * that cannot reply.
+ *
+ * Name-based on purpose. These models are not in the curated catalogue — that is exactly why
+ * they land in the "other installed" list — so there is no `modes` field to read, and Ollama's
+ * own tag listing does not say what a model is *for*.
+ */
+export function isEmbeddingOnlyTag(tag: string): boolean {
+  return /embed/i.test(tag);
+}
+
 export function isDeckDailyPullModel(entry: PullModelEntry): boolean {
   return entry.group !== "stretch";
 }

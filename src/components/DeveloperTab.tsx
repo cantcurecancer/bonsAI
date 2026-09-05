@@ -92,12 +92,13 @@ export type DeveloperTabProps = {
   steamWebApiKey: string;
   setSteamWebApiKey: (v: string) => void;
 
-  bonsaiTokenStreamingEnabled: boolean;
-  setBonsaiTokenStreamingEnabled: (v: boolean) => void;
   showOnscreenDebugHud: boolean;
   setShowOnscreenDebugHud: (v: boolean) => void;
   devForceSessionRagChips: boolean;
   setDevForceSessionRagChips: (v: boolean) => void;
+  /** Warm the default Ask model into memory at boot so the first question skips the cold load. */
+  devPreloadAskModel: boolean;
+  setDevPreloadAskModel: (v: boolean) => void;
   /** QA: exact questions pinned into the preset carousel, in order. Empty means normal sampling. */
   devFrozenTestChips: string[];
   setDevFrozenTestChips: (v: string[]) => void;
@@ -130,12 +131,12 @@ export const DeveloperTab: React.FC<DeveloperTabProps> = ({
   setPresetChipAnimation,
   steamWebApiKey,
   setSteamWebApiKey,
-  bonsaiTokenStreamingEnabled,
-  setBonsaiTokenStreamingEnabled,
   showOnscreenDebugHud,
   setShowOnscreenDebugHud,
   devForceSessionRagChips,
   setDevForceSessionRagChips,
+  devPreloadAskModel,
+  setDevPreloadAskModel,
   devFrozenTestChips,
   setDevFrozenTestChips,
   ragHybridRetrievalEnabled,
@@ -200,6 +201,12 @@ export const DeveloperTab: React.FC<DeveloperTabProps> = ({
               description="Shows a small translucent log at the bottom of the plugin (focus, tab changes, ingest). Off by default so Settings and connection UI stay readable."
               checked={showOnscreenDebugHud}
               onChange={(checked) => setShowOnscreenDebugHud(checked)}
+            />
+            <ToggleField
+              label="Warm the Ask model at boot"
+              description="Loads the default Ask model into memory when the plugin starts, so the first question skips the cold load. Only ever warms a model of 3B parameters or under, and skips quietly if memory is tight — no error, no stuck status line."
+              checked={devPreloadAskModel}
+              onChange={(checked) => setDevPreloadAskModel(checked)}
             />
           </div>
         </PanelSectionRow>
@@ -442,12 +449,6 @@ export const DeveloperTab: React.FC<DeveloperTabProps> = ({
         </PanelSectionRow>
         <PanelSectionRow>
           <div className="bonsai-settings-bleed" style={{ width: "100%" }}>
-            <ToggleField
-              label="Token streaming (experimental)"
-              description="Render Ollama replies as they stream. TDP banners, strategy branches, model-policy disclosure, and spoilers still apply at the end of the reply."
-              checked={bonsaiTokenStreamingEnabled}
-              onChange={(checked) => setBonsaiTokenStreamingEnabled(checked)}
-            />
             <ToggleField
               label="Force session RAG chips (QA)"
               description="Always fill preset carousel slots from the knowledge base instead of a 30% chance each, and reseed the chips immediately. For verifying SESSION-RAG-CHIPS-01 without waiting on the roll. Needs Use local knowledge base on and a covered game running."

@@ -40,12 +40,12 @@ export function useDeveloperTabPayload({
   setPresetChipAnimation,
   steamWebApiKey,
   setSteamWebApiKey,
-  bonsaiTokenStreamingEnabled,
-  setBonsaiTokenStreamingEnabled,
   showOnscreenDebugHud,
   setShowOnscreenDebugHud,
   devForceSessionRagChips,
   setDevForceSessionRagChips,
+  devPreloadAskModel,
+  setDevPreloadAskModel,
   devFrozenTestChips,
   setDevFrozenTestChips,
   ragHybridRetrievalEnabled,
@@ -79,12 +79,12 @@ export function useDeveloperTabPayload({
         setPresetChipAnimation={setPresetChipAnimation}
         steamWebApiKey={steamWebApiKey}
         setSteamWebApiKey={setSteamWebApiKey}
-        bonsaiTokenStreamingEnabled={bonsaiTokenStreamingEnabled}
-        setBonsaiTokenStreamingEnabled={setBonsaiTokenStreamingEnabled}
         showOnscreenDebugHud={showOnscreenDebugHud}
         setShowOnscreenDebugHud={setShowOnscreenDebugHud}
         devForceSessionRagChips={devForceSessionRagChips}
         setDevForceSessionRagChips={setDevForceSessionRagChips}
+        devPreloadAskModel={devPreloadAskModel}
+        setDevPreloadAskModel={setDevPreloadAskModel}
         devFrozenTestChips={devFrozenTestChips}
         setDevFrozenTestChips={setDevFrozenTestChips}
         ragHybridRetrievalEnabled={ragHybridRetrievalEnabled}
@@ -105,9 +105,9 @@ export function useDeveloperTabPayload({
       presetChipFadeAnimationEnabled,
       presetChipAnimation,
       steamWebApiKey,
-      bonsaiTokenStreamingEnabled,
       showOnscreenDebugHud,
       devForceSessionRagChips,
+      devPreloadAskModel,
       devFrozenTestChips,
       ragHybridRetrievalEnabled,
       tabResumeMode,

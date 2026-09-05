@@ -346,10 +346,14 @@ _SIMPLE_FIELDS: dict[str, Any] = {
     # Developer and Desktop logging opt-ins.
     "desktop_debug_note_auto_save": _bool_default_false,
     "desktop_ask_verbose_logging": _bool_default_false,
-    "bonsai_token_streaming_enabled": _bool_default_false,
     "show_onscreen_debug_hud": _bool_default_false,
     # QA only: forces every eligible preset-carousel slot to a session RAG chip.
     "dev_force_session_rag_chips": _bool_default_false,
+    # Speed-mode VRAM preload: warm the default Ask model at boot instead of on the first
+    # question. Developer switch first (roadmap); off by default.
+    "dev_preload_ask_model": _bool_default_false,
+    # One suggestion chip instead of two (roadmap [chips]). Two stays the shipped default (D43).
+    "preset_single_chip": _bool_default_false,
     "desktop_app_log_level": _enum(_VALID_DESKTOP_APP_LOG_LEVELS, "off", strip=True),
     # Defaults to "resume" rather than an off-like value: D15 option B is the locked
     # behavior, and this control exists to compare the alternatives, not to gate it.

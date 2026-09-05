@@ -102,6 +102,42 @@ describe("MainTabPresetAnimatedChips memo gate", () => {
     }
   });
 
+  /*
+   * "One suggestion chip" setting (roadmap `[chips]` ★★★): on, the row shows a single chip
+   * instead of PRESET_VISIBLE_SLOTS. `.bonsai-preset-across` gives every rendered slot an equal
+   * flex share (section-6.ts), so a single slot child automatically takes the whole row -- no
+   * extra width math needed here, only that exactly one slot renders.
+   */
+  it("renders one chip, with the whole row, in fade / static / decode when presetSingleChip is on", () => {
+    for (const mode of ["static", "fade", "decode"] as const) {
+      const { container, unmount } = renderChips({ animationMode: mode, presetSingleChip: true });
+      const row = container.querySelector(".bonsai-preset-carousel-focus-root.bonsai-preset-across");
+      expect(row, `${mode}: the chips share one horizontal focus container`).toBeTruthy();
+      expect(row!.querySelectorAll(":scope > .bonsai-preset-carousel-slot")).toHaveLength(1);
+      unmount();
+    }
+  });
+
+  it("re-renders when presetSingleChip changes (memo comparator gate)", () => {
+    const { container, rerender } = renderChips({ animationMode: "static", presetSingleChip: false });
+    expect(
+      container.querySelectorAll(".bonsai-preset-carousel-focus-root.bonsai-preset-across > .bonsai-preset-carousel-slot"),
+    ).toHaveLength(PRESET_VISIBLE_SLOTS);
+
+    rerender(
+      <MainTabPresetAnimatedChips
+        seeds={[seed("alpha"), seed("bravo"), seed("charlie")]}
+        setUnifiedInput={vi.fn()}
+        animationMode="static"
+        presetSingleChip={true}
+      />,
+    );
+
+    expect(
+      container.querySelectorAll(".bonsai-preset-carousel-focus-root.bonsai-preset-across > .bonsai-preset-carousel-slot"),
+    ).toHaveLength(1);
+  });
+
   it("carousel mode is a window on the history with the focused chip marked", () => {
     const { container } = renderChips({ animationMode: "carousel" });
     expect(container.querySelector(".bonsai-preset-carousel-viewport")).toBeTruthy();
@@ -117,6 +153,36 @@ describe("MainTabPresetAnimatedChips memo gate", () => {
       s.getAttribute("data-bonsai-preset-visible"),
     );
     expect(visible).toEqual(["true", "true", "false"]);
+  });
+
+  /*
+   * "One suggestion chip" setting in carousel mode: the window narrows to one, so the focused chip
+   * is the only one that is both a visible chip and a focus stop -- "the first and last chip are
+   * the same chip" (roadmap `[chips]` ★★★). --bonsai-preset-visible-slots is what the CSS reads
+   * to size and slide the track (section-4.ts); with one slot it must read "1", not the
+   * PRESET_VISIBLE_SLOTS default.
+   */
+  it("carousel mode: presetSingleChip narrows the window to one chip and writes the CSS variable", () => {
+    const { container } = renderChips({ animationMode: "carousel", presetSingleChip: true });
+    const track = container.querySelector(".bonsai-preset-carousel-track") as HTMLElement | null;
+    expect(track).toBeTruthy();
+    expect(track!.style.getPropertyValue("--bonsai-preset-visible-slots")).toBe("1");
+
+    const focused = container.querySelectorAll(".bonsai-preset-carousel-slot--focus");
+    expect(focused).toHaveLength(1);
+    expect(focused[0]?.textContent).toContain("alpha");
+
+    const visible = Array.from(container.querySelectorAll(".bonsai-preset-carousel-slot")).map((s) =>
+      s.getAttribute("data-bonsai-preset-visible"),
+    );
+    // Only the focused chip is on screen; the other two are rendered (for the slide) but clipped.
+    expect(visible).toEqual(["true", "false", "false"]);
+  });
+
+  it("carousel mode without the setting still writes PRESET_VISIBLE_SLOTS to the CSS variable", () => {
+    const { container } = renderChips({ animationMode: "carousel" });
+    const track = container.querySelector(".bonsai-preset-carousel-track") as HTMLElement | null;
+    expect(track!.style.getPropertyValue("--bonsai-preset-visible-slots")).toBe(String(PRESET_VISIBLE_SLOTS));
   });
 
   /* The Tip badge exists to be seen at a glance (Phase 4 track 1); only the prompt text scrolls. */
@@ -153,6 +219,7 @@ describe("MainTabPresetAnimatedChips memo gate", () => {
       "onCarouselExitDown",
       "useLocalKnowledgeBase",
       "askRestartToken",
+      "presetSingleChip",
     ];
 
     // `setUnifiedInput` is deliberately not compared — it is a setState identity

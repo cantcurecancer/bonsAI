@@ -255,6 +255,7 @@ describe("settings contracts", () => {
       desktopAppLogLevel: "off",
       presetChipFadeAnimationEnabled: true,
       presetChipAnimation: "fade",
+      presetSingleChip: false,
       inputSanitizerUserDisabled: false,
       capabilities: DEFAULT_CAPABILITIES,
       aiCharacterEnabled: true,
@@ -275,8 +276,7 @@ describe("settings contracts", () => {
       strategySpoilerMaskingEnabled: false,
       strategySpoilerAutoRevealAfterConsent: false,
       steamWebApiKey: "abc",
-      bonsaiTokenStreamingEnabled: true,
-      showOnscreenDebugHud: false, devForceSessionRagChips: false, devFrozenTestChips: [],
+      showOnscreenDebugHud: false, devForceSessionRagChips: false, devPreloadAskModel: false, devFrozenTestChips: [],
       tabResumeMode: "resume",
       namedOllamaHosts: [],
       voiceSttModel: "tiny.en",
@@ -304,7 +304,6 @@ describe("settings contracts", () => {
     expect(p.strategy_spoiler_auto_reveal_after_consent).toBe(false);
     expect(p.steam_web_api_key).toBe("abc");
     expect(p.show_developer_tab).toBe(true);
-    expect(p.bonsai_token_streaming_enabled).toBe(true);
   });
 
   it("toBonsaiSettingsPayload merges patch over base (character picker path)", () => {
@@ -319,6 +318,7 @@ describe("settings contracts", () => {
       desktopAppLogLevel: "off" as const,
       presetChipFadeAnimationEnabled: true,
       presetChipAnimation: "fade" as const,
+      presetSingleChip: false,
       inputSanitizerUserDisabled: false,
       capabilities: DEFAULT_CAPABILITIES,
       aiCharacterEnabled: true,
@@ -339,8 +339,7 @@ describe("settings contracts", () => {
       strategySpoilerMaskingEnabled: DEFAULT_STRATEGY_SPOILER_MASKING_ENABLED,
       strategySpoilerAutoRevealAfterConsent: false,
       steamWebApiKey: "",
-      bonsaiTokenStreamingEnabled: false,
-      showOnscreenDebugHud: false, devForceSessionRagChips: false, devFrozenTestChips: [],
+      showOnscreenDebugHud: false, devForceSessionRagChips: false, devPreloadAskModel: false, devFrozenTestChips: [],
       tabResumeMode: "resume" as const,
       namedOllamaHosts: [],
       voiceSttModel: "tiny.en" as const,
@@ -462,6 +461,7 @@ describe("settings contracts", () => {
       desktopAppLogLevel: normalized.desktop_app_log_level,
       presetChipFadeAnimationEnabled: normalized.preset_chip_fade_animation_enabled,
       presetChipAnimation: normalized.preset_chip_animation,
+      presetSingleChip: normalized.preset_single_chip,
       inputSanitizerUserDisabled: normalized.input_sanitizer_user_disabled,
       capabilities: normalized.capabilities,
       aiCharacterEnabled: normalized.ai_character_enabled,
@@ -482,9 +482,9 @@ describe("settings contracts", () => {
       strategySpoilerMaskingEnabled: normalized.strategy_spoiler_masking_enabled,
       strategySpoilerAutoRevealAfterConsent: normalized.strategy_spoiler_auto_reveal_after_consent,
       steamWebApiKey: normalized.steam_web_api_key,
-      bonsaiTokenStreamingEnabled: normalized.bonsai_token_streaming_enabled,
       showOnscreenDebugHud: normalized.show_onscreen_debug_hud,
       devForceSessionRagChips: normalized.dev_force_session_rag_chips,
+      devPreloadAskModel: normalized.dev_preload_ask_model,
       devFrozenTestChips: normalized.dev_frozen_test_chips,
       tabResumeMode: normalized.tab_resume_mode,
       namedOllamaHosts: normalized.named_ollama_hosts,

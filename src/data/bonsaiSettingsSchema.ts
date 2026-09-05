@@ -86,6 +86,11 @@ export type BonsaiSettings = {
   preset_chip_fade_animation_enabled: boolean;
   /** Main-tab preset chips: crossfade cycle, vertical carousel, or static rotation without opacity animation. */
   preset_chip_animation: PresetChipAnimation;
+  /**
+   * When true, the suggestion row shows one chip with the whole 300px column instead of two side
+   * by side. Off (two chips) is the shipped default (D43, 2026-09-01).
+   */
+  preset_single_chip: boolean;
   /** When true, Ask input sanitizer lane is off (set via README magic phrases, not the Settings UI). */
   input_sanitizer_user_disabled: boolean;
   capabilities: BonsaiCapabilities;
@@ -127,8 +132,6 @@ export type BonsaiSettings = {
   strategy_spoiler_auto_reveal_after_consent: boolean;
   /** Steam Web API key for GetPlayerBans (VAC check command); stored on device with plugin settings. */
   steam_web_api_key: string;
-  /** When true, Main tab shows progressive Ollama token streaming (Developer tab opt-in). */
-  bonsai_token_streaming_enabled: boolean;
   /** When true, show the translucent on-screen ingest debug HUD (Developer tab opt-in). */
   show_onscreen_debug_hud: boolean;
   /**
@@ -136,6 +139,12 @@ export type BonsaiSettings = {
    * `SESSION_RAG_CHIP_PROBABILITY`. Makes SESSION-RAG-CHIPS-01 deterministic; not a user feature.
    */
   dev_force_session_rag_chips: boolean;
+  /**
+   * Developer-tab switch: warm the default Ask model into memory at plugin boot so the first
+   * question does not pay the cold-load cost. Off by default; the backend only ever warms a
+   * model of 3B parameters or under and skips silently when memory is tight.
+   */
+  dev_preload_ask_model: boolean;
   /** Which tab a reopen lands on — the three D15 options behind one Developer-tab control. */
   tab_resume_mode: TabResumeMode;
   /** Labeled ``host:port`` presets for quick Connection switching (max 4). */
@@ -172,6 +181,7 @@ export type BonsaiSettingsSnapshotInput = {
   desktopAppLogLevel: DesktopAppLogLevel;
   presetChipFadeAnimationEnabled: boolean;
   presetChipAnimation: PresetChipAnimation;
+  presetSingleChip: boolean;
   inputSanitizerUserDisabled: boolean;
   capabilities: BonsaiCapabilities;
   aiCharacterEnabled: boolean;
@@ -194,9 +204,9 @@ export type BonsaiSettingsSnapshotInput = {
   strategySpoilerMaskingEnabled: boolean;
   strategySpoilerAutoRevealAfterConsent: boolean;
   steamWebApiKey: string;
-  bonsaiTokenStreamingEnabled: boolean;
   showOnscreenDebugHud: boolean;
   devForceSessionRagChips: boolean;
+  devPreloadAskModel: boolean;
   tabResumeMode: TabResumeMode;
   namedOllamaHosts: NamedOllamaHost[];
   devFrozenTestChips: string[];
@@ -230,9 +240,9 @@ export const DEFAULT_SCREENSHOT_ATTACHMENT_PRESET: ScreenshotAttachmentPreset = 
 export const DEFAULT_SCREENSHOT_MAX_DIMENSION: ScreenshotMaxDimension = 1280;
 export const DEFAULT_DESKTOP_DEBUG_NOTE_AUTO_SAVE = false;
 export const DEFAULT_DESKTOP_ASK_VERBOSE_LOGGING = false;
-export const DEFAULT_BONSAI_TOKEN_STREAMING_ENABLED = false;
 export const DEFAULT_SHOW_ONSCREEN_DEBUG_HUD = false;
 export const DEFAULT_DEV_FORCE_SESSION_RAG_CHIPS = false;
+export const DEFAULT_DEV_PRELOAD_ASK_MODEL = false;
 /** D15 option B, the locked decision — a fresh install resumes the tab you left. */
 export const DEFAULT_TAB_RESUME_MODE: TabResumeMode = "resume";
 export const TAB_RESUME_MODE_OPTIONS: TabResumeMode[] = ["always_main", "resume", "resume_recent"];
@@ -250,6 +260,8 @@ export const DEFAULT_DESKTOP_APP_LOG_LEVEL: DesktopAppLogLevel = "off";
 export const DESKTOP_APP_LOG_LEVEL_OPTIONS: DesktopAppLogLevel[] = ["off", "default", "verbose"];
 export const DEFAULT_PRESET_CHIP_FADE_ANIMATION_ENABLED = true;
 export const DEFAULT_PRESET_CHIP_ANIMATION: PresetChipAnimation = "fade";
+/** D43 (2026-09-01): two chips is the shipped default; this setting overrides it to one. */
+export const DEFAULT_PRESET_SINGLE_CHIP = false;
 export const PRESET_CHIP_ANIMATION_OPTIONS: PresetChipAnimation[] = ["fade", "carousel", "static", "decode"];
 export const DEFAULT_INPUT_SANITIZER_USER_DISABLED = false;
 export const DEFAULT_SHOW_DEVELOPER_TAB = false;

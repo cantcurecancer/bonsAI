@@ -18,6 +18,17 @@ import { holdMsForPresetText } from "../../data/presets";
  * two leave ~20 — enough to recognise most suggestions without waiting for them to scroll.
  */
 export const PRESET_VISIBLE_SLOTS = 2;
+
+/**
+ * The row's actual visible-slot count for this render: 1 when the "one suggestion chip" setting
+ * is on, otherwise `PRESET_VISIBLE_SLOTS`. `PRESET_VISIBLE_SLOTS` keeps meaning "the shipped
+ * default" — carouselState.test.ts pins it at exactly 2 — and every call site that currently
+ * reads the constant directly should read this instead, so the setting overrides at the point of
+ * use rather than by changing what the default means.
+ */
+export function effectivePresetVisibleSlots(singleChip: boolean): number {
+  return singleChip ? 1 : PRESET_VISIBLE_SLOTS;
+}
 /** Chip height, per the drawing (was 34 when the row was one chip). */
 export const PRESET_CHIP_HEIGHT_PX = 30;
 /** Space between the chips. Not in the drawing; measured after the first deploy. */

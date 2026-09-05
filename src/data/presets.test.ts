@@ -36,6 +36,20 @@ describe("presets", () => {
     expect(detectPromptCategory("What should I expect while answers stream in?")).toBe("general");
   });
 
+  it("detects category for the wave 2 preset refresh (2026-09-05)", () => {
+    // These must hit the exact-preset-text match, not the keyword fallback. Three of the six
+    // start with "how do i", which is itself a "strategy" keyword (CATEGORY_KEYWORDS) -- so if
+    // the exact match ever stopped firing (e.g. a wording change added a "for ..." clause, which
+    // detectPromptCategory strips before comparing), these would silently reclassify as
+    // "strategy" instead of failing loudly. This test is the tripwire for that.
+    expect(detectPromptCategory("How do I turn on Thinking mode?")).toBe("general");
+    expect(detectPromptCategory("What does Kids master lock do?")).toBe("general");
+    expect(detectPromptCategory("What is Caveman reply style?")).toBe("general");
+    expect(detectPromptCategory("Where do your game tips come from?")).toBe("general");
+    expect(detectPromptCategory("How do I start a new named chat?")).toBe("general");
+    expect(detectPromptCategory("How do I ask about a game that isn't running?")).toBe("general");
+  });
+
   it("returns contextual presets with requested length", () => {
     const presets = getContextualPresets("performance", 3);
     expect(presets.length).toBe(3);

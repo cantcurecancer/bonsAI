@@ -186,6 +186,55 @@ describe("preset row D-pad handlers", () => {
   });
 
   /*
+   * "One suggestion chip" setting (roadmap `[chips]` ★★★): with a single visible slot the one chip
+   * on screen is both the first and the last, so both Left and Right must claim the move and fire
+   * the out-of-chips glow rather than either one silently walking somewhere.
+   */
+  describe("a single chip (count 1) is both edges at once", () => {
+    it("Left claims the move without focusing anything and fires the left glow", () => {
+      const onBlockedEdge = vi.fn();
+      const { handlers, focusChip } = make(0, 1);
+      const withCue = buildChipNavHandlers({
+        index: 0,
+        count: 1,
+        focusChip: vi.fn(() => true),
+        exitDown: vi.fn(() => true),
+        exitUp: vi.fn(() => false),
+        onBlockedEdge,
+      });
+      expect(handlers.onMoveLeft()).toBe(true);
+      expect(focusChip).not.toHaveBeenCalled();
+      expect(withCue.onMoveLeft()).toBe(true);
+      expect(onBlockedEdge).toHaveBeenCalledWith("left");
+    });
+
+    it("Right claims the move without focusing anything and fires the right glow", () => {
+      const onBlockedEdge = vi.fn();
+      const { handlers, focusChip } = make(0, 1);
+      const withCue = buildChipNavHandlers({
+        index: 0,
+        count: 1,
+        focusChip: vi.fn(() => true),
+        exitDown: vi.fn(() => true),
+        exitUp: vi.fn(() => false),
+        onBlockedEdge,
+      });
+      expect(handlers.onMoveRight()).toBe(true);
+      expect(focusChip).not.toHaveBeenCalled();
+      expect(withCue.onMoveRight()).toBe(true);
+      expect(onBlockedEdge).toHaveBeenCalledWith("right");
+    });
+
+    it("advanceAtEnd still gets first refusal on Right, same as any other last chip", () => {
+      const advanceAtEnd = vi.fn(() => true);
+      const { handlers, focusChip } = make(0, 1, advanceAtEnd);
+      expect(handlers.onMoveRight()).toBe(true);
+      expect(advanceAtEnd).toHaveBeenCalledTimes(1);
+      expect(focusChip).not.toHaveBeenCalled();
+    });
+  });
+
+  /*
    * D58 #2: Up used to be a single `takeNavFocus("session-context-strip")` call; it is now a
    * two-step fallback (strip, then the always-mounted chat slot row -- see usePresetRowNav in
    * MainTabPresetAnimatedChips.tsx, which is where the two `takeNavFocus` targets actually live).

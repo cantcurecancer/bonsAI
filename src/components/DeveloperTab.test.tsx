@@ -29,12 +29,12 @@ function baseProps(overrides: Partial<DeveloperTabProps> = {}): DeveloperTabProp
     setPresetChipAnimation: () => {},
     steamWebApiKey: "",
     setSteamWebApiKey: () => {},
-    bonsaiTokenStreamingEnabled: false,
-    setBonsaiTokenStreamingEnabled: () => {},
     showOnscreenDebugHud: false,
     setShowOnscreenDebugHud: () => {},
     devForceSessionRagChips: false,
     setDevForceSessionRagChips: () => {},
+    devPreloadAskModel: false,
+    setDevPreloadAskModel: () => {},
     devFrozenTestChips: [],
     setDevFrozenTestChips: () => {},
     ragHybridRetrievalEnabled: false,
@@ -44,6 +44,25 @@ function baseProps(overrides: Partial<DeveloperTabProps> = {}): DeveloperTabProp
     ...overrides,
   };
 }
+
+describe("DeveloperTab warm-Ask-model-at-boot toggle", () => {
+  function checkedOf(el: Element | null): unknown {
+    return (el as unknown as { checked?: unknown } | null)?.checked;
+  }
+
+  it("renders unchecked when the setting is off (shipped default)", () => {
+    render(<DeveloperTab {...baseProps({ devPreloadAskModel: false })} />);
+    const toggle = document.querySelector('[label="Warm the Ask model at boot"]');
+    expect(toggle).toBeTruthy();
+    expect(checkedOf(toggle)).toBe(false);
+  });
+
+  it("renders checked when the setting is on", () => {
+    render(<DeveloperTab {...baseProps({ devPreloadAskModel: true })} />);
+    const toggle = document.querySelector('[label="Warm the Ask model at boot"]');
+    expect(checkedOf(toggle)).toBe(true);
+  });
+});
 
 describe("DeveloperTab frozen test chips clear button", () => {
   it("renders no stop named Clear frozen test chips when no batch is pinned", () => {
