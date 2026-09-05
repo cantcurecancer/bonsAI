@@ -361,5 +361,17 @@
         "q11"
       ]
     }
+  },
+  {
+    "name": "a setting the code no longer knows about does not reset the rest",
+    "input": {
+      "a_setting_that_no_longer_exists": true,
+      "reply_verbosity": "detailed",
+      "desktop_app_log_level": "verbose"
+    },
+    "expected": {
+      "reply_verbosity": "detailed",
+      "desktop_app_log_level": "verbose"
+    }
   }
 ]
