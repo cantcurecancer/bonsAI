@@ -582,3 +582,12 @@ measurements and the QA rows survive. The roadmap keeps a one-line entry in **Do
   60-second walk restarts when an Ask completes, even though a pinned batch always reseeds to the same three chips.
   Row **QA-FROZEN-CHIPS-02**.
   - **Deck 2026-09-04, build 49241e7:** with plan 31 batch 1 pinned, Right at the newest chip pulled sentences 6 to 11 in one by one; after an Ask the sixty-second walk restarted and the row changed ten times in twenty seconds (`runs/QA-FROZEN-CHIPS-02-right-at-edge-pulls-next-entry.json`).
+
+### Up from the preset chips walked back through the chip history before it left the row (verified on the Deck 2026-09-04)
+
+- ★ `[focus]` **Up from the preset chips walks back through the chip history before it leaves the row** — **VERIFY.**
+  Fixed at the desk 2026-09-04 (D58 #2): Up now tries the session context strip first, same as before, and falls
+  back to the always-mounted chat slot row when no strip is registered (an empty chat), instead of leaving the
+  press unclaimed for Steam's own multi-step fallback to walk back through chip history first. Row
+  **PRESET-ONE-LINE-03** Up step.
+  - **Deck 2026-09-04, build f9a4c17:** one Up from a chip reached the session strip with a reply on screen and the chat slot row on the empty chat, every stop visible (`runs/PRESET-ONE-LINE-03-up-leaves-at-once-with-reply-b.json`, `runs/PRESET-ONE-LINE-03-up-leaves-at-once-empty-chat.json`). The maintainer chose this behaviour after a mockup (D58 #2).

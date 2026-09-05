@@ -241,11 +241,6 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
   grid column now carries 6px of inner padding so a focused tile's ring has room to render before the column's own
   `overflow: hidden` clips it — most visible before the fix on an edge tile. Style only. Owed: a screenshot with the ring
   visible on an edge tile. Row **CHAR-PICKER-RING-01**.
-- ★ `[focus]` **Up from the preset chips walks back through the chip history before it leaves the row** — **VERIFY.**
-  Fixed at the desk 2026-09-04 (D58 #2): Up now tries the session context strip first, same as before, and falls
-  back to the always-mounted chat slot row when no strip is registered (an empty chat), instead of leaving the
-  press unclaimed for Steam's own multi-step fallback to walk back through chip history first. Row
-  **PRESET-ONE-LINE-03** Up step.
 - ★ `[reply]` **After reopening the panel, a branch-pick turn's header shows the internal prompt** — **VERIFY.** Fixed at the desk
   2026-08-28: the caption the user saw is saved with the turn. Owed: make a branch pick, reopen, read the header. Row
   **CHAT-HEADER-CAPTION-01**. [Detail](archive/roadmap-bugs-fixed.md#moved-from-the-roadmap-2026-09-02).
@@ -344,6 +339,8 @@ on 2026-07-30 (`apply_tdp` no longer exists). Preserved in the archive.
 since April (`25742f2`), and a deliberate failing test exits 1 today. If it recurs, record the exact command and shell.
 
 **September 2026**
+- ★ `[focus]` **Up from a preset chip leaves the row in one press** — verified on the Deck 2026-09-04 on an empty chat (to the chat row)
+  and with a reply on screen (to the session strip); Left still walks the history (PRESET-ONE-LINE-03, D58 #2). [Detail](archive/roadmap-bugs-fixed.md#moved-from-the-roadmap-2026-09-04).
 - ★ `[chips]` **A pinned test batch longer than the row now reaches its tail, and an Ask restarts the walk** — verified on the Deck
   2026-09-04 with the eleven-sentence batch (QA-FROZEN-CHIPS-02). [Detail](archive/roadmap-bugs-fixed.md#moved-from-the-roadmap-2026-09-04).
 - ★ `[focus]` **The greyed-out Clear frozen test chips button no longer takes a dead press** — verified on the Deck 2026-09-04: with no
