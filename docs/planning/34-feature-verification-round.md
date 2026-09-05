@@ -411,3 +411,35 @@ Two things the sweeps closed or confirmed on the way:
 
 Three unnamed stops on Main (the answer chunks) and one on Developer (a text field) carry no accessible
 name. Not a failure by any row, but worth knowing: a sweep cannot tell you what they are.
+
+### Where the round stands, 2026-09-05 ~05:50
+
+**Four entries closed**, taking the Verify list from 23 to 19:
+
+| Closed | How |
+|---|---|
+| Thinking effort control | Nothing was owed — both checks had passed and nobody moved the entry. Desk work. |
+| Expert mode gets as many cards as Strategy | Its own check passed 2026-09-04; the last companion check passed tonight with an uncovered game. |
+| Show details says what the knowledge base had for your game | All four readings now confirmed, the uncovered-game one tonight. |
+| Asking about a boss by name | All seven sentences right, and the fence behaves in both directions on screen. |
+
+**Three bugs filed, all with evidence both ways.** The Speed-mode meaning search, the slower embed on one
+game, and the navigation state where Down stops half way. The third began as a wrong diagnosis and was
+corrected the same session after a loader restart disproved it.
+
+**Not attempted, and why.** Half-Life 2's chip-crawl frame sampling: its entry also needs the maintainer's
+eyes, so it cannot close tonight either way. Baldur's Gate 3 and The Sims 4: their two sentences are
+already proven by the extractor probe and the entry is closed. The thinking-line emoji checks: they need a
+turn that happens to print an emoji, which 32 sampled phases last round did not produce — luck, not a
+scheduled check. The soft-cap and chat-slot entries each still carry a filed bug, so no amount of
+checking closes them tonight.
+
+**A note for whoever drives next.** The shoulder buttons switch tabs from anywhere except the chat slot
+row, where they switch chats. Landing in a tab puts the ring back where it was in that tab's body, not on
+the tab bar, so a shoulder press from deep in one tab lands deep in another. That is Steam's own
+behaviour and the tab-switch row already passes on it — but it makes scripted navigation fragile. Walk up
+to the tab bar first.
+
+**The device was left exactly as it was found** — every setting re-read off disk and matching, all five
+permissions on, no game running, no frozen chips pinned. Backups for the morning's data clear are in
+place: `settings.json.bak-round34` beside the settings file, and `~/bonsai-round34-chats.tgz`.
