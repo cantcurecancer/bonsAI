@@ -21,6 +21,7 @@ import {
   formatSizeGb,
   isDeckDailyPullModel,
   isDeckEssentialsPullModel,
+  isEmbeddingOnlyTag,
   type PullModelEntry,
   type PullModelFilterId,
   type PullModelGroup,
@@ -1073,6 +1074,11 @@ export function PullModelsModal(props: PullModelsModalProps) {
     const navDelete = rowNavHandlers(rowIndex, "delete", true);
     const pinned = pinnedAskTag === tag;
     const isNew = isRecentPullModelTag(pullRecord, tag, Date.now());
+    /* An embedding model is installed to serve the knowledge base and can never answer a
+       question, so pinning one for Ask would point it at something that cannot reply. The button
+       stays present and focusable rather than being dropped: removing it would change the row's
+       D-pad path, and a focus regression is a worse trade than a button that explains itself. */
+    const embeddingOnly = isEmbeddingOnlyTag(tag);
 
     return (
       <div
@@ -1086,14 +1092,21 @@ export function PullModelsModal(props: PullModelsModalProps) {
             focusable
             className={`bonsai-pullmodels-slot bonsai-pullmodels-slot--installed${pinned ? " bonsai-pullmodels-slot--pinned" : ""}`}
             disabled={pinBusyTag === tag}
-            aria-label={pinned ? `${tag} is used for Ask` : `Use ${tag} for Ask`}
+            aria-label={
+              embeddingOnly
+                ? `${tag} cannot answer questions, so it cannot be used for Ask`
+                : pinned
+                  ? `${tag} is used for Ask`
+                  : `Use ${tag} for Ask`
+            }
             onClick={(ev) => {
               ev.stopPropagation();
+              if (embeddingOnly) return;
               void pinModelForAsk(null, tag);
             }}
             {...(rowNavHandlers(rowIndex, "select", true) as Record<string, unknown>)}
           >
-            {pinned ? "★" : "☆"}
+            {embeddingOnly ? "—" : pinned ? "★" : "☆"}
           </Button>
         </div>
         <div className="bonsai-pullmodels-col bonsai-pullmodels-col--model" role="cell">

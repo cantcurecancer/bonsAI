@@ -20,6 +20,7 @@ import {
   PULL_MODEL_NEW_BADGE_WINDOW_MS,
   type PullModelPullRecord,
 } from "./PullModelsModal";
+import { isEmbeddingOnlyTag } from "../data/pullModelCatalog";
 import { getRpcCallLog, setRpcHandler } from "../test-harness/fakeDeckyRpc";
 import { defaultSettingsFixture } from "../test-harness/rpcFixtures";
 
@@ -50,6 +51,21 @@ function showAllGroups(container: HTMLElement) {
   ) as HTMLButtonElement;
   fireEvent.click(toggle);
 }
+
+describe("isEmbeddingOnlyTag", () => {
+  it("spots the embedding model the knowledge base installs", () => {
+    // Found on the Deck 2026-09-05 (PULL-PIN-01): nomic-embed-text is installed to serve the
+    // knowledge base and carried the same "Use for Ask" star as a chat model, so one press
+    // would have pointed Ask at something that cannot reply.
+    expect(isEmbeddingOnlyTag("nomic-embed-text:latest")).toBe(true);
+    expect(isEmbeddingOnlyTag("mxbai-embed-large")).toBe(true);
+  });
+
+  it("does not catch a chat model", () => {
+    expect(isEmbeddingOnlyTag("qwen2.5:1.5b")).toBe(false);
+    expect(isEmbeddingOnlyTag("gemma4:e2b-it-qat")).toBe(false);
+  });
+});
 
 describe("computeUpdatedPullRecord", () => {
   const now = 1_000_000_000_000;
