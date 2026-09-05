@@ -155,8 +155,6 @@ replace it with a specific issue when one exists.
   same. Wanted: a short glow or bounce at the blocked edge, the way Android lights up the end of a list you scroll past, for both
   the D-pad and a finger. Any effect with the same meaning is fine. Must respect reduced motion and stay inside the 300 px column;
   the row's edge behaviour itself (Left/Right hold still, Right pulls the next pinned entry in) does not change.
-- ★★ `[chips]` **Preset chip expansion** — **OPEN, incremental.** Add or refresh preset strings as features land. Wave 1 shipped four
-  prompts; row **PRESET-EXPAND-W1-01** still owed. Not in scope: replacing the `fade` default; session RAG chips (shipped).
 - ★★ `[focus]` **Fewer D-pad stops on a finished reply** — **OPEN, filed 2026-09-02.** A finished answer gets one stop per paragraph,
   so a long reply is ten or more presses before the chips. Merge neighbouring paragraphs into sections of about one screen each.
   Streaming is untouched: the finished reply is re-split once the stream closes. Code fences stay whole.
@@ -190,8 +188,6 @@ replace it with a specific issue when one exists.
 - ★★★ `[layout]` **Session context folds into Show details** — **OPEN, workshop before building.** The **Session context (N turns)**
   bar stops being its own row, so a settled answer costs one collapsed control instead of two.
   [Open questions](roadmap-details.md#session-context-folds-into-show-details).
-- ★★★ `[ollama]` **Custom model in the Pull Models picker** — **OPEN.** Pull any valid Ollama-library tag, a **Use for Ask** pin, and a
-  **New** badge (30 days). Not in scope: LAN pull (see **LAN custom model pull**).
 - ★★★ `[ollama]` **Dynamic keep-alive / smart unload** — **OPEN, research spike.** Hold models loaded, or unload when a game takes
   focus on the Deck APU? The spike decides go or no-go; no production unload before it.
 - ★★★ `[ollama]` **Per-mode latency timeouts** — **OPEN.** Separate warning and timeout values per Ask mode.
@@ -284,6 +280,10 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
 - ★★ `[chat]` **The game a chat belongs to, above its title** — **VERIFY.** Shipped 2026-08-30 in quiet text above the slot title;
   only chats created after that date carry the name. Row **CHAT-SLOTS-V3-14c**. It costs a line of height, which cuts against the
   vertical-space goal; decide whether it shows always or only when the row has focus.
+- ★★ `[chips]` **Preset chip expansion** — **VERIFY.** Wave 2 shipped 2026-09-05: six new chips pointing at thinking mode, the kids
+  lock, the Caveman reply style, where game tips come from, named chats, and asking about a game that is not running. Wave 1's row
+  **PRESET-EXPAND-W1-01** is still owed as well, so both waves want the same walk. Row **PRESET-EXPAND-W2-01**. Incremental by
+  design: when the next batch of features needs chips, file it fresh rather than reopening this.
 - ★★ `[QA]` **Deferred manual QA** — **VERIFY.** Tier 0 smokes (SMOKE-A, C, F) then Tier 1 (SMOKE-E, H), and a broader prompt-testing
   pass. SMOKE-B was retired 2026-09-03 (D57 #6). Round in progress: [plan 31](planning/31-deck-verification-round.md).
 - ★★ `[reply]` **Thinking line fixes from 2026-08-07/08** — **VERIFY.** Emoji upright, lazy status tag survives, no bare-emoji phase
@@ -291,6 +291,10 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
   **THINKING-SLOW-01**, **THINKING-LIVE-01**, **THINKING-SPOILER-01**. [Log](planning/06-thinking-blurbs-review.md#10-implementation-log).
 - ★★ `[reply]` **Token streaming Phase A/B** — **VERIFY.** Start stutter fixed, sections as D-pad stops, scroll follow. Rows
   **STREAM-REVEAL-01**, **STREAM-09**, **STREAM-FOLLOW-01**. [Review](planning/05-token-streaming-review.md).
+- ★★★ `[ollama]` **Custom model in the Pull Models picker** — **VERIFY.** Shipped 2026-09-05. A field at the top of the picker takes
+  any Ollama-library name and pulls it, and a made-up name comes back with a reason instead of nothing happening. A star on each
+  installed model makes it the one Ask reaches for first. Anything pulled in the last thirty days carries a **New** label. LAN pull
+  untouched. Rows **PULL-CUSTOM-01**, **PULL-CUSTOM-02**, **PULL-PIN-01**, **PULL-NEW-BADGE-01**.
 - ★★★ `[perms]` **Kids master lock** — **VERIFY.** Shipped 2026-08-09. Rows **KIDS-LOCK-01**, **KIDS-FOCUS-01**, **KIDS-REGRESS-01**
   (and **KIDS-LOCK-02** with a child account). Live CEF Stage 0 confirmation still owed.
 - ★★★ `[platform]` **Legacy-loader shim removal (D11)** — **VERIFY.** RPC probe passed; the Main-tab Ask pass is open. Row **D11-SHIM-01**.
