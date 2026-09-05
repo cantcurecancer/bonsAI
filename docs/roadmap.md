@@ -255,10 +255,10 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
   paths pass on the Deck 2026-09-04.** Closing the Clear cache confirmation returns the ring to the Clear cache button; after the
   trap's node check was made realm-safe, a chord close and reopen left the ring on Decky's back button, visible. Owed: the
   suspend-and-resume remount, which the rig cannot force. Row **TAB-BAR-11**.
-- ★★ `[focus]` **Down from the chat slot lands on the whole reply before its first section** — **VERIFY, Down path passed on the
-  Deck 2026-09-04.** From the chat row, Down lands on the turn header and then on the first stop inside the answer, never on the
-  bare bubble. Owed: the Up half on a reply without a branch picker (with one, Up from the picker skips the answer, a separate
-  bug filed 2026-09-04). Row **CHAT-REPLY-ENTRY-01**.
+- ★★ `[focus]` **Down from the chat slot lands on the whole reply before its first section** — **VERIFY, Down half passed, Up half
+  failed on the Deck 2026-09-04.** From the chat row, Down lands on the turn header and then on the first stop inside the answer,
+  never on the bare bubble. Up from Helpful still lands on the bare bubble: the fix reached only the Retry row, and the thumbs
+  row's Up still hands the press to Steam. Back with its lane. Row **CHAT-REPLY-ENTRY-01**.
 - ★★ `[focus]` `[perms]` **The Open Permissions button under a blocked reply is not a D-pad stop** — **VERIFY, first fix failed on
   the Deck 2026-09-04.** The button is built as a stop now, but the hops into its row used a plain focus across containers: Up from
   the session strip lost the ring, and the helper stamped the row with a tab index that removes it from Steam's graph. Back with its

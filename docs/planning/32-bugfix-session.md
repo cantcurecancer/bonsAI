@@ -329,3 +329,5 @@ Written as things land.
   bug 7's redo **fails** the same way, and the discriminating test showed the cause: any button press inside the picker submits the
   modal's form and closes it, Reset included; lane B is stopping the submit. Lane E's overlay fix landed (`4f9a846`) for the third
   deploy; lane A's Open Permissions redo is still building. The ban lookup stays off until PERM-JUMP-01 runs on the third build.
+  Bug 3's Up half **fails** (22:29): on a reply with no picker, Up from Helpful lands on the bare bubble, because the thumbs row's
+  Up handler still yields to Steam and the new fallback only reached the Retry row; back with lane A as a third commit on its branch.
