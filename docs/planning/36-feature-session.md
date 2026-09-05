@@ -291,3 +291,25 @@ tracked tree, so it is not committed and will need writing again in a later sess
 
 **Waiting on:** the other session to land its bug fixes, watched automatically. Wave two starts when
 its branch has been still for fifteen minutes.
+
+### A mistake worth writing down: three sessions, one working copy
+
+**What happened.** Cutting this session's branch in the shared working copy moved every other session
+off the branch it thought it was on. A third session — the one planning the answer preview in the
+reply-ready toast — then made its commit, and the commit landed on **this** branch instead of the
+shared one. Nothing was lost; it went to the wrong place.
+
+**How it settled.** The bug-fixing session had already made itself a separate copy for landing, so it
+was unaffected and kept going. The shared working copy is now effectively this session's, and the
+stranded commit reaches the shared branch when this branch merges at the end, which was happening
+anyway.
+
+**What follows from it, and this one is a rule now:**
+
+1. **This branch's history is never rewritten.** No rebase, no amend, no force. Somebody else's commit
+   is sitting in it and rewriting would strand their work a second time.
+2. **The merge at the end has to expect a commit that is not this session's** — a plan document, three
+   decisions, and two roadmap edits about the reply-ready toast. Merge it, do not drop it as noise.
+3. **A session that is not alone on a machine does not cut a branch in the shared working copy.** Make
+   a separate copy first and cut the branch there. Three sessions were running here and only one of
+   them could hold the shared one.
