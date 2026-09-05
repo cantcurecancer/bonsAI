@@ -3419,7 +3419,7 @@ typed command yes, the full report, consent asked for again at the time, four st
 Someone who wants to check a healthy setup before asking anything cannot; if that turns out to matter, a
 button on the Ollama tab is a small later addition, noted in the plan's out-of-scope list.
 
-### D70 — OPEN (raised 2026-09-05) — Showing the model's real thinking: seven calls before "go"
+### D70 — LOCKED 2026-09-05 (raised 2026-09-05) — Showing the model's real thinking: seven calls before "go"
 
 Numbered 70 on purpose: the feature-building chat's branch already holds D65 to D69, so this skips past
 them to avoid two entries with one number when the branches meet.
@@ -3463,3 +3463,74 @@ thinking model at the Deep level. The plan puts the model's own latest sentence 
 
 **Consequence if unanswered.** Nothing is built until 1 to 3 are answered. 4 to 7 have defaults that hold:
 saved and capped, chip yes, tips retired, test on the PC with the Deck's model once the pull is allowed.
+
+**Answers, 2026-09-05 (the maintainer answered in chat):**
+
+1. **Three lines**, each the height of a line of the answer, not one status line.
+2. **The fold shows the seconds and no token count**, and must not read "Thought for", which is too close
+   to Claude's wording. Alternatives are put to the maintainer in D71.
+3. **Live reasoning in Strategy mode too.** Accept the spoiler risk; warn the person once.
+4. Saved with the chat, capped (default held).
+5. A chip in Show details (default held); the token count lives on the chip only.
+6. **Retire the two-star thinking-tips entry.**
+7. **Test on this PC first** to knock out obvious bugs, **then verify on the Deck.** The Deck's own default
+   Gemma 4 build is on this PC already and, checked the same day, it thinks; no pull is needed.
+
+**Two things the maintainer added, both now in the plan.** First, they do not accept that thinking is paid
+for and thrown away; the plan gives the reasoning a second job. Second, that job is spoilers: the model is
+told to weigh, inside its thinking, what counts as a spoiler under the person's chosen tier and to end
+with a verdict line the plugin reads. How far that verdict reaches is D71.
+
+**Correction worth recording.** The plan's first draft said the Deck's default model could not think.
+Ollama lists the thinking capability on the exact Gemma 4 build the Deck runs. The feature therefore
+shows for anyone who turns thinking on.
+
+### D71 — OPEN (raised 2026-09-05) — The folded line's wording, and how far the spoiler verdict reaches
+
+Raised from the maintainer's answers to D70, plan [40](../planning/40-reasoning-display.md).
+
+1. **What the folded line says** once the answer starts. Seconds only, no token count, and not "Thought
+   for". Candidates, with the opened block's label after the slash:
+   - Option 1 (recommended): *Worked it out in 41 s* / *See the working* and *Hide the working*. Plain,
+     active, and "the working" is the schoolroom phrase for showing your steps, which nobody else uses.
+   - Option 2: *Reasoned for 41 s* / *Show reasoning*.
+   - Option 3: *41 s of thinking* / *Open* and *Close*.
+   - Option 4: *Mulled it over for 41 s*, and later a version in each AI character's own voice, the way
+     the status phrases already take the character's tone.
+2. **How far the spoiler verdict reaches.** The model ends its thinking with a verdict line: what in the
+   answer counts as a spoiler under the person's tier, and what it fenced.
+   - Option 1 (recommended to start): the verdict becomes the model's risk opinion for the *Spoiler risk*
+     chip, replacing the after-the-fact tag, and the chip's detail says so. The answer itself is not
+     touched. Safe, small, and the answer test says whether the extra thinking also cuts fence misfires.
+   - Option 2: the verdict also gates the answer. A high verdict on a story game, with no consent given,
+     holds the whole answer behind one tap-to-reveal until the person opens it. Stronger, and a real
+     change to what people see; only after option 1 has been measured.
+   - Option 3: chip only, and the model is not asked to weigh spoilers at all; the reasoning is shown
+     but given no second job.
+3. **The one-time notice's shape.** A short confirm the first time thinking is turned on, saying the
+   thinking is shown unmasked and may mention things the answer will hide (recommended); or a line
+   under the Thinking row only, no confirm.
+
+**Consequence if unanswered.** Nothing is built until 1 and 2 are answered. 3 defaults to the confirm.
+
+### D72 — OPEN (raised 2026-09-05) — Newer models for the Deck: what to pull and measure
+
+Raised from the maintainer's question while answering D70, and written up in
+[planning/41-deck-model-survey.md](../planning/41-deck-model-survey.md). The short answer: this quarter's
+releases are mostly large; the small candidates worth measuring are Granite 4.2 (3b and 8b, new, thinks,
+no images), the bigger Gemma 4 sibling (e4b), Qwen 3.5 at 2b, and LFM 2.5 8b (fast, text only). Nothing
+on paper is known to beat today's Gemma 4; only a measurement can say.
+
+1. **Pull the five candidates onto this PC** for the answer test, about 21 gigabytes in all.
+   - Option 1 (recommended): yes, all five.
+   - Option 2: a shorter list, named by the maintainer.
+   - Option 3: not now.
+2. **Which modes to re-pick.**
+   - Option 1 (recommended): all three, each with its own candidates.
+   - Option 2: Strategy only, where the quality gap shows most.
+3. **Is image support a must for Speed and Strategy?** If yes, Granite and LFM drop out of those modes.
+   - Option 1 (recommended): not a must for Speed; a must for any mode that takes screenshots today.
+   - Option 2: a must everywhere; only Gemma and Qwen sizes stay.
+
+**Consequence if unanswered.** Nothing is pulled. The survey stays as the first input to the on-Deck model
+benchmark entry, which is where the measurement belongs.

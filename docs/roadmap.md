@@ -178,10 +178,6 @@ replace it with a specific issue when one exists.
   the answer, in every mode, for eight seconds, so a short answer is read without leaving the game; tap still opens the panel.
   Hidden blocks are skipped; if nothing safe is left the toast stays as it is. **Measure first, on two screens with screenshots:**
   the Deck's own screen and a 24-inch 1080p monitor; the popup is expected to be small. [Plan and mockup](planning/38-toast-answer-lines.md).
-- ★★ `[reply]` **Thinking tips replace the status blurb (Phase 2)** — **OPEN.** Hand-curated bonsAI tips, feature tips for generic
-  asks and KB-strategy tips for game asks, chosen by current game and mode. The generic filler copy goes away entirely. Data file
-  shaped like `data/kb/strategy_seed.json`. Superseded by **Reasoning display** once real thinking streams.
-  **Whether this entry retires is asked in D70 (plan 40).**
 - ★★ `[ui]` **Replace the bonsAI tab icon with the redesign's** — **OPEN.** Flatter, more silhouette, because it renders at 14px. It
   has to be an inline SVG path, not the PNG, so it inherits `currentColor` (`BonsaiTreeTabIcon`). Update `icons.bonsaiGeometry.test.tsx`
   in the same change.
@@ -257,16 +253,18 @@ replace it with a specific issue when one exists.
   plus a GitHub attach URL. Phase 6 publish shipped 2026-08-16.
 - ★★★★★ `[ollama]` **On-Deck model benchmark** — **OPEN.** Rank installed models by measured speed and completion; offer as try order
   with confirmation.
+  **First input, 2026-09-05:** a desk survey of this quarter's models that fit the Deck, and what to measure, in
+  [41-deck-model-survey.md](planning/41-deck-model-survey.md); the calls are D72.
 - ★★★★★ `[perms]` **VAC Phase 2: opponent IDs** — **OPEN, research.** Surface live opponent identities for ban checks when metadata allows.
 - ★★★★★ `[platform]` **Controller macro test rig and live view** — **OPEN, discovery locked 2026-08-23, board ordered.** A bridge board
   the Deck sees as a real controller, a macro runner gated on real UI state, and one recording pipeline. Primitives land upstream in
   decky-plugin-studio. Next: spikes S1 to S3. [Plan](planning/19-controller-macro-test-rig.md), [program](planning/21-ai-owned-testing-program.md).
 - ★★★★★ `[platform]` **Steam Controller copilot (Ibex gen-2)** — **OPEN.** AI copy tuned to gen-2 hardware.
-- ★★★★★ `[reply]` **Reasoning display** — **OPEN, planned 2026-09-05, calls pending (D70).** The plugin asks a thinking model to
-  think and throws the thinking away; the line under your question shows a stock phrase for the whole wait. Planned: that line
-  shows the model's own newest sentence, folds to *Thought for N s* when the answer starts, opens to the full text, and Show
-  details gets a thinking chip. Nothing changes on models that cannot think. A test to find out runs first, on the Deck's own
-  thinking model. [Plan](planning/40-reasoning-display.md).
+- ★★★★★ `[reply]` **Reasoning display** — **OPEN, planned 2026-09-05, calls locked (D70), two open (D71).** The plugin asks a
+  thinking model to think and throws the thinking away; the line under your question shows a stock phrase for the whole wait.
+  Planned: three lines at the answer's size show the model's own newest sentences, fold to one line with the seconds when the
+  answer starts, open to the full text; Show details gets a thinking chip; and the thinking is also spent deciding what counts
+  as a spoiler for you. The Deck's default model can think. A test runs on the PC first, then the Deck. [Plan](planning/40-reasoning-display.md).
 - ★★★★★ `[voice]` **Local reply TTS** — **OPEN.** Phase 1 offline play/stop; Phase 2 character-aligned read-aloud (legal gate).
 - ★★★★★ `[voice]` **Wake-word listening** — **OPEN, beta.** Opt-in always-on local wake **bonsAI**, then STT, then a quiet Ask.
   [Feasibility](planning/10-wake-word-listening-feasibility.md).

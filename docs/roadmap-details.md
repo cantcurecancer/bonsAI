@@ -714,6 +714,10 @@ alphabetical order the rest of the Backlog uses.
 
 ## Thinking tips replace the status blurb (Thinking effort Phase 2)
 
+**Retired 2026-09-05 (D70 #6).** Real thinking replaces the composed phrases wherever thinking is on, under
+**Reasoning display** ([40-reasoning-display.md](planning/40-reasoning-display.md)); the phrases stay as they are with thinking Off.
+The roadmap entry is removed; this note is what remains of it.
+
 - ★★ **Thinking effort control** — **Phase 1 shipped 2026-08-15; Phase 2 Backlog**
   - **Phase 1 (shipped):** Ollama tab → **Thinking** row, Off / Brief / Balanced / Deep, defaulting **Off**. Sends `think: true` for all three on levels — named levels are gpt-oss-only and qwen3 / deepseek-r1 reject a string (**D21**, superseding doc 16) — with effort carried by the reserved budget (256 / 512 / 1024) added to `num_predict`. A model that cannot think gets one silent retry with thinking off, is remembered for the session, and the user is told once. On-Deck **THINK-EFFORT-04**, **THINK-EFFORT-05** Open.
   - **Phase 2 (Backlog):** Replace the cosmetic `<bonsai-status>` blurb outright with hand-curated bonsAI tips — feature tips ("Ask-mode Speed trims replies for a quick answer") for generic asks, KB-strategy tips ("A run spent only kiting is a run that ends underpowered") for game-specific asks, selected contextually by current game/mode. Not a fallback for otherwise-empty moments — the generic filler copy goes away entirely. Data file shaped like `data/kb/strategy_seed.json`.
@@ -795,6 +799,11 @@ alphabetical order the rest of the Backlog uses.
   - **Source:** [13-roadmap-feature-ideas.md](planning/13-roadmap-feature-ideas.md) § C1.
 
 ## Reasoning display
+
+**Planned 2026-09-05, calls locked in D70, two open in D71:** [40-reasoning-display.md](planning/40-reasoning-display.md).
+Changed from the sketch below: three lines at the answer's size, not one; the fold shows seconds only and does not read
+"Thought for"; live in Strategy mode too, with one notice; and the thinking gets a second job, a spoiler verdict under the
+person's tier. The Deck's default Gemma 4 build can think, so this is not gated on pulling a special model.
 
 - ★★★★★ **Reasoning display** (real model `thinking`, not the status blurb)
   - **GitHub:** [bonsAI Issues](https://github.com/qd313/bonsAI/issues) — issue TBD.
