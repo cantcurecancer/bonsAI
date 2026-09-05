@@ -62,7 +62,7 @@ Checked in the code, not just read off the roadmap.
 | 3 | **A first quick question that does not wait for the model to load** — the default Ask model is warmed at boot. Behind a developer switch first. Small models only, skipped quietly when memory is tight. | the Ollama service, the Developer screen | yes, one developer switch | **no** |
 | 4 | **One preset chip instead of two, if you want the label to have the whole column.** Two stays the default. | the preset row layout, the Settings screen | yes, one choice | **no** |
 | 5 | **Separate slow-warning and give-up times for each Ask mode**, instead of one pair for all three. | the Settings screen, the Ollama screen, the reply's slow notice | yes, per mode | **yes** — the reply's slow notice is in the chat transcript, which the other chat's first helper owns, and the Main tab body, which its second helper owns |
-| 6 | **Replies always arrive word by word, and the switch for it disappears.** One fewer thing to decide, and it halves every test row that had to be run twice. | the settings shape in both languages, both agreement files, the Settings screen, the ask hook | **removes** one | **yes** — the ask hook is the other chat's second helper's |
+| 6 | **Replies always arrive word by word.** See § 2e — the switch is a developer one, so what changes for an ordinary person is the behaviour, not the screen. | the settings shape in both languages, both agreement files, the Developer screen, the plugin root, the ask service | **removes** one | **yes** — the plugin root is the other chat's second helper's |
 
 Because of that last column, **five and six go last**, after the other chat's work has landed.
 
@@ -83,6 +83,42 @@ in its own commit right after them, rather than handing it to a helper. Its own 
 goes wrong on the device it can be undone without taking the three new settings with it.
 
 The tab icon and the model-residency question were both left for another time.
+
+### 2e. What the streaming change actually is (measured 2026-09-05, before any code)
+
+Worth writing down, because the roadmap entry reads as though a person is losing a switch they use.
+
+**They are not. The switch is on the Developer screen, labelled "Token streaming (experimental)",**
+and it is **off by default today**. There is no streaming control anywhere on the Settings or Ollama
+screens. So:
+
+- **What changes for an ordinary person:** replies start arriving word by word instead of landing in
+  one lump. That is the whole user-visible change, and it is a real one.
+- **What changes for a developer:** one switch disappears from the Developer screen.
+- **What changes for this project:** every test row that had to be run twice, once with the switch on
+  and once off, becomes one row. That is the payoff the roadmap entry was after.
+
+**The size of the job, counted rather than guessed:** the setting's two names appear **27 times across
+14 files**. That is well under the eighteen-file, thirty-edit cost this repo records for *adding* a
+setting, because this one was never threaded into the per-tab plumbing the way a Settings control is.
+It reaches the Developer screen and the ask service and nothing else.
+
+The edit points, so wave two is mechanical rather than a hunt:
+
+| Where | How many | Note |
+|---|---|---|
+| the plugin root | 4 | **contested** — the other chat's second helper is in this file |
+| the Developer screen | 6 | includes the switch itself |
+| the Developer screen's payload | 5 | |
+| the settings hook | 2 | |
+| the settings payload builder, the shape, the normaliser | 1 each | |
+| the Python settings service, the ask service | 1 each | Python is authoritative where the two disagree |
+| the two agreement files and the tests that assert them | the rest | the shape files must lose the key or a test fails |
+| the recorded preview results | 6 | historic result files — read, do not rewrite |
+
+**The one real risk stays the upgrade**, and it is not in that table: a settings file already on a
+Deck still carries the key. Loading it must drop the key quietly and leave every other setting alone.
+That test is written before the removal, and it is the first thing checked on the device.
 
 ### 2d. Deliberately not this session
 
@@ -216,6 +252,42 @@ measurement in hand, which is why none of the highlight features are in scope.
    learned, move on.
 8. Do not push. Do not wipe plugin data.
 
-## 7. Progress log
+## 7. The device checks, written before the code
 
-Written as work lands.
+Drafted 2026-09-05, before any feature was built, so nothing here was written to fit what got made.
+Each row moves into [testing.md](../testing.md) in the same commit as its feature lands, not before.
+
+Two rules apply to every row below, both earned:
+
+- **A control that is highlighted is not necessarily on screen.** Check the control's rectangle against
+  the top of the dock every time. A row that only asks "did the ring land on it" passes while the
+  control sits behind the question box.
+- **Screenshots off this device are unreliable, so measure instead.** Read positions and text, not
+  pictures.
+
+| Feature | Row | What the device has to show |
+|---|---|---|
+| 1, custom model pull | `PULL-CUSTOM-01` | Open the pull picker, reach the new text field by thumbstick only, type a real library name that is **not** in the built-in list, pull it. It appears in the installed list and can be asked a question. The field's rectangle must sit clear of the dock. |
+| 1 | `PULL-CUSTOM-02` | Type a name that does not exist. A message appears that names the problem and says what to do. No silent nothing, no raw error text, and the picker stays usable afterwards. |
+| 1 | `PULL-PIN-01` | Pin a model as the one Ask uses. Close the panel, reopen it, and the pin is still there. Ask a question and Show details names that model. |
+| 1 | `PULL-NEW-BADGE-01` | A model pulled today reads **New**. A model pulled more than thirty days ago does not. Check both in the same sitting, since one without the other proves nothing. |
+| 2, fresh chips | `PRESET-EXPAND-W2-01` | With no pinned test batch, watch the chip row for a full minute and write down every chip that comes round. At least three of the new prompts appear. Pressing A on one fills the question box with that exact wording and does **not** send it. A prompt that switches the Ask mode does switch it. |
+| 3, warm at boot | `PRELOAD-01` | Restart the loader, wait for the plugin to settle, then ask one quick question and time it. Compare against the same question with the switch off, from a cold start. The warmed one is faster; write both numbers down whatever they say. |
+| 3 | `PRELOAD-02` | With a game running and memory under pressure, the warm-up is skipped and nothing on screen mentions it. No error, no stuck status line, no slower first question than without the feature. |
+| 4, one chip or two | `PRESET-SLOTS-01` | Set it to one. The row shows one chip and its label has the whole column — measure the label's width against the 300-pixel column, do not judge by eye. Left and Right still move through the list. The dock does not change height. |
+| 4 | `PRESET-SLOTS-02` | A settings file with nothing chosen still shows two chips. This is the row that proves the default did not move. |
+| 5, per-mode times | `LATENCY-PERMODE-01` | Set a deliberately short give-up time for Speed only. A Speed question gives up at that time and says so in a way a person can act on. The same question in Strategy does **not** give up, proving the three modes are genuinely separate. |
+| 6, streaming | `STREAM-UPGRADE-01` | **Runs first, before any other row.** Copy the Deck's real settings file aside. Put back a copy that still carries the old streaming switch. Open the panel. Read every other setting back off disk: all of them unchanged. If any setting moved, that commit comes out and the pass stops. |
+| 6 | `STREAM-DEFAULT-01` | On a settings file that never had the switch, ask a long question. Words appear as they are written, not in one lump at the end. The Developer screen has no streaming switch on it. |
+
+## 8. Progress log
+
+**Wave 0, done.** Branched off the other session's latest work at `7d30656`. All five gates green on it:
+types clean, 971 frontend tests across 121 files, the Python suite, the build, and the highlight
+checker. Two helper copies of the repo made. A corrected helper brief written — it lives outside the
+tracked tree, so it is not committed and will need writing again in a later session.
+
+**Wave 1, running.** Two helpers started: the custom model pull, and the fresh chip prompts.
+
+**Waiting on:** the other session to land its bug fixes, watched automatically. Wave two starts when
+its branch has been still for fifteen minutes.
