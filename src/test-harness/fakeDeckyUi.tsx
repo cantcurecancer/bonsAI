@@ -61,33 +61,37 @@ function stub(name: string) {
 }
 
 /*
- * Button and ButtonItem, and only these two, are focusable stubs: on device Decky wires a real
- * button into Steam's nav graph and stamps `tabindex="0"` itself once it registers the node (the
- * focus-graph policy documents this), so a button is always programmatically focusable there, and a
- * *disabled* one refuses focus the way any disabled native control does. jsdom enforces the native
- * rule that a plain `<div>` with no tabindex ignores `.focus()` entirely, so without this a test
- * calling `.focus()` on a stubbed button -- exactly what putting the ring back on a button after a
- * picker reorder needs -- would silently no-op and `document.activeElement` would never move,
- * whether or not the code under test is correct. Reading `disabled` off the real props (not a fixed
- * default) is what lets a test also prove the disabled-button fallback path: `tabIndex` is only
- * omitted, never forced, so a caller's own `tabIndex` still wins. The other stubs are containers, not
- * focus stops, and are left as plain, non-focusable divs.
+ * Button and ButtonItem, and only these two, render an actual `<button>` rather than a stub `<div>`.
+ *
+ * Two independent reasons stacked into this one choice:
+ *
+ * 1. On device Decky wires a real button into Steam's nav graph and stamps `tabindex="0"` itself
+ *    once it registers the node (the focus-graph policy documents this), so a button is always
+ *    programmatically focusable there, and a *disabled* one refuses focus the way any disabled
+ *    native control does. A stub `<div>` needed a manual `tabIndex` trick to fake that; a real
+ *    `<button>` gets focus/disabled semantics for free from jsdom, so the trick is gone.
+ * 2. Decky's real `Button` renders a plain `<button>` with no `type` attribute -- a submit button by
+ *    default -- and `ModelRoutingOrderModal`'s picker sits inside Steam's `ConfirmModal`, which
+ *    renders a `<form>`. An un-prevented click there submits the form and takes the modal's own
+ *    OK/Done path instead of the button's own `onClick` effect (measured on device 2026-09-04,
+ *    PICKER-REORDER-02: a reorder press and a Reset press each closed the picker this way). A stub
+ *    `<div>` can never reproduce that -- only a real `<button>` inside a real `<form>` submits on
+ *    click -- so a test proving a handler calls `preventDefault()` needs this to be a real button.
+ *    Giving the stub its own `type="button"` would hide exactly the defect this fixes; it deliberately
+ *    has none, matching Decky's real markup.
+ *
+ * The other stubs are containers, not focus stops or clickable controls, and stay plain, non-focusable
+ * divs.
  */
 function focusableButtonStub(name: string) {
-  return React.forwardRef<HTMLDivElement, StubProps>(function DeckyUiButtonStub(
+  return React.forwardRef<HTMLButtonElement, StubProps>(function DeckyUiButtonStub(
     { children, ...rest },
     ref
   ) {
-    const disabled = Boolean((rest as { disabled?: unknown }).disabled);
     return (
-      <div
-        ref={ref}
-        data-decky-ui={name}
-        tabIndex={disabled ? undefined : -1}
-        {...withoutSteamNavProps(rest)}
-      >
+      <button ref={ref} data-decky-ui={name} {...withoutSteamNavProps(rest)}>
         {children as React.ReactNode}
-      </div>
+      </button>
     );
   });
 }

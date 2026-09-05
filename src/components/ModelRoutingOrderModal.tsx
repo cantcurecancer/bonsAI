@@ -274,7 +274,16 @@ export function ModelRoutingOrderModal({
                     <Button
                       className="bonsai-chat-secondary-btn"
                       disabled={index === 0}
-                      onClick={() => moveAndKeepHighlight(row.tag, index, -1, "up")}
+                      onClick={(e: MouseEvent) => {
+                        // Decky's Button renders a plain <button> with no type, and this picker's
+                        // content sits inside Steam's ConfirmModal, which renders a <form> -- so an
+                        // un-prevented click submits it, taking the modal's own OK path. Measured on
+                        // device 2026-09-04 (PICKER-REORDER-02): A on this button reordered the row
+                        // and then closed the picker; A on Reset did the same, which is what pinned
+                        // form submission as the cause rather than the reorder or the refocus.
+                        e.preventDefault();
+                        moveAndKeepHighlight(row.tag, index, -1, "up");
+                      }}
                       aria-label={`Move ${row.tag} up`}
                       ref={(el: HTMLElement | null) => setRowButtonRef(row.tag, "up", el)}
                     >
@@ -283,7 +292,12 @@ export function ModelRoutingOrderModal({
                     <Button
                       className="bonsai-chat-secondary-btn"
                       disabled={index >= rows.length - 1}
-                      onClick={() => moveAndKeepHighlight(row.tag, index, 1, "down")}
+                      onClick={(e: MouseEvent) => {
+                        // See the Up button's comment: preventDefault stops the click from also
+                        // submitting the ConfirmModal's form.
+                        e.preventDefault();
+                        moveAndKeepHighlight(row.tag, index, 1, "down");
+                      }}
                       aria-label={`Move ${row.tag} down`}
                       ref={(el: HTMLElement | null) => setRowButtonRef(row.tag, "down", el)}
                     >
@@ -296,7 +310,15 @@ export function ModelRoutingOrderModal({
             {/* Done and Cancel now come from ConfirmModal's own footer. Reset stays here because it
                 edits the list rather than closing the picker, and belongs next to what it edits. */}
             <Focusable className="bonsai-model-routing-footer" flow-children="horizontal" style={{ display: "flex", gap: 8 }}>
-              <Button className="bonsai-chat-secondary-btn" onClick={onReset}>
+              <Button
+                className="bonsai-chat-secondary-btn"
+                onClick={(e: MouseEvent) => {
+                  // Same form-submit hazard as the row buttons above -- Reset closed the picker on
+                  // device too, which is what showed the cause was the form, not the reorder.
+                  e.preventDefault();
+                  onReset();
+                }}
+              >
                 Reset to defaults
               </Button>
             </Focusable>

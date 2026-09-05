@@ -69,14 +69,16 @@ All notable changes to this project are documented in this file.
   and a disabled button still takes the D-pad ring, so leaving Developer spent one press on it either
   way. It now only renders once a batch is pinned. `DeveloperTab.tsx`. On-Deck **DEV-CLEAR-CHIPS-01**
   in `docs/testing.md`.
-- **Reordering models in the try-order picker no longer drops the highlight — redone 2026-09-04 after
-  the first attempt failed on device:** pressing Up or Down on a row reordered the list correctly but
-  left the D-pad ring owned by nothing, so the next press looked like a wasted one re-acquiring focus.
-  The first fix's plain `focus()` was not enough: on device the ring instead left the picker for a
-  hidden tab button behind it, and moving it in the same instant as the press even closed the picker
-  by mistake. The ring now moves with Steam's own focus-transfer API, deferred until just after the
-  press releases. `ModelRoutingOrderModal.tsx`. Not checked on the Deck yet — On-Deck
-  **PICKER-REORDER-02** in `docs/testing.md` decides.
+- **Reordering models in the try-order picker no longer closes it or drops the highlight — third
+  attempt, 2026-09-04, after the first two failed on device:** pressing Up or Down on a row reordered
+  the list correctly but left the D-pad ring owned by nothing, so the next press looked like a wasted
+  one re-acquiring focus. The first fix's plain `focus()` was not enough — the ring left the picker for
+  a hidden tab button behind it — and the second fix's own refocus, plus every other button in the
+  picker including **Reset to defaults**, turned out to close the picker outright: its buttons had no
+  `type` attribute, so a press submitted the enclosing form and took the modal's own Done path.
+  Button presses now stop that submission, on top of the Steam focus-transfer API the second attempt
+  added. `ModelRoutingOrderModal.tsx`. Not checked on the Deck yet — On-Deck **PICKER-REORDER-02** in
+  `docs/testing.md` decides.
 - **The KB retrieval bake-off's verdict only ever compared two of its four arms (no user-visible change):** `_arms_verdict` read just the `rrf` and `keyword` rows of the holdout table, so the 2026-08-29 run printed "no separation" while its own table showed `vector_only` well ahead. It now finds whichever arm has the best top-3 score, checks it against every other arm with the same locked non-overlap rule, and always names the arms it judged. `scripts/eval_kb_embed_models.py`; `tests/test_eval_kb_arms.py`.
 - **The chip you're looking at in Show details was hard to spot:** the current chip in the context chip ladder was only a faint background tint away from the others, and the "Chip N of M" counter above it was small grey text. The current chip now gets a visible cyan glow and brighter fill, and the counter reads in the same cyan/bold style used for section labels elsewhere. `ContextChipLadder.tsx`.
 - **The focus ring could look cut off in the character picker's grid:** a tile at the edge of a column had its D-pad ring clipped by the column's own edge, most visible on the top, bottom and outer columns. Each grid column now has a little breathing room inside it so the ring renders in full. `CharacterPickerModal.tsx`.

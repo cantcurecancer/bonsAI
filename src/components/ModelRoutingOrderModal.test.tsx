@@ -12,13 +12,18 @@
  * synchronously stole the release half of the very A press that triggered the reorder, so the press
  * saved and closed the picker instead of just moving the highlight.
  *
- * The fix now: `takeRowFocus` uses Steam's own transfer (`navRef` / `TakeFocus`, the same mechanism
- * `PresetRowFocusRoot` uses for the preset carousel) instead of a plain `.focus()` across rows, and
- * `moveAndKeepHighlight` defers the whole transfer (`REORDER_FOCUS_TRANSFER_DELAY_MS`) past Steam's
- * own press/release window before calling it, with one more tick before the in-container
- * `focusRowButton` -- the same two-step `onEnterFromOutside` uses.
+ * Second fix (`takeRowFocus` / `TakeFocus`, deferred past the press) also failed on device the same
+ * night, build f9a4c17 (runs/PICKER-REORDER-02-redo-ring-follows-moved-row.json, step 3): a reorder
+ * press still closed the picker, and so did A on *Reset to defaults* -- which is not a reorder or a
+ * refocus at all. Root cause: the picker's content sits inside Steam's `ConfirmModal`, which renders
+ * a `<form>`, and Decky's `Button` renders a plain `<button>` with no `type`, so it is a submit
+ * button -- Steam's A press clicks it, which submits the form, which is the modal's own OK/Done path.
+ *
+ * The fix now: every row Up/Down `onClick` and the Reset `onClick` call `event.preventDefault()` on
+ * top of the existing `takeRowFocus`/`focusRowButton` transfer, which stays as the second fix left it.
  */
-import { act, fireEvent, render } from "@testing-library/react";
+import type { FormEvent } from "react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
@@ -215,5 +220,52 @@ describe("ModelRoutingOrderModal reorder keeps the highlight and the picker open
     runFocusTransfer();
     expect(tagOrder(container)).toEqual(["model-b", "model-c", "model-a", "model-d"]);
     expect(elementHasFocus(downButton(container, "model-a"))).toBe(true);
+  });
+});
+
+describe("row and Reset buttons do not submit an enclosing form", () => {
+  // Decky's Button renders a plain <button> with no `type`, which defaults to "submit". The
+  // picker's real container (Steam's ConfirmModal) renders a <form>, so on device an un-prevented
+  // click submitted it and took the modal's own OK/Done path -- measured 2026-09-04, build f9a4c17
+  // (runs/PICKER-REORDER-02-redo-ring-follows-moved-row.json, step 3): a reorder press closed the
+  // picker, and so did A on Reset to defaults, which is what showed this was never about the reorder
+  // or the refocus. The test-harness Button/ButtonItem stub renders a real <button> with no `type`
+  // for exactly this reason -- a stub <div> could never reproduce a form submitting on click.
+  function renderInForm(onSubmit: (e: FormEvent<HTMLFormElement>) => void) {
+    return render(
+      <form onSubmit={onSubmit}>
+        <ModelRoutingOrderModal {...baseProps()} />
+      </form>,
+    );
+  }
+
+  it("clicking a row's Down button does not submit the form", () => {
+    const onSubmit = vi.fn((e: FormEvent<HTMLFormElement>) => e.preventDefault());
+    const { container } = renderInForm(onSubmit);
+
+    fireEvent.click(downButton(container, "model-a"));
+
+    expect(onSubmit).not.toHaveBeenCalled();
+    // The reorder itself still ran -- preventDefault on the click stops the browser's default
+    // submit action, not the handler's own effect.
+    expect(tagOrder(container)).toEqual(["model-b", "model-a", "model-c", "model-d"]);
+  });
+
+  it("clicking a row's Up button does not submit the form", () => {
+    const onSubmit = vi.fn((e: FormEvent<HTMLFormElement>) => e.preventDefault());
+    const { container } = renderInForm(onSubmit);
+
+    fireEvent.click(upButton(container, "model-b"));
+
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it("clicking Reset to defaults does not submit the form", () => {
+    const onSubmit = vi.fn((e: FormEvent<HTMLFormElement>) => e.preventDefault());
+    renderInForm(onSubmit);
+
+    fireEvent.click(screen.getByText("Reset to defaults"));
+
+    expect(onSubmit).not.toHaveBeenCalled();
   });
 });
