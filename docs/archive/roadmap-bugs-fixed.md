@@ -609,3 +609,12 @@ measurements and the QA rows survive. The roadmap keeps a one-line entry in **Do
   eligible candidates, keeping game chips ahead of generic Deck tips. Row **CHIP-ROTATION-01**.
   [Detail](roadmap-details.md#chip-rotation-is-biased-to-the-top-of-the-candidate-list).
   - **Deck 2026-09-04, build f9a4c17:** with Half-Life 2 running and the frozen batch cleared, the carousel showed ranks 2, 3, 4 and 5 of the game's eight chips inside 30 seconds and rank 1 never came round (`runs/CHIP-ROTATION-01-carousel-sample-half-life-2.json`).
+
+### The question overlay sat a few pixels off the native text field (verified on the Deck 2026-09-04)
+
+- ★ `[ask]` **The question overlay sits a few pixels off the native text field** — **VERIFY.** Fixed at the desk
+  2026-09-04: measured 22:00 (build `49241e7`), the field and its two mirrors differed on `white-space`,
+  `overflow-wrap`, font-family (dormant while Motiva Sans is installed) and width (274.463px vs a
+  `clientWidth`-rounded 274px) — enough to wrap a long line one character sooner in the mirrors. They now copy the
+  field's own computed style each pass. Owed: the same read after the fix, within 0.1px. Row **ASK-OVERLAY-01**.
+  - **Deck 2026-09-04, third build of plan 32:** field and mirrors read the same `white-space`, `overflow-wrap` and font stack; widths within 0.012 px; the placeholder mirror fits inside the field; a 58-character question wraps into the same two lines in the overlay and the measuring mirror (`runs/ASK-OVERLAY-01-build3-measurements.json`).

@@ -225,11 +225,6 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
 
 ### Bugs that need verification
 
-- ★ `[ask]` **The question overlay sits a few pixels off the native text field** — **VERIFY.** Fixed at the desk
-  2026-09-04: measured 22:00 (build `49241e7`), the field and its two mirrors differed on `white-space`,
-  `overflow-wrap`, font-family (dormant while Motiva Sans is installed) and width (274.463px vs a
-  `clientWidth`-rounded 274px) — enough to wrap a long line one character sooner in the mirrors. They now copy the
-  field's own computed style each pass. Owed: the same read after the fix, within 0.1px. Row **ASK-OVERLAY-01**.
 - ★ `[chips]` **A frozen test-chip batch longer than the row cannot be reached after the first minute** — **VERIFY.**
   Fixed at the desk 2026-09-04, Deck check owed: Right at the last visible chip now pulls the next pinned entry into
   the carousel's history, mirroring how Left at the edge already pulls an earlier one back; and every mode's
@@ -339,6 +334,8 @@ on 2026-07-30 (`apply_tdp` no longer exists). Preserved in the archive.
 since April (`25742f2`), and a deliberate failing test exits 1 today. If it recurs, record the exact command and shell.
 
 **September 2026**
+- ★ `[ask]` **The question overlay now sits exactly on the native text field** — verified on the Deck 2026-09-04: the field and
+  its two mirrors agree on wrapping, font and width to 0.02 px, empty and with a two-line question (ASK-OVERLAY-01). [Detail](archive/roadmap-bugs-fixed.md#moved-from-the-roadmap-2026-09-04).
 - ★ `[chips]` **Chip rotation reaches past the top three of the candidate list** — verified on the Deck 2026-09-04 with Half-Life 2
   running: ranks 2, 3, 4 and 5 of its eight chips came round inside 30 seconds and rank 1 did not (CHIP-ROTATION-01). [Detail](archive/roadmap-bugs-fixed.md#moved-from-the-roadmap-2026-09-04).
 - ★★ `[chat]` **A command reply keeps its question as the header and titles the chat** — verified on the Deck 2026-09-04: the VAC
