@@ -31,6 +31,11 @@
       "role": ""
     },
     {
+      "path": "src/components/MainTabPresetAnimatedChips.tsx",
+      "lines": 1215,
+      "role": ""
+    },
+    {
       "path": "src/hooks/useBonsaiAskOrchestration.test.ts",
       "lines": 1215,
       "role": ""
@@ -38,11 +43,6 @@
     {
       "path": "src/components/OllamaWhereAiRunsSection.tsx",
       "lines": 1174,
-      "role": ""
-    },
-    {
-      "path": "src/components/MainTabPresetAnimatedChips.tsx",
-      "lines": 1157,
       "role": ""
     },
     {
@@ -116,6 +116,11 @@
       "role": ""
     },
     {
+      "path": "src/components/MainTabPresetAnimatedChips.test.tsx",
+      "lines": 568,
+      "role": ""
+    },
+    {
       "path": "src/hooks/usePluginSettings.ts",
       "lines": 566,
       "role": ""
@@ -168,11 +173,6 @@
     {
       "path": "py_modules/backend/services/chat_slot_service.py",
       "lines": 468,
-      "role": ""
-    },
-    {
-      "path": "src/components/MainTabPresetAnimatedChips.test.tsx",
-      "lines": 460,
       "role": ""
     },
     {

@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 366,
-  "edgeCount": 886,
+  "fileCount": 367,
+  "edgeCount": 888,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -1665,6 +1665,7 @@
         "src/features/preset-carousel/carouselState.test.ts",
         "src/features/preset-carousel/carouselState.ts",
         "src/features/preset-carousel/sessionRagComposer.ts",
+        "src/styles/sections/section-4.test.ts",
         "src/styles/sections/section-4.ts"
       ]
     },
@@ -2334,6 +2335,13 @@
         "src/styles/bonsaiScopeStylesheet.ts"
       ]
     },
+    "src/styles/sections/section-4.test.ts": {
+      "imports": [
+        "src/features/preset-carousel/presetRowLayout.ts",
+        "src/styles/sections/section-4.ts"
+      ],
+      "importedBy": []
+    },
     "src/styles/sections/section-4.ts": {
       "imports": [
         "src/features/preset-carousel/presetRowLayout.ts",
@@ -2342,7 +2350,8 @@
       ],
       "importedBy": [
         "src/styles/bonsaiScopeStylesheet.ts",
-        "src/styles/presetChipFocusRing.test.ts"
+        "src/styles/presetChipFocusRing.test.ts",
+        "src/styles/sections/section-4.test.ts"
       ]
     },
     "src/styles/sections/section-5.ts": {
