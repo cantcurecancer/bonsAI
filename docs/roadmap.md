@@ -36,7 +36,8 @@ from one star to six.
 ★–★★ Sonnet 5 high · ★★★–★★★★ Opus xhigh plans, Sonnet lanes implement when the cause is known · ★★★★★+ Fable max
 plans only, Sonnet lanes build, Opus xhigh lands · `[focus]` `[layout]` `[ui]` measure on the Deck first, then Opus xhigh,
 never a lane without the measurement · docs and bookkeeping Sonnet or Opus medium · escalate a tier only after two device
-failures with a measurement. A prompt-time hook gives a gentle heads-up when a session starts work outside this.
+failures with a measurement · Haiku 4.5 on trial for read-only lookups, log each use in plan 33 § 4a. A prompt-time
+hook gives a gentle heads-up when a session starts work outside this.
 
 ---
 

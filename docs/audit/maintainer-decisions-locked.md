@@ -3151,3 +3151,26 @@ copied here.
    registry; after thirty quiet minutes it announces in chat and proceeds ten minutes later unless told
    to wait. It may carry on into plan 31's remaining rows afterwards.
 9. Yes: filed in Phase 0 as a ★★ `[chat]` entry; lane A may try it after its own two bugs, one hour cap.
+
+### D59 — LOCKED 2026-09-05 (raised 2026-09-05) — Model and effort routing: adopt plan 33 § 2 as policy?
+
+The measured cost and outcome record is in [docs/planning/33-model-routing.md](../planning/33-model-routing.md).
+Five calls, answer by number:
+
+1. **The routing table (plan 33 § 2).** (a) adopt as written (recommended); (b) edit rows first, say which.
+2. **Orchestrator for bug-fixing sessions.** (a) Opus 5 at xhigh (recommended: it reviews diffs, resolves docs
+   conflicts and drives the Deck, and Fable max was more than half the 09-04 session's cost); (b) keep Fable 5.1 max.
+3. **What lanes may edit.** (a) code, tests and a one-paragraph report only; the orchestrator moves roadmap,
+   testing and changelog rows in one commit per landing (recommended); (b) keep plan 32's split where lanes move
+   their own rows.
+4. **Haiku 4.5.** (a) try it for read-only lookups with a checkable answer in the next lane session
+   (recommended, it is nearly free); (b) leave it out of this project.
+5. **Where the policy lives once locked.** (a) copy the table into AGENTS.md and link plan 33 for the evidence
+   (recommended); (b) keep it in plan 33 and link from AGENTS.md.
+
+**Answers, 2026-09-05** (the maintainer in chat: "sounds good on the refactoring and subagents, add that";
+"go ahead and write the AGENTS.md file"): 1 (a), 2 (a), 3 (a), 5 (a). The table and rules are in
+AGENTS.md § 3; the roadmap carries a six-line rough guide. **4 (a), locked later the same day with a
+condition:** Haiku 4.5 is on trial for read-only lookups, every use logged in plan 33 § 4a and grep-confirmed;
+if Sonnet or Opus has to step in more than twice in ten uses, it is dropped.
+
