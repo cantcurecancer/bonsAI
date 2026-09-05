@@ -63,6 +63,11 @@ chat slot row, the turn header, all four answer sections, Helpful, Retry, Open P
 to Desktop, a chip, the Ask field and ask. **Every stop visible, no cycles, nothing focused behind the dock**
 (`runs/QA-FREE-PLAY-01-build4-main-sweep.json`). Three of the stops carry no name of their own; all three are answer sections.
 Not a substitute for the by-hand pass, which still owes the touchscreen and a streaming reply.
+**A third sweep the same night**, on a Strategy reply about the Half-Life 2 antlions with an archived turn above it,
+walked 13 controls in 17 presses — the *2 earlier* archive header, the question, the answer section, Helpful, Retry, the
+session strip, a chip, the character button, the attach button and ask — again every stop visible and no cycles
+(`runs/QA-FREE-PLAY-01-build4-strategy-reply-sweep.json`). That reply came back as one section, so the long-reply case the row
+really wants is still owed.
 
 A stop that is focused but not visible is a **FAIL of this row**, whatever the scripted rows say.
 This is the manual interim for the DPS visibility oracle + `deck_sweep`
