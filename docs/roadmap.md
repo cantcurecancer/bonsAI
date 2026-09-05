@@ -44,13 +44,16 @@ hook gives a gentle heads-up when a session starts work outside this.
 ## Bugs
 
 
-- ★ `[ask]` **The question overlay sits a few pixels off the native text field** — **OPEN.** Most visible on a three-line question
-  and on the empty-field placeholder. Nothing has touched the overlay since 2026-08-07.
 - ★ `[focus]` **An answer section can take the ring while hidden behind the Ask box** — **OPEN, found 2026-09-04.** Walking up the
   Red Dead turn landed on a bubble measured only 67% visible, covered by `.bonsai-unified-input-text-box`'s input.
 - ★ `[focus]` **Down does not move the ring off an unrevealed spoiler block** — **OPEN, found 2026-09-04.** With the ring on
   `.bonsai-spoiler-reveal-target`, Down reports the press arriving and nothing moving. After the block is revealed, Down escapes
   normally, so it is the hidden state that traps.
+- ★ `[main]` **The footnote under the Ask bar says no active game until the first Ask** — **OPEN, found 2026-09-04** during
+  CHIP-ROTATION-01: with Half-Life 2 running and the carousel already showing that game's chips, the line read *Context: no active
+  game detected* for the whole 96-second sample. The line only changes when an Ask's status poll reports a game (`index.tsx` starts
+  it inactive; `useBonsaiAskOrchestration.ts` updates it from the poll), so on a fresh mount it reports a detection that never ran.
+  Evidence `runs/CHIP-ROTATION-01-carousel-sample-half-life-2.json`.
 - ★ `[reply]` **A branch question elides the game name** — **OPEN, found 2026-09-04.** The Ravenholm branch picker asked
   *"Where are you at in … ?"* with the title replaced by an ellipsis.
 - ★★ `[focus]` **After the panel remounts the ring parks on a zero-size container** — **OPEN, found 2026-09-04.** On a fresh mount
@@ -62,6 +65,9 @@ hook gives a gentle heads-up when a session starts work outside this.
   chunk (three `.bonsai-answer-stop` stops on one turn); Up jumps from the feedback buttons straight past them to the bubble and
   the turn header. With the archive expanded, Up from the first archived header ran 18 presses to the tab bar and Decky's back
   button without the chat slot row ever taking the ring, though two Downs reach it normally. Same family as **ONBUTTONDOWN-AUDIT-01**.
+  **Half of this moved on 2026-09-05:** Up from the feedback buttons now lands on the reply's last section rather than skipping
+  to the bubble (measured, CHAT-REPLY-ENTRY-01). What is still open is the archived-header half — Up from the first archived
+  header runs to the tab bar without the chat slot row ever taking the ring.
 - ★★ `[KB]` **A troubleshooting question that only describes the symptom reaches no tips** — **OPEN, maintainer call.** The router
   needs a topic word: *"the game drops me back to the library"* never routes because *crash* is absent. Two of four blind compat
   rows miss. A reach limit of the D16 gate, not a regression; neither row was reworded. [Detail](roadmap-details.md#a-troubleshooting-question-that-only-describes-the-symptom-reaches-no-tips).
