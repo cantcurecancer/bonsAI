@@ -287,7 +287,29 @@ types clean, 971 frontend tests across 121 files, the Python suite, the build, a
 checker. Two helper copies of the repo made. A corrected helper brief written — it lives outside the
 tracked tree, so it is not committed and will need writing again in a later session.
 
-**Wave 1, running.** Two helpers started: the custom model pull, and the fresh chip prompts.
+**Wave 1, done.** Both features landed with their roadmap, testing and changelog lines moved.
+
+- **Fresh chip prompts.** Six new chips: thinking mode, the kids lock, the Caveman reply style, where
+  game tips come from, named chats, and asking about a game that is not running. Two of the six named
+  things that sounded made up — the Caveman reply style and the four thinking levels — and both are
+  real, so they stand. Row **PRESET-EXPAND-W2-01**.
+- **The custom model pull.** All three parts in one commit: type any library name and pull it, a star
+  that makes a model the one Ask reaches for, and a **New** label for thirty days. **No new backend
+  method was needed** — the pull job already took a name and already checked it against the real
+  library, returning a reason a person can act on. Rows **PULL-CUSTOM-01**, **02**, **PULL-PIN-01**,
+  **PULL-NEW-BADGE-01**.
+- **One thing reviewed and changed on landing:** the key that remembers when a model was pulled was
+  defined inside the picker; every other key the plugin keeps on the device lives in one file for
+  exactly that reason. Moved, no behaviour change.
+- **One thing reviewed and left alone:** the **New** label is kept on the device rather than on disk,
+  because nothing anywhere recorded when a pull happened. The consequence is honest and is written into
+  its check — a model installed before the picker was ever opened is never labelled New.
+
+**Also done while waiting, and it belongs to wave two.** Before deleting the streaming switch, there
+needed to be a check that a settings file still carrying it does not disturb everything else. There was
+none: all thirty-one existing cases cover a bad *value* for a setting that still exists, not a *key* the
+code no longer knows about. Added as a thirty-second case. Both languages already did the right thing,
+so nothing changed except that it is now guarded.
 
 **Waiting on:** the other session to land its bug fixes, watched automatically. Wave two starts when
 its branch has been still for fifteen minutes.
