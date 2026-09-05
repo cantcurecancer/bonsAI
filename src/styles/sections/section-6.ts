@@ -190,7 +190,12 @@ export function buildSection6Section(): string {
         .bonsai-scope .bonsai-chat-turn-row-header {
           display: block !important;
           width: fit-content !important;
-          max-width: min(88%, 280px) !important;
+          /* Same cap as the answer bubble below it, so the two are mirrored rather than merely
+             both indented. At 88% a long question stopped 35px short of the left edge while the
+             answer stopped 23px short of the right, and the mismatch is what read as lopsided
+             (measured on the Deck 2026-09-05, reported by the maintainer). 92% of the 290px row
+             is 267px, which is exactly the answer bubble's width. */
+          max-width: min(92%, 280px) !important;
           min-width: 0 !important;
           margin-left: auto !important;
           margin-right: 0 !important;
