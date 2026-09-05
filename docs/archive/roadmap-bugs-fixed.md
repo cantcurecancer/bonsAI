@@ -591,3 +591,12 @@ measurements and the QA rows survive. The roadmap keeps a one-line entry in **Do
   press unclaimed for Steam's own multi-step fallback to walk back through chip history first. Row
   **PRESET-ONE-LINE-03** Up step.
   - **Deck 2026-09-04, build f9a4c17:** one Up from a chip reached the session strip with a reply on screen and the chat slot row on the empty chat, every stop visible (`runs/PRESET-ONE-LINE-03-up-leaves-at-once-with-reply-b.json`, `runs/PRESET-ONE-LINE-03-up-leaves-at-once-empty-chat.json`). The maintainer chose this behaviour after a mockup (D58 #2).
+
+### A command reply left the turn header blank and the chat titled New chat (verified on the Deck 2026-09-04)
+
+- ★★ `[chat]` **A command reply leaves the turn header blank and the chat titled *New chat*** — **VERIFY.**
+  Fixed at the desk 2026-09-04, Deck check owed: the sanitizer, shortcut-setup and VAC-check replies now save their question
+  and reply to the active chat slot the same way a normal Ask's completed turn does, so the slot gets a first turn, renames
+  itself off *New chat*, and the header reads the command instead of `…`. Row **CMD-REPLY-TITLE-01**.
+  [Detail](roadmap-details.md#a-command-reply-leaves-the-turn-header-blank-and-the-chat-titled-new-chat).
+  - **Deck 2026-09-04, build f9a4c17:** header and slot title both read *bonsai:vac-check*, the slot file on disk carried the label and both turns, and a chord close and reopen kept the header. The backend now saves a local command reply to the active chat the way a normal Ask does (lane F).

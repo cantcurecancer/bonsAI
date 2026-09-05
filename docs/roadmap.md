@@ -244,11 +244,6 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
 - ★ `[reply]` **After reopening the panel, a branch-pick turn's header shows the internal prompt** — **VERIFY.** Fixed at the desk
   2026-08-28: the caption the user saw is saved with the turn. Owed: make a branch pick, reopen, read the header. Row
   **CHAT-HEADER-CAPTION-01**. [Detail](archive/roadmap-bugs-fixed.md#moved-from-the-roadmap-2026-09-02).
-- ★★ `[chat]` **A command reply leaves the turn header blank and the chat titled *New chat*** — **VERIFY.**
-  Fixed at the desk 2026-09-04, Deck check owed: the sanitizer, shortcut-setup and VAC-check replies now save their question
-  and reply to the active chat slot the same way a normal Ask's completed turn does, so the slot gets a first turn, renames
-  itself off *New chat*, and the header reads the command instead of `…`. Row **CMD-REPLY-TITLE-01**.
-  [Detail](roadmap-details.md#a-command-reply-leaves-the-turn-header-blank-and-the-chat-titled-new-chat).
 - ★★ `[focus]` **A checklist the model got wrong was left in the reply as raw JSON**, its own D-pad stop that did nothing — **VERIFY.**
   Fixed 2026-08-28: a rejected checklist block is dropped, as a rejected branch block already was. Owed: one sighting on device of a
   reply where it happens. Row **STRAT-CHECKLIST-JSON-01**.
@@ -339,6 +334,8 @@ on 2026-07-30 (`apply_tdp` no longer exists). Preserved in the archive.
 since April (`25742f2`), and a deliberate failing test exits 1 today. If it recurs, record the exact command and shell.
 
 **September 2026**
+- ★★ `[chat]` **A command reply keeps its question as the header and titles the chat** — verified on the Deck 2026-09-04: the VAC
+  check reply is saved to the chat like any other turn, so the header and the chat title read the command (CMD-REPLY-TITLE-01). [Detail](archive/roadmap-bugs-fixed.md#moved-from-the-roadmap-2026-09-04).
 - ★ `[focus]` **Up from a preset chip leaves the row in one press** — verified on the Deck 2026-09-04 on an empty chat (to the chat row)
   and with a reply on screen (to the session strip); Left still walks the history (PRESET-ONE-LINE-03, D58 #2). [Detail](archive/roadmap-bugs-fixed.md#moved-from-the-roadmap-2026-09-04).
 - ★ `[chips]` **A pinned test batch longer than the row now reaches its tail, and an Ask restarts the walk** — verified on the Deck
