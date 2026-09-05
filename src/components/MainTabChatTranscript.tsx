@@ -12,7 +12,7 @@ import {
   BONSAI_CHAT_AI_BUBBLE_MAX_FRAC,
 } from "../features/unified-input/constants";
 import { getUiDocument } from "../utils/uiDocument";
-import type { NavRefHolder } from "../utils/navFocusRegistry";
+import { registerNavFocus, takeNavFocus, type NavRefHolder } from "../utils/navFocusRegistry";
 import { formatAppliedTuningBannerText } from "../utils/appliedTuningText";
 import type { ModelPolicyDisclosurePayload } from "../data/modelPolicy";
 import { StrategyChecklistPanel } from "./StrategyChecklistPanel";
@@ -48,7 +48,6 @@ import type { ReplyMicroActionId } from "../data/replyMicroActions";
 import {
   focusContextChipLadder,
   focusContextHint,
-  focusDeckOwner,
   focusReplyUtilityRow,
   focusSessionContextStrip,
   focusUpFromBelowContextChipLadder,
@@ -138,41 +137,26 @@ export type MainTabChatTranscriptProps = {
   isForeignPendingAsk?: boolean;
 };
 
-/*
- * Registered at mount by the two rows below, rather than looked up by query: the troubleshooting
- * Ask hint's "Open Permissions" button, and the vac-check capability deny action's own button
- * (PermissionDenyAction forwards it through `buttonRef`). A page query would work too — both are
- * genuine Decky Buttons — but the focus-pattern linter's page-search rule asks for a registered
- * handle instead, matching replyStopRegistry and the row-level refs in buildReplyActionsElement.
- * Module-level rather than per-render state: only one Main tab transcript is ever mounted at a
- * time, the same assumption replyStopRegistry makes.
- */
-let troubleshootingPermHintButtonEl: HTMLElement | null = null;
-let vacDenyActionButtonEl: HTMLElement | null = null;
-
-export type ChatPermissionHintRowId = "troubleshooting" | "deny-action";
-
-/** Ref callback target for the two permission-hint rows' buttons — see the module comment above. */
-export function registerChatPermissionHintButton(
-  which: ChatPermissionHintRowId,
-  el: HTMLElement | null
-): void {
-  if (which === "troubleshooting") troubleshootingPermHintButtonEl = el;
-  else vacDenyActionButtonEl = el;
-}
-
 /**
- * The troubleshooting Ask hint's "Open Permissions" button, or the vac-check capability deny
- * action's "Open Permissions" button — whichever is mounted. Both render as top-level rows below
- * the transcript (outside any turn's own Focusable), between the reply actions row and the session
- * context strip, so neither is a document-order neighbor of the reply row the way the chip ladder
- * is. A plain focus, exactly like focusContextChipLadder / focusContextHint — both targets are
- * genuine Decky Buttons (`focusable`), the same category of target those helpers already carry
- * gpfocus for reliably.
+ * Hand the ring to whichever permission-hint row is mounted below the transcript — the
+ * troubleshooting Ask hint's "Open Permissions", or the vac-check capability deny action's own
+ * "Open Permissions" — using Steam's own transfer and nothing else.
+ *
+ * `focusChatPermissionHintRow` used to look these up by a registered *button* handle and land on it
+ * with `focusDeckOwner`, a plain `.focus()` with a defensive `tabindex` stamp. Measured wrong on
+ * device 2026-09-04 (build 49241e7, PERM-JUMP-01): the ring did not follow the DOM focus across the
+ * container boundary (the standing rule this whole registry exists for), and separately the stamp
+ * itself was corrupting — Steam's real Focusables carry no `tabindex` attribute on device at all, so
+ * the "only stamp when one is missing" guard fired every time and the *wrapping* `.Panel.Focusable`
+ * (the nearest ancestor `focusDeckOwner` climbs to, since the button itself lacked one) came away
+ * `tabindex="-1"`, dropping the whole row out of Steam's nav graph. Both rows now register a
+ * `navRef` on their own wrapping Focusable (see the two `useEffect`s below and
+ * navFocusRegistry.ts), and this function is `takeNavFocus` only — no DOM query, no `.focus()`, no
+ * tabindex of any kind.
  */
 export function focusChatPermissionHintRow(): boolean {
-  if (focusDeckOwner(troubleshootingPermHintButtonEl)) return true;
-  return focusDeckOwner(vacDenyActionButtonEl);
+  if (takeNavFocus("chat-perm-hint-troubleshoot")) return true;
+  return takeNavFocus("chat-perm-hint-deny");
 }
 
 /**
@@ -323,6 +307,25 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
     if (!earlierExpanded) return;
     firstArchivedTurnNavRef.current?.TakeFocus?.(true);
   }, [earlierExpanded]);
+
+  /*
+   * Nav targets for the two permission-hint rows below the transcript — see
+   * `focusChatPermissionHintRow`'s comment above for why this replaced a registered button handle
+   * and `focusDeckOwner`. Registered for the lifetime of this component rather than only while the
+   * row is actually rendered: `takeNavFocus` already treats an unpopulated or stale holder as "not
+   * available" (`navFocusRegistry.ts`), which is exactly the state a conditionally-unmounted row
+   * leaves behind, so there is nothing to additionally guard here.
+   */
+  const troubleshootHintNavRef = useRef<NavRefHolder["current"]>(null);
+  const vacDenyRowNavRef = useRef<NavRefHolder["current"]>(null);
+  useEffect(() => {
+    registerNavFocus("chat-perm-hint-troubleshoot", troubleshootHintNavRef);
+    return () => registerNavFocus("chat-perm-hint-troubleshoot", null);
+  }, []);
+  useEffect(() => {
+    registerNavFocus("chat-perm-hint-deny", vacDenyRowNavRef);
+    return () => registerNavFocus("chat-perm-hint-deny", null);
+  }, []);
 
   const chatMainColumnRef = useRef<HTMLDivElement | null>(null);
   /*
@@ -882,12 +885,16 @@ questionLooksLikeTroubleshootingAsk(unifiedInput) ? (
      * forward `onMoveUp`/`onMoveDown`, and this row sits outside the live turn's own Focusable, so
      * Steam's default fallback (proven elsewhere in this file to skip nearby rows and jump straight
      * to the session strip) cannot be trusted to land here. `flow-children="horizontal"` keeps
-     * Left/Right between Open Permissions and Dismiss.
+     * Left/Right between Open Permissions and Dismiss. `navRef` registers this row as a Steam nav
+     * node (`focusChatPermissionHintRow` above, `takeNavFocus` only) — the button-ref + plain-focus
+     * approach this replaced moved `activeElement` but not the gamepad ring, measured on device
+     * 2026-09-04 (build 49241e7).
      */}
     <Focusable
       className="bonsai-chat-troubleshoot-perm-hint-row"
       flow-children="horizontal"
       {...({
+        navRef: troubleshootHintNavRef,
         onMoveUp: () => focusUpFromBelowContextChipLadder(queryLiveTurnSlot()),
         onMoveDown: () => focusSessionContextStrip(),
       } as Record<string, unknown>)}
@@ -912,7 +919,6 @@ questionLooksLikeTroubleshootingAsk(unifiedInput) ? (
           {onNavigateToPermissions ? (
             <Button
               focusable
-              ref={(el: HTMLElement | null) => registerChatPermissionHintButton("troubleshooting", el)}
               onClick={() => onNavigateToPermissions("steam_logs_read")}
               style={{ fontSize: 11, padding: "4px 10px", minHeight: 34 }}
             >
@@ -935,13 +941,16 @@ questionLooksLikeTroubleshootingAsk(unifiedInput) ? (
   <PanelSectionRow>
     {/*
      * Same reasoning as the troubleshooting hint's wrapper just above: this row sits outside the
-     * live turn's own Focusable, between the reply actions row and the session context strip, and
-     * PermissionDenyAction's own Button cannot forward onMoveUp/onMoveDown itself.
+     * live turn's own Focusable, between the reply actions row and the session context strip,
+     * PermissionDenyAction's own Button cannot forward onMoveUp/onMoveDown itself, and `navRef`
+     * (not a button ref plus plain focus) is the only transfer Steam's ring actually follows here —
+     * see `focusChatPermissionHintRow` above.
      */}
     <Focusable
       className="bonsai-chat-vac-deny-row"
       flow-children="horizontal"
       {...({
+        navRef: vacDenyRowNavRef,
         onMoveUp: () => focusUpFromBelowContextChipLadder(queryLiveTurnSlot()),
         onMoveDown: () => focusSessionContextStrip(),
       } as Record<string, unknown>)}
@@ -949,7 +958,6 @@ questionLooksLikeTroubleshootingAsk(unifiedInput) ? (
       <div className="bonsai-full-bleed-row" style={fullBleedRowStyle}>
         <PermissionDenyAction
           capability="steam_web_api"
-          buttonRef={(el) => registerChatPermissionHintButton("deny-action", el)}
           onJump={onNavigateToPermissions}
           compact
         />

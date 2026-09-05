@@ -257,6 +257,10 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
   the Deck 2026-09-04.** The button is built as a stop now, but the hops into its row used a plain focus across containers: Up from
   the session strip lost the ring, and the helper stamped the row with a tab index that removes it from Steam's graph. Back with its
   lane for a registered-nav-node version. Rows **PERM-JUMP-01**, **SMOKE-C**.
+  **Redone at the desk 2026-09-04, Deck check owed again.** Both permission-hint rows now register a `navRef` (new ids
+  `chat-perm-hint-troubleshoot` / `chat-perm-hint-deny` in `navFocusRegistry.ts`) and the hop is `takeNavFocus` only — no page
+  query, no plain `focus()`, no tabindex of any kind. `focusDeckOwner` itself no longer stamps a tabindex onto a genuine
+  `.Panel.Focusable`, which is what corrupted the row the first time.
 - ★★ `[reply]` **Spoiler fences wrapped harmless tactics on games with no story, and on bosses you named** — **VERIFIED on the
   Deck 2026-09-03.** Fixed 2026-09-02: on those turns the prompt now says plainly not to fence. Measured on the PC with the answer
   eval: 28 of 96 misfires before, 3 after, ending questions still fenced. Deck run **KB-ANSWER-02**, 5 of 5: Tank, antlions,

@@ -28,8 +28,38 @@ export function focusDeckOwner(el: HTMLElement | null | undefined): boolean {
     el.matches(".Panel.Focusable") ? el : el.closest(".Panel.Focusable")
   ) as HTMLElement | null;
   const target = panel ?? el;
-  // Keep Decky's own tabindex; replacing "0" with "-1" removes the node from Steam's nav graph.
-  if (!target.hasAttribute("tabindex")) target.setAttribute("tabindex", "-1");
+  /*
+   * Stamp a synthetic tabindex only on a plain element of ours (no `.Panel.Focusable` found at all,
+   * so `target` fell back to `el` itself) — never on a genuine Steam Focusable (`panel` non-null).
+   *
+   * The guard used to be "stamp whenever one is missing", on the theory that Decky's own Focusables
+   * always carry a real `tabindex` (so an absent one safely meant "ours to manage") — see
+   * REPLY-DOWN-01 (2026-08-04, docs/testing.md), the first time that theory cost a working stop:
+   * `focusRegisteredReplyStop` stamped `tabindex="-1"` straight onto Retry and its row using the
+   * same reasoning. That is fixed there by skipping native `<button>`/`<a>`/etc. (replyStopRegistry.ts
+   * `ensureFocusable`), but this function has no such element-type check, and the theory itself is
+   * false on at least one build: measured on device 2026-09-04 (build 49241e7, PERM-JUMP-01's redo)
+   * with the ring genuinely on Retry, Copy and Open Permissions in turn, every one of them read
+   * `tabindex: null` — real Steam Focusables carry no `tabindex` attribute at all here. The old guard
+   * therefore fired on every one of them, and stamping the wrapping `.Panel.Focusable` a caller had
+   * climbed to (`panel`) is what corrupted `.bonsai-chat-vac-deny-row` and dropped it from Steam's
+   * nav graph. `panel` already tells us, independent of the tabindex attribute, whether `target` is
+   * one of Steam's own nodes: if climbing (or a direct match) found one, it needs nothing from us —
+   * Steam manages its own focus semantics regardless of what the DOM attribute says — and only the
+   * `el`-is-not-a-Focusable-at-all fallback case is genuinely ours to make focusable.
+   *
+   * Trade-off, stated rather than hidden: a bare `.Panel.Focusable` that has no tabindex on device
+   * AND no natively-focusable descendant to fall back to (the `el.focus()` a few lines down) now
+   * honestly reports `false` instead of a stamp-assisted `true` that never actually carried Steam's
+   * ring anyway — every caller in this file already treats `false` as "try the next option", so that
+   * is a safe direction to be wrong in. What is UNKNOWN, not measured, is whether this file's other
+   * `focusDeckOwner` targets (`.bonsai-context-hint`, `.bonsai-chip-ladder`, a session-context row)
+   * are in that no-fallback shape on this same build — if one of them starts returning `false` where
+   * it used to return a stamp-assisted `true`, that is this trade-off, not a new defect, and the fix
+   * is the same one PERM-JUMP-01 needed: a registered `navRef` for that target instead of a page
+   * query plus a plain `focus()`.
+   */
+  if (!panel && !target.hasAttribute("tabindex")) target.setAttribute("tabindex", "-1");
   target.focus({ preventScroll: true });
   // Asked of the element's own document: the global one belongs to SharedJSContext (uiDocument.ts),
   // so the old `contains(document.activeElement)` check reported failure on every successful move.

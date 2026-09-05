@@ -42,6 +42,58 @@ describe("liveTurnFocusGraph", () => {
     expect((document.activeElement as HTMLElement)?.classList.contains("Focusable")).toBe(true);
   });
 
+  /*
+   * PERM-JUMP-01's redo, measured on device 2026-09-04 (build 49241e7): with the ring genuinely on
+   * Retry, Copy and Open Permissions in turn, every one read `tabindex: null` — real Steam
+   * Focusables carry no `tabindex` attribute here at all, unlike this file's other fixtures (all
+   * pre-stamped `tabindex="-1"` for exactly this reason). The old "stamp whenever one is absent"
+   * guard therefore fired on a genuine `.Panel.Focusable` it had climbed to, and the stamp itself is
+   * what dropped `.bonsai-chat-vac-deny-row` out of Steam's nav graph (same shape as REPLY-DOWN-01,
+   * 2026-08-04, docs/testing.md — `focusRegisteredReplyStop` stamping `-1` onto Retry and its row).
+   * This fixture matches the bug's actual shape: a native `<button>` (needs no tabindex — buttons
+   * are natively focusable) nested in a wrapping Focusable that, on device, has none either.
+   */
+  it("focusDeckOwner never stamps a tabindex onto a genuine Panel.Focusable it climbed to", () => {
+    mountLiveTurn(`
+      <div class="Panel Focusable">
+        <button type="button">Inner</button>
+      </div>
+    `);
+    const wrapper = document.querySelector(".Panel.Focusable") as HTMLElement;
+    const btn = document.querySelector("button") as HTMLElement;
+    expect(focusDeckOwner(btn)).toBe(true);
+    // The wrapper is left exactly as Steam rendered it — no attribute added at all.
+    expect(wrapper.hasAttribute("tabindex")).toBe(false);
+    // The natively-focusable button itself is what actually holds the ring, via the existing
+    // `el.focus()` fallback for when `target` (the wrapper) cannot be focused.
+    expect(document.activeElement).toBe(btn);
+  });
+
+  /*
+   * The one case this change accepts as an honest `false` rather than a misleading `true`: a target
+   * that is itself a genuine Panel.Focusable, has no tabindex on device, and has no natively
+   * focusable descendant to fall back to. Before this change the function stamped it, which is
+   * exactly the corruption above — and the alternative (silently reporting success while nothing was
+   * actually focused) is not better. Every caller already treats `false` as "fall through to the
+   * next option in the chain", the same as if the target had not resolved at all.
+   */
+  it("focusDeckOwner reports false rather than stamp a bare Panel.Focusable leaf with no fallback", () => {
+    mountLiveTurn(`<div class="Panel Focusable bonsai-chip-ladder"></div>`);
+    const leaf = document.querySelector(".Panel.Focusable") as HTMLElement;
+    expect(focusDeckOwner(leaf)).toBe(false);
+    expect(leaf.hasAttribute("tabindex")).toBe(false);
+  });
+
+  /* The fallback the stamp still exists for: a plain element of ours, not a Steam Focusable at all
+     (no `.Panel.Focusable` anywhere in its ancestry), needs a synthetic tabindex to be focusable. */
+  it("focusDeckOwner still stamps a tabindex onto a plain element that is not a Steam Focusable", () => {
+    mountLiveTurn(`<div class="bonsai-session-context-strip"></div>`);
+    const plain = document.querySelector(".bonsai-session-context-strip") as HTMLElement;
+    expect(focusDeckOwner(plain)).toBe(true);
+    expect(plain.getAttribute("tabindex")).toBe("-1");
+    expect(document.activeElement).toBe(plain);
+  });
+
   it("focusDownFromLiveAnswerBubble prefers branch buttons over thumbs", () => {
     mountLiveTurn(`
       <div class="bonsai-chat-turn-slot">
