@@ -28,6 +28,7 @@ export function toBonsaiSettingsPayload(
     desktop_app_log_level: input.desktopAppLogLevel,
     preset_chip_fade_animation_enabled: input.presetChipAnimation === "fade",
     preset_chip_animation: input.presetChipAnimation,
+    preset_single_chip: input.presetSingleChip,
     input_sanitizer_user_disabled: input.inputSanitizerUserDisabled,
     capabilities: input.capabilities,
     ai_character_enabled: input.aiCharacterEnabled,

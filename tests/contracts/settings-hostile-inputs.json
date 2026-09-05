@@ -387,5 +387,19 @@
       "desktop_app_log_level": "verbose",
       "preset_chip_animation": "carousel"
     }
+  },
+  {
+    "name": "an old settings file predating the one-chip switch loads two chips and leaves everything else untouched",
+    "input": {
+      "reply_verbosity": "detailed",
+      "desktop_app_log_level": "verbose",
+      "preset_chip_animation": "carousel"
+    },
+    "expected": {
+      "preset_single_chip": false,
+      "reply_verbosity": "detailed",
+      "desktop_app_log_level": "verbose",
+      "preset_chip_animation": "carousel"
+    }
   }
 ]

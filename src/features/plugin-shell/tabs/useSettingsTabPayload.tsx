@@ -40,6 +40,8 @@ export function useSettingsTabPayload({
   onResetSession,
   onClearAllPluginData,
   onJumpToPermission,
+  presetSingleChip,
+  setPresetSingleChip,
 }: UseSettingsTabPayloadArgs): React.ReactElement {
   // Dependency list preserved verbatim from index.tsx: the settings setters are stable
   // identities from usePluginSettings and were deliberately left out.
@@ -74,6 +76,8 @@ export function useSettingsTabPayload({
         onResetSession={onResetSession}
         onClearAllPluginData={onClearAllPluginData}
         onJumpToPermission={onJumpToPermission}
+        presetSingleChip={presetSingleChip}
+        setPresetSingleChip={setPresetSingleChip}
       />
     ),
     [
@@ -98,6 +102,7 @@ export function useSettingsTabPayload({
       onResetSession,
       onClearAllPluginData,
       onJumpToPermission,
+      presetSingleChip,
     ]
   );
 }

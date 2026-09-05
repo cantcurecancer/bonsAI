@@ -17,7 +17,7 @@
     },
     {
       "path": "src/index.tsx",
-      "lines": 1620,
+      "lines": 1627,
       "role": "Plugin root: tabs, scoped CSS, RPC wiring, Settings"
     },
     {
@@ -37,7 +37,7 @@
     },
     {
       "path": "src/components/MainTabPresetAnimatedChips.tsx",
-      "lines": 1215,
+      "lines": 1233,
       "role": ""
     },
     {
@@ -106,8 +106,18 @@
       "role": ""
     },
     {
+      "path": "src/components/MainTabPresetAnimatedChips.test.tsx",
+      "lines": 635,
+      "role": ""
+    },
+    {
       "path": "py_modules/backend/services/game_ai_request.py",
       "lines": 617,
+      "role": ""
+    },
+    {
+      "path": "src/hooks/usePluginSettings.ts",
+      "lines": 584,
       "role": ""
     },
     {
@@ -116,18 +126,8 @@
       "role": ""
     },
     {
-      "path": "src/hooks/usePluginSettings.ts",
-      "lines": 576,
-      "role": ""
-    },
-    {
-      "path": "src/components/MainTabPresetAnimatedChips.test.tsx",
-      "lines": 568,
-      "role": ""
-    },
-    {
       "path": "src/components/SettingsTab.tsx",
-      "lines": 556,
+      "lines": 572,
       "role": ""
     },
     {
@@ -137,7 +137,7 @@
     },
     {
       "path": "py_modules/backend/services/settings_service.py",
-      "lines": 540,
+      "lines": 542,
       "role": "Load/save/merge settings.json"
     },
     {
@@ -146,18 +146,18 @@
       "role": ""
     },
     {
+      "path": "src/utils/settingsContracts.test.ts",
+      "lines": 512,
+      "role": ""
+    },
+    {
       "path": "src/components/CharacterPropGlyph.tsx",
       "lines": 511,
       "role": ""
     },
     {
-      "path": "src/utils/settingsContracts.test.ts",
-      "lines": 509,
-      "role": ""
-    },
-    {
       "path": "src/data/bonsaiSettingsNormalizers.ts",
-      "lines": 498,
+      "lines": 499,
       "role": ""
     },
     {

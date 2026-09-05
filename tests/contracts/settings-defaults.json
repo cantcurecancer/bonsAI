@@ -31,6 +31,7 @@
   "ollama_local_on_deck": false,
   "preset_chip_animation": "fade",
   "preset_chip_fade_animation_enabled": true,
+  "preset_single_chip": false,
   "rag_corpus_path": "",
   "rag_corpus_version": "",
   "rag_hybrid_retrieval_enabled": true,

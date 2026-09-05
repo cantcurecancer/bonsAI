@@ -275,6 +275,8 @@ const Content: React.FC = () => {
     presetChipAnimation,
     setPresetChipAnimation,
     setPresetChipFadeAnimationEnabled,
+    presetSingleChip,
+    setPresetSingleChip,
     askMode,
     setAskMode,
     ollamaKeepAlive,
@@ -664,6 +666,7 @@ const Content: React.FC = () => {
       desktopAppLogLevel,
       presetChipFadeAnimationEnabled,
       presetChipAnimation,
+      presetSingleChip,
       inputSanitizerUserDisabled,
       capabilities,
       aiCharacterEnabled,
@@ -712,6 +715,7 @@ const Content: React.FC = () => {
       desktopAppLogLevel,
       presetChipFadeAnimationEnabled,
       presetChipAnimation,
+      presetSingleChip,
       inputSanitizerUserDisabled,
       capabilities,
       aiCharacterEnabled,
@@ -1154,6 +1158,7 @@ const Content: React.FC = () => {
     onOpenPluginHelp: openPluginHelpModal,
     presetChipFadeAnimationEnabled,
     presetChipAnimation,
+    presetSingleChip,
     onRetryLastResponse,
     liveReplyFeedbackRating,
     onReplyFeedback,
@@ -1292,6 +1297,8 @@ const Content: React.FC = () => {
     onCompleteDeckyModalClose: finalizeShowModalAndRestoreActiveTab,
     onResetSession: resetPluginSession,
     onClearAllPluginData,
+    presetSingleChip,
+    setPresetSingleChip,
   });
 
   const ollamaTab = useOllamaTabPayload({

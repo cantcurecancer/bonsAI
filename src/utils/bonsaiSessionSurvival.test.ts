@@ -38,6 +38,7 @@ function minimalSnapshot(overrides: Partial<BonsaiSessionSurvivalSnapshot> = {})
       desktopAppLogLevel: DEFAULT_DESKTOP_APP_LOG_LEVEL,
       presetChipFadeAnimationEnabled: true,
       presetChipAnimation: "fade",
+      presetSingleChip: false,
       inputSanitizerUserDisabled: false,
       capabilities: { ...DEFAULT_CAPABILITIES },
       aiCharacterEnabled: true,

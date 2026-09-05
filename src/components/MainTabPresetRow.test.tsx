@@ -12,7 +12,7 @@ import { resetFakeDeckyRpc } from "../test-harness/fakeDeckyRpc";
 
 const seed = (text: string): PresetPrompt => ({ text, category: "general" });
 
-function renderRow(showPluginHelpChip: boolean) {
+function renderRow(showPluginHelpChip: boolean, presetSingleChip = false) {
   return render(
     <MainTabPresetRow
       suggestedPrompts={[seed("alpha"), seed("bravo"), seed("charlie")]}
@@ -23,6 +23,7 @@ function renderRow(showPluginHelpChip: boolean) {
       isAsking={false}
       focusUnifiedTextField={() => false}
       presetCarouselHostRef={React.createRef<HTMLDivElement | null>()}
+      presetSingleChip={presetSingleChip}
     />,
   );
 }
@@ -42,5 +43,12 @@ describe("MainTabPresetRow", () => {
     const { container } = renderRow(false);
     expect(container.querySelector(".bonsai-preset-help-chip")).toBeNull();
     expect(container.querySelectorAll(".bonsai-preset-carousel-slot")).toHaveLength(PRESET_VISIBLE_SLOTS);
+  });
+
+  /* "One suggestion chip" setting (roadmap [chips] ★★★): two stays the default; this proves the
+     row actually forwards the setting down rather than only accepting the prop and ignoring it. */
+  it("passes presetSingleChip through to the chips, dropping the row to one", () => {
+    const { container } = renderRow(false, true);
+    expect(container.querySelectorAll(".bonsai-preset-carousel-slot")).toHaveLength(1);
   });
 });

@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 368,
-  "edgeCount": 892,
+  "fileCount": 370,
+  "edgeCount": 894,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -761,6 +761,7 @@
       ],
       "importedBy": [
         "src/components/SettingsTab.modalReturnFocus.test.tsx",
+        "src/components/SettingsTabPresetSingleChip.test.tsx",
         "src/features/plugin-shell/tabs/useSettingsTabPayload.tsx"
       ]
     },
@@ -793,6 +794,12 @@
       "importedBy": [
         "src/components/OllamaTab.tsx"
       ]
+    },
+    "src/components/SettingsTabPresetSingleChip.test.tsx": {
+      "imports": [
+        "src/components/SettingsTab.tsx"
+      ],
+      "importedBy": []
     },
     "src/components/SettingsTabUiScaleSection.test.ts": {
       "imports": [
@@ -1664,6 +1671,12 @@
         "src/hooks/useBonsaiAskOrchestration.ts"
       ]
     },
+    "src/features/preset-carousel/presetRowLayout.test.ts": {
+      "imports": [
+        "src/features/preset-carousel/presetRowLayout.ts"
+      ],
+      "importedBy": []
+    },
     "src/features/preset-carousel/presetRowLayout.ts": {
       "imports": [
         "src/data/presets.ts"
@@ -1675,6 +1688,7 @@
         "src/components/MainTabPresetRow.tsx",
         "src/features/preset-carousel/carouselState.test.ts",
         "src/features/preset-carousel/carouselState.ts",
+        "src/features/preset-carousel/presetRowLayout.test.ts",
         "src/features/preset-carousel/sessionRagComposer.ts",
         "src/styles/sections/section-4.test.ts",
         "src/styles/sections/section-4.ts"

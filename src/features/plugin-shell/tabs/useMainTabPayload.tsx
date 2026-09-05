@@ -103,6 +103,7 @@ export function useMainTabPayload({
     onOpenPluginHelp,
     presetChipFadeAnimationEnabled,
     presetChipAnimation,
+    presetSingleChip,
     onRetryLastResponse,
     liveReplyFeedbackRating,
     onReplyFeedback,
@@ -217,6 +218,7 @@ export function useMainTabPayload({
         onOpenPluginHelp={onOpenPluginHelp}
         presetChipFadeAnimationEnabled={presetChipFadeAnimationEnabled}
         presetChipAnimation={presetChipAnimation}
+        presetSingleChip={presetSingleChip}
         onRetryLastResponse={onRetryLastResponse}
         liveReplyFeedbackRating={liveReplyFeedbackRating}
         onReplyFeedback={onReplyFeedback}
@@ -332,6 +334,7 @@ export function useMainTabPayload({
       useLocalKnowledgeBase,
       presetChipFadeAnimationEnabled,
       presetChipAnimation,
+      presetSingleChip,
       unifiedInput,
       unifiedInputSurfacePx,
       usesNativeMultilineField,

@@ -86,6 +86,11 @@ export type BonsaiSettings = {
   preset_chip_fade_animation_enabled: boolean;
   /** Main-tab preset chips: crossfade cycle, vertical carousel, or static rotation without opacity animation. */
   preset_chip_animation: PresetChipAnimation;
+  /**
+   * When true, the suggestion row shows one chip with the whole 300px column instead of two side
+   * by side. Off (two chips) is the shipped default (D43, 2026-09-01).
+   */
+  preset_single_chip: boolean;
   /** When true, Ask input sanitizer lane is off (set via README magic phrases, not the Settings UI). */
   input_sanitizer_user_disabled: boolean;
   capabilities: BonsaiCapabilities;
@@ -178,6 +183,7 @@ export type BonsaiSettingsSnapshotInput = {
   desktopAppLogLevel: DesktopAppLogLevel;
   presetChipFadeAnimationEnabled: boolean;
   presetChipAnimation: PresetChipAnimation;
+  presetSingleChip: boolean;
   inputSanitizerUserDisabled: boolean;
   capabilities: BonsaiCapabilities;
   aiCharacterEnabled: boolean;
@@ -258,6 +264,8 @@ export const DEFAULT_DESKTOP_APP_LOG_LEVEL: DesktopAppLogLevel = "off";
 export const DESKTOP_APP_LOG_LEVEL_OPTIONS: DesktopAppLogLevel[] = ["off", "default", "verbose"];
 export const DEFAULT_PRESET_CHIP_FADE_ANIMATION_ENABLED = true;
 export const DEFAULT_PRESET_CHIP_ANIMATION: PresetChipAnimation = "fade";
+/** D43 (2026-09-01): two chips is the shipped default; this setting overrides it to one. */
+export const DEFAULT_PRESET_SINGLE_CHIP = false;
 export const PRESET_CHIP_ANIMATION_OPTIONS: PresetChipAnimation[] = ["fade", "carousel", "static", "decode"];
 export const DEFAULT_INPUT_SANITIZER_USER_DISABLED = false;
 export const DEFAULT_SHOW_DEVELOPER_TAB = false;

@@ -12,7 +12,10 @@
  */
 import { describe, expect, it } from "vitest";
 import { buildSection4Section } from "./section-4";
-import { PRESET_CHIP_BLOCKED_EDGE_FLASH_MS } from "../../features/preset-carousel/presetRowLayout";
+import {
+  PRESET_CHIP_BLOCKED_EDGE_FLASH_MS,
+  PRESET_VISIBLE_SLOTS,
+} from "../../features/preset-carousel/presetRowLayout";
 
 describe("chip row out-of-chips edge cue (section 4 CSS)", () => {
   const css = buildSection4Section();
@@ -59,5 +62,32 @@ describe("chip row out-of-chips edge cue (section 4 CSS)", () => {
     const rampMs = Number(match![1]);
     expect(rampMs).toBeGreaterThan(0);
     expect(rampMs).toBeLessThan(PRESET_CHIP_BLOCKED_EDGE_FLASH_MS);
+  });
+});
+
+describe("carousel track width reads the one-suggestion-chip override (section 4 CSS)", () => {
+  const css = buildSection4Section();
+
+  it("the slide distance falls back to PRESET_VISIBLE_SLOTS but reads --bonsai-preset-visible-slots", () => {
+    // MainTabPresetAnimatedChips writes --bonsai-preset-visible-slots on the track (alongside
+    // --bonsai-preset-window-start) so the "one suggestion chip" setting can override the window
+    // width per render without a rebuild; PRESET_VISIBLE_SLOTS is only the fallback for the rare
+    // case nothing wrote the variable.
+    expect(css).toContain(
+      `var(--bonsai-preset-visible-slots, ${PRESET_VISIBLE_SLOTS}))`,
+    );
+    const transformMatch = css.match(/transform:\s*translateX\(([\s\S]*?)\)\s*!important;/);
+    expect(transformMatch).toBeTruthy();
+    expect(transformMatch![1]).toContain("var(--bonsai-preset-visible-slots");
+  });
+
+  it("each chip's share of the row also reads the same variable, not a baked-in pixel width", () => {
+    const flexMatch = css.match(
+      /\.bonsai-scope \.bonsai-preset-carousel-track > \.bonsai-preset-carousel-slot\s*\{([^}]*)\}/,
+    );
+    expect(flexMatch).toBeTruthy();
+    expect(flexMatch![1]).toContain("var(--bonsai-preset-visible-slots");
+    // No pixel width is measured or hard-coded here (design-language rule 4).
+    expect(flexMatch![1]).not.toMatch(/\d+px\s*\)\s*\/\s*\d/);
   });
 });

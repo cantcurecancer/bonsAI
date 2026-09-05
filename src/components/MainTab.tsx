@@ -43,6 +43,8 @@ export type MainTabProps = {
   onOpenPluginHelp: () => void;
   presetChipFadeAnimationEnabled?: boolean;
   presetChipAnimation?: "fade" | "carousel" | "static" | "decode";
+  /** "One suggestion chip" setting: the row shows one chip with the whole column. Off by default. */
+  presetSingleChip?: boolean;
   onRetryLastResponse?: () => void;
   liveReplyFeedbackRating?: "up" | "down" | null;
   onReplyFeedback?: (rating: "up" | "down") => void;
@@ -211,6 +213,7 @@ export function MainTab(props: MainTabProps) {
             onOpenPluginHelp={props.onOpenPluginHelp}
             presetChipFadeAnimationEnabled={props.presetChipFadeAnimationEnabled}
             presetChipAnimation={props.presetChipAnimation}
+            presetSingleChip={props.presetSingleChip}
             setUnifiedInput={props.setUnifiedInput}
             onPresetPreferAskMode={props.onPresetPreferAskMode}
             presetCarouselInject={props.presetCarouselInject}
