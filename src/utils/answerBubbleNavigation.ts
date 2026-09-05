@@ -122,11 +122,16 @@ export function focusFirstAnswerChunk(answerKey: string): boolean {
 }
 
 /**
- * The reverse of `focusFirstAnswerChunk`, for entering from below: the reply-actions row's Up, when
- * no thumbs/chips/glossary chip claims the press first (buildReplyActionsElement.tsx), used to yield
- * to Steam's own move and land on the bare bubble rather than its last section — the same double
- * landing `focusFirstAnswerChunk` had on the way in, just approached from underneath. Same
- * TakeFocus-then-focus shape; see that function's comment for why the transfer is needed.
+ * The reverse of `focusFirstAnswerChunk`, for entering from below: the reply-actions row's Up, once
+ * refinement chips and — for the utility row (Retry / Show details) — the opposite thumbs column
+ * have declined, and a glossary chip in view has also declined (buildReplyActionsElement.tsx). The
+ * thumbs row (Helpful / Not really) never claimed the press first at all — its own `onMoveUp` was a
+ * bare `() => false` — so on a normal reply, which always has a thumbs row, this fallback used to be
+ * unreachable: Up yielded straight to Steam's own geometry move, which landed on the bare bubble
+ * rather than its last section. Measured on device 2026-09-04 (build f9a4c17, CHAT-REPLY-ENTRY-01):
+ * ring on Helpful, Up landed on `.bonsai-chat-ai-bubble`, never the last `.bonsai-answer-stop`. Both
+ * the thumbs row's and the utility row's chains now end here. Same TakeFocus-then-focus shape; see
+ * `focusFirstAnswerChunk`'s comment for why the transfer is needed.
  */
 export function focusLastAnswerChunk(answerKey: string): boolean {
   const el =

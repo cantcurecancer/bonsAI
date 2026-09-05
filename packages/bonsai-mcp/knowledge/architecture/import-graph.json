@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
   "fileCount": 362,
-  "edgeCount": 872,
+  "edgeCount": 873,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -2806,6 +2806,7 @@
         "src/utils/answerBubbleElRegistry.ts",
         "src/utils/answerStopRegistry.ts",
         "src/utils/buildReplyActionsElement.tsx",
+        "src/utils/drgGlossaryTermRegistry.ts",
         "src/utils/uiDocument.ts"
       ],
       "importedBy": []
@@ -3090,6 +3091,7 @@
         "src/components/DrgGlossaryTermChip.tsx",
         "src/utils/answerBubbleNavigation.test.ts",
         "src/utils/answerBubbleNavigation.ts",
+        "src/utils/buildReplyActionsElement.test.tsx",
         "src/utils/buildReplyActionsElement.tsx"
       ]
     },

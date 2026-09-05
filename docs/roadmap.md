@@ -43,16 +43,13 @@ failures with a measurement. A prompt-time hook gives a gentle heads-up when a s
 ## Bugs
 
 
+- ★ `[ask]` **The question overlay sits a few pixels off the native text field** — **OPEN.** Most visible on a three-line question
+  and on the empty-field placeholder. Nothing has touched the overlay since 2026-08-07.
 - ★ `[focus]` **An answer section can take the ring while hidden behind the Ask box** — **OPEN, found 2026-09-04.** Walking up the
   Red Dead turn landed on a bubble measured only 67% visible, covered by `.bonsai-unified-input-text-box`'s input.
 - ★ `[focus]` **Down does not move the ring off an unrevealed spoiler block** — **OPEN, found 2026-09-04.** With the ring on
   `.bonsai-spoiler-reveal-target`, Down reports the press arriving and nothing moving. After the block is revealed, Down escapes
   normally, so it is the hidden state that traps.
-- ★ `[main]` **The footnote under the Ask bar says no active game until the first Ask** — found on the Deck 2026-09-04 during
-  CHIP-ROTATION-01: with Half-Life 2 running and the carousel already showing that game's chips, the line read *Context: no active
-  game detected* for the whole 96-second sample. The line only changes when an Ask's status poll reports a game (index.tsx starts it
-  as inactive; useBonsaiAskOrchestration.ts updates it from the poll), so on a fresh mount it reports a detection that never ran.
-  Evidence `runs/CHIP-ROTATION-01-carousel-sample-half-life-2.json`.
 - ★ `[reply]` **A branch question elides the game name** — **OPEN, found 2026-09-04.** The Ravenholm branch picker asked
   *"Where are you at in … ?"* with the title replaced by an ellipsis.
 - ★★ `[focus]` **After the panel remounts the ring parks on a zero-size container** — **OPEN, found 2026-09-04.** On a fresh mount
@@ -242,6 +239,11 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
 - ★ `[reply]` **After reopening the panel, a branch-pick turn's header shows the internal prompt** — **VERIFY.** Fixed at the desk
   2026-08-28: the caption the user saw is saved with the turn. Owed: make a branch pick, reopen, read the header. Row
   **CHAT-HEADER-CAPTION-01**. [Detail](archive/roadmap-bugs-fixed.md#moved-from-the-roadmap-2026-09-02).
+- ★★ `[chat]` **A command reply leaves the turn header blank and the chat titled *New chat*** — **VERIFY.**
+  Fixed at the desk 2026-09-04, Deck check owed: the sanitizer, shortcut-setup and VAC-check replies now save their question
+  and reply to the active chat slot the same way a normal Ask's completed turn does, so the slot gets a first turn, renames
+  itself off *New chat*, and the header reads the command instead of `…`. Row **CMD-REPLY-TITLE-01**.
+  [Detail](roadmap-details.md#a-command-reply-leaves-the-turn-header-blank-and-the-chat-titled-new-chat).
 - ★★ `[focus]` **A checklist the model got wrong was left in the reply as raw JSON**, its own D-pad stop that did nothing — **VERIFY.**
   Fixed 2026-08-28: a rejected checklist block is dropped, as a rejected branch block already was. Owed: one sighting on device of a
   reply where it happens. Row **STRAT-CHECKLIST-JSON-01**.
@@ -249,10 +251,13 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
   paths pass on the Deck 2026-09-04.** Closing the Clear cache confirmation returns the ring to the Clear cache button; after the
   trap's node check was made realm-safe, a chord close and reopen left the ring on Decky's back button, visible. Owed: the
   suspend-and-resume remount, which the rig cannot force. Row **TAB-BAR-11**.
-- ★★ `[focus]` **Down from the chat slot lands on the whole reply before its first section** — **VERIFY, Down half passed, Up half
-  failed on the Deck 2026-09-04.** From the chat row, Down lands on the turn header and then on the first stop inside the answer,
-  never on the bare bubble. Up from Helpful still lands on the bare bubble: the fix reached only the Retry row, and the thumbs
-  row's Up still hands the press to Steam. Back with its lane. Row **CHAT-REPLY-ENTRY-01**.
+- ★★ `[focus]` **Down from the chat slot lands on the whole reply before its first section** — **VERIFY, Down path passed on the
+  Deck 2026-09-04.** From the chat row, Down lands on the turn header and then on the first stop inside the answer, never on the
+  bare bubble. **The Up half failed on a cleaner re-measurement the same day** (a reply with no branch picker, ring on Helpful,
+  Up landed on the bare bubble): the first fix only reached the utility row's Up (Retry / Show details), and every ordinary reply
+  uses the thumbs row (Helpful / Not really) instead, whose own Up was still a bare "yield to Steam". **Redone at the desk
+  2026-09-04, Deck check owed again:** the thumbs row's Up now gets the same last-resort chain (glossary chip, then the bubble's
+  last section). Row **CHAT-REPLY-ENTRY-01**.
 - ★★ `[focus]` `[perms]` **The Open Permissions button under a blocked reply is not a D-pad stop** — **VERIFY, first fix failed on
   the Deck 2026-09-04.** The button is built as a stop now, but the hops into its row used a plain focus across containers: Up from
   the session strip lost the ring, and the helper stamped the row with a tab index that removes it from Steam's graph. Back with its

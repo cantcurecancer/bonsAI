@@ -15,6 +15,10 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { buildReplyActionsElement } from "./buildReplyActionsElement";
 import { registerAnswerBubbleEl } from "./answerBubbleElRegistry";
 import { registerAnswerStop, resetAnswerStopRegistry } from "./answerStopRegistry";
+import {
+  registerDrgGlossaryTermChip,
+  resetDrgGlossaryTermRegistry,
+} from "./drgGlossaryTermRegistry";
 import { resetUiDocument } from "./uiDocument";
 
 vi.mock("@decky/ui", async () => import("../test-harness/fakeDeckyUi"));
@@ -45,6 +49,41 @@ function findByClassName(node: React.ReactNode, className: string): React.ReactE
     return node;
   }
   return findByClassName(props.children as React.ReactNode, className);
+}
+
+/** A bubble with `count` registered `.bonsai-answer-stop` sections, under answerKey "live". */
+function registerBubbleWithStops(count: number): HTMLElement[] {
+  const bubble = document.createElement("div");
+  bubble.className = "bonsai-chat-ai-bubble";
+  document.body.appendChild(bubble);
+  registerAnswerBubbleEl("live", bubble);
+
+  const stops: HTMLElement[] = [];
+  for (let i = 0; i < count; i++) {
+    const stop = document.createElement("div");
+    stop.className = "bonsai-answer-stop";
+    bubble.appendChild(stop);
+    registerAnswerStop("live", i, stop);
+    stops.push(stop);
+  }
+  return stops;
+}
+
+/* jsdom reports every rect as 0×0, so geometry-reading helpers (elementIsWithinViewportOf) need it
+   supplied — same helper shape as answerBubbleNavigation.test.ts's stubRect. */
+function stubRect(el: HTMLElement, top: number, bottom: number): void {
+  el.getBoundingClientRect = () =>
+    ({
+      top,
+      bottom,
+      left: 0,
+      right: 0,
+      width: 0,
+      height: bottom - top,
+      x: 0,
+      y: top,
+      toJSON: () => ({}),
+    }) as DOMRect;
 }
 
 describe("buildReplyActionsElement refine chip row", () => {
@@ -162,23 +201,6 @@ describe("buildReplyActionsElement Up from the utility row into the answer", () 
     document.body.innerHTML = "";
   });
 
-  function registerBubbleWithStops(count: number): HTMLElement[] {
-    const bubble = document.createElement("div");
-    bubble.className = "bonsai-chat-ai-bubble";
-    document.body.appendChild(bubble);
-    registerAnswerBubbleEl("live", bubble);
-
-    const stops: HTMLElement[] = [];
-    for (let i = 0; i < count; i++) {
-      const stop = document.createElement("div");
-      stop.className = "bonsai-answer-stop";
-      bubble.appendChild(stop);
-      registerAnswerStop("live", i, stop);
-      stops.push(stop);
-    }
-    return stops;
-  }
-
   it("lands on the bubble's last section when no thumbs, chips or glossary chip claim the press", () => {
     const stops = registerBubbleWithStops(2);
     const el = buildReplyActionsElement({
@@ -212,5 +234,98 @@ describe("buildReplyActionsElement Up from the utility row into the answer", () 
     const onMoveUp = (utilityRow!.props as Record<string, unknown>).onMoveUp as () => boolean;
 
     expect(onMoveUp()).toBe(false);
+  });
+});
+
+/*
+ * Up from the thumbs row (Helpful / Not really) — measured broken on device 2026-09-04 (build
+ * f9a4c17, CHAT-REPLY-ENTRY-01): with the ring on Helpful, Up landed on the bare
+ * `.bonsai-chat-ai-bubble`, never the last `.bonsai-answer-stop`. The thumbs row's own `onMoveUp`
+ * (and the outer reply-actions container's, the same function) was a bare `() => false` that always
+ * yielded to Steam — unlike the utility row above, which already had a last-resort chain. Every
+ * ordinary reply has a thumbs row, so this was the path that mattered on device and the utility-row
+ * fix alone never ran for it. `moveUpFromReply` now gets the same chain, minus the hop to the
+ * utility row itself (thumbs sits above it, not below): `onMoveUpFromReply` (if a caller ever
+ * supplies it) → the DRG glossary chip → the bubble's last section.
+ */
+describe("buildReplyActionsElement Up from the thumbs row into the answer", () => {
+  afterEach(() => {
+    resetAnswerStopRegistry();
+    resetDrgGlossaryTermRegistry();
+    resetUiDocument();
+    registerAnswerBubbleEl("live", null);
+    document.body.innerHTML = "";
+  });
+
+  /* Both the outer container and the thumbs row wire the identical `moveUpFromReply` callback
+     (buildReplyActionsElement.tsx: the container's own onMoveUp, and the thumbs row's), so reading
+     it off the outer element is exactly the handler Up-from-Helpful/Not-really actually calls. */
+  function moveUpFromReplyOf(el: React.ReactElement | null): () => boolean {
+    return (el!.props as Record<string, unknown>).onMoveUp as () => boolean;
+  }
+
+  it("lands on the bubble's last section when no glossary chip is in view", () => {
+    const stops = registerBubbleWithStops(2);
+    const el = buildReplyActionsElement({
+      replyKey: "live",
+      rating: null,
+      onRate: () => {},
+      showFeedback: true, // thumbs row renders (Helpful / Not really)
+    });
+
+    expect(moveUpFromReplyOf(el)()).toBe(true);
+    expect(document.activeElement).toBe(stops[stops.length - 1]);
+  });
+
+  it("falls back to the bubble when the answer has no registered sections at all", () => {
+    // No bubble registered under "live" — nothing to enter, so Up must still report false rather
+    // than claim a press it did nothing with.
+    const el = buildReplyActionsElement({
+      replyKey: "live",
+      rating: null,
+      onRate: () => {},
+      showFeedback: true,
+    });
+
+    expect(moveUpFromReplyOf(el)()).toBe(false);
+  });
+
+  it("still prefers a DRG glossary chip in view over the bubble's last section", () => {
+    const stops = registerBubbleWithStops(2);
+    const bubble = document.querySelector(".bonsai-chat-ai-bubble") as HTMLElement;
+
+    // findScrollablePanel needs a `[class*="TabContentsScroll"]` ancestor to resolve at all — see
+    // chatPanelScroll.ts; jsdom's own scrollHeight/clientHeight both read 0 either way.
+    const scroll = document.createElement("div");
+    scroll.className = "TabContentsScroll";
+    document.body.appendChild(scroll);
+    scroll.appendChild(bubble);
+    stubRect(scroll, 0, 250);
+
+    const chip = document.createElement("div");
+    stubRect(chip, 100, 150); // inside the 0-250 viewport band
+    stops[0]!.appendChild(chip);
+    registerDrgGlossaryTermChip("kiting-1", chip);
+
+    // The ring's own rect matters to findNextDrgGlossaryTermChipInView's reading-order check: a ring
+    // that trivially "contains" the chip (document.body, jsdom's un-focused default) reads as
+    // already inside it and the chip is skipped for "up". A ring below the chip, outside the bubble
+    // — Helpful, in the real layout — is what makes the chip legitimately "before" it going up.
+    const ringStandIn = document.createElement("button");
+    stubRect(ringStandIn, 400, 432);
+    document.body.appendChild(ringStandIn);
+    ringStandIn.tabIndex = -1;
+    ringStandIn.focus();
+
+    const el = buildReplyActionsElement({
+      replyKey: "live",
+      rating: null,
+      onRate: () => {},
+      showFeedback: true,
+    });
+
+    expect(moveUpFromReplyOf(el)()).toBe(true);
+    expect(document.activeElement).toBe(chip);
+    expect(document.activeElement).not.toBe(stops[stops.length - 1]);
   });
 });

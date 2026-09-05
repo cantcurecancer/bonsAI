@@ -125,6 +125,7 @@ export function buildReplyActionsElement(
     onChip,
     askInFlight = false,
     getAnswerCopyText,
+    onMoveUpFromReply,
     onMoveUpFromChips,
     onMoveDownFromUtility,
   } = args;
@@ -137,7 +138,25 @@ export function buildReplyActionsElement(
   const thumbsLocked = rating !== null;
 
   const liveSlot = () => queryLiveTurnSlot();
-  const moveUpFromReply = () => false;
+  /*
+   * Up from the thumbs row (Helpful / Not really) — the outer reply-actions container's own
+   * `onMoveUp` falls back to the same handler. Measured on device 2026-09-04 (build f9a4c17,
+   * CHAT-REPLY-ENTRY-01): this used to be a bare `() => false`, unconditionally yielding to Steam,
+   * whose own geometry move landed on the bare answer bubble — never its last section — because
+   * every ordinary reply has a thumbs row and this was the only path Up from it ever took. The
+   * utility row (Retry / Show details) already had a last-resort chain
+   * (`upFromRetry`/`upFromShowDetails` below); this gives the thumbs row the same one, minus the
+   * hop to the utility row itself, since thumbs sits above it, not below.
+   * `onMoveUpFromReply` is declared but has never had a supplier anywhere in this repo (checked
+   * 2026-09-04) — kept rather than dropped, since the type already promises "focuses strategy
+   * chrome before the answer bubble" and a caller that wants that ahead of the glossary chip and
+   * the bubble fallback can still supply it without another signature change.
+   */
+  const moveUpFromReply = () => {
+    if (onMoveUpFromReply?.()) return true;
+    if (upIntoGlossaryChip()) return true;
+    return focusLastAnswerChunk(replyKey);
+  };
   const downFromUtility = () => {
     if (onMoveDownFromUtility?.()) return true;
     return focusDownFromReplyUtilityRow(liveSlot());
