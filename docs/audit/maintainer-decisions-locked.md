@@ -3215,3 +3215,36 @@ what it actually shows when focused has to be looked at on the Deck. Every versi
 focus.
 
 Both halves are on the roadmap as two-star chat entries — the cut question under Bugs, the cue under Features.
+
+---
+
+### D61 — LOCKED 2026-09-05 (raised 2026-09-05) — The feature verification round: what is in scope, and what waits
+
+Raised at the start of the round planned in
+[planning/34-feature-verification-round.md](../planning/34-feature-verification-round.md). The Verify list
+had 23 entries owing a device check and the round needed its edges drawn before anything was pressed.
+
+**Answers, 2026-09-05, all eight locked** (the maintainer answered in chat):
+
+1. **Start shape.** Desk work begins immediately; the device work waits for the maintainer's word. The
+   other chat finished the same evening and handed the device over.
+2. **The in-person block runs last**, as plan 31 § 7 has it — not first, even though the rig has now
+   measured most of those items.
+3. **Gated items.** A model pull is in scope. Clear all plugin data is in scope but **runs in the
+   morning**, not overnight: the maintainer declined to authorise a destructive step in advance while
+   asleep. The Family View PIN and the Steam Web API key are **out of scope** this round, so the kids
+   lock and the ban lookup entries stay in Verify.
+4. **On a failure: file it and carry on.** Write the bug into the roadmap with the evidence named and move
+   to the next check. No fixes during the round.
+5. **Length: one long overnight run.**
+6. **The chat-slot game name stays in Verify and is not checked.** D57 #8 decided the name should show
+   only while the row has focus; that code was never written, so the entry is waiting on code, not on the
+   device.
+7. **Scope: the Verify list, plus a free walk of every screen** — every stop reachable and every stop
+   visible. Wider than D57 #7, which kept to the Verify rows alone.
+8. **Deploy first.** The device was running a build from before the two colour fixes; verifying an old
+   build risks passing something since changed and failing something already fixed.
+
+**Consequence worth recording.** Three entries cannot close overnight because they all depend on the data
+clear: the voice fixes, the shell and tab payload extraction, and the reopen half of the cache-clear
+entry. They close in the morning in one short block.
