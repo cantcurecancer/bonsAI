@@ -5,15 +5,16 @@
  * Solves: User-consent surface for sensitive operations before Ask or settings use them.
  * Does not: Enforce capabilities server-side — main.py capabilities service is authoritative.
  */
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { Focusable, PanelSection, PanelSectionRow, ToggleField, Button } from "@decky/ui";
 import type { BonsaiCapabilities } from "../data/bonsaiSettingsSchema";
 import type { PermissionFocusTargetId } from "../utils/permissionDeepLink";
 import { permissionJumpReturnTabLabel } from "../utils/permissionDeepLink";
 import {
-  registerPermissionFocusOwner,
+  registerPermissionRowNavFocus,
   restorePermissionJumpFocusWithRetry,
 } from "../utils/permissionJumpRegistry";
+import type { NavRefHolder } from "../utils/navFocusRegistry";
 
 type Props = {
   capabilities: BonsaiCapabilities;
@@ -70,15 +71,30 @@ function PermissionToggleHost({
   focusId: PermissionFocusTargetId;
   children: React.ReactNode;
 }) {
+  /*
+   * Registered as this row's own Steam nav node (navFocusRegistry.ts), not an element ref: a jump
+   * here arrives from a different tab, a different navigation container, and a plain DOM `.focus()`
+   * on a queried element does not carry Steam's gamepad ring across that boundary. Measured on
+   * device 2026-09-05 (build 4/517804a, PERM-JUMP-01 step 3): the ring landed on "Back to Main"
+   * instead of this row's toggle. `Focusable` needs no `focusable` of its own here — the `ToggleField`
+   * inside is the real stop, the same shape `session-context-strip` and the chat permission-hint
+   * rows already use successfully.
+   */
+  const navRef = useRef<NavRefHolder["current"]>(null);
+  useEffect(() => {
+    registerPermissionRowNavFocus(focusId, navRef);
+    return () => registerPermissionRowNavFocus(focusId, null);
+  }, [focusId]);
+
   return (
-    <div
-      ref={(el) => registerPermissionFocusOwner(focusId, el)}
+    <Focusable
+      {...({ navRef } as Record<string, unknown>)}
       className="bonsai-settings-bleed"
       style={{ width: "100%" }}
       data-bonsai-permission-focus={focusId}
     >
       {children}
-    </div>
+    </Focusable>
   );
 }
 

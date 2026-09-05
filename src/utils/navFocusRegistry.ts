@@ -29,6 +29,13 @@ export type NavFocusId = "session-context-strip" | "chat-slot-row" | "preset-car
    *  can in principle be mounted at once and a single shared id would let the later-mounted row's
    *  registration silently clobber the other's. */
   | "chat-perm-hint-troubleshoot" | "chat-perm-hint-deny"
+  /** One per Permissions-tab capability row — see permissionJumpRegistry.ts's `focusOwnerById`.
+   *  Recurred 2026-09-05 (build 4/517804a, PERM-JUMP-01 step 3): the jump landed on "Back to Main"
+   *  instead of the armed toggle, because `focusOwnerById` climbed to a registered element and
+   *  called a plain `.focus()` on it — the same cross-container failure this whole file exists
+   *  for, just in a file neither chat fix had touched yet. */
+  | "permissions-row-game-context-read" | "permissions-row-filesystem-write"
+  | "permissions-row-steam-web-api" | "permissions-row-microphone-access"
   /** One per tab body except Main (TabBodyFocusRoot): the collapsing bar's Down hands the ring here. */
   | `tab-body:${string}`;
 

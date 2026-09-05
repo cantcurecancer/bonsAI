@@ -255,6 +255,10 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
   Main* comes back to the reply with the ring on the button. The one step left: the ring lands on *Back to Main* instead of
   the matching toggle, because the jump still focuses its row with a plain cross-container focus. Back with its lane. Row
   **PERM-JUMP-01**.
+  **Redone at the desk 2026-09-05:** each Permissions row registers its own nav node (new ids `permissions-row-game-context-read`,
+  `-filesystem-write`, `-steam-web-api`, `-microphone-access`), the jump hands the ring over with Steam's own transfer instead of a
+  DOM focus, and the retry loop now retries on an honest failure instead of stopping at the first attempt. Deck check owed on that
+  one step.
 - ★★★ `[chat]` **Clear cache cleared the screen but not the session** — **VERIFY.** Fixed and confirmed 2026-08-27, and again on the
   Deck 2026-09-03. The orphan half is measured: the chat stays behind after a clear, so each clear-and-reask cycle leaves one more
   chat in the rotation — a follow-up, not a regression. Only the mid-generation half is still owed: clearing while a reply is still

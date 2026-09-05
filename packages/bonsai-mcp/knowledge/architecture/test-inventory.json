@@ -20,6 +20,7 @@
     "src/components/MainTabPresetRow.test.tsx",
     "src/components/ModelRoutingOrderModal.test.tsx",
     "src/components/PermissionDenyAction.test.tsx",
+    "src/components/PermissionsTab.permissionRowNavRegistration.test.tsx",
     "src/components/PermissionsTab.test.tsx",
     "src/components/ReplyCopyButton.test.tsx",
     "src/components/SessionContextStrip.test.tsx",

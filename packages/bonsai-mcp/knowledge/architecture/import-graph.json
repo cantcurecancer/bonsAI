@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 362,
-  "edgeCount": 873,
+  "fileCount": 363,
+  "edgeCount": 879,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -609,6 +609,14 @@
         "src/features/plugin-shell/useDesktopNoteSaveModal.tsx"
       ]
     },
+    "src/components/PermissionsTab.permissionRowNavRegistration.test.tsx": {
+      "imports": [
+        "src/components/PermissionsTab.tsx",
+        "src/data/bonsaiSettingsSchema.ts",
+        "src/utils/navFocusRegistry.ts"
+      ],
+      "importedBy": []
+    },
     "src/components/PermissionsTab.test.tsx": {
       "imports": [
         "src/components/PermissionsTab.tsx",
@@ -619,10 +627,12 @@
     "src/components/PermissionsTab.tsx": {
       "imports": [
         "src/data/bonsaiSettingsSchema.ts",
+        "src/utils/navFocusRegistry.ts",
         "src/utils/permissionDeepLink.ts",
         "src/utils/permissionJumpRegistry.ts"
       ],
       "importedBy": [
+        "src/components/PermissionsTab.permissionRowNavRegistration.test.tsx",
         "src/components/PermissionsTab.test.tsx",
         "src/features/plugin-shell/tabs/usePermissionsTabPayload.tsx"
       ]
@@ -945,6 +955,7 @@
         "src/components/DeveloperTab.tsx",
         "src/components/OllamaTab.tsx",
         "src/components/OllamaWhereAiRunsSection.tsx",
+        "src/components/PermissionsTab.permissionRowNavRegistration.test.tsx",
         "src/components/PermissionsTab.test.tsx",
         "src/components/PermissionsTab.tsx",
         "src/components/PullModelsModal.tsx",
@@ -3282,6 +3293,8 @@
         "src/components/MainTabUnifiedAskBar.tsx",
         "src/components/ModelRoutingOrderModal.test.tsx",
         "src/components/ModelRoutingOrderModal.tsx",
+        "src/components/PermissionsTab.permissionRowNavRegistration.test.tsx",
+        "src/components/PermissionsTab.tsx",
         "src/components/SessionContextStrip.tsx",
         "src/features/chat-slots/ChatSlotRow.tsx",
         "src/features/plugin-shell/TabBodyFocusRoot.tsx",
@@ -3292,7 +3305,9 @@
         "src/hooks/useMainTabAskBarFocus.ts",
         "src/index.tsx",
         "src/utils/liveTurnFocusGraph.ts",
-        "src/utils/navFocusRegistry.test.ts"
+        "src/utils/navFocusRegistry.test.ts",
+        "src/utils/permissionJumpRegistry.test.ts",
+        "src/utils/permissionJumpRegistry.ts"
       ]
     },
     "src/utils/ollamaTabLocalSurvival.ts": {
@@ -3334,12 +3349,14 @@
     },
     "src/utils/permissionJumpRegistry.test.ts": {
       "imports": [
+        "src/utils/navFocusRegistry.ts",
         "src/utils/permissionJumpRegistry.ts"
       ],
       "importedBy": []
     },
     "src/utils/permissionJumpRegistry.ts": {
       "imports": [
+        "src/utils/navFocusRegistry.ts",
         "src/utils/permissionDeepLink.ts"
       ],
       "importedBy": [
