@@ -3485,7 +3485,7 @@ with a verdict line the plugin reads. How far that verdict reaches is D71.
 Ollama lists the thinking capability on the exact Gemma 4 build the Deck runs. The feature therefore
 shows for anyone who turns thinking on.
 
-### D71 — OPEN (raised 2026-09-05) — The folded line's wording, and how far the spoiler verdict reaches
+### D71 — LOCKED 2026-09-05 (raised 2026-09-05) — The folded line's wording, and how far the spoiler verdict reaches
 
 Raised from the maintainer's answers to D70, plan [40](../planning/40-reasoning-display.md).
 
@@ -3513,7 +3513,17 @@ Raised from the maintainer's answers to D70, plan [40](../planning/40-reasoning-
 
 **Consequence if unanswered.** Nothing is built until 1 and 2 are answered. 3 defaults to the confirm.
 
-### D72 — OPEN (raised 2026-09-05) — Newer models for the Deck: what to pull and measure
+**Answers, 2026-09-05 (the maintainer answered in chat):**
+
+1. **The folded line reads *Show reasoning*, with the seconds,** when no AI character is selected. When one
+   is selected, the line is written in the character's voice instead, seconds kept, "if it works": the
+   mockup in the plan's test shows three characters' versions and the maintainer judges. The plain line is
+   the fallback.
+2. **The verdict feeds the Spoiler risk chip first**, replacing the after-the-fact tag; the answer is not
+   held back in this step. The answer test decides whether holding an answer back is the next step.
+3. **A confirm the first time thinking is turned on.**
+
+### D72 — LOCKED 2026-09-05 (raised 2026-09-05) — Newer models for the Deck: what to pull and measure
 
 Raised from the maintainer's question while answering D70, and written up in
 [planning/41-deck-model-survey.md](../planning/41-deck-model-survey.md). The short answer: this quarter's
@@ -3534,3 +3544,21 @@ on paper is known to beat today's Gemma 4; only a measurement can say.
 
 **Consequence if unanswered.** Nothing is pulled. The survey stays as the first input to the on-Deck model
 benchmark entry, which is where the measurement belongs.
+
+**Answers, 2026-09-05 (the maintainer answered in chat):**
+
+1. **Pull the five: yes.** Pulled onto this PC the same day.
+2. **All three modes, in a new frame.** Today's Gemma 4 build is accepted as the best speed for the cost and
+   becomes the **Strategy** model. **Expert** wants the best-answering model that fits the Deck at all, even
+   if much slower: Gemma 4 12B and Qwen 3.5 9B were pulled as well for that search, beside Granite 4.2 8B.
+   **Speed** wants a small model that beats the current pick on speed for the quality: LFM 2.5, Granite 4.2
+   3B, Qwen 3.5 2B. The maintainer asked for data on recent releases; the survey now carries the makers'
+   published figures with sources.
+3. **Images are not a must for Speed.** Checked the same day: they are not a must for any text pick,
+   because screenshot questions route through their own model list.
+
+**Added by the maintainer: is nomic still the right embedding model?** As far as the desk can tell, yes:
+the plugin's own bake-off found six models equal on finding the right card and nomic the fastest, and
+Ollama's shelf has nothing newer than eight months. The one thing a swap could buy is the Deck's 0.8 to 1.1
+seconds per question, and only a smaller model with equal recall buys it. Three untested small ones were
+pulled for one sweep with the existing script; the result decides whether a swap is even proposed.

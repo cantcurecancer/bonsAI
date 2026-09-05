@@ -4,8 +4,8 @@ Written 2026-09-05, before any code; reworked the same day after the maintainer'
 of the six features the maintainer picked to plan. The roadmap entry says "spike first", which in plain
 words is: run a test to find out before building anything. This plan says what the test is, what the
 feature looks like, what the reasoning is also used for, and what is decided. The decisions are **D70**
-(locked) and **D71** (open) in [maintainer-decisions-locked.md](../audit/maintainer-decisions-locked.md).
-Nothing in § 6 starts until D71 is answered and § 3 has run on the PC.
+and **D71**, both locked, in [maintainer-decisions-locked.md](../audit/maintainer-decisions-locked.md).
+Nothing in § 6 starts until § 3 has run on the PC.
 
 Read first: [CLAUDE.md](../../CLAUDE.md); the model and effort table in [AGENTS.md](../../AGENTS.md) § 3;
 [06-thinking-blurbs-review.md](06-thinking-blurbs-review.md) for how today's thinking line came to be;
@@ -60,8 +60,9 @@ thinking is also spent on deciding what counts as a spoiler for you.
 You ask something with thinking on. Instead of *Not forgotten, still thinking…*, the space under your
 question shows the model's own latest sentences, three lines at the answer's text size, the newest at
 the bottom, older ones sliding up. It never grows past three lines. When the answer starts, that space
-folds to one line, *Worked it out in 41 s* or whichever wording D71 picks, and the answer streams in
-below as today. The ring can land on the folded line; A opens the whole reasoning in a muted block,
+folds to one line, *Show reasoning · 41 s*, and the answer streams in below as today. With an AI
+character selected, that line is written in the character's voice instead, seconds kept, if the voice
+pipeline can do it well; the plain form is the fallback. The ring can land on the folded line; A opens the whole reasoning in a muted block,
 A closes it. Reopen the chat tomorrow and the folded line is still there and still opens.
 
 Show details gains one chip: *Thinking: Balanced · 41 s · 380 tokens*, so the cost of the level you
@@ -74,8 +75,9 @@ thinking is shown unmasked and may mention things the answer will hide, and asks
 spoiler tier you chose, what in the answer it is about to write would count as a spoiler under that
 tier, and what it will fence. It ends its thinking with one short verdict line. The plugin reads that
 line and uses it as the model's risk opinion, in place of the after-the-fact tag, so the *Spoiler risk*
-chip reflects a decision the model actually made rather than a guess. Whether that verdict may also
-hold back the answer is the open call in D71.
+chip reflects a decision the model actually made rather than a guess. The answer itself is not touched
+in this first step; if the answer test shows the verdict cuts fence misfires, letting it hold back an
+answer is the next step, decided then.
 
 On a model that cannot think, or with thinking Off, nothing changes anywhere.
 
@@ -91,7 +93,7 @@ an hour at the desk plus model time, then one Deck block.
 | T2 | How much thinking is there, and how fast? | Same capture: characters and seconds of thinking at Brief, Balanced and Deep, for a quick fact question, a Strategy game question with cards, and an Expert one. Deck numbers are the ones that count. | Whether three lines keep up, and what the folded line typically says. |
 | T3 | Does the reasoning say spoilers out loud, and does the verdict line come out well formed? | The Red Dead ending question in Strategy mode with the corpus, with the second-job instruction in the prompt; read the captured reasoning and its last line. | How to word the one-time notice; whether the verdict is parseable often enough to use. |
 | T4 | How long until the first answer token? | From the same timestamps. | How much silence the three lines are actually filling. |
-| T5 | Do the newest sentences read as a status? | A mockup with the real captured text on the 300-pixel column, three lines at the answer's size, and the folded line in each candidate wording. | The maintainer's eyes, as with the toast. |
+| T5 | Do the newest sentences read as a status, and does the folded line work in a character's voice? | A mockup with the real captured text on the 300-pixel column, three lines at the answer's size, the plain folded line, and the folded line in three characters' voices. | The maintainer's eyes, as with the toast; "if it works" is judged here. |
 | T6 | Does the verdict agree with the answer test? | Run the existing answer test on the PC with the second-job prompt: fence misfires and facts, against the baseline of 70.8 percent fence-not-misfired. | Whether the second job earns its tokens. If misfires do not drop, the verdict feeds the chip only. |
 
 Evidence: capture files under `runs/`, the mockup linked from § 10, the answer-test report beside the
@@ -103,9 +105,10 @@ earlier ones.
    replacing the composed phrase the moment the first thinking chunk arrives. Never more than three.
    The composed phrases still fill the silence before the first chunk and stay as the whole story with
    thinking Off.
-2. **When the answer starts:** the space folds to one line with the seconds and no token count, wording
-   from D71, and becomes a D-pad stop; A opens the full reasoning as a muted block above the answer, A
-   closes it. Closed by default, always.
+2. **When the answer starts:** the space folds to *Show reasoning · 41 s*, seconds and no token count,
+   and becomes a D-pad stop; A opens the full reasoning as a muted block above the answer, A closes it.
+   Closed by default, always. With an AI character selected the line takes the character's voice, seconds
+   kept, if it works; the plain line is the fallback.
 3. **Strategy mode included.** The live lines show there too. No masking inside the reasoning; one notice
    the first time thinking is turned on, with a confirm.
 4. **Saved with the chat**, capped at a few thousand characters, so a reopened chat still has the fold.
@@ -114,7 +117,7 @@ earlier ones.
    the phrases stay as they are with thinking Off.
 7. **The second job:** with thinking on, the prompt asks the model to weigh spoilers under the chosen
    tier inside its thinking and end with a verdict line; the plugin reads the verdict as the model's risk
-   opinion. How far the verdict reaches is D71.
+   opinion for the chip. The answer is not held back in this first step; that waits on the answer test.
 8. **Nothing changes with thinking Off or on a model that cannot think.**
 
 ## 5. What the maintainer decided — D70, locked 2026-09-05
@@ -124,9 +127,12 @@ earlier ones.
 5. A chip in Show details, yes (default; the token count lives on the chip only). 6. Retire the tips
 entry. 7. Test on the PC first to catch obvious bugs, then verify on the Deck.
 
-**Still open, D71:** the folded line's wording, and how far the spoiler verdict reaches.
+**D71, locked 2026-09-05:** the folded line reads *Show reasoning* with the seconds when no AI character
+is selected, and takes the character's voice when one is, if it works; the verdict feeds the chip first
+and the answer test decides whether it may hold an answer back; the warning is a confirm the first time
+thinking is turned on.
 
-## 6. Build steps, after D71 and § 3
+## 6. Build steps, after § 3
 
 One thing per commit, all four gates green between commits. Steps 1 and 4 touch backend files another
 session may be in; they wait for a free window.
@@ -136,7 +142,7 @@ session may be in; they wait for a free window.
 | 1 | The streaming reader keeps the thinking field in its own buffer, publishes the newest sentences live and the whole text plus seconds and tokens at the end; the saved turn carries the capped text. Tests with a faked stream: thinking first then answer, thinking only, no thinking, a cut-off stream. | Sonnet 5 high lane | § 3 done, a free window on the backend |
 | 2 | The live three-line block at answer size; the fold when the answer starts; the fold as a focus stop with open and close. Focus-graph entry first. Tests for each state. | Opus xhigh, after a device measurement of the block's height against the transcript | step 1 |
 | 3 | The Show details chip, and the one-time notice with its confirm. | Sonnet 5 high lane | step 1 |
-| 4 | The second job: the prompt addition under each spoiler tier, the verdict-line reader, the risk band taking the verdict in place of the tag, and whatever reach D71 grants. Measured with the answer test before it lands. | Opus xhigh plans the wording, Sonnet 5 high lane builds | T6 and D71 |
+| 4 | The second job: the prompt addition under each spoiler tier, the verdict-line reader, the risk band taking the verdict in place of the tag. Chip only in this step. Measured with the answer test before it lands. | Opus xhigh plans the wording, Sonnet 5 high lane builds | T6 |
 | 5 | Docs: the roadmap entry moves to Verify naming the rows below; rows in the manual test doc; a changelog line; the tips entry retired. | the session's own driver | steps 2 to 4 |
 | 6 | The Deck rows in § 7. | whoever holds the Deck, Opus xhigh reads the results | step 5 and a free Deck |
 
@@ -193,3 +199,5 @@ Written as work lands.
   size, seconds-only fold with new wording pending, live in Strategy with one notice, tips entry retired,
   PC first then Deck. Corrected: the Deck's default Gemma 4 build can think. Added the second job, the
   spoiler verdict, with D71 raised for its reach and the fold's wording. Nothing captured, nothing built.
+- **2026-09-05, later still** — D71 locked: *Show reasoning* plain, the character's voice when one is
+  selected if it works; verdict to the chip first; a confirm once. Nothing captured, nothing built.
