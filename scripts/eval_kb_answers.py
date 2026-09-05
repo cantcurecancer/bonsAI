@@ -140,7 +140,6 @@ def write_harness_settings(settings_dir: Path, *, corpus_dir: Path, corpus_versi
         "ai_character_enabled": False,
         "show_developer_tab": False,
         "input_sanitizer_user_disabled": False,
-        "bonsai_token_streaming_enabled": False,
         "capabilities": {},
         # Gemma is open-weight, not OSI open source; the default tier (open_source_only) would
         # drop it and the routing fallback then picks whatever is installed first.
