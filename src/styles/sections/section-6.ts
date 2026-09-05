@@ -236,6 +236,37 @@ export function buildSection6Section(): string {
           overflow: hidden !important;
           text-overflow: ellipsis !important;
         }
+        /*
+         * D60: an OPEN turn shows the whole question, wrapped, capped at five lines, with the
+         * last line fading out — instead of the single-line ellipsis rule above. Scoped off the
+         * header's own --expanded modifier (set by buildTurnHeaderElement.tsx) rather than a
+         * class on the title span itself, so the two files stay decoupled.
+         *
+         * The fade is a plain overflow cue, not the focus-driven cut-question cue from the same
+         * decision (that one is a separate Features entry, still unbuilt). It fades a fixed
+         * one-line-tall band at the bottom via calc(100% - 1.3em) rather than a fixed percentage,
+         * so the fade always covers the LAST line actually shown — 1 through 5 — rather than a
+         * fraction of a box whose height changes with how much text there is.
+         */
+        .bonsai-scope .bonsai-chat-turn-row-header--expanded .bonsai-chat-turn-row-title {
+          white-space: normal !important;
+          overflow: hidden !important;
+          overflow-wrap: anywhere !important;
+          text-overflow: clip !important;
+          max-height: 6.5em !important;
+          -webkit-mask-image: linear-gradient(
+            to bottom,
+            #000 0%,
+            #000 calc(100% - 1.3em),
+            transparent 100%
+          ) !important;
+          mask-image: linear-gradient(
+            to bottom,
+            #000 0%,
+            #000 calc(100% - 1.3em),
+            transparent 100%
+          ) !important;
+        }
         .bonsai-scope .bonsai-chat-turn-row--expanded .bonsai-chat-ai-bubble {
           margin-bottom: 8px !important;
         }

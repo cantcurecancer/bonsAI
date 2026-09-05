@@ -27,7 +27,7 @@ import { buildAnswerBubbleElement } from "../utils/buildAnswerBubbleElement";
 import { buildAnswerCopyText } from "../utils/answerCopyText";
 import { buildThinkingBlurbTextElement } from "../utils/buildThinkingBlurbTextElement";
 import { buildTurnHeaderElement } from "../utils/buildTurnHeaderElement";
-import { buildCollapsedTurnTitle } from "../utils/chatTurnTitle";
+import { buildCollapsedTurnTitle, buildExpandedTurnTitle } from "../utils/chatTurnTitle";
 import { ContextChipLadder } from "./ContextChipLadder";
 import { SessionContextStrip } from "./SessionContextStrip";
 import { transparencyUiAvailable } from "../utils/contextChipsFromSnapshot";
@@ -616,7 +616,12 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
           >
             {buildTurnHeaderElement({
               turnId: turn.id,
-              title: buildCollapsedTurnTitle(turn.questionDisplay || turn.question),
+              /* D60: an open turn shows the whole question (CSS caps it visually at five lines
+                 with a fade on the last line); a closed turn keeps today's single cut line. */
+              title:
+                expandedTurnKey === turn.id
+                  ? buildExpandedTurnTitle(turn.questionDisplay || turn.question)
+                  : buildCollapsedTurnTitle(turn.questionDisplay || turn.question),
               expanded: expandedTurnKey === turn.id,
               onActivate: () => onTurnActivate?.(turn.id),
             })}
@@ -731,7 +736,11 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
             {buildTurnHeaderElement({
               turnId: "live",
               variant: "live",
-              title: buildCollapsedTurnTitle(liveQuestion) || "…",
+              /* Same open/closed split as the archived-turn header above (D60). */
+              title:
+                (expandedTurnKey === "live"
+                  ? buildExpandedTurnTitle(liveQuestion)
+                  : buildCollapsedTurnTitle(liveQuestion)) || "…",
               expanded: expandedTurnKey === "live",
               isStreaming: isStreamingPreview,
               onActivate: () => onTurnActivate?.("live"),

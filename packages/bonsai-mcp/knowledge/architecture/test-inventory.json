@@ -15,6 +15,7 @@
     "src/components/MainTabChatTranscript.permHintNavRegistration.test.tsx",
     "src/components/MainTabChatTranscript.permissionHintFocus.test.ts",
     "src/components/MainTabChatTranscript.strategyPanels.test.tsx",
+    "src/components/MainTabChatTranscript.turnTitle.test.tsx",
     "src/components/MainTabPresetAnimatedChips.test.tsx",
     "src/components/MainTabPresetRow.askRestart.test.tsx",
     "src/components/MainTabPresetRow.test.tsx",

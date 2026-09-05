@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 363,
-  "edgeCount": 879,
+  "fileCount": 364,
+  "edgeCount": 882,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -384,8 +384,17 @@
         "src/components/MainTabChatTranscript.emptySlotPreview.test.tsx",
         "src/components/MainTabChatTranscript.permHintNavRegistration.test.tsx",
         "src/components/MainTabChatTranscript.permissionHintFocus.test.ts",
-        "src/components/MainTabChatTranscript.strategyPanels.test.tsx"
+        "src/components/MainTabChatTranscript.strategyPanels.test.tsx",
+        "src/components/MainTabChatTranscript.turnTitle.test.tsx"
       ]
+    },
+    "src/components/MainTabChatTranscript.turnTitle.test.tsx": {
+      "imports": [
+        "src/components/MainTabChatTranscript.tsx",
+        "src/test-harness/fakeDeckyUi.tsx",
+        "src/types/bonsaiUi.ts"
+      ],
+      "importedBy": []
     },
     "src/components/MainTabPresetAnimatedChips.test.tsx": {
       "imports": [
@@ -2433,6 +2442,7 @@
         "src/components/MainTabChatTranscript.permHintNavRegistration.test.tsx",
         "src/components/MainTabChatTranscript.permissionHintFocus.test.ts",
         "src/components/MainTabChatTranscript.strategyPanels.test.tsx",
+        "src/components/MainTabChatTranscript.turnTitle.test.tsx",
         "src/components/PermissionDenyAction.test.tsx",
         "src/components/ReplyCopyButton.test.tsx",
         "src/components/SessionContextStrip.test.tsx",
@@ -2505,6 +2515,7 @@
         "src/components/MainTabChatTranscript.emptySlotPreview.test.tsx",
         "src/components/MainTabChatTranscript.strategyPanels.test.tsx",
         "src/components/MainTabChatTranscript.tsx",
+        "src/components/MainTabChatTranscript.turnTitle.test.tsx",
         "src/components/MainTabScreenshotBrowser.tsx",
         "src/components/MainTabUnifiedAskBar.tsx",
         "src/components/SessionContextStrip.test.tsx",
