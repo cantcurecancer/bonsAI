@@ -19,7 +19,7 @@ import { StrategyChecklistPanel } from "./StrategyChecklistPanel";
 import { PermissionDenyAction } from "./PermissionDenyAction";
 import { isVacCheckCapabilityDenyResponse } from "../utils/permissionDeepLink";
 import type { BonsaiCapabilityKey } from "../utils/permissionDeepLink";
-import { isPendingPlaceholderResponse } from "../utils/askThinkingPhases";
+import { isPendingPlaceholderResponse, isStopNoticeResponse } from "../utils/askThinkingPhases";
 import { BonsaiChatSecondaryButton } from "./BonsaiChatSecondaryButton";
 import { buildReplyActionsElement } from "../utils/buildReplyActionsElement";
 import { archivedTurnTransparency } from "../utils/archivedTurnTransparency";
@@ -605,6 +605,19 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
           const turnIndex = renderIndex + archivedRenderOffset;
           /* Hoisted out of the reply-actions IIFE below: the strategy panels need it too. */
           const isNewestArchivedTurn = turnIndex === askThreadCollapsed.length - 1;
+          /*
+           * A stopped Ask is persisted to the chat slot like any other turn (main.py records the
+           * assistant turn on both cancel paths), so the reload this triggers (onSlotTurnsChanged)
+           * archives it exactly like a completed Ask — expandedTurnKey moves off "live" onto this
+           * turn's own id. `askStopped` survives that reload (only cleared by the next Ask or by
+           * Clear cache), so it is still readable here; it is the render gate below that stopped
+           * looking in the right place. `isStopNoticeResponse` tells a real kept draft apart from
+           * the backend's own placeholder text ("Request cancelled.") for the no-draft case — the
+           * deliberate "an empty stop shows nothing" behaviour from useBonsaiAskOrchestration.ts
+           * stays preserved here rather than re-decided.
+           */
+          const isNewestStoppedArchivedTurn =
+            isNewestArchivedTurn && askStopped && !isStopNoticeResponse(turn.answer);
           return (
           <Focusable
             key={turn.id}
@@ -627,6 +640,22 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
             })}
             {expandedTurnKey === turn.id ? (
               <>
+                {isNewestStoppedArchivedTurn ? (
+                  /* Same status, same placement as the live-turn Stopped notice below — a
+                     stopped turn just does not stay "live" long enough to reach it. */
+                  <div
+                    className="bonsai-chat-status-line bonsai-chat-stopped-line"
+                    role="status"
+                    style={{
+                      color: "#9fb7d5",
+                      fontSize: 12,
+                      lineHeight: 1.35,
+                      marginBottom: 8,
+                    }}
+                  >
+                    Stopped — partial answer kept.
+                  </div>
+                ) : null}
                 {renderAnswerBubble(
                   turn.answer,
                   false,
@@ -658,8 +687,15 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
                  * archived branch to render the control instead of assuming it stays live-only.
                  */}
                 {(() => {
+                  /* Restores Helpful / Not really / Retry on a stopped turn (roadmap: "Stopping a
+                     reply leaves no 'Stopped' notice"). `lastExchange` is cleared to null on
+                     cancel (useBonsaiAskOrchestration.ts), which is right for its own job — it
+                     means "no completed exchange to refine" — but it also silently dropped these
+                     buttons for a turn that has a perfectly good kept answer sitting right on it. */
                   const showFeedbackHere =
-                    isNewestArchivedTurn && !isAsking && Boolean(lastExchange?.answer?.trim());
+                    isNewestArchivedTurn &&
+                    !isAsking &&
+                    (Boolean(lastExchange?.answer?.trim()) || isNewestStoppedArchivedTurn);
                   const transparencyAvailableHere = transparencyUiAvailable(
                     archivedTransparencyFor(turn, turnIndex)
                   );
@@ -671,7 +707,23 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
                       ? (rating) => onReplyFeedback?.(rating)
                       : () => {},
                     showFeedback: showFeedbackHere,
-                    onRetry: showFeedbackHere ? onRetryLastResponse : undefined,
+                    /*
+                     * `onRetryLastResponse` reads `lastExchange?.question`, which is exactly what
+                     * a stop clears to null — it would resend nothing, or whatever happens to be
+                     * sitting in the Ask field, rather than this turn's own question. `turn.question`
+                     * is right there on the turn already being displayed, so the stopped case
+                     * re-asks it directly through the same `onAskOllama` entry point Retry itself
+                     * calls, instead of going through the stale exchange snapshot.
+                     */
+                    onRetry: !showFeedbackHere
+                      ? undefined
+                      : isNewestStoppedArchivedTurn
+                        ? () => {
+                            void onAskOllama?.(turn.question, {
+                              threadQuestionDisplay: turn.questionDisplay || turn.question,
+                            });
+                          }
+                        : onRetryLastResponse,
                     transparencyOpen: transparencyDetailsOpen,
                     onToggleTransparency: transparencyAvailableHere
                       ? makeToggleTransparencyDetails(turn.id)

@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 364,
-  "edgeCount": 882,
+  "fileCount": 365,
+  "edgeCount": 885,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -334,6 +334,14 @@
       ],
       "importedBy": []
     },
+    "src/components/MainTabChatTranscript.stoppedNotice.test.tsx": {
+      "imports": [
+        "src/components/MainTabChatTranscript.tsx",
+        "src/test-harness/fakeDeckyUi.tsx",
+        "src/types/bonsaiUi.ts"
+      ],
+      "importedBy": []
+    },
     "src/components/MainTabChatTranscript.strategyPanels.test.tsx": {
       "imports": [
         "src/components/MainTabChatTranscript.tsx",
@@ -384,6 +392,7 @@
         "src/components/MainTabChatTranscript.emptySlotPreview.test.tsx",
         "src/components/MainTabChatTranscript.permHintNavRegistration.test.tsx",
         "src/components/MainTabChatTranscript.permissionHintFocus.test.ts",
+        "src/components/MainTabChatTranscript.stoppedNotice.test.tsx",
         "src/components/MainTabChatTranscript.strategyPanels.test.tsx",
         "src/components/MainTabChatTranscript.turnTitle.test.tsx"
       ]
@@ -2441,6 +2450,7 @@
         "src/components/MainTabChatTranscript.emptySlotPreview.test.tsx",
         "src/components/MainTabChatTranscript.permHintNavRegistration.test.tsx",
         "src/components/MainTabChatTranscript.permissionHintFocus.test.ts",
+        "src/components/MainTabChatTranscript.stoppedNotice.test.tsx",
         "src/components/MainTabChatTranscript.strategyPanels.test.tsx",
         "src/components/MainTabChatTranscript.turnTitle.test.tsx",
         "src/components/PermissionDenyAction.test.tsx",
@@ -2513,6 +2523,7 @@
         "src/components/MainTab.tsx",
         "src/components/MainTabChatTranscript.earlierPill.test.tsx",
         "src/components/MainTabChatTranscript.emptySlotPreview.test.tsx",
+        "src/components/MainTabChatTranscript.stoppedNotice.test.tsx",
         "src/components/MainTabChatTranscript.strategyPanels.test.tsx",
         "src/components/MainTabChatTranscript.tsx",
         "src/components/MainTabChatTranscript.turnTitle.test.tsx",

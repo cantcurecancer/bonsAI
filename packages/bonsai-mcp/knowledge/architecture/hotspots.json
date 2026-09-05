@@ -41,6 +41,11 @@
       "role": ""
     },
     {
+      "path": "src/components/MainTabChatTranscript.tsx",
+      "lines": 1111,
+      "role": ""
+    },
+    {
       "path": "src/components/PullModelsModal.tsx",
       "lines": 1104,
       "role": ""
@@ -59,11 +64,6 @@
       "path": "py_modules/backend/services/ollama_service.py",
       "lines": 1074,
       "role": "Prompt build, Ollama HTTP, streaming"
-    },
-    {
-      "path": "src/components/MainTabChatTranscript.tsx",
-      "lines": 1059,
-      "role": ""
     },
     {
       "path": "src/data/characterPlaceholderEmoticonGrids.ts",
