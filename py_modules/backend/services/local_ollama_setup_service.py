@@ -592,24 +592,50 @@ def try_restart_ollama_user_service(shell_log: Callable[[str], None]) -> None:
             shell_log(str(exc))
 
 
+"""Braille spinner frames Ollama draws while it works. Ordinary characters, so the ANSI strip
+leaves them; a failure after ten redraws otherwise repeats one word ten times."""
+_SPINNER_FRAME_RE = re.compile(r"[⠀-⣿]+")
+_REPEATED_BLANKS_RE = re.compile(r"\s{2,}")
+
+
 def _format_ollama_pull_failure(tag: str, code: int, tail_lines: list[str]) -> str:
-    """Human-readable pull failure with stderr tail and registry-tag hints."""
-    tail_text = strip_ansi_escape_sequences("\n".join(tail_lines).strip())
+    """Human-readable pull failure: what to do about it first, the raw output after.
+
+    The order matters now, and it did not before. Until the pull picker grew a field for typing
+    any model name, every pull came from a curated list, so a tag that does not exist was nearly
+    unreachable and almost nobody saw this line. Measured on the Deck 2026-09-05 (PULL-CUSTOM-02):
+    a made-up name produced a message opening with ``ollama pull ... failed with exit code 1. Last
+    output: pulling manifest ⠋ pulling manifest ⠙ pulling manifest ⠹ ...`` and ending with the one
+    sentence a person can act on. Spinner frames first, the answer last.
+
+    So the advice leads, the command's own words follow, and the spinner frames are dropped —
+    they are animation, repeated once per redraw, and carry nothing.
+    """
+    # Ollama animates progress by redrawing the same line with a different spinner frame, so the
+    # tail is mostly the same words over and over. Strip the frames (ordinary characters, so the
+    # ANSI strip leaves them) and then drop consecutive repeats, which is what a redraw is.
+    cleaned: list[str] = []
+    for raw_line in strip_ansi_escape_sequences("\n".join(tail_lines)).splitlines():
+        line = _REPEATED_BLANKS_RE.sub(" ", _SPINNER_FRAME_RE.sub("", raw_line)).strip()
+        if line and (not cleaned or cleaned[-1] != line):
+            cleaned.append(line)
+    tail_text = " ".join(cleaned)
     tail_snip = tail_text[-480:] if tail_text else ""
-    msg = f"ollama pull {tag} failed with exit code {code}"
-    if tail_snip:
-        msg += f". Last output: {tail_snip}"
+
     low = tail_text.casefold()
+    advice = ""
     if "id_ed25519" in low and "no such file" in low:
-        msg += (
-            " Ollama’s ~/.ollama folder is missing keys (often after Clear all data). "
+        advice = (
+            "Ollama’s ~/.ollama folder is missing keys (often after Clear all data). "
             "Tap Install Ollama on the Ollama tab, or run ``ollama serve`` once in Konsole."
         )
     elif "manifest" in low and ("not exist" in low or "does not exist" in low):
-        msg += (
-            f" Tag «{tag}» is not on the Ollama library — try qwen2.5vl:3b or gemma4:e2b-it-qat."
-        )
-    return msg
+        advice = f"Tag «{tag}» is not on the Ollama library — try qwen2.5vl:3b or gemma4:e2b-it-qat."
+
+    detail = f"ollama pull {tag} failed with exit code {code}"
+    if tail_snip:
+        detail += f". Last output: {tail_snip}"
+    return f"{advice} {detail}" if advice else detail
 
 
 def run_ollama_pull(
