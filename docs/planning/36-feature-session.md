@@ -370,6 +370,18 @@ final step is a fast-forward with nothing to decide. Never resolve the roadmap b
 side — the merge earlier today would have deleted eight entries that way, and one of them had been
 renamed rather than removed, which is invisible unless each is checked by name.
 
+### Outcome: five of six built, the sixth dropped on purpose
+
+**Built, landed and checked on the Deck:** the custom model pull, the fresh suggestion chips, the boot
+warm-up, one chip instead of two, and streaming as the default.
+
+**Dropped: separate slow-warning and give-up times per Ask mode.** This was named as the one at risk
+twice before any of it was attempted, and the reasoning did not change. It is the largest of the six —
+the two existing values already run through sixteen files each, and going per mode triples them — and
+the least of them for a person, because it changes when a warning appears rather than what the plugin
+can do. The session found seven real faults on the device instead, which was the better use of the time.
+The roadmap entry says the same thing, so the next person does not re-derive it.
+
 ### The device block, 2026-09-05
 
 **Four features checked, seven bugs found, all seven fixed.** Not one of the seven was visible at the
