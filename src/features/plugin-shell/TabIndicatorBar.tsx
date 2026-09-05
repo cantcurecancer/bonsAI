@@ -17,7 +17,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Focusable } from "@decky/ui";
 
-import { registerNavFocus, type NavRefHolder } from "../../utils/navFocusRegistry";
+import { registerNavFocus, unregisterNavFocus, type NavRefHolder } from "../../utils/navFocusRegistry";
 import { getUiDocument } from "../../utils/uiDocument";
 import { registerModalReturnFocusOwner } from "./modalReturnFocusRegistry";
 import { buildTabBarNavHandlers } from "./tabBarNav";
@@ -74,7 +74,7 @@ export function TabIndicatorBar({ tabIds, currentTab, selectTab, exitDown }: Tab
   const navRef = useRef<NavRefHolder["current"]>(null);
   useEffect(() => {
     registerNavFocus("tab-bar", navRef);
-    return () => registerNavFocus("tab-bar", null);
+    return () => unregisterNavFocus("tab-bar", navRef);
   }, []);
 
   useHiddenTabHeaderTrap();

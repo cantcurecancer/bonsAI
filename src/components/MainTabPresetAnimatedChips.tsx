@@ -51,7 +51,7 @@ import {
 import { BONSAI_FOREST_GREEN } from "../features/unified-input/constants";
 import { joinPresetWithRunningGame } from "../utils/joinPresetWithRunningGame";
 import { buildChipNavHandlers } from "../features/preset-carousel/presetRowNav";
-import { registerNavFocus, takeNavFocus, type NavRefHolder } from "../utils/navFocusRegistry";
+import { registerNavFocus, unregisterNavFocus, takeNavFocus, type NavRefHolder } from "../utils/navFocusRegistry";
 import { elementHasFocus } from "../utils/uiDocument";
 
 /*
@@ -339,7 +339,7 @@ function PresetRowFocusRoot(props: {
   const rootRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     registerNavFocus("preset-carousel", navRef);
-    return () => registerNavFocus("preset-carousel", null);
+    return () => unregisterNavFocus("preset-carousel", navRef);
   }, []);
   const { onEnterFromOutside } = props;
   const onFocus = useCallback(

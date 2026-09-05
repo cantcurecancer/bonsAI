@@ -74,8 +74,11 @@ describe("vac-check deny row nav registration", () => {
     expect(navFocusRegistry.takeNavFocus("chat-perm-hint-deny")).toBe(true);
 
     unmount();
-    const callsAfterUnmount = spy.mock.calls.filter(([id]) => id === "chat-perm-hint-deny");
-    expect(callsAfterUnmount[callsAfterUnmount.length - 1]![1]).toBeNull();
+    // Assert the outcome, not which function did it: the id no longer resolves to anything, so a
+    // hop aimed here reports false and its caller falls through. (Was: assert the last call's
+    // second argument was null — the old API's shape, which the identity-checked deregistration
+    // of 2026-09-05 replaced.)
+    expect(navFocusRegistry.takeNavFocus("chat-perm-hint-deny")).toBe(false);
 
     spy.mockRestore();
   });
@@ -110,8 +113,11 @@ describe("troubleshooting hint row nav registration", () => {
     expect(holder).not.toBeNull();
 
     unmount();
-    const callsAfterUnmount = spy.mock.calls.filter(([id]) => id === "chat-perm-hint-troubleshoot");
-    expect(callsAfterUnmount[callsAfterUnmount.length - 1]![1]).toBeNull();
+    // Assert the outcome, not which function did it: the id no longer resolves to anything, so a
+    // hop aimed here reports false and its caller falls through. (Was: assert the last call's
+    // second argument was null — the old API's shape, which the identity-checked deregistration
+    // of 2026-09-05 replaced.)
+    expect(navFocusRegistry.takeNavFocus("chat-perm-hint-troubleshoot")).toBe(false);
 
     spy.mockRestore();
   });

@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 365,
-  "edgeCount": 885,
+  "fileCount": 366,
+  "edgeCount": 886,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -3298,6 +3298,12 @@
         "src/components/ModelRoutingOrderModal.tsx"
       ]
     },
+    "src/utils/navFocusRegistry.remount.test.ts": {
+      "imports": [
+        "src/utils/navFocusRegistry.ts"
+      ],
+      "importedBy": []
+    },
     "src/utils/navFocusRegistry.test.ts": {
       "imports": [
         "src/utils/navFocusRegistry.ts"
@@ -3327,6 +3333,7 @@
         "src/hooks/useMainTabAskBarFocus.ts",
         "src/index.tsx",
         "src/utils/liveTurnFocusGraph.ts",
+        "src/utils/navFocusRegistry.remount.test.ts",
         "src/utils/navFocusRegistry.test.ts",
         "src/utils/permissionJumpRegistry.test.ts",
         "src/utils/permissionJumpRegistry.ts"

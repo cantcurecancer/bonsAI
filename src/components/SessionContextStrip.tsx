@@ -11,7 +11,7 @@ import type { AskThreadCollapsedTurn } from "../types/bonsaiUi";
 import type { ChatSlotTurnTransparency, TransparencySnapshot } from "../utils/inputTransparency";
 import { ContextChipLadder } from "./ContextChipLadder";
 import { chipsFromSnapshot } from "../utils/contextChipsFromSnapshot";
-import { registerNavFocus, type NavRefHolder } from "../utils/navFocusRegistry";
+import { registerNavFocus, unregisterNavFocus, type NavRefHolder } from "../utils/navFocusRegistry";
 import { isDeckDirectionUpEvent, isOkDeckButtonEvent } from "../utils/focusNavigation";
 import { focusLastSessionContextRow } from "../utils/liveTurnFocusGraph";
 
@@ -50,7 +50,7 @@ export function SessionContextStrip({
   const navRef = useRef<NavRefHolder["current"]>(null);
   useEffect(() => {
     registerNavFocus("session-context-strip", navRef);
-    return () => registerNavFocus("session-context-strip", null);
+    return () => unregisterNavFocus("session-context-strip", navRef);
   }, []);
 
   /*

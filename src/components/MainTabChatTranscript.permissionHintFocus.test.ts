@@ -26,7 +26,8 @@ import {
   focusChatPermissionHintRow,
   focusDownFromReplyUtilityRowOrPermHint,
 } from "./MainTabChatTranscript";
-import { registerNavFocus, resetNavFocusRegistry } from "../utils/navFocusRegistry";
+import { registerNavFocus,
+  unregisterNavFocus, resetNavFocusRegistry } from "../utils/navFocusRegistry";
 
 function mount(html: string): void {
   document.body.innerHTML = html;
@@ -93,12 +94,13 @@ describe("focusChatPermissionHintRow", () => {
   });
 
   it("falls through to the deny row once the troubleshooting hint unregisters (unmounts)", () => {
-    registerNavFocus("chat-perm-hint-troubleshoot", fakeNavHolder());
+    const troubleshoot = fakeNavHolder();
+    registerNavFocus("chat-perm-hint-troubleshoot", troubleshoot);
     const deny = fakeNavHolder();
     registerNavFocus("chat-perm-hint-deny", deny);
-    // The real unmount effect cleanup calls registerNavFocus(id, null) — Dismiss, or the hint's own
-    // condition going false, does exactly this.
-    registerNavFocus("chat-perm-hint-troubleshoot", null);
+    // The real unmount cleanup calls unregisterNavFocus(id, itsOwnHolder) — Dismiss, or the hint's
+    // own condition going false, does exactly this.
+    unregisterNavFocus("chat-perm-hint-troubleshoot", troubleshoot);
 
     expect(focusChatPermissionHintRow()).toBe(true);
     expect(deny.current.TakeFocus).toHaveBeenCalled();

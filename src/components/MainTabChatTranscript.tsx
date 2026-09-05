@@ -12,7 +12,7 @@ import {
   BONSAI_CHAT_AI_BUBBLE_MAX_FRAC,
 } from "../features/unified-input/constants";
 import { getUiDocument } from "../utils/uiDocument";
-import { registerNavFocus, takeNavFocus, type NavRefHolder } from "../utils/navFocusRegistry";
+import { registerNavFocus, unregisterNavFocus, takeNavFocus, type NavRefHolder } from "../utils/navFocusRegistry";
 import { formatAppliedTuningBannerText } from "../utils/appliedTuningText";
 import type { ModelPolicyDisclosurePayload } from "../data/modelPolicy";
 import { StrategyChecklistPanel } from "./StrategyChecklistPanel";
@@ -320,11 +320,11 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
   const vacDenyRowNavRef = useRef<NavRefHolder["current"]>(null);
   useEffect(() => {
     registerNavFocus("chat-perm-hint-troubleshoot", troubleshootHintNavRef);
-    return () => registerNavFocus("chat-perm-hint-troubleshoot", null);
+    return () => unregisterNavFocus("chat-perm-hint-troubleshoot", troubleshootHintNavRef);
   }, []);
   useEffect(() => {
     registerNavFocus("chat-perm-hint-deny", vacDenyRowNavRef);
-    return () => registerNavFocus("chat-perm-hint-deny", null);
+    return () => unregisterNavFocus("chat-perm-hint-deny", vacDenyRowNavRef);
   }, []);
 
   const chatMainColumnRef = useRef<HTMLDivElement | null>(null);

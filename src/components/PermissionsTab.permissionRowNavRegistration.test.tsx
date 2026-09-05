@@ -62,8 +62,11 @@ describe.each([
     expect(navFocusRegistry.takeNavFocus(navId)).toBe(true);
 
     unmount();
-    const callsAfterUnmount = spy.mock.calls.filter(([id]) => id === navId);
-    expect(callsAfterUnmount[callsAfterUnmount.length - 1]![1]).toBeNull();
+    // Assert the outcome, not which function did it: the id no longer resolves to anything, so a
+    // hop aimed here reports false and its caller falls through. (Was: assert the last call's
+    // second argument was null — the old API's shape, which the identity-checked deregistration
+    // of 2026-09-05 replaced.)
+    expect(navFocusRegistry.takeNavFocus(navId)).toBe(false);
 
     spy.mockRestore();
   });

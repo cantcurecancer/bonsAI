@@ -12,6 +12,7 @@ import type { PermissionFocusTargetId } from "../utils/permissionDeepLink";
 import { permissionJumpReturnTabLabel } from "../utils/permissionDeepLink";
 import {
   registerPermissionRowNavFocus,
+  unregisterPermissionRowNavFocus,
   restorePermissionJumpFocusWithRetry,
 } from "../utils/permissionJumpRegistry";
 import type { NavRefHolder } from "../utils/navFocusRegistry";
@@ -83,7 +84,7 @@ function PermissionToggleHost({
   const navRef = useRef<NavRefHolder["current"]>(null);
   useEffect(() => {
     registerPermissionRowNavFocus(focusId, navRef);
-    return () => registerPermissionRowNavFocus(focusId, null);
+    return () => unregisterPermissionRowNavFocus(focusId, navRef);
   }, [focusId]);
 
   return (

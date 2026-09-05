@@ -52,10 +52,35 @@ const navRefs = new Map<NavFocusId, NavRefHolder>();
  *
  * Pass the same object to the component's `navRef` prop. Steam fills in `.current` once the node is
  * mounted and navigable; until then `takeNavFocus` simply reports false and the caller falls back.
+ * Pair every call with `unregisterNavFocus(id, thatSameHolder)` in the effect's cleanup — never a
+ * bare delete, for the reason written on that function.
  */
-export function registerNavFocus(id: NavFocusId, holder: NavRefHolder | null): void {
-  if (holder) navRefs.set(id, holder);
-  else navRefs.delete(id);
+export function registerNavFocus(id: NavFocusId, holder: NavRefHolder): void {
+  navRefs.set(id, holder);
+}
+
+/**
+ * Drop a registration on unmount — but ONLY if this holder is still the one registered.
+ *
+ * The identity check is the whole point, and it is not defensive coding. Every caller registers in
+ * a `useEffect` and unregisters in its cleanup, and React does not promise that an old instance's
+ * cleanup runs before a new instance's setup. Whenever two instances of the same component are
+ * briefly alive at once — a panel reopen, a tab switch, a remount under a new key, StrictMode's
+ * double-invoke — the order can be: new instance registers, THEN old instance's cleanup runs. With
+ * the old unconditional `delete`, that cleanup wiped the live instance's entry, and the id was left
+ * with no registration at all while its component sat on screen.
+ *
+ * What that cost a user, measured as a symptom rather than a cause: `takeNavFocus` then returns
+ * false, the caller falls through to its next option — which for several of these hops is a plain
+ * `focus()` across a container boundary — and a plain `focus()` moves `document.activeElement`
+ * without moving Steam's ring, while the handler still reports the press as handled. The press
+ * arrives, nothing visibly moves, and Steam's ring and the page's own focus end up on different
+ * elements. That is the exact signature recorded for the "Down stops half way and the Ask button
+ * cannot be reached" bug, including why reopening the panel does not clear it (the same racing
+ * order happens again) and why restarting the loader does (the module, and this Map, are new).
+ */
+export function unregisterNavFocus(id: NavFocusId, holder: NavRefHolder): void {
+  if (navRefs.get(id) === holder) navRefs.delete(id);
 }
 
 /**

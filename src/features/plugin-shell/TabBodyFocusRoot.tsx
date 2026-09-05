@@ -14,7 +14,7 @@
 import React, { useEffect, useRef } from "react";
 import { Focusable } from "@decky/ui";
 
-import { registerNavFocus, takeNavFocus, type NavRefHolder } from "../../utils/navFocusRegistry";
+import { registerNavFocus, unregisterNavFocus, takeNavFocus, type NavRefHolder } from "../../utils/navFocusRegistry";
 import type { BonsaiTabId } from "./tabTitles";
 
 export type TabBodyFocusRootProps = {
@@ -31,7 +31,7 @@ export function TabBodyFocusRoot({ id, children }: TabBodyFocusRootProps): React
   useEffect(() => {
     const key = tabBodyNavFocusId(id);
     registerNavFocus(key, navRef);
-    return () => registerNavFocus(key, null);
+    return () => unregisterNavFocus(key, navRef);
   }, [id]);
 
   return (

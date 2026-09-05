@@ -14,7 +14,7 @@ import {
   isBumperRightDeckEvent,
   isOkDeckButtonEvent,
 } from "../../utils/focusNavigation";
-import { registerNavFocus, takeNavFocus, type NavRefHolder } from "../../utils/navFocusRegistry";
+import { registerNavFocus, unregisterNavFocus, takeNavFocus, type NavRefHolder } from "../../utils/navFocusRegistry";
 import {
   rememberModalReturnFocus,
   registerModalReturnFocusOwner,
@@ -89,7 +89,7 @@ export function ChatSlotRow({
 
   useEffect(() => {
     registerNavFocus("chat-slot-row", navRef);
-    return () => registerNavFocus("chat-slot-row", null);
+    return () => unregisterNavFocus("chat-slot-row", navRef);
   }, []);
 
   useEffect(() => {
