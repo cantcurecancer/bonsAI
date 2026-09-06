@@ -430,6 +430,11 @@ for the Deck to be free). Anything new goes here, one line each, with what it de
   two of four blind troubleshooting questions miss. Agreed fix: when no topic matched, let the meaning search run over the
   tip sheet, measured on the 17 blind troubleshooting rows first. About a day. (D52)
   [Detail](roadmap-details.md#a-troubleshooting-question-that-only-describes-the-symptom-reaches-no-tips).
+- ★★★ `[KB]` **Game notes are attached and then thrown away before the model reads them** — **OPEN, measured on the Deck
+  2026-09-06.** A Strategy question about a covered game sends about 820 tokens more than the model can hold, so the start
+  of the prompt is dropped without a word — the identity, the rules, and the cards. Asked about the Bone Hydra, the reply
+  was vague general tactics, not the fifteen Hades cards. Even a plain Deck question in Strategy runs about 500 over. The
+  warning that caught this only writes to the log. [Detail](roadmap-details.md#game-notes-are-attached-and-then-thrown-away).
 - ★★★ `[KB]` **The meaning search got about a fifth slower** — **OPEN, found 2026-09-05.** Three Strategy questions on the
   same game took about 1.09 s each to embed, against the 0.79–0.90 s band recorded when the feature shipped. Same corpus,
   same model, same device; every game question waits about a fifth of a second longer than it should. Cause unmeasured;
@@ -489,8 +494,8 @@ for the Deck to be free). Anything new goes here, one line each, with what it de
 - ★★ `[KB]` **A latency budget for a game question** — **OPEN, added 2026-09-05.** The slowdown above was only caught because
   one QA row happened to record a band. Write down the budget (embed time plus first token with a game running) so the next
   regression fails a check instead of relying on luck.
-- ★★ `[KB]` **A measured context-window experiment** — **OPEN, research, added 2026-09-05.** The Deck's model runs with a
-  4,096-token window and a Strategy prompt already uses about half. Try 8,192 as a Developer experiment with a game
+- ★★ `[KB]` **A measured context-window experiment** — **OPEN, research, added 2026-09-05, re-measured 2026-09-06.** The
+  Deck's model runs with a 4,096-token window and a Strategy question with cards already goes over it (the bug above). Try 8,192 as a Developer experiment with a game
   running, recording memory and time to first token, before it becomes a setting. Agreed as "later, its own call". (D46)
 - ★★★ `[KB]` **Follow-ups remember** — **OPEN, agreed 2026-09-01.** *"What about the second phase?"* should answer about the
   boss you were just asking about; today the model gets only the newest message and the follow-up searches nothing. First

@@ -498,6 +498,38 @@ Small, and only worth doing if returning to that button matters.
 
 The roadmap cleanup of 2026-09-02 cut every entry to five lines. The original text of each open entry that was longer is here, verbatim, under a heading the roadmap links to.
 
+## Game notes are attached and then thrown away
+
+Measured on the Deck 2026-09-06 with `gemma4:e2b-it-qat`, Strategy mode, `ask_think_effort: medium`, character voice on,
+`use_local_knowledge_base: true`. Two real Asks driven through the panel with the bridge board; both logged the
+`prompt_window_warning` added by `bb377d7` (D46). The guard warns and does nothing else.
+
+| Ask | Prompt tokens | `num_predict` | Total | Window | Over by |
+|---|---|---|---|---|---|
+| "Why does my game stutter after a few minutes?" (no cards) | ~2,497 | 2,112 | 4,609 | 4,096 | ~513 |
+| "How do I beat the Bone Hydra in Hades?" (cards attached) | ~2,805 | 2,112 | 4,917 | 4,096 | ~821 |
+
+`num_predict` is 2,112 because Strategy's visible cap is 1,600 (`ASK_VISIBLE_NUM_PREDICT` in
+`py_modules/backend/services/ollama_ask_budgets.py`) plus the 512-token thinking budget for `medium` effort. The Hades
+prompt is ~308 tokens larger than the no-card one, which is the cards arriving; the corpus holds 15 Hades sections.
+
+Ollama keeps the end of the prompt and drops its start, so the order of loss is: the dynamic game/attachment block, the
+identity clause, the hardware appendix and JSON contract, then the knowledge cards spliced in as `early_context_suffix`.
+The roleplay suffix is appended last by `apply_roleplay_to_system_content`, which is why the character voice survives an
+overflow while the cards do not — voice was verified in character on all six device Asks the same afternoon.
+
+Observable in the reply: the Bone Hydra answer was generic dodge-and-punish advice ("the sweeping ground assaults") with
+no Hades-specific detail, i.e. the model answering from its own weights while the transparency panel would still report
+cards attached.
+
+Two entries already in **Next** are the candidate fixes and both now have a measurement behind them: the **prompt diet**
+(cut rules, move cards next to the question) and **a measured context-window experiment** (8,192). Neither has been
+sized against these numbers yet. A third option nobody has costed: lower Strategy's visible cap, which trades reply
+length for cards.
+
+Not yet known: how often this fires in ordinary use. Both measured Asks had no game running and no screenshot attached,
+which are the *cheapest* Strategy prompts — a running game, a screenshot or Proton log excerpts all push it further over.
+
 ## The shipping retrieval arm loses to the vector half alone on rows nobody tuned against
 
 - ★★★★ **The shipping retrieval arm loses to the vector half alone on rows nobody tuned against** — found 2026-08-29 by the first
