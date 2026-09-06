@@ -437,6 +437,25 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
       appId,
       spoilerConsentEffective,
       onDrgGlossaryExplainFurther: onAskOllama ? onDrgGlossaryExplainFurther : undefined,
+      /*
+       * Copy moved into this bubble's corner (D77). Everything buildAnswerCopyText needs is already
+       * a parameter here, so it is computed once for both the archived and the live branch rather
+       * than twice down in the reply row, where it used to live.
+       *
+       * Never while streaming: the bubble has no settled bottom to pin the icon to, and the text
+       * would change under the press.
+       */
+      getAnswerCopyText:
+        !streaming && body.trim()
+          ? () =>
+              buildAnswerCopyText({
+                body,
+                spoilerMaskingEnabled: strategySpoilerMaskingEnabled,
+                askQuestion,
+                appId,
+                spoilerConsentEffective,
+              })
+          : undefined,
     });
 
   /*
@@ -737,16 +756,6 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
                     chipError: showFeedbackHere ? liveReplyChipError : null,
                     onChip: showFeedbackHere ? onReplyMicroAction : undefined,
                     askInFlight: isAsking,
-                    getAnswerCopyText: turn.answer?.trim()
-                      ? () =>
-                          buildAnswerCopyText({
-                            body: turn.answer,
-                            spoilerMaskingEnabled: strategySpoilerMaskingEnabled,
-                            askQuestion: turn.question,
-                            appId: turn.appId ?? null,
-                            spoilerConsentEffective: turn.spoilerConsentEffective === true,
-                          })
-                      : undefined,
                     /* Down must reach this turn's own ladder. Without a handler the Focusable
                        falls through to the next focusable in document order — the session context
                        strip — and the chips become unreachable from above. */
@@ -871,19 +880,6 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
                   chipError: liveReplyChipError,
                   onChip: onReplyMicroAction,
                   askInFlight: isAsking,
-                  /* Same body the bubble above just rendered (liveResponseBody), with a fallback to
-                     lastExchange for the brief window where the row is visible but the live slot's
-                     own body has not repopulated yet. */
-                  getAnswerCopyText: (liveResponseBody.trim() || lastExchange?.answer?.trim())
-                    ? () =>
-                        buildAnswerCopyText({
-                          body: liveResponseBody.trim() ? liveResponseBody : lastExchange?.answer || "",
-                          spoilerMaskingEnabled: strategySpoilerMaskingEnabled,
-                          askQuestion: liveQuestion || lastExchange?.question || "",
-                          appId: ollamaContext?.app_id ?? null,
-                          spoilerConsentEffective: lastExchange?.spoilerConsentEffective === true,
-                        })
-                    : undefined,
                   onMoveDownFromUtility: () =>
                     focusDownFromReplyUtilityRowOrPermHint(queryLiveTurnSlot()),
                 })

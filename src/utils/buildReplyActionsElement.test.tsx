@@ -135,46 +135,25 @@ describe("buildReplyActionsElement refine chip row", () => {
   });
 });
 
-describe("buildReplyActionsElement Copy control", () => {
-  it("renders a Copy button in the utility row when getAnswerCopyText is supplied", () => {
-    const el = buildReplyActionsElement({
-      replyKey: "live",
-      rating: "up",
-      onRate: () => {},
-      showFeedback: true,
-      onRetry: () => {},
-      getAnswerCopyText: () => "the answer text",
-    });
-    render(<>{el}</>);
-    expect(screen.getByText("Copy")).toBeTruthy();
-  });
-
-  it("does not render a Copy button when getAnswerCopyText is not supplied", () => {
-    const el = buildReplyActionsElement({
-      replyKey: "live",
-      rating: "up",
-      onRate: () => {},
-      showFeedback: true,
-      onRetry: () => {},
-    });
-    render(<>{el}</>);
-    expect(screen.queryByText("Copy")).toBeNull();
-  });
-
-  it("shows the utility row (and Copy) even with no Retry and no transparency toggle", () => {
+/*
+ * Copy left this row for the answer bubble's bottom-right corner (D77). What it does when pressed
+ * is unchanged and still covered by ReplyCopyButton.test.tsx; where it lives is covered by
+ * buildAnswerBubbleElement.test.tsx. What is pinned here is that the row does not offer it.
+ */
+describe("buildReplyActionsElement no longer offers Copy", () => {
+  it("renders no Copy button, and no row at all when Retry is absent", () => {
     const el = buildReplyActionsElement({
       replyKey: "live",
       rating: null,
       onRate: () => {},
       showFeedback: false,
-      getAnswerCopyText: () => "answer",
+      onToggleTransparency: () => {},
     });
-    render(<>{el}</>);
-    expect(screen.getByText("Copy")).toBeTruthy();
-    expect(screen.queryByText("Retry")).toBeNull();
+    expect(findByClassName(el, "bonsai-chat-reply-actions-row--utility")).toBeNull();
+    expect(JSON.stringify(el)).not.toContain("Copy");
   });
 
-  it("returns null when there is nothing to show, Copy included", () => {
+  it("returns null when there is nothing to show at all", () => {
     const el = buildReplyActionsElement({
       replyKey: "live",
       rating: null,

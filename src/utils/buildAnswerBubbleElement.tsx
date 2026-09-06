@@ -10,6 +10,7 @@ import { Focusable } from "@decky/ui";
 import { MainTabBonsaiAiMarkdownChunk } from "../components/MainTabBonsaiAiMarkdownChunk";
 import type { DrgGlossaryTerm } from "../data/drgGlossaryTerms";
 import { StreamFenceWaitChip } from "../components/StreamFenceWaitChip";
+import { ReplyCopyButton } from "../components/ReplyCopyButton";
 import {
   getRegisteredAnswerBubble,
   registerAnswerBubbleEl,
@@ -18,15 +19,19 @@ import {
 } from "./answerBubbleElRegistry";
 import {
   focusFirstAnswerChunk,
+  focusLastAnswerChunk,
   handleAnswerBubbleMoveDown,
   handleAnswerBubbleMoveUp,
 } from "./answerBubbleNavigation";
 import { registerAnswerStop } from "./answerStopRegistry";
 import { uiGamepadFocusElement } from "./uiDocument";
 import {
+  isDeckDirectionLeftEvent,
+  isDeckDirectionRightEvent,
   isDownDeckButtonEvent,
   isUpDeckButtonEvent,
 } from "./focusNavigation";
+import { focusRegisteredReplyStop } from "./replyStopRegistry";
 import { prepareStreamMarkdown } from "./streamMarkdownPrepare";
 import { splitResponseIntoChunks } from "./splitResponseIntoChunks";
 import { stripAssistantDisplayTags } from "./stripAssistantDisplayTags";
@@ -50,6 +55,13 @@ export type BuildAnswerBubbleElementArgs = {
   spoilerConsentEffective?: boolean;
   /** DRG Survivor glossary "explain further" chip — starts a new Ask turn about the tapped term. */
   onDrgGlossaryExplainFurther?: (term: DrgGlossaryTerm) => void;
+  /**
+   * When set, the bubble's bottom-right corner gains a small faded Copy icon (D77).
+   *
+   * Only on a finished answer: a still-arriving one has no bottom to pin it to, and the text it
+   * would copy changes under the press.
+   */
+  getAnswerCopyText?: () => string;
 };
 
 const noopChunkRef = { current: 0 };
@@ -220,6 +232,7 @@ export function buildAnswerBubbleElement(
     appId = null,
     spoilerConsentEffective = false,
     onDrgGlossaryExplainFurther,
+    getAnswerCopyText,
   } = args;
   const spoilerUnwrapEligible =
     spoilerConsentEffective || (spoilerMaskingEnabled && (askQuestion.trim() || appId));
@@ -279,6 +292,29 @@ export function buildAnswerBubbleElement(
   const stopNav = stopNavProps(moveDown, moveUp);
 
   /*
+   * Copy in the bubble's bottom-right corner (D77), reached by Right from the last section.
+   *
+   * It is its own navigation container, like the reply row below, so a bare focus() from a section
+   * would move activeElement while Steam's ring stayed on the section — the failure this repo has
+   * lost three fixes to. TakeFocus first, then the registry focus reports whether it landed.
+   */
+  const copyNavRef: { current: { TakeFocus?: (gamepad?: boolean) => unknown } | null } = {
+    current: null,
+  };
+  const copySlotEl: { current: HTMLElement | null } = { current: null };
+  const showCornerCopy = Boolean(getAnswerCopyText) && !streaming;
+  const rightIntoCopy = () => {
+    if (!showCornerCopy) return false;
+    try {
+      copyNavRef.current?.TakeFocus?.(true);
+    } catch {
+      /* fall through — the registry focus below reports whether it landed */
+    }
+    return focusRegisteredReplyStop("copy");
+  };
+  const leftOutOfCopy = () => focusLastAnswerChunk(answerKey);
+
+  /*
    * Steam's nav node for this bubble, so the reply-actions row below can hand the ring in (Up onto
    * a glossary chip). A plain per-render holder like buildReplyActionsElement's utilityNavRef —
    * this is a plain function, so there are no hooks to use; re-registering each render replaces the
@@ -332,7 +368,9 @@ export function buildAnswerBubbleElement(
       }}
     >
       <div
-        className="bonsai-chat-ai-bubble-inner"
+        className={`bonsai-chat-ai-bubble-inner${
+          showCornerCopy ? " bonsai-chat-ai-bubble-inner--with-copy" : ""
+        }`}
         data-bonsai-answer-bubble="true"
         data-bonsai-answer-key={answerKey}
       >
@@ -356,7 +394,23 @@ export function buildAnswerBubbleElement(
                   key={`${answerKey}-chunk-${i}`}
                   className={STOP_CLASS}
                   ref={(el: HTMLElement | null) => registerAnswerStop(answerKey, i, el)}
-                  {...stopAttrs(stopNav, i)}
+                  {...stopAttrs(
+                    stopNav,
+                    i,
+                    /* Only the last section offers Right into the corner icon: it is pinned to the
+                       bottom of the bubble, so anywhere else the ring would jump past text. */
+                    showCornerCopy && i === displayChunks.length - 1
+                      ? {
+                          onMoveRight: () => rightIntoCopy(),
+                          onButtonDown: (button: unknown) => {
+                            if (isDeckDirectionRightEvent(button)) return rightIntoCopy();
+                            if (isDownDeckButtonEvent(button)) return moveDown();
+                            if (isUpDeckButtonEvent(button)) return moveUp();
+                            return false;
+                          },
+                        }
+                      : undefined
+                  )}
                 >
                   <MainTabBonsaiAiMarkdownChunk
                     source={chunk}
@@ -368,6 +422,27 @@ export function buildAnswerBubbleElement(
                 </Focusable>
               ))}
         </div>
+        {showCornerCopy ? (
+          /*
+           * The handlers sit on this Focusable, not on the button inside it: a Decky Button does
+           * not forward onMove* to any Focusable — the measured reason recorded in
+           * buildReplyActionsElement.tsx for the row below.
+           */
+          <Focusable
+            className="bonsai-reply-copy-corner-slot"
+            ref={(el: HTMLElement | null) => {
+              copySlotEl.current = el;
+            }}
+            {...({
+              navRef: copyNavRef,
+              onMoveLeft: () => leftOutOfCopy(),
+              onButtonDown: (button: unknown) =>
+                isDeckDirectionLeftEvent(button) ? leftOutOfCopy() : false,
+            } as Record<string, unknown>)}
+          >
+            <ReplyCopyButton corner getCopyText={getAnswerCopyText!} />
+          </Focusable>
+        ) : null}
       </div>
     </Focusable>
   );

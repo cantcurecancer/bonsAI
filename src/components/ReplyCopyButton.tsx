@@ -1,14 +1,15 @@
 /**
  * Title: Reply copy button
- * Purpose: Copy a reply's visible answer text to the host clipboard from the reply utility row.
- * Used for: buildReplyActionsElement utility row, alongside Retry / Show details.
+ * Purpose: Copy a reply's visible answer text to the host clipboard, as a labelled button or a corner icon.
+ * Used for: the answer bubble's bottom-right corner (D77); the reply utility row before that.
  * Solves: Self-contained press -> clipboard -> feedback state, so buildReplyActionsElement stays
  *   a plain function (no hooks available there — see its own header comment).
  * Does not: Decide what text is "visible" — see answerCopyText.ts. Does not write the clipboard
  *   itself — see clipboardWrite.ts.
  */
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { BonsaiChatSecondaryButton } from "./BonsaiChatSecondaryButton";
+import { CopyDoneIcon, CopyFailedIcon, CopyGlyphIcon } from "./icons";
 import { writeClipboardText } from "../utils/clipboardWrite";
 
 export type ReplyCopyButtonProps = {
@@ -16,6 +17,12 @@ export type ReplyCopyButtonProps = {
   getCopyText: () => string;
   disabled?: boolean;
   deckNav?: Record<string, () => boolean | void>;
+  /**
+   * Draw as a small faded icon for the answer bubble's corner instead of a labelled button (D77).
+   * "Copied" and "Copy failed" have no room there, so the result is a tick or a cross and the
+   * words stay in the spoken label, which is unchanged.
+   */
+  corner?: boolean;
 };
 
 type CopyStatus = "idle" | "copying" | "copied" | "error";
@@ -37,8 +44,15 @@ const ARIA_LABEL: Record<CopyStatus, string> = {
   error: "Copy reply failed, press to try again",
 };
 
+const CORNER_ICON: Record<CopyStatus, React.FC<{ size?: number }>> = {
+  idle: CopyGlyphIcon,
+  copying: CopyGlyphIcon,
+  copied: CopyDoneIcon,
+  error: CopyFailedIcon,
+};
+
 export function ReplyCopyButton(props: ReplyCopyButtonProps) {
-  const { getCopyText, disabled = false, deckNav } = props;
+  const { getCopyText, disabled = false, deckNav, corner = false } = props;
   const [status, setStatus] = useState<CopyStatus>("idle");
   const timerRef = useRef<number | undefined>(undefined);
   const mountedRef = useRef(true);
@@ -80,6 +94,22 @@ export function ReplyCopyButton(props: ReplyCopyButtonProps) {
       }
     );
   };
+
+  if (corner) {
+    const Icon = CORNER_ICON[status];
+    return (
+      <BonsaiChatSecondaryButton
+        disabled={disabled}
+        onClick={handleClick}
+        aria-label={ARIA_LABEL[status]}
+        replyStop="copy"
+        deckNav={deckNav}
+        className={`bonsai-reply-copy-corner bonsai-reply-copy-corner--${status}`}
+      >
+        <Icon size={14} />
+      </BonsaiChatSecondaryButton>
+    );
+  }
 
   return (
     <BonsaiChatSecondaryButton

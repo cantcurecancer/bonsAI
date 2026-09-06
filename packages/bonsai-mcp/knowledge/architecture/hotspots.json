@@ -51,18 +51,18 @@
       "role": ""
     },
     {
+      "path": "src/styles/sections/section-6.ts",
+      "lines": 1199,
+      "role": ""
+    },
+    {
       "path": "src/components/OllamaWhereAiRunsSection.tsx",
       "lines": 1174,
       "role": ""
     },
     {
-      "path": "src/styles/sections/section-6.ts",
-      "lines": 1145,
-      "role": ""
-    },
-    {
       "path": "src/components/MainTabChatTranscript.tsx",
-      "lines": 1121,
+      "lines": 1117,
       "role": ""
     },
     {
@@ -146,11 +146,6 @@
       "role": ""
     },
     {
-      "path": "src/utils/buildReplyActionsElement.tsx",
-      "lines": 516,
-      "role": ""
-    },
-    {
       "path": "src/components/CharacterPropGlyph.tsx",
       "lines": 511,
       "role": ""
@@ -158,6 +153,11 @@
     {
       "path": "src/utils/settingsContracts.test.ts",
       "lines": 508,
+      "role": ""
+    },
+    {
+      "path": "src/utils/buildReplyActionsElement.tsx",
+      "lines": 501,
       "role": ""
     },
     {
@@ -186,18 +186,18 @@
       "role": ""
     },
     {
+      "path": "src/utils/buildAnswerBubbleElement.tsx",
+      "lines": 450,
+      "role": ""
+    },
+    {
+      "path": "src/utils/buildAnswerBubbleElement.test.tsx",
+      "lines": 438,
+      "role": ""
+    },
+    {
       "path": "py_modules/backend/services/desktop_note_service.py",
       "lines": 432,
-      "role": ""
-    },
-    {
-      "path": "src/utils/answerBubbleNavigation.test.ts",
-      "lines": 430,
-      "role": ""
-    },
-    {
-      "path": "py_modules/backend/services/ai_character_service.py",
-      "lines": 426,
       "role": ""
     }
   ]

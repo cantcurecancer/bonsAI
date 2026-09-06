@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
   "fileCount": 373,
-  "edgeCount": 907,
+  "edgeCount": 909,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -703,11 +703,12 @@
     "src/components/ReplyCopyButton.tsx": {
       "imports": [
         "src/components/BonsaiChatSecondaryButton.tsx",
+        "src/components/icons.tsx",
         "src/utils/clipboardWrite.ts"
       ],
       "importedBy": [
         "src/components/ReplyCopyButton.test.tsx",
-        "src/utils/buildReplyActionsElement.tsx"
+        "src/utils/buildAnswerBubbleElement.tsx"
       ]
     },
     "src/components/SessionContextStrip.test.tsx": {
@@ -891,6 +892,7 @@
         "src/components/MainTabChatTranscript.tsx",
         "src/components/MainTabScreenshotBrowser.tsx",
         "src/components/MainTabUnifiedAskBar.tsx",
+        "src/components/ReplyCopyButton.tsx",
         "src/components/icons.bonsaiGeometry.test.tsx",
         "src/features/plugin-shell/tabTitles.tsx",
         "src/index.tsx",
@@ -2892,12 +2894,14 @@
     "src/utils/buildAnswerBubbleElement.tsx": {
       "imports": [
         "src/components/MainTabBonsaiAiMarkdownChunk.tsx",
+        "src/components/ReplyCopyButton.tsx",
         "src/components/StreamFenceWaitChip.tsx",
         "src/data/drgGlossaryTerms.ts",
         "src/utils/answerBubbleElRegistry.ts",
         "src/utils/answerBubbleNavigation.ts",
         "src/utils/answerStopRegistry.ts",
         "src/utils/focusNavigation.ts",
+        "src/utils/replyStopRegistry.ts",
         "src/utils/splitResponseIntoChunks.ts",
         "src/utils/streamMarkdownPrepare.ts",
         "src/utils/stripAssistantDisplayTags.ts",
@@ -2923,7 +2927,6 @@
     "src/utils/buildReplyActionsElement.tsx": {
       "imports": [
         "src/components/BonsaiChatSecondaryButton.tsx",
-        "src/components/ReplyCopyButton.tsx",
         "src/components/icons.tsx",
         "src/data/replyMicroActions.ts",
         "src/utils/answerBubbleElRegistry.ts",
@@ -3540,6 +3543,7 @@
       ],
       "importedBy": [
         "src/components/BonsaiChatSecondaryButton.tsx",
+        "src/utils/buildAnswerBubbleElement.tsx",
         "src/utils/buildReplyActionsElement.tsx",
         "src/utils/liveTurnFocusGraph.test.ts",
         "src/utils/liveTurnFocusGraph.ts",

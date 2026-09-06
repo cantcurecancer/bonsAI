@@ -8,7 +8,6 @@
 import React from "react";
 import { Focusable } from "@decky/ui";
 import { BonsaiChatSecondaryButton } from "../components/BonsaiChatSecondaryButton";
-import { ReplyCopyButton } from "../components/ReplyCopyButton";
 import {
   RefreshArrowIcon,
   ThumbDownOutlineIcon,
@@ -20,8 +19,6 @@ import {
   focusDownFromReplyUtilityRow,
   focusLastReplyChip,
   focusReplyHelpful,
-  focusReplyNotReally,
-  focusReplyCopy,
   focusReplyRetry,
   focusReplyShowDetails,
   queryLiveTurnSlot,
@@ -73,8 +70,6 @@ export type BuildReplyActionsElementArgs = {
   chipError?: string | null;
   onChip?: (chipId: ReplyMicroActionId) => void;
   askInFlight?: boolean;
-  /** When set and non-blank, the utility row gains a Copy button that copies this text. */
-  getAnswerCopyText?: () => string;
   /** When set, D-pad Up from reply actions focuses strategy chrome before the answer bubble. */
   onMoveUpFromReply?: () => boolean;
   /** D-pad Up from utility row (Retry / Show details) when no chip rows are visible. */
@@ -139,15 +134,17 @@ export function buildReplyActionsElement(
     chipError = null,
     onChip,
     askInFlight = false,
-    getAnswerCopyText,
     onMoveUpFromReply,
     onMoveUpFromChips,
     onMoveDownFromUtility,
   } = args;
 
   const showChipRows = Boolean(onChip) && rating === "down";
-  /* Show details left this row for the line below it (D76), so only Retry and Copy keep it alive. */
-  const showUtilityRow = Boolean(onRetry) || Boolean(getAnswerCopyText);
+  /*
+   * Show details became the line below (D76) and Copy moved into the answer bubble's corner (D77),
+   * so Retry is the only thing left holding this row up.
+   */
+  const showUtilityRow = Boolean(onRetry);
   const showDetailsDivider = Boolean(onToggleTransparency);
   const feedbackDisabled = askInFlight || ratingUnavailable;
   const chipsInactive = chipsDisabled || chipUsed || askInFlight;
@@ -204,7 +201,8 @@ export function buildReplyActionsElement(
 
   const downFromThumbsRow = () =>
     focusedStop() === "not-really" ? downFromNotReally() : downFromHelpful();
-  const upFromUtilityRow = () => (focusedStop() === "copy" ? upFromCopy() : upFromRetry());
+  const upFromUtilityRow = () => upFromRetry();
+
 
   /*
    * Row elements, captured at mount so a press handler can ask "is focus still mine?".
@@ -268,14 +266,14 @@ export function buildReplyActionsElement(
    * "Helpful → Down" look correct only because Retry is where Steam was going to land anyway.
    * Once focus is inside the row, a plain `focus()` moves between its two buttons (same container).
    */
-  const enterUtilityRow = (stop: "retry" | "copy") => {
+  const enterUtilityRow = (stop: "retry") => {
     try {
       utilityNavRef.current?.TakeFocus?.(true);
     } catch {
       /* fall through — the DOM focus below still reports whether it landed */
     }
     const slot = liveSlot();
-    return stop === "retry" ? focusReplyRetry(slot) : focusReplyCopy(slot);
+    return stop === "retry" ? focusReplyRetry(slot) : false;
   };
   const downFromHelpful = () => {
     if (showChipRows) return false;
@@ -283,9 +281,7 @@ export function buildReplyActionsElement(
   };
   const downFromNotReally = () => {
     if (showChipRows) return false;
-    /* Copy took Show details' column when the line replaced it, so the pairing is kept:
-       Helpful sits over Retry, Not really over Copy. */
-    if (enterUtilityRow("copy")) return true;
+    /* One column left in the row, so both thumbs land on it. */
     return enterUtilityRow("retry");
   };
   /*
@@ -329,18 +325,10 @@ export function buildReplyActionsElement(
     if (upIntoGlossaryChip()) return true;
     return focusLastAnswerChunk(replyKey);
   };
-  const upFromCopy = () => {
-    const slot = liveSlot();
-    if (showChipRows && focusLastReplyChip(slot)) return true;
-    if (focusReplyNotReally(slot)) return true;
-    if (upIntoGlossaryChip()) return true;
-    return focusLastAnswerChunk(replyKey);
-  };
 
   const upFromDivider = () => {
     const slot = liveSlot();
     if (showUtilityRow && focusReplyRetry(slot)) return true;
-    if (showUtilityRow && focusReplyCopy(slot)) return true;
     return upFromRetry();
   };
 
@@ -460,9 +448,6 @@ export function buildReplyActionsElement(
               <RefreshArrowIcon size={14} />
               Retry
             </BonsaiChatSecondaryButton>
-          ) : null}
-          {getAnswerCopyText ? (
-            <ReplyCopyButton getCopyText={getAnswerCopyText} disabled={askInFlight} />
           ) : null}
         </Focusable>
       ) : null}

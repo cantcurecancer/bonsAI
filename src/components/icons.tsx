@@ -243,6 +243,39 @@ export const PasteClipboardIcon: React.FC<{ size?: number }> = ({ size = 15 }) =
   </IconShell>
 );
 
+/**
+ * This two-overlapping-rounded-squares icon is the Copy control in the answer bubble's corner.
+ *
+ * Distinct from PasteClipboardIcon above, which is a clipboard with a lid and means paste. Drawn
+ * small and thin because it sits over the answer's own text at half opacity.
+ */
+export const CopyGlyphIcon: React.FC<{ size?: number }> = ({ size = 14 }) => (
+  <IconShell size={size}>
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect x="9" y="9" width="11" height="11" rx="2.2" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M15.5 5.6A2.2 2.2 0 0 0 13.4 4H6.2A2.2 2.2 0 0 0 4 6.2v7.2c0 .98.64 1.81 1.6 2.1" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  </IconShell>
+);
+
+/** This tick replaces the copy glyph for two seconds after a copy worked. */
+export const CopyDoneIcon: React.FC<{ size?: number }> = ({ size = 14 }) => (
+  <IconShell size={size}>
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="m5 12.6 4.6 4.6L19 6.8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  </IconShell>
+);
+
+/** This cross replaces the copy glyph for two seconds after a copy failed. */
+export const CopyFailedIcon: React.FC<{ size?: number }> = ({ size = 14 }) => (
+  <IconShell size={size}>
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M6.5 6.5l11 11m0-11-11 11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  </IconShell>
+);
+
 /** This paperclip icon marks media attachment entry points. */
 export const AttachMediaIcon: React.FC<{ size?: number }> = ({ size = 22 }) => (
   <IconShell size={size}>

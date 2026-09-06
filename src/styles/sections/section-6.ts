@@ -304,6 +304,60 @@ export function buildSection6Section(): string {
         .bonsai-scope .bonsai-chat-ai-bubble-inner {
           padding: 8px 10px !important;
           box-sizing: border-box !important;
+          /* Anchor for the Copy icon pinned to the bubble's bottom-right corner (D77). */
+          position: relative !important;
+        }
+        /*
+         * Copy, in the answer bubble's bottom-right corner.
+         *
+         * The last section reserves room on its right so a line of text can never run under the
+         * icon. A fixed inset in CSS, never a measured one (design-language.md rule 4). The
+         * modifier class rather than :has(), because nothing here may assume a CEF version.
+         */
+        .bonsai-scope .bonsai-chat-ai-bubble-inner--with-copy
+          .bonsai-ai-response-stack--in-bubble > .bonsai-answer-stop:last-child {
+          padding-right: ${uiScalePx(22)} !important;
+        }
+        .bonsai-scope .bonsai-reply-copy-corner-slot {
+          position: absolute !important;
+          right: ${uiScalePx(4)} !important;
+          bottom: ${uiScalePx(2)} !important;
+          display: inline-flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          outline: none !important;
+        }
+        /*
+         * Icon only: no border, no gradient, no minimum height. Overrides the shared secondary
+         * button look, which is a labelled pill and would draw a box over the answer's own text.
+         */
+        .bonsai-scope button.bonsai-chat-secondary-btn.bonsai-reply-copy-corner,
+        .bonsai-scope button.bonsai-chat-secondary-btn.bonsai-reply-copy-corner.DialogButton {
+          min-height: 0 !important;
+          width: ${uiScalePx(20)} !important;
+          height: ${uiScalePx(20)} !important;
+          padding: 0 !important;
+          gap: 0 !important;
+          border: none !important;
+          border-radius: 4px !important;
+          background: none !important;
+          box-shadow: none !important;
+          color: #d4dde6 !important;
+          /* Same weight as the microphone in the Ask field. */
+          opacity: 0.5 !important;
+        }
+        .bonsai-scope .bonsai-reply-copy-corner-slot:focus-within button.bonsai-reply-copy-corner,
+        .bonsai-scope button.bonsai-reply-copy-corner.gpfocus,
+        .bonsai-scope button.bonsai-reply-copy-corner:focus-visible {
+          opacity: 0.95 !important;
+        }
+        .bonsai-scope button.bonsai-reply-copy-corner--copied {
+          color: #9ce7ff !important;
+          opacity: 0.95 !important;
+        }
+        .bonsai-scope button.bonsai-reply-copy-corner--error {
+          color: #f16a5a !important;
+          opacity: 0.95 !important;
         }
         .bonsai-scope .bonsai-chat-ai-bubble .bonsai-ai-response-stack--in-bubble,
         .bonsai-scope .bonsai-chat-ai-bubble .bonsai-ai-response-chunk--in-bubble {

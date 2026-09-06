@@ -1,3 +1,4 @@
+import React from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { cleanup, render } from "@testing-library/react";
 
@@ -8,6 +9,25 @@ import { splitResponseIntoChunks } from "./splitResponseIntoChunks";
 import { SPOILER_STREAM_MASK_LABEL } from "./streamMarkdownPrepare";
 
 const ANSWER_KEY = "live";
+
+/** Every React element in the tree whose className mentions `cls`, in render order. */
+function collectByClassName(node: React.ReactNode, cls: string): React.ReactElement[] {
+  const out: React.ReactElement[] = [];
+  const walk = (n: React.ReactNode) => {
+    if (Array.isArray(n)) {
+      n.forEach(walk);
+      return;
+    }
+    if (!n || typeof n !== "object" || !("props" in n)) return;
+    const el = n as React.ReactElement;
+    const className = (el.props as Record<string, unknown>).className;
+    if (typeof className === "string" && className.split(/\s+/).includes(cls)) out.push(el);
+    walk((el.props as { children?: React.ReactNode }).children);
+  };
+  walk(node);
+  return out;
+}
+
 
 /*
  * Plain prose is a single section while streaming — prepareStreamMarkdown only closes a block at a
@@ -331,5 +351,87 @@ describe("answer bubble section stops", () => {
     const { container } = render(el!);
     expect(container.textContent).toContain(SPOILER_STREAM_MASK_LABEL);
     expect(container.textContent).not.toContain("dwarf retires");
+  });
+});
+
+/*
+ * Copy sits in the answer's corner, not in a button row (D77). What it does when pressed is
+ * ReplyCopyButton's business; what is pinned here is that it appears on a finished answer only,
+ * and that the ring can get to it and back.
+ */
+describe("Copy in the answer bubble's corner", () => {
+  beforeEach(() => {
+    resetAnswerStopRegistry();
+    registerAnswerBubbleEl(ANSWER_KEY, null);
+  });
+  afterEach(() => {
+    cleanup();
+    resetAnswerStopRegistry();
+  });
+
+  const build = (streaming: boolean, withCopy = true) =>
+    buildAnswerBubbleElement({
+      body: FENCED_BODY,
+      streaming,
+      spoilerMaskingEnabled: true,
+      maxWidthCss: "100%",
+      answerKey: ANSWER_KEY,
+      getAnswerCopyText: withCopy ? () => "copied text" : undefined,
+    });
+
+  it("draws the icon on a finished answer", () => {
+    const { container } = render(build(false)!);
+    const icon = container.querySelector(".bonsai-reply-copy-corner");
+    expect(icon).not.toBeNull();
+    expect(icon!.getAttribute("aria-label")).toBe("Copy reply text");
+    /* Icon only — the word "Copy" would draw a pill over the answer's own text. */
+    expect(icon!.textContent).toBe("");
+  });
+
+  it("draws nothing while the answer is still arriving", () => {
+    const { container } = render(build(true)!);
+    expect(container.querySelector(".bonsai-reply-copy-corner")).toBeNull();
+  });
+
+  it("draws nothing when no copy text is supplied", () => {
+    const { container } = render(build(false, false)!);
+    expect(container.querySelector(".bonsai-reply-copy-corner")).toBeNull();
+  });
+
+  it("reserves room on the last section so text cannot run under the icon", () => {
+    const { container } = render(build(false)!);
+    const inner = container.querySelector(".bonsai-chat-ai-bubble-inner");
+    expect(inner!.className).toContain("bonsai-chat-ai-bubble-inner--with-copy");
+    const plain = render(build(false, false)!);
+    expect(
+      plain.container.querySelector(".bonsai-chat-ai-bubble-inner")!.className
+    ).not.toContain("--with-copy");
+  });
+
+  /*
+   * Read off the React tree, not the DOM: the test harness strips every Steam nav prop before it
+   * reaches a div (fakeDeckyUi.tsx), so onMoveRight is invisible to a rendered query.
+   */
+  it("offers Right into the icon from the last section, and from no other", () => {
+    const sections = collectByClassName(build(false)!, "bonsai-answer-stop");
+    expect(sections.length).toBeGreaterThan(1);
+    const withRight = sections.filter(
+      (node) => (node.props as Record<string, unknown>).onMoveRight
+    );
+    expect(withRight).toHaveLength(1);
+    expect(
+      String((withRight[0]!.props as Record<string, unknown>)["data-bonsai-chunk-index"])
+    ).toBe(String(sections.length - 1));
+  });
+
+  it("offers Left back out of the icon", () => {
+    const slot = collectByClassName(build(false)!, "bonsai-reply-copy-corner-slot");
+    expect(slot).toHaveLength(1);
+    expect((slot[0]!.props as Record<string, unknown>).onMoveLeft).toBeTypeOf("function");
+  });
+
+  it("does not offer Right into an icon that is not there", () => {
+    const sections = collectByClassName(build(false, false)!, "bonsai-answer-stop");
+    expect(sections.some((n) => (n.props as Record<string, unknown>).onMoveRight)).toBe(false);
   });
 });

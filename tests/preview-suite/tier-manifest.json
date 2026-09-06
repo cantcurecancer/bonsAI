@@ -104,7 +104,8 @@
         "UI-A-presets-visible",
         "UI-A-reply-stop-count",
         "UI-A-reply-fence-alone",
-        "UI-A-details-divider"
+        "UI-A-details-divider",
+        "UI-A-copy-in-bubble-corner"
       ],
       "sourceFiles": [
         "tier3-ui-navigation.json"

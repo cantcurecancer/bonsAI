@@ -666,6 +666,73 @@
           "expect": false
         }
       ]
+    },
+    {
+      "id": "UI-A-copy-in-bubble-corner",
+      "tier": "tier3UI",
+      "bucket": "D",
+      "tags": [
+        "COPY-REPLY-01",
+        "REPLY-CHROME"
+      ],
+      "evidenceProfile": "preview",
+      "checkboxIds": [],
+      "captureSteps": [
+        3
+      ],
+      "note": "Copy is a faded icon in the answer bubble's bottom-right corner (D77), not a button in the row. It must sit inside the bubble and never appear while the answer is still arriving.",
+      "steps": [
+        {
+          "action": "previewHook",
+          "method": "setTab",
+          "args": [
+            "main"
+          ]
+        },
+        {
+          "action": "previewHook",
+          "method": "seedFinishedTurn",
+          "args": [
+            "what should i upgrade first",
+            "Upgrade the shield first.\n\nThen the boots."
+          ]
+        },
+        {
+          "action": "sleep",
+          "ms": 500
+        },
+        {
+          "action": "snapshotDom",
+          "selector": ".bonsai-scope"
+        },
+        {
+          "action": "assert",
+          "type": "domContains",
+          "expect": "bonsai-reply-copy-corner"
+        },
+        {
+          "action": "assert",
+          "type": "domContains",
+          "expect": "Copy reply text"
+        },
+        {
+          "action": "previewHook",
+          "method": "getReplyLayoutJson"
+        },
+        {
+          "action": "assert",
+          "type": "hookField",
+          "field": "copyIcon",
+          "op": "present"
+        },
+        {
+          "action": "assert",
+          "type": "hookRectInside",
+          "inner": "copyIcon",
+          "outer": "answerBubble",
+          "slack": 2
+        }
+      ]
     }
   ]
 }
