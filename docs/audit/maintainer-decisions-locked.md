@@ -4031,3 +4031,32 @@ result comes from, and it is a row or three, never a wall. Whether that word lis
 shipped after early August were verified on the Deck on 2026-09-05, and the maintainer's call is that the row carries
 enough. Nothing is owed for the tab bar, one-chip mode, the end-of-row glow, always-streaming replies or the reply
 block rework.
+
+### D80 — LOCKED 2026-09-06 (raised the same day) — Knowledge-base wave one: the Speed-mode symptom search, the voice preset, and running on without stops
+
+Raised while planning wave one of the knowledge-base work, plan [46](../planning/46-kb-wave-one-session.md). Three
+calls, all given in one message, plus a fourth that was already settled and is restated here so the plan reads whole.
+
+**A troubleshooting question that only describes the problem gets the meaning search in Speed mode too — but only
+with no game running, and only after the keyword search and the topic router have both come back empty.** The
+1 September call (D52) said such questions get a meaning search over the tip sheet. The 5 September fix made Speed
+mode skip the meaning search altogether, and the two rules collided, because troubleshooting is mostly asked in
+Speed. This resolves it the recommended way: the cost is one embedding call, about a second when the model is warm
+and about a second and a half when it is not, and it lands only on questions that would otherwise get no tips at
+all. With a game running, the question still goes to that game's cards; changing that is a separate call. Plan 46's
+Deck row R3 times it.
+
+**The voice-on measurement uses the Ali G preset**, the character on the maintainer's Deck. A character-voice bug is
+being worked in another chat at the time of writing. The answer test's voice switch is built regardless; the first
+voice-on run waits until that fix has landed, so the numbers describe a working voice. If the fix has not landed by
+the end of plan 46's wave 2, the run is left owed in the log, never skipped quietly.
+
+**The session runs on without pausing between milestones once each is verifiably complete and as intended.**
+"Verifiably" means the milestone gates in plan 46 § 5: green gates, the acceptance numbers in the lane brief, and the
+orchestrator's own re-run of any measurement a lane reports. The sweep table and the release check become heads-ups
+in the log, not stops. **The one stop that stays is the public push of the corpus release**, because it leaves the
+machine; the maintainer can fold it into the "go" by saying so in the same message.
+
+**The Deck session after the release runs on Opus at medium effort and records; it never diagnoses.** A failed row is
+saved with its evidence and handed to an Opus session at extra-high effort to read — the routing table's own rule,
+restated here because the maintainer chose the medium tier for the run and wanted the hand-off explicit.
