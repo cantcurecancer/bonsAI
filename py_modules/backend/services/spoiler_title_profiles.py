@@ -18,6 +18,9 @@ LOW_NARRATIVE_APP_IDS = frozenset(
         "2321470",  # Deep Rock Galactic: Survivor
         "550",  # Left 4 Dead 2
         "1222670",  # The Sims 4
+        # 2026-09-05 tranche (D69): a campaign with named bosses, but nothing that reads as
+        # a reveal -- the demons and their weak points are the whole conversation.
+        "782330",  # DOOM Eternal
     }
 )
 
@@ -36,6 +39,15 @@ PROTECT_PROGRESSION_APP_IDS = frozenset(
         # the cost of being wrong is asymmetric — over-fencing a puzzle hint annoys, and
         # under-fencing the ending cannot be taken back. Section type carries the rest.
         "620",  # Portal 2
+        # 2026-09-05 tranche (D69). Black Mesa is Half-Life's story retold; Hollow Knight is
+        # built on discovery; the GTA and Fallout entries are mission-driven like their
+        # siblings above. GTA V has two Steam builds, both listed so either resolves.
+        "362890",  # Black Mesa
+        "367520",  # Hollow Knight
+        "3240220",  # Grand Theft Auto V Enhanced
+        "271590",  # Grand Theft Auto V Legacy
+        "12210",  # Grand Theft Auto IV: The Complete Edition
+        "22380",  # Fallout: New Vegas
     }
 )
 
@@ -54,6 +66,14 @@ _LOW_NARRATIVE_TITLES = (
     "deep rock galactic",
     "left 4 dead 2",
     "the sims 4",
+    # 2026-09-05 tranche (D69). The emulated titles are Steam shortcuts with no AppID, so the
+    # name is the only handle; "smash bros" covers both the N64 game and Melee.
+    "doom eternal",
+    "doom 64",
+    "super mario 64",
+    "mario kart 64",
+    "smash bros",
+    "pikmin 2",
 )
 
 _PROTECT_PROGRESSION_TITLES = (
@@ -69,6 +89,19 @@ _PROTECT_PROGRESSION_TITLES = (
     "half-life 2",
     "half life 2",
     "portal 2",
+    # 2026-09-05 tranche (D69). "gta v" also catches Vice City, which protecting is the
+    # right side to err on; Paper Mario is a chapter story, unlike its N64 shelf-mates.
+    "black mesa",
+    "hollow knight",
+    "grand theft auto v",
+    "grand theft auto iv",
+    "gta v",
+    "gta iv",
+    "gta 5",
+    "gta 4",
+    "paper mario",
+    "thousand-year door",
+    "new vegas",
 )
 
 

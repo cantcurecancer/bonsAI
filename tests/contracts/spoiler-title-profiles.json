@@ -3,7 +3,8 @@
   "low_narrative_app_ids": [
     "2321470",
     "550",
-    "1222670"
+    "1222670",
+    "782330"
   ],
   "protect_progression_app_ids": [
     "1086940",
@@ -13,9 +14,57 @@
     "1547000",
     "1174180",
     "220",
-    "620"
+    "620",
+    "362890",
+    "367520",
+    "3240220",
+    "271590",
+    "12210",
+    "22380"
   ],
   "cases": [
+    {
+      "name": "black mesa appid protects progression (2026-09-05 tranche)",
+      "app_id": "362890",
+      "app_name": "",
+      "expected": "protect_progression"
+    },
+    {
+      "name": "gta v legacy build protects progression like the enhanced one",
+      "app_id": "271590",
+      "app_name": "",
+      "expected": "protect_progression"
+    },
+    {
+      "name": "doom eternal appid is low narrative",
+      "app_id": "782330",
+      "app_name": "",
+      "expected": "low_narrative"
+    },
+    {
+      "name": "an N64 shortcut with no appid is low narrative by name",
+      "app_id": "",
+      "app_name": "Super Mario 64",
+      "expected": "low_narrative"
+    },
+    {
+      "name": "the doom 64 shortcut name on the Deck is low narrative",
+      "app_id": "",
+      "app_name": "Doom 64: Retribution",
+      "expected": "low_narrative"
+    },
+    {
+      "name": "paper mario is a chapter story and protects by name",
+      "app_id": "",
+      "app_name": "Paper Mario: The Thousand-Year Door",
+      "expected": "protect_progression"
+    },
+    {
+      "name": "new vegas protects by name when only the title is known",
+      "app_id": "",
+      "app_name": "Fallout: New Vegas",
+      "expected": "protect_progression"
+    },
     {
       "name": "drg survivor appid is low narrative",
       "app_id": "2321470",
