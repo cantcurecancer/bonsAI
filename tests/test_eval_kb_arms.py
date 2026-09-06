@@ -8,12 +8,16 @@ Solves: The eval is what decides whether fusion ships. A verdict that rounds an 
 Does not: Run any embedding or touch Ollama — every test here is pure scoring logic.
 """
 
+import contextlib
 import importlib.util
+import io
 import json
 import re
 import sys
+import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
@@ -217,6 +221,10 @@ class EvalArmsTests(unittest.TestCase):
         rule worth keeping is the one underneath it: **a label must name a real card**. A
         label written from imagination turns the eval into a measure of our expectations
         rather than of retrieval, which is the same self-referential trap as R1.
+
+        A row's `expect_section` may now be a single card name or a list of names (a second
+        right answer) -- this walks both shapes so a phantom name hiding inside a list cannot
+        slip past the check the single-name case already had.
         """
         data = json.loads(
             (REPO_ROOT / "tests" / "fixtures" / "kb_eval_v2.json").read_text(encoding="utf-8")
@@ -225,11 +233,15 @@ class EvalArmsTests(unittest.TestCase):
             (REPO_ROOT / "data" / "kb" / "strategy_seed.json").read_text(encoding="utf-8")
         )
         card_names = {s["name"] for s in seed["sections"]}
-        phantom = [
-            (r["id"], r["expect_section"])
-            for r in data["queries"]
-            if r.get("expect_section") and r["expect_section"] not in card_names
-        ]
+        phantom = []
+        for row in data["queries"]:
+            raw = row.get("expect_section")
+            if not raw:
+                continue
+            names = raw if isinstance(raw, list) else [raw]
+            for name in names:
+                if name and name not in card_names:
+                    phantom.append((row["id"], name))
         self.assertEqual(phantom, [], f"labels naming no card in the seed: {phantom}")
 
     def test_fixture_status_tracks_whether_every_title_is_carded(self):
@@ -333,6 +345,263 @@ class EvalArmsTests(unittest.TestCase):
         sliced = mod._slice_results(results, cases, lambda c: c.domain == "compat")
         self.assertEqual([r.case_id for r in sliced["keyword"]], ["1", "3", "5"])
         self.assertEqual([r.case_id for r in sliced["rrf"]], ["1", "3", "5"])
+
+    # --- weight sweep -----------------------------------------------------------------------
+
+    def _sweep_cases(self, mod):
+        return [
+            mod.QueryCase(
+                case_id="tune-1",
+                query="q1",
+                ask_mode="speed",
+                domain="strategy",
+                app_id="",
+                shortcut="",
+                expect_topic="",
+                expect_section="Card A",
+                suite="t",
+                split="tune",
+            ),
+            mod.QueryCase(
+                case_id="tune-2",
+                query="q2",
+                ask_mode="speed",
+                domain="strategy",
+                app_id="",
+                shortcut="",
+                expect_topic="",
+                expect_section="Card B",
+                suite="t",
+                split="tune",
+            ),
+            mod.QueryCase(
+                case_id="holdout-1",
+                query="q3",
+                ask_mode="speed",
+                domain="strategy",
+                app_id="",
+                shortcut="",
+                expect_topic="",
+                expect_section="Card C",
+                suite="t",
+                split="holdout",
+            ),
+        ]
+
+    def test_sweep_applies_each_pair_and_restores_the_constants(self):
+        """The sweep sets RRF_W_FTS/RRF_W_VEC on the service module for each pair, so the fake
+        fusion below sees them at call time, and puts the originals back afterward -- proving
+        both halves of the contract, not just that a number changed somewhere."""
+        mod = self.mod
+        seen: list[tuple[float, float]] = []
+
+        def fake_hybrid_retrieve(conn, case, *, query_vector, vectors_by_id, fts_k, top_k, with_recall):
+            seen.append((mod.kb_service.RRF_W_FTS, mod.kb_service.RRF_W_VEC))
+            return []
+
+        def fake_embed_one(ollama_base, model, text, *, timeout_s=30.0):
+            return [0.1, 0.2], 1.0
+
+        cases = self._sweep_cases(mod)
+        original_fts, original_vec = mod.kb_service.RRF_W_FTS, mod.kb_service.RRF_W_VEC
+
+        with mock.patch.object(mod, "_hybrid_retrieve", fake_hybrid_retrieve), mock.patch.object(
+            mod, "_embed_one", fake_embed_one
+        ):
+            rows = mod._sweep_weights(
+                conn=None,
+                ollama_base="http://example.invalid",
+                model="nomic-embed-text",
+                vectors_by_id=mod.DomainVectors(compat={}, strategy={}),
+                cases=cases,
+                pairs=[(0.5, 1.5), (1.0, 1.0)],
+            )
+
+        # Two tune-split cases per pair -- one fake-fusion call each, both seeing the pair's
+        # weights, in pair order.
+        self.assertEqual(seen, [(0.5, 1.5), (0.5, 1.5), (1.0, 1.0), (1.0, 1.0)])
+        self.assertEqual((mod.kb_service.RRF_W_FTS, mod.kb_service.RRF_W_VEC), (original_fts, original_vec))
+        # Only the two tune-split cases were scored -- the holdout row never enters the sweep.
+        self.assertEqual([row["n"] for row in rows], [2, 2])
+
+    def test_sweep_run_prints_no_holdout_numbers(self):
+        """A sweep table is built from tune-split cases only, so the printed table carries no
+        holdout case id and no count including the holdout row -- the honesty rule R1 exists
+        to enforce for every other split use in this file. (The header saying holdout is
+        deliberately excluded is fine; a holdout *number* leaking is what this guards.)"""
+        mod = self.mod
+
+        def fake_hybrid_retrieve(conn, case, *, query_vector, vectors_by_id, fts_k, top_k, with_recall):
+            return []
+
+        def fake_embed_one(ollama_base, model, text, *, timeout_s=30.0):
+            return [0.1, 0.2], 1.0
+
+        cases = self._sweep_cases(mod)
+        with mock.patch.object(mod, "_hybrid_retrieve", fake_hybrid_retrieve), mock.patch.object(
+            mod, "_embed_one", fake_embed_one
+        ):
+            rows = mod._sweep_weights(
+                conn=None,
+                ollama_base="http://example.invalid",
+                model="nomic-embed-text",
+                vectors_by_id=mod.DomainVectors(compat={}, strategy={}),
+                cases=cases,
+                pairs=[(1.0, 1.0)],
+            )
+            captured = io.StringIO()
+            with contextlib.redirect_stderr(captured):
+                mod._print_sweep_table(rows)
+
+        # n=2 (tune only, never 3 -- the holdout row is excluded, not just unlabeled)
+        self.assertEqual(rows[0]["n"], 2)
+        printed = captured.getvalue()
+        self.assertNotIn("holdout-1", printed)
+        self.assertIn(" 2 ", printed)
+
+    def test_parse_weight_pairs_reads_the_default_sweep_list(self):
+        mod = self.mod
+        pairs = mod._parse_weight_pairs(mod.DEFAULT_SWEEP_WEIGHTS)
+        self.assertEqual(pairs[0], (1.0, 1.0))
+        self.assertEqual(pairs[-1], (1.0, 1.5))
+        self.assertEqual(len(pairs), 9)
+
+    def test_parse_weight_pairs_rejects_a_malformed_pair(self):
+        mod = self.mod
+        with self.assertRaises(ValueError):
+            mod._parse_weight_pairs("1:1,not-a-pair")
+
+    # --- per-case output ---------------------------------------------------------------------
+
+    def test_per_case_table_has_names_in_rank_order_for_every_arm(self):
+        mod = self.mod
+        cases = [
+            mod.QueryCase(
+                case_id="c1",
+                query="q1",
+                ask_mode="speed",
+                domain="strategy",
+                app_id="",
+                shortcut="",
+                expect_topic="",
+                expect_section="Card A",
+                suite="t",
+                split="tune",
+            ),
+            mod.QueryCase(
+                case_id="c2",
+                query="q2",
+                ask_mode="speed",
+                domain="compat",
+                app_id="",
+                shortcut="",
+                expect_topic="Tip X",
+                expect_section="",
+                suite="t",
+                split="holdout",
+            ),
+        ]
+        results = {
+            "keyword": [
+                mod.QueryResult(
+                    case_id="c1", hit_at_1=True, hit_at_3=True, fts_empty=False, embed_ms=0.0,
+                    top_names=["Card A", "Card B", "Card C"],
+                ),
+                mod.QueryResult(
+                    case_id="c2", hit_at_1=False, hit_at_3=False, fts_empty=True, embed_ms=0.0,
+                    top_names=[],
+                ),
+            ],
+            "rrf": [
+                mod.QueryResult(
+                    case_id="c1", hit_at_1=True, hit_at_3=True, fts_empty=False, embed_ms=12.0,
+                    top_names=["Card A", "Card D"],
+                ),
+                mod.QueryResult(
+                    case_id="c2", hit_at_1=False, hit_at_3=True, fts_empty=False, embed_ms=9.0,
+                    top_names=["Tip X", "Tip Y"],
+                ),
+            ],
+        }
+
+        table = mod._per_case_table(cases, results)
+
+        self.assertEqual(set(table.keys()), {"keyword", "rrf"})
+        self.assertEqual(len(table["keyword"]), 2)
+        self.assertEqual(len(table["rrf"]), 2)
+        self.assertEqual(
+            table["rrf"][0],
+            {
+                "case_id": "c1",
+                "split": "tune",
+                "domain": "strategy",
+                "hit_at_1": True,
+                "hit_at_3": True,
+                "fts_empty": False,
+                "top_names": ["Card A", "Card D"],
+            },
+        )
+        self.assertEqual(table["rrf"][1]["top_names"], ["Tip X", "Tip Y"])
+        self.assertEqual(table["keyword"][1]["top_names"], [])
+
+    # --- a second right answer ----------------------------------------------------------------
+
+    def test_list_expect_section_hits_on_its_second_name(self):
+        mod = self.mod
+        fixture = {
+            "queries": [
+                {
+                    "id": "X-2",
+                    "domain": "strategy",
+                    "query": "how do I open the vault door",
+                    "expect_section": ["Card A", "Card B"],
+                    "note": "two cards both answer this question fairly",
+                }
+            ]
+        }
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            path = Path(tmp_dir) / "fixture.json"
+            path.write_text(json.dumps(fixture), encoding="utf-8")
+            cases = mod._load_fixture(path, "test-suite")
+
+        self.assertEqual(len(cases), 1)
+        self.assertEqual(cases[0].expect_section, ["Card A", "Card B"])
+        self.assertTrue(mod._case_is_labeled(cases[0]))
+
+        card = mod.KnowledgeCard(
+            section_id=1,
+            game_id=1,
+            game_title="G",
+            section_type="section",
+            name="Card B",
+            card="text",
+            source_url="",
+            source_license="x",
+            source_version=None,
+            crawled_at=None,
+            trust_tier="fallback",
+        )
+        self.assertTrue(mod._card_matches(cases[0], card))
+
+    def test_list_expect_section_without_note_fails_to_load(self):
+        mod = self.mod
+        fixture = {
+            "queries": [
+                {
+                    "id": "X-3",
+                    "domain": "strategy",
+                    "query": "how do I open the vault door",
+                    "expect_section": ["Card A", "Card B"],
+                    "note": "",
+                }
+            ]
+        }
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            path = Path(tmp_dir) / "fixture.json"
+            path.write_text(json.dumps(fixture), encoding="utf-8")
+            with self.assertRaises(ValueError) as ctx:
+                mod._load_fixture(path, "test-suite")
+        self.assertIn("X-3", str(ctx.exception))
 
 
 if __name__ == "__main__":
