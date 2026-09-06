@@ -5188,7 +5188,7 @@
       "skill_level": "familiar",
       "input_style": "natural",
       "note": "Written blind 2026-09-06; the writer had not read any card.",
-      "expect_section": ""
+      "expect_section": "Tentacles"
     },
     {
       "id": "V2-T1-BMS-04",
@@ -5203,7 +5203,7 @@
       "skill_level": "familiar",
       "input_style": "terse",
       "note": "Written blind 2026-09-06; the writer had not read any card.",
-      "expect_section": ""
+      "expect_section": "HECU Marines"
     },
     {
       "id": "V2-T1-BMS-05",
@@ -5263,7 +5263,7 @@
       "skill_level": "beginner",
       "input_style": "natural",
       "note": "Written blind 2026-09-06; the writer had not read any card.",
-      "expect_section": ""
+      "expect_section": "Soul, Focus and spells"
     },
     {
       "id": "V2-T1-HK-03",
@@ -5280,7 +5280,7 @@
       "skill_level": "familiar",
       "input_style": "natural",
       "note": "Written blind 2026-09-06; the writer had not read any card. Withheld 'False Knight' -- described the fight instead so the row measures retrieval by behaviour rather than by name.",
-      "expect_section": ""
+      "expect_section": "False Knight"
     },
     {
       "id": "V2-T1-HK-04",
@@ -5295,7 +5295,7 @@
       "skill_level": "familiar",
       "input_style": "terse",
       "note": "Written blind 2026-09-06; the writer had not read any card.",
-      "expect_section": ""
+      "expect_section": "Movement abilities and where they are"
     },
     {
       "id": "V2-T1-HK-05",
@@ -5310,7 +5310,7 @@
       "skill_level": "beginner",
       "input_style": "natural",
       "note": "Written blind 2026-09-06; the writer had not read any card.",
-      "expect_section": ""
+      "expect_section": "Movement abilities and where they are"
     },
     {
       "id": "V2-T1-HK-06",
@@ -5340,7 +5340,7 @@
       "skill_level": "beginner",
       "input_style": "terse",
       "note": "Written blind 2026-09-06; the writer had not read any card.",
-      "expect_section": ""
+      "expect_section": "Starting out in DOOM Eternal: the combat loop"
     },
     {
       "id": "V2-T1-DOOME-02",
@@ -5355,7 +5355,7 @@
       "skill_level": "beginner",
       "input_style": "natural",
       "note": "Written blind 2026-09-06; the writer had not read any card.",
-      "expect_section": ""
+      "expect_section": "Starting out in DOOM Eternal: the combat loop"
     },
     {
       "id": "V2-T1-DOOME-03",
@@ -5372,7 +5372,7 @@
       "skill_level": "familiar",
       "input_style": "natural",
       "note": "Written blind 2026-09-06; the writer had not read any card. Withheld 'Marauder' -- described the enemy by its shield and axe instead of naming it.",
-      "expect_section": ""
+      "expect_section": "Marauder"
     },
     {
       "id": "V2-T1-DOOME-04",
@@ -5387,7 +5387,7 @@
       "skill_level": "familiar",
       "input_style": "terse",
       "note": "Written blind 2026-09-06; the writer had not read any card.",
-      "expect_section": ""
+      "expect_section": "Starting out in DOOM Eternal: the combat loop"
     },
     {
       "id": "V2-T1-DOOME-05",
@@ -5417,7 +5417,7 @@
       "skill_level": "",
       "input_style": "natural",
       "note": "Written blind 2026-09-06; the writer had not read any card. Written as the required 'no card likely' row -- niche or late-game content, included so the labeller can decide whether a card covers it.",
-      "expect_section": ""
+      "expect_section": "Slayer Gates, keys and the Fortress"
     },
     {
       "id": "V2-T1-DOOM64-01",
@@ -5464,7 +5464,7 @@
       "skill_level": "familiar",
       "input_style": "natural",
       "note": "Written blind 2026-09-06; the writer had not read any card. Withheld 'Mother Demon' -- described the fight generically instead of naming the boss.",
-      "expect_section": ""
+      "expect_section": "Mother Demon"
     },
     {
       "id": "V2-T1-DOOM64-04",
@@ -5481,7 +5481,7 @@
       "skill_level": "familiar",
       "input_style": "terse",
       "note": "Written blind 2026-09-06; the writer had not read any card. Withheld 'Unmaker' -- described the weapon instead of naming it.",
-      "expect_section": ""
+      "expect_section": "Unmaker and the Demon Keys"
     },
     {
       "id": "V2-T1-DOOM64-05",
@@ -5511,7 +5511,7 @@
       "skill_level": "",
       "input_style": "natural",
       "note": "Written blind 2026-09-06; the writer had not read any card. Written as the required 'no card likely' row -- niche or late-game content, included so the labeller can decide whether a card covers it.",
-      "expect_section": ""
+      "expect_section": "Starting out in Doom 64"
     },
     {
       "id": "V2-T1-GTAV-01",
@@ -5526,7 +5526,7 @@
       "skill_level": "beginner",
       "input_style": "terse",
       "note": "Written blind 2026-09-06; the writer had not read any card.",
-      "expect_section": ""
+      "expect_section": "Starting out in GTA V"
     },
     {
       "id": "V2-T1-GTAV-02",
@@ -5541,7 +5541,7 @@
       "skill_level": "beginner",
       "input_style": "natural",
       "note": "Written blind 2026-09-06; the writer had not read any card.",
-      "expect_section": ""
+      "expect_section": "Wanted levels and losing the cops"
     },
     {
       "id": "V2-T1-GTAV-03",
@@ -5556,7 +5556,7 @@
       "skill_level": "familiar",
       "input_style": "natural",
       "note": "Written blind 2026-09-06; the writer had not read any card.",
-      "expect_section": ""
+      "expect_section": "Heists: the approach and the crew"
     },
     {
       "id": "V2-T1-GTAV-04",
@@ -5603,7 +5603,7 @@
       "skill_level": "",
       "input_style": "natural",
       "note": "Written blind 2026-09-06; the writer had not read any card. Written as the required 'no card likely' row -- niche or late-game content, included so the labeller can decide whether a card covers it.",
-      "expect_section": ""
+      "expect_section": "Money: the stock market and the assassination jobs"
     },
     {
       "id": "V2-T1-GTAIV-01",
@@ -5618,7 +5618,7 @@
       "skill_level": "beginner",
       "input_style": "terse",
       "note": "Written blind 2026-09-06; the writer had not read any card.",
-      "expect_section": ""
+      "expect_section": "Wanted levels and the search circle"
     },
     {
       "id": "V2-T1-GTAIV-02",
@@ -5633,7 +5633,7 @@
       "skill_level": "beginner",
       "input_style": "natural",
       "note": "Written blind 2026-09-06; the writer had not read any card.",
-      "expect_section": ""
+      "expect_section": "Friends and their favours"
     },
     {
       "id": "V2-T1-GTAIV-03",
@@ -5663,7 +5663,7 @@
       "skill_level": "familiar",
       "input_style": "terse",
       "note": "Written blind 2026-09-06; the writer had not read any card.",
-      "expect_section": ""
+      "expect_section": "Weapons and where to buy them"
     },
     {
       "id": "V2-T1-GTAIV-05",
@@ -5708,7 +5708,7 @@
       "skill_level": "beginner",
       "input_style": "terse",
       "note": "Written blind 2026-09-06; the writer had not read any card.",
-      "expect_section": ""
+      "expect_section": "Starting out in Fallout: New Vegas"
     },
     {
       "id": "V2-T1-FNV-02",
@@ -5723,7 +5723,7 @@
       "skill_level": "beginner",
       "input_style": "natural",
       "note": "Written blind 2026-09-06; the writer had not read any card.",
-      "expect_section": ""
+      "expect_section": "Hardcore mode"
     },
     {
       "id": "V2-T1-FNV-03",
@@ -5740,7 +5740,7 @@
       "skill_level": "familiar",
       "input_style": "natural",
       "note": "Written blind 2026-09-06; the writer had not read any card. Withheld 'Deathclaw' -- described the creatures instead of naming them.",
-      "expect_section": ""
+      "expect_section": "Deathclaws and Quarry Junction"
     },
     {
       "id": "V2-T1-FNV-04",
@@ -5815,7 +5815,7 @@
       "skill_level": "beginner",
       "input_style": "natural",
       "note": "Written blind 2026-09-06; the writer had not read any card.",
-      "expect_section": ""
+      "expect_section": "Starting out in Super Mario 64"
     },
     {
       "id": "V2-T1-SM64-03",
@@ -5832,7 +5832,7 @@
       "skill_level": "familiar",
       "input_style": "natural",
       "note": "Written blind 2026-09-06; the writer had not read any card. Withheld 'Bowser' -- described the fight by its throw mechanic instead of naming him.",
-      "expect_section": ""
+      "expect_section": "Bowser: the three fights"
     },
     {
       "id": "V2-T1-SM64-04",
@@ -5847,7 +5847,7 @@
       "skill_level": "familiar",
       "input_style": "terse",
       "note": "Written blind 2026-09-06; the writer had not read any card.",
-      "expect_section": ""
+      "expect_section": "The three caps"
     },
     {
       "id": "V2-T1-SM64-05",
@@ -5892,7 +5892,7 @@
       "skill_level": "beginner",
       "input_style": "terse",
       "note": "Written blind 2026-09-06; the writer had not read any card.",
-      "expect_section": ""
+      "expect_section": "Starting out in Mario Kart 64"
     },
     {
       "id": "V2-T1-MK64-02",
@@ -5907,7 +5907,7 @@
       "skill_level": "beginner",
       "input_style": "natural",
       "note": "Written blind 2026-09-06; the writer had not read any card.",
-      "expect_section": ""
+      "expect_section": "Starting out in Mario Kart 64"
     },
     {
       "id": "V2-T1-MK64-03",
@@ -5922,7 +5922,7 @@
       "skill_level": "familiar",
       "input_style": "natural",
       "note": "Written blind 2026-09-06; the writer had not read any card.",
-      "expect_section": ""
+      "expect_section": "Items and who gets them"
     },
     {
       "id": "V2-T1-MK64-04",
@@ -5954,7 +5954,7 @@
       "skill_level": "beginner",
       "input_style": "natural",
       "note": "Written blind 2026-09-06; the writer had not read any card. Withheld 'Kalimari Desert' -- described the track by its hazard instead of naming it.",
-      "expect_section": ""
+      "expect_section": "Courses that fight back"
     },
     {
       "id": "V2-T1-MK64-06",
@@ -5969,7 +5969,7 @@
       "skill_level": "",
       "input_style": "natural",
       "note": "Written blind 2026-09-06; the writer had not read any card. Written as the required 'no card likely' row -- niche or late-game content, included so the labeller can decide whether a card covers it.",
-      "expect_section": ""
+      "expect_section": "Shortcuts worth learning"
     },
     {
       "id": "V2-T1-TTYD-01",
@@ -5984,7 +5984,7 @@
       "skill_level": "beginner",
       "input_style": "terse",
       "note": "Written blind 2026-09-06; the writer had not read any card.",
-      "expect_section": ""
+      "expect_section": "Starting out in Paper Mario: The Thousand-Year Door"
     },
     {
       "id": "V2-T1-TTYD-02",
@@ -5999,7 +5999,7 @@
       "skill_level": "beginner",
       "input_style": "natural",
       "note": "Written blind 2026-09-06; the writer had not read any card.",
-      "expect_section": ""
+      "expect_section": "Starting out in Paper Mario: The Thousand-Year Door"
     },
     {
       "id": "V2-T1-TTYD-03",
@@ -6029,7 +6029,7 @@
       "skill_level": "familiar",
       "input_style": "terse",
       "note": "Written blind 2026-09-06; the writer had not read any card.",
-      "expect_section": ""
+      "expect_section": "Badges and BP"
     },
     {
       "id": "V2-T1-TTYD-05",
@@ -6046,7 +6046,7 @@
       "skill_level": "beginner",
       "input_style": "natural",
       "note": "Written blind 2026-09-06; the writer had not read any card. Withheld 'Pit of 100 Trials' -- described the dungeon instead of naming it.",
-      "expect_section": ""
+      "expect_section": "Rogueport's side content: Shine Sprites, the Pit and the Trouble Center"
     },
     {
       "id": "V2-T1-TTYD-06",
@@ -6106,7 +6106,7 @@
       "skill_level": "familiar",
       "input_style": "natural",
       "note": "Written blind 2026-09-06; the writer had not read any card.",
-      "expect_section": ""
+      "expect_section": "Beady Long Legs, Man-at-Legs and Raging Long Legs"
     },
     {
       "id": "V2-T1-PIK2-04",
@@ -6121,7 +6121,7 @@
       "skill_level": "familiar",
       "input_style": "terse",
       "note": "Written blind 2026-09-06; the writer had not read any card.",
-      "expect_section": ""
+      "expect_section": "Purple and White Pikmin"
     },
     {
       "id": "V2-T1-PIK2-05",
@@ -6136,7 +6136,7 @@
       "skill_level": "beginner",
       "input_style": "natural",
       "note": "Written blind 2026-09-06; the writer had not read any card.",
-      "expect_section": ""
+      "expect_section": "Caves"
     },
     {
       "id": "V2-T1-PIK2-06",
@@ -6166,7 +6166,7 @@
       "skill_level": "beginner",
       "input_style": "terse",
       "note": "Written blind 2026-09-06; the writer had not read any card.",
-      "expect_section": ""
+      "expect_section": "Unlocking the other eleven"
     },
     {
       "id": "V2-T1-MELEE-02",
@@ -6181,7 +6181,7 @@
       "skill_level": "beginner",
       "input_style": "natural",
       "note": "Written blind 2026-09-06; the writer had not read any card.",
-      "expect_section": ""
+      "expect_section": "Starting out in Melee"
     },
     {
       "id": "V2-T1-MELEE-03",
@@ -6211,7 +6211,7 @@
       "skill_level": "familiar",
       "input_style": "terse",
       "note": "Written blind 2026-09-06; the writer had not read any card.",
-      "expect_section": ""
+      "expect_section": "The techniques the game never tells you about"
     },
     {
       "id": "V2-T1-MELEE-05",
@@ -6228,7 +6228,7 @@
       "skill_level": "beginner",
       "input_style": "natural",
       "note": "Written blind 2026-09-06; the writer had not read any card. Withheld 'Final Destination' -- described the stage instead of naming it.",
-      "expect_section": ""
+      "expect_section": "Edgeguarding and the ledge"
     },
     {
       "id": "V2-T1-MELEE-06",
