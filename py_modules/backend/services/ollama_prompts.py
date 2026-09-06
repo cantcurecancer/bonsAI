@@ -1091,6 +1091,7 @@ def build_system_prompt(
     strategy_checklist_state: Optional[dict] = None,
     reply_verbosity: str = "balanced",
     reply_language: str = "english",
+    knowledge_block_placement: str = "early",
 ) -> str:
     """Build the system message used for Ollama requests from game and attachment context.
 
@@ -1098,6 +1099,11 @@ def build_system_prompt(
     general-purpose clause → ``early_context_suffix`` (e.g. Proton excerpts) → topic/mode injects → TDP + JSON
     contract tail. Future RAG snippets belong immediately before the topic injects (same splice as
     ``early_context_suffix``, or an adjacent block in ``main.py``).
+
+    ``knowledge_block_placement``: ``"early"`` (default) keeps ``early_context_suffix`` where it has
+    always spliced in, right after identity. ``"late"`` moves it to immediately before the hardware
+    appendix tail instead, so on a prompt that overflows the model's window and loses its start,
+    the attached cards are the part nearest the end that survives (D46).
     """
     attachment_app_ids = sorted(
         {
@@ -1234,6 +1240,15 @@ def build_system_prompt(
                 "and drop any label the card does not have.\n"
             )
 
+    placement = knowledge_block_placement if knowledge_block_placement == "late" else "early"
+
+    def _assemble(head: str, rest: str, tail_block: str) -> str:
+        """Splice ``early_block`` (the Proton excerpt / knowledge-base cards) either right after
+        identity (today's order) or immediately before the tail, per ``placement``."""
+        if placement == "late":
+            return head + rest + early_block + tail_block
+        return head + early_block + rest + tail_block
+
     hardware_tdp_appendix = (
         "Hardware appendix (apply only when relevant): The Steam Deck APU supports a TDP range of 3-15 watts and "
         "GPU clock of 200-1600 MHz. Never suggest power values outside these hardware limits.\n\n"
@@ -1289,7 +1304,11 @@ def build_system_prompt(
                 app_id=app_id,
                 app_name=app_name,
             )
-        return dynamic_block + general_block + drg_glossary_block + early_block + middle + language_block + verbosity_block + tail
+        return _assemble(
+            dynamic_block + general_block + drg_glossary_block,
+            middle + language_block + verbosity_block,
+            tail,
+        )
 
     ollama_q = user_asks_ollama_bonsai_host_or_latency(question)
     model_policy_q = _user_asks_model_policy_tiers_explainer(question)
@@ -1411,7 +1430,11 @@ def build_system_prompt(
         character_roleplay_on=character_roleplay_on,
     )
     language_block = build_reply_language_block(reply_language)
-    return dynamic_block + general_block + drg_glossary_block + early_block + middle + language_block + verbosity_block + tail
+    return _assemble(
+        dynamic_block + general_block + drg_glossary_block,
+        middle + language_block + verbosity_block,
+        tail,
+    )
 
 
 def format_ai_response(

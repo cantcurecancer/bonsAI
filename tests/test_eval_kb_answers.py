@@ -14,6 +14,7 @@ Does not: Run the real Ask pipeline or touch Ollama — every test here is pure 
 import importlib.util
 import json
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -69,6 +70,8 @@ class EvalKbAnswersHarnessTests(unittest.TestCase):
             payload_bytes=None,
             prompt_eval_tokens=None,
             system_prompt_chars=None,
+            window_warning=False,
+            prompt_tokens_est=None,
         )
         base.update(overrides)
         return mod.SampleResult(**base)
@@ -86,6 +89,128 @@ class EvalKbAnswersHarnessTests(unittest.TestCase):
     def test_mean_prompt_chars_is_none_with_nothing_captured(self):
         samples = [self._sample(system_prompt_chars=None)]
         self.assertIsNone(self.mod.mean_prompt_chars(samples))
+
+    # --- commit 4: settings writer flags (--voice, --think) ------------------------------------
+
+    def test_write_harness_settings_default_run_has_no_voice_and_thinking_off(self):
+        mod = self.mod
+        with tempfile.TemporaryDirectory() as tmp:
+            settings_dir = Path(tmp)
+            path = mod.write_harness_settings(
+                settings_dir, corpus_dir=Path(tmp), corpus_version="1", model="m"
+            )
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        self.assertFalse(payload["ai_character_enabled"])
+        self.assertNotIn("ai_character_preset_id", payload)
+        self.assertEqual(payload["ask_think_effort"], "off")
+
+    def test_write_harness_settings_voice_enables_character_and_records_preset(self):
+        mod = self.mod
+        with tempfile.TemporaryDirectory() as tmp:
+            settings_dir = Path(tmp)
+            path = mod.write_harness_settings(
+                settings_dir,
+                corpus_dir=Path(tmp),
+                corpus_version="1",
+                model="m",
+                voice_preset_id="alig_ali_g",
+            )
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        self.assertTrue(payload["ai_character_enabled"])
+        self.assertEqual(payload["ai_character_preset_id"], "alig_ali_g")
+
+    def test_write_harness_settings_rejects_unknown_voice_preset(self):
+        mod = self.mod
+        with tempfile.TemporaryDirectory() as tmp:
+            with self.assertRaises(ValueError):
+                mod.write_harness_settings(
+                    Path(tmp),
+                    corpus_dir=Path(tmp),
+                    corpus_version="1",
+                    model="m",
+                    voice_preset_id="not_a_real_preset",
+                )
+
+    def test_write_harness_settings_think_effort_writes_ask_think_effort(self):
+        mod = self.mod
+        with tempfile.TemporaryDirectory() as tmp:
+            path = mod.write_harness_settings(
+                Path(tmp), corpus_dir=Path(tmp), corpus_version="1", model="m", think_effort="medium"
+            )
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        self.assertEqual(payload["ask_think_effort"], "medium")
+
+    # --- commit 4: kb-placement wrapper (same monkeypatch shape as the variant hook) -----------
+
+    def test_build_prompt_wrapper_forwards_kb_placement_kwarg(self):
+        mod = self.mod
+        calls = []
+
+        def fake_real_build(*a, **kw):
+            calls.append(kw)
+            return "PROMPT"
+
+        wrapped = mod._build_prompt_wrapper(fake_real_build, kb_placement="late", variant_fn=None)
+        out = wrapped(question="hi")
+        self.assertEqual(out, "PROMPT")
+        self.assertEqual(calls[-1].get("knowledge_block_placement"), "late")
+
+    def test_build_prompt_wrapper_early_does_not_pass_the_kwarg(self):
+        """Early is the shipped default; the wrapper should not force a kwarg the function
+        already defaults to, so a real_build that predates the parameter still works."""
+        mod = self.mod
+        calls = []
+
+        def fake_real_build(*a, **kw):
+            calls.append(kw)
+            return "PROMPT"
+
+        wrapped = mod._build_prompt_wrapper(fake_real_build, kb_placement="early", variant_fn=None)
+        wrapped(question="hi")
+        self.assertNotIn("knowledge_block_placement", calls[-1])
+
+    def test_build_prompt_wrapper_applies_variant_after_placement(self):
+        mod = self.mod
+
+        def fake_real_build(*a, **kw):
+            return "PROMPT with the fence sentence"
+
+        def drop_fence(text: str) -> str:
+            return text.replace(" with the fence sentence", "")
+
+        wrapped = mod._build_prompt_wrapper(fake_real_build, kb_placement="late", variant_fn=drop_fence)
+        self.assertEqual(wrapped(question="hi"), "PROMPT")
+
+    # --- commit 4: window-warning columns --------------------------------------------------------
+
+    def test_extract_window_warning_reads_the_estimate_out_of_the_log_line(self):
+        mod = self.mod
+        lines = [
+            "[INFO]: ask_ollama: POST http://x model=m payload_bytes=100 num_predict=800 think=False",
+            "[WARNING]: ask_ollama: prompt ~2800 tokens + num_predict 2112 = 4912 exceeds the "
+            "assumed 4096-token window by ~816; Ollama keeps the end of the prompt and drops its "
+            "start silently (identity, rules, cards). Trim what is attached (D46).",
+        ]
+        warned, tokens = mod._extract_window_warning(lines)
+        self.assertTrue(warned)
+        self.assertEqual(tokens, 2800)
+
+    def test_extract_window_warning_false_when_nothing_fired(self):
+        mod = self.mod
+        lines = ["[INFO]: ask_ollama: POST http://x model=m payload_bytes=100 num_predict=800 think=False"]
+        warned, tokens = mod._extract_window_warning(lines)
+        self.assertFalse(warned)
+        self.assertIsNone(tokens)
+
+    def test_window_warning_count_and_mean_prompt_tokens(self):
+        samples = [
+            self._sample(window_warning=True, prompt_tokens_est=2800),
+            self._sample(window_warning=False, prompt_tokens_est=1200),
+            self._sample(window_warning=True, prompt_tokens_est=3000),
+        ]
+        warned, total = self.mod.window_warning_count(samples)
+        self.assertEqual((warned, total), (2, 3))
+        self.assertAlmostEqual(self.mod.mean_prompt_tokens(samples), 2333.3, places=1)
 
 
 if __name__ == "__main__":

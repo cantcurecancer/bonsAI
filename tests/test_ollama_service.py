@@ -1252,6 +1252,67 @@ class OllamaServiceTests(unittest.TestCase):
         self.assertLess(i_id, i_mark)
         self.assertLess(i_mark, i_hw)
 
+    def _kb_prompt_with_mode_inject(self, *, knowledge_block_placement: str = "early") -> str:
+        """Speed-mode prompt with an attached card and a real mode inject + the hardware
+        appendix, so early vs late placement can be told apart by where the KB block lands."""
+
+        def lookup_app_name(_app_id: str) -> str:
+            return ""
+
+        def lookup_vdf(_path: str) -> dict:
+            return {}
+
+        return build_system_prompt(
+            question="Explain the model policy tiers",
+            app_id="2321470",
+            app_name="",
+            normalized_attachments=[],
+            prepared_images=[],
+            lookup_app_name=lookup_app_name,
+            lookup_screenshot_vdf_metadata=lookup_vdf,
+            ask_mode="speed",
+            early_context_suffix="--- Local knowledge base ---\nFocus the weak points.",
+            knowledge_block_placement=knowledge_block_placement,
+        )
+
+    def test_build_system_prompt_knowledge_block_placement_defaults_early(self):
+        """D46 follow-up: today's shipped order, still the default — cards splice in right
+        after identity, ahead of every mode inject and the hardware appendix."""
+        prompt = self._kb_prompt_with_mode_inject()
+        i_kb = prompt.index("KNOWLEDGE BASE (offline corpus)")
+        i_mode = prompt.index("MODEL POLICY TIERS (bonsAI)")
+        i_hw = prompt.index("Hardware appendix (apply only when relevant)")
+        self.assertLess(i_kb, i_mode)
+        self.assertLess(i_mode, i_hw)
+
+    def test_build_system_prompt_knowledge_block_placement_late_moves_after_mode_inject(self):
+        """Late placement puts the cards as close to the question as the system prompt allows —
+        after the mode injects, still ahead of the hardware appendix tail."""
+        prompt = self._kb_prompt_with_mode_inject(knowledge_block_placement="late")
+        i_kb = prompt.index("KNOWLEDGE BASE (offline corpus)")
+        i_mode = prompt.index("MODEL POLICY TIERS (bonsAI)")
+        i_hw = prompt.index("Hardware appendix (apply only when relevant)")
+        self.assertLess(i_mode, i_kb)
+        self.assertLess(i_kb, i_hw)
+
+    def test_build_system_prompt_knowledge_block_placement_late_strategy_mode(self):
+        """Same order rule on the strategy branch, which builds its tail differently."""
+        prompt = build_system_prompt(
+            question="Where do I go next?",
+            app_id="2321470",
+            app_name="",
+            normalized_attachments=[],
+            prepared_images=[],
+            lookup_app_name=lambda _app_id: "",
+            lookup_screenshot_vdf_metadata=lambda _path: {},
+            ask_mode="strategy",
+            early_context_suffix="--- Local knowledge base ---\nFocus the weak points.",
+            knowledge_block_placement="late",
+        )
+        i_kb = prompt.index("KNOWLEDGE BASE (offline corpus)")
+        i_mode = prompt.index("STRATEGY GUIDE MODE (active")
+        self.assertLess(i_mode, i_kb)
+
     def test_build_system_prompt_includes_model_policy_tiers_explainer(self):
         """Chip / paraphrases about Model policy get tier + FOSS vs open-weight vs proprietary guidance."""
 
