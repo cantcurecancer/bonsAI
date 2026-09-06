@@ -289,12 +289,6 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
   picker go with it. Three tests. Row **CLEAR-ALL-PREFIX-01**; **not run on the device**, because doing so destroys the
   maintainer's chats and settings and that was not asked for.
 
-- ★ `[reply]` **Retry on a reply that came back after a restart did nothing** — **VERIFY.** Found on the Deck 2026-09-06
-  while checking the character voice. Reopen the plugin after it has restarted and your last conversation is there, with a
-  live Retry badge on the question — pressing it sent no question at all, just a toast. The badge was asking the session
-  for the question instead of the turn it is drawn on, and a restart empties the session while the chat comes back from
-  disk. It now re-asks the turn it sits on. One test. Row **RETRY-RESTART-01**.
-
 - ★★ `[focus]` **A checklist the model got wrong was left in the reply as raw JSON**, its own D-pad stop that did nothing — **VERIFY.**
   Fixed 2026-08-28: a rejected checklist block is dropped, as a rejected branch block already was. Owed: one sighting on device of a
   reply where it happens. Row **STRAT-CHECKLIST-JSON-01**.
@@ -562,6 +556,10 @@ Everything shipped since v0.4.9 (2026-07-08), one line each, newest first. Detai
 [archive/roadmap-completed.md](archive/roadmap-completed.md), [archive/roadmap-bugs-fixed.md](archive/roadmap-bugs-fixed.md).
 
 **Verified on the Deck 2026-09-06 (reply block, second pass):**
+- ★ `[reply]` **Retry works on a reply that came back after a restart** — reopening the plugin after it restarts shows your
+  last conversation, and the Retry badge on it used to send nothing at all. It re-asks the question it is drawn on now.
+  Found and fixed 2026-09-06; confirmed on the Deck the same day, badge pressed with the controller, a real request logged
+  with that question. [Detail](archive/roadmap-bugs-fixed.md#retry-on-a-restored-reply-sent-nothing).
 - ★★ `[focus]` **The end of a long answer now stays clear of the Ask bar in both directions** — coming back up from the
   Show details line used to leave a third of the last part behind the bar, at the same spot every run. A scroll log on the
   Deck showed why: the plugin's "lift it clear" step was being ignored by the browser for anything inside the answer
