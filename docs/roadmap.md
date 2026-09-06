@@ -110,6 +110,11 @@ hook gives a gentle heads-up when a session starts work outside this.
   **Half of this moved on 2026-09-05:** Up from the feedback buttons now lands on the reply's last section rather than skipping
   to the bubble (measured, CHAT-REPLY-ENTRY-01). What is still open is the archived-header half — Up from the first archived
   header runs to the tab bar without the chat slot row ever taking the ring.
+- ★★ `[reply]` **An answer can end with a block of raw computer text where a power tip should be** — **OPEN, seen on the
+  Deck 2026-09-06.** In Speed mode with Deep Rock Galactic: Survivor running and the character voice on, a reply ended
+  with the literal line `{"tdp_watts": 5, "gpu_clock_mhz": 1200}` sitting in the words a person reads. The plugin's own
+  log shows it recognised this as a power suggestion, so it understood it correctly — it was just never removed from the
+  text shown on screen. Needs someone to trace where that block should be stripped before the reply reaches the screen.
 - ★★ `[reply]` **Token streaming reveals text in bursts while a game is running** — **ACCEPTED 2026-09-04 (D58 #4).** Measured 2026-08-28 with
   a game running: tokens arrive in bursts, and during a burst the overlay drops to 47 fps; between bursts it is a flat 60. Delivery
   is bursty, painting is not slow. The game's own frame rate is unmeasured. Accepted as a nice-to-have; reopen only if the game's own frame rate is measured
