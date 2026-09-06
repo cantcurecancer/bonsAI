@@ -247,6 +247,67 @@
         "open-world",
         "fps"
       ]
+    },
+    {
+      "game_id": 21,
+      "app_id": null,
+      "igdb_id": "emudeck-sm64-n64",
+      "canonical_title": "Super Mario 64",
+      "edition": "N64",
+      "platform": "Nintendo 64",
+      "genres": [
+        "platformer",
+        "3d-platformer"
+      ]
+    },
+    {
+      "game_id": 22,
+      "app_id": null,
+      "igdb_id": "emudeck-mk64-n64",
+      "canonical_title": "Mario Kart 64",
+      "edition": "N64",
+      "platform": "Nintendo 64",
+      "genres": [
+        "racing",
+        "kart"
+      ]
+    },
+    {
+      "game_id": 23,
+      "app_id": null,
+      "igdb_id": "emudeck-ttyd-gcn",
+      "canonical_title": "Paper Mario: The Thousand-Year Door",
+      "edition": "GCN",
+      "platform": "Nintendo GameCube",
+      "genres": [
+        "rpg",
+        "turn-based"
+      ]
+    },
+    {
+      "game_id": 24,
+      "app_id": null,
+      "igdb_id": "emudeck-pikmin2-gcn",
+      "canonical_title": "Pikmin 2",
+      "edition": "GCN",
+      "platform": "Nintendo GameCube",
+      "genres": [
+        "strategy",
+        "real-time-strategy"
+      ]
+    },
+    {
+      "game_id": 25,
+      "app_id": null,
+      "igdb_id": "emudeck-ssbm-gcn",
+      "canonical_title": "Super Smash Bros. Melee",
+      "edition": "GCN",
+      "platform": "Nintendo GameCube",
+      "genres": [
+        "fighting",
+        "party",
+        "versus"
+      ]
     }
   ],
   "aliases": [
@@ -481,6 +542,70 @@
     {
       "alias": "new vegas",
       "game_id": 20
+    },
+    {
+      "alias": "super mario 64",
+      "game_id": 21
+    },
+    {
+      "alias": "mario 64",
+      "game_id": 21
+    },
+    {
+      "alias": "sm64",
+      "game_id": 21
+    },
+    {
+      "alias": "mario kart 64",
+      "game_id": 22
+    },
+    {
+      "alias": "mk64",
+      "game_id": 22
+    },
+    {
+      "alias": "paper mario the thousand year door",
+      "game_id": 23
+    },
+    {
+      "alias": "paper mario ttyd",
+      "game_id": 23
+    },
+    {
+      "alias": "ttyd",
+      "game_id": 23
+    },
+    {
+      "alias": "thousand year door",
+      "game_id": 23
+    },
+    {
+      "alias": "paper mario 2",
+      "game_id": 23
+    },
+    {
+      "alias": "pikmin 2",
+      "game_id": 24
+    },
+    {
+      "alias": "pikmin2",
+      "game_id": 24
+    },
+    {
+      "alias": "super smash bros melee",
+      "game_id": 25
+    },
+    {
+      "alias": "smash melee",
+      "game_id": 25
+    },
+    {
+      "alias": "ssbm",
+      "game_id": 25
+    },
+    {
+      "alias": "melee",
+      "game_id": 25
     }
   ],
   "sections": [
@@ -2926,6 +3051,391 @@
       "card": "Seven snow globes are hidden in the base game and each is worth two thousand caps from Jane at the Lucky 38, where they go on a display stand; finding all seven is the achievement, selling them is optional. They sit on the rubble-topped grave in Goodsprings cemetery, the welcome desk of the Hoover Dam visitor centre, upstairs in the tower of the Old Mormon Fort, the reception desk of the Jacobstown lodge, the table inside the Boomers' museum at Nellis, the counter of the Lucky 38 cocktail lounge, and one more at the test site. The blue-star Sunset Sarsaparilla caps are a different hunt: one bottle in twenty holds one, over a hundred sit in fixed spots, and fifty of them buy the legendary prize at the company headquarters, though collectors, as Malcolm Holmes warns you, will kill for them.",
       "source_url": "https://fallout.fandom.com/wiki/Snow_globe_(Fallout:_New_Vegas)",
       "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 234,
+      "game_id": 21,
+      "section_type": "mechanic",
+      "name": "Starting out in Super Mario 64",
+      "card": "The paintings in the castle are the courses: walk up and the surface ripples, jump in and you are there. Each course holds several missions, one star each, and stars open the castle's doors. Health is the eight-wedge power meter, refilled by coins, spinning hearts, or surfacing in water. The moves are the game: run and jump three times for the triple jump, run then crouch and jump for the long jump, jump into a wall and jump again for the wall kick, crouch and jump for the backflip, turn around sharply and jump for the side flip, and press crouch in the air to ground-pound. Caps last sixty seconds and only appear in courses once you have hit their switches. A hundred coins in any course is an extra star, and the rabbit in the basement gives one when caught at fifteen stars and again at fifty.",
+      "source_url": "https://www.mariowiki.com/Super_Mario_64",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 235,
+      "game_id": 21,
+      "section_type": "boss",
+      "name": "Bowser: the three fights",
+      "card": "The first fight opens at eight stars. Bowser breathes a stream of fire that leaves burning sparks, jumps to shake the ground, which stuns you unless you are in the air, and claws if you stand close. Get behind him, grab his tail, spin the stick to build speed, and throw him into one of the four spiked bombs around the edge; a miss and he climbs back on. The second fight, after boarding the sub, adds a stage that tilts whenever he lands, single fireballs, and teleporting. The final fight at seventy stars has five bombs, and he must be thrown three times: his slams now send shockwaves along the floor, and he breathes fire upward that rains back down. The keys from the first two fights open the locked doors.",
+      "source_url": "https://www.mariowiki.com/Bowser_in_the_Dark_World",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 236,
+      "game_id": 21,
+      "section_type": "boss",
+      "name": "King Bob-omb and the Whomp King",
+      "card": "King Bob-omb waits on the summit of Bob-omb Battlefield. He grabs and throws you if you walk into his hands, so circle behind him, pick him up and throw him; three throws win. Throw him off the mountain and he calls it cheating and the fight restarts, and he can hurt you on contact in the moment he gets up. The Whomp King on top of Whomp's Fortress attacks by falling flat on his face, which is your opening: ground-pound his back while he is down, three times, and the star is yours and a tower rises on the fortress.",
+      "source_url": "https://www.mariowiki.com/King_Bob-omb",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 237,
+      "game_id": 21,
+      "section_type": "boss",
+      "name": "Eyerok, the Big Bully and the Wiggler",
+      "card": "Eyerok is the pair of stone hands in the pyramid at Shifting Sand Land. Each hand slams or shoves on its own and only one opens its eye at a time; punch, kick or dive into the open eye, three hits destroys that hand, and both must go for the star. A hit from him costs three wedges. The Big Bully in Lethal Lava Land cannot hurt you and you cannot hurt him: he shoves, and you win by punching him off the platform into the lava. The Wiggler lives inside Tiny-Huge Island's mountain: ground-pound the pool on the tiny side to flood his house, then go in on the huge side and jump on his head.",
+      "source_url": "https://www.mariowiki.com/Eyerok",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 238,
+      "game_id": 21,
+      "section_type": "item",
+      "name": "The three caps",
+      "card": "Each cap needs its switch pressed in a hidden course before its blocks turn solid anywhere else. The red Wing Cap, from the tower at ten stars, lets you fly from a triple jump or a cannon shot, slowly losing height. The green Metal Cap makes you invulnerable and very heavy: you sink and walk along the bottom, never need to breathe, and cannot swim. The blue Vanish Cap makes you a ghost for a short time, walking through enemies and metal fences. All caps run out after a minute, and finishing a mission drops the form. Dire, Dire Docks is the one place you can wear metal and vanish at once.",
+      "source_url": "https://www.mariowiki.com/Metal_Cap",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 239,
+      "game_id": 21,
+      "section_type": "mechanic",
+      "name": "Stars that are easy to miss",
+      "card": "Catch the yellow rabbit in the castle basement when you have fifteen stars, and again at fifty, and he hands over a star each time; he never comes back after the second. Every course also has a star for collecting a hundred coins in one visit, which is where most of the total comes from. The wing-cap tower's own star is its eight red coins, in pairs at the compass points, and you will have to land and relaunch because you lose height as you fly. Tick Tock Clock runs at whatever speed the clock hands showed when you jumped in, so choose your moment at the painting to freeze or slow the machinery.",
+      "source_url": "https://www.mariowiki.com/MIPS",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 240,
+      "game_id": 22,
+      "section_type": "mechanic",
+      "name": "Starting out in Mario Kart 64",
+      "card": "Hold the gas as the lights change from red to blue for a rocket start; too early and you spin your tyres and leave slower than everyone. Hop and hold to drift, then wiggle the stick side to side while sliding: the smoke goes white, yellow, then orange, and letting go on orange gives a mini-turbo. Gas and brake together spins the kart on the spot. If you drive straight into a banana, a well-timed tap of the brake saves the spin and shows a musical note. Item boxes hand out stronger items the further back you are. Grand Prix is four cups of four races at 50, 100 and 150cc, scoring nine, six, three and one point for the top four; the Extra class runs the courses mirrored. Battle mode gives each player three balloons, and time-trial ghosts only save if you never pause, crash, reverse or fall.",
+      "source_url": "https://www.mariowiki.com/Mario_Kart_64",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 241,
+      "game_id": 22,
+      "section_type": "item",
+      "name": "Items and who gets them",
+      "card": "Your place decides your items. The blue Spiny Shell only comes to fourth place or lower: it runs along the ground with a siren, homes on the leader, flips anyone in its path, and can be held behind your kart to block other shells before you fire it. Lightning goes to second through eighth: everyone else shrinks, cannot use mushrooms, stars or Boos, and can be flattened if you drive over them. Fake Item Boxes belong to first and second: an upside-down question mark, they launch whoever hits them and block incoming shells. Triple red shells orbit you, fire one at a time, and shield you meanwhile. Bananas dropped in a trail take out the whole line if a kart clips the first.",
+      "source_url": "https://www.mariowiki.com/Spiny_Shell_(blue)",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 242,
+      "game_id": 22,
+      "section_type": "area",
+      "name": "Shortcuts worth learning",
+      "card": "On Rainbow Road, hop over the left railing right at the start to land on the loop around the big star and skip a huge stretch. On Royal Raceway the dash ramp before the second row of item boxes cuts a corner; a mushroom does it, or a left drift with a full mini-turbo released into a hop. In Yoshi Valley, hop left where the routes rejoin to skip a bend, and use a mushroom across the last off-road patch, drifting into the fence for a bigger boost onto the final straight. In Kalimari Desert you can follow the train tracks into the tunnel and turn around with a star to skip most of a lap, but never on the final lap. Nearly every corner on Royal Raceway has a dirt patch a mushroom crosses.",
+      "source_url": "https://www.mariowiki.com/Rainbow_Road_(Mario_Kart_64)",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 243,
+      "game_id": 22,
+      "section_type": "area",
+      "name": "Courses that fight back",
+      "card": "Toad's Turnpike is the third longest track and a figure of eight full of traffic: cars, tankers, box trucks and school buses that never stop. Kalimari Desert crosses the railway twice, so listen for the train. Choco Mountain drops boulders on the left U-turn. Yoshi Valley splits into six routes; the leftmost is the simplest but has no railings. Frappe Snowland has a river jump on the straight and a field of snowmen that stop a kart dead. Rainbow Road is long, unwalled in places, and the Chain Chomps on it are the reason to learn the start shortcut.",
+      "source_url": "https://www.mariowiki.com/Toad%27s_Turnpike",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 244,
+      "game_id": 23,
+      "section_type": "mechanic",
+      "name": "Starting out in Paper Mario: The Thousand-Year Door",
+      "card": "Battles are turn-based on a theatre stage: Mario and one partner each act every turn, and you can swap who goes first, which also puts that one in front. Hit an enemy in the field to open with a free first strike; they can do the same to you. Every attack has an action command, a button press at the right moment for extra damage, and every enemy attack can be guarded with A as it lands for one less damage, or superguarded with B in a tiny window for no damage and a point back. Levelling up every hundred star points gives a choice: five HP, five FP or three badge points. The boots and hammer upgrades are story finds you cannot skip, and the black chests hand out paper tricks like the plane and the sideways squeeze.",
+      "source_url": "https://www.mariowiki.com/Paper_Mario:_The_Thousand-Year_Door",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 245,
+      "game_id": 23,
+      "section_type": "mechanic",
+      "name": "Star Power, Stylish moves and the crowd",
+      "card": "The audience is a resource. Every jump, hammer and partner attack earns Star Power for the Crystal Star moves, and it comes faster when you land the action command or add a Stylish move, an extra press at the right beat of the attack animation that makes the crowd cheer; Stylish works only on normal and badge attacks, not items or counters. Appeal to gain Star Power directly while anyone is awake in the seats. Your star rank sets how many can attend, rising at levels ten, twenty and thirty. The crowd is not always friendly: some throw things at you or heckle, and Hooktail, Cortez and the Shadow Queen eat audience members to heal, so clear them first.",
+      "source_url": "https://www.mariowiki.com/Star_Power_(Paper_Mario_series)",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 246,
+      "game_id": 23,
+      "section_type": "mechanic",
+      "name": "Badges and BP",
+      "card": "Badges are the build. You find them in red question blocks, take them from enemies, buy them at the Lovely Howz in Rogueport, from Charlieton at steep prices, at the Pianta Parlor for tokens, or from Dazzle underground for Star Pieces. Each costs badge points to wear, so BP at level-up is often the best pick. P badges give the same effect to your partner. Wearing two copies of an attack badge doubles its FP cost but raises its power. The ones people build around: Power Bounce, repeated jumps until you miss a command; Multibounce, one hit on every enemy; Quake Hammer for everything on the ground; and Power Rush, Close Call and Last Stand, which only work while you are in Danger at five HP or less, plus Mega Rush at exactly one, which is why some players have Chet Rippo lower their maximum HP on purpose.",
+      "source_url": "https://www.mariowiki.com/Badge",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 247,
+      "game_id": 23,
+      "section_type": "boss",
+      "name": "Hooktail",
+      "card": "The dragon at the top of the castle in chapter one, guarding the first Crystal Star: twenty HP, one point of defence, five attack, and a trick where she plays dead and comes back with ten more. She eats members of the audience to heal, so keep the crowd thin, and her bite cannot be blocked at all, so keep your own HP topped up rather than hoping to guard. Somewhere in her castle is a badge that changes your attack sound to a cricket's chirp, and the thief who mentions it is right: the noise makes her flinch. Koops joins you for this fight; his shell toss hits her first before you commit Mario. Fire hurts her badly.",
+      "source_url": "https://www.mariowiki.com/Hooktail",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 248,
+      "game_id": 23,
+      "section_type": "boss",
+      "name": "Rawk Hawk, Magnus von Grapple and Cortez",
+      "card": "Rawk Hawk, the Glitz Pit champion in chapter three, fights from the air: a flipping jump, a flying elbow, a slide kick on the ground, and a ceiling hang that shakes down a rain of objects for one damage each, which Koops's shell ignores. Magnus von Grapple, the robot at the end of chapter two, stomps one party member for two base damage every turn until it drops to twenty HP, then fires its fists off as separate targets. Cortez, the pirate skeleton under Keelhaul Key in chapter five, comes in three forms, and beating him settles nothing because he is already dead; the fight ends when he understands you only want the Crystal Star, not his treasure.",
+      "source_url": "https://www.mariowiki.com/Rawk_Hawk",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 249,
+      "game_id": 23,
+      "section_type": "area",
+      "name": "Rogueport's side content: Shine Sprites, the Pit and the Trouble Center",
+      "card": "Forty-two Shine Sprites are hidden in blocks across the world, and Merlon next to Professor Frankly trades three of them for a partner rank; each of the seven partners can go up twice, and Merluvlee the fortune teller will point you at the ones you missed. The Trouble Center on the east side of town is a bulletin board of odd jobs that pay coins, items and badges. Under the town lies the Pit of a Hundred Trials: a hundred floors of fights with Charlieton selling supplies part-way down and Bonetail at the bottom, whose breaths freeze, confuse, shrink or sleep you unless you guard them or raise Shell Shield; she coughs up the Return Postage badge. Zess T. in the square cooks any two ingredients into something better.",
+      "source_url": "https://www.mariowiki.com/Shine_Sprite",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 250,
+      "game_id": 24,
+      "section_type": "mechanic",
+      "name": "Starting out in Pikmin 2",
+      "card": "There is no day limit this time: the goal is ten thousand Pokos of treasure to clear the company's debt, and treasures and enemy bodies both pay. Two captains share the work, and the button that used to pause now swaps between them, so one can carry while the other fights. The day still ends at sunset, and any Pikmin not with a captain or back at the Onion is eaten when the night creatures wake, so watch the sun and call everyone in early. The colours: red for fire and the hardest hitters, yellow thrown highest and safe from electricity, blue the only ones for water, purple heavy and strong, white fast, poison-proof and able to see treasure buried underground. Bulbmin, found only in certain caves, shrug off every hazard but cannot leave with you.",
+      "source_url": "https://www.pikminwiki.com/Pikmin_2",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 251,
+      "game_id": 24,
+      "section_type": "mechanic",
+      "name": "Caves",
+      "card": "Most of the treasure is underground. A cave is a stack of small floors, each laid out fresh from random pieces every time you enter, with a hole down at the end and usually a boss on the last floor and a geyser home afterwards. There is no Onion below, so the squad you walk in with is the squad you have; nothing you collect counts until you come back up, and leaving early forfeits the run. The day's clock stops while you are down there, which makes a cave the right place to spend a late afternoon. Read the hazard icons at the entrance and bring the colours that match, and bring purples for the fights.",
+      "source_url": "https://www.pikminwiki.com/Cave",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 252,
+      "game_id": 24,
+      "section_type": "mechanic",
+      "name": "Purple and White Pikmin",
+      "card": "Purples weigh as much as ten Pikmin, so one lifts what ten would, and some treasures, including the map pieces that open new areas at over a hundred weight, are impossible without them. Their landing on an enemy stuns it, they hit hard, and blowhog gusts do not move them, but they are slow and fly low when thrown. Whites are the fastest Pikmin, immune to poison and able to dig up treasure that is completely buried, which no other colour can find; anything that eats one is poisoned. Both come only from candypop buds in caves, in limited numbers, so treat them as tools rather than an army and keep them out of the front line.",
+      "source_url": "https://www.pikminwiki.com/Purple_Pikmin",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 253,
+      "game_id": 24,
+      "section_type": "item",
+      "name": "Sprays and nectar",
+      "card": "The purple ultra-bitter spray, ten purple berries from a Burgeoning Spiderwort or a found dose, turns every enemy near you to stone for about nine seconds, bomb rocks included, and is the answer to anything you cannot outfight; the purple-berry plants are rarer than the red ones, so hoard it. The red ultra-spicy spray, ten red berries, sends your Pikmin into a frenzy, faster and stronger, and flowers them. Nectar does the flowering on its own: drops from eggs, rubble, nectar weed and some insects, and a flowered Pikmin runs and carries noticeably faster than a leaf, so let a new batch drink before a long carry.",
+      "source_url": "https://www.pikminwiki.com/Ultra-bitter_spray",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 254,
+      "game_id": 24,
+      "section_type": "boss",
+      "name": "Empress Bulblax and the Snagrets",
+      "card": "The Empress Bulblax is a bulborb the size of the room. In the Hole of Heroes she is asleep when you arrive, which is your sneak attack; in Frontier Cavern she is awake and pumping out larvae without end, so kill the mother, not the children. She rolls from wall to wall, so keep the squad off the sides and throw purples at her head in the pauses. The Burrowing Snagret hides under the ground until you are close, then rises to peck; it often gets stuck half out, and a stuck snagret is free damage, again best done with purples. Its big cousin the Pileated Snagret pulls fully out and walks after you.",
+      "source_url": "https://www.pikminwiki.com/Empress_Bulblax",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 255,
+      "game_id": 24,
+      "section_type": "boss",
+      "name": "Beady Long Legs, Man-at-Legs and Raging Long Legs",
+      "card": "The arachnorbs are all legs and one body, and only the body counts. The Beady Long Legs falls from the sky when you enter its ground and stomps about, crushing anything under a foot; it stops to lower its body to rest, and that is when you throw yellows high onto it, then whistle them back before it shakes. The Man-at-Legs is different: half-buried, it only wakes when touched, it never crushes, and instead a gun unfolds that tracks the captain you are controlling, so keep the squad in cover behind the pillars, swap captains to draw fire, and attack the body when it settles. The Raging Long Legs in the Hole of Heroes has huge feet but leaves room underneath its belly if you stay close.",
+      "source_url": "https://www.pikminwiki.com/Man-at-Legs",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 256,
+      "game_id": 24,
+      "section_type": "boss",
+      "name": "The Waterwraith and the Submerged Castle",
+      "card": "The castle's mouth is under water, so only blues may enter, and inside are all four hazards; take about sixty blues if you also want the Bulbmin living there. On each of the first four floors, five minutes after you arrive, the Waterwraith drops in on its stone rollers and hunts you, crushing Pikmin and other creatures alike, and nothing hurts it but purples or a petrifying spray. So each floor is a race: find the hole down before the clock, and grab treasure only if it is on the way. On the last floor it appears when you enter its arena, and there you fight it, purples first to knock it off its rollers.",
+      "source_url": "https://www.pikminwiki.com/Submerged_Castle",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 257,
+      "game_id": 24,
+      "section_type": "boss",
+      "name": "Titan Dweevil",
+      "card": "The final boss, at the bottom of the Dream Den, carries four weapons that are the four hazards: a flame cannon, an electric shocker, a water pump and a poison bomb, and each becomes a treasure when it falls. It is tall, so throw yellows to reach the weapons, and pull them back the moment a weapon starts up; captains sidestep the hazards. Do not let Pikmin swarm its feet, they go idle there and die. Once the weapons are gone the body is open. It stops to rest after two or three rounds of stomping, and it only reacts to attacks once a stomping cycle has finished.",
+      "source_url": "https://www.pikminwiki.com/Titan_Dweevil",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 258,
+      "game_id": 24,
+      "section_type": "boss",
+      "name": "Segmented Crawbster",
+      "card": "The boss of the Cavern of Chaos, on floor ten. It drops from above when something walks under it, then rolls itself into a ball and charges the captain you are controlling, not the Pikmin, homing all the way. You cannot hurt it while it rolls; you make it hurt itself: stand with a wall behind you and step aside at the last moment so it slams in, then attack the soft belly while it is flipped. Boulders fall as the fight goes on and sometimes eggs with them. Swap captains to pull its charge where you want it.",
+      "source_url": "https://www.pikminwiki.com/Segmented_Crawbster",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 259,
+      "game_id": 24,
+      "section_type": "enemy",
+      "name": "The enemies that empty a squad",
+      "card": "Spotty Bulbears never sleep in this game: they patrol with dwarf bulbears trailing behind, and they heal if you leave them, so it is all or nothing, and purples from the side. Gatling Groinks fire mortars from range, some from towers you cannot reach, and a dead one left lying gets back up. The Careening Dirigibug floats over and drops a bomb rock at your feet; kill it in the two seconds it takes to produce one or step back. Anode Beetles are harmless alone and lethal in pairs, when an arc jumps between them that only yellows survive. Volatile Dweevils drop from the ceiling near treasure and explode after a short chase. The Bumbling Snitchbug picks up a captain and scatters the squad, so keep moving under it.",
+      "source_url": "https://www.pikminwiki.com/Spotty_Bulbear",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 260,
+      "game_id": 25,
+      "section_type": "mechanic",
+      "name": "Starting out in Melee",
+      "card": "Twenty-five fighters, fourteen there from the start and eleven to unlock, on twenty-nine stages. You do not drain a health bar: damage climbs as a percentage, and the higher it goes the further a hit sends you, so a stock is lost by being launched past the edge of the screen, not by running out of health. Everything is faster than the first game: less freeze on hits, higher gravity, faster falls, and momentum carried out of a dash into a jump. Smash attacks charge for up to a second for forty percent more power. Shield with the shoulder buttons, and press them only part way for a bigger, longer-lasting but weaker shield. Sudden Death after a tie restarts at three hundred percent, where nearly anything is a knockout.",
+      "source_url": "https://www.ssbwiki.com/Super_Smash_Bros._Melee",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 261,
+      "game_id": 25,
+      "section_type": "mechanic",
+      "name": "The techniques the game never tells you about",
+      "card": "Melee's depth is in inputs it never mentions. L-cancelling: press a shoulder button or Z within seven frames of landing during an air attack and the landing animation plays twice as fast, halving your lag. Wavedashing: air-dodge diagonally into the ground and you slide a short way while able to do any grounded action, which is how spacing and shield pressure work at a high level; Luigi slides furthest, then the Ice Climbers and Mewtwo. Dash dancing flicks back and forth to bait a commitment. Short hop, done by releasing jump during the crouch before it, keeps aerials low and fast. Fast falling, a tap down while falling, ends a jump early and beats an opponent's timing.",
+      "source_url": "https://www.ssbwiki.com/L-canceling",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 262,
+      "game_id": 25,
+      "section_type": "mechanic",
+      "name": "Surviving hits: DI, SDI and teching",
+      "card": "You are not helpless when hit. Hold the stick during the freeze frames before you are launched and you shift your angle by up to about eighteen degrees; hold perpendicular to the knockback to live longer, or along it to fall out of a combo. Tap the stick during the freeze itself and you slide a small distance each tap, which is how you escape multi-hit moves; this is a separate trick from the first. When you are about to hit the ground, a wall, or a ceiling while tumbling, press a shoulder button within twenty frames to tech: you bounce up briefly untouchable instead of lying there, and a tech left or right rolls you away. Teching a wall while falling off the side is how you survive being spiked, and holding jump as you do it wall-jumps you back.",
+      "source_url": "https://www.ssbwiki.com/Directional_influence",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 263,
+      "game_id": 25,
+      "section_type": "mechanic",
+      "name": "Edgeguarding and the ledge",
+      "card": "Most stocks are taken off the stage, not on it. When someone is knocked off, you go out or wait for them: hit them again, or take the ledge yourself so they cannot grab it, which forces them onto the stage where you are waiting. Grabbing the ledge gives you invincible frames, and the ledge dash, dropping off then jumping and air-dodging back on at the right moment, keeps some of those frames while skipping the slow climb animation. Meteor smashes hit straight down and are the cleanest kills off stage; you can cancel one by jumping or using your up special eight frames after the hit stops, which is your escape when it happens to you.",
+      "source_url": "https://www.ssbwiki.com/Edgeguarding",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 264,
+      "game_id": 25,
+      "section_type": "mechanic",
+      "name": "Shields, grabs and punishing",
+      "card": "Blocking is not passive. Shields stop everything but grabs and a few unblockable moves, and a light press makes a bigger shield that resists being poked through but leaves you worse off afterwards. The standard punish is the shield grab, pressing attack while shielding, which skips the delay of dropping the shield and catches an opponent stuck in the end of their move. Out of shield you can also jump, roll, wavedash, up smash or use an aerial, and how good those are decides how safe an attack is against you. Grabs lead into throws, and a few characters chain them: Sheik's down throw regrabs most of the cast from zero, and the Ice Climbers can hold you in place indefinitely with the wobble, which many tournaments ban.",
+      "source_url": "https://www.ssbwiki.com/Out_of_shield",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 265,
+      "game_id": 25,
+      "section_type": "enemy",
+      "name": "Fox and Falco",
+      "card": "The two Star Fox characters sit at the top of the game. Fox is the fastest lightweight in it: second fastest dash, third fastest fall, three-frame jump, and a shield reflector that comes out instantly and knocks people sideways off the stage. His speed is also his weakness, since falling fast means being combo'd hard. Falco is his slower, heavier twin with a different feel: his laser makes people flinch and cancels when he lands, which shuts down approaches, and his down air spikes straight down. The Falco pillar, reflector into a down air spike into more, is one of the best shield-wearing routines in the game. Both die early because they fall so fast.",
+      "source_url": "https://www.ssbwiki.com/Fox_(SSBM)",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 266,
+      "game_id": 25,
+      "section_type": "enemy",
+      "name": "Marth, Sheik, Jigglypuff and Peach",
+      "card": "Marth kills with the tip of his sword and nothing else; spacing is the whole character, and the Ken combo, a forward air then a jump and a down air spike, is the classic finish and needs the first hit placed exactly. Sheik is fast, combos easily, and chain-throws much of the cast from zero, though only a few of her moves actually kill. Jigglypuff is slow on the ground and floats in the air; the wall of pain, back air after back air while drifting out with them, carries people off the stage, and Rest hits on the first frame for twenty-eight percent and kills under fifteen, but leaves it asleep and helpless if it misses. Peach fights almost entirely in the air, with a float, a down smash that shreds, and turnips she pulls from the ground.",
+      "source_url": "https://www.ssbwiki.com/Marth_(SSBM)",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 267,
+      "game_id": 25,
+      "section_type": "mechanic",
+      "name": "Unlocking the other eleven",
+      "card": "Every hidden character has to be beaten in a fight before joining, and each has two ways to summon that fight. Jigglypuff, Dr. Mario, Falco, Young Link, Pichu, Luigi, Ganondorf, Mewtwo, Roy, Marth and Mr. Game and Watch are the eleven. Some come from playing modes: Jigglypuff after any single-player mode, Marth after using all fourteen starters in any mode, Dr. Mario after Classic as Mario with no continues, Roy the same as Marth, Young Link after ten characters have cleared a mode, Falco after the hundred-man melee. Others come from events: Ganondorf from event twenty-nine, Pichu from event thirty-seven. Luigi wants the first Adventure stage finished with a two as the second digit of the seconds. Mewtwo wants twenty hours of versus play, less with more players, and Mr. Game and Watch wants every other character to clear a mode.",
+      "source_url": "https://www.ssbwiki.com/Unlockable_character",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 268,
+      "game_id": 25,
+      "section_type": "mechanic",
+      "name": "The single-player modes and what they unlock",
+      "card": "Classic is eleven fights ending with Master Hand, who has a health bar rather than a percentage; take half of it inside five minutes and fifty seconds on Normal or higher and Crazy Hand joins him. Adventure is the longer one, with side-scrolling stages between the fights, and if you reach Bowser on Normal or higher within eighteen minutes he comes back as Giga Bowser, worth a hundred thousand points and his own trophy if you beat him without continuing. All-Star opens once every fighter is unlocked and sends you through all of them with a small supply of healing between rounds. Clearing it unlocks Battlefield; clearing all fifty-one event matches unlocks Final Destination. Those two flat stages are what tournaments play on.",
+      "source_url": "https://www.ssbwiki.com/Adventure_Mode",
+      "source_license": "CC-BY-SA-4.0",
       "source_version": null,
       "crawled_at": "2026-09-05"
     }
