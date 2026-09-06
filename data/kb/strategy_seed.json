@@ -234,6 +234,19 @@
         "action-adventure",
         "open-world"
       ]
+    },
+    {
+      "game_id": 20,
+      "app_id": "22380",
+      "igdb_id": null,
+      "canonical_title": "Fallout: New Vegas",
+      "edition": null,
+      "platform": "Steam",
+      "genres": [
+        "rpg",
+        "open-world",
+        "fps"
+      ]
     }
   ],
   "aliases": [
@@ -452,6 +465,22 @@
     {
       "alias": "gtaiv",
       "game_id": 19
+    },
+    {
+      "alias": "fallout new vegas",
+      "game_id": 20
+    },
+    {
+      "alias": "fallout nv",
+      "game_id": 20
+    },
+    {
+      "alias": "fnv",
+      "game_id": 20
+    },
+    {
+      "alias": "new vegas",
+      "game_id": 20
     }
   ],
   "sections": [
@@ -2775,6 +2804,127 @@
       "name": "Liberty City's boroughs and when they open",
       "card": "Four boroughs of the real New York plus New Jersey, each with a different feel: Broker is Brooklyn and where you start, Dukes is Queens on the same island, Bohan is the Bronx across the water, Algonquin is Manhattan with the tall buildings and most of the money, and the State of Alderney is New Jersey, industrial and suburban. The bridges are closed by the police at first: Algonquin opens after the mission Blow Your Cover and Alderney after Three Leaf Clover. Crossing a closed bridge earns an instant six-star wanted level, so if the map shows a closed island, the story has to get there first.",
       "source_url": "https://gta.fandom.com/wiki/Liberty_City_(HD_Universe)",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 223,
+      "game_id": 20,
+      "section_type": "mechanic",
+      "name": "Starting out in Fallout: New Vegas",
+      "card": "Doc Mitchell patches you up in Goodsprings, sets your stats with his tester, and hands over a Pip-Boy and a gun or two based on the skills you tagged. The town is the tutorial: Sunny Smiles teaches shooting and campfire cooking, and the little quests around it show every kind of skill check in the game, all of them fixed thresholds rather than dice rolls, so a Speech of 25 either works or it does not. The road north out of town is closed by deathclaws at the quarry past Sloan; the game means you to go south through Primm, Nipton and Novac and round the long way. Doc Mitchell's containers are safe storage, and once the town is cleared nothing hostile respawns inside it. You choose three tag skills for fifteen points each, get ten skill points plus half your Intelligence per level, a perk every two levels, and a cap of thirty, or fifty with the four add-ons.",
+      "source_url": "https://fallout.fandom.com/wiki/Goodsprings",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 224,
+      "game_id": 20,
+      "section_type": "mechanic",
+      "name": "Hardcore mode",
+      "card": "Switch it on from the options at any time, and off again the same way; finishing the game with it on earns the achievement. Stimpaks and RadAway heal over time instead of instantly, a doctor's bag only partly mends a crippled limb, and otherwise only a doctor, certain beds, a healing poultice or Hydra will, so sleeping in an owned bed for the Well Rested bonus becomes the free fix. Ammunition has weight. Companions can die for good. You also drink, eat and sleep: thirst climbs fastest, about one point every ten real seconds, and each stage strips stats until the top one kills you. Fast travel is allowed but the hours it takes still count, so check your meters before a long jump or you can arrive dead. Campfire food heals far more than stimpaks once your Survival is decent, which is the whole point of the skill.",
+      "source_url": "https://fallout.fandom.com/wiki/Hardcore_mode",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 225,
+      "game_id": 20,
+      "section_type": "mechanic",
+      "name": "Reputation, disguises and hit squads",
+      "card": "Every town and faction keeps two separate tallies, fame and infamy, and your title with them (Accepted, Liked, Idolized, or Shunned, Vilified, or a mixed one) comes from the pair. Being caught stealing costs two infamy; killing one of theirs in the open costs thirty. Killing from hiding with a silent one-shot kill, or with the Mister Sandman perk, costs nothing, except with the Brotherhood, who notice everything but Sandman. Wearing a faction's armour turns your standing with them neutral while it is on, a disguise that also hides some other relationships from your Pip-Boy. Fall to Shunned with the Legion and squads of four assassins start walking across the map to find you; anger the NCR too and Ranger squads join them. Infamy with the NCR and Legion can each be wiped once, when their leaders invite you in after the events at the Tops.",
+      "source_url": "https://fallout.fandom.com/wiki/Fallout:_New_Vegas_reputations",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 226,
+      "game_id": 20,
+      "section_type": "enemy",
+      "name": "Deathclaws and Quarry Junction",
+      "card": "The quarry past Sloan is why the road north is closed. Inside are ordinary deathclaws at double or triple their usual health, young ones, an alpha male whose swipe does three hundred damage, and a mother with a litter of babies who goes berserk if you kill one in front of her. Both entrances are guarded. They stop chasing if you stand on a rock they cannot reach or dive into water, a crippled leg stops the leaping attack and slows them to a limp, and a flare gun makes them flee. The reward for clearing it is a Fat Man with two mini nukes and a light machine gun in the den. Come back much later, with the anti-materiel rifle the Gun Runners' guard brags about, and remember Dead Wind Cavern holds the legendary one, which hits twice as hard.",
+      "source_url": "https://fallout.fandom.com/wiki/Quarry_Junction",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 227,
+      "game_id": 20,
+      "section_type": "enemy",
+      "name": "Cazadores",
+      "card": "Giant orange wasps in swarms of four or more, flying fast and erratic, and their sting does more raw damage than a giant radscorpion's and three times the poison, for longer. You will not sneak past them: their perception is higher than a deathclaw's. Cripple a wing in V.A.T.S. and one drops out of the air and slows to a crawl; crippling the antennae only frenzies them, and headshots give no bonus. Carry antivenom or super stimpaks, and know that your companions cannot use antivenom, so heal them with stimpaks from the companion wheel; they will use datura antivenom if they have it. The ones inside the Big MT are tougher still.",
+      "source_url": "https://fallout.fandom.com/wiki/Cazador",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 228,
+      "game_id": 20,
+      "section_type": "enemy",
+      "name": "Night stalkers",
+      "card": "Coyote bodies with rattlesnake heads, made in a lab and now everywhere at night and in caves, especially their dens, where the packs are large and the tunnels twist. They leap and bite with venom weaker than a cazador's, but it stacks if several land, so treat the poison. They rattle and hiss when close, which is your warning, and their standing bite animation roots them for a moment, so backpedal out of it. With the Animal Friend perk they ignore you entirely. The pack in Charleston Cave can turn invisible like a Stealth Boy; fight those in a corridor where they have to come to you.",
+      "source_url": "https://fallout.fandom.com/wiki/Night_stalker",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 229,
+      "game_id": 20,
+      "section_type": "mechanic",
+      "name": "Companions and what each one gives you",
+      "card": "You can bring one person and one of the two non-humans at once, ordered through the companion wheel, and none of them care about your karma except Cass, who leaves if you go properly evil. In normal mode they only fall unconscious. Boone, the sniper in the dinosaur at Novac, gives Spotter, which lights up hostiles while you aim. ED-E, the broken eyebot in the Nash house at Primm, extends how far you detect enemies. Veronica at the 188 Trading Post lets you use a workbench anywhere. Rex, the cyberdog with the Kings in Freeside, marks nearby loot. Cass at the Mojave Outpost makes whiskey harmless and armouring. Raul, locked up on Black Mountain, slows your gear's wear. Lily at Jacobstown makes Stealth Boys last and sneak crits hurt. Arcade at the Old Mormon Fort makes stimpaks heal more.",
+      "source_url": "https://fallout.fandom.com/wiki/Craig_Boone",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 230,
+      "game_id": 20,
+      "section_type": "area",
+      "name": "Getting into the Strip",
+      "card": "The north gate is held by Securitrons who shoot anyone who walks up without talking to the greeter. Ways in: pass the credit check by carrying two thousand caps, which are checked, not taken; hack the greeter with a Science of eighty; hand over a passport, forged by Ralph at Mick and Ralph's in Freeside for five hundred caps, three hundred and seventy-five with a Barter of fifty, or free with a good NCR reputation, or free from the King as his favour after G.I. Blues; or shoot every robot at the gate, which earns Strip infamy for each one and turns every Securitron inside hostile. Once through, Victor finds you at the door, and the Tops, Gomorrah, the Ultra-Luxe, Vault 21 and the NCR Embassy are all a short walk.",
+      "source_url": "https://fallout.fandom.com/wiki/New_Vegas_Strip",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 231,
+      "game_id": 20,
+      "section_type": "item",
+      "name": "Weapon mods and the unique guns you can get early",
+      "card": "Mods never turn up as loot: you buy them from a dozen stationary and travelling merchants whose stock rotates every three days, and each weapon takes up to three, one of each kind, fixed forever once attached. Unique weapons refuse mods but come with better stats and sometimes the mods built in. Early ones worth a detour: Lucky, a .357 that never jams, in a hard-locked floor safe behind the gift shop counter of the Bison Steve in Primm; That Gun, bought or stolen from the Dino Bite gift shop in Novac; Ratslayer, a silenced night-scoped varmint rifle with a huge critical multiplier, in the Broc Flower Cave past the giant rats; This Machine, the Garand, for the quiet quest about Sergeant Contreras at Camp McCarran. Uniques cannot be repaired with their common cousins unless you take Jury Rigging at Repair ninety, which repairs anything with anything of the same class.",
+      "source_url": "https://fallout.fandom.com/wiki/Fallout:_New_Vegas_weapon_mods",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 232,
+      "game_id": 20,
+      "section_type": "mechanic",
+      "name": "Skills, SPECIAL points, implants and books",
+      "card": "Each skill starts at two plus twice its governing stat plus half your Luck, so Luck quietly lifts everything. Three tagged skills get fifteen points; each level gives ten plus half your Intelligence; and the base game does not hand out enough to max them all, so choose. Skill books are three permanent points each, four with Comprehension, and there are about fifty-two of them; magazines are ten points for a minute, doubled and tripled by the matching perks, and merchants sell them, so carry a few for a hard check. Doctor Usanagi at the New Vegas medical clinic near the Crimson Caravan sells a permanent point in any stat for four thousand caps each, as many as your Endurance allows, plus armour under the skin for eight thousand and slow health regeneration for twelve. Buy the Intelligence implant first if you can afford it; it pays itself back in skill points.",
+      "source_url": "https://fallout.fandom.com/wiki/Fallout:_New_Vegas_skills",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 233,
+      "game_id": 20,
+      "section_type": "mechanic",
+      "name": "Snow globes and star bottle caps",
+      "card": "Seven snow globes are hidden in the base game and each is worth two thousand caps from Jane at the Lucky 38, where they go on a display stand; finding all seven is the achievement, selling them is optional. They sit on the rubble-topped grave in Goodsprings cemetery, the welcome desk of the Hoover Dam visitor centre, upstairs in the tower of the Old Mormon Fort, the reception desk of the Jacobstown lodge, the table inside the Boomers' museum at Nellis, the counter of the Lucky 38 cocktail lounge, and one more at the test site. The blue-star Sunset Sarsaparilla caps are a different hunt: one bottle in twenty holds one, over a hundred sit in fixed spots, and fifty of them buy the legendary prize at the company headquarters, though collectors, as Malcolm Holmes warns you, will kill for them.",
+      "source_url": "https://fallout.fandom.com/wiki/Snow_globe_(Fallout:_New_Vegas)",
       "source_license": "CC-BY-SA-3.0",
       "source_version": null,
       "crawled_at": "2026-09-05"
