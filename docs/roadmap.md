@@ -348,17 +348,20 @@ Same rules as the lists above: five lines an entry, stars ascending in each list
 then to [Done](#done-for-v050) in the same commit. The one difference is that the knowledge base keeps its bugs, its owed
 checks and its plans together here instead of spread over three lists.
 
-**Where things stand (2026-09-05).** 161 cards over 13 games, plus 124 Deck tips. On questions written without seeing the
-cards, the right card is in the top three about four times in five and first about half the time. The Deck's own model
-keeps the card's facts nine times in ten and no longer hides plain tactics behind a spoiler box. The biggest limit for a
-person is still coverage: thirteen games, and every other game gets the model's memory plus one generic genre card.
+**Where things stand (2026-09-06).** 266 cards over 25 games, plus 124 Deck tips, after the tranche nearly doubled both.
+On questions written without seeing the cards, the right card is in the top three about four times in five and first about
+half the time; those numbers are from the old thirteen games and have not been re-measured since. The Deck's own model
+keeps the card's facts nine times in ten and no longer hides plain tactics behind a spoiler box. Coverage is still the
+biggest limit for a person, but less so: twenty-five games now, and every other game gets the model's memory plus one
+generic genre card. The new cards are not on the Deck yet; they ship with the next corpus release.
 
 **Pick up here, in order.**
 
 1. The bug-fixing session running today owns the knowledge-base code files. Let it land the two bugs it holds before
    touching them.
-2. The new titles are picked and the shelf is confirmed on the Deck (plan 40 § 3 and § 6); writing their cards needs no
-   Deck and can start. Only Fallout: New Vegas is not installed. The sweep, the prompt diet and the eval tooling need no Deck.
+2. The new titles have their cards (plan 40 § 7). What they still need is blind test questions, written in a session that
+   has not read the cards, then one corpus release. Only Fallout: New Vegas is not installed on the Deck. The sweep, the
+   prompt diet and the eval tooling need no Deck.
 3. Then work **Next** from the top: the prompt diet, the "not in my notes" line, symptom-only troubleshooting, the eval
    tooling and the weight sweep, spoiler tiers, follow-ups remembering, and one corpus release that carries everything
    needing a rebuild.
@@ -474,11 +477,11 @@ for the Deck to be free). Anything new goes here, one line each, with what it de
   thirteen titles still have no enemy or item cards, so "how do I deal with X" works for two games. Next: 40–60 entity cards
   in tranches with a quality read from you after the first; then chip ranking by meaning. Card authors cannot write blind
   test questions, so content and eval rows go in separate sessions. [Plan](planning/28-phase5-corpus-depth.md).
-- ★★★★ `[KB]` **A first tranche of new titles from your Steam library** — **OPEN, titles picked 2026-09-05, nothing written.**
-  Nine picked from a library read over SSH and a wiki check per candidate: Black Mesa, Hollow Knight, GTA V, GTA IV, DOOM
-  Eternal with Doom 64, a Mario pack (Super Mario 64, Mario Kart 64, Paper Mario TTYD), Super Smash Bros. Melee, Fallout: New
-  Vegas, Pikmin 2. Every source is licence-checked with a dump in hand. Next: cards in one session, blind questions in
-  another, one release. Shelf and collections confirmed on the Deck 2026-09-05; New Vegas needs installing. [Plan](planning/40-new-titles-from-the-library.md). (D69)
+- ★★★★ `[KB]` **A first tranche of new titles from your Steam library** — **PARTIAL, cards written 2026-09-06.** All eleven
+  games now have notes: Black Mesa, Hollow Knight, GTA V, GTA IV, DOOM Eternal, Doom 64, Super Mario 64, Mario Kart 64,
+  Paper Mario TTYD, Super Smash Bros. Melee, Fallout: New Vegas, Pikmin 2. 105 cards, every one citing a page, a licence
+  and the day it was read. Owed: blind test questions in a different session, then one corpus release, then the Deck check
+  (**KB-TRANCHE-01**). [Plan](planning/40-new-titles-from-the-library.md). (D69)
 - ★★★★ `[KB]` **KB online / versus strategy content** — **OPEN, discovery locked 2026-08-09.** Multiplayer questions
   (roles, callouts, co-op) get cards; today they get nothing specific. New card kinds and a spoiler table update, Left 4
   Dead 2 first, then Counter-Strike 2, from archive dumps only. Two to three weeks. [Plan](planning/17-kb-online-versus-strategy-content.md).

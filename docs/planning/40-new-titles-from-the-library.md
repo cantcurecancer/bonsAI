@@ -4,9 +4,9 @@ Written 2026-09-05, after the maintainer said yes to a one-off tranche of new ti
 base and asked for the list to come from their own Steam library. Plain language on purpose. Decision
 D69 in the decisions file; roadmap entry under Knowledge base and RAG § Next.
 
-**Status 2026-09-05, evening: the library is read, the wikis are checked, the titles are picked (§ 6) and the
-screen walk is done (end of § 3). Ten of the eleven games are on the Deck; Fallout: New Vegas needs installing.
-Owed: the cards.**
+**Status 2026-09-06: the cards are written — 105 of them across eleven games (§ 7). The library read, the wiki
+checks, the pick and the screen walk are all done. Ten of the eleven games are on the Deck; Fallout: New Vegas
+needs installing. Owed: blind test questions from a different session, one corpus release, then the device check.**
 
 ---
 
@@ -215,18 +215,51 @@ And the hours say the versus plan matters: Counter-Strike 2, Team Fortress 2, PU
 Source are about five thousand hours between them. That plan already has Counter-Strike 2 as its stage
 four.
 
-## 7. The rules for writing
+## 7. The cards, written 2026-09-06
 
-The pick is made (§ 6). Now:
+All eleven games have their notes: **105 cards**, which takes the corpus from 161 cards over 13 games to
+266 over 25. Written in one sitting from pages read live off each wiki the day before.
+
+| Title | Cards | Source, licence |
+|---|---|---|
+| Black Mesa | 11 | Combine OverWiki, CC BY-SA 4.0 |
+| Hollow Knight | 13 | hollowknight.wiki, CC BY-SA 3.0 |
+| DOOM Eternal | 13 | doomwiki.org, CC BY-SA 4.0 |
+| Doom 64 | 5 | doomwiki.org, CC BY-SA 4.0 |
+| Grand Theft Auto V | 9 | GTA wiki, CC BY-SA 3.0 |
+| Grand Theft Auto IV | 8 | GTA wiki, CC BY-SA 3.0 |
+| Fallout: New Vegas | 11 | Fallout wiki, CC BY-SA 3.0 |
+| Super Mario 64 | 6 | Super Mario Wiki, CC BY-SA 4.0 |
+| Mario Kart 64 | 4 | Super Mario Wiki, CC BY-SA 4.0 |
+| Paper Mario: The Thousand-Year Door | 6 | Super Mario Wiki, CC BY-SA 4.0 |
+| Super Smash Bros. Melee | 9 | SmashWiki, CC BY-SA 4.0 |
+| Pikmin 2 | 10 | Pikipedia, CC BY-SA 4.0 |
+
+Every card names the page it came from, the licence that page declares, and the day it was read, so the
+credit line under a reply is right without anyone fixing it later. Roughly a third of the cards are how the
+game works, a quarter are bosses, and the rest are enemies, items and places. Each title opens with a
+"starting out" card. Card lengths run 400 to 880 characters, in the same band as the cards already shipping.
+
+**Two things came out of the writing.** Fandom's wikis were readable after all: only the in-IDE fetcher gets
+refused, so a new tool reads pages live and records the revision and date, which is fresher than an
+archive.org dump and needs no download. And Fandom character pages hide their whole body inside a tab box
+that the first version of the reader skipped, which is why the Fallout companions came back empty until it
+was fixed.
+
+**Rules kept:**
 
 - **Cards in one session, blind test questions in another.** Whoever writes a card can never write its
-  blind question; the test method depends on it.
+  blind question; the test method depends on it. **This session wrote the cards, so it must not write the
+  questions.**
 - **Every card carries its source and licence** the day it is written, never fixed later; the publish
   tool refuses a card without them.
-- **A first pass is six to ten cards per title:** the bosses, the enemies that kill people, the items
-  that matter, one "starting out" card in the new kind.
+- Story is left out where it would spoil: Hollow Knight's two endgame bosses have no cards, GTA's mission
+  plots are named only where they gate a mechanic, and the Fallout factions and endings are absent.
 - **One corpus release for the tranche**, bundled with the other changes that need a rebuild.
-- About a day per title. The lock on new titles stays for anything beyond this tranche.
+- The lock on new titles stays for anything beyond this tranche.
+
+**Still owed:** blind test questions from a session that has not read these cards, added to the retrieval and
+answer fixtures; then one corpus release; then the device check, row **KB-TRANCHE-01**.
 
 ## 8. Checklist
 
@@ -235,7 +268,8 @@ The pick is made (§ 6). Now:
 - ✅ Step one B: the screen walk, 2026-09-05 evening, once the Deck was free (end of § 3). Ten of eleven on the device;
   New Vegas needs installing.
 - ✅ Maintainer picked the tranche, 2026-09-05 (§ 6); recorded in the decisions file under D69.
-- ⬜ Cards written (one session); blind questions written (another); release.
+- ✅ Cards written, 2026-09-06: 105 across eleven games (§ 7).
+- ⬜ Blind questions written in a different session; corpus release; device check (**KB-TRANCHE-01**).
 
 ## Sources
 
@@ -244,5 +278,6 @@ The pick is made (§ 6). Now:
 - [17-kb-online-versus-strategy-content.md](17-kb-online-versus-strategy-content.md) — the source rule for multiplayer content
 - [37-rag-status-report.md](37-rag-status-report.md) — the zoomed-out picture
 - `scripts/probe_deck_steam_library.py` — the file-read path; `build/deck-library.json` — today's read
+- `scripts/fetch_wiki_live_pages.py` — reading pages live off a wiki with the revision, date and licence (used for every card here)
 - `scripts/fetch_wiki_dump_pages.py` — pulling pages and the declared licence out of an archive.org dump
 - archive.org WikiTeam search results and the wikis' own licence declarations, read 2026-09-05
