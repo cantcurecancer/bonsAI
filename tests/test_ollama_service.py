@@ -1328,6 +1328,47 @@ class OllamaServiceTests(unittest.TestCase):
         prompt = self._strategy_prompt_with_kb("413150")
         self.assertIn("Put spoilery walkthrough detail inside", prompt)
 
+    def test_build_system_prompt_kb_clause_drops_citation_fence_instruction(self):
+        """The citation fence was obeyed once in 89 recorded asks and nothing reads it — gone.
+
+        The grounding instruction itself stays; only the fence-wrapping ask is removed."""
+        prompt = self._strategy_prompt_with_kb("2321470")
+        self.assertIn(
+            "Ground answers in the attached strategy/compat cards when relevant.", prompt
+        )
+        self.assertNotIn("bonsai-cite", prompt)
+        self.assertNotIn("trust tier", prompt)
+
+    def test_build_system_prompt_thin_context_drops_citation_fence_offer(self):
+        lookup_app_name, lookup_vdf = self._verbosity_lookup_helpers()
+        prompt = build_system_prompt(
+            question="Anything I should know?",
+            app_id="",
+            app_name="",
+            normalized_attachments=[],
+            prepared_images=[],
+            lookup_app_name=lookup_app_name,
+            lookup_screenshot_vdf_metadata=lookup_vdf,
+            ask_mode="speed",
+        )
+        self.assertIn("LIMITED CONTEXT", prompt)
+        self.assertNotIn("bonsai-cite", prompt)
+
+    def test_build_system_prompt_reply_verbosity_fence_list_drops_citation_fence(self):
+        lookup_app_name, lookup_vdf = self._verbosity_lookup_helpers()
+        prompt = build_system_prompt(
+            question="Quick tip?",
+            app_id="",
+            app_name="",
+            normalized_attachments=[],
+            prepared_images=[],
+            lookup_app_name=lookup_app_name,
+            lookup_screenshot_vdf_metadata=lookup_vdf,
+            reply_verbosity="caveman",
+        )
+        self.assertIn("REPLY VERBOSITY", prompt)
+        self.assertNotIn("bonsai-cite", prompt)
+
     def test_prompt_window_warning_fires_only_when_prompt_plus_reply_would_not_fit(self):
         """D46: the Deck runs a 4,096-token window and nothing sets num_ctx; an overlong prompt
         loses its start silently. The POST site now logs a warning instead of saying nothing."""

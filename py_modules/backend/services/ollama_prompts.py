@@ -920,14 +920,13 @@ def build_bonsai_status_stream_instruction(
 THIN_CONTEXT_HONESTY_CLAUSE = (
     "LIMITED CONTEXT: No active game and no screenshots were attached for this turn. "
     "Prefer general Steam Deck guidance; say when you are uncertain or guessing; do not invent a specific game title, "
-    "AppID, or on-screen detail you cannot see. Optional: wrap log-derived claims in ```bonsai-cite ... ``` if you cite "
-    "attached excerpts.\n\n"
+    "AppID, or on-screen detail you cannot see.\n\n"
 )
 
 _REPLY_VERBOSITY_SHARED = (
     "REPLY VERBOSITY: This block shapes visible coaching prose only (the answer body after the required "
     "<bonsai-status> line — not the status tag itself). Structural topic/mode injects and mandatory fences "
-    "(```bonsai-strategy-branches```, ```bonsai-strategy-checklist```, ```json``` TDP blocks, ```bonsai-cite```, "
+    "(```bonsai-strategy-branches```, ```bonsai-strategy-checklist```, ```json``` TDP blocks, "
     "checklists) take priority. Word caps apply to visible prose only, not fence JSON.\n"
 )
 
@@ -1208,12 +1207,10 @@ def build_system_prompt(
     if early_stripped and "Local knowledge base" in early_stripped:
         early_block += (
             "\n\nKNOWLEDGE BASE (offline corpus): Ground answers in the attached strategy/compat "
-            "cards when relevant. Wrap source-backed claims in ```bonsai-cite ... ``` fences with "
-            "trust tier (wiki_verified / wiki_no_patch / fallback_no_source).\n"
+            "cards when relevant.\n"
             if strategy_kb_relaxed
             else "\n\nKNOWLEDGE BASE (offline corpus): Ground answers in the attached strategy/compat "
-            "cards when relevant. Wrap source-backed claims in ```bonsai-cite ... ``` fences with "
-            "trust tier (wiki_verified / wiki_no_patch / fallback_no_source). "
+            "cards when relevant. "
             "Put spoilery walkthrough detail inside ```bonsai-spoiler``` when the user has not opted in.\n"
         )
         # Phase 4 R1: structured cards carry labelled lines (Summary / Weak points / Uses /
