@@ -53,27 +53,34 @@ confirm nothing is skipped. Rows D-PAD-SCROLL-02 (reworded) and STREAM-09.
 
 ## The automated checks
 
-Three layers, and it is worth being clear about which of them actually ran.
+Three layers. Being clear about which of them actually ran:
 
-**The test runner.** Ran, green. It has no layout engine, so it proves what is rendered and what a
-press calls, and nothing about where anything sits.
+**The test runner. Ran, green: 1,106 tests.** Beyond each builder's own suite there is now one that
+renders a whole finished reply and checks the pieces add up: no button row anywhere, Retry inside the
+question bubble and not the answer's, Copy inside the answer bubble and not the question's, both
+named for someone who cannot see them, a long answer down to a handful of stops with none of its
+words lost, the reading order question then answer then *Was this helpful?* then the line, and the
+line last with nothing between it and the chips it opens. It has no layout engine, so it proves
+what is drawn and in what order, and nothing about where anything sits on screen.
 
-**The scripted UI run.** Two new scenarios are written and registered — one counts the stops on a
-long seeded answer, one proves a code block still keeps a stop of its own. Two things had to be
-added for them to be possible:
+**The scripted UI run. Written, not run.** Five scenarios: the stop count on a long answer, a code
+block keeping its own stop, the details line, Copy inside the answer bubble, and Retry inside the
+question bubble with the old row gone. Two things had to be added for these to be possible at all:
 
 - Two preview-only seams. One puts a finished question and answer straight into the transcript
-  without asking a model, so the text is the same every run. It goes through the session-restore
-  path that already exists, so no new setter had to be handed out of the ask state. The other
-  reports the newest reply's shape: how many stops, and the rectangle of the answer bubble, the
-  question bubble, the details line, the two corner icons and the old button row.
-- Two new checks in the runner. It could only match text inside the result before, which cannot say
+  without asking a model, so the text is the same every run — it goes through the session-restore
+  path that already exists, so no new setter had to be handed out of the ask state. The other reports
+  the newest reply's shape: how many stops, and the rectangle of each bubble, the line, both icons
+  and the old row.
+- Two new checks in the runner. It could only match text inside a result before, which cannot say
   "four stops or fewer", and could not say "this icon is inside that bubble" at all.
 
-**Not yet run.** The scripted run needs the preview panel opened from inside the editor, which is a
-manual step. Everything it needs is committed and ready.
+**It could not be run from here: the scripted run needs the preview panel opened from inside the
+editor.** The sandbox starts fine and the checks are committed and ready; opening the panel is a
+manual step. Run it with `npm run test:preview:tier -- --tier=tier3UI --evidence --write`.
 
-**The device.** Not run. This is where focus and layout bugs actually show up.
+**The device. Not run.** This is where focus and layout problems actually show, and where the corner
+icons need looking at hardest.
 
 ## Step 2 — the Show details line (done 2026-09-06)
 
