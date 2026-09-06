@@ -518,6 +518,18 @@ def _mean(values: list[float]) -> Optional[float]:
     return round(sum(vals) / len(vals), 1) if vals else None
 
 
+def mean_prompt_chars(samples: list[SampleResult]) -> Optional[float]:
+    """Mean length of the built system prompt, over samples that captured one.
+
+    Only sample 1 of each case keeps the full prompt text (``run_sample`` reads it off the
+    transparency snapshot), so this is a mean over one sample per case, not over every sample.
+    It is the cheap stand-in for token count while a prompt change is still being sized: a
+    slimming that drops instructions should show up here before it shows up in the answer
+    quality checks.
+    """
+    return _mean([float(r.system_prompt_chars) for r in samples if r.system_prompt_chars])
+
+
 # --- report ----------------------------------------------------------------------------------
 
 def _flag(ok: Optional[bool]) -> str:
@@ -578,7 +590,9 @@ def write_report(
     elapsed = _mean([r.elapsed_s for r in samples if r.success])
     payloads = _mean([float(r.payload_bytes) for r in samples if r.payload_bytes])
     pev = _mean([float(r.prompt_eval_tokens) for r in samples if r.prompt_eval_tokens])
+    prompt_chars = mean_prompt_chars(samples)
     lines.append(f"Mean seconds per answer: **{elapsed}**. Mean request payload: **{payloads}** bytes. Mean prompt tokens (Ollama prompt_eval): **{pev}**.")
+    lines.append(f"Mean system prompt length: **{prompt_chars}** characters.")
     lines.append("")
     lines.append("## Per case")
     lines.append("")
@@ -750,11 +764,12 @@ def main() -> int:
     run_minutes = round((time.perf_counter() - t_run) / 60.0, 1)
 
     summary = summarize(cases, samples)
+    prompt_chars = mean_prompt_chars(samples)
     print()
     print(f"facts {summary.facts.pct()} · no-contradiction {summary.contradictions_clean.pct()} · "
           f"fence-not-misfired {summary.fence_no_misfire.pct()} · fence-when-due {summary.fence_present_when_due.pct()} · "
           f"menu-when-due {summary.branches_when_due.pct()} · card-attached {summary.card_attached.pct()} · "
-          f"cases-all-clean {summary.cases_all_pass.pct()} · {run_minutes} min")
+          f"cases-all-clean {summary.cases_all_pass.pct()} · prompt-chars {prompt_chars} · {run_minutes} min")
 
     if args.write_report:
         stamp = date.today().isoformat()
@@ -770,6 +785,7 @@ def main() -> int:
             "samples_per_case": args.samples,
             "cases": len(cases),
             "run_minutes": run_minutes,
+            "prompt_chars_mean": prompt_chars,
         }
         report_path = REPORT_DIR / f"kb-answer-eval-{stamp}{suffix}.md"
         write_report(report_path, cases=cases, samples=samples, summary=summary, meta=meta)
