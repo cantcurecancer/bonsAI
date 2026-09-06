@@ -3750,7 +3750,7 @@ its Expert group are one roadmap entry.
 **Consequence worth recording.** The report that carries these numbers is a page rebuilt from the test
 reports, not a document, so the next bake-off refreshes it rather than replacing it.
 
-### D74 — PARTLY LOCKED 2026-09-05 (raised the same day) — Reading answers aloud: four calls locked, two open
+### D74 — PARTLY LOCKED 2026-09-05 (raised the same day) — Reading answers aloud: five calls locked, one open
 
 Raised by the feasibility memo [planning/42-read-aloud-feasibility.md](../planning/42-read-aloud-feasibility.md),
 the fourth of the six features planned one at a time on 2026-09-05. What the memo found, in one breath: the Deck
@@ -3838,4 +3838,25 @@ A middle path: the voice list follows the tier setting the models already use. O
 open-source-only tier, only public domain and attribution-only voices, named in About. On the looser
 tiers, non-commercial voices too, marked as such, the way open-weight models are marked today.
 *Recommended: the middle path.* Open until the maintainer says.
+
+**Locked later the same day: call 4 is the invented voice.** The maintainer: "invented one sounds more like
+what we need to go for." So way 2 in the memo's § 6: design the voice once on the PC from a description,
+or from a five-second recording of the maintainer's own voice; copy it on the Deck with the small cloning
+model. Row 04 decides whether the Deck can carry that model beside a game; the stock regional voice is the
+fallback if it cannot. Never a real person's voice without their consent.
+
+**Call 6, what would be out.** The maintainer asked which voices the attribution-only rule excludes. Every
+English Piper voice's licence card was read on 2026-09-05; the table is § 6.1 of the memo. In one
+breath: out on every tier, *lessac*, Piper's best-known American voice, because its recordings are
+research-only and the licence forbids building voice products with them (a correction: the memo's first
+draft called it attribution-only). Looser tiers only, because non-commercial: *ryan*, the two *hfc*
+voices, *l2arctic* and *semaine*. Unclear until a voice folder is read: *alan*, *amy*, *danny*, *kusal*.
+Everything else is in, including the British 109-speaker pack, the 904-speaker LibriTTS packs, and every
+Kokoro, Kitten and Pocket TTS voice.
+
+**Call 6, reframed by call 4.** With an invented voice for the character, the plugin can design its own
+reader voice the same way, and then no stock voice is needed for anything. The stock list becomes an
+optional extra. The call now: (a) the plugin's own designed voice as the reader, no stock list; (b) the
+designed voice plus the stock list as an extra, filtered by the model tier setting, *lessac* never; (c)
+stock voices only for the plain reader, filtered by tier. *Recommended: (b).* Open.
 

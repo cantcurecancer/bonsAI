@@ -199,8 +199,9 @@ replace it with a specific issue when one exists.
 - ★★★ `[ui]` **Search density** — **OPEN.** Tighter, more scannable results with highlighted match tokens.
 - ★★★ `[voice]` **A voice per character** — **OPEN, after Read answers aloud; two calls open (D74).** A natural voice as a one-time
   download of about 90 MB, then a voice that fits the selected character: a stock British voice from a 109-speaker pack picked by
-  region, or an invented voice designed once on the PC and copied on the Deck from a five-second clip. Never a copy of a real
-  person's voice without consent. Open: stock first or invented first, and which voice licences the plugin ships.
+  region, or an invented voice designed once on the PC and copied on the Deck from a five-second clip. The invented voice is
+  the maintainer's pick (D74). Never a copy of a real person's voice without consent. Open: which stock voices, if any, the
+  plugin lists; Piper's best-known American voice is research-only and never ships.
   [Memo](planning/42-read-aloud-feasibility.md).
 - ★★★★ `[ask]` **Connection doctor** — **OPEN, planned 2026-09-05, calls locked (D64).** When an Ask fails, a **Fix this** button
   under the failed reply runs the checks the plugin already has, shows the one that failed, and offers the one thing to do

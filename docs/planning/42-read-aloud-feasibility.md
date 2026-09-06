@@ -171,9 +171,44 @@ make it unlawful.
 3. **The voice-design model on the Deck itself.** No: it wants four to eight gigabytes of graphics memory,
    which the Deck shares with the game.
 
-Recommendation: way 1 first, because it is one file and rides on the natural voice download; way 2 when
-the maintainer wants the voice to be truly its own, once row 04 says the Deck can carry it. The rule
-stays as written.
+**The maintainer's call, 2026-09-05: way 2, the invented voice.** Row 04 decides whether it reads on the
+Deck or only on the PC; way 1 stays as the fallback if row 04 fails. The rule stays as written.
+
+### 6.1 Which stock voices would be out
+
+Every English voice in the Piper set, with the licence on its own card, read 2026-09-05. Under the
+rule "public domain or attribution-only" the middle column is what a person on the default tier
+would see. One correction to the memo's first draft: Piper's best-known American voice, *lessac*, is
+not attribution-only. Its recordings are licensed for research only and the licence forbids building
+voice products with them at all, so it is out on every tier.
+
+| Voice | Default tier | Why |
+|---|---|---|
+| **UK:** vctk (109 speakers), alba (Scottish), aru (12 Liverpool speakers) | in | attribution |
+| **UK:** cori | in | public domain |
+| **UK:** jenny_dioco | in | attribution; must be called *Jenny* in the app |
+| **UK:** northern_english_male, southern_english_female | in | attribution, share-alike |
+| **UK:** alan | check the voice folder | the Mycroft set is attribution share-alike overall; the card says "see URL" |
+| **UK:** semaine (4 speakers) | looser tiers only | non-commercial |
+| **US:** ljspeech, john, kristin, norman, bryce | in | public domain |
+| **US:** joe, mike, kathleen, reza_ibrahim | in | CC0 |
+| **US:** libritts, libritts_r (904 speakers) | in | attribution |
+| **US:** sam | in | Apache 2.0 |
+| **US:** arctic (18 speakers) | in, most likely | the CMU Arctic licence allows any use; the card only says "see licence file" |
+| **US:** amy, danny | check the voice folder | as alan |
+| **US:** kusal | out until checked | no licence found on the card or at its source |
+| **US:** ryan, hfc_male, hfc_female | looser tiers only | non-commercial |
+| **US:** l2arctic (24 accented speakers) | looser tiers only | non-commercial |
+| **US:** lessac | **out on every tier** | research only; voice products forbidden |
+
+The Kokoro and Kitten voices are Apache 2.0, and Pocket TTS's own pre-made voices are donated under
+CC0; all in. Pocket TTS's weights are attribution-only, which is fine on the default tier under the
+middle path.
+
+**What the invented voice changes.** With way 2 chosen, the character voice needs no stock voice at
+all. The plain reader can go the same way: design one voice for the plugin itself once, keep the clip,
+and every Deck reads in it. Then the stock list above is an optional extra, not the product, and call 6
+shrinks to whether to offer that list at all.
 
 ## 7. Proving it on the Deck
 
@@ -232,15 +267,17 @@ Locked the same day, the maintainer's answers:
 5. **The roadmap entry is split**: *Read answers aloud* (two stars, now that no download is in it) and *A
    voice per character* (three stars, since the download moved into it).
 
+4. **The character voice: the invented one.** Locked later the same day. Way 2 in § 6: design the voice
+   once on the PC, copy it on the Deck from a five-second clip; row 04 decides whether the Deck can carry
+   the copying model; the stock regional voice is the fallback.
+
 Still open:
 
-4. **The character voice.** The maintainer wants an invented character voice with a heavy regional accent,
-   not a stock reader and not a copy of a named performer. § 6 has the three ways. The call: (a) the stock
-   regional voice first; (b) straight to the invented voice, after the Deck check; (c) both, stock first,
-   invented when the check passes. *Recommendation: (c).*
-6. **Voice licences.** The pros and cons the maintainer asked for are in the decisions file under D74,
-   with a middle path: the voice list follows the tier setting the models already use.
-   *Recommendation: the middle path.*
+6. **Voice licences, and whether to list stock voices at all.** § 6.1 has every English voice and which
+   would be out. With the invented voice chosen, the plugin can design its own reader voice too, and the
+   stock list becomes an optional extra. *Recommendation:* the plugin's own designed voice as the reader,
+   the stock list offered as an extra and filtered by the model tier setting (the middle path), *lessac*
+   never.
 
 ## 10. Sources
 
@@ -266,3 +303,7 @@ Still open:
   five-second clip on two CPU cores and is in the runner's set, the voice-design models need a graphics
   card, so design on the PC and read on the Deck. Row 04 now measures Pocket TTS. Voice licences open,
   pros and cons written.
+- **2026-09-05, later still** — The invented voice locked for the character (way 2). Every English Piper
+  voice's licence card read: *lessac*, the best-known American voice, is research-only and out on every
+  tier; five voices are non-commercial; the British 109-speaker pack and most of the rest are fine.
+  § 6.1 has the table. Call 6 reframed: with an invented voice, the stock list is an optional extra.
