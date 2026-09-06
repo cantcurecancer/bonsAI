@@ -50,20 +50,6 @@ hook gives a gentle heads-up when a session starts work outside this.
 ## Bugs
 
 
-- ★★★ `[ollama]` **The order you set for which model to try is thrown away half a second later** — **OPEN, measured on the
-  device 2026-09-06.** Open the Ollama tab, press *Set text model try order…*, move a model up or down, press *Done*. The order
-  is written to the settings file correctly — and then, about six tenths of a second later, something writes the file again and
-  puts the old empty list back. Nothing on screen says anything went wrong, and reopening the picker shows the models in their
-  original order, so the only way to notice is that the setting never sticks. Measured twice; the second time with the settings
-  file read four times a second, which caught both writes: at 00:44:20.383 the file held
-  `['gemma4:e2b-it-qat', 'qwen3.5:4b', 'qwen2.5:1.5b', 'nomic-embed-text:latest']`, and at 00:44:20.986 it held `[]`.
-  **Where to look:** the picker's own save is fine — [useRoutingOrderModal.ts:107-121](../src/features/model-routing/useRoutingOrderModal.ts#L107-L121)
-  pauses the background save, writes the patch and re-reads what came back. The second writer is the timed background save in
-  [usePluginSettings.ts:407-422](../src/hooks/usePluginSettings.ts#L407-L422), which fires 400 ms after any settings change and
-  sends a *snapshot taken before* the picker's write. Changing the order is itself a settings change, so it schedules that very
-  save — the pause happens first and does not catch it. **This blocks a Verify row:** *Pulled models join the model try order*
-  (**ROUTING-MERGE-01**) cannot be checked while no order can be saved, so the model pull it needs was not spent.
-
 - ★ `[focus]` **Closing the model try order picker drops the highlight onto the tab rather than the button you opened it from** —
   **OPEN, seen twice 2026-09-06.** After pressing *Done*, the highlight lands on the Ollama tab's outer frame, not back on
   *Set text model try order…*. It is not a dead end — the next press moves normally — but it costs about thirteen presses to get
@@ -287,11 +273,14 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
 
 - ★★ `[chips]` **A glow when the chip row runs out of chips** — **VERIFY.** Built at the desk 2026-09-05 under D62 #3: press Left or Right past the first or last suggestion chip and that chip glows briefly, the way a phone lights up the end of a list. Nothing about the row’s existing edge behaviour changes. Reduced motion keeps the cue and drops the movement. **No measurement closes this one** — whether it reads as *end of list* rather than *error* is the maintainer’s call from a recording, and it is on their checklist.
 
+- ★ `[ollama]` **Pulled models join the model try order** — **MOSTLY VERIFIED on the Deck 2026-09-06, one case left.**
+  A model pulled from the picker landed at the **bottom** of the text list, and showed up in the vision list because it can
+  read pictures — while a text-only model and the embedding one stayed out of that list. What is still owed is the opposite
+  placement: with *Allow high-VRAM model fallbacks* on, a **large** pulled model is supposed to go to the **top** instead.
+  That needs a large model on the device and the switch turned on. Row **ROUTING-MERGE-01**.
+
 - ★ `[layout]` **Rows span the QAM panel width** — **VERIFY.** Fixed 2026-08-16 and measured by probe (268 to 300 px); the visual walk
   was never run. Confirm the Main rows look flush and nothing overflows the column. Row **ASK-WIDTH-01**.
-- ★ `[ollama]` **Pulled models join the model try order** — **BLOCKED, 2026-09-06.** RPC wired 2026-08-02. Row
-  **ROUTING-MERGE-01**. Nothing can be checked here until the try order saves at all — see the Bugs entry above. The model
-  pull this row needs was deliberately not spent.
 - ★ `[platform]` **Shell state and tab payload extraction (refactor step 8)** — **VERIFY.** Smoke: six tabs, one Ask, Ollama tab
   after Clear all plugin data. Row **SHELL-PAYLOAD-01**.
 - ★ `[platform]` **VAC check (`bonsai:vac-check`) on-device QA** — **VERIFY.** Implementation complete; run **VAC-02…06** after Tier 0
@@ -512,6 +501,9 @@ Everything shipped since v0.4.9 (2026-07-08), one line each, newest first. Detai
 [archive/roadmap-completed.md](archive/roadmap-completed.md), [archive/roadmap-bugs-fixed.md](archive/roadmap-bugs-fixed.md).
 
 **Verified on the Deck 2026-09-06 (round 34 continued):**
+- ★★★ `[ollama]` **The order you set for which model to try now sticks** — found and fixed the same night. Setting an order used
+  to be undone half a second later, so the setting looked like it did nothing.
+  [Detail](archive/roadmap-bugs-fixed.md#round-34-continued-2026-09-06)
 - ★ `[reply]` **A branch question names the game again** — the follow-up question at the end of a Strategy answer used to say
   *"Where are you at in … ?"* with the game's name replaced by three dots. It now says the name.
   [Detail](archive/roadmap-bugs-fixed.md#round-34-continued-2026-09-06)

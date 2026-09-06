@@ -509,3 +509,40 @@ walk of the same tab, 18 stops, found nothing invisible. It was a mid-scroll tra
 **The device was left as it was found:** try order empty (the bug put it back itself), no frozen chips, all other settings
 unchanged, nothing running, no model pulled. Two chats gained turns — the Ravenholm thread and the stopped weapons guide —
 which is ordinary use, not a settings change.
+
+### The try-order bug fixed, and the pulled-model check run — 2026-09-06, 00:50–01:10
+
+**The first diagnosis was wrong in one important way, and reading the code properly changed the fix.** Last night's write-up
+said the timed background save was sending a snapshot taken before the picker's write. It is not: that snapshot is rebuilt from
+live state on every render. The timed save was the writer, but the stale value reached it by another route.
+
+**The real cause.** Decky throws away and rebuilds the plugin's screen whenever a modal closes, so every opener first stores a
+copy of the live session — settings included — and the rebuild puts it back. The copy is taken *before* the picker opens, so it
+holds the old order. The picker saved correctly; the rebuild then put the old order back into the screen's state, and the timed
+save wrote that to disk 400 ms later.
+
+**This repo has fixed the same defect twice already.** `patchPendingSessionSettingsSnapshot` exists for exactly this, and both
+the models hub and the character picker call it — the character picker for the identical symptom, *"picking a character
+appeared to do nothing"*. The try-order picker was the third opener and did not call it. One line, plus three tests, proved red
+before green by removing that one call.
+
+**Confirmed on the device.** Rebuilt, deployed, and the same steps repeated with the settings file read four times a second:
+the order was written at 01:02:00.409 and was still there when the watch stopped 45 seconds later, and on a fresh read after
+that. One write, not two.
+
+**With that fixed, ROUTING-MERGE-01 could finally run.**
+
+| What the row asks | Result |
+|---|---|
+| A pulled model joins the bottom of the text try order | **PASS.** `qwen2.5vl:3b` pulled from the picker (3.0 GB, done 01:05:02) and landed last in the list. |
+| A model that can read pictures also joins the vision list | **PASS.** The vision picker listed it first of three. |
+| A text-only model does not | **PASS**, from the other direction: the text-only and embedding models were absent from that list. |
+| With high-VRAM fallbacks on, a large model goes to the **top** instead | **Not run.** Needs a large model on the device and the switch on. |
+
+**The device was put back.** The pulled model was removed, both lists reset to empty, and the plugin restarted so it read the
+reset from disk — checked afterwards: both lists empty, no chips pinned, knowledge base on, thinking off.
+
+**One thing to note for whoever picks this up.** Closing the try-order picker still drops the highlight onto the tab rather than
+the button you opened it from — twice more tonight, and once on the vision picker too. Pulling a model does *not* have the
+problem: that modal hands the highlight straight back to *Browse models…*. So it is the two try-order buttons specifically, and
+it is filed.
