@@ -48,8 +48,11 @@ USER_AGENT = (
 _SKIP_CLASS = re.compile(
     r"navbox|\btoc\b|mw-editsection|noprint|\breference\b|mw-references|catlinks|printfooter|"
     r"mw-indicators|hatnote|\bthumb\b|gallery|cite_note|mw-jump|sidebar|metadata|ambox|"
-    r"portable-infobox-hidden|wds-|global-navigation|page-header__actions|mw-parser-output-hidden"
+    r"portable-infobox-hidden|global-navigation|page-header__actions|mw-parser-output-hidden"
 )
+# Not skipped on purpose: Fandom's "wds-tabber" boxes. Character pages (Fallout companions,
+# GTA people) keep their whole body inside one, so skipping it returned an empty page
+# on 2026-09-05; the tab labels come through as a short line of text, which is harmless.
 _BLOCK_TAGS = {"p", "div", "section", "article", "aside", "br", "tr", "ul", "ol", "dl", "blockquote", "pre"}
 _HEADING = re.compile(r"h([1-6])")
 
