@@ -4115,3 +4115,67 @@ updated in the same change.
    actually lives.
 
 **If nothing is decided, option 1 is what happens** — the branch stays and nothing reaches the plugin.
+
+
+### D82 — OPEN, raised 2026-09-06 — Leaning the search on meaning wins on the measurements and breaks three rules we set on purpose
+
+**Status: measured, tried, reverted. Nothing changed in the plugin. The numbers below are real and repeatable.**
+
+**What was measured.** Nine different balances between the word search and the meaning search, run over the full
+266-note library. Only one beat today's even split on **both** measures at once, and it was the one that counts the
+meaning search twice as much as the word search:
+
+| | right note first | in the top three |
+|---|---|---|
+| Today's even split, tuning questions (168) | 65.5% | 88.7% |
+| Leaning on meaning, tuning questions (168) | **69.6%** | **89.9%** |
+| Today's even split, held-back questions (135) | 37.0% | 51.9% |
+| Leaning on meaning, held-back questions (135) | **43.0%** | **53.3%** |
+
+The held-back questions are the honest test — no tuning is ever allowed to look at them. It won there too, and the
+direction agreed on both sets independently. D68 authorised making this change on exactly this evidence.
+
+**Two warnings about those numbers before anyone reads them as a win.**
+
+1. **The ranges overlap.** This is a consistent direction, not a separated result. "Lean on meaning, the evidence is
+   thin" is the honest one-line summary.
+2. **The held-back numbers look far worse than the old ones (37% against about 70% in August) because the test got
+   much harder, not because the search got worse.** The held-back set grew from 36 questions to 135 by adding blind
+   questions about twelve newly added games, written by someone who had not read a single note and who described
+   things instead of naming them. That is the new floor.
+
+**Why it was reverted.** Making the change breaks three tests, and all three are guarding behaviour we chose on
+purpose, not implementation detail:
+
+1. **A note whose meaning-index has not been built yet gets buried.** Today, a note that is the best word-match still
+   comes first even when its meaning-index is missing — there is a deliberate mechanism keeping it there. Halve the
+   word search's weight and any note that *does* have a meaning-index outranks it. In plain terms: **a freshly added
+   note could be pushed out of sight until its index is built.**
+2. **The meaning search can now push aside a strong exact word match.** There is a test whose name is literally the
+   rule — a note found by meaning may compete, but must not unseat the top word match. With the change it does. In
+   plain terms: someone who types words that exactly match one note could be shown a different note first.
+3. **A locked decision (D22) stops holding.** Preferring a topic was chosen over filtering by it, so a clearly better
+   match elsewhere still surfaces. One of its cases stops surfacing.
+
+The arithmetic behind all three is the same and it is not subtle: at equal weight, a note ranked first by words and a
+note ranked first by meaning score the same. Halve the word weight and **the meaning-first note always wins**, in every
+tie, everywhere.
+
+**So this is not the two-constant flip D68 described.** D68 authorised acting on the measurement. It did not consider
+that the same change quietly overturns three named guarantees, one of them a locked decision. Pushing it through would
+mean editing those three tests to expect the opposite of what they were written to protect, which is a design decision
+rather than a measurement one. That is why it stopped here.
+
+**The options.**
+
+1. **Leave the weights alone. Recommended for now.** The evidence is a direction, not a result, and the cost is three
+   rules we set deliberately — including new notes being buried before their index exists, which would land exactly
+   during a corpus release.
+2. **Take the change and accept all three consequences**, updating those tests to match. Worth about four points on
+   "right note first". Do this only if the three behaviours above are genuinely not wanted any more.
+3. **Get the win without the cost. Recommended as the follow-up.** Keep the weights even and change the tie-break
+   instead: let meaning rank higher *only* where there is no strong word match, and keep the existing protection for a
+   note whose meaning-index is missing. That targets the same gap without touching any of the three rules. It is real
+   work rather than a constant change, and needs its own measurement.
+
+**If nothing is decided, option 1 is what happens** — the weights stay even and the measurements stay on record.
