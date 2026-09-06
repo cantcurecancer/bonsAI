@@ -8,12 +8,15 @@ Solves: The eval is what decides whether fusion ships. A verdict that rounds an 
 Does not: Run any embedding or touch Ollama — every test here is pure scoring logic.
 """
 
+import contextlib
 import importlib.util
+import io
 import json
 import re
 import sys
 import unittest
 from pathlib import Path
+from unittest import mock
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
@@ -333,6 +336,131 @@ class EvalArmsTests(unittest.TestCase):
         sliced = mod._slice_results(results, cases, lambda c: c.domain == "compat")
         self.assertEqual([r.case_id for r in sliced["keyword"]], ["1", "3", "5"])
         self.assertEqual([r.case_id for r in sliced["rrf"]], ["1", "3", "5"])
+
+    # --- weight sweep -----------------------------------------------------------------------
+
+    def _sweep_cases(self, mod):
+        return [
+            mod.QueryCase(
+                case_id="tune-1",
+                query="q1",
+                ask_mode="speed",
+                domain="strategy",
+                app_id="",
+                shortcut="",
+                expect_topic="",
+                expect_section="Card A",
+                suite="t",
+                split="tune",
+            ),
+            mod.QueryCase(
+                case_id="tune-2",
+                query="q2",
+                ask_mode="speed",
+                domain="strategy",
+                app_id="",
+                shortcut="",
+                expect_topic="",
+                expect_section="Card B",
+                suite="t",
+                split="tune",
+            ),
+            mod.QueryCase(
+                case_id="holdout-1",
+                query="q3",
+                ask_mode="speed",
+                domain="strategy",
+                app_id="",
+                shortcut="",
+                expect_topic="",
+                expect_section="Card C",
+                suite="t",
+                split="holdout",
+            ),
+        ]
+
+    def test_sweep_applies_each_pair_and_restores_the_constants(self):
+        """The sweep sets RRF_W_FTS/RRF_W_VEC on the service module for each pair, so the fake
+        fusion below sees them at call time, and puts the originals back afterward -- proving
+        both halves of the contract, not just that a number changed somewhere."""
+        mod = self.mod
+        seen: list[tuple[float, float]] = []
+
+        def fake_hybrid_retrieve(conn, case, *, query_vector, vectors_by_id, fts_k, top_k, with_recall):
+            seen.append((mod.kb_service.RRF_W_FTS, mod.kb_service.RRF_W_VEC))
+            return []
+
+        def fake_embed_one(ollama_base, model, text, *, timeout_s=30.0):
+            return [0.1, 0.2], 1.0
+
+        cases = self._sweep_cases(mod)
+        original_fts, original_vec = mod.kb_service.RRF_W_FTS, mod.kb_service.RRF_W_VEC
+
+        with mock.patch.object(mod, "_hybrid_retrieve", fake_hybrid_retrieve), mock.patch.object(
+            mod, "_embed_one", fake_embed_one
+        ):
+            rows = mod._sweep_weights(
+                conn=None,
+                ollama_base="http://example.invalid",
+                model="nomic-embed-text",
+                vectors_by_id=mod.DomainVectors(compat={}, strategy={}),
+                cases=cases,
+                pairs=[(0.5, 1.5), (1.0, 1.0)],
+            )
+
+        # Two tune-split cases per pair -- one fake-fusion call each, both seeing the pair's
+        # weights, in pair order.
+        self.assertEqual(seen, [(0.5, 1.5), (0.5, 1.5), (1.0, 1.0), (1.0, 1.0)])
+        self.assertEqual((mod.kb_service.RRF_W_FTS, mod.kb_service.RRF_W_VEC), (original_fts, original_vec))
+        # Only the two tune-split cases were scored -- the holdout row never enters the sweep.
+        self.assertEqual([row["n"] for row in rows], [2, 2])
+
+    def test_sweep_run_prints_no_holdout_numbers(self):
+        """A sweep table is built from tune-split cases only, so the printed table carries no
+        holdout case id and no count including the holdout row -- the honesty rule R1 exists
+        to enforce for every other split use in this file. (The header saying holdout is
+        deliberately excluded is fine; a holdout *number* leaking is what this guards.)"""
+        mod = self.mod
+
+        def fake_hybrid_retrieve(conn, case, *, query_vector, vectors_by_id, fts_k, top_k, with_recall):
+            return []
+
+        def fake_embed_one(ollama_base, model, text, *, timeout_s=30.0):
+            return [0.1, 0.2], 1.0
+
+        cases = self._sweep_cases(mod)
+        with mock.patch.object(mod, "_hybrid_retrieve", fake_hybrid_retrieve), mock.patch.object(
+            mod, "_embed_one", fake_embed_one
+        ):
+            rows = mod._sweep_weights(
+                conn=None,
+                ollama_base="http://example.invalid",
+                model="nomic-embed-text",
+                vectors_by_id=mod.DomainVectors(compat={}, strategy={}),
+                cases=cases,
+                pairs=[(1.0, 1.0)],
+            )
+            captured = io.StringIO()
+            with contextlib.redirect_stderr(captured):
+                mod._print_sweep_table(rows)
+
+        # n=2 (tune only, never 3 -- the holdout row is excluded, not just unlabeled)
+        self.assertEqual(rows[0]["n"], 2)
+        printed = captured.getvalue()
+        self.assertNotIn("holdout-1", printed)
+        self.assertIn(" 2 ", printed)
+
+    def test_parse_weight_pairs_reads_the_default_sweep_list(self):
+        mod = self.mod
+        pairs = mod._parse_weight_pairs(mod.DEFAULT_SWEEP_WEIGHTS)
+        self.assertEqual(pairs[0], (1.0, 1.0))
+        self.assertEqual(pairs[-1], (1.0, 1.5))
+        self.assertEqual(len(pairs), 9)
+
+    def test_parse_weight_pairs_rejects_a_malformed_pair(self):
+        mod = self.mod
+        with self.assertRaises(ValueError):
+            mod._parse_weight_pairs("1:1,not-a-pair")
 
 
 if __name__ == "__main__":

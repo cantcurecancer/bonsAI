@@ -97,6 +97,12 @@ from backend.services.ollama_embed_service import (  # noqa: E402
     format_embed_query,
 )
 
+# Kept as a module reference, not just the two names, so the weight sweep can set
+# RRF_W_FTS / RRF_W_VEC on the *module* between runs. `_fuse_cards_by_rrf` reads those two
+# names as globals at call time from this same module object, so writing through this
+# reference changes the blend `_hybrid_retrieve` uses without editing the service file.
+from backend.services import knowledge_base_service as kb_service  # noqa: E402
+
 PromptMode = Literal["bare", "prompted"]
 RetrievalArm = Literal["keyword", "vector_only", "rrf_rerank_only", "rrf"]
 Split = Literal["tune", "holdout"]
@@ -817,6 +823,170 @@ def _run_retrieval_arms(
     return out
 
 
+# --- weight sweep: does a different keyword/vector blend beat 1:1? -------------------------
+
+DEFAULT_SWEEP_WEIGHTS = "1:1,0.75:1,0.5:1,0.25:1,0:1,1:0.75,1:0.5,1.5:1,1:1.5"
+
+
+def _parse_weight_pairs(spec: str) -> list[tuple[float, float]]:
+    """Parse ``"w_fts:w_vec,w_fts:w_vec,..."`` into pairs of floats."""
+    pairs: list[tuple[float, float]] = []
+    for chunk in spec.split(","):
+        chunk = chunk.strip()
+        if not chunk:
+            continue
+        fts_str, sep, vec_str = chunk.partition(":")
+        if not sep or not fts_str or not vec_str:
+            raise ValueError(f"bad weight pair {chunk!r}; expected w_fts:w_vec")
+        pairs.append((float(fts_str), float(vec_str)))
+    if not pairs:
+        raise ValueError(f"no weight pairs found in {spec!r}")
+    return pairs
+
+
+def _run_shipping_arm_at_weights(
+    conn: sqlite3.Connection,
+    cases: list[QueryCase],
+    query_vectors: dict[str, list[float]],
+    vectors_by_id: DomainVectors,
+    weights: tuple[float, float],
+) -> list[QueryResult]:
+    """Run the shipping arm (``_hybrid_retrieve`` with recall) over ``cases`` at one
+    ``(RRF_W_FTS, RRF_W_VEC)`` blend, restoring the constants afterward no matter what.
+
+    Query vectors are supplied rather than embedded here -- the sweep embeds each case once
+    and reuses the vector across every pair, since the embed round trip is the slow part and
+    changing the weights does not change the embedding.
+    """
+    old_fts, old_vec = kb_service.RRF_W_FTS, kb_service.RRF_W_VEC
+    kb_service.RRF_W_FTS, kb_service.RRF_W_VEC = weights
+    try:
+        results: list[QueryResult] = []
+        for case in cases:
+            top_k = _eval_top_k(case.ask_mode)
+            q_vec = query_vectors[case.case_id]
+            cards = _hybrid_retrieve(
+                conn,
+                case,
+                query_vector=q_vec,
+                vectors_by_id=vectors_by_id,
+                fts_k=HYBRID_FTS_SHORTLIST_K,
+                top_k=top_k,
+                with_recall=True,
+            )
+            hit_at_1, hit_at_3 = _score_cards(cards, case, top_k)
+            results.append(
+                QueryResult(
+                    case_id=case.case_id,
+                    hit_at_1=hit_at_1,
+                    hit_at_3=hit_at_3,
+                    fts_empty=not cards,
+                    embed_ms=0.0,
+                    top_names=[c.name for c in cards[:3]],
+                )
+            )
+        return results
+    finally:
+        kb_service.RRF_W_FTS, kb_service.RRF_W_VEC = old_fts, old_vec
+
+
+def _embed_query_vectors(
+    ollama_base: str, model: str, cases: list[QueryCase]
+) -> dict[str, list[float]]:
+    """Embed every case's query once, keyed by case id, for reuse across weight pairs."""
+    out: dict[str, list[float]] = {}
+    for case in cases:
+        expanded = _expand_query(case.query, "")
+        q_vec, _ = _embed_one(ollama_base, model, _format_query(model, expanded, "prompted"))
+        out[case.case_id] = q_vec
+    return out
+
+
+def _pair_row(pair: tuple[float, float], results: list[QueryResult]) -> dict[str, Any]:
+    scores = _arm_scores("rrf", results)
+    return {
+        "w_fts": pair[0],
+        "w_vec": pair[1],
+        "n": scores.n,
+        "top1_pct": scores.top1_pct,
+        "top3_pct": scores.top3_pct,
+        "top1_ci": list(scores.top1_ci),
+        "top3_ci": list(scores.top3_ci),
+    }
+
+
+def _sweep_weights(
+    conn: sqlite3.Connection,
+    ollama_base: str,
+    model: str,
+    vectors_by_id: DomainVectors,
+    cases: list[QueryCase],
+    pairs: list[tuple[float, float]],
+) -> list[dict[str, Any]]:
+    """Try every ``(w_fts, w_vec)`` pair on the shipping arm, **tuning rows only**.
+
+    Holding holdout back here is the whole point of the split (R1) -- this function never even
+    looks at a holdout case, let alone scores or prints one.
+    """
+    tuning_cases = [c for c in cases if c.split == "tune" and _case_is_labeled(c)]
+    query_vectors = _embed_query_vectors(ollama_base, model, tuning_cases)
+    return [
+        _pair_row(
+            pair, _run_shipping_arm_at_weights(conn, tuning_cases, query_vectors, vectors_by_id, pair)
+        )
+        for pair in pairs
+    ]
+
+
+def _confirm_holdout(
+    conn: sqlite3.Connection,
+    ollama_base: str,
+    model: str,
+    vectors_by_id: DomainVectors,
+    cases: list[QueryCase],
+    pair: tuple[float, float],
+) -> dict[str, Any]:
+    """Run exactly one candidate pair, and 1:1 for comparison, on the holdout rows only."""
+    holdout_cases = [c for c in cases if c.split == "holdout" and _case_is_labeled(c)]
+    query_vectors = _embed_query_vectors(ollama_base, model, holdout_cases)
+    candidate = _run_shipping_arm_at_weights(conn, holdout_cases, query_vectors, vectors_by_id, pair)
+    baseline = _run_shipping_arm_at_weights(
+        conn, holdout_cases, query_vectors, vectors_by_id, (1.0, 1.0)
+    )
+    return {
+        "candidate": _pair_row(pair, candidate),
+        "baseline": _pair_row((1.0, 1.0), baseline),
+    }
+
+
+def _print_sweep_table(rows: list[dict[str, Any]]) -> None:
+    print("", file=sys.stderr)
+    print("Weight sweep (tuning rows only; holdout is never read here):", file=sys.stderr)
+    header = f"{'w_fts:w_vec':<12} {'n':>4} {'right card first':>18} {'in top 3':>10} {'ci (right first)':>18} {'ci (top 3)':>18}"
+    print(header, file=sys.stderr)
+    for row in rows:
+        pair_label = f"{row['w_fts']:g}:{row['w_vec']:g}"
+        top1_ci = f"[{row['top1_ci'][0]}, {row['top1_ci'][1]}]"
+        top3_ci = f"[{row['top3_ci'][0]}, {row['top3_ci'][1]}]"
+        print(
+            f"{pair_label:<12} {row['n']:>4} {row['top1_pct']:>17.1f}% {row['top3_pct']:>9.1f}% "
+            f"{top1_ci:>18} {top3_ci:>18}",
+            file=sys.stderr,
+        )
+
+
+def _print_confirm_holdout(result: dict[str, Any]) -> None:
+    for label, row in (("candidate", result["candidate"]), ("baseline 1:1", result["baseline"])):
+        pair_label = f"{row['w_fts']:g}:{row['w_vec']:g}"
+        top1_ci = f"[{row['top1_ci'][0]}, {row['top1_ci'][1]}]"
+        top3_ci = f"[{row['top3_ci'][0]}, {row['top3_ci'][1]}]"
+        print(
+            f"{label} ({pair_label}) n={row['n']} right card first {row['top1_pct']}% {top1_ci} "
+            f"in top 3 {row['top3_pct']}% {top3_ci}",
+            file=sys.stderr,
+        )
+
+
 def _slice_results(
     results: dict[str, list[QueryResult]], cases: list[QueryCase], keep: Any
 ) -> dict[str, list[QueryResult]]:
@@ -1447,7 +1617,61 @@ def main() -> int:
         action="store_true",
         help="Rebuild the seed corpus even if corpus.db already exists under --out",
     )
+    parser.add_argument(
+        "--sweep-weights",
+        nargs="?",
+        const=DEFAULT_SWEEP_WEIGHTS,
+        default=None,
+        metavar="W_FTS:W_VEC,...",
+        help=(
+            "Try each RRF weight pair on the shipping arm over tuning rows only, print one "
+            f"table, and exit (never touches holdout). Defaults to {DEFAULT_SWEEP_WEIGHTS}."
+        ),
+    )
+    parser.add_argument(
+        "--confirm-holdout",
+        default=None,
+        metavar="W_FTS:W_VEC",
+        help=(
+            "Run exactly this weight pair, and 1:1 for comparison, on holdout rows only; "
+            "prints the two side by side and exits. Nothing else runs."
+        ),
+    )
     args = parser.parse_args()
+
+    if args.sweep_weights is not None or args.confirm_holdout is not None:
+        try:
+            db_path = _ensure_seed_db(args.out, force_rebuild=args.force_rebuild)
+            conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
+            conn.row_factory = sqlite3.Row
+            docs = _load_corpus_docs(conn)
+            cases = _load_fixture(FIXTURES / "kb_eval_v2.json", "kb_eval_v2")
+            print(f"Embedding corpus for {BASELINE_MODEL}...", file=sys.stderr)
+            vectors_by_id = _build_vectors(args.ollama, BASELINE_MODEL, docs, "prompted")
+
+            if args.confirm_holdout is not None:
+                pair = _parse_weight_pairs(args.confirm_holdout)[0]
+                result = _confirm_holdout(
+                    conn, args.ollama, BASELINE_MODEL, vectors_by_id, cases, pair
+                )
+                conn.close()
+                _print_confirm_holdout(result)
+                return 0
+
+            pairs = _parse_weight_pairs(args.sweep_weights)
+            rows = _sweep_weights(conn, args.ollama, BASELINE_MODEL, vectors_by_id, cases, pairs)
+            conn.close()
+            _print_sweep_table(rows)
+            return 0
+        except ValueError as exc:
+            print(f"bad weight pair: {exc}", file=sys.stderr)
+            return 1
+        except EmbedError as exc:
+            print(f"embed error: {exc}", file=sys.stderr)
+            return 1
+        except subprocess.CalledProcessError as exc:
+            print(f"build_rag_db failed: {exc}", file=sys.stderr)
+            return 1
 
     try:
         run_bakeoff(
