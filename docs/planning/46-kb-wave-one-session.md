@@ -36,7 +36,16 @@ report [37](37-rag-status-report.md); the answer-quality plan [30](30-kb-answer-
 - **The search test has 341 questions:** 221 tuning rows and 120 blind rows; 289 game questions and 52
   troubleshooting questions, 17 of the troubleshooting ones blind. None mentions any of the twelve new
   games. No row uses a second right answer yet.
-- **The answer test has 37 cases,** all on the old thirteen games, and runs with the character voice off.
+- **The answer test has 37 cases,** all on the old thirteen games, and runs with the character voice off and
+  thinking off.
+- **Game notes are attached and then thrown away before the model reads them** (roadmap, ★★★, measured on the Deck
+  2026-09-06, filed after this plan was first written). With the voice on and thinking at medium, a Strategy question
+  sends about 2,500 to 2,800 prompt tokens plus a 2,112-token reply budget into a 4,096-token window. Ollama keeps
+  the end and drops the start without a word: the identity, the rules and the cards. The voice suffix is appended
+  last, so it survives; the cards do not. Asked about a Hades boss with fifteen Hades cards attached, the reply was
+  generic. **The PC answer test cannot see this**, because it runs with the voice off and thinking off, which keeps
+  every prompt inside the window. Lane C now owns this bug (§ 6C) and the answer test gets the switches that let
+  the PC reproduce a Deck-shaped prompt.
 - **No weight sweep exists.** The word "sweep" in the search test script means the embedding-model
   comparison, not the blend weights. The blend weights are two constants read at fusion time.
 - **The answer test has no "answer first" variant** and no voice switch.
@@ -50,13 +59,15 @@ report [37](37-rag-status-report.md); the answer-quality plan [30](30-kb-answer-
 |---|---|---|---|---|
 | 1 | ★★★★ | **Blind questions for the twelve new games**, added to the search test; answer-test rows for the same games | Nothing yet. This is the gate: without it the new cards cannot be measured and should not be released | A (blind), E (answer rows) |
 | 2 | ★★ / ★★★★ | **Eval tooling and the weight sweep** — a sweep flag, per-question output for what ships, rows that may name a second right answer | Nothing directly. If the sweep agrees with the blind reading, the right card lands first about nine points more often on realistic questions (63% against 54%) for a two-line change | B |
-| 3 | ★★ | **Prompt diet** — drop the citation instruction nobody can see, send the screenshot rules only with a screenshot, try the cards next to the question. Plus a one-flag voice switch on the answer test | Slightly faster first word, and a few points more of the card's facts kept, because the model reads fewer rules per fact. Measured, not assumed | C |
+| 3 | ★★★ | **Prompt diet, and the cards no longer thrown away** — drop the citation instruction nobody can see, send the screenshot rules only with a screenshot, put the cards next to the question, and shorten the reply budget only when the prompt would not fit. Plus voice and thinking switches on the answer test | A Strategy question with the voice on gets an answer built from the cards instead of vague general tactics. Today the cards are silently cut off the front of the prompt on every such question. Also slightly faster first word and fewer rules per fact. Measured, not assumed | C |
 | 4 | ★★ | **Symptom-only troubleshooting reach** — a question that describes the problem without naming it reaches the right tip | *"The game drops me back to the library a few minutes in"* gets the crash tips. Today it gets nothing because the word "crash" is absent | D |
 | 5 | ★★★ | **One corpus point release** in today's format, carrying the 105 new cards | Twelve more games get notes instead of the model's memory. Nothing already installed goes stale, because the format does not change | orchestrator, with your go |
 
 Not in this wave, on purpose: the "not in my notes" line, follow-ups remembering, the answer-first test,
-the embedding-model pull, spoiler tiers, the starting-out kind, the card style pass. They are wave two and
-the format-change release; see the roadmap.
+the embedding-model pull, spoiler tiers, the starting-out kind, the card style pass, and the measured
+context-window experiment (8,192 needs a Deck memory reading and is its own roadmap entry). They are wave two and
+the format-change release; see the roadmap. The focus bugs in the roadmap's Bugs list are a separate session
+(§ 3, item 7).
 
 ## 3. The calls, answered 2026-09-06 (D80)
 
@@ -73,6 +84,18 @@ the format-change release; see the roadmap.
    confirmation agree, the orchestrator flips the two constants and writes the numbers into the commit and § 11.
 5. **Run on once a milestone verifies.** What counts as verified is the gate table at the end of § 5. No pause for
    confirmation between lanes, landings or eval runs.
+6. **Open — answer in the "go" message: when the prompt would not fit the window, shorten the reply instead of losing
+   the cards.** Recommended and written into Lane C as a commit: keep the thinking budget, shrink only the visible
+   reply so that prompt plus reply fits 4,096, never below 600 visible tokens, and log one line saying it did. The
+   trade is a shorter Strategy reply on the questions that overflow today, against a reply built from the cards. The
+   diet alone claws back about 340 tokens and the overflow is 500 to 820, so the diet alone does not close it. The
+   other two options — raising the window to 8,192, or lowering Strategy's reply cap for everyone — stay separate
+   calls (the window one needs a Deck memory measurement and is already its own roadmap entry). Strike commit 6 in
+   Lane C if you say no.
+7. **The focus bugs on the roadmap are not in this wave.** They need the Deck as the gate and Opus at extra-high after
+   a measurement; this wave keeps the Deck free until the QA session. They fit a separate bug-fixing session of
+   their own (plan 35's shape) that another chat can run alongside, on its own branch, because none of them touch
+   the Python, fixtures or scripts this wave edits.
 
 ## 4. Who does what
 
@@ -205,7 +228,7 @@ it. Both in plain language: what a person now sees, then the numbers.
 | Labels applied | Every new row has a label or a reason for a blank; `npm run test:py` green (a label must name a real card) |
 | Sweep decided | The tuning table and, if a pair won, the blind confirmation are in § 11; the constants changed or "no change" recorded under D68 |
 | Symptom-only landed | Lane D's 17-row table re-run once on the landed branch and matching its report; the four blind natural sentences reach their topic |
-| Prompt diet landed | The landed answer run is within two points of Lane C's "after" on facts kept and menu, fence-not-misfired at or above 91 of 96, prompt shorter |
+| Prompt diet landed | The landed answer run is within two points of Lane C's "after" on facts kept and menu, fence-not-misfired at or above 91 of 96, prompt shorter; **the Deck-shaped run (voice on, thinking medium) warns on zero cases** |
 | Release built | Manifest shows today's date and 266 sections; publish check passed; Python tests green |
 | Release pushed | Both channels read back the same version over the wire |
 | Deck rows written | § 8 carries every exact sentence for every batch, in one message for the maintainer to confirm |
@@ -375,11 +398,24 @@ output (a case whose top three are all from the wrong game, say).
 
 ### Lane C — the prompt diet, a placement switch, and a voice switch on the answer test
 
-**Files you may edit:** `py_modules/backend/services/ollama_prompts.py`, `tests/test_ollama_service.py`,
-`scripts/eval_kb_answers.py`. **Read-only:** `main.py` (`_build_system_prompt` at `:2972` passes the stacked
-knowledge block as `early_context_suffix`), `py_modules/backend/services/game_ai_request.py:365` (where the
-Proton excerpt and the knowledge block are stacked into one string). **Forbidden:** the knowledge-base
-service, the fixtures.
+**Files you may edit:** `py_modules/backend/services/ollama_prompts.py`,
+`py_modules/backend/services/ollama_service.py` (the window warning and the request options only),
+`tests/test_ollama_service.py`, `scripts/eval_kb_answers.py`. **Read-only:** `main.py` (`_build_system_prompt` at
+`:2972` passes the stacked knowledge block as `early_context_suffix`),
+`py_modules/backend/services/game_ai_request.py:365` (where the Proton excerpt and the knowledge block are stacked
+into one string), `py_modules/backend/services/ollama_ask_budgets.py` (the reply budgets: Strategy's visible cap is
+1,600, thinking at medium adds 512, `resolve_ask_token_budgets` at `:65`),
+`py_modules/backend/services/ai_character_service.py:134` (the voice suffix is appended **last**, which is why it
+survives an overflow). **Forbidden:** the knowledge-base service, the fixtures.
+
+**The bug you also own.** Roadmap: *Game notes are attached and then thrown away before the model reads them*
+(★★★, measured on the Deck 2026-09-06; detail in `docs/roadmap-details.md` under the same title). With the voice on
+and thinking at medium, a Strategy prompt is about 2,500 to 2,800 tokens; the reply budget is 2,112; the window is
+4,096. Ollama drops the start of the prompt silently — identity, rules, cards — and the reply comes from the model's
+memory while Show details still says the cards were attached. The warning that caught it
+(`prompt_window_warning`, `ollama_service.py:622`, used at `:684`) only writes to the log. Two things fix it
+together: the diet and late placement below (a card at the end of the prompt survives), and commit 6 (a prompt that
+would not fit shortens the reply instead of losing its start).
 
 **Where things are** (all in `ollama_prompts.py`): `build_system_prompt` at `:1077`; the dynamic block
 (`:1176-1186`) always includes three screenshot rule lines (`vision_priority_line`,
@@ -392,7 +428,7 @@ mentions it), and the citation instruction was obeyed once in 89 recorded asks. 
 hardware appendix — must stay true), `:1313-1330` (the knowledge-base clause), `:829` (visual context line
 with one image).
 
-**Four commits, tests first, in this order.**
+**Six commits, tests first, in this order.**
 
 1. **The "before" numbers are the orchestrator's wave-0 answer baseline** (`before-wave1` in
    `docs/archive/research/`), taken on the same corpus and model; do not repeat that run. Your first commit adds a
@@ -416,22 +452,45 @@ with one image).
    `build_system_prompt` (same monkeypatch as the variant hook) to pass the keyword. Add `--voice <preset_id>`
    to the harness: sets `ai_character_enabled` true and `ai_character_preset_id` in `write_harness_settings`
    (`:133`), rejects an id not in `VALID_PRESET_IDS` from `ai_character_service`, and records the preset in
-   the report meta. The maintainer's preset is `alig_ali_g`; do not run a voice measurement yourself — a voice bug
-   is being fixed elsewhere and the orchestrator runs it once that fix lands. Tests for both flags on the
-   harness's settings writer.
-5. **Measure after.** Two runs: `--samples 3 --label after-diet` and `--samples 3 --kb-placement late --label after-diet-late`.
-   The noise band between two identical runs on this test is about two points. Read: the diet is a keep if
-   facts kept and menu present are not below "before" by more than two points, fence-not-misfired stays at or
-   above 91 of 96, and `prompt_chars` fell. Late placement wins only if it beats early on facts kept by more
-   than the noise band with nothing else worse. **If late wins, flip the default in one more commit** with the
-   numbers in the message; if not, leave the default and say so.
+   the report meta. The maintainer's preset is `alig_ali_g`; do not run a voice *quality* measurement yourself — a
+   voice bug is being fixed elsewhere and the orchestrator runs it once that fix lands. Also add
+   `--think off|low|medium|high`, which writes `ask_think_effort` into the harness settings (default `off`, the
+   fresh-install value; the maintainer's Deck runs `medium`). And two report columns that make the overflow visible:
+   **window warnings** (how many cases logged `prompt_window_warning`; the harness already captures the plugin log,
+   see `:384`) and **prompt tokens** (mean of the warning's own estimate, or `estimate_prompt_tokens` over the
+   captured messages). Tests for all three flags on the harness's settings writer and for the two columns.
+5. **Measure after, PC-shaped.** Two runs: `--samples 3 --label after-diet` and
+   `--samples 3 --kb-placement late --label after-diet-late`. The noise band between two identical runs on this
+   test is about two points. Read: the diet is a keep if facts kept and menu present are not below "before" by more
+   than two points, fence-not-misfired stays at or above 91 of 96, and `prompt_chars` fell. Late placement wins on
+   the PC-shaped run only if it beats early on facts kept by more than the noise band with nothing else worse.
+   **Then measure Deck-shaped**, which is the run that matters for the bug: `--samples 1 --voice alig_ali_g --think medium --label deck-shaped-before`
+   at the parent commit of your first diet change (use `git stash` or a scratch checkout of the tip), and the same
+   at your head with `--kb-placement early` and again with `late`. Read only the **window warnings** and
+   **prompt tokens** columns from these runs until the voice fix lands; the quality columns are noise while the
+   voice bug is open. Expect "before" to warn on most Strategy cases; expect the diet to cut tokens by about 340
+   and not to clear the warnings on its own. **Late placement is the default if it wins on the PC-shaped run or
+   ties there** — because on a Deck-shaped prompt the cards at the end are the ones that survive. Flip the default
+   in one commit with the numbers in the message.
+6. **A prompt that would not fit shortens the reply instead of losing its start** (§ 3 call 6; skip this commit
+   only if the "go" struck it). In `ollama_service.py`, where the request options and the warning are built
+   (`:684`): when the estimate says prompt plus `num_predict` exceeds the window, keep the thinking budget whole
+   and reduce the **visible** part of `num_predict` until it fits, never below 600 visible tokens; if even the
+   floor does not fit, send the floor and keep the warning. Log one line naming the old and new `num_predict`.
+   The estimate is 3.5 characters per token and errs low on purpose; do not change it. Tests with fake messages:
+   a prompt that fits is untouched; a 2,800-token prompt at Strategy with thinking medium gets a visible budget
+   that fits and its thinking budget intact; a prompt past the floor still sends the floor and warns. Re-run the
+   Deck-shaped run at head: **window warnings must read zero** on every case, and the clamp line must appear only
+   on the cases that warned before.
 
-**Done when:** the commits above, `npm run test:py` green, and the three report summaries are in your
-report. Do not commit the report files.
+**Done when:** the commits above, `npm run test:py` green, the PC-shaped summaries and the Deck-shaped
+warning and token counts are in your report, and the Deck-shaped run at head warns on zero cases. Do not commit
+the report files.
 
 **Report:** hashes; test names; a three-row table (before, from the wave-0 baseline / after / after-late × the
-summary columns plus prompt chars); the placement verdict and why; anything in the prompt that looked dead and
-you left alone.
+summary columns plus prompt chars); a second table for the Deck-shaped runs (before / diet early / diet late /
+with the clamp × window warnings, mean prompt tokens, mean `num_predict` sent); the placement verdict and why;
+anything in the prompt that looked dead and you left alone.
 
 ### Lane D — symptom-only troubleshooting reach
 
@@ -560,7 +619,7 @@ handed to an Opus extra-high session; the routing table is explicit that failure
 | **R1 Corpus update through the plugin** | Old corpus installed | Ollama tab → *Update knowledge base* | The tab shows the new version (the release date); a game question's Show details names it; 266 cards reachable (probe if needed) | `runs/W1-R1-update.json`, plugin log tail |
 | **R2 Speed skips the meaning search; Strategy pays once** (closes the owed Speed half of the recall row and starts the latency budget) | DRG Survivor running; batch of the three recall sentences | Throwaway question; then each sentence in Speed, then in Strategy | Speed: Show details reads *Keyword search* and no embed time; Strategy: *Keyword + meaning* and an embed time at or under 1.0 s on the second and third questions | `runs/W1-R2-*.json` |
 | **R3 Symptom-only reach** | No game running; Speed; batch of the four blind sentences (controller, storage, crash, audio) plus *"thank you very much"* | Ask each | The four attach a tip on the right topic and Show details reads the new tip-sheet label; the thank-you attaches nothing; the embed time on the four is at or under 1.5 s | `runs/W1-R3-*.json` |
-| **R4 Prompt diet on device** | DRG Survivor running; Strategy; batch of three answer-test sentences the orchestrator picks from the fixture | Ask each; then one question with a screenshot attached | Replies keep the card's facts and the branch menu; no citation-fence text appears in any reply; the screenshot reply describes what is in the image | `runs/W1-R4-*.json`, the saved chat |
+| **R4 Prompt diet on device, and the cards survive** (closes *Game notes are attached and then thrown away*) | Voice on, thinking at medium (the maintainer's own settings); Hades running; Strategy; batch: *"How do I beat the Bone Hydra in Hades?"*, *"Why does my game stutter after a few minutes?"*, plus three answer-test sentences the orchestrator picks from the fixture | Ask each; then one question with a screenshot attached; then read the plugin log | The Bone Hydra reply names Hades-specific tactics from the cards, not generic dodge advice; the log shows **no** window warning on any of the five (the clamp line may appear instead); replies keep the card's facts and the branch menu; no citation-fence text appears; the screenshot reply describes what is in the image | `runs/W1-R4-*.json`, the saved chat, the log tail |
 | **R5 The twelve new games** (row KB-TRANCHE-01) | Batch of twelve: one blind question per game, taken from Lane A's rows so the eval and the device agree | Steam titles: launch the game, ask in Strategy. Emulated titles: with nothing running, ask the question with the game named in it (the title-in-question path), or launch through the emulator if time allows. Fallout: New Vegas needs the install first | For each: at least one card attaches; the credit line names the wiki and a date; the spoiler behaviour matches the title's profile; the reply is about that game and no other | `runs/W1-R5-<tag>.json` |
 | **R6 The weights** (only if wave 2 changed them) | DRG Survivor running; two paraphrase questions the orchestrator picks from the sweep's per-question output — ones that flipped from miss to hit | Run the SSH probe script for each (cards cannot be counted on screen) | The right card is first | probe output |
 | **R7 The five August rows** (optional, one evening) | One batch per row's sentences | As each row says in `docs/testing.md` | As each row says | as each row says |
@@ -599,6 +658,10 @@ to § 11 of this file: for each row, pass or fail, the reading, the file. Plain 
   questions had.
 - **The answer test is noisy by about two points.** Three samples per case, same corpus, same model, same
   PC, and no other eval running at the same time when a run is being compared.
+- **The overflow only shows on a Deck-shaped prompt.** Voice on and thinking at medium are the maintainer's
+  settings, not the test's defaults. Lane C's Deck-shaped runs exist for exactly this; a green PC-shaped run alone
+  proves nothing about the bug. And while the voice bug is open, only the warning and token columns of those runs
+  are trusted.
 - **Two rules collide on Speed mode** (§ 3 call 1). The lane does not start until it is answered.
 - **The sweep can say "no clear winner."** That is a finding, recorded under D68; the weights stay.
 - **Shared Ollama on the PC.** Five lanes may build corpora and run evals at once; that is fine for
