@@ -1178,9 +1178,14 @@ def build_system_prompt(
         else "If the user asks about gameplay context, prioritize game-specific visual cues over Steam UI."
     )
     thin_context = not (app_id or "").strip() and not (app_name or "").strip() and not prepared_images
+    # These three rules only matter once there is something on screen to read — an unconditional
+    # inject spent tokens on every Ask, image or not.
+    screenshot_rules = (
+        f" {vision_priority_line} {genre_franchise_cue_line} {game_intent_line}" if prepared_images else ""
+    )
     dynamic_block = (
         f"{game_line} {attachment_game_context_line} {attachment_name_context_line} {vdf_context_line} "
-        f"{vision_line} {vision_priority_line} {genre_franchise_cue_line} {game_intent_line}\n\n"
+        f"{vision_line}{screenshot_rules}\n\n"
     )
     if thin_context:
         dynamic_block += THIN_CONTEXT_HONESTY_CLAUSE

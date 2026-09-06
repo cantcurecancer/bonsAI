@@ -838,6 +838,54 @@ class OllamaServiceTests(unittest.TestCase):
         self.assertLess(i_dyn, i_gp)
         self.assertLess(i_gp, i_hw)
 
+    def test_build_system_prompt_screenshot_rules_absent_without_an_image(self):
+        """The three screenshot-only rule lines cost tokens on every Ask, image or not.
+        They should only join the prompt when there is something to look at."""
+
+        def lookup_app_name(_app_id: str) -> str:
+            return ""
+
+        def lookup_vdf(_path: str) -> dict:
+            return {}
+
+        prompt = build_system_prompt(
+            question="How do I fix stutter?",
+            app_id="123",
+            app_name="Game Name",
+            normalized_attachments=[],
+            prepared_images=[],
+            lookup_app_name=lookup_app_name,
+            lookup_screenshot_vdf_metadata=lookup_vdf,
+            ask_mode="speed",
+        )
+        self.assertIn("No visual context attachments provided.", prompt)
+        self.assertNotIn("prioritize identifying gameplay/world content", prompt)
+        self.assertNotIn("Use recognizable in-game HUD motifs", prompt)
+        self.assertNotIn("Minimize Steam overlay/plugin UI mentions", prompt)
+        self.assertNotIn("prioritize game-specific visual cues over Steam UI", prompt)
+
+    def test_build_system_prompt_screenshot_rules_present_with_an_image(self):
+        def lookup_app_name(_app_id: str) -> str:
+            return ""
+
+        def lookup_vdf(_path: str) -> dict:
+            return {}
+
+        prompt = build_system_prompt(
+            question="How do I fix stutter?",
+            app_id="123",
+            app_name="Game Name",
+            normalized_attachments=[],
+            prepared_images=[{"image_b64": "abc"}],
+            lookup_app_name=lookup_app_name,
+            lookup_screenshot_vdf_metadata=lookup_vdf,
+            ask_mode="speed",
+        )
+        self.assertIn("Visual context attachments provided: 1.", prompt)
+        self.assertIn("prioritize identifying gameplay/world content", prompt)
+        self.assertIn("Use recognizable in-game HUD motifs", prompt)
+        self.assertIn("RULE: Ship of Harkinian (SoH)", prompt)
+
     def test_build_system_prompt_speed_includes_qam_sweet_spot_line(self):
         """Efficiency / sweet spot questions get QAM Performance lever instructions."""
 
