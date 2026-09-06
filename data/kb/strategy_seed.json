@@ -160,6 +160,19 @@
         "action",
         "single-player"
       ]
+    },
+    {
+      "game_id": 14,
+      "app_id": "362890",
+      "igdb_id": null,
+      "canonical_title": "Black Mesa",
+      "edition": null,
+      "platform": "Steam",
+      "genres": [
+        "fps",
+        "action",
+        "single-player"
+      ]
     }
   ],
   "aliases": [
@@ -282,6 +295,18 @@
     {
       "alias": "hl2",
       "game_id": 13
+    },
+    {
+      "alias": "black mesa",
+      "game_id": 14
+    },
+    {
+      "alias": "black mesa source",
+      "game_id": 14
+    },
+    {
+      "alias": "bms",
+      "game_id": 14
     }
   ],
   "sections": [
@@ -1959,6 +1984,127 @@
       "source_url": "",
       "source_license": "bonsAI-maintainer",
       "source_version": "seed-1.2"
+    },
+    {
+      "section_id": 164,
+      "game_id": 14,
+      "section_type": "mechanic",
+      "name": "Starting out in Black Mesa",
+      "card": "Black Mesa is Half-Life rebuilt from the ground up on the Source engine, with new art, sound and voice work but the original's chapters, weapons and enemies kept on purpose rather than added to. The one exception is Xen: those chapters are mostly new work and far longer than the 1998 originals, so budget more time for the alien world than veterans remember. Expect the same shape of game throughout: no cutscenes, scripted scenes you walk through, a crowbar for crates and vents, and fights that go better from a doorway than from the middle of a room. There are 25 achievements, Workshop support and a separate deathmatch mode; the campaign itself is single-player only.",
+      "source_url": "https://combineoverwiki.net/wiki/Black_Mesa_(video_game)",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 165,
+      "game_id": 14,
+      "section_type": "boss",
+      "name": "Tentacles",
+      "card": "Three blade-headed stalks in the missile silo in Blast Pit, and nothing you carry can kill them: shooting a stalk only drives it into its pit for a moment, and one strike kills you outright. They are blind and hunt by sound and vibration, gently tapping the floor and then hammering wherever they heard you, so crouch-walk past them and never run in the open. A grenade lobbed to the far side of the silo pulls all three heads to the noise while you cross. The chapter's real job is elsewhere: restore power, oxygen and fuel to the rocket motor and fire it, which burns the whole cluster out and opens the tunnels beyond.",
+      "source_url": "https://combineoverwiki.net/wiki/Tentacle",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 166,
+      "game_id": 14,
+      "section_type": "boss",
+      "name": "Gonarch",
+      "card": "The giant four-legged headcrab mother in the caverns of Xen. Its shell shrugs off almost everything; the pale egg sac swinging under its body is the only part that takes damage, so any shot not at the sac is wasted. At range it lobs white acid mortars from its back, up close its front legs slash for huge damage, and whenever it sees you it births baby headcrabs in pairs, up to twenty alive at once: weak and fast, there to distract you from the sac. It walks the webbing over the pits that you and its children fall straight through, so watch your footing more than its feet. When it dies the sac bursts and releases one last brood, so back away before the pop.",
+      "source_url": "https://combineoverwiki.net/wiki/Gonarch",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 167,
+      "game_id": 14,
+      "section_type": "boss",
+      "name": "Nihilanth",
+      "card": "The floating giant at the very end. Its head stays shut while the orange energy spheres orbiting it hold a charge, and it refills them from the crystals around the chamber, so the fight is the crystals first: break every one, then wait for the head to open like a flower and shoot the sphere inside, which is the only weak spot. Meanwhile it fires streams of purple bolts, calls in Vortigaunts and Alien Controllers, and throws big green orbs that teleport you into side arenas full of aliens; those orbs can be shot down before they reach you. Keep moving between crystals rather than standing to trade shots.",
+      "source_url": "https://combineoverwiki.net/wiki/Nihilanth",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 168,
+      "game_id": 14,
+      "section_type": "enemy",
+      "name": "Gargantua",
+      "card": "Six metres of blue armour with one glowing eye, immune to ordinary bullets and a little faster than you on foot. It cooks anything close with the flame jets in its hands, and its stomp sends a red shockwave along the floor that hits hard but travels slowly, so step sideways rather than backing up. You are not meant to shoot it down; each meeting has a tool nearby. The first one dies to the track power you restore in Sector E, the one in the motorpool dies to the airstrikes you call from the Marines' tactical map, and the one on Xen can be waited out from a crevice once it starts patrolling. If you must fight one, only explosives and energy weapons hurt it: rockets, satchel charges, the Gluon Gun.",
+      "source_url": "https://combineoverwiki.net/wiki/Gargantua",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 169,
+      "game_id": 14,
+      "section_type": "enemy",
+      "name": "HECU Marines",
+      "card": "The soldiers sent in to clean the facility out, including anyone who saw what happened. They fight in squads and keep in touch by radio, throw grenades to flush you out of cover, and some act as medics or engineers for the rest. Where they have dug in they add laser tripmines, sentry guns and manned emplacements, and outdoors they have air support. They carry submachine guns with grenade launchers, shotguns, light machine guns and sniper rifles, so the corridor habits that beat aliens get you killed here: break line of sight, fight one doorway at a time, and check any room they held for red tripmine beams before you walk in.",
+      "source_url": "https://combineoverwiki.net/wiki/Hazardous_Environment_Combat_Unit",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 170,
+      "game_id": 14,
+      "section_type": "enemy",
+      "name": "Houndeye",
+      "card": "Three-legged with one big compound eye, and always in a pack of up to four. Alone one is timid; together they charge a sonic shockwave that hurts you and smashes crates and glass, and the damage rises with the size of the pack. Kill the leader and the rest lose the ability to charge the wave and fall back to a weak bark, so pick out the one the others follow. A resting pack dozes and wakes to noise, which is your chance to line up the first shot. Bullsquids leave them alone, so a room with both is not a three-way fight.",
+      "source_url": "https://combineoverwiki.net/wiki/Houndeye",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 171,
+      "game_id": 14,
+      "section_type": "item",
+      "name": "Tau Cannon",
+      "card": "The gauss gun: a particle beam that draws straight from the suit's uranium reserve, shared with the Gluon Gun, so it never reloads. Tap-fire sends fast yellow beams that chew through unarmoured targets; hold the alternate fire to charge a white-hot shot that punches through several enemies or a wall and explodes on the far side, which turns cover into a trap for whoever is behind it. Beams also bounce off walls at shallow angles. Fire the charged shot straight down and the recoil throws you upward, the gauss jump, which reaches ledges nothing else does.",
+      "source_url": "https://combineoverwiki.net/wiki/Tau_Cannon",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 172,
+      "game_id": 14,
+      "section_type": "item",
+      "name": "Gluon Gun",
+      "card": "The last weapon in the game, handed over in the Lambda Core test chamber by the scientist who built it and cannot bring himself to use it. It pours out a continuous spiral of energy that destroys most things in seconds, with splash at the point of contact, stays accurate at long range, and goes straight through bulletproof armour, which makes it the one gun that genuinely hurts a Gargantua. It shares the uranium reserve with the Tau Cannon and drinks it fast, so it is not a room-clearing tool; save it for whatever nothing else is denting. It does not work underwater.",
+      "source_url": "https://combineoverwiki.net/wiki/Gluon_Gun",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 173,
+      "game_id": 14,
+      "section_type": "item",
+      "name": "Hivehand",
+      "card": "The living alien rifle the Alien Grunts carry, though you cannot take one from a body: one lies past the tripmine room in Surface Tension and another in the Lambda supply depot before the main portal, in case you missed the first. It grows its own ammo, eight hornets loaded at a time and replaced within seconds, and the primary-fire hornets home in on living targets around corners and chase whatever runs. That makes it the free answer to headcrabs, barnacles and Alien Controllers without spending real ammunition. Alternate fire dumps all eight fast and straight, good for barrels and point-blank damage. Hornets ignore anything inorganic and bounce off looking for something alive.",
+      "source_url": "https://combineoverwiki.net/wiki/Hivehand",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 174,
+      "game_id": 14,
+      "section_type": "item",
+      "name": "Long Jump Module",
+      "card": "Handed to you at the end of Lambda Core for the world beyond, and the only way across Xen's floating islands, where the gravity is weak and a missed gap drops you into the void. Crouch and then jump in quick succession and the suit launches you a long way forward; the training course taught it, but Xen is where it counts. Take a couple of practice jumps on solid ground before the first real gap so the timing is in your thumbs, not your head.",
+      "source_url": "https://combineoverwiki.net/wiki/Long_Jump_Module",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
     }
   ],
   "genre_patterns": [
