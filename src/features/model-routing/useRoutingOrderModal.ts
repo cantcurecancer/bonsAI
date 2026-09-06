@@ -15,6 +15,7 @@ import type { DeveloperConnectionStatus } from "../../components/DeveloperTab";
 import { OLLAMA_LOCAL_ON_DECK_DEFAULT_PCIP, type BonsaiSettings } from "../../data/bonsaiSettingsSchema";
 import type { ModelPolicyTierId } from "../../data/modelPolicy";
 import type { PullModelEntry } from "../../data/pullModelCatalog";
+import { patchPendingSessionSettingsSnapshot } from "../../utils/bonsaiSessionSurvival";
 import { callDeckyWithTimeout, formatDeckyRpcError } from "../../utils/deckyCall";
 
 /** Loopback probes can start systemd / `ollama serve`, so they get a much longer deadline. */
@@ -119,6 +120,16 @@ export function useRoutingOrderModal(a: UseRoutingOrderModalArgs) {
               a.buildSettingsPayload(patch),
             ]);
             a.hydrateFromSettings(saved);
+            // The session snapshot captured before this modal opened still holds the OLD try order.
+            // Decky remounts Content when the modal closes, and that restore re-hydrates settings
+            // from the snapshot — over the save that just succeeded — after which the debounced save
+            // writes the old order back to disk. Measured on the Deck 2026-09-06: the file held the
+            // new order at 00:44:20.383 and the old empty one 0.6s later, so setting an order looked
+            // like it did nothing. Same defect as the character picker and the models hub, which both
+            // already patch here; this was the third opener and was missed.
+            patchPendingSessionSettingsSnapshot(
+              kind === "vision" ? { visionModelRoutingOrder: order } : { textModelRoutingOrder: order },
+            );
           },
           onClose: () => {
             a.finalizeShowModalAndRestoreActiveTab(() => handle.Close());

@@ -20,9 +20,12 @@ looking at the cards, the search puts the right card in its top three about four
 first a little over half the time. The small model on the Deck keeps the facts from the cards nine
 times in ten, almost never contradicts them, and since 3 September no longer hides tactics behind a
 spoiler box on games with no story. The search half has been measured to the decimal for a month; the
-answer half has been measured for three days. **The largest limit on quality for a real person is not
-either of those. It is that the library covers thirteen games**, and every other game gets the model's
-memory plus one generic genre card.
+answer half has been measured for three days. **The largest limit on quality for a real person has been
+that the library covers too few games**, and every other game gets the model's memory plus one generic
+genre card. That limit halved on 6 September: eleven more games were written up, taking the library from
+thirteen games to twenty-five and from 161 cards to 266. Those cards are not on the Deck yet; they ship
+with the next corpus release, and their quality is unmeasured until questions are written for them by a
+session that has not read them.
 
 ## 2. What has been built, in order
 
@@ -75,9 +78,11 @@ band when the feature shipped was 0.79–0.90, so it is about a fifth slower, ca
 seconds per answer with a character voice on; the model runs with a 4,096-token window and a Strategy
 prompt is about 1,500–2,000 tokens, of which only about 200 are the cards.
 
-**The library.** 161 cards over 13 titles: 82 mechanic, 22 boss, 22 item, 19 enemy, 14 area, one
-quest, one dungeon. Eleven of the thirteen titles still have no enemy or item cards. 96 cards are
-maintainer-written with no source; 65 come from wikis with credit lines. 124 shared Deck tips.
+**The library.** 266 cards over 25 titles, after the 6 September tranche added 105 cards and twelve games.
+The mix is 128 mechanic, 46 boss, 37 item, 34 enemy, 19 area, one quest, one dungeon. 96 cards are
+maintainer-written with no source; 170 come from wikis with credit lines, across eight source sites.
+124 shared Deck tips, unchanged. The 105 new cards are in the seed but not yet in a release, so nothing
+on a Deck has them.
 
 ## 4. What is open right now
 
@@ -107,7 +112,10 @@ switch) have never been run on the Deck.
 **Your calls.** All five were decided on 5 September: "starting out" cards get their own kind; the answer-first
 shape is tested on the PC and then the Deck before a decision; structured cards stay prose; the blend-weight sweep runs
 now and the weights change if it agrees; and a first tranche of new titles comes from your own Steam library. The
-library was read the same day, the wikis checked, and nine titles picked (plan 40 § 6).
+library was read the same day, the wikis checked, nine titles picked, and that evening the shelf and the collections
+were confirmed on the Deck itself (plan 40 § 3 and § 6). The cards for all eleven games were written on 6 September
+(plan 40 § 7). What that tranche still needs is blind test questions from a session that has not read the cards, then
+one corpus release, then the device check.
 
 ## 5. Next phases: what each buys, and what it costs
 
@@ -161,8 +169,10 @@ them straight; what remains is coverage, follow-up memory, and the things the te
 1. **The Deck and the knowledge-base files are held by the bug-fixing session** started today. Its
    lane owns the prompt text, the knowledge-base service and the embedding service. Knowledge-base
    code edits should wait for it or go through it.
-2. **The screen walk that confirms the shelf**, once the Deck is free. The five calls and the title pick
-   were all decided on 5 September; the card writing needs no Deck.
+2. **The eleven new games have cards but no questions, and no release.** Nothing about them can be measured
+   until a different session writes blind questions for them, and nothing reaches a Deck until the next corpus
+   release. Fallout: New Vegas is also owned but not installed on the device, so its cards cannot be judged
+   in place until it is.
 3. **The "no new titles" rule** for Phase 5 is reopened for one tranche only; the catalog stays its own
    phase.
 4. **Any schema change is a release that stales every installed corpus.** Per-game tips, a new card

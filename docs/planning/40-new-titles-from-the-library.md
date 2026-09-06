@@ -4,8 +4,9 @@ Written 2026-09-05, after the maintainer said yes to a one-off tranche of new ti
 base and asked for the list to come from their own Steam library. Plain language on purpose. Decision
 D69 in the decisions file; roadmap entry under Knowledge base and RAG § Next.
 
-**Status 2026-09-05: the library is read, the wikis are checked, and the titles are picked (§ 6). Owed: the
-screen walk when the Deck is free, then the cards.**
+**Status 2026-09-06: the cards are written — 105 of them across eleven games (§ 7). The library read, the wiki
+checks, the pick and the screen walk are all done. Ten of the eleven games are on the Deck; Fallout: New Vegas
+needs installing. Owed: blind test questions from a different session, one corpus release, then the device check.**
 
 ---
 
@@ -32,11 +33,11 @@ sorted by hours, marks what is installed, and can look up names for games that a
 installed. It reads files only, so it never competes with a session driving the screen. The full list
 is in `build/deck-library.json` (not committed; re-run the script to refresh it).
 
-**B. The screen walk — owed, when the Deck is free.** Open the Library, walk the shelf with the D-pad
-through the rig and the controller bridge, read each tile off the page. What it adds over A: what is
-actually on the shelf right now, the collections you made, and anything hidden. What it cannot add:
-hours (the client keeps none for shortcuts) or games you own but removed. Use it to confirm the
-shortlist in § 6, not to enumerate.
+**B. The screen walk — done 2026-09-05, evening, once you said the Deck was free.** The Library was open
+with nothing running; the rig walked the Recent Games shelf with the D-pad tile by tile, and the collections
+and the hidden list were read off the same page. What it added over A: what is actually on the shelf right
+now, the collections you made, and what is hidden. Findings at the end of § 3. Nothing in them changes the
+pick in § 6; one title (Fallout: New Vegas) needs installing before its cards can be judged on the Deck.
 
 ## 3. What the read found
 
@@ -97,6 +98,46 @@ last-played date, so they are ranked by recency and by what you said: there is g
 | GameCube / Wii (8) | **Super Smash Bros. Melee**, **Paper Mario: The Thousand-Year Door**, **Pikmin 2**, Mario Party 6 and 7, Wind Waker, Twilight Princess, Skyward Sword | not through Steam |
 | Switch / Wii U (10) | Breath of the Wild (three ways), Tears of the Kingdom, DLC entries | BotW April 2026; TotK Dec 2023 |
 | Others | Crash Bandicoot (PS1), Demolition Man, Road Rash, ToeJam & Earl (Genesis), Dynamite Cop (Dreamcast) | Demolition Man May 2026; Crash Oct 2024 |
+
+### What the screen walk added (2026-09-05, evening, Deck free)
+
+Done with the controller rig once you said the Deck was free. The Library home was open with nothing running.
+The ring walked the Recent Games shelf tile by tile (twenty presses right, then twenty back so it ended where
+it started), and the collections and the hidden list were read off the same page. Evidence:
+`runs/plan40-library-shelf-walk.json`.
+
+**The Recent Games shelf, in order, right now:** Deep Rock Galactic: Survivor, Ship of Harkinian, Sifu,
+Half-Life 2, Left 4 Dead 2, Fallout 4, Portal 2, Baldur's Gate 3, State of Emergency, Cyberpunk 2077,
+Spider-Man Remastered, Wreckfest, Dead Space, GTA San Andreas (Definitive), Hades, Team Fortress 2, The
+Invincible, The Red Strings Club, 7 Days to Die, Demolition Man; then the "View more in your Library" button.
+Twenty tiles. None of the nine picked titles is on it: the shelf is this summer, the pick is your back
+catalogue. That is fine; the cards are for games you go back to.
+
+**Collections you made:** Favorites (Battlefield 6 Open Beta, Cyberpunk 2077, Deep Rock Galactic: Survivor,
+Left 4 Dead 2, Palworld, Stardew Valley, Team Fortress 2) and one empty one called "Switch". The rest are the
+ROM manager's: Nintendo 64 (44 games), PlayStation 2 (17), GameCube (6), Switch through Ryujinx (5) and through
+Yuzu (4), Genesis (3), Wii (2), PlayStation (1), Dreamcast (1), and an "Emulation" folder holding the 20
+emulators themselves. 397 games sit in no collection. **Hidden:** three entries, none a game that matters here
+(a friend's pass, a mod manager, Valve's test app).
+
+**The nine, as they sit on the device:**
+
+| Title | On the Deck | Hours | Note |
+|---|---|---|---|
+| Black Mesa | installed (Steam) | 2 | last opened Dec 2025 |
+| Hollow Knight | installed (Steam) | 13 | last opened Jul 2024 |
+| Grand Theft Auto V | Enhanced edition installed (Steam) | 38, plus 233 | the 233 are on the Legacy edition, owned but not installed; the cards cover both |
+| Grand Theft Auto IV | installed (Steam) | 103 | Complete Edition, last opened Dec 2025 |
+| DOOM Eternal | installed (Steam), plus a shortcut copy | under 1 | last opened Feb 2026 |
+| Doom 64 | two shortcuts, one in the Nintendo 64 collection | — | rides along with Eternal's source |
+| Super Mario 64, Mario Kart 64 | shortcuts, Nintendo 64 collection | — | each appears twice (two ROM-manager runs) |
+| Paper Mario: TTYD, Super Smash Bros. Melee, Pikmin 2 | shortcuts, GameCube collection | — | each appears twice |
+| **Fallout: New Vegas** | **owned, not installed** | 13 | last opened Jan 2025; **install it before judging its cards on the Deck** |
+
+So ten of the eleven games are on the device today and one needs an install. Nothing in the walk changes the
+pick. The doubled shortcuts are harmless for the cards, but the plugin will see two tiles with the same name
+for each emulated title, which is worth remembering when a chip or a test row names one. Brotato, if you want
+it as a tenth, is installed with 31 hours.
 
 ## 4. Which games make good candidates
 
@@ -174,26 +215,61 @@ And the hours say the versus plan matters: Counter-Strike 2, Team Fortress 2, PU
 Source are about five thousand hours between them. That plan already has Counter-Strike 2 as its stage
 four.
 
-## 7. The rules for writing
+## 7. The cards, written 2026-09-06
 
-The pick is made (§ 6). Now:
+All eleven games have their notes: **105 cards**, which takes the corpus from 161 cards over 13 games to
+266 over 25. Written in one sitting from pages read live off each wiki the day before.
+
+| Title | Cards | Source, licence |
+|---|---|---|
+| Black Mesa | 11 | Combine OverWiki, CC BY-SA 4.0 |
+| Hollow Knight | 13 | hollowknight.wiki, CC BY-SA 3.0 |
+| DOOM Eternal | 13 | doomwiki.org, CC BY-SA 4.0 |
+| Doom 64 | 5 | doomwiki.org, CC BY-SA 4.0 |
+| Grand Theft Auto V | 9 | GTA wiki, CC BY-SA 3.0 |
+| Grand Theft Auto IV | 8 | GTA wiki, CC BY-SA 3.0 |
+| Fallout: New Vegas | 11 | Fallout wiki, CC BY-SA 3.0 |
+| Super Mario 64 | 6 | Super Mario Wiki, CC BY-SA 4.0 |
+| Mario Kart 64 | 4 | Super Mario Wiki, CC BY-SA 4.0 |
+| Paper Mario: The Thousand-Year Door | 6 | Super Mario Wiki, CC BY-SA 4.0 |
+| Super Smash Bros. Melee | 9 | SmashWiki, CC BY-SA 4.0 |
+| Pikmin 2 | 10 | Pikipedia, CC BY-SA 4.0 |
+
+Every card names the page it came from, the licence that page declares, and the day it was read, so the
+credit line under a reply is right without anyone fixing it later. Roughly a third of the cards are how the
+game works, a quarter are bosses, and the rest are enemies, items and places. Each title opens with a
+"starting out" card. Card lengths run 400 to 880 characters, in the same band as the cards already shipping.
+
+**Two things came out of the writing.** Fandom's wikis were readable after all: only the in-IDE fetcher gets
+refused, so a new tool reads pages live and records the revision and date, which is fresher than an
+archive.org dump and needs no download. And Fandom character pages hide their whole body inside a tab box
+that the first version of the reader skipped, which is why the Fallout companions came back empty until it
+was fixed.
+
+**Rules kept:**
 
 - **Cards in one session, blind test questions in another.** Whoever writes a card can never write its
-  blind question; the test method depends on it.
+  blind question; the test method depends on it. **This session wrote the cards, so it must not write the
+  questions.**
 - **Every card carries its source and licence** the day it is written, never fixed later; the publish
   tool refuses a card without them.
-- **A first pass is six to ten cards per title:** the bosses, the enemies that kill people, the items
-  that matter, one "starting out" card in the new kind.
+- Story is left out where it would spoil: Hollow Knight's two endgame bosses have no cards, GTA's mission
+  plots are named only where they gate a mechanic, and the Fallout factions and endings are absent.
 - **One corpus release for the tranche**, bundled with the other changes that need a rebuild.
-- About a day per title. The lock on new titles stays for anything beyond this tranche.
+- The lock on new titles stays for anything beyond this tranche.
+
+**Still owed:** blind test questions from a session that has not read these cards, added to the retrieval and
+answer fixtures; then one corpus release; then the device check, row **KB-TRANCHE-01**.
 
 ## 8. Checklist
 
 - ✅ Step one A: library read over SSH, 2026-09-05 (90 Steam games with playtime, 121 shortcuts).
 - ✅ Step three: wiki check per candidate (§ 5).
-- ⬜ Maintainer says the Deck is free; step one B: the screen walk confirms the shelf and the collections.
+- ✅ Step one B: the screen walk, 2026-09-05 evening, once the Deck was free (end of § 3). Ten of eleven on the device;
+  New Vegas needs installing.
 - ✅ Maintainer picked the tranche, 2026-09-05 (§ 6); recorded in the decisions file under D69.
-- ⬜ Cards written (one session); blind questions written (another); release.
+- ✅ Cards written, 2026-09-06: 105 across eleven games (§ 7).
+- ⬜ Blind questions written in a different session; corpus release; device check (**KB-TRANCHE-01**).
 
 ## Sources
 
@@ -202,5 +278,6 @@ The pick is made (§ 6). Now:
 - [17-kb-online-versus-strategy-content.md](17-kb-online-versus-strategy-content.md) — the source rule for multiplayer content
 - [37-rag-status-report.md](37-rag-status-report.md) — the zoomed-out picture
 - `scripts/probe_deck_steam_library.py` — the file-read path; `build/deck-library.json` — today's read
+- `scripts/fetch_wiki_live_pages.py` — reading pages live off a wiki with the revision, date and licence (used for every card here)
 - `scripts/fetch_wiki_dump_pages.py` — pulling pages and the declared licence out of an archive.org dump
 - archive.org WikiTeam search results and the wikis' own licence declarations, read 2026-09-05

@@ -3555,8 +3555,26 @@ rides along), a Mario pack (Super Mario 64, Mario Kart 64, Paper Mario: The Thou
 Melee, Fallout: New Vegas, Pikmin 2. Palworld and Devil May Cry 3 were dropped by the maintainer. The maintainer asked
 whether a wiki that declares no licence could be assumed usable: no — silence means all rights reserved by default, and
 the publish tool refuses a card without a licence. Brotato turned out to declare **CC BY-SA 4.0 in its page footer**
-(the machine-readable field is empty), so it is usable if wanted; it is not in the nine. Owed: the screen walk when the
-Deck is free.
+(the machine-readable field is empty), so it is usable if wanted; it is not in the nine. The screen walk was done the
+same evening once the Deck was free: ten of the eleven games are on the device (Steam installs, or shortcuts in the
+Nintendo 64 and GameCube collections), Fallout: New Vegas is owned but not installed, and the pick stands (plan 40 § 3).
+
+**The cards, written 2026-09-06.** All eleven games are in the seed: 105 cards, taking the corpus from 161 cards over 13
+games to 266 over 25. Per title: Hollow Knight and DOOM Eternal 13 each, Black Mesa and Fallout: New Vegas 11, Pikmin 2
+10, Super Smash Bros. Melee and GTA V 9, GTA IV 8, Super Mario 64 and Paper Mario 6, Doom 64 5, Mario Kart 64 4. Every
+card names its page, the licence that page declares and the day it was read, so the credit line under a reply needs no
+later fixing; the licence gate and 938 tests pass. Two findings worth keeping: Fandom answers a plain request from the
+maintainer's machine (only the in-IDE fetcher gets HTTP 402), so `scripts/fetch_wiki_live_pages.py` now reads pages live
+with their revision and date, which beats an archive dump for freshness; and Fandom character pages hide their body
+inside a tab box that the first version of that reader skipped, which returned empty pages until it was fixed.
+
+**One deliberate gap against D65.** The eleven "starting out" cards are typed `mechanic`, not the new `guide` kind D65
+locked, because that kind does not exist yet: adding it touches the seed validator, both language kind lists and a chip
+wording. Re-typing eleven rows afterwards is a one-line change each with no format-version bump, so the order costs
+nothing. When `guide` lands, re-type these along with the three cards D65 already named.
+
+**Still owed on this decision:** blind test questions from a session that has not read these cards, one corpus release,
+then the device check, row **KB-TRANCHE-01** in testing.md.
 
 **Answers, 2026-09-05 (the maintainer answered in chat), all seven locked:**
 

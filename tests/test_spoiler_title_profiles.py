@@ -48,8 +48,10 @@ class SpoilerTitleProfilesTests(unittest.TestCase):
         self.assertEqual(resolve_title_spoiler_profile("", ""), "unknown")
 
     def test_matrix_counts(self):
-        self.assertEqual(len(LOW_NARRATIVE_APP_IDS), 3)
-        self.assertEqual(len(PROTECT_PROGRESSION_APP_IDS), 8)
+        # 3 + 8 until 2026-09-05; the new-titles tranche (D69) added DOOM Eternal to the
+        # low-narrative set and six story titles (GTA V twice, one per Steam build).
+        self.assertEqual(len(LOW_NARRATIVE_APP_IDS), 4)
+        self.assertEqual(len(PROTECT_PROGRESSION_APP_IDS), 14)
 
     def test_every_corpus_title_has_a_spoiler_profile(self):
         """A game in the corpus with no profile silently resolves to ``unknown``.

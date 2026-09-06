@@ -50,6 +50,12 @@ hook gives a gentle heads-up when a session starts work outside this.
 ## Bugs
 
 
+- ★ `[focus]` **Closing the model try order picker drops the highlight onto the tab rather than the button you opened it from** —
+  **OPEN, seen twice 2026-09-06.** After pressing *Done*, the highlight lands on the Ollama tab's outer frame, not back on
+  *Set text model try order…*. It is not a dead end — the next press moves normally — but it costs about thirteen presses to get
+  back to where you were. The *Clear cache…* and *Clear all data…* buttons were taught to hand the highlight back on
+  2026-09-04; the two try-order buttons were not.
+
 - ★ `[focus]` **A greyed-out button still takes the highlight, so the D-pad lands on something that does nothing** —
   **OPEN, measured 2026-09-05.** Watched on the device while a question was in flight: the Ask button is greyed and the
   highlight still lands on it. It is not one button — it is how greyed buttons behave here, so it now also applies to the
@@ -272,22 +278,6 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
   picker go with it. Three tests. Row **CLEAR-ALL-PREFIX-01**; **not run on the device**, because doing so destroys the
   maintainer's chats and settings and that was not asked for.
 
-- ★ `[reply]` **A branch question elides the game name** — **OPEN, found 2026-09-04.** The Ravenholm branch picker asked
-  *"Where are you at in … ?"* with the title replaced by an ellipsis.
-  **VERIFY.** Fixed at the desk 2026-09-05, both halves: the prompt’s worked example no longer contains dots to copy, and a picker that still has a hole where a name belongs is dropped rather than shown. Owed on the Deck: a Strategy question that ends in a picker names its game.
-- ★★ `[reply]` **Stopping a reply leaves no "Stopped" notice** — **OPEN, found 2026-09-04.** Pressing *Stop generation* inside the
-  soft-continue window keeps the partial body correctly and strips the `Continuing…` cue (the 2026-08-15 fix works), but the small
-  **Stopped** notice **SOFT-PREDICT-03** asks for never appears — the word is absent from the turn, the panel and the whole page —
-  and the stopped turn also loses its *Helpful / Not really / Retry* buttons, keeping only *Show details* and *Copy*.
-  **VERIFY.** Fixed at the desk 2026-09-05. The notice was only ever drawn while the turn still counted as live, and a stopped turn is saved to the chat straight away, so it never got the chance. It now shows on the settled turn, and Helpful / Not really / Retry come back with it — Retry re-asks that turn’s own question. Row **SOFT-PREDICT-03**.
-  **Corrected the same day at the maintainer's word:** Helpful and Not really now show **greyed out** on a stopped turn — half an answer is not something to rate, and the rating is saved. Retry stays live. The greyed buttons will take a dead D-pad press, which is filed separately above. **The Deck check is still owed:** three attempts, two answers finished before Stop could be reached and one lost the highlight mid-answer.
-- ★★★★ `[chat]` **A Strategy thread's branch block shows in whichever chat slot you are looking at** — **OPEN, found 2026-09-04.**
-  Slot A was asked a long Ravenholm question; switching to slot B showed B's own two turns followed by A's branch picker,
-  *"Where are you at in … ? A. Just starting in the town area / B. Dealing with a tough encounter or trap"*. It is still in B after
-  A's reply finished, so it is not a mid-stream race — the block is not scoped to the slot that made it. Seen twice: a
-  *"Dodging Asterius's Charge — Progress is saved for this game…"* block from A's Hades thread also rendered while viewing B.
-  Breaks **CHAT-SLOTS-V3-05a**, whose whole point is that a slot shows zero of another slot's content.
-  **VERIFY.** Fixed at the desk 2026-09-05: the branch block is tagged with the chat that asked for it and hidden the moment that chat is not the one on screen, so switching back brings it home rather than leaking it. Row **CHAT-SLOTS-V3-05a**.
 - ★★ `[focus]` **A checklist the model got wrong was left in the reply as raw JSON**, its own D-pad stop that did nothing — **VERIFY.**
   Fixed 2026-08-28: a rejected checklist block is dropped, as a rejected branch block already was. Owed: one sighting on device of a
   reply where it happens. Row **STRAT-CHECKLIST-JSON-01**.
@@ -300,16 +290,24 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
 
 - ★★ `[chips]` **A glow when the chip row runs out of chips** — **VERIFY.** Built at the desk 2026-09-05 under D62 #3: press Left or Right past the first or last suggestion chip and that chip glows briefly, the way a phone lights up the end of a list. Nothing about the row’s existing edge behaviour changes. Reduced motion keeps the cue and drops the movement. **No measurement closes this one** — whether it reads as *end of list* rather than *error* is the maintainer’s call from a recording, and it is on their checklist.
 
+- ★ `[ollama]` **Pulled models join the model try order** — **MOSTLY VERIFIED on the Deck 2026-09-06, one case left.**
+  A model pulled from the picker landed at the **bottom** of the text list, and showed up in the vision list because it can
+  read pictures — while a text-only model and the embedding one stayed out of that list. What is still owed is the opposite
+  placement: with *Allow high-VRAM model fallbacks* on, a **large** pulled model is supposed to go to the **top** instead.
+  That needs a large model on the device and the switch turned on. Row **ROUTING-MERGE-01**.
+
 - ★ `[layout]` **Rows span the QAM panel width** — **VERIFY.** Fixed 2026-08-16 and measured by probe (268 to 300 px); the visual walk
   was never run. Confirm the Main rows look flush and nothing overflows the column. Row **ASK-WIDTH-01**.
-- ★ `[ollama]` **Pulled models join the model try order** — **VERIFY.** RPC wired 2026-08-02. Row **ROUTING-MERGE-01**.
 - ★ `[platform]` **Shell state and tab payload extraction (refactor step 8)** — **VERIFY.** Smoke: six tabs, one Ask, Ollama tab
   after Clear all plugin data. Row **SHELL-PAYLOAD-01**.
 - ★ `[platform]` **VAC check (`bonsai:vac-check`) on-device QA** — **VERIFY.** Implementation complete; run **VAC-02…06** after Tier 0
   **SMOKE-F** passes.
 - ★ `[voice]` **Three voice fixes from early August** — **VERIFY.** A finished install survives *Clear all plugin data*
   (**VOICE-CLEAR-01**, backend half verified), the install button reads right when the engine is already ready
-  (**VOICE-REINSTALL-01**), and the `status()` fix still wants one live recording retried on the Deck.
+  (**VOICE-REINSTALL-01**, done 2026-09-05), and the `status()` fix — a live start/stop recording — **done on the Deck
+  2026-09-06**: the button went *Voice input* → *Stop voice input* → *Voice input* with no error. It recorded silence, so
+  nothing was transcribed; whether speech comes back as the right words is still owed and needs a person to talk to it.
+  Only the *Clear all plugin data* half (**VOICE-CLEAR-01**) is left, and that waits for the final phase.
 - ★★ `[chat]` **The game a chat belongs to, above its title** — **VERIFY.** Shipped 2026-08-30 in quiet text above the slot title;
   only chats created after that date carry the name. Row **CHAT-SLOTS-V3-14c**. It costs a line of height, which cuts against the
   vertical-space goal; decide whether it shows always or only when the row has focus.
@@ -328,7 +326,6 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
   (**PULL-NEW-BADGE-01**) — not run, because wiping data was not authorised. Rows **PULL-CUSTOM-01**, **02**, **PULL-PIN-01** pass.
 - ★★★ `[perms]` **Kids master lock** — **VERIFY.** Shipped 2026-08-09. Rows **KIDS-LOCK-01**, **KIDS-FOCUS-01**, **KIDS-REGRESS-01**
   (and **KIDS-LOCK-02** with a child account). Live CEF Stage 0 confirmation still owed.
-- ★★★ `[platform]` **Legacy-loader shim removal (D11)** — **VERIFY.** RPC probe passed; the Main-tab Ask pass is open. Row **D11-SHIM-01**.
 - ★★★ `[reply]` **Soft reply-length cap and thinking budget** — **VERIFY.** Shipped 2026-08-10. Sub-check 02 verified; 01, 03 and 04
   automated with a Deck confirm owed; 05 needs a real thinking model. [Why](roadmap-details.md#shipped-qa-owed--why-each-was-built-this-way).
 - ★★★★ `[ollama]` **Speed-mode VRAM preload** — **VERIFY, the mechanism proved on the Deck 2026-09-05, the timing not.**
@@ -365,17 +362,20 @@ Same rules as the lists above: five lines an entry, stars ascending in each list
 then to [Done](#done-for-v050) in the same commit. The one difference is that the knowledge base keeps its bugs, its owed
 checks and its plans together here instead of spread over three lists.
 
-**Where things stand (2026-09-05).** 161 cards over 13 games, plus 124 Deck tips. On questions written without seeing the
-cards, the right card is in the top three about four times in five and first about half the time. The Deck's own model
-keeps the card's facts nine times in ten and no longer hides plain tactics behind a spoiler box. The biggest limit for a
-person is still coverage: thirteen games, and every other game gets the model's memory plus one generic genre card.
+**Where things stand (2026-09-06).** 266 cards over 25 games, plus 124 Deck tips, after the tranche nearly doubled both.
+On questions written without seeing the cards, the right card is in the top three about four times in five and first about
+half the time; those numbers are from the old thirteen games and have not been re-measured since. The Deck's own model
+keeps the card's facts nine times in ten and no longer hides plain tactics behind a spoiler box. Coverage is still the
+biggest limit for a person, but less so: twenty-five games now, and every other game gets the model's memory plus one
+generic genre card. The new cards are not on the Deck yet; they ship with the next corpus release.
 
 **Pick up here, in order.**
 
 1. The bug-fixing session running today owns the knowledge-base code files. Let it land the two bugs it holds before
    touching them.
-2. The new titles are picked (plan 40 § 6); writing their cards needs no Deck and can start. The screen walk that
-   confirms the shelf waits for the Deck to be free. The sweep, the prompt diet and the eval tooling need no Deck.
+2. The new titles have their cards (plan 40 § 7). What they still need is blind test questions, written in a session that
+   has not read the cards, then one corpus release. Only Fallout: New Vegas is not installed on the Deck. The sweep, the
+   prompt diet and the eval tooling need no Deck.
 3. Then work **Next** from the top: the prompt diet, the "not in my notes" line, symptom-only troubleshooting, the eval
    tooling and the weight sweep, spoiler tiers, follow-ups remembering, and one corpus release that carries everything
    needing a rebuild.
@@ -491,11 +491,11 @@ for the Deck to be free). Anything new goes here, one line each, with what it de
   thirteen titles still have no enemy or item cards, so "how do I deal with X" works for two games. Next: 40–60 entity cards
   in tranches with a quality read from you after the first; then chip ranking by meaning. Card authors cannot write blind
   test questions, so content and eval rows go in separate sessions. [Plan](planning/28-phase5-corpus-depth.md).
-- ★★★★ `[KB]` **A first tranche of new titles from your Steam library** — **OPEN, titles picked 2026-09-05, nothing written.**
-  Nine picked from a library read over SSH and a wiki check per candidate: Black Mesa, Hollow Knight, GTA V, GTA IV, DOOM
-  Eternal with Doom 64, a Mario pack (Super Mario 64, Mario Kart 64, Paper Mario TTYD), Super Smash Bros. Melee, Fallout: New
-  Vegas, Pikmin 2. Every source is licence-checked with a dump in hand. Next: cards in one session, blind questions in
-  another, one release. The screen walk that confirms the shelf waits for the Deck. [Plan](planning/40-new-titles-from-the-library.md). (D69)
+- ★★★★ `[KB]` **A first tranche of new titles from your Steam library** — **PARTIAL, cards written 2026-09-06.** All eleven
+  games now have notes: Black Mesa, Hollow Knight, GTA V, GTA IV, DOOM Eternal, Doom 64, Super Mario 64, Mario Kart 64,
+  Paper Mario TTYD, Super Smash Bros. Melee, Fallout: New Vegas, Pikmin 2. 105 cards, every one citing a page, a licence
+  and the day it was read. Owed: blind test questions in a different session, then one corpus release, then the Deck check
+  (**KB-TRANCHE-01**). [Plan](planning/40-new-titles-from-the-library.md). (D69)
 - ★★★★ `[KB]` **KB online / versus strategy content** — **OPEN, discovery locked 2026-08-09.** Multiplayer questions
   (roles, callouts, co-op) get cards; today they get nothing specific. New card kinds and a spoiler table update, Left 4
   Dead 2 first, then Counter-Strike 2, from archive dumps only. Two to three weeks. [Plan](planning/17-kb-online-versus-strategy-content.md).
@@ -516,6 +516,23 @@ for the Deck to be free). Anything new goes here, one line each, with what it de
 
 Everything shipped since v0.4.9 (2026-07-08), one line each, newest first. Detail: [CHANGELOG.md](../CHANGELOG.md),
 [archive/roadmap-completed.md](archive/roadmap-completed.md), [archive/roadmap-bugs-fixed.md](archive/roadmap-bugs-fixed.md).
+
+**Verified on the Deck 2026-09-06 (round 34 continued):**
+- ★★★ `[ollama]` **The order you set for which model to try now sticks** — found and fixed the same night. Setting an order used
+  to be undone half a second later, so the setting looked like it did nothing.
+  [Detail](archive/roadmap-bugs-fixed.md#round-34-continued-2026-09-06)
+- ★ `[reply]` **A branch question names the game again** — the follow-up question at the end of a Strategy answer used to say
+  *"Where are you at in … ?"* with the game's name replaced by three dots. It now says the name.
+  [Detail](archive/roadmap-bugs-fixed.md#round-34-continued-2026-09-06)
+- ★★ `[reply]` **Stopping a reply now says so** — pressing Stop leaves a *Stopped — partial answer kept.* line, keeps the half
+  answer, greys out Helpful and Not really, and leaves Retry live.
+  [Detail](archive/roadmap-bugs-fixed.md#round-34-continued-2026-09-06)
+- ★★★★ `[chat]` **A chat's follow-up question stays in its own chat** — the block used to show up in whichever chat you were
+  looking at. It now shows only in the chat that asked for it, and comes back when you switch back.
+  [Detail](archive/roadmap-bugs-fixed.md#round-34-continued-2026-09-06)
+- ★★★ `[platform]` **Legacy-loader shim removal (D11)** — the last two checks it owed ran on the device: a real Ask typed into
+  the Main tab, and a voice recording started and stopped for real.
+  [Detail](archive/roadmap-completed.md#round-34-continued-2026-09-06)
 
 **Verified on the Deck 2026-09-05 (round 36):**
 - ★ `[layout]` **The question bubble lines up with the answer below it** — it used to sit further in from the left than

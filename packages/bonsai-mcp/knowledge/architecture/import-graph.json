@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 370,
-  "edgeCount": 895,
+  "fileCount": 371,
+  "edgeCount": 902,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -537,6 +537,7 @@
       ],
       "importedBy": [
         "src/components/ModelRoutingOrderModal.test.tsx",
+        "src/features/model-routing/useRoutingOrderModal.test.tsx",
         "src/features/model-routing/useRoutingOrderModal.ts"
       ]
     },
@@ -1000,6 +1001,7 @@
         "src/components/VoiceInputSettingsSection.tsx",
         "src/data/bonsaiSettingsNormalizers.ts",
         "src/data/characterUiAccent.ts",
+        "src/features/model-routing/useRoutingOrderModal.test.tsx",
         "src/features/model-routing/useRoutingOrderModal.ts",
         "src/features/plugin-shell/pluginStorage.ts",
         "src/features/plugin-shell/useCharacterPickerModal.tsx",
@@ -1386,6 +1388,17 @@
         "src/features/chat-slots/ChatSlotRow.tsx"
       ]
     },
+    "src/features/model-routing/useRoutingOrderModal.test.tsx": {
+      "imports": [
+        "src/components/ModelRoutingOrderModal.tsx",
+        "src/data/bonsaiSettingsSchema.ts",
+        "src/features/model-routing/useRoutingOrderModal.ts",
+        "src/test-harness/fakeDeckyRpc.ts",
+        "src/test-harness/fakeDeckyUi.tsx",
+        "src/utils/bonsaiSessionSurvival.ts"
+      ],
+      "importedBy": []
+    },
     "src/features/model-routing/useRoutingOrderModal.ts": {
       "imports": [
         "src/components/DeveloperTab.tsx",
@@ -1393,9 +1406,11 @@
         "src/data/bonsaiSettingsSchema.ts",
         "src/data/modelPolicy.ts",
         "src/data/pullModelCatalog.ts",
+        "src/utils/bonsaiSessionSurvival.ts",
         "src/utils/deckyCall.ts"
       ],
       "importedBy": [
+        "src/features/model-routing/useRoutingOrderModal.test.tsx",
         "src/index.tsx"
       ]
     },
@@ -2466,6 +2481,7 @@
         "src/components/PullModelsModal.test.tsx",
         "src/components/SettingsTab.mdns.test.ts",
         "src/components/VoiceInputSettingsSection.test.tsx",
+        "src/features/model-routing/useRoutingOrderModal.test.tsx",
         "src/hooks/useBackgroundGameAi.test.ts",
         "src/hooks/useBonsaiAskOrchestration.test.ts",
         "src/hooks/usePluginSettings.test.ts",
@@ -2495,6 +2511,7 @@
         "src/components/SessionContextStrip.test.tsx",
         "src/features/chat-slots/ChatSlotRenameModal.test.tsx",
         "src/features/chat-slots/ChatSlotRow.test.tsx",
+        "src/features/model-routing/useRoutingOrderModal.test.tsx",
         "src/test-harness/setup.ts",
         "src/utils/buildReplyActionsElement.test.tsx"
       ]
@@ -2827,6 +2844,8 @@
         "src/utils/inputTransparency.ts"
       ],
       "importedBy": [
+        "src/features/model-routing/useRoutingOrderModal.test.tsx",
+        "src/features/model-routing/useRoutingOrderModal.ts",
         "src/features/plugin-shell/useCharacterPickerModal.tsx",
         "src/features/plugin-shell/useOllamaConnectionState.ts",
         "src/features/plugin-shell/useOllamaModelsHubModal.tsx",

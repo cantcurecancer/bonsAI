@@ -160,6 +160,154 @@
         "action",
         "single-player"
       ]
+    },
+    {
+      "game_id": 14,
+      "app_id": "362890",
+      "igdb_id": null,
+      "canonical_title": "Black Mesa",
+      "edition": null,
+      "platform": "Steam",
+      "genres": [
+        "fps",
+        "action",
+        "single-player"
+      ]
+    },
+    {
+      "game_id": 15,
+      "app_id": "367520",
+      "igdb_id": null,
+      "canonical_title": "Hollow Knight",
+      "edition": null,
+      "platform": "Steam",
+      "genres": [
+        "metroidvania",
+        "action",
+        "platformer"
+      ]
+    },
+    {
+      "game_id": 16,
+      "app_id": "782330",
+      "igdb_id": null,
+      "canonical_title": "DOOM Eternal",
+      "edition": null,
+      "platform": "Steam",
+      "genres": [
+        "fps",
+        "action"
+      ]
+    },
+    {
+      "game_id": 17,
+      "app_id": null,
+      "igdb_id": "emudeck-doom64-n64",
+      "canonical_title": "Doom 64",
+      "edition": "N64",
+      "platform": "Nintendo 64",
+      "genres": [
+        "fps",
+        "action"
+      ]
+    },
+    {
+      "game_id": 18,
+      "app_id": "3240220",
+      "igdb_id": null,
+      "canonical_title": "Grand Theft Auto V",
+      "edition": "Enhanced",
+      "platform": "Steam",
+      "genres": [
+        "action-adventure",
+        "open-world"
+      ]
+    },
+    {
+      "game_id": 19,
+      "app_id": "12210",
+      "igdb_id": null,
+      "canonical_title": "Grand Theft Auto IV",
+      "edition": "The Complete Edition",
+      "platform": "Steam",
+      "genres": [
+        "action-adventure",
+        "open-world"
+      ]
+    },
+    {
+      "game_id": 20,
+      "app_id": "22380",
+      "igdb_id": null,
+      "canonical_title": "Fallout: New Vegas",
+      "edition": null,
+      "platform": "Steam",
+      "genres": [
+        "rpg",
+        "open-world",
+        "fps"
+      ]
+    },
+    {
+      "game_id": 21,
+      "app_id": null,
+      "igdb_id": "emudeck-sm64-n64",
+      "canonical_title": "Super Mario 64",
+      "edition": "N64",
+      "platform": "Nintendo 64",
+      "genres": [
+        "platformer",
+        "3d-platformer"
+      ]
+    },
+    {
+      "game_id": 22,
+      "app_id": null,
+      "igdb_id": "emudeck-mk64-n64",
+      "canonical_title": "Mario Kart 64",
+      "edition": "N64",
+      "platform": "Nintendo 64",
+      "genres": [
+        "racing",
+        "kart"
+      ]
+    },
+    {
+      "game_id": 23,
+      "app_id": null,
+      "igdb_id": "emudeck-ttyd-gcn",
+      "canonical_title": "Paper Mario: The Thousand-Year Door",
+      "edition": "GCN",
+      "platform": "Nintendo GameCube",
+      "genres": [
+        "rpg",
+        "turn-based"
+      ]
+    },
+    {
+      "game_id": 24,
+      "app_id": null,
+      "igdb_id": "emudeck-pikmin2-gcn",
+      "canonical_title": "Pikmin 2",
+      "edition": "GCN",
+      "platform": "Nintendo GameCube",
+      "genres": [
+        "strategy",
+        "real-time-strategy"
+      ]
+    },
+    {
+      "game_id": 25,
+      "app_id": null,
+      "igdb_id": "emudeck-ssbm-gcn",
+      "canonical_title": "Super Smash Bros. Melee",
+      "edition": "GCN",
+      "platform": "Nintendo GameCube",
+      "genres": [
+        "fighting",
+        "party",
+        "versus"
+      ]
     }
   ],
   "aliases": [
@@ -282,6 +430,182 @@
     {
       "alias": "hl2",
       "game_id": 13
+    },
+    {
+      "alias": "black mesa",
+      "game_id": 14
+    },
+    {
+      "alias": "black mesa source",
+      "game_id": 14
+    },
+    {
+      "alias": "bms",
+      "game_id": 14
+    },
+    {
+      "alias": "hollow knight",
+      "game_id": 15
+    },
+    {
+      "alias": "hollowknight",
+      "game_id": 15
+    },
+    {
+      "alias": "hk",
+      "game_id": 15
+    },
+    {
+      "alias": "doom eternal",
+      "game_id": 16
+    },
+    {
+      "alias": "doometernal",
+      "game_id": 16
+    },
+    {
+      "alias": "doom 64",
+      "game_id": 17
+    },
+    {
+      "alias": "doom64",
+      "game_id": 17
+    },
+    {
+      "alias": "doom 64 retribution",
+      "game_id": 17
+    },
+    {
+      "alias": "grand theft auto v",
+      "game_id": 18
+    },
+    {
+      "alias": "grand theft auto v enhanced",
+      "game_id": 18
+    },
+    {
+      "alias": "grand theft auto v legacy",
+      "game_id": 18
+    },
+    {
+      "alias": "gta v",
+      "game_id": 18
+    },
+    {
+      "alias": "gta 5",
+      "game_id": 18
+    },
+    {
+      "alias": "gta5",
+      "game_id": 18
+    },
+    {
+      "alias": "gtav",
+      "game_id": 18
+    },
+    {
+      "alias": "grand theft auto iv",
+      "game_id": 19
+    },
+    {
+      "alias": "grand theft auto iv the complete edition",
+      "game_id": 19
+    },
+    {
+      "alias": "gta iv",
+      "game_id": 19
+    },
+    {
+      "alias": "gta 4",
+      "game_id": 19
+    },
+    {
+      "alias": "gta4",
+      "game_id": 19
+    },
+    {
+      "alias": "gtaiv",
+      "game_id": 19
+    },
+    {
+      "alias": "fallout new vegas",
+      "game_id": 20
+    },
+    {
+      "alias": "fallout nv",
+      "game_id": 20
+    },
+    {
+      "alias": "fnv",
+      "game_id": 20
+    },
+    {
+      "alias": "new vegas",
+      "game_id": 20
+    },
+    {
+      "alias": "super mario 64",
+      "game_id": 21
+    },
+    {
+      "alias": "mario 64",
+      "game_id": 21
+    },
+    {
+      "alias": "sm64",
+      "game_id": 21
+    },
+    {
+      "alias": "mario kart 64",
+      "game_id": 22
+    },
+    {
+      "alias": "mk64",
+      "game_id": 22
+    },
+    {
+      "alias": "paper mario the thousand year door",
+      "game_id": 23
+    },
+    {
+      "alias": "paper mario ttyd",
+      "game_id": 23
+    },
+    {
+      "alias": "ttyd",
+      "game_id": 23
+    },
+    {
+      "alias": "thousand year door",
+      "game_id": 23
+    },
+    {
+      "alias": "paper mario 2",
+      "game_id": 23
+    },
+    {
+      "alias": "pikmin 2",
+      "game_id": 24
+    },
+    {
+      "alias": "pikmin2",
+      "game_id": 24
+    },
+    {
+      "alias": "super smash bros melee",
+      "game_id": 25
+    },
+    {
+      "alias": "smash melee",
+      "game_id": 25
+    },
+    {
+      "alias": "ssbm",
+      "game_id": 25
+    },
+    {
+      "alias": "melee",
+      "game_id": 25
     }
   ],
   "sections": [
@@ -1959,6 +2283,1161 @@
       "source_url": "",
       "source_license": "bonsAI-maintainer",
       "source_version": "seed-1.2"
+    },
+    {
+      "section_id": 164,
+      "game_id": 14,
+      "section_type": "mechanic",
+      "name": "Starting out in Black Mesa",
+      "card": "Black Mesa is Half-Life rebuilt from the ground up on the Source engine, with new art, sound and voice work but the original's chapters, weapons and enemies kept on purpose rather than added to. The one exception is Xen: those chapters are mostly new work and far longer than the 1998 originals, so budget more time for the alien world than veterans remember. Expect the same shape of game throughout: no cutscenes, scripted scenes you walk through, a crowbar for crates and vents, and fights that go better from a doorway than from the middle of a room. There are 25 achievements, Workshop support and a separate deathmatch mode; the campaign itself is single-player only.",
+      "source_url": "https://combineoverwiki.net/wiki/Black_Mesa_(video_game)",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 165,
+      "game_id": 14,
+      "section_type": "boss",
+      "name": "Tentacles",
+      "card": "Three blade-headed stalks in the missile silo in Blast Pit, and nothing you carry can kill them: shooting a stalk only drives it into its pit for a moment, and one strike kills you outright. They are blind and hunt by sound and vibration, gently tapping the floor and then hammering wherever they heard you, so crouch-walk past them and never run in the open. A grenade lobbed to the far side of the silo pulls all three heads to the noise while you cross. The chapter's real job is elsewhere: restore power, oxygen and fuel to the rocket motor and fire it, which burns the whole cluster out and opens the tunnels beyond.",
+      "source_url": "https://combineoverwiki.net/wiki/Tentacle",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 166,
+      "game_id": 14,
+      "section_type": "boss",
+      "name": "Gonarch",
+      "card": "The giant four-legged headcrab mother in the caverns of Xen. Its shell shrugs off almost everything; the pale egg sac swinging under its body is the only part that takes damage, so any shot not at the sac is wasted. At range it lobs white acid mortars from its back, up close its front legs slash for huge damage, and whenever it sees you it births baby headcrabs in pairs, up to twenty alive at once: weak and fast, there to distract you from the sac. It walks the webbing over the pits that you and its children fall straight through, so watch your footing more than its feet. When it dies the sac bursts and releases one last brood, so back away before the pop.",
+      "source_url": "https://combineoverwiki.net/wiki/Gonarch",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 167,
+      "game_id": 14,
+      "section_type": "boss",
+      "name": "Nihilanth",
+      "card": "The floating giant at the very end. Its head stays shut while the orange energy spheres orbiting it hold a charge, and it refills them from the crystals around the chamber, so the fight is the crystals first: break every one, then wait for the head to open like a flower and shoot the sphere inside, which is the only weak spot. Meanwhile it fires streams of purple bolts, calls in Vortigaunts and Alien Controllers, and throws big green orbs that teleport you into side arenas full of aliens; those orbs can be shot down before they reach you. Keep moving between crystals rather than standing to trade shots.",
+      "source_url": "https://combineoverwiki.net/wiki/Nihilanth",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 168,
+      "game_id": 14,
+      "section_type": "enemy",
+      "name": "Gargantua",
+      "card": "Six metres of blue armour with one glowing eye, immune to ordinary bullets and a little faster than you on foot. It cooks anything close with the flame jets in its hands, and its stomp sends a red shockwave along the floor that hits hard but travels slowly, so step sideways rather than backing up. You are not meant to shoot it down; each meeting has a tool nearby. The first one dies to the track power you restore in Sector E, the one in the motorpool dies to the airstrikes you call from the Marines' tactical map, and the one on Xen can be waited out from a crevice once it starts patrolling. If you must fight one, only explosives and energy weapons hurt it: rockets, satchel charges, the Gluon Gun.",
+      "source_url": "https://combineoverwiki.net/wiki/Gargantua",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 169,
+      "game_id": 14,
+      "section_type": "enemy",
+      "name": "HECU Marines",
+      "card": "The soldiers sent in to clean the facility out, including anyone who saw what happened. They fight in squads and keep in touch by radio, throw grenades to flush you out of cover, and some act as medics or engineers for the rest. Where they have dug in they add laser tripmines, sentry guns and manned emplacements, and outdoors they have air support. They carry submachine guns with grenade launchers, shotguns, light machine guns and sniper rifles, so the corridor habits that beat aliens get you killed here: break line of sight, fight one doorway at a time, and check any room they held for red tripmine beams before you walk in.",
+      "source_url": "https://combineoverwiki.net/wiki/Hazardous_Environment_Combat_Unit",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 170,
+      "game_id": 14,
+      "section_type": "enemy",
+      "name": "Houndeye",
+      "card": "Three-legged with one big compound eye, and always in a pack of up to four. Alone one is timid; together they charge a sonic shockwave that hurts you and smashes crates and glass, and the damage rises with the size of the pack. Kill the leader and the rest lose the ability to charge the wave and fall back to a weak bark, so pick out the one the others follow. A resting pack dozes and wakes to noise, which is your chance to line up the first shot. Bullsquids leave them alone, so a room with both is not a three-way fight.",
+      "source_url": "https://combineoverwiki.net/wiki/Houndeye",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 171,
+      "game_id": 14,
+      "section_type": "item",
+      "name": "Tau Cannon",
+      "card": "The gauss gun: a particle beam that draws straight from the suit's uranium reserve, shared with the Gluon Gun, so it never reloads. Tap-fire sends fast yellow beams that chew through unarmoured targets; hold the alternate fire to charge a white-hot shot that punches through several enemies or a wall and explodes on the far side, which turns cover into a trap for whoever is behind it. Beams also bounce off walls at shallow angles. Fire the charged shot straight down and the recoil throws you upward, the gauss jump, which reaches ledges nothing else does.",
+      "source_url": "https://combineoverwiki.net/wiki/Tau_Cannon",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 172,
+      "game_id": 14,
+      "section_type": "item",
+      "name": "Gluon Gun",
+      "card": "The last weapon in the game, handed over in the Lambda Core test chamber by the scientist who built it and cannot bring himself to use it. It pours out a continuous spiral of energy that destroys most things in seconds, with splash at the point of contact, stays accurate at long range, and goes straight through bulletproof armour, which makes it the one gun that genuinely hurts a Gargantua. It shares the uranium reserve with the Tau Cannon and drinks it fast, so it is not a room-clearing tool; save it for whatever nothing else is denting. It does not work underwater.",
+      "source_url": "https://combineoverwiki.net/wiki/Gluon_Gun",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 173,
+      "game_id": 14,
+      "section_type": "item",
+      "name": "Hivehand",
+      "card": "The living alien rifle the Alien Grunts carry, though you cannot take one from a body: one lies past the tripmine room in Surface Tension and another in the Lambda supply depot before the main portal, in case you missed the first. It grows its own ammo, eight hornets loaded at a time and replaced within seconds, and the primary-fire hornets home in on living targets around corners and chase whatever runs. That makes it the free answer to headcrabs, barnacles and Alien Controllers without spending real ammunition. Alternate fire dumps all eight fast and straight, good for barrels and point-blank damage. Hornets ignore anything inorganic and bounce off looking for something alive.",
+      "source_url": "https://combineoverwiki.net/wiki/Hivehand",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 174,
+      "game_id": 14,
+      "section_type": "item",
+      "name": "Long Jump Module",
+      "card": "Handed to you at the end of Lambda Core for the world beyond, and the only way across Xen's floating islands, where the gravity is weak and a missed gap drops you into the void. Crouch and then jump in quick succession and the suit launches you a long way forward; the training course taught it, but Xen is where it counts. Take a couple of practice jumps on solid ground before the first real gap so the timing is in your thumbs, not your head.",
+      "source_url": "https://combineoverwiki.net/wiki/Long_Jump_Module",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 175,
+      "game_id": 15,
+      "section_type": "mechanic",
+      "name": "Starting out in Hollow Knight",
+      "card": "A side-scrolling metroidvania: a huge connected kingdom under the town of Dirtmouth that opens piece by piece as you find abilities. There is no map of an area until you find Cornifer, the humming cartographer, and buy his copy, and it only fills in as you rest at benches once you own a quill from his wife in Dirtmouth. Benches are everything: they save, restore your masks, and are the only place charms can be swapped. Your nail is short, so learn early to bounce off enemies and spikes with a downward slash. Hitting enemies fills the soul meter; hold Focus to spend it healing one mask at a time, or tap it for spells. Dying is not the end: your Shade waits where you fell, holding your Geo.",
+      "source_url": "https://hollowknight.wiki/w/Hollow_Knight",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 176,
+      "game_id": 15,
+      "section_type": "mechanic",
+      "name": "Dying, your Shade and lost Geo",
+      "card": "When your shell breaks you respawn at the last bench, all your Geo stays behind in a Shade at or just before the room you died in, and your soul meter is cracked to two thirds until you deal with it. Walk back and an off-key music-box tune tells you it is near; it floats at you, swings a nail and casts whichever spells you have learned, and it dies after a handful of hits, returning the Geo and mending the meter. Die again before reaching it and a new Shade replaces the old one, Geo and all, so a big purse is a reason to go back first. If the Shade sits somewhere brutal, Confessor Jiji behind the locked door on the east side of Dirtmouth will summon it to her room for a Rancid Egg.",
+      "source_url": "https://hollowknight.wiki/w/Shade",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 177,
+      "game_id": 15,
+      "section_type": "mechanic",
+      "name": "Charms and notches",
+      "card": "Charms are the build system: each takes a set number of notches, you start with three notches and can find eight more, and you can only swap charms while sitting on a bench. Forty-five exist, though five are upgrades that replace another. Spend early Geo on Salubra's first notch in the Crossroads once you hold five charms. If a charm needs more notches than you have left you can force it in and go overcharmed: every hit you take then does double damage, fine for platforming and a bad idea in a boss room. Early keepers: Soul Catcher from the Ancestral Mound for more healing fuel per hit, and Quick Focus from Salubra, which makes healing a third faster and turns many boss fights.",
+      "source_url": "https://hollowknight.wiki/w/Charms",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 178,
+      "game_id": 15,
+      "section_type": "item",
+      "name": "Nail upgrades and Pale Ore",
+      "card": "The Nailsmith in the City of Tears reforges the nail four times, from 5 damage up to 21: the first upgrade costs Geo alone, the next three need one, two and three Pale Ore on top, six Ore in all, scattered across the kingdom behind bosses, grubs and hidden rooms. The Mantis Lords are a good deadline for the first upgrade. The nail also carries you: a downward slash on enemies, spikes and the purple mushrooms of the Fungal Wastes bounces you upward, which is both a combat rhythm and the way into places you are not supposed to reach yet. Mark of Pride from the Mantis Village adds a quarter to its reach.",
+      "source_url": "https://hollowknight.wiki/w/Nail",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 179,
+      "game_id": 15,
+      "section_type": "mechanic",
+      "name": "Soul, Focus and spells",
+      "card": "Every nail hit on an enemy adds soul to the round meter on the left, up to ninety-nine. Hold Focus to turn thirty-three soul into one mask of health; it takes over a second, you stand still for it, and a hit cancels it, so heal during a boss's long, far-away attacks and not on hope. Tap the cast button instead and the same soul fuels spells: Vengeful Spirit from the Ancestral Mound fires forward and early on hits three times as hard as your nail, Desolate Dive from the Soul Sanctum slams down, breaks fragile floors and makes you briefly untouchable, and Howling Wraiths blasts upward and around you. Hot springs refill soul fast and slowly top up masks; a bench refills the soul totems you can hit for a free meter.",
+      "source_url": "https://hollowknight.wiki/w/Focus",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 180,
+      "game_id": 15,
+      "section_type": "item",
+      "name": "Movement abilities and where they are",
+      "card": "Hallownest opens in the order you find its abilities, and knowing that order saves hours of poking at walls. The Mothwing Cloak, a short dash with a brief cooldown, is Hornet's prize in Greenpath. The Mantis Claw, wall-cling and wall-jump, waits in the Mantis Village below the Fungal Wastes. The Crystal Heart, a charged horizontal flight from the ground or a wall, is in the mines of Crystal Peak. The Monarch Wings, a double jump, lie at the bottom of the Ancient Basin. Isma's Tear lets you swim in acid and opens the Waterways and several shortcuts; the Shade Cloak from the Abyss upgrades the dash to pass through enemies, their attacks and the black Shade Gates. If a gap looks impossible, it usually is until one of these.",
+      "source_url": "https://hollowknight.wiki/w/Mothwing_Cloak",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 181,
+      "game_id": 15,
+      "section_type": "boss",
+      "name": "False Knight",
+      "card": "The armoured maggot in the Forgotten Crossroads, and the first real fight. He leaps, charges, and slams a mace that sends a shockwave along the whole floor; jump the wave rather than backing off. Hitting the armour earns no soul, so save what you have for healing: the only time you gain soul or do real damage is when the armour empties and he topples, exposing the maggot's head. Pile hits on the head, then back off, because he wakes into a rage that rains barrels; those barrels can be knocked back into him for ten damage each and can even stagger him. After the third exposure he breaks the floor and falls below; drop after him and finish the maggot. If it goes badly, a wall above the left gate becomes breakable after his first rage, and the Vengeful Spirit spell is in the very next room, which makes the rematch far easier.",
+      "source_url": "https://hollowknight.wiki/w/False_Knight",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 182,
+      "game_id": 15,
+      "section_type": "boss",
+      "name": "Hornet in Greenpath",
+      "card": "The fight for the dash, at the Lake of Unn end of Greenpath. She lunges along the ground, dives from the air, throws her needle across most of the arena and pulls it back (it cuts on the return too), and spins a thread storm around herself. She stands still for about a second while she takes her stance, so open with upward slashes. Trade a few nail hits when she lunges in, then hit her with Vengeful Spirit when she backs off; at this point the spell does three times your nail's damage. After roughly a fifth of her health she kneels to recover: heal then, or spend a spell on her, because the next hit wakes her, and she always leaps after a stagger, which is a free window. Heal during the needle throw or the thread storm, both short-ranged and slow. Mistime a jump over the needle and a downward slash bounces you off it safely.",
+      "source_url": "https://hollowknight.wiki/w/Hornet_Protector",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 183,
+      "game_id": 15,
+      "section_type": "boss",
+      "name": "Mantis Lords",
+      "card": "The three sisters on the thrones in the Mantis Village do not attack until you challenge them, and then a cage closes with spike pits either side. One fights first: a lance dash along the whole floor, a drop from directly above you, and a spinning boomerang blade thrown from the wall in a rising or falling arc. Each attack ends with her vanishing, so the rhythm is dodge, one or two hits, reset; the attacks quicken as she weakens. Heal during the boomerang, the slowest attack. When she yields the other two fight together, sometimes dashing from both ends at once; stand near the centre when they throw the short-arc boomerangs and the blades pass over you, long enough to heal two masks. Go in with at least one nail upgrade and Quick Focus if you have it. Win and the whole village stands down, a bench opens, and Mark of Pride waits in a chest to the northeast.",
+      "source_url": "https://hollowknight.wiki/w/Mantis_Lords",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 184,
+      "game_id": 15,
+      "section_type": "boss",
+      "name": "Soul Master",
+      "card": "Top of the Soul Sanctum in the City of Tears. He teleports between every attack: a dash across the arena, a homing soul orb that will not hit you if you stand right beside him, a ring of four orbs he glides across with (and which boomerang back after he vanishes), and a dive slam that sends shockwaves both ways, sometimes faked once before landing above your new spot. Hit him from below while he is conjuring orbs; that is the open window. When he deflates and gasps he is staggered, and there is a moment to hit him without ending the stagger. He plays dead once, leaves the Desolate Dive spell as bait, and comes back through the roof for a faster second round with far less time to heal, so learn the dodges in round one.",
+      "source_url": "https://hollowknight.wiki/w/Soul_Master",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 185,
+      "game_id": 15,
+      "section_type": "boss",
+      "name": "Watcher Knights",
+      "card": "Six armoured husks at the top of the Watcher's Spire, fought at most two at a time; a new one wakes twenty seconds after the last, or two together if you kill fast. Each does a double slash, rolls as a ball along the floor and bounces after you, and is immune to the nail while rolling (spells still land). Their only answer to attacks from above is that bouncing roll, so fight from the air and never let them corner you. Before the fight, break the hidden wall on the approach and cut the chandelier's support: it drops on the second husk from the left and you fight five instead of six. Quick Focus matters here; Desolate Dive with Shaman Stone kills one in three casts while keeping you untouchable.",
+      "source_url": "https://hollowknight.wiki/w/Watcher_Knight",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 186,
+      "game_id": 15,
+      "section_type": "boss",
+      "name": "Broken Vessel",
+      "card": "The infected husk shaped like you, far west in the Ancient Basin past a gap that needs the Crystal Heart. It dashes with slashes that cover most of the arena, flails its nail overhead, leaps to slam down and throw four arcs of infection, shakes out a cascade of blobs that covers nearly everything when its health gets low, and spawns weak balloons that drift at you. It is one of the few bosses that gets knocked back, so Vengeful Spirit can hit it twice; Desolate Dive during the cascade both damages it and keeps you safe. A longer nail (Mark of Pride or Longnail) matches its reach, and Defender's Crest quietly clears the balloons. Heal when it staggers, head weighed down and shaking.",
+      "source_url": "https://hollowknight.wiki/w/Broken_Vessel",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 187,
+      "game_id": 15,
+      "section_type": "enemy",
+      "name": "Primal Aspid",
+      "card": "The flying spitter of Kingdom's Edge and the Colosseum, and by common agreement the nastiest ordinary enemy in the game. It hovers just out of nail reach and spits three blobs in a spread with the middle one aimed at you, so close range is worse, not better. Listen for the whistle of its wings and deal with it before anything else in the room; nail arts, especially Great Slash or Dash Slash, reach it when normal swings will not, and a spell does the job from range. In the Colosseum they are the first thing to kill in any wave.",
+      "source_url": "https://hollowknight.wiki/w/Primal_Aspid",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 188,
+      "game_id": 16,
+      "section_type": "mechanic",
+      "name": "Starting out in DOOM Eternal: the combat loop",
+      "card": "Eternal is a resource game wearing a shooter's clothes. Ammo is scarce and the pools are small, so the loop is: shoot a weak enemy until it flashes, glory kill it for health; chainsaw a fodder demon for a shower of ammo (three fuel units, one always refilling on its own every twenty seconds, and fodder costs one, so it is never off the table); flame belch a group and kill them burning for armour, on a twenty-five second cooldown. Heavy demons cost all three fuel units and the super heavies cannot be sawed at all. Never stand still: dash twice, jump twice, and swap weapons mid-fight rather than reloading. If you run dry on everything, the game hands you the chainsaw for one fodder kill and the loop starts again.",
+      "source_url": "https://doomwiki.org/wiki/Chainsaw_(Doom_Eternal)",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 189,
+      "game_id": 16,
+      "section_type": "enemy",
+      "name": "Marauder",
+      "card": "The fight everyone gets stuck on. Stay at mid range: close and it draws a super shotgun faster than you can dash, far and it throws axe waves. Its red shield blocks everything from the front, plasma included, and the chainsaw does nothing; the Crucible only works once it is stunned. Watch its feet: a dash is repositioning, a run means it is coming in to swing. When it winds up the axe its eyes flash green; hit it in that instant and it falters for a couple of seconds, then pour in the highest damage per shot you own, super shotgun, ballista, rocket, swapping between them for two or three hits per stagger. Grenades and rockets exploding beside it also drop the shield briefly. Kill the glowing wolf it summons the moment it appears, clear the other demons first, and keep the arena's space between you.",
+      "source_url": "https://doomwiki.org/wiki/Marauder",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 190,
+      "game_id": 16,
+      "section_type": "boss",
+      "name": "Doom Hunter",
+      "card": "End of the Doom Hunter Base: one, then two at once. The first health bar is the sled it rides, not the demon. Its energy shield melts to the plasma rifle, especially with heat blast or microwave beam, but regrows while the sled lives; the sled itself is always exposed to anything, and the blood punch wrecks it fastest. When it calls out critical damage it drops the sled, losing the shield, the plasma guns and the missile strikes, and the bar refills for the body, which now comes at you faster with the chainsaw and cannon. Empty that second bar and it is done. After this level they return as ordinary super heavies in the big fights.",
+      "source_url": "https://doomwiki.org/wiki/Doom_hunter",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 191,
+      "game_id": 16,
+      "section_type": "boss",
+      "name": "Gladiator",
+      "card": "The whole of Sentinel Prime. In phase one it hides behind a shield and creeps forward; when the eyes on the shield flash green it swings the flail, and that is your window: shoot then, stagger it, and press the glory kill button for heavy punches. Blinking eyes mean a projectile you sidestep with a dash. Rockets or grenades on the ground behind it get round the shield for a little damage. When the bar empties, glory kill the shield off and phase two starts faster, swinging two flails, deflecting your shots while it spins one (do not fire into a spin), throwing both to fence you between the chains and then firing energy waves to jump or step through before it charges. Fodder spawns through the fight for health, armour and ammo; use it.",
+      "source_url": "https://doomwiki.org/wiki/Gladiator",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 192,
+      "game_id": 16,
+      "section_type": "boss",
+      "name": "Khan Maykr",
+      "card": "Her shield stops everything until sustained fire breaks it, and it regrows if you pause, so keep the pressure on; a full lock-on rocket burst lands because she does not dodge often. Even with the shield down normal weapons do nothing: only the blood punch hurts her, and she stays airborne, so meathook in with the super shotgun, blast, and punch. Her shots are a fast slanted spread of yellow bolts and a slow heavy purple orb, plus a pillar of light that follows you leaving fire behind, and near the end burning patches on the floor. The red-armoured drones she summons are a nuisance in numbers, but headshots on them drop health and ammo; farm them between phases.",
+      "source_url": "https://doomwiki.org/wiki/Khan_Maykr",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 193,
+      "game_id": 16,
+      "section_type": "boss",
+      "name": "Icon of Sin",
+      "card": "Two phases, eight targets each: both pectorals, both shoulders, both hands, the abdomen and the head. Phase one strips the armour, phase two the flesh beneath, and shooting a part that is already broken does nothing, so use accurate guns, heavy cannon and ballista, and take the hands early before it speeds up (it quickens with every part). It summons waves up to super heavy, flushes the field with energy that also kills its own summons, burns floor patches, and fires a magic circle and fireballs from its head that a wall blocks. Phase two has more room but adds a fireball rain and a charged head beam you must not stand in. Spend the Crucible and blood punch charges on the summons for health, keep moving on the platforms, and never stop to admire it.",
+      "source_url": "https://doomwiki.org/wiki/Icon_of_Sin_(Doom_Eternal)",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 194,
+      "game_id": 16,
+      "section_type": "enemy",
+      "name": "Cacodemon",
+      "card": "Faster and meaner than before, with a rapid string of shots and a lunging bite that reaches further than it looks. Two clean answers: when its mouth opens, feed it a frag grenade or a sticky bomb from the combat shotgun; it gulps, swells, and drops into an instant stagger for a free glory kill. Or hit it with the ballista, which does bonus damage to anything flying, and a charged arbalest bolt kills it outright when it explodes. Either way it is one of the cheapest heavies on the field once you stop treating it like a bullet sponge.",
+      "source_url": "https://doomwiki.org/wiki/Cacodemon_(Doom_Eternal)",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 195,
+      "game_id": 16,
+      "section_type": "mechanic",
+      "name": "Weak points worth shooting",
+      "card": "Most heavy demons carry a part that, once destroyed, takes their best attack away. The arachnotron's tail turret dies to one sticky bomb, precision bolt or ballista shot and leaves it with claws and lobbed grenades. The revenant's shoulder launchers come off the same way and ground it; a dash or double jump also breaks its missile lock. The mancubus's arm cannons can be shot to weaken its fire and kill the flamethrowers, and a chainsaw or glory kill to its chest makes it explode on its neighbours. The pinky is armoured in front and bare at the tail, and a blood punch kills it from any side. A carcass's shield pops to plasma or a punch. Find the part first and the fight is half done.",
+      "source_url": "https://doomwiki.org/wiki/Arachnotron_(Doom_Eternal)",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 196,
+      "game_id": 16,
+      "section_type": "enemy",
+      "name": "Whiplash",
+      "card": "The snake-bodied one that will not hold still. It lashes chained blades, lays energy waves along the ground that home on you, and hugs the floor while flanking so projectiles sail over it. Hitscan beats it: the heavy cannon, or the plasma rifle's microwave beam, which holds it in place for a few seconds even after you stop firing, long enough for a quick weapon-swap combo. An ice bomb is the other answer, freezing it mid-slither. Do not meathook it; it answers with an energy wave that knocks you off the hook.",
+      "source_url": "https://doomwiki.org/wiki/Whiplash",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 197,
+      "game_id": 16,
+      "section_type": "enemy",
+      "name": "Arch-vile",
+      "card": "A walking buff totem: while it lives everything in the arena hits harder and moves faster, glowing red, and it summons more demons, drawn from that fight's list and sometimes as bad as tyrants or marauders. It summons while you are locked into a glory kill or chainsaw animation, because you cannot interrupt it then, and its new arrivals stand in an orange aura, frozen and undamageable, until it finishes. So find it first, skip the executions until it is dead, and put your heaviest ordnance into it. Its magic shield ignores plasma, and it counts as super heavy, so no chainsaw.",
+      "source_url": "https://doomwiki.org/wiki/Arch-vile_(Doom_Eternal)",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 198,
+      "game_id": 16,
+      "section_type": "item",
+      "name": "Super Shotgun and meat hook",
+      "card": "Picked up in the Cultist Base and never put down: massive point-blank damage, several fodder demons per shot, a pinky in one shot to the tail, but a long reload and nothing at range. The reload disappears if you swap to another gun and back. The meathook under the barrel is the movement tool: fire it into a demon and it yanks you to them for the blast, or across the arena for the escape. Small enemies are held in place when hooked; big ones are not, and may hit you on the way in, so be ready to jump off. It will not grab a marauder or riot shield facing you, nor the gladiator behind its shield, and a knockback hit or a dash lets go.",
+      "source_url": "https://doomwiki.org/wiki/Super_shotgun_(Doom_Eternal)",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 199,
+      "game_id": 16,
+      "section_type": "item",
+      "name": "The Crucible",
+      "card": "A sword that kills any demon in one swing without a stagger, marauders excepted (they must be stunned first), and the Doom hunter, which costs two: one for the sled, one for the body. It holds three charges, refilled only at fixed spots in the level, and one swing spends one charge whether it lands on a tyrant or an imp, so treat every charge as a tyrant. Each kill returns health. Save it for the super heavies in the last arenas and for the Icon fight, where the charges and blood punches on its summons are how you stay alive.",
+      "source_url": "https://doomwiki.org/wiki/Crucible_(Doom_Eternal)",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 200,
+      "game_id": 16,
+      "section_type": "mechanic",
+      "name": "Slayer Gates, keys and the Fortress",
+      "card": "The purple gore nests behind locked gates are optional arenas harder than anything around them; each opens with a Slayer Key hidden nearby, in Exultia, Cultist Base, Super Gore Nest, ARC Complex, Mars Core and Taras Nabad. Clearing one pays three weapon points and an Empyrean Key, and all six keys unlock the Unmaykr in the Fortress, a rapid three-orb gun that shares the BFG's ammo. Back at the Fortress, Sentinel batteries from the levels open doors two at a time for crystals, mod bots, suit points and skins, and the twelve Sentinel crystals in blue shrines raise health, armour or ammo four steps each. The flame belch, ice bomb and ballista are collected there between missions.",
+      "source_url": "https://doomwiki.org/wiki/Slayer_Gate",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 201,
+      "game_id": 17,
+      "section_type": "mechanic",
+      "name": "Starting out in Doom 64",
+      "card": "Not a port: a separate sequel to Doom II with thirty-two new levels, redrawn larger sprites, coloured lighting and a slower, darker mood. The whole Doom II arsenal is here plus one new gun, the Unmaker, and most of the classic monsters, but no arch-viles, revenants, spider mastermind or chaingunners; the new faces are the fast, half-invisible nightmare imp and the Mother Demon at the end. Four secret levels hide the game's real reward, and the 2020 re-release adds a further episode, The Lost Levels, after the ending. Play it like classic Doom: find keys, hit switches, and treat every quiet room as a trap.",
+      "source_url": "https://doomwiki.org/wiki/Doom_64",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 202,
+      "game_id": 17,
+      "section_type": "enemy",
+      "name": "Nightmare imp",
+      "card": "The first new monster you meet: a translucent blue-purple imp, twice as fast as the ordinary kind, throwing purple fireballs that fly twice as fast too, and hard to see against dark walls. Treat every dim doorway as holding one. It is still an imp in health, so the shotgun handles it; the danger is the pack and the speed, not the toughness. First seen in Main Engineering, and there are a lot of them.",
+      "source_url": "https://doomwiki.org/wiki/Nightmare_imp",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 203,
+      "game_id": 17,
+      "section_type": "item",
+      "name": "Unmaker and the Demon Keys",
+      "card": "The one new gun: a demonic laser that eats cells, found first in the secret level Outpost Omega and not again until Altar of Pain. On its own it is a slower, stronger plasma gun. Each of the three Demon Keys, one hidden on each of the secret levels Outpost Omega, The Lair and In The Void, powers it up: faster firing, then a second beam, then a third, until it fires so fast that it stun-locks anything in the game, the Cyberdemon and the Mother Demon included. The keys also disable the three monster teleporters in the final level, which skips most of the last battle. Hunt the secret levels; they are the point of the game.",
+      "source_url": "https://doomwiki.org/wiki/Unmaker",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 204,
+      "game_id": 17,
+      "section_type": "boss",
+      "name": "Mother Demon",
+      "card": "The final boss in The Absolution. Her flame trail tosses you into the air where you cannot steer, and four homing rockets follow; taking all four at once kills through any armour. The answer is the fully upgraded Unmaker at point-blank range: its fire rate stuns her so she never launches the rockets, leaving only the flame trails to dodge. Without all three Demon Keys you also fight a large horde before she appears and burn most of your ammo doing it; then it is the BFG on careful timing, or rockets. Get the keys first.",
+      "source_url": "https://doomwiki.org/wiki/Mother_Demon",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 205,
+      "game_id": 17,
+      "section_type": "mechanic",
+      "name": "The Lost Levels",
+      "card": "The 2020 re-release's extra episode: six levels that start you stranded with no weapons on a distant base and end in Final Judgement against the Sister Resurrector, plus one separate fun level. It opens when you beat the Mother Demon, or by finishing the secret level Hectic and using the Features menu's level select, or with any password for the first level and the same menu; on PC a -warp 34 launch flag also works. All three Demon Keys and the Unmaker are found again inside Final Judgement and are required to finish it.",
+      "source_url": "https://doomwiki.org/wiki/The_Lost_Levels",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 206,
+      "game_id": 18,
+      "section_type": "mechanic",
+      "name": "Starting out in GTA V",
+      "card": "Three protagonists share one map, and in free roam you can switch between them any time from the character wheel; the number under each face is how many missions that person has waiting, and you cannot switch while you have a wanted level. Each has a special ability on the small yellow meter under the radar: Michael slows time in gunfights, Franklin slows time while driving, Trevor takes half damage and deals double while raging. Skills grow by doing: run to build stamina, land shots to build shooting, punch and play sports for strength. A cheap trick worth knowing early: switch away and straight back, and your character returns with full health and a repaired, cleaned car.",
+      "source_url": "https://gta.fandom.com/wiki/Character_Wheel",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 207,
+      "game_id": 18,
+      "section_type": "mechanic",
+      "name": "Special abilities and how to grow them",
+      "card": "Michael's Area Kill is bullet time for shootouts and lasts thirty seconds once the ability bar is maxed. Franklin's Driving Focus slows the world while he is in any land vehicle, tank included, and makes gaps and slides easy; it starts at a third of its final length. Trevor's rage doubles his damage and makes him immune to everything for its duration. The bar refills differently for each of them, and the skill behind it grows with use: Franklin's climbs while he drifts, threads near misses at speed, drives into oncoming traffic, or holds ninety percent of a car's top speed. Grow the bar and you grow the time you get.",
+      "source_url": "https://gta.fandom.com/wiki/Special_Ability",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 208,
+      "game_id": 18,
+      "section_type": "mechanic",
+      "name": "Wanted levels and losing the cops",
+      "card": "Five stars, not six, and the police are far more persistent than in older games: they ram, box you in, take civilians' cars to keep chasing, and respond to crimes nobody saw because bystanders phone them in. There is no search circle. Every officer has a cone of vision and hunts across the whole map, and the helicopter's cone is enormous, so a chase is lost by breaking every line of sight, not by driving fast in the open. At one star an officer tries to arrest you at gunpoint; fighting or fleeing makes it two on the spot, and security guards and motorcycle cops simply open fire. You cannot switch characters while wanted. If nobody sees you drive into a Los Santos Customs the door opens and the stars go with it; if you were spotted approaching, it stays shut.",
+      "source_url": "https://gta.fandom.com/wiki/Wanted_Level_in_GTA_V",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 209,
+      "game_id": 18,
+      "section_type": "mechanic",
+      "name": "Skills and the cheapest ways to raise them",
+      "card": "Seven skills grow by use. Stamina rises one percent every 175 metres run or minute swum, and once it is full you never tire. Shooting rises with hits and headshots, and the Ammu-Nation range gives three percent per gold medal. Strength rises one percent per twenty landed punches, or from golf and tennis. Stealth grows from silent takedowns and creeping. Flying gives one percent per ten minutes in the air, one for each bridge you fly under, and three to five per flight-school gold. Driving rises with air time and clean stunt jumps, two or three percent a jump. Lung capacity gains two percent per minute under water and from yoga. Max out stamina first; the rest follow whatever you already enjoy.",
+      "source_url": "https://gta.fandom.com/wiki/Skills_in_GTA_V",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 210,
+      "game_id": 18,
+      "section_type": "mechanic",
+      "name": "Heists: the approach and the crew",
+      "card": "The big robberies are the spine of the story and the first time the series lets you plan one. Each starts with a choice of approach, quiet from the roof or loud through the front, and a crew you hire rather than recruit: drivers, gunmen and hackers who each want a percentage of the take. Experts cost a bigger slice and perform; cheap newcomers keep more money in your pocket but can fumble the job. Then come setup missions to steal the gear and vehicles the plan needs. Pick the approach that suits how you like to play, and spend on the crew member whose job your plan cannot survive without.",
+      "source_url": "https://gta.fandom.com/wiki/Heists_in_GTA_V",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 211,
+      "game_id": 18,
+      "section_type": "mechanic",
+      "name": "Money: the stock market and the assassination jobs",
+      "card": "The real money in the single-player game is the stock market. Two exchanges exist: the LCN works offline and reacts to what happens in the story, and the BAWSAQ needs a Social Club connection. Five assassination missions for Franklin, unlocked after Fame or Shame, each swing a named company; buy that stock before the hit (or just after, for the bus job), wait while the market ticks every thirty seconds, and sell at the top, often eighty percent up and sometimes far more. Do all but the first of them after the final big score so you are investing a fortune rather than pocket change, then buy the golf club and the cinemas that were out of reach.",
+      "source_url": "https://gta.fandom.com/wiki/Lester%27s_Assassinations",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 212,
+      "game_id": 18,
+      "section_type": "mechanic",
+      "name": "Properties",
+      "card": "Buying businesses opens up after Trevor's mission Nervous Ron: walk to the For Sale sign outside and pay. Each pays a weekly sum into its owner's account, and the manager will sometimes phone for help; ignoring the call cuts the week's profit. You need at least five for completion. Early ones that pay back: Franklin's cab company for a steady two thousand a week, and Trevor's McKenzie Field hangar, which pays five to seven thousand per smuggling run. The golf club and cinemas are for after the stock market has made you rich.",
+      "source_url": "https://gta.fandom.com/wiki/Properties_in_GTA_V",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 213,
+      "game_id": 18,
+      "section_type": "mechanic",
+      "name": "Side jobs and collectibles that count",
+      "card": "Not everything on the map matters for completion. Random events (fifty-seven, sixty in the enhanced version) appear as dots: light blue is friendly, red is hostile, flashing lets you choose a side; fourteen count. Strangers and Freaks are the named side stories per character. Of the fifty stunt jumps, twenty-five count; of fifty bridges to fly under, twenty-five, plus eight of the fifteen knife flights. The fifty spaceship parts unlock Omega's mission and the fifty letter scraps solve the Leonora Johnson murder, both optional. Armoured trucks are a quick twenty-five thousand each. The map on the Junk energy drink website lists every jump and fly-under.",
+      "source_url": "https://gta.fandom.com/wiki/Random_Events_in_GTA_V",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 214,
+      "game_id": 18,
+      "section_type": "item",
+      "name": "Weapons, armour and cover",
+      "card": "You carry every weapon at once, fifty-nine across the base game and updates, and each can take attachments like scopes and suppressors; ammo is kept per weapon class, so an empty pistol does not empty the others. Body armour comes in five tiers from Ammu-Nation, each a fifth stronger than the last, and once you buy a heavier one the lighter ones vanish from the shelf; it does nothing against melee. Cover is one button that snaps you to the nearest solid object; from there you can blind-fire without a reticle, nudge the stick to peek and aim while barely exposed, or slip round a corner without leaving cover.",
+      "source_url": "https://gta.fandom.com/wiki/Weapons_in_GTA_V",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 215,
+      "game_id": 19,
+      "section_type": "mechanic",
+      "name": "Starting out in GTA IV",
+      "card": "Liberty City opens up one island at a time as the story goes, starting in Broker. Save by walking to the bed in a safehouse and choosing to sleep; that also clears any wanted level. There are no garages: the yellow Residents Parking bays on the street outside each safehouse hold two vehicles, and anything damaged there repairs itself when you leave the area or reload. Gunfire hurts far more than in older games, so the cover button is not optional: it snaps you to the nearest solid object, and from there you strafe, pop out to aim, or blind-fire round the edge. The phone runs the game: friends call, jobs arrive as texts and emails, and the internet cafés are where the side work starts.",
+      "source_url": "https://gta.fandom.com/wiki/Safehouses_in_GTA_IV",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 216,
+      "game_id": 19,
+      "section_type": "mechanic",
+      "name": "Wanted levels and the search circle",
+      "card": "Six stars. When you are wanted a flashing circle sits on the radar: that is where the police are looking, and every cop inside it is a flashing icon. Get outside the circle without being seen and stay quiet for a few seconds and the stars fade; get spotted leaving and the circle re-centres on you. White stars mean they see you, grey means they have lost you, blinking grey means they are about to give up. Swapping cars buys a couple of seconds at best. While wanted you cannot buy guns or clothes, take a taxi, enter bars or activities, or use the subway above two stars, and getting arrested drops you at the nearest station without your weapons or armour. Pay 'n' Spray clears it if you enter unseen in a car that fits, any bed clears it, and once unlocked a call to Kiki or Francis clears up to three stars.",
+      "source_url": "https://gta.fandom.com/wiki/Wanted_Level_in_GTA_IV",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 217,
+      "game_id": 19,
+      "section_type": "mechanic",
+      "name": "Friends and their favours",
+      "card": "Each friend has a like rating you raise by taking them out: bowling, darts, pool, eating, drinking, shows, the strip club. You get about an in-game hour to collect them once a date is set, being late costs points, and declining their calls costs five to ten each time. At seventy-five percent they phone to offer a favour. Roman sends a free cab that works even while the police are after you, which is the best escape in the game. Little Jacob drives up with a boot full of guns at sixty percent off, usable mid-mission. Brucie flies you across the city by helicopter. Dwayne, if you let him live, sends two armed men to fight beside you. Packie leaves a car bomb you detonate by phone.",
+      "source_url": "https://gta.fandom.com/wiki/Friendships_in_GTA_IV",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 218,
+      "game_id": 19,
+      "section_type": "mechanic",
+      "name": "Girlfriends",
+      "card": "Two girlfriends come from the story and three from the dating sites, which open after the mission Out of the Closet: reply to a profile, wait for her email, and the first date decides whether she gives you her number. Each has tastes in clothes, cars and venues that move her fondness, and a bad date or not asking to come in ends it, though she reappears on the site a few days later as if you had never met. The online three pay off: Kiki the lawyer clears wanted levels with a phone call once she is fond of you, Carmen tops up your health by phone, and Alex gets you discounts on clothes. The Algonquin two are unavailable until that island opens.",
+      "source_url": "https://gta.fandom.com/wiki/Girlfriends_in_GTA_IV",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 219,
+      "game_id": 19,
+      "section_type": "mechanic",
+      "name": "Side jobs: Most Wanted, Stevie's cars and Brucie's exports",
+      "card": "Sit in a stationary police car and the computer lists ten most-wanted criminals for the region: thirty in all across Algonquin, the Broker-Dukes-Bohan side, and Alderney, in any order you like. Stevie texts thirty car requests with a photo of where each is parked, usually within a block of the hint; deliver them undamaged to his lot in Bohan for the best money, nearly four hundred thousand in total, once you have the Alderney safehouse and have done Smackdown and No. 1. Brucie emails ten exotic cars to steal for his lockup in East Hook, a thousand each, eight hundred for bikes, less if you dent them. The Fixer's payphone in Port Tudor, Alderney, hands out assassinations after Truck Hustle. None of these are the story; all of them are the hundred percent.",
+      "source_url": "https://gta.fandom.com/wiki/Most_Wanted",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 220,
+      "game_id": 19,
+      "section_type": "mechanic",
+      "name": "Collectibles: flying rats and stunt jumps",
+      "card": "Two hundred pigeons are hidden around Liberty City and Alderney, glowing red and cooing so you can find them at night; shoot, burn, blow up or run over every one and the Annihilator attack helicopter spawns on the MeTV building. There are also fifty stunt jumps, and unlike the pigeons all fifty are needed for completion. The game tells you after each landing: Stunt jump completed, or Not good enough. Some only need you to land; others want a distance or a precise landing spot that the game never explains, so a jump that keeps failing usually wants more speed or a different line rather than more attempts.",
+      "source_url": "https://gta.fandom.com/wiki/Flying_Rats",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 221,
+      "game_id": 19,
+      "section_type": "item",
+      "name": "Weapons and where to buy them",
+      "card": "Sixteen weapons in two tiers each, with generic names: the carbine is the M4, the assault rifle the AK. Dropped guns lie on the ground with a faint orange glow, and you can disarm an enemy by shooting his hand rather than killing him. The underground gun shops open after Do You Have Protection?, and once Little Jacob likes you enough his van sells everything at sixty percent off. Fixed spawn points around the city refill the same weapon every visit, which is how most players keep an RPG. Body armour is sold alongside the guns and is the difference between two hits and five.",
+      "source_url": "https://gta.fandom.com/wiki/Weapons_in_GTA_IV",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 222,
+      "game_id": 19,
+      "section_type": "area",
+      "name": "Liberty City's boroughs and when they open",
+      "card": "Four boroughs of the real New York plus New Jersey, each with a different feel: Broker is Brooklyn and where you start, Dukes is Queens on the same island, Bohan is the Bronx across the water, Algonquin is Manhattan with the tall buildings and most of the money, and the State of Alderney is New Jersey, industrial and suburban. The bridges are closed by the police at first: Algonquin opens after the mission Blow Your Cover and Alderney after Three Leaf Clover. Crossing a closed bridge earns an instant six-star wanted level, so if the map shows a closed island, the story has to get there first.",
+      "source_url": "https://gta.fandom.com/wiki/Liberty_City_(HD_Universe)",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 223,
+      "game_id": 20,
+      "section_type": "mechanic",
+      "name": "Starting out in Fallout: New Vegas",
+      "card": "Doc Mitchell patches you up in Goodsprings, sets your stats with his tester, and hands over a Pip-Boy and a gun or two based on the skills you tagged. The town is the tutorial: Sunny Smiles teaches shooting and campfire cooking, and the little quests around it show every kind of skill check in the game, all of them fixed thresholds rather than dice rolls, so a Speech of 25 either works or it does not. The road north out of town is closed by deathclaws at the quarry past Sloan; the game means you to go south through Primm, Nipton and Novac and round the long way. Doc Mitchell's containers are safe storage, and once the town is cleared nothing hostile respawns inside it. You choose three tag skills for fifteen points each, get ten skill points plus half your Intelligence per level, a perk every two levels, and a cap of thirty, or fifty with the four add-ons.",
+      "source_url": "https://fallout.fandom.com/wiki/Goodsprings",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 224,
+      "game_id": 20,
+      "section_type": "mechanic",
+      "name": "Hardcore mode",
+      "card": "Switch it on from the options at any time, and off again the same way; finishing the game with it on earns the achievement. Stimpaks and RadAway heal over time instead of instantly, a doctor's bag only partly mends a crippled limb, and otherwise only a doctor, certain beds, a healing poultice or Hydra will, so sleeping in an owned bed for the Well Rested bonus becomes the free fix. Ammunition has weight. Companions can die for good. You also drink, eat and sleep: thirst climbs fastest, about one point every ten real seconds, and each stage strips stats until the top one kills you. Fast travel is allowed but the hours it takes still count, so check your meters before a long jump or you can arrive dead. Campfire food heals far more than stimpaks once your Survival is decent, which is the whole point of the skill.",
+      "source_url": "https://fallout.fandom.com/wiki/Hardcore_mode",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 225,
+      "game_id": 20,
+      "section_type": "mechanic",
+      "name": "Reputation, disguises and hit squads",
+      "card": "Every town and faction keeps two separate tallies, fame and infamy, and your title with them (Accepted, Liked, Idolized, or Shunned, Vilified, or a mixed one) comes from the pair. Being caught stealing costs two infamy; killing one of theirs in the open costs thirty. Killing from hiding with a silent one-shot kill, or with the Mister Sandman perk, costs nothing, except with the Brotherhood, who notice everything but Sandman. Wearing a faction's armour turns your standing with them neutral while it is on, a disguise that also hides some other relationships from your Pip-Boy. Fall to Shunned with the Legion and squads of four assassins start walking across the map to find you; anger the NCR too and Ranger squads join them. Infamy with the NCR and Legion can each be wiped once, when their leaders invite you in after the events at the Tops.",
+      "source_url": "https://fallout.fandom.com/wiki/Fallout:_New_Vegas_reputations",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 226,
+      "game_id": 20,
+      "section_type": "enemy",
+      "name": "Deathclaws and Quarry Junction",
+      "card": "The quarry past Sloan is why the road north is closed. Inside are ordinary deathclaws at double or triple their usual health, young ones, an alpha male whose swipe does three hundred damage, and a mother with a litter of babies who goes berserk if you kill one in front of her. Both entrances are guarded. They stop chasing if you stand on a rock they cannot reach or dive into water, a crippled leg stops the leaping attack and slows them to a limp, and a flare gun makes them flee. The reward for clearing it is a Fat Man with two mini nukes and a light machine gun in the den. Come back much later, with the anti-materiel rifle the Gun Runners' guard brags about, and remember Dead Wind Cavern holds the legendary one, which hits twice as hard.",
+      "source_url": "https://fallout.fandom.com/wiki/Quarry_Junction",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 227,
+      "game_id": 20,
+      "section_type": "enemy",
+      "name": "Cazadores",
+      "card": "Giant orange wasps in swarms of four or more, flying fast and erratic, and their sting does more raw damage than a giant radscorpion's and three times the poison, for longer. You will not sneak past them: their perception is higher than a deathclaw's. Cripple a wing in V.A.T.S. and one drops out of the air and slows to a crawl; crippling the antennae only frenzies them, and headshots give no bonus. Carry antivenom or super stimpaks, and know that your companions cannot use antivenom, so heal them with stimpaks from the companion wheel; they will use datura antivenom if they have it. The ones inside the Big MT are tougher still.",
+      "source_url": "https://fallout.fandom.com/wiki/Cazador",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 228,
+      "game_id": 20,
+      "section_type": "enemy",
+      "name": "Night stalkers",
+      "card": "Coyote bodies with rattlesnake heads, made in a lab and now everywhere at night and in caves, especially their dens, where the packs are large and the tunnels twist. They leap and bite with venom weaker than a cazador's, but it stacks if several land, so treat the poison. They rattle and hiss when close, which is your warning, and their standing bite animation roots them for a moment, so backpedal out of it. With the Animal Friend perk they ignore you entirely. The pack in Charleston Cave can turn invisible like a Stealth Boy; fight those in a corridor where they have to come to you.",
+      "source_url": "https://fallout.fandom.com/wiki/Night_stalker",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 229,
+      "game_id": 20,
+      "section_type": "mechanic",
+      "name": "Companions and what each one gives you",
+      "card": "You can bring one person and one of the two non-humans at once, ordered through the companion wheel, and none of them care about your karma except Cass, who leaves if you go properly evil. In normal mode they only fall unconscious. Boone, the sniper in the dinosaur at Novac, gives Spotter, which lights up hostiles while you aim. ED-E, the broken eyebot in the Nash house at Primm, extends how far you detect enemies. Veronica at the 188 Trading Post lets you use a workbench anywhere. Rex, the cyberdog with the Kings in Freeside, marks nearby loot. Cass at the Mojave Outpost makes whiskey harmless and armouring. Raul, locked up on Black Mountain, slows your gear's wear. Lily at Jacobstown makes Stealth Boys last and sneak crits hurt. Arcade at the Old Mormon Fort makes stimpaks heal more.",
+      "source_url": "https://fallout.fandom.com/wiki/Craig_Boone",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 230,
+      "game_id": 20,
+      "section_type": "area",
+      "name": "Getting into the Strip",
+      "card": "The north gate is held by Securitrons who shoot anyone who walks up without talking to the greeter. Ways in: pass the credit check by carrying two thousand caps, which are checked, not taken; hack the greeter with a Science of eighty; hand over a passport, forged by Ralph at Mick and Ralph's in Freeside for five hundred caps, three hundred and seventy-five with a Barter of fifty, or free with a good NCR reputation, or free from the King as his favour after G.I. Blues; or shoot every robot at the gate, which earns Strip infamy for each one and turns every Securitron inside hostile. Once through, Victor finds you at the door, and the Tops, Gomorrah, the Ultra-Luxe, Vault 21 and the NCR Embassy are all a short walk.",
+      "source_url": "https://fallout.fandom.com/wiki/New_Vegas_Strip",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 231,
+      "game_id": 20,
+      "section_type": "item",
+      "name": "Weapon mods and the unique guns you can get early",
+      "card": "Mods never turn up as loot: you buy them from a dozen stationary and travelling merchants whose stock rotates every three days, and each weapon takes up to three, one of each kind, fixed forever once attached. Unique weapons refuse mods but come with better stats and sometimes the mods built in. Early ones worth a detour: Lucky, a .357 that never jams, in a hard-locked floor safe behind the gift shop counter of the Bison Steve in Primm; That Gun, bought or stolen from the Dino Bite gift shop in Novac; Ratslayer, a silenced night-scoped varmint rifle with a huge critical multiplier, in the Broc Flower Cave past the giant rats; This Machine, the Garand, for the quiet quest about Sergeant Contreras at Camp McCarran. Uniques cannot be repaired with their common cousins unless you take Jury Rigging at Repair ninety, which repairs anything with anything of the same class.",
+      "source_url": "https://fallout.fandom.com/wiki/Fallout:_New_Vegas_weapon_mods",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 232,
+      "game_id": 20,
+      "section_type": "mechanic",
+      "name": "Skills, SPECIAL points, implants and books",
+      "card": "Each skill starts at two plus twice its governing stat plus half your Luck, so Luck quietly lifts everything. Three tagged skills get fifteen points; each level gives ten plus half your Intelligence; and the base game does not hand out enough to max them all, so choose. Skill books are three permanent points each, four with Comprehension, and there are about fifty-two of them; magazines are ten points for a minute, doubled and tripled by the matching perks, and merchants sell them, so carry a few for a hard check. Doctor Usanagi at the New Vegas medical clinic near the Crimson Caravan sells a permanent point in any stat for four thousand caps each, as many as your Endurance allows, plus armour under the skin for eight thousand and slow health regeneration for twelve. Buy the Intelligence implant first if you can afford it; it pays itself back in skill points.",
+      "source_url": "https://fallout.fandom.com/wiki/Fallout:_New_Vegas_skills",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 233,
+      "game_id": 20,
+      "section_type": "mechanic",
+      "name": "Snow globes and star bottle caps",
+      "card": "Seven snow globes are hidden in the base game and each is worth two thousand caps from Jane at the Lucky 38, where they go on a display stand; finding all seven is the achievement, selling them is optional. They sit on the rubble-topped grave in Goodsprings cemetery, the welcome desk of the Hoover Dam visitor centre, upstairs in the tower of the Old Mormon Fort, the reception desk of the Jacobstown lodge, the table inside the Boomers' museum at Nellis, the counter of the Lucky 38 cocktail lounge, and one more at the test site. The blue-star Sunset Sarsaparilla caps are a different hunt: one bottle in twenty holds one, over a hundred sit in fixed spots, and fifty of them buy the legendary prize at the company headquarters, though collectors, as Malcolm Holmes warns you, will kill for them.",
+      "source_url": "https://fallout.fandom.com/wiki/Snow_globe_(Fallout:_New_Vegas)",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 234,
+      "game_id": 21,
+      "section_type": "mechanic",
+      "name": "Starting out in Super Mario 64",
+      "card": "The paintings in the castle are the courses: walk up and the surface ripples, jump in and you are there. Each course holds several missions, one star each, and stars open the castle's doors. Health is the eight-wedge power meter, refilled by coins, spinning hearts, or surfacing in water. The moves are the game: run and jump three times for the triple jump, run then crouch and jump for the long jump, jump into a wall and jump again for the wall kick, crouch and jump for the backflip, turn around sharply and jump for the side flip, and press crouch in the air to ground-pound. Caps last sixty seconds and only appear in courses once you have hit their switches. A hundred coins in any course is an extra star, and the rabbit in the basement gives one when caught at fifteen stars and again at fifty.",
+      "source_url": "https://www.mariowiki.com/Super_Mario_64",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 235,
+      "game_id": 21,
+      "section_type": "boss",
+      "name": "Bowser: the three fights",
+      "card": "The first fight opens at eight stars. Bowser breathes a stream of fire that leaves burning sparks, jumps to shake the ground, which stuns you unless you are in the air, and claws if you stand close. Get behind him, grab his tail, spin the stick to build speed, and throw him into one of the four spiked bombs around the edge; a miss and he climbs back on. The second fight, after boarding the sub, adds a stage that tilts whenever he lands, single fireballs, and teleporting. The final fight at seventy stars has five bombs, and he must be thrown three times: his slams now send shockwaves along the floor, and he breathes fire upward that rains back down. The keys from the first two fights open the locked doors.",
+      "source_url": "https://www.mariowiki.com/Bowser_in_the_Dark_World",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 236,
+      "game_id": 21,
+      "section_type": "boss",
+      "name": "King Bob-omb and the Whomp King",
+      "card": "King Bob-omb waits on the summit of Bob-omb Battlefield. He grabs and throws you if you walk into his hands, so circle behind him, pick him up and throw him; three throws win. Throw him off the mountain and he calls it cheating and the fight restarts, and he can hurt you on contact in the moment he gets up. The Whomp King on top of Whomp's Fortress attacks by falling flat on his face, which is your opening: ground-pound his back while he is down, three times, and the star is yours and a tower rises on the fortress.",
+      "source_url": "https://www.mariowiki.com/King_Bob-omb",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 237,
+      "game_id": 21,
+      "section_type": "boss",
+      "name": "Eyerok, the Big Bully and the Wiggler",
+      "card": "Eyerok is the pair of stone hands in the pyramid at Shifting Sand Land. Each hand slams or shoves on its own and only one opens its eye at a time; punch, kick or dive into the open eye, three hits destroys that hand, and both must go for the star. A hit from him costs three wedges. The Big Bully in Lethal Lava Land cannot hurt you and you cannot hurt him: he shoves, and you win by punching him off the platform into the lava. The Wiggler lives inside Tiny-Huge Island's mountain: ground-pound the pool on the tiny side to flood his house, then go in on the huge side and jump on his head.",
+      "source_url": "https://www.mariowiki.com/Eyerok",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 238,
+      "game_id": 21,
+      "section_type": "item",
+      "name": "The three caps",
+      "card": "Each cap needs its switch pressed in a hidden course before its blocks turn solid anywhere else. The red Wing Cap, from the tower at ten stars, lets you fly from a triple jump or a cannon shot, slowly losing height. The green Metal Cap makes you invulnerable and very heavy: you sink and walk along the bottom, never need to breathe, and cannot swim. The blue Vanish Cap makes you a ghost for a short time, walking through enemies and metal fences. All caps run out after a minute, and finishing a mission drops the form. Dire, Dire Docks is the one place you can wear metal and vanish at once.",
+      "source_url": "https://www.mariowiki.com/Metal_Cap",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 239,
+      "game_id": 21,
+      "section_type": "mechanic",
+      "name": "Stars that are easy to miss",
+      "card": "Catch the yellow rabbit in the castle basement when you have fifteen stars, and again at fifty, and he hands over a star each time; he never comes back after the second. Every course also has a star for collecting a hundred coins in one visit, which is where most of the total comes from. The wing-cap tower's own star is its eight red coins, in pairs at the compass points, and you will have to land and relaunch because you lose height as you fly. Tick Tock Clock runs at whatever speed the clock hands showed when you jumped in, so choose your moment at the painting to freeze or slow the machinery.",
+      "source_url": "https://www.mariowiki.com/MIPS",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 240,
+      "game_id": 22,
+      "section_type": "mechanic",
+      "name": "Starting out in Mario Kart 64",
+      "card": "Hold the gas as the lights change from red to blue for a rocket start; too early and you spin your tyres and leave slower than everyone. Hop and hold to drift, then wiggle the stick side to side while sliding: the smoke goes white, yellow, then orange, and letting go on orange gives a mini-turbo. Gas and brake together spins the kart on the spot. If you drive straight into a banana, a well-timed tap of the brake saves the spin and shows a musical note. Item boxes hand out stronger items the further back you are. Grand Prix is four cups of four races at 50, 100 and 150cc, scoring nine, six, three and one point for the top four; the Extra class runs the courses mirrored. Battle mode gives each player three balloons, and time-trial ghosts only save if you never pause, crash, reverse or fall.",
+      "source_url": "https://www.mariowiki.com/Mario_Kart_64",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 241,
+      "game_id": 22,
+      "section_type": "item",
+      "name": "Items and who gets them",
+      "card": "Your place decides your items. The blue Spiny Shell only comes to fourth place or lower: it runs along the ground with a siren, homes on the leader, flips anyone in its path, and can be held behind your kart to block other shells before you fire it. Lightning goes to second through eighth: everyone else shrinks, cannot use mushrooms, stars or Boos, and can be flattened if you drive over them. Fake Item Boxes belong to first and second: an upside-down question mark, they launch whoever hits them and block incoming shells. Triple red shells orbit you, fire one at a time, and shield you meanwhile. Bananas dropped in a trail take out the whole line if a kart clips the first.",
+      "source_url": "https://www.mariowiki.com/Spiny_Shell_(blue)",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 242,
+      "game_id": 22,
+      "section_type": "area",
+      "name": "Shortcuts worth learning",
+      "card": "On Rainbow Road, hop over the left railing right at the start to land on the loop around the big star and skip a huge stretch. On Royal Raceway the dash ramp before the second row of item boxes cuts a corner; a mushroom does it, or a left drift with a full mini-turbo released into a hop. In Yoshi Valley, hop left where the routes rejoin to skip a bend, and use a mushroom across the last off-road patch, drifting into the fence for a bigger boost onto the final straight. In Kalimari Desert you can follow the train tracks into the tunnel and turn around with a star to skip most of a lap, but never on the final lap. Nearly every corner on Royal Raceway has a dirt patch a mushroom crosses.",
+      "source_url": "https://www.mariowiki.com/Rainbow_Road_(Mario_Kart_64)",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 243,
+      "game_id": 22,
+      "section_type": "area",
+      "name": "Courses that fight back",
+      "card": "Toad's Turnpike is the third longest track and a figure of eight full of traffic: cars, tankers, box trucks and school buses that never stop. Kalimari Desert crosses the railway twice, so listen for the train. Choco Mountain drops boulders on the left U-turn. Yoshi Valley splits into six routes; the leftmost is the simplest but has no railings. Frappe Snowland has a river jump on the straight and a field of snowmen that stop a kart dead. Rainbow Road is long, unwalled in places, and the Chain Chomps on it are the reason to learn the start shortcut.",
+      "source_url": "https://www.mariowiki.com/Toad%27s_Turnpike",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 244,
+      "game_id": 23,
+      "section_type": "mechanic",
+      "name": "Starting out in Paper Mario: The Thousand-Year Door",
+      "card": "Battles are turn-based on a theatre stage: Mario and one partner each act every turn, and you can swap who goes first, which also puts that one in front. Hit an enemy in the field to open with a free first strike; they can do the same to you. Every attack has an action command, a button press at the right moment for extra damage, and every enemy attack can be guarded with A as it lands for one less damage, or superguarded with B in a tiny window for no damage and a point back. Levelling up every hundred star points gives a choice: five HP, five FP or three badge points. The boots and hammer upgrades are story finds you cannot skip, and the black chests hand out paper tricks like the plane and the sideways squeeze.",
+      "source_url": "https://www.mariowiki.com/Paper_Mario:_The_Thousand-Year_Door",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 245,
+      "game_id": 23,
+      "section_type": "mechanic",
+      "name": "Star Power, Stylish moves and the crowd",
+      "card": "The audience is a resource. Every jump, hammer and partner attack earns Star Power for the Crystal Star moves, and it comes faster when you land the action command or add a Stylish move, an extra press at the right beat of the attack animation that makes the crowd cheer; Stylish works only on normal and badge attacks, not items or counters. Appeal to gain Star Power directly while anyone is awake in the seats. Your star rank sets how many can attend, rising at levels ten, twenty and thirty. The crowd is not always friendly: some throw things at you or heckle, and Hooktail, Cortez and the Shadow Queen eat audience members to heal, so clear them first.",
+      "source_url": "https://www.mariowiki.com/Star_Power_(Paper_Mario_series)",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 246,
+      "game_id": 23,
+      "section_type": "mechanic",
+      "name": "Badges and BP",
+      "card": "Badges are the build. You find them in red question blocks, take them from enemies, buy them at the Lovely Howz in Rogueport, from Charlieton at steep prices, at the Pianta Parlor for tokens, or from Dazzle underground for Star Pieces. Each costs badge points to wear, so BP at level-up is often the best pick. P badges give the same effect to your partner. Wearing two copies of an attack badge doubles its FP cost but raises its power. The ones people build around: Power Bounce, repeated jumps until you miss a command; Multibounce, one hit on every enemy; Quake Hammer for everything on the ground; and Power Rush, Close Call and Last Stand, which only work while you are in Danger at five HP or less, plus Mega Rush at exactly one, which is why some players have Chet Rippo lower their maximum HP on purpose.",
+      "source_url": "https://www.mariowiki.com/Badge",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 247,
+      "game_id": 23,
+      "section_type": "boss",
+      "name": "Hooktail",
+      "card": "The dragon at the top of the castle in chapter one, guarding the first Crystal Star: twenty HP, one point of defence, five attack, and a trick where she plays dead and comes back with ten more. She eats members of the audience to heal, so keep the crowd thin, and her bite cannot be blocked at all, so keep your own HP topped up rather than hoping to guard. Somewhere in her castle is a badge that changes your attack sound to a cricket's chirp, and the thief who mentions it is right: the noise makes her flinch. Koops joins you for this fight; his shell toss hits her first before you commit Mario. Fire hurts her badly.",
+      "source_url": "https://www.mariowiki.com/Hooktail",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 248,
+      "game_id": 23,
+      "section_type": "boss",
+      "name": "Rawk Hawk, Magnus von Grapple and Cortez",
+      "card": "Rawk Hawk, the Glitz Pit champion in chapter three, fights from the air: a flipping jump, a flying elbow, a slide kick on the ground, and a ceiling hang that shakes down a rain of objects for one damage each, which Koops's shell ignores. Magnus von Grapple, the robot at the end of chapter two, stomps one party member for two base damage every turn until it drops to twenty HP, then fires its fists off as separate targets. Cortez, the pirate skeleton under Keelhaul Key in chapter five, comes in three forms, and beating him settles nothing because he is already dead; the fight ends when he understands you only want the Crystal Star, not his treasure.",
+      "source_url": "https://www.mariowiki.com/Rawk_Hawk",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 249,
+      "game_id": 23,
+      "section_type": "area",
+      "name": "Rogueport's side content: Shine Sprites, the Pit and the Trouble Center",
+      "card": "Forty-two Shine Sprites are hidden in blocks across the world, and Merlon next to Professor Frankly trades three of them for a partner rank; each of the seven partners can go up twice, and Merluvlee the fortune teller will point you at the ones you missed. The Trouble Center on the east side of town is a bulletin board of odd jobs that pay coins, items and badges. Under the town lies the Pit of a Hundred Trials: a hundred floors of fights with Charlieton selling supplies part-way down and Bonetail at the bottom, whose breaths freeze, confuse, shrink or sleep you unless you guard them or raise Shell Shield; she coughs up the Return Postage badge. Zess T. in the square cooks any two ingredients into something better.",
+      "source_url": "https://www.mariowiki.com/Shine_Sprite",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 250,
+      "game_id": 24,
+      "section_type": "mechanic",
+      "name": "Starting out in Pikmin 2",
+      "card": "There is no day limit this time: the goal is ten thousand Pokos of treasure to clear the company's debt, and treasures and enemy bodies both pay. Two captains share the work, and the button that used to pause now swaps between them, so one can carry while the other fights. The day still ends at sunset, and any Pikmin not with a captain or back at the Onion is eaten when the night creatures wake, so watch the sun and call everyone in early. The colours: red for fire and the hardest hitters, yellow thrown highest and safe from electricity, blue the only ones for water, purple heavy and strong, white fast, poison-proof and able to see treasure buried underground. Bulbmin, found only in certain caves, shrug off every hazard but cannot leave with you.",
+      "source_url": "https://www.pikminwiki.com/Pikmin_2",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 251,
+      "game_id": 24,
+      "section_type": "mechanic",
+      "name": "Caves",
+      "card": "Most of the treasure is underground. A cave is a stack of small floors, each laid out fresh from random pieces every time you enter, with a hole down at the end and usually a boss on the last floor and a geyser home afterwards. There is no Onion below, so the squad you walk in with is the squad you have; nothing you collect counts until you come back up, and leaving early forfeits the run. The day's clock stops while you are down there, which makes a cave the right place to spend a late afternoon. Read the hazard icons at the entrance and bring the colours that match, and bring purples for the fights.",
+      "source_url": "https://www.pikminwiki.com/Cave",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 252,
+      "game_id": 24,
+      "section_type": "mechanic",
+      "name": "Purple and White Pikmin",
+      "card": "Purples weigh as much as ten Pikmin, so one lifts what ten would, and some treasures, including the map pieces that open new areas at over a hundred weight, are impossible without them. Their landing on an enemy stuns it, they hit hard, and blowhog gusts do not move them, but they are slow and fly low when thrown. Whites are the fastest Pikmin, immune to poison and able to dig up treasure that is completely buried, which no other colour can find; anything that eats one is poisoned. Both come only from candypop buds in caves, in limited numbers, so treat them as tools rather than an army and keep them out of the front line.",
+      "source_url": "https://www.pikminwiki.com/Purple_Pikmin",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 253,
+      "game_id": 24,
+      "section_type": "item",
+      "name": "Sprays and nectar",
+      "card": "The purple ultra-bitter spray, ten purple berries from a Burgeoning Spiderwort or a found dose, turns every enemy near you to stone for about nine seconds, bomb rocks included, and is the answer to anything you cannot outfight; the purple-berry plants are rarer than the red ones, so hoard it. The red ultra-spicy spray, ten red berries, sends your Pikmin into a frenzy, faster and stronger, and flowers them. Nectar does the flowering on its own: drops from eggs, rubble, nectar weed and some insects, and a flowered Pikmin runs and carries noticeably faster than a leaf, so let a new batch drink before a long carry.",
+      "source_url": "https://www.pikminwiki.com/Ultra-bitter_spray",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 254,
+      "game_id": 24,
+      "section_type": "boss",
+      "name": "Empress Bulblax and the Snagrets",
+      "card": "The Empress Bulblax is a bulborb the size of the room. In the Hole of Heroes she is asleep when you arrive, which is your sneak attack; in Frontier Cavern she is awake and pumping out larvae without end, so kill the mother, not the children. She rolls from wall to wall, so keep the squad off the sides and throw purples at her head in the pauses. The Burrowing Snagret hides under the ground until you are close, then rises to peck; it often gets stuck half out, and a stuck snagret is free damage, again best done with purples. Its big cousin the Pileated Snagret pulls fully out and walks after you.",
+      "source_url": "https://www.pikminwiki.com/Empress_Bulblax",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 255,
+      "game_id": 24,
+      "section_type": "boss",
+      "name": "Beady Long Legs, Man-at-Legs and Raging Long Legs",
+      "card": "The arachnorbs are all legs and one body, and only the body counts. The Beady Long Legs falls from the sky when you enter its ground and stomps about, crushing anything under a foot; it stops to lower its body to rest, and that is when you throw yellows high onto it, then whistle them back before it shakes. The Man-at-Legs is different: half-buried, it only wakes when touched, it never crushes, and instead a gun unfolds that tracks the captain you are controlling, so keep the squad in cover behind the pillars, swap captains to draw fire, and attack the body when it settles. The Raging Long Legs in the Hole of Heroes has huge feet but leaves room underneath its belly if you stay close.",
+      "source_url": "https://www.pikminwiki.com/Man-at-Legs",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 256,
+      "game_id": 24,
+      "section_type": "boss",
+      "name": "The Waterwraith and the Submerged Castle",
+      "card": "The castle's mouth is under water, so only blues may enter, and inside are all four hazards; take about sixty blues if you also want the Bulbmin living there. On each of the first four floors, five minutes after you arrive, the Waterwraith drops in on its stone rollers and hunts you, crushing Pikmin and other creatures alike, and nothing hurts it but purples or a petrifying spray. So each floor is a race: find the hole down before the clock, and grab treasure only if it is on the way. On the last floor it appears when you enter its arena, and there you fight it, purples first to knock it off its rollers.",
+      "source_url": "https://www.pikminwiki.com/Submerged_Castle",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 257,
+      "game_id": 24,
+      "section_type": "boss",
+      "name": "Titan Dweevil",
+      "card": "The final boss, at the bottom of the Dream Den, carries four weapons that are the four hazards: a flame cannon, an electric shocker, a water pump and a poison bomb, and each becomes a treasure when it falls. It is tall, so throw yellows to reach the weapons, and pull them back the moment a weapon starts up; captains sidestep the hazards. Do not let Pikmin swarm its feet, they go idle there and die. Once the weapons are gone the body is open. It stops to rest after two or three rounds of stomping, and it only reacts to attacks once a stomping cycle has finished.",
+      "source_url": "https://www.pikminwiki.com/Titan_Dweevil",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 258,
+      "game_id": 24,
+      "section_type": "boss",
+      "name": "Segmented Crawbster",
+      "card": "The boss of the Cavern of Chaos, on floor ten. It drops from above when something walks under it, then rolls itself into a ball and charges the captain you are controlling, not the Pikmin, homing all the way. You cannot hurt it while it rolls; you make it hurt itself: stand with a wall behind you and step aside at the last moment so it slams in, then attack the soft belly while it is flipped. Boulders fall as the fight goes on and sometimes eggs with them. Swap captains to pull its charge where you want it.",
+      "source_url": "https://www.pikminwiki.com/Segmented_Crawbster",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 259,
+      "game_id": 24,
+      "section_type": "enemy",
+      "name": "The enemies that empty a squad",
+      "card": "Spotty Bulbears never sleep in this game: they patrol with dwarf bulbears trailing behind, and they heal if you leave them, so it is all or nothing, and purples from the side. Gatling Groinks fire mortars from range, some from towers you cannot reach, and a dead one left lying gets back up. The Careening Dirigibug floats over and drops a bomb rock at your feet; kill it in the two seconds it takes to produce one or step back. Anode Beetles are harmless alone and lethal in pairs, when an arc jumps between them that only yellows survive. Volatile Dweevils drop from the ceiling near treasure and explode after a short chase. The Bumbling Snitchbug picks up a captain and scatters the squad, so keep moving under it.",
+      "source_url": "https://www.pikminwiki.com/Spotty_Bulbear",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 260,
+      "game_id": 25,
+      "section_type": "mechanic",
+      "name": "Starting out in Melee",
+      "card": "Twenty-five fighters, fourteen there from the start and eleven to unlock, on twenty-nine stages. You do not drain a health bar: damage climbs as a percentage, and the higher it goes the further a hit sends you, so a stock is lost by being launched past the edge of the screen, not by running out of health. Everything is faster than the first game: less freeze on hits, higher gravity, faster falls, and momentum carried out of a dash into a jump. Smash attacks charge for up to a second for forty percent more power. Shield with the shoulder buttons, and press them only part way for a bigger, longer-lasting but weaker shield. Sudden Death after a tie restarts at three hundred percent, where nearly anything is a knockout.",
+      "source_url": "https://www.ssbwiki.com/Super_Smash_Bros._Melee",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 261,
+      "game_id": 25,
+      "section_type": "mechanic",
+      "name": "The techniques the game never tells you about",
+      "card": "Melee's depth is in inputs it never mentions. L-cancelling: press a shoulder button or Z within seven frames of landing during an air attack and the landing animation plays twice as fast, halving your lag. Wavedashing: air-dodge diagonally into the ground and you slide a short way while able to do any grounded action, which is how spacing and shield pressure work at a high level; Luigi slides furthest, then the Ice Climbers and Mewtwo. Dash dancing flicks back and forth to bait a commitment. Short hop, done by releasing jump during the crouch before it, keeps aerials low and fast. Fast falling, a tap down while falling, ends a jump early and beats an opponent's timing.",
+      "source_url": "https://www.ssbwiki.com/L-canceling",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 262,
+      "game_id": 25,
+      "section_type": "mechanic",
+      "name": "Surviving hits: DI, SDI and teching",
+      "card": "You are not helpless when hit. Hold the stick during the freeze frames before you are launched and you shift your angle by up to about eighteen degrees; hold perpendicular to the knockback to live longer, or along it to fall out of a combo. Tap the stick during the freeze itself and you slide a small distance each tap, which is how you escape multi-hit moves; this is a separate trick from the first. When you are about to hit the ground, a wall, or a ceiling while tumbling, press a shoulder button within twenty frames to tech: you bounce up briefly untouchable instead of lying there, and a tech left or right rolls you away. Teching a wall while falling off the side is how you survive being spiked, and holding jump as you do it wall-jumps you back.",
+      "source_url": "https://www.ssbwiki.com/Directional_influence",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 263,
+      "game_id": 25,
+      "section_type": "mechanic",
+      "name": "Edgeguarding and the ledge",
+      "card": "Most stocks are taken off the stage, not on it. When someone is knocked off, you go out or wait for them: hit them again, or take the ledge yourself so they cannot grab it, which forces them onto the stage where you are waiting. Grabbing the ledge gives you invincible frames, and the ledge dash, dropping off then jumping and air-dodging back on at the right moment, keeps some of those frames while skipping the slow climb animation. Meteor smashes hit straight down and are the cleanest kills off stage; you can cancel one by jumping or using your up special eight frames after the hit stops, which is your escape when it happens to you.",
+      "source_url": "https://www.ssbwiki.com/Edgeguarding",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 264,
+      "game_id": 25,
+      "section_type": "mechanic",
+      "name": "Shields, grabs and punishing",
+      "card": "Blocking is not passive. Shields stop everything but grabs and a few unblockable moves, and a light press makes a bigger shield that resists being poked through but leaves you worse off afterwards. The standard punish is the shield grab, pressing attack while shielding, which skips the delay of dropping the shield and catches an opponent stuck in the end of their move. Out of shield you can also jump, roll, wavedash, up smash or use an aerial, and how good those are decides how safe an attack is against you. Grabs lead into throws, and a few characters chain them: Sheik's down throw regrabs most of the cast from zero, and the Ice Climbers can hold you in place indefinitely with the wobble, which many tournaments ban.",
+      "source_url": "https://www.ssbwiki.com/Out_of_shield",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 265,
+      "game_id": 25,
+      "section_type": "enemy",
+      "name": "Fox and Falco",
+      "card": "The two Star Fox characters sit at the top of the game. Fox is the fastest lightweight in it: second fastest dash, third fastest fall, three-frame jump, and a shield reflector that comes out instantly and knocks people sideways off the stage. His speed is also his weakness, since falling fast means being combo'd hard. Falco is his slower, heavier twin with a different feel: his laser makes people flinch and cancels when he lands, which shuts down approaches, and his down air spikes straight down. The Falco pillar, reflector into a down air spike into more, is one of the best shield-wearing routines in the game. Both die early because they fall so fast.",
+      "source_url": "https://www.ssbwiki.com/Fox_(SSBM)",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 266,
+      "game_id": 25,
+      "section_type": "enemy",
+      "name": "Marth, Sheik, Jigglypuff and Peach",
+      "card": "Marth kills with the tip of his sword and nothing else; spacing is the whole character, and the Ken combo, a forward air then a jump and a down air spike, is the classic finish and needs the first hit placed exactly. Sheik is fast, combos easily, and chain-throws much of the cast from zero, though only a few of her moves actually kill. Jigglypuff is slow on the ground and floats in the air; the wall of pain, back air after back air while drifting out with them, carries people off the stage, and Rest hits on the first frame for twenty-eight percent and kills under fifteen, but leaves it asleep and helpless if it misses. Peach fights almost entirely in the air, with a float, a down smash that shreds, and turnips she pulls from the ground.",
+      "source_url": "https://www.ssbwiki.com/Marth_(SSBM)",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 267,
+      "game_id": 25,
+      "section_type": "mechanic",
+      "name": "Unlocking the other eleven",
+      "card": "Every hidden character has to be beaten in a fight before joining, and each has two ways to summon that fight. Jigglypuff, Dr. Mario, Falco, Young Link, Pichu, Luigi, Ganondorf, Mewtwo, Roy, Marth and Mr. Game and Watch are the eleven. Some come from playing modes: Jigglypuff after any single-player mode, Marth after using all fourteen starters in any mode, Dr. Mario after Classic as Mario with no continues, Roy the same as Marth, Young Link after ten characters have cleared a mode, Falco after the hundred-man melee. Others come from events: Ganondorf from event twenty-nine, Pichu from event thirty-seven. Luigi wants the first Adventure stage finished with a two as the second digit of the seconds. Mewtwo wants twenty hours of versus play, less with more players, and Mr. Game and Watch wants every other character to clear a mode.",
+      "source_url": "https://www.ssbwiki.com/Unlockable_character",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 268,
+      "game_id": 25,
+      "section_type": "mechanic",
+      "name": "The single-player modes and what they unlock",
+      "card": "Classic is eleven fights ending with Master Hand, who has a health bar rather than a percentage; take half of it inside five minutes and fifty seconds on Normal or higher and Crazy Hand joins him. Adventure is the longer one, with side-scrolling stages between the fights, and if you reach Bowser on Normal or higher within eighteen minutes he comes back as Giga Bowser, worth a hundred thousand points and his own trophy if you beat him without continuing. All-Star opens once every fighter is unlocked and sends you through all of them with a small supply of healing between rounds. Clearing it unlocks Battlefield; clearing all fifty-one event matches unlocks Final Destination. Those two flat stages are what tournaments play on.",
+      "source_url": "https://www.ssbwiki.com/Adventure_Mode",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
     }
   ],
   "genre_patterns": [
