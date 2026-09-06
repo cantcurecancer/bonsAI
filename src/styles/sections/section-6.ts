@@ -215,24 +215,45 @@ export function buildSection6Section(): string {
           color: #8fa8c4 !important;
         }
         /*
-         * The newest question's bubble carries a Retry icon on its left (D77). Flex row rather
-         * than an absolute corner: this bubble is right-aligned and fit-content, so only its right
-         * edge is fixed — pinning to the left one would need a measurement.
+         * The newest question's bubble carries a Retry icon at its bottom-left corner (D77).
+         *
+         * Out of the flow, not a flex child. As a child it reserved a 26px column down the WHOLE
+         * height of the bubble — on a four-line question that is a tall empty strip, and the
+         * maintainer flagged it from a screenshot on 2026-09-06. Positioned against the bubble it
+         * costs no width at all, so the question text gets those pixels back and usually drops a
+         * line.
+         *
+         * right: 100% puts it beyond the bubble's left edge and the negative margin pulls it 6px
+         * back over the corner — inside the bubble's own 10px side padding, so it can never sit on
+         * a word. All relative to the bubble itself, so no measurement is involved: the earlier
+         * worry about this bubble's floating left edge was about pinning to the COLUMN, not to the
+         * bubble.
          */
         .bonsai-scope .bonsai-chat-turn-row-header--with-retry {
-          display: flex !important;
-          flex-direction: row !important;
-          align-items: center !important;
-          gap: ${uiScalePx(6)} !important;
+          position: relative !important;
         }
         .bonsai-scope .bonsai-chat-turn-row-body {
-          flex: 1 1 auto !important;
           min-width: 0 !important;
           text-align: right !important;
           outline: none !important;
         }
-        .bonsai-scope .bonsai-turn-retry-corner-slot {
-          flex: 0 0 auto !important;
+        /*
+         * Four classes plus the element on purpose. .bonsai-scope .Panel.Focusable > div further
+         * up this sheet forces position: relative !important on every direct div child of a Decky
+         * Focusable, and it beat a two-class rule: measured on the Deck 2026-09-06, the icon stayed
+         * in the flow, sat at the TOP of the bubble pushed 245px to the left, and added 23px of
+         * empty space above the question text — the opposite of the fix.
+         */
+        .bonsai-scope
+          .bonsai-chat-turn-row-header.bonsai-chat-turn-row-header--with-retry
+          > div.bonsai-turn-retry-corner-slot {
+          position: absolute !important;
+          top: auto !important;
+          right: 100% !important;
+          bottom: 0 !important;
+          /* Half over the bubble's own 10px side padding, half outside: a corner badge that can
+             never sit on a word, and costs the text no width at all. */
+          margin-right: ${uiScalePx(-10)} !important;
           display: inline-flex !important;
           align-items: center !important;
           justify-content: center !important;

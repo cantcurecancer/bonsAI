@@ -50,14 +50,14 @@ hook gives a gentle heads-up when a session starts work outside this.
 ## Bugs
 
 
-- ★★ `[focus]` **The last part of a long answer can sit a third of the way under the Ask bar when the ring is on it** —
-  **OPEN, measured 2026-09-06.** Walking down a long answer, the ring lands on its last part and the panel scrolls, but not far
-  enough: about a third of that part stays behind the input bar at the bottom. The ring is on it and you cannot read all of it
-  without scrolling again by hand. It happened on the way down and on the way up, in the same place both times, and it is the
-  only thing the reply walk still flags. Not caused by the three 2026-09-06 reply changes — the same overlap showed on the run
-  taken before them — but they made it easier to hit, because parts of an answer are bigger now. The fix is in how the answer
-  scrolls itself, not in the reply chrome: the scroll stops when the part is *in view* rather than *clear of the dock*.
-  Runs: `reply-block-final-walk` (stops 7 and 19), `copy-right-from-answer`.
+- ★★ `[focus]` **Walking UP into the end of a long answer still leaves a third of it under the Ask bar** —
+  **PARTLY FIXED 2026-09-06, one direction still wrong.** Walking **down** a long answer is fixed: every part now stops clear
+  of the input bar, measured over the whole reply both ways. Walking **up** — from the Show details line back into the answer
+  — still lands on the last part with about a third of it behind the bar. **What is known:** the readable area now ends at the
+  top of the bar rather than the bottom of the panel, and the code nudges the panel whenever a part it just landed on runs
+  underneath. That nudge fires on the way down and does not on this one path. Running it again a frame later did not help, and
+  the panel settles at exactly the same place on every run, so it is deterministic and worth one more look with a log rather
+  than another guess. Runs: `reply-block-dock-fix-verified` (stop 20), `reply-block-final-clean`, `reply-block-after-scroll-fix`.
 
 - ★ `[focus]` **Closing the model try order picker drops the highlight onto the tab rather than the button you opened it from** —
   **OPEN, seen twice 2026-09-06.** After pressing *Done*, the highlight lands on the Ollama tab's outer frame, not back on

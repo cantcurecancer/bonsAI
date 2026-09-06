@@ -10,6 +10,7 @@ import {
   chunkHasContentBelowViewport,
   findScrollablePanel,
   panelScrollMax,
+  readableBottomOf,
   scrollTabContentsByStep,
   tryGeometryPanelScroll,
 } from "./chatPanelScroll";
@@ -37,11 +38,60 @@ import {
   orderedAnswerStops,
 } from "./answerStopRegistry";
 
-/** True when `el` overlaps the visible band of its scroll container. */
+/**
+ * True when `el` overlaps the READABLE band of its scroll container.
+ *
+ * Readable, not the container's full height: the Main tab's dock is sticky inside the container and
+ * covers its bottom, so a section wholly behind the Ask bar used to count as in view and could take
+ * the ring (measured 2026-09-06).
+ */
 export function elementIsWithinViewportOf(el: HTMLElement, scroll: HTMLElement): boolean {
   const elRect = el.getBoundingClientRect();
   const scrollRect = scroll.getBoundingClientRect();
-  return elRect.bottom > scrollRect.top && elRect.top < scrollRect.bottom;
+  return elRect.bottom > scrollRect.top && elRect.top < readableBottomOf(scroll);
+}
+
+/**
+ * Feature: a section the ring just landed on should be readable, not half behind the Ask bar.
+ * Input: the focused section and its scroll container. Output: true when the panel actually moved.
+ *
+ * Scrolls only as far as it takes to clear the dock, and never past the section's own top — a
+ * section taller than the readable band parks with its top at the top of the band rather than
+ * jumping its start off screen. Nothing else about the step-by-step scrolling changes.
+ */
+export function revealBelowDock(el: HTMLElement, scroll: HTMLElement): boolean {
+  /*
+   * Once now, once on the next frame.
+   *
+   * Focus itself never scrolls (focusAnswerStop passes preventScroll), but Steam's own navigation
+   * adjusts the container AFTER our handler returns — measured on the Deck 2026-09-06, coming up
+   * out of the Show details line: the panel moved by 195px after this ran, putting the section back
+   * under the Ask bar. The second pass runs once the dust has settled. It is idempotent: it only
+   * ever scrolls far enough to clear the dock, and never past the section's own top.
+   */
+  const again = () => {
+    if (!el.isConnected) return;
+    revealBelowDockOnce(el, scroll);
+  };
+  try {
+    if (typeof requestAnimationFrame === "function") requestAnimationFrame(again);
+  } catch {
+    /* no frame scheduler in the test environment — the immediate pass below is enough there */
+  }
+  return revealBelowDockOnce(el, scroll);
+}
+
+function revealBelowDockOnce(el: HTMLElement, scroll: HTMLElement): boolean {
+  const elRect = el.getBoundingClientRect();
+  const scrollRect = scroll.getBoundingClientRect();
+  const hidden = elRect.bottom - readableBottomOf(scroll);
+  if (hidden <= 4) return false;
+  const headroom = Math.max(0, elRect.top - scrollRect.top);
+  const step = Math.min(hidden, headroom);
+  if (step < 1) return false;
+  const before = scroll.scrollTop;
+  scroll.scrollTop = Math.min(panelScrollMax(scroll), before + step);
+  return scroll.scrollTop !== before;
 }
 
 /** Walk turn slots. Must query the UI document, not SharedJSContext's shell — see uiDocument.ts. */
@@ -143,7 +193,14 @@ export function focusLastAnswerChunk(answerKey: string): boolean {
   takeAnswerBubbleNavFocus(answerKey);
   // Registered handles, not a page query — same registry the section walk itself reads.
   const stops = orderedAnswerStops(answerKey, el);
-  if (stops.length && focusAnswerStop(stops[stops.length - 1]!)) return true;
+  const last = stops[stops.length - 1];
+  if (last && focusAnswerStop(last)) {
+    /* Coming into the answer from below — Up out of the Show details line — lands here, and it is
+       the one entry point that skipped the dock check (measured 2026-09-06). */
+    const scroll = findScrollablePanel(el);
+    if (scroll) revealBelowDock(last, scroll);
+    return true;
+  }
   return focusPanelEl(el);
 }
 
@@ -269,7 +326,11 @@ export function handleAnswerBubbleMoveDown(
     const inView = (el: HTMLElement) => elementIsWithinViewportOf(el, scroll);
     const at = focusedAnswerStopIndex(stops);
     const next = at >= 0 ? stops[at + 1] : stops.find(inView);
-    if (next && inView(next) && focusAnswerStop(next)) return true;
+    if (next && inView(next) && focusAnswerStop(next)) {
+      /* Landing on it is not enough — if it runs under the dock, bring it out. */
+      revealBelowDock(next, scroll);
+      return true;
+    }
   }
 
   /*
@@ -328,7 +389,11 @@ export function handleAnswerBubbleMoveUp(
     const stops = orderedAnswerStops(answerKey, bubble);
     const at = focusedAnswerStopIndex(stops);
     const prev = at > 0 ? stops[at - 1] : undefined;
-    if (prev && elementIsWithinViewportOf(prev, scroll) && focusAnswerStop(prev)) return true;
+    if (prev && elementIsWithinViewportOf(prev, scroll) && focusAnswerStop(prev)) {
+      /* Same as the Down path: landing on it is not enough if it runs under the dock. */
+      revealBelowDock(prev, scroll);
+      return true;
+    }
   }
 
   /* Mirror down: only scroll while bubble content remains above the viewport. */

@@ -99,8 +99,29 @@ export function scrollTabContentsByStep(
   return true;
 }
 
+/**
+ * Feature: the readable bottom edge of a scroll panel.
+ * Input: the scroll container. Output: the y below which nothing can be read.
+ *
+ * The Main tab's bottom dock (presets, Ask bar, context line) is sticky INSIDE this container, so
+ * the container's own bottom edge is well below the last readable pixel. Measured on the Deck
+ * 2026-09-06: the last part of a long answer sat a third behind the Ask bar with the ring on it,
+ * because every check here compared against the container's bottom and saw nothing hidden.
+ *
+ * Falls back to the container's bottom on any tab that has no dock.
+ */
+export function readableBottomOf(scrollEl: HTMLElement): number {
+  const containerBottom = scrollEl.getBoundingClientRect().bottom;
+  const dock = scrollEl.querySelector(".bonsai-main-tab-dock") as HTMLElement | null;
+  if (!dock) return containerBottom;
+  const dockTop = dock.getBoundingClientRect().top;
+  /* A dock parked below the fold, or one with no height yet, must not shrink the band to nothing. */
+  if (!(dockTop > scrollEl.getBoundingClientRect().top)) return containerBottom;
+  return Math.min(containerBottom, dockTop);
+}
+
 export function chunkHasContentBelowViewport(chunkEl: HTMLElement, scrollEl: HTMLElement): boolean {
-  return chunkEl.getBoundingClientRect().bottom > scrollEl.getBoundingClientRect().bottom + 4;
+  return chunkEl.getBoundingClientRect().bottom > readableBottomOf(scrollEl) + 4;
 }
 
 export function chunkHasContentAboveViewport(chunkEl: HTMLElement, scrollEl: HTMLElement): boolean {

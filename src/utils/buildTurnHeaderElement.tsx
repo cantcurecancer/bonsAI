@@ -106,10 +106,10 @@ export function buildTurnHeaderElement(args: BuildTurnHeaderElementArgs): React.
   /*
    * With Retry, the bubble becomes a row of two stops: the icon, then the question text.
    *
-   * The icon is a flex child rather than a corner pinned by position, because this bubble is
-   * right-aligned and only as wide as its text — its left edge floats, and pinning to a floating
-   * edge would need a measurement (design-language.md rule 4). As a child the bubble simply grows
-   * to fit it.
+   * The icon is positioned against the bubble's bottom-left corner rather than taking a column of
+   * its own. As a flex child it reserved 26px down the whole height of the bubble, which on a
+   * four-line question is a tall empty strip — reported from a screenshot 2026-09-06. Positioning
+   * is against the bubble, not the column, so no measurement is involved.
    *
    * Activation moves onto the text child so a press on the icon cannot also open or close the
    * question. Down into the answer stays on the outer row: a Decky Button does not forward

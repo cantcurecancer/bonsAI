@@ -1,10 +1,12 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { splitResponseIntoChunks } from "./splitResponseIntoChunks";
 import {
+  elementIsWithinViewportOf,
   focusFirstAnswerChunk,
   focusLastAnswerChunk,
   handleAnswerBubbleMoveDown,
   handleAnswerBubbleMoveUp,
+  revealBelowDock,
 } from "./answerBubbleNavigation";
 import { registerAnswerStop, resetAnswerStopRegistry } from "./answerStopRegistry";
 import { registerAnswerBubbleEl } from "./answerBubbleElRegistry";
@@ -425,5 +427,85 @@ describe("focusFirstAnswerChunk / focusLastAnswerChunk", () => {
 
     expect(focusLastAnswerChunk(ANSWER_KEY)).toBe(true);
     expect(document.activeElement).toBe(bubble);
+  });
+});
+
+/*
+ * The Main tab's dock is sticky inside the scroll container, so the container's bottom edge is well
+ * below the last readable pixel. Measured on the Deck 2026-09-06: the last part of a long answer sat
+ * a third behind the Ask bar with the ring on it, because every check compared against the container.
+ */
+describe("the readable band stops at the dock, not the panel edge", () => {
+  afterEach(() => {
+    document.body.innerHTML = "";
+    resetUiDocument();
+  });
+
+  /** jsdom reports every rect as 0x0, so the geometry the helpers read has to be supplied. */
+  function stubRect(el: HTMLElement, top: number, bottom: number) {
+    el.getBoundingClientRect = () =>
+      ({ top, bottom, left: 0, right: 100, width: 100, height: bottom - top }) as DOMRect;
+  }
+
+  function panelWithDock(dockTop: number | null) {
+    document.body.innerHTML = `
+      <div id="scroll"><div id="section"></div>${
+        dockTop === null ? "" : '<div class="bonsai-main-tab-dock"></div>'
+      }</div>`;
+    const scroll = document.getElementById("scroll") as HTMLElement;
+    stubRect(scroll, 0, 700);
+    Object.defineProperty(scroll, "scrollHeight", { value: 2000, configurable: true });
+    Object.defineProperty(scroll, "clientHeight", { value: 700, configurable: true });
+    scroll.scrollTop = 0;
+    const dock = scroll.querySelector(".bonsai-main-tab-dock") as HTMLElement | null;
+    if (dock && dockTop !== null) stubRect(dock, dockTop, 700);
+    return scroll;
+  }
+
+  it("does not call a section in view when it sits entirely behind the dock", () => {
+    const scroll = panelWithDock(500);
+    const section = document.getElementById("section") as HTMLElement;
+    stubRect(section, 520, 660);
+    expect(elementIsWithinViewportOf(section, scroll)).toBe(false);
+  });
+
+  it("still calls a section in view when it is above the dock", () => {
+    const scroll = panelWithDock(500);
+    const section = document.getElementById("section") as HTMLElement;
+    stubRect(section, 100, 400);
+    expect(elementIsWithinViewportOf(section, scroll)).toBe(true);
+  });
+
+  it("falls back to the panel edge on a tab with no dock", () => {
+    const scroll = panelWithDock(null);
+    const section = document.getElementById("section") as HTMLElement;
+    stubRect(section, 520, 660);
+    expect(elementIsWithinViewportOf(section, scroll)).toBe(true);
+  });
+
+  it("scrolls a section out from under the dock, by just enough", () => {
+    const scroll = panelWithDock(500);
+    const section = document.getElementById("section") as HTMLElement;
+    /* 100 tall band overrun: bottom 600 against a readable bottom of 500. */
+    stubRect(section, 300, 600);
+    expect(revealBelowDock(section, scroll)).toBe(true);
+    expect(scroll.scrollTop).toBe(100);
+  });
+
+  it("never scrolls a tall section's own start off the top", () => {
+    const scroll = panelWithDock(500);
+    const section = document.getElementById("section") as HTMLElement;
+    /* Starts 40 below the top, runs 300 past the dock: it may only move by the 40 it has. */
+    stubRect(section, 40, 800);
+    expect(revealBelowDock(section, scroll)).toBe(true);
+    expect(scroll.scrollTop).toBe(40);
+  });
+
+  it("does nothing when the section already clears the dock", () => {
+    const scroll = panelWithDock(500);
+    const section = document.getElementById("section") as HTMLElement;
+    stubRect(section, 100, 400);
+    expect(revealBelowDock(section, scroll)).toBe(false);
+    expect(scroll.scrollTop).toBe(0);
   });
 });
