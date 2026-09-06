@@ -3968,3 +3968,66 @@ nothing carried over. Half leaves some of the previous section on screen so you 
 answer is re-split once it is done, as now. Code blocks stay whole and stay in a stop of their own. A paragraph
 that is already half a screen long is left alone. No text is skipped: a press either moves the ring to a section
 already on screen or scrolls the panel, which is the behaviour that was already there.
+
+### D79 — LOCKED 2026-09-06 (raised the same day) — The Steam settings shortcuts move above the question box
+
+Raised while planning the ★★★ `[ask]` `[focus]` entry *Steam settings shortcuts float above the question box*, and
+built against measured sizes rather than a drawing. Plan [45](../planning/45-settings-shortcut-card.md), mockups and
+the live rule tester at
+[The settings list, moved up](https://claude.ai/code/artifact/1ab2a570-2ae5-45cd-b12b-332694f96fd5).
+
+**The card sits just above the question box, and nothing underneath it moves.** Fixed to the box's top edge, growing
+upward over the chat, covering the suggestion chips. Chosen over sitting above the chips (which keeps them visible but
+costs another 38px of chat) and over a full-panel sheet. The point is not that it looks better — today the list is part
+of the bottom dock, so every result that appears shoves the box, the chips and the whole conversation up the screen.
+Two letters can match 71 of the 194 settings, which grows the dock by roughly 2,300px and puts the box off the top.
+
+**The list stops at eight.** Nothing caps it today. Eight makes the card one fixed size that never scrolls and never
+surprises anyone, at 288px — 209 of the 412px reading area.
+
+**Up puts the real highlight on the nearest result, and Down walks back out into the box.** This merges two of the
+three options that were put to the maintainer: the highlight genuinely moves into the card, *and* Down leaves it. The
+merge came out of the B question below, and it removes the dead press that the option chosen first would have had —
+under that one, Down on the nearest result did nothing at all.
+
+**A jumps straight to the setting**, exactly as it does today. No confirming step, unlike the frozen test chips, which
+fill the box and wait.
+
+**B closes the card for the rest of that search and keeps what you typed.** It returns only when the box is emptied and
+a new search starts. A tap outside the card does the same. B was originally going to be the only way out of the card,
+which clashed with closing-for-the-search: backing out to add a word would have killed the list for good. Down leaving
+the card is what freed B to mean one thing.
+
+**Coming back from a jump finds it exactly as you left it** — the words still in the box, the card still open — so a
+second setting takes no retyping.
+
+**The suggestion chips cannot take the highlight while the card covers them.** Standing rule here: nothing hidden ever
+gets the ring.
+
+**The card gets out of the way past three words or at a question mark, but never while the words are an exact run
+inside a setting's name.** The let-out clause is not a nicety. **123 of the 194 settings have names of three or more
+words** — *Enable Developer Mode* is three, *Steam Client Update Channel* is four — so a plain three-word cut hides the
+list at the exact moment someone finishes typing the name of the thing they wanted. Checked against the real data on
+2026-09-06: the plain cut hides *steam client update channel* and *show switch to desktop option*, both of which return
+a real result; the version with the let-out keeps them and still hides all four of the sentence-shaped examples.
+
+**Typing while the highlight is in the card hands it straight back to the box.** Locked, but it means the list redraws
+under your thumb mid-word, so it is on the list to watch on the device before it is called settled.
+
+**A reply arriving changes nothing.** The card behaves the same whether or not an answer is streaming in.
+
+**The heading reads *Steam settings* with a count** of how many were left out. The card lands where answers normally
+appear, so it has to say it is not one. Dropping the heading would not buy another row — the list stops at eight either
+way — it would buy 22px of chat back, which was judged not worth the ambiguity.
+
+**What the search actually does, because it is not what it looks like.** What you type has to sit inside a setting's
+name as one whole piece, so a long sentence matches nothing by itself: *how do I make the screen brighter* returns no
+results today. The only reason a sentence ever matches is the bundled Deck basics word list, which ships switched on
+and works the other way round — if your sentence *contains* one of its 88 words, it fires. That is where every stray
+result comes from, and it is a row or three, never a wall. Whether that word list stays was **folded into the ★
+`[ask]` *Intent packs later review* entry already in Features** rather than decided here.
+
+**Also settled in the same sitting: no third batch of suggestion chips.** The six chips added for the features that
+shipped after early August were verified on the Deck on 2026-09-05, and the maintainer's call is that the row carries
+enough. Nothing is owed for the tab bar, one-chip mode, the end-of-row glow, always-streaming replies or the reply
+block rework.

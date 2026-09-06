@@ -156,7 +156,10 @@ hook gives a gentle heads-up when a session starts work outside this.
 replace it with a specific issue when one exists.
 
 - ★ `[ask]` **Intent packs later review** — **OPEN.** Decide whether the quiet intent-pack search aliases are deleted, left quiet, or
-  revived under Developer. Not in scope: re-shipping Proton journal inject without a redesign.
+  revived under Developer. Not in scope: re-shipping Proton journal inject without a redesign. **New evidence 2026-09-06 (D79):**
+  the bundled Deck basics list ships switched on and is the *only* reason a whole sentence ever matches a setting — its 88 words
+  match when your sentence contains one of them, so *can you help me with performance* returns three results. The maintainer folded
+  that finding into this entry. [Detail](planning/45-settings-shortcut-card.md#5-two-things-about-the-search-that-are-not-obvious).
 - ★★ `[chat]` **A quiet cue that a cut question can be opened** — **OPEN, filed 2026-09-05 by the maintainer.** When the ring lands on
   a question bubble that has been cut short, nothing on screen says the rest is there. Chosen 2026-09-05 from four drawn options: the
   text fades out at the right-hand edge instead of ending in three dots, only while the ring is on it, nothing for a finger. Nothing
@@ -183,6 +186,11 @@ replace it with a specific issue when one exists.
   The Deck's own voice, which SteamOS has shipped since June 2025, so nothing to download; it keeps reading with the menu closed and
   stops on a second press or a new question. A setting reads new answers on its own when the menu is closed, off by default. A
   hidden spoiler block is skipped with a short spoken phrase. Three Deck checks run before the build. [Memo](planning/42-read-aloud-feasibility.md).
+- ★★★ `[ask]` `[focus]` **Steam settings shortcuts float above the question box** — **OPEN, planned 2026-09-06, all calls locked
+  (D79).** Today the list of matching Steam settings appears under the box and pushes the box, the chips and the whole
+  conversation up the screen; two letters can match 71 settings and throw the box off the top. It moves to a card above the box
+  that holds the best eight and never moves anything. Up walks into it, Down walks out, B closes it and keeps your words.
+  [Plan](planning/45-settings-shortcut-card.md) · [Mockups](https://claude.ai/code/artifact/1ab2a570-2ae5-45cd-b12b-332694f96fd5).
 - ★★★ `[chips]` **Decode preset chip animation** — **VERIFY, feel only.** Shipped 2026-08-28. Measured on device: a flat 60 fps with
   all chips decoding. Whether it feels right is a person's call. Row **PRESET-STREAM-ANIM-01**.
 - ★★★ `[layout]` **Give the reclaimed height to the transcript** — **OPEN, next step under the vertical-space goal.** The collapsing
