@@ -69,6 +69,42 @@ Each heading below matches a roadmap item's title, and the roadmap item links he
 
 ---
 
+## Spy: a character who lies to you on purpose
+
+Filed 2026-09-06 by the maintainer. **Nothing is built.** These are the things the build must not
+have to rediscover.
+
+**The idea.** The Spy is a new Team Fortress 2 character in the picker. He is helpful in tone and
+wrong on purpose, because he is working for the other team and is good at it. Pyro's heaviest
+setting is the nearest thing today and it is a different joke: Pyro is stubborn and rude, so his
+bad advice is obviously bad. The Spy's is meant to sound right.
+
+**The floor is the same as Pyro's, and it is not negotiable.** Nothing that can damage the Deck,
+lose a save, spend money, or turn off a protection. Wasted time only. Anything that fails that
+test is not a Spy line, however good the joke is.
+
+**The reveal is the feature.** Being lied to and never finding out is just a broken plugin. So
+plan, before writing any of it: what tells you that you were played, when it appears, and how you
+get the honest answer afterwards without having to ask the whole question again.
+
+### Four things to plan for, found while filing this
+
+  1. **There is no Spy in the character list yet.** Every other Team Fortress 2 name is there; this
+     one is a new entry, not a change to an existing character.
+  2. **Pyro's bad advice never reaches an answer today.** It is five fixed sentences that only ever
+     go into a chip you press yourself, and only on the two heaviest accent settings. The Spy needs
+     the lying inside the answer itself. That is a different mechanism and a much bigger job, and
+     it is the part that has to clear the floor above every time rather than five known-safe times.
+  3. **Sometimes he opens as somebody else.** On a random chance, his first message introduces him
+     as a different character from the list, and he keeps that up. This needs its own decisions:
+     how often, whether the picker still shows Spy while he claims otherwise, and how the reveal
+     reads when the person thought they had picked someone honest.
+  4. **There is no first message from a character today.** A character only colours the answers you
+     ask for; nothing greets you when you pick one. The impersonation opener needs that to exist
+     first, so it is work in its own right and not a line of prompt text.
+
+---
+
 ## Terse mode (Speed answers in three lines)
 
 Discovery ran with the maintainer on 2026-08-29. **Nothing is built.** This is the settled shape,

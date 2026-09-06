@@ -202,6 +202,11 @@ replace it with a specific issue when one exists.
   give-up values per Ask mode. It was the sixth candidate in round 36 and was dropped on purpose, said in advance rather than
   discovered late: it is the largest of that set — the two existing values already run through sixteen files each and going per mode
   triples them — and the least of them for a person, since it changes when a warning appears rather than what the plugin can do.
+- ★★★ `[reply]` **Spy: a character who lies to you on purpose** — **OPEN, filed 2026-09-06 by the maintainer.** A new
+  Team Fortress 2 character. Pyro's Heavy setting already gives bad advice because he is a stubborn arse; the Spy gives bad advice
+  because he is clever and working for the other side. Sometimes he opens by claiming to be a different character instead. Same hard
+  floor as Pyro's: nothing that can damage the Deck, lose a save, or cost money — wasted time only. And you have to be able to find
+  out, so the reveal is planned before anything is built. [Detail](roadmap-details.md#spy-a-character-who-lies-to-you-on-purpose).
 - ★★★ `[reply]` **Terse mode: Speed answers in three lines** — **OPEN, planned 2026-08-29, nothing built.** A toggle beside the
   reply-style slider, off by default, capping a Speed answer at three lines. It overrides the slider and the character; destructive
   warnings and the depth phrases escape it. The real work is widening the branch picker (D40). **TERSE-01** passes at 8 of 10.
