@@ -965,6 +965,713 @@
    "expect_fence": null,
    "expect_branches": true,
    "note": "Vague first turn: the orientation-plus-menu shape is the right one here (D54 baseline)."
+  },
+  {
+   "id": "A-BMS-01",
+   "app_id": "362890",
+   "app_name": "Black Mesa",
+   "ask_mode": "strategy",
+   "question": "How do I damage the giant headcrab boss at the end of the Xen caverns in Black Mesa?",
+   "expect_card": "Gonarch",
+   "must_mention": [
+    [
+     "egg sac",
+     "the sac",
+     "underside",
+     "the pale sac swinging underneath",
+     "its belly sac"
+    ],
+    [
+     "shell blocks",
+     "armor shrugs off",
+     "everything else is wasted",
+     "only the sac takes damage",
+     "nowhere else works",
+     "immune everywhere else"
+    ]
+   ],
+   "must_not_say": [
+    "shoot the legs",
+    "aim for the legs",
+    "target its legs"
+   ],
+   "expect_fence": false,
+   "expect_branches": true,
+   "note": "Boss named by description, not name, on a protect_progression title, but a boss fight itself is not a story beat. 2026-09-06 write-up."
+  },
+  {
+   "id": "A-BMS-02",
+   "app_id": "362890",
+   "app_name": "Black Mesa",
+   "ask_mode": "strategy",
+   "question": "What's different about the Xen levels in Black Mesa compared to the original Half-Life?",
+   "expect_card": "Starting out in Black Mesa",
+   "must_mention": [
+    [
+     "mostly new",
+     "expanded",
+     "far longer",
+     "much longer",
+     "rebuilt from scratch",
+     "brand new content"
+    ],
+    [
+     "kept the same",
+     "unchanged",
+     "faithful to the original",
+     "same weapons and enemies",
+     "not added to",
+     "stayed close to the original"
+    ]
+   ],
+   "must_not_say": [
+    "the whole game has new levels",
+    "every chapter was expanded",
+    "all-new content throughout"
+   ],
+   "expect_fence": false,
+   "expect_branches": true,
+   "note": "How-it-works card. 2026-09-06 write-up."
+  },
+  {
+   "id": "A-HK-01",
+   "app_id": "367520",
+   "app_name": "Hollow Knight",
+   "ask_mode": "strategy",
+   "question": "How do I beat the big armored bug boss in the Forgotten Crossroads?",
+   "expect_card": "False Knight",
+   "must_mention": [
+    [
+     "hit the head",
+     "target his head",
+     "attack when the armor comes off",
+     "expose the head",
+     "aim for the head",
+     "his head is the real target"
+    ],
+    [
+     "jump the shockwave",
+     "jump over the wave",
+     "jump his slam",
+     "hop over the shockwave",
+     "leap the wave"
+    ]
+   ],
+   "must_not_say": [
+    "back away from the shockwave",
+    "run from the wave",
+    "back off when he slams"
+   ],
+   "expect_fence": false,
+   "expect_branches": true,
+   "note": "Boss described by look, not name, on a protect_progression title; a boss mechanic isn't a story beat. 2026-09-06 write-up."
+  },
+  {
+   "id": "A-HK-02",
+   "app_id": "367520",
+   "app_name": "Hollow Knight",
+   "ask_mode": "strategy",
+   "question": "I just started Hollow Knight and don't have a map -- how do I get one, and what do benches actually do?",
+   "expect_card": "Starting out in Hollow Knight",
+   "must_mention": [
+    [
+     "Cornifer",
+     "buy his map",
+     "buy the map from him",
+     "his wife sells the quill",
+     "the cartographer"
+    ],
+    [
+     "save your game",
+     "restore your masks",
+     "heal your masks",
+     "swap charms",
+     "change charms",
+     "rest and heal"
+    ]
+   ],
+   "must_not_say": [
+    "you start with a full map",
+    "the map is given at the start",
+    "no need to buy a map"
+   ],
+   "expect_fence": false,
+   "expect_branches": true,
+   "note": "How-it-works / starting-out card. 2026-09-06 write-up."
+  },
+  {
+   "id": "A-DOOME-01",
+   "app_id": "782330",
+   "app_name": "DOOM Eternal",
+   "ask_mode": "strategy",
+   "question": "How do I fight the Marauder in DOOM Eternal? He keeps blocking everything.",
+   "expect_card": "Marauder",
+   "must_mention": [
+    [
+     "shield blocks",
+     "blocks from the front",
+     "chainsaw does nothing",
+     "crucible only works once stunned",
+     "his shield stops everything"
+    ],
+    [
+     "green flash",
+     "eyes flash green",
+     "stagger window",
+     "stay at mid range",
+     "mid-range",
+     "when his eyes glow"
+    ]
+   ],
+   "must_not_say": [
+    "rush him",
+    "get in close",
+    "close the distance",
+    "stand right next to him"
+   ],
+   "expect_fence": false,
+   "expect_branches": true,
+   "note": "Low-narrative title, no fence needed regardless. 2026-09-06 write-up."
+  },
+  {
+   "id": "A-DOOME-02",
+   "app_id": "782330",
+   "app_name": "DOOM Eternal",
+   "ask_mode": "strategy",
+   "question": "What's the basic combat loop I'm supposed to be doing in DOOM Eternal?",
+   "expect_card": "Starting out in DOOM Eternal: the combat loop",
+   "must_mention": [
+    [
+     "glory kill",
+     "melee kill for health",
+     "finishing move for health",
+     "glory-kill weak enemies"
+    ],
+    [
+     "chainsaw",
+     "saw a fodder demon",
+     "chainsaw weak enemies for ammo",
+     "sawing enemies refills ammo"
+    ]
+   ],
+   "must_not_say": [
+    "reload your weapons",
+    "stand still and reload",
+    "take cover and reload"
+   ],
+   "expect_fence": false,
+   "expect_branches": true,
+   "note": "How-it-works card. 2026-09-06 write-up."
+  },
+  {
+   "id": "A-DOOM64-01",
+   "app_id": "",
+   "app_name": "Doom 64",
+   "ask_mode": "strategy",
+   "question": "How do I beat the final boss in Doom 64, the Mother Demon?",
+   "expect_card": "Mother Demon",
+   "must_mention": [
+    [
+     "Unmaker",
+     "upgraded Unmaker",
+     "point-blank with the Unmaker",
+     "fully powered Unmaker"
+    ],
+    [
+     "get the keys first",
+     "collect the Demon Keys",
+     "all three keys",
+     "avoid the horde fight",
+     "homing rockets",
+     "four rockets"
+    ]
+   ],
+   "must_not_say": [
+    "skip the keys",
+    "you don't need the keys",
+    "ignore the demon keys"
+   ],
+   "expect_fence": false,
+   "expect_branches": true,
+   "note": "Emulated title, low-narrative, boss named by the user. 2026-09-06 write-up."
+  },
+  {
+   "id": "A-DOOM64-02",
+   "app_id": "",
+   "app_name": "Doom 64",
+   "ask_mode": "strategy",
+   "question": "Is Doom 64 just a port of the original Doom games, or is it different?",
+   "expect_card": "Starting out in Doom 64",
+   "must_mention": [
+    [
+     "separate sequel",
+     "not a port",
+     "new levels",
+     "thirty-two new levels",
+     "its own game"
+    ],
+    [
+     "nightmare imp",
+     "Unmaker",
+     "no arch-viles",
+     "missing some classic monsters",
+     "one new weapon"
+    ]
+   ],
+   "must_not_say": [
+    "it's just a port",
+    "it's a remaster of Doom II",
+    "the same levels as Doom II"
+   ],
+   "expect_fence": false,
+   "expect_branches": true,
+   "note": "How-it-works card. 2026-09-06 write-up."
+  },
+  {
+   "id": "A-GTAV-01",
+   "app_id": "3240220",
+   "app_name": "Grand Theft Auto V",
+   "ask_mode": "strategy",
+   "question": "How does body armor work in GTA V, and does it help against melee?",
+   "expect_card": "Weapons, armour and cover",
+   "must_mention": [
+    [
+     "five tiers",
+     "five levels",
+     "each tier is stronger",
+     "buying a heavier one removes the others",
+     "the lighter ones disappear"
+    ],
+    [
+     "does nothing against melee",
+     "no protection from melee",
+     "melee ignores armor",
+     "useless against punches"
+    ]
+   ],
+   "must_not_say": [
+    "armor protects you from melee",
+    "armor blocks melee damage"
+   ],
+   "expect_fence": false,
+   "expect_branches": true,
+   "note": "Item card. 2026-09-06 write-up."
+  },
+  {
+   "id": "A-GTAV-02",
+   "app_id": "3240220",
+   "app_name": "Grand Theft Auto V",
+   "ask_mode": "strategy",
+   "question": "How do the special abilities work for the three characters in GTA V?",
+   "expect_card": "Starting out in GTA V",
+   "must_mention": [
+    [
+     "Michael slows time",
+     "Franklin slows time while driving",
+     "Trevor takes less damage and deals more",
+     "Trevor's rage",
+     "bullet time in a gunfight"
+    ],
+    [
+     "yellow meter",
+     "the meter under the radar",
+     "can't switch characters while wanted",
+     "not while you have a wanted level"
+    ]
+   ],
+   "must_not_say": [],
+   "expect_fence": false,
+   "expect_branches": true,
+   "note": "How-it-works card; the card states no clear misconception to contradict. 2026-09-06 write-up."
+  },
+  {
+   "id": "A-GTAIV-01",
+   "app_id": "12210",
+   "app_name": "Grand Theft Auto IV",
+   "ask_mode": "strategy",
+   "question": "Where can I reliably buy weapons in GTA IV, and is there a discount anywhere?",
+   "expect_card": "Weapons and where to buy them",
+   "must_mention": [
+    [
+     "underground gun shops",
+     "after Do You Have Protection",
+     "unlocks after a story mission"
+    ],
+    [
+     "Little Jacob",
+     "his van",
+     "sixty percent off",
+     "60% off",
+     "a discount once he likes you"
+    ]
+   ],
+   "must_not_say": [],
+   "expect_fence": false,
+   "expect_branches": true,
+   "note": "Item card; the card states no clear misconception to contradict. 2026-09-06 write-up."
+  },
+  {
+   "id": "A-GTAIV-02",
+   "app_id": "12210",
+   "app_name": "Grand Theft Auto IV",
+   "ask_mode": "strategy",
+   "question": "How does saving work in GTA IV, and does it clear my wanted level?",
+   "expect_card": "Starting out in GTA IV",
+   "must_mention": [
+    [
+     "sleep in the bed",
+     "walk to the bed",
+     "save at a safehouse",
+     "sleeping in a safehouse"
+    ],
+    [
+     "clears your wanted level",
+     "removes the wanted level",
+     "wipes the stars",
+     "resets your wanted level"
+    ]
+   ],
+   "must_not_say": [
+    "there are garages",
+    "you can store cars in a garage"
+   ],
+   "expect_fence": false,
+   "expect_branches": true,
+   "note": "How-it-works card. 2026-09-06 write-up."
+  },
+  {
+   "id": "A-FNV-01",
+   "app_id": "22380",
+   "app_name": "Fallout: New Vegas",
+   "ask_mode": "strategy",
+   "question": "Why is Quarry Junction so dangerous, and how do I survive if I have to go through it early?",
+   "expect_card": "Deathclaws and Quarry Junction",
+   "must_mention": [
+    [
+     "alpha male",
+     "hits for three hundred",
+     "much stronger deathclaws",
+     "double or triple health",
+     "tougher than normal deathclaws"
+    ],
+    [
+     "cripple a leg",
+     "crippled leg slows them",
+     "a flare gun makes them flee",
+     "stand somewhere they can't reach",
+     "climb onto a rock"
+    ]
+   ],
+   "must_not_say": [],
+   "expect_fence": false,
+   "expect_branches": true,
+   "note": "Enemy card, named location. 2026-09-06 write-up."
+  },
+  {
+   "id": "A-FNV-02",
+   "app_id": "22380",
+   "app_name": "Fallout: New Vegas",
+   "ask_mode": "strategy",
+   "question": "I'm new to Fallout: New Vegas -- how do skill checks work, and can I fail them randomly?",
+   "expect_card": "Starting out in Fallout: New Vegas",
+   "must_mention": [
+    [
+     "fixed threshold",
+     "not a dice roll",
+     "no random chance",
+     "either works or it doesn't",
+     "no luck involved"
+    ],
+    [
+     "Goodsprings",
+     "Sunny Smiles",
+     "the tutorial town",
+     "teaches you shooting"
+    ]
+   ],
+   "must_not_say": [
+    "skill checks are random",
+    "there's a dice roll",
+    "chance-based"
+   ],
+   "expect_fence": false,
+   "expect_branches": true,
+   "note": "How-it-works / starting-out card. 2026-09-06 write-up."
+  },
+  {
+   "id": "A-SM64-01",
+   "app_id": "",
+   "app_name": "Super Mario 64",
+   "ask_mode": "strategy",
+   "question": "How do I actually beat Bowser in Super Mario 64? I keep missing the bombs.",
+   "expect_card": "Bowser: the three fights",
+   "must_mention": [
+    [
+     "grab his tail",
+     "spin the stick",
+     "swing him around",
+     "build up speed then throw"
+    ],
+    [
+     "spiked bombs",
+     "throw him into a bomb",
+     "three throws",
+     "throw him three times"
+    ]
+   ],
+   "must_not_say": [],
+   "expect_fence": false,
+   "expect_branches": true,
+   "note": "Emulated title, low-narrative, boss named by the user. 2026-09-06 write-up."
+  },
+  {
+   "id": "A-SM64-02",
+   "app_id": "",
+   "app_name": "Super Mario 64",
+   "ask_mode": "strategy",
+   "question": "How does health work in Super Mario 64, and how do I refill it?",
+   "expect_card": "Starting out in Super Mario 64",
+   "must_mention": [
+    [
+     "eight wedges",
+     "power meter",
+     "health meter with eight segments",
+     "the wedge meter"
+    ],
+    [
+     "coins",
+     "spinning hearts",
+     "coming up for air in water",
+     "surfacing underwater refills it"
+    ]
+   ],
+   "must_not_say": [],
+   "expect_fence": false,
+   "expect_branches": true,
+   "note": "How-it-works card. 2026-09-06 write-up."
+  },
+  {
+   "id": "A-MK64-01",
+   "app_id": "",
+   "app_name": "Mario Kart 64",
+   "ask_mode": "strategy",
+   "question": "Who gets the blue shell in Mario Kart 64, and can I block it?",
+   "expect_card": "Items and who gets them",
+   "must_mention": [
+    [
+     "fourth place or lower",
+     "only for players in the back",
+     "you need to be behind fourth"
+    ],
+    [
+     "hold it behind your kart",
+     "block incoming shells",
+     "shield yourself with it",
+     "carry it as a shield"
+    ]
+   ],
+   "must_not_say": [],
+   "expect_fence": false,
+   "expect_branches": true,
+   "note": "Item card. 2026-09-06 write-up."
+  },
+  {
+   "id": "A-MK64-02",
+   "app_id": "",
+   "app_name": "Mario Kart 64",
+   "ask_mode": "strategy",
+   "question": "How do I get a rocket start off the line in Mario Kart 64?",
+   "expect_card": "Starting out in Mario Kart 64",
+   "must_mention": [
+    [
+     "hold the gas",
+     "as the lights turn blue",
+     "when the lights change from red to blue",
+     "gun it right when they go blue"
+    ],
+    [
+     "spin your tires",
+     "start too early",
+     "leave slower",
+     "you'll bog down",
+     "false start"
+    ]
+   ],
+   "must_not_say": [],
+   "expect_fence": false,
+   "expect_branches": true,
+   "note": "How-it-works card. 2026-09-06 write-up."
+  },
+  {
+   "id": "A-TTYD-01",
+   "app_id": "",
+   "app_name": "Paper Mario: The Thousand-Year Door",
+   "ask_mode": "strategy",
+   "question": "What's the trick to beating Hooktail in Thousand-Year Door? She keeps healing.",
+   "expect_card": "Hooktail",
+   "must_mention": [
+    [
+     "eats the audience",
+     "eats spectators to heal",
+     "thin the crowd",
+     "keep the audience small"
+    ],
+    [
+     "cricket",
+     "chirping sound",
+     "the badge with the cricket noise",
+     "fire damage",
+     "fire hurts her badly"
+    ]
+   ],
+   "must_not_say": [
+    "guard her bite",
+    "block her bite attack",
+    "her bite can be blocked"
+   ],
+   "expect_fence": false,
+   "expect_branches": true,
+   "note": "Boss named by the user on a protect_progression title, but a boss fight is not a story beat. 2026-09-06 write-up."
+  },
+  {
+   "id": "A-TTYD-02",
+   "app_id": "",
+   "app_name": "Paper Mario: The Thousand-Year Door",
+   "ask_mode": "strategy",
+   "question": "How does battling actually work in Thousand-Year Door -- what's an action command?",
+   "expect_card": "Starting out in Paper Mario: The Thousand-Year Door",
+   "must_mention": [
+    [
+     "timed button press",
+     "press the button at the right moment",
+     "extra damage for good timing",
+     "action command"
+    ],
+    [
+     "guard with A",
+     "superguard with B",
+     "block for less damage",
+     "perfectly timed block takes none"
+    ]
+   ],
+   "must_not_say": [],
+   "expect_fence": false,
+   "expect_branches": true,
+   "note": "How-it-works card. 2026-09-06 write-up."
+  },
+  {
+   "id": "A-PIK2-01",
+   "app_id": "",
+   "app_name": "Pikmin 2",
+   "ask_mode": "strategy",
+   "question": "How do I deal with the giant bulborb boss that keeps making more enemies?",
+   "expect_card": "Empress Bulblax and the Snagrets",
+   "must_mention": [
+    [
+     "kill the mother",
+     "ignore the babies",
+     "don't waste time on the larvae",
+     "focus the boss not the young"
+    ],
+    [
+     "throw purples at her head",
+     "purple Pikmin",
+     "when she pauses between rolls",
+     "she rolls from wall to wall"
+    ]
+   ],
+   "must_not_say": [
+    "kill the larvae first",
+    "focus the babies"
+   ],
+   "expect_fence": false,
+   "expect_branches": true,
+   "note": "Boss described by look, low-narrative title. 2026-09-06 write-up."
+  },
+  {
+   "id": "A-PIK2-02",
+   "app_id": "",
+   "app_name": "Pikmin 2",
+   "ask_mode": "strategy",
+   "question": "What's the actual goal in Pikmin 2, and is there still a day limit?",
+   "expect_card": "Starting out in Pikmin 2",
+   "must_mention": [
+    [
+     "ten thousand Pokos",
+     "no day limit",
+     "unlimited days",
+     "collect treasure to pay off the debt"
+    ],
+    [
+     "two captains",
+     "swap between captains",
+     "one carries while the other fights"
+    ]
+   ],
+   "must_not_say": [
+    "there's a day limit",
+    "you have a limited number of days"
+   ],
+   "expect_fence": false,
+   "expect_branches": true,
+   "note": "How-it-works card. 2026-09-06 write-up."
+  },
+  {
+   "id": "A-MELEE-01",
+   "app_id": "",
+   "app_name": "Super Smash Bros. Melee",
+   "ask_mode": "strategy",
+   "question": "What makes Fox and Falco so good in Melee, and what's their weakness?",
+   "expect_card": "Fox and Falco",
+   "must_mention": [
+    [
+     "fastest lightweight",
+     "second fastest dash",
+     "reflector",
+     "shine",
+     "quick jump"
+    ],
+    [
+     "die early",
+     "fall too fast",
+     "easy to combo",
+     "combo'd hard",
+     "light and fast falling"
+    ]
+   ],
+   "must_not_say": [],
+   "expect_fence": false,
+   "expect_branches": true,
+   "note": "Matchup card treated as an enemy/character card, low-narrative title. 2026-09-06 write-up."
+  },
+  {
+   "id": "A-MELEE-02",
+   "app_id": "",
+   "app_name": "Super Smash Bros. Melee",
+   "ask_mode": "strategy",
+   "question": "How does damage and knockback work in Melee if there's no health bar?",
+   "expect_card": "Starting out in Melee",
+   "must_mention": [
+    [
+     "percentage",
+     "damage percent",
+     "the higher it goes the further you fly",
+     "percent instead of health"
+    ],
+    [
+     "launched off the screen",
+     "knocked past the edge",
+     "losing a stock",
+     "sent flying off stage"
+    ]
+   ],
+   "must_not_say": [
+    "running out of health",
+    "a health bar drains to zero"
+   ],
+   "expect_fence": false,
+   "expect_branches": true,
+   "note": "How-it-works card. 2026-09-06 write-up."
   }
  ]
 }
