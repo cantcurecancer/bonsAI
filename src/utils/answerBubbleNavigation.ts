@@ -58,30 +58,15 @@ export function elementIsWithinViewportOf(el: HTMLElement, scroll: HTMLElement):
  * Scrolls only as far as it takes to clear the dock, and never past the section's own top — a
  * section taller than the readable band parks with its top at the top of the band rather than
  * jumping its start off screen. Nothing else about the step-by-step scrolling changes.
+ *
+ * One pass, at the moment of landing. Steam's own focus scroll starts about 30ms AFTER this
+ * returns and glides for ~150ms — scroll log on the Deck, 2026-09-06, Up out of the Show details
+ * line: Steam smooth-scrolled the whole bubble "nearest", which for a bubble taller than the pane
+ * means bottom-aligned, and that dragged the last section under the dock. A second pass a frame
+ * later ran before the glide had moved anything and changed nothing. The late correction belongs
+ * to useDockClearanceOnFocus, whose settle passes at 150/300/900ms re-measure after the glide.
  */
 export function revealBelowDock(el: HTMLElement, scroll: HTMLElement): boolean {
-  /*
-   * Once now, once on the next frame.
-   *
-   * Focus itself never scrolls (focusAnswerStop passes preventScroll), but Steam's own navigation
-   * adjusts the container AFTER our handler returns — measured on the Deck 2026-09-06, coming up
-   * out of the Show details line: the panel moved by 195px after this ran, putting the section back
-   * under the Ask bar. The second pass runs once the dust has settled. It is idempotent: it only
-   * ever scrolls far enough to clear the dock, and never past the section's own top.
-   */
-  const again = () => {
-    if (!el.isConnected) return;
-    revealBelowDockOnce(el, scroll);
-  };
-  try {
-    if (typeof requestAnimationFrame === "function") requestAnimationFrame(again);
-  } catch {
-    /* no frame scheduler in the test environment — the immediate pass below is enough there */
-  }
-  return revealBelowDockOnce(el, scroll);
-}
-
-function revealBelowDockOnce(el: HTMLElement, scroll: HTMLElement): boolean {
   const elRect = el.getBoundingClientRect();
   const scrollRect = scroll.getBoundingClientRect();
   const hidden = elRect.bottom - readableBottomOf(scroll);

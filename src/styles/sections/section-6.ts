@@ -223,11 +223,12 @@ export function buildSection6Section(): string {
          * costs no width at all, so the question text gets those pixels back and usually drops a
          * line.
          *
-         * right: 100% puts it beyond the bubble's left edge and the negative margin pulls it 6px
-         * back over the corner — inside the bubble's own 10px side padding, so it can never sit on
-         * a word. All relative to the bubble itself, so no measurement is involved: the earlier
-         * worry about this bubble's floating left edge was about pinning to the COLUMN, not to the
-         * bubble.
+         * Inside the bubble's bottom-left corner: 6px in from the left border, 3px up from the
+         * bottom one. The first cut straddled the border — half in, half out — and the maintainer
+         * called it from a screenshot on 2026-09-06. All relative to the bubble itself, so no
+         * measurement is involved: the earlier worry about this bubble's floating left edge was
+         * about pinning to the COLUMN, not to the bubble. How the text keeps clear of it is the
+         * pair of title rules below.
          */
         .bonsai-scope .bonsai-chat-turn-row-header--with-retry {
           position: relative !important;
@@ -249,15 +250,46 @@ export function buildSection6Section(): string {
           > div.bonsai-turn-retry-corner-slot {
           position: absolute !important;
           top: auto !important;
-          right: 100% !important;
-          bottom: 0 !important;
-          /* Half over the bubble's own 10px side padding, half outside: a corner badge that can
-             never sit on a word, and costs the text no width at all. */
-          margin-right: ${uiScalePx(-10)} !important;
+          right: auto !important;
+          left: ${uiScalePx(6)} !important;
+          bottom: ${uiScalePx(3)} !important;
+          margin: 0 !important;
+          /* Above the question text's box, which follows it in the DOM and is itself positioned:
+             without this a hit-test at the icon returned the title span, so a TAP on the icon
+             would have opened the question rather than retried (sweep on the Deck 2026-09-06,
+             "Retry same prompt COVERED by the title"). */
+          z-index: 2 !important;
           display: inline-flex !important;
           align-items: center !important;
           justify-content: center !important;
           outline: none !important;
+        }
+        /*
+         * The question text keeps clear of the icon without reserving a column beside every line.
+         *
+         * Only the OPEN newest question carries the icon — a collapsed one is rebuilt without it,
+         * since the transcript hands over the Retry handler only while the turn is expanded — so
+         * only the open shape matters. There, only the LAST line can meet the icon —
+         * the text is right-aligned — so a left float generated after the text sits on that line
+         * and pushes its words to the right. When the last line is already full the float drops
+         * to a line of its own underneath, the one case that adds height (a single line), and the
+         * only way to promise the icon never sits on a word. A question longer than the five-line
+         * cap keeps its float on a hidden line, so there the icon rides over the faded fifth line
+         * instead. The icon itself lives outside the title box, so the open bubble's bottom fade
+         * does not touch it.
+         *
+         * A float rather than padding for the open case on purpose: padding reserved 26px beside
+         * every line of a four-line question, and the maintainer flagged the empty strip from a
+         * screenshot on 2026-09-06. Widths: the icon starts at 6 and is 20 wide, so it ends at 26;
+         * the header's 10px side padding plus this 22 puts the first word at 32, a 6px gap.
+         */
+        .bonsai-scope
+          .bonsai-chat-turn-row-header--with-retry.bonsai-chat-turn-row-header--expanded
+          .bonsai-chat-turn-row-title::after {
+          content: "" !important;
+          float: left !important;
+          width: ${uiScalePx(22)} !important;
+          height: 1.3em !important;
         }
         /* Icon only, same weight as the microphone in the Ask field. */
         .bonsai-scope button.bonsai-chat-secondary-btn.bonsai-turn-retry-corner,
@@ -371,8 +403,10 @@ export function buildSection6Section(): string {
           box-sizing: border-box !important;
         }
         /*
-         * Copy, at the bottom right of the answer, on its own line rather than over the text.
-         * Why in flow and not pinned to the corner: runs/reply-block-copy-trap.json, 2026-09-06.
+         * Copy, drawn inside the answer's bottom-right corner while staying a sibling of the
+         * bubble in the DOM (why in flow and not a child: runs/reply-block-copy-trap.json,
+         * 2026-09-06). The first cut sat astride the bubble's bottom edge, half in and half out,
+         * and the maintainer called it from a screenshot the same day.
          */
         .bonsai-scope .bonsai-reply-copy-corner-slot {
           display: flex !important;
@@ -383,16 +417,61 @@ export function buildSection6Section(): string {
           width: min(92%, 100%) !important;
           max-width: min(92%, 100%) !important;
           align-self: flex-start !important;
-          /* Pulled up over the bubble's bottom padding — not over its text — so the icon reads as
-             sitting in the answer's corner and the reply loses no height to it. The bubble already
-             carries margin-bottom: 8. */
-          margin-top: ${uiScalePx(-24)} !important;
-          margin-bottom: ${uiScalePx(6)} !important;
-          padding-right: ${uiScalePx(8)} !important;
+          /* Pulled up until the icon's bottom sits 4px above the bubble's bottom edge: the bubble's
+             own margin (8) plus the turn slot's gap (6) plus the icon (20) plus those 4 — measured
+             on the Deck 2026-09-06, where -24 left the icon at 1155–1175 against a bubble ending at
+             1165. The margin below puts the reply block back where it sat before the icon existed,
+             so the reply loses no height to it. */
+          margin-top: ${uiScalePx(-38)} !important;
+          margin-bottom: ${uiScalePx(12)} !important;
+          padding-right: ${uiScalePx(7)} !important;
           box-sizing: border-box !important;
           position: relative !important;
           z-index: 1 !important;
           outline: none !important;
+          /* The slot spans the bubble's width so the icon lands on the bubble's right edge, and it
+             overlaps the last section's bottom strip; only the icon should take a tap. Without
+             this the strip hit-tested as the slot (sweep on the Deck 2026-09-06, "last section
+             67% visible, covered by the copy slot"). */
+          pointer-events: none !important;
+        }
+        .bonsai-scope .bonsai-reply-copy-corner-slot > button.bonsai-reply-copy-corner {
+          pointer-events: auto !important;
+        }
+        /*
+         * The answer's last line keeps clear of the icon.
+         *
+         * Same idea as the question bubble's Retry, mirrored: the icon overlaps the bottom corner,
+         * and the only text that can reach it is the END of the last line, so a right-floated
+         * spacer generated after that line's content reserves the corner. When the last line is
+         * already full the spacer drops to a line of its own — one line of height, in the one case
+         * where the text would otherwise run under the icon. Anything else (a bottom padding band,
+         * a right-hand column) would cost every answer space to protect that one case.
+         *
+         * The float has to sit INSIDE the block that owns the last line, and markdown gives that
+         * block several shapes: a paragraph or heading (both carry .bonsai-md-p), a fenced code
+         * block, a list's last item, or a loose list's last item wrapping its own paragraph. Two
+         * rules rather than one list so the :has() pair cannot take the plain ones down with it if
+         * a Steam client ever lacks it. A table's last cell is not covered; there the icon rides
+         * over the corner.
+         */
+        .bonsai-scope .bonsai-chat-ai-bubble--with-copy .bonsai-answer-stop:last-child > .bonsai-md-p:last-child::after,
+        .bonsai-scope .bonsai-chat-ai-bubble--with-copy .bonsai-answer-stop:last-child > .bonsai-md-fenced-pre:last-child::after,
+        .bonsai-scope .bonsai-chat-ai-bubble--with-copy .bonsai-answer-stop:last-child > .bonsai-md-ul:last-child > .bonsai-md-li:last-child > .bonsai-md-p:last-child::after,
+        .bonsai-scope .bonsai-chat-ai-bubble--with-copy .bonsai-answer-stop:last-child > .bonsai-md-ol:last-child > .bonsai-md-li:last-child > .bonsai-md-p:last-child::after {
+          content: "" !important;
+          float: right !important;
+          /* Icon 20 wide, 7 in from the bubble's right border; the text ends 11 in. 24 leaves a
+             4px gap between the last word and the icon. */
+          width: ${uiScalePx(24)} !important;
+          height: 1em !important;
+        }
+        .bonsai-scope .bonsai-chat-ai-bubble--with-copy .bonsai-answer-stop:last-child > .bonsai-md-ul:last-child > .bonsai-md-li:last-child:not(:has(> .bonsai-md-p))::after,
+        .bonsai-scope .bonsai-chat-ai-bubble--with-copy .bonsai-answer-stop:last-child > .bonsai-md-ol:last-child > .bonsai-md-li:last-child:not(:has(> .bonsai-md-p))::after {
+          content: "" !important;
+          float: right !important;
+          width: ${uiScalePx(24)} !important;
+          height: 1em !important;
         }
         /*
          * Icon only: no border, no gradient, no minimum height. Overrides the shared secondary

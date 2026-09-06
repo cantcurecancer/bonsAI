@@ -5,6 +5,7 @@ import { cleanup, render } from "@testing-library/react";
 import { buildAnswerBubbleElement, stopNavProps } from "./buildAnswerBubbleElement";
 import { orderedAnswerStops, resetAnswerStopRegistry } from "./answerStopRegistry";
 import { registerAnswerBubbleEl } from "./answerBubbleElRegistry";
+import { registerReplyStop } from "./replyStopRegistry";
 import { splitResponseIntoChunks } from "./splitResponseIntoChunks";
 import { SPOILER_STREAM_MASK_LABEL } from "./streamMarkdownPrepare";
 
@@ -435,6 +436,35 @@ describe("Copy in the answer bubble's corner", () => {
     const slot = collectByClassName(build(false)!, "bonsai-reply-copy-corner-slot");
     expect(slot).toHaveLength(1);
     expect((slot[0]!.props as Record<string, unknown>).onMoveLeft).toBeTypeOf("function");
+  });
+
+  it("marks the bubble so the stylesheet can keep the last line clear of the icon", () => {
+    const finished = render(build(false)!).container;
+    expect(finished.querySelector(".bonsai-chat-ai-bubble--with-copy")).not.toBeNull();
+    cleanup();
+    const streaming = render(build(true)!).container;
+    expect(streaming.querySelector(".bonsai-chat-ai-bubble--with-copy")).toBeNull();
+  });
+
+  /*
+   * The icon draws inside the bubble's corner, overlapping the last section's box by a few
+   * pixels — the same overlap that once made Steam's geometry bounce Down between two boxes
+   * (runs/reply-block-copy-trap.json). So Down names its target instead of leaving it to Steam.
+   */
+  it("names where Down goes from the icon: the reply block below it", () => {
+    const target = document.createElement("div");
+    target.tabIndex = 0;
+    document.body.appendChild(target);
+    registerReplyStop("show-details", target);
+    try {
+      const slot = collectByClassName(build(false)!, "bonsai-reply-copy-corner-slot");
+      const onMoveDown = (slot[0]!.props as Record<string, unknown>).onMoveDown as () => boolean;
+      expect(onMoveDown()).toBe(true);
+      expect(document.activeElement).toBe(target);
+    } finally {
+      registerReplyStop("show-details", null);
+      target.remove();
+    }
   });
 
   it("does not offer Right into an icon that is not there", () => {

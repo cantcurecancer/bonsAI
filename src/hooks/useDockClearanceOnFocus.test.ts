@@ -92,6 +92,52 @@ describe("liftAboveDock", () => {
     expect(liftAboveDock(el)).toBe(false);
   });
 
+  /*
+   * Inside the answer bubble scrollIntoView is a no-op: the bubble clips its overflow, which
+   * swallows the scroll-margin, and Steam's pane pads its scroll edge by 80px. Measured on the Deck
+   * 2026-09-06, Up from the Show details line: margins of 0 to 300px all parked the pane at the
+   * same place, the section 77px behind the dock. The lift must then move the pane itself.
+   */
+  it("scrolls the pane by hand when scrollIntoView leaves the element covered", () => {
+    const t = makePane();
+    let scrollTop = 100;
+    Object.defineProperty(t.scroll, "scrollTop", {
+      configurable: true,
+      get: () => scrollTop,
+      set: (next: number) => {
+        scrollTop = next;
+      },
+    });
+    Object.defineProperty(t.scroll, "scrollHeight", { configurable: true, get: () => 2000 });
+    Object.defineProperty(t.scroll, "clientHeight", { configurable: true, get: () => 616 });
+    // 200 tall, bottom 77 behind the dock's top at 370; the stubbed scrollIntoView moves nothing.
+    const el = t.focusEl(247, 447);
+
+    expect(liftAboveDock(el)).toBe(true);
+    expect(el.scrollIntoView).toHaveBeenCalled();
+    // 77 hidden plus the 6px pad, on top of where the pane already was.
+    expect(scrollTop).toBe(183);
+  });
+
+  it("never scrolls a tall element's own top off the pane while lifting by hand", () => {
+    const t = makePane();
+    let scrollTop = 0;
+    Object.defineProperty(t.scroll, "scrollTop", {
+      configurable: true,
+      get: () => scrollTop,
+      set: (next: number) => {
+        scrollTop = next;
+      },
+    });
+    Object.defineProperty(t.scroll, "scrollHeight", { configurable: true, get: () => 2000 });
+    Object.defineProperty(t.scroll, "clientHeight", { configurable: true, get: () => 616 });
+    // Starts 30 below the pane's top and runs 200 past the dock: it may only move by the 30 it has.
+    const el = t.focusEl(30, 570);
+
+    expect(liftAboveDock(el)).toBe(true);
+    expect(scrollTop).toBe(30);
+  });
+
   it("does nothing outside a scroll pane", () => {
     const orphan = document.createElement("div");
     orphan.scrollIntoView = vi.fn();

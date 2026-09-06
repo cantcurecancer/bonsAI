@@ -37,7 +37,7 @@
     },
     {
       "path": "src/styles/sections/section-6.ts",
-      "lines": 1266,
+      "lines": 1345,
       "role": ""
     },
     {
@@ -171,6 +171,16 @@
       "role": ""
     },
     {
+      "path": "src/utils/buildAnswerBubbleElement.tsx",
+      "lines": 483,
+      "role": ""
+    },
+    {
+      "path": "src/utils/buildAnswerBubbleElement.test.tsx",
+      "lines": 475,
+      "role": ""
+    },
+    {
       "path": "py_modules/backend/services/knowledge_base_schema.py",
       "lines": 470,
       "role": ""
@@ -181,18 +191,8 @@
       "role": ""
     },
     {
-      "path": "src/utils/buildAnswerBubbleElement.tsx",
-      "lines": 465,
-      "role": ""
-    },
-    {
       "path": "src/features/preset-carousel/sessionRagComposer.test.ts",
       "lines": 457,
-      "role": ""
-    },
-    {
-      "path": "src/utils/buildAnswerBubbleElement.test.tsx",
-      "lines": 445,
       "role": ""
     },
     {

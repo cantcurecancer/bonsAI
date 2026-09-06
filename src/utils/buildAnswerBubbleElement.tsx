@@ -312,6 +312,14 @@ export function buildAnswerBubbleElement(
     return focusRegisteredReplyStop("copy");
   };
   const leftOutOfCopy = () => focusLastAnswerChunk(answerKey);
+  /*
+   * Down out of the icon is named, not left to Steam's geometry. The icon now DRAWS inside the
+   * bubble's corner (still a sibling in the DOM), overlapping the last section's box by a few
+   * pixels — and an overlap is exactly what made Steam treat two boxes as each below the other in
+   * runs/reply-block-copy-trap.json. Naming the next stop removes the guess.
+   */
+  const downOutOfCopy = () =>
+    focusRegisteredReplyStop("helpful") || focusRegisteredReplyStop("show-details");
 
   /*
    * Steam's nav node for this bubble, so the reply-actions row below can hand the ring in (Up onto
@@ -349,7 +357,10 @@ export function buildAnswerBubbleElement(
       ref={(el: HTMLElement | null) => registerAnswerBubbleEl(answerKey, el)}
       className={`bonsai-chat-ai-bubble bonsai-glass-panel${
         streaming ? " bonsai-chat-ai-bubble--stream-preview" : ""
-      }${fenceWaitActive ? " bonsai-chat-ai-bubble--fence-wait" : ""}`}
+      }${fenceWaitActive ? " bonsai-chat-ai-bubble--fence-wait" : ""}${
+        /* Lets the stylesheet keep the answer's last line clear of the corner icon. */
+        showCornerCopy ? " bonsai-chat-ai-bubble--with-copy" : ""
+      }`}
       {...navHandlers}
       {...({ navRef: bubbleNavRef } as Record<string, unknown>)}
       style={{
@@ -441,7 +452,10 @@ export function buildAnswerBubbleElement(
    *
    * As a sibling it is an ordinary step between the answer and the thumbs: Steam scrolls it into
    * view like any other, and Down continues to the reply block. Reached from the answer by Right
-   * as well, which is the route a person is told about.
+   * as well, which is the route a person is told about. Where it DRAWS is a separate matter: the
+   * stylesheet pulls it up into the bubble's bottom-right corner (the maintainer asked for it
+   * inside the bubble, 2026-09-06), and a spacer on the answer's last line keeps the text clear
+   * of it — the --with-copy rules in section-6.
    */
   return (
     <>
@@ -453,8 +467,12 @@ export function buildAnswerBubbleElement(
           navRef: copyNavRef,
           onMoveLeft: () => leftOutOfCopy(),
           onMoveUp: () => leftOutOfCopy(),
-          onButtonDown: (button: unknown) =>
-            isDeckDirectionLeftEvent(button) ? leftOutOfCopy() : false,
+          onMoveDown: () => downOutOfCopy(),
+          onButtonDown: (button: unknown) => {
+            if (isDeckDirectionLeftEvent(button)) return leftOutOfCopy();
+            if (isDownDeckButtonEvent(button)) return downOutOfCopy();
+            return false;
+          },
         } as Record<string, unknown>)}
       >
         <ReplyCopyButton corner getCopyText={getAnswerCopyText!} />

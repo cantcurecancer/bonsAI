@@ -50,14 +50,10 @@ hook gives a gentle heads-up when a session starts work outside this.
 ## Bugs
 
 
-- ★★ `[focus]` **Walking UP into the end of a long answer still leaves a third of it under the Ask bar** —
-  **PARTLY FIXED 2026-09-06, one direction still wrong.** Walking **down** a long answer is fixed: every part now stops clear
-  of the input bar, measured over the whole reply both ways. Walking **up** — from the Show details line back into the answer
-  — still lands on the last part with about a third of it behind the bar. **What is known:** the readable area now ends at the
-  top of the bar rather than the bottom of the panel, and the code nudges the panel whenever a part it just landed on runs
-  underneath. That nudge fires on the way down and does not on this one path. Running it again a frame later did not help, and
-  the panel settles at exactly the same place on every run, so it is deterministic and worth one more look with a log rather
-  than another guess. Runs: `reply-block-dock-fix-verified` (stop 20), `reply-block-final-clean`, `reply-block-after-scroll-fix`.
+- ★ `[focus]` **Pressing A on an open question closes it and drops the highlight** — the answer folds away and the ring
+  lands nowhere; the next D-pad press places it fresh instead of moving it. Seen on the Deck 2026-09-06 while checking the
+  corner icons, and the earlier run that pressed the question recorded the same landing ("nothing"), so it is not new to
+  the corner icons. Runs: `retry-corner-collapse-question`, `press-question-not-retry`.
 
 - ★ `[focus]` **Closing the model try order picker drops the highlight onto the tab rather than the button you opened it from** —
   **OPEN, seen twice 2026-09-06.** After pressing *Done*, the highlight lands on the Ollama tab's outer frame, not back on
@@ -547,6 +543,18 @@ for the Deck to be free). Anything new goes here, one line each, with what it de
 
 Everything shipped since v0.4.9 (2026-07-08), one line each, newest first. Detail: [CHANGELOG.md](../CHANGELOG.md),
 [archive/roadmap-completed.md](archive/roadmap-completed.md), [archive/roadmap-bugs-fixed.md](archive/roadmap-bugs-fixed.md).
+
+**Verified on the Deck 2026-09-06 (reply block, second pass):**
+- ★★ `[focus]` **The end of a long answer now stays clear of the Ask bar in both directions** — coming back up from the
+  Show details line used to leave a third of the last part behind the bar, at the same spot every run. A scroll log on the
+  Deck showed why: the plugin's "lift it clear" step was being ignored by the browser for anything inside the answer
+  bubble, and Steam's own slow scroll then dragged the part under the bar. The lift now moves the panel itself when the
+  browser will not. Runs: `reply-block-up-into-answer-fixed`, `reply-block-both-ways-after-lift-fix`,
+  `reply-block-corner-icons-inside`.
+- ★★ `[reply]` **Retry and Copy sit inside their bubbles' corners** — both had been straddling the bubble edge, half in
+  and half out. Retry is 7px in from the question bubble's left edge and 4px up from its bottom; Copy is 7px in from the
+  answer's right edge and 4px up. Each bubble's last line leaves room for its icon, no bubble grew, and the reply block
+  starts where it did before the icons existed. Runs: `reply-block-corner-icons-inside`, `reply-block-copy-right-down-up`.
 
 **Verified on the Deck 2026-09-06 (round 34 continued):**
 - ★★★ `[ollama]` **The order you set for which model to try now sticks** — found and fixed the same night. Setting an order used

@@ -8,11 +8,12 @@
  *         2026-08-31. Steam cannot know about the dock; this listens for focus landing under it
  *         and lifts the element clear.
  * Does not: Follow streaming text or deliver the end of an answer — see useStreamScrollPin, which
- *           also owns the evidence for WHY the nudge is scrollIntoView and not a scrollTop write
- *           (Steam's scroller erases direct writes).
+ *           owns the evidence for why scrollIntoView is tried FIRST (Steam's scroller erased direct
+ *           writes while tokens streamed). The direct write is the fallback here, for the one place
+ *           scrollIntoView is measured to be a no-op — see liftAboveDock.
  */
 import { useEffect, type RefObject } from "react";
-import { findTabContentsScroll } from "../utils/chatPanelScroll";
+import { findTabContentsScroll, panelScrollMax } from "../utils/chatPanelScroll";
 
 const DOCK_SELECTOR = ".bonsai-main-tab-dock";
 
@@ -50,7 +51,8 @@ export function liftAboveDock(el: HTMLElement): boolean {
   const dock = scroll.querySelector<HTMLElement>(DOCK_SELECTOR);
   if (!dock || dock.contains(el)) return false;
 
-  const paneBottom = scroll.getBoundingClientRect().bottom;
+  const paneRect = scroll.getBoundingClientRect();
+  const paneBottom = paneRect.bottom;
   const dockTop = dock.getBoundingClientRect().top;
   const covered = paneBottom - Math.min(paneBottom, dockTop);
   if (covered <= 0) return false;
@@ -60,6 +62,31 @@ export function liftAboveDock(el: HTMLElement): boolean {
 
   el.style.scrollMarginBottom = `${Math.ceil(covered) + CLEARANCE_PAD_PX}px`;
   el.scrollIntoView({ block: "end", behavior: "auto" });
+
+  /*
+   * Measure again, and finish the job by hand if scrollIntoView left the element covered.
+   *
+   * Inside the answer bubble it always does. Scroll log on the Deck, 2026-09-06, Up out of the
+   * Show details line into a long answer's last section: scrollIntoView with a scroll-margin of
+   * 0, 80, 164 or 300px all parked the pane at the same scrollTop, the section's bottom 77px
+   * behind the dock, and every later pass asked for that same place again. Two things eat the
+   * margin: the bubble and its text stack both clip their overflow, and Chromium honours
+   * scroll-margin only against the nearest clipping box rather than the pane; and Steam's pane
+   * carries scroll-padding-bottom: 80px, so "end" means 80px above the pane's bottom — still 77px
+   * inside a 157px dock. A plain scrollTop write is what the D-pad's own section steps use on a
+   * finished reply, and it holds (the erased-write evidence in useStreamScrollPin is from
+   * mid-stream commits). Capped at the element's own headroom, so a section taller than the
+   * readable band keeps its top on screen rather than jumping its start away.
+   */
+  const after = el.getBoundingClientRect();
+  const stillHidden = after.bottom + CLEARANCE_PAD_PX - dockTop;
+  if (stillHidden > 1) {
+    const headroom = Math.max(0, after.top - paneRect.top);
+    const step = Math.min(stillHidden, headroom);
+    if (step >= 1) {
+      scroll.scrollTop = Math.min(panelScrollMax(scroll), scroll.scrollTop + step);
+    }
+  }
   return true;
 }
 
