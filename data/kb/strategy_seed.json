@@ -186,6 +186,30 @@
         "action",
         "platformer"
       ]
+    },
+    {
+      "game_id": 16,
+      "app_id": "782330",
+      "igdb_id": null,
+      "canonical_title": "DOOM Eternal",
+      "edition": null,
+      "platform": "Steam",
+      "genres": [
+        "fps",
+        "action"
+      ]
+    },
+    {
+      "game_id": 17,
+      "app_id": null,
+      "igdb_id": "emudeck-doom64-n64",
+      "canonical_title": "Doom 64",
+      "edition": "N64",
+      "platform": "Nintendo 64",
+      "genres": [
+        "fps",
+        "action"
+      ]
     }
   ],
   "aliases": [
@@ -332,6 +356,26 @@
     {
       "alias": "hk",
       "game_id": 15
+    },
+    {
+      "alias": "doom eternal",
+      "game_id": 16
+    },
+    {
+      "alias": "doometernal",
+      "game_id": 16
+    },
+    {
+      "alias": "doom 64",
+      "game_id": 17
+    },
+    {
+      "alias": "doom64",
+      "game_id": 17
+    },
+    {
+      "alias": "doom 64 retribution",
+      "game_id": 17
     }
   ],
   "sections": [
@@ -2271,6 +2315,204 @@
       "card": "The flying spitter of Kingdom's Edge and the Colosseum, and by common agreement the nastiest ordinary enemy in the game. It hovers just out of nail reach and spits three blobs in a spread with the middle one aimed at you, so close range is worse, not better. Listen for the whistle of its wings and deal with it before anything else in the room; nail arts, especially Great Slash or Dash Slash, reach it when normal swings will not, and a spell does the job from range. In the Colosseum they are the first thing to kill in any wave.",
       "source_url": "https://hollowknight.wiki/w/Primal_Aspid",
       "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 188,
+      "game_id": 16,
+      "section_type": "mechanic",
+      "name": "Starting out in DOOM Eternal: the combat loop",
+      "card": "Eternal is a resource game wearing a shooter's clothes. Ammo is scarce and the pools are small, so the loop is: shoot a weak enemy until it flashes, glory kill it for health; chainsaw a fodder demon for a shower of ammo (three fuel units, one always refilling on its own every twenty seconds, and fodder costs one, so it is never off the table); flame belch a group and kill them burning for armour, on a twenty-five second cooldown. Heavy demons cost all three fuel units and the super heavies cannot be sawed at all. Never stand still: dash twice, jump twice, and swap weapons mid-fight rather than reloading. If you run dry on everything, the game hands you the chainsaw for one fodder kill and the loop starts again.",
+      "source_url": "https://doomwiki.org/wiki/Chainsaw_(Doom_Eternal)",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 189,
+      "game_id": 16,
+      "section_type": "enemy",
+      "name": "Marauder",
+      "card": "The fight everyone gets stuck on. Stay at mid range: close and it draws a super shotgun faster than you can dash, far and it throws axe waves. Its red shield blocks everything from the front, plasma included, and the chainsaw does nothing; the Crucible only works once it is stunned. Watch its feet: a dash is repositioning, a run means it is coming in to swing. When it winds up the axe its eyes flash green; hit it in that instant and it falters for a couple of seconds, then pour in the highest damage per shot you own, super shotgun, ballista, rocket, swapping between them for two or three hits per stagger. Grenades and rockets exploding beside it also drop the shield briefly. Kill the glowing wolf it summons the moment it appears, clear the other demons first, and keep the arena's space between you.",
+      "source_url": "https://doomwiki.org/wiki/Marauder",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 190,
+      "game_id": 16,
+      "section_type": "boss",
+      "name": "Doom Hunter",
+      "card": "End of the Doom Hunter Base: one, then two at once. The first health bar is the sled it rides, not the demon. Its energy shield melts to the plasma rifle, especially with heat blast or microwave beam, but regrows while the sled lives; the sled itself is always exposed to anything, and the blood punch wrecks it fastest. When it calls out critical damage it drops the sled, losing the shield, the plasma guns and the missile strikes, and the bar refills for the body, which now comes at you faster with the chainsaw and cannon. Empty that second bar and it is done. After this level they return as ordinary super heavies in the big fights.",
+      "source_url": "https://doomwiki.org/wiki/Doom_hunter",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 191,
+      "game_id": 16,
+      "section_type": "boss",
+      "name": "Gladiator",
+      "card": "The whole of Sentinel Prime. In phase one it hides behind a shield and creeps forward; when the eyes on the shield flash green it swings the flail, and that is your window: shoot then, stagger it, and press the glory kill button for heavy punches. Blinking eyes mean a projectile you sidestep with a dash. Rockets or grenades on the ground behind it get round the shield for a little damage. When the bar empties, glory kill the shield off and phase two starts faster, swinging two flails, deflecting your shots while it spins one (do not fire into a spin), throwing both to fence you between the chains and then firing energy waves to jump or step through before it charges. Fodder spawns through the fight for health, armour and ammo; use it.",
+      "source_url": "https://doomwiki.org/wiki/Gladiator",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 192,
+      "game_id": 16,
+      "section_type": "boss",
+      "name": "Khan Maykr",
+      "card": "Her shield stops everything until sustained fire breaks it, and it regrows if you pause, so keep the pressure on; a full lock-on rocket burst lands because she does not dodge often. Even with the shield down normal weapons do nothing: only the blood punch hurts her, and she stays airborne, so meathook in with the super shotgun, blast, and punch. Her shots are a fast slanted spread of yellow bolts and a slow heavy purple orb, plus a pillar of light that follows you leaving fire behind, and near the end burning patches on the floor. The red-armoured drones she summons are a nuisance in numbers, but headshots on them drop health and ammo; farm them between phases.",
+      "source_url": "https://doomwiki.org/wiki/Khan_Maykr",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 193,
+      "game_id": 16,
+      "section_type": "boss",
+      "name": "Icon of Sin",
+      "card": "Two phases, eight targets each: both pectorals, both shoulders, both hands, the abdomen and the head. Phase one strips the armour, phase two the flesh beneath, and shooting a part that is already broken does nothing, so use accurate guns, heavy cannon and ballista, and take the hands early before it speeds up (it quickens with every part). It summons waves up to super heavy, flushes the field with energy that also kills its own summons, burns floor patches, and fires a magic circle and fireballs from its head that a wall blocks. Phase two has more room but adds a fireball rain and a charged head beam you must not stand in. Spend the Crucible and blood punch charges on the summons for health, keep moving on the platforms, and never stop to admire it.",
+      "source_url": "https://doomwiki.org/wiki/Icon_of_Sin_(Doom_Eternal)",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 194,
+      "game_id": 16,
+      "section_type": "enemy",
+      "name": "Cacodemon",
+      "card": "Faster and meaner than before, with a rapid string of shots and a lunging bite that reaches further than it looks. Two clean answers: when its mouth opens, feed it a frag grenade or a sticky bomb from the combat shotgun; it gulps, swells, and drops into an instant stagger for a free glory kill. Or hit it with the ballista, which does bonus damage to anything flying, and a charged arbalest bolt kills it outright when it explodes. Either way it is one of the cheapest heavies on the field once you stop treating it like a bullet sponge.",
+      "source_url": "https://doomwiki.org/wiki/Cacodemon_(Doom_Eternal)",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 195,
+      "game_id": 16,
+      "section_type": "mechanic",
+      "name": "Weak points worth shooting",
+      "card": "Most heavy demons carry a part that, once destroyed, takes their best attack away. The arachnotron's tail turret dies to one sticky bomb, precision bolt or ballista shot and leaves it with claws and lobbed grenades. The revenant's shoulder launchers come off the same way and ground it; a dash or double jump also breaks its missile lock. The mancubus's arm cannons can be shot to weaken its fire and kill the flamethrowers, and a chainsaw or glory kill to its chest makes it explode on its neighbours. The pinky is armoured in front and bare at the tail, and a blood punch kills it from any side. A carcass's shield pops to plasma or a punch. Find the part first and the fight is half done.",
+      "source_url": "https://doomwiki.org/wiki/Arachnotron_(Doom_Eternal)",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 196,
+      "game_id": 16,
+      "section_type": "enemy",
+      "name": "Whiplash",
+      "card": "The snake-bodied one that will not hold still. It lashes chained blades, lays energy waves along the ground that home on you, and hugs the floor while flanking so projectiles sail over it. Hitscan beats it: the heavy cannon, or the plasma rifle's microwave beam, which holds it in place for a few seconds even after you stop firing, long enough for a quick weapon-swap combo. An ice bomb is the other answer, freezing it mid-slither. Do not meathook it; it answers with an energy wave that knocks you off the hook.",
+      "source_url": "https://doomwiki.org/wiki/Whiplash",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 197,
+      "game_id": 16,
+      "section_type": "enemy",
+      "name": "Arch-vile",
+      "card": "A walking buff totem: while it lives everything in the arena hits harder and moves faster, glowing red, and it summons more demons, drawn from that fight's list and sometimes as bad as tyrants or marauders. It summons while you are locked into a glory kill or chainsaw animation, because you cannot interrupt it then, and its new arrivals stand in an orange aura, frozen and undamageable, until it finishes. So find it first, skip the executions until it is dead, and put your heaviest ordnance into it. Its magic shield ignores plasma, and it counts as super heavy, so no chainsaw.",
+      "source_url": "https://doomwiki.org/wiki/Arch-vile_(Doom_Eternal)",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 198,
+      "game_id": 16,
+      "section_type": "item",
+      "name": "Super Shotgun and meat hook",
+      "card": "Picked up in the Cultist Base and never put down: massive point-blank damage, several fodder demons per shot, a pinky in one shot to the tail, but a long reload and nothing at range. The reload disappears if you swap to another gun and back. The meathook under the barrel is the movement tool: fire it into a demon and it yanks you to them for the blast, or across the arena for the escape. Small enemies are held in place when hooked; big ones are not, and may hit you on the way in, so be ready to jump off. It will not grab a marauder or riot shield facing you, nor the gladiator behind its shield, and a knockback hit or a dash lets go.",
+      "source_url": "https://doomwiki.org/wiki/Super_shotgun_(Doom_Eternal)",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 199,
+      "game_id": 16,
+      "section_type": "item",
+      "name": "The Crucible",
+      "card": "A sword that kills any demon in one swing without a stagger, marauders excepted (they must be stunned first), and the Doom hunter, which costs two: one for the sled, one for the body. It holds three charges, refilled only at fixed spots in the level, and one swing spends one charge whether it lands on a tyrant or an imp, so treat every charge as a tyrant. Each kill returns health. Save it for the super heavies in the last arenas and for the Icon fight, where the charges and blood punches on its summons are how you stay alive.",
+      "source_url": "https://doomwiki.org/wiki/Crucible_(Doom_Eternal)",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 200,
+      "game_id": 16,
+      "section_type": "mechanic",
+      "name": "Slayer Gates, keys and the Fortress",
+      "card": "The purple gore nests behind locked gates are optional arenas harder than anything around them; each opens with a Slayer Key hidden nearby, in Exultia, Cultist Base, Super Gore Nest, ARC Complex, Mars Core and Taras Nabad. Clearing one pays three weapon points and an Empyrean Key, and all six keys unlock the Unmaykr in the Fortress, a rapid three-orb gun that shares the BFG's ammo. Back at the Fortress, Sentinel batteries from the levels open doors two at a time for crystals, mod bots, suit points and skins, and the twelve Sentinel crystals in blue shrines raise health, armour or ammo four steps each. The flame belch, ice bomb and ballista are collected there between missions.",
+      "source_url": "https://doomwiki.org/wiki/Slayer_Gate",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 201,
+      "game_id": 17,
+      "section_type": "mechanic",
+      "name": "Starting out in Doom 64",
+      "card": "Not a port: a separate sequel to Doom II with thirty-two new levels, redrawn larger sprites, coloured lighting and a slower, darker mood. The whole Doom II arsenal is here plus one new gun, the Unmaker, and most of the classic monsters, but no arch-viles, revenants, spider mastermind or chaingunners; the new faces are the fast, half-invisible nightmare imp and the Mother Demon at the end. Four secret levels hide the game's real reward, and the 2020 re-release adds a further episode, The Lost Levels, after the ending. Play it like classic Doom: find keys, hit switches, and treat every quiet room as a trap.",
+      "source_url": "https://doomwiki.org/wiki/Doom_64",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 202,
+      "game_id": 17,
+      "section_type": "enemy",
+      "name": "Nightmare imp",
+      "card": "The first new monster you meet: a translucent blue-purple imp, twice as fast as the ordinary kind, throwing purple fireballs that fly twice as fast too, and hard to see against dark walls. Treat every dim doorway as holding one. It is still an imp in health, so the shotgun handles it; the danger is the pack and the speed, not the toughness. First seen in Main Engineering, and there are a lot of them.",
+      "source_url": "https://doomwiki.org/wiki/Nightmare_imp",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 203,
+      "game_id": 17,
+      "section_type": "item",
+      "name": "Unmaker and the Demon Keys",
+      "card": "The one new gun: a demonic laser that eats cells, found first in the secret level Outpost Omega and not again until Altar of Pain. On its own it is a slower, stronger plasma gun. Each of the three Demon Keys, one hidden on each of the secret levels Outpost Omega, The Lair and In The Void, powers it up: faster firing, then a second beam, then a third, until it fires so fast that it stun-locks anything in the game, the Cyberdemon and the Mother Demon included. The keys also disable the three monster teleporters in the final level, which skips most of the last battle. Hunt the secret levels; they are the point of the game.",
+      "source_url": "https://doomwiki.org/wiki/Unmaker",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 204,
+      "game_id": 17,
+      "section_type": "boss",
+      "name": "Mother Demon",
+      "card": "The final boss in The Absolution. Her flame trail tosses you into the air where you cannot steer, and four homing rockets follow; taking all four at once kills through any armour. The answer is the fully upgraded Unmaker at point-blank range: its fire rate stuns her so she never launches the rockets, leaving only the flame trails to dodge. Without all three Demon Keys you also fight a large horde before she appears and burn most of your ammo doing it; then it is the BFG on careful timing, or rockets. Get the keys first.",
+      "source_url": "https://doomwiki.org/wiki/Mother_Demon",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 205,
+      "game_id": 17,
+      "section_type": "mechanic",
+      "name": "The Lost Levels",
+      "card": "The 2020 re-release's extra episode: six levels that start you stranded with no weapons on a distant base and end in Final Judgement against the Sister Resurrector, plus one separate fun level. It opens when you beat the Mother Demon, or by finishing the secret level Hectic and using the Features menu's level select, or with any password for the first level and the same menu; on PC a -warp 34 launch flag also works. All three Demon Keys and the Unmaker are found again inside Final Judgement and are required to finish it.",
+      "source_url": "https://doomwiki.org/wiki/The_Lost_Levels",
+      "source_license": "CC-BY-SA-4.0",
       "source_version": null,
       "crawled_at": "2026-09-05"
     }
