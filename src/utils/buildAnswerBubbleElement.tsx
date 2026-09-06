@@ -301,7 +301,6 @@ export function buildAnswerBubbleElement(
   const copyNavRef: { current: { TakeFocus?: (gamepad?: boolean) => unknown } | null } = {
     current: null,
   };
-  const copySlotEl: { current: HTMLElement | null } = { current: null };
   const showCornerCopy = Boolean(getAnswerCopyText) && !streaming;
   const rightIntoCopy = () => {
     if (!showCornerCopy) return false;
@@ -342,7 +341,7 @@ export function buildAnswerBubbleElement(
     },
   } as Record<string, unknown>;
 
-  return (
+  const bubble = (
     <Focusable
       key={`answer-bubble-${answerKey}`}
       /* Mount-time registration. Without it the only route to this element was `activeElement`,
@@ -368,9 +367,7 @@ export function buildAnswerBubbleElement(
       }}
     >
       <div
-        className={`bonsai-chat-ai-bubble-inner${
-          showCornerCopy ? " bonsai-chat-ai-bubble-inner--with-copy" : ""
-        }`}
+        className="bonsai-chat-ai-bubble-inner"
         data-bonsai-answer-bubble="true"
         data-bonsai-answer-key={answerKey}
       >
@@ -422,28 +419,46 @@ export function buildAnswerBubbleElement(
                 </Focusable>
               ))}
         </div>
-        {showCornerCopy ? (
-          /*
-           * The handlers sit on this Focusable, not on the button inside it: a Decky Button does
-           * not forward onMove* to any Focusable — the measured reason recorded in
-           * buildReplyActionsElement.tsx for the row below.
-           */
-          <Focusable
-            className="bonsai-reply-copy-corner-slot"
-            ref={(el: HTMLElement | null) => {
-              copySlotEl.current = el;
-            }}
-            {...({
-              navRef: copyNavRef,
-              onMoveLeft: () => leftOutOfCopy(),
-              onButtonDown: (button: unknown) =>
-                isDeckDirectionLeftEvent(button) ? leftOutOfCopy() : false,
-            } as Record<string, unknown>)}
-          >
-            <ReplyCopyButton corner getCopyText={getAnswerCopyText!} />
-          </Focusable>
-        ) : null}
       </div>
     </Focusable>
+  );
+
+  if (!showCornerCopy) return bubble;
+
+  /*
+   * Copy sits just under the answer, tucked to its bottom right — a SIBLING of the bubble, not a
+   * child of it. Measured twice on the Deck 2026-09-06, and both failures came from it being
+   * inside:
+   *
+   *   runs/reply-block-copy-trap.json — absolutely positioned over the last section's corner, the
+   *   overlap made Steam's geometry treat each box as below the other, and Down bounced Copy →
+   *   section → Copy for as long as anyone kept pressing.
+   *
+   *   runs/reply-block-full-walk.json and the walk after it — in flow but still inside the bubble,
+   *   Down from it stalled (nothing below it inside the bubble to go to) and on a long answer the
+   *   ring landed on it 0% visible, completely behind the Ask bar, because the bubble's own scroll
+   *   handling does not run for it.
+   *
+   * As a sibling it is an ordinary step between the answer and the thumbs: Steam scrolls it into
+   * view like any other, and Down continues to the reply block. Reached from the answer by Right
+   * as well, which is the route a person is told about.
+   */
+  return (
+    <>
+      {bubble}
+      <Focusable
+        key={`answer-copy-${answerKey}`}
+        className="bonsai-reply-copy-corner-slot"
+        {...({
+          navRef: copyNavRef,
+          onMoveLeft: () => leftOutOfCopy(),
+          onMoveUp: () => leftOutOfCopy(),
+          onButtonDown: (button: unknown) =>
+            isDeckDirectionLeftEvent(button) ? leftOutOfCopy() : false,
+        } as Record<string, unknown>)}
+      >
+        <ReplyCopyButton corner getCopyText={getAnswerCopyText!} />
+      </Focusable>
+    </>
   );
 }

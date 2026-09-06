@@ -398,14 +398,21 @@ describe("Copy in the answer bubble's corner", () => {
     expect(container.querySelector(".bonsai-reply-copy-corner")).toBeNull();
   });
 
-  it("reserves room on the last section so text cannot run under the icon", () => {
+  /*
+   * Measured on the Deck 2026-09-06 (runs/reply-block-copy-trap.json): with the icon absolutely
+   * positioned over the last section's corner, Steam's geometry navigation treated the two
+   * overlapping boxes as each being below the other and Down bounced between them forever — the
+   * reply could not be walked past. In flow it is unambiguously last.
+   */
+  it("sits after the bubble as its own step, never inside it", () => {
     const { container } = render(build(false)!);
-    const inner = container.querySelector(".bonsai-chat-ai-bubble-inner");
-    expect(inner!.className).toContain("bonsai-chat-ai-bubble-inner--with-copy");
-    const plain = render(build(false, false)!);
-    expect(
-      plain.container.querySelector(".bonsai-chat-ai-bubble-inner")!.className
-    ).not.toContain("--with-copy");
+    const bubble = container.querySelector(".bonsai-chat-ai-bubble")!;
+    const slot = container.querySelector(".bonsai-reply-copy-corner-slot")!;
+    /* Inside the bubble it was a dead end going Down, and could land behind the Ask bar with the
+       ring on it and nothing visible — measured twice on the Deck 2026-09-06. */
+    expect(bubble.contains(slot)).toBe(false);
+    /* DOCUMENT_POSITION_FOLLOWING — it comes after the answer, so Down reaches it then moves on. */
+    expect(bubble.compareDocumentPosition(slot) & 4).toBeTruthy();
   });
 
   /*

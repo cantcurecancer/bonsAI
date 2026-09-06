@@ -348,27 +348,29 @@ export function buildSection6Section(): string {
         .bonsai-scope .bonsai-chat-ai-bubble-inner {
           padding: 8px 10px !important;
           box-sizing: border-box !important;
-          /* Anchor for the Copy icon pinned to the bubble's bottom-right corner (D77). */
-          position: relative !important;
         }
         /*
-         * Copy, in the answer bubble's bottom-right corner.
-         *
-         * The last section reserves room on its right so a line of text can never run under the
-         * icon. A fixed inset in CSS, never a measured one (design-language.md rule 4). The
-         * modifier class rather than :has(), because nothing here may assume a CEF version.
+         * Copy, at the bottom right of the answer, on its own line rather than over the text.
+         * Why in flow and not pinned to the corner: runs/reply-block-copy-trap.json, 2026-09-06.
          */
-        .bonsai-scope .bonsai-chat-ai-bubble-inner--with-copy
-          .bonsai-ai-response-stack--in-bubble > .bonsai-answer-stop:last-child {
-          padding-right: ${uiScalePx(22)} !important;
-        }
         .bonsai-scope .bonsai-reply-copy-corner-slot {
-          position: absolute !important;
-          right: ${uiScalePx(4)} !important;
-          bottom: ${uiScalePx(2)} !important;
-          display: inline-flex !important;
+          display: flex !important;
+          justify-content: flex-end !important;
           align-items: center !important;
-          justify-content: center !important;
+          /* Same cap as the answer bubble above it, so the icon lands on the bubble's own right
+             edge rather than the column's. Kept in step with BONSAI_CHAT_AI_BUBBLE_MAX_FRAC. */
+          width: min(92%, 100%) !important;
+          max-width: min(92%, 100%) !important;
+          align-self: flex-start !important;
+          /* Pulled up over the bubble's bottom padding — not over its text — so the icon reads as
+             sitting in the answer's corner and the reply loses no height to it. The bubble already
+             carries margin-bottom: 8. */
+          margin-top: ${uiScalePx(-24)} !important;
+          margin-bottom: ${uiScalePx(6)} !important;
+          padding-right: ${uiScalePx(8)} !important;
+          box-sizing: border-box !important;
+          position: relative !important;
+          z-index: 1 !important;
           outline: none !important;
         }
         /*

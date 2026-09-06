@@ -37,7 +37,7 @@
     },
     {
       "path": "src/styles/sections/section-6.ts",
-      "lines": 1243,
+      "lines": 1245,
       "role": ""
     },
     {
@@ -176,18 +176,18 @@
       "role": ""
     },
     {
+      "path": "src/utils/buildAnswerBubbleElement.tsx",
+      "lines": 465,
+      "role": ""
+    },
+    {
       "path": "src/features/preset-carousel/sessionRagComposer.test.ts",
       "lines": 457,
       "role": ""
     },
     {
-      "path": "src/utils/buildAnswerBubbleElement.tsx",
-      "lines": 450,
-      "role": ""
-    },
-    {
       "path": "src/utils/buildAnswerBubbleElement.test.tsx",
-      "lines": 438,
+      "lines": 445,
       "role": ""
     },
     {

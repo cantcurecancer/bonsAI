@@ -123,15 +123,26 @@ describe("a finished reply, all three changes together", () => {
     expect(last.className).toContain("bonsai-chat-details-divider");
   });
 
-  it("puts each icon inside the bubble it belongs to", () => {
+  it("puts Retry in the question bubble and Copy right after the answer", () => {
     const { container } = renderReply(SHORT_ANSWER);
-    const questionBubble = container.querySelector(".bonsai-chat-turn-row-header");
-    const answerBubble = container.querySelector(".bonsai-chat-ai-bubble");
-    expect(questionBubble!.querySelector(".bonsai-turn-retry-corner")).not.toBeNull();
-    expect(answerBubble!.querySelector(".bonsai-reply-copy-corner")).not.toBeNull();
-    /* And not in each other's. */
-    expect(questionBubble!.querySelector(".bonsai-reply-copy-corner")).toBeNull();
-    expect(answerBubble!.querySelector(".bonsai-turn-retry-corner")).toBeNull();
+    const questionBubble = container.querySelector(".bonsai-chat-turn-row-header")!;
+    const answerBubble = container.querySelector(".bonsai-chat-ai-bubble")!;
+    expect(questionBubble.querySelector(".bonsai-turn-retry-corner")).not.toBeNull();
+    expect(questionBubble.querySelector(".bonsai-reply-copy-corner")).toBeNull();
+
+    /* Copy is a step after the answer, not inside it — measured on the Deck 2026-09-06: inside, it
+       was a dead end going Down and could sit behind the Ask bar with the ring on it. */
+    const copy = container.querySelector(".bonsai-reply-copy-corner-slot")!;
+    expect(answerBubble.contains(copy)).toBe(false);
+    expect(answerBubble.compareDocumentPosition(copy) & 4).toBeTruthy();
+    expect(answerBubble.querySelector(".bonsai-turn-retry-corner")).toBeNull();
+  });
+
+  it("keeps Copy above the thumbs, so the walk down is answer, Copy, then the buttons", () => {
+    const { container } = renderReply(SHORT_ANSWER);
+    const copy = container.querySelector(".bonsai-reply-copy-corner-slot")!;
+    const thumbs = container.querySelector(".bonsai-chat-reply-actions")!;
+    expect(copy.compareDocumentPosition(thumbs) & 4).toBeTruthy();
   });
 
   it("names both icons for someone who cannot see them", () => {

@@ -151,3 +151,50 @@ Up out of the button row now press Up out of the line, which inherited the same 
 
 **Still owed on the device.** Rows COPY-REPLY-01, COPY-REPLY-02, the new RETRY-CORNER-01, and
 CHAT-REPLY-ENTRY-01.
+
+## On the device, 2026-09-06
+
+All three verified on the Deck. Two problems were found there that no test could have caught, both
+from the Copy icon living inside the answer bubble.
+
+**First: the ring got stuck.** With Copy pinned over the last part of the answer, the two boxes
+overlapped, and Steam's navigation treats overlapping boxes as each being below the other. Down
+bounced Copy, answer, Copy, answer for as long as anyone kept pressing — forty presses in the run
+and it never got past the reply. The same run also showed a part of the answer only 89% visible,
+with the icon sitting on top of it.
+
+Moving the icon out of the overlap, onto its own line at the bottom of the bubble, fixed the
+visibility and half the trap: Down from the answer reached Copy, then stalled there.
+
+**Second: the ring could land somewhere invisible.** Still inside the bubble, on a long answer, Down
+landed on Copy **0% visible** — entirely behind the Ask bar. The bubble handles its own scrolling for
+the parts of the answer, and that never ran for the icon.
+
+**The fix both point to:** Copy is not part of the answer bubble at all. It is a step of its own,
+just after it, tucked up against the bubble's bottom right so it still reads as being in the
+answer's corner and the reply loses no height to it. As an ordinary step, the panel scrolls it into
+view like anything else and Down carries on to the buttons below.
+
+**After that, the reply walks cleanly.** Down and back up visits every control once, in order, with
+no loop:
+
+    title → tabs → chat rows → 2 earlier → Retry → answer part 1, 2, 3 → Copy → Show details
+    → session context → suggestion chip → Ask field → ask
+
+**Numbers worth keeping.** An answer of about 1,800 characters is three stops instead of six. The
+details line is 267 pixels wide starting at x=52, the same edges as the answer bubble. Copy is 20
+by 20 at x=291, inside the bubble's right edge. Retry is 20 by 20 at x=123, inside the question
+bubble. Pressing Copy put all 1,834 characters on the clipboard. Nothing overflows sideways.
+
+**The two worries in the plan both came out fine.** Pressing the question collapses it and does not
+start a Retry. The details line opens on one press and closes on one press — no double toggle.
+
+**One problem left, filed as its own bug.** The last part of a long answer can sit about a third
+under the Ask bar with the ring on it. It is in how the answer scrolls itself, not in these three
+changes, and the same overlap showed on the run taken before them — but bigger parts make it easier
+to hit.
+
+Evidence: `runs/reply-block-copy-trap.json`, `runs/reply-block-after-fix.json`,
+`runs/reply-block-full-walk.json`, `runs/reply-block-final-walk.json`,
+`runs/copy-right-from-answer.json`, `runs/press-question-not-retry.json`,
+`runs/question-bubble-two-stops.json`.

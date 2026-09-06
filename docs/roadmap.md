@@ -50,6 +50,15 @@ hook gives a gentle heads-up when a session starts work outside this.
 ## Bugs
 
 
+- ★★ `[focus]` **The last part of a long answer can sit a third of the way under the Ask bar when the ring is on it** —
+  **OPEN, measured 2026-09-06.** Walking down a long answer, the ring lands on its last part and the panel scrolls, but not far
+  enough: about a third of that part stays behind the input bar at the bottom. The ring is on it and you cannot read all of it
+  without scrolling again by hand. It happened on the way down and on the way up, in the same place both times, and it is the
+  only thing the reply walk still flags. Not caused by the three 2026-09-06 reply changes — the same overlap showed on the run
+  taken before them — but they made it easier to hit, because parts of an answer are bigger now. The fix is in how the answer
+  scrolls itself, not in the reply chrome: the scroll stops when the part is *in view* rather than *clear of the dock*.
+  Runs: `reply-block-final-walk` (stops 7 and 19), `copy-right-from-answer`.
+
 - ★ `[focus]` **Closing the model try order picker drops the highlight onto the tab rather than the button you opened it from** —
   **OPEN, seen twice 2026-09-06.** After pressing *Done*, the highlight lands on the Ollama tab's outer frame, not back on
   *Set text model try order…*. It is not a dead end — the next press moves normally — but it costs about thirteen presses to get
@@ -280,31 +289,27 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
 
 ### Features that need verification
 
-- ★★★ `[layout]` **Copy sits in the answer's corner, not in a button row** — **VERIFY, and this is the one to look at hardest.**
-  Built at the desk 2026-09-06 under D77. The row of buttons under a reply is gone. **Copy** is a small faded icon in the answer
-  bubble's bottom right corner — press Right from the last part of the answer to reach it, Left to come back. **Retry** is a faded
-  circular arrow on the newest question's bubble, on its left — press Left from the question, Right to come back. The reply gets
-  that whole row's height back. **What is owed on the device:** every one of those four presses, reading back where the ring
-  actually landed rather than judging from a screenshot; that pressing the question still opens and closes it and does **not**
-  fire Retry by accident; that neither icon is touch-only; and a sweep for anything now unreachable. The question bubble went from
-  one D-pad stop to a row of two, which is the change most likely to go wrong in a way no test can catch. Rows **COPY-REPLY-01**,
-  **COPY-REPLY-02**, **CHAT-REPLY-ENTRY-01**.
+- ★★★ `[layout]` **Copy sits in the answer's corner, not in a button row** — **VERIFIED on the Deck 2026-09-06.** The row of
+  buttons under a reply is gone. **Copy** is a small faded icon tucked to the answer's bottom right — press Right from the last
+  part of the answer to reach it, Left to come back. **Retry** is a faded circular arrow on the newest question's bubble, on its
+  left — press Left from the question, Right to come back. **What the runs show:** walking the whole reply down and back up
+  again visits every control once, in order, with no loop and nothing hidden, and pressing Copy put all 1,834 characters of the
+  answer on the clipboard. Pressing the question still opens and closes it and does not start a Retry. An older question shows
+  no arrow. Two problems were found and fixed on the device before this closed — see the notes on the entry below and the
+  planning file. Runs: `reply-block-final-walk`, `copy-right-from-answer`, `press-question-not-retry`,
+  `question-bubble-two-stops`. Rows **COPY-REPLY-01**, **COPY-REPLY-02**, **RETRY-CORNER-01**, **CHAT-REPLY-ENTRY-01**.
 
-- ★★ `[layout]` **Show details becomes a divider, not a chip** — **VERIFY.** Built at the desk 2026-09-06 under D76.
-  Under a finished answer there is now a thin line across the reply with **Show details ↓** in the middle of it, at the
-  bottom of the block. Pressing it opens the detail chips below the line and the label becomes **Hide details ↑**. The
-  button row above keeps Retry and Copy. The reply block also went from 88% of the column to 92%, so its edges line up with
-  the answer bubble and the question above it. **What is owed on the device:** that the line reads as the end of the answer
-  rather than a control; that one press opens it and one press closes it — it answers the A button and a finger tap by two
-  separate routes, so a double toggle is the thing to watch for; that Down from Helpful reaches it and Down again reaches the
-  chips; and that the wider block did not push anything out of the column. Row **SHOW-DETAILS-01**.
+- ★★ `[layout]` **Show details becomes a divider, not a chip** — **VERIFIED on the Deck 2026-09-06.** Under a finished answer
+  there is a thin line across the reply with **Show details ↓** in the middle. **What the runs show:** the line is 267 pixels
+  wide starting at the same left edge as the answer bubble above it, so the two share both edges exactly. One press opens the
+  chips and turns the label into **Hide details ↑**; one more press closes it — the double-toggle worry did not happen. The
+  ring reaches it walking down and walking up, and it is fully on screen, not behind the input bar. Nothing overflows sideways.
+  Run: `reply-block-final-walk`. Row **SHOW-DETAILS-01**.
 
-- ★★ `[focus]` **Fewer D-pad stops on a finished reply** — **VERIFY.** Built at the desk 2026-09-06 under D78. A finished
-  answer used to give one D-pad stop per paragraph, so a long reply was ten or more presses before the buttons under it.
-  Neighbouring short paragraphs — and the lines of a bullet list — now share a stop, up to about half a screen of text each.
-  Code blocks still stand alone and stay whole. A still-arriving answer is unchanged. **What is owed on the device:** walk a
-  long finished answer and count the presses to the first button, and confirm no text is skipped — a press either moves the
-  ring to a section already on screen or scrolls the panel. Rows **D-PAD-SCROLL-02** (reworded) and **STREAM-09**.
+- ★★ `[focus]` **Fewer D-pad stops on a finished reply** — **VERIFIED on the Deck 2026-09-06.** **What a person notices:** an
+  answer of about 1,800 characters used to be one stop per paragraph — six of them. It is three now, and each press either moves
+  the ring to a part of the answer already on screen or scrolls the panel; nothing is skipped. A short answer of 400 characters
+  is a single stop. Code blocks still stand alone. Runs: `reply-block-final-walk`. Rows **D-PAD-SCROLL-02**, **STREAM-09**.
 
 - ★★ `[chips]` **A glow when the chip row runs out of chips** — **VERIFY.** Built at the desk 2026-09-05 under D62 #3: press Left or Right past the first or last suggestion chip and that chip glows briefly, the way a phone lights up the end of a list. Nothing about the row’s existing edge behaviour changes. Reduced motion keeps the cue and drops the movement. **No measurement closes this one** — whether it reads as *end of list* rather than *error* is the maintainer’s call from a recording, and it is on their checklist.
 
