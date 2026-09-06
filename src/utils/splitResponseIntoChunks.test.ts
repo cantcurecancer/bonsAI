@@ -73,4 +73,59 @@ describe("splitResponseIntoChunks", () => {
       }
     );
   });
+  /*
+   * Fewer D-pad stops on a finished reply. One stop per paragraph meant ten-plus Down presses
+   * before the buttons under a long answer; neighbouring short pieces now merge up to about half
+   * a screen of text. The merge must not change a single word, and must leave code fences alone.
+   */
+  describe("merging short pieces into fewer stops", () => {
+    const words = (value: string) => value.split(/\s+/).filter(Boolean);
+
+    it("merges ten short paragraphs into a handful of stops", () => {
+      const t = Array.from({ length: 10 }, (_, i) => `Paragraph ${i} says a short thing.`).join(
+        "\n\n"
+      );
+      const c = splitResponseIntoChunks(t);
+      expect(c.length).toBeGreaterThan(0);
+      expect(c.length).toBeLessThanOrEqual(4);
+      expect(words(c.join("\n\n"))).toEqual(words(t));
+    });
+
+    it("merges a twelve-line bullet list into one stop", () => {
+      const t = Array.from({ length: 12 }, (_, i) => `- Bullet number ${i}`).join("\n");
+      const c = splitResponseIntoChunks(t);
+      expect(c).toHaveLength(1);
+      expect(c[0]).toBe(t);
+    });
+
+    it("leaves a code fence in a stop of its own, with its neighbours in theirs", () => {
+      const t = "Before the code.\n\n```sh\necho hi\n```\n\nAfter the code.";
+      const c = splitResponseIntoChunks(t);
+      expect(c).toHaveLength(3);
+      expect(c[0]).toBe("Before the code.");
+      expect(c[1]).toMatch(/```sh/);
+      expect(c[2]).toBe("After the code.");
+    });
+
+    it("does not merge a paragraph that is already about half a screen long", () => {
+      const long = `${"word ".repeat(200).trim()}.`;
+      const t = `${long}\n\nA short trailing note.`;
+      const c = splitResponseIntoChunks(t);
+      expect(c).toHaveLength(2);
+      expect(c[0]).toBe(long);
+      expect(c[1]).toBe("A short trailing note.");
+    });
+
+    it("keeps every word, in order, when pieces are merged", () => {
+      const t = [
+        "First short paragraph.",
+        "Second short paragraph.",
+        "```\ncode block stays whole\n```",
+        "Third short paragraph.",
+        "Fourth short paragraph.",
+      ].join("\n\n");
+      const c = splitResponseIntoChunks(t);
+      expect(words(c.join("\n\n"))).toEqual(words(t));
+    });
+  });
 });

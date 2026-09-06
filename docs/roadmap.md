@@ -155,9 +155,6 @@ replace it with a specific issue when one exists.
   One check owed first: the question bubble turns its own outline off and gets no ring rule, so look on the Deck at what focus shows.
 - ★★ `[chat]` **First-run ghost "New chat" label at the create position** — **OPEN, parked by decision.** The create position is the
   literal `[+]`, re-confirmed on board 8f and again in the v3 rows. Reopen that decision before building it.
-- ★★ `[focus]` **Fewer D-pad stops on a finished reply** — **OPEN, filed 2026-09-02.** A finished answer gets one stop per paragraph,
-  so a long reply is ten or more presses before the chips. Merge neighbouring paragraphs into sections of about one screen each.
-  Streaming is untouched: the finished reply is re-split once the stream closes. Code fences stay whole.
 - ★★ `[layout]` **Show details becomes a divider, not a chip** — **OPEN.** A full-width rule with the label in the middle reads as the
   end of the answer and frees the row it shares. Copy the collapsed-history row's shape (`.bonsai-chat-earlier-pill-row`).
 - ★★ `[ollama]` **Expert offers the stronger Deck-run models first, and the licence list learns the Sept 2026 models** —
@@ -287,6 +284,13 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
   being written (unit-tested, not reproducible by hand yet). Row **CLEAR-CACHE-01**. [Why](roadmap-details.md#shipped-qa-owed--why-each-was-built-this-way).
 
 ### Features that need verification
+
+- ★★ `[focus]` **Fewer D-pad stops on a finished reply** — **VERIFY.** Built at the desk 2026-09-06 under D78. A finished
+  answer used to give one D-pad stop per paragraph, so a long reply was ten or more presses before the buttons under it.
+  Neighbouring short paragraphs — and the lines of a bullet list — now share a stop, up to about half a screen of text each.
+  Code blocks still stand alone and stay whole. A still-arriving answer is unchanged. **What is owed on the device:** walk a
+  long finished answer and count the presses to the first button, and confirm no text is skipped — a press either moves the
+  ring to a section already on screen or scrolls the panel. Rows **D-PAD-SCROLL-02** (reworded) and **STREAM-09**.
 
 - ★★ `[chips]` **A glow when the chip row runs out of chips** — **VERIFY.** Built at the desk 2026-09-05 under D62 #3: press Left or Right past the first or last suggestion chip and that chip glows briefly, the way a phone lights up the end of a list. Nothing about the row’s existing edge behaviour changes. Reduced motion keeps the cue and drops the movement. **No measurement closes this one** — whether it reads as *end of list* rather than *error* is the maintainer’s call from a recording, and it is on their checklist.
 

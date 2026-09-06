@@ -16,14 +16,24 @@ import {
 } from "./drgGlossaryTermRegistry";
 import { resetUiDocument } from "./uiDocument";
 
-describe("streaming answer sections", () => {
-  it("splits streaming body into multiple sections when paragraphs exist", () => {
-    const body = "First paragraph.\n\nSecond paragraph.\n\nThird still typing";
+/*
+ * These describe the FINISHED answer's sections. A still-streaming answer is split by
+ * prepareStreamMarkdown, not by this function — see buildAnswerBubbleElement.tsx.
+ */
+describe("finished answer sections", () => {
+  it("puts three short paragraphs in one section, so Down does not waste two presses", () => {
+    const body = "First paragraph.\n\nSecond paragraph.\n\nThird paragraph.";
     const chunks = splitResponseIntoChunks(body);
+    expect(chunks).toHaveLength(1);
+  });
+
+  it("still splits once a paragraph fills about half a screen on its own", () => {
+    const long = `${"word ".repeat(200).trim()}.`;
+    const chunks = splitResponseIntoChunks(`${long}\n\n${long}`);
     expect(chunks.length).toBeGreaterThan(1);
   });
 
-  it("returns one section for short streaming line", () => {
+  it("returns one section for a short line", () => {
     const chunks = splitResponseIntoChunks("Short stream");
     expect(chunks).toHaveLength(1);
   });

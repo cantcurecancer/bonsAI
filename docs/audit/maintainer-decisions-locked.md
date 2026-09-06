@@ -3917,3 +3917,54 @@ in every Ask's context.
 and a desk number are a number of nothing. The button's question is fixed, general and spoiler-free, thinking
 off, a small cap, so numbers compare across dates. The record is cleared by Clear all plugin data. Nothing
 leaves the device.
+
+### D76 — LOCKED 2026-09-06 (raised the same day) — The Show details line goes at the bottom of the reply
+
+Raised while planning three changes to the block under a finished answer. **Show details stops being a button
+and becomes a thin line across the width with its label in the middle**, so it reads as the end of the answer
+rather than as another control competing with it.
+
+**The call: the line goes at the bottom of the block, under the buttons.** Order becomes the answer, then
+*Was this helpful?* and its two buttons, then Retry, then the line. The detail chips open below the line,
+which is exactly where they already appear, so nothing above them moves when they open.
+
+**The one rejected.** Putting the line straight under the answer would read more literally as the end of the
+answer, but the chips would then open above the buttons and push them down the screen every time.
+
+Shape to copy: the collapsed-history row that already sits in the same file — a label centred on a hairline.
+The only difference is a line on both sides of the label rather than one.
+
+### D77 — LOCKED 2026-09-06 (raised the same day) — Copy and Retry become corner icons on the bubbles
+
+**Copy leaves the button row and becomes a small faded icon in the bottom right corner of the answer bubble.**
+Reached by pressing Right from the last part of the answer; Left goes back. Drawn as the usual two overlapping
+rounded squares. It swaps to a tick for two seconds when it works, and a cross when it does not — the words
+have no room, so they stay in the spoken label only.
+
+**Retry leaves the row too, and becomes a circular arrow on the question bubble**, on the bubble's left side,
+faded, the same weight as the microphone in the Ask field. Reached by pressing Left from the question; Right
+goes back. Only the newest question offers it, exactly as the button did.
+
+**With both gone and Show details a line, the button row under the reply disappears entirely** and the
+transcript gains its height.
+
+**Why the left side of the question bubble, not a corner:** that bubble is right-aligned and only as wide as
+its text, so its left edge floats. Pinning anything to a floating edge needs a measurement, which the design
+rules forbid. The icon becomes a flex child instead and the bubble grows to fit it, in plain CSS.
+
+**The hard part is focus, not paint.** Answer bubbles and question bubbles are not places the ring goes today,
+so each icon needs a way in and a way back out, and neither may quietly become touch-only.
+
+### D78 — LOCKED 2026-09-06 (raised the same day) — One D-pad stop holds about half a screen
+
+A finished answer used to give one stop per paragraph, so a long reply was ten or more Down presses before the
+buttons under it. **Neighbouring short paragraphs now share a stop, up to about 900 characters** — roughly half
+a screen of the Deck's reading area.
+
+**Why half and not a full screen.** A full screen means each press replaces everything you were reading, with
+nothing carried over. Half leaves some of the previous section on screen so you keep your place.
+
+**What does not change.** A still-arriving answer is split by a different routine and is untouched; the finished
+answer is re-split once it is done, as now. Code blocks stay whole and stay in a stop of their own. A paragraph
+that is already half a screen long is left alone. No text is skipped: a press either moves the ring to a section
+already on screen or scrolls the panel, which is the behaviour that was already there.
