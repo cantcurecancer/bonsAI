@@ -96,11 +96,11 @@ on a Deck has them.
 
 **Bugs.**
 
-- ★★★ **A quick question in Speed mode pays for the meaning search it was meant to skip.** Found last
-  night on the Deck; the code never checked the mode before running the meaning search. Fixed on the
-  shared branch on 5 September by the bug-fixing session; the Deck check is owed.
-- ★★★ **The meaning search is about a fifth slower than when it shipped.** Same lane, time-boxed to one
-  look.
+- ★★★ **The meaning search is about a fifth slower than when it shipped, and it is not a one-time warm-up
+  cost.** Confirmed again on the Deck 6 September at 1.10, 1.23 and 1.19 seconds, on every one of three
+  Strategy questions, not just the first. The explanation offered on 5 September — only the first question
+  after a quiet spell pays to wake the search model, later ones nearly free, measured on the PC at 1.47
+  seconds then 0.05 — does not hold on the Deck. Cause still unmeasured.
 - ★★★★ **The shipping blend loses to its meaning half on blind questions.** Deferred by you until there is
   more data. The tool that sweeps the weights on the tuning set landed 6 September; the sweep itself has
   not been run yet.
@@ -115,7 +115,10 @@ on a Deck has them.
 - ★ Five older checks from the August retrieval rework — the corpus format gate, the relevance floor,
   follow-ups searching your own words, what Show details claims, and the Developer off switch. None has
   ever been run on the device. Worth one evening with pinned test chips, or worth closing.
-- ★★★ The recall-pass check. Its Strategy half passed; its Speed half is the first bug above.
+- ★★★ The recall-pass check's timing half. Confirmed on the Deck 6 September: Speed no longer pays for the meaning
+  search at all (closed), and the Strategy label is right, but the meaning search itself still runs 1.1 to 1.2
+  seconds on every question — the row wants the second and third at or under one second. That is the slowdown
+  bug above.
 - ★★★ One glossary word, tapped rather than reached with the D-pad.
 - ★★★ The download Cancel button, which cannot be checked at all: the download finishes in about a
   second, so there is no window to press it in.

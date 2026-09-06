@@ -435,10 +435,12 @@ for the Deck to be free). Anything new goes here, one line each, with what it de
   of the prompt is dropped without a word — the identity, the rules, and the cards. Asked about the Bone Hydra, the reply
   was vague general tactics, not the fifteen Hades cards. Even a plain Deck question in Strategy runs about 500 over. The
   warning that caught this only writes to the log. [Detail](roadmap-details.md#game-notes-are-attached-and-then-thrown-away).
-- ★★★ `[KB]` **The meaning search got about a fifth slower** — **OPEN, found 2026-09-05.** Three Strategy questions on the
-  same game took about 1.09 s each to embed, against the 0.79–0.90 s band recorded when the feature shipped. Same corpus,
-  same model, same device; every game question waits about a fifth of a second longer than it should. Cause unmeasured;
-  the bug session has it, time-boxed to one look. Evidence `runs/round34-drg-q*.json`.
+- ★★★ `[KB]` **The meaning search got about a fifth slower** — **OPEN, found 2026-09-05, still open 2026-09-06.** Three
+  Strategy questions took about 1.09 s each to embed against the 0.79–0.90 s band recorded when the feature shipped; a
+  repeat on the Deck 2026-09-06 read 1.10, 1.23 and 1.19 s. The earlier explanation — only the first question after a
+  quiet spell pays to wake the search model and the rest are nearly free, measured on the PC at 1.47 s then 0.05 s —
+  **does not hold on the Deck**: the third question here was no faster than the first. Cause still unmeasured. Evidence
+  `runs/round34-drg-q*.json`, `runs/plan46-R2-strategy-half.json`.
 - ★★★★ `[KB]` **What ships loses to its own meaning half on questions nobody tuned against** — **OPEN, decided 2026-09-05.**
   On the blind questions the meaning search alone puts the right card first 63% of the time; the shipping blend 54%. Agreed:
   build the weight sweep, run it on the tuning questions only, confirm once on the blind set if it agrees, then change the
@@ -450,14 +452,12 @@ for the Deck to be free). Anything new goes here, one line each, with what it de
   format gate, the relevance floor, follow-ups searching the user's words, transparency matching what the model got, and
   the Developer kill-switch. Either one evening with pinned test chips, or close them as superseded by the rows that
   passed this week. Rows **KB-VARIANT-01**, **KB-FLOOR-01**, **KB-FOLLOWUP-01**, **KB-TRANSPARENCY-01**, **KB-KILLSWITCH-01**.
-- ★★★ `[KB]` **A quick question in Speed mode no longer pays for the slow search** — **VERIFY.** Fixed on the shared branch
-  2026-09-05 (`c72310a`): the meaning search now checks the mode first. Found the night before: two of three Speed questions
-  spent about a second embedding when the row requires none. Owed: the Speed half of **KB-RECALL-01**, with a covered game
-  running, reading *Keyword search* and no embed time.
-- ★★★ `[KB]` **The meaning search searches on its own instead of re-ordering keyword hits** — **VERIFY, Strategy half
-  passed 2026-09-05.** In Strategy all three questions read *Keyword + meaning*, which is what the row asks for. The Speed
-  half is the entry above; the timing over band is the slowdown bug. Row **KB-RECALL-01** stays owed until both close;
-  **KB-RECALL-02** verified at the desk.
+- ★★★ `[KB]` **The meaning search searches on its own instead of re-ordering keyword hits** — **VERIFY, the label half now
+  passes in both modes; the timing half does not.** Confirmed again on the Deck 2026-09-06: three Strategy questions all
+  read *Keyword + meaning*, and the same three in Speed read *Keyword search* with no embed time — the Speed half is
+  closed, see Done. What still fails is the clock: the meaning search took 1.10, 1.23 and 1.19 seconds on that run, every
+  question, not just the first, where the row wants the second and third at or under one second. Row **KB-RECALL-01**
+  stays owed for the timing only; **KB-RECALL-02** verified at the desk.
 - ★★★ `[KB]` **DRG Survivor glossary terms** — **VERIFY, one touch tap owed.** Shipped 2026-08-28 and walked on device:
   underline, popup, D-pad reachability, B, one-press Up. Rows **DRG-GLOSSARY-01…04**.
   [Detail](archive/roadmap-completed.md#moved-from-the-roadmap-2026-09-02).
@@ -554,6 +554,18 @@ for the Deck to be free). Anything new goes here, one line each, with what it de
 
 Everything shipped since v0.4.9 (2026-07-08), one line each, newest first. Detail: [CHANGELOG.md](../CHANGELOG.md),
 [archive/roadmap-completed.md](archive/roadmap-completed.md), [archive/roadmap-bugs-fixed.md](archive/roadmap-bugs-fixed.md).
+
+**Verified on the Deck 2026-09-06 (knowledge base, wave one):**
+- ★★★ `[KB]` **A quick question in Speed mode no longer pays for the slow search** — confirmed on the Deck 2026-09-06 with
+  Deep Rock Galactic: Survivor running, on a fresh build. All three of the row's sentences were asked in Speed: two read
+  *Keyword search*, the third read *Knowledge base (skipped)* because the word search found nothing on its own — none of
+  them spent any time on the meaning search. Fixed on the shared branch 2026-09-05 (`c72310a`). Row **KB-RECALL-01**'s
+  Speed half closes; the timing half of its Strategy check is still open, in the knowledge base section. Evidence
+  `runs/plan46-R2-speed-half.json`.
+
+**Checked on the Deck 2026-09-06 and found fine:** a suggestion chip that looked like scrambled characters was the
+reveal animation caught mid-frame, and a slow-reply notice that looked like it was missing words reads correctly in
+full — *"69 seconds, over 60: prefer GPU for Ollama, not CPU."*
 
 **Verified on the Deck 2026-09-06 (reply block, second pass):**
 - ★ `[reply]` **Retry works on a reply that came back after a restart** — reopening the plugin after it restarts shows your
