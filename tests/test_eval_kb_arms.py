@@ -14,6 +14,7 @@ import io
 import json
 import re
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 from unittest import mock
@@ -220,6 +221,10 @@ class EvalArmsTests(unittest.TestCase):
         rule worth keeping is the one underneath it: **a label must name a real card**. A
         label written from imagination turns the eval into a measure of our expectations
         rather than of retrieval, which is the same self-referential trap as R1.
+
+        A row's `expect_section` may now be a single card name or a list of names (a second
+        right answer) -- this walks both shapes so a phantom name hiding inside a list cannot
+        slip past the check the single-name case already had.
         """
         data = json.loads(
             (REPO_ROOT / "tests" / "fixtures" / "kb_eval_v2.json").read_text(encoding="utf-8")
@@ -228,11 +233,15 @@ class EvalArmsTests(unittest.TestCase):
             (REPO_ROOT / "data" / "kb" / "strategy_seed.json").read_text(encoding="utf-8")
         )
         card_names = {s["name"] for s in seed["sections"]}
-        phantom = [
-            (r["id"], r["expect_section"])
-            for r in data["queries"]
-            if r.get("expect_section") and r["expect_section"] not in card_names
-        ]
+        phantom = []
+        for row in data["queries"]:
+            raw = row.get("expect_section")
+            if not raw:
+                continue
+            names = raw if isinstance(raw, list) else [raw]
+            for name in names:
+                if name and name not in card_names:
+                    phantom.append((row["id"], name))
         self.assertEqual(phantom, [], f"labels naming no card in the seed: {phantom}")
 
     def test_fixture_status_tracks_whether_every_title_is_carded(self):
@@ -534,6 +543,65 @@ class EvalArmsTests(unittest.TestCase):
         )
         self.assertEqual(table["rrf"][1]["top_names"], ["Tip X", "Tip Y"])
         self.assertEqual(table["keyword"][1]["top_names"], [])
+
+    # --- a second right answer ----------------------------------------------------------------
+
+    def test_list_expect_section_hits_on_its_second_name(self):
+        mod = self.mod
+        fixture = {
+            "queries": [
+                {
+                    "id": "X-2",
+                    "domain": "strategy",
+                    "query": "how do I open the vault door",
+                    "expect_section": ["Card A", "Card B"],
+                    "note": "two cards both answer this question fairly",
+                }
+            ]
+        }
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            path = Path(tmp_dir) / "fixture.json"
+            path.write_text(json.dumps(fixture), encoding="utf-8")
+            cases = mod._load_fixture(path, "test-suite")
+
+        self.assertEqual(len(cases), 1)
+        self.assertEqual(cases[0].expect_section, ["Card A", "Card B"])
+        self.assertTrue(mod._case_is_labeled(cases[0]))
+
+        card = mod.KnowledgeCard(
+            section_id=1,
+            game_id=1,
+            game_title="G",
+            section_type="section",
+            name="Card B",
+            card="text",
+            source_url="",
+            source_license="x",
+            source_version=None,
+            crawled_at=None,
+            trust_tier="fallback",
+        )
+        self.assertTrue(mod._card_matches(cases[0], card))
+
+    def test_list_expect_section_without_note_fails_to_load(self):
+        mod = self.mod
+        fixture = {
+            "queries": [
+                {
+                    "id": "X-3",
+                    "domain": "strategy",
+                    "query": "how do I open the vault door",
+                    "expect_section": ["Card A", "Card B"],
+                    "note": "",
+                }
+            ]
+        }
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            path = Path(tmp_dir) / "fixture.json"
+            path.write_text(json.dumps(fixture), encoding="utf-8")
+            with self.assertRaises(ValueError) as ctx:
+                mod._load_fixture(path, "test-suite")
+        self.assertIn("X-3", str(ctx.exception))
 
 
 if __name__ == "__main__":

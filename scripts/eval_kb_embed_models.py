@@ -157,7 +157,9 @@ class QueryCase:
     app_id: str
     shortcut: str
     expect_topic: str
-    expect_section: str
+    # A single card name, or a list of names for a question with more than one right answer.
+    # A list row is only valid with a non-empty fixture `note` -- see `_load_fixture`.
+    expect_section: str | list[str]
     suite: str
     split: Split = "tune"
     # Computed from the live gate, never read from the fixture. A baked boolean goes stale the
@@ -224,6 +226,18 @@ def _load_fixture(path: Path, suite: str) -> list[QueryCase]:
         gate_ok, gate_domain = _gate_verdict(
             ask_mode=ask_mode, question=query, app_id=app_id, app_name=shortcut
         )
+        raw_expect_section = row.get("expect_section") or ""
+        expect_section: str | list[str]
+        if isinstance(raw_expect_section, list):
+            # A second right answer is a deliberate call, not a default -- the fixture must
+            # say why in `note`, or the row fails to load rather than shipping unexplained.
+            if not str(row.get("note") or "").strip():
+                raise ValueError(
+                    f"{row.get('id')}: a list expect_section requires a non-empty note"
+                )
+            expect_section = [str(name) for name in raw_expect_section]
+        else:
+            expect_section = str(raw_expect_section)
         out.append(
             QueryCase(
                 case_id=str(row["id"]),
@@ -233,7 +247,7 @@ def _load_fixture(path: Path, suite: str) -> list[QueryCase]:
                 app_id=app_id,
                 shortcut=shortcut,
                 expect_topic=str(row.get("expect_topic") or ""),
-                expect_section=str(row.get("expect_section") or ""),
+                expect_section=expect_section,
                 suite=suite,
                 split=split,
                 gate_reachable=gate_ok and gate_domain == row["domain"],
@@ -364,7 +378,8 @@ def _embed_one(ollama_base: str, model: str, text: str, *, timeout_s: float = 30
 def _card_matches(case: QueryCase, card: KnowledgeCard) -> bool:
     if case.domain == "compat":
         return case.expect_topic.lower() == card.name.lower()
-    return case.expect_section.lower() == card.name.lower()
+    names = case.expect_section if isinstance(case.expect_section, list) else [case.expect_section]
+    return any(name.lower() == card.name.lower() for name in names)
 
 
 def _eval_top_k(ask_mode: str) -> int:
@@ -1056,10 +1071,15 @@ def _arms_table(results: dict[str, list[QueryResult]]) -> dict[str, Any]:
 
 
 def _case_is_labeled(case: QueryCase) -> bool:
-    """Blank expect_* rows are deliberate corpus gaps and always miss; exclude them from ship-gate math."""
+    """Blank expect_* rows are deliberate corpus gaps and always miss; exclude them from ship-gate math.
+
+    A list `expect_section` (a second right answer) counts as labeled when any name in it is
+    non-blank -- the same rule a single string already followed, just applied per name.
+    """
     if case.domain == "compat":
         return bool(case.expect_topic.strip())
-    return bool(case.expect_section.strip())
+    names = case.expect_section if isinstance(case.expect_section, list) else [case.expect_section]
+    return any(name.strip() for name in names)
 
 
 _ARM_LABELS: dict[str, str] = {
