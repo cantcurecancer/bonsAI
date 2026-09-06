@@ -46,6 +46,12 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "py_modules"))
 
+# Neither module touches `decky` at import time (confirmed 2026-09-06), so these are safe to
+# import eagerly, unlike `main` / `game_ai_request` / `ollama_prompts` below which are deferred
+# until after install_fake_decky() runs.
+from backend.services.ai_character_service import VALID_PRESET_IDS  # noqa: E402
+from backend.services.ollama_service import estimate_prompt_tokens  # noqa: E402
+
 DEFAULT_OLLAMA = "http://127.0.0.1:11434"
 DEFAULT_MODEL = "gemma4:e2b-it-qat"  # what the Deck loads (measured 2026-09-01)
 DEFAULT_CORPUS = ROOT / "build" / "knowledge-base"
@@ -57,6 +63,21 @@ JSON_DIR = ROOT / "build" / "kb-answer-eval"
 SPOILER_FENCE_RE = re.compile(r"```\s*bonsai-spoiler", re.I)
 PAYLOAD_RE = re.compile(r"payload_bytes=(\d+)")
 PROMPT_EVAL_RE = re.compile(r"prompt_eval=(\d+)")
+# ``ollama_service.prompt_window_warning``'s own line: "...prompt ~2800 tokens + num_predict...".
+_WINDOW_WARNING_TOKENS_RE = re.compile(r"prompt ~(\d+) tokens")
+
+
+def _extract_window_warning(log_lines: list[str]) -> tuple[bool, Optional[int]]:
+    """True plus the warning's own prompt-token estimate when D46's ``prompt_window_warning``
+    fired somewhere in ``log_lines``; else False and None so the caller falls back to
+    ``estimate_prompt_tokens`` on the captured system prompt."""
+    for line in log_lines:
+        if "drops its start silently" not in line:
+            continue
+        m = _WINDOW_WARNING_TOKENS_RE.search(line)
+        if m:
+            return True, int(m.group(1))
+    return False, None
 
 
 # --- environment: the plugin outside Decky ----------------------------------------------------
@@ -130,21 +151,42 @@ def install_fake_decky(work_dir: Path) -> tuple[types.ModuleType, _ListHandler]:
     return decky, capture
 
 
-def write_harness_settings(settings_dir: Path, *, corpus_dir: Path, corpus_version: str, model: str) -> Path:
-    """The settings.json the plugin will load. Everything else takes the fresh-install default."""
+def write_harness_settings(
+    settings_dir: Path,
+    *,
+    corpus_dir: Path,
+    corpus_version: str,
+    model: str,
+    voice_preset_id: str = "",
+    think_effort: str = "off",
+) -> Path:
+    """The settings.json the plugin will load. Everything else takes the fresh-install default.
+
+    ``think_effort`` matches the fresh-install default ("off") unless a device-shaped run asks
+    for more — the maintainer's own Deck runs "medium". ``voice_preset_id`` turns on the
+    character voice for a device-shaped run; an id outside ``VALID_PRESET_IDS`` is a typo, not a
+    run worth measuring, so it raises rather than silently running voice-off.
+    """
+    if voice_preset_id and voice_preset_id not in VALID_PRESET_IDS:
+        raise ValueError(
+            f"unknown --voice preset id {voice_preset_id!r}; valid ids: {', '.join(sorted(VALID_PRESET_IDS))}"
+        )
     payload = {
         "use_local_knowledge_base": True,
         "rag_corpus_path": str(corpus_dir),
         "rag_corpus_version": corpus_version,
         "text_model_routing_order": [model],
-        "ai_character_enabled": False,
+        "ai_character_enabled": bool(voice_preset_id),
         "show_developer_tab": False,
         "input_sanitizer_user_disabled": False,
         "capabilities": {},
         # Gemma is open-weight, not OSI open source; the default tier (open_source_only) would
         # drop it and the routing fallback then picks whatever is installed first.
         "model_policy_tier": "open_weight",
+        "ask_think_effort": think_effort,
     }
+    if voice_preset_id:
+        payload["ai_character_preset_id"] = voice_preset_id
     path = settings_dir / "settings.json"
     path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
     return path
@@ -209,6 +251,30 @@ VARIANTS: dict[str, PromptVariant] = {
     "drop_fence_placement": _variant_drop_fence_placement,
     "fence_subtractive": _variant_fence_subtractive,
 }
+
+
+def _build_prompt_wrapper(
+    real_build: Callable[..., str],
+    *,
+    kb_placement: str,
+    variant_fn: Optional[PromptVariant],
+) -> Callable[..., str]:
+    """Wrap ``build_system_prompt`` the same way ``--variant`` already does: swap the module-level
+    name in ``main`` for a function that calls through to the real one. ``--kb-placement`` adds a
+    ``knowledge_block_placement`` kwarg (only when it differs from the function's own "early"
+    default, so a real_build that predates the parameter still works); ``--variant`` still runs
+    last, as a text substitution on the finished prompt.
+    """
+
+    def _wrapped(*a: Any, **kw: Any) -> str:
+        if kb_placement != "early":
+            kw.setdefault("knowledge_block_placement", kb_placement)
+        out = real_build(*a, **kw)
+        if variant_fn is not None:
+            out = variant_fn(out)
+        return out
+
+    return _wrapped
 
 
 # --- fixture ---------------------------------------------------------------------------------
@@ -284,6 +350,8 @@ class SampleResult:
     payload_bytes: Optional[int]
     prompt_eval_tokens: Optional[int]
     system_prompt_chars: Optional[int]
+    window_warning: bool = False
+    prompt_tokens_est: Optional[int] = None
     error: str = ""
     system_prompt: str = field(default="", repr=False)
 
@@ -388,6 +456,7 @@ async def run_sample(
         m = PROMPT_EVAL_RE.search(line)
         if m:
             prompt_eval = int(m.group(1))
+    window_warning, warning_prompt_tokens = _extract_window_warning(capture.records[log_start:])
 
     system_prompt = ""
     for snap in snapshots:
@@ -413,6 +482,14 @@ async def run_sample(
         if isinstance(diag, dict) and diag.get("model_succeeded"):
             model = str(diag.get("model_succeeded"))
 
+    prompt_tokens_est = warning_prompt_tokens
+    if prompt_tokens_est is None and system_prompt:
+        # No warning fired: estimate from the same messages shape ollama_service scores, so the
+        # column still means something on a run that comfortably fits the window.
+        prompt_tokens_est = estimate_prompt_tokens(
+            [{"role": "system", "content": system_prompt}, {"role": "user", "content": case.question}]
+        )
+
     return SampleResult(
         case_id=case.id,
         sample=sample_idx,
@@ -435,6 +512,8 @@ async def run_sample(
         payload_bytes=payload_bytes,
         prompt_eval_tokens=prompt_eval,
         system_prompt_chars=len(system_prompt) if system_prompt else None,
+        window_warning=window_warning,
+        prompt_tokens_est=prompt_tokens_est,
         error=error,
         system_prompt=system_prompt,
     )
@@ -518,6 +597,30 @@ def _mean(values: list[float]) -> Optional[float]:
     return round(sum(vals) / len(vals), 1) if vals else None
 
 
+def mean_prompt_chars(samples: list[SampleResult]) -> Optional[float]:
+    """Mean length of the built system prompt, over samples that captured one.
+
+    Only sample 1 of each case keeps the full prompt text (``run_sample`` reads it off the
+    transparency snapshot), so this is a mean over one sample per case, not over every sample.
+    It is the cheap stand-in for token count while a prompt change is still being sized: a
+    slimming that drops instructions should show up here before it shows up in the answer
+    quality checks.
+    """
+    return _mean([float(r.system_prompt_chars) for r in samples if r.system_prompt_chars])
+
+
+def window_warning_count(samples: list[SampleResult]) -> tuple[int, int]:
+    """(samples that logged D46's prompt-window warning, samples run) — every sample, not
+    deduped to one per case, so this is the number a device-shaped run needs to read as zero."""
+    return sum(1 for r in samples if r.window_warning), len(samples)
+
+
+def mean_prompt_tokens(samples: list[SampleResult]) -> Optional[float]:
+    """Mean estimated prompt size — the warning's own estimate where it fired, else the harness's
+    own ``estimate_prompt_tokens`` reading of the captured system prompt."""
+    return _mean([float(r.prompt_tokens_est) for r in samples if r.prompt_tokens_est is not None])
+
+
 # --- report ----------------------------------------------------------------------------------
 
 def _flag(ok: Optional[bool]) -> str:
@@ -531,6 +634,11 @@ def _case_cell(rs: list[SampleResult], attr: str) -> str:
     hit = sum(1 for v in vals if v)
     of = sum(1 for v in vals if v is not None)
     return f"{hit}/{of}"
+
+
+def _case_mean(rs: list[SampleResult], attr: str) -> str:
+    m = _mean([float(v) for v in (getattr(r, attr) for r in rs) if v is not None])
+    return "—" if m is None else str(m)
 
 
 def write_report(
@@ -557,7 +665,11 @@ def write_report(
     lines.append("")
     lines.append("| Setting | Value |")
     lines.append("|---|---|")
-    for k in ("model", "ollama", "corpus_version", "corpus_sections", "prompt_variant", "samples_per_case", "cases", "run_minutes"):
+    for k in (
+        "model", "ollama", "corpus_version", "corpus_sections", "prompt_variant",
+        "kb_placement", "voice_preset", "think_effort",
+        "samples_per_case", "cases", "run_minutes",
+    ):
         lines.append(f"| {k} | `{meta.get(k)}` |")
     lines.append("")
     lines.append("## Summary")
@@ -578,12 +690,19 @@ def write_report(
     elapsed = _mean([r.elapsed_s for r in samples if r.success])
     payloads = _mean([float(r.payload_bytes) for r in samples if r.payload_bytes])
     pev = _mean([float(r.prompt_eval_tokens) for r in samples if r.prompt_eval_tokens])
+    prompt_chars = mean_prompt_chars(samples)
+    warned, warn_of = window_warning_count(samples)
+    prompt_tokens_mean = mean_prompt_tokens(samples)
     lines.append(f"Mean seconds per answer: **{elapsed}**. Mean request payload: **{payloads}** bytes. Mean prompt tokens (Ollama prompt_eval): **{pev}**.")
+    lines.append(f"Mean system prompt length: **{prompt_chars}** characters.")
+    lines.append(
+        f"D46 window warnings: **{warned}/{warn_of}** samples. Mean estimated prompt tokens: **{prompt_tokens_mean}**."
+    )
     lines.append("")
     lines.append("## Per case")
     lines.append("")
-    lines.append("| Case | Mode | Card attached | Facts | No contradiction | Fence ok | Menu ok | s/answer |")
-    lines.append("|---|---|---|---|---|---|---|---|")
+    lines.append("| Case | Mode | Card attached | Facts | No contradiction | Fence ok | Menu ok | Window warn | Prompt tokens | s/answer |")
+    lines.append("|---|---|---|---|---|---|---|---|---|---|")
     for c in cases:
         rs = by_case.get(c.id) or []
         if not rs:
@@ -591,7 +710,8 @@ def write_report(
         card = _case_cell(rs, "card_ok") if c.expect_card else (_case_cell(rs, "attached_ok") if c.expect_attached is not None else "—")
         lines.append(
             f"| `{c.id}` | {c.ask_mode} | {card} | {_case_cell(rs, 'mention_ok')} | {_case_cell(rs, 'notsay_ok')} | "
-            f"{_case_cell(rs, 'fence_ok')} | {_case_cell(rs, 'branches_ok')} | {_mean([r.elapsed_s for r in rs])} |"
+            f"{_case_cell(rs, 'fence_ok')} | {_case_cell(rs, 'branches_ok')} | {_case_cell(rs, 'window_warning')} | "
+            f"{_case_mean(rs, 'prompt_tokens_est')} | {_mean([r.elapsed_s for r in rs])} |"
         )
     lines.append("")
     lines.append("## Failures worth reading")
@@ -658,6 +778,23 @@ def main() -> int:
     parser.add_argument("--samples", type=int, default=3, help="answers per case")
     parser.add_argument("--only", default="", help="comma-separated case ids")
     parser.add_argument("--variant", default="baseline", choices=sorted(VARIANTS), help="prompt variant hook")
+    parser.add_argument(
+        "--kb-placement",
+        default="early",
+        choices=("early", "late"),
+        help="where the knowledge-base block splices into the system prompt (D46 follow-up)",
+    )
+    parser.add_argument(
+        "--voice",
+        default="",
+        help="AI character preset id — turns on the character voice for a device-shaped run",
+    )
+    parser.add_argument(
+        "--think",
+        default="off",
+        choices=("off", "low", "medium", "high"),
+        help="ask_think_effort — off is the fresh-install default; the maintainer's Deck runs medium",
+    )
     parser.add_argument("--label", default="", help="suffix for the report filename, e.g. after-w4")
     parser.add_argument("--write-report", action="store_true", default=True)
     parser.add_argument("--no-write-report", action="store_false", dest="write_report")
@@ -679,7 +816,14 @@ def main() -> int:
 
     work_dir = args.work_dir.resolve()
     _decky, capture = install_fake_decky(work_dir)
-    write_harness_settings(work_dir / "settings", corpus_dir=corpus_dir, corpus_version=corpus_version, model=args.model)
+    write_harness_settings(
+        work_dir / "settings",
+        corpus_dir=corpus_dir,
+        corpus_version=corpus_version,
+        model=args.model,
+        voice_preset_id=args.voice,
+        think_effort=args.think,
+    )
 
     # Imported only now: main.py reads `decky` at import time.
     import main as plugin_main  # noqa: E402
@@ -698,14 +842,13 @@ def main() -> int:
 
     gar.retrieve_knowledge_context = _recording_retrieve
 
-    variant = VARIANTS[args.variant]
-    if args.variant != "baseline":
-        real_build = plugin_main.build_system_prompt
-
-        def _variant_build(*a: Any, **kw: Any) -> str:
-            return variant(real_build(*a, **kw))
-
-        plugin_main.build_system_prompt = _variant_build
+    variant_fn = VARIANTS[args.variant] if args.variant != "baseline" else None
+    if args.kb_placement != "early" or variant_fn is not None:
+        plugin_main.build_system_prompt = _build_prompt_wrapper(
+            plugin_main.build_system_prompt,
+            kb_placement=args.kb_placement,
+            variant_fn=variant_fn,
+        )
 
     only = {s.strip() for s in args.only.split(",") if s.strip()} or None
     cases = load_fixture(args.fixture, only)
@@ -722,7 +865,11 @@ def main() -> int:
         except sqlite3.Error:
             corpus_sections = "?"
 
-    print(f"corpus {corpus_version} ({corpus_sections} sections) · model {args.model} · variant {args.variant} · {len(cases)} cases × {args.samples}")
+    print(
+        f"corpus {corpus_version} ({corpus_sections} sections) · model {args.model} · variant {args.variant} · "
+        f"kb-placement {args.kb_placement} · voice {args.voice or 'off'} · think {args.think} · "
+        f"{len(cases)} cases × {args.samples}"
+    )
     t_run = time.perf_counter()
     samples: list[SampleResult] = []
     for ci, case in enumerate(cases, 1):
@@ -750,11 +897,15 @@ def main() -> int:
     run_minutes = round((time.perf_counter() - t_run) / 60.0, 1)
 
     summary = summarize(cases, samples)
+    prompt_chars = mean_prompt_chars(samples)
+    warned, warn_of = window_warning_count(samples)
+    prompt_tokens_mean = mean_prompt_tokens(samples)
     print()
     print(f"facts {summary.facts.pct()} · no-contradiction {summary.contradictions_clean.pct()} · "
           f"fence-not-misfired {summary.fence_no_misfire.pct()} · fence-when-due {summary.fence_present_when_due.pct()} · "
           f"menu-when-due {summary.branches_when_due.pct()} · card-attached {summary.card_attached.pct()} · "
-          f"cases-all-clean {summary.cases_all_pass.pct()} · {run_minutes} min")
+          f"cases-all-clean {summary.cases_all_pass.pct()} · prompt-chars {prompt_chars} · "
+          f"window-warnings {warned}/{warn_of} · prompt-tokens {prompt_tokens_mean} · {run_minutes} min")
 
     if args.write_report:
         stamp = date.today().isoformat()
@@ -767,9 +918,15 @@ def main() -> int:
             "corpus_version": corpus_version,
             "corpus_sections": corpus_sections,
             "prompt_variant": args.variant,
+            "kb_placement": args.kb_placement,
+            "voice_preset": args.voice,
+            "think_effort": args.think,
             "samples_per_case": args.samples,
             "cases": len(cases),
             "run_minutes": run_minutes,
+            "prompt_chars_mean": prompt_chars,
+            "window_warnings": f"{warned}/{warn_of}",
+            "prompt_tokens_mean": prompt_tokens_mean,
         }
         report_path = REPORT_DIR / f"kb-answer-eval-{stamp}{suffix}.md"
         write_report(report_path, cases=cases, samples=samples, summary=summary, meta=meta)

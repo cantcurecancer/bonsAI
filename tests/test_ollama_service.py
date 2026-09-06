@@ -838,6 +838,54 @@ class OllamaServiceTests(unittest.TestCase):
         self.assertLess(i_dyn, i_gp)
         self.assertLess(i_gp, i_hw)
 
+    def test_build_system_prompt_screenshot_rules_absent_without_an_image(self):
+        """The three screenshot-only rule lines cost tokens on every Ask, image or not.
+        They should only join the prompt when there is something to look at."""
+
+        def lookup_app_name(_app_id: str) -> str:
+            return ""
+
+        def lookup_vdf(_path: str) -> dict:
+            return {}
+
+        prompt = build_system_prompt(
+            question="How do I fix stutter?",
+            app_id="123",
+            app_name="Game Name",
+            normalized_attachments=[],
+            prepared_images=[],
+            lookup_app_name=lookup_app_name,
+            lookup_screenshot_vdf_metadata=lookup_vdf,
+            ask_mode="speed",
+        )
+        self.assertIn("No visual context attachments provided.", prompt)
+        self.assertNotIn("prioritize identifying gameplay/world content", prompt)
+        self.assertNotIn("Use recognizable in-game HUD motifs", prompt)
+        self.assertNotIn("Minimize Steam overlay/plugin UI mentions", prompt)
+        self.assertNotIn("prioritize game-specific visual cues over Steam UI", prompt)
+
+    def test_build_system_prompt_screenshot_rules_present_with_an_image(self):
+        def lookup_app_name(_app_id: str) -> str:
+            return ""
+
+        def lookup_vdf(_path: str) -> dict:
+            return {}
+
+        prompt = build_system_prompt(
+            question="How do I fix stutter?",
+            app_id="123",
+            app_name="Game Name",
+            normalized_attachments=[],
+            prepared_images=[{"image_b64": "abc"}],
+            lookup_app_name=lookup_app_name,
+            lookup_screenshot_vdf_metadata=lookup_vdf,
+            ask_mode="speed",
+        )
+        self.assertIn("Visual context attachments provided: 1.", prompt)
+        self.assertIn("prioritize identifying gameplay/world content", prompt)
+        self.assertIn("Use recognizable in-game HUD motifs", prompt)
+        self.assertIn("RULE: Ship of Harkinian (SoH)", prompt)
+
     def test_build_system_prompt_speed_includes_qam_sweet_spot_line(self):
         """Efficiency / sweet spot questions get QAM Performance lever instructions."""
 
@@ -1204,6 +1252,67 @@ class OllamaServiceTests(unittest.TestCase):
         self.assertLess(i_id, i_mark)
         self.assertLess(i_mark, i_hw)
 
+    def _kb_prompt_with_mode_inject(self, *, knowledge_block_placement: str = "early") -> str:
+        """Speed-mode prompt with an attached card and a real mode inject + the hardware
+        appendix, so early vs late placement can be told apart by where the KB block lands."""
+
+        def lookup_app_name(_app_id: str) -> str:
+            return ""
+
+        def lookup_vdf(_path: str) -> dict:
+            return {}
+
+        return build_system_prompt(
+            question="Explain the model policy tiers",
+            app_id="2321470",
+            app_name="",
+            normalized_attachments=[],
+            prepared_images=[],
+            lookup_app_name=lookup_app_name,
+            lookup_screenshot_vdf_metadata=lookup_vdf,
+            ask_mode="speed",
+            early_context_suffix="--- Local knowledge base ---\nFocus the weak points.",
+            knowledge_block_placement=knowledge_block_placement,
+        )
+
+    def test_build_system_prompt_knowledge_block_placement_defaults_early(self):
+        """D46 follow-up: today's shipped order, still the default — cards splice in right
+        after identity, ahead of every mode inject and the hardware appendix."""
+        prompt = self._kb_prompt_with_mode_inject()
+        i_kb = prompt.index("KNOWLEDGE BASE (offline corpus)")
+        i_mode = prompt.index("MODEL POLICY TIERS (bonsAI)")
+        i_hw = prompt.index("Hardware appendix (apply only when relevant)")
+        self.assertLess(i_kb, i_mode)
+        self.assertLess(i_mode, i_hw)
+
+    def test_build_system_prompt_knowledge_block_placement_late_moves_after_mode_inject(self):
+        """Late placement puts the cards as close to the question as the system prompt allows —
+        after the mode injects, still ahead of the hardware appendix tail."""
+        prompt = self._kb_prompt_with_mode_inject(knowledge_block_placement="late")
+        i_kb = prompt.index("KNOWLEDGE BASE (offline corpus)")
+        i_mode = prompt.index("MODEL POLICY TIERS (bonsAI)")
+        i_hw = prompt.index("Hardware appendix (apply only when relevant)")
+        self.assertLess(i_mode, i_kb)
+        self.assertLess(i_kb, i_hw)
+
+    def test_build_system_prompt_knowledge_block_placement_late_strategy_mode(self):
+        """Same order rule on the strategy branch, which builds its tail differently."""
+        prompt = build_system_prompt(
+            question="Where do I go next?",
+            app_id="2321470",
+            app_name="",
+            normalized_attachments=[],
+            prepared_images=[],
+            lookup_app_name=lambda _app_id: "",
+            lookup_screenshot_vdf_metadata=lambda _path: {},
+            ask_mode="strategy",
+            early_context_suffix="--- Local knowledge base ---\nFocus the weak points.",
+            knowledge_block_placement="late",
+        )
+        i_kb = prompt.index("KNOWLEDGE BASE (offline corpus)")
+        i_mode = prompt.index("STRATEGY GUIDE MODE (active")
+        self.assertLess(i_mode, i_kb)
+
     def test_build_system_prompt_includes_model_policy_tiers_explainer(self):
         """Chip / paraphrases about Model policy get tier + FOSS vs open-weight vs proprietary guidance."""
 
@@ -1328,6 +1437,47 @@ class OllamaServiceTests(unittest.TestCase):
         prompt = self._strategy_prompt_with_kb("413150")
         self.assertIn("Put spoilery walkthrough detail inside", prompt)
 
+    def test_build_system_prompt_kb_clause_drops_citation_fence_instruction(self):
+        """The citation fence was obeyed once in 89 recorded asks and nothing reads it — gone.
+
+        The grounding instruction itself stays; only the fence-wrapping ask is removed."""
+        prompt = self._strategy_prompt_with_kb("2321470")
+        self.assertIn(
+            "Ground answers in the attached strategy/compat cards when relevant.", prompt
+        )
+        self.assertNotIn("bonsai-cite", prompt)
+        self.assertNotIn("trust tier", prompt)
+
+    def test_build_system_prompt_thin_context_drops_citation_fence_offer(self):
+        lookup_app_name, lookup_vdf = self._verbosity_lookup_helpers()
+        prompt = build_system_prompt(
+            question="Anything I should know?",
+            app_id="",
+            app_name="",
+            normalized_attachments=[],
+            prepared_images=[],
+            lookup_app_name=lookup_app_name,
+            lookup_screenshot_vdf_metadata=lookup_vdf,
+            ask_mode="speed",
+        )
+        self.assertIn("LIMITED CONTEXT", prompt)
+        self.assertNotIn("bonsai-cite", prompt)
+
+    def test_build_system_prompt_reply_verbosity_fence_list_drops_citation_fence(self):
+        lookup_app_name, lookup_vdf = self._verbosity_lookup_helpers()
+        prompt = build_system_prompt(
+            question="Quick tip?",
+            app_id="",
+            app_name="",
+            normalized_attachments=[],
+            prepared_images=[],
+            lookup_app_name=lookup_app_name,
+            lookup_screenshot_vdf_metadata=lookup_vdf,
+            reply_verbosity="caveman",
+        )
+        self.assertIn("REPLY VERBOSITY", prompt)
+        self.assertNotIn("bonsai-cite", prompt)
+
     def test_prompt_window_warning_fires_only_when_prompt_plus_reply_would_not_fit(self):
         """D46: the Deck runs a 4,096-token window and nothing sets num_ctx; an overlong prompt
         loses its start silently. The POST site now logs a warning instead of saying nothing."""
@@ -1353,6 +1503,131 @@ class OllamaServiceTests(unittest.TestCase):
         self.assertIsNone(prompt_window_warning(edge, 500))
         self.assertIsNotNone(prompt_window_warning(edge, 800))
         self.assertEqual(ASSUMED_CONTEXT_WINDOW_TOKENS, 4096)
+
+    def test_clamp_num_predict_to_window_leaves_a_fitting_prompt_untouched(self):
+        """D46 follow-up: a prompt that already fits gets its num_predict back unchanged."""
+        from backend.services.ollama_service import clamp_num_predict_to_window
+
+        messages = [{"role": "system", "content": "x" * 3500}, {"role": "user", "content": "q"}]
+        self.assertEqual(clamp_num_predict_to_window(messages, 800, 0), 800)
+        self.assertEqual(clamp_num_predict_to_window(messages, 1600, 512), 1600 + 512)
+
+    def test_clamp_num_predict_to_window_shrinks_visible_keeps_thinking_whole(self):
+        """A ~2,800-token Strategy prompt with thinking medium (visible 1600 + thinking 512 =
+        2112) overflows the 4,096 window by 816. The clamp must take that 816 out of the visible
+        share only — thinking stays the full 512 the setting promised."""
+        from backend.services.ollama_service import clamp_num_predict_to_window
+
+        messages = [{"role": "system", "content": "x" * int(2800 * 3.5)}]
+        clamped = clamp_num_predict_to_window(messages, 1600, 512)
+        self.assertEqual(clamped, 784 + 512)  # room = 4096 - 2800 - 512
+
+    def test_clamp_num_predict_to_window_never_goes_below_the_visible_floor(self):
+        """A prompt so large even the 600-token visible floor cannot make it fit still gets the
+        floor — a short reply beats no reply, and the caller's warning still fires."""
+        from backend.services.ollama_service import clamp_num_predict_to_window
+
+        messages = [{"role": "system", "content": "x" * int(4000 * 3.5)}]
+        clamped = clamp_num_predict_to_window(messages, 1600, 512)
+        self.assertEqual(clamped, 600 + 512)
+
+    @patch("backend.services.ollama_service.urllib.request.urlopen")
+    def test_post_ollama_chat_fitting_prompt_sends_unclamped_num_predict(
+        self, mock_urlopen: MagicMock
+    ) -> None:
+        mock_urlopen.return_value = self._ndjson_response(
+            ['{"message":{"role":"assistant","content":"ok"},"done":true}']
+        )
+        logger = MagicMock()
+        post_ollama_chat(
+            "http://127.0.0.1:11434/api/chat",
+            "vision:test",
+            [{"role": "user", "content": "short question"}],
+            60,
+            [],
+            [],
+            [],
+            [],
+            logger,
+            "speed",
+            "5m",
+            cancel_requested=lambda: False,
+        )
+        body = json.loads(mock_urlopen.call_args[0][0].data.decode("utf-8"))
+        self.assertEqual(body["options"]["num_predict"], ASK_VISIBLE_NUM_PREDICT["speed"])
+        clamp_lines = [c for c in logger.warning.call_args_list if "clamping num_predict" in str(c)]
+        self.assertEqual(clamp_lines, [])
+
+    @patch("backend.services.ollama_service.urllib.request.urlopen")
+    def test_post_ollama_chat_overlong_strategy_prompt_shrinks_visible_keeps_thinking(
+        self, mock_urlopen: MagicMock
+    ) -> None:
+        """The exact bug shape: Strategy + thinking medium (visible 1600 + thinking 512 = 2112)
+        on a ~2,800-token prompt would drop the identity/rules/cards silently. The clamp instead
+        sends a smaller visible budget that fits, keeping the full thinking budget."""
+        mock_urlopen.return_value = self._ndjson_response(
+            ['{"message":{"role":"assistant","content":"ok"},"done":true}']
+        )
+        logger = MagicMock()
+        messages = [{"role": "system", "content": "x" * int(2800 * 3.5)}, {"role": "user", "content": "q"}]
+        post_ollama_chat(
+            "http://127.0.0.1:11434/api/chat",
+            "vision:test",
+            messages,
+            60,
+            [],
+            [],
+            [],
+            [],
+            logger,
+            "strategy",
+            "5m",
+            cancel_requested=lambda: False,
+            think_effort="medium",
+        )
+        body = json.loads(mock_urlopen.call_args[0][0].data.decode("utf-8"))
+        self.assertEqual(body["options"]["num_predict"], 784 + 512)
+        self.assertTrue(body["think"])
+        clamp_lines = [c for c in logger.warning.call_args_list if "clamping num_predict" in str(c)]
+        self.assertEqual(len(clamp_lines), 1)
+        self.assertIn("2112", str(clamp_lines[0]))
+        self.assertIn(str(784 + 512), str(clamp_lines[0]))
+        window_lines = [c for c in logger.warning.call_args_list if "exceeds the assumed" in str(c)]
+        self.assertEqual(window_lines, [])
+
+    @patch("backend.services.ollama_service.urllib.request.urlopen")
+    def test_post_ollama_chat_past_the_floor_sends_floor_and_still_warns(
+        self, mock_urlopen: MagicMock
+    ) -> None:
+        """Even the 600-token visible floor cannot rescue this one — it still sends the floor
+        (a short reply beats none) and the D46 warning still fires, since nothing else can be
+        trimmed from here."""
+        mock_urlopen.return_value = self._ndjson_response(
+            ['{"message":{"role":"assistant","content":"ok"},"done":true}']
+        )
+        logger = MagicMock()
+        messages = [{"role": "system", "content": "x" * int(4000 * 3.5)}]
+        post_ollama_chat(
+            "http://127.0.0.1:11434/api/chat",
+            "vision:test",
+            messages,
+            60,
+            [],
+            [],
+            [],
+            [],
+            logger,
+            "strategy",
+            "5m",
+            cancel_requested=lambda: False,
+            think_effort="medium",
+        )
+        body = json.loads(mock_urlopen.call_args[0][0].data.decode("utf-8"))
+        self.assertEqual(body["options"]["num_predict"], 600 + 512)
+        clamp_lines = [c for c in logger.warning.call_args_list if "clamping num_predict" in str(c)]
+        self.assertEqual(len(clamp_lines), 1)
+        window_lines = [c for c in logger.warning.call_args_list if "exceeds the assumed" in str(c)]
+        self.assertEqual(len(window_lines), 1)
 
     def test_user_consents_strategy_spoilers_phrases(self):
         self.assertTrue(user_consents_strategy_spoilers("full spoilers please"))

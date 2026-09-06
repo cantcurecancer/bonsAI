@@ -920,14 +920,13 @@ def build_bonsai_status_stream_instruction(
 THIN_CONTEXT_HONESTY_CLAUSE = (
     "LIMITED CONTEXT: No active game and no screenshots were attached for this turn. "
     "Prefer general Steam Deck guidance; say when you are uncertain or guessing; do not invent a specific game title, "
-    "AppID, or on-screen detail you cannot see. Optional: wrap log-derived claims in ```bonsai-cite ... ``` if you cite "
-    "attached excerpts.\n\n"
+    "AppID, or on-screen detail you cannot see.\n\n"
 )
 
 _REPLY_VERBOSITY_SHARED = (
     "REPLY VERBOSITY: This block shapes visible coaching prose only (the answer body after the required "
     "<bonsai-status> line — not the status tag itself). Structural topic/mode injects and mandatory fences "
-    "(```bonsai-strategy-branches```, ```bonsai-strategy-checklist```, ```json``` TDP blocks, ```bonsai-cite```, "
+    "(```bonsai-strategy-branches```, ```bonsai-strategy-checklist```, ```json``` TDP blocks, "
     "checklists) take priority. Word caps apply to visible prose only, not fence JSON.\n"
 )
 
@@ -1092,6 +1091,7 @@ def build_system_prompt(
     strategy_checklist_state: Optional[dict] = None,
     reply_verbosity: str = "balanced",
     reply_language: str = "english",
+    knowledge_block_placement: str = "early",
 ) -> str:
     """Build the system message used for Ollama requests from game and attachment context.
 
@@ -1099,6 +1099,11 @@ def build_system_prompt(
     general-purpose clause → ``early_context_suffix`` (e.g. Proton excerpts) → topic/mode injects → TDP + JSON
     contract tail. Future RAG snippets belong immediately before the topic injects (same splice as
     ``early_context_suffix``, or an adjacent block in ``main.py``).
+
+    ``knowledge_block_placement``: ``"early"`` (default) keeps ``early_context_suffix`` where it has
+    always spliced in, right after identity. ``"late"`` moves it to immediately before the hardware
+    appendix tail instead, so on a prompt that overflows the model's window and loses its start,
+    the attached cards are the part nearest the end that survives (D46).
     """
     attachment_app_ids = sorted(
         {
@@ -1179,9 +1184,14 @@ def build_system_prompt(
         else "If the user asks about gameplay context, prioritize game-specific visual cues over Steam UI."
     )
     thin_context = not (app_id or "").strip() and not (app_name or "").strip() and not prepared_images
+    # These three rules only matter once there is something on screen to read — an unconditional
+    # inject spent tokens on every Ask, image or not.
+    screenshot_rules = (
+        f" {vision_priority_line} {genre_franchise_cue_line} {game_intent_line}" if prepared_images else ""
+    )
     dynamic_block = (
         f"{game_line} {attachment_game_context_line} {attachment_name_context_line} {vdf_context_line} "
-        f"{vision_line} {vision_priority_line} {genre_franchise_cue_line} {game_intent_line}\n\n"
+        f"{vision_line}{screenshot_rules}\n\n"
     )
     if thin_context:
         dynamic_block += THIN_CONTEXT_HONESTY_CLAUSE
@@ -1208,12 +1218,10 @@ def build_system_prompt(
     if early_stripped and "Local knowledge base" in early_stripped:
         early_block += (
             "\n\nKNOWLEDGE BASE (offline corpus): Ground answers in the attached strategy/compat "
-            "cards when relevant. Wrap source-backed claims in ```bonsai-cite ... ``` fences with "
-            "trust tier (wiki_verified / wiki_no_patch / fallback_no_source).\n"
+            "cards when relevant.\n"
             if strategy_kb_relaxed
             else "\n\nKNOWLEDGE BASE (offline corpus): Ground answers in the attached strategy/compat "
-            "cards when relevant. Wrap source-backed claims in ```bonsai-cite ... ``` fences with "
-            "trust tier (wiki_verified / wiki_no_patch / fallback_no_source). "
+            "cards when relevant. "
             "Put spoilery walkthrough detail inside ```bonsai-spoiler``` when the user has not opted in.\n"
         )
         # Phase 4 R1: structured cards carry labelled lines (Summary / Weak points / Uses /
@@ -1231,6 +1239,15 @@ def build_system_prompt(
                 "those labels as short bullets rather than dissolving them into a paragraph, "
                 "and drop any label the card does not have.\n"
             )
+
+    placement = knowledge_block_placement if knowledge_block_placement == "late" else "early"
+
+    def _assemble(head: str, rest: str, tail_block: str) -> str:
+        """Splice ``early_block`` (the Proton excerpt / knowledge-base cards) either right after
+        identity (today's order) or immediately before the tail, per ``placement``."""
+        if placement == "late":
+            return head + rest + early_block + tail_block
+        return head + early_block + rest + tail_block
 
     hardware_tdp_appendix = (
         "Hardware appendix (apply only when relevant): The Steam Deck APU supports a TDP range of 3-15 watts and "
@@ -1287,7 +1304,11 @@ def build_system_prompt(
                 app_id=app_id,
                 app_name=app_name,
             )
-        return dynamic_block + general_block + drg_glossary_block + early_block + middle + language_block + verbosity_block + tail
+        return _assemble(
+            dynamic_block + general_block + drg_glossary_block,
+            middle + language_block + verbosity_block,
+            tail,
+        )
 
     ollama_q = user_asks_ollama_bonsai_host_or_latency(question)
     model_policy_q = _user_asks_model_policy_tiers_explainer(question)
@@ -1409,7 +1430,11 @@ def build_system_prompt(
         character_roleplay_on=character_roleplay_on,
     )
     language_block = build_reply_language_block(reply_language)
-    return dynamic_block + general_block + drg_glossary_block + early_block + middle + language_block + verbosity_block + tail
+    return _assemble(
+        dynamic_block + general_block + drg_glossary_block,
+        middle + language_block + verbosity_block,
+        tail,
+    )
 
 
 def format_ai_response(
