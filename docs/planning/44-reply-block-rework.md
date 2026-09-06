@@ -75,9 +75,35 @@ manual step. Everything it needs is committed and ready.
 
 **The device.** Not run. This is where focus and layout bugs actually show up.
 
-## Step 2 — the Show details line
+## Step 2 — the Show details line (done 2026-09-06)
 
-Not built yet. See D76 for the placement call and the roadmap entry for the shape.
+**What a person notices.** Under the answer: *Was this helpful?* and its two buttons, then Retry and
+Copy, then a thin line across the reply with **Show details ↓** in the middle. Pressing it opens the
+detail chips below the line and the label becomes **Hide details ↑**.
+
+**What changed.** The button left the row and became a line, built the same way the collapsed-history
+row is — a label centred on a hairline — with a rule on both sides instead of one. It registers under
+the same focus name the button used, so everything that looked the button up still finds it.
+
+The reply block also went from 88% of the column to 92%, matching the answer bubble and the question
+above it, so the line shares their left and right edge instead of sitting slightly inside them.
+
+**Two things worth knowing.**
+
+- The line answers the A button one way and a finger tap another, and deliberately not a third. Steam
+  fires its own activation for the A press as well, so wiring all three would toggle twice on one
+  press. If the device shows a single press opening and immediately closing it, that guess was wrong
+  and one of the two comes off. It is in the test row.
+- Copy took the column Show details vacated, so the pairing above and below is kept: Helpful sits
+  over Retry, Not really over Copy.
+
+**Tests.** Five new cases: the line renders and the button is gone, the label flips, one press calls
+the toggle once, a running answer dims it and disconnects both presses, and a reply with neither
+Retry nor Copy shows the line with no button row at all. Two older cases changed: one built the row
+with only Show details in it, which no longer makes a row; one asserted that coming up from below the
+chips lands on Retry, when the line is now what sits directly above them.
+
+**Still owed on the device.** Row SHOW-DETAILS-01, rewritten.
 
 ## Step 3 — the corner icons
 

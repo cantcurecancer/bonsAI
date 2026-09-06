@@ -56,13 +56,13 @@
       "role": ""
     },
     {
-      "path": "src/components/MainTabChatTranscript.tsx",
-      "lines": 1114,
+      "path": "src/styles/sections/section-6.ts",
+      "lines": 1145,
       "role": ""
     },
     {
-      "path": "src/styles/sections/section-6.ts",
-      "lines": 1086,
+      "path": "src/components/MainTabChatTranscript.tsx",
+      "lines": 1121,
       "role": ""
     },
     {
@@ -146,6 +146,11 @@
       "role": ""
     },
     {
+      "path": "src/utils/buildReplyActionsElement.tsx",
+      "lines": 516,
+      "role": ""
+    },
+    {
       "path": "src/components/CharacterPropGlyph.tsx",
       "lines": 511,
       "role": ""
@@ -173,11 +178,6 @@
     {
       "path": "py_modules/backend/services/chat_slot_service.py",
       "lines": 468,
-      "role": ""
-    },
-    {
-      "path": "src/utils/buildReplyActionsElement.tsx",
-      "lines": 461,
       "role": ""
     },
     {

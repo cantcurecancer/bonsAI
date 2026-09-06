@@ -179,10 +179,14 @@ export function focusReplyCopy(liveSlot: HTMLElement | null): boolean {
   return focusReplyStop(liveSlot, "copy");
 }
 
-/** Retry -> Show details -> Copy: whichever of the utility row's columns is actually mounted. */
+/**
+ * Retry -> Copy: whichever of the utility row's columns is actually mounted.
+ *
+ * Show details is no longer one of them — it is the line below the row now (D76) — so it is not
+ * tried here. Callers that mean the line ask for it by name.
+ */
 export function focusReplyUtilityRow(liveSlot: HTMLElement | null): boolean {
   if (focusReplyRetry(liveSlot)) return true;
-  if (focusReplyShowDetails(liveSlot)) return true;
   return focusReplyCopy(liveSlot);
 }
 
@@ -324,6 +328,8 @@ export function focusAnyContextChipLadder(): boolean {
 export function focusUpFromBelowContextChipLadder(liveSlot: HTMLElement | null): boolean {
   if (focusAnyContextChipLadder()) return true;
   if (focusContextHint(liveSlot)) return true;
+  /* The Show details line sits directly above the chips now, so it is the first thing above. */
+  if (focusReplyShowDetails(liveSlot)) return true;
   return focusReplyUtilityRow(liveSlot);
 }
 

@@ -1,6 +1,6 @@
 /**
  * Title: Reply actions element builder
- * Purpose: Build Helpful/Retry/Show details and refinement chip Focusable rows for a reply turn.
+ * Purpose: Build Helpful/Retry/Copy rows, the refinement chips and the Show details line for a reply.
  * Used for: MainTabChatTranscript reply micro-actions and liveTurnFocusGraph sibling hops.
  * Solves: Registered Deck focus owners for D-pad navigation between reply action buttons.
  * Does not: Submit follow-up Ask — see useBonsaiAskOrchestration reply chip handlers.
@@ -21,11 +21,17 @@ import {
   focusLastReplyChip,
   focusReplyHelpful,
   focusReplyNotReally,
+  focusReplyCopy,
   focusReplyRetry,
   focusReplyShowDetails,
   queryLiveTurnSlot,
 } from "./liveTurnFocusGraph";
-import { getReplyStop, REPLY_STOP_ORDER, type ReplyStopId } from "./replyStopRegistry";
+import {
+  getReplyStop,
+  registerReplyStop,
+  REPLY_STOP_ORDER,
+  type ReplyStopId,
+} from "./replyStopRegistry";
 import { elementHasGamepadFocus } from "./uiDocument";
 import { isDeckDirectionDownEvent, isDeckDirectionUpEvent } from "./focusNavigation";
 import {
@@ -140,8 +146,9 @@ export function buildReplyActionsElement(
   } = args;
 
   const showChipRows = Boolean(onChip) && rating === "down";
-  const showUtilityRow =
-    Boolean(onRetry) || Boolean(onToggleTransparency) || Boolean(getAnswerCopyText);
+  /* Show details left this row for the line below it (D76), so only Retry and Copy keep it alive. */
+  const showUtilityRow = Boolean(onRetry) || Boolean(getAnswerCopyText);
+  const showDetailsDivider = Boolean(onToggleTransparency);
   const feedbackDisabled = askInFlight || ratingUnavailable;
   const chipsInactive = chipsDisabled || chipUsed || askInFlight;
   const thumbsLocked = rating !== null;
@@ -166,9 +173,14 @@ export function buildReplyActionsElement(
     if (upIntoGlossaryChip()) return true;
     return focusLastAnswerChunk(replyKey);
   };
-  const downFromUtility = () => {
+  /* Below the utility row sits the details line, then whatever was below the row before it. */
+  const downFromDivider = () => {
     if (onMoveDownFromUtility?.()) return true;
     return focusDownFromReplyUtilityRow(liveSlot());
+  };
+  const downFromUtility = () => {
+    if (showDetailsDivider && focusReplyShowDetails(liveSlot())) return true;
+    return downFromDivider();
   };
 
   /*
@@ -192,8 +204,7 @@ export function buildReplyActionsElement(
 
   const downFromThumbsRow = () =>
     focusedStop() === "not-really" ? downFromNotReally() : downFromHelpful();
-  const upFromUtilityRow = () =>
-    focusedStop() === "show-details" ? upFromShowDetails() : upFromRetry();
+  const upFromUtilityRow = () => (focusedStop() === "copy" ? upFromCopy() : upFromRetry());
 
   /*
    * Row elements, captured at mount so a press handler can ask "is focus still mine?".
@@ -203,6 +214,7 @@ export function buildReplyActionsElement(
    */
   const thumbsRowEl: { current: HTMLElement | null } = { current: null };
   const utilityRowEl: { current: HTMLElement | null } = { current: null };
+  const dividerEl: { current: HTMLElement | null } = { current: null };
   /*
    * Steam's nav node for the utility row. Thumbs and utility are separate navigation containers, so
    * a DOM `focus()` alone cannot carry gamepad focus between them — see navFocusRegistry. A local
@@ -256,14 +268,14 @@ export function buildReplyActionsElement(
    * "Helpful → Down" look correct only because Retry is where Steam was going to land anyway.
    * Once focus is inside the row, a plain `focus()` moves between its two buttons (same container).
    */
-  const enterUtilityRow = (stop: "retry" | "show-details") => {
+  const enterUtilityRow = (stop: "retry" | "copy") => {
     try {
       utilityNavRef.current?.TakeFocus?.(true);
     } catch {
       /* fall through — the DOM focus below still reports whether it landed */
     }
     const slot = liveSlot();
-    return stop === "retry" ? focusReplyRetry(slot) : focusReplyShowDetails(slot);
+    return stop === "retry" ? focusReplyRetry(slot) : focusReplyCopy(slot);
   };
   const downFromHelpful = () => {
     if (showChipRows) return false;
@@ -271,7 +283,10 @@ export function buildReplyActionsElement(
   };
   const downFromNotReally = () => {
     if (showChipRows) return false;
-    return enterUtilityRow("show-details");
+    /* Copy took Show details' column when the line replaced it, so the pairing is kept:
+       Helpful sits over Retry, Not really over Copy. */
+    if (enterUtilityRow("copy")) return true;
+    return enterUtilityRow("retry");
   };
   /*
    * Last fallback on the way up: hand the ring straight to a glossary chip inside this turn's
@@ -314,7 +329,7 @@ export function buildReplyActionsElement(
     if (upIntoGlossaryChip()) return true;
     return focusLastAnswerChunk(replyKey);
   };
-  const upFromShowDetails = () => {
+  const upFromCopy = () => {
     const slot = liveSlot();
     if (showChipRows && focusLastReplyChip(slot)) return true;
     if (focusReplyNotReally(slot)) return true;
@@ -322,7 +337,14 @@ export function buildReplyActionsElement(
     return focusLastAnswerChunk(replyKey);
   };
 
-  if (!showFeedback && !showUtilityRow && !showChipRows && rating === null) {
+  const upFromDivider = () => {
+    const slot = liveSlot();
+    if (showUtilityRow && focusReplyRetry(slot)) return true;
+    if (showUtilityRow && focusReplyCopy(slot)) return true;
+    return upFromRetry();
+  };
+
+  if (!showFeedback && !showUtilityRow && !showDetailsDivider && !showChipRows && rating === null) {
     return null;
   }
 
@@ -439,20 +461,53 @@ export function buildReplyActionsElement(
               Retry
             </BonsaiChatSecondaryButton>
           ) : null}
-          {onToggleTransparency ? (
-            <BonsaiChatSecondaryButton
-              disabled={askInFlight}
-              onClick={onToggleTransparency}
-              aria-expanded={transparencyOpen}
-              aria-label={transparencyOpen ? "Hide details" : "Show details"}
-              replyStop="show-details"
-            >
-              {transparencyOpen ? "Hide details" : "Show details"}
-            </BonsaiChatSecondaryButton>
-          ) : null}
           {getAnswerCopyText ? (
             <ReplyCopyButton getCopyText={getAnswerCopyText} disabled={askInFlight} />
           ) : null}
+        </Focusable>
+      ) : null}
+      {showDetailsDivider ? (
+        /*
+         * Show details is a line across the reply, not a button in the row above (D76).
+         *
+         * Registered under the same stop name the button used, so focusReplyShowDetails and every
+         * caller of it keep working — focusRegisteredReplyStop focuses whatever node is registered
+         * and does not care that this one is not a <button>.
+         *
+         * Same handler placement rule as the row above: the move handlers go on this Focusable.
+         * `pressHandler` only answers Up and Down, so an A press still falls through to
+         * onOKButton rather than being swallowed — the trap decky-focus-graph.mdc warns about.
+         */
+        <Focusable
+          className={`bonsai-chat-details-divider${
+            askInFlight ? " bonsai-chat-details-divider--disabled" : ""
+          }`}
+          ref={(el: HTMLElement | null) => {
+            dividerEl.current = el;
+            registerReplyStop("show-details", el);
+          }}
+          /*
+           * Two sources, deliberately not three. `onOKButton` is the D-pad A press; `onClick` is a
+           * finger on the screen. `onActivate` is left off on purpose: Steam fires it for the A
+           * press as well, so wiring all three would toggle twice on one press. The earlier-pill
+           * row uses onActivate/onOKButton and is verified on the device rather than in a test
+           * (the harness strips both) — this keeps a press testable without giving up touch.
+           */
+          onOKButton={askInFlight ? undefined : onToggleTransparency}
+          onClick={askInFlight ? undefined : onToggleTransparency}
+          aria-expanded={transparencyOpen}
+          aria-label={transparencyOpen ? "Hide details" : "Show details"}
+          {...({
+            onMoveUp: upFromDivider,
+            onMoveDown: downFromDivider,
+            onButtonDown: pressHandler(dividerEl, downFromDivider, upFromDivider),
+          } as Record<string, unknown>)}
+        >
+          <span className="bonsai-chat-details-divider-rule" />
+          <span className="bonsai-chat-details-divider-label">
+            {transparencyOpen ? "Hide details ↑" : "Show details ↓"}
+          </span>
+          <span className="bonsai-chat-details-divider-rule" />
         </Focusable>
       ) : null}
     </Focusable>

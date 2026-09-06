@@ -48,6 +48,7 @@ import type { ReplyMicroActionId } from "../data/replyMicroActions";
 import {
   focusContextChipLadder,
   focusContextHint,
+  focusReplyShowDetails,
   focusReplyUtilityRow,
   focusSessionContextStrip,
   focusUpFromBelowContextChipLadder,
@@ -759,7 +760,10 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
                     <ContextChipLadder
                       snapshot={archivedTransparencyFor(turn, turnIndex)}
                       collapsedHint={false}
-                      onMoveUpFromLadder={() => focusReplyUtilityRow(queryTurnSlot(turn.id))}
+                      onMoveUpFromLadder={() =>
+                        focusReplyShowDetails(queryTurnSlot(turn.id)) ||
+                        focusReplyUtilityRow(queryTurnSlot(turn.id))
+                      }
                       onMoveDownFromLadder={() => focusSessionContextStrip()}
                       /*
                        * Only the newest archived turn matches `transparencySnapshot` — the post-Ask
@@ -889,7 +893,10 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
                 <ContextChipLadder
                   snapshot={transparencySnapshot}
                   collapsedHint={false}
-                  onMoveUpFromLadder={() => focusReplyUtilityRow(queryLiveTurnSlot())}
+                  onMoveUpFromLadder={() =>
+                    focusReplyShowDetails(queryLiveTurnSlot()) ||
+                    focusReplyUtilityRow(queryLiveTurnSlot())
+                  }
                   onMoveDownFromLadder={() => focusSessionContextStrip()}
                   devDiagnostics={devDiagnosticsForLiveSnapshot}
                 />

@@ -599,6 +599,73 @@
           "expect": 3
         }
       ]
+    },
+    {
+      "id": "UI-A-details-divider",
+      "tier": "tier3UI",
+      "bucket": "D",
+      "tags": [
+        "SHOW-DETAILS-01",
+        "REPLY-CHROME"
+      ],
+      "evidenceProfile": "preview",
+      "checkboxIds": [],
+      "captureSteps": [
+        3
+      ],
+      "note": "Show details is a line across the reply, not a button (D76). The line must be as wide as the reply block, sit under the buttons, and open the chips.",
+      "steps": [
+        {
+          "action": "previewHook",
+          "method": "setTab",
+          "args": [
+            "main"
+          ]
+        },
+        {
+          "action": "previewHook",
+          "method": "seedFinishedTurn",
+          "args": [
+            "what should i upgrade first",
+            "Upgrade the shield first.\n\nThen the boots."
+          ]
+        },
+        {
+          "action": "sleep",
+          "ms": 500
+        },
+        {
+          "action": "snapshotDom",
+          "selector": ".bonsai-scope"
+        },
+        {
+          "action": "assert",
+          "type": "domContains",
+          "expect": "bonsai-chat-details-divider"
+        },
+        {
+          "action": "assert",
+          "type": "domContains",
+          "expect": "Show details"
+        },
+        {
+          "action": "previewHook",
+          "method": "getReplyLayoutJson"
+        },
+        {
+          "action": "assert",
+          "type": "hookField",
+          "field": "detailsDivider",
+          "op": "present"
+        },
+        {
+          "action": "assert",
+          "type": "hookField",
+          "field": "detailsOpen",
+          "op": "eq",
+          "expect": false
+        }
+      ]
     }
   ]
 }

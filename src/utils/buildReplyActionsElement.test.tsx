@@ -193,6 +193,11 @@ describe("buildReplyActionsElement Copy control", () => {
  * (roadmap: "Down from the chat slot lands on the whole reply before its first section"), approached
  * from underneath.
  */
+/*
+ * These used to build the row with only `onToggleTransparency`, because Show details lived in it.
+ * It is the line below the row now (D76), so the row needs Retry to exist at all — the press being
+ * checked (Up out of the row, into the answer) is unchanged.
+ */
 describe("buildReplyActionsElement Up from the utility row into the answer", () => {
   afterEach(() => {
     resetAnswerStopRegistry();
@@ -208,7 +213,7 @@ describe("buildReplyActionsElement Up from the utility row into the answer", () 
       rating: null,
       onRate: () => {},
       showFeedback: false, // no thumbs row
-      onToggleTransparency: () => {}, // utility row renders (Show details)
+      onRetry: () => {}, // utility row renders (Retry)
     });
 
     const utilityRow = findByClassName(el, "bonsai-chat-reply-actions-row--utility");
@@ -227,7 +232,7 @@ describe("buildReplyActionsElement Up from the utility row into the answer", () 
       rating: null,
       onRate: () => {},
       showFeedback: false,
-      onToggleTransparency: () => {},
+      onRetry: () => {},
     });
 
     const utilityRow = findByClassName(el, "bonsai-chat-reply-actions-row--utility");
@@ -327,5 +332,58 @@ describe("buildReplyActionsElement Up from the thumbs row into the answer", () =
     expect(moveUpFromReplyOf(el)()).toBe(true);
     expect(document.activeElement).toBe(chip);
     expect(document.activeElement).not.toBe(stops[stops.length - 1]);
+  });
+});
+
+/*
+ * Show details is a line across the bottom of the reply, not a button in the row (D76). It reads as
+ * the end of the answer and gives the row its width back.
+ */
+describe("buildReplyActionsElement Show details line", () => {
+  const build = (over: Record<string, unknown> = {}) =>
+    buildReplyActionsElement({
+      replyKey: "live",
+      rating: null,
+      onRate: () => {},
+      showFeedback: false,
+      onToggleTransparency: () => {},
+      ...over,
+    });
+
+  it("renders a line and no Show details button", () => {
+    const el = build({ onRetry: () => {} });
+    expect(findByClassName(el, "bonsai-chat-details-divider")).not.toBeNull();
+    const row = findByClassName(el, "bonsai-chat-reply-actions-row--utility");
+    const labels = JSON.stringify(row!.props);
+    expect(labels).not.toContain("Show details");
+  });
+
+  it("reads Show details when closed and Hide details when open", () => {
+    const closed = findByClassName(build(), "bonsai-chat-details-divider");
+    expect(JSON.stringify(closed!.props)).toContain("Show details");
+    const open = findByClassName(build({ transparencyOpen: true }), "bonsai-chat-details-divider");
+    expect(JSON.stringify(open!.props)).toContain("Hide details");
+  });
+
+  it("presses the toggle once", () => {
+    const onToggleTransparency = vi.fn();
+    const line = findByClassName(build({ onToggleTransparency }), "bonsai-chat-details-divider");
+    const press = (line!.props as Record<string, unknown>).onOKButton as () => void;
+    press();
+    expect(onToggleTransparency).toHaveBeenCalledTimes(1);
+  });
+
+  it("does nothing while the answer is still running", () => {
+    const line = findByClassName(build({ askInFlight: true }), "bonsai-chat-details-divider");
+    const props = line!.props as Record<string, unknown>;
+    expect(props.onOKButton).toBeUndefined();
+    expect(props.onClick).toBeUndefined();
+    expect(String(props.className)).toContain("bonsai-chat-details-divider--disabled");
+  });
+
+  it("renders without a button row when Retry and Copy are both absent", () => {
+    const el = build();
+    expect(findByClassName(el, "bonsai-chat-reply-actions-row--utility")).toBeNull();
+    expect(findByClassName(el, "bonsai-chat-details-divider")).not.toBeNull();
   });
 });

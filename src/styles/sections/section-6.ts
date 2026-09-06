@@ -501,7 +501,11 @@ export function buildSection6Section(): string {
         }
         .bonsai-scope .bonsai-chat-reply-actions {
           margin-top: 10px !important;
-          max-width: min(88%, 100%) !important;
+          /* 92%, matching the answer bubble above it and the question bubble above that, so the
+             details line below shares their left and right edge instead of sitting 4% inside them
+             (design-language.md rule 3). Was 88%; the buttons are fit-content and left-aligned, so
+             only the full-width line and the chip row's wrap point notice. */
+          max-width: min(92%, 100%) !important;
           display: flex !important;
           flex-direction: column !important;
           align-items: flex-start !important;
@@ -526,6 +530,61 @@ export function buildSection6Section(): string {
           flex: 0 1 auto !important;
           white-space: nowrap !important;
           max-width: none !important;
+        }
+        /*
+         * Show details, as a line across the reply rather than a button in the row (D76).
+         *
+         * Same shape as the collapsed-history row above: a label centred on a hairline. The
+         * difference is a rule on both sides. The hairline stays a raw 1px — hairlines do not
+         * follow the UI scale (design-tokens.md).
+         */
+        .bonsai-scope .bonsai-chat-details-divider {
+          display: flex !important;
+          flex-direction: row !important;
+          align-items: center !important;
+          gap: ${uiScalePx(8)} !important;
+          width: 100% !important;
+          box-sizing: border-box !important;
+          margin: ${uiScalePx(4)} 0 ${uiScalePx(2)} !important;
+          cursor: pointer !important;
+          outline: none !important;
+        }
+        .bonsai-scope .bonsai-chat-details-divider-rule {
+          flex: 1;
+          height: 1px;
+          background: rgba(255, 255, 255, 0.09);
+        }
+        .bonsai-scope .bonsai-chat-details-divider-label {
+          font-size: ${uiScalePx(10)};
+          font-weight: 600;
+          letter-spacing: 0.04em;
+          color: #9fb7d5;
+          white-space: nowrap;
+          padding: 0 ${uiScalePx(2)};
+        }
+        /*
+         * Brightens when the D-pad ring is on it. Keyed off Steam's own focus class as well as
+         * :focus-within, the way the Ask row's Clear button is — on the Deck you arrive here with
+         * the D-pad, never a pointer, and :focus alone does not fire.
+         */
+        .bonsai-scope .bonsai-chat-details-divider.gpfocus .bonsai-chat-details-divider-label,
+        .bonsai-scope .bonsai-chat-details-divider:focus-within .bonsai-chat-details-divider-label {
+          color: #e8eef5;
+        }
+        .bonsai-scope .bonsai-chat-details-divider.gpfocus .bonsai-chat-details-divider-rule,
+        .bonsai-scope .bonsai-chat-details-divider:focus-within .bonsai-chat-details-divider-rule {
+          background: rgba(255, 255, 255, 0.28);
+        }
+        /* The standard white ring, never the character colour (design-tokens.md). */
+        .bonsai-scope .bonsai-chat-details-divider.gpfocus,
+        .bonsai-scope .bonsai-chat-details-divider:focus-visible {
+          outline: 2px solid rgba(255, 255, 255, 0.9) !important;
+          outline-offset: 2px !important;
+          border-radius: 4px !important;
+        }
+        .bonsai-scope .bonsai-chat-details-divider--disabled {
+          opacity: 0.45 !important;
+          cursor: default !important;
         }
         .bonsai-scope .bonsai-save-chat-desktop-row {
           margin-top: ${uiScalePx(BONSAI_CHAT_TRANSCRIPT_TO_SAVE_GAP_PX)} !important;

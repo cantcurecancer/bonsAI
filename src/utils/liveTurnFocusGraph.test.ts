@@ -291,7 +291,7 @@ describe("liveTurnFocusGraph", () => {
     expect(document.activeElement?.id).toBe(left);
   });
 
-  it("Up from an expanded session strip climbs out to the utility row, not back into the strip", () => {
+  it("Up from an expanded session strip climbs out to the Show details line, not back into the strip", () => {
     /*
      * The 2026-08-23 trap, and the check that fails without its fix.
      *
@@ -314,7 +314,9 @@ describe("liveTurnFocusGraph", () => {
        </div>`,
     );
     expect(focusUpFromBelowContextChipLadder(slot)).toBe(true);
-    expect(document.activeElement?.id).toBe("stop-retry");
+    /* The Show details line sits directly above the chips now (D76), so it is what Up lands on —
+       it used to be Retry, back when Show details was a button in the row. */
+    expect(document.activeElement?.id).toBe("stop-show-details");
     expect(document.activeElement?.id).not.toBe("strip-ladder");
   });
 

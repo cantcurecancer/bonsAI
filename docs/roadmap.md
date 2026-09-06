@@ -155,8 +155,6 @@ replace it with a specific issue when one exists.
   One check owed first: the question bubble turns its own outline off and gets no ring rule, so look on the Deck at what focus shows.
 - ★★ `[chat]` **First-run ghost "New chat" label at the create position** — **OPEN, parked by decision.** The create position is the
   literal `[+]`, re-confirmed on board 8f and again in the v3 rows. Reopen that decision before building it.
-- ★★ `[layout]` **Show details becomes a divider, not a chip** — **OPEN.** A full-width rule with the label in the middle reads as the
-  end of the answer and frees the row it shares. Copy the collapsed-history row's shape (`.bonsai-chat-earlier-pill-row`).
 - ★★ `[ollama]` **Expert offers the stronger Deck-run models first, and the licence list learns the Sept 2026 models** —
   **OPEN, planned 2026-09-05, calls locked (D73).** In the model picker's Expert group, the models that beat today's Gemma 4 on the
   answer test come first, in bake-off order. The plugin's licence list is behind: Gemma 4 has been Apache 2.0 since April and is
@@ -284,6 +282,15 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
   being written (unit-tested, not reproducible by hand yet). Row **CLEAR-CACHE-01**. [Why](roadmap-details.md#shipped-qa-owed--why-each-was-built-this-way).
 
 ### Features that need verification
+
+- ★★ `[layout]` **Show details becomes a divider, not a chip** — **VERIFY.** Built at the desk 2026-09-06 under D76.
+  Under a finished answer there is now a thin line across the reply with **Show details ↓** in the middle of it, at the
+  bottom of the block. Pressing it opens the detail chips below the line and the label becomes **Hide details ↑**. The
+  button row above keeps Retry and Copy. The reply block also went from 88% of the column to 92%, so its edges line up with
+  the answer bubble and the question above it. **What is owed on the device:** that the line reads as the end of the answer
+  rather than a control; that one press opens it and one press closes it — it answers the A button and a finger tap by two
+  separate routes, so a double toggle is the thing to watch for; that Down from Helpful reaches it and Down again reaches the
+  chips; and that the wider block did not push anything out of the column. Row **SHOW-DETAILS-01**.
 
 - ★★ `[focus]` **Fewer D-pad stops on a finished reply** — **VERIFY.** Built at the desk 2026-09-06 under D78. A finished
   answer used to give one D-pad stop per paragraph, so a long reply was ten or more presses before the buttons under it.
