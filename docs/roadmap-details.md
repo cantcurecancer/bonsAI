@@ -805,6 +805,11 @@ The roadmap entry is removed; this note is what remains of it.
   - **Goal:** Rank installed models by measured speed/completion; offer as try order (with confirmation).
   - **Depends on:** shipped routing pickers; overlaps **Dynamic keep-alive** measurements.
   - **Source:** [13-roadmap-feature-ideas.md](planning/13-roadmap-feature-ideas.md) § C1.
+  - **Descoped 2026-09-06 (D75, open):** the gate in § C1 asked whether timings hold still before ranking on them. Nobody ran
+    it; the plan takes the descope now: [43-model-speed-readout.md](planning/43-model-speed-readout.md) shows each model's last
+    timing on this Deck, keeps a ten-entry record per model with the running game, and adds a one-press timing button. The
+    record answers the gate over weeks of ordinary use; if timings hold still under "no game, Speed, thinking off", the ranking
+    becomes a small feature on top. Retiring this line is call 5 of D75.
 
 ## Reasoning display
 

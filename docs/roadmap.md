@@ -203,6 +203,11 @@ replace it with a specific issue when one exists.
   the maintainer's pick (D74). Never a copy of a real person's voice without consent. Open: which stock voices, if any, the
   plugin lists; Piper's best-known American voice is research-only and never ships.
   [Memo](planning/42-read-aloud-feasibility.md).
+- ★★★ `[ollama]` **How fast is this model on this Deck** — **OPEN, planned 2026-09-06, calls open (D75).** Next to each installed
+  model, how fast it answered on this Deck the last time it was used, and a button to time it now with one fixed question. The
+  numbers already exist on every answer; the plugin keeps a last-ten record per model with the game that was running, shows a
+  badge in the picker and a plain line under Show details, and never reorders anything. The bake-off's Deck half becomes one
+  press per model. [Plan](planning/43-model-speed-readout.md).
 - ★★★★ `[ask]` **Connection doctor** — **OPEN, planned 2026-09-05, calls locked (D64).** When an Ask fails, a **Fix this** button
   under the failed reply runs the checks the plugin already has, shows the one that failed, and offers the one thing to do
   next with a button that lands you on that control on the Ollama tab. It only offers; nothing changes without a press.
@@ -219,10 +224,11 @@ replace it with a specific issue when one exists.
   configs.
 - ★★★★ `[ui]` **SteamOS Share path** — **OPEN.** Faster path from Share and capture flows into screenshot attach where APIs allow.
 - ★★★★ `[ui]` **SteamOS spin hint card** — **OPEN.** Detect immutable spins and deep-link to troubleshooting.
-- ★★★★★ `[ollama]` **On-Deck model benchmark** — **OPEN.** Rank installed models by measured speed and completion; offer as try order
-  with confirmation.
-  **First input, 2026-09-05:** a desk survey of this quarter's models that fit the Deck, and what to measure, in
-  [41-deck-model-survey.md](planning/41-deck-model-survey.md); the calls are D72.
+- ★★★★★ `[ollama]` **On-Deck model benchmark** — **OPEN, descoped on 2026-09-06, one call open (D75).** Rank installed models by measured
+  speed and completion; offer as try order with confirmation. Its own gate said: if timings do not hold still, descope to a
+  one-shot readout. That readout is now its own three-star entry, [plan 43](planning/43-model-speed-readout.md), and its record
+  of timings answers the gate over time. Whether this line retires is D75. **First input, 2026-09-05:** the desk survey of this
+  quarter's models in [41-deck-model-survey.md](planning/41-deck-model-survey.md); the calls are D72.
 - ★★★★★ `[perms]` **VAC Phase 2: opponent IDs** — **OPEN, research.** Surface live opponent identities for ban checks when metadata allows.
 - ★★★★★ `[platform]` **Controller macro test rig and live view** — **OPEN, discovery locked 2026-08-23, board ordered.** A bridge board
   the Deck sees as a real controller, a macro runner gated on real UI state, and one recording pipeline. Primitives land upstream in

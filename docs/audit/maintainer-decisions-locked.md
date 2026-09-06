@@ -3860,3 +3860,42 @@ optional extra. The call now: (a) the plugin's own designed voice as the reader,
 designed voice plus the stock list as an extra, filtered by the model tier setting, *lessac* never; (c)
 stock voices only for the plain reader, filtered by tier. *Recommended: (b).* Open.
 
+
+### D75 — OPEN (raised 2026-09-06) — The model speed readout: six calls before anything is built
+
+Raised by [planning/43-model-speed-readout.md](../planning/43-model-speed-readout.md), the fifth of the six
+features planned one at a time. The five-star benchmark's own gate said to descope to a one-shot readout if
+timings do not hold still; nobody ran the gate; the plan takes the descope now and lets the readout's record
+answer the gate over time.
+
+**What a person will notice.** In the model picker, a small badge per installed model: *9 words/s*, or *not
+timed yet*. Under Show details, one plain line: how long the answer took, how long the model took to load,
+when the first word came, how many words a second, and which game was running. In the Ollama tab, the last
+few timings per model with their dates and conditions. A button, *Time this model now*, that asks one fixed
+short question and reports the same line. Nothing is reordered for them, ever.
+
+**Why it is cheap.** Every answer already carries its seconds and its model in the diagnostics the Developer
+details chip shows; Ollama already reports the load, reading and writing times at the end of every stream
+and the plugin reads only the counts beside them. Words a second is a division. The running game is already
+in every Ask's context.
+
+**The calls.** Each has a recommendation; none is locked.
+
+1. **Both halves, or the record alone?** (a) the record with its badge and lines, no button; (b) the record
+   plus the button. *Recommended: (b).* The button is what turns the bake-off's Deck half into ten presses
+   and the only way to time a model that has never been picked.
+2. **Where the numbers show.** (a) picker badge, Show details line, Ollama tab readout; (b) Show details and
+   the Ollama tab only; (c) Developer tab only. *Recommended: (a).*
+3. **Timing with a game running.** (a) run and record, the game's name on the entry; (b) warn first, then
+   run; (c) refuse until the game is closed. *Recommended: (a).* A number with the game named is a true
+   number, and the game-running case is the one people live in.
+4. **Write each timing to the Desktop notes file too**, one line, when notes are on? (a) yes; (b) no.
+   *Recommended: (a).* It reuses the notes writer and fills the bake-off sheet from a text file.
+5. **The five-star entry.** (a) retire it; the ranking half lives in the details file behind the record's
+   data; (b) keep it beneath this one. *Recommended: (a).*
+6. **Stars.** Two for the record alone, three with the button. *Recommended: three.*
+
+**What is not a call.** The badge is the last answer, not an average; averages of a game-running number
+and a desk number are a number of nothing. The button's question is fixed, general and spoiler-free, thinking
+off, a small cap, so numbers compare across dates. The record is cleared by Clear all plugin data. Nothing
+leaves the device.
