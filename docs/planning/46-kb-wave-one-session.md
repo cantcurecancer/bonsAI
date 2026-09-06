@@ -679,10 +679,42 @@ to § 11 of this file: for each row, pass or fail, the reading, the file. Plain 
   contradicted a note, and attached a note every time. The search test could not tell its four search methods apart on
   the held-back questions — the ranges overlap. That is an open question, not a tie.
 - Lanes launched: five.
-- Landings, in order, with hashes: three so far. 72 blind search questions for the twelve new games
+- Landings, in order, with hashes: 72 blind search questions for the twelve new games
   (`dc263df`); 24 answer-test rows for the same twelve games (`2f564fc`); the search test's weight sweep,
-  per-question card detail, and second-right-answer support (`8cf140b`).
-- Sweep table and the weight call: —
+  per-question card detail, and second-right-answer support (`8cf140b`); the blind questions matched to the
+  notes that answer them (`2f56216`).
+- **Not landed, and why.** The symptom-only troubleshooting search was built, measured and held back
+  (`ccf903b`, written up as **D81**; the branch `lane/kb-symptom-search` is kept). One of its four target
+  sentences improved — a controller question that used to get nothing now reaches the controller tips. The
+  crash sentence still fails and now attaches a tip about desktop mode where it used to attach nothing, which
+  is worse for the person reading it. The finding worth keeping: matching by meaning does not connect the words
+  a person uses to describe a crash to the way the crash tips are written. That was the assumption the idea
+  rested on. The fix probably lives in rewriting the tips, not the search.
+- **How many of the new questions have a note behind them: 43 of 72.** The other 29 are blank. Some were
+  written deliberately to have no note; most are real gaps, thinnest on the smaller games (Doom 64 has five
+  notes in total). Read as a coverage number: for these twelve games, about four in ten of the things a player
+  would plainly ask about are not covered yet. Blank questions are excluded from scoring.
+- Sweep table and the weight call: **measured, tried, reverted — written up as D82.** Nine balances over all 266
+  notes. Only one beat today's even split on both measures: counting the meaning search twice as much as the word
+  search. Tuning questions (168): right note first 69.6% against 65.5%, in the top three 89.9% against 88.7%.
+  Held-back questions (135), the honest test: right note first 43.0% against 37.0%, in the top three 53.3%
+  against 51.9%. The direction agreed on both sets, and every range overlaps.
+  **Reverted because it breaks three rules set on purpose**: a note whose meaning-index has not been built yet
+  gets buried; the meaning search can push aside a note that exactly matches the words typed; and one case of
+  the locked topic-preference decision stops holding. At equal weight a word-first and a meaning-first note tie;
+  halve the word weight and the meaning-first note wins every tie, everywhere. That is a design call, not a
+  measurement one, so it stopped. Weights stay at 1.0 / 1.0.
+  **Read the held-back number carefully:** 37% against about 70% in August is the test getting harder, not the
+  search getting worse — the held-back set grew from 36 questions to 135 by adding the blind questions about the
+  twelve new games, which describe things instead of naming them. That is the new floor.
+- Deck session, run early because the device was free: the Speed half of the recall check **passes** — all three
+  sentences used a plain word search and none spent time on the meaning search. The Strategy half passes on the
+  label and **fails on timing**: 1.10, 1.23 and 1.19 seconds, where the row wants the second and third at or under
+  1.0. The warm-up explanation holds on the PC and not on this Deck; the third question was no faster than the
+  first. Evidence in `runs/plan46-R2-speed-half.json` and `runs/plan46-R2-strategy-half.json`.
+- **A before-reading for the notes-thrown-away bug, taken on the maintainer's own settings** (voice on, thinking
+  medium): all three Strategy questions went over the 4,096-token window, by 703, 780 and 712 tokens. All three
+  Speed questions stayed inside. After the prompt slimming lands, the same run must warn on zero.
 - Answer test before / after / after-late / voice: before is the pre-wave baseline above; after / after-late / voice
   not run yet.
 - Release: version, bytes, both channels read back: —
