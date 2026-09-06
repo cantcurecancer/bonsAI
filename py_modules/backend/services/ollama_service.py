@@ -637,6 +637,41 @@ def prompt_window_warning(
     )
 
 
+# D46 follow-up (2026-09-06): the warning above told the log the truth and left the Ask
+# unchanged, so the prompt still lost its start on the wire. Once the prompt itself is slimmed
+# and the knowledge-base block moved late, most overflow left is exactly the visible reply
+# budget stacked on top of a thinking budget (Strategy + thinking medium runs ~2,800 prompt
+# tokens against a 2,112 reply budget in a 4,096 window). Shrinking the visible half instead of
+# sending the request unchanged means the reply is short rather than the prompt losing its
+# identity, rules and cards. The thinking budget is never touched -- a user who turned thinking
+# on asked for that reasoning headroom specifically.
+MIN_VISIBLE_NUM_PREDICT = 600
+
+
+def clamp_num_predict_to_window(
+    messages: list,
+    visible_num_predict: int,
+    thinking_budget: int,
+    *,
+    window_tokens: int = ASSUMED_CONTEXT_WINDOW_TOKENS,
+    floor_visible: int = MIN_VISIBLE_NUM_PREDICT,
+) -> int:
+    """Wire ``num_predict`` (visible + thinking) shrunk so the prompt fits, thinking left whole.
+
+    Returns ``visible_num_predict + thinking_budget`` unchanged when it already fits. Otherwise
+    takes the overflow out of the visible share only, down to ``floor_visible`` -- past that
+    point the floor is sent anyway (a short reply beats a prompt that loses its start), and the
+    caller's own ``prompt_window_warning`` still fires on the result.
+    """
+    est = estimate_prompt_tokens(messages)
+    total = int(visible_num_predict) + int(thinking_budget)
+    if est + total <= window_tokens:
+        return total
+    room_for_visible = window_tokens - est - int(thinking_budget)
+    new_visible = max(int(floor_visible), room_for_visible)
+    return new_visible + int(thinking_budget)
+
+
 def _stream_ollama_chat_once(
     url: str,
     model_name: str,
@@ -666,6 +701,25 @@ def _stream_ollama_chat_once(
 
     num_predict = int(budgets.get("num_predict") or 800)
     think_wire = budgets.get("think", False)
+    # D46 follow-up: shrink the visible half of num_predict, never the thinking half, so a
+    # prompt that would otherwise overflow the window sends a shorter reply instead of losing
+    # its own start on the wire. A prompt that already fits gets num_predict back unchanged.
+    visible_num_predict = int(budgets.get("visible_num_predict") or num_predict)
+    thinking_budget = int(budgets.get("thinking_budget") or 0)
+    clamped_num_predict = clamp_num_predict_to_window(messages, visible_num_predict, thinking_budget)
+    if clamped_num_predict != num_predict:
+        logger.warning(
+            "ask_ollama: clamping num_predict %d -> %d (visible floor %d, thinking budget %d kept "
+            "whole) so a ~%d-token prompt fits the %d-token window model=%s",
+            num_predict,
+            clamped_num_predict,
+            MIN_VISIBLE_NUM_PREDICT,
+            thinking_budget,
+            estimate_prompt_tokens(messages),
+            ASSUMED_CONTEXT_WINDOW_TOKENS,
+            model_name,
+        )
+    num_predict = clamped_num_predict
     body_dict = {
         "model": model_name,
         "messages": messages,

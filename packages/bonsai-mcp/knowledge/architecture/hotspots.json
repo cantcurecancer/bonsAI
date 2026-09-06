@@ -41,14 +41,14 @@
       "role": ""
     },
     {
+      "path": "py_modules/backend/services/ollama_service.py",
+      "lines": 1271,
+      "role": "Prompt build, Ollama HTTP, streaming"
+    },
+    {
       "path": "src/components/MainTabPresetAnimatedChips.tsx",
       "lines": 1233,
       "role": ""
-    },
-    {
-      "path": "py_modules/backend/services/ollama_service.py",
-      "lines": 1217,
-      "role": "Prompt build, Ollama HTTP, streaming"
     },
     {
       "path": "src/hooks/useBonsaiAskOrchestration.test.ts",

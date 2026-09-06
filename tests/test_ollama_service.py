@@ -1504,6 +1504,131 @@ class OllamaServiceTests(unittest.TestCase):
         self.assertIsNotNone(prompt_window_warning(edge, 800))
         self.assertEqual(ASSUMED_CONTEXT_WINDOW_TOKENS, 4096)
 
+    def test_clamp_num_predict_to_window_leaves_a_fitting_prompt_untouched(self):
+        """D46 follow-up: a prompt that already fits gets its num_predict back unchanged."""
+        from backend.services.ollama_service import clamp_num_predict_to_window
+
+        messages = [{"role": "system", "content": "x" * 3500}, {"role": "user", "content": "q"}]
+        self.assertEqual(clamp_num_predict_to_window(messages, 800, 0), 800)
+        self.assertEqual(clamp_num_predict_to_window(messages, 1600, 512), 1600 + 512)
+
+    def test_clamp_num_predict_to_window_shrinks_visible_keeps_thinking_whole(self):
+        """A ~2,800-token Strategy prompt with thinking medium (visible 1600 + thinking 512 =
+        2112) overflows the 4,096 window by 816. The clamp must take that 816 out of the visible
+        share only — thinking stays the full 512 the setting promised."""
+        from backend.services.ollama_service import clamp_num_predict_to_window
+
+        messages = [{"role": "system", "content": "x" * int(2800 * 3.5)}]
+        clamped = clamp_num_predict_to_window(messages, 1600, 512)
+        self.assertEqual(clamped, 784 + 512)  # room = 4096 - 2800 - 512
+
+    def test_clamp_num_predict_to_window_never_goes_below_the_visible_floor(self):
+        """A prompt so large even the 600-token visible floor cannot make it fit still gets the
+        floor — a short reply beats no reply, and the caller's warning still fires."""
+        from backend.services.ollama_service import clamp_num_predict_to_window
+
+        messages = [{"role": "system", "content": "x" * int(4000 * 3.5)}]
+        clamped = clamp_num_predict_to_window(messages, 1600, 512)
+        self.assertEqual(clamped, 600 + 512)
+
+    @patch("backend.services.ollama_service.urllib.request.urlopen")
+    def test_post_ollama_chat_fitting_prompt_sends_unclamped_num_predict(
+        self, mock_urlopen: MagicMock
+    ) -> None:
+        mock_urlopen.return_value = self._ndjson_response(
+            ['{"message":{"role":"assistant","content":"ok"},"done":true}']
+        )
+        logger = MagicMock()
+        post_ollama_chat(
+            "http://127.0.0.1:11434/api/chat",
+            "vision:test",
+            [{"role": "user", "content": "short question"}],
+            60,
+            [],
+            [],
+            [],
+            [],
+            logger,
+            "speed",
+            "5m",
+            cancel_requested=lambda: False,
+        )
+        body = json.loads(mock_urlopen.call_args[0][0].data.decode("utf-8"))
+        self.assertEqual(body["options"]["num_predict"], ASK_VISIBLE_NUM_PREDICT["speed"])
+        clamp_lines = [c for c in logger.warning.call_args_list if "clamping num_predict" in str(c)]
+        self.assertEqual(clamp_lines, [])
+
+    @patch("backend.services.ollama_service.urllib.request.urlopen")
+    def test_post_ollama_chat_overlong_strategy_prompt_shrinks_visible_keeps_thinking(
+        self, mock_urlopen: MagicMock
+    ) -> None:
+        """The exact bug shape: Strategy + thinking medium (visible 1600 + thinking 512 = 2112)
+        on a ~2,800-token prompt would drop the identity/rules/cards silently. The clamp instead
+        sends a smaller visible budget that fits, keeping the full thinking budget."""
+        mock_urlopen.return_value = self._ndjson_response(
+            ['{"message":{"role":"assistant","content":"ok"},"done":true}']
+        )
+        logger = MagicMock()
+        messages = [{"role": "system", "content": "x" * int(2800 * 3.5)}, {"role": "user", "content": "q"}]
+        post_ollama_chat(
+            "http://127.0.0.1:11434/api/chat",
+            "vision:test",
+            messages,
+            60,
+            [],
+            [],
+            [],
+            [],
+            logger,
+            "strategy",
+            "5m",
+            cancel_requested=lambda: False,
+            think_effort="medium",
+        )
+        body = json.loads(mock_urlopen.call_args[0][0].data.decode("utf-8"))
+        self.assertEqual(body["options"]["num_predict"], 784 + 512)
+        self.assertTrue(body["think"])
+        clamp_lines = [c for c in logger.warning.call_args_list if "clamping num_predict" in str(c)]
+        self.assertEqual(len(clamp_lines), 1)
+        self.assertIn("2112", str(clamp_lines[0]))
+        self.assertIn(str(784 + 512), str(clamp_lines[0]))
+        window_lines = [c for c in logger.warning.call_args_list if "exceeds the assumed" in str(c)]
+        self.assertEqual(window_lines, [])
+
+    @patch("backend.services.ollama_service.urllib.request.urlopen")
+    def test_post_ollama_chat_past_the_floor_sends_floor_and_still_warns(
+        self, mock_urlopen: MagicMock
+    ) -> None:
+        """Even the 600-token visible floor cannot rescue this one — it still sends the floor
+        (a short reply beats none) and the D46 warning still fires, since nothing else can be
+        trimmed from here."""
+        mock_urlopen.return_value = self._ndjson_response(
+            ['{"message":{"role":"assistant","content":"ok"},"done":true}']
+        )
+        logger = MagicMock()
+        messages = [{"role": "system", "content": "x" * int(4000 * 3.5)}]
+        post_ollama_chat(
+            "http://127.0.0.1:11434/api/chat",
+            "vision:test",
+            messages,
+            60,
+            [],
+            [],
+            [],
+            [],
+            logger,
+            "strategy",
+            "5m",
+            cancel_requested=lambda: False,
+            think_effort="medium",
+        )
+        body = json.loads(mock_urlopen.call_args[0][0].data.decode("utf-8"))
+        self.assertEqual(body["options"]["num_predict"], 600 + 512)
+        clamp_lines = [c for c in logger.warning.call_args_list if "clamping num_predict" in str(c)]
+        self.assertEqual(len(clamp_lines), 1)
+        window_lines = [c for c in logger.warning.call_args_list if "exceeds the assumed" in str(c)]
+        self.assertEqual(len(window_lines), 1)
+
     def test_user_consents_strategy_spoilers_phrases(self):
         self.assertTrue(user_consents_strategy_spoilers("full spoilers please"))
         self.assertTrue(user_consents_strategy_spoilers("Spoilers are okay"))
