@@ -995,6 +995,32 @@ def _slice_results(
     return {arm: [rows[i] for i in indices] for arm, rows in results.items()}
 
 
+def _per_case_table(
+    cases: list[QueryCase], results: dict[str, list[QueryResult]]
+) -> dict[str, list[dict[str, Any]]]:
+    """One row per case per arm, so a bad case can be read by eye instead of only by average.
+
+    ``results[arm]`` is built one entry per case in the same order as ``cases`` (see
+    ``_run_retrieval_arms``), so zipping the two lists lines each result up with the case it
+    scored. ``top_names`` is copied through as-is -- it is already rank order.
+    """
+    out: dict[str, list[dict[str, Any]]] = {}
+    for arm, rows in results.items():
+        out[arm] = [
+            {
+                "case_id": row.case_id,
+                "split": case.split,
+                "domain": case.domain,
+                "hit_at_1": row.hit_at_1,
+                "hit_at_3": row.hit_at_3,
+                "fts_empty": row.fts_empty,
+                "top_names": row.top_names,
+            }
+            for case, row in zip(cases, rows)
+        ]
+    return out
+
+
 def _keyword_blind_slice(
     results: dict[str, list[QueryResult]],
 ) -> dict[str, list[QueryResult]]:
@@ -1573,6 +1599,7 @@ def run_bakeoff(
         "keyword_baseline": _scores_to_dict(keyword_scores),
         "english": {"bare": english_bare, "prompted": english_prompted},
         "arms": arms,
+        "per_case": _per_case_table(english_cases, arm_results),
         "gate": gate,
         "spanish_probe": spanish_probe,
         "winner": winner,

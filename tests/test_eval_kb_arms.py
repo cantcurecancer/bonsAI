@@ -462,6 +462,79 @@ class EvalArmsTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             mod._parse_weight_pairs("1:1,not-a-pair")
 
+    # --- per-case output ---------------------------------------------------------------------
+
+    def test_per_case_table_has_names_in_rank_order_for_every_arm(self):
+        mod = self.mod
+        cases = [
+            mod.QueryCase(
+                case_id="c1",
+                query="q1",
+                ask_mode="speed",
+                domain="strategy",
+                app_id="",
+                shortcut="",
+                expect_topic="",
+                expect_section="Card A",
+                suite="t",
+                split="tune",
+            ),
+            mod.QueryCase(
+                case_id="c2",
+                query="q2",
+                ask_mode="speed",
+                domain="compat",
+                app_id="",
+                shortcut="",
+                expect_topic="Tip X",
+                expect_section="",
+                suite="t",
+                split="holdout",
+            ),
+        ]
+        results = {
+            "keyword": [
+                mod.QueryResult(
+                    case_id="c1", hit_at_1=True, hit_at_3=True, fts_empty=False, embed_ms=0.0,
+                    top_names=["Card A", "Card B", "Card C"],
+                ),
+                mod.QueryResult(
+                    case_id="c2", hit_at_1=False, hit_at_3=False, fts_empty=True, embed_ms=0.0,
+                    top_names=[],
+                ),
+            ],
+            "rrf": [
+                mod.QueryResult(
+                    case_id="c1", hit_at_1=True, hit_at_3=True, fts_empty=False, embed_ms=12.0,
+                    top_names=["Card A", "Card D"],
+                ),
+                mod.QueryResult(
+                    case_id="c2", hit_at_1=False, hit_at_3=True, fts_empty=False, embed_ms=9.0,
+                    top_names=["Tip X", "Tip Y"],
+                ),
+            ],
+        }
+
+        table = mod._per_case_table(cases, results)
+
+        self.assertEqual(set(table.keys()), {"keyword", "rrf"})
+        self.assertEqual(len(table["keyword"]), 2)
+        self.assertEqual(len(table["rrf"]), 2)
+        self.assertEqual(
+            table["rrf"][0],
+            {
+                "case_id": "c1",
+                "split": "tune",
+                "domain": "strategy",
+                "hit_at_1": True,
+                "hit_at_3": True,
+                "fts_empty": False,
+                "top_names": ["Card A", "Card D"],
+            },
+        )
+        self.assertEqual(table["rrf"][1]["top_names"], ["Tip X", "Tip Y"])
+        self.assertEqual(table["keyword"][1]["top_names"], [])
+
 
 if __name__ == "__main__":
     unittest.main()
