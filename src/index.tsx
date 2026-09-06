@@ -92,6 +92,7 @@ import { useDisclaimerAndLocalRuntimeGates } from "./hooks/useDisclaimerAndLocal
 import { useCapturedFrontendErrors } from "./hooks/useCapturedFrontendErrors";
 import { getSteamSettingsUrl } from "./data/steamSettingsNavigation";
 import { registerPreviewTestHooks, isDeckyPreviewRuntime } from "./preview/previewTestHooks";
+import { buildReplyLayoutReport } from "./preview/replyLayoutReport";
 import { IP_DEFAULT } from "./data/storageKeys";
 
 type SteamUrlApi = {
@@ -859,6 +860,25 @@ const Content: React.FC = () => {
       // may still call it.
       getSysfsWrites: async () => [],
       setTab: (tabId: string) => setCurrentTab(tabId),
+      /*
+       * A finished reply on screen without asking a model. Goes through restoreSessionSnapshot —
+       * the route the modal-survival path already uses — so no new setter has to be handed out of
+       * useBonsaiAskOrchestration just for preview.
+       */
+      seedFinishedTurn: (question: string, answer: string) => {
+        const id = `preview-turn-${Date.now()}`;
+        setCurrentTab("main");
+        restoreSessionSnapshot({
+          ...sessionSnapshotRef.current(),
+          currentTab: "main",
+          ollamaResponse: answer,
+          lastExchange: { question, answer },
+          askThreadCollapsed: [{ id, question, answer }],
+          askThreadDisplayQuestion: "",
+          expandedTurnKey: id,
+        });
+      },
+      getReplyLayoutJson: () => buildReplyLayoutReport(),
       resetDisclaimer: () => {
         try {
           window.localStorage.removeItem("bonsai:disclaimer-accepted");
@@ -882,6 +902,7 @@ const Content: React.FC = () => {
     setSelectedAttachment,
     setCurrentTab,
     showDisclaimerModalAgain,
+    restoreSessionSnapshot,
   ]);
 
   const openModelPolicyReadme = useCallback(() => {

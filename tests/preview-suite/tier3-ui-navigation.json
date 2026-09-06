@@ -484,6 +484,121 @@
           ]
         }
       ]
+    },
+    {
+      "id": "UI-A-reply-stop-count",
+      "tier": "tier3UI",
+      "bucket": "D",
+      "tags": [
+        "REPLY-SECTIONS",
+        "D-PAD-SCROLL-02"
+      ],
+      "evidenceProfile": "preview",
+      "checkboxIds": [],
+      "captureSteps": [
+        3
+      ],
+      "note": "Fewer D-pad stops on a finished reply (D78). Ten short paragraphs, a twelve-line bullet list and a code block. Before the merge this text gave more than twenty stops.",
+      "steps": [
+        {
+          "action": "previewHook",
+          "method": "setTab",
+          "args": [
+            "main"
+          ]
+        },
+        {
+          "action": "previewHook",
+          "method": "seedFinishedTurn",
+          "args": [
+            "how do i handle the exploders",
+            "Paragraph 0 says a short thing about the game you are playing right now.\n\nParagraph 1 says a short thing about the game you are playing right now.\n\nParagraph 2 says a short thing about the game you are playing right now.\n\nParagraph 3 says a short thing about the game you are playing right now.\n\nParagraph 4 says a short thing about the game you are playing right now.\n\nParagraph 5 says a short thing about the game you are playing right now.\n\nParagraph 6 says a short thing about the game you are playing right now.\n\nParagraph 7 says a short thing about the game you are playing right now.\n\nParagraph 8 says a short thing about the game you are playing right now.\n\nParagraph 9 says a short thing about the game you are playing right now.\n\n- Bullet number 0\n- Bullet number 1\n- Bullet number 2\n- Bullet number 3\n- Bullet number 4\n- Bullet number 5\n- Bullet number 6\n- Bullet number 7\n- Bullet number 8\n- Bullet number 9\n- Bullet number 10\n- Bullet number 11\n\n```sh\necho hello\n```\n\nOne closing paragraph."
+          ]
+        },
+        {
+          "action": "sleep",
+          "ms": 500
+        },
+        {
+          "action": "snapshotDom",
+          "selector": ".bonsai-scope"
+        },
+        {
+          "action": "previewHook",
+          "method": "getReplyLayoutJson"
+        },
+        {
+          "action": "assert",
+          "type": "hookField",
+          "field": "answerStops",
+          "op": "lte",
+          "expect": 4
+        },
+        {
+          "action": "assert",
+          "type": "hookField",
+          "field": "answerStops",
+          "op": "gte",
+          "expect": 1
+        },
+        {
+          "action": "assert",
+          "type": "hookField",
+          "field": "answerBubble",
+          "op": "present"
+        },
+        {
+          "action": "assert",
+          "type": "hookField",
+          "field": "questionBubble",
+          "op": "present"
+        }
+      ]
+    },
+    {
+      "id": "UI-A-reply-fence-alone",
+      "tier": "tier3UI",
+      "bucket": "D",
+      "tags": [
+        "REPLY-SECTIONS",
+        "STREAM-09"
+      ],
+      "evidenceProfile": "preview",
+      "checkboxIds": [],
+      "captureSteps": [],
+      "note": "A code block keeps a stop of its own with its neighbours in theirs, so merging never swallows one.",
+      "steps": [
+        {
+          "action": "previewHook",
+          "method": "setTab",
+          "args": [
+            "main"
+          ]
+        },
+        {
+          "action": "previewHook",
+          "method": "seedFinishedTurn",
+          "args": [
+            "show me the command",
+            "Before the code.\n\n```sh\necho hi\n```\n\nAfter the code."
+          ]
+        },
+        {
+          "action": "sleep",
+          "ms": 500
+        },
+        {
+          "action": "previewHook",
+          "method": "getReplyLayoutJson"
+        },
+        {
+          "action": "assert",
+          "type": "hookField",
+          "field": "answerStops",
+          "op": "eq",
+          "expect": 3
+        }
+      ]
     }
   ]
 }

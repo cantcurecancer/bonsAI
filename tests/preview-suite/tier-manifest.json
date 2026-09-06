@@ -9,7 +9,9 @@
         "UNIT-A-vitest-gates",
         "UNIT-B-pytest-sandbox-tdp"
       ],
-      "sourceFiles": ["unit-gates.json"]
+      "sourceFiles": [
+        "unit-gates.json"
+      ]
     },
     "tier0": {
       "runbookTier": 0,
@@ -21,7 +23,9 @@
         "SMOKE-F-shortcut-deck",
         "SMOKE-F-vac-capability-off"
       ],
-      "sourceFiles": ["tier0-smokes.json"],
+      "sourceFiles": [
+        "tier0-smokes.json"
+      ],
       "requiresPreview": true
     },
     "tier1Core": {
@@ -32,7 +36,10 @@
         "SMOKE-E-strategy-mode",
         "BG-ASK-reopen-status"
       ],
-      "sourceFiles": ["tier1-tdp.json", "tier2-strategy-streaming.json"],
+      "sourceFiles": [
+        "tier1-tdp.json",
+        "tier2-strategy-streaming.json"
+      ],
       "requiresPreview": true,
       "requiresOllama": true
     },
@@ -46,7 +53,9 @@
         "TDP-20W-clamp-to-15",
         "GPU-800-advisory"
       ],
-      "sourceFiles": ["tier1-tdp.json"],
+      "sourceFiles": [
+        "tier1-tdp.json"
+      ],
       "requiresPreview": true,
       "requiresOllama": true
     },
@@ -63,15 +72,22 @@
         "VISION-V1-spot-dom",
         "STEAM-JUMP-shim"
       ],
-      "sourceFiles": ["tier2-strategy-streaming.json", "tier2-char-vac.json"],
+      "sourceFiles": [
+        "tier2-strategy-streaming.json",
+        "tier2-char-vac.json"
+      ],
       "requiresPreview": true,
       "requiresOllama": true
     },
     "hookSmoke": {
       "runbookTier": 0,
       "description": "callTestHook IPC smoke (setTab + getState) before tier3UI hook scenarios.",
-      "scenarioIds": ["HOOK-smoke-setTab"],
-      "sourceFiles": ["hook-smoke.json"],
+      "scenarioIds": [
+        "HOOK-smoke-setTab"
+      ],
+      "sourceFiles": [
+        "hook-smoke.json"
+      ],
       "requiresPreview": true
     },
     "tier3UI": {
@@ -85,9 +101,13 @@
         "UI-A-mode-menu",
         "UI-A-transparency-expand",
         "UI-A-debug-tab",
-        "UI-A-presets-visible"
+        "UI-A-presets-visible",
+        "UI-A-reply-stop-count",
+        "UI-A-reply-fence-alone"
       ],
-      "sourceFiles": ["tier3-ui-navigation.json"],
+      "sourceFiles": [
+        "tier3-ui-navigation.json"
+      ],
       "requiresPreview": true,
       "requiresOllama": true
     },
@@ -110,7 +130,9 @@
         "STREAM-06-smooth-reveal",
         "FEEDBACK-01-reply-action-chrome"
       ],
-      "sourceFiles": ["tier2-deep.json"],
+      "sourceFiles": [
+        "tier2-deep.json"
+      ],
       "requiresPreview": true,
       "requiresOllama": true
     },
@@ -122,7 +144,9 @@
         "E-CEF-CORS-ollama-pc",
         "E-CLEAN-INSTALL"
       ],
-      "sourceFiles": ["deck-only-e-bucket.json"],
+      "sourceFiles": [
+        "deck-only-e-bucket.json"
+      ],
       "requiresPreview": false,
       "requiresDeck": true
     }

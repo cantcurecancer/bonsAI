@@ -290,6 +290,62 @@ function assertStep(step, context) {
       }
       return;
     }
+    /*
+     * Numeric and presence checks on the last previewHook result, by field name.
+     *
+     * `hookResult` above is a substring match on the whole JSON, which cannot express
+     * "four stops or fewer" — the check the reply-section work actually needs. Fields are
+     * top-level names from getReplyLayoutJson; `op` is one of eq / lte / gte / present / absent.
+     */
+    case "hookField": {
+      const report = context.lastHook ?? {};
+      const field = step.field;
+      if (!field) throw new Error("hookField needs a `field`");
+      const actual = report?.[field];
+      const op = step.op ?? "eq";
+      const ok =
+        op === "present"
+          ? actual !== null && actual !== undefined
+          : op === "absent"
+            ? actual === null || actual === undefined
+            : op === "lte"
+              ? Number(actual) <= Number(expect)
+              : op === "gte"
+                ? Number(actual) >= Number(expect)
+                : actual === expect;
+      if (!ok) {
+        throw new Error(
+          `hookField failed: ${field} ${op} ${JSON.stringify(expect)} — actual ${JSON.stringify(actual)}`
+        );
+      }
+      return;
+    }
+    /*
+     * One rectangle sits inside another, within `slack` pixels. This is what catches a corner
+     * icon drifting outside the bubble it is meant to sit in, which no DOM substring can see.
+     */
+    case "hookRectInside": {
+      const report = context.lastHook ?? {};
+      const inner = report?.[step.inner];
+      const outer = report?.[step.outer];
+      if (!inner || !outer) {
+        throw new Error(
+          `hookRectInside failed: need both rects — ${step.inner}=${JSON.stringify(inner)}, ${step.outer}=${JSON.stringify(outer)}`
+        );
+      }
+      const slack = step.slack ?? 2;
+      const fits =
+        inner.x >= outer.x - slack &&
+        inner.y >= outer.y - slack &&
+        inner.x + inner.w <= outer.x + outer.w + slack &&
+        inner.y + inner.h <= outer.y + outer.h + slack;
+      if (!fits) {
+        throw new Error(
+          `hookRectInside failed: ${step.inner} ${JSON.stringify(inner)} is not inside ${step.outer} ${JSON.stringify(outer)}`
+        );
+      }
+      return;
+    }
     case "domContainsAny": {
       requireExpect();
       const html = context.lastDom ?? "";

@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
-  "fileCount": 371,
-  "edgeCount": 902,
+  "fileCount": 373,
+  "edgeCount": 907,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -2273,6 +2273,7 @@
         "src/hooks/useUiScaleProfile.ts",
         "src/pluginVersion.ts",
         "src/preview/previewTestHooks.ts",
+        "src/preview/replyLayoutReport.ts",
         "src/utils/appDesktopLog.ts",
         "src/utils/bonsaiDebugIngest.ts",
         "src/utils/bonsaiReplySurface.ts",
@@ -2301,7 +2302,25 @@
     "src/preview/previewTestHooks.ts": {
       "imports": [],
       "importedBy": [
-        "src/index.tsx"
+        "src/index.tsx",
+        "src/preview/replyLayoutReport.ts"
+      ]
+    },
+    "src/preview/replyLayoutReport.test.ts": {
+      "imports": [
+        "src/preview/replyLayoutReport.ts",
+        "src/utils/uiDocument.ts"
+      ],
+      "importedBy": []
+    },
+    "src/preview/replyLayoutReport.ts": {
+      "imports": [
+        "src/preview/previewTestHooks.ts",
+        "src/utils/uiDocument.ts"
+      ],
+      "importedBy": [
+        "src/index.tsx",
+        "src/preview/replyLayoutReport.test.ts"
       ]
     },
     "src/styles/bonsaiScopeStylesheet.ts": {
@@ -3787,6 +3806,8 @@
         "src/hooks/useBonsaiAskOrchestration.ts",
         "src/hooks/useMainTabAskBarFocus.test.ts",
         "src/hooks/useMainTabAskBarFocus.ts",
+        "src/preview/replyLayoutReport.test.ts",
+        "src/preview/replyLayoutReport.ts",
         "src/utils/answerBubbleElRegistry.test.ts",
         "src/utils/answerBubbleElRegistry.ts",
         "src/utils/answerBubbleNavigation.test.ts",

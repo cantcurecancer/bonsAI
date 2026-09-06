@@ -101,7 +101,9 @@
         "UI-A-mode-menu",
         "UI-A-transparency-expand",
         "UI-A-debug-tab",
-        "UI-A-presets-visible"
+        "UI-A-presets-visible",
+        "UI-A-reply-stop-count",
+        "UI-A-reply-fence-alone"
       ],
       "sourceFiles": [
         "tier3-ui-navigation.json"

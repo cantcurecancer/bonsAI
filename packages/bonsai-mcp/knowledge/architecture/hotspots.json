@@ -11,14 +11,14 @@
       "role": ""
     },
     {
+      "path": "src/index.tsx",
+      "lines": 1642,
+      "role": "Plugin root: tabs, scoped CSS, RPC wiring, Settings"
+    },
+    {
       "path": "src/hooks/useBonsaiAskOrchestration.ts",
       "lines": 1632,
       "role": ""
-    },
-    {
-      "path": "src/index.tsx",
-      "lines": 1621,
-      "role": "Plugin root: tabs, scoped CSS, RPC wiring, Settings"
     },
     {
       "path": "py_modules/backend/services/voice_transcription_service.py",

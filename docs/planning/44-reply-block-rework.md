@@ -51,6 +51,30 @@ that three short paragraphs give more than one section, which is the behaviour b
 **Still owed on the device.** Walk a long finished answer, count the presses to the first button, and
 confirm nothing is skipped. Rows D-PAD-SCROLL-02 (reworded) and STREAM-09.
 
+## The automated checks
+
+Three layers, and it is worth being clear about which of them actually ran.
+
+**The test runner.** Ran, green. It has no layout engine, so it proves what is rendered and what a
+press calls, and nothing about where anything sits.
+
+**The scripted UI run.** Two new scenarios are written and registered — one counts the stops on a
+long seeded answer, one proves a code block still keeps a stop of its own. Two things had to be
+added for them to be possible:
+
+- Two preview-only seams. One puts a finished question and answer straight into the transcript
+  without asking a model, so the text is the same every run. It goes through the session-restore
+  path that already exists, so no new setter had to be handed out of the ask state. The other
+  reports the newest reply's shape: how many stops, and the rectangle of the answer bubble, the
+  question bubble, the details line, the two corner icons and the old button row.
+- Two new checks in the runner. It could only match text inside the result before, which cannot say
+  "four stops or fewer", and could not say "this icon is inside that bubble" at all.
+
+**Not yet run.** The scripted run needs the preview panel opened from inside the editor, which is a
+manual step. Everything it needs is committed and ready.
+
+**The device.** Not run. This is where focus and layout bugs actually show up.
+
 ## Step 2 — the Show details line
 
 Not built yet. See D76 for the placement call and the roadmap entry for the shape.
