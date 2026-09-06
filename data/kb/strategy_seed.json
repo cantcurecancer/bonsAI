@@ -210,6 +210,30 @@
         "fps",
         "action"
       ]
+    },
+    {
+      "game_id": 18,
+      "app_id": "3240220",
+      "igdb_id": null,
+      "canonical_title": "Grand Theft Auto V",
+      "edition": "Enhanced",
+      "platform": "Steam",
+      "genres": [
+        "action-adventure",
+        "open-world"
+      ]
+    },
+    {
+      "game_id": 19,
+      "app_id": "12210",
+      "igdb_id": null,
+      "canonical_title": "Grand Theft Auto IV",
+      "edition": "The Complete Edition",
+      "platform": "Steam",
+      "genres": [
+        "action-adventure",
+        "open-world"
+      ]
     }
   ],
   "aliases": [
@@ -376,6 +400,58 @@
     {
       "alias": "doom 64 retribution",
       "game_id": 17
+    },
+    {
+      "alias": "grand theft auto v",
+      "game_id": 18
+    },
+    {
+      "alias": "grand theft auto v enhanced",
+      "game_id": 18
+    },
+    {
+      "alias": "grand theft auto v legacy",
+      "game_id": 18
+    },
+    {
+      "alias": "gta v",
+      "game_id": 18
+    },
+    {
+      "alias": "gta 5",
+      "game_id": 18
+    },
+    {
+      "alias": "gta5",
+      "game_id": 18
+    },
+    {
+      "alias": "gtav",
+      "game_id": 18
+    },
+    {
+      "alias": "grand theft auto iv",
+      "game_id": 19
+    },
+    {
+      "alias": "grand theft auto iv the complete edition",
+      "game_id": 19
+    },
+    {
+      "alias": "gta iv",
+      "game_id": 19
+    },
+    {
+      "alias": "gta 4",
+      "game_id": 19
+    },
+    {
+      "alias": "gta4",
+      "game_id": 19
+    },
+    {
+      "alias": "gtaiv",
+      "game_id": 19
     }
   ],
   "sections": [
@@ -2513,6 +2589,193 @@
       "card": "The 2020 re-release's extra episode: six levels that start you stranded with no weapons on a distant base and end in Final Judgement against the Sister Resurrector, plus one separate fun level. It opens when you beat the Mother Demon, or by finishing the secret level Hectic and using the Features menu's level select, or with any password for the first level and the same menu; on PC a -warp 34 launch flag also works. All three Demon Keys and the Unmaker are found again inside Final Judgement and are required to finish it.",
       "source_url": "https://doomwiki.org/wiki/The_Lost_Levels",
       "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 206,
+      "game_id": 18,
+      "section_type": "mechanic",
+      "name": "Starting out in GTA V",
+      "card": "Three protagonists share one map, and in free roam you can switch between them any time from the character wheel; the number under each face is how many missions that person has waiting, and you cannot switch while you have a wanted level. Each has a special ability on the small yellow meter under the radar: Michael slows time in gunfights, Franklin slows time while driving, Trevor takes half damage and deals double while raging. Skills grow by doing: run to build stamina, land shots to build shooting, punch and play sports for strength. A cheap trick worth knowing early: switch away and straight back, and your character returns with full health and a repaired, cleaned car.",
+      "source_url": "https://gta.fandom.com/wiki/Character_Wheel",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 207,
+      "game_id": 18,
+      "section_type": "mechanic",
+      "name": "Special abilities and how to grow them",
+      "card": "Michael's Area Kill is bullet time for shootouts and lasts thirty seconds once the ability bar is maxed. Franklin's Driving Focus slows the world while he is in any land vehicle, tank included, and makes gaps and slides easy; it starts at a third of its final length. Trevor's rage doubles his damage and makes him immune to everything for its duration. The bar refills differently for each of them, and the skill behind it grows with use: Franklin's climbs while he drifts, threads near misses at speed, drives into oncoming traffic, or holds ninety percent of a car's top speed. Grow the bar and you grow the time you get.",
+      "source_url": "https://gta.fandom.com/wiki/Special_Ability",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 208,
+      "game_id": 18,
+      "section_type": "mechanic",
+      "name": "Wanted levels and losing the cops",
+      "card": "Five stars, not six, and the police are far more persistent than in older games: they ram, box you in, take civilians' cars to keep chasing, and respond to crimes nobody saw because bystanders phone them in. There is no search circle. Every officer has a cone of vision and hunts across the whole map, and the helicopter's cone is enormous, so a chase is lost by breaking every line of sight, not by driving fast in the open. At one star an officer tries to arrest you at gunpoint; fighting or fleeing makes it two on the spot, and security guards and motorcycle cops simply open fire. You cannot switch characters while wanted. If nobody sees you drive into a Los Santos Customs the door opens and the stars go with it; if you were spotted approaching, it stays shut.",
+      "source_url": "https://gta.fandom.com/wiki/Wanted_Level_in_GTA_V",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 209,
+      "game_id": 18,
+      "section_type": "mechanic",
+      "name": "Skills and the cheapest ways to raise them",
+      "card": "Seven skills grow by use. Stamina rises one percent every 175 metres run or minute swum, and once it is full you never tire. Shooting rises with hits and headshots, and the Ammu-Nation range gives three percent per gold medal. Strength rises one percent per twenty landed punches, or from golf and tennis. Stealth grows from silent takedowns and creeping. Flying gives one percent per ten minutes in the air, one for each bridge you fly under, and three to five per flight-school gold. Driving rises with air time and clean stunt jumps, two or three percent a jump. Lung capacity gains two percent per minute under water and from yoga. Max out stamina first; the rest follow whatever you already enjoy.",
+      "source_url": "https://gta.fandom.com/wiki/Skills_in_GTA_V",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 210,
+      "game_id": 18,
+      "section_type": "mechanic",
+      "name": "Heists: the approach and the crew",
+      "card": "The big robberies are the spine of the story and the first time the series lets you plan one. Each starts with a choice of approach, quiet from the roof or loud through the front, and a crew you hire rather than recruit: drivers, gunmen and hackers who each want a percentage of the take. Experts cost a bigger slice and perform; cheap newcomers keep more money in your pocket but can fumble the job. Then come setup missions to steal the gear and vehicles the plan needs. Pick the approach that suits how you like to play, and spend on the crew member whose job your plan cannot survive without.",
+      "source_url": "https://gta.fandom.com/wiki/Heists_in_GTA_V",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 211,
+      "game_id": 18,
+      "section_type": "mechanic",
+      "name": "Money: the stock market and the assassination jobs",
+      "card": "The real money in the single-player game is the stock market. Two exchanges exist: the LCN works offline and reacts to what happens in the story, and the BAWSAQ needs a Social Club connection. Five assassination missions for Franklin, unlocked after Fame or Shame, each swing a named company; buy that stock before the hit (or just after, for the bus job), wait while the market ticks every thirty seconds, and sell at the top, often eighty percent up and sometimes far more. Do all but the first of them after the final big score so you are investing a fortune rather than pocket change, then buy the golf club and the cinemas that were out of reach.",
+      "source_url": "https://gta.fandom.com/wiki/Lester%27s_Assassinations",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 212,
+      "game_id": 18,
+      "section_type": "mechanic",
+      "name": "Properties",
+      "card": "Buying businesses opens up after Trevor's mission Nervous Ron: walk to the For Sale sign outside and pay. Each pays a weekly sum into its owner's account, and the manager will sometimes phone for help; ignoring the call cuts the week's profit. You need at least five for completion. Early ones that pay back: Franklin's cab company for a steady two thousand a week, and Trevor's McKenzie Field hangar, which pays five to seven thousand per smuggling run. The golf club and cinemas are for after the stock market has made you rich.",
+      "source_url": "https://gta.fandom.com/wiki/Properties_in_GTA_V",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 213,
+      "game_id": 18,
+      "section_type": "mechanic",
+      "name": "Side jobs and collectibles that count",
+      "card": "Not everything on the map matters for completion. Random events (fifty-seven, sixty in the enhanced version) appear as dots: light blue is friendly, red is hostile, flashing lets you choose a side; fourteen count. Strangers and Freaks are the named side stories per character. Of the fifty stunt jumps, twenty-five count; of fifty bridges to fly under, twenty-five, plus eight of the fifteen knife flights. The fifty spaceship parts unlock Omega's mission and the fifty letter scraps solve the Leonora Johnson murder, both optional. Armoured trucks are a quick twenty-five thousand each. The map on the Junk energy drink website lists every jump and fly-under.",
+      "source_url": "https://gta.fandom.com/wiki/Random_Events_in_GTA_V",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 214,
+      "game_id": 18,
+      "section_type": "item",
+      "name": "Weapons, armour and cover",
+      "card": "You carry every weapon at once, fifty-nine across the base game and updates, and each can take attachments like scopes and suppressors; ammo is kept per weapon class, so an empty pistol does not empty the others. Body armour comes in five tiers from Ammu-Nation, each a fifth stronger than the last, and once you buy a heavier one the lighter ones vanish from the shelf; it does nothing against melee. Cover is one button that snaps you to the nearest solid object; from there you can blind-fire without a reticle, nudge the stick to peek and aim while barely exposed, or slip round a corner without leaving cover.",
+      "source_url": "https://gta.fandom.com/wiki/Weapons_in_GTA_V",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 215,
+      "game_id": 19,
+      "section_type": "mechanic",
+      "name": "Starting out in GTA IV",
+      "card": "Liberty City opens up one island at a time as the story goes, starting in Broker. Save by walking to the bed in a safehouse and choosing to sleep; that also clears any wanted level. There are no garages: the yellow Residents Parking bays on the street outside each safehouse hold two vehicles, and anything damaged there repairs itself when you leave the area or reload. Gunfire hurts far more than in older games, so the cover button is not optional: it snaps you to the nearest solid object, and from there you strafe, pop out to aim, or blind-fire round the edge. The phone runs the game: friends call, jobs arrive as texts and emails, and the internet cafés are where the side work starts.",
+      "source_url": "https://gta.fandom.com/wiki/Safehouses_in_GTA_IV",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 216,
+      "game_id": 19,
+      "section_type": "mechanic",
+      "name": "Wanted levels and the search circle",
+      "card": "Six stars. When you are wanted a flashing circle sits on the radar: that is where the police are looking, and every cop inside it is a flashing icon. Get outside the circle without being seen and stay quiet for a few seconds and the stars fade; get spotted leaving and the circle re-centres on you. White stars mean they see you, grey means they have lost you, blinking grey means they are about to give up. Swapping cars buys a couple of seconds at best. While wanted you cannot buy guns or clothes, take a taxi, enter bars or activities, or use the subway above two stars, and getting arrested drops you at the nearest station without your weapons or armour. Pay 'n' Spray clears it if you enter unseen in a car that fits, any bed clears it, and once unlocked a call to Kiki or Francis clears up to three stars.",
+      "source_url": "https://gta.fandom.com/wiki/Wanted_Level_in_GTA_IV",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 217,
+      "game_id": 19,
+      "section_type": "mechanic",
+      "name": "Friends and their favours",
+      "card": "Each friend has a like rating you raise by taking them out: bowling, darts, pool, eating, drinking, shows, the strip club. You get about an in-game hour to collect them once a date is set, being late costs points, and declining their calls costs five to ten each time. At seventy-five percent they phone to offer a favour. Roman sends a free cab that works even while the police are after you, which is the best escape in the game. Little Jacob drives up with a boot full of guns at sixty percent off, usable mid-mission. Brucie flies you across the city by helicopter. Dwayne, if you let him live, sends two armed men to fight beside you. Packie leaves a car bomb you detonate by phone.",
+      "source_url": "https://gta.fandom.com/wiki/Friendships_in_GTA_IV",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 218,
+      "game_id": 19,
+      "section_type": "mechanic",
+      "name": "Girlfriends",
+      "card": "Two girlfriends come from the story and three from the dating sites, which open after the mission Out of the Closet: reply to a profile, wait for her email, and the first date decides whether she gives you her number. Each has tastes in clothes, cars and venues that move her fondness, and a bad date or not asking to come in ends it, though she reappears on the site a few days later as if you had never met. The online three pay off: Kiki the lawyer clears wanted levels with a phone call once she is fond of you, Carmen tops up your health by phone, and Alex gets you discounts on clothes. The Algonquin two are unavailable until that island opens.",
+      "source_url": "https://gta.fandom.com/wiki/Girlfriends_in_GTA_IV",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 219,
+      "game_id": 19,
+      "section_type": "mechanic",
+      "name": "Side jobs: Most Wanted, Stevie's cars and Brucie's exports",
+      "card": "Sit in a stationary police car and the computer lists ten most-wanted criminals for the region: thirty in all across Algonquin, the Broker-Dukes-Bohan side, and Alderney, in any order you like. Stevie texts thirty car requests with a photo of where each is parked, usually within a block of the hint; deliver them undamaged to his lot in Bohan for the best money, nearly four hundred thousand in total, once you have the Alderney safehouse and have done Smackdown and No. 1. Brucie emails ten exotic cars to steal for his lockup in East Hook, a thousand each, eight hundred for bikes, less if you dent them. The Fixer's payphone in Port Tudor, Alderney, hands out assassinations after Truck Hustle. None of these are the story; all of them are the hundred percent.",
+      "source_url": "https://gta.fandom.com/wiki/Most_Wanted",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 220,
+      "game_id": 19,
+      "section_type": "mechanic",
+      "name": "Collectibles: flying rats and stunt jumps",
+      "card": "Two hundred pigeons are hidden around Liberty City and Alderney, glowing red and cooing so you can find them at night; shoot, burn, blow up or run over every one and the Annihilator attack helicopter spawns on the MeTV building. There are also fifty stunt jumps, and unlike the pigeons all fifty are needed for completion. The game tells you after each landing: Stunt jump completed, or Not good enough. Some only need you to land; others want a distance or a precise landing spot that the game never explains, so a jump that keeps failing usually wants more speed or a different line rather than more attempts.",
+      "source_url": "https://gta.fandom.com/wiki/Flying_Rats",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 221,
+      "game_id": 19,
+      "section_type": "item",
+      "name": "Weapons and where to buy them",
+      "card": "Sixteen weapons in two tiers each, with generic names: the carbine is the M4, the assault rifle the AK. Dropped guns lie on the ground with a faint orange glow, and you can disarm an enemy by shooting his hand rather than killing him. The underground gun shops open after Do You Have Protection?, and once Little Jacob likes you enough his van sells everything at sixty percent off. Fixed spawn points around the city refill the same weapon every visit, which is how most players keep an RPG. Body armour is sold alongside the guns and is the difference between two hits and five.",
+      "source_url": "https://gta.fandom.com/wiki/Weapons_in_GTA_IV",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 222,
+      "game_id": 19,
+      "section_type": "area",
+      "name": "Liberty City's boroughs and when they open",
+      "card": "Four boroughs of the real New York plus New Jersey, each with a different feel: Broker is Brooklyn and where you start, Dukes is Queens on the same island, Bohan is the Bronx across the water, Algonquin is Manhattan with the tall buildings and most of the money, and the State of Alderney is New Jersey, industrial and suburban. The bridges are closed by the police at first: Algonquin opens after the mission Blow Your Cover and Alderney after Three Leaf Clover. Crossing a closed bridge earns an instant six-star wanted level, so if the map shows a closed island, the story has to get there first.",
+      "source_url": "https://gta.fandom.com/wiki/Liberty_City_(HD_Universe)",
+      "source_license": "CC-BY-SA-3.0",
       "source_version": null,
       "crawled_at": "2026-09-05"
     }
