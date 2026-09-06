@@ -657,6 +657,23 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
                   : buildCollapsedTurnTitle(turn.questionDisplay || turn.question),
               expanded: expandedTurnKey === turn.id,
               onActivate: () => onTurnActivate?.(turn.id),
+              /*
+               * Retry rides on the newest question's bubble now (D77) instead of the row under the
+               * answer. Same gate the row's own Retry used, and the same two handlers: a stopped
+               * turn re-asks its own question directly, because onRetryLastResponse reads
+               * lastExchange, which a stop clears to null.
+               */
+              onRetry:
+                isNewestArchivedTurn && expandedTurnKey === turn.id
+                  ? isNewestStoppedArchivedTurn
+                    ? () => {
+                        void onAskOllama?.(turn.question, {
+                          threadQuestionDisplay: turn.questionDisplay || turn.question,
+                        });
+                      }
+                    : onRetryLastResponse
+                  : undefined,
+              retryDisabled: isAsking,
             })}
             {expandedTurnKey === turn.id ? (
               <>
@@ -730,23 +747,6 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
                     /* A stopped turn shows the thumbs greyed out: half an answer is not something
                        to rate, and the rating is saved. Retry below stays live. */
                     ratingUnavailable: isNewestStoppedArchivedTurn,
-                    /*
-                     * `onRetryLastResponse` reads `lastExchange?.question`, which is exactly what
-                     * a stop clears to null — it would resend nothing, or whatever happens to be
-                     * sitting in the Ask field, rather than this turn's own question. `turn.question`
-                     * is right there on the turn already being displayed, so the stopped case
-                     * re-asks it directly through the same `onAskOllama` entry point Retry itself
-                     * calls, instead of going through the stale exchange snapshot.
-                     */
-                    onRetry: !showFeedbackHere
-                      ? undefined
-                      : isNewestStoppedArchivedTurn
-                        ? () => {
-                            void onAskOllama?.(turn.question, {
-                              threadQuestionDisplay: turn.questionDisplay || turn.question,
-                            });
-                          }
-                        : onRetryLastResponse,
                     transparencyOpen: transparencyDetailsOpen,
                     onToggleTransparency: transparencyAvailableHere
                       ? makeToggleTransparencyDetails(turn.id)
@@ -812,6 +812,8 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
               expanded: expandedTurnKey === "live",
               isStreaming: isStreamingPreview,
               onActivate: () => onTurnActivate?.("live"),
+              onRetry: expandedTurnKey === "live" ? onRetryLastResponse : undefined,
+              retryDisabled: isAsking,
             })}
             {expandedTurnKey === "live" && isAsking && thinkingSummary ? (
               <div
@@ -871,7 +873,6 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
                     onReplyFeedback?.(rating);
                   },
                   showFeedback: Boolean(lastExchange?.answer?.trim()),
-                  onRetry: onRetryLastResponse ?? undefined,
                   transparencyOpen: transparencyDetailsOpen,
                   onToggleTransparency:
                     showTransparencyUi ? onToggleTransparencyDetails : undefined,

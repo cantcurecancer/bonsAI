@@ -733,6 +733,84 @@
           "slack": 2
         }
       ]
+    },
+    {
+      "id": "UI-A-retry-on-question-bubble",
+      "tier": "tier3UI",
+      "bucket": "D",
+      "tags": [
+        "REPLY-CHROME",
+        "CHAT-REPLY-ENTRY-01"
+      ],
+      "evidenceProfile": "preview",
+      "checkboxIds": [],
+      "captureSteps": [
+        3
+      ],
+      "note": "Retry is a faded circular arrow on the newest question's bubble (D77), and the button row under the reply is gone entirely.",
+      "steps": [
+        {
+          "action": "previewHook",
+          "method": "setTab",
+          "args": [
+            "main"
+          ]
+        },
+        {
+          "action": "previewHook",
+          "method": "seedFinishedTurn",
+          "args": [
+            "what should i upgrade first",
+            "Upgrade the shield first.\n\nThen the boots."
+          ]
+        },
+        {
+          "action": "sleep",
+          "ms": 500
+        },
+        {
+          "action": "snapshotDom",
+          "selector": ".bonsai-scope"
+        },
+        {
+          "action": "assert",
+          "type": "domContains",
+          "expect": "bonsai-turn-retry-corner"
+        },
+        {
+          "action": "assert",
+          "type": "domContains",
+          "expect": "Retry same prompt"
+        },
+        {
+          "action": "assert",
+          "type": "domNotContains",
+          "expect": "bonsai-chat-reply-actions-row--utility"
+        },
+        {
+          "action": "previewHook",
+          "method": "getReplyLayoutJson"
+        },
+        {
+          "action": "assert",
+          "type": "hookField",
+          "field": "retryIcon",
+          "op": "present"
+        },
+        {
+          "action": "assert",
+          "type": "hookField",
+          "field": "utilityRow",
+          "op": "absent"
+        },
+        {
+          "action": "assert",
+          "type": "hookRectInside",
+          "inner": "retryIcon",
+          "outer": "questionBubble",
+          "slack": 2
+        }
+      ]
     }
   ]
 }

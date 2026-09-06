@@ -1,6 +1,6 @@
 /**
  * Title: Reply actions element builder
- * Purpose: Build Helpful/Retry/Copy rows, the refinement chips and the Show details line for a reply.
+ * Purpose: Build the Helpful/Not really row, the refinement chips and the Show details line.
  * Used for: MainTabChatTranscript reply micro-actions and liveTurnFocusGraph sibling hops.
  * Solves: Registered Deck focus owners for D-pad navigation between reply action buttons.
  * Does not: Submit follow-up Ask — see useBonsaiAskOrchestration reply chip handlers.
@@ -8,27 +8,17 @@
 import React from "react";
 import { Focusable } from "@decky/ui";
 import { BonsaiChatSecondaryButton } from "../components/BonsaiChatSecondaryButton";
-import {
-  RefreshArrowIcon,
-  ThumbDownOutlineIcon,
-  ThumbUpOutlineIcon,
-} from "../components/icons";
+import { ThumbDownOutlineIcon, ThumbUpOutlineIcon } from "../components/icons";
 import type { ReplyMicroActionId } from "../data/replyMicroActions";
 import { replyMicroActionById } from "../data/replyMicroActions";
 import {
   focusDownFromReplyUtilityRow,
   focusLastReplyChip,
   focusReplyHelpful,
-  focusReplyRetry,
   focusReplyShowDetails,
   queryLiveTurnSlot,
 } from "./liveTurnFocusGraph";
-import {
-  getReplyStop,
-  registerReplyStop,
-  REPLY_STOP_ORDER,
-  type ReplyStopId,
-} from "./replyStopRegistry";
+import { registerReplyStop } from "./replyStopRegistry";
 import { elementHasGamepadFocus } from "./uiDocument";
 import { isDeckDirectionDownEvent, isDeckDirectionUpEvent } from "./focusNavigation";
 import {
@@ -62,7 +52,6 @@ export type BuildReplyActionsElementArgs = {
    * later. Maintainer's call, 2026-09-05.
    */
   ratingUnavailable?: boolean;
-  onRetry?: () => void;
   transparencyOpen?: boolean;
   onToggleTransparency?: () => void;
   chipsDisabled?: boolean;
@@ -126,7 +115,6 @@ export function buildReplyActionsElement(
     onRate,
     showFeedback,
     ratingUnavailable = false,
-    onRetry,
     transparencyOpen,
     onToggleTransparency,
     chipsDisabled = false,
@@ -141,10 +129,10 @@ export function buildReplyActionsElement(
 
   const showChipRows = Boolean(onChip) && rating === "down";
   /*
-   * Show details became the line below (D76) and Copy moved into the answer bubble's corner (D77),
-   * so Retry is the only thing left holding this row up.
+   * The row of buttons under a reply is gone (D76, D77): Show details became the line below,
+   * Copy moved into the answer bubble's corner and Retry onto the question bubble's. What is left
+   * is the thumbs and the line.
    */
-  const showUtilityRow = Boolean(onRetry);
   const showDetailsDivider = Boolean(onToggleTransparency);
   const feedbackDisabled = askInFlight || ratingUnavailable;
   const chipsInactive = chipsDisabled || chipUsed || askInFlight;
@@ -175,33 +163,9 @@ export function buildReplyActionsElement(
     if (onMoveDownFromUtility?.()) return true;
     return focusDownFromReplyUtilityRow(liveSlot());
   };
-  const downFromUtility = () => {
-    if (showDetailsDivider && focusReplyShowDetails(liveSlot())) return true;
-    return downFromDivider();
-  };
 
-  /*
-   * Which reply stop currently holds focus (thumbs: 2, utility row: up to 3 with Copy).
-   *
-   * The row handlers below need this because `onMove*` has to sit on the row `Focusable`, not on the
-   * individual buttons — see the comment on the utility row — so a single handler serves every
-   * column and has to work out which one it was called for. Copy does not get its own up/down
-   * mapping below (it falls back to the Retry column's) — Left/Right within the row is Steam's own
-   * `flow-children="horizontal"` navigation, unaffected by which column owns the vertical hop.
-   */
-  const focusedStop = (): ReplyStopId | null => {
-    for (const id of REPLY_STOP_ORDER) {
-      const el = getReplyStop(id);
-      // Gamepad ring, not activeElement — see elementHasGamepadFocus. Using the
-      // DOM's notion here made both column handlers below dead code.
-      if (el && elementHasGamepadFocus(el)) return id;
-    }
-    return null;
-  };
 
-  const downFromThumbsRow = () =>
-    focusedStop() === "not-really" ? downFromNotReally() : downFromHelpful();
-  const upFromUtilityRow = () => upFromRetry();
+  const downFromThumbsRow = () => downFromThumbs();
 
 
   /*
@@ -211,7 +175,6 @@ export function buildReplyActionsElement(
    * render is the ref equivalent here — there are no hooks to use.
    */
   const thumbsRowEl: { current: HTMLElement | null } = { current: null };
-  const utilityRowEl: { current: HTMLElement | null } = { current: null };
   const dividerEl: { current: HTMLElement | null } = { current: null };
   /*
    * Steam's nav node for the utility row. Thumbs and utility are separate navigation containers, so
@@ -219,9 +182,6 @@ export function buildReplyActionsElement(
    * holder rather than the id registry: the row is built here, and a per-render object in the
    * module map would leave stale entries behind.
    */
-  const utilityNavRef: { current: { TakeFocus?: (gamepad?: boolean) => unknown } | null } = {
-    current: null,
-  };
 
   /*
    * D-pad handling goes through `onButtonDown`, which instrumentation confirmed is what Decky
@@ -266,23 +226,11 @@ export function buildReplyActionsElement(
    * "Helpful → Down" look correct only because Retry is where Steam was going to land anyway.
    * Once focus is inside the row, a plain `focus()` moves between its two buttons (same container).
    */
-  const enterUtilityRow = (stop: "retry") => {
-    try {
-      utilityNavRef.current?.TakeFocus?.(true);
-    } catch {
-      /* fall through — the DOM focus below still reports whether it landed */
-    }
-    const slot = liveSlot();
-    return stop === "retry" ? focusReplyRetry(slot) : false;
-  };
-  const downFromHelpful = () => {
+  /* Below the thumbs sits the Show details line — the button row that used to be here is gone. */
+  const downFromThumbs = () => {
     if (showChipRows) return false;
-    return enterUtilityRow("retry");
-  };
-  const downFromNotReally = () => {
-    if (showChipRows) return false;
-    /* One column left in the row, so both thumbs land on it. */
-    return enterUtilityRow("retry");
+    if (showDetailsDivider && focusReplyShowDetails(liveSlot())) return true;
+    return downFromDivider();
   };
   /*
    * Last fallback on the way up: hand the ring straight to a glossary chip inside this turn's
@@ -326,13 +274,10 @@ export function buildReplyActionsElement(
     return focusLastAnswerChunk(replyKey);
   };
 
-  const upFromDivider = () => {
-    const slot = liveSlot();
-    if (showUtilityRow && focusReplyRetry(slot)) return true;
-    return upFromRetry();
-  };
+  /* Nothing between the line and the thumbs any more, so Up goes straight to the row above. */
+  const upFromDivider = () => upFromRetry();
 
-  if (!showFeedback && !showUtilityRow && !showDetailsDivider && !showChipRows && rating === null) {
+  if (!showFeedback && !showDetailsDivider && !showChipRows && rating === null) {
     return null;
   }
 
@@ -412,44 +357,6 @@ export function buildReplyActionsElement(
         >
           {chipError}
         </div>
-      ) : null}
-      {showUtilityRow ? (
-        <Focusable
-          className="bonsai-chat-reply-actions-row bonsai-chat-reply-actions-row--utility"
-          flow-children="horizontal"
-          /*
-           * The move handlers belong here, on the row, not on the two buttons.
-           *
-           * `onMoveUp` / `onMoveDown` are SteamUI `Focusable` props. Passing them to a Decky
-           * `Button` puts them on a `DialogButton`, which does not forward them to any Focusable —
-           * verified on device by walking the fibers: the answer bubble's `Focusable` carries
-           * `onMoveDown` on Steam's own component, while the Retry button's copy stops at the
-           * DialogButton wrapper and never reaches one. So nothing below Retry / Show details was
-           * reachable by D-pad: the handler that would have moved focus was never called.
-           */
-          ref={(el: HTMLElement | null) => {
-            utilityRowEl.current = el;
-          }}
-          {...({
-            navRef: utilityNavRef,
-            onMoveUp: upFromUtilityRow,
-            onMoveDown: downFromUtility,
-            onButtonDown: pressHandler(utilityRowEl, downFromUtility, upFromUtilityRow),
-          } as Record<string, unknown>)}
-          style={{ display: "flex", flexDirection: "row", flexWrap: "nowrap", gap: 8, alignItems: "center" }}
-        >
-          {onRetry ? (
-            <BonsaiChatSecondaryButton
-              disabled={askInFlight}
-              onClick={onRetry}
-              aria-label="Retry same prompt"
-              replyStop="retry"
-            >
-              <RefreshArrowIcon size={14} />
-              Retry
-            </BonsaiChatSecondaryButton>
-          ) : null}
-        </Focusable>
       ) : null}
       {showDetailsDivider ? (
         /*

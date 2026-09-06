@@ -214,6 +214,50 @@ export function buildSection6Section(): string {
           ) !important;
           color: #8fa8c4 !important;
         }
+        /*
+         * The newest question's bubble carries a Retry icon on its left (D77). Flex row rather
+         * than an absolute corner: this bubble is right-aligned and fit-content, so only its right
+         * edge is fixed — pinning to the left one would need a measurement.
+         */
+        .bonsai-scope .bonsai-chat-turn-row-header--with-retry {
+          display: flex !important;
+          flex-direction: row !important;
+          align-items: center !important;
+          gap: ${uiScalePx(6)} !important;
+        }
+        .bonsai-scope .bonsai-chat-turn-row-body {
+          flex: 1 1 auto !important;
+          min-width: 0 !important;
+          text-align: right !important;
+          outline: none !important;
+        }
+        .bonsai-scope .bonsai-turn-retry-corner-slot {
+          flex: 0 0 auto !important;
+          display: inline-flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          outline: none !important;
+        }
+        /* Icon only, same weight as the microphone in the Ask field. */
+        .bonsai-scope button.bonsai-chat-secondary-btn.bonsai-turn-retry-corner,
+        .bonsai-scope button.bonsai-chat-secondary-btn.bonsai-turn-retry-corner.DialogButton {
+          min-height: 0 !important;
+          width: ${uiScalePx(20)} !important;
+          height: ${uiScalePx(20)} !important;
+          padding: 0 !important;
+          gap: 0 !important;
+          border: none !important;
+          border-radius: 4px !important;
+          background: none !important;
+          box-shadow: none !important;
+          color: #d4dde6 !important;
+          opacity: 0.5 !important;
+        }
+        .bonsai-scope .bonsai-turn-retry-corner-slot:focus-within button.bonsai-turn-retry-corner,
+        .bonsai-scope button.bonsai-turn-retry-corner.gpfocus,
+        .bonsai-scope button.bonsai-turn-retry-corner:focus-visible {
+          opacity: 0.95 !important;
+        }
         .bonsai-scope .bonsai-chat-turn-row-header--live {
           border: 1px solid rgba(100, 145, 205, 0.48) !important;
           background: linear-gradient(

@@ -10,13 +10,21 @@ import { elementHasFocus } from "./uiDocument";
 
 export type ReplyStopId = "helpful" | "not-really" | "retry" | "show-details" | "copy";
 
-/** Reading order of the grid — used to ask "which stop has focus?" deterministically. */
+/**
+ * Reading order down the reply, top to bottom.
+ *
+ * These no longer sit in one grid. After D76 and D77 the button row is gone: `retry` is an icon on
+ * the question bubble above the answer, `copy` an icon in the answer bubble's bottom-right corner,
+ * `helpful` and `not-really` the two buttons under it, and `show-details` the line below them. The
+ * order below is the order a person walks them, which is what the "which stop has focus?" lookups
+ * want; it is not a claim about layout.
+ */
 export const REPLY_STOP_ORDER: readonly ReplyStopId[] = [
+  "retry",
+  "copy",
   "helpful",
   "not-really",
-  "retry",
   "show-details",
-  "copy",
 ];
 
 const stops = new Map<ReplyStopId, HTMLElement>();
@@ -46,7 +54,8 @@ function ensureFocusable(el: HTMLElement): void {
 }
 
 /**
- * Feature: Main-tab reply D-pad (Helpful / Not really / Retry / Show details).
+ * Feature: Main-tab reply D-pad (the question's Retry, the answer's Copy, Helpful / Not really,
+ * and the Show details line).
  * Input: stop id. Output: true if that stop is mounted and focus actually landed.
  *
  * The registered node is the Decky `Button`'s own `<button>`, which is the nav node — try it first

@@ -105,7 +105,42 @@ chips lands on Retry, when the line is now what sits directly above them.
 
 **Still owed on the device.** Row SHOW-DETAILS-01, rewritten.
 
-## Step 3 — the corner icons
+## Step 3 — the corner icons (done 2026-09-06)
 
-Not built yet. See D77. This is the one with real risk: it turns the question bubble from one stop
-into a row of two, and neither icon may end up touch-only.
+**What a person notices.** The row of buttons under a reply is gone. Copy is a small faded icon in
+the answer bubble's bottom right corner. Retry is a faded circular arrow on the newest question's
+bubble, on its left. Under the answer there is now only *Was this helpful?*, its two buttons, and the
+Show details line.
+
+**Copy.** Everything it did when pressed is unchanged — it reads the text at the moment of the press,
+tries three ways of putting it on the clipboard, and shows the result for two seconds. Only what it
+draws is new: the usual two overlapping rounded squares, a tick when it works, a cross when it does
+not. The words have no room, so they live in the spoken label, which did not change. It appears on a
+finished answer only: a still-arriving one has no settled bottom to pin it to, and the text would
+change under the press.
+
+**Retry.** The question bubble went from one D-pad stop to a row of two: the icon, then the question
+text. The icon is a normal part of the row rather than something pinned to a corner, because that
+bubble is right-aligned and only as wide as its text — its left edge moves, and pinning to a moving
+edge would need a measurement, which the design rules forbid. As part of the row, the bubble simply
+grows to fit it.
+
+Pressing to open and close the question moved onto the text half, so pressing the icon cannot also
+open the question. A turn with no Retry to offer — every turn but the newest — renders exactly as it
+did before, one stop.
+
+**The risk, plainly.** This is the change most likely to be wrong in a way no test can catch. The
+test runner has no layout engine and the scripted run does not check D-pad graphs. If it is wrong it
+will show as the question no longer opening when pressed, as pressing the question firing Retry, or
+as the ring skipping past the answer. All three are visible in one pass on the device.
+
+**Tests.** Six on the question bubble: one stop and activation on the bubble when there is no Retry;
+two stops with activation moved onto the text when there is; Down into the answer staying on the
+outer row rather than either half; one press calling Retry once; and the icon greyed out and its
+Left press refused while an answer is on its way. Five on the answer bubble: the icon on a finished
+answer, nothing while streaming, nothing without copy text, the room reserved on the last section,
+and Right offered from the last section and no other. Two older tests changed: the pair that pressed
+Up out of the button row now press Up out of the line, which inherited the same fallback chain.
+
+**Still owed on the device.** Rows COPY-REPLY-01, COPY-REPLY-02, the new RETRY-CORNER-01, and
+CHAT-REPLY-ENTRY-01.

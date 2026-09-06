@@ -7,6 +7,7 @@
  *         hardware. These tests go red if the edge leaves onMoveDown again.
  * Does not: Prove on-device behavior — that is runs/SPOILER-REVEAL-*.json's job.
  */
+import React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { buildTurnHeaderElement } from "./buildTurnHeaderElement";
@@ -62,5 +63,81 @@ describe("turn header D-pad Down", () => {
 
     expect(onButtonDown("ArrowDown")).toBe(true);
     expect(mockedFocusFirstAnswerChunk).toHaveBeenCalledWith("turn-1");
+  });
+});
+
+/*
+ * Retry sits on the newest question's bubble as a faded circular arrow (D77), not in a button row
+ * under the answer. A turn with no Retry to offer must be exactly what it was before: one
+ * Focusable, one D-pad stop, activation on the bubble itself.
+ */
+describe("Retry on the question bubble", () => {
+  const build = (over: Record<string, unknown> = {}) =>
+    buildTurnHeaderElement({
+      turnId: "turn-1",
+      title: "a question",
+      expanded: true,
+      onActivate: () => {},
+      ...over,
+    });
+
+  const childrenOf = (el: React.ReactElement) =>
+    React.Children.toArray((el.props as { children?: React.ReactNode }).children).filter(
+      Boolean
+    ) as React.ReactElement[];
+
+  it("is one stop, with activation on the bubble, when there is no Retry", () => {
+    const el = build();
+    const props = el.props as Record<string, unknown>;
+    expect(props.onActivate).toBeTypeOf("function");
+    expect(String(props.className)).not.toContain("--with-retry");
+    const kids = childrenOf(el);
+    expect(kids).toHaveLength(1);
+    expect(String((kids[0]!.props as Record<string, unknown>).className)).toContain(
+      "bonsai-chat-turn-row-title"
+    );
+  });
+
+  it("becomes a row of the icon then the question when Retry is offered", () => {
+    const el = build({ onRetry: () => {} });
+    const props = el.props as Record<string, unknown>;
+    expect(String(props.className)).toContain("--with-retry");
+    /* Activation moved onto the text child, so pressing the icon cannot also open the question. */
+    expect(props.onActivate).toBeUndefined();
+
+    const kids = childrenOf(el);
+    expect(kids).toHaveLength(2);
+    expect(String((kids[0]!.props as Record<string, unknown>).className)).toContain(
+      "bonsai-turn-retry-corner-slot"
+    );
+    const body = kids[1]!.props as Record<string, unknown>;
+    expect(String(body.className)).toContain("bonsai-chat-turn-row-body");
+    expect(body.onActivate).toBeTypeOf("function");
+    expect(body.onMoveLeft).toBeTypeOf("function");
+  });
+
+  it("keeps Down into the answer on the outer row, not on either child", () => {
+    const el = build({ onRetry: () => {} });
+    expect((el.props as Record<string, unknown>).onMoveDown).toBeTypeOf("function");
+    for (const kid of childrenOf(el)) {
+      expect((kid.props as Record<string, unknown>).onMoveDown).toBeUndefined();
+    }
+  });
+
+  it("presses Retry once", () => {
+    const onRetry = vi.fn();
+    const slot = childrenOf(build({ onRetry }))[0]!;
+    const button = childrenOf(slot)[0]!;
+    ((button.props as Record<string, unknown>).onClick as () => void)();
+    expect(onRetry).toHaveBeenCalledTimes(1);
+  });
+
+  it("greys the icon out and refuses Left while an answer is on its way", () => {
+    const el = build({ onRetry: () => {}, retryDisabled: true });
+    const kids = childrenOf(el);
+    const button = childrenOf(kids[0]!)[0]!;
+    expect((button.props as Record<string, unknown>).disabled).toBe(true);
+    const onMoveLeft = (kids[1]!.props as Record<string, unknown>).onMoveLeft as () => boolean;
+    expect(onMoveLeft()).toBe(false);
   });
 });

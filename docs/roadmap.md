@@ -176,9 +176,6 @@ replace it with a specific issue when one exists.
   hidden spoiler block is skipped with a short spoken phrase. Three Deck checks run before the build. [Memo](planning/42-read-aloud-feasibility.md).
 - ★★★ `[chips]` **Decode preset chip animation** — **VERIFY, feel only.** Shipped 2026-08-28. Measured on device: a flat 60 fps with
   all chips decoding. Whether it feels right is a person's call. Row **PRESET-STREAM-ANIM-01**.
-- ★★★ `[layout]` **Copy sits in the answer's corner, not in a button row** — **OPEN.** A small semi-transparent copy glyph in the
-  bubble's corner, the same weight as the microphone. The hard part is focus: bubbles need a way in and back out, and Copy must not
-  become touch-only.
 - ★★★ `[layout]` **Give the reclaimed height to the transcript** — **OPEN, next step under the vertical-space goal.** The collapsing
   tab bar freed 61px, but the transcript is still 412px: the room went into Main's overflow and the gap above the dock. What caps
   the transcript is a Main-tab layout question, worked out in [planning/30-collapsing-tab-bar.md](planning/30-collapsing-tab-bar.md) § 8.
@@ -282,6 +279,16 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
   being written (unit-tested, not reproducible by hand yet). Row **CLEAR-CACHE-01**. [Why](roadmap-details.md#shipped-qa-owed--why-each-was-built-this-way).
 
 ### Features that need verification
+
+- ★★★ `[layout]` **Copy sits in the answer's corner, not in a button row** — **VERIFY, and this is the one to look at hardest.**
+  Built at the desk 2026-09-06 under D77. The row of buttons under a reply is gone. **Copy** is a small faded icon in the answer
+  bubble's bottom right corner — press Right from the last part of the answer to reach it, Left to come back. **Retry** is a faded
+  circular arrow on the newest question's bubble, on its left — press Left from the question, Right to come back. The reply gets
+  that whole row's height back. **What is owed on the device:** every one of those four presses, reading back where the ring
+  actually landed rather than judging from a screenshot; that pressing the question still opens and closes it and does **not**
+  fire Retry by accident; that neither icon is touch-only; and a sweep for anything now unreachable. The question bubble went from
+  one D-pad stop to a row of two, which is the change most likely to go wrong in a way no test can catch. Rows **COPY-REPLY-01**,
+  **COPY-REPLY-02**, **CHAT-REPLY-ENTRY-01**.
 
 - ★★ `[layout]` **Show details becomes a divider, not a chip** — **VERIFY.** Built at the desk 2026-09-06 under D76.
   Under a finished answer there is now a thin line across the reply with **Show details ↓** in the middle of it, at the

@@ -177,7 +177,14 @@ describe("buildReplyActionsElement no longer offers Copy", () => {
  * It is the line below the row now (D76), so the row needs Retry to exist at all — the press being
  * checked (Up out of the row, into the answer) is unchanged.
  */
-describe("buildReplyActionsElement Up from the utility row into the answer", () => {
+/*
+ * Up out of the bottom of the reply block, into the answer.
+ *
+ * This used to be the button row's own onMoveUp. The row is gone (D76, D77) — Show details is the
+ * line at the bottom now, and it inherited the same last-resort chain, so the press being checked
+ * is unchanged even though the element carrying it is not.
+ */
+describe("buildReplyActionsElement Up from the bottom of the reply into the answer", () => {
   afterEach(() => {
     resetAnswerStopRegistry();
     resetUiDocument();
@@ -192,12 +199,12 @@ describe("buildReplyActionsElement Up from the utility row into the answer", () 
       rating: null,
       onRate: () => {},
       showFeedback: false, // no thumbs row
-      onRetry: () => {}, // utility row renders (Retry)
+      onToggleTransparency: () => {},
     });
 
-    const utilityRow = findByClassName(el, "bonsai-chat-reply-actions-row--utility");
-    expect(utilityRow).not.toBeNull();
-    const onMoveUp = (utilityRow!.props as Record<string, unknown>).onMoveUp as () => boolean;
+    const line = findByClassName(el, "bonsai-chat-details-divider");
+    expect(line).not.toBeNull();
+    const onMoveUp = (line!.props as Record<string, unknown>).onMoveUp as () => boolean;
 
     expect(onMoveUp()).toBe(true);
     expect(document.activeElement).toBe(stops[stops.length - 1]);
@@ -211,11 +218,11 @@ describe("buildReplyActionsElement Up from the utility row into the answer", () 
       rating: null,
       onRate: () => {},
       showFeedback: false,
-      onRetry: () => {},
+      onToggleTransparency: () => {},
     });
 
-    const utilityRow = findByClassName(el, "bonsai-chat-reply-actions-row--utility");
-    const onMoveUp = (utilityRow!.props as Record<string, unknown>).onMoveUp as () => boolean;
+    const line = findByClassName(el, "bonsai-chat-details-divider");
+    const onMoveUp = (line!.props as Record<string, unknown>).onMoveUp as () => boolean;
 
     expect(onMoveUp()).toBe(false);
   });
@@ -329,12 +336,10 @@ describe("buildReplyActionsElement Show details line", () => {
       ...over,
     });
 
-  it("renders a line and no Show details button", () => {
-    const el = build({ onRetry: () => {} });
+  it("renders a line, and no button row of any kind", () => {
+    const el = build();
     expect(findByClassName(el, "bonsai-chat-details-divider")).not.toBeNull();
-    const row = findByClassName(el, "bonsai-chat-reply-actions-row--utility");
-    const labels = JSON.stringify(row!.props);
-    expect(labels).not.toContain("Show details");
+    expect(findByClassName(el, "bonsai-chat-reply-actions-row--utility")).toBeNull();
   });
 
   it("reads Show details when closed and Hide details when open", () => {
@@ -360,9 +365,14 @@ describe("buildReplyActionsElement Show details line", () => {
     expect(String(props.className)).toContain("bonsai-chat-details-divider--disabled");
   });
 
-  it("renders without a button row when Retry and Copy are both absent", () => {
-    const el = build();
-    expect(findByClassName(el, "bonsai-chat-reply-actions-row--utility")).toBeNull();
-    expect(findByClassName(el, "bonsai-chat-details-divider")).not.toBeNull();
+  it("is the last thing in the block, after the thumbs", () => {
+    const el = build({ showFeedback: true });
+    const children = React.Children.toArray(
+      (el!.props as { children?: React.ReactNode }).children
+    ).filter(Boolean) as React.ReactElement[];
+    const last = children[children.length - 1]!;
+    expect(String((last.props as Record<string, unknown>).className)).toContain(
+      "bonsai-chat-details-divider"
+    );
   });
 });

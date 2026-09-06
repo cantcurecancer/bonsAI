@@ -105,7 +105,8 @@
         "UI-A-reply-stop-count",
         "UI-A-reply-fence-alone",
         "UI-A-details-divider",
-        "UI-A-copy-in-bubble-corner"
+        "UI-A-copy-in-bubble-corner",
+        "UI-A-retry-on-question-bubble"
       ],
       "sourceFiles": [
         "tier3-ui-navigation.json"

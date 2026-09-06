@@ -1,14 +1,18 @@
 /**
  * Title: Turn header element builder
- * Purpose: Build Focusable collapsed/expanded Ask turn header rows for chat transcript slots.
+ * Purpose: Build the question bubble for a turn — its text, and the Retry icon in its corner.
  * Used for: MainTabChatTranscript history and live turn slot rendering.
  * Solves: Consistent header focus behavior and expand/collapse activation on Deck.
- * Does not: Render answer body — see buildAnswerBubbleElement.
+ * Does not: Render answer body — see buildAnswerBubbleElement. Does not decide what Retry re-asks
+ *   — the caller supplies the handler.
  */
 import React from "react";
 import { Focusable } from "@decky/ui";
+import { BonsaiChatSecondaryButton } from "../components/BonsaiChatSecondaryButton";
+import { RefreshArrowIcon } from "../components/icons";
 import { focusFirstAnswerChunk } from "./answerBubbleNavigation";
-import { isDownDeckButtonEvent } from "./focusNavigation";
+import { isDeckDirectionLeftEvent, isDeckDirectionRightEvent, isDownDeckButtonEvent } from "./focusNavigation";
+import { focusRegisteredReplyStop } from "./replyStopRegistry";
 
 export type BuildTurnHeaderElementArgs = {
   turnId: string;
@@ -17,6 +21,15 @@ export type BuildTurnHeaderElementArgs = {
   variant?: "history" | "live";
   isStreaming?: boolean;
   onActivate: () => void;
+  /**
+   * When set, the bubble gains a faded circular-arrow Retry icon on its left (D77).
+   *
+   * Only the newest turn supplies it — Retry re-asks the question, and an older turn's is not what
+   * would be sent. A turn without it renders exactly as before: one Focusable, one stop.
+   */
+  onRetry?: () => void;
+  /** Greys the Retry icon out and disconnects it while an answer is on its way. */
+  retryDisabled?: boolean;
 };
 
 /** Plain function — header Focusable is a child of the turn-slot Focusable group. */
@@ -28,6 +41,8 @@ export function buildTurnHeaderElement(args: BuildTurnHeaderElementArgs): React.
     variant = "history",
     isStreaming = false,
     onActivate,
+    onRetry,
+    retryDisabled = false,
   } = args;
 
   const headerClass = [
@@ -38,6 +53,9 @@ export function buildTurnHeaderElement(args: BuildTurnHeaderElementArgs): React.
   ]
     .filter(Boolean)
     .join(" ");
+
+  /* Same per-render holder pattern the reply row uses — this is a plain function, no hooks. */
+  const bodyEl: { current: HTMLElement | null } = { current: null };
 
   const focusAnswer = () => {
     if (!expanded) return false;
@@ -60,18 +78,98 @@ export function buildTurnHeaderElement(args: BuildTurnHeaderElementArgs): React.
       isDownDeckButtonEvent(button) ? focusAnswer() : false,
   } as Record<string, unknown>;
 
+  const titleSpan = (
+    <span className="bonsai-chat-turn-row-title" data-bonsai-turn-id={turnId}>
+      {title || "…"}
+    </span>
+  );
+
+  /*
+   * No Retry to offer — every turn but the newest. Unchanged from before the icon existed: one
+   * Focusable, one D-pad stop, activation on the bubble itself.
+   */
+  if (!onRetry) {
+    return (
+      <Focusable
+        key={`turn-header-${turnId}`}
+        className={headerClass}
+        onActivate={onActivate}
+        aria-expanded={expanded}
+        data-bonsai-turn-id={turnId}
+        {...headerNavHandlers}
+      >
+        {titleSpan}
+      </Focusable>
+    );
+  }
+
+  /*
+   * With Retry, the bubble becomes a row of two stops: the icon, then the question text.
+   *
+   * The icon is a flex child rather than a corner pinned by position, because this bubble is
+   * right-aligned and only as wide as its text — its left edge floats, and pinning to a floating
+   * edge would need a measurement (design-language.md rule 4). As a child the bubble simply grows
+   * to fit it.
+   *
+   * Activation moves onto the text child so a press on the icon cannot also open or close the
+   * question. Down into the answer stays on the outer row: a Decky Button does not forward
+   * onMove*, the measured reason recorded in buildReplyActionsElement.tsx.
+   */
+  const rightIntoQuestion = () => {
+    const body = bodyEl.current;
+    if (!body) return false;
+    try {
+      (body as HTMLElement).focus({ preventScroll: true });
+    } catch {
+      return false;
+    }
+    return true;
+  };
+  const leftIntoRetry = () => (retryDisabled ? false : focusRegisteredReplyStop("retry"));
+
   return (
     <Focusable
       key={`turn-header-${turnId}`}
-      className={headerClass}
-      onActivate={onActivate}
-      aria-expanded={expanded}
+      className={`${headerClass} bonsai-chat-turn-row-header--with-retry`}
+      flow-children="horizontal"
       data-bonsai-turn-id={turnId}
       {...headerNavHandlers}
     >
-      <span className="bonsai-chat-turn-row-title" data-bonsai-turn-id={turnId}>
-        {title || "…"}
-      </span>
+      <Focusable
+        className="bonsai-turn-retry-corner-slot"
+        {...({
+          onMoveRight: () => rightIntoQuestion(),
+          onButtonDown: (button: unknown) =>
+            isDeckDirectionRightEvent(button) ? rightIntoQuestion() : false,
+        } as Record<string, unknown>)}
+      >
+        <BonsaiChatSecondaryButton
+          className="bonsai-turn-retry-corner"
+          disabled={retryDisabled}
+          onClick={onRetry}
+          aria-label="Retry same prompt"
+          replyStop="retry"
+        >
+          <RefreshArrowIcon size={14} />
+        </BonsaiChatSecondaryButton>
+      </Focusable>
+      <Focusable
+        className="bonsai-chat-turn-row-body"
+        ref={(el: HTMLElement | null) => {
+          bodyEl.current = el;
+        }}
+        onActivate={onActivate}
+        onOKButton={onActivate}
+        aria-expanded={expanded}
+        data-bonsai-turn-id={turnId}
+        {...({
+          onMoveLeft: () => leftIntoRetry(),
+          onButtonDown: (button: unknown) =>
+            isDeckDirectionLeftEvent(button) ? leftIntoRetry() : false,
+        } as Record<string, unknown>)}
+      >
+        {titleSpan}
+      </Focusable>
     </Focusable>
   );
 }
