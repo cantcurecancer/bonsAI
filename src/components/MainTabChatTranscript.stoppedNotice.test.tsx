@@ -130,6 +130,38 @@ describe("stopped turn — notice and reply actions restored on the archived tur
     );
   });
 
+  /*
+   * Roadmap "Retry on a restored reply does nothing" (one-star, reply, found on the Deck
+   * 2026-09-06). A plugin restart is the case: the chat slots come back from Python, so the
+   * transcript redraws the last exchange, but the in-memory session snapshot does not survive a
+   * restart (bonsaiSessionSurvival.ts says so in its own header), so `lastExchange` is null while
+   * the turn is on screen with a live Retry badge. The stopped path above was already given the
+   * direct re-ask for exactly this reason; a finished turn was not, and fell through to
+   * `onRetryLastResponse`, which reads `lastExchange`, finds nothing, and toasts "Nothing to
+   * retry". Same landing as the stopped case: Retry re-asks the turn it is drawn on.
+   */
+  it("Retry re-asks a finished turn's own question when lastExchange is gone", () => {
+    const onAskOllama = vi.fn();
+    const onRetryLastResponse = vi.fn();
+    const { getByLabelText } = render(
+      <MainTabChatTranscript
+        {...baseProps({
+          askThreadCollapsed: [stoppedTurn],
+          expandedTurnKey: stoppedTurn.id,
+          askStopped: false,
+          lastExchange: null,
+          onAskOllama,
+          onRetryLastResponse,
+        })}
+      />
+    );
+    fireEvent.click(getByLabelText("Retry same prompt"));
+    expect(onAskOllama).toHaveBeenCalledWith(
+      stoppedTurn.question,
+      expect.objectContaining({ threadQuestionDisplay: stoppedTurn.question })
+    );
+  });
+
   it("shows nothing extra for an empty stop (no readable draft kept)", () => {
     const emptyStopTurn: AskThreadCollapsedTurn = {
       id: "stopped-2",

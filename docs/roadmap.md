@@ -289,6 +289,12 @@ Fixed, unit-tested and shipped, but not yet confirmed on the Deck. Owed QA row n
   picker go with it. Three tests. Row **CLEAR-ALL-PREFIX-01**; **not run on the device**, because doing so destroys the
   maintainer's chats and settings and that was not asked for.
 
+- ★ `[reply]` **Retry on a reply that came back after a restart did nothing** — **VERIFY.** Found on the Deck 2026-09-06
+  while checking the character voice. Reopen the plugin after it has restarted and your last conversation is there, with a
+  live Retry badge on the question — pressing it sent no question at all, just a toast. The badge was asking the session
+  for the question instead of the turn it is drawn on, and a restart empties the session while the chat comes back from
+  disk. It now re-asks the turn it sits on. One test. Row **RETRY-RESTART-01**.
+
 - ★★ `[focus]` **A checklist the model got wrong was left in the reply as raw JSON**, its own D-pad stop that did nothing — **VERIFY.**
   Fixed 2026-08-28: a rejected checklist block is dropped, as a rejected branch block already was. Owed: one sighting on device of a
   reply where it happens. Row **STRAT-CHECKLIST-JSON-01**.

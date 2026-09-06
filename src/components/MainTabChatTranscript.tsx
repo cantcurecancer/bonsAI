@@ -659,19 +659,34 @@ export function MainTabChatTranscript(props: MainTabChatTranscriptProps) {
               onActivate: () => onTurnActivate?.(turn.id),
               /*
                * Retry rides on the newest question's bubble now (D77) instead of the row under the
-               * answer. Same gate the row's own Retry used, and the same two handlers: a stopped
-               * turn re-asks its own question directly, because onRetryLastResponse reads
-               * lastExchange, which a stop clears to null.
+               * answer. It re-asks the turn it is drawn on, always: the turn already carries its
+               * own question, so nothing here has to consult session state that may be gone.
+               *
+               * This used to route a stopped turn that way and every other turn through
+               * onRetryLastResponse, which reads lastExchange. A stop clears lastExchange to null,
+               * which is why the stopped case was special-cased -- but a plugin restart empties it
+               * too, while the chat slots come back from Python and redraw the turn with a live
+               * Retry badge. Pressing it toasted "Nothing to retry" and sent nothing (measured on
+               * the Deck 2026-09-06: no request reached the backend). Both cases are the same
+               * case, so there is one handler now.
+               *
+               * Passing the question as an override also makes onAskOllama clear any pending
+               * reply follow-up itself, which is the clearing onRetryLastResponse did by hand.
+               *
+               * The stop-notice check keeps the one case that must still show no Retry: a stop
+               * with nothing readable kept, where the answer is the backend's own placeholder.
+               * That used to fall out of the lastExchange routing by accident; it is a condition
+               * now, because the routing it depended on is gone.
                */
               onRetry:
-                isNewestArchivedTurn && expandedTurnKey === turn.id
-                  ? isNewestStoppedArchivedTurn
-                    ? () => {
-                        void onAskOllama?.(turn.question, {
-                          threadQuestionDisplay: turn.questionDisplay || turn.question,
-                        });
-                      }
-                    : onRetryLastResponse
+                isNewestArchivedTurn &&
+                expandedTurnKey === turn.id &&
+                !isStopNoticeResponse(turn.answer)
+                  ? () => {
+                      void onAskOllama?.(turn.question, {
+                        threadQuestionDisplay: turn.questionDisplay || turn.question,
+                      });
+                    }
                   : undefined,
               retryDisabled: isAsking,
             })}
