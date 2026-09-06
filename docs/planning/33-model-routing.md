@@ -27,6 +27,7 @@ Checklist for this plan:
 - ✅ Roadmap maintainer note added
 - ✅ Maintainer review (D59, 2026-09-05: table, orchestrator, lane scope and AGENTS.md placement locked)
 - ✅ Short form copied into AGENTS.md § 3
+- ✅ Bookkeeper helper and guard installed (2026-09-06, § 6)
 - ⬜ Haiku trial: ten lookups logged in § 4a, then keep or drop
 
 ## 1. What each model costs here
@@ -65,7 +66,7 @@ means: write the code and tests. "Land" means: review each diff, cherry-pick, ke
 | Pixel polish (dots, rings, fonts) | do not use Fable; the tools cannot see pixels | Opus xhigh with a measurement, else a human | | human eyes |
 | Backend and retrieval (`[KB]`, `[ollama]`) | Opus xhigh | Sonnet 5 high | Opus xhigh | the eval harness, not the Deck |
 | Refactor | Opus xhigh (§ 3) | Sonnet 5 high lanes for moves; Opus xhigh for behavior-touching steps | Opus xhigh | after each landing batch |
-| Docs, roadmap bookkeeping, plain explanations | | Sonnet 5 high or Opus medium | | |
+| Docs, roadmap bookkeeping, plain explanations | | the `bookkeeper` helper (Sonnet 5 high) or Opus medium | | |
 | Read-only lookups with a checkable answer | | Haiku 4.5 on trial (§ 4a) or Sonnet 5 low | the caller greps to confirm | |
 | Deck QA driving | Opus xhigh writes the rows and expect strings | Sonnet 5 high may run rows already written | Opus xhigh reads the failures | |
 
@@ -156,11 +157,13 @@ What to change:
   more than half the session cost on 09-04. Use Fable only when the same session also plans ★★★★★ scope.
 - **Lanes should not edit the roadmap, testing rows, or the changelog.** Plan 32 had lanes move their own
   rows and the orchestrator then spent turns resolving the conflicts. Lanes return code, tests, and a
-  one-paragraph report; the orchestrator does the bookkeeping in one commit per landing.
-- **Check the lane effort actually took.** The plan 32 agent file says `effort: high`, and D58 #7 locked
-  Sonnet at high. Every lane transcript records `max`. Either the front matter is ignored or the
-  transcript records the parent's setting; until that is settled, assume lanes run at the parent's effort
-  and cost accordingly.
+  one-paragraph report; the bookkeeping is done by the bookkeeper helper, briefed by the orchestrator, in
+  one commit per landing.
+- **Check the lane effort actually took.** Settled 2026-09-06: across every helper transcript on this
+  machine, the bugfix-lane and feature-lane helpers (front matter `effort: high`) ran every turn at high
+  (1,111 and 899 turns). The "max" turns the plan saw were general-purpose helpers with no front matter,
+  which inherit the parent's effort (2,874 Sonnet turns at max, all from Fable-max parents). So the front
+  matter is honored; a helper with no front matter runs at whatever the main chat runs at.
 - **Do not launch lanes near a usage-limit reset.** Two lane runs on 08-23 and one on 09-03 were killed
   mid-task and had to be relaunched from scratch.
 
@@ -214,6 +217,17 @@ model or effort is outside the table, open the reply with one gentle sentence sa
 recommended row, then carry on. If it matches, the session says nothing. On a session's first prompt there
 is no turn yet, so it reports the user-settings default and says so. It never blocks. Confirmed live
 2026-09-05: it fired on the prompt that asked for this section.
+
+A second hook, the bookkeeper guard, works differently: it refuses instead of reminding. If a session
+running on Fable tries to edit the roadmap, the testing docs, the changelog, or a test file itself, the
+guard stops that edit and tells the session to hand the batch to the `bookkeeper` helper instead, with a
+brief that says what a person will notice and what each row should read. It never fires inside a helper,
+on Opus or Sonnet, or on a plan, a memory file, or a scratch file. Setting `BONSAI_BOOKKEEPER_GUARD=off`
+turns it off for one session. It lives under `.claude/` on the maintainer's machine, git-ignored, the same
+as the reminder. Fifteen fake-call checks passed on 2026-09-06. It is a refusal rather than a rule because
+a rule can drift out of a long chat's attention, while a refused call cannot be missed. The honest limit:
+the guard only changes who types the file. Every reply the maintainer reads in the chat is still written
+by the main model running the session; the guard cannot move that.
 
 ## 7. Evidence
 
