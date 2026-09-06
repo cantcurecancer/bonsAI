@@ -6,6 +6,17 @@
 
 Headings group related work. Star counts match the historical list.
 
+### Round 34 continued (2026-09-06)
+
+- ★★★ `[platform]` **Legacy-loader shim removal (D11)** — the old compatibility layer that every Ask used to pass through was
+  taken out on 2026-08-03. The backend side was proved the next day by driving all the affected calls on the device (21 of 21
+  clean). What was left was the part a probe cannot do: a real Ask typed into the Main tab against a working Ollama, and a
+  voice recording started and stopped for real. **Both run on the Deck 2026-09-06.** Two Asks completed through the Main tab
+  (one finished in 23.6 seconds, one stopped on purpose), and the voice button went *Voice input* → *Stop voice input* →
+  *Voice input* with no error and no crash in the log. The recording was silence, so nothing came back as text — the right
+  outcome for silence, and whether speech comes back as the right words belongs to the voice rows, which are still open.
+  Row **D11-SHIM-01**.
+
 ### Round 36 (2026-09-05)
 
 - ★★ **Replies always arrive word by word:** streaming used to be a Developer-screen switch called *Token streaming (experimental)*, off by default, so an ordinary person's replies landed in one lump at the end. It is now simply how replies work, and the switch is gone. The setting's two names appeared 27 times across 14 files, all removed in both languages; both shared agreement files lost the key too, so an incomplete two-language edit would fail a test rather than ship. **The upgrade was the risk, and it was proven before the removal:** a settings file already on a Deck still carries the deleted key, and loading it must drop that key quietly and leave every other setting untouched. A shared test case named for the real key was written and watched passing in both languages first. **On the Deck 2026-09-05:** a copy of the device's real settings file was made to look like one written by the previous build, the new build deployed, the panel opened — 47 settings before, 46 after, the only loss the dead key, nothing else changed. Then a long question with no streaming key anywhere in settings: the answer grew through 28, 127, 247, 403, 515, 627, 666 characters over eight seconds, eleven separate steps. The Developer screen carries no streaming control. Rows **STREAM-UPGRADE-01**, **STREAM-DEFAULT-01**.

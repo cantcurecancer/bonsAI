@@ -443,3 +443,69 @@ to the tab bar first.
 **The device was left exactly as it was found** — every setting re-read off disk and matching, all five
 permissions on, no game running, no frozen chips pinned. Backups for the morning's data clear are in
 place: `settings.json.bak-round34` beside the settings file, and `~/bonsai-round34-chats.tgz`.
+
+---
+
+### Continued 2026-09-06, 00:29–01:00 — three bugs closed, one new one found
+
+Picked the round back up after the device came free. The tree had moved on a long way (725 commits past `main`, the
+2026-09-05 desk fixes all present), so the first act was a fresh deploy; the loader came back in 321 ms and the panel
+opened on the second attempt, which is the usual behaviour straight after a deploy.
+
+**The device was in the state round 34 left it** — thinking off, no saved try order, no frozen chips, knowledge base on,
+Strategy mode, nothing running.
+
+**Three bugs from the 2026-09-05 desk session now pass on the device.** All three were checked inside one Strategy
+conversation, with no game running.
+
+| What was owed | Result |
+|---|---|
+| A branch question names its game | **PASS.** *"Where are you at in Half-Life 2?"* — the name is there, no dots. |
+| A stopped reply says it stopped | **PASS.** *"Stopped — partial answer kept."*, half answer kept, Helpful and Not really greyed, Retry live. |
+| A branch block stays in its own chat | **PASS.** Absent from both other chats, in both directions; comes home on the way back. |
+
+Two screenshots stand as evidence: `screenshots/round35-branch-names-game-and-stays-in-slot.png` and
+`screenshots/round35-stopped-notice-and-greyed-buttons.png`.
+
+**One more entry closed, and it cost almost nothing.** The legacy-loader shim removal (**D11-SHIM-01**) had two checks
+left that a probe cannot do — a real Ask typed into the Main tab, and a voice recording started and stopped for real. The
+Asks above cover the first. For the second the voice button went *Voice input* → *Stop voice input* → *Voice input* with no
+error and nothing in the log; the engine folder was written to at that moment, so the recording really happened. It
+recorded silence, so no words came back — which is correct for silence, and does not say whether speech is transcribed
+well. That question belongs to the voice rows and is still owed.
+
+**A new bug, and it is a bad one: the model try order will not save.**
+
+Setting out to run **ROUTING-MERGE-01** meant first saving a try order, so that a pulled model would have something to
+join. Opening *Set text model try order…*, moving one model up and pressing *Done* left the settings file holding an empty
+list. Pressing *Done* with no change also left it empty, which is reasonable. So the second attempt read the settings file
+four times a second while the same steps were repeated, and caught both writes:
+
+```
+00:44:20.383  ['gemma4:e2b-it-qat', 'qwen3.5:4b', 'qwen2.5:1.5b', 'nomic-embed-text:latest']
+00:44:20.986  []
+```
+
+The picker saves correctly and something puts the old value back six tenths of a second later. The picker's own save is
+sound — it pauses the background save, writes, and re-reads. The second writer is the timed background save, which fires
+400 ms after any settings change and sends a snapshot taken *before* the picker wrote. Changing the order is itself a
+settings change, so it schedules the very save that undoes it. Filed under Bugs with both line references.
+
+**So the model pull was not spent.** **ROUTING-MERGE-01** cannot pass while no order can be saved, and a download would
+have proved nothing. The entry is marked blocked rather than open, which is the honest state.
+
+**Two smaller findings.**
+
+- Closing the try-order picker drops the highlight onto the Ollama tab's outer frame rather than back on the button you
+  opened it from — about thirteen presses to get back. Seen both times. Filed.
+- The greyed *Helpful* and *Not really* buttons on a stopped reply still take the highlight and do nothing. That is the
+  existing greyed-button entry, not a new fault; this is a second sighting.
+
+**One near-miss worth writing down so nobody re-files it.** During the first walk down the Main tab one stop inside the
+reply body came back covered by the Ask box — focused but invisible, the exact shape this rig exists to catch. A second
+walk of the same tab, 18 stops, found nothing invisible. It was a mid-scroll transient, not a defect. Evidence
+`runs/round35-main-visibility-walk.json`.
+
+**The device was left as it was found:** try order empty (the bug put it back itself), no frozen chips, all other settings
+unchanged, nothing running, no model pulled. Two chats gained turns — the Ravenholm thread and the stopped weapons guide —
+which is ordinary use, not a settings change.

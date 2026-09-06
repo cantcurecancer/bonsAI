@@ -150,6 +150,31 @@ the `await`. Verified on-device: 21/21 RPCs ok, `bonsAI plugin loaded!`, zero lo
 
 ---
 
+## Round 34 continued (2026-09-06)
+
+Three bugs that had been fixed at the desk on 2026-09-05 and were waiting for someone to try them on the Deck. All three
+were checked in one Strategy conversation with no game running, on the build deployed at 00:29.
+
+- ★ **A branch question names the game again.** The follow-up question at the end of a Strategy answer used to read
+  *"Where are you at in … ?"*, with the game's name replaced by three dots. Asked *"I am stuck in Ravenholm in Half-Life 2,
+  how do I get through it?"*; the answer ended with **"Where are you at in Half-Life 2? A. Just arrived at the train station /
+  B. Fighting through Ravenholm"**. The name is there and there are no dots. The plugin's own log confirms the block was the
+  real one and not text the model happened to write: `ask_ollama: strategy fences branch_marker=True branch_parsed=True
+  branch_options=2`. Screenshot `screenshots/round35-branch-names-game-and-stays-in-slot.png`.
+
+- ★★ **Stopping a reply now says so.** Asked for a very long answer, pressed *Stop generation* while it was still arriving.
+  The turn kept the half answer and gained the line **"Stopped — partial answer kept."** *Helpful* and *Not really* are both
+  there and both greyed, which is what the maintainer asked for on 2026-09-05 — half an answer is not something to rate.
+  *Retry*, *Show details* and *Copy* are live. The backend stopped cleanly too: `abort_background_game_ai: stop requested`,
+  then the model unloaded. Screenshot `screenshots/round35-stopped-notice-and-greyed-buttons.png`. Row **SOFT-PREDICT-03**.
+  **One thing carried over:** the two greyed buttons still take the D-pad highlight and do nothing when pressed. That is the
+  separate greyed-button entry in [Bugs](../roadmap.md#bugs), and this is a second sighting of it, not a new fault.
+
+- ★★★★ **A chat's follow-up question stays in its own chat.** The branch block from the Ravenholm chat was checked against
+  both of the other chats on the device — one with two turns of its own, one empty — and appeared in neither, in either
+  direction of the shoulder buttons. Switching back to the Ravenholm chat brought it home unchanged. Row
+  **CHAT-SLOTS-V3-05a**.
+
 ## Round 36 (2026-09-05)
 
 - ★ **The question bubble lines up with the answer below it:** the bubble showing what you typed was pushed against the right edge with an empty strip down its left, and the answer below it sat almost flush, so the two did not line up. Reported by the maintainer, who put the gap at about 40 pixels. **Measured on the Deck: 35 pixels of empty space on the left, none on the right, and nothing sitting in the gap.** The cause was not a stray margin: both bubbles are capped as a share of the row, and the two caps disagreed — the answer stops at 92% of the row, the question stopped at 88%. On the 290-pixel row that is 23 pixels beside the answer and 35 beside the question. Setting the question to the same 92% makes them exactly mirrored, both 267 pixels wide, inset 23 on their own side, confirmed on the device after the change. **Some inset is kept on purpose:** the bubble is pushed right so it reads as *yours*, and with no inset at all a question would be indistinguishable from an answer. Whether 23 is still too much is a person's call. Row **CHAT-BUBBLE-MIRROR-01**.
