@@ -673,14 +673,17 @@ to § 11 of this file: for each row, pass or fail, the reading, the file. Plain 
 
 ## 11. Progress log
 
-*(empty until "go")*
-
-- Tip hash at start: —
-- Corpus version built in wave 0: —
-- Pre-wave search baseline (266 cards): —
-- Lanes launched: —
-- Landings, in order, with hashes: —
+- Tip hash at start: `37b0886`.
+- Corpus version built in wave 0: `2026.09.06`, 266 notes, passed the publish check.
+- Pre-wave search baseline (266 cards): the answer test kept the facts from the card 92.9% of the time, never
+  contradicted a note, and attached a note every time. The search test could not tell its four search methods apart on
+  the held-back questions — the ranges overlap. That is an open question, not a tie.
+- Lanes launched: five.
+- Landings, in order, with hashes: three so far. 72 blind search questions for the twelve new games
+  (`dc263df`); 24 answer-test rows for the same twelve games (`2f564fc`); the search test's weight sweep,
+  per-question card detail, and second-right-answer support (`8cf140b`).
 - Sweep table and the weight call: —
-- Answer test before / after / after-late / voice: —
+- Answer test before / after / after-late / voice: before is the pre-wave baseline above; after / after-late / voice
+  not run yet.
 - Release: version, bytes, both channels read back: —
 - QA session log: —

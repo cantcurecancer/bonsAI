@@ -48,6 +48,8 @@ session that has not read them.
 | 2–3 Sep | ★★ | Spoiler fence misfire fixed and measured; prompt budget guard so a long log paste cannot push the instructions out of the model's window | Fewer replies with harmless tactics hidden behind a spoiler box; confirmed 5 of 5 on the Deck |
 | 3–5 Sep | ★★ | Deck verifications: Expert mode cards, boss-by-name phrasing, all four coverage readings, wiki credit with date, troubleshooting routing, the seed hint | Six knowledge-base entries moved to Done |
 | 6 Sep | ★★★★ | Eleven more games written up from their wikis — 105 cards, each naming the page it came from, the licence and the day it was read | Nothing yet: the cards exist but are not in a release, so no Deck has them |
+| 6 Sep | ★★★ | 72 blind search questions and 24 answer-test rows for the twelve new games; the search test gained a weight sweep, per-question card detail, and a second right answer | Nothing yet: measurement plumbing only |
+| 6 Sep | ★★★ | Speed mode's remaining meaning-search leak confirmed fixed on the Deck | A Speed question no longer spends about a second on the slower search |
 
 Chip work that touches the knowledge base also shipped in this window: corpus chips no longer vanish
 after 21 seconds, the rotation no longer favours the top three, and the pinned test-chip batches exist
@@ -100,8 +102,8 @@ on a Deck has them.
 - ★★★ **The meaning search is about a fifth slower than when it shipped.** Same lane, time-boxed to one
   look.
 - ★★★★ **The shipping blend loses to its meaning half on blind questions.** Deferred by you until there is
-  more data. No tooling yet exists to sweep the weights on the tuning set, which is the agreed first
-  step.
+  more data. The tool that sweeps the weights on the tuning set landed 6 September; the sweep itself has
+  not been run yet.
 - ★★ **A troubleshooting question that only describes the symptom reaches no tips.** You decided on
   1 September to let the meaning search run over the tip sheet when no topic routed. Not built yet.
 - ★★ **The eval cannot yet prove the recall pass on many rows.** One re-count owed on the next search
@@ -145,7 +147,7 @@ behind the claim where there is any.
 | ★★★ **Spoiler tiers setting** — strict / default / open | A strict player stops seeing boss tactics; an open player stops seeing fences at all. Today one rule fits everyone | The tiers are confirmed; the fence fix showed prompt wording moves the misfire rate 24 points | 3 days: settings plumbing (~18 files), a prompt per tier measured on the answer test, a control with a focus entry, Deck QA | Nothing, once the bug session releases the prompt file |
 | ★★★ **Follow-ups remember** | "What about the second phase?" gets an answer about the boss you were just asking about. Today the model receives only the newest message and the follow-up searches nothing | Agreed 1 Sep: carry the previous turn's named thing into the search first; chat history later, trimmed to the window | 1 day for the carry-over; 2 more for history within the budget | The 4k window: a Strategy reply can be 900 tokens |
 | ★★ **Symptom-only troubleshooting reach** | "The game drops me back to the library" reaches the crash tips without saying "crash". Two of four blind troubleshooting questions miss today | Decided 1 Sep; measure on the 17 blind troubleshooting rows first | 1 day | None |
-| ★★ **Eval tooling** — weight sweep on the tuning set, per-case output for the shipping blend, rows that may list a second right answer | Nothing a user sees. It is what unblocks the weights decision and stops every card batch reading as a regression | Agreed; zero rows use the second-answer option yet | 1–2 days | None |
+| ★★ **Eval tooling** — weight sweep on the tuning set, per-case output for the shipping blend, rows that may list a second right answer | Nothing a user sees. It is what unblocks the weights decision and stops every card batch reading as a regression | **Shipped 6 September.** No question in the test uses the second-answer option yet; the sweep itself has not been run | Done | None |
 | ★★★ **"Starting out" card kind**, then the Cyberpunk / Fallout / Red Dead orientation cards | A new player gets a "how do I get started" chip and a matching answer; today those three cards read as "What should I know about Choosing a build?" | Your gap-sheet asks on 29 Aug | 1–2 days plus a corpus rebuild and release | Your call on the kind |
 | ★★★ **Card style pass** — rewrite the 139 prose cards as labelled short lines | Possibly better fact retention by the 2B model. Facts kept is already 92%, so the ceiling is low; do it only if the answer test says the labelled shape scores better | The six labelled cards kept content accurate 6 of 6 on the Deck, but the labels themselves survived 1 of 6 | 2–3 days of content, a rebuild and a release | Measure first |
 
@@ -185,10 +187,11 @@ them straight; what remains is coverage, follow-up memory, and the things the te
 1. **The Deck and the knowledge-base files are held by the bug-fixing session** started today. Its
    lane owns the prompt text, the knowledge-base service and the embedding service. Knowledge-base
    code edits should wait for it or go through it.
-2. **The eleven new games have cards but no questions, and no release.** Nothing about them can be measured
-   until a different session writes blind questions for them, and nothing reaches a Deck until the next corpus
-   release. Fallout: New Vegas is also owned but not installed on the device, so its cards cannot be judged
-   in place until it is.
+2. **The new games have cards and, as of 6 September, blind questions too, but no release yet.** 72 blind
+   search questions and 24 answer-test rows landed the same day; each blind question still needs matching to
+   the note that answers it, which is in progress. Nothing reaches a Deck until the next corpus release.
+   Fallout: New Vegas is also owned but not installed on the device, so its cards cannot be judged in place
+   until it is.
 3. **The "no new titles" rule** for Phase 5 is reopened for one tranche only; the catalog stays its own
    phase.
 4. **Any schema change is a release that stales every installed corpus.** Per-game tips, a new card
