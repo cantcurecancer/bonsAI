@@ -173,6 +173,19 @@
         "action",
         "single-player"
       ]
+    },
+    {
+      "game_id": 15,
+      "app_id": "367520",
+      "igdb_id": null,
+      "canonical_title": "Hollow Knight",
+      "edition": null,
+      "platform": "Steam",
+      "genres": [
+        "metroidvania",
+        "action",
+        "platformer"
+      ]
     }
   ],
   "aliases": [
@@ -307,6 +320,18 @@
     {
       "alias": "bms",
       "game_id": 14
+    },
+    {
+      "alias": "hollow knight",
+      "game_id": 15
+    },
+    {
+      "alias": "hollowknight",
+      "game_id": 15
+    },
+    {
+      "alias": "hk",
+      "game_id": 15
     }
   ],
   "sections": [
@@ -2103,6 +2128,149 @@
       "card": "Handed to you at the end of Lambda Core for the world beyond, and the only way across Xen's floating islands, where the gravity is weak and a missed gap drops you into the void. Crouch and then jump in quick succession and the suit launches you a long way forward; the training course taught it, but Xen is where it counts. Take a couple of practice jumps on solid ground before the first real gap so the timing is in your thumbs, not your head.",
       "source_url": "https://combineoverwiki.net/wiki/Long_Jump_Module",
       "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 175,
+      "game_id": 15,
+      "section_type": "mechanic",
+      "name": "Starting out in Hollow Knight",
+      "card": "A side-scrolling metroidvania: a huge connected kingdom under the town of Dirtmouth that opens piece by piece as you find abilities. There is no map of an area until you find Cornifer, the humming cartographer, and buy his copy, and it only fills in as you rest at benches once you own a quill from his wife in Dirtmouth. Benches are everything: they save, restore your masks, and are the only place charms can be swapped. Your nail is short, so learn early to bounce off enemies and spikes with a downward slash. Hitting enemies fills the soul meter; hold Focus to spend it healing one mask at a time, or tap it for spells. Dying is not the end: your Shade waits where you fell, holding your Geo.",
+      "source_url": "https://hollowknight.wiki/w/Hollow_Knight",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 176,
+      "game_id": 15,
+      "section_type": "mechanic",
+      "name": "Dying, your Shade and lost Geo",
+      "card": "When your shell breaks you respawn at the last bench, all your Geo stays behind in a Shade at or just before the room you died in, and your soul meter is cracked to two thirds until you deal with it. Walk back and an off-key music-box tune tells you it is near; it floats at you, swings a nail and casts whichever spells you have learned, and it dies after a handful of hits, returning the Geo and mending the meter. Die again before reaching it and a new Shade replaces the old one, Geo and all, so a big purse is a reason to go back first. If the Shade sits somewhere brutal, Confessor Jiji behind the locked door on the east side of Dirtmouth will summon it to her room for a Rancid Egg.",
+      "source_url": "https://hollowknight.wiki/w/Shade",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 177,
+      "game_id": 15,
+      "section_type": "mechanic",
+      "name": "Charms and notches",
+      "card": "Charms are the build system: each takes a set number of notches, you start with three notches and can find eight more, and you can only swap charms while sitting on a bench. Forty-five exist, though five are upgrades that replace another. Spend early Geo on Salubra's first notch in the Crossroads once you hold five charms. If a charm needs more notches than you have left you can force it in and go overcharmed: every hit you take then does double damage, fine for platforming and a bad idea in a boss room. Early keepers: Soul Catcher from the Ancestral Mound for more healing fuel per hit, and Quick Focus from Salubra, which makes healing a third faster and turns many boss fights.",
+      "source_url": "https://hollowknight.wiki/w/Charms",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 178,
+      "game_id": 15,
+      "section_type": "item",
+      "name": "Nail upgrades and Pale Ore",
+      "card": "The Nailsmith in the City of Tears reforges the nail four times, from 5 damage up to 21: the first upgrade costs Geo alone, the next three need one, two and three Pale Ore on top, six Ore in all, scattered across the kingdom behind bosses, grubs and hidden rooms. The Mantis Lords are a good deadline for the first upgrade. The nail also carries you: a downward slash on enemies, spikes and the purple mushrooms of the Fungal Wastes bounces you upward, which is both a combat rhythm and the way into places you are not supposed to reach yet. Mark of Pride from the Mantis Village adds a quarter to its reach.",
+      "source_url": "https://hollowknight.wiki/w/Nail",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 179,
+      "game_id": 15,
+      "section_type": "mechanic",
+      "name": "Soul, Focus and spells",
+      "card": "Every nail hit on an enemy adds soul to the round meter on the left, up to ninety-nine. Hold Focus to turn thirty-three soul into one mask of health; it takes over a second, you stand still for it, and a hit cancels it, so heal during a boss's long, far-away attacks and not on hope. Tap the cast button instead and the same soul fuels spells: Vengeful Spirit from the Ancestral Mound fires forward and early on hits three times as hard as your nail, Desolate Dive from the Soul Sanctum slams down, breaks fragile floors and makes you briefly untouchable, and Howling Wraiths blasts upward and around you. Hot springs refill soul fast and slowly top up masks; a bench refills the soul totems you can hit for a free meter.",
+      "source_url": "https://hollowknight.wiki/w/Focus",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 180,
+      "game_id": 15,
+      "section_type": "item",
+      "name": "Movement abilities and where they are",
+      "card": "Hallownest opens in the order you find its abilities, and knowing that order saves hours of poking at walls. The Mothwing Cloak, a short dash with a brief cooldown, is Hornet's prize in Greenpath. The Mantis Claw, wall-cling and wall-jump, waits in the Mantis Village below the Fungal Wastes. The Crystal Heart, a charged horizontal flight from the ground or a wall, is in the mines of Crystal Peak. The Monarch Wings, a double jump, lie at the bottom of the Ancient Basin. Isma's Tear lets you swim in acid and opens the Waterways and several shortcuts; the Shade Cloak from the Abyss upgrades the dash to pass through enemies, their attacks and the black Shade Gates. If a gap looks impossible, it usually is until one of these.",
+      "source_url": "https://hollowknight.wiki/w/Mothwing_Cloak",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 181,
+      "game_id": 15,
+      "section_type": "boss",
+      "name": "False Knight",
+      "card": "The armoured maggot in the Forgotten Crossroads, and the first real fight. He leaps, charges, and slams a mace that sends a shockwave along the whole floor; jump the wave rather than backing off. Hitting the armour earns no soul, so save what you have for healing: the only time you gain soul or do real damage is when the armour empties and he topples, exposing the maggot's head. Pile hits on the head, then back off, because he wakes into a rage that rains barrels; those barrels can be knocked back into him for ten damage each and can even stagger him. After the third exposure he breaks the floor and falls below; drop after him and finish the maggot. If it goes badly, a wall above the left gate becomes breakable after his first rage, and the Vengeful Spirit spell is in the very next room, which makes the rematch far easier.",
+      "source_url": "https://hollowknight.wiki/w/False_Knight",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 182,
+      "game_id": 15,
+      "section_type": "boss",
+      "name": "Hornet in Greenpath",
+      "card": "The fight for the dash, at the Lake of Unn end of Greenpath. She lunges along the ground, dives from the air, throws her needle across most of the arena and pulls it back (it cuts on the return too), and spins a thread storm around herself. She stands still for about a second while she takes her stance, so open with upward slashes. Trade a few nail hits when she lunges in, then hit her with Vengeful Spirit when she backs off; at this point the spell does three times your nail's damage. After roughly a fifth of her health she kneels to recover: heal then, or spend a spell on her, because the next hit wakes her, and she always leaps after a stagger, which is a free window. Heal during the needle throw or the thread storm, both short-ranged and slow. Mistime a jump over the needle and a downward slash bounces you off it safely.",
+      "source_url": "https://hollowknight.wiki/w/Hornet_Protector",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 183,
+      "game_id": 15,
+      "section_type": "boss",
+      "name": "Mantis Lords",
+      "card": "The three sisters on the thrones in the Mantis Village do not attack until you challenge them, and then a cage closes with spike pits either side. One fights first: a lance dash along the whole floor, a drop from directly above you, and a spinning boomerang blade thrown from the wall in a rising or falling arc. Each attack ends with her vanishing, so the rhythm is dodge, one or two hits, reset; the attacks quicken as she weakens. Heal during the boomerang, the slowest attack. When she yields the other two fight together, sometimes dashing from both ends at once; stand near the centre when they throw the short-arc boomerangs and the blades pass over you, long enough to heal two masks. Go in with at least one nail upgrade and Quick Focus if you have it. Win and the whole village stands down, a bench opens, and Mark of Pride waits in a chest to the northeast.",
+      "source_url": "https://hollowknight.wiki/w/Mantis_Lords",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 184,
+      "game_id": 15,
+      "section_type": "boss",
+      "name": "Soul Master",
+      "card": "Top of the Soul Sanctum in the City of Tears. He teleports between every attack: a dash across the arena, a homing soul orb that will not hit you if you stand right beside him, a ring of four orbs he glides across with (and which boomerang back after he vanishes), and a dive slam that sends shockwaves both ways, sometimes faked once before landing above your new spot. Hit him from below while he is conjuring orbs; that is the open window. When he deflates and gasps he is staggered, and there is a moment to hit him without ending the stagger. He plays dead once, leaves the Desolate Dive spell as bait, and comes back through the roof for a faster second round with far less time to heal, so learn the dodges in round one.",
+      "source_url": "https://hollowknight.wiki/w/Soul_Master",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 185,
+      "game_id": 15,
+      "section_type": "boss",
+      "name": "Watcher Knights",
+      "card": "Six armoured husks at the top of the Watcher's Spire, fought at most two at a time; a new one wakes twenty seconds after the last, or two together if you kill fast. Each does a double slash, rolls as a ball along the floor and bounces after you, and is immune to the nail while rolling (spells still land). Their only answer to attacks from above is that bouncing roll, so fight from the air and never let them corner you. Before the fight, break the hidden wall on the approach and cut the chandelier's support: it drops on the second husk from the left and you fight five instead of six. Quick Focus matters here; Desolate Dive with Shaman Stone kills one in three casts while keeping you untouchable.",
+      "source_url": "https://hollowknight.wiki/w/Watcher_Knight",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 186,
+      "game_id": 15,
+      "section_type": "boss",
+      "name": "Broken Vessel",
+      "card": "The infected husk shaped like you, far west in the Ancient Basin past a gap that needs the Crystal Heart. It dashes with slashes that cover most of the arena, flails its nail overhead, leaps to slam down and throw four arcs of infection, shakes out a cascade of blobs that covers nearly everything when its health gets low, and spawns weak balloons that drift at you. It is one of the few bosses that gets knocked back, so Vengeful Spirit can hit it twice; Desolate Dive during the cascade both damages it and keeps you safe. A longer nail (Mark of Pride or Longnail) matches its reach, and Defender's Crest quietly clears the balloons. Heal when it staggers, head weighed down and shaking.",
+      "source_url": "https://hollowknight.wiki/w/Broken_Vessel",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 187,
+      "game_id": 15,
+      "section_type": "enemy",
+      "name": "Primal Aspid",
+      "card": "The flying spitter of Kingdom's Edge and the Colosseum, and by common agreement the nastiest ordinary enemy in the game. It hovers just out of nail reach and spits three blobs in a spread with the middle one aimed at you, so close range is worse, not better. Listen for the whistle of its wings and deal with it before anything else in the room; nail arts, especially Great Slash or Dash Slash, reach it when normal swings will not, and a spell does the job from range. In the Colosseum they are the first thing to kill in any wave.",
+      "source_url": "https://hollowknight.wiki/w/Primal_Aspid",
+      "source_license": "CC-BY-SA-3.0",
       "source_version": null,
       "crawled_at": "2026-09-05"
     }
