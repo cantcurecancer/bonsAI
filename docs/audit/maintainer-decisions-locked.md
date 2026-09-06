@@ -4060,3 +4060,58 @@ machine; the maintainer can fold it into the "go" by saying so in the same messa
 **The Deck session after the release runs on Opus at medium effort and records; it never diagnoses.** A failed row is
 saved with its evidence and handed to an Opus session at extra-high effort to read — the routing table's own rule,
 restated here because the maintainer chose the medium tier for the run and wanted the hand-off explicit.
+
+
+### D81 — OPEN, raised 2026-09-06 — The symptom-only search was built and measured, and it does not do what D52 expected
+
+**Status: built, measured, held back. Not shipped. The branch is `lane/kb-symptom-search`, three commits, kept.**
+
+**What it was meant to do.** Someone types a plain description of a problem with no game running — *"the game drops me
+back to the library a few minutes in"* — and gets the crash tips, even though the word "crash" never appears. That was
+the win D52 was bought for, and plan 46 listed it as two stars.
+
+**What it actually does, measured on the real tip sheet.** Four plainly-worded sentences were the target. Of those:
+
+- **The controller one now works.** It used to get nothing at all, because the plugin refused to even look. It now
+  reaches the controller tips. That is a real improvement.
+- **The storage one and the headphones one already worked** before the change. They are unaffected.
+- **The crash one still does not work, and is arguably worse than before.** It used to attach nothing. It now attaches
+  a tip about desktop mode — the wrong subject entirely. Someone describing a crash would be shown advice about
+  something else.
+
+Nothing that already worked got worse: all thirteen of the other questions attached exactly the same tip, the same way,
+before and after.
+
+**Why it does not work, which is the part worth keeping.** Two separate reasons, and the second is the one that matters.
+
+1. The new search by meaning only runs when the plain word search comes back **completely** empty. On the real tip
+   sheet the word search almost always returns *something*, even a weak and unrelated match. So the new search rarely
+   gets a turn at all.
+2. **Even when forced to run anyway, it does not find the crash tip.** For that sentence, the closest tips by meaning
+   were about desktop mode and storage. So this is not just a gate that is set too tight. On this tip sheet, matching by
+   meaning does not connect *"drops me back to the library"* to the crash tips at all.
+
+That second point is the finding. The assumption behind D52 — that searching by meaning would bridge the gap between how
+a person describes a problem and how the tip is written — **does not hold for the tips we actually have.** It is a fact
+about the tip sheet's wording, not about the code.
+
+**The trade nobody costed.** Opening the gate so more questions reach the tip sheet also means more questions get a weak
+or wrong tip attached. Today the plugin says nothing when it is unsure. The change makes it say something more often, and
+some of what it says is wrong. Whether that is a better experience is a judgement, not a measurement.
+
+**One loose end either way.** A test in the search-measuring suite now fails, correctly: it guards that the count of
+questions reaching retrieval tracks the live gate, and the gate changed. If anything here ships, that expectation is
+updated in the same change.
+
+**The options.**
+
+1. **Hold it. Recommended.** Keep the branch, ship nothing. One sentence out of four improved, and it came with a new way
+   to show someone the wrong advice. Not worth shipping on that record.
+2. **Ship only the gate opening.** The controller sentence works and questions stop being refused outright. Accept that
+   some questions now get a weak or wrong tip where they used to get none.
+3. **Rework it, and treat the tip sheet as the real problem.** Two changes together: let the meaning search run when the
+   word search's best match is *weak*, not only when it is empty; and rewrite the tips so a crash tip actually contains
+   the words a person uses to describe a crash. The second is corpus work, not code, and is probably where the win
+   actually lives.
+
+**If nothing is decided, option 1 is what happens** — the branch stays and nothing reaches the plugin.
