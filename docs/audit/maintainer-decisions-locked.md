@@ -3750,7 +3750,7 @@ its Expert group are one roadmap entry.
 **Consequence worth recording.** The report that carries these numbers is a page rebuilt from the test
 reports, not a document, so the next bake-off refreshes it rather than replacing it.
 
-### D74 — OPEN (raised 2026-09-05) — Reading answers aloud: six calls before anything is built
+### D74 — PARTLY LOCKED 2026-09-05 (raised the same day) — Reading answers aloud: four calls locked, two open
 
 Raised by the feasibility memo [planning/42-read-aloud-feasibility.md](../planning/42-read-aloud-feasibility.md),
 the fourth of the six features planned one at a time on 2026-09-05. What the memo found, in one breath: the Deck
@@ -3789,3 +3789,53 @@ cannot speak and nothing on its roadmap changes that.
 **Before any build, whatever the answers:** Deck rows TTS-FEAS-01 to 03 in the memo, under half an hour
 over SSH, when the Deck is free. Row 05, the natural voice beside Deep Rock Survivor, decides whether the
 natural voice is the default or an option.
+
+**Locked 2026-09-05, the maintainer's answers.**
+
+1. **Phase 1 uses the Deck's own voice only.** No download. The natural voice moves to Phase 2.
+2. **Reading new answers on their own when the menu is closed ships in Phase 1**, as a setting, off by
+   default.
+3. **A skipped spoiler block is said out loud**, one short phrase.
+5. **The roadmap entry is split.** *Read answers aloud* is two stars now that no download is in it; *A voice
+   per character* is three stars, since the download moved into it. The five-star line is retired.
+
+**Call 4, revised the same day.** The maintainer does not want a stock reader for the character voice and
+is not asking for a copy of a named performer: they want an invented character voice with a heavy regional
+accent, like the ones the character mode already writes. The rule as written allows that; it forbids only a
+real person's voice without that person's consent. The memo's § 6 now has three ways: a stock British voice
+from a 109-speaker consented pack, picked by region; an invented voice designed once on the PC from a
+description, or a five-second recording of the maintainer's own voice, copied on the Deck by a small model
+that runs on two CPU cores (unmeasured on the Deck; row 04 measures it); or the design model on the Deck
+itself, which is a no. The call now: (a) the stock regional voice first; (b) straight to the invented voice,
+after the Deck check; (c) both, stock first, invented when the check passes. *Recommended: (c).*
+
+**Call 6, the pros and cons the maintainer asked for.** The question is whether the plugin ships only
+voices whose recordings are public domain or attribution-only.
+
+For:
+
+- It keeps the plugin's promise. The default tier is open source only, and a voice is a model; a person who
+  chose that tier gets no surprise in the voice list.
+- The voices we want qualify anyway. The British 109-speaker pack and the standard American voice are
+  attribution-only; the Kokoro and Kitten voices are Apache 2.0. Little is lost.
+- Attribution is one line in About, the same line whatever the tier.
+- Non-commercial voices bite people who stream or make videos with the plugin on screen; an
+  attribution-only voice never does.
+- One rule, no judgement calls later.
+
+Against:
+
+- Some of the best-sounding voices in the Piper set are non-commercial and would be out, so the very best
+  voice is not in the picker.
+- It needs upkeep: every new voice's card has to be checked before it is added, and voice cards are
+  sometimes missing a licence or wrong about it, so checking the card is not always enough.
+- It is a rule about recordings, not about what the plugin does. A person playing alone is never touched
+  by a non-commercial clause; for them the rule only removes choices.
+- An invented voice (call 4, way 2) sidesteps the question for the character voice but not for the plain
+  reader.
+
+A middle path: the voice list follows the tier setting the models already use. On the default
+open-source-only tier, only public domain and attribution-only voices, named in About. On the looser
+tiers, non-commercial voices too, marked as such, the way open-weight models are marked today.
+*Recommended: the middle path.* Open until the maintainer says.
+

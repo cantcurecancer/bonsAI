@@ -169,6 +169,10 @@ replace it with a specific issue when one exists.
   maintainer has said they do not want to supply one. So whoever builds it proposes a shape and the maintainer approves it by
   eye — a shape is not something to settle from a description or by reaching for a stronger model. It has to be an inline SVG
   path rather than the PNG so it takes the colour around it. Update the icon geometry test in the same change.
+- ★★ `[voice]` **Read answers aloud** — **OPEN, planned 2026-09-05, calls locked (D74).** A Read aloud button under the answer.
+  The Deck's own voice, which SteamOS has shipped since June 2025, so nothing to download; it keeps reading with the menu closed and
+  stops on a second press or a new question. A setting reads new answers on its own when the menu is closed, off by default. A
+  hidden spoiler block is skipped with a short spoken phrase. Three Deck checks run before the build. [Memo](planning/42-read-aloud-feasibility.md).
 - ★★★ `[chips]` **Decode preset chip animation** — **VERIFY, feel only.** Shipped 2026-08-28. Measured on device: a flat 60 fps with
   all chips decoding. Whether it feels right is a person's call. Row **PRESET-STREAM-ANIM-01**.
 - ★★★ `[layout]` **Copy sits in the answer's corner, not in a button row** — **OPEN.** A small semi-transparent copy glyph in the
@@ -193,6 +197,11 @@ replace it with a specific issue when one exists.
 - ★★★ `[ui]` **Adjustable text size in Settings** — **OPEN.** `uiScalePx()` already runs through the stylesheet; the work is exposing it,
   deciding what must not scale (icons, the 300px column), and paying the settings plumbing. [Detail](roadmap-details.md#adjustable-text-size-in-settings).
 - ★★★ `[ui]` **Search density** — **OPEN.** Tighter, more scannable results with highlighted match tokens.
+- ★★★ `[voice]` **A voice per character** — **OPEN, after Read answers aloud; two calls open (D74).** A natural voice as a one-time
+  download of about 90 MB, then a voice that fits the selected character: a stock British voice from a 109-speaker pack picked by
+  region, or an invented voice designed once on the PC and copied on the Deck from a five-second clip. Never a copy of a real
+  person's voice without consent. Open: stock first or invented first, and which voice licences the plugin ships.
+  [Memo](planning/42-read-aloud-feasibility.md).
 - ★★★★ `[ask]` **Connection doctor** — **OPEN, planned 2026-09-05, calls locked (D64).** When an Ask fails, a **Fix this** button
   under the failed reply runs the checks the plugin already has, shows the one that failed, and offers the one thing to do
   next with a button that lands you on that control on the Ollama tab. It only offers; nothing changes without a press.
@@ -223,11 +232,6 @@ replace it with a specific issue when one exists.
   Planned: three lines at the answer's size show the model's own newest sentences, fold to one line with the seconds when the
   answer starts, open to the full text; Show details gets a thinking chip; and the thinking is also spent deciding what counts
   as a spoiler for you. The Deck's default model can think. A test runs on the PC first, then the Deck. [Plan](planning/40-reasoning-display.md).
-- ★★★★★ `[voice]` **Local reply TTS** — **OPEN, memo written 2026-09-05, calls open (D74).** Press a button under an answer and the
-  Deck reads it out, menu open or closed, nothing sent anywhere. The memo found the Deck has had a voice of its own since June 2025,
-  the plugin's microphone code already reaches the Deck's sound system, and a natural voice is one 90 MB download with no compile.
-  Speed beside a game is unmeasured; six Deck checks wait on the device. Six questions for the maintainer, including whether to
-  split this into read aloud (three stars) and a voice per character (two stars). [Memo](planning/42-read-aloud-feasibility.md).
 - ★★★★★ `[voice]` **Wake-word listening** — **OPEN, beta.** Opt-in always-on local wake **bonsAI**, then STT, then a quiet Ask.
   [Feasibility](planning/10-wake-word-listening-feasibility.md).
 - ★★★★★★ `[platform]` **Deep mod AI hints** — **OPEN.** Detect mod frameworks and files; mod-aware guidance.

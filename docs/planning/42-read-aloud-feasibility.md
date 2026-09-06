@@ -67,16 +67,17 @@ measurement, not a guess. § 7 is that measurement.
   shows the Stop button.
 - It reads what is on screen, and only that: hidden spoiler blocks are left out (§ 5), formatting is not
   read as symbols, the branch menu of a Strategy answer is not read.
-- Optional, if the maintainer says yes (D74): when an answer finishes with the menu closed, read it
-  without a press. That is the in-game case the toast preview in plan 38 serves for short answers; reading
-  serves it for long ones.
-- Two voices: the Deck's own voice, which works the moment the plugin is installed, and a natural voice,
-  which is a one-time download of about 90 MB from the Settings tab, the same way the listening engine
-  installs today.
+- When enabled in Settings (off by default; the maintainer's call, D74): when an answer finishes with the
+  menu closed, read it without a press. That is the in-game case the toast preview in plan 38 serves for
+  short answers; reading serves it for long ones.
+- One voice in Phase 1: the Deck's own, which works the moment the plugin is installed (the maintainer's
+  call, D74). The natural voice, a one-time download of about 90 MB from the Settings tab the way the
+  listening engine installs today, moves to Phase 2 with the character voices.
 
-**Phase 2, a voice per character.** When an AI character is selected, the answer is read in a stock voice
-that matches the character's type (deep and slow, bright and quick, gruff), chosen from the voices the
-engine ships. Never a copy of a real actor's voice; § 6 is the legal gate and it closes with that one rule.
+**Phase 2, a voice per character.** The natural voice download, and then, when an AI character is selected,
+a voice that fits the character: a stock voice with the right regional sound, or an invented voice made
+once from a description or a short recording (§ 6). Never a copy of a real person's voice without their
+consent; that is the whole legal gate.
 
 ## 3. What can speak on the Deck: the options
 
@@ -140,15 +141,39 @@ not needed in Phase 1.
 - **The branch menu** at the end of a Strategy answer is not read; it is a control, not the answer.
 - **Stop** on: the button, a new question, the plugin unloading, the Deck going to sleep.
 
-## 6. Phase 2 and the legal gate
+## 6. Phase 2: a voice that fits the character, and the legal gate
 
-The roadmap has carried "character-aligned read-aloud (legal gate)" without saying what the gate is. It is
-this: **no copy of a real person's voice, ever.** Not the game's voice actors, not a soundalike trained on
-them. Several US states now make imitating a performer's voice without permission unlawful, and the
-plugin's character mode already names real games' characters, which makes a cloned voice an obvious
-target. Stock voices from the engine's own set, matched to a character's type, carry none of that risk.
-With that rule written down, Phase 2 needs no further legal thought and becomes a small build: a table
-from character to stock voice, and the voice choice passed to the engine.
+The maintainer's ask, 2026-09-05: not a stock reader, and not a copy of any real performer, but an
+invented character voice with a heavy regional accent, the way the character mode already writes in one.
+Three ways to get there, cheapest first. All three keep the one rule that is the legal gate: **never a
+copy of a real person's voice without that person's consent.** Invented voices, consented recordings and
+a person's own voice are all fine; a soundalike of a named performer is not, and several US states now
+make it unlawful.
+
+1. **A stock voice with the right regional sound.** The Piper set has a British pack trained on 109
+   consented speakers from across the UK, attribution licence, and the pack's speaker list says where
+   each is from, so a young man from Surrey or London is a matter of picking the right number. The words
+   already carry the slang and the rhythm, because the character mode writes them that way. What this
+   cannot do is the performance: the exaggerated delivery of a comic character. Cost: one voice pack, the
+   runner from § 3, no new engine; Deck speed as measured for B.
+2. **Invent the voice once on the PC, then copy it on the Deck.** Two engines do this. One makes a new
+   voice from a plain-language description (a young man from Surrey, a heavy London-Jamaican accent, quick
+   and cocky); it wants a graphics card, so it runs once on the PC, never on the Deck. The other, Pocket
+   TTS, takes a five-second clip of any voice and reads new text in it; it is a 100-million-parameter
+   model that runs on two CPU cores, its code is MIT, and it is in the runner's model set. So: design the
+   voice on the PC, keep a five-second clip, and the Deck reads every answer in it. The clip is of nobody.
+   Or skip the design step and record yourself doing the accent for five seconds; your own voice needs
+   nobody's permission. A five-second copy keeps the sound of the voice and much of the accent and loses
+   some of the performance. Cost: Pocket TTS on the Deck is unmeasured (row 04 now includes it); one
+   published measurement puts it near real time on a four-core server, so beside a game it may not keep
+   ahead of playback. Its weights' licence is checked on the day; its terms forbid copying a voice without
+   consent, which is the rule anyway.
+3. **The voice-design model on the Deck itself.** No: it wants four to eight gigabytes of graphics memory,
+   which the Deck shares with the game.
+
+Recommendation: way 1 first, because it is one file and rides on the natural voice download; way 2 when
+the maintainer wants the voice to be truly its own, once row 04 says the Deck can carry it. The rule
+stays as written.
 
 ## 7. Proving it on the Deck
 
@@ -166,7 +191,9 @@ half an hour; a probe script (§ 8, step 0) runs them in one go.
   the Deck, set the library path, make a sound file from a 150-word answer taken from the answer test.
   Pass: no illegal-instruction crash, speech in the file; record seconds taken and memory used, and the
   seconds for the first sentence alone.
-- **TTS-FEAS-04, the other voices** (optional, same day): Kitten nano and Kokoro packed, same measure.
+- **TTS-FEAS-04, the other voices** (same day): Kitten nano, Kokoro packed, and Pocket TTS reading from a
+  five-second clip of the maintainer's own voice, same measure. Pocket TTS's number decides whether § 6
+  way 2 is a Deck feature or a PC-only one.
 - **TTS-FEAS-05, beside a game.** Row 03 again with Deep Rock Survivor running: seconds taken, and a
   note by eye on whether the game stuttered. This is the number that decides whether B is the default
   or only an option.
@@ -181,38 +208,39 @@ Only after D74 is answered and rows 01 to 03 have passed.
 
 | # | Step | Who | Depends on |
 |---|---|---|---|
-| 0 | A probe script for rows 01 to 03 over SSH, in the shape of the existing Deck probes. Writes what it finds to a run file. | Opus xhigh writes it; anyone runs it | the Deck being free |
+| 0 | A probe script for rows 01 to 04 over SSH, in the shape of the existing Deck probes. Writes what it finds to a run file. | Opus xhigh writes it; anyone runs it | the Deck being free |
 | 1 | The text helper shared with plan 38 (if plan 38 has not built it yet), plus sentence splitting. Tests: the plan 38 list, and sentences split on full stops, question marks and line breaks but not on decimals or abbreviations. | Sonnet 5 high lane | nothing |
-| 2 | Background: a speak service. Takes text, splits it, makes each sentence with the chosen engine (A or B) into a sound file, plays them in order through the session's sound system, stops on request. Three bridge methods: start, stop, status. Start returns at once and the screen polls status, so no call outruns the 15-second deadline. Tests with a fake engine and a fake player. | Sonnet 5 high lane | 1 |
-| 3 | Install flow for the natural voice: download the runner and one voice, smoke-test once, write the ready marker; progress shown in Settings the way the listening engine's is. Reuse that code's download, progress and cancel pieces rather than copy them. | Sonnet 5 high lane | 2 |
-| 4 | Screen: the Read aloud / Stop button under the answer with a focus-graph entry; a Settings row for the voice (Deck's own, or natural once installed); the auto-read setting if D74 says yes. Plumbing budget from the settings note in CLAUDE.md: a boolean is about eighteen files. | Sonnet 5 high lane; Opus xhigh reviews the focus entry | 2, 3 |
-| 5 | Docs: roadmap, testing rows, changelog. | Sonnet 5 high | 4 |
-| 6 | Phase 2: the character-to-voice table and passing the voice choice through. | Sonnet 5 high lane | Phase 1 shipped |
+| 2 | Background: a speak service. Takes text, splits it, makes each sentence with the Deck's own voice into a sound file, plays them in order through the session's sound system, stops on request. The engine is behind one small interface so Phase 2 adds the natural voice without touching the rest. Three bridge methods: start, stop, status. Start returns at once and the screen polls status, so no call outruns the 15-second deadline. Tests with a fake engine and a fake player. | Sonnet 5 high lane | 1 |
+| 3 | Screen: the Read aloud / Stop button under the answer with a focus-graph entry, and the Settings row for reading new answers on their own when the menu is closed, off by default. Plumbing budget from the settings note in CLAUDE.md: a boolean is about eighteen files. | Sonnet 5 high lane; Opus xhigh reviews the focus entry | 2 |
+| 4 | Docs: roadmap, testing rows, changelog. | Sonnet 5 high | 3 |
+| 5 | Phase 2, the natural voice: download the runner and one voice, smoke-test once, write the ready marker; progress shown in Settings the way the listening engine's is. Reuse that code's download, progress and cancel pieces rather than copy them. A Settings row picks the voice. | Sonnet 5 high lane | Phase 1 shipped; row 03 passed |
+| 6 | Phase 2, the character voices: the character-to-voice table (a stock speaker number, or a five-second clip) and passing the choice through; the clip path only if row 04 passed. | Sonnet 5 high lane | 5 |
 
-**Effort, honestly.** Phase 1 with the Deck's own voice only is two stars: the plumbing exists, the engine
-is there. Adding the natural voice download is a third star, mostly the install flow and its Settings
-state. Phase 2 is two stars. The roadmap's five stars were the price of not knowing any of this.
+**Effort, honestly.** Phase 1, the Deck's own voice only, is two stars: the plumbing exists, the engine
+is there. Phase 2 is three stars: the natural voice download and its Settings state, plus the character
+table; the copied-voice path adds a Deck measurement, not much code. The roadmap's five stars were the
+price of not knowing any of this.
 
-## 9. What the maintainer decides — D74, open
+## 9. What the maintainer decided — D74, partly locked 2026-09-05
 
-1. **Which voice ships in Phase 1?** The Deck's own voice only, no download; the natural voice only,
-   download required before the button does anything; or both, the Deck's own voice from day one and the
-   natural voice as an optional download that takes over once installed. *Recommendation: both.* The
-   button works the moment the plugin is installed, and the download is a choice, not a wall.
-2. **Read new answers automatically when the menu is closed?** In Phase 1 as an off-by-default setting,
-   or leave it for later. *Recommendation: in Phase 1, off by default.* The in-game case is where reading
-   aloud beats reading, and the setting is one boolean beside the button's plumbing.
-3. **When a hidden spoiler block is skipped, say so or stay silent?** *Recommendation: say it*, one short
-   phrase, so the person knows the answer had more.
-4. **Phase 2's rule: stock voices only, never a copy of a real person's voice.** Yes closes the legal gate
-   for good. *Recommendation: yes.*
-5. **Split the roadmap entry** into Phase 1, read aloud (three stars) and Phase 2, a voice per character
-   (two stars, after Phase 1), retiring the five-star line. *Recommendation: yes.*
-6. **Voice licences.** Every Piper voice carries the licence of the recordings it was trained on; some
-   are public domain or attribution-only, some are non-commercial. The plugin's model tiers are about
-   models, and a voice is a model. *Recommendation:* ship only voices whose data licence is public domain
-   or attribution-only, name the voice and its licence in the About tab, and treat any other voice as a
-   person's own download, outside the plugin.
+Locked the same day, the maintainer's answers:
+
+1. **The Deck's own voice for Phase 1.** No download. The natural voice moves to Phase 2.
+2. **Reading new answers on their own when the menu is closed ships in Phase 1**, as a setting, off by
+   default.
+3. **A skipped spoiler block is said out loud**, one short phrase.
+5. **The roadmap entry is split**: *Read answers aloud* (two stars, now that no download is in it) and *A
+   voice per character* (three stars, since the download moved into it).
+
+Still open:
+
+4. **The character voice.** The maintainer wants an invented character voice with a heavy regional accent,
+   not a stock reader and not a copy of a named performer. § 6 has the three ways. The call: (a) the stock
+   regional voice first; (b) straight to the invented voice, after the Deck check; (c) both, stock first,
+   invented when the check passes. *Recommendation: (c).*
+6. **Voice licences.** The pros and cons the maintainer asked for are in the decisions file under D74,
+   with a middle path: the voice list follows the tier setting the models already use.
+   *Recommendation: the middle path.*
 
 ## 10. Sources
 
@@ -232,3 +260,9 @@ state. Phase 2 is two stars. The roadmap's five stars were the price of not know
   microphone code already reaches the session's sound system from root; a natural voice is one Apache 2.0
   runner plus one 63 MB voice, no compile, no container. Not yet measured: speed beside a game. Six
   questions to the maintainer as D74. Deck rows written, waiting on the Deck.
+- **2026-09-05, later** — Four calls locked: the Deck's own voice for Phase 1, auto-read as an off-by-default
+  setting, the spoken spoiler phrase, the split. The maintainer asked for an invented accent voice for the
+  character rather than a stock one; researched and written up in § 6: Pocket TTS copies a voice from a
+  five-second clip on two CPU cores and is in the runner's set, the voice-design models need a graphics
+  card, so design on the PC and read on the Deck. Row 04 now measures Pocket TTS. Voice licences open,
+  pros and cons written.
