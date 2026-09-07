@@ -212,6 +212,63 @@ class EvalKbAnswersHarnessTests(unittest.TestCase):
         self.assertEqual((warned, total), (2, 3))
         self.assertAlmostEqual(self.mod.mean_prompt_tokens(samples), 2333.3, places=1)
 
+    # --- plan 48 lane A, commit 1: tolerant fact matching (D86/D88) ----------------------------
+    #
+    # The old check passed a must_mention alternative only when it appeared as an exact phrase in
+    # the reply, so a right answer in different words was scored as a missing fact. These four
+    # pairs are the ones the roadmap bug named; the fifth uses the real reply text recorded in
+    # docs/archive/research/kb-answer-eval-2026-09-07-after-wave2.md for case A-TTYD-01, which
+    # failed both fact groups under the old check ("missing facts: `eats the audience`, `cricket`")
+    # even though it plainly states both facts, just in different words.
+
+    def test_fact_group_hit_matches_keep_the_crowd_thin_against_thin_the_crowd(self):
+        self.assertTrue(
+            self.mod.fact_group_hit("you need to keep the crowd thin", ["thin the crowd"])
+        )
+
+    def test_fact_group_hit_matches_killing_the_mother_against_kill_the_mother(self):
+        self.assertTrue(
+            self.mod.fact_group_hit("killing the mother first is the plan", ["kill the mother"])
+        )
+
+    def test_fact_group_hit_matches_hurting_her_badly_against_hurts_her_badly(self):
+        self.assertTrue(
+            self.mod.fact_group_hit("fire is also noted as hurting her badly", ["fire hurts her badly"])
+        )
+
+    def test_fact_group_hit_matches_the_paper_mario_report_reply(self):
+        reply = (
+            "The key to dealing with Hooktail's healing is managing the audience. She heals by "
+            "eating members of the audience, so you need to keep the crowd thin. Also, remember "
+            "that her bite cannot be blocked, so focus on keeping your own HP high rather than "
+            "trying to guard against her attacks. Koops is useful here because his shell toss hits "
+            "her first before you commit Mario. Fire is also noted as hurting her badly."
+        )
+        group1 = ["eats the audience", "eats spectators to heal", "thin the crowd", "keep the audience small"]
+        group2 = ["cricket", "chirping sound", "the badge with the cricket noise", "fire damage", "fire hurts her badly"]
+        self.assertTrue(self.mod.fact_group_hit(reply, group1))
+        self.assertTrue(self.mod.fact_group_hit(reply, group2))
+
+    def test_fact_group_hit_fails_when_the_words_are_too_far_apart(self):
+        # A wrong answer must still fail: "crowd" and "thin" both occur somewhere in this reply,
+        # but nowhere near each other -- a check with no window would wrongly pass it.
+        reply = (
+            "The crowd cheered loudly. "
+            + " ".join(["and then something else happened"] * 4)
+            + " The paint looked thin."
+        )
+        self.assertFalse(self.mod.fact_group_hit(reply, ["thin the crowd"]))
+
+    def test_fact_group_hit_fails_when_the_stems_match_but_the_context_does_not(self):
+        # Same shape, a different pair of words: "kill" and "mother" both occur, in two unrelated
+        # sentences far apart, not describing the claim "kill the mother".
+        reply = (
+            "You can kill the runt easily. "
+            + " ".join(["it takes a few hits to bring down"] * 4)
+            + " Her mother taught her everything about the forest."
+        )
+        self.assertFalse(self.mod.fact_group_hit(reply, ["kill the mother"]))
+
 
 if __name__ == "__main__":
     unittest.main()

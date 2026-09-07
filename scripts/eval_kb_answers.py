@@ -30,6 +30,7 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import itertools
 import json
 import logging
 import os
@@ -325,6 +326,109 @@ def load_fixture(path: Path, only: Optional[set[str]]) -> list[Case]:
     return cases
 
 
+# --- tolerant fact/claim matching (plan 48, D86/D88) ------------------------------------------
+#
+# The old check passed a must_mention/must_not_say alternative only when it appeared as an exact
+# phrase in the normalised reply, so "keep the crowd thin" failed against the fixture's own "thin
+# the crowd" -- a right answer marked wrong. What follows strips filler words, reduces each
+# remaining word to a rough stem (plurals, past tense, -ing), and passes when every content word
+# of an alternative appears within a short span of the reply, in any order.
+
+FILLER_WORDS = {
+    "a", "an", "the", "is", "are", "was", "were", "be", "been", "being",
+    "to", "of", "and", "or", "but", "so", "also", "that", "this", "in", "on", "at", "as", "then",
+}
+
+# Negation words the contradiction check (added alongside this) looks for immediately before a
+# matched claim word. "no longer" is the one two-word phrase; it is matched as an adjacent pair.
+NEGATION_WORDS = {"no", "not", "never", "isn't", "without"}
+
+WINDOW_TOKENS = 8       # how far apart an alternative's content words may sit in the reply
+NEGATION_LOOKBACK = 3   # words checked before a matched content word for a preceding negation
+
+_WORD_RE = re.compile(r"[a-z']+")
+
+
+def _stem(word: str) -> str:
+    """A rough stem: enough to fold plurals, past tense and -ing onto the same root as their base
+    form (killing/kill, hurts/hurt, limited/limit) without pulling in a real stemmer dependency.
+    The length guards keep short words (e.g. "noted", 5 letters) from being cut down far enough to
+    collide with an unrelated word -- "noted" must not become "not"."""
+    w = word.lower()
+    if w.endswith("'s") and len(w) > 3:
+        w = w[:-2]
+    if w.endswith("ing") and len(w) > 5:
+        w = w[:-3]
+    elif w.endswith("ed") and len(w) > 5:
+        w = w[:-2]
+    elif w.endswith("es") and len(w) > 4:
+        w = w[:-2]
+    elif w.endswith("s") and len(w) > 3 and not w.endswith("ss"):
+        w = w[:-1]
+    return w
+
+
+def _tokenize(text: str) -> list[str]:
+    return _WORD_RE.findall(_norm(text))
+
+
+def _content_stems(phrase: str) -> list[str]:
+    """Stemmed content words of one alternative, filler words dropped. Duplicates and order are
+    kept; matching below de-dupes when it builds the set of words it needs to find."""
+    return [_stem(tok) for tok in _tokenize(phrase) if tok not in FILLER_WORDS]
+
+
+def _find_alt_match(reply_stems: list[str], required: list[str]) -> Optional[list[int]]:
+    """None if some required stem never appears in reply_stems, or no combination of occurrences
+    fits inside WINDOW_TOKENS; else the tightest-fitting combination of matched indices, one per
+    required stem (same order as the de-duplicated ``required`` list)."""
+    ordered_required = list(dict.fromkeys(required))  # de-dup, keep first-seen order
+    if not ordered_required:
+        return None
+    positions = {r: [i for i, s in enumerate(reply_stems) if s == r] for r in ordered_required}
+    if any(not idxs for idxs in positions.values()):
+        return None
+    best: Optional[list[int]] = None
+    best_span: Optional[int] = None
+    for combo in itertools.product(*(positions[r] for r in ordered_required)):
+        span = max(combo) - min(combo)
+        if span > WINDOW_TOKENS:
+            continue
+        if best_span is None or span < best_span:
+            best, best_span = list(combo), span
+    return best
+
+
+def fact_group_hit(reply: str, alternatives: list[str]) -> bool:
+    """True when any alternative's content words all appear, in any order, within a short window
+    of the reply -- the tolerant replacement for "alternative is a substring of the reply"."""
+    reply_stems = [_stem(t) for t in _tokenize(reply)]
+    return any(_find_alt_match(reply_stems, _content_stems(alt)) is not None for alt in alternatives)
+
+
+def _has_negation_before(reply_stems: list[str], idx: int) -> bool:
+    """True when a negation word, or the two-word "no longer", sits in the NEGATION_LOOKBACK words
+    immediately before position idx."""
+    window = reply_stems[max(0, idx - NEGATION_LOOKBACK):idx]
+    if any(w in NEGATION_WORDS for w in window):
+        return True
+    return any(window[i] == "no" and window[i + 1] == "longer" for i in range(len(window) - 1))
+
+
+def claim_group_hit(reply: str, alternatives: list[str]) -> bool:
+    """True when the wrong claim (any alternative phrasing) is stated in the reply and none of its
+    matched words has a negation sitting just before it -- so "there is no day limit" does not trip
+    a claim written as "there is a day limit", but "there is still a day limit" does."""
+    reply_stems = [_stem(t) for t in _tokenize(reply)]
+    for alt in alternatives:
+        match = _find_alt_match(reply_stems, _content_stems(alt))
+        if match is None:
+            continue
+        if not any(_has_negation_before(reply_stems, i) for i in match):
+            return True
+    return False
+
+
 # --- one sample ------------------------------------------------------------------------------
 
 @dataclass
@@ -434,7 +538,7 @@ async def run_sample(
     if case.expect_attached is not None:
         attached_ok = kb_attached == bool(case.expect_attached)
 
-    mention_hits = [any(_norm(alt) in norm_reply for alt in group) for group in case.must_mention]
+    mention_hits = [fact_group_hit(reply, group) for group in case.must_mention]
     mention_ok = all(mention_hits) if case.must_mention else None
     notsay_hits = [s for s in case.must_not_say if _norm(s) in norm_reply]
     notsay_ok = (not notsay_hits) if case.must_not_say else None
