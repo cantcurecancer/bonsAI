@@ -419,6 +419,16 @@ appeared when it was due **88.9 times in a hundred against 77.8**. It keeps the 
 31 August with 161 notes in it, and had been for weeks. That is filed as its own bug and it makes the earlier search
 figures in this section, and in wave one's reports, void.
 
+**The answer numbers in the paragraph above are marked here, not deleted, because they turn out not to be
+comparable either.** The check behind them had two faults of its own, both fixed in wave three: it could
+mark a right answer wrong for using different words than expected, and it could miss a reply that flatly
+said the opposite of its own note. Measured again on the same 61 questions with the fixed checks, on the
+library that ships: facts kept **76.6%**, never contradicts its note **94.4%**, a note attached whenever
+one was due **100%**, branch menu shown when due **98.6%**, clean on all three runs **60.7%**. **Every
+answer number this file has ever quoted before this wave, including the 55.7-to-62.3 and 88.9-against-77.8
+figures just above, was taken with those two faults still in the check and should not be read as a real
+comparison against these new ones.**
+
 **Getting to the troubleshooting tips is where the wave fell short.** The tips themselves are much better — crash went
 from 2 to 9, sound 1 to 8, picture 1 to 8, performance 2 to 10, controller 6 to 10, and the top crash tip no longer
 tells someone to check a desktop that game mode does not have. But of 24 fresh sentences written by someone who had not
@@ -527,39 +537,6 @@ is fine, the one-second target is retired (D84). Anything new goes here, one lin
   rule no longer holding — are not covered by that rule and still need answering if this is ever revisited. Weights
   stay even for now. (D68, D82) [Detail](roadmap-details.md#the-shipping-retrieval-arm-loses-to-the-vector-half-alone-on-rows-nobody-tuned-against).
 
-- ★★★★ `[KB]` **The search test has been measuring a library from 31 August that is missing half the
-  notes** — **OPEN, found 2026-09-07.** The test keeps its own copy of the library and **reuses whatever
-  copy it finds** unless someone passes a rebuild flag by hand. The copy sitting on this machine was built
-  on **31 August: 161 notes and 13 games**, against 293 notes and 25 games today. Nobody passed the flag, so
-  every run since has quietly measured the old library.
-  **What that means, and it is worse than it sounds.** All **72** of the questions about the twelve games
-  added this month score zero in that test and always have — the notes they are looking for are not in the
-  copy being searched, so the test hands back notes from unrelated games. Asked *"black mesa where do i go
-  first"* it returned a Left 4 Dead 2 note and a Zelda one. The wave-one search conclusions about the new
-  games, and the starting measurement taken tonight, are void for the same reason.
-  **The weight decision that is currently on hold was measured with this same test**, so its numbers need
-  re-checking before anything is decided on them. Fix: the test must rebuild its copy, or refuse to run when
-  the copy is older than the notes file. Both ends of tonight's measurement have been re-run with a forced
-  rebuild. Planned as wave three ([48](planning/48-kb-wave-three-session.md)).
-- ★★★ `[KB]` **An answer said the opposite of its own note and the check waved it through** — **OPEN,
-  found 2026-09-07 while taking this wave's starting measurements.** Asked what the goal of Pikmin 2 is and
-  whether there is still a day limit, the reply said *"there is still a day limit"*. The note it was given
-  says there is **no** day limit in this game. A person would plan a whole run around that and be wrong.
-  The check that is supposed to catch exactly this passed the reply, because it looks for two fixed
-  sentences — *"there's a day limit"* and *"you have a limited number of days"* — and the model wrote
-  neither. **So the "never contradicts its note" score of 100% is not trustworthy**, and every report that
-  has quoted it needs reading with that in mind. Two things to fix and they are separate: the model saying
-  it, and the check missing it. Evidence: the answer test taken today on the tip. Planned as wave three
-  ([48](planning/48-kb-wave-three-session.md)).
-- ★★ `[KB]` **The answer test marks a fact missing when the answer said it in different words** — **OPEN,
-  found 2026-09-07.** The check looks for a phrase inside the reply, so *"keep the crowd thin"* fails
-  against *"thin the crowd"*, *"killing the mother"* fails against *"kill the mother"*, and *"hurting her
-  badly"* fails against *"hurts her badly"*. Four of the questions that failed today were right and were
-  counted wrong; one Paper Mario answer was counted wrong twice for facts it plainly stated. **So the
-  facts score of 70.8% is lower than the truth**, and the four thin-game failures it shows are not the
-  content gap they look like — the facts are in the notes and in the answers. Left alone on purpose while
-  this wave runs, so its before and after are measured the same way; worth fixing straight after. Planned
-  as wave three ([48](planning/48-kb-wave-three-session.md)).
 - ★★ `[KB]` **A pinned test batch is not badged** — **OPEN, found 2026-09-07.** Chips pinned for testing are
   supposed to carry an amber Test badge, so it is obvious the carousel is showing a fixed set rather than what
   the plugin would have picked on its own. With the chip-decode animation switched on, the badge never draws, so
@@ -578,6 +555,20 @@ is fine, the one-second target is retired (D84). Anything new goes here, one lin
   device, asking about a boss that does not exist in Hades got a confident answer about weapons, and no line.
   Same cause as the tip problem above: nothing in the search can say "none of these fit." Evidence
   `runs/plan47-R5-not-in-notes.json`, `runs/plan47-probe-notinnotes.json`.
+  **Better after wave three, but not fixed.** The line fires more often now that both searches have a
+  floor under them. It still cannot fire on the four questions that caused it: asking Black Mesa how to
+  tame a horse still attaches a note about enemies instead of saying nothing fit.
+- ★★★ `[KB]` **The note search has got about thirty per cent slower since August** — **OPEN, found
+  2026-09-07.** The same three questions took 793 to 900 milliseconds in August, 1078 to 1094 one
+  September evening, and 1103 to 1230 the next. The explanation given at the time — that only the first
+  question after a quiet spell is slow — does not hold on the device: three questions asked back to back
+  came back within 16 milliseconds of each other, no faster on the third than the first. Nobody knows why
+  yet. There is now a written budget of one second and a check that prints over-budget, so it cannot
+  creep up again unnoticed.
+- ★★ `[KB]` **Four questions still get notes about the wrong subject** — **OPEN, found 2026-09-07.**
+  Asking Black Mesa how to tame a horse, asking Portal 2 where to buy a house, and asking about a Hades
+  boss that does not exist all still attach a note. The floor added this wave cannot catch these without
+  also throwing away twenty or more correct answers elsewhere in the library, so it was left as it is.
 
 ### Deck check owed
 
@@ -593,6 +584,9 @@ is fine, the one-second target is retired (D84). Anything new goes here, one lin
 
 ### Next
 
+- `[KB]` **How often the "No tip for this" line actually appears is unmeasured on the device** — no stars,
+  added 2026-09-07. The line could not fire at all before this wave's floor landed; now it can, but nobody
+  has watched it happen on the Deck yet.
 - ★ `[KB]` **Measure answers with the character voice on** — **OPEN, switch already built.** The answer test's voice
   switch landed 6 September. What's still owed is one run with it turned on, which wave three's main measurement
   run includes — planned as wave three ([48](planning/48-kb-wave-three-session.md)).
@@ -687,6 +681,23 @@ is fine, the one-second target is retired (D84). Anything new goes here, one lin
 
 Everything shipped since v0.4.9 (2026-07-08), one line each, newest first. Detail: [CHANGELOG.md](../CHANGELOG.md),
 [archive/roadmap-completed.md](archive/roadmap-completed.md), [archive/roadmap-bugs-fixed.md](archive/roadmap-bugs-fixed.md).
+
+**Fixed 2026-09-07 (knowledge base, wave three — these are the tools that grade answers and searches, not
+the plugin itself, so nothing here needs a Deck check):**
+- ★★★★ `[KB]` **The search test now checks the actual library instead of a leftover copy from 31 August** —
+  it used to reuse whatever copy of the notes it found lying around, so every question about a game added
+  this month scored as a miss no matter how good the search really was. It now rebuilds its copy whenever
+  the notes are newer, refuses to run at all on a stale copy it cannot rebuild, and prints the version and
+  the number of notes it searched with every report.
+- ★★★ `[KB]` **The answer test no longer waves through a reply that says the opposite of its own note** —
+  asked whether Pikmin 2 still has a day limit, a reply once said yes when the note says no, and the check
+  passed it because it was only looking for two exact sentences neither of which the model happened to
+  write. Claims are now read one sentence at a time, and a word like "too" is treated as a negative the
+  same way "not" is.
+- ★★ `[KB]` **The answer test stops marking a correct answer wrong just for using different words** — a
+  reply that said "thin the crowd" used to fail a check looking for the exact words "keep the crowd thin",
+  and the same for "kill the mother" against "killing the mother". Answers that mean the same thing now
+  count as right.
 
 **Accepted, not fixed, 2026-09-07:**
 - ★ `[focus]` **ACCEPTED 2026-09-07 — the ring can land on a spot half hidden behind the Copy or Retry icon** —
