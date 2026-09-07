@@ -4235,3 +4235,83 @@ one second.
 **So the test row closes on speed being acceptable, not on the target being met.** Rewrite the row to say about a
 second, every question, is the measured and accepted cost on this device. Do not leave a one-second target in place
 that nothing intends to meet.
+
+### D85 — LOCKED 2026-09-07 — Knowledge-base wave two: four calls answered before a line of code
+
+Raised and answered the same day while planning [47](../planning/47-kb-wave-two-session.md). Two of the four
+were the maintainer's own questions; the other two came out of checks run while writing the plan, and both
+changed what a lane will do.
+
+**1. How much of the game-note gap to fill. Answered: the 21 real gaps, plus topping up the four thinnest
+games.** Wave one left 29 of 72 plainly-worded questions with no note behind them. Eight of those 29 are
+marked in the file as written on purpose to have no answer — secret endings, post-game bosses — so the real
+content gap is 21. **Those eight stay blank as a control**, so the test keeps something honest to measure
+against. On top of the 21, Mario Kart 64 (4 notes), Doom 64 (5), Super Mario 64 (6) and Paper Mario (6) are
+brought up to eight to ten each, because a game that thin will keep producing new gaps against questions
+nobody has written yet. Eight to ten is a target, not a quota: a padded note competes in the search with the
+good ones, so a lane that runs out of real material says so instead.
+
+**A consequence worth writing down.** A note written to answer a question that was written blind stops that
+question being a blind measurement. So the headline number for this wave is **coverage** — how many of the
+72 now have a note — and the search score on those 21 rows is reported with a note saying it is no longer
+blind. The eight controls are what stays honest.
+
+**2. The wording of the "not in my notes" line (D48 left this open on 2026-09-01). Answered:**
+
+> Not in my notes — this answer is from the model's own knowledge.
+
+One muted line, added by code and not by the model, under the reply. Two lines in the 300 px column. Two
+alternatives were shown and turned down: naming the game (*"I have no notes on this for Doom 64…"*), which
+costs a third line; and adding *"so worth double-checking"*, which nags on every uncovered question.
+Everything else about the line stays as D48 locked it — Strategy and Expert asks only, only where the notes
+cover the game but nothing matched, never when the library is off or the game is uncovered.
+
+**3. What the meaning-index work should actually do. Answered: ship the guarantee, and measure the
+tie-break. Nothing about the live search changes in this wave.**
+
+This one corrects a belief that had got into the roadmap. D82 was held with the maintainer's condition:
+*"don't lean the search towards meaning until its meaning index is built."* It was reasonable to read that
+as *guarantee the index and the four-to-six point gain is unlocked.* **It is not.** D82 names three
+objections and that trigger covers one of them. The other two — a note whose words exactly match being
+pushed aside, and one case of the locked topic-preference decision no longer holding — are untouched by it
+and were written down at the time as still needing answering.
+
+So the work splits in two. **The guarantee ships**, because it is worth having on its own: the corpus build
+has three separate paths that put notes on a device with no meaning index and only print a warning, and the
+plugin's run-time check asks one yes-or-no question about the whole library rather than checking each note.
+**The tie-break is measured only** — keep the balance even and let meaning rank higher only where there is
+no strong word match, which is the follow-up D82 itself recommends because it targets the same gap without
+touching any of the three rules. The numbers come back as a decision rather than a change.
+
+**4. Who fixes the ring landing behind the Copy and Retry icons. Answered: the session running the wave,
+not a helper.** It is a focus and layout problem, and the standing rule keeps those away from helpers and
+gives them to Opus at extra-high after a device reading. The reading exists: last night's run recorded three
+stops that were focused while partly hidden — one at 67% behind Retry and two at 89% behind Copy. Two
+things about it are worth knowing. It is **recorded nowhere but an untracked evidence file**, so it gets a
+roadmap entry as part of this wave. And the manual test record reads the same 89% as *expected* — the icon
+is meant to sit in that corner — while saying nothing about the 67%. So the entry is filed as the 67% case,
+not as the 89% one.
+
+**Two findings from checks run while planning, which is why the plan looks different from the sketch.**
+
+The plan now carries a standing rule: any lane whose value rests on an unproven assumption gets that
+assumption tested cheaply before the lane is briefed. Wave one lost a day to a lane whose whole design
+rested on one (D81). Two such checks were run while writing plan 47.
+
+- **Troubleshooting is refused before wording ever matters.** Ten ordinary problem sentences were run
+  through the part of the plugin that decides whether a question is about troubleshooting at all. **Nine of
+  ten reach nothing** — including *"my game keeps crashing"*, *"my game won't launch"*, *"black screen when
+  I start the game"* and *"game keeps crashing on my Steam Deck"*. The word "crash" is deliberately classed
+  as too weak to send a question to the tip sheet on its own, in every circumstance. That reasoning holds
+  while a game is running — "crash" is a thing bosses do to you — and does not hold with nothing running.
+  So D81's "rewrite the tips" is right and incomplete: the routing has to stop refusing first, or a perfect
+  rewrite is never reached.
+- **There are two crash tips in the whole sheet of 124, and neither helps.** They read *"Crash to desktop:
+  check ~/.steam/steam/logs and compatdata"* and *"Kernel panic rare on Deck: note SteamOS version and last
+  game."* On a Deck in game mode there is no desktop to crash to. So the tips are not badly worded so much
+  as barely there, and the job is writing them, not rewording them.
+
+**One thing this costs.** The sentence D81 and three other documents quote — the one about a game dropping
+you back to the library — has been read by everyone who has worked on this, so it is burned as a blind test.
+It is retired as a held-back row, and plan 47 has a separate lane write two dozen fresh symptom sentences,
+blind, before anyone touches the tips.

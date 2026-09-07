@@ -1,4 +1,4 @@
-# 37 — The knowledge base, zoomed out (status report, 2026-09-06, second pass after wave one)
+# 37 — The knowledge base, zoomed out (status report, 2026-09-07, third pass, wave two planned)
 
 Written from the roadmap, the knowledge-base architecture doc, the answer-quality plan, the locked
 decisions, the last eval reports, the last three session plans and the code. Plain language on
@@ -133,9 +133,14 @@ both channels and installed on the Deck.**
   text sitting where words should be. The plugin's own log shows it recognised the block as a power
   suggestion — it just did not remove it from what the person reads. Nobody has traced it yet.
 - ★★ **Unrelated questions still get game cards.** Accepted 27 August; not being worked.
-- ★★ **The panel keeps naming a game after it is closed.** New, 6 September. After exiting a game the line
-  under the question box still named it. A question that names its own game still works; one that does not
-  may pick up the wrong game's notes. Not proven to cause a wrong answer yet.
+- ★★ **The panel keeps naming a game after it is closed.** New, 6 September, on the roadmap since 7
+  September. After exiting a game the line under the question box still named it. A question that names its
+  own game still works; one that does not may pick up the wrong game's notes. Not proven to cause a wrong
+  answer yet. The cause is now known: the running game is worked out once when the panel opens and only
+  corrected when a question is in flight.
+- ★ **The ring can land half hidden behind the Copy or Retry icon.** Measured 6 September, filed 7
+  September. Three stops on one reply were focused while only partly visible — one at 67% behind Retry. The
+  89% readings alongside it are expected and already explained; the 67% one is not.
 
 **Settled on 6 September, no longer open.**
 
@@ -147,7 +152,8 @@ both channels and installed on the Deck.**
 - **The shipping blend losing to its meaning half** — measured properly at last, and held. See section 3.
 - **A symptom-only troubleshooting question reaching no tips** — built, measured, held. It does not work:
   matching by meaning cannot connect the words a person uses for a crash to the way the crash tips are
-  written. Rewriting the tips is the real job and now has its own roadmap entry.
+  written. Rewriting the tips is the real job and now has its own roadmap entry. **Widened on 7 September**
+  and the widening is the bigger half — see the next paragraph.
 
 **Owed on the Deck.**
 
@@ -160,10 +166,14 @@ both channels and installed on the Deck.**
   so there is no window to press it in.
 - ★★★ Which way a too-long chip label is cut off. Behind the preset-row work.
 
-**Your calls.** Four were decided on 6 September: the symptom-only search is held and rewriting the tips is
-the real job; leaning the search toward meaning is held until every note is guaranteed to have its meaning
-index built; the twelve new games ship with their coverage gap known and accepted; and about a second to
-search on the Deck is fine. Nothing is waiting on you right now.
+**Your calls.** Four more were decided on 7 September while wave two was planned (D85): fill the 21 real
+note gaps and top up the four thinnest games, keeping the eight deliberate blanks as a control; the "not in
+my notes" line reads *"Not in my notes — this answer is from the model's own knowledge."*; the meaning-index
+work ships the guarantee and only measures the tie-break; and the ring bug is fixed by the session running
+the wave rather than a helper. Four were decided on 6 September: the symptom-only search is held and
+rewriting the tips is the real job; leaning the search toward meaning is held until every note is guaranteed
+to have its meaning index built; the twelve new games ship with their coverage gap known and accepted; and
+about a second to search on the Deck is fine. Nothing is waiting on you right now.
 
 ## 5. Next phases: what each buys, and what it costs
 
@@ -176,10 +186,10 @@ behind the claim where there is any.
 | Item (with its stars) | What it buys | Evidence | Cost | In the way |
 |---|---|---|---|---|
 | ★★ **Prompt diet** — **SHIPPED 6 September** | The small model reads nine tokens of instruction for every token of knowledge; fewer rules means better rule-following and ~340 tokens back in a 4k window. Expect a few points on facts kept and a slightly faster first token | The citation instruction was obeyed once in 89 asks and the UI cannot render it | Done | None. Instructions fell from 6,930 to 5,682 characters; moving the notes next to the question was measured and rejected, because it placed the spoiler warning correctly far less often |
-| ★★ **"Not in my notes" line** when a game question matches nothing | A person can tell an answer from the notes from one out of the model's memory. Does not change the answer; changes trust | Your own May note of a confident, wrong, tidy reply with no notes | 0.5–1 day, plus a focus check if it becomes a stop | Wording to settle with you |
+| ★★ **"Not in my notes" line** when a game question matches nothing | A person can tell an answer from the notes from one out of the model's memory. Does not change the answer; changes trust | Your own May note of a confident, wrong, tidy reply with no notes | 0.5–1 day, plus a focus check if it becomes a stop | Nothing. **Wording settled 7 September:** *"Not in my notes — this answer is from the model's own knowledge."* Planned as wave two |
 | ★★★ **Spoiler tiers setting** — strict / default / open | A strict player stops seeing boss tactics; an open player stops seeing fences at all. Today one rule fits everyone | The tiers are confirmed; the fence fix showed prompt wording moves the misfire rate 24 points | 3 days: settings plumbing (~18 files), a prompt per tier measured on the answer test, a control with a focus entry, Deck QA | Nothing, once the bug session releases the prompt file |
 | ★★★ **Follow-ups remember** | "What about the second phase?" gets an answer about the boss you were just asking about. Today the model receives only the newest message and the follow-up searches nothing | Agreed 1 Sep: carry the previous turn's named thing into the search first; chat history later, trimmed to the window | 1 day for the carry-over; 2 more for history within the budget | The 4k window: a Strategy reply can be 900 tokens |
-| ★★ **Symptom-only troubleshooting reach** — **BUILT, MEASURED, HELD 6 September** | It did not work. One of four target sentences improved; the crash one now attaches a tip about desktop mode where it used to attach nothing, which is worse | Matching by meaning does not connect the words people use for a crash to how the crash tips are written | Superseded | **Rewriting the tips so they use the words people type** is the actual job, and now has its own roadmap entry |
+| ★★★ **A troubleshooting question mostly never reaches the tips** — **WIDENED 7 September, planned as wave two** | *"My game keeps crashing"* gets crash advice. Today it gets nothing, and there is almost nothing useful to get | Measured 7 September: **nine of ten** ordinary problem sentences reach nothing. "Crash" is deliberately classed as too weak to route a question on its own, in every circumstance. The whole sheet holds **two** crash tips and neither is usable on a Deck | 1–2 days across one lane | Nothing. Three fixes in order: stop refusing, teach the rules everyday words, write the tips. Then re-run the held meaning search on the new tips to settle whether it dies or revives |
 | ★★ **Eval tooling** — weight sweep on the tuning set, per-case output for the shipping blend, rows that may list a second right answer | Nothing a user sees. It is what unblocks the weights decision and stops every card batch reading as a regression | **Shipped 6 September, and the sweep has now been run** — see section 3. No question uses the second-answer option yet | Done | None |
 | ★★★ **"Starting out" card kind**, then the Cyberpunk / Fallout / Red Dead orientation cards | A new player gets a "how do I get started" chip and a matching answer; today those three cards read as "What should I know about Choosing a build?" | Your gap-sheet asks on 29 Aug | 1–2 days plus a corpus rebuild and release | Your call on the kind |
 | ★★★ **Card style pass** — rewrite the 139 prose cards as labelled short lines | Possibly better fact retention by the 2B model. Facts kept is already 92%, so the ceiling is low; do it only if the answer test says the labelled shape scores better | The six labelled cards kept content accurate 6 of 6 on the Deck, but the labels themselves survived 1 of 6 | 2–3 days of content, a rebuild and a release | Measure first |
@@ -195,10 +205,17 @@ meaning index is built, it lets the meaning search push aside a note that exactl
 someone typed, and it breaks one case of a locked decision. Numbers and the full reasoning are in section
 3 and in the decisions file.
 
-**What would unlock it:** guarantee every note has its meaning index before it can be searched. Then the
-first objection disappears and the other two still need answering. A better route may be to leave the
-balance alone and change only the tie-break, so meaning wins when there is no strong word match. That is
-real work rather than a constant change, and needs its own measurement.
+**What would unlock it — and read this carefully, because it is easy to get wrong.** Guaranteeing every note
+has its meaning index answers **one of the three objections**, not all three. The other two — a note whose
+words exactly match being pushed aside, and one case of the locked topic-preference decision — are untouched
+by that trigger. So the guarantee on its own does not deliver the four-to-six points; it removes one blocker
+of three.
+
+**The route that could deliver them** is the follow-up the decision itself recommends: leave the balance
+alone and change only the tie-break, so meaning wins where there is no strong word match. That targets the
+same gap without touching any of the three rules. Wave two ships the guarantee — worth having on its own,
+because the corpus build has three separate ways to put unindexed notes on a device and only warns — and
+**measures** the tie-break, so the next call comes with numbers rather than a hope. (D85)
 
 ### 5c. Corpus phases
 
@@ -224,7 +241,9 @@ them straight; what remains is coverage, follow-up memory, and the things the te
 ## 6. What is blocking, in one list
 
 1. **Coverage, and it is now the top one.** The twelve new games shipped thin: 43 of 72 plain player
-   questions have a note behind them. This is content work, not code, and no tooling is in the way.
+   questions have a note behind them. Eight of the 29 blanks were written on purpose to have none, so the
+   real gap is 21. This is content work, not code, and no tooling is in the way. Planned as wave two
+   ([47](47-kb-wave-two-session.md)), two content lanes, with the four thinnest games topped up as well.
 2. **Fallout: New Vegas is owned but not installed on the Deck**, so its cards cannot be judged in place
    until it is. That is the only thing blocking the last wave-one device row.
 3. **The "no new titles" rule** for Phase 5 is reopened for one tranche only; the catalog stays its own
@@ -282,6 +301,7 @@ carrying the same stars they carry here.
 - [kb-embed-bakeoff-2026-09-06-arms.md](../archive/research/kb-embed-bakeoff-2026-09-06-arms.md) — latest search numbers, on all 266 cards
 - [kb-answer-eval-2026-09-06-before-wave1.md](../archive/research/kb-answer-eval-2026-09-06-before-wave1.md) and [kb-answer-eval-2026-09-06-after-wave1-landed.md](../archive/research/kb-answer-eval-2026-09-06-after-wave1-landed.md) — answer numbers either side of the prompt work
 - [46-kb-wave-one-session.md](46-kb-wave-one-session.md) — the wave that produced everything dated 6 September, with its progress log
+- [47-kb-wave-two-session.md](47-kb-wave-two-session.md) — wave two: the gap list, the troubleshooting path, two bugs, the index guarantee, one release
 - `runs/plan46-*.json` — the device evidence behind the 6 September Deck readings
 - [34-feature-verification-round.md](34-feature-verification-round.md), [35-bugfix-session.md](35-bugfix-session.md), [36-feature-session.md](36-feature-session.md) — this week's Deck findings and who owns which files
 - `data/kb/strategy_seed.json`, `tests/fixtures/kb_eval_v2.json`, `tests/fixtures/kb_answer_eval.json` — counted directly

@@ -56,6 +56,14 @@ hook gives a gentle heads-up when a session starts work outside this.
   corner icons, and the earlier run that pressed the question recorded the same landing ("nothing"), so it is not new to
   the corner icons. Runs: `retry-corner-collapse-question`, `press-question-not-retry`.
 
+- ★ `[focus]` **The ring can land on a spot half hidden behind the Copy or Retry icon** — **OPEN, measured on the
+  Deck 2026-09-06, filed 2026-09-07.** Walking down a reply, three stops were focused while only partly visible: one at
+  **67%** behind the Retry icon and two at 89% behind Copy. A person moving the ring there sees it half covered. The
+  89% readings are expected and already explained in the test row — the icon is meant to sit in that corner — so this
+  entry is about the **67% case**, which nothing covers. Same family as the two worse versions fixed on 2026-09-06 when
+  Copy became a step of its own. Focus and layout, so it needs the device reading (which exists) and Opus at extra-high,
+  not a helper. Evidence `runs/plan46-R4-prompt-fix-on-device.json`, `runs/plan46-R4-walk-to-ask.json`. (D85)
+
 - ★ `[focus]` **Closing the model try order picker drops the highlight onto the tab rather than the button you opened it from** —
   **OPEN, seen twice 2026-09-06.** After pressing *Done*, the highlight lands on the Ollama tab's outer frame, not back on
   *Set text model try order…*. It is not a dead end — the next press moves normally — but it costs about thirteen presses to get
@@ -410,25 +418,32 @@ the twelve new games is thin at the bottom, and that was known before shipping (
 
 **Pick up here, in order.**
 
-*(Rewritten 2026-09-06 after wave one. The three steps that were here are all done: the blind questions were written
-and matched, the release went out, and the prompt slimming, the search tooling and the weight sweep all landed or were
-decided.)*
+*(Rewritten 2026-09-07. All of it is now planned as one wave —
+[47](planning/47-kb-wave-two-session.md), approved and waiting on a "go".)*
 
-1. **Fill the thin games.** This is the biggest thing a person would notice. Of 72 questions a player might plainly ask
-   about the twelve games added on 2026-09-06, only 43 have a note that answers them. Mario Kart 64 has four notes and
-   Doom 64 five. Someone asking about those will often get nothing. Writing notes, not code.
-2. **Rewrite the troubleshooting tips so they use the words people type.** The entry under Next explains why: searching
-   by meaning was built, measured and held back because it cannot connect *"the game drops me back to the library"* to
-   tips written in other words. The tips are the problem, not the search.
-3. **Then work Next from the top:** the "not in my notes" line, answer-first tested both ways, spoiler tiers, and
-   follow-ups remembering — plus one corpus release carrying whatever needs a rebuild.
+1. **Fill the thin games.** The biggest thing a person would notice. Of 72 questions a player might plainly ask about
+   the twelve games added on 2026-09-06, only 43 have a note that answers them; eight of the 29 blanks were written on
+   purpose to have none, so the real gap is **21**. Mario Kart 64 has four notes and Doom 64 five, and those four
+   thinnest games get topped up as well. Writing notes, not code.
+2. **Make a troubleshooting question reach the tips at all.** Bigger than "rewrite the tips", and cheaper. Measured
+   2026-09-07: **nine of ten ordinary problem sentences reach nothing**, because the word "crash" is classed as too
+   weak to send a question to the tip sheet on its own, in every circumstance. And there are two crash tips in the
+   whole sheet of 124, neither of them useful. Three fixes: stop refusing, teach the rules everyday words, then write
+   the tips. (D85)
+3. **The rest of the wave:** the "not in my notes" line with its wording now settled, the guarantee that every note has
+   its meaning index, two traceable bugs, one corpus release, one evening on the Deck. Then work Next from the top —
+   answer-first tested both ways, spoiler tiers, follow-ups remembering.
 
 **Owed on the Deck:** one row (**KB-TRANCHE-01**) — a question per new game on the device. Fallout: New Vegas still is
 not installed. Everything else from wave one is verified.
 
 ### Calls waiting on you
 
-None open. **Decided 2026-09-06:** the symptom-only search is held and rewriting the tips is the real job (D81);
+None open. **Decided 2026-09-07 (D85), planning wave two:** fill the 21 real note gaps and top up the four thinnest
+games, keeping the eight deliberate blanks as a control; the "not in my notes" line reads *"Not in my notes — this
+answer is from the model's own knowledge."*; the meaning-index work ships the guarantee and only **measures** the
+tie-break, because guaranteeing the index answers one of D82's three objections and not the other two; and the ring
+bug is fixed by the session running the wave rather than a helper. **Decided 2026-09-06:** the symptom-only search is held and rewriting the tips is the real job (D81);
 leaning the search toward meaning is held until every note is guaranteed to have its meaning index built, and two
 other objections would still need answering if it is ever taken (D82); the twelve new games ship with their coverage
 gap known and accepted (D83); about a second to search on the Deck is fine and the one-second target is retired
@@ -452,6 +467,13 @@ is fine, the one-second target is retired (D84). Anything new goes here, one lin
   uses to describe a crash to the way the crash tips are written; the real fix is rewriting the tips, filed as its own
   entry below. Held rather than shipped (D52, D81).
   [Detail](roadmap-details.md#a-troubleshooting-question-that-only-describes-the-symptom-reaches-no-tips).
+- ★★ `[KB]` **The panel keeps naming a game after you have closed it** — **OPEN, seen on the Deck 2026-09-06, filed
+  2026-09-07.** After exiting a game the line under the question box still named it. A question that names its own game
+  still works; one that does not may pick up the wrong game's notes. Not yet proven to have caused a wrong answer. The
+  cause is in the code's own comment: the running game is worked out once when the panel mounts and only corrected when
+  an ask's status poll runs, so closing a game with no question in flight never updates it
+  ([useBonsaiAskOrchestration.ts:102-125](../src/hooks/useBonsaiAskOrchestration.ts), line at
+  [MainTab.tsx:282](../src/components/MainTab.tsx)). Was written up in the status report only until now. (D85)
 - ★★★ `[KB]` **Searching the notes by meaning costs about a second, every time, on the Deck** — **ACCEPTED
   2026-09-06.** Repeated on the Deck: 1.10, 1.23 and 1.19 seconds across three questions in a row, the same band as
   the first time this was measured. The maintainer looked at the number and said that is fine — about a second before
@@ -502,7 +524,8 @@ is fine, the one-second target is retired (D84). Anything new goes here, one lin
   Row **KB-ANSWER-03**. Examples and trade-offs in the decisions file. (D66)
 - ★★ `[KB]` **"Not in my notes" line** — **OPEN, agreed 2026-09-01.** When a game question matches no card, one muted line
   built by code says the answer is general knowledge, so a person can tell notes from memory. Only on Strategy and Expert
-  asks for a covered game; never when the library is off or the game is uncovered. Wording to settle with you. (D48)
+  asks for a covered game; never when the library is off or the game is uncovered. **Wording settled 2026-09-07:**
+  *"Not in my notes — this answer is from the model's own knowledge."* (D48, D85)
 - ★★ `[KB]` **Eval tooling: the weight sweep, per-question results for what ships, a second right answer** — **OPEN,
   agreed 2026-09-01, sweep go-ahead 2026-09-05.** Nothing a user sees. The sweep runs on the tuning questions and decides
   the blend-weights bug above; the rest stops every card batch reading as a regression when two cards are both fair
@@ -521,11 +544,15 @@ is fine, the one-second target is retired (D84). Anything new goes here, one lin
   Deck's model runs with a 4,096-token window and a Strategy question with cards already goes over it (now trimmed
   instead of dropped, see Done). Try 8,192 as a Developer experiment with a game running, recording memory and time to
   first token, before it becomes a setting. Agreed as "later, its own call". (D46)
-- ★★ `[KB]` **Troubleshooting tips don't use the words a person actually types** — **OPEN, added 2026-09-06.** Trying to
-  reach the crash tips by searching for meaning instead of exact words did not work: the tips about desktop mode were
-  closer in meaning to *"the game drops me back to the library"* than the actual crash tips were. Matching by meaning
-  cannot bridge that gap on its own; the tips need to be rewritten so they contain the words people actually use to
-  describe a crash. Held back in favour of this instead (D81).
+- ★★★ `[KB]` **A troubleshooting question mostly never reaches the tips** — **OPEN, widened 2026-09-07.** Filed as
+  "the tips don't use the words people type", which is true and is the smaller half. Measured 2026-09-07: **nine of ten
+  ordinary problem sentences reach nothing at all** — *"my game keeps crashing"*, *"my game won't launch"*, *"black
+  screen when I start the game"*, *"game keeps crashing on my Steam Deck"*. The word "crash" is deliberately classed as
+  too weak to route a question on its own, in every circumstance; that holds while a game is running and does not hold
+  with nothing running. The rules are also written in enthusiast words (*deadzone*, *TDP*, *vsync*), and the sheet holds
+  **two** crash tips, both unusable on a Deck (*"Crash to desktop: check ~/.steam/steam/logs"*). Three fixes in order:
+  stop refusing, teach the rules everyday words, write the tips. Then re-run the held meaning search on the new tips to
+  see whether it still adds anything. (D81, D85)
 - ★★★ `[KB]` **Follow-ups remember** — **OPEN, agreed 2026-09-01.** *"What about the second phase?"* should answer about the
   boss you were just asking about; today the model gets only the newest message and the follow-up searches nothing. First
   carry the previous turn's named thing into the search (a day); then chat history trimmed to the window (two more). (D47)
