@@ -40,6 +40,7 @@ from backend.services.knowledge_base_service import (
     _load_section_vectors,
     _search_compat_patterns,
     COMPAT_TOPIC_RECALL_K,
+    STRATEGY_MEANING_FLOOR,
     _vector_recall_sections,
     VECTOR_RECALL_FLOOR,
     VECTOR_RECALL_MARGIN_MIN_POOL,
@@ -1182,6 +1183,99 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
     self.assertNotIn("Dreadnought", result.text_block)
     self.assertNotIn("Praetorian", result.text_block)
     self.assertNotIn("Nitra", result.text_block)
+
+  def test_strategy_meaning_floor_sits_inside_the_calibrated_safe_zone(self):
+    """Regression pin for the calibration written into STRATEGY_MEANING_FLOOR's comment: it
+    must stay inside the measured safe zone -- above the strongest wrong-attached tuning row
+    (0.5183) and below the weakest right-attached one (0.5277) -- or the zero-regression
+    guarantee documented there no longer holds."""
+    self.assertGreater(STRATEGY_MEANING_FLOOR, 0.5183)
+    self.assertLess(STRATEGY_MEANING_FLOOR, 0.5277)
+
+  def test_strategy_meaning_floor_blocks_a_below_floor_pool_end_to_end(self):
+    """D87: a real keyword hit is still dropped when nothing in the game's whole vectored note
+    set clears the meaning floor -- "attach nothing" beats attaching the only card that shares
+    a word with the question, the notes-side twin of the tips test above.
+
+    Every DRG Survivor section is mocked to the same low cosine (0.3, well under
+    STRATEGY_MEANING_FLOOR), so the pool-margin gate inside _vector_recall_sections also finds
+    nothing stands out -- the keyword hit on "Dreadnought" is the only reason anything would
+    attach without this floor.
+    """
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    conn = _get_connection(str(SEED_DB))
+    ids = [
+      int(r[0])
+      for r in conn.execute("SELECT section_id FROM sections WHERE game_id = 2")
+    ]
+    with mock.patch(
+      "backend.services.knowledge_base_service.nomic_embed_available",
+      return_value=True,
+    ), mock.patch(
+      "backend.services.knowledge_base_service.corpus_has_usable_section_vectors",
+      return_value=True,
+    ), mock.patch(
+      "backend.services.knowledge_base_service.embed_texts",
+      return_value=[[1.0, 0.0] + [0.0] * 766],
+    ), mock.patch(
+      "backend.services.knowledge_base_service._load_section_vectors",
+      return_value={sid: [0.3, 0.0] + [0.0] * 766 for sid in ids},
+    ):
+      result = retrieve_knowledge_context(
+        settings,
+        ask_mode="strategy",
+        question="Glyphid Dreadnought weak point",
+        app_id="2321470",
+        app_name="Deep Rock Galactic: Survivor",
+        domain="strategy",
+        pc_ip="127.0.0.1:11434",
+      )
+    self.assertFalse(result.attached)
+    self.assertEqual(result.text_block, "")
+    self.assertTrue(result.notes.startswith("routed_nothing_fit"))
+
+  def test_strategy_meaning_floor_leaves_a_confident_pool_alone(self):
+    """The floor reads the pool's best score: one card clearing it keeps the whole game's
+    vector pool from being blanked out, even when every sibling card scores low."""
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    conn = _get_connection(str(SEED_DB))
+    ids = [
+      int(r[0])
+      for r in conn.execute("SELECT section_id FROM sections WHERE game_id = 2")
+    ]
+    vectors = {sid: [0.3, 0.0] + [0.0] * 766 for sid in ids}
+    vectors[3] = [0.9, 0.0] + [0.0] * 766  # Glyphid Dreadnought -- clearly above the floor
+    with mock.patch(
+      "backend.services.knowledge_base_service.nomic_embed_available",
+      return_value=True,
+    ), mock.patch(
+      "backend.services.knowledge_base_service.corpus_has_usable_section_vectors",
+      return_value=True,
+    ), mock.patch(
+      "backend.services.knowledge_base_service.embed_texts",
+      return_value=[[1.0, 0.0] + [0.0] * 766],
+    ), mock.patch(
+      "backend.services.knowledge_base_service._load_section_vectors",
+      return_value=vectors,
+    ):
+      result = retrieve_knowledge_context(
+        settings,
+        ask_mode="strategy",
+        question="Glyphid Dreadnought weak point",
+        app_id="2321470",
+        app_name="Deep Rock Galactic: Survivor",
+        domain="strategy",
+        pc_ip="127.0.0.1:11434",
+      )
+    self.assertTrue(result.attached)
+    self.assertEqual(result.retrieval_method, "hybrid")
+    self.assertIn("Dreadnought", result.text_block)
 
   def test_rrf_lets_a_recall_card_compete_without_unseating_the_top_keyword_hit(self):
     keyword = [

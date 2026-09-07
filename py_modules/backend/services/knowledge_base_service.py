@@ -293,6 +293,41 @@ RRF_W_TOPIC = 0.30
 # that happens to share enough vocabulary with a tip still gets one.
 COMPAT_MEANING_FLOOR = 0.5044
 
+# --- Meaning floor: "none of these fit" (D87, notes half, 2026-09-07) --------------------------
+#
+# The "not in my notes" line shipped in wave two could never fire, for the same reason the tip
+# sheet needed a floor: a keyword-plus-vector-recall search inside one game's notes nearly always
+# finds *something*. Measured on device: ten Strategy questions against covered games -- gibberish
+# included ("qqqq zzzz wwww" in Hades) -- every single one attached a note, including three Hades
+# weapon notes offered up in answer to "how do i beat the bone hydra in hades", a boss that does
+# not exist.
+#
+# Calibrated on the 186 tuning-split Strategy rows of kb_eval_v2.json (never the 175 held-back
+# rows), reproducing the real pipeline end to end (keyword search, type recall, vector recall,
+# RRF fusion, the Strategy top-3 budget) rather than reading cosine in isolation: 120 of 186 rows
+# attach their right note today, 64 attach a wrong one, 2 attach nothing. This gate is far
+# **stricter** than the tips gate -- a roughly-right note is often still useful, so the rule is
+# zero tolerance: **no row that attaches its right note today may lose it**. Sweeping every floor
+# from 0.40 to 0.80, the highest value with zero such losses is 0.523: the weakest right-attached
+# row's best meaning score is 0.5277, the strongest wrong-attached row still under that is 0.5183.
+# At 0.523, wrong-attached falls from 64 to 58 (six of Wave Two's real DRG/BG3/GTA:SA rows go
+# from "attaches a wrong note" to "attaches nothing"); one point higher already costs two right
+# rows.
+#
+# **This floor does not, on its own, fix the four device sentences named in this lane's brief.**
+# Their best meaning scores -- "how do i tame a horse" against Black Mesa 0.6349 (the corpus's
+# Houndeye enemy card, an alien creature note the embedding model reads as horse-adjacent),
+# "where do i buy a house" against Portal 2 0.5266, "qqqq zzzz wwww" in Hades 0.5326, "how do i
+# beat the bone hydra in hades" 0.6369 -- all sit inside the same range as genuinely right notes
+# elsewhere in this corpus (as low as 0.5277). A floor high enough to reject all four would have
+# to clear roughly 0.64, which on the tuning rows costs 20-30+ right-attached notes for a corpus
+# this size -- a clear net loss under the zero-tolerance rule above, so it was not taken. This
+# mirrors a limitation already measured and documented on this exact corpus for
+# VECTOR_RECALL_FLOOR / VECTOR_RECALL_POOL_MARGIN: raw cosine similarity between a short question
+# and a small per-game card set does not cleanly separate "genuinely relevant" from "shares enough
+# incidental vocabulary to score high anyway".
+STRATEGY_MEANING_FLOOR = 0.523
+
 # Column weights, highest first. sections_fts is (name, card); compat_patterns_fts is
 # (topic, platforms, card). A card whose *title* matches the Ask is a better hit than one
 # that mentions the words somewhere in its body.
@@ -1590,18 +1625,17 @@ def retrieve_knowledge_context(
                 else:
                     vectors_by_id = _load_section_vectors(conn, [c.section_id for c in cards])
 
-                # D87: "none of these fit". Only the tips half (domain == "compat") is gated so
-                # far -- the notes half is a separate commit. Below the floor, nothing in this
-                # candidate pool is a match worth guessing over, so the whole pool is dropped
-                # rather than fused; the fallback tip search downstream is skipped too (see the
-                # fallback_text block below), so this is "attach nothing", not "attach the
-                # weakest thing we found".
+                # D87: "none of these fit", on both the tips half and the notes half. Below the
+                # floor, nothing in this candidate pool is a match worth guessing over, so the
+                # whole pool is dropped rather than fused; the fallback card downstream is
+                # skipped too (see the fallback_text block below), so this is "attach nothing",
+                # not "attach the weakest thing we found". The notes gate is deliberately looser
+                # in absolute terms and far stricter in what it may cost -- see
+                # STRATEGY_MEANING_FLOOR's comment for why a note it does not catch (four such
+                # sentences are named there) was left alone rather than pushed higher.
                 best_meaning = _best_meaning_score(vectors_by_id, query_vector)
-                meaning_floor_rejected = (
-                    domain == "compat"
-                    and best_meaning is not None
-                    and best_meaning < COMPAT_MEANING_FLOOR
-                )
+                meaning_floor = COMPAT_MEANING_FLOOR if domain == "compat" else STRATEGY_MEANING_FLOOR
+                meaning_floor_rejected = best_meaning is not None and best_meaning < meaning_floor
                 if meaning_floor_rejected:
                     routed_nothing_fit = True
                     cards = []
