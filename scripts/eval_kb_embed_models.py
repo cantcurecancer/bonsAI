@@ -352,6 +352,23 @@ def _ensure_seed_db(
     return db_path
 
 
+def _read_corpus_manifest(out_dir: Path) -> dict[str, Any]:
+    """Read the manifest written alongside the corpus this run actually searched.
+
+    Both report writers (markdown and JSON) stamp their header with these three values, so a
+    stale or thin copy shows on the page instead of hiding behind a plain filename.
+    """
+    manifest_path = out_dir / "corpus-manifest.json"
+    if not manifest_path.is_file():
+        return {"version": "unknown", "note_count": 0, "tip_count": 0}
+    data = json.loads(manifest_path.read_text(encoding="utf-8"))
+    return {
+        "version": str(data.get("version") or "unknown"),
+        "note_count": int(data.get("embedding_section_total_count") or 0),
+        "tip_count": int(data.get("embedding_compat_total_count") or 0),
+    }
+
+
 def _load_corpus_docs(conn: sqlite3.Connection) -> list[CorpusDoc]:
     docs: list[CorpusDoc] = []
     for row in conn.execute(
@@ -1466,6 +1483,8 @@ def _write_report(
         f"Date: {payload['date']}",
         f"Ollama: `{payload['ollama_base']}`",
         f"Corpus: `{payload['corpus_db']}`",
+        f"Corpus version: {payload['corpus_version']} · notes searched: "
+        f"{payload['corpus_note_count']} · tips searched: {payload['corpus_tip_count']}",
         "",
         "## Recommendation",
         "",
@@ -1819,10 +1838,14 @@ def run_bakeoff(
         REPO_ROOT / "docs" / "archive" / "research" / f"kb-embed-bakeoff-{today}{suffix}.json"
     )
 
+    corpus_manifest = _read_corpus_manifest(out_dir)
     payload: dict[str, Any] = {
         "date": today,
         "ollama_base": ollama_base,
         "corpus_db": str(db_path),
+        "corpus_version": corpus_manifest["version"],
+        "corpus_note_count": corpus_manifest["note_count"],
+        "corpus_tip_count": corpus_manifest["tip_count"],
         "models": models,
         "keyword_baseline": _scores_to_dict(keyword_scores),
         "english": {"bare": english_bare, "prompted": english_prompted},

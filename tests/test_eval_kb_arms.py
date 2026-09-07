@@ -748,6 +748,87 @@ class EvalArmsTests(unittest.TestCase):
             self.assertEqual(result, db_path)
             self.assertEqual(len(calls), 1)
 
+    # --- report headers: naming the corpus a report speaks for --------------------------------
+
+    def test_read_corpus_manifest_reports_version_and_counts(self):
+        mod = self.mod
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            out_dir = Path(tmp_dir)
+            manifest = {
+                "version": "2026.09.07",
+                "embedding_section_total_count": 293,
+                "embedding_compat_total_count": 156,
+            }
+            (out_dir / "corpus-manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+            info = mod._read_corpus_manifest(out_dir)
+        self.assertEqual(info["version"], "2026.09.07")
+        self.assertEqual(info["note_count"], 293)
+        self.assertEqual(info["tip_count"], 156)
+
+    def test_read_corpus_manifest_falls_back_when_missing(self):
+        """A run before the manifest exists must not crash -- it just has nothing to say yet."""
+        mod = self.mod
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            info = mod._read_corpus_manifest(Path(tmp_dir))
+        self.assertEqual(info["version"], "unknown")
+        self.assertEqual(info["note_count"], 0)
+        self.assertEqual(info["tip_count"], 0)
+
+    def _report_payload(self, **overrides):
+        """The minimal payload shape `_write_report` reads from -- see `run_bakeoff`."""
+        payload = {
+            "date": "2026-09-07",
+            "ollama_base": "http://127.0.0.1:11434",
+            "corpus_db": "/tmp/corpus.db",
+            "corpus_version": "2026.09.07",
+            "corpus_note_count": 293,
+            "corpus_tip_count": 156,
+            "models": ["nomic-embed-text"],
+            "keyword_baseline": {"top1_pct": 10.0, "top3_pct": 20.0, "fts_empty_pct": 5.0},
+            "english": {
+                "bare": {
+                    "nomic-embed-text": {
+                        "top1_pct": 1.0,
+                        "top3_pct": 2.0,
+                        "mean_embed_ms": 3.0,
+                        "fts_empty_pct": 4.0,
+                    }
+                },
+                "prompted": {
+                    "nomic-embed-text": {
+                        "top1_pct": 5.0,
+                        "top3_pct": 6.0,
+                        "mean_embed_ms": 7.0,
+                        "fts_empty_pct": 8.0,
+                    }
+                },
+            },
+            "arms": {},
+            "gate": {},
+            "spanish_probe": {},
+            "json_path": "docs/archive/research/kb-embed-bakeoff-2026-09-07.json",
+        }
+        payload.update(overrides)
+        return payload
+
+    def test_report_header_names_the_corpus_it_searched(self):
+        """A stale or thin copy must show on the page, not hide behind a plain filename."""
+        mod = self.mod
+        payload = self._report_payload()
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            report_path = Path(tmp_dir) / "report.md"
+            mod._write_report(
+                report_path,
+                payload=payload,
+                recommendation="keep nomic-embed-text",
+                winner="nomic-embed-text",
+            )
+            text = report_path.read_text(encoding="utf-8")
+        header = text.split("## Recommendation")[0]
+        self.assertIn("2026.09.07", header)
+        self.assertIn("293", header)
+        self.assertIn("156", header)
+
 
 if __name__ == "__main__":
     unittest.main()
