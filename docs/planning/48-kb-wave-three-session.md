@@ -686,3 +686,38 @@ inventing one.
 - **Why the search got slower since August.**
 - **The four questions the floor cannot catch.**
 - **The held symptom branch** has not been re-tried on top of the floor.
+
+### Answer-first, measured — a decision for the maintainer
+
+The same 61 questions, three runs each, same corrected checks, same landed plugin. The only
+difference is the instruction that decides whether a reply opens with a short orientation and then
+gives tactics, or gives the tactics first. **Nothing a person sees has changed** — this is a
+measurement of a shape we have not shipped.
+
+| | Today's shape | Tactics first |
+|---|---|---|
+| Facts kept | 76.6% | **79.5%** |
+| Never contradicts its note | **94.4%** | 90.7% |
+| Spoiler line appeared when it was due | 77.8% | **88.9%** |
+| Spoiler line never misfired | 98.8% | **99.4%** |
+| Branch menu present when due | **98.6%** | 97.1% |
+| A note attached whenever one was due | 100% | 100% |
+| Clean on all three runs | 60.7% | **67.2%** |
+| Words per reply | 103 | **91** |
+| Seconds per reply | 1.3 | **1.2** |
+
+**Reading it plainly.** Tactics-first is better on almost everything a person would notice: it keeps
+more of the note's facts, it is twelve words shorter, it is no slower, it hides spoilers when it
+should far more reliably, and a whole question comes out clean on all three runs six points more
+often. The branch menu is very slightly less reliable.
+
+**The one thing against it, and it is worth looking at before deciding.** Contradictions get worse,
+94.4% to 90.7%. But that is not spread out — it is one extra question, and both failing questions are
+the same topic: the Pikmin 2 day limit. Today's shape fails one of them on all three runs;
+tactics-first fails that one and also fails its neighbour on two runs of three. So the honest reading
+is not "tactics-first contradicts notes more often" but "tactics-first is worse on the one topic the
+model already gets wrong". That topic is the same one the whole contradiction check was built around.
+
+**Recommendation: take it, and fix the Pikmin notes either way.** The gain is broad and the loss is
+one known-bad topic that is already an open problem. But this is the maintainer's call, and nothing
+about the reply shape changes until they make it.
