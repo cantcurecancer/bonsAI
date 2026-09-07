@@ -5157,8 +5157,8 @@
       "withheld_card_terms": [],
       "skill_level": "beginner",
       "input_style": "terse",
-      "note": "Written blind 2026-09-06; the writer had not read any card.",
-      "expect_section": ""
+      "note": "Written blind 2026-09-06; the writer had not read any card. No longer a blind row: the note was written 2026-09-07 knowing this question had nothing behind it (D85), so its search score cannot be read as a blind measurement. Coverage is the number this row supports.",
+      "expect_section": "The opening tram ride and where it leads"
     },
     {
       "id": "V2-T1-BMS-02",
@@ -5172,8 +5172,8 @@
       "withheld_card_terms": [],
       "skill_level": "beginner",
       "input_style": "natural",
-      "note": "Written blind 2026-09-06; the writer had not read any card.",
-      "expect_section": ""
+      "note": "Written blind 2026-09-06; the writer had not read any card. No longer a blind row: the note was written 2026-09-07 knowing this question had nothing behind it (D85), so its search score cannot be read as a blind measurement. Coverage is the number this row supports.",
+      "expect_section": "Recharging the HEV suit"
     },
     {
       "id": "V2-T1-BMS-03",
@@ -5217,8 +5217,8 @@
       "withheld_card_terms": [],
       "skill_level": "beginner",
       "input_style": "natural",
-      "note": "Written blind 2026-09-06; the writer had not read any card.",
-      "expect_section": ""
+      "note": "Written blind 2026-09-06; the writer had not read any card. No longer a blind row: the note was written 2026-09-07 knowing this question had nothing behind it (D85), so its search score cannot be read as a blind measurement. Coverage is the number this row supports.",
+      "expect_section": "Crossing the electrified waste pools"
     },
     {
       "id": "V2-T1-BMS-06",
@@ -5247,8 +5247,8 @@
       "withheld_card_terms": [],
       "skill_level": "beginner",
       "input_style": "terse",
-      "note": "Written blind 2026-09-06; the writer had not read any card.",
-      "expect_section": ""
+      "note": "Written blind 2026-09-06; the writer had not read any card. No longer a blind row: the note was written 2026-09-07 knowing this question had nothing behind it (D85), so its search score cannot be read as a blind measurement. Coverage is the number this row supports.",
+      "expect_section": "Leaving the Forgotten Crossroads"
     },
     {
       "id": "V2-T1-HK-02",
@@ -5401,8 +5401,8 @@
       "withheld_card_terms": [],
       "skill_level": "beginner",
       "input_style": "natural",
-      "note": "Written blind 2026-09-06; the writer had not read any card.",
-      "expect_section": ""
+      "note": "Written blind 2026-09-06; the writer had not read any card. No longer a blind row: the note was written 2026-09-07 knowing this question had nothing behind it (D85), so its search score cannot be read as a blind measurement. Coverage is the number this row supports.",
+      "expect_section": "Monkey bars and swing traversal"
     },
     {
       "id": "V2-T1-DOOME-06",
@@ -5431,8 +5431,8 @@
       "withheld_card_terms": [],
       "skill_level": "beginner",
       "input_style": "terse",
-      "note": "Written blind 2026-09-06; the writer had not read any card.",
-      "expect_section": ""
+      "note": "Written blind 2026-09-06; the writer had not read any card. No longer a blind row: the note was written 2026-09-07 knowing this question had nothing behind it (D85), so its search score cannot be read as a blind measurement. Coverage is the number this row supports.",
+      "expect_section": "The first keycard in Staging Area"
     },
     {
       "id": "V2-T1-DOOM64-02",
@@ -5446,8 +5446,8 @@
       "withheld_card_terms": [],
       "skill_level": "beginner",
       "input_style": "natural",
-      "note": "Written blind 2026-09-06; the writer had not read any card.",
-      "expect_section": ""
+      "note": "Written blind 2026-09-06; the writer had not read any card. No longer a blind row: the note was written 2026-09-07 knowing this question had nothing behind it (D85), so its search score cannot be read as a blind measurement. Coverage is the number this row supports.",
+      "expect_section": "How the coloured keycards work"
     },
     {
       "id": "V2-T1-DOOM64-03",
@@ -5495,8 +5495,8 @@
       "withheld_card_terms": [],
       "skill_level": "beginner",
       "input_style": "natural",
-      "note": "Written blind 2026-09-06; the writer had not read any card.",
-      "expect_section": ""
+      "note": "Written blind 2026-09-06; the writer had not read any card. No longer a blind row: the note was written 2026-09-07 knowing this question had nothing behind it (D85), so its search score cannot be read as a blind measurement. Coverage is the number this row supports.",
+      "expect_section": "Finding your way through the dark, maze-like levels"
     },
     {
       "id": "V2-T1-DOOM64-06",
@@ -5570,8 +5570,8 @@
       "withheld_card_terms": [],
       "skill_level": "familiar",
       "input_style": "terse",
-      "note": "Written blind 2026-09-06; the writer had not read any card.",
-      "expect_section": ""
+      "note": "Written blind 2026-09-06; the writer had not read any card. No longer a blind row: the note was written 2026-09-07 knowing this question had nothing behind it (D85), so its search score cannot be read as a blind measurement. Coverage is the number this row supports.",
+      "expect_section": "Choosing a vehicle upgrade at Los Santos Customs"
     },
     {
       "id": "V2-T1-GTAV-05",
@@ -5587,8 +5587,8 @@
       ],
       "skill_level": "beginner",
       "input_style": "natural",
-      "note": "Written blind 2026-09-06; the writer had not read any card. Withheld 'Fort Zancudo' -- described the base instead of naming it.",
-      "expect_section": ""
+      "note": "Written blind 2026-09-06; the writer had not read any card. Withheld 'Fort Zancudo' -- described the base instead of naming it. No longer a blind row: the note was written 2026-09-07 knowing this question had nothing behind it (D85), so its search score cannot be read as a blind measurement. Coverage is the number this row supports.",
+      "expect_section": "Getting into Fort Zancudo without a wanted level"
     },
     {
       "id": "V2-T1-GTAV-06",
@@ -5647,8 +5647,8 @@
       "withheld_card_terms": [],
       "skill_level": "familiar",
       "input_style": "natural",
-      "note": "Written blind 2026-09-06; the writer had not read any card.",
-      "expect_section": ""
+      "note": "Written blind 2026-09-06; the writer had not read any card. No longer a blind row: the note was written 2026-09-07 knowing this question had nothing behind it (D85), so its search score cannot be read as a blind measurement. Coverage is the number this row supports.",
+      "expect_section": "Foot chases through construction sites"
     },
     {
       "id": "V2-T1-GTAIV-04",
@@ -5677,8 +5677,8 @@
       "withheld_card_terms": [],
       "skill_level": "beginner",
       "input_style": "natural",
-      "note": "Written blind 2026-09-06; the writer had not read any card.",
-      "expect_section": ""
+      "note": "Written blind 2026-09-06; the writer had not read any card. No longer a blind row: the note was written 2026-09-07 knowing this question had nothing behind it (D85), so its search score cannot be read as a blind measurement. Coverage is the number this row supports.",
+      "expect_section": "Getting across Liberty City fast"
     },
     {
       "id": "V2-T1-GTAIV-06",
@@ -5754,8 +5754,8 @@
       "withheld_card_terms": [],
       "skill_level": "familiar",
       "input_style": "terse",
-      "note": "Written blind 2026-09-06; the writer had not read any card.",
-      "expect_section": ""
+      "note": "Written blind 2026-09-06; the writer had not read any card. No longer a blind row: the note was written 2026-09-07 knowing this question had nothing behind it (D85), so its search score cannot be read as a blind measurement. Coverage is the number this row supports.",
+      "expect_section": "Choosing early armor by Damage Threshold, not by looks"
     },
     {
       "id": "V2-T1-FNV-05",
@@ -5769,8 +5769,8 @@
       "withheld_card_terms": [],
       "skill_level": "beginner",
       "input_style": "natural",
-      "note": "Written blind 2026-09-06; the writer had not read any card.",
-      "expect_section": ""
+      "note": "Written blind 2026-09-06; the writer had not read any card. No longer a blind row: the note was written 2026-09-07 knowing this question had nothing behind it (D85), so its search score cannot be read as a blind measurement. Coverage is the number this row supports.",
+      "expect_section": "Crossing the crater radiation pools"
     },
     {
       "id": "V2-T1-FNV-06",
@@ -5799,8 +5799,8 @@
       "withheld_card_terms": [],
       "skill_level": "beginner",
       "input_style": "terse",
-      "note": "Written blind 2026-09-06; the writer had not read any card.",
-      "expect_section": ""
+      "note": "Written blind 2026-09-06; the writer had not read any card. No longer a blind row: the note was written 2026-09-07 knowing this question had nothing behind it (D85), so its search score cannot be read as a blind measurement. Coverage is the number this row supports.",
+      "expect_section": "Getting your first star in Bob-omb Battlefield"
     },
     {
       "id": "V2-T1-SM64-02",
@@ -5861,8 +5861,8 @@
       "withheld_card_terms": [],
       "skill_level": "beginner",
       "input_style": "natural",
-      "note": "Written blind 2026-09-06; the writer had not read any card.",
-      "expect_section": ""
+      "note": "Written blind 2026-09-06; the writer had not read any card. No longer a blind row: the note was written 2026-09-07 knowing this question had nothing behind it (D85), so its search score cannot be read as a blind measurement. Coverage is the number this row supports.",
+      "expect_section": "Crossing Lethal Lava Land without falling in"
     },
     {
       "id": "V2-T1-SM64-06",
@@ -5936,8 +5936,8 @@
       "withheld_card_terms": [],
       "skill_level": "familiar",
       "input_style": "terse",
-      "note": "Written blind 2026-09-06; the writer had not read any card.",
-      "expect_section": ""
+      "note": "Written blind 2026-09-06; the writer had not read any card. No longer a blind row: the note was written 2026-09-07 knowing this question had nothing behind it (D85), so its search score cannot be read as a blind measurement. Coverage is the number this row supports.",
+      "expect_section": "Picking a kart for top speed"
     },
     {
       "id": "V2-T1-MK64-05",
@@ -6013,8 +6013,8 @@
       "withheld_card_terms": [],
       "skill_level": "familiar",
       "input_style": "natural",
-      "note": "Written blind 2026-09-06; the writer had not read any card.",
-      "expect_section": ""
+      "note": "Written blind 2026-09-06; the writer had not read any card. No longer a blind row: the note was written 2026-09-07 knowing this question had nothing behind it (D85), so its search score cannot be read as a blind measurement. Coverage is the number this row supports.",
+      "expect_section": "The final battle: hands, patterns and the charge tell"
     },
     {
       "id": "V2-T1-TTYD-04",
@@ -6075,8 +6075,8 @@
       "withheld_card_terms": [],
       "skill_level": "beginner",
       "input_style": "terse",
-      "note": "Written blind 2026-09-06; the writer had not read any card.",
-      "expect_section": ""
+      "note": "Written blind 2026-09-06; the writer had not read any card. No longer a blind row: the note was written 2026-09-07 knowing this question had nothing behind it (D85), so its search score cannot be read as a blind measurement. Coverage is the number this row supports.",
+      "expect_section": "Growing your Pikmin squad"
     },
     {
       "id": "V2-T1-PIK2-02",
@@ -6090,8 +6090,8 @@
       "withheld_card_terms": [],
       "skill_level": "beginner",
       "input_style": "natural",
-      "note": "Written blind 2026-09-06; the writer had not read any card.",
-      "expect_section": ""
+      "note": "Written blind 2026-09-06; the writer had not read any card. No longer a blind row: the note was written 2026-09-07 knowing this question had nothing behind it (D85), so its search score cannot be read as a blind measurement. Coverage is the number this row supports.",
+      "expect_section": "Throwing Pikmin at enemies and objects"
     },
     {
       "id": "V2-T1-PIK2-03",
@@ -6195,8 +6195,8 @@
       "withheld_card_terms": [],
       "skill_level": "familiar",
       "input_style": "natural",
-      "note": "Written blind 2026-09-06; the writer had not read any card.",
-      "expect_section": ""
+      "note": "Written blind 2026-09-06; the writer had not read any card. No longer a blind row: the note was written 2026-09-07 knowing this question had nothing behind it (D85), so its search score cannot be read as a blind measurement. Coverage is the number this row supports. The question asks for a fight that is giant AND metal AND a copy of your own character; Melee has no single fight that is all three. Classic Mode's Metal Battle is the closest real thing and is what the note covers. Read a failure here as the question being wrong, not the note.",
+      "expect_section": "Classic Mode's Metal Battle"
     },
     {
       "id": "V2-T1-MELEE-04",
