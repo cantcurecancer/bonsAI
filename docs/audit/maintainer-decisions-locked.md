@@ -4114,7 +4114,10 @@ updated in the same change.
    the words a person uses to describe a crash. The second is corpus work, not code, and is probably where the win
    actually lives.
 
-**If nothing is decided, option 1 is what happens** — the branch stays and nothing reaches the plugin.
+**ANSWERED 2026-09-06 — option 1, with option 3's second half as the real job.** Hold it. The branch stays and
+nothing reaches the plugin. The finding stands on its own: matching by meaning does not connect the words a person
+uses to describe a crash to the way the crash tips are written. **Rewriting the tips so they contain the words people
+actually use is the work**, not more search tuning. That becomes its own roadmap entry; this decision closes.
 
 
 ### D82 — OPEN, raised 2026-09-06 — Leaning the search on meaning wins on the measurements and breaks three rules we set on purpose
@@ -4178,4 +4181,35 @@ rather than a measurement one. That is why it stopped here.
    note whose meaning-index is missing. That targets the same gap without touching any of the three rules. It is real
    work rather than a constant change, and needs its own measurement.
 
-**If nothing is decided, option 1 is what happens** — the weights stay even and the measurements stay on record.
+**ANSWERED 2026-09-06 — hold, and here is the condition for lifting it.** The maintainer's words: *"don't lean the
+search towards meaning until its meaning index is built."*
+
+So this is not a permanent no. It is a rule with a trigger. Leaning the search on meaning is blocked **for as long as
+a note can exist whose meaning index has not been built yet** — because that is the case where the lean buries a
+brand-new note out of sight. The moment every note is guaranteed to have its meaning index before it can be searched,
+the objection in point 1 above disappears and the change can be reconsidered on the numbers, which are already on
+record here.
+
+The other two objections (a strong exact word match being pushed aside, and the topic-preference case) are **not**
+covered by that trigger and still need answering separately if the lean is ever taken.
+
+Weights stay even for now. The measurements stand.
+
+
+### D83 — LOCKED 2026-09-06 — Ship the twelve new games now; the thin coverage is a later job
+
+**The release goes out as it is.** Version `2026.09.06`, 266 notes across 25 games, 124 troubleshooting tips,
+1.27 MB. Twelve games gain notes: Hollow Knight and DOOM Eternal get 13 each, down to Mario Kart 64 with 4 and
+Doom 64 with 5.
+
+**The coverage gap was put in front of the maintainer before the decision and they chose to ship anyway.** Of 72
+questions a player might plainly ask about these twelve games, only **43 have a note that answers them**. Four in ten
+hit nothing. That is measured, not guessed — the questions were written by someone who had not read the notes, then
+matched to the notes by someone who had.
+
+**So the gap is a known, accepted state of this release, not a defect in it.** Someone asking about Mario Kart 64 or
+Doom 64 will often get nothing. Nothing already installed goes stale, because the format has not changed.
+
+**What happens next is agreed in principle and not yet scheduled:** filling the thin games is worth doing, and it is
+separate work. Whether the effort goes into more games or more depth on the games already covered is still open, and
+does not block anything.
