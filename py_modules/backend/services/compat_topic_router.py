@@ -240,6 +240,13 @@ _TOPIC_RULES: dict[str, tuple[tuple[str, ...], ...]] = {
 # thing bosses do to you. They confirm a routing decision another topic already made.
 _WEAK_TOPICS = frozenset({"deck", "linux", "crash"})
 
+# Of the weak topics, these two stop being ambiguous the moment there is no game in the
+# picture at all -- no game running, and none named in the question. "My game keeps crashing"
+# with nothing running has no boss to blame the word on; on a device with no game open, "linux"
+# is a platform word, not scenery. "deck" stays weak even then: "how do I beat the boss on my
+# deck" is a real strategy question and saying nothing is running does not change that.
+_STRONG_WITHOUT_GAME_TOPICS = frozenset({"crash", "linux"})
+
 
 def _normalize(question: str) -> str:
     """Lowercase, drop apostrophes, punctuation to spaces, collapse runs.
@@ -288,14 +295,21 @@ def match_compat_corpus_topics(question: str) -> list[str]:
     return strong + weak
 
 
-def question_targets_compat_corpus(question: str) -> bool:
+def question_targets_compat_corpus(question: str, *, game_in_context: bool = True) -> bool:
     """True when the Ask names a troubleshooting topic the shared compat corpus covers.
 
     A weak-topic match on its own does not route. "How do I beat the boss on my deck" is a
     strategy question that happens to say "deck"; routing it to the tip sheet would attach
     troubleshooting advice to a boss fight.
+
+    ``game_in_context`` tells the router whether a game is running or was named in the
+    question. Defaulted to True so a caller that does not pass it keeps today's behaviour.
+    When it is False, "crash" and "linux" are treated as strong enough to route alone --
+    "my game keeps crashing" with nothing running is a plain troubleshooting sentence, not a
+    boss fight. "deck" stays weak either way; see ``_STRONG_WITHOUT_GAME_TOPICS``.
     """
-    return any(topic not in _WEAK_TOPICS for topic in match_compat_corpus_topics(question))
+    weak_topics = _WEAK_TOPICS if game_in_context else (_WEAK_TOPICS - _STRONG_WITHOUT_GAME_TOPICS)
+    return any(topic not in weak_topics for topic in match_compat_corpus_topics(question))
 
 
 def known_compat_topics() -> frozenset[str]:
