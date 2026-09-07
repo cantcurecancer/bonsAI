@@ -3438,6 +3438,38 @@
       "source_license": "CC-BY-SA-4.0",
       "source_version": null,
       "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 269,
+      "game_id": 14,
+      "section_type": "mechanic",
+      "name": "The opening tram ride and where it leads",
+      "card": "Black Mesa opens with a long tram ride that needs no input beyond looking around; it carries you from the surface entrance through checkpoints and cargo bays into the underground facility, and doubles as an unskippable loading screen for the level ahead. Step off at the platform, badge through the checkpoint, and follow the corridor signs to the locker room, where you change into the orange HEV suit before the day's work — the path there is linear, so a door that will not open yet is one you have not reached the switch for. Anomalous Materials, the lab down the following hall, is where the real gameplay opens up: once things go wrong there, the crowbar on the floor nearby is the first weapon in the game, and from then on every locked vent or wooden crate is worth swinging at before hunting for another way around.",
+      "source_url": "https://combineoverwiki.net/wiki/Black_Mesa_Transit_System",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-07"
+    },
+    {
+      "section_id": 270,
+      "game_id": 14,
+      "section_type": "mechanic",
+      "name": "Recharging the HEV suit",
+      "card": "The suit's own charge, shown on the HUD next to health, does not come back on its own; you top it up at a wall-mounted suit charger, an orange unit with a black charging cord and the HEV logo, kept separate from the white health chargers with the red cross. Walk up and hold use; a mechanical arm extends and feeds power in until you back away or the charger runs dry. Each charger holds a limited reserve that does not refill once spent, so treat the first one in an area as insurance for what is ahead rather than something to top off out of habit, and look for a charger before a big fight rather than after taking damage in it. When a charger's screen goes dark, it is done for good.",
+      "source_url": "https://combineoverwiki.net/wiki/Chargers",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-07"
+    },
+    {
+      "section_id": 271,
+      "game_id": 14,
+      "section_type": "mechanic",
+      "name": "Crossing the electrified waste pools",
+      "card": "One stretch of the waste-treatment area has you wading through pools of toxic runoff with live wiring hanging into the water. The current is not constant; it arcs on a cycle, with a spark and a crackling sound just before it charges. Watch for that cue and move while the water is dark, not while it is lit up. Standing in a charged pool does heavy damage fast and can be a one-hit kill at low health, so top off before you start rather than trying to push through mid-arc. Where a catwalk, pipe or stack of crates skirts the edge, take the dry route even if it looks like the slower path — the current covers the whole pool, not just the middle.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": null
     }
   ],
   "genre_patterns": [
