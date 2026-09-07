@@ -30,6 +30,7 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import itertools
 import json
 import logging
 import os
@@ -37,6 +38,8 @@ import re
 import sys
 import time
 import types
+import urllib.error
+import urllib.request
 from dataclasses import dataclass, field
 from datetime import date
 from pathlib import Path
@@ -288,11 +291,25 @@ class Case:
     question: str
     expect_card: Optional[str]
     must_mention: list[list[str]]
-    must_not_say: list[str]
+    must_not_say: list[list[str]]  # claim groups: each inner list is one wrong claim's phrasings
     expect_fence: Optional[bool]
     expect_branches: Optional[bool]
     expect_attached: Optional[bool]
     note: str
+
+
+def _parse_must_not_say(raw: Any) -> list[list[str]]:
+    """The fixture's ``must_not_say`` accepts two shapes, so a partly-migrated row still loads:
+    the old shape, a flat list of strings naming one implicit claim (every string an alternative
+    phrasing of the same wrong claim); and the new shape, a list of claim groups, each an explicit
+    list of alternative phrasings for one wrong claim. A row can have more than one distinct wrong
+    claim under the new shape; the fixture in this repo does not, today."""
+    items = list(raw or [])
+    if not items:
+        return []
+    if all(isinstance(x, list) for x in items):
+        return [[str(s) for s in group] for group in items]
+    return [[str(s) for s in items]]
 
 
 def load_fixture(path: Path, only: Optional[set[str]]) -> list[Case]:
@@ -311,7 +328,7 @@ def load_fixture(path: Path, only: Optional[set[str]]) -> list[Case]:
                 question=str(row.get("question") or ""),
                 expect_card=row.get("expect_card") or None,
                 must_mention=[[str(a) for a in group] for group in (row.get("must_mention") or [])],
-                must_not_say=[str(s) for s in (row.get("must_not_say") or [])],
+                must_not_say=_parse_must_not_say(row.get("must_not_say")),
                 expect_fence=row.get("expect_fence"),
                 expect_branches=row.get("expect_branches"),
                 expect_attached=row.get("expect_attached"),
@@ -323,6 +340,179 @@ def load_fixture(path: Path, only: Optional[set[str]]) -> list[Case]:
         if missing:
             raise SystemExit(f"unknown case id(s): {', '.join(sorted(missing))}")
     return cases
+
+
+# --- tolerant fact/claim matching (plan 48, D86/D88) ------------------------------------------
+#
+# The old check passed a must_mention/must_not_say alternative only when it appeared as an exact
+# phrase in the normalised reply, so "keep the crowd thin" failed against the fixture's own "thin
+# the crowd" -- a right answer marked wrong. What follows strips filler words, reduces each
+# remaining word to a rough stem (plurals, past tense, -ing), and passes when every content word
+# of an alternative appears within a short span of the reply, in any order.
+
+FILLER_WORDS = {
+    "a", "an", "the", "is", "are", "was", "were", "be", "been", "being",
+    "to", "of", "and", "or", "but", "so", "also", "that", "this", "in", "on", "at", "as", "then",
+}
+
+# Negation words the contradiction check (added alongside this) looks for immediately before a
+# matched claim word. "no longer" is the one two-word phrase; it is matched as an adjacent pair.
+NEGATION_WORDS = {"no", "not", "never", "isn't", "without"}
+
+WINDOW_TOKENS = 8       # how far apart an alternative's content words may sit in the reply
+NEGATION_LOOKBACK = 3   # words checked before a matched content word for a preceding negation
+
+_WORD_RE = re.compile(r"[a-z']+")
+
+
+def _stem(word: str) -> str:
+    """A rough stem: enough to fold plurals, past tense and -ing onto the same root as their base
+    form (killing/kill, hurts/hurt, limited/limit) without pulling in a real stemmer dependency.
+    The length guards keep short words (e.g. "noted", 5 letters) from being cut down far enough to
+    collide with an unrelated word -- "noted" must not become "not"."""
+    w = word.lower()
+    if w.endswith("'s") and len(w) > 3:
+        w = w[:-2]
+    if w.endswith("ing") and len(w) > 5:
+        w = w[:-3]
+    elif w.endswith("ed") and len(w) > 5:
+        w = w[:-2]
+    elif w.endswith("es") and len(w) > 4:
+        w = w[:-2]
+    elif w.endswith("s") and len(w) > 3 and not w.endswith("ss"):
+        w = w[:-1]
+    return w
+
+
+def _tokenize(text: str) -> list[str]:
+    return _WORD_RE.findall(_norm(text))
+
+
+def _content_stems(phrase: str) -> list[str]:
+    """Stemmed content words of one alternative, filler words dropped. Duplicates and order are
+    kept; matching below de-dupes when it builds the set of words it needs to find."""
+    return [_stem(tok) for tok in _tokenize(phrase) if tok not in FILLER_WORDS]
+
+
+def _find_alt_match(reply_stems: list[str], required: list[str]) -> Optional[list[int]]:
+    """None if some required stem never appears in reply_stems, or no combination of occurrences
+    fits inside WINDOW_TOKENS; else the tightest-fitting combination of matched indices, one per
+    required stem (same order as the de-duplicated ``required`` list)."""
+    ordered_required = list(dict.fromkeys(required))  # de-dup, keep first-seen order
+    if not ordered_required:
+        return None
+    positions = {r: [i for i, s in enumerate(reply_stems) if s == r] for r in ordered_required}
+    if any(not idxs for idxs in positions.values()):
+        return None
+    best: Optional[list[int]] = None
+    best_span: Optional[int] = None
+    for combo in itertools.product(*(positions[r] for r in ordered_required)):
+        span = max(combo) - min(combo)
+        if span > WINDOW_TOKENS:
+            continue
+        if best_span is None or span < best_span:
+            best, best_span = list(combo), span
+    return best
+
+
+def fact_group_hit(reply: str, alternatives: list[str]) -> bool:
+    """True when any alternative's content words all appear, in any order, within a short window
+    of the reply -- the tolerant replacement for "alternative is a substring of the reply"."""
+    reply_stems = [_stem(t) for t in _tokenize(reply)]
+    return any(_find_alt_match(reply_stems, _content_stems(alt)) is not None for alt in alternatives)
+
+
+def _has_negation_before(reply_stems: list[str], idx: int) -> bool:
+    """True when a negation word, or the two-word "no longer", sits in the NEGATION_LOOKBACK words
+    immediately before position idx."""
+    window = reply_stems[max(0, idx - NEGATION_LOOKBACK):idx]
+    if any(w in NEGATION_WORDS for w in window):
+        return True
+    return any(window[i] == "no" and window[i + 1] == "longer" for i in range(len(window) - 1))
+
+
+def claim_group_hit(reply: str, alternatives: list[str]) -> bool:
+    """True when the wrong claim (any alternative phrasing) is stated in the reply and none of its
+    matched words has a negation sitting just before it -- so "there is no day limit" does not trip
+    a claim written as "there is a day limit", but "there is still a day limit" does."""
+    reply_stems = [_stem(t) for t in _tokenize(reply)]
+    for alt in alternatives:
+        match = _find_alt_match(reply_stems, _content_stems(alt))
+        if match is None:
+            continue
+        if not any(_has_negation_before(reply_stems, i) for i in match):
+            return True
+    return False
+
+
+# --- judge column: a second model's opinion, report-only (plan 48, D86 call 4) -----------------
+#
+# A second model reads the same note and reply the fixed checks above just scored, and answers the
+# same two yes/no questions in its own words: does the reply contradict the note, and does it state
+# each fact group. This is a column in the report and one summary line, nothing else -- it is never
+# read by SampleResult.all_ok or by any Rate the fixed checks feed, and it only runs at all when
+# --judge names a model. The point is to learn whether the judge agrees with the fixed checks often
+# enough to be trusted with more than reporting, not to let it decide anything yet.
+
+JUDGE_TIMEOUT_S = 90.0
+
+
+def _judge_prompt(note_text: str, reply_text: str, fact_groups: list[list[str]]) -> str:
+    facts_lines = "\n".join(
+        f"{i + 1}. " + " / ".join(alts) for i, alts in enumerate(fact_groups)
+    ) or "(no facts listed for this question)"
+    return (
+        "You are checking one written answer against the reference note it was supposed to be "
+        "based on. Reply with JSON only, in exactly this shape and nothing else:\n"
+        '{"contradicts_note": true or false, "facts_stated": [true or false, ...]}\n\n'
+        f"REFERENCE NOTE (what the answer should agree with):\n{note_text}\n\n"
+        f"WRITTEN ANSWER (what you are checking):\n{reply_text}\n\n"
+        "contradicts_note: does the written answer say anything that reverses or contradicts a "
+        "fact in the reference note? Answer true or false.\n"
+        f"facts_stated: for each of the {len(fact_groups)} facts below (each line lists a few "
+        "interchangeable ways of saying the same fact), does the written answer state that fact in "
+        f"any words at all? Answer one true or false per line, in order, as a JSON array of exactly "
+        f"{len(fact_groups)} values.\n"
+        f"{facts_lines}\n"
+    )
+
+
+def call_judge(
+    ollama_base: str,
+    judge_model: str,
+    note_text: str,
+    reply_text: str,
+    fact_groups: list[list[str]],
+    *,
+    timeout_s: float = JUDGE_TIMEOUT_S,
+) -> dict[str, Any]:
+    """One blocking, non-streaming ``/api/chat`` call. Raises on any HTTP, JSON or shape problem;
+    the caller turns that into a per-sample ``judge_error`` string rather than failing the run --
+    a judge hiccup must never cost a score, because the judge never feeds one."""
+    prompt = _judge_prompt(note_text, reply_text, fact_groups)
+    body = json.dumps(
+        {
+            "model": judge_model,
+            "messages": [{"role": "user", "content": prompt}],
+            "stream": False,
+            "format": "json",
+            "think": False,  # a plain verdict, not a reasoning trace -- keeps the judge quick
+            "options": {"temperature": 0},
+        }
+    ).encode("utf-8")
+    req = urllib.request.Request(
+        f"{ollama_base.rstrip('/')}/api/chat",
+        data=body,
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    with urllib.request.urlopen(req, timeout=timeout_s) as resp:
+        payload = json.loads(resp.read().decode("utf-8"))
+    content = ((payload.get("message") or {}).get("content")) or ""
+    parsed = json.loads(content)
+    facts_raw = parsed.get("facts_stated")
+    facts = [bool(v) for v in facts_raw] if isinstance(facts_raw, list) else []
+    return {"contradicts_note": bool(parsed.get("contradicts_note")), "facts_stated": facts}
 
 
 # --- one sample ------------------------------------------------------------------------------
@@ -354,9 +544,17 @@ class SampleResult:
     prompt_tokens_est: Optional[int] = None
     error: str = ""
     system_prompt: str = field(default="", repr=False)
+    # Judge column (report-only; --judge off by default). None everywhere below means "the judge
+    # did not run for this sample" -- never "the judge said no".
+    judge_contradicts: Optional[bool] = None
+    judge_all_facts_stated: Optional[bool] = None
+    judge_error: str = ""
+    judge_elapsed_s: Optional[float] = None
 
     @property
     def all_ok(self) -> bool:
+        # Deliberately excludes every judge_* field: the judge column is report-only and must
+        # never move this score, however it turns out to agree with the fixed checks.
         checks = [self.card_ok, self.attached_ok, self.mention_ok, self.notsay_ok, self.fence_ok, self.branches_ok]
         return self.success and all(c is not False for c in checks)
 
@@ -387,6 +585,7 @@ async def run_sample(
     capture: _ListHandler,
     kb_card_names: Callable[[str], list[str]],
     run_game_ai_request: Callable[..., Any],
+    judge_model: str = "",
 ) -> SampleResult:
     del retrieval_log[:]
     log_start = len(capture.records)
@@ -417,14 +616,15 @@ async def run_sample(
 
     reply = str(result.get("response") or "")
     success = bool(result.get("success"))
-    norm_reply = _norm(reply)
 
     kb_attached = False
     cards: list[str] = []
+    note_text = ""
     if retrieval_log:
         kr = retrieval_log[-1]
         kb_attached = bool(getattr(kr, "attached", False))
-        cards = _card_short_names(kb_card_names(getattr(kr, "text_block", "") or ""))
+        note_text = str(getattr(kr, "text_block", "") or "")
+        cards = _card_short_names(kb_card_names(note_text))
 
     card_ok: Optional[bool] = None
     if case.expect_card:
@@ -434,9 +634,9 @@ async def run_sample(
     if case.expect_attached is not None:
         attached_ok = kb_attached == bool(case.expect_attached)
 
-    mention_hits = [any(_norm(alt) in norm_reply for alt in group) for group in case.must_mention]
+    mention_hits = [fact_group_hit(reply, group) for group in case.must_mention]
     mention_ok = all(mention_hits) if case.must_mention else None
-    notsay_hits = [s for s in case.must_not_say if _norm(s) in norm_reply]
+    notsay_hits = [" / ".join(group) for group in case.must_not_say if claim_group_hit(reply, group)]
     notsay_ok = (not notsay_hits) if case.must_not_say else None
 
     fence_present = bool(SPOILER_FENCE_RE.search(reply))
@@ -490,6 +690,22 @@ async def run_sample(
             [{"role": "system", "content": system_prompt}, {"role": "user", "content": case.question}]
         )
 
+    judge_contradicts: Optional[bool] = None
+    judge_all_facts_stated: Optional[bool] = None
+    judge_error = ""
+    judge_elapsed_s: Optional[float] = None
+    if judge_model and success and note_text:
+        jt0 = time.perf_counter()
+        try:
+            judged = call_judge(ollama_base, judge_model, note_text, reply, case.must_mention)
+            judge_contradicts = judged["contradicts_note"]
+            facts = judged["facts_stated"]
+            if case.must_mention and len(facts) == len(case.must_mention):
+                judge_all_facts_stated = all(facts)
+        except Exception as exc:  # a judge hiccup is reported, never scored
+            judge_error = f"{type(exc).__name__}: {exc}"
+        judge_elapsed_s = round(time.perf_counter() - jt0, 2)
+
     return SampleResult(
         case_id=case.id,
         sample=sample_idx,
@@ -516,6 +732,10 @@ async def run_sample(
         prompt_tokens_est=prompt_tokens_est,
         error=error,
         system_prompt=system_prompt,
+        judge_contradicts=judge_contradicts,
+        judge_all_facts_stated=judge_all_facts_stated,
+        judge_error=judge_error,
+        judge_elapsed_s=judge_elapsed_s,
     )
 
 
@@ -552,6 +772,10 @@ class Summary:
     attached_control = Rate()
     success = Rate()
     cases_all_pass = Rate()
+    # Judge column (report-only): agreement with the fixed checks, over samples where --judge ran
+    # and produced a usable verdict. Stays "n/a" (Rate.of == 0) whenever --judge was not passed.
+    judge_contradiction_agree = Rate()
+    judge_facts_agree = Rate()
 
     def __init__(self) -> None:
         self.facts = Rate()
@@ -564,6 +788,8 @@ class Summary:
         self.attached_control = Rate()
         self.success = Rate()
         self.cases_all_pass = Rate()
+        self.judge_contradiction_agree = Rate()
+        self.judge_facts_agree = Rate()
 
 
 def summarize(cases: list[Case], samples: list[SampleResult]) -> Summary:
@@ -587,6 +813,16 @@ def summarize(cases: list[Case], samples: list[SampleResult]) -> Summary:
             s.branches_absent_when_not.add(r.branches_ok)
         s.card_attached.add(r.card_ok)
         s.attached_control.add(r.attached_ok)
+
+        contradiction_agree: Optional[bool] = None
+        if r.judge_contradicts is not None and r.notsay_ok is not None:
+            contradiction_agree = r.judge_contradicts == (r.notsay_ok is False)
+        s.judge_contradiction_agree.add(contradiction_agree)
+
+        facts_agree: Optional[bool] = None
+        if r.judge_all_facts_stated is not None and r.mention_ok is not None:
+            facts_agree = r.judge_all_facts_stated == r.mention_ok
+        s.judge_facts_agree.add(facts_agree)
     for cid, rs in by_case.items():
         s.cases_all_pass.add(all(r.all_ok for r in rs))
     return s
@@ -619,6 +855,24 @@ def mean_prompt_tokens(samples: list[SampleResult]) -> Optional[float]:
     """Mean estimated prompt size — the warning's own estimate where it fired, else the harness's
     own ``estimate_prompt_tokens`` reading of the captured system prompt."""
     return _mean([float(r.prompt_tokens_est) for r in samples if r.prompt_tokens_est is not None])
+
+
+def mean_judge_elapsed_s(samples: list[SampleResult]) -> Optional[float]:
+    """Mean seconds the judge call added per sample it actually ran on — None when --judge did not
+    run at all, so a report without --judge shows nothing rather than a stray 0.0."""
+    return _mean([r.judge_elapsed_s for r in samples if r.judge_elapsed_s is not None])
+
+
+def _judge_cell(r: SampleResult) -> str:
+    """One short per-sample cell for the report table: contradiction / facts, or 'n/a' /
+    'err: ...' when the judge did not produce a usable verdict for this sample."""
+    if r.judge_error:
+        return f"err: {r.judge_error[:40]}"
+    if r.judge_contradicts is None and r.judge_all_facts_stated is None:
+        return "n/a"
+    contra = "n/a" if r.judge_contradicts is None else ("contradicts" if r.judge_contradicts else "clean")
+    facts = "n/a" if r.judge_all_facts_stated is None else ("stated" if r.judge_all_facts_stated else "missing")
+    return f"{contra} / {facts}"
 
 
 # --- report ----------------------------------------------------------------------------------
@@ -667,7 +921,7 @@ def write_report(
     lines.append("|---|---|")
     for k in (
         "model", "ollama", "corpus_version", "corpus_sections", "prompt_variant",
-        "kb_placement", "voice_preset", "think_effort",
+        "kb_placement", "voice_preset", "think_effort", "judge_model",
         "samples_per_case", "cases", "run_minutes",
     ):
         lines.append(f"| {k} | `{meta.get(k)}` |")
@@ -699,20 +953,40 @@ def write_report(
         f"D46 window warnings: **{warned}/{warn_of}** samples. Mean estimated prompt tokens: **{prompt_tokens_mean}**."
     )
     lines.append("")
+    if meta.get("judge_model"):
+        judge_elapsed = mean_judge_elapsed_s(samples)
+        lines.append(
+            "**Judge column, report-only** (model `" + str(meta["judge_model"]) + "`; never scored -- "
+            "this is here so the maintainer can see whether the judge is worth trusting with more than "
+            "reporting, not because it decides anything): agrees with the fixed contradiction check on "
+            f"**{summary.judge_contradiction_agree.pct()}** ({summary.judge_contradiction_agree.frac()}) "
+            "of samples where both ran; agrees with the fixed facts check on "
+            f"**{summary.judge_facts_agree.pct()}** ({summary.judge_facts_agree.frac()}). "
+            f"Mean seconds the judge call added per sample: **{judge_elapsed}**."
+        )
+        lines.append("")
     lines.append("## Per case")
     lines.append("")
-    lines.append("| Case | Mode | Card attached | Facts | No contradiction | Fence ok | Menu ok | Window warn | Prompt tokens | s/answer |")
-    lines.append("|---|---|---|---|---|---|---|---|---|---|")
+    header = "| Case | Mode | Card attached | Facts | No contradiction | Fence ok | Menu ok | Window warn | Prompt tokens | s/answer |"
+    sep = "|---|---|---|---|---|---|---|---|---|---|"
+    if meta.get("judge_model"):
+        header += " Judge (s1) |"
+        sep += "---|"
+    lines.append(header)
+    lines.append(sep)
     for c in cases:
         rs = by_case.get(c.id) or []
         if not rs:
             continue
         card = _case_cell(rs, "card_ok") if c.expect_card else (_case_cell(rs, "attached_ok") if c.expect_attached is not None else "—")
-        lines.append(
+        row = (
             f"| `{c.id}` | {c.ask_mode} | {card} | {_case_cell(rs, 'mention_ok')} | {_case_cell(rs, 'notsay_ok')} | "
             f"{_case_cell(rs, 'fence_ok')} | {_case_cell(rs, 'branches_ok')} | {_case_cell(rs, 'window_warning')} | "
             f"{_case_mean(rs, 'prompt_tokens_est')} | {_mean([r.elapsed_s for r in rs])} |"
         )
+        if meta.get("judge_model"):
+            row += f" {_judge_cell(rs[0])} |"
+        lines.append(row)
     lines.append("")
     lines.append("## Failures worth reading")
     lines.append("")
@@ -795,6 +1069,12 @@ def main() -> int:
         choices=("off", "low", "medium", "high"),
         help="ask_think_effort — off is the fresh-install default; the maintainer's Deck runs medium",
     )
+    parser.add_argument(
+        "--judge",
+        default="",
+        help="Ollama model tag for a second, report-only opinion (contradiction + facts stated). "
+        "Off by default; never affects any score, only adds a column and a summary line.",
+    )
     parser.add_argument("--label", default="", help="suffix for the report filename, e.g. after-w4")
     parser.add_argument("--write-report", action="store_true", default=True)
     parser.add_argument("--no-write-report", action="store_false", dest="write_report")
@@ -868,7 +1148,7 @@ def main() -> int:
     print(
         f"corpus {corpus_version} ({corpus_sections} sections) · model {args.model} · variant {args.variant} · "
         f"kb-placement {args.kb_placement} · voice {args.voice or 'off'} · think {args.think} · "
-        f"{len(cases)} cases × {args.samples}"
+        f"judge {args.judge or 'off'} · {len(cases)} cases × {args.samples}"
     )
     t_run = time.perf_counter()
     samples: list[SampleResult] = []
@@ -884,6 +1164,7 @@ def main() -> int:
                     capture=capture,
                     kb_card_names=kb_card_names,
                     run_game_ai_request=gar.run_game_ai_request,
+                    judge_model=args.judge,
                 )
             )
             samples.append(r)
@@ -893,6 +1174,7 @@ def main() -> int:
                 f"cards={len(r.cards)} facts={_flag(r.mention_ok)} nosay={_flag(r.notsay_ok)} "
                 f"fence={_flag(r.fence_ok)} menu={_flag(r.branches_ok)} card={_flag(r.card_ok)}"
                 + (f" err={r.error}" if r.error else "")
+                + (f" judge={_judge_cell(r)}" if args.judge else "")
             )
     run_minutes = round((time.perf_counter() - t_run) / 60.0, 1)
 
@@ -906,6 +1188,14 @@ def main() -> int:
           f"menu-when-due {summary.branches_when_due.pct()} · card-attached {summary.card_attached.pct()} · "
           f"cases-all-clean {summary.cases_all_pass.pct()} · prompt-chars {prompt_chars} · "
           f"window-warnings {warned}/{warn_of} · prompt-tokens {prompt_tokens_mean} · {run_minutes} min")
+    if args.judge:
+        judge_elapsed = mean_judge_elapsed_s(samples)
+        print(
+            f"judge ({args.judge}, report-only, not scored): agrees on contradiction "
+            f"{summary.judge_contradiction_agree.pct()} ({summary.judge_contradiction_agree.frac()}) · "
+            f"agrees on facts {summary.judge_facts_agree.pct()} ({summary.judge_facts_agree.frac()}) · "
+            f"+{judge_elapsed}s/sample"
+        )
 
     if args.write_report:
         stamp = date.today().isoformat()
@@ -921,6 +1211,7 @@ def main() -> int:
             "kb_placement": args.kb_placement,
             "voice_preset": args.voice,
             "think_effort": args.think,
+            "judge_model": args.judge,
             "samples_per_case": args.samples,
             "cases": len(cases),
             "run_minutes": run_minutes,
@@ -945,6 +1236,8 @@ def main() -> int:
                 "attached_control": summary.attached_control.__dict__,
                 "success": summary.success.__dict__,
                 "cases_all_pass": summary.cases_all_pass.__dict__,
+                "judge_contradiction_agree": summary.judge_contradiction_agree.__dict__,
+                "judge_facts_agree": summary.judge_facts_agree.__dict__,
             },
             "samples": [
                 {k: v for k, v in r.__dict__.items() if k != "system_prompt"}

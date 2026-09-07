@@ -17,6 +17,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "py_modules"))
@@ -75,6 +76,26 @@ class EvalKbAnswersHarnessTests(unittest.TestCase):
         )
         base.update(overrides)
         return mod.SampleResult(**base)
+
+    def _case(self, **overrides):
+        """A minimal Case; every field the dataclass needs, override what a test cares about."""
+        mod = self.mod
+        base = dict(
+            id="c1",
+            app_id="1",
+            app_name="Game",
+            ask_mode="strategy",
+            question="q",
+            expect_card=None,
+            must_mention=[],
+            must_not_say=[],
+            expect_fence=None,
+            expect_branches=None,
+            expect_attached=None,
+            note="",
+        )
+        base.update(overrides)
+        return mod.Case(**base)
 
     # --- commit 1: prompt_chars mean ----------------------------------------------------------
 
@@ -211,6 +232,247 @@ class EvalKbAnswersHarnessTests(unittest.TestCase):
         warned, total = self.mod.window_warning_count(samples)
         self.assertEqual((warned, total), (2, 3))
         self.assertAlmostEqual(self.mod.mean_prompt_tokens(samples), 2333.3, places=1)
+
+    # --- plan 48 lane A, commit 1: tolerant fact matching (D86/D88) ----------------------------
+    #
+    # The old check passed a must_mention alternative only when it appeared as an exact phrase in
+    # the reply, so a right answer in different words was scored as a missing fact. These four
+    # pairs are the ones the roadmap bug named; the fifth uses the real reply text recorded in
+    # docs/archive/research/kb-answer-eval-2026-09-07-after-wave2.md for case A-TTYD-01, which
+    # failed both fact groups under the old check ("missing facts: `eats the audience`, `cricket`")
+    # even though it plainly states both facts, just in different words.
+
+    def test_fact_group_hit_matches_keep_the_crowd_thin_against_thin_the_crowd(self):
+        self.assertTrue(
+            self.mod.fact_group_hit("you need to keep the crowd thin", ["thin the crowd"])
+        )
+
+    def test_fact_group_hit_matches_killing_the_mother_against_kill_the_mother(self):
+        self.assertTrue(
+            self.mod.fact_group_hit("killing the mother first is the plan", ["kill the mother"])
+        )
+
+    def test_fact_group_hit_matches_hurting_her_badly_against_hurts_her_badly(self):
+        self.assertTrue(
+            self.mod.fact_group_hit("fire is also noted as hurting her badly", ["fire hurts her badly"])
+        )
+
+    def test_fact_group_hit_matches_the_paper_mario_report_reply(self):
+        reply = (
+            "The key to dealing with Hooktail's healing is managing the audience. She heals by "
+            "eating members of the audience, so you need to keep the crowd thin. Also, remember "
+            "that her bite cannot be blocked, so focus on keeping your own HP high rather than "
+            "trying to guard against her attacks. Koops is useful here because his shell toss hits "
+            "her first before you commit Mario. Fire is also noted as hurting her badly."
+        )
+        group1 = ["eats the audience", "eats spectators to heal", "thin the crowd", "keep the audience small"]
+        group2 = ["cricket", "chirping sound", "the badge with the cricket noise", "fire damage", "fire hurts her badly"]
+        self.assertTrue(self.mod.fact_group_hit(reply, group1))
+        self.assertTrue(self.mod.fact_group_hit(reply, group2))
+
+    def test_fact_group_hit_fails_when_the_words_are_too_far_apart(self):
+        # A wrong answer must still fail: "crowd" and "thin" both occur somewhere in this reply,
+        # but nowhere near each other -- a check with no window would wrongly pass it.
+        reply = (
+            "The crowd cheered loudly. "
+            + " ".join(["and then something else happened"] * 4)
+            + " The paint looked thin."
+        )
+        self.assertFalse(self.mod.fact_group_hit(reply, ["thin the crowd"]))
+
+    def test_fact_group_hit_fails_when_the_stems_match_but_the_context_does_not(self):
+        # Same shape, a different pair of words: "kill" and "mother" both occur, in two unrelated
+        # sentences far apart, not describing the claim "kill the mother".
+        reply = (
+            "You can kill the runt easily. "
+            + " ".join(["it takes a few hits to bring down"] * 4)
+            + " Her mother taught her everything about the forest."
+        )
+        self.assertFalse(self.mod.fact_group_hit(reply, ["kill the mother"]))
+
+    # --- plan 48 lane A, commit 2: negation-aware contradiction check (D86/D88) ----------------
+    #
+    # The old check only caught a contradiction that used one of a fixed list of exact sentences.
+    # The Pikmin 2 reply recorded in docs/archive/research/kb-answer-eval-2026-09-07-after-wave2.md
+    # for case A-PIK2-02 said "yes, there is still a day limit" -- a plain contradiction of the
+    # note, which the old check missed because the fixture's sentence was "there's a day limit"
+    # (a different contraction) and "you have a limited number of days" (different words again).
+
+    def test_claim_group_hit_catches_the_pikmin_reply_that_kept_the_day_limit(self):
+        reply = (
+            "Regarding the day limit, yes, there is still a day limit. The day ends at sunset, "
+            "and any Pikmin that is not with a captain or back at the Onion will be eaten when "
+            "the night creatures wake up. You need to watch the sun and call everyone in early."
+        )
+        self.assertTrue(self.mod.claim_group_hit(reply, ["there is a day limit"]))
+
+    def test_claim_group_hit_does_not_fire_when_the_reply_denies_the_claim(self):
+        reply = "There is no day limit in Pikmin 2 -- take as long as you need."
+        self.assertFalse(self.mod.claim_group_hit(reply, ["there is a day limit"]))
+
+    def test_claim_group_hit_recognises_no_longer_as_a_negation(self):
+        reply = "There is no longer a day limit in this game."
+        self.assertFalse(self.mod.claim_group_hit(reply, ["there is a day limit"]))
+
+    def test_claim_group_hit_known_miss_not_only_is_there_a_day_limit(self):
+        # Named in plan 48 (docs/planning/48-kb-wave-three-session.md, section 10) as a phrasing a
+        # negation-aware check on a fixed lookback can be fooled by: "not" sits just before "there"
+        # here, so it reads as a negation of the claim even though "not only" does not actually
+        # deny that a day limit exists -- the opposite of what the sentence means. Documented as a
+        # known miss rather than chased; the judge column (commit 3) is the second opinion for
+        # exactly this kind of case.
+        reply = "Not only is there a day limit."
+        self.assertFalse(self.mod.claim_group_hit(reply, ["there is a day limit"]))
+
+    def test_claim_group_hit_any_alternative_in_the_group_counts(self):
+        self.assertTrue(
+            self.mod.claim_group_hit(
+                "focus one first and ignore the other twin", ["kill one first", "focus one first"]
+            )
+        )
+
+    # --- plan 48 lane A, commit 2: must_not_say fixture shape --------------------------------
+
+    def test_parse_must_not_say_wraps_the_old_flat_shape_as_one_claim_group(self):
+        self.assertEqual(
+            self.mod._parse_must_not_say(["training perk", "power armor training"]),
+            [["training perk", "power armor training"]],
+        )
+
+    def test_parse_must_not_say_keeps_the_new_nested_shape(self):
+        self.assertEqual(
+            self.mod._parse_must_not_say([["training perk", "power armor training"], ["a second claim"]]),
+            [["training perk", "power armor training"], ["a second claim"]],
+        )
+
+    def test_parse_must_not_say_empty_is_empty(self):
+        self.assertEqual(self.mod._parse_must_not_say([]), [])
+        self.assertEqual(self.mod._parse_must_not_say(None), [])
+
+    # --- plan 48 lane A, commit 3: judge column (report-only, D86 call 4) ---------------------
+
+    class _FakeOllamaResponse:
+        """Enough of ``http.client.HTTPResponse`` for ``call_judge``: a context manager whose
+        ``read()`` returns the body bytes urllib.request.urlopen would have handed back."""
+
+        def __init__(self, body: bytes):
+            self._body = body
+
+        def read(self):
+            return self._body
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_a):
+            return False
+
+    def _fake_ollama_chat(self, message_json: dict):
+        return self._FakeOllamaResponse(
+            json.dumps({"message": {"content": json.dumps(message_json)}}).encode("utf-8")
+        )
+
+    def test_call_judge_parses_a_well_formed_verdict(self):
+        mod = self.mod
+        response = self._fake_ollama_chat({"contradicts_note": True, "facts_stated": [True, False]})
+        with patch.object(mod.urllib.request, "urlopen", return_value=response) as mock_urlopen:
+            out = mod.call_judge("http://127.0.0.1:11434", "judge-model", "note text", "reply text", [["a"], ["b"]])
+        self.assertEqual(out, {"contradicts_note": True, "facts_stated": [True, False]})
+        # the request went to the chat endpoint, non-streaming, naming the judge model
+        req = mock_urlopen.call_args.args[0]
+        self.assertTrue(req.full_url.endswith("/api/chat"))
+        sent = json.loads(req.data.decode("utf-8"))
+        self.assertEqual(sent["model"], "judge-model")
+        self.assertFalse(sent["stream"])
+
+    def test_call_judge_raises_on_unparseable_content(self):
+        mod = self.mod
+        response = self._FakeOllamaResponse(json.dumps({"message": {"content": "not json"}}).encode("utf-8"))
+        with patch.object(mod.urllib.request, "urlopen", return_value=response):
+            with self.assertRaises(Exception):
+                mod.call_judge("http://127.0.0.1:11434", "judge-model", "note", "reply", [])
+
+    def test_call_judge_missing_facts_stated_is_an_empty_list_not_an_error(self):
+        mod = self.mod
+        response = self._fake_ollama_chat({"contradicts_note": False})
+        with patch.object(mod.urllib.request, "urlopen", return_value=response):
+            out = mod.call_judge("http://127.0.0.1:11434", "judge-model", "note", "reply", [["a"]])
+        self.assertEqual(out, {"contradicts_note": False, "facts_stated": []})
+
+    def test_judge_prompt_carries_the_note_reply_and_fact_count(self):
+        prompt = self.mod._judge_prompt("THE NOTE", "THE REPLY", [["a", "b"], ["c"]])
+        self.assertIn("THE NOTE", prompt)
+        self.assertIn("THE REPLY", prompt)
+        self.assertIn("2", prompt)  # two fact groups to answer for
+
+    def test_mean_judge_elapsed_s_is_none_when_the_judge_never_ran(self):
+        samples = [self._sample(judge_elapsed_s=None)]
+        self.assertIsNone(self.mod.mean_judge_elapsed_s(samples))
+
+    def test_mean_judge_elapsed_s_averages_only_samples_that_ran(self):
+        samples = [
+            self._sample(judge_elapsed_s=1.0),
+            self._sample(judge_elapsed_s=3.0),
+            self._sample(judge_elapsed_s=None),
+        ]
+        self.assertEqual(self.mod.mean_judge_elapsed_s(samples), 2.0)
+
+    def test_judge_cell_reports_the_error_when_the_judge_call_failed(self):
+        r = self._sample(judge_error="TimeoutError: timed out")
+        self.assertIn("TimeoutError", self.mod._judge_cell(r))
+
+    def test_judge_cell_is_na_when_the_judge_did_not_run(self):
+        r = self._sample()
+        self.assertEqual(self.mod._judge_cell(r), "n/a")
+
+    def test_judge_cell_reports_contradiction_and_facts(self):
+        r = self._sample(judge_contradicts=True, judge_all_facts_stated=False)
+        cell = self.mod._judge_cell(r)
+        self.assertIn("contradicts", cell)
+        self.assertIn("missing", cell)
+
+    def test_sample_result_all_ok_ignores_the_judge_columns(self):
+        # The judge column must never move a score: a sample every fixed check likes, but where
+        # the judge (rightly or wrongly) flags a contradiction, is still all_ok.
+        r = self._sample(
+            success=True, card_ok=True, attached_ok=True, mention_ok=True, notsay_ok=True,
+            fence_ok=True, branches_ok=True, judge_contradicts=True, judge_all_facts_stated=False,
+        )
+        self.assertTrue(r.all_ok)
+
+    def test_summarize_judge_agreement_counts_only_when_both_checks_ran(self):
+        mod = self.mod
+        case = self._case(id="c1")
+        samples = [
+            # judge ran, fixed contradiction check did not (no must_not_say on this case) -- not counted
+            self._sample(case_id="c1", notsay_ok=None, judge_contradicts=False),
+            # neither ran -- not counted
+            self._sample(case_id="c1", notsay_ok=None, judge_contradicts=None),
+        ]
+        summary = mod.summarize([case], samples)
+        self.assertEqual(summary.judge_contradiction_agree.of, 0)
+
+    def test_summarize_judge_agreement_true_when_they_agree_false_when_they_disagree(self):
+        mod = self.mod
+        case = self._case(id="c1")
+        samples = [
+            # fixed check found a contradiction (notsay_ok False); judge agrees (judge_contradicts True)
+            self._sample(case_id="c1", notsay_ok=False, judge_contradicts=True, mention_ok=None),
+            # fixed check found nothing wrong (notsay_ok True); judge disagrees (judge_contradicts True)
+            self._sample(case_id="c1", notsay_ok=True, judge_contradicts=True, mention_ok=None),
+        ]
+        summary = mod.summarize([case], samples)
+        self.assertEqual((summary.judge_contradiction_agree.hit, summary.judge_contradiction_agree.of), (1, 2))
+
+    def test_summarize_judge_facts_agreement(self):
+        mod = self.mod
+        case = self._case(id="c1")
+        samples = [
+            self._sample(case_id="c1", mention_ok=True, judge_all_facts_stated=True, notsay_ok=None),
+            self._sample(case_id="c1", mention_ok=True, judge_all_facts_stated=False, notsay_ok=None),
+        ]
+        summary = mod.summarize([case], samples)
+        self.assertEqual((summary.judge_facts_agree.hit, summary.judge_facts_agree.of), (1, 2))
 
 
 if __name__ == "__main__":
