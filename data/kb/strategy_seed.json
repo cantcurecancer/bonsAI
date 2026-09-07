@@ -3578,6 +3578,160 @@
       "source_license": "CC-BY-SA-4.0",
       "source_version": null,
       "crawled_at": "2026-09-07"
+    },
+    {
+      "section_id": 300,
+      "game_id": 16,
+      "section_type": "mechanic",
+      "name": "Monkey bars and swing traversal",
+      "card": "Monkey bars are horizontal bars the Slayer grabs mid-air and swings along, first taught in Cultist Base and used throughout the campaign to cross gaps, pits and electrified drops. Approach at a run and jump toward the bar rather than at it — grabbing happens automatically once you are close enough in the air, and letting go too early is what causes most falls. Some bars only appear for a short time after a switch, or lower again once you swing off, so cross before double-checking your surroundings. Chaining a bar into a nearby climbable wall or a dash keeps momentum going; stopping mid-swing to aim at an enemy is usually what drops a Slayer into the pit below. If a section has more than one bar in a row, commit to the whole chain rather than pausing between them.",
+      "source_url": "https://doomwiki.org/wiki/Cultist_Base/Walkthrough",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-07"
+    },
+    {
+      "section_id": 301,
+      "game_id": 17,
+      "section_type": "mechanic",
+      "name": "The first keycard in Staging Area",
+      "card": "Doom 64's opening level, Staging Area, hides its first keycard behind a timed switch. Take the elevator up from the starting courtyard and expect enemies to attack from several sides at once on higher skill levels. A switch a short way further on opens a locked door for a limited time, and you need to move quickly to reach it before it shuts — on the easier skill levels the blue key sits out in the open beside that same switch, while on harder settings a berserk pack takes its place there instead. Once you have the blue key, backtrack to the blue door to keep moving through the level. Losing track of which door needs which key is the main way new players get stuck this early, so pick up every key colour you see even before you have found its matching door.",
+      "source_url": "https://doomwiki.org/wiki/MAP01:_Staging_Area_(Doom_64)",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-07"
+    },
+    {
+      "section_id": 302,
+      "game_id": 17,
+      "section_type": "mechanic",
+      "name": "How the coloured keycards work",
+      "card": "Doom 64 uses the same coloured-key system as the rest of the series: a locked door will not open until you are carrying a keycard or skull key of the matching colour, and once picked up a key opens every door of that colour on the level, not just one. Keys are lost the moment you leave a level, so there is no point carrying one forward. Doom 64 goes a step further than the original games: a locked line does not have to be a door at all, it can be any switch or tripwire, and trying to use one without the right key makes your marine grunt while the matching key icon on the status bar flashes so you know exactly which colour you are missing. That flash is the fastest way to work out which key to go back for when a level feels like it has stopped progressing.",
+      "source_url": "https://doomwiki.org/wiki/Key",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-07"
+    },
+    {
+      "section_id": 303,
+      "game_id": 17,
+      "section_type": "mechanic",
+      "name": "Finding your way through the dark, maze-like levels",
+      "card": "Doom 64 is deliberately darker than the games before it, with much of its lighting kept low to build atmosphere, and the North American release ships with its brightness setting at the lowest point on the scale — turning it up in the options menu is the single biggest fix for corridors that look like an unbroken black maze. Beyond that, the layouts reward backtracking rather than a straight line: locked doors and dead ends are normal, and a switch you cannot explain yet usually opens something back the way you came. Listen for the sound of a distant door or switch firing when you press one, since it tells you something changed even if you cannot see where. If a corridor loops back on itself, that is the level working as intended, not a wrong turn — note any unopened coloured door you pass and keep exploring until you find its key.",
+      "source_url": "https://doomwiki.org/wiki/Doom_64",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-07"
+    },
+    {
+      "section_id": 304,
+      "game_id": 21,
+      "section_type": "mechanic",
+      "name": "Getting your first star in Bob-omb Battlefield",
+      "card": "The very first star in Super Mario 64 is Big Bob-omb on the Summit, the first mission of Bob-omb Battlefield. Cross the bridge from the start and follow the path up the mountain, watching for Goombas, wandering Bob-ombs, a Chain Chomp on its post, and iron balls that roll down the spiral road toward you. At the summit you meet the Big Bob-omb himself: walk up to him from the front and he grabs and throws you, so circle around behind him instead, pick him up, and throw him to the ground. Three throws finish the fight. Throwing him off the edge of the summit does not count — he climbs back up, accuses you of cheating, and the fight restarts from the beginning. Once he is beaten the third time, he explodes and leaves behind the Power Star.",
+      "source_url": "https://www.mariowiki.com/Big_Bob-omb_on_the_Summit",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-07"
+    },
+    {
+      "section_id": 305,
+      "game_id": 21,
+      "section_type": "area",
+      "name": "Crossing Lethal Lava Land without falling in",
+      "card": "Lethal Lava Land is almost entirely platforms over an open pool of lava, and the Bullies scattered across it are what actually cause most falls, not the jumps themselves — a Bully's whole attack is shoving you backward, and on the narrower platforms that shove goes straight into the lava. Fight them from the middle of a platform rather than its edge, and back them toward a drop instead of letting them back you toward one. The ring platform that circles the volcano briefly stops moving and the volcano erupts with fireballs, so keep moving once it resumes rather than lingering. Inside the volcano itself the platforms get smaller near the top and the jumps are between poles rather than solid ground, so slow down and aim each jump individually. Wearing the Metal Cap before a Bully fight removes the fall risk entirely, since a metal Mario cannot be knocked back by a hit.",
+      "source_url": "https://www.mariowiki.com/Lethal_Lava_Land",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-07"
+    },
+    {
+      "section_id": 306,
+      "game_id": 22,
+      "section_type": "mechanic",
+      "name": "Picking a kart for top speed",
+      "card": "Mario Kart 64's eight racers split into three weight classes, and the numbers behind them are fixed: lightweights (Peach, Toad and Yoshi) top out at 314, while every middleweight and heavyweight — Mario, Luigi, D.K., Wario and Bowser alike — caps out lower at 310. Lightweights also accelerate fastest, get the biggest boost from a Mini-Turbo, and lose the least speed driving off-road, which is why they are the pick for outright speed on most courses. The trade-off is handling: they have the widest turning radius of any class and bleed off the most speed in a turn without drifting, and in Battle Mode they spin out from almost any hit, with Toad in particular losing control if anyone bumps him at all. Middleweights turn tightest and are the steadier all-round choice if a course is mostly corners rather than straights.",
+      "source_url": "https://www.mariowiki.com/Mario_Kart_64",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-07"
+    },
+    {
+      "section_id": 307,
+      "game_id": 22,
+      "section_type": "mechanic",
+      "name": "Drifting and Mini-Turbos",
+      "card": "Mario Kart 64 introduced the Mini-Turbo as a reward for drifting well, and the way to charge one is specific to this game: hop into a drift by holding the drift button through a turn, then rock the control stick left and right while you hold it. Doing that charges a short speed boost that fires the moment you let go of the drift, on top of whatever speed you already had. Later Mario Kart games make this time-based instead, so if you learned to drift on a newer entry the wiggling motion will feel unfamiliar at first — it is deliberate here, not a fluke. The strength of your kart's own handling affects how tightly it drifts, so a kart with worse handling drifts in a wider arc and needs the turn started earlier. Chaining drifts through a series of corners rather than resetting between them keeps you close to top speed for the whole section.",
+      "source_url": "https://www.mariowiki.com/Drift",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-07"
+    },
+    {
+      "section_id": 308,
+      "game_id": 22,
+      "section_type": "mechanic",
+      "name": "Unlocking Extra mode",
+      "card": "Extra mode — called Mirror Mode in every later Mario Kart game — is the reward for earning gold in all four cups at 150cc, the fastest of the three engine classes. Once unlocked, Extra reuses the same eight courses from 100cc but flips every one of them horizontally, so a corner that used to bend right now bends left and vice versa. The title screen itself changes once Extra is unlocked, which is the easiest way to check whether you actually earned it. The AI in 150cc and Extra leans harder on rubber-banding than the easier classes: expect one or two computer racers to receive a large handicap that lets them recover from being hit and catch back up quickly, so a comfortable lead near the finish line is not as safe as it looks in the two hardest settings.",
+      "source_url": "https://www.mariowiki.com/Mario_Kart_64",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-07"
+    },
+    {
+      "section_id": 309,
+      "game_id": 22,
+      "section_type": "mechanic",
+      "name": "Battle Mode: the four arenas and balloons",
+      "card": "Battle Mode needs at least two players and puts everyone in an enclosed arena instead of on a racetrack, across four courses: Block Fort, Skyscraper, Double Deck and Big Donut. Every racer starts with three balloons in their own colour, and any item hit or driving off the arena's edge costs one. A heavier character can also pop a lighter one's balloon just by ramming them hard enough — Bowser barrelling into Toad is the extreme case — which is worth remembering when picking a character for this mode rather than for racing. Losing all three balloons turns you into a small, remote-controlled Bomb Kart that can still be attacked and stunned by other players' items, and if it collides with anyone it explodes and you are out for good. The last racer still holding a balloon wins the round.",
+      "source_url": "https://www.mariowiki.com/Mario_Kart_64",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-07"
+    },
+    {
+      "section_id": 310,
+      "game_id": 22,
+      "section_type": "mechanic",
+      "name": "Time Trials and staff ghosts",
+      "card": "Time Trial mode races you against the clock alone, and after your first clean lap the game saves a ghost of that run for you to chase on your next attempt. The ghost only saves if the run itself was clean — pausing, crashing into an obstacle, driving in reverse, or falling off the track at any point during the lap throws the recording away, so a fast lap with one bad mistake near the end still leaves you with nothing to beat. Three of the eight courses also carry a staff ghost set by the developers, each raced by the character the course is themed around, and those are the only pre-made times in the game — the other five courses have no staff record to chase, only whatever ghost you set yourself.",
+      "source_url": "https://www.mariowiki.com/Mario_Kart_64",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-07"
+    },
+    {
+      "section_id": 311,
+      "game_id": 24,
+      "section_type": "mechanic",
+      "name": "Growing your Pikmin squad",
+      "card": "Pikmin multiply through their Onion, the hovering hive that matches their colour, and the way to grow a squad is to keep feeding that Onion rather than just picking up loose seeds. Carrying a pellet back to the matching-colour Onion produces new seeds based on the number printed on it, and carrying back a defeated enemy's corpse does the same, usually in far larger numbers than any pellet. If there are fewer Pikmin of that colour in the field than your current limit allows, a returned seed sprouts immediately as a new Pikmin; once you are at the limit, seeds are banked inside the Onion instead and can be called out later, so there is no harm bringing back more than you can use right now. Each colour's Onion is found in a different area rather than all together, so reaching a new area is usually also how you unlock a bigger squad.",
+      "source_url": "https://www.pikminwiki.com/Onion",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-07"
+    },
+    {
+      "section_id": 312,
+      "game_id": 24,
+      "section_type": "mechanic",
+      "name": "Throwing Pikmin at enemies and objects",
+      "card": "Throwing is how you send Pikmin to fight or to work at a distance: aim with the cursor and the game estimates where the Pikmin will land, though a wall or ledge in the way can knock it short of the mark. A thrown Pikmin that hits an enemy mid-flight latches on and starts attacking immediately rather than waiting to land. The next Pikmin in line to be thrown is whichever one is standing closest to your leader, shown on the HUD, so reordering your squad on the ground changes what gets thrown next. Yellow Pikmin fly higher than the rest and reach ledges the others cannot. Purple Pikmin fly faster on a flatter arc and slam down hard enough to stun or knock back whatever they land on, while Rock Pikmin drop on a much lower arc and bounce forward instead of sticking to the spot they land.",
+      "source_url": "https://www.pikminwiki.com/Throw",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-07"
+    },
+    {
+      "section_id": 313,
+      "game_id": 25,
+      "section_type": "mechanic",
+      "name": "Classic Mode's Metal Battle",
+      "card": "Stage 10 of Classic Mode is a one-on-one fight against a metal version of whichever character you are using — every character except Ganondorf, Roy and Mr. Game & Watch can appear this way, and the fight always takes place on Battlefield. Breaking a Metal Box triples a fighter's weight and roughly doubles both fall speed and gravity, so the CPU's metal copy hits the ground fast, cannot recover from an edge as well as it normally could, and is a good target for a vertical juggle or an early edgeguard rather than a horizontal knockout attempt. The weight increase also raises its knockback resistance, so hits that would normally send a fresh copy of that character flying do noticeably less — plan on landing more hits to finish it than the same matchup would normally take, rather than looking for one big kill move.",
+      "source_url": "https://www.ssbwiki.com/Classic_Mode_(SSBM)",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-07"
     }
   ],
   "genre_patterns": [
