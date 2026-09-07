@@ -19,6 +19,7 @@ from backend.services.knowledge_base_service import (
     _trust_tier_for_row,
     EmbeddingDimensionMismatch,
     KnowledgeCard,
+    _best_meaning_score,
     close_connection,
     kb_coverage_to_transparency,
     resolve_title_from_question,
@@ -1435,6 +1436,130 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
       )
     self.assertTrue(result.attached)
     self.assertEqual(result.retrieval_method, "keyword_embed_unavailable")
+
+  def test_best_meaning_score_reads_the_max_across_the_pool(self):
+    """The D87 floor reads the strongest match in the whole pool, not any one card's rank."""
+    vectors = {1: [1.0, 0.0], 2: [0.0, 1.0], 3: [0.6, 0.8]}
+    self.assertAlmostEqual(_best_meaning_score(vectors, [1.0, 0.0]), 1.0)
+    self.assertIsNone(_best_meaning_score({}, [1.0, 0.0]))
+
+  def test_compat_meaning_floor_blocks_a_below_floor_pool_end_to_end(self):
+    """D87: a keyword/topic pool whose best meaning score never clears the floor attaches
+    nothing at all -- not the weakest tip in the pool, and not the compat fallback either.
+
+    Real keyword pool ("why is my game crashing proton issue" has five real tips on the seed
+    corpus, per test_compat_hybrid_reranks_when_nomic_available); every mocked vector is
+    orthogonal to the query, so the best meaning score in the pool is 0.0, well under
+    COMPAT_MEANING_FLOOR.
+    """
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    with mock.patch(
+      "backend.services.knowledge_base_service.nomic_embed_available",
+      return_value=True,
+    ), mock.patch(
+      "backend.services.knowledge_base_service.corpus_has_usable_compat_vectors",
+      return_value=True,
+    ), mock.patch(
+      "backend.services.knowledge_base_service.embed_texts",
+      return_value=[[1.0, 0.0] + [0.0] * 766],
+    ), mock.patch(
+      "backend.services.knowledge_base_service._load_compat_vectors",
+      return_value={1: [0.0, 1.0] + [0.0] * 766, 2: [0.0, 1.0] + [0.0] * 766},
+    ):
+      result = retrieve_knowledge_context(
+        settings,
+        ask_mode="expert",
+        question="why is my game crashing proton issue",
+        app_id="",
+        app_name="",
+        domain="compat",
+        pc_ip="127.0.0.1:11434",
+      )
+    self.assertFalse(result.attached)
+    self.assertEqual(result.text_block, "")
+    self.assertTrue(result.notes.startswith("routed_nothing_fit"))
+
+  def test_compat_meaning_floor_leaves_a_confident_pool_alone(self):
+    """The floor reads the pool's best score, so one strong card keeps the whole pool attached
+    even when other candidates in it score near zero."""
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    with mock.patch(
+      "backend.services.knowledge_base_service.nomic_embed_available",
+      return_value=True,
+    ), mock.patch(
+      "backend.services.knowledge_base_service.corpus_has_usable_compat_vectors",
+      return_value=True,
+    ), mock.patch(
+      "backend.services.knowledge_base_service.embed_texts",
+      return_value=[[1.0, 0.0] + [0.0] * 766],
+    ), mock.patch(
+      "backend.services.knowledge_base_service._load_compat_vectors",
+      return_value={1: [1.0, 0.0] + [0.0] * 766, 2: [0.0, 1.0] + [0.0] * 766},
+    ):
+      result = retrieve_knowledge_context(
+        settings,
+        ask_mode="expert",
+        question="why is my game crashing proton issue",
+        app_id="",
+        app_name="",
+        domain="compat",
+        pc_ip="127.0.0.1:11434",
+      )
+    self.assertTrue(result.attached)
+    self.assertEqual(result.retrieval_method, "hybrid")
+
+  def test_thank_you_very_much_attaches_nothing(self):
+    """Precision test carried over from wave two's tip lane -- must keep passing unchanged.
+
+    No topic matches, no keyword hit, so this never reaches the meaning floor at all; it is
+    pinned here so a future change to either gate cannot quietly start attaching something.
+    """
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    result = retrieve_knowledge_context(
+      settings,
+      ask_mode="speed",
+      question="thank you very much",
+      app_id="",
+      app_name="",
+      domain="compat",
+      pc_ip="",
+    )
+    self.assertFalse(result.attached)
+    self.assertEqual(result.text_block, "")
+
+  def test_compat_meaning_floor_stands_down_without_an_embed_model(self):
+    """No embed model means no meaning score to floor -- keyword attachment is unaffected."""
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    with mock.patch(
+      "backend.services.knowledge_base_service.nomic_embed_available",
+      return_value=False,
+    ), mock.patch(
+      "backend.services.knowledge_base_service.corpus_has_usable_compat_vectors",
+      return_value=True,
+    ):
+      result = retrieve_knowledge_context(
+        settings,
+        ask_mode="expert",
+        question="why is my game crashing proton issue",
+        app_id="",
+        app_name="",
+        domain="compat",
+        pc_ip="127.0.0.1:11434",
+      )
+    self.assertTrue(result.attached)
+    self.assertEqual(result.retrieval_method, "keyword")
 
   def test_game_knowledge_is_not_gated_on_ask_mode(self):
     """D17. The same question about the same running game, in each mode.

@@ -265,6 +265,34 @@ RRF_W_TOPIC = 0.30
 # with the strategy path for its own sake. Detail:
 # docs/audit/rag-compat-topic-preference-2026-08-18.md.
 
+# --- Meaning floor: "none of these fit" (D87, tips half, 2026-09-07) ---------------------------
+#
+# A keyword search over 156 tips nearly always finds *something*, and the router's topic recall
+# (above) has no floor at all -- so a problem sentence that fits no tip in the sheet still got one
+# stapled onto the reply (five of Wave Two's 24 blind problem sentences, measured on device). D87
+# widens the fix to a floor rather than leaving it a routing preference.
+#
+# **Not on the fused rank score** -- the rule 10 cheap check (runs/plan48-laneC-cheap-check.json)
+# found that number takes essentially two values on this corpus, about 0.0328 when the router
+# missed the topic and about 0.0377 when it hit, with right and wrong tips at both. A floor there
+# would separate "the router matched" from "it did not" and nothing else.
+#
+# **On the meaning score instead**, which is continuous (runs/plan48-laneC-cheap-check-signals.json):
+# across the 35 tuning rows of kb_eval_v2.json the weakest right tip scored 0.5649, and the two
+# junk phrases that reached the search at all ("one sentence", "what time is it") scored 0.4821
+# and 0.5044. A floor just above that junk ceiling keeps every one of the 34 tuning rows that had
+# a right tip in its candidate pool (one row's pool never contained the right tip at all, floor
+# or no floor).
+#
+# CAUTION, carried forward and widened before shipping: the brief flagged that only two of six
+# original junk phrases reached the search, a thin sample. Eight phrases written fresh for this
+# lane (not held-back rows) mostly scored well under the floor, but one -- "my dog needs a walk"
+# -- scored 0.5819 against the seed corpus, above both the floor and four tuning rows' own right
+# tip. So this floor is a narrow, measured-safe net: it has not cost a real tip on any row
+# measured so far, but it is not a general fix for meaning-search false positives -- a phrase
+# that happens to share enough vocabulary with a tip still gets one.
+COMPAT_MEANING_FLOOR = 0.5044
+
 # Column weights, highest first. sections_fts is (name, card); compat_patterns_fts is
 # (topic, platforms, card). A card whose *title* matches the Ask is a better hit than one
 # that mentions the words somewhere in its body.
@@ -720,6 +748,22 @@ def _dot_similarity(a: list[float], b: list[float]) -> float:
             f"embedding dimension mismatch: query {len(a)} vs corpus {len(b)}"
         )
     return sum(x * y for x, y in zip(a, b))
+
+
+def _best_meaning_score(
+    vectors_by_id: dict[int, list[float]], query_vector: list[float]
+) -> Optional[float]:
+    """Highest cosine similarity across every candidate ``vectors_by_id`` holds a vector for.
+
+    This is what the D87 "none of these fit" floor reads -- the strongest meaning match in the
+    whole candidate pool for this turn, not any one card's rank after fusion. ``None`` when
+    there is nothing to measure (an empty pool), which the caller reads as "the floor stands
+    down": no embed model, Speed mode, and a corpus with no vectors all end here having never
+    called this at all, and an empty pool means the same thing one step later.
+    """
+    if not vectors_by_id:
+        return None
+    return max(_dot_similarity(query_vector, vec) for vec in vectors_by_id.values())
 
 
 def _load_compat_vectors(conn: sqlite3.Connection, pattern_ids: list[int]) -> dict[int, list[float]]:
@@ -1349,6 +1393,10 @@ def retrieve_knowledge_context(
     retrieval_method: RetrievalMethod = "keyword"
     embed_ms = 0.0
     rerank_ms = 0.0
+    # D87: true once the meaning floor decided nothing in the candidate pool is a real match.
+    # Read downstream to skip the fallback card and to label the no-hit note distinctly from an
+    # ordinary "nothing routed at all" -- see COMPAT_MEANING_FLOOR.
+    routed_nothing_fit = False
     try:
         conn = _get_connection(db_path)
         t_resolve = time.perf_counter()
@@ -1541,14 +1589,31 @@ def retrieve_knowledge_context(
                     )
                 else:
                     vectors_by_id = _load_section_vectors(conn, [c.section_id for c in cards])
-                cards = _fuse_cards_by_rrf(
-                    cards,
-                    query_vector,
-                    vectors_by_id,
-                    top_k=top_k,
-                    recall_cards=topic_cards + recall_cards,
-                    preferred_ids=preferred_ids,
+
+                # D87: "none of these fit". Only the tips half (domain == "compat") is gated so
+                # far -- the notes half is a separate commit. Below the floor, nothing in this
+                # candidate pool is a match worth guessing over, so the whole pool is dropped
+                # rather than fused; the fallback tip search downstream is skipped too (see the
+                # fallback_text block below), so this is "attach nothing", not "attach the
+                # weakest thing we found".
+                best_meaning = _best_meaning_score(vectors_by_id, query_vector)
+                meaning_floor_rejected = (
+                    domain == "compat"
+                    and best_meaning is not None
+                    and best_meaning < COMPAT_MEANING_FLOOR
                 )
+                if meaning_floor_rejected:
+                    routed_nothing_fit = True
+                    cards = []
+                else:
+                    cards = _fuse_cards_by_rrf(
+                        cards,
+                        query_vector,
+                        vectors_by_id,
+                        top_k=top_k,
+                        recall_cards=topic_cards + recall_cards,
+                        preferred_ids=preferred_ids,
+                    )
                 rerank_ms = round((time.perf_counter() - t_rerank) * 1000, 2)
                 retrieval_method = "hybrid"
             except (OllamaEmbedError, EmbeddingDimensionMismatch, IndexError, ValueError):
@@ -1566,7 +1631,9 @@ def retrieve_knowledge_context(
         implicit_strategy_route = domain != "compat" and implicit_route
 
         fallback_text: Optional[str] = None
-        if not cards:
+        # A meaning-floor rejection means "attach nothing", not "attach the weakest thing we
+        # found" -- so the fallback card is skipped too, on both branches below.
+        if not cards and not routed_nothing_fit:
             if domain == "compat":
                 fallback_text = _compat_fallback(conn, question)
             elif not implicit_strategy_route:
@@ -1580,9 +1647,14 @@ def retrieve_knowledge_context(
         )
         total_ms = round((time.perf_counter() - t0) * 1000, 2)
         if not text_block.strip():
+            # D87's distinct signal: "routed_nothing_fit" means a topic (or keyword hit) reached
+            # retrieval and the meaning floor turned it away, not that nothing was routed at all
+            # -- so a later reader (Show details, the "no tip for this" line) can tell the two
+            # apart instead of reading one "no_hit" for both.
+            no_hit_label = "routed_nothing_fit" if routed_nothing_fit else "no_hit"
             return KnowledgeRetrievalResult(
                 attached=False,
-                notes=f"no_hit ({resolution})",
+                notes=f"{no_hit_label} ({resolution})",
                 retrieval_method=retrieval_method,
                 timing_ms={
                     "resolve_ms": resolve_ms,
