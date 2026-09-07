@@ -2167,3 +2167,48 @@ class TrustTierDerivationTests(unittest.TestCase):
 
     def test_bare_card_with_nothing_is_fallback(self):
         self.assertEqual(_trust_tier_for_row(self._row("", "")), TRUST_TIER_FALLBACK)
+
+
+class CompatPatternsTipContentTests(unittest.TestCase):
+    """Pins what a person actually gets back from data/kb/compat_patterns.json.
+
+    Reads the JSON file directly -- no corpus build, no Ollama -- because these are facts
+    about the tip text itself, not about search ranking.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        path = REPO_ROOT / "data" / "kb" / "compat_patterns.json"
+        cls.patterns = json.loads(path.read_text(encoding="utf-8"))
+
+    def test_five_thin_subjects_now_have_real_coverage(self):
+        """KB wave two, Lane D: each of these had one or two tips and needed 8-10."""
+        by_topic: dict[str, int] = {}
+        for row in self.patterns:
+            by_topic[row["topic"]] = by_topic.get(row["topic"], 0) + 1
+        for topic in ("crash", "performance", "audio", "display", "controller"):
+            with self.subTest(topic=topic):
+                self.assertGreaterEqual(by_topic[topic], 8)
+                self.assertLessEqual(by_topic[topic], 10)
+
+    def test_crash_no_longer_claims_a_desktop_that_game_mode_does_not_have(self):
+        """A Deck in game mode drops a crashed game back to the library, not to a desktop --
+        the old tip told people to go check logs on a desktop that isn't there."""
+        crash_cards = [row["card"] for row in self.patterns if row["topic"] == "crash"]
+        for card in crash_cards:
+            self.assertNotIn("Crash to desktop", card)
+
+    def test_overlay_crash_tip_moved_out_of_proton(self):
+        """This tip is about a crash, not about Proton, and used to sit under the wrong topic."""
+        overlay_text = "Disable Steam overlay and third-party overlays when crashes happen at launch."
+        proton_cards = [row["card"] for row in self.patterns if row["topic"] == "proton"]
+        crash_cards = [row["card"] for row in self.patterns if row["topic"] == "crash"]
+        self.assertNotIn(overlay_text, proton_cards)
+        self.assertIn(overlay_text, crash_cards)
+
+    def test_every_tip_stays_a_sentence_or_two(self):
+        """A tip is meant to be read at a glance, not studied."""
+        for row in self.patterns:
+            self.assertLessEqual(
+                len(row["card"]), 200, f"pattern {row['pattern_id']} card is too long to be a quick tip"
+            )

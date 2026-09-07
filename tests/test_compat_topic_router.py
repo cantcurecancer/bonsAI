@@ -87,6 +87,119 @@ class CompatTopicRouterTests(unittest.TestCase):
         # But a weak topic riding alongside a real one is fine.
         self.assertTrue(question_targets_compat_corpus("proton crash on my deck"))
 
+    def test_crash_and_linux_route_alone_with_no_game_in_context(self):
+        """Reproduced on the tip: with nothing running, plain crash sentences hit nothing.
+
+        "my game keeps crashing" has no boss to blame the word on. Once there is no running
+        game and none named in the question, "crash" and "linux" stop needing a second,
+        stronger topic alongside them.
+        """
+        for question in (
+            "my game keeps crashing",
+            "my game wont launch",
+            "black screen when i start the game",
+            "game keeps crashing on my steam deck",
+        ):
+            with self.subTest(question=question):
+                self.assertTrue(question_targets_compat_corpus(question, game_in_context=False))
+
+    def test_crash_stays_weak_with_a_game_in_context(self):
+        """The moment a game is running, "crash" goes back to meaning what a boss does."""
+        self.assertFalse(
+            question_targets_compat_corpus("the boss crashes into me and I die", game_in_context=True)
+        )
+        self.assertFalse(
+            question_targets_compat_corpus("how do I beat this boss on my deck", game_in_context=False)
+        )
+
+    def test_deck_stays_weak_even_with_no_game_in_context(self):
+        """"deck" is excluded from the no-game exception -- it is too ordinary a word."""
+        self.assertFalse(question_targets_compat_corpus("my deck gets really hot", game_in_context=False))
+
+    def test_question_targets_compat_corpus_default_matches_old_behaviour(self):
+        """No caller has to pass the new argument for existing behaviour to hold."""
+        self.assertFalse(question_targets_compat_corpus("my game keeps crashing"))
+
+    def test_should_retrieve_knowledge_routes_plain_crash_with_no_game_running(self):
+        """The gate that actually decides whether an Ask reaches the compat corpus."""
+        for question in (
+            "my game keeps crashing",
+            "my game wont launch",
+            "black screen when i start the game",
+            "game keeps crashing on my steam deck",
+        ):
+            with self.subTest(question=question):
+                should_run, domain = should_retrieve_knowledge(
+                    use_local_knowledge_base=True,
+                    ask_mode="speed",
+                    question=question,
+                    app_id="",
+                    app_name="",
+                )
+                self.assertTrue(should_run)
+                self.assertEqual(domain, "compat")
+
+    def test_should_retrieve_knowledge_keeps_crash_weak_with_a_running_game(self):
+        """A crash sentence behaves exactly as it did before when a game is running."""
+        should_run, domain = should_retrieve_knowledge(
+            use_local_knowledge_base=True,
+            ask_mode="speed",
+            question="my game keeps crashing",
+            app_id="440",
+            app_name="Team Fortress 2",
+        )
+        # Speed mode with a game running still reaches the strategy corpus (D17) -- the point
+        # under test is that it is *not* "compat", i.e. the weak "crash" topic did not fire
+        # on its own just because a game happens to be running.
+        self.assertTrue(should_run)
+        self.assertEqual(domain, "strategy")
+
+    def test_should_retrieve_knowledge_keeps_crash_weak_with_a_named_title(self):
+        """A game named in the question (D19) counts as a game in context too."""
+        should_run, domain = should_retrieve_knowledge(
+            use_local_knowledge_base=True,
+            ask_mode="speed",
+            question="my game keeps crashing",
+            app_id="",
+            app_name="",
+            text_resolved_title="Team Fortress 2",
+        )
+        self.assertTrue(should_run)
+        self.assertEqual(domain, "strategy")
+
+    def test_plain_words_reach_their_subject(self):
+        """Ordinary phrasing for symptoms the rules previously only knew by their jargon name.
+
+        "stutter" replaces "frame rate drop", "vibrat(ing)" replaces "haptic", "torn" replaces
+        "tearing", "cant find" replaces "subnet", and the contraction "isnt working" replaces
+        the already-plain "not working" that only matched its own spelling.
+        """
+        cases = {
+            "performance": "why does my game stutter after a few minutes",
+            "steam_input": "my controller isnt working after i reconnect it",
+            "display": "the screen looks torn when i turn my character quickly",
+            "controller": "the controller keeps vibrating way more than i want it to",
+            "network": "my computer and my deck cant find each other on the wifi",
+        }
+        for subject, question in cases.items():
+            with self.subTest(subject=subject, question=question):
+                self.assertIn(subject, match_compat_corpus_topics(question))
+
+    def test_plain_words_do_not_reopen_the_substring_bug(self):
+        """The new terms must not fire on ordinary sentences that merely contain their letters.
+
+        This is the same class of bug the module docstring warns about ("lan" inside
+        "plants"): a plain new term is only safe if it needs a second word, or if the word
+        itself never means anything else in a gaming sentence.
+        """
+        for question in (
+            "the fight moves so slowly it feels like a cutscene",
+            "my favorite outfit for this run is the one with the torn cape",
+            "I got so far off course I couldn't find my way back to camp",
+        ):
+            with self.subTest(question=question):
+                self.assertFalse(question_targets_compat_corpus(question))
+
     def test_apostrophes_survive_normalization(self):
         """A rule written as `cant see` has to match a question written `can't see`.
 

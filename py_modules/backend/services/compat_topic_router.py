@@ -79,6 +79,10 @@ _TOPIC_RULES: dict[str, tuple[tuple[str, ...], ...]] = {
         ("steam input",),
         ("controller", "not detected"),
         ("controller", "not working"),
+        # "isnt working" catches the contraction spelling. Apostrophe deletion in
+        # _normalize turns "isn't working" into "isnt working", which does not contain the
+        # literal text "not working" -- the two rules are not the same string.
+        ("controller", "isnt working"),
         ("controller", "layout"),
         ("controller", "profile"),
         ("controller", "mapping"),
@@ -101,6 +105,12 @@ _TOPIC_RULES: dict[str, tuple[tuple[str, ...], ...]] = {
         ("dead zone",),
         ("rumble",),
         ("haptic",),
+        # "vibrat" is a deliberate stem, same idea as "upscal" in gamescope below -- it
+        # reaches "vibrate", "vibrating" and "vibration" without three separate entries.
+        # Paired with "controller" because "vibrat" alone is common enough in an ordinary
+        # sentence ("the whole room was vibrating") that it needs a second word to mean
+        # anything about hardware.
+        ("controller", "vibrat"),
         ("controller", "pair"),
         ("controller", "disconnect"),
     ),
@@ -133,6 +143,7 @@ _TOPIC_RULES: dict[str, tuple[tuple[str, ...], ...]] = {
         ("lan",),
         ("wifi", "cannot see"),
         ("wifi", "cant see"),
+        ("wifi", "cant find"),
     ),
     "updates": (
         ("steamos update",),
@@ -191,6 +202,10 @@ _TOPIC_RULES: dict[str, tuple[tuple[str, ...], ...]] = {
         ("external monitor",),
         ("hdmi",),
         ("picture tears",),
+        # "torn" is the word most people reach for instead of "tearing"; it does not share
+        # a stem with it so needs its own entry. Paired with "screen" -- "torn" alone shows
+        # up in plenty of sentences that have nothing to do with a display.
+        ("screen", "torn"),
     ),
     "performance": (
         ("frame limit",),
@@ -203,6 +218,13 @@ _TOPIC_RULES: dict[str, tuple[tuple[str, ...], ...]] = {
         ("fan", "scream"),
         ("overheat",),
         ("thermal",),
+        # "stutter" is the plain word for what "frame rate drop" means in enthusiast terms.
+        # Kept single-term: it names a game-performance symptom and nothing else in an
+        # ordinary gaming sentence.
+        ("stutter",),
+        # "slows down" needs "game" alongside it -- a fight or a level "slowing down" is
+        # ordinary strategy language, not a performance complaint.
+        ("game", "slows down"),
     ),
     "crash": (
         ("crash",),
@@ -239,6 +261,13 @@ _TOPIC_RULES: dict[str, tuple[tuple[str, ...], ...]] = {
 # alone is not enough to route -- "deck" appears in plenty of strategy asks, and "crash" is a
 # thing bosses do to you. They confirm a routing decision another topic already made.
 _WEAK_TOPICS = frozenset({"deck", "linux", "crash"})
+
+# Of the weak topics, these two stop being ambiguous the moment there is no game in the
+# picture at all -- no game running, and none named in the question. "My game keeps crashing"
+# with nothing running has no boss to blame the word on; on a device with no game open, "linux"
+# is a platform word, not scenery. "deck" stays weak even then: "how do I beat the boss on my
+# deck" is a real strategy question and saying nothing is running does not change that.
+_STRONG_WITHOUT_GAME_TOPICS = frozenset({"crash", "linux"})
 
 
 def _normalize(question: str) -> str:
@@ -288,14 +317,21 @@ def match_compat_corpus_topics(question: str) -> list[str]:
     return strong + weak
 
 
-def question_targets_compat_corpus(question: str) -> bool:
+def question_targets_compat_corpus(question: str, *, game_in_context: bool = True) -> bool:
     """True when the Ask names a troubleshooting topic the shared compat corpus covers.
 
     A weak-topic match on its own does not route. "How do I beat the boss on my deck" is a
     strategy question that happens to say "deck"; routing it to the tip sheet would attach
     troubleshooting advice to a boss fight.
+
+    ``game_in_context`` tells the router whether a game is running or was named in the
+    question. Defaulted to True so a caller that does not pass it keeps today's behaviour.
+    When it is False, "crash" and "linux" are treated as strong enough to route alone --
+    "my game keeps crashing" with nothing running is a plain troubleshooting sentence, not a
+    boss fight. "deck" stays weak either way; see ``_STRONG_WITHOUT_GAME_TOPICS``.
     """
-    return any(topic not in _WEAK_TOPICS for topic in match_compat_corpus_topics(question))
+    weak_topics = _WEAK_TOPICS if game_in_context else (_WEAK_TOPICS - _STRONG_WITHOUT_GAME_TOPICS)
+    return any(topic not in weak_topics for topic in match_compat_corpus_topics(question))
 
 
 def known_compat_topics() -> frozenset[str]:

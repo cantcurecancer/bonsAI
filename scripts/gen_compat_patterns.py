@@ -28,10 +28,11 @@ def add(topic: str, platforms: list[str], card: str, url: str = "") -> None:
     pid += 1
 
 
-# Proton (12)
+# Proton (11)
+# One tip that used to live here moved to Crash below (KB wave two, Lane D): "disable
+# overlays when crashes happen at launch" is advice about a crash, not about Proton itself.
 add("proton", ["deck", "linux"], "Verify Proton Experimental or game-forced version in game Properties > Compatibility. Clear shader cache under ~/.steam/steam/steamapps/shadercache/<appid>.")
 add("proton", ["deck", "linux"], "Try fullscreen vs borderless windowed; some titles hitch only in one mode on Deck.")
-add("proton", ["deck", "linux"], "Disable Steam overlay and third-party overlays when crashes happen at launch.")
 add("proton", ["deck", "linux"], "Check ProtonDB for launch options and community fixes before forcing a Proton version.")
 add("proton", ["deck", "linux"], "After SteamOS update, re-test with Proton Experimental; stale compat data can break until shader regen.")
 add("proton", ["windows"], "On Windows Steam, Proton is not used; troubleshooting is native DirectX/Vulkan driver issues.")
@@ -150,7 +151,7 @@ add("steam_input", ["deck"], "Keyboard mouse on Deck: Desktop Mode or Touchscree
 add("steam_input", ["deck"], "Cyberpunk and FPS: community gyro templates need sensitivity tweak.")
 add("steam_input", ["steamvr"], "SteamVR controllers use separate binding UI from flat Steam Input.")
 
-# controller / gyro (8)
+# controller / gyro (12)
 add("controller", ["deck"], "Bluetooth pairing: hold Steam + X, use Bluetooth in Gaming Mode.")
 add("controller", ["deck"], "Wired USB controller preferred for lowest latency.")
 add("gyro", ["deck"], "Calibrate gyro on flat surface before enabling gyro aim.")
@@ -159,6 +160,11 @@ add("controller", ["deck"], "Xbox controller firmware updates require Windows PC
 add("controller", ["deck"], "Stick drift: increase deadzone in Steam Input or clean hardware.")
 add("gyro", ["deck"], "Gyro jitter when walking: lower sensitivity or disable on foot sections.")
 add("controller", ["deck"], "Multiple controllers: player order follows connection order.")
+# Added KB wave two, Lane D -- four more everyday controller problems, ordered cheapest fix first.
+add("controller", ["deck"], "Check the battery first; a controller that seems broken is often just empty.")
+add("controller", ["deck"], "If a controller stops responding mid-game, disconnect and reconnect it before restarting the game.")
+add("controller", ["deck"], "If it connects but no buttons do anything, forget the device and pair it again.")
+add("controller", ["deck"], "Weak or missing vibration usually means it connected as a generic device, not through Steam Input.")
 
 # Frame / FEX (6)
 add("steam_frame", ["frame"], "Steam Frame: companion Deck/phone on LAN for bonsAI while HMD in-game.")
@@ -168,19 +174,61 @@ add("steam_frame", ["frame"], "Frame theater mode: wrong display target can mirr
 add("steam_frame", ["frame"], "Frame companion UX is research-phase; verify Valve docs before assuming APIs.")
 add("fex", ["linux"], "FEX vs Proton: Proton is primary on Steam Deck AMD.")
 
-# misc (12)
+# misc (6)
 add("network", ["deck"], "Steam offline mode: go online once to validate licenses before offline trip.")
 add("network", ["deck"], "DNS issues on hotel Wi-Fi: try manual DNS in Desktop Mode network settings.")
-add("audio", ["deck"], "No audio after suspend: toggle volume, switch output in Quick Settings.")
-add("display", ["deck"], "External monitor blank: try HDMI direct, 1080p60, disable overscan.")
-add("performance", ["deck"], "TDP cap in QAM affects CPU/GPU together; lowering reduces heat.")
-add("performance", ["deck"], "30 FPS cap can stabilize frame pacing vs uncapped stutter.")
 add("emudeck", ["deck"], "EmuDeck paths: ROMs and emulator configs live outside Steam.")
 add("emudeck", ["deck"], "PCSX2 via EmuDeck: per-game settings in EmuDeck menu.")
 add("linux", ["linux"], "Flatpak Steam vs native: Deck uses system Steam; do not mix library paths.")
-add("crash", ["deck"], "Crash to desktop: check ~/.steam/steam/logs and compatdata.")
-add("crash", ["deck"], "Kernel panic rare on Deck: note SteamOS version and last game.")
 add("shader", ["deck"], "Shader pre-cache missing: first launch stutters until cache builds.")
+
+# Crash, performance, audio and display (KB wave two, Lane D). These four subjects had one
+# or two tips each and neither crash tip actually helped: game mode has no desktop to crash
+# to, and a kernel panic note is not useful advice on its own. Rewritten and expanded so a
+# plain troubleshooting question gets more than a shrug, ordered cheapest/most likely first.
+
+# Crash (9, including the overlay tip moved down from Proton above)
+add("crash", ["deck"], "On the Deck a crash drops you back to the game library, not to a desktop -- there is no desktop to check.")
+add("crash", ["deck", "linux"], "Disable Steam overlay and third-party overlays when crashes happen at launch.")
+add("crash", ["deck"], "Try forcing a different Proton version, or Proton Experimental, from the game's Properties > Compatibility tab.")
+add("crash", ["deck"], "Clear the shader cache under ~/.steam/steam/steamapps/shadercache/<appid> and let it rebuild.")
+add("crash", ["deck"], "Verify the game's files from the Steam library; a broken download is a common crash cause.")
+add("crash", ["deck"], "Check free storage space -- a nearly full drive can crash a game at launch or while saving.")
+add("crash", ["deck"], "Update both the game and SteamOS before digging further; a version mismatch is a frequent cause.")
+add("crash", ["deck"], "A real kernel panic (not just a game crash) is rare on Deck -- note the SteamOS version and last game if it happens.")
+add("crash", ["deck"], "If only one game crashes and everything else runs fine, the game is the more likely cause.")
+
+# Performance (10)
+add("performance", ["deck"], "TDP cap in QAM affects CPU/GPU together; lowering reduces heat.")
+add("performance", ["deck"], "30 FPS cap can stabilize frame pacing vs uncapped stutter.")
+add("performance", ["deck"], "If the game stutters, lower the resolution or turn on FSR before changing anything else.")
+add("performance", ["deck"], "Cap the frame rate to what the game can hold steady -- a lower steady rate beats an uneven higher one.")
+add("performance", ["deck"], "Lower the TDP limit in Quick Settings if the Deck feels hot or the fan is loud.")
+add("performance", ["deck"], "Plug in the charger during demanding games; the Deck slows itself down on low battery.")
+add("performance", ["deck"], "Turn off motion blur and other post-processing effects; some games run noticeably smoother without them.")
+add("performance", ["deck"], "Verify the game's files if performance suddenly got worse right after an update.")
+add("performance", ["deck"], "Give the game a minute after launch -- shaders compiling for the first time cause stutter that goes away.")
+add("performance", ["deck"], "Close other apps and background downloads before a demanding game to free up memory.")
+
+# Audio (8)
+add("audio", ["deck"], "No audio after suspend: toggle volume, switch output in Quick Settings.")
+add("audio", ["deck"], "Check the output device in Quick Settings -- the Deck can switch to a disconnected Bluetooth device.")
+add("audio", ["deck"], "Re-pair Bluetooth headphones if the audio crackles or cuts in and out.")
+add("audio", ["deck"], "Use a wired connection for rhythm or competitive games; Bluetooth audio adds a small delay.")
+add("audio", ["deck"], "If there is no sound at all, check the in-game audio settings too, not just the Deck's.")
+add("audio", ["deck"], "Restart the game if sound stops mid-session; it is usually the game's audio, not the hardware.")
+add("audio", ["deck"], "Try a different USB-C dock or cable if audio through a dock cuts out or hums.")
+add("audio", ["deck"], "Update the game if audio broke right after a patch; a fix is usually already out.")
+
+# Display (8)
+add("display", ["deck"], "External monitor blank: try HDMI direct, 1080p60, disable overscan.")
+add("display", ["deck"], "If the screen looks torn while moving the camera, turn on V-Sync in the game's display settings.")
+add("display", ["deck"], "Set an external display to 1080p60 first -- higher settings can show a blank screen until confirmed working.")
+add("display", ["deck"], "Use a direct HDMI cable instead of an adapter chain if an external monitor shows nothing.")
+add("display", ["deck"], "Lower the in-game resolution if the picture looks blurry on the built-in screen.")
+add("display", ["deck"], "Turn off HDR in the game if colors look washed out or too dark on the built-in screen.")
+add("display", ["deck"], "If the picture stutters rather than tears, that is a performance problem, not a display one.")
+add("display", ["deck"], "Restart the game after changing display settings; some games only apply them on the next launch.")
 
 OUT.parent.mkdir(parents=True, exist_ok=True)
 OUT.write_text(json.dumps(tips, indent=2) + "\n", encoding="utf-8")

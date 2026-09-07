@@ -347,8 +347,13 @@ def should_retrieve_knowledge(
     # (decision D16). It is kept separate rather than folded into the phrase gate because
     # that gate also drives Proton log attachment, prompt framing and stream tags; widening
     # it would change four behaviours to fix one.
+    # A game in context -- one running, or one the question names -- is what makes "crash" and
+    # "linux" ambiguous ("the boss crashes into me" beats a boss on a Linux machine). With
+    # neither, the router treats them as ordinary troubleshooting words instead of requiring a
+    # second, stronger topic alongside them.
+    game_in_context = bool(aid or aname or str(text_resolved_title or "").strip())
     if question_matches_troubleshooting_log_context(question) or question_targets_compat_corpus(
-        question
+        question, game_in_context=game_in_context
     ):
         return True, "compat"
     # D17: game knowledge is not a property of the Ask mode. Strategy cards used to require
