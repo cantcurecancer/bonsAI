@@ -517,5 +517,92 @@ class EvalKbAnswersHarnessTests(unittest.TestCase):
         self.assertEqual((summary.judge_facts_agree.hit, summary.judge_facts_agree.of), (1, 2))
 
 
+class EvalKbAnswersAnswerFirstVariantTests(unittest.TestCase):
+    """Plan 48, Lane D: the ``answer_first`` prompt-variant hook. Measures nothing itself -- it
+    only proves the swap fires on the turn shape it is meant for and stays out of the way of every
+    other turn shape, the same way the two spoiler-fence variants above it are proven."""
+
+    _KB_BLOCK = (
+        "--- Local knowledge base (bonsAI; offline corpus; may be truncated) ---\n"
+        "Domain: strategy\n\n"
+        "[Half-Life 2 / boss: Nova Prospekt] (trust: high)\n"
+        "Some tactics text here.\n"
+        "--- end of knowledge base ---"
+    )
+
+    @classmethod
+    def setUpClass(cls):
+        cls.mod = _load_eval_module()
+        from backend.services.ollama_prompts import build_system_prompt
+
+        cls.build_system_prompt = staticmethod(build_system_prompt)
+
+    @classmethod
+    def tearDownClass(cls):
+        sys.modules.pop("eval_kb_answers", None)
+
+    def _strategy_prompt(self, *, entity: str = "", early_context_suffix: str = ""):
+        return self.build_system_prompt(
+            "how do i beat the strider",
+            "220",
+            "Half-Life 2",
+            [],
+            [],
+            lambda app_id: "",
+            lambda path: {},
+            ask_mode="strategy",
+            early_context_suffix=early_context_suffix,
+            strategy_spoiler_asked_entity=entity,
+            strategy_spoiler_kb_entity_match=bool(entity),
+        )
+
+    def test_swaps_the_orientation_sentence_on_a_strategy_turn_with_a_named_thing_and_a_note(self):
+        prompt = self._strategy_prompt(entity="the strider", early_context_suffix=self._KB_BLOCK)
+        # Sanity: both conditions the variant looks for are actually present in the built prompt.
+        self.assertIn("NAMED-ENTITY CONSENT", prompt)
+        self.assertIn("Local knowledge base", prompt)
+        self.assertIn(self.mod._ORIENTATION_MENU_SENTENCE, prompt)
+
+        out = self.mod._variant_answer_first(prompt)
+
+        self.assertNotEqual(out, prompt)
+        self.assertNotIn(self.mod._ORIENTATION_MENU_SENTENCE, out)
+        self.assertIn(self.mod._ANSWER_FIRST_SENTENCE, out)
+        # The rest of the turn (the menu fence, the spoiler policy line) is untouched.
+        self.assertIn("```bonsai-strategy-branches", out)
+        self.assertIn("NAMED-ENTITY CONSENT", out)
+
+    def test_leaves_a_speed_turn_untouched(self):
+        prompt = self.build_system_prompt(
+            "how do i beat the strider",
+            "220",
+            "Half-Life 2",
+            [],
+            [],
+            lambda app_id: "",
+            lambda path: {},
+            ask_mode="speed",
+            early_context_suffix=self._KB_BLOCK,
+        )
+        out = self.mod._variant_answer_first(prompt)
+        self.assertEqual(out, prompt)
+
+    def test_leaves_a_strategy_turn_untouched_when_no_note_is_attached(self):
+        prompt = self._strategy_prompt(entity="the strider", early_context_suffix="")
+        self.assertIn(self.mod._ORIENTATION_MENU_SENTENCE, prompt)
+        out = self.mod._variant_answer_first(prompt)
+        self.assertEqual(out, prompt)
+
+    def test_leaves_a_strategy_turn_untouched_when_nothing_was_named(self):
+        prompt = self._strategy_prompt(entity="", early_context_suffix=self._KB_BLOCK)
+        self.assertIn(self.mod._ORIENTATION_MENU_SENTENCE, prompt)
+        out = self.mod._variant_answer_first(prompt)
+        self.assertEqual(out, prompt)
+
+    def test_registered_in_the_variant_table(self):
+        self.assertIn("answer_first", self.mod.VARIANTS)
+        self.assertIs(self.mod.VARIANTS["answer_first"], self.mod._variant_answer_first)
+
+
 if __name__ == "__main__":
     unittest.main()
