@@ -408,34 +408,47 @@ Same rules as the lists above: five lines an entry, stars ascending in each list
 then to [Done](#done-for-v050) in the same commit. The one difference is that the knowledge base keeps its bugs, its owed
 checks and its plans together here instead of spread over three lists.
 
-**Where things stand (2026-09-06).** 266 cards over 25 games, plus 124 Deck tips, after the tranche nearly doubled both.
-On questions written without seeing the cards, the right card is in the top three about four times in five and first about
-half the time; those numbers are from the old thirteen games and have not been re-measured since. The Deck's own model
-keeps the card's facts nine times in ten and no longer hides plain tactics behind a spoiler box. Coverage is still the
-biggest limit for a person, but less so: twenty-five games now, and every other game gets the model's memory plus one
-generic genre card. **The new cards shipped 2026-09-06 in corpus `2026.09.06`, live on both channels.** Coverage on
-the twelve new games is thin at the bottom, and that was known before shipping (D83).
+**Where things stand (2026-09-07, after wave two).** **293 notes over 25 games, plus 156 Deck tips.** Wave two added
+27 notes and 32 tips. **Of the 72 questions a player might plainly ask about the twelve games added this month, 64 now
+have a note** — the other eight were written on purpose to have none, so every question that was meant to have an
+answer has one.
+
+On the questions nobody tuned against, the search that ships puts the right note in the top three **84 times in a
+hundred, up from 80**. Every one of the 21 notes written this evening is found in the top three for its own question,
+and 12 come first. Across all 72 questions about the new games, **58 find their note in the top three where 38 did**.
+Two rows out of 413 got worse against 24 better.
+
+The Deck's own model: answers clean on all three runs went from **55.7 to 62.3 in a hundred**, and the spoiler line
+appeared when it was due **88.9 times in a hundred against 77.8**. It keeps the note's facts about seven times in ten
+— **but that score is measured wrong** and is really higher; see the bug about the answer test below.
+
+**Every number above was re-measured on the library that actually ships.** The search test had been reading a copy from
+31 August with 161 notes in it, and had been for weeks. That is filed as its own bug and it makes the earlier search
+figures in this section, and in wave one's reports, void.
+
+**Getting to the troubleshooting tips is where the wave fell short.** The tips themselves are much better — crash went
+from 2 to 9, sound 1 to 8, picture 1 to 8, performance 2 to 10, controller 6 to 10, and the top crash tip no longer
+tells someone to check a desktop that game mode does not have. But of 24 fresh sentences written by someone who had not
+seen the rules, **6 reached the tips before and 8 after**. The rules are still phrase-shaped: they catch the exact
+wording someone imagined and miss the neighbour.
 
 **Pick up here, in order.**
 
-*(Rewritten 2026-09-07. All of it is now planned as one wave —
-[47](planning/47-kb-wave-two-session.md), approved and waiting on a "go".)*
+*(Rewritten 2026-09-07 after wave two landed — [47](planning/47-kb-wave-two-session.md).)*
 
-1. **Fill the thin games.** The biggest thing a person would notice. Of 72 questions a player might plainly ask about
-   the twelve games added on 2026-09-06, only 43 have a note that answers them; eight of the 29 blanks were written on
-   purpose to have none, so the real gap is **21**. Mario Kart 64 has four notes and Doom 64 five, and those four
-   thinnest games get topped up as well. Writing notes, not code.
-2. **Make a troubleshooting question reach the tips at all.** Bigger than "rewrite the tips", and cheaper. Measured
-   2026-09-07: **nine of ten ordinary problem sentences reach nothing**, because the word "crash" is classed as too
-   weak to send a question to the tip sheet on its own, in every circumstance. And there are two crash tips in the
-   whole sheet of 124, neither of them useful. Three fixes: stop refusing, teach the rules everyday words, then write
-   the tips. (D85)
-3. **The rest of the wave:** the "not in my notes" line with its wording now settled, the guarantee that every note has
-   its meaning index, two traceable bugs, one corpus release, one evening on the Deck. Then work Next from the top —
-   answer-first tested both ways, spoiler tiers, follow-ups remembering.
+1. **Fix the two ways the answer test lies.** Both filed below. One hid a reply that told someone the opposite of its
+   own note; the other counts a right answer wrong when it uses different words. Every answer number this project has
+   quoted rests on them, so nothing else should be decided from those numbers until this is done. Cheap.
+2. **Make the search test rebuild its copy of the library.** Filed below. Until then no search number can be trusted,
+   including the ones the held weight decision rests on.
+3. **Reaching the troubleshooting tips, properly this time.** Widening the words bought two questions out of 24. What is
+   missing is a way for the search to say *"none of these tips fit"* — without it, opening the gate wider attaches a
+   wrong tip, which is worse than nothing. That is now measured, not guessed; see the held entry below.
+4. **Then Next from the top** — answer-first tested both ways, spoiler tiers, follow-ups remembering.
 
-**Owed on the Deck:** one row (**KB-TRANCHE-01**) — a question per new game on the device. Fallout: New Vegas still is
-not installed. Everything else from wave one is verified.
+**Owed on the Deck:** wave two's own evening (rows **W2-R1** to **W2-R7** in
+[plan 47](planning/47-kb-wave-two-session.md) § 8), plus **KB-TRANCHE-01** from wave one — a question per new game on
+the device. Fallout: New Vegas still is not installed.
 
 ### Calls waiting on you
 
