@@ -3581,6 +3581,17 @@
       "source_license": "CC-BY-SA-4.0",
       "source_version": null,
       "crawled_at": "2026-09-07"
+    },
+    {
+      "section_id": 313,
+      "game_id": 25,
+      "section_type": "mechanic",
+      "name": "Classic Mode's Metal Battle",
+      "card": "Stage 10 of Classic Mode is a one-on-one fight against a metal version of whichever character you are using — every character except Ganondorf, Roy and Mr. Game & Watch can appear this way, and the fight always takes place on Battlefield. Breaking a Metal Box triples a fighter's weight and roughly doubles both fall speed and gravity, so the CPU's metal copy hits the ground fast, cannot recover from an edge as well as it normally could, and is a good target for a vertical juggle or an early edgeguard rather than a horizontal knockout attempt. The weight increase also raises its knockback resistance, so hits that would normally send a fresh copy of that character flying do noticeably less — plan on landing more hits to finish it than the same matchup would normally take, rather than looking for one big kill move.",
+      "source_url": "https://www.ssbwiki.com/Classic_Mode_(SSBM)",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-07"
     }
   ],
   "genre_patterns": [
