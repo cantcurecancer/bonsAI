@@ -246,10 +246,49 @@ def _variant_fence_subtractive(prompt: str) -> str:
     return out
 
 
+_KB_BLOCK_HEADER_MARKER = "--- Local knowledge base (bonsAI; offline corpus; may be truncated) ---"
+
+# The short-orientation-then-menu sentence of the first-turn Strategy block
+# (ollama_prompts.py, build_system_prompt's non-followup strategy_block). D86, plan 48 lane D:
+# nobody has measured whether giving the note's tactics first, ahead of the same branch menu,
+# reads better than today's brief orientation. This sentence only exists on a first-turn Strategy
+# reply, so finding it already narrows to the right turn shape without a separate ask-mode check.
+_ORIENTATION_MENU_SENTENCE = (
+    "After a brief orientation (no spoilers beyond what is needed to branch), you MUST end the "
+    "reply with exactly one fenced block so the UI can show choices. "
+)
+_ANSWER_FIRST_SENTENCE = (
+    "Lead with the note's tactics in plain text first — skip the orientation — then you "
+    "MUST end the reply with exactly one fenced block so the UI can show choices. "
+)
+
+
+def _variant_answer_first(prompt: str) -> str:
+    """W6 / D86 experiment: on a Strategy first turn that has both a knowledge-base note attached
+    and a named thing the user asked about, swap the short-orientation-then-menu sentence for one
+    that gives the note's tactics first, then the same menu. Everything else about the reply
+    (the menu fence itself, the spoiler policy, the rest of the turn) is untouched.
+
+    Both conditions are read off the finished prompt text, the same way the two fence variants
+    above key off it: the knowledge-base block header (``_KB_BLOCK_HEADER_MARKER``) only appears
+    when a note actually attached (knowledge_base_service._format_block returns nothing otherwise),
+    and the named-entity line (``_ENTITY_RE``) only appears when the user named the thing
+    (ollama_prompts._strategy_spoiler_low_risk_addendum). A Speed turn never builds the first-turn
+    strategy block at all, so the target sentence is simply absent and this is a no-op — no
+    separate ask-mode check is needed.
+    """
+    if _KB_BLOCK_HEADER_MARKER not in prompt:
+        return prompt
+    if not _ENTITY_RE.search(prompt):
+        return prompt
+    return prompt.replace(_ORIENTATION_MENU_SENTENCE, _ANSWER_FIRST_SENTENCE, 1)
+
+
 VARIANTS: dict[str, PromptVariant] = {
     "baseline": _variant_baseline,
     "drop_fence_placement": _variant_drop_fence_placement,
     "fence_subtractive": _variant_fence_subtractive,
+    "answer_first": _variant_answer_first,
 }
 
 
