@@ -418,16 +418,40 @@ Same rules as plan 47 § 8: Opus at medium, exclusive window on the Deck, settin
 **batches pinned as frozen test chips and never typed**, the batch sentences **confirmed by the maintainer
 before pinning**. The sentences below are drafts; they are finalised after landing and confirmed then.
 
-**Batch W3-A — problems that fit no tip** (with nothing running; from the five that got wrong tips in wave
-two, exact wording to be taken from the fixture after landing):
+**Batch W3-A — problems that reach the tip sheet and fit no tip** (with nothing running).
+
+**These five replaced the original draft on 2026-09-07, because the draft could not test this row.**
+The five sentences first written here were the ones that got wrong tips *with the held symptom branch
+merged*. On the build that ships, **none of them reach the tip sheet at all** — measured, all five
+return "not routed". So the row would have passed its "no tip attaches" check for the wrong reason,
+and the new line could never have appeared, because the line only fires on a question that was routed
+and then found nothing. A row that passes without exercising the feature is worse than no row.
+
+These five are measured to **reach the tip sheet today and come back with a tip that does not answer
+them**, which is exactly the state the floor is meant to turn into "nothing, plus the line":
 
 ```
-game wont even open
-screen goes black when i open it
-game keeps quiting to the home screen
-buttons not working right half the time
-cant find my pc on the network
+the trackpad haptics buzz constantly in proton games
+proton games launch upside down on my external monitor
+shader download stalls at 99 percent every single time
+the deck wakes from sleep with no wifi until i reboot
+my sd card randomly unmounts while a game is running
 ```
+
+What each one gets back **today**, for the before-and-after:
+
+| Sentence | The tip it gets now | Fits? |
+|---|---|---|
+| trackpad haptics buzz in proton games | *"Deck sleep with Proton games: if resume fails, exit to Gaming Mode home and relaunch."* | no |
+| proton games launch upside down on a monitor | *"External monitor blank: try HDMI direct, 1080p60, disable overscan."* | no — blank is not upside down |
+| shader download stalls at 99 percent | *"Shader pre-cache missing: first launch stutters until cache builds."* | no |
+| wakes from sleep with no wifi | *"Verify AC adapter wattage; weak USB-C hubs can throttle charge and TDP during play."* | no, not remotely |
+| sd card unmounts mid-game | *"Move library to SD: Steam Settings > Storage; move per game."* | no |
+
+Two more that reach the sheet were left out on purpose because their tip half-fits, so they cannot
+give a clean verdict: the controller one (*"my controller keeps disconnecting from the dock"*) and the
+wired-headphone one (*"audio crackles only when the headphones are plugged into the dock"*, which gets
+a Bluetooth tip).
 
 **Batch W3-B — problems that fit a tip** (nothing running; the eight from wave two's batch R4 that reach a
 tip, reused).
@@ -450,7 +474,7 @@ black mesa how do i get across the electrified water
 | Row | Setup | Do | Pass when | Evidence |
 |---|---|---|---|---|
 | **W3-R1 Install the point release** | Previous library installed | Ollama tab → *Update knowledge base* | The tab shows the new version; a Black Mesa question's Show details names it | `runs/plan48-R1-*.json` |
-| **W3-R2 No tip, and the line says so** | Nothing running. Batch W3-A, Speed | Ask each | No tip attaches; the reply ends with the "No tip for this" line, exactly worded; Show details says no tip fit | `runs/plan48-R2-*.json` |
+| **W3-R2 No tip, and the line says so** | Nothing running. Batch W3-A, Speed | Ask each | **Each was routed to the tip sheet** (Show details must say so — if it says "not a troubleshooting question", the sentence is wrong, not the feature); no tip attaches; the reply ends with the "No tip for this" line, exactly worded; Show details says no tip fit | `runs/plan48-R2-*.json` |
 | **W3-R3 A tip still attaches when one fits** | Nothing running. Batch W3-B, Speed | Ask each | A tip on the right subject attaches; **no** "No tip for this" line | `runs/plan48-R3-*.json` |
 | **W3-R4 Follow-ups remember** | Hades running, Strategy. Batch W3-C | Ask in order | The second and fourth attach the note of the boss just asked about; the question shown is unchanged; Show details shows the remembered name in the search | `runs/plan48-R4-*.json` |
 | **W3-R5 The corrected note** | Batch W3-D | Ask | The reply says the current is constant, stay out of the water, cross on high ground or cut the power; nothing about a cycle | `runs/plan48-R5-*.json` |
