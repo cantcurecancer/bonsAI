@@ -3482,6 +3482,28 @@
       "source_license": "CC-BY-SA-4.0",
       "source_version": null,
       "crawled_at": "2026-09-07"
+    },
+    {
+      "section_id": 304,
+      "game_id": 21,
+      "section_type": "mechanic",
+      "name": "Getting your first star in Bob-omb Battlefield",
+      "card": "The very first star in Super Mario 64 is Big Bob-omb on the Summit, the first mission of Bob-omb Battlefield. Cross the bridge from the start and follow the path up the mountain, watching for Goombas, wandering Bob-ombs, a Chain Chomp on its post, and iron balls that roll down the spiral road toward you. At the summit you meet the Big Bob-omb himself: walk up to him from the front and he grabs and throws you, so circle around behind him instead, pick him up, and throw him to the ground. Three throws finish the fight. Throwing him off the edge of the summit does not count — he climbs back up, accuses you of cheating, and the fight restarts from the beginning. Once he is beaten the third time, he explodes and leaves behind the Power Star.",
+      "source_url": "https://www.mariowiki.com/Big_Bob-omb_on_the_Summit",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-07"
+    },
+    {
+      "section_id": 305,
+      "game_id": 21,
+      "section_type": "area",
+      "name": "Crossing Lethal Lava Land without falling in",
+      "card": "Lethal Lava Land is almost entirely platforms over an open pool of lava, and the Bullies scattered across it are what actually cause most falls, not the jumps themselves — a Bully's whole attack is shoving you backward, and on the narrower platforms that shove goes straight into the lava. Fight them from the middle of a platform rather than its edge, and back them toward a drop instead of letting them back you toward one. The ring platform that circles the volcano briefly stops moving and the volcano erupts with fireballs, so keep moving once it resumes rather than lingering. Inside the volcano itself the platforms get smaller near the top and the jumps are between poles rather than solid ground, so slow down and aim each jump individually. Wearing the Metal Cap before a Bully fight removes the fall risk entirely, since a metal Mario cannot be knocked back by a hit.",
+      "source_url": "https://www.mariowiki.com/Lethal_Lava_Land",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-07"
     }
   ],
   "genre_patterns": [
