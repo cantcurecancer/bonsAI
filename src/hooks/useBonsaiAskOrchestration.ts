@@ -1500,7 +1500,15 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
   // --- Session survival snapshot restore / reset ---
   const restoreSessionSnapshot = useCallback((snap: BonsaiSessionSurvivalSnapshot) => {
     setOllamaResponse(snap.ollamaResponse);
-    setOllamaContext(snap.ollamaContext);
+    /*
+     * Not a blind `setOllamaContext(snap.ollamaContext)`. The snapshot was captured while a
+     * modal was open (or the panel was closed) and can name a game that has since been closed —
+     * the exact way the Ask-bar footnote kept naming a game after it was exited. Re-derived from
+     * the running game right now (the same source `syncOllamaContextFromRunningApp` reads),
+     * rather than trusting whatever the snapshot says, so a game that closed while the panel was
+     * away is not resurrected on the way back.
+     */
+    syncOllamaContextFromRunningApp();
     setLastExchange(snap.lastExchange);
     setAskThreadCollapsed(snap.askThreadCollapsed);
     setAskThreadDisplayQuestion(snap.askThreadDisplayQuestion);
@@ -1522,7 +1530,7 @@ export function useBonsaiAskOrchestration(a: UseBonsaiAskOrchestrationArgs) {
     setShowSlowWarning(snap.showSlowWarning);
     setLastRequestId(snap.lastRequestId);
     setThinkingSummary(snap.thinkingSummary);
-  }, []);
+  }, [syncOllamaContextFromRunningApp]);
 
   const resetAskSessionSlice = useCallback(() => {
     if (isAsking) {
