@@ -4213,3 +4213,25 @@ Doom 64 will often get nothing. Nothing already installed goes stale, because th
 **What happens next is agreed in principle and not yet scheduled:** filling the thin games is worth doing, and it is
 separate work. Whether the effort goes into more games or more depth on the games already covered is still open, and
 does not block anything.
+
+
+### D84 — LOCKED 2026-09-06 — About a second to search the notes on the Deck is fine
+
+**The measurement.** With a game running and the deeper answer mode on, searching the notes by meaning took **1.10,
+1.23 and 1.19 seconds** on three questions in a row on the Deck. The test row wanted the second and third at or under
+one second.
+
+**Two things this settles.**
+
+1. **The maintainer's call: that speed is fine.** No work is needed. The one-second target in the test row was never
+   based on anything a person complained about, and about a second before an answer starts — on a question that then
+   takes tens of seconds to write itself out — is not what anyone notices.
+2. **The warm-up explanation is wrong for the Deck, and that part still stands.** The earlier finding was that only
+   the first question after a quiet spell pays, at 1.47 seconds, and later ones cost almost nothing at 0.05. That
+   holds on the PC. On the Deck the cost is about 1.2 seconds *every time* — the third question was no faster than
+   the first. Anyone reading the old explanation and expecting later questions to be free on the device would be
+   wrong.
+
+**So the test row closes on speed being acceptable, not on the target being met.** Rewrite the row to say about a
+second, every question, is the measured and accepted cost on this device. Do not leave a one-second target in place
+that nothing intends to meet.
