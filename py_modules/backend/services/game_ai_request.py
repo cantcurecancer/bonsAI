@@ -23,6 +23,7 @@ from backend.services.destructive_advice_guard import (
     append_destructive_advice_notice,
     check_destructive_advice,
 )
+from backend.services import kb_followup_memory
 from backend.services.input_sanitizer_service import apply_input_sanitizer_lane
 from backend.services.kb_not_in_notes_notice import (
     append_not_in_notes_notice,
@@ -324,6 +325,29 @@ async def run_game_ai_request(
             app_name=app_name,
             text_resolved_title=text_resolved_title,
         )
+
+        # Follow-up memory, step one. A bare follow-up ("what about her second phase") carries
+        # none of the previous turn into the search on its own -- there is no argument that
+        # could. Strategy and Expert only; a troubleshooting question neither stores a subject
+        # nor picks one up, and turning the library off clears whatever was remembered. This
+        # only ever changes the words handed to the search below -- question_for_model, and so
+        # what the person and the model see, is untouched.
+        kb_ask_mode = (ask_mode or "speed").strip().lower()
+        kb_memory_eligible = kb_ask_mode in ("strategy", "expert")
+        question_for_kb_search = question_for_retrieval
+        if settings.get("use_local_knowledge_base") is not True:
+            kb_followup_memory.forget()
+        elif kb_domain == "compat":
+            kb_followup_memory.forget()
+        elif kb_memory_eligible and kb_domain == "strategy":
+            remembered_subject = kb_followup_memory.recall(
+                app_id=app_id, app_name=app_name, text_resolved_title=text_resolved_title
+            )
+            if remembered_subject and not extract_strategy_asked_entity(question_for_retrieval):
+                question_for_kb_search = kb_followup_memory.augment_search_words(
+                    question_for_retrieval, remembered_subject=remembered_subject
+                )
+
         if should_kb:
             if isinstance(active_rid, int) and hasattr(plugin, "_publish_thinking_phase_key"):
                 plugin._publish_thinking_phase_key(
@@ -340,7 +364,7 @@ async def run_game_ai_request(
                 return retrieve_knowledge_context(
                     settings,
                     ask_mode=ask_mode,
-                    question=question_for_retrieval,
+                    question=question_for_kb_search,
                     app_id=app_id,
                     app_name=app_name,
                     shortcut_name=shortcut_name,
@@ -428,6 +452,20 @@ async def run_game_ai_request(
         strategy_spoiler_kb_entity_match = kb_text_covers_asked_entity(
             kb_text, strategy_spoiler_asked_entity
         )
+        # Follow-up memory, step one: remember this question's named thing (or, failing that,
+        # the top attached note's own name) for the *next* Strategy/Expert question about this
+        # game -- never during a troubleshooting question or Speed, gated the same way the
+        # search-words augmentation above is.
+        if kb_memory_eligible and kb_domain == "strategy":
+            followup_subject = strategy_spoiler_asked_entity or next(
+                iter(kb_card_names(kb_text)), ""
+            )
+            kb_followup_memory.remember(
+                app_id=app_id,
+                app_name=app_name,
+                text_resolved_title=text_resolved_title,
+                subject=followup_subject,
+            )
         kb_survived = kb_result is not None and kb_result.attached and stacked.knowledge_attached
         strategy_domain_guidance = ask_mode == "strategy" or (
             kb_domain == "strategy" and kb_survived
