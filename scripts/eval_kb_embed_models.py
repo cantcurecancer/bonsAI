@@ -257,12 +257,53 @@ def _load_fixture(path: Path, suite: str) -> list[QueryCase]:
     return out
 
 
-def _ensure_seed_db(out_dir: Path, *, force_rebuild: bool = False) -> Path:
+# The three inputs that decide whether the eval's saved copy of the library is still current:
+# the two data files the corpus is built from, and the builder itself (a script change can
+# change what a rebuild would produce even with the same data files).
+CORPUS_STALE_CHECK_RELPATHS = (
+    Path("data") / "kb" / "strategy_seed.json",
+    Path("data") / "kb" / "compat_patterns.json",
+    Path("scripts") / "build_rag_db.py",
+)
+
+
+def _default_stale_check_paths() -> list[Path]:
+    return [REPO_ROOT / rel for rel in CORPUS_STALE_CHECK_RELPATHS]
+
+
+def _corpus_is_stale(db_mtime: float, input_mtimes: list[float]) -> bool:
+    """True when any input is newer than the corpus copy the eval would otherwise reuse.
+
+    Pure: takes modification times, not paths, so the rebuild rule is pinned by a test without
+    touching a filesystem or Ollama. ``_ensure_seed_db`` is the only caller that stats real
+    files -- the notes (``strategy_seed.json``, ``compat_patterns.json``) and the builder itself
+    (``build_rag_db.py``). A copy that predates any of the three is void: this project spent
+    weeks quoting search numbers from a copy of the library that had gone stale unnoticed.
+    """
+    return any(t > db_mtime for t in input_mtimes)
+
+
+def _ensure_seed_db(
+    out_dir: Path,
+    *,
+    force_rebuild: bool = False,
+    stale_check_paths: list[Path] | None = None,
+) -> Path:
     db_path = out_dir / "corpus.db"
+    stale = False
     if db_path.is_file() and not force_rebuild:
-        return db_path
+        paths = _default_stale_check_paths() if stale_check_paths is None else stale_check_paths
+        input_mtimes = [p.stat().st_mtime for p in paths if p.is_file()]
+        stale = _corpus_is_stale(db_path.stat().st_mtime, input_mtimes)
+        if not stale:
+            return db_path
+        print(
+            "the eval's saved copy of the library is older than the notes or the builder -- "
+            "rebuilding it before this run searches anything",
+            file=sys.stderr,
+        )
     out_dir.mkdir(parents=True, exist_ok=True)
-    if force_rebuild:
+    if force_rebuild or stale:
         for name in ("corpus.db", "corpus.db.zlib", "corpus-manifest.json", "ATTRIBUTIONS.md"):
             path = out_dir / name
             if path.is_file():

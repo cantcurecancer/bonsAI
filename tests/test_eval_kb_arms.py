@@ -2,16 +2,20 @@
 Title: Eval harness arm-comparison tests
 Purpose: Pin the honesty rules the KB retrieval bake-off enforces in code.
 Used for: scripts/eval_kb_embed_models.py — splits, bootstrap CIs, the non-overlap verdict,
-          and the live gate-reachability check (R2).
+          the live gate-reachability check (R2), and whether the eval's saved library copy
+          is fresh enough to trust.
 Solves: The eval is what decides whether fusion ships. A verdict that rounds an overlap up to
-        a win, or a gate flag that goes stale, would settle the argument with a wrong number.
-Does not: Run any embedding or touch Ollama — every test here is pure scoring logic.
+        a win, a gate flag that goes stale, or a report measuring a stale library copy without
+        saying so, would settle the argument with a wrong number.
+Does not: Run any embedding or touch Ollama — every test here is pure scoring logic or plain
+          file timestamps on a temp directory.
 """
 
 import contextlib
 import importlib.util
 import io
 import json
+import os
 import re
 import sys
 import tempfile
@@ -602,6 +606,107 @@ class EvalArmsTests(unittest.TestCase):
             with self.assertRaises(ValueError) as ctx:
                 mod._load_fixture(path, "test-suite")
         self.assertIn("X-3", str(ctx.exception))
+
+    # --- the eval's saved library copy: stale detection ---------------------------------------
+
+    def test_corpus_is_stale_when_an_input_is_newer_than_the_copy(self):
+        """A copy built before the notes or the builder changed must not be reused silently."""
+        self.assertTrue(
+            self.mod._corpus_is_stale(db_mtime=100.0, input_mtimes=[50.0, 60.0, 150.0])
+        )
+
+    def test_corpus_is_stale_false_when_the_copy_postdates_every_input(self):
+        self.assertFalse(
+            self.mod._corpus_is_stale(db_mtime=300.0, input_mtimes=[50.0, 60.0, 150.0])
+        )
+
+    def test_ensure_seed_db_rebuilds_when_a_watched_input_is_newer_than_the_copy(self):
+        """A copy older than the notes file triggers a rebuild.
+
+        subprocess.run is faked, so this never runs the real builder -- only the rebuild
+        decision is under test.
+        """
+        mod = self.mod
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            out_dir = Path(tmp_dir) / "out"
+            out_dir.mkdir()
+            db_path = out_dir / "corpus.db"
+            db_path.write_text("old copy", encoding="utf-8")
+            os.utime(db_path, (1000, 1000))
+
+            notes_path = Path(tmp_dir) / "strategy_seed.json"
+            notes_path.write_text("{}", encoding="utf-8")
+            os.utime(notes_path, (2000, 2000))  # newer than the copy
+
+            calls = []
+
+            def fake_run(cmd, *, check, cwd):
+                calls.append(cmd)
+                db_path.write_text("rebuilt", encoding="utf-8")
+
+            with mock.patch.object(mod.subprocess, "run", fake_run):
+                captured = io.StringIO()
+                with contextlib.redirect_stderr(captured):
+                    result = mod._ensure_seed_db(out_dir, stale_check_paths=[notes_path])
+
+            self.assertEqual(result, db_path)
+            self.assertEqual(len(calls), 1)
+            self.assertEqual(db_path.read_text(encoding="utf-8"), "rebuilt")
+            self.assertIn("rebuilding", captured.getvalue())
+
+    def test_ensure_seed_db_reuses_the_copy_when_every_input_is_older(self):
+        """A copy newer than all three watched inputs is reused, not rebuilt."""
+        mod = self.mod
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            out_dir = Path(tmp_dir) / "out"
+            out_dir.mkdir()
+            db_path = out_dir / "corpus.db"
+            db_path.write_text("current copy", encoding="utf-8")
+            os.utime(db_path, (2000, 2000))
+
+            notes_path = Path(tmp_dir) / "strategy_seed.json"
+            notes_path.write_text("{}", encoding="utf-8")
+            os.utime(notes_path, (1000, 1000))  # older than the copy
+
+            calls = []
+
+            def fake_run(cmd, *, check, cwd):
+                calls.append(cmd)
+
+            with mock.patch.object(mod.subprocess, "run", fake_run):
+                result = mod._ensure_seed_db(out_dir, stale_check_paths=[notes_path])
+
+            self.assertEqual(result, db_path)
+            self.assertEqual(calls, [])
+            self.assertEqual(db_path.read_text(encoding="utf-8"), "current copy")
+
+    def test_ensure_seed_db_force_rebuild_skips_the_staleness_check(self):
+        """--force-rebuild keeps working exactly as it does today: no comparison at all."""
+        mod = self.mod
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            out_dir = Path(tmp_dir) / "out"
+            out_dir.mkdir()
+            db_path = out_dir / "corpus.db"
+            db_path.write_text("current copy", encoding="utf-8")
+            os.utime(db_path, (2000, 2000))
+
+            notes_path = Path(tmp_dir) / "strategy_seed.json"
+            notes_path.write_text("{}", encoding="utf-8")
+            os.utime(notes_path, (1000, 1000))  # older than the copy -- would not trigger alone
+
+            calls = []
+
+            def fake_run(cmd, *, check, cwd):
+                calls.append(cmd)
+                db_path.write_text("rebuilt", encoding="utf-8")
+
+            with mock.patch.object(mod.subprocess, "run", fake_run):
+                result = mod._ensure_seed_db(
+                    out_dir, force_rebuild=True, stale_check_paths=[notes_path]
+                )
+
+            self.assertEqual(result, db_path)
+            self.assertEqual(len(calls), 1)
 
 
 if __name__ == "__main__":
