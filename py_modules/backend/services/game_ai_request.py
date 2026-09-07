@@ -26,7 +26,9 @@ from backend.services.destructive_advice_guard import (
 from backend.services import kb_followup_memory
 from backend.services.input_sanitizer_service import apply_input_sanitizer_lane
 from backend.services.kb_not_in_notes_notice import (
+    append_no_tip_for_this_notice,
     append_not_in_notes_notice,
+    should_show_no_tip_for_this_notice,
     should_show_not_in_notes_notice,
 )
 from backend.services.ollama_prompts import (
@@ -588,19 +590,33 @@ async def run_game_ai_request(
                     response_text, destructive_advice_check
                 )
 
-        # Attribution note: only on an explicit Strategy/Expert ask where the notes cover this
-        # game (kb_coverage_status == "sections") but nothing matched the question this turn
-        # (kb_attached is False). Appended after the safety notice above so a reply that trips
-        # both shows the safety warning first, the attribution line last.
+        # Attribution notes: two footers, each saying which half of the knowledge base this
+        # reply did *not* get help from. Appended after the safety notice above so a reply that
+        # trips more than one shows the safety warning first.
+        #
+        # They can never both appear on one reply, and "no tip for this" wins the tie. A turn
+        # this specific can happen: an Expert or Strategy ask about a game whose notes are
+        # covered (so "not in my notes" would qualify), where this particular question read as
+        # troubleshooting and got routed to the tip sheet instead (kb_domain == "compat"), and
+        # nothing there matched either. "Not in my notes" would be true but misleading -- the
+        # search never looked in the notes this turn -- so it is suppressed whenever "no tip for
+        # this" applies. See TheTwoLinesNeverBothAppearTests in test_kb_not_in_notes_notice.py
+        # for the case proven, and D87 (docs/planning/48-kb-wave-three-session.md § 6) for why
+        # the tip sheet needed this line at all.
         if ollama_result.get("success"):
-            response_text = append_not_in_notes_notice(
-                response_text,
-                should_show_not_in_notes_notice(
-                    ask_mode=ask_mode,
-                    kb_attached=bool(kb_transparency.get("kb_attached")),
-                    kb_coverage_status=str(kb_coverage_transparency.get("kb_coverage_status") or ""),
-                ),
+            show_no_tip_for_this = should_show_no_tip_for_this_notice(
+                kb_attached=bool(kb_transparency.get("kb_attached")),
+                kb_domain=str(kb_transparency.get("kb_domain") or ""),
+                kb_unavailable_reason=str(kb_transparency.get("kb_unavailable_reason") or ""),
+                kb_notes=str(kb_transparency.get("kb_notes") or ""),
             )
+            show_not_in_notes = should_show_not_in_notes_notice(
+                ask_mode=ask_mode,
+                kb_attached=bool(kb_transparency.get("kb_attached")),
+                kb_coverage_status=str(kb_coverage_transparency.get("kb_coverage_status") or ""),
+            ) and not show_no_tip_for_this
+            response_text = append_not_in_notes_notice(response_text, show_not_in_notes)
+            response_text = append_no_tip_for_this_notice(response_text, show_no_tip_for_this)
 
         err_tail = ""
         if not ollama_result.get("success"):
