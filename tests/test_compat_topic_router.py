@@ -167,6 +167,39 @@ class CompatTopicRouterTests(unittest.TestCase):
         self.assertTrue(should_run)
         self.assertEqual(domain, "strategy")
 
+    def test_plain_words_reach_their_subject(self):
+        """Ordinary phrasing for symptoms the rules previously only knew by their jargon name.
+
+        "stutter" replaces "frame rate drop", "vibrat(ing)" replaces "haptic", "torn" replaces
+        "tearing", "cant find" replaces "subnet", and the contraction "isnt working" replaces
+        the already-plain "not working" that only matched its own spelling.
+        """
+        cases = {
+            "performance": "why does my game stutter after a few minutes",
+            "steam_input": "my controller isnt working after i reconnect it",
+            "display": "the screen looks torn when i turn my character quickly",
+            "controller": "the controller keeps vibrating way more than i want it to",
+            "network": "my computer and my deck cant find each other on the wifi",
+        }
+        for subject, question in cases.items():
+            with self.subTest(subject=subject, question=question):
+                self.assertIn(subject, match_compat_corpus_topics(question))
+
+    def test_plain_words_do_not_reopen_the_substring_bug(self):
+        """The new terms must not fire on ordinary sentences that merely contain their letters.
+
+        This is the same class of bug the module docstring warns about ("lan" inside
+        "plants"): a plain new term is only safe if it needs a second word, or if the word
+        itself never means anything else in a gaming sentence.
+        """
+        for question in (
+            "the fight moves so slowly it feels like a cutscene",
+            "my favorite outfit for this run is the one with the torn cape",
+            "I got so far off course I couldn't find my way back to camp",
+        ):
+            with self.subTest(question=question):
+                self.assertFalse(question_targets_compat_corpus(question))
+
     def test_apostrophes_survive_normalization(self):
         """A rule written as `cant see` has to match a question written `can't see`.
 
