@@ -3559,6 +3559,28 @@
       "source_license": "CC-BY-SA-4.0",
       "source_version": null,
       "crawled_at": "2026-09-07"
+    },
+    {
+      "section_id": 311,
+      "game_id": 24,
+      "section_type": "mechanic",
+      "name": "Growing your Pikmin squad",
+      "card": "Pikmin multiply through their Onion, the hovering hive that matches their colour, and the way to grow a squad is to keep feeding that Onion rather than just picking up loose seeds. Carrying a pellet back to the matching-colour Onion produces new seeds based on the number printed on it, and carrying back a defeated enemy's corpse does the same, usually in far larger numbers than any pellet. If there are fewer Pikmin of that colour in the field than your current limit allows, a returned seed sprouts immediately as a new Pikmin; once you are at the limit, seeds are banked inside the Onion instead and can be called out later, so there is no harm bringing back more than you can use right now. Each colour's Onion is found in a different area rather than all together, so reaching a new area is usually also how you unlock a bigger squad.",
+      "source_url": "https://www.pikminwiki.com/Onion",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-07"
+    },
+    {
+      "section_id": 312,
+      "game_id": 24,
+      "section_type": "mechanic",
+      "name": "Throwing Pikmin at enemies and objects",
+      "card": "Throwing is how you send Pikmin to fight or to work at a distance: aim with the cursor and the game estimates where the Pikmin will land, though a wall or ledge in the way can knock it short of the mark. A thrown Pikmin that hits an enemy mid-flight latches on and starts attacking immediately rather than waiting to land. The next Pikmin in line to be thrown is whichever one is standing closest to your leader, shown on the HUD, so reordering your squad on the ground changes what gets thrown next. Yellow Pikmin fly higher than the rest and reach ledges the others cannot. Purple Pikmin fly faster on a flatter arc and slam down hard enough to stun or knock back whatever they land on, while Rock Pikmin drop on a much lower arc and bounce forward instead of sticking to the spot they land.",
+      "source_url": "https://www.pikminwiki.com/Throw",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-07"
     }
   ],
   "genre_patterns": [
