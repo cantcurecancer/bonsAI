@@ -17,6 +17,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "py_modules"))
@@ -75,6 +76,26 @@ class EvalKbAnswersHarnessTests(unittest.TestCase):
         )
         base.update(overrides)
         return mod.SampleResult(**base)
+
+    def _case(self, **overrides):
+        """A minimal Case; every field the dataclass needs, override what a test cares about."""
+        mod = self.mod
+        base = dict(
+            id="c1",
+            app_id="1",
+            app_name="Game",
+            ask_mode="strategy",
+            question="q",
+            expect_card=None,
+            must_mention=[],
+            must_not_say=[],
+            expect_fence=None,
+            expect_branches=None,
+            expect_attached=None,
+            note="",
+        )
+        base.update(overrides)
+        return mod.Case(**base)
 
     # --- commit 1: prompt_chars mean ----------------------------------------------------------
 
@@ -327,6 +348,131 @@ class EvalKbAnswersHarnessTests(unittest.TestCase):
     def test_parse_must_not_say_empty_is_empty(self):
         self.assertEqual(self.mod._parse_must_not_say([]), [])
         self.assertEqual(self.mod._parse_must_not_say(None), [])
+
+    # --- plan 48 lane A, commit 3: judge column (report-only, D86 call 4) ---------------------
+
+    class _FakeOllamaResponse:
+        """Enough of ``http.client.HTTPResponse`` for ``call_judge``: a context manager whose
+        ``read()`` returns the body bytes urllib.request.urlopen would have handed back."""
+
+        def __init__(self, body: bytes):
+            self._body = body
+
+        def read(self):
+            return self._body
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_a):
+            return False
+
+    def _fake_ollama_chat(self, message_json: dict):
+        return self._FakeOllamaResponse(
+            json.dumps({"message": {"content": json.dumps(message_json)}}).encode("utf-8")
+        )
+
+    def test_call_judge_parses_a_well_formed_verdict(self):
+        mod = self.mod
+        response = self._fake_ollama_chat({"contradicts_note": True, "facts_stated": [True, False]})
+        with patch.object(mod.urllib.request, "urlopen", return_value=response) as mock_urlopen:
+            out = mod.call_judge("http://127.0.0.1:11434", "judge-model", "note text", "reply text", [["a"], ["b"]])
+        self.assertEqual(out, {"contradicts_note": True, "facts_stated": [True, False]})
+        # the request went to the chat endpoint, non-streaming, naming the judge model
+        req = mock_urlopen.call_args.args[0]
+        self.assertTrue(req.full_url.endswith("/api/chat"))
+        sent = json.loads(req.data.decode("utf-8"))
+        self.assertEqual(sent["model"], "judge-model")
+        self.assertFalse(sent["stream"])
+
+    def test_call_judge_raises_on_unparseable_content(self):
+        mod = self.mod
+        response = self._FakeOllamaResponse(json.dumps({"message": {"content": "not json"}}).encode("utf-8"))
+        with patch.object(mod.urllib.request, "urlopen", return_value=response):
+            with self.assertRaises(Exception):
+                mod.call_judge("http://127.0.0.1:11434", "judge-model", "note", "reply", [])
+
+    def test_call_judge_missing_facts_stated_is_an_empty_list_not_an_error(self):
+        mod = self.mod
+        response = self._fake_ollama_chat({"contradicts_note": False})
+        with patch.object(mod.urllib.request, "urlopen", return_value=response):
+            out = mod.call_judge("http://127.0.0.1:11434", "judge-model", "note", "reply", [["a"]])
+        self.assertEqual(out, {"contradicts_note": False, "facts_stated": []})
+
+    def test_judge_prompt_carries_the_note_reply_and_fact_count(self):
+        prompt = self.mod._judge_prompt("THE NOTE", "THE REPLY", [["a", "b"], ["c"]])
+        self.assertIn("THE NOTE", prompt)
+        self.assertIn("THE REPLY", prompt)
+        self.assertIn("2", prompt)  # two fact groups to answer for
+
+    def test_mean_judge_elapsed_s_is_none_when_the_judge_never_ran(self):
+        samples = [self._sample(judge_elapsed_s=None)]
+        self.assertIsNone(self.mod.mean_judge_elapsed_s(samples))
+
+    def test_mean_judge_elapsed_s_averages_only_samples_that_ran(self):
+        samples = [
+            self._sample(judge_elapsed_s=1.0),
+            self._sample(judge_elapsed_s=3.0),
+            self._sample(judge_elapsed_s=None),
+        ]
+        self.assertEqual(self.mod.mean_judge_elapsed_s(samples), 2.0)
+
+    def test_judge_cell_reports_the_error_when_the_judge_call_failed(self):
+        r = self._sample(judge_error="TimeoutError: timed out")
+        self.assertIn("TimeoutError", self.mod._judge_cell(r))
+
+    def test_judge_cell_is_na_when_the_judge_did_not_run(self):
+        r = self._sample()
+        self.assertEqual(self.mod._judge_cell(r), "n/a")
+
+    def test_judge_cell_reports_contradiction_and_facts(self):
+        r = self._sample(judge_contradicts=True, judge_all_facts_stated=False)
+        cell = self.mod._judge_cell(r)
+        self.assertIn("contradicts", cell)
+        self.assertIn("missing", cell)
+
+    def test_sample_result_all_ok_ignores_the_judge_columns(self):
+        # The judge column must never move a score: a sample every fixed check likes, but where
+        # the judge (rightly or wrongly) flags a contradiction, is still all_ok.
+        r = self._sample(
+            success=True, card_ok=True, attached_ok=True, mention_ok=True, notsay_ok=True,
+            fence_ok=True, branches_ok=True, judge_contradicts=True, judge_all_facts_stated=False,
+        )
+        self.assertTrue(r.all_ok)
+
+    def test_summarize_judge_agreement_counts_only_when_both_checks_ran(self):
+        mod = self.mod
+        case = self._case(id="c1")
+        samples = [
+            # judge ran, fixed contradiction check did not (no must_not_say on this case) -- not counted
+            self._sample(case_id="c1", notsay_ok=None, judge_contradicts=False),
+            # neither ran -- not counted
+            self._sample(case_id="c1", notsay_ok=None, judge_contradicts=None),
+        ]
+        summary = mod.summarize([case], samples)
+        self.assertEqual(summary.judge_contradiction_agree.of, 0)
+
+    def test_summarize_judge_agreement_true_when_they_agree_false_when_they_disagree(self):
+        mod = self.mod
+        case = self._case(id="c1")
+        samples = [
+            # fixed check found a contradiction (notsay_ok False); judge agrees (judge_contradicts True)
+            self._sample(case_id="c1", notsay_ok=False, judge_contradicts=True, mention_ok=None),
+            # fixed check found nothing wrong (notsay_ok True); judge disagrees (judge_contradicts True)
+            self._sample(case_id="c1", notsay_ok=True, judge_contradicts=True, mention_ok=None),
+        ]
+        summary = mod.summarize([case], samples)
+        self.assertEqual((summary.judge_contradiction_agree.hit, summary.judge_contradiction_agree.of), (1, 2))
+
+    def test_summarize_judge_facts_agreement(self):
+        mod = self.mod
+        case = self._case(id="c1")
+        samples = [
+            self._sample(case_id="c1", mention_ok=True, judge_all_facts_stated=True, notsay_ok=None),
+            self._sample(case_id="c1", mention_ok=True, judge_all_facts_stated=False, notsay_ok=None),
+        ]
+        summary = mod.summarize([case], samples)
+        self.assertEqual((summary.judge_facts_agree.hit, summary.judge_facts_agree.of), (1, 2))
 
 
 if __name__ == "__main__":
