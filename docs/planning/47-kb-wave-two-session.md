@@ -545,20 +545,95 @@ session.
 
 **Before the first row.** Confirm the Deck is free — other chats press buttons on the same device, so ask for
 an exclusive window. Back up `settings.json` off the Deck and restore it at the end. Deploy with
-`scripts/build.ps1`; opening the plugin fails once after a deploy, so try again. **Pin test chips, never
-type** — the orchestrator writes every batch's exact sentences into this section at landing and has you
-confirm them all in one message. The Deck sleeps during pauses, so ask a throwaway question before timing
-anything.
+`scripts/build.ps1`; opening the plugin fails once after a deploy, so try again. **Pin the batches below as
+frozen test chips, never type** — pressing A on a pinned chip fills the Ask field word for word and does not
+submit, so the Ask press stays a separate step. The Deck sleeps during pauses, so ask a throwaway question
+before timing anything.
+
+**Every sentence below is under 160 characters and each batch is 3–12 entries, which is what the chip
+pinning accepts.**
+
+### The batches, word for word
+
+**Batch R2 — the twelve new games** (12 chips). One question per game that already had a note before this
+wave, so this row tests the tranche rather than tonight's work.
+
+```
+how do i get past the giant tentacle thing blocking the vent without it grabbing me
+how do i heal in hollow knight without a potion
+doom eternal early game tips
+any tips for the huge final demon boss at the end of doom 64
+gta 5 how to switch characters
+gta 4 how to lose the cops
+fallout new vegas where do i go after leaving goodsprings
+how do i do a long jump in super mario 64
+mario kart 64 how to drift
+paper mario ttyd early game tips
+what's the safe way to deal with the giant spider-like boss underground
+melee how to unlock more characters
+```
+
+**Batch R3 — eight questions that had no answer until tonight** (8 chips), with the note each should find:
+
+```
+black mesa where do i go first                                    -> The opening tram ride and where it leads
+hollow knight where do i go after the first area                  -> Leaving the Forgotten Crossroads
+how do i get into the military base without getting a wanted level -> Getting into Fort Zancudo without a wanted level
+fallout new vegas best early game armor                           -> Choosing early armor by Damage Threshold, not by looks
+doom 64 where's the first key                                     -> The first keycard in Staging Area
+mario 64 how to get the first star                                -> Getting your first star in Bob-omb Battlefield
+mario kart 64 best kart for speed                                 -> Picking a kart for top speed
+pikmin 2 how to get more pikmin                                   -> Growing your Pikmin squad
+```
+
+**Batch R4 — problems, with nothing running** (9 chips). The first eight are sentences written by someone who
+had not seen the tips, and all eight reach the tips on this machine. The ninth is the control and must
+attach nothing.
+
+```
+the game is really stuttering and skipping around the whole time I'm trying to play it
+no sound at all coming out
+storage full cant install anything else
+screen looks torn and glitchy
+it gets really hot and battery drains so fast
+it gets uncomfortably warm in my hands after a little while and the battery seems to drain a lot quicker than it used to
+update stuck wont finish installing
+when I plug it into the television the menus show up in the wrong spot on the screen and are hard to read
+thank you very much
+```
+
+**The other sixteen from that set are known not to reach the tips** and are recorded in the pinned reach
+test rather than checked here. There is no point asking the device a question this machine already says
+returns nothing.
+
+**Batch R5 — the "not in my notes" line** (2 chips), with **Hades** running. Checked against the library
+today: Hades has 15 notes, nothing anywhere mentions a hydra, and Megara has a note of its own.
+
+```
+how do i beat the bone hydra in hades
+how do i beat megara in hades
+```
+
+**Batch R6 — the two bug fixes** (3 chips), with **Deep Rock Galactic: Survivor** running, Speed, voice on —
+the setup that produced the stray computer text.
+
+```
+can you drop the tdp to save some battery
+what power limit should i use for this game
+how do i get more battery life out of this
+```
+
+### The rows
 
 | Row | Setup | Do | Pass when | Evidence |
 |---|---|---|---|---|
-| **W2-R1 Install the release** | Old corpus installed | Ollama tab → *Update knowledge base* | The tab shows the new version and note count; a game question's Show details names it | `runs/plan47-R1-*.json` |
-| **W2-R2 The twelve new games** (closes **KB-TRANCHE-01**) | Fallout: New Vegas installed. Batch of twelve, one blind question per game | Steam titles: launch, ask in Strategy. Emulated titles: ask with the game named. Each emulated title appears **twice** in the library from two ROM-manager runs and the shortcut names differ from the real titles (*Doom 64: Retribution*) | Each attaches at least one note; the credit line names the wiki and a date; spoiler behaviour matches the title's setting; the reply is about that game | `runs/plan47-R2-<tag>.json` |
-| **W2-R3 The filled gaps** | Batch of eight of the newly answered gap questions, picked across both lanes | Ask each with the game running or named | A note attaches, and the reply uses it rather than general memory | `runs/plan47-R3-*.json` |
-| **W2-R4 Troubleshooting reaches the tips** | **Nothing running.** Batch of eight of Lane C's fresh sentences plus *"thank you very much"* as a control | Ask each in Speed | The eight attach tips on the right subject; the thank-you attaches nothing | `runs/plan47-R4-*.json` |
-| **W2-R5 The "not in my notes" line** | Voice on, thinking medium, a covered game running | One question the notes cannot answer; one they can; one in Speed; then turn the library off and repeat the first | Line appears on the first only, reads exactly as written, and sits below the answer without breaking the D-pad walk | `runs/plan47-R5-*.json`, the saved chat |
-| **W2-R6 The two bug fixes** | Speed, Deep Rock Galactic: Survivor running, voice on — the exact setup that produced the raw text | Ask three power-ish questions; then exit the game and read the line under the question box | No code-like line in any reply; the line under the box stops naming the game within a few seconds of exiting | `runs/plan47-R6-*.json`, log tail |
-| **W2-R7 The ring and the corner icons** | A long reply on screen | Walk down the whole reply with the D-pad | Every stop is fully visible; none reads below 100% behind the Copy or Retry icon | `runs/plan47-R7-*.json` |
+| **W2-R1 Install the release** | Old notes installed | Ollama tab → *Update knowledge base* | The tab shows the new version and **293 notes**; a game question's Show details names it | `runs/plan47-R1-*.json` |
+| **W2-R2 The twelve new games** (closes **KB-TRANCHE-01**) | Fallout: New Vegas installed. Batch R2 | Steam titles: launch, ask in Strategy. Emulated titles: ask with the game named. Each emulated title appears **twice** in the library from two ROM-manager runs, and the shortcut names differ from the real titles (*Doom 64: Retribution*) | Each attaches at least one note; the credit line names the wiki and a date; spoiler behaviour matches the title's setting; the reply is about that game | `runs/plan47-R2-<tag>.json` |
+| **W2-R3 The filled gaps** | Batch R3 | Ask each with the game running or named | The named note attaches, and the reply uses it rather than general memory | `runs/plan47-R3-*.json` |
+| **W2-R4 Problems reach the tips** | **Nothing running.** Batch R4 | Ask each in Speed | The eight attach tips on the right subject; *thank you very much* attaches nothing | `runs/plan47-R4-*.json` |
+| **W2-R5 The "not in my notes" line** | Voice on, thinking medium, **Hades running**. Batch R5 | Ask the hydra one in Strategy, then the Megara one in Strategy, then the hydra one again in Speed; then turn the library off and ask the hydra one once more | The line appears **only** on the first, reads exactly *"Not in my notes — this answer is from the model's own knowledge."*, and sits below the answer without breaking the D-pad walk | `runs/plan47-R5-*.json`, the saved chat |
+| **W2-R6 The two bug fixes** | Speed, **Deep Rock Galactic: Survivor** running, voice on. Batch R6 | Ask all three; then exit the game and read the line under the question box | No code-like line in any reply; the line under the box stops naming the game within a few seconds of exiting | `runs/plan47-R6-*.json`, log tail |
+| **W2-R7 The ring and the corner icons** | A long reply on screen | Walk down the whole reply with the D-pad | **This row measures, it does not check a fix** — the fix is not built. Record the visible percentage at every stop. What is wanted is the *size* of the stop that read 67%, which no evidence file holds. **A stop is only a failure if a word of text is hidden**; a corner point under an icon is where the icon is meant to be | `runs/plan47-R7-*.json` |
 | **W2-R8 The five August rows** (optional) | One batch per row | As each row says in `docs/testing.md` | As each row says | as each row says |
 
 **Wrap.** Exit any game, restore `settings.json`, list every file written under `runs/`, and append the log
