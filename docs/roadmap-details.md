@@ -500,6 +500,16 @@ The roadmap cleanup of 2026-09-02 cut every entry to five lines. The original te
 
 ## Game notes are attached and then thrown away
 
+**Fixed 2026-09-06.** When a question will not fit the model's window, the answer now gets shorter instead of the
+notes being dropped. Full write-up and the before/after answer numbers: [CHANGELOG.md](../CHANGELOG.md). On-Deck
+**KB-PROMPT-FIT-01** in [testing.md](testing.md).
+
+**Correction, 2026-09-06: the Bone Hydra example in the table below never demonstrated this bug.** There is no Bone
+Hydra note in the library — no note has "hydra" in its name, and the only note whose text mentions a hydra is a
+Fallout: New Vegas one about an item of the same name. So a generic answer to that question was always the correct
+behaviour. The bug itself was real; it is corrected below rather than removed, since the measurement it sits inside
+is otherwise accurate.
+
 Measured on the Deck 2026-09-06 with `gemma4:e2b-it-qat`, Strategy mode, `ask_think_effort: medium`, character voice on,
 `use_local_knowledge_base: true`. Two real Asks driven through the panel with the bridge board; both logged the
 `prompt_window_warning` added by `bb377d7` (D46). The guard warns and does nothing else.
@@ -519,8 +529,13 @@ The roleplay suffix is appended last by `apply_roleplay_to_system_content`, whic
 overflow while the cards do not — voice was verified in character on all six device Asks the same afternoon.
 
 Observable in the reply: the Bone Hydra answer was generic dodge-and-punish advice ("the sweeping ground assaults") with
-no Hades-specific detail, i.e. the model answering from its own weights while the transparency panel would still report
-cards attached.
+no Hades-specific detail — **but, as corrected above, that boss has no note, so a generic answer here was always the
+right outcome and this observation does not show the bug.** The real evidence is the token counts in the table above,
+plus a PC-side run (below) and the fix's own device confirmation.
+
+**The real evidence for the bug, gathered separately from the table above.** On a test run on a PC shaped like the
+maintainer's own settings, 22 of 37 questions lost the start of what was sent to the model. On the Deck, all three
+deeper-mode questions asked with a game running went over the limit, by 703, 780 and 712 tokens.
 
 Two entries already in **Next** are the candidate fixes and both now have a measurement behind them: the **prompt diet**
 (cut rules, move cards next to the question) and **a measured context-window experiment** (8,192). Neither has been
@@ -529,6 +544,14 @@ length for cards.
 
 Not yet known: how often this fires in ordinary use. Both measured Asks had no game running and no screenshot attached,
 which are the *cheapest* Strategy prompts — a running game, a screenshot or Proton log excerpts all push it further over.
+
+**Fixed, 2026-09-06.** The fix trims the visible reply instead of the prompt: when a request would not fit, the answer
+shrinks just enough to fit, never below a floor, and the thinking time a person asked for is left whole. A log line
+records the old and new size. Confirmed on the Deck the same day with the character voice on, thinking at medium,
+Hades running: asking about Megara, a boss that does have a note, got an answer built from it — her dash patterns,
+punishing her while she recovers, using boons for burst damage — and the reply budget trimmed from 2112 to 1800 tokens
+so the prompt fit. Full write-up, the three smaller trims that came first, and the before/after answer-quality
+numbers: [CHANGELOG.md](../CHANGELOG.md). On-Deck row **KB-PROMPT-FIT-01** in [testing.md](testing.md).
 
 ## The shipping retrieval arm loses to the vector half alone on rows nobody tuned against
 

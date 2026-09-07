@@ -435,11 +435,6 @@ for the Deck to be free). Anything new goes here, one line each, with what it de
   two of four blind troubleshooting questions miss. Agreed fix: when no topic matched, let the meaning search run over the
   tip sheet, measured on the 17 blind troubleshooting rows first. About a day. (D52)
   [Detail](roadmap-details.md#a-troubleshooting-question-that-only-describes-the-symptom-reaches-no-tips).
-- ★★★ `[KB]` **Game notes are attached and then thrown away before the model reads them** — **OPEN, measured on the Deck
-  2026-09-06.** A Strategy question about a covered game sends about 820 tokens more than the model can hold, so the start
-  of the prompt is dropped without a word — the identity, the rules, and the cards. Asked about the Bone Hydra, the reply
-  was vague general tactics, not the fifteen Hades cards. Even a plain Deck question in Strategy runs about 500 over. The
-  warning that caught this only writes to the log. [Detail](roadmap-details.md#game-notes-are-attached-and-then-thrown-away).
 - ★★★ `[KB]` **The meaning search got about a fifth slower** — **OPEN, found 2026-09-05, still open 2026-09-06.** Three
   Strategy questions took about 1.09 s each to embed against the 0.79–0.90 s band recorded when the feature shipped; a
   repeat on the Deck 2026-09-06 read 1.10, 1.23 and 1.19 s. The earlier explanation — only the first question after a
@@ -561,6 +556,16 @@ Everything shipped since v0.4.9 (2026-07-08), one line each, newest first. Detai
 [archive/roadmap-completed.md](archive/roadmap-completed.md), [archive/roadmap-bugs-fixed.md](archive/roadmap-bugs-fixed.md).
 
 **Verified on the Deck 2026-09-06 (knowledge base, wave one):**
+- ★★★ `[KB]` **A long Strategy question no longer throws away its game notes** — when a question would send more to the
+  model than its window can hold, the reply now gets shorter instead of the notes being dropped from the front of what
+  the model reads. Confirmed on the Deck with the character voice on, thinking at medium, Hades running: asking about
+  Megara — a boss with a note — got an answer built from it, and the log showed the reply budget trimmed from 2112 to
+  1800 tokens so the prompt fit, with the old silent-drop warning gone. **Correction to this entry's old evidence:** it
+  used to point at a different Hades boss, the Bone Hydra, who has no note in the library — a generic answer to that
+  question was always correct and never proved the bug. The real evidence is a PC test run that lost the start of 22 of
+  37 prompts, and three Deck questions that went over the window by 703, 780 and 712 tokens. Full numbers and the three
+  smaller trims that came first: [CHANGELOG.md](../CHANGELOG.md). On-Deck **KB-PROMPT-FIT-01** in [testing.md](testing.md).
+  [Detail](roadmap-details.md#game-notes-are-attached-and-then-thrown-away).
 - ★★★ `[KB]` **A quick question in Speed mode no longer pays for the slow search** — confirmed on the Deck 2026-09-06 with
   Deep Rock Galactic: Survivor running, on a fresh build. All three of the row's sentences were asked in Speed: two read
   *Keyword search*, the third read *Knowledge base (skipped)* because the word search found nothing on its own — none of
