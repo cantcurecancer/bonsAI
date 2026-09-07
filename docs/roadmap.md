@@ -426,8 +426,8 @@ a decision (D66, the test entry under Next); structured cards stay prose (D67); 
 weights change if it agrees (D68); a first tranche of new titles comes from your own Steam library (D69, the read waits
 for the Deck to be free). **Decided 2026-09-06:** ship the twelve-game release now and treat the thin coverage as later
 work (D83); hold the symptom-only troubleshooting search and rewrite the tips instead (D81); hold leaning the search
-toward meaning until every note is guaranteed to have its index (D82). Anything new goes here, one line each, with
-what it decides.
+toward meaning until every note is guaranteed to have its index (D82); about a second to search the notes on the Deck
+is fine, the one-second target is retired (D84). Anything new goes here, one line each, with what it decides.
 
 ### Bugs
 
@@ -441,12 +441,14 @@ what it decides.
   uses to describe a crash to the way the crash tips are written; the real fix is rewriting the tips, filed as its own
   entry below. Held rather than shipped (D52, D81).
   [Detail](roadmap-details.md#a-troubleshooting-question-that-only-describes-the-symptom-reaches-no-tips).
-- ★★★ `[KB]` **The meaning search got about a fifth slower** — **OPEN, found 2026-09-05, still open 2026-09-06.** Three
-  Strategy questions took about 1.09 s each to embed against the 0.79–0.90 s band recorded when the feature shipped; a
-  repeat on the Deck 2026-09-06 read 1.10, 1.23 and 1.19 s. The earlier explanation — only the first question after a
-  quiet spell pays to wake the search model and the rest are nearly free, measured on the PC at 1.47 s then 0.05 s —
-  **does not hold on the Deck**: the third question here was no faster than the first. Cause still unmeasured. Evidence
-  `runs/round34-drg-q*.json`, `runs/plan46-R2-strategy-half.json`.
+- ★★★ `[KB]` **Searching the notes by meaning costs about a second, every time, on the Deck** — **ACCEPTED
+  2026-09-06.** Repeated on the Deck: 1.10, 1.23 and 1.19 seconds across three questions in a row, the same band as
+  the first time this was measured. The maintainer looked at the number and said that is fine — about a second before
+  an answer that then takes tens of seconds to write out is not something a person would notice. **The one-second
+  target this was measured against is retired.** The related finding still stands: the idea that only the first
+  question after a quiet spell is slow holds on a PC, where a repeat came back in 0.05 seconds, but not on the Deck,
+  where the third question here was no faster than the first. (D84) Evidence `runs/round34-drg-q*.json`,
+  `runs/plan46-R2-strategy-half.json`.
 - ★★★★ `[KB]` **What ships loses to its own meaning half on questions nobody tuned against** — **ACCEPTED, decided
   2026-09-06.** The weight sweep ran: leaning the search toward meaning gets the right note first about four to six
   points more often, but it also buries a brand-new note whose meaning index has not been built yet, which the current
@@ -461,12 +463,6 @@ what it decides.
   format gate, the relevance floor, follow-ups searching the user's words, transparency matching what the model got, and
   the Developer kill-switch. Either one evening with pinned test chips, or close them as superseded by the rows that
   passed this week. Rows **KB-VARIANT-01**, **KB-FLOOR-01**, **KB-FOLLOWUP-01**, **KB-TRANSPARENCY-01**, **KB-KILLSWITCH-01**.
-- ★★★ `[KB]` **The meaning search searches on its own instead of re-ordering keyword hits** — **VERIFY, the label half now
-  passes in both modes; the timing half does not.** Confirmed again on the Deck 2026-09-06: three Strategy questions all
-  read *Keyword + meaning*, and the same three in Speed read *Keyword search* with no embed time — the Speed half is
-  closed, see Done. What still fails is the clock: the meaning search took 1.10, 1.23 and 1.19 seconds on that run, every
-  question, not just the first, where the row wants the second and third at or under one second. Row **KB-RECALL-01**
-  stays owed for the timing only; **KB-RECALL-02** verified at the desk.
 - ★★★★ `[KB]` **A first tranche of new titles from your Steam library** — **VERIFY, released 2026-09-06.** Twelve games
   now have notes: Black Mesa, Hollow Knight, GTA V, GTA IV, DOOM Eternal, Doom 64, Super Mario 64, Mario Kart 64, Paper
   Mario TTYD, Super Smash Bros. Melee, Fallout: New Vegas, Pikmin 2. Corpus `2026.09.06` shipped to both channels and
@@ -587,8 +583,12 @@ Everything shipped since v0.4.9 (2026-07-08), one line each, newest first. Detai
   Deep Rock Galactic: Survivor running, on a fresh build. All three of the row's sentences were asked in Speed: two read
   *Keyword search*, the third read *Knowledge base (skipped)* because the word search found nothing on its own — none of
   them spent any time on the meaning search. Fixed on the shared branch 2026-09-05 (`c72310a`). Row **KB-RECALL-01**'s
-  Speed half closes; the timing half of its Strategy check is still open, in the knowledge base section. Evidence
-  `runs/plan46-R2-speed-half.json`.
+  Speed half closes. Evidence `runs/plan46-R2-speed-half.json`.
+- ★★★ `[KB]` **The meaning search searches on its own instead of re-ordering keyword hits, and about a second is an
+  accepted cost** — confirmed again on the Deck 2026-09-06: three Strategy questions all read *Keyword + meaning*, and
+  the same three in Speed read *Keyword search* with no embed time. The remaining question was the clock: the meaning
+  search took 1.10, 1.23 and 1.19 seconds, every question, not just the first. The maintainer said that speed is fine
+  and retired the one-second target the row was measured against (D84). Rows **KB-RECALL-01** and **KB-RECALL-02** close.
 
 **Checked on the Deck 2026-09-06 and found fine:** a suggestion chip that looked like scrambled characters was the
 reveal animation caught mid-frame, and a slow-reply notice that looked like it was missing words reads correctly in
