@@ -3438,6 +3438,17 @@
       "source_license": "CC-BY-SA-4.0",
       "source_version": null,
       "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 300,
+      "game_id": 16,
+      "section_type": "mechanic",
+      "name": "Monkey bars and swing traversal",
+      "card": "Monkey bars are horizontal bars the Slayer grabs mid-air and swings along, first taught in Cultist Base and used throughout the campaign to cross gaps, pits and electrified drops. Approach at a run and jump toward the bar rather than at it — grabbing happens automatically once you are close enough in the air, and letting go too early is what causes most falls. Some bars only appear for a short time after a switch, or lower again once you swing off, so cross before double-checking your surroundings. Chaining a bar into a nearby climbable wall or a dash keeps momentum going; stopping mid-swing to aim at an enemy is usually what drops a Slayer into the pit below. If a section has more than one bar in a row, commit to the whole chain rather than pausing between them.",
+      "source_url": "https://doomwiki.org/wiki/Cultist_Base/Walkthrough",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-07"
     }
   ],
   "genre_patterns": [
