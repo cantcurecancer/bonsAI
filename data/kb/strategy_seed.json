@@ -3545,6 +3545,39 @@
       "source_license": "CC-BY-SA-3.0",
       "source_version": null,
       "crawled_at": "2026-09-07"
+    },
+    {
+      "section_id": 279,
+      "game_id": 23,
+      "section_type": "boss",
+      "name": "The final battle: hands, patterns and the charge tell",
+      "card": "The two hands in the final fight are separate targets with only five HP and seven attack each, so killing one is easy, but it comes back on the following turn — treat them as removable nuisances between the main attacks rather than as kills that stick. Watch for the move that raises attack and defence by three, and for the flash that warns of a bigger charged strike a turn ahead of it landing: guard or superguard the turn it actually lands rather than the turn it charges. The breath attack can poison, confuse or strip badges rather than deal raw damage, so a status-cure item is worth carrying into this fight even if you have not needed one in a while. Being dragged under the stage for a turn is more a tempo loss than a real threat — keep attacking rather than trying to save whoever got grabbed.",
+      "source_url": "https://www.mariowiki.com/Shadow_Queen",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-07"
+    },
+    {
+      "section_id": 280,
+      "game_id": 23,
+      "section_type": "mechanic",
+      "name": "Guarding and superguarding, frame by frame",
+      "card": "A regular guard needs the button pressed within about an eighth of a second before a hit lands; get it right and you shave one point of damage off, more with each Damage Dodge badge equipped, and shrug off almost every status effect the attack would have caused. Superguard is the harder version, a much tighter window that blocks the hit completely and hits the attacker back for landing it at all, so it is worth drilling on a weak, predictable enemy before relying on it in a fight that matters. Neither version helps against an item an enemy uses on you, and if an attack targets both Mario and his partner, only the first hit needs a real read: whichever guard you did, or did not do, carries over to the second hit automatically. A few late-game attacks bypass guarding entirely with a lock-out effect that no amount of timing gets around.",
+      "source_url": "https://www.mariowiki.com/Guard",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-07"
+    },
+    {
+      "section_id": 281,
+      "game_id": 23,
+      "section_type": "item",
+      "name": "Boots and Hammer: the upgrade chain",
+      "card": "Mario's boots and hammer each upgrade twice, and each step is a straight damage jump rather than a new gimmick: a jump attack goes from one damage with the starting Boots to three with the Ultra Boots, and a hammer swing goes from two damage to four with the Super Hammer and six with the Ultra Hammer, all before any attack-boosting badges. Each upgrade also unlocks a field move — the Ultra Boots add a Spring Jump that grabs onto pipes and bars out of normal jumping range, letting you back into areas that looked finished the first time through. The Ultra Hammer can also open a battle with a free first-strike hit at no FP cost, worth using on anything you would rather not spend a turn fighting normally. A later tier always replaces the one before it, so there is no reason to hold onto an earlier hammer or pair of boots once the upgrade is in hand.",
+      "source_url": "https://www.mariowiki.com/Ultra_Hammer",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-07"
     }
   ],
   "genre_patterns": [
