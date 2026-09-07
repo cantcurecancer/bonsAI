@@ -453,7 +453,17 @@ the device. Fallout: New Vegas still is not installed.
 
 ### Calls waiting on you
 
-None open. **Decided 2026-09-07 (D85), planning wave two:** fill the 21 real note gaps and top up the four thinnest
+- **One note says something nobody has checked, and someone would act on it.** Black Mesa, *"Crossing the
+  electrified waste pools"*, written 2026-09-07. It claims the current is **not constant** — that it arcs on
+  a cycle, with a spark and a crackle just before it charges, so you should move while the water is dark and
+  wait while it is lit. **No page says this.** It was written from the writer's own memory of the game, and
+  carries no source, which the credit rules allow. Two other notes written the same way that evening are
+  recommendations rather than facts (which upgrade to buy in GTA V, how to win a chase in GTA IV), so being
+  wrong about them costs a player nothing. This one is different: someone following it walks into charged
+  water on purpose. **Either confirm it from the game, or say the word and it comes out.** It shipped in the
+  2026-09-07 release, so if it goes, that is a point release. (D85)
+
+**Nothing else open.** **Decided 2026-09-07 (D85), planning wave two:** fill the 21 real note gaps and top up the four thinnest
 games, keeping the eight deliberate blanks as a control; the "not in my notes" line reads *"Not in my notes — this
 answer is from the model's own knowledge."*; the meaning-index work ships the guarantee and only **measures** the
 tie-break, because guaranteeing the index answers one of D82's three objections and not the other two; and the ring
