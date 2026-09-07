@@ -28,7 +28,7 @@
       "deck",
       "linux"
     ],
-    "card": "Disable Steam overlay and third-party overlays when crashes happen at launch.",
+    "card": "Check ProtonDB for launch options and community fixes before forcing a Proton version.",
     "source_url": "",
     "source_license": "bonsAI-maintainer"
   },
@@ -39,23 +39,12 @@
       "deck",
       "linux"
     ],
-    "card": "Check ProtonDB for launch options and community fixes before forcing a Proton version.",
-    "source_url": "",
-    "source_license": "bonsAI-maintainer"
-  },
-  {
-    "pattern_id": 5,
-    "topic": "proton",
-    "platforms": [
-      "deck",
-      "linux"
-    ],
     "card": "After SteamOS update, re-test with Proton Experimental; stale compat data can break until shader regen.",
     "source_url": "",
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 6,
+    "pattern_id": 5,
     "topic": "proton",
     "platforms": [
       "windows"
@@ -65,7 +54,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 7,
+    "pattern_id": 6,
     "topic": "proton",
     "platforms": [
       "deck"
@@ -75,7 +64,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 8,
+    "pattern_id": 7,
     "topic": "proton",
     "platforms": [
       "deck",
@@ -86,7 +75,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 9,
+    "pattern_id": 8,
     "topic": "proton",
     "platforms": [
       "deck"
@@ -96,7 +85,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 10,
+    "pattern_id": 9,
     "topic": "proton",
     "platforms": [
       "deck",
@@ -107,7 +96,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 11,
+    "pattern_id": 10,
     "topic": "proton",
     "platforms": [
       "deck"
@@ -117,7 +106,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 12,
+    "pattern_id": 11,
     "topic": "proton",
     "platforms": [
       "steamvr"
@@ -127,7 +116,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 13,
+    "pattern_id": 12,
     "topic": "deck",
     "platforms": [
       "deck"
@@ -137,7 +126,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 14,
+    "pattern_id": 13,
     "topic": "deck",
     "platforms": [
       "deck"
@@ -147,7 +136,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 15,
+    "pattern_id": 14,
     "topic": "deck",
     "platforms": [
       "deck"
@@ -157,7 +146,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 16,
+    "pattern_id": 15,
     "topic": "deck",
     "platforms": [
       "deck"
@@ -167,7 +156,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 17,
+    "pattern_id": 16,
     "topic": "deck",
     "platforms": [
       "deck"
@@ -177,7 +166,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 18,
+    "pattern_id": 17,
     "topic": "deck",
     "platforms": [
       "deck"
@@ -187,7 +176,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 19,
+    "pattern_id": 18,
     "topic": "deck",
     "platforms": [
       "deck"
@@ -197,7 +186,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 20,
+    "pattern_id": 19,
     "topic": "deck",
     "platforms": [
       "deck"
@@ -207,7 +196,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 21,
+    "pattern_id": 20,
     "topic": "deck",
     "platforms": [
       "deck"
@@ -217,7 +206,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 22,
+    "pattern_id": 21,
     "topic": "deck",
     "platforms": [
       "deck"
@@ -227,7 +216,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 23,
+    "pattern_id": 22,
     "topic": "steam_machine",
     "platforms": [
       "steam_machine",
@@ -238,7 +227,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 24,
+    "pattern_id": 23,
     "topic": "bpm",
     "platforms": [
       "deck",
@@ -249,7 +238,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 25,
+    "pattern_id": 24,
     "topic": "bpm",
     "platforms": [
       "deck"
@@ -259,7 +248,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 26,
+    "pattern_id": 25,
     "topic": "desktop_mode",
     "platforms": [
       "deck"
@@ -269,7 +258,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 27,
+    "pattern_id": 26,
     "topic": "gaming_mode",
     "platforms": [
       "deck"
@@ -279,7 +268,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 28,
+    "pattern_id": 27,
     "topic": "steam_machine",
     "platforms": [
       "linux"
@@ -289,7 +278,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 29,
+    "pattern_id": 28,
     "topic": "bpm",
     "platforms": [
       "deck"
@@ -299,7 +288,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 30,
+    "pattern_id": 29,
     "topic": "desktop_mode",
     "platforms": [
       "deck"
@@ -309,7 +298,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 31,
+    "pattern_id": 30,
     "topic": "wine",
     "platforms": [
       "linux"
@@ -319,7 +308,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 32,
+    "pattern_id": 31,
     "topic": "wine",
     "platforms": [
       "linux"
@@ -329,7 +318,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 33,
+    "pattern_id": 32,
     "topic": "wine",
     "platforms": [
       "deck"
@@ -339,7 +328,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 34,
+    "pattern_id": 33,
     "topic": "wine",
     "platforms": [
       "linux"
@@ -349,7 +338,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 35,
+    "pattern_id": 34,
     "topic": "wine",
     "platforms": [
       "windows"
@@ -359,7 +348,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 36,
+    "pattern_id": 35,
     "topic": "wine",
     "platforms": [
       "linux"
@@ -369,7 +358,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 37,
+    "pattern_id": 36,
     "topic": "windows_steam",
     "platforms": [
       "windows"
@@ -379,7 +368,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 38,
+    "pattern_id": 37,
     "topic": "windows_steam",
     "platforms": [
       "windows"
@@ -389,7 +378,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 39,
+    "pattern_id": 38,
     "topic": "windows_steam",
     "platforms": [
       "windows"
@@ -399,7 +388,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 40,
+    "pattern_id": 39,
     "topic": "windows_steam",
     "platforms": [
       "windows"
@@ -409,7 +398,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 41,
+    "pattern_id": 40,
     "topic": "windows_steam",
     "platforms": [
       "windows"
@@ -419,7 +408,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 42,
+    "pattern_id": 41,
     "topic": "windows_steam",
     "platforms": [
       "windows"
@@ -429,7 +418,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 43,
+    "pattern_id": 42,
     "topic": "steamvr",
     "platforms": [
       "steamvr",
@@ -440,7 +429,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 44,
+    "pattern_id": 43,
     "topic": "steamvr",
     "platforms": [
       "steamvr"
@@ -450,7 +439,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 45,
+    "pattern_id": 44,
     "topic": "steamvr",
     "platforms": [
       "deck"
@@ -460,7 +449,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 46,
+    "pattern_id": 45,
     "topic": "steamvr",
     "platforms": [
       "steamvr"
@@ -470,7 +459,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 47,
+    "pattern_id": 46,
     "topic": "steamvr",
     "platforms": [
       "steamvr"
@@ -480,7 +469,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 48,
+    "pattern_id": 47,
     "topic": "steamvr",
     "platforms": [
       "steamvr"
@@ -490,7 +479,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 49,
+    "pattern_id": 48,
     "topic": "steamvr",
     "platforms": [
       "steamvr"
@@ -500,7 +489,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 50,
+    "pattern_id": 49,
     "topic": "steamvr",
     "platforms": [
       "steamvr"
@@ -510,7 +499,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 51,
+    "pattern_id": 50,
     "topic": "gamescope",
     "platforms": [
       "deck",
@@ -521,7 +510,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 52,
+    "pattern_id": 51,
     "topic": "gamescope",
     "platforms": [
       "deck"
@@ -531,7 +520,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 53,
+    "pattern_id": 52,
     "topic": "gamescope",
     "platforms": [
       "deck"
@@ -541,7 +530,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 54,
+    "pattern_id": 53,
     "topic": "gamescope",
     "platforms": [
       "linux"
@@ -551,7 +540,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 55,
+    "pattern_id": 54,
     "topic": "gamescope",
     "platforms": [
       "deck"
@@ -561,7 +550,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 56,
+    "pattern_id": 55,
     "topic": "gamescope",
     "platforms": [
       "deck"
@@ -571,7 +560,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 57,
+    "pattern_id": 56,
     "topic": "gamescope",
     "platforms": [
       "deck"
@@ -581,7 +570,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 58,
+    "pattern_id": 57,
     "topic": "gamescope",
     "platforms": [
       "linux"
@@ -591,7 +580,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 59,
+    "pattern_id": 58,
     "topic": "anticheat",
     "platforms": [
       "deck",
@@ -602,7 +591,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 60,
+    "pattern_id": 59,
     "topic": "anticheat",
     "platforms": [
       "deck"
@@ -612,7 +601,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 61,
+    "pattern_id": 60,
     "topic": "anticheat",
     "platforms": [
       "windows"
@@ -622,7 +611,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 62,
+    "pattern_id": 61,
     "topic": "anticheat",
     "platforms": [
       "deck",
@@ -633,7 +622,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 63,
+    "pattern_id": 62,
     "topic": "anticheat",
     "platforms": [
       "deck"
@@ -643,7 +632,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 64,
+    "pattern_id": 63,
     "topic": "anticheat",
     "platforms": [
       "deck",
@@ -654,7 +643,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 65,
+    "pattern_id": 64,
     "topic": "anticheat",
     "platforms": [
       "deck"
@@ -664,7 +653,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 66,
+    "pattern_id": 65,
     "topic": "anticheat",
     "platforms": [
       "linux"
@@ -674,7 +663,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 67,
+    "pattern_id": 66,
     "topic": "streaming",
     "platforms": [
       "deck"
@@ -684,7 +673,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 68,
+    "pattern_id": 67,
     "topic": "streaming",
     "platforms": [
       "deck"
@@ -694,7 +683,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 69,
+    "pattern_id": 68,
     "topic": "streaming",
     "platforms": [
       "deck"
@@ -704,7 +693,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 70,
+    "pattern_id": 69,
     "topic": "streaming",
     "platforms": [
       "windows"
@@ -714,7 +703,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 71,
+    "pattern_id": 70,
     "topic": "streaming",
     "platforms": [
       "deck"
@@ -724,7 +713,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 72,
+    "pattern_id": 71,
     "topic": "streaming",
     "platforms": [
       "deck"
@@ -734,7 +723,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 73,
+    "pattern_id": 72,
     "topic": "streaming",
     "platforms": [
       "steamvr"
@@ -744,7 +733,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 74,
+    "pattern_id": 73,
     "topic": "streaming",
     "platforms": [
       "deck"
@@ -754,7 +743,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 75,
+    "pattern_id": 74,
     "topic": "storage",
     "platforms": [
       "deck"
@@ -764,7 +753,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 76,
+    "pattern_id": 75,
     "topic": "storage",
     "platforms": [
       "deck"
@@ -774,7 +763,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 77,
+    "pattern_id": 76,
     "topic": "storage",
     "platforms": [
       "deck"
@@ -784,7 +773,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 78,
+    "pattern_id": 77,
     "topic": "storage",
     "platforms": [
       "linux"
@@ -794,7 +783,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 79,
+    "pattern_id": 78,
     "topic": "storage",
     "platforms": [
       "deck"
@@ -804,7 +793,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 80,
+    "pattern_id": 79,
     "topic": "storage",
     "platforms": [
       "windows"
@@ -814,7 +803,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 81,
+    "pattern_id": 80,
     "topic": "storage",
     "platforms": [
       "deck"
@@ -824,7 +813,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 82,
+    "pattern_id": 81,
     "topic": "storage",
     "platforms": [
       "deck"
@@ -834,7 +823,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 83,
+    "pattern_id": 82,
     "topic": "updates",
     "platforms": [
       "deck"
@@ -844,7 +833,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 84,
+    "pattern_id": 83,
     "topic": "updates",
     "platforms": [
       "deck"
@@ -854,7 +843,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 85,
+    "pattern_id": 84,
     "topic": "updates",
     "platforms": [
       "windows"
@@ -864,7 +853,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 86,
+    "pattern_id": 85,
     "topic": "updates",
     "platforms": [
       "deck"
@@ -874,7 +863,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 87,
+    "pattern_id": 86,
     "topic": "updates",
     "platforms": [
       "linux"
@@ -884,7 +873,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 88,
+    "pattern_id": 87,
     "topic": "updates",
     "platforms": [
       "deck"
@@ -894,7 +883,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 89,
+    "pattern_id": 88,
     "topic": "steam_input",
     "platforms": [
       "deck"
@@ -904,7 +893,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 90,
+    "pattern_id": 89,
     "topic": "steam_input",
     "platforms": [
       "deck"
@@ -914,7 +903,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 91,
+    "pattern_id": 90,
     "topic": "steam_input",
     "platforms": [
       "deck"
@@ -924,7 +913,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 92,
+    "pattern_id": 91,
     "topic": "steam_input",
     "platforms": [
       "deck"
@@ -934,7 +923,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 93,
+    "pattern_id": 92,
     "topic": "steam_input",
     "platforms": [
       "deck"
@@ -944,7 +933,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 94,
+    "pattern_id": 93,
     "topic": "steam_input",
     "platforms": [
       "windows"
@@ -954,7 +943,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 95,
+    "pattern_id": 94,
     "topic": "steam_input",
     "platforms": [
       "deck"
@@ -964,7 +953,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 96,
+    "pattern_id": 95,
     "topic": "steam_input",
     "platforms": [
       "deck"
@@ -974,7 +963,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 97,
+    "pattern_id": 96,
     "topic": "steam_input",
     "platforms": [
       "deck"
@@ -984,7 +973,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 98,
+    "pattern_id": 97,
     "topic": "steam_input",
     "platforms": [
       "steamvr"
@@ -994,7 +983,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 99,
+    "pattern_id": 98,
     "topic": "controller",
     "platforms": [
       "deck"
@@ -1004,7 +993,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 100,
+    "pattern_id": 99,
     "topic": "controller",
     "platforms": [
       "deck"
@@ -1014,7 +1003,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 101,
+    "pattern_id": 100,
     "topic": "gyro",
     "platforms": [
       "deck"
@@ -1024,7 +1013,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 102,
+    "pattern_id": 101,
     "topic": "controller",
     "platforms": [
       "deck"
@@ -1034,7 +1023,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 103,
+    "pattern_id": 102,
     "topic": "controller",
     "platforms": [
       "deck"
@@ -1044,7 +1033,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 104,
+    "pattern_id": 103,
     "topic": "controller",
     "platforms": [
       "deck"
@@ -1054,7 +1043,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 105,
+    "pattern_id": 104,
     "topic": "gyro",
     "platforms": [
       "deck"
@@ -1064,7 +1053,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 106,
+    "pattern_id": 105,
     "topic": "controller",
     "platforms": [
       "deck"
@@ -1074,32 +1063,42 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 107,
-    "topic": "steam_frame",
+    "pattern_id": 106,
+    "topic": "controller",
     "platforms": [
-      "frame"
+      "deck"
     ],
-    "card": "Steam Frame: companion Deck/phone on LAN for bonsAI while HMD in-game.",
+    "card": "Check the battery first; a controller that seems broken is often just empty.",
+    "source_url": "",
+    "source_license": "bonsAI-maintainer"
+  },
+  {
+    "pattern_id": 107,
+    "topic": "controller",
+    "platforms": [
+      "deck"
+    ],
+    "card": "If a controller stops responding mid-game, disconnect and reconnect it before restarting the game.",
     "source_url": "",
     "source_license": "bonsAI-maintainer"
   },
   {
     "pattern_id": 108,
-    "topic": "steam_frame",
+    "topic": "controller",
     "platforms": [
-      "frame"
+      "deck"
     ],
-    "card": "Frame comfort: reduce locomotion intensity; seated playspace reduces nausea.",
+    "card": "If it connects but no buttons do anything, forget the device and pair it again.",
     "source_url": "",
     "source_license": "bonsAI-maintainer"
   },
   {
     "pattern_id": 109,
-    "topic": "fex",
+    "topic": "controller",
     "platforms": [
-      "linux"
+      "deck"
     ],
-    "card": "FEX-Emu on ARM Linux: experimental x86 emulation; not AMD Deck path.",
+    "card": "Weak or missing vibration usually means it connected as a generic device, not through Steam Input.",
     "source_url": "",
     "source_license": "bonsAI-maintainer"
   },
@@ -1109,7 +1108,7 @@
     "platforms": [
       "frame"
     ],
-    "card": "Frame theater mode: wrong display target can mirror desktop instead of HMD.",
+    "card": "Steam Frame: companion Deck/phone on LAN for bonsAI while HMD in-game.",
     "source_url": "",
     "source_license": "bonsAI-maintainer"
   },
@@ -1119,7 +1118,7 @@
     "platforms": [
       "frame"
     ],
-    "card": "Frame companion UX is research-phase; verify Valve docs before assuming APIs.",
+    "card": "Frame comfort: reduce locomotion intensity; seated playspace reduces nausea.",
     "source_url": "",
     "source_license": "bonsAI-maintainer"
   },
@@ -1129,12 +1128,42 @@
     "platforms": [
       "linux"
     ],
-    "card": "FEX vs Proton: Proton is primary on Steam Deck AMD.",
+    "card": "FEX-Emu on ARM Linux: experimental x86 emulation; not AMD Deck path.",
     "source_url": "",
     "source_license": "bonsAI-maintainer"
   },
   {
     "pattern_id": 113,
+    "topic": "steam_frame",
+    "platforms": [
+      "frame"
+    ],
+    "card": "Frame theater mode: wrong display target can mirror desktop instead of HMD.",
+    "source_url": "",
+    "source_license": "bonsAI-maintainer"
+  },
+  {
+    "pattern_id": 114,
+    "topic": "steam_frame",
+    "platforms": [
+      "frame"
+    ],
+    "card": "Frame companion UX is research-phase; verify Valve docs before assuming APIs.",
+    "source_url": "",
+    "source_license": "bonsAI-maintainer"
+  },
+  {
+    "pattern_id": 115,
+    "topic": "fex",
+    "platforms": [
+      "linux"
+    ],
+    "card": "FEX vs Proton: Proton is primary on Steam Deck AMD.",
+    "source_url": "",
+    "source_license": "bonsAI-maintainer"
+  },
+  {
+    "pattern_id": 116,
     "topic": "network",
     "platforms": [
       "deck"
@@ -1144,7 +1173,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 114,
+    "pattern_id": 117,
     "topic": "network",
     "platforms": [
       "deck"
@@ -1154,47 +1183,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 115,
-    "topic": "audio",
-    "platforms": [
-      "deck"
-    ],
-    "card": "No audio after suspend: toggle volume, switch output in Quick Settings.",
-    "source_url": "",
-    "source_license": "bonsAI-maintainer"
-  },
-  {
-    "pattern_id": 116,
-    "topic": "display",
-    "platforms": [
-      "deck"
-    ],
-    "card": "External monitor blank: try HDMI direct, 1080p60, disable overscan.",
-    "source_url": "",
-    "source_license": "bonsAI-maintainer"
-  },
-  {
-    "pattern_id": 117,
-    "topic": "performance",
-    "platforms": [
-      "deck"
-    ],
-    "card": "TDP cap in QAM affects CPU/GPU together; lowering reduces heat.",
-    "source_url": "",
-    "source_license": "bonsAI-maintainer"
-  },
-  {
     "pattern_id": 118,
-    "topic": "performance",
-    "platforms": [
-      "deck"
-    ],
-    "card": "30 FPS cap can stabilize frame pacing vs uncapped stutter.",
-    "source_url": "",
-    "source_license": "bonsAI-maintainer"
-  },
-  {
-    "pattern_id": 119,
     "topic": "emudeck",
     "platforms": [
       "deck"
@@ -1204,7 +1193,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 120,
+    "pattern_id": 119,
     "topic": "emudeck",
     "platforms": [
       "deck"
@@ -1214,7 +1203,7 @@
     "source_license": "bonsAI-maintainer"
   },
   {
-    "pattern_id": 121,
+    "pattern_id": 120,
     "topic": "linux",
     "platforms": [
       "linux"
@@ -1224,12 +1213,22 @@
     "source_license": "bonsAI-maintainer"
   },
   {
+    "pattern_id": 121,
+    "topic": "shader",
+    "platforms": [
+      "deck"
+    ],
+    "card": "Shader pre-cache missing: first launch stutters until cache builds.",
+    "source_url": "",
+    "source_license": "bonsAI-maintainer"
+  },
+  {
     "pattern_id": 122,
     "topic": "crash",
     "platforms": [
       "deck"
     ],
-    "card": "Crash to desktop: check ~/.steam/steam/logs and compatdata.",
+    "card": "On the Deck a crash drops you back to the game library, not to a desktop -- there is no desktop to check.",
     "source_url": "",
     "source_license": "bonsAI-maintainer"
   },
@@ -1237,19 +1236,340 @@
     "pattern_id": 123,
     "topic": "crash",
     "platforms": [
-      "deck"
+      "deck",
+      "linux"
     ],
-    "card": "Kernel panic rare on Deck: note SteamOS version and last game.",
+    "card": "Disable Steam overlay and third-party overlays when crashes happen at launch.",
     "source_url": "",
     "source_license": "bonsAI-maintainer"
   },
   {
     "pattern_id": 124,
-    "topic": "shader",
+    "topic": "crash",
     "platforms": [
       "deck"
     ],
-    "card": "Shader pre-cache missing: first launch stutters until cache builds.",
+    "card": "Try forcing a different Proton version, or Proton Experimental, from the game's Properties > Compatibility tab.",
+    "source_url": "",
+    "source_license": "bonsAI-maintainer"
+  },
+  {
+    "pattern_id": 125,
+    "topic": "crash",
+    "platforms": [
+      "deck"
+    ],
+    "card": "Clear the shader cache under ~/.steam/steam/steamapps/shadercache/<appid> and let it rebuild.",
+    "source_url": "",
+    "source_license": "bonsAI-maintainer"
+  },
+  {
+    "pattern_id": 126,
+    "topic": "crash",
+    "platforms": [
+      "deck"
+    ],
+    "card": "Verify the game's files from the Steam library; a broken download is a common crash cause.",
+    "source_url": "",
+    "source_license": "bonsAI-maintainer"
+  },
+  {
+    "pattern_id": 127,
+    "topic": "crash",
+    "platforms": [
+      "deck"
+    ],
+    "card": "Check free storage space -- a nearly full drive can crash a game at launch or while saving.",
+    "source_url": "",
+    "source_license": "bonsAI-maintainer"
+  },
+  {
+    "pattern_id": 128,
+    "topic": "crash",
+    "platforms": [
+      "deck"
+    ],
+    "card": "Update both the game and SteamOS before digging further; a version mismatch is a frequent cause.",
+    "source_url": "",
+    "source_license": "bonsAI-maintainer"
+  },
+  {
+    "pattern_id": 129,
+    "topic": "crash",
+    "platforms": [
+      "deck"
+    ],
+    "card": "A real kernel panic (not just a game crash) is rare on Deck -- note the SteamOS version and last game if it happens.",
+    "source_url": "",
+    "source_license": "bonsAI-maintainer"
+  },
+  {
+    "pattern_id": 130,
+    "topic": "crash",
+    "platforms": [
+      "deck"
+    ],
+    "card": "If only one game crashes and everything else runs fine, the game is the more likely cause.",
+    "source_url": "",
+    "source_license": "bonsAI-maintainer"
+  },
+  {
+    "pattern_id": 131,
+    "topic": "performance",
+    "platforms": [
+      "deck"
+    ],
+    "card": "TDP cap in QAM affects CPU/GPU together; lowering reduces heat.",
+    "source_url": "",
+    "source_license": "bonsAI-maintainer"
+  },
+  {
+    "pattern_id": 132,
+    "topic": "performance",
+    "platforms": [
+      "deck"
+    ],
+    "card": "30 FPS cap can stabilize frame pacing vs uncapped stutter.",
+    "source_url": "",
+    "source_license": "bonsAI-maintainer"
+  },
+  {
+    "pattern_id": 133,
+    "topic": "performance",
+    "platforms": [
+      "deck"
+    ],
+    "card": "If the game stutters, lower the resolution or turn on FSR before changing anything else.",
+    "source_url": "",
+    "source_license": "bonsAI-maintainer"
+  },
+  {
+    "pattern_id": 134,
+    "topic": "performance",
+    "platforms": [
+      "deck"
+    ],
+    "card": "Cap the frame rate to what the game can hold steady -- a lower steady rate beats an uneven higher one.",
+    "source_url": "",
+    "source_license": "bonsAI-maintainer"
+  },
+  {
+    "pattern_id": 135,
+    "topic": "performance",
+    "platforms": [
+      "deck"
+    ],
+    "card": "Lower the TDP limit in Quick Settings if the Deck feels hot or the fan is loud.",
+    "source_url": "",
+    "source_license": "bonsAI-maintainer"
+  },
+  {
+    "pattern_id": 136,
+    "topic": "performance",
+    "platforms": [
+      "deck"
+    ],
+    "card": "Plug in the charger during demanding games; the Deck slows itself down on low battery.",
+    "source_url": "",
+    "source_license": "bonsAI-maintainer"
+  },
+  {
+    "pattern_id": 137,
+    "topic": "performance",
+    "platforms": [
+      "deck"
+    ],
+    "card": "Turn off motion blur and other post-processing effects; some games run noticeably smoother without them.",
+    "source_url": "",
+    "source_license": "bonsAI-maintainer"
+  },
+  {
+    "pattern_id": 138,
+    "topic": "performance",
+    "platforms": [
+      "deck"
+    ],
+    "card": "Verify the game's files if performance suddenly got worse right after an update.",
+    "source_url": "",
+    "source_license": "bonsAI-maintainer"
+  },
+  {
+    "pattern_id": 139,
+    "topic": "performance",
+    "platforms": [
+      "deck"
+    ],
+    "card": "Give the game a minute after launch -- shaders compiling for the first time cause stutter that goes away.",
+    "source_url": "",
+    "source_license": "bonsAI-maintainer"
+  },
+  {
+    "pattern_id": 140,
+    "topic": "performance",
+    "platforms": [
+      "deck"
+    ],
+    "card": "Close other apps and background downloads before a demanding game to free up memory.",
+    "source_url": "",
+    "source_license": "bonsAI-maintainer"
+  },
+  {
+    "pattern_id": 141,
+    "topic": "audio",
+    "platforms": [
+      "deck"
+    ],
+    "card": "No audio after suspend: toggle volume, switch output in Quick Settings.",
+    "source_url": "",
+    "source_license": "bonsAI-maintainer"
+  },
+  {
+    "pattern_id": 142,
+    "topic": "audio",
+    "platforms": [
+      "deck"
+    ],
+    "card": "Check the output device in Quick Settings -- the Deck can switch to a disconnected Bluetooth device.",
+    "source_url": "",
+    "source_license": "bonsAI-maintainer"
+  },
+  {
+    "pattern_id": 143,
+    "topic": "audio",
+    "platforms": [
+      "deck"
+    ],
+    "card": "Re-pair Bluetooth headphones if the audio crackles or cuts in and out.",
+    "source_url": "",
+    "source_license": "bonsAI-maintainer"
+  },
+  {
+    "pattern_id": 144,
+    "topic": "audio",
+    "platforms": [
+      "deck"
+    ],
+    "card": "Use a wired connection for rhythm or competitive games; Bluetooth audio adds a small delay.",
+    "source_url": "",
+    "source_license": "bonsAI-maintainer"
+  },
+  {
+    "pattern_id": 145,
+    "topic": "audio",
+    "platforms": [
+      "deck"
+    ],
+    "card": "If there is no sound at all, check the in-game audio settings too, not just the Deck's.",
+    "source_url": "",
+    "source_license": "bonsAI-maintainer"
+  },
+  {
+    "pattern_id": 146,
+    "topic": "audio",
+    "platforms": [
+      "deck"
+    ],
+    "card": "Restart the game if sound stops mid-session; it is usually the game's audio, not the hardware.",
+    "source_url": "",
+    "source_license": "bonsAI-maintainer"
+  },
+  {
+    "pattern_id": 147,
+    "topic": "audio",
+    "platforms": [
+      "deck"
+    ],
+    "card": "Try a different USB-C dock or cable if audio through a dock cuts out or hums.",
+    "source_url": "",
+    "source_license": "bonsAI-maintainer"
+  },
+  {
+    "pattern_id": 148,
+    "topic": "audio",
+    "platforms": [
+      "deck"
+    ],
+    "card": "Update the game if audio broke right after a patch; a fix is usually already out.",
+    "source_url": "",
+    "source_license": "bonsAI-maintainer"
+  },
+  {
+    "pattern_id": 149,
+    "topic": "display",
+    "platforms": [
+      "deck"
+    ],
+    "card": "External monitor blank: try HDMI direct, 1080p60, disable overscan.",
+    "source_url": "",
+    "source_license": "bonsAI-maintainer"
+  },
+  {
+    "pattern_id": 150,
+    "topic": "display",
+    "platforms": [
+      "deck"
+    ],
+    "card": "If the screen looks torn while moving the camera, turn on V-Sync in the game's display settings.",
+    "source_url": "",
+    "source_license": "bonsAI-maintainer"
+  },
+  {
+    "pattern_id": 151,
+    "topic": "display",
+    "platforms": [
+      "deck"
+    ],
+    "card": "Set an external display to 1080p60 first -- higher settings can show a blank screen until confirmed working.",
+    "source_url": "",
+    "source_license": "bonsAI-maintainer"
+  },
+  {
+    "pattern_id": 152,
+    "topic": "display",
+    "platforms": [
+      "deck"
+    ],
+    "card": "Use a direct HDMI cable instead of an adapter chain if an external monitor shows nothing.",
+    "source_url": "",
+    "source_license": "bonsAI-maintainer"
+  },
+  {
+    "pattern_id": 153,
+    "topic": "display",
+    "platforms": [
+      "deck"
+    ],
+    "card": "Lower the in-game resolution if the picture looks blurry on the built-in screen.",
+    "source_url": "",
+    "source_license": "bonsAI-maintainer"
+  },
+  {
+    "pattern_id": 154,
+    "topic": "display",
+    "platforms": [
+      "deck"
+    ],
+    "card": "Turn off HDR in the game if colors look washed out or too dark on the built-in screen.",
+    "source_url": "",
+    "source_license": "bonsAI-maintainer"
+  },
+  {
+    "pattern_id": 155,
+    "topic": "display",
+    "platforms": [
+      "deck"
+    ],
+    "card": "If the picture stutters rather than tears, that is a performance problem, not a display one.",
+    "source_url": "",
+    "source_license": "bonsAI-maintainer"
+  },
+  {
+    "pattern_id": 156,
+    "topic": "display",
+    "platforms": [
+      "deck"
+    ],
+    "card": "Restart the game after changing display settings; some games only apply them on the next launch.",
     "source_url": "",
     "source_license": "bonsAI-maintainer"
   }
