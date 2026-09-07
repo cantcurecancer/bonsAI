@@ -3449,6 +3449,39 @@
       "source_license": "CC-BY-SA-4.0",
       "source_version": null,
       "crawled_at": "2026-09-07"
+    },
+    {
+      "section_id": 301,
+      "game_id": 17,
+      "section_type": "mechanic",
+      "name": "The first keycard in Staging Area",
+      "card": "Doom 64's opening level, Staging Area, hides its first keycard behind a timed switch. Take the elevator up from the starting courtyard and expect enemies to attack from several sides at once on higher skill levels. A switch a short way further on opens a locked door for a limited time, and you need to move quickly to reach it before it shuts — on the easier skill levels the blue key sits out in the open beside that same switch, while on harder settings a berserk pack takes its place there instead. Once you have the blue key, backtrack to the blue door to keep moving through the level. Losing track of which door needs which key is the main way new players get stuck this early, so pick up every key colour you see even before you have found its matching door.",
+      "source_url": "https://doomwiki.org/wiki/MAP01:_Staging_Area_(Doom_64)",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-07"
+    },
+    {
+      "section_id": 302,
+      "game_id": 17,
+      "section_type": "mechanic",
+      "name": "How the coloured keycards work",
+      "card": "Doom 64 uses the same coloured-key system as the rest of the series: a locked door will not open until you are carrying a keycard or skull key of the matching colour, and once picked up a key opens every door of that colour on the level, not just one. Keys are lost the moment you leave a level, so there is no point carrying one forward. Doom 64 goes a step further than the original games: a locked line does not have to be a door at all, it can be any switch or tripwire, and trying to use one without the right key makes your marine grunt while the matching key icon on the status bar flashes so you know exactly which colour you are missing. That flash is the fastest way to work out which key to go back for when a level feels like it has stopped progressing.",
+      "source_url": "https://doomwiki.org/wiki/Key",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-07"
+    },
+    {
+      "section_id": 303,
+      "game_id": 17,
+      "section_type": "mechanic",
+      "name": "Finding your way through the dark, maze-like levels",
+      "card": "Doom 64 is deliberately darker than the games before it, with much of its lighting kept low to build atmosphere, and the North American release ships with its brightness setting at the lowest point on the scale — turning it up in the options menu is the single biggest fix for corridors that look like an unbroken black maze. Beyond that, the layouts reward backtracking rather than a straight line: locked doors and dead ends are normal, and a switch you cannot explain yet usually opens something back the way you came. Listen for the sound of a distant door or switch firing when you press one, since it tells you something changed even if you cannot see where. If a corridor loops back on itself, that is the level working as intended, not a wrong turn — note any unopened coloured door you pass and keep exploring until you find its key.",
+      "source_url": "https://doomwiki.org/wiki/Doom_64",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-07"
     }
   ],
   "genre_patterns": [
