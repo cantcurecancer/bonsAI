@@ -71,7 +71,50 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--pc-ip", default="127.0.0.1")
     p.add_argument("--label", default="", help="Free-text label for the run, printed and stored.")
     p.add_argument("--json", default="", help="Write the per-row detail to this path.")
+    p.add_argument(
+        "--compare", default="",
+        help="A JSON file from an earlier run. Prints the row-level diff, which is the part that "
+             "actually decides whether a floor is worth keeping -- the summary buckets cannot show "
+             "a bad attachment removed from a row that records no expected answer.",
+    )
     return p.parse_args()
+
+
+def print_comparison(before_path: str, after_rows: list[dict]) -> None:
+    """Row-level before/after. The buckets hide the wins; this does not."""
+    with open(before_path, encoding="utf-8") as fh:
+        before_doc = json.load(fh)
+    before = {r["id"]: r for r in before_doc.get("rows", before_doc)}
+    after = {r["id"]: r for r in after_rows}
+
+    stopped: list[dict] = []
+    started: list[dict] = []
+    lost_right: list[dict] = []
+    gained_right: list[dict] = []
+    for rid, a in after.items():
+        b = before.get(rid)
+        if b is None or b["attached"] == a["attached"]:
+            continue
+        if b["attached"] and not a["attached"]:
+            (lost_right if b["verdict"] == "right" else stopped).append(
+                {"id": rid, "query": a["query"], "was": b["attached"], "wanted": b.get("expect_section") or b.get("expect_topic")}
+            )
+        elif a["attached"] and not b["attached"]:
+            (gained_right if a["verdict"] == "right" else started).append(
+                {"id": rid, "query": a["query"], "now": a["attached"]}
+            )
+
+    print()
+    print("=== compared against %s ===" % before_path)
+    print("  bad attachments removed (this is the win) : %d" % len(stopped))
+    print("  RIGHT answers lost (this is the cost)     : %d" % len(lost_right))
+    print("  right answers gained                      : %d" % len(gained_right))
+    print("  new attachments that are not right        : %d" % len(started))
+    for label, rows in (("REMOVED", stopped), ("LOST A RIGHT ANSWER", lost_right),
+                        ("NEWLY ATTACHED", started)):
+        for r in rows:
+            print("    [%s] %-46s was/now: %s" % (
+                label, r["query"][:46], ", ".join(r.get("was") or r.get("now") or []) or "-"))
 
 
 def attached(settings: dict, question: str, *, mode: str, app_id: str, app_name: str,
@@ -174,6 +217,43 @@ def main() -> int:
             "blind": str(row.get("id", "")).startswith("V2-W2-SYM-"),
         })
 
+    # The 175 held-back STRATEGY rows. These are what judge a floor on the note path, and they
+    # are the reason this script exists in the form it does: on 2026-09-07 the note floor looked
+    # like a net loss when read off the right/wrong/nothing buckets alone (-1 right, no change in
+    # wrong), and was very nearly reverted. The row-level diff showed the opposite -- it had
+    # removed six confident non-answers and cost one right note. Six of those rows record no
+    # expected note, so removing a bad attachment from them moves NO bucket at all. Read
+    # `stopped_attaching` below, not just the buckets.
+    holdout_notes = [
+        q for q in fx["queries"]
+        if (q.get("split") or default_split) == "holdout" and q.get("domain") == "strategy"
+    ]
+    n_right = n_wrong = n_nothing = n_unscored = 0
+    for row in holdout_notes:
+        aid = str(row.get("app_id") or "")
+        names, _ = attached(
+            settings, row["query"], mode="strategy",
+            app_id=aid, app_name="", pc_ip=args.pc_ip,
+        )
+        want = str(row.get("expect_section") or "").strip()
+        if not want:
+            verdict = "unscored-attached" if names else "unscored-nothing"
+            n_unscored += 1
+        elif not names:
+            verdict = "nothing"
+            n_nothing += 1
+        elif any(want.lower() == n.lower() for n in names):
+            verdict = "right"
+            n_right += 1
+        else:
+            verdict = "wrong"
+            n_wrong += 1
+        detail.append({
+            "id": row["id"], "kind": "holdout-note", "query": row["query"],
+            "expect_section": want or None, "attached": names, "verdict": verdict,
+            "blind": False,
+        })
+
     junk_attached = 0
     for phrase in JUNK:
         names, domain = attached(settings, phrase, mode="speed", app_id="", app_name="",
@@ -227,6 +307,17 @@ def main() -> int:
     for d in detail:
         if d["kind"] == "device-note":
             print("    %-40s -> %s" % (d["query"][:40], ", ".join(d["attached"]) or "(nothing)"))
+
+    print()
+    print("Held-back strategy rows (the note path)")
+    print("  rows                       : %d" % len(holdout_notes))
+    print("    right note attached      : %d" % n_right)
+    print("    wrong note attached      : %d" % n_wrong)
+    print("    nothing attached         : %d" % n_nothing)
+    print("    no expected note         : %d  <- a bad attachment removed here moves NO bucket" % n_unscored)
+
+    if args.compare:
+        print_comparison(args.compare, detail)
 
     if args.json:
         os.makedirs(os.path.dirname(os.path.abspath(args.json)) or ".", exist_ok=True)
