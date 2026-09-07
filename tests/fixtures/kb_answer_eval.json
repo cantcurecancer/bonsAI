@@ -7,7 +7,8 @@
   "expect_branches true on Strategy first turns only. Speed and Expert never get a menu.",
   "app_id \"\" with app_name set mimics an EmuDeck shortcut; retrieval resolves the title from the name.",
   "expect_attached false marks a control case where nothing should attach at all.",
-  "Calibration edits after a run are allowed for must_mention synonyms only, and are dated in the case note. Never edit a case to make a failing check pass for any other reason."
+  "Calibration edits after a run are allowed for must_mention synonyms only, and are dated in the case note. Never edit a case to make a failing check pass for any other reason.",
+  "must_not_say is now a list of claim groups (D86/D88): each inner list is one wrong claim, written as alternative phrasings, matched the same tolerant way as must_mention, and a hit only counts when no negation word (no, not, never, isn't, no longer, without) sits within three words before the matched words. A flat list of strings (the old shape) still loads, as one implicit claim group, for one wave."
  ],
  "cases": [
   {
@@ -65,9 +66,11 @@
     ]
    ],
    "must_not_say": [
-    "kill one first",
-    "focus one first",
-    "burn one down first"
+    [
+     "kill one first",
+     "focus one first",
+     "burn one down first"
+    ]
    ],
    "expect_fence": false,
    "expect_branches": true,
@@ -409,9 +412,11 @@
     ]
    ],
    "must_not_say": [
-    "slows time",
-    "slow time",
-    "bullet time"
+    [
+     "slows time",
+     "slow time",
+     "bullet time"
+    ]
    ],
    "expect_fence": false,
    "expect_branches": false,
@@ -583,8 +588,10 @@
     ]
    ],
    "must_not_say": [
-    "training perk",
-    "power armor training"
+    [
+     "training perk",
+     "power armor training"
+    ]
    ],
    "expect_fence": false,
    "expect_branches": false,
@@ -991,9 +998,11 @@
     ]
    ],
    "must_not_say": [
-    "shoot the legs",
-    "aim for the legs",
-    "target its legs"
+    [
+     "shoot the legs",
+     "aim for the legs",
+     "target its legs"
+    ]
    ],
    "expect_fence": false,
    "expect_branches": true,
@@ -1025,9 +1034,11 @@
     ]
    ],
    "must_not_say": [
-    "the whole game has new levels",
-    "every chapter was expanded",
-    "all-new content throughout"
+    [
+     "the whole game has new levels",
+     "every chapter was expanded",
+     "all-new content throughout"
+    ]
    ],
    "expect_fence": false,
    "expect_branches": true,
@@ -1058,9 +1069,11 @@
     ]
    ],
    "must_not_say": [
-    "back away from the shockwave",
-    "run from the wave",
-    "back off when he slams"
+    [
+     "back away from the shockwave",
+     "run from the wave",
+     "back off when he slams"
+    ]
    ],
    "expect_fence": false,
    "expect_branches": true,
@@ -1091,9 +1104,11 @@
     ]
    ],
    "must_not_say": [
-    "you start with a full map",
-    "the map is given at the start",
-    "no need to buy a map"
+    [
+     "you start with a full map",
+     "the map is given at the start",
+     "no need to buy a map"
+    ]
    ],
    "expect_fence": false,
    "expect_branches": true,
@@ -1124,10 +1139,12 @@
     ]
    ],
    "must_not_say": [
-    "rush him",
-    "get in close",
-    "close the distance",
-    "stand right next to him"
+    [
+     "rush him",
+     "get in close",
+     "close the distance",
+     "stand right next to him"
+    ]
    ],
    "expect_fence": false,
    "expect_branches": true,
@@ -1155,9 +1172,11 @@
     ]
    ],
    "must_not_say": [
-    "reload your weapons",
-    "stand still and reload",
-    "take cover and reload"
+    [
+     "reload your weapons",
+     "stand still and reload",
+     "take cover and reload"
+    ]
    ],
    "expect_fence": false,
    "expect_branches": true,
@@ -1187,9 +1206,11 @@
     ]
    ],
    "must_not_say": [
-    "skip the keys",
-    "you don't need the keys",
-    "ignore the demon keys"
+    [
+     "skip the keys",
+     "you don't need the keys",
+     "ignore the demon keys"
+    ]
    ],
    "expect_fence": false,
    "expect_branches": true,
@@ -1219,9 +1240,11 @@
     ]
    ],
    "must_not_say": [
-    "it's just a port",
-    "it's a remaster of Doom II",
-    "the same levels as Doom II"
+    [
+     "it's just a port",
+     "it's a remaster of Doom II",
+     "the same levels as Doom II"
+    ]
    ],
    "expect_fence": false,
    "expect_branches": true,
@@ -1250,8 +1273,10 @@
     ]
    ],
    "must_not_say": [
-    "armor protects you from melee",
-    "armor blocks melee damage"
+    [
+     "armor protects you from melee",
+     "armor blocks melee damage"
+    ]
    ],
    "expect_fence": false,
    "expect_branches": true,
@@ -1332,8 +1357,10 @@
     ]
    ],
    "must_not_say": [
-    "there are garages",
-    "you can store cars in a garage"
+    [
+     "there are garages",
+     "you can store cars in a garage"
+    ]
    ],
    "expect_fence": false,
    "expect_branches": true,
@@ -1390,9 +1417,11 @@
     ]
    ],
    "must_not_say": [
-    "skill checks are random",
-    "there's a dice roll",
-    "chance-based"
+    [
+     "skill checks are random",
+     "there's a dice roll",
+     "chance-based"
+    ]
    ],
    "expect_fence": false,
    "expect_branches": true,
@@ -1525,9 +1554,11 @@
     ]
    ],
    "must_not_say": [
-    "guard her bite",
-    "block her bite attack",
-    "her bite can be blocked"
+    [
+     "guard her bite",
+     "block her bite attack",
+     "her bite can be blocked"
+    ]
    ],
    "expect_fence": false,
    "expect_branches": true,
@@ -1581,8 +1612,10 @@
     ]
    ],
    "must_not_say": [
-    "kill the larvae first",
-    "focus the babies"
+    [
+     "kill the larvae first",
+     "focus the babies"
+    ]
    ],
    "expect_fence": false,
    "expect_branches": true,
@@ -1609,8 +1642,10 @@
     ]
    ],
    "must_not_say": [
-    "there's a day limit",
-    "you have a limited number of days"
+    [
+     "there's a day limit",
+     "you have a limited number of days"
+    ]
    ],
    "expect_fence": false,
    "expect_branches": true,
@@ -1666,8 +1701,10 @@
     ]
    ],
    "must_not_say": [
-    "running out of health",
-    "a health bar drains to zero"
+    [
+     "running out of health",
+     "a health bar drains to zero"
+    ]
    ],
    "expect_fence": false,
    "expect_branches": true,

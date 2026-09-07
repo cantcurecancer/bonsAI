@@ -269,6 +269,65 @@ class EvalKbAnswersHarnessTests(unittest.TestCase):
         )
         self.assertFalse(self.mod.fact_group_hit(reply, ["kill the mother"]))
 
+    # --- plan 48 lane A, commit 2: negation-aware contradiction check (D86/D88) ----------------
+    #
+    # The old check only caught a contradiction that used one of a fixed list of exact sentences.
+    # The Pikmin 2 reply recorded in docs/archive/research/kb-answer-eval-2026-09-07-after-wave2.md
+    # for case A-PIK2-02 said "yes, there is still a day limit" -- a plain contradiction of the
+    # note, which the old check missed because the fixture's sentence was "there's a day limit"
+    # (a different contraction) and "you have a limited number of days" (different words again).
+
+    def test_claim_group_hit_catches_the_pikmin_reply_that_kept_the_day_limit(self):
+        reply = (
+            "Regarding the day limit, yes, there is still a day limit. The day ends at sunset, "
+            "and any Pikmin that is not with a captain or back at the Onion will be eaten when "
+            "the night creatures wake up. You need to watch the sun and call everyone in early."
+        )
+        self.assertTrue(self.mod.claim_group_hit(reply, ["there is a day limit"]))
+
+    def test_claim_group_hit_does_not_fire_when_the_reply_denies_the_claim(self):
+        reply = "There is no day limit in Pikmin 2 -- take as long as you need."
+        self.assertFalse(self.mod.claim_group_hit(reply, ["there is a day limit"]))
+
+    def test_claim_group_hit_recognises_no_longer_as_a_negation(self):
+        reply = "There is no longer a day limit in this game."
+        self.assertFalse(self.mod.claim_group_hit(reply, ["there is a day limit"]))
+
+    def test_claim_group_hit_known_miss_not_only_is_there_a_day_limit(self):
+        # Named in plan 48 (docs/planning/48-kb-wave-three-session.md, section 10) as a phrasing a
+        # negation-aware check on a fixed lookback can be fooled by: "not" sits just before "there"
+        # here, so it reads as a negation of the claim even though "not only" does not actually
+        # deny that a day limit exists -- the opposite of what the sentence means. Documented as a
+        # known miss rather than chased; the judge column (commit 3) is the second opinion for
+        # exactly this kind of case.
+        reply = "Not only is there a day limit."
+        self.assertFalse(self.mod.claim_group_hit(reply, ["there is a day limit"]))
+
+    def test_claim_group_hit_any_alternative_in_the_group_counts(self):
+        self.assertTrue(
+            self.mod.claim_group_hit(
+                "focus one first and ignore the other twin", ["kill one first", "focus one first"]
+            )
+        )
+
+    # --- plan 48 lane A, commit 2: must_not_say fixture shape --------------------------------
+
+    def test_parse_must_not_say_wraps_the_old_flat_shape_as_one_claim_group(self):
+        self.assertEqual(
+            self.mod._parse_must_not_say(["training perk", "power armor training"]),
+            [["training perk", "power armor training"]],
+        )
+
+    def test_parse_must_not_say_keeps_the_new_nested_shape(self):
+        self.assertEqual(
+            self.mod._parse_must_not_say([["training perk", "power armor training"], ["a second claim"]]),
+            [["training perk", "power armor training"], ["a second claim"]],
+        )
+
+    def test_parse_must_not_say_empty_is_empty(self):
+        self.assertEqual(self.mod._parse_must_not_say([]), [])
+        self.assertEqual(self.mod._parse_must_not_say(None), [])
+
 
 if __name__ == "__main__":
     unittest.main()

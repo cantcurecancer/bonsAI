@@ -289,11 +289,25 @@ class Case:
     question: str
     expect_card: Optional[str]
     must_mention: list[list[str]]
-    must_not_say: list[str]
+    must_not_say: list[list[str]]  # claim groups: each inner list is one wrong claim's phrasings
     expect_fence: Optional[bool]
     expect_branches: Optional[bool]
     expect_attached: Optional[bool]
     note: str
+
+
+def _parse_must_not_say(raw: Any) -> list[list[str]]:
+    """The fixture's ``must_not_say`` accepts two shapes, so a partly-migrated row still loads:
+    the old shape, a flat list of strings naming one implicit claim (every string an alternative
+    phrasing of the same wrong claim); and the new shape, a list of claim groups, each an explicit
+    list of alternative phrasings for one wrong claim. A row can have more than one distinct wrong
+    claim under the new shape; the fixture in this repo does not, today."""
+    items = list(raw or [])
+    if not items:
+        return []
+    if all(isinstance(x, list) for x in items):
+        return [[str(s) for s in group] for group in items]
+    return [[str(s) for s in items]]
 
 
 def load_fixture(path: Path, only: Optional[set[str]]) -> list[Case]:
@@ -312,7 +326,7 @@ def load_fixture(path: Path, only: Optional[set[str]]) -> list[Case]:
                 question=str(row.get("question") or ""),
                 expect_card=row.get("expect_card") or None,
                 must_mention=[[str(a) for a in group] for group in (row.get("must_mention") or [])],
-                must_not_say=[str(s) for s in (row.get("must_not_say") or [])],
+                must_not_say=_parse_must_not_say(row.get("must_not_say")),
                 expect_fence=row.get("expect_fence"),
                 expect_branches=row.get("expect_branches"),
                 expect_attached=row.get("expect_attached"),
@@ -521,7 +535,6 @@ async def run_sample(
 
     reply = str(result.get("response") or "")
     success = bool(result.get("success"))
-    norm_reply = _norm(reply)
 
     kb_attached = False
     cards: list[str] = []
@@ -540,7 +553,7 @@ async def run_sample(
 
     mention_hits = [fact_group_hit(reply, group) for group in case.must_mention]
     mention_ok = all(mention_hits) if case.must_mention else None
-    notsay_hits = [s for s in case.must_not_say if _norm(s) in norm_reply]
+    notsay_hits = [" / ".join(group) for group in case.must_not_say if claim_group_hit(reply, group)]
     notsay_ok = (not notsay_hits) if case.must_not_say else None
 
     fence_present = bool(SPOILER_FENCE_RE.search(reply))
