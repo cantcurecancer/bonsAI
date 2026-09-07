@@ -490,6 +490,20 @@ is fine, the one-second target is retired (D84). Anything new goes here, one lin
   rule no longer holding — are not covered by that rule and still need answering if this is ever revisited. Weights
   stay even for now. (D68, D82) [Detail](roadmap-details.md#the-shipping-retrieval-arm-loses-to-the-vector-half-alone-on-rows-nobody-tuned-against).
 
+- ★★★★ `[KB]` **The search test has been measuring a library from 31 August that is missing half the
+  notes** — **OPEN, found 2026-09-07.** The test keeps its own copy of the library and **reuses whatever
+  copy it finds** unless someone passes a rebuild flag by hand. The copy sitting on this machine was built
+  on **31 August: 161 notes and 13 games**, against 293 notes and 25 games today. Nobody passed the flag, so
+  every run since has quietly measured the old library.
+  **What that means, and it is worse than it sounds.** All **72** of the questions about the twelve games
+  added this month score zero in that test and always have — the notes they are looking for are not in the
+  copy being searched, so the test hands back notes from unrelated games. Asked *"black mesa where do i go
+  first"* it returned a Left 4 Dead 2 note and a Zelda one. The wave-one search conclusions about the new
+  games, and the starting measurement taken tonight, are void for the same reason.
+  **The weight decision that is currently on hold was measured with this same test**, so its numbers need
+  re-checking before anything is decided on them. Fix: the test must rebuild its copy, or refuse to run when
+  the copy is older than the notes file. Both ends of tonight's measurement have been re-run with a forced
+  rebuild.
 - ★★★ `[KB]` **An answer said the opposite of its own note and the check waved it through** — **OPEN,
   found 2026-09-07 while taking this wave's starting measurements.** Asked what the goal of Pikmin 2 is and
   whether there is still a day limit, the reply said *"there is still a day limit"*. The note it was given
