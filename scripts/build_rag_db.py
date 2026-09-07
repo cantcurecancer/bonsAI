@@ -565,18 +565,26 @@ def _populate_vectors_for_table(
     ollama_base: str = DEFAULT_BUILD_OLLAMA_BASE,
     model: str = DEFAULT_EMBEDDING_MODEL,
     timeout_s: float = 120.0,
-) -> int:
+) -> tuple[int, int]:
+    """Embed the rows ``select_sql`` names. Returns ``(populated, total)``.
+
+    ``populated`` can fall short of ``total`` three ways, and the caller (``build_corpus``)
+    decides whether that shortfall is acceptable: the embedding model is not installed
+    (populated stays 0), the run stops partway through (host/network failure after at least
+    one batch landed), or one row's vector comes back the wrong size and is skipped. ``total``
+    is read before any of those checks so a caller can always compute how many are missing.
+    """
+    rows = conn.execute(select_sql).fetchall()
+    total = len(rows)
+    if not rows:
+        return 0, 0
+
     tags = _list_installed_ollama_tags(ollama_base, timeout_seconds=5.0)
     model_l = model.lower()
     if not any(t.lower() == model_l or t.lower().startswith(f"{model_l}:") for t in tags):
         print(f"Skipping {table} embeddings: {model} not installed on {ollama_base}", file=sys.stderr)
-        return 0
+        return 0, total
 
-    rows = conn.execute(select_sql).fetchall()
-    if not rows:
-        return 0
-
-    total = len(rows)
     populated = 0
     cleared = False
     print(f"Embedding {total} rows for {table} (batch {EMBED_BATCH_SIZE})...", file=sys.stderr)
@@ -597,14 +605,14 @@ def _populate_vectors_for_table(
             if not cleared:
                 # Nothing has been deleted yet, so the corpus keeps whatever vectors it had.
                 print(f"Skipping {table} embeddings: {exc}", file=sys.stderr)
-                return 0
+                return 0, total
             print(
                 f"WARNING: {table} embeddings stopped after {populated}/{total} rows: {exc}\n"
                 f"         The table is now partially populated. Re-run the build.",
                 file=sys.stderr,
             )
             conn.commit()
-            return populated
+            return populated, total
 
         # Clear only once the host has actually answered. The previous code deleted the whole
         # table before the single embed request, so any failure wiped existing vectors and
@@ -629,7 +637,7 @@ def _populate_vectors_for_table(
         conn.commit()
         print(f"  {table}: {min(start + EMBED_BATCH_SIZE, total)}/{total}", file=sys.stderr)
 
-    return populated
+    return populated, total
 
 
 def populate_section_vectors(
@@ -638,9 +646,9 @@ def populate_section_vectors(
     ollama_base: str = DEFAULT_BUILD_OLLAMA_BASE,
     model: str = DEFAULT_EMBEDDING_MODEL,
     timeout_s: float = 120.0,
-) -> tuple[bool, int]:
-    """Embed section cards when local Ollama has ``model``; returns (populated, count)."""
-    count = _populate_vectors_for_table(
+) -> tuple[int, int]:
+    """Embed section cards when local Ollama has ``model``; returns (populated, total)."""
+    return _populate_vectors_for_table(
         conn,
         table="section_vectors",
         id_column="section_id",
@@ -649,7 +657,6 @@ def populate_section_vectors(
         model=model,
         timeout_s=timeout_s,
     )
-    return count > 0, count
 
 
 def populate_compat_vectors(
@@ -658,9 +665,9 @@ def populate_compat_vectors(
     ollama_base: str = DEFAULT_BUILD_OLLAMA_BASE,
     model: str = DEFAULT_EMBEDDING_MODEL,
     timeout_s: float = 120.0,
-) -> tuple[bool, int]:
-    """Embed compat tip cards; returns (populated, count)."""
-    count = _populate_vectors_for_table(
+) -> tuple[int, int]:
+    """Embed compat tip cards; returns (populated, total)."""
+    return _populate_vectors_for_table(
         conn,
         table="compat_pattern_vectors",
         id_column="pattern_id",
@@ -669,10 +676,9 @@ def populate_compat_vectors(
         model=model,
         timeout_s=timeout_s,
     )
-    return count > 0, count
 
 
-def build_corpus(out_dir: Path, *, seed: bool) -> dict:
+def build_corpus(out_dir: Path, *, seed: bool, allow_missing_embeddings: bool = False) -> dict:
     out_dir.mkdir(parents=True, exist_ok=True)
     db_path = out_dir / CORPUS_DB_FILENAME
     if db_path.exists():
@@ -683,28 +689,54 @@ def build_corpus(out_dir: Path, *, seed: bool) -> dict:
     embeddings_populated = False
     embedding_section_count = 0
     embedding_compat_count = 0
+    section_total = 0
+    compat_total = 0
+    refusal: str | None = None
     try:
         apply_schema(conn)
         if seed:
             seed_sample_corpus(conn)
         conn.execute("INSERT INTO sections_fts(sections_fts) VALUES('rebuild')")
         conn.execute("INSERT INTO compat_patterns_fts(compat_patterns_fts) VALUES('rebuild')")
-        section_populated, embedding_section_count = populate_section_vectors(conn)
-        compat_populated, embedding_compat_count = populate_compat_vectors(conn)
-        embeddings_populated = section_populated or compat_populated
+        embedding_section_count, section_total = populate_section_vectors(conn)
+        embedding_compat_count, compat_total = populate_compat_vectors(conn)
+        embeddings_populated = embedding_section_count > 0 or embedding_compat_count > 0
         conn.commit()
-        # Generate attributions while the connection is open (ATTR-2.1). Write the file after
-        # VACUUM so a failed vacuum cannot leave a half-built ATTRIBUTIONS.md beside a missing DB.
-        attributions_text = format_attributions_markdown(conn)
-        # Ship a single self-contained file. The schema opens WAL, so without this the tail of
-        # the corpus can sit in a -wal that is not part of the release, and the Deck now opens
-        # the DB with immutable=1, which ignores a WAL outright. DELETE mode folds it back in;
-        # VACUUM then reclaims the space the build churned.
-        conn.execute("PRAGMA journal_mode=DELETE")
-        conn.isolation_level = None  # VACUUM cannot run inside sqlite3's implicit transaction
-        conn.execute("VACUUM")
+
+        section_missing = section_total - embedding_section_count
+        compat_missing = compat_total - embedding_compat_count
+        missing_count = section_missing + compat_missing
+        if missing_count > 0 and not allow_missing_embeddings:
+            # A note or tip with no meaning-search vector ships silently otherwise — see the
+            # three ways this happens in _populate_vectors_for_table's docstring. Refuse rather
+            # than warn: the maintainer decides with --allow-missing-embeddings, not a scrollback
+            # line nobody reads.
+            refusal = (
+                f"{missing_count} card(s) would ship with no meaning-search vector "
+                f"({section_missing} section(s), {compat_missing} compat tip(s)). "
+                "Install the embedding model and re-run, or pass --allow-missing-embeddings "
+                "to build anyway."
+            )
+
+        if refusal is None:
+            # Generate attributions while the connection is open (ATTR-2.1). Write the file
+            # after VACUUM so a failed vacuum cannot leave a half-built ATTRIBUTIONS.md beside
+            # a missing DB.
+            attributions_text = format_attributions_markdown(conn)
+            # Ship a single self-contained file. The schema opens WAL, so without this the tail
+            # of the corpus can sit in a -wal that is not part of the release, and the Deck now
+            # opens the DB with immutable=1, which ignores a WAL outright. DELETE mode folds it
+            # back in; VACUUM then reclaims the space the build churned.
+            conn.execute("PRAGMA journal_mode=DELETE")
+            conn.isolation_level = None  # VACUUM cannot run inside sqlite3's implicit transaction
+            conn.execute("VACUUM")
     finally:
         conn.close()
+
+    if refusal is not None:
+        if db_path.exists():
+            db_path.unlink()
+        raise SystemExit(refusal)
 
     if not attributions_text:
         raise RuntimeError("corpus build finished without generating ATTRIBUTIONS.md")
@@ -725,6 +757,12 @@ def build_corpus(out_dir: Path, *, seed: bool) -> dict:
         "embeddings_populated": embeddings_populated,
         "embedding_section_count": embedding_section_count,
         "embedding_compat_count": embedding_compat_count,
+        # Recorded either way (whether zero or not) so a corpus built with
+        # --allow-missing-embeddings is still honest about what it is missing.
+        "embedding_section_total_count": section_total,
+        "embedding_compat_total_count": compat_total,
+        "embedding_missing_count": section_total - embedding_section_count
+        + (compat_total - embedding_compat_count),
         "db_filename": CORPUS_DB_FILENAME,
         "db_sha256": db_sha,
         "compressed_filename": compressed.name,
@@ -760,8 +798,17 @@ def main() -> int:
     # Not under dist/ -- `npm run build` clears that directory and would delete the corpus.
     parser.add_argument("--out", type=Path, default=Path("build/knowledge-base"), help="Output directory")
     parser.add_argument("--seed", action="store_true", help="Include sample games/sections for dev QA")
+    parser.add_argument(
+        "--allow-missing-embeddings",
+        action="store_true",
+        help=(
+            "Finish the build even when some sections or compat tips have no meaning-search "
+            "vector (missing embedding model, an interrupted run, or a bad vector). Without "
+            "this flag the build refuses to finish and nothing is written."
+        ),
+    )
     args = parser.parse_args()
-    manifest = build_corpus(args.out, seed=args.seed)
+    manifest = build_corpus(args.out, seed=args.seed, allow_missing_embeddings=args.allow_missing_embeddings)
     print(json.dumps(manifest, indent=2))
     print(f"Wrote {args.out / CORPUS_DB_FILENAME} and manifest version {manifest['version']}")
     return 0
