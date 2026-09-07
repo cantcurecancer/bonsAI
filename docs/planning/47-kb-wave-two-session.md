@@ -731,7 +731,88 @@ The in-IDE preview can produce it — a short question seeded, then the layout r
 panel has to be opened from the IDE and cannot be started from here.** Not attempted on the device: the
 Deck belongs to the checking session in wave 5.
 
-**Section 8's row W2-R7 needs its pass line changed either way.** It reads "none reads below 100% behind
-the Copy or Retry icon", which the accepted 89% can never meet — the icons sit inside their bubbles
-because that is what was asked for. The row should ask instead that no word of text is covered and no
-stop reads worse than the corner the icon occupies.
+### Everything landed, 2026-09-07
+
+All seven lanes in, all five gates green after each: 1,023 backend tests and 1,123 frontend.
+
+| Lane | What landed | Effort it ran at |
+|---|---|---|
+| A | 13 notes for the six titles that protect their story, 11 gap questions answered | Sonnet 5, high |
+| B | 14 notes for the six that do not, 10 gap questions answered | Sonnet 5, high |
+| C | 24 problem sentences written blind | not overridden |
+| D | The routing change, everyday words, and 32 rewritten tips | high |
+| E | The stray computer text, and the panel naming a closed game | high |
+| F | The index guarantee, and the tie-break measured | Sonnet 5, high |
+| G | The "not in my notes" line | high |
+
+### The numbers, all re-measured on the library that ships
+
+**The search test had been reading a copy of the library from 31 August** — 161 notes, 13 games — because it
+reuses whatever copy it finds unless a rebuild flag is passed by hand. Nobody had passed it. Every search
+figure taken before this was found is void, including this evening's own starting one and wave one's.
+Both ends were run again with the copy rebuilt. Filed as a four-star bug.
+
+| | Before | After |
+|---|---|---|
+| Of 72 plain questions about the twelve new games, how many have a note | 43 | **64** (the other 8 are meant to have none) |
+| Right note in the top three, on questions nobody tuned against | 80 in 100 | **84 in 100** |
+| Those 72 questions finding their note in the top three | 38 | **58** |
+| Answers clean on all three runs | 55.7 in 100 | **62.3 in 100** |
+| Spoiler line appeared when it was due | 77.8 in 100 | **88.9 in 100** |
+| Plainly-worded problem sentences that reach the tips (of 24, written blind) | 6 | **8** |
+
+All 21 newly answered questions find their note in the top three; 12 find it first. Two rows of 413 got
+worse against 24 better — the one worth naming is that asking about the big spiky turtle you throw by the
+tail used to find the Bowser note third, and a new note about throwing King Bob-omb now sits above it.
+
+### Three things found while measuring, all filed
+
+1. **An answer told someone Pikmin 2 still has a day limit. Its note says the opposite.** The check that
+   exists to catch that passed it, because it looks for two fixed sentences and the model wrote neither.
+   **The "never contradicts its note — 100%" figure is not trustworthy.** Three stars.
+2. **The facts score is lower than the truth.** The check matches a phrase inside the reply, so *"keep the
+   crowd thin"* fails against *"thin the crowd"* and *"killing the mother"* against *"kill the mother"*.
+   Four of the failures were right answers. **So the four thin-game failures were never the content gap
+   they looked like** — the facts were already in the notes and in the answers. Two stars.
+3. **The stale search corpus**, above. Four stars.
+
+Neither check was fixed during the wave, on purpose, so its before and after are measured the same way.
+
+### The held symptom search: reaches further, answers worse. Stays held.
+
+Merged on top of everything that landed and measured. With nothing running it gets **all 24** of the blind
+problem sentences into the search against **8** without it, and *"thank you very much"* still attaches
+nothing. **But what comes back is wrong**: *"game wont even open"* and *"screen goes black when i open it"*
+both attach a tip about the on-screen keyboard, *"cant find my pc on the network"* one about hotel Wi-Fi.
+That is the same objection that held it before.
+
+**The cause is now known, which is the useful part.** Its meaning search runs *only when nothing else finds
+anything*, and that almost never happens — a word search over 156 tips nearly always finds something by
+shared words and wins first with a poor match. All five of those came back by word search, not by meaning.
+**What is missing is not a wider gate but a way to say "none of these tips fit."**
+
+### The tie-break: measured, and it cannot change an answer
+
+Right note first and in the top three came back **identical** to today's even split on both the tuning and
+the held-back questions. The reason is arithmetic, not luck: the rule only leans toward meaning when the
+word search finds nothing at all, and then every candidate has the same word score, so changing the weight
+stretches the gaps without reordering anything. All three protected behaviours survive because the word
+search finds something in all three. **Nothing here is worth taking.**
+
+### The release, built and waiting
+
+Corpus `2026.09.07`, schema 3. **293 notes, 156 tips, every one indexed** (`embedding_missing_count: 0`).
+2,289,664 bytes uncompressed, **1.39 MB to download**. The publish check passes and the Python suite is
+green. **Nothing has left this machine.**
+
+### Still owed
+
+- **The ring bug is not started.** The 67% reading needs the size of the stop it measured, which no evidence
+  file holds. The in-IDE preview can produce it but **the preview panel has to be opened from the IDE**.
+  Row W2-R7 is rewritten to measure rather than to check a fix.
+- **One note needs the maintainer's eye.** Lane A wrote three notes with no source, from its own memory. Two
+  are opinion. The third says Black Mesa's electrified water arcs on a cycle with a spark warning, so you
+  should move while the water is dark. **That is not verified against any page** and it is the kind of thing
+  a person would act on.
+- **The Deck sentences are written out in § 8** and await confirmation before anything is pinned.
+- **Fallout: New Vegas still is not installed on the Deck.**
