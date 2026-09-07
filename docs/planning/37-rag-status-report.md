@@ -1,4 +1,4 @@
-# 37 — The knowledge base, zoomed out (status report, 2026-09-06)
+# 37 — The knowledge base, zoomed out (status report, 2026-09-06, second pass after wave one)
 
 Written from the roadmap, the knowledge-base architecture doc, the answer-quality plan, the locked
 decisions, the last eval reports, the last three session plans and the code. Plain language on
@@ -27,10 +27,17 @@ times in ten, almost never contradicts them, and since 3 September no longer hid
 spoiler box on games with no story. The search half has been measured to the decimal for a month; the
 answer half has been measured for three days. **The largest limit on quality for a real person has been
 that the library covers too few games**, and every other game gets the model's memory plus one generic
-genre card. That limit halved on 6 September: eleven more games were written up, taking the library from
-thirteen games to twenty-five and from 161 cards to 266. Those cards are not on the Deck yet; they ship
-with the next corpus release, and their quality is unmeasured until questions are written for them by a
-session that has not read them.
+genre card. That limit halved on 6 September: **twelve** more games were written up, taking the library from
+thirteen games to twenty-five and from 161 cards to 266, and the release went out the same evening. It is
+live on both channels and installed on the maintainer's Deck.
+
+**Two things that evening turned up are worth reading before anything else in this report.** First, the
+new games are thin: of 72 questions a player might plainly ask about them, only **43 have a note that
+answers them**. Mario Kart 64 has four notes, Doom 64 five. Someone asking about those will often get
+nothing. Second, a bug had been quietly costing every long question its notes — with the character voice
+on and thinking turned up, the model was silently dropping the start of what it was sent, including the
+notes, and answering from memory while the plugin said the notes were used. That is fixed and confirmed
+on the device.
 
 ## 2. What has been built, in order
 
@@ -57,83 +64,106 @@ for QA.
 
 ## 3. The numbers today
 
-**Search.** Latest run, 161 cards, 260 labelled questions. "First" means the right card was ranked
-first; "top three" means it was among the three the model actually receives in Strategy mode.
+*(All of these were taken on 6 September on the full 266-card library, so they compare like with like.
+Older numbers in this report's history were taken on 161 cards and are not comparable.)*
+
+**Search — the blend that ships against the alternatives.** These were the starting numbers before the
+twelve new games had their questions matched to notes.
 
 | Question set | Word search | Meaning search alone | What ships (the blend) |
 |---|---|---|---|
-| Questions used to tune (168), first / top three | 62% / 80% | 69% / 89% | 66% / 89% |
-| Questions written blind (92), first / top three | 49% / 71% | **63% / 80%** | 54% / 76% |
+| Written blind (92), in the top three | 70.7% | **80.4%** | 76.1% |
 
-Read: on realistic questions the meaning search alone beats the shipping blend by about nine points
-of "right card first". You deferred acting on that on 29 August until there is more data (more games,
-more questions). The weights have not been touched.
+The ranges overlap, so on this set the four methods **cannot be told apart**. That is an open question,
+not a tie.
 
-**Answers.** The PC runs the Deck's own model over 37 questions, three times each, and checks the
-reply without a judge model.
+**Search — the weight sweep, run for the first time.** Nine balances between the word search and the
+meaning search. Only one beat today's even split on both measures at once: counting meaning twice as
+much as words.
 
-| Check | Rate after the fence fix (2 Sep) |
-|---|---|
-| Facts from the card kept | 92% |
-| Nothing the card contradicts | 89% (8 of 9 cases that have a must-not-say list) |
-| No spoiler box where none was due | 95% (was 71% before the fix) |
-| Spoiler box present on a real story question | 100% |
-| Branch menu on a Strategy first turn | 98% |
-| The expected card was attached | 100% |
+| Balance | Right note first | In the top three |
+|---|---|---|
+| Today's even split, tuning questions (168) | 65.5% | 88.7% |
+| Leaning on meaning, tuning questions (168) | **69.6%** | **89.9%** |
+| Today's even split, held-back questions (135) | 37.0% | 51.9% |
+| Leaning on meaning, held-back questions (135) | **43.0%** | **53.3%** |
 
-**The Deck, measured this week.** About 1.1 seconds to embed a question for the meaning search (the
-band when the feature shipped was 0.79–0.90, so it is about a fifth slower, cause unmeasured); 20–25
-seconds per answer with a character voice on; the model runs with a 4,096-token window and a Strategy
-prompt is about 1,500–2,000 tokens, of which only about 200 are the cards.
+It won on both sets independently. **It was still reverted** — it breaks three behaviours chosen on
+purpose, the worst being that a newly added note gets buried until its meaning index is built. Held until
+every note is guaranteed to have its index first.
 
-**The library.** 266 cards over 25 titles, after the 6 September tranche added 105 cards and twelve games.
-The mix is 128 mechanic, 46 boss, 37 item, 34 enemy, 19 area, one quest, one dungeon. 96 cards are
-maintainer-written with no source; 170 come from wikis with credit lines, across eight source sites.
-124 shared Deck tips, unchanged. The 105 new cards are in the seed but not yet in a release, so nothing
-on a Deck has them.
+**Read the held-back numbers carefully.** 37% against about 70% in August is the test getting harder, not
+the search getting worse. That set grew from 36 questions to 135 by adding blind questions about the
+twelve new games, which describe things rather than naming them. **That is the new floor.**
+
+**Answers.** The PC runs the Deck's own model over the test questions, three times each, no judge model.
+Comparing the same 37 questions before and after the prompt work:
+
+| Check | Before | After |
+|---|---|---|
+| Facts from the note kept | 92.9% | 91.9% |
+| No spoiler box where none was due | 93.3% | **97.1%** |
+| Branch menu when due | 100% | 98.2% |
+| The expected note was attached | 100% | 100% |
+| Length of the instructions sent | 6,930 characters | **5,682** |
+
+The two small falls are inside this test's own wobble of about two points; the spoiler number is a real
+four-point gain. **Across all 183 samples, not one question lost the start of its prompt** — that count
+used to be 22 of 37.
+
+Run over all 61 questions, including the 24 new-game ones, facts kept reads **71.9%**. That is the new
+games being genuinely harder, not a regression, and it is the number to beat next.
+
+**The Deck, measured 6 September.** Searching by meaning takes **1.10, 1.23 and 1.19 seconds** — on every
+question, not just the first. The maintainer has accepted that as fine and the one-second target is
+retired. A Strategy question with the voice on used to run about 2,690 tokens against a 4,096-token
+window with a 2,112-token reply budget, going over by 703 to 780. After the prompt slimming it is about
+2,296, and when it still would not fit the answer is shortened instead of the notes being lost.
+
+**The library.** 266 cards over 25 titles, 124 shared Deck tips. The mix is 128 mechanic, 46 boss, 37
+item, 34 enemy, 19 area, one quest, one dungeon. 96 cards are maintainer-written with no source; 170 come
+from wikis with credit lines, across eight source sites. **Published as `2026.09.06`, 1.27 MB, live on
+both channels and installed on the Deck.**
 
 ## 4. What is open right now
 
 **Bugs.**
 
-- ★★★ **The meaning search is about a fifth slower than when it shipped, and it is not a one-time warm-up
-  cost.** Confirmed again on the Deck 6 September at 1.10, 1.23 and 1.19 seconds, on every one of three
-  Strategy questions, not just the first. The explanation offered on 5 September — only the first question
-  after a quiet spell pays to wake the search model, later ones nearly free, measured on the PC at 1.47
-  seconds then 0.05 — does not hold on the Deck. Cause still unmeasured.
-- ★★★★ **The shipping blend loses to its meaning half on blind questions.** Deferred by you until there is
-  more data. The tool that sweeps the weights on the tuning set landed 6 September; the sweep itself has
-  not been run yet.
-- ★★ **A troubleshooting question that only describes the symptom reaches no tips.** You decided on
-  1 September to let the meaning search run over the tip sheet when no topic routed. Not built yet.
-- ★★ **The eval cannot yet prove the recall pass on many rows.** One re-count owed on the next search
-  run.
+- ★★ **Raw computer text can appear in a reply.** New, 6 September. An answer ended with a line of code-like
+  text sitting where words should be. The plugin's own log shows it recognised the block as a power
+  suggestion — it just did not remove it from what the person reads. Nobody has traced it yet.
 - ★★ **Unrelated questions still get game cards.** Accepted 27 August; not being worked.
+- ★★ **The panel keeps naming a game after it is closed.** New, 6 September. After exiting a game the line
+  under the question box still named it. A question that names its own game still works; one that does not
+  may pick up the wrong game's notes. Not proven to cause a wrong answer yet.
+
+**Settled on 6 September, no longer open.**
+
+- **Game notes thrown away on a long question** — fixed and confirmed on the device.
+- **Speed mode paying for the slow search** — confirmed fixed on the device.
+- **The meaning search being about a fifth slower** — accepted. About a second on every question is the
+  measured, accepted cost. The warm-up explanation was proven wrong for the Deck: the third question was
+  no faster than the first.
+- **The shipping blend losing to its meaning half** — measured properly at last, and held. See section 3.
+- **A symptom-only troubleshooting question reaching no tips** — built, measured, held. It does not work:
+  matching by meaning cannot connect the words a person uses for a crash to the way the crash tips are
+  written. Rewriting the tips is the real job and now has its own roadmap entry.
 
 **Owed on the Deck.**
 
-- ★ Five older checks from the August retrieval rework — the corpus format gate, the relevance floor,
-  follow-ups searching your own words, what Show details claims, and the Developer off switch. None has
-  ever been run on the device. Worth one evening with pinned test chips, or worth closing.
-- ★★★ The recall-pass check's timing half. Confirmed on the Deck 6 September: Speed no longer pays for the meaning
-  search at all (closed), and the Strategy label is right, but the meaning search itself still runs 1.1 to 1.2
-  seconds on every question — the row wants the second and third at or under one second. That is the slowdown
-  bug above.
+- ★★★★ **One question per new game on the device.** The only wave-one row still owed. Fallout: New Vegas
+  has to be installed first.
+- ★ Five older checks from the August retrieval rework, never run on the device. Worth one evening with
+  pinned test chips, or worth closing.
 - ★★★ One glossary word, tapped rather than reached with the D-pad.
-- ★★★ The download Cancel button, which cannot be checked at all: the download finishes in about a
-  second, so there is no window to press it in.
+- ★★★ The download Cancel button, which cannot be checked at all: the download finishes in about a second,
+  so there is no window to press it in.
 - ★★★ Which way a too-long chip label is cut off. Behind the preset-row work.
-- ★★★★ The eleven new games, once they are in a release. Fallout: New Vegas has to be installed first.
 
-The structured-cards check closed on 5 September when you accepted prose, so it is no longer owed.
-
-**Your calls.** All five were decided on 5 September: "starting out" cards get their own kind; the answer-first
-shape is tested on the PC and then the Deck before a decision; structured cards stay prose; the blend-weight sweep runs
-now and the weights change if it agrees; and a first tranche of new titles comes from your own Steam library. The
-library was read the same day, the wikis checked, nine titles picked, and that evening the shelf and the collections
-were confirmed on the Deck itself (plan 40 § 3 and § 6). The cards for all eleven games were written on 6 September
-(plan 40 § 7). What that tranche still needs is blind test questions from a session that has not read the cards, then
-one corpus release, then the device check.
+**Your calls.** Four were decided on 6 September: the symptom-only search is held and rewriting the tips is
+the real job; leaning the search toward meaning is held until every note is guaranteed to have its meaning
+index built; the twelve new games ship with their coverage gap known and accepted; and about a second to
+search on the Deck is fine. Nothing is waiting on you right now.
 
 ## 5. Next phases: what each buys, and what it costs
 
@@ -145,12 +175,12 @@ behind the claim where there is any.
 
 | Item (with its stars) | What it buys | Evidence | Cost | In the way |
 |---|---|---|---|---|
-| ★★ **Prompt diet** — drop the dead citation instruction, send screenshot rules only with an image, move the cards next to the question | The small model reads nine tokens of instruction for every token of knowledge; fewer rules means better rule-following and ~340 tokens back in a 4k window. Expect a few points on facts kept and a slightly faster first token | The citation instruction was obeyed once in 89 asks and the UI cannot render it | 1 day, measured before and after | The prompt text is owned by the bug session's lane right now |
+| ★★ **Prompt diet** — **SHIPPED 6 September** | The small model reads nine tokens of instruction for every token of knowledge; fewer rules means better rule-following and ~340 tokens back in a 4k window. Expect a few points on facts kept and a slightly faster first token | The citation instruction was obeyed once in 89 asks and the UI cannot render it | Done | None. Instructions fell from 6,930 to 5,682 characters; moving the notes next to the question was measured and rejected, because it placed the spoiler warning correctly far less often |
 | ★★ **"Not in my notes" line** when a game question matches nothing | A person can tell an answer from the notes from one out of the model's memory. Does not change the answer; changes trust | Your own May note of a confident, wrong, tidy reply with no notes | 0.5–1 day, plus a focus check if it becomes a stop | Wording to settle with you |
 | ★★★ **Spoiler tiers setting** — strict / default / open | A strict player stops seeing boss tactics; an open player stops seeing fences at all. Today one rule fits everyone | The tiers are confirmed; the fence fix showed prompt wording moves the misfire rate 24 points | 3 days: settings plumbing (~18 files), a prompt per tier measured on the answer test, a control with a focus entry, Deck QA | Nothing, once the bug session releases the prompt file |
 | ★★★ **Follow-ups remember** | "What about the second phase?" gets an answer about the boss you were just asking about. Today the model receives only the newest message and the follow-up searches nothing | Agreed 1 Sep: carry the previous turn's named thing into the search first; chat history later, trimmed to the window | 1 day for the carry-over; 2 more for history within the budget | The 4k window: a Strategy reply can be 900 tokens |
-| ★★ **Symptom-only troubleshooting reach** | "The game drops me back to the library" reaches the crash tips without saying "crash". Two of four blind troubleshooting questions miss today | Decided 1 Sep; measure on the 17 blind troubleshooting rows first | 1 day | None |
-| ★★ **Eval tooling** — weight sweep on the tuning set, per-case output for the shipping blend, rows that may list a second right answer | Nothing a user sees. It is what unblocks the weights decision and stops every card batch reading as a regression | **Shipped 6 September.** No question in the test uses the second-answer option yet; the sweep itself has not been run | Done | None |
+| ★★ **Symptom-only troubleshooting reach** — **BUILT, MEASURED, HELD 6 September** | It did not work. One of four target sentences improved; the crash one now attaches a tip about desktop mode where it used to attach nothing, which is worse | Matching by meaning does not connect the words people use for a crash to how the crash tips are written | Superseded | **Rewriting the tips so they use the words people type** is the actual job, and now has its own roadmap entry |
+| ★★ **Eval tooling** — weight sweep on the tuning set, per-case output for the shipping blend, rows that may list a second right answer | Nothing a user sees. It is what unblocks the weights decision and stops every card batch reading as a regression | **Shipped 6 September, and the sweep has now been run** — see section 3. No question uses the second-answer option yet | Done | None |
 | ★★★ **"Starting out" card kind**, then the Cyberpunk / Fallout / Red Dead orientation cards | A new player gets a "how do I get started" chip and a matching answer; today those three cards read as "What should I know about Choosing a build?" | Your gap-sheet asks on 29 Aug | 1–2 days plus a corpus rebuild and release | Your call on the kind |
 | ★★★ **Card style pass** — rewrite the 139 prose cards as labelled short lines | Possibly better fact retention by the 2B model. Facts kept is already 92%, so the ceiling is low; do it only if the answer test says the labelled shape scores better | The six labelled cards kept content accurate 6 of 6 on the Deck, but the labels themselves survived 1 of 6 | 2–3 days of content, a rebuild and a release | Measure first |
 
@@ -159,18 +189,24 @@ behind the claim where there is any.
 The four stars are the risk of changing what every question goes through, not the size of the change
 itself — the change is one line, and the tooling it needs is the ★★ eval row above.
 
-Run the weight sweep on the tuning set, write it up, and decide. If the meaning half is right, the
-right card lands first on realistic questions about nine points more often (63% against 54%) for a
-one-line change. This is the biggest single retrieval gain on the table, and it is waiting on the
-data you asked for, which means more games or more blind questions.
+**Done on 6 September, and the answer was not the one expected.** The sweep ran, the winning balance was
+confirmed on the held-back questions, and it was still reverted — it buries a newly added note until its
+meaning index is built, it lets the meaning search push aside a note that exactly matches the words
+someone typed, and it breaks one case of a locked decision. Numbers and the full reasoning are in section
+3 and in the decisions file.
+
+**What would unlock it:** guarantee every note has its meaning index before it can be searched. Then the
+first objection disappears and the other two still need answering. A better route may be to leave the
+balance alone and change only the tie-break, so meaning wins when there is no strong word match. That is
+real work rather than a constant change, and needs its own measurement.
 
 ### 5c. Corpus phases
 
 | Phase (with its stars) | What it buys | Cost | In the way |
 |---|---|---|---|
 | ★★★★ **Phase 4 track 3 — per-game Deck tips** | Troubleshooting a covered game gets that game's own quirks (launch options, a known-broken layout) instead of generic tips. Content for seven titles is collected; two verified quirks are from your own Deck | 2–3 days: a schema bump, the builder, ten or so tips, an eval label, a release, a Deck reinstall | The schema bump makes every installed corpus stale until re-downloaded; bundle it with the next release |
-| ★★★★ **Phase 5 — entity depth on the 13 titles** | "How do I deal with X" works for eleven more games; chips get variety (a game with only mechanic cards offers one flavour of chip). More cards is also the data the weights decision wants | 3–5 days of content for 40–60 cards, in tranches with a quality read from you after the first; chip vector ranking (the second half of Phase 5) 2–3 days | Whoever writes a card cannot write its blind test question, so authoring and eval rows go in different sessions; every batch lowers "first place" a little until second-answer rows exist |
-| ★★★★ **Phase 7 — infrastructure** | Mostly nothing at 161 cards. Three pieces do matter now: **pulling the embedding model as part of installing the library** (a person without it silently gets word search only and loses the whole meaning search; a button and a hint exist, it is not part of the flow); **thumbs-down demote** (a wrong card stops coming back); **packs** (needed before a large catalog). An approximate-nearest-neighbour index buys nothing until the corpus is thousands of cards | Embed pull 1–2 days; demote 3 days; packs 5+ days; index 2–3 days; vision-to-cards a 1–2 day spike first | None for the first two |
+| ★★★★ **Phase 5 — entity depth, now across 25 titles** | "How do I deal with X" works for more of the library; chips get variety (a game with only mechanic cards offers one flavour of chip). More cards is also the data the weights decision wants | 3–5 days of content for 40–60 cards, in tranches with a quality read from you after the first; chip vector ranking (the second half of Phase 5) 2–3 days | Whoever writes a card cannot write its blind test question, so authoring and eval rows go in different sessions; every batch lowers "first place" a little until second-answer rows exist |
+| ★★★★ **Phase 7 — infrastructure** | Mostly nothing at 266 cards. Three pieces do matter now: **pulling the embedding model as part of installing the library** (a person without it silently gets word search only and loses the whole meaning search; a button and a hint exist, it is not part of the flow); **thumbs-down demote** (a wrong card stops coming back); **packs** (needed before a large catalog). An approximate-nearest-neighbour index buys nothing until the corpus is thousands of cards | Embed pull 1–2 days; demote 3 days; packs 5+ days; index 2–3 days; vision-to-cards a 1–2 day spike first | None for the first two |
 | ★★★★ **Online / versus content** | Multiplayer questions (roles, callouts, co-op) get cards; today they get nothing specific | 2–3 weeks: new card kinds, a spoiler table update, Left 4 Dead 2 versus cards, then Counter-Strike 2, from archive dumps only | Source policy and licensing per card; a rebuild |
 | ★★★★★ **Community tip contribution** | A reader can turn a good reply into a proposed card with one press | 3–5 days | Unblocked since the public publish |
 | ★★★ **Visual maps** | A boss outline with weak points marked, or a dungeon map, in the reply | Research first; weeks | What a map is made of is undecided; authoring sits behind the source policy |
@@ -187,14 +223,10 @@ them straight; what remains is coverage, follow-up memory, and the things the te
 
 ## 6. What is blocking, in one list
 
-1. **The Deck and the knowledge-base files are held by the bug-fixing session** started today. Its
-   lane owns the prompt text, the knowledge-base service and the embedding service. Knowledge-base
-   code edits should wait for it or go through it.
-2. **The new games have cards and, as of 6 September, blind questions too, but no release yet.** 72 blind
-   search questions and 24 answer-test rows landed the same day; each blind question still needs matching to
-   the note that answers it, which is in progress. Nothing reaches a Deck until the next corpus release.
-   Fallout: New Vegas is also owned but not installed on the device, so its cards cannot be judged in place
-   until it is.
+1. **Coverage, and it is now the top one.** The twelve new games shipped thin: 43 of 72 plain player
+   questions have a note behind them. This is content work, not code, and no tooling is in the way.
+2. **Fallout: New Vegas is owned but not installed on the Deck**, so its cards cannot be judged in place
+   until it is. That is the only thing blocking the last wave-one device row.
 3. **The "no new titles" rule** for Phase 5 is reopened for one tranche only; the catalog stays its own
    phase.
 4. **Any schema change is a release that stales every installed corpus.** Per-game tips, a new card
@@ -247,7 +279,9 @@ carrying the same stars they carry here.
 - [30-kb-answer-quality-plan.md](30-kb-answer-quality-plan.md) — the answer-quality plan and its checklist
 - [28-phase5-corpus-depth.md](28-phase5-corpus-depth.md), [18-phase4-track3-per-game-compat-tips.md](18-phase4-track3-per-game-compat-tips.md), [17-kb-online-versus-strategy-content.md](17-kb-online-versus-strategy-content.md)
 - [maintainer-decisions-locked.md](../audit/maintainer-decisions-locked.md) — D27, D38, D40b, D41, D45–D54, D65–D69
-- [kb-embed-bakeoff-2026-08-31c-arms.md](../archive/research/kb-embed-bakeoff-2026-08-31c-arms.md) — latest search numbers
-- [kb-answer-eval-2026-09-02-shipped-fence-fix.md](../archive/research/kb-answer-eval-2026-09-02-shipped-fence-fix.md) — latest answer numbers
+- [kb-embed-bakeoff-2026-09-06-arms.md](../archive/research/kb-embed-bakeoff-2026-09-06-arms.md) — latest search numbers, on all 266 cards
+- [kb-answer-eval-2026-09-06-before-wave1.md](../archive/research/kb-answer-eval-2026-09-06-before-wave1.md) and [kb-answer-eval-2026-09-06-after-wave1-landed.md](../archive/research/kb-answer-eval-2026-09-06-after-wave1-landed.md) — answer numbers either side of the prompt work
+- [46-kb-wave-one-session.md](46-kb-wave-one-session.md) — the wave that produced everything dated 6 September, with its progress log
+- `runs/plan46-*.json` — the device evidence behind the 6 September Deck readings
 - [34-feature-verification-round.md](34-feature-verification-round.md), [35-bugfix-session.md](35-bugfix-session.md), [36-feature-session.md](36-feature-session.md) — this week's Deck findings and who owns which files
 - `data/kb/strategy_seed.json`, `tests/fixtures/kb_eval_v2.json`, `tests/fixtures/kb_answer_eval.json` — counted directly
