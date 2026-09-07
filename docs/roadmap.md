@@ -56,13 +56,23 @@ hook gives a gentle heads-up when a session starts work outside this.
   corner icons, and the earlier run that pressed the question recorded the same landing ("nothing"), so it is not new to
   the corner icons. Runs: `retry-corner-collapse-question`, `press-question-not-retry`.
 
-- ★ `[focus]` **The ring can land on a spot half hidden behind the Copy or Retry icon** — **OPEN, measured on the
-  Deck 2026-09-06, filed 2026-09-07.** Walking down a reply, three stops were focused while only partly visible: one at
-  **67%** behind the Retry icon and two at 89% behind Copy. A person moving the ring there sees it half covered. The
-  89% readings are expected and already explained in the test row — the icon is meant to sit in that corner — so this
-  entry is about the **67% case**, which nothing covers. Same family as the two worse versions fixed on 2026-09-06 when
-  Copy became a step of its own. Focus and layout, so it needs the device reading (which exists) and Opus at extra-high,
-  not a helper. Evidence `runs/plan46-R4-prompt-fix-on-device.json`, `runs/plan46-R4-walk-to-ask.json`. (D85)
+- ★ `[focus]` **The ring can land on a spot half hidden behind the Copy or Retry icon** — **MEASURED on the
+  Deck 2026-09-07; the fix is a look-and-feel call and is waiting on you.** Walking down a reply, some stops
+  are focused while partly covered by the small icon in their own corner. **No text is ever hidden** — the
+  last line of a question or answer reserves a 22-pixel column for the icon — so what a person actually sees
+  is the highlight outline interrupted where the icon sits.
+  **Measured on the device, so this is arithmetic now rather than guesswork.** A two-line question bubble is
+  56 pixels tall, its highlighted area 43, and the icon is 20 tall sitting 3 above the bubble's bottom edge.
+  Of the nine points the check samples, only the bottom-left corner falls under the icon — **89%**, which the
+  test row already records as expected. **A one-line question bubble is about 30 pixels tall, and then all
+  three points down the left edge fall inside the icon's 20-pixel band — that is the 67%.** The turn is at 47
+  pixels: above it 89%, below it worse.
+  **So the fix is one number, and it costs height.** Giving a question bubble a floor of about 48 pixels
+  makes every question read 89%. A one-line question then grows from about 30 pixels to 48 — **18 more
+  pixels of a 300-pixel-wide column, on every short question**. Making the icon smaller helps but does not
+  reach 89%. **Doing nothing is defensible**: nothing is unreadable, and the icons sit inside their bubbles
+  because that is what was asked for.
+  Evidence `runs/plan47-R7-walk-into-reply.json`, `runs/plan47-R7-back-to-question.json`. (D85)
 
 - ★ `[focus]` **Closing the model try order picker drops the highlight onto the tab rather than the button you opened it from** —
   **OPEN, seen twice 2026-09-06.** After pressing *Done*, the highlight lands on the Ollama tab's outer frame, not back on
