@@ -3504,6 +3504,61 @@
       "source_license": "CC-BY-SA-4.0",
       "source_version": null,
       "crawled_at": "2026-09-07"
+    },
+    {
+      "section_id": 306,
+      "game_id": 22,
+      "section_type": "mechanic",
+      "name": "Picking a kart for top speed",
+      "card": "Mario Kart 64's eight racers split into three weight classes, and the numbers behind them are fixed: lightweights (Peach, Toad and Yoshi) top out at 314, while every middleweight and heavyweight — Mario, Luigi, D.K., Wario and Bowser alike — caps out lower at 310. Lightweights also accelerate fastest, get the biggest boost from a Mini-Turbo, and lose the least speed driving off-road, which is why they are the pick for outright speed on most courses. The trade-off is handling: they have the widest turning radius of any class and bleed off the most speed in a turn without drifting, and in Battle Mode they spin out from almost any hit, with Toad in particular losing control if anyone bumps him at all. Middleweights turn tightest and are the steadier all-round choice if a course is mostly corners rather than straights.",
+      "source_url": "https://www.mariowiki.com/Mario_Kart_64",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-07"
+    },
+    {
+      "section_id": 307,
+      "game_id": 22,
+      "section_type": "mechanic",
+      "name": "Drifting and Mini-Turbos",
+      "card": "Mario Kart 64 introduced the Mini-Turbo as a reward for drifting well, and the way to charge one is specific to this game: hop into a drift by holding the drift button through a turn, then rock the control stick left and right while you hold it. Doing that charges a short speed boost that fires the moment you let go of the drift, on top of whatever speed you already had. Later Mario Kart games make this time-based instead, so if you learned to drift on a newer entry the wiggling motion will feel unfamiliar at first — it is deliberate here, not a fluke. The strength of your kart's own handling affects how tightly it drifts, so a kart with worse handling drifts in a wider arc and needs the turn started earlier. Chaining drifts through a series of corners rather than resetting between them keeps you close to top speed for the whole section.",
+      "source_url": "https://www.mariowiki.com/Drift",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-07"
+    },
+    {
+      "section_id": 308,
+      "game_id": 22,
+      "section_type": "mechanic",
+      "name": "Unlocking Extra mode",
+      "card": "Extra mode — called Mirror Mode in every later Mario Kart game — is the reward for earning gold in all four cups at 150cc, the fastest of the three engine classes. Once unlocked, Extra reuses the same eight courses from 100cc but flips every one of them horizontally, so a corner that used to bend right now bends left and vice versa. The title screen itself changes once Extra is unlocked, which is the easiest way to check whether you actually earned it. The AI in 150cc and Extra leans harder on rubber-banding than the easier classes: expect one or two computer racers to receive a large handicap that lets them recover from being hit and catch back up quickly, so a comfortable lead near the finish line is not as safe as it looks in the two hardest settings.",
+      "source_url": "https://www.mariowiki.com/Mario_Kart_64",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-07"
+    },
+    {
+      "section_id": 309,
+      "game_id": 22,
+      "section_type": "mechanic",
+      "name": "Battle Mode: the four arenas and balloons",
+      "card": "Battle Mode needs at least two players and puts everyone in an enclosed arena instead of on a racetrack, across four courses: Block Fort, Skyscraper, Double Deck and Big Donut. Every racer starts with three balloons in their own colour, and any item hit or driving off the arena's edge costs one. A heavier character can also pop a lighter one's balloon just by ramming them hard enough — Bowser barrelling into Toad is the extreme case — which is worth remembering when picking a character for this mode rather than for racing. Losing all three balloons turns you into a small, remote-controlled Bomb Kart that can still be attacked and stunned by other players' items, and if it collides with anyone it explodes and you are out for good. The last racer still holding a balloon wins the round.",
+      "source_url": "https://www.mariowiki.com/Mario_Kart_64",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-07"
+    },
+    {
+      "section_id": 310,
+      "game_id": 22,
+      "section_type": "mechanic",
+      "name": "Time Trials and staff ghosts",
+      "card": "Time Trial mode races you against the clock alone, and after your first clean lap the game saves a ghost of that run for you to chase on your next attempt. The ghost only saves if the run itself was clean — pausing, crashing into an obstacle, driving in reverse, or falling off the track at any point during the lap throws the recording away, so a fast lap with one bad mistake near the end still leaves you with nothing to beat. Three of the eight courses also carry a staff ghost set by the developers, each raced by the character the course is themed around, and those are the only pre-made times in the game — the other five courses have no staff record to chase, only whatever ghost you set yourself.",
+      "source_url": "https://www.mariowiki.com/Mario_Kart_64",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-07"
     }
   ],
   "genre_patterns": [
