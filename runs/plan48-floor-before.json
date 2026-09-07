@@ -1,0 +1,593 @@
+{
+ "label": "before-floor",
+ "corpus": "C:\\Users\\still\\Documents\\BonsAI\\build\\knowledge-base\\corpus.db",
+ "summary": {
+  "holdout_rows": 41,
+  "scoreable": 17,
+  "right": 14,
+  "wrong": 1,
+  "nothing": 2,
+  "unscored_attached": 8,
+  "unscored_nothing": 16,
+  "blind_reaching": 8,
+  "blind_total": 24,
+  "junk_attached": 0,
+  "junk_total": 12,
+  "device_attached": 4,
+  "device_total": 4
+ },
+ "rows": [
+  {
+   "id": "V2-C-28",
+   "kind": "holdout-tip",
+   "query": "fex emulation x86 arm performance",
+   "expect_topic": "fex",
+   "attached": [
+    "fex"
+   ],
+   "verdict": "right",
+   "blind": false
+  },
+  {
+   "id": "V2-C-29",
+   "kind": "holdout-tip",
+   "query": "the translated windows binaries run far slower than native ones",
+   "expect_topic": "fex",
+   "attached": [
+    "fex"
+   ],
+   "verdict": "right",
+   "blind": false
+  },
+  {
+   "id": "V2-C-30",
+   "kind": "holdout-tip",
+   "query": "big picture mode controller navigation broken",
+   "expect_topic": "bpm",
+   "attached": [
+    "bpm"
+   ],
+   "verdict": "right",
+   "blind": false
+  },
+  {
+   "id": "V2-C-31",
+   "kind": "holdout-tip",
+   "query": "on the television the menus stop responding to the pad",
+   "expect_topic": "bpm",
+   "attached": [
+    "bpm"
+   ],
+   "verdict": "right",
+   "blind": false
+  },
+  {
+   "id": "V2-C-32",
+   "kind": "holdout-tip",
+   "query": "windows steam client dual boot library",
+   "expect_topic": "windows_steam",
+   "attached": [
+    "windows_steam"
+   ],
+   "verdict": "right",
+   "blind": false
+  },
+  {
+   "id": "V2-C-33",
+   "kind": "holdout-tip",
+   "query": "can both operating systems see the same installed games",
+   "expect_topic": "windows_steam",
+   "attached": [
+    "windows_steam"
+   ],
+   "verdict": "right",
+   "blind": false
+  },
+  {
+   "id": "V2-C-34",
+   "kind": "holdout-tip",
+   "query": "network firewall port ollama lan",
+   "expect_topic": "network",
+   "attached": [
+    "network"
+   ],
+   "verdict": "right",
+   "blind": false
+  },
+  {
+   "id": "V2-C-35",
+   "kind": "holdout-tip",
+   "query": "the handheld can't see the computer running the model on my home wifi",
+   "expect_topic": "network",
+   "attached": [
+    "network"
+   ],
+   "verdict": "right",
+   "blind": false
+  },
+  {
+   "id": "V2-C-36",
+   "kind": "holdout-tip",
+   "query": "performance overlay frame limit deck tdp",
+   "expect_topic": "performance",
+   "attached": [
+    "performance"
+   ],
+   "verdict": "right",
+   "blind": false
+  },
+  {
+   "id": "V2-C-37",
+   "kind": "holdout-tip",
+   "query": "the fan screams and the battery dies in an hour",
+   "expect_topic": "performance",
+   "attached": [
+    "performance"
+   ],
+   "verdict": "right",
+   "blind": false
+  },
+  {
+   "id": "V2-C-38",
+   "kind": "holdout-tip",
+   "query": "steam frame controller pairing",
+   "expect_topic": "steam_frame",
+   "attached": [
+    "controller"
+   ],
+   "verdict": "wrong",
+   "blind": false
+  },
+  {
+   "id": "V2-C-39",
+   "kind": "holdout-tip",
+   "query": "display refresh rate mismatch tearing",
+   "expect_topic": "display",
+   "attached": [
+    "display"
+   ],
+   "verdict": "right",
+   "blind": false
+  },
+  {
+   "id": "V2-C-40",
+   "kind": "holdout-tip",
+   "query": "the picture tears across the middle when I turn quickly",
+   "expect_topic": "display",
+   "attached": [
+    "display"
+   ],
+   "verdict": "right",
+   "blind": false
+  },
+  {
+   "id": "V2-BLIND-H19",
+   "kind": "holdout-tip",
+   "query": "my controller works fine on the desktop but the game doesn't seem to see half my buttons",
+   "expect_topic": "steam_input",
+   "attached": [],
+   "verdict": "nothing",
+   "blind": false
+  },
+  {
+   "id": "V2-BLIND-H20",
+   "kind": "holdout-tip",
+   "query": "I'm nearly out of room and want to move some installed games onto my memory card without redownloading everything",
+   "expect_topic": "storage",
+   "attached": [
+    "storage"
+   ],
+   "verdict": "right",
+   "blind": false
+  },
+  {
+   "id": "V2-BLIND-H55",
+   "kind": "holdout-tip",
+   "query": "the game drops me back to the library a few minutes in, every single time",
+   "expect_topic": "crash",
+   "attached": [],
+   "verdict": "nothing",
+   "blind": false
+  },
+  {
+   "id": "V2-BLIND-H56",
+   "kind": "holdout-tip",
+   "query": "sound comes out of the built-in speakers fine but nothing plays through my bluetooth headphones",
+   "expect_topic": "audio",
+   "attached": [
+    "audio"
+   ],
+   "verdict": "right",
+   "blind": false
+  },
+  {
+   "id": "V2-W2-SYM-01",
+   "kind": "holdout-tip",
+   "query": "game keeps quiting to the home screen",
+   "expect_topic": null,
+   "attached": [],
+   "verdict": "unscored-nothing",
+   "blind": true
+  },
+  {
+   "id": "V2-W2-SYM-02",
+   "kind": "holdout-tip",
+   "query": "my game will just shut itself off and dump me back at the home screen for no reason",
+   "expect_topic": null,
+   "attached": [],
+   "verdict": "unscored-nothing",
+   "blind": true
+  },
+  {
+   "id": "V2-W2-SYM-03",
+   "kind": "holdout-tip",
+   "query": "game wont even open",
+   "expect_topic": null,
+   "attached": [],
+   "verdict": "unscored-nothing",
+   "blind": true
+  },
+  {
+   "id": "V2-W2-SYM-04",
+   "kind": "holdout-tip",
+   "query": "when I try to launch the game nothing happens at all it just sits there on the home screen",
+   "expect_topic": null,
+   "attached": [],
+   "verdict": "unscored-nothing",
+   "blind": true
+  },
+  {
+   "id": "V2-W2-SYM-05",
+   "kind": "holdout-tip",
+   "query": "screen goes black when i open it",
+   "expect_topic": null,
+   "attached": [],
+   "verdict": "unscored-nothing",
+   "blind": true
+  },
+  {
+   "id": "V2-W2-SYM-06",
+   "kind": "holdout-tip",
+   "query": "the screen turns completely black after I pick the game and it never shows anything after that",
+   "expect_topic": null,
+   "attached": [],
+   "verdict": "unscored-nothing",
+   "blind": true
+  },
+  {
+   "id": "V2-W2-SYM-07",
+   "kind": "holdout-tip",
+   "query": "game super choppy and laggy now",
+   "expect_topic": null,
+   "attached": [],
+   "verdict": "unscored-nothing",
+   "blind": true
+  },
+  {
+   "id": "V2-W2-SYM-08",
+   "kind": "holdout-tip",
+   "query": "the game is really stuttering and skipping around the whole time I'm trying to play it",
+   "expect_topic": null,
+   "attached": [
+    "performance"
+   ],
+   "verdict": "unscored-attached",
+   "blind": true
+  },
+  {
+   "id": "V2-W2-SYM-09",
+   "kind": "holdout-tip",
+   "query": "buttons not working right half the time",
+   "expect_topic": null,
+   "attached": [],
+   "verdict": "unscored-nothing",
+   "blind": true
+  },
+  {
+   "id": "V2-W2-SYM-10",
+   "kind": "holdout-tip",
+   "query": "sometimes when I push a button on the controller it just doesn't do anything or it does it really late",
+   "expect_topic": null,
+   "attached": [],
+   "verdict": "unscored-nothing",
+   "blind": true
+  },
+  {
+   "id": "V2-W2-SYM-11",
+   "kind": "holdout-tip",
+   "query": "no sound at all coming out",
+   "expect_topic": null,
+   "attached": [
+    "audio"
+   ],
+   "verdict": "unscored-attached",
+   "blind": true
+  },
+  {
+   "id": "V2-W2-SYM-12",
+   "kind": "holdout-tip",
+   "query": "the sound keeps coming out of the tv speakers instead of my headphones even though they're plugged in",
+   "expect_topic": null,
+   "attached": [],
+   "verdict": "unscored-nothing",
+   "blind": true
+  },
+  {
+   "id": "V2-W2-SYM-13",
+   "kind": "holdout-tip",
+   "query": "storage full cant install anything else",
+   "expect_topic": null,
+   "attached": [
+    "storage"
+   ],
+   "verdict": "unscored-attached",
+   "blind": true
+  },
+  {
+   "id": "V2-W2-SYM-14",
+   "kind": "holdout-tip",
+   "query": "I keep getting a message saying there isn't enough space left whenever I try to put a new game on",
+   "expect_topic": null,
+   "attached": [],
+   "verdict": "unscored-nothing",
+   "blind": true
+  },
+  {
+   "id": "V2-W2-SYM-15",
+   "kind": "holdout-tip",
+   "query": "screen looks torn and glitchy",
+   "expect_topic": null,
+   "attached": [
+    "display"
+   ],
+   "verdict": "unscored-attached",
+   "blind": true
+  },
+  {
+   "id": "V2-W2-SYM-16",
+   "kind": "holdout-tip",
+   "query": "the picture looks like it's ripping apart across the middle whenever something moves fast on the screen",
+   "expect_topic": null,
+   "attached": [],
+   "verdict": "unscored-nothing",
+   "blind": true
+  },
+  {
+   "id": "V2-W2-SYM-17",
+   "kind": "holdout-tip",
+   "query": "it gets really hot and battery drains so fast",
+   "expect_topic": null,
+   "attached": [
+    "performance"
+   ],
+   "verdict": "unscored-attached",
+   "blind": true
+  },
+  {
+   "id": "V2-W2-SYM-18",
+   "kind": "holdout-tip",
+   "query": "it gets uncomfortably warm in my hands after a little while and the battery seems to drain a lot quicker than it used to",
+   "expect_topic": null,
+   "attached": [
+    "performance"
+   ],
+   "verdict": "unscored-attached",
+   "blind": true
+  },
+  {
+   "id": "V2-W2-SYM-19",
+   "kind": "holdout-tip",
+   "query": "cant find my pc on the network",
+   "expect_topic": null,
+   "attached": [],
+   "verdict": "unscored-nothing",
+   "blind": true
+  },
+  {
+   "id": "V2-W2-SYM-20",
+   "kind": "holdout-tip",
+   "query": "it won't show my computer in the list even though they're both connected to the same home network",
+   "expect_topic": null,
+   "attached": [],
+   "verdict": "unscored-nothing",
+   "blind": true
+  },
+  {
+   "id": "V2-W2-SYM-21",
+   "kind": "holdout-tip",
+   "query": "update stuck wont finish installing",
+   "expect_topic": null,
+   "attached": [
+    "updates"
+   ],
+   "verdict": "unscored-attached",
+   "blind": true
+  },
+  {
+   "id": "V2-W2-SYM-22",
+   "kind": "holdout-tip",
+   "query": "the software update has just been sitting there for ages now and it never actually finishes installing",
+   "expect_topic": null,
+   "attached": [],
+   "verdict": "unscored-nothing",
+   "blind": true
+  },
+  {
+   "id": "V2-W2-SYM-23",
+   "kind": "holdout-tip",
+   "query": "menus all messed up on the tv",
+   "expect_topic": null,
+   "attached": [],
+   "verdict": "unscored-nothing",
+   "blind": true
+  },
+  {
+   "id": "V2-W2-SYM-24",
+   "kind": "holdout-tip",
+   "query": "when I plug it into the television the menus show up in the wrong spot on the screen and are hard to read",
+   "expect_topic": null,
+   "attached": [
+    "bpm"
+   ],
+   "verdict": "unscored-attached",
+   "blind": true
+  },
+  {
+   "id": "JUNK:please repeat that",
+   "kind": "junk",
+   "query": "please repeat that",
+   "expect_topic": null,
+   "attached": [],
+   "verdict": "nothing",
+   "blind": false
+  },
+  {
+   "id": "JUNK:one sentence",
+   "kind": "junk",
+   "query": "one sentence",
+   "expect_topic": null,
+   "attached": [],
+   "verdict": "nothing",
+   "blind": false
+  },
+  {
+   "id": "JUNK:thank you very much",
+   "kind": "junk",
+   "query": "thank you very much",
+   "expect_topic": null,
+   "attached": [],
+   "verdict": "nothing",
+   "blind": false
+  },
+  {
+   "id": "JUNK:four hours",
+   "kind": "junk",
+   "query": "four hours",
+   "expect_topic": null,
+   "attached": [],
+   "verdict": "nothing",
+   "blind": false
+  },
+  {
+   "id": "JUNK:what time is it",
+   "kind": "junk",
+   "query": "what time is it",
+   "expect_topic": null,
+   "attached": [],
+   "verdict": "nothing",
+   "blind": false
+  },
+  {
+   "id": "JUNK:our team",
+   "kind": "junk",
+   "query": "our team",
+   "expect_topic": null,
+   "attached": [],
+   "verdict": "nothing",
+   "blind": false
+  },
+  {
+   "id": "JUNK:ok thanks",
+   "kind": "junk",
+   "query": "ok thanks",
+   "expect_topic": null,
+   "attached": [],
+   "verdict": "nothing",
+   "blind": false
+  },
+  {
+   "id": "JUNK:never mind",
+   "kind": "junk",
+   "query": "never mind",
+   "expect_topic": null,
+   "attached": [],
+   "verdict": "nothing",
+   "blind": false
+  },
+  {
+   "id": "JUNK:what did you say",
+   "kind": "junk",
+   "query": "what did you say",
+   "expect_topic": null,
+   "attached": [],
+   "verdict": "nothing",
+   "blind": false
+  },
+  {
+   "id": "JUNK:hello there",
+   "kind": "junk",
+   "query": "hello there",
+   "expect_topic": null,
+   "attached": [],
+   "verdict": "nothing",
+   "blind": false
+  },
+  {
+   "id": "JUNK:that is great",
+   "kind": "junk",
+   "query": "that is great",
+   "expect_topic": null,
+   "attached": [],
+   "verdict": "nothing",
+   "blind": false
+  },
+  {
+   "id": "JUNK:sounds good to me",
+   "kind": "junk",
+   "query": "sounds good to me",
+   "expect_topic": null,
+   "attached": [],
+   "verdict": "nothing",
+   "blind": false
+  },
+  {
+   "id": "DEVICE:how do i tame a horse",
+   "kind": "device-note",
+   "query": "how do i tame a horse",
+   "expect_topic": null,
+   "attached": [
+    "Houndeye",
+    "Gonarch",
+    "The opening tram ride and where it leads"
+   ],
+   "verdict": "wrong",
+   "blind": false
+  },
+  {
+   "id": "DEVICE:where do i buy a house",
+   "kind": "device-note",
+   "query": "where do i buy a house",
+   "expect_topic": null,
+   "attached": [
+    "Wheatley"
+   ],
+   "verdict": "wrong",
+   "blind": false
+  },
+  {
+   "id": "DEVICE:qqqq zzzz wwww",
+   "kind": "device-note",
+   "query": "qqqq zzzz wwww",
+   "expect_topic": null,
+   "attached": [
+    "Mirror of Night",
+    "Darkness, keys and gems"
+   ],
+   "verdict": "wrong",
+   "blind": false
+  },
+  {
+   "id": "DEVICE:how do i beat the bone hydra in hades",
+   "kind": "device-note",
+   "query": "how do i beat the bone hydra in hades",
+   "expect_topic": null,
+   "attached": [
+    "Weapon choice",
+    "Theseus and Asterius",
+    "Heat and the Pact of Punishment"
+   ],
+   "verdict": "wrong",
+   "blind": false
+  }
+ ]
+}
