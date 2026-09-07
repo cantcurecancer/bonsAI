@@ -4373,3 +4373,93 @@ text is ever hidden. Closed as accepted.
 **One thing found while planning.** The roadmap entry asking for a voice switch on the answer test is
 stale: the switch landed on 6 September. What is owed is a run with it on, which wave three's canonical
 measurement includes.
+
+### D87 — LOCKED 2026-09-07 — The "none of these fit" floor covers the notes as well as the tips
+
+**Raised** during wave three's first evening, from a result that came out of running wave two's Deck
+evening. **Answered by the maintainer the same evening.**
+
+#### What was found
+
+The "not in my notes" line shipped in wave two. It exists so a person can tell an answer built from
+their own notes from one the model made up. It shows only when the library covers the game they are
+playing **and nothing in the library matched what they asked**.
+
+It never shows.
+
+Ten Strategy questions were put to games the library covers, on the device, against the library that
+ships. They included deliberately absurd ones — *"how do i tame a horse"* while Black Mesa was the
+game, *"where do i buy a house"* in Portal 2 — and one that is not a sentence at all,
+*"qqqq zzzz wwww"*, in Hades. **Every single one attached notes.** The line printed on none of them.
+
+Then on the device: with Hades running, *"how do i beat the bone hydra in hades"*. There is no bone
+hydra in Hades. Three Hades notes attached — the weapon notes — and the reply explained, at length
+and with confidence, which weapon to bring to a fight that does not exist. No line.
+
+#### Why this matters more than one dormant line
+
+This is the **same fault** wave three was already convened to fix, in a second place. Wave three's
+tip lane exists because a plain word search over 156 tips nearly always finds *something*, so a
+problem sentence that fits no tip gets a wrong tip stapled on. The notes behave identically: a word
+search inside one game's notes nearly always finds something, so a question the notes cannot answer
+gets notes anyway, and the line that was supposed to warn the reader stands down precisely when it
+is most needed.
+
+Fixing only the tips would leave the line dormant and leave the notes handing out confident answers
+about things that are not in the game.
+
+#### The options put to the maintainer
+
+1. **Widen the tip lane to the notes as well** — the same floor, the same measurement, one lane, one
+   more concern.
+2. **Keep wave three as planned**, file the notes hole as a new bug, leave the line dormant until a
+   later wave.
+3. **A separate lane** on the notes path, running alongside.
+
+#### The call
+
+**Option 1. The floor covers the notes as well as the tips.** One lane, blind to the same held-back
+rows, measured the same way on the tuning rows only.
+
+#### What was measured before the lane was briefed
+
+The cheap check the plan requires was run first, and it changed the brief.
+
+**The fused score cannot carry a floor.** The number the search ranks tips by is a rank-fusion score,
+and on this corpus it takes essentially two values: about 0.0328 when the router did not match the
+question's topic, and about 0.0377 when it did. Right tips and wrong tips both sit at both values. A
+floor on that number separates "the router matched a topic" from "it did not" and nothing else.
+
+**The meaning score can.** Underneath the fusion, the meaning score is continuous and it separates
+cleanly at the bottom end:
+
+| | range across the 35 tuning rows |
+|---|---|
+| best right tip, by meaning | 0.5649 to 0.8367 |
+| best wrong tip, by meaning | 0.5447 to 0.8152 |
+| the junk phrases | 0.4821 to 0.5044 |
+
+A floor just above the junk phrases — 0.5044 — **keeps 34 of 34 right tips**. The same floor on the
+keyword score would throw away 8 of them.
+
+**What the floor can and cannot do.** It can say "none of these fit" for a question the tip sheet has
+no business answering, which is the actual complaint. It cannot pick the right tip out of a genuinely
+on-topic set: right beats best-wrong on only 20 of 34 rows by meaning, and 17 of 34 by keyword. So
+the lane builds the floor and leaves the ranking alone, and the honest claim is the narrow one.
+
+One caution on the evidence: only two of the six junk phrases reach the search at all, so the junk
+end of that table rests on two points. The lane should widen it rather than trust it as it stands.
+
+#### Also settled the same evening
+
+- **The wave two Deck evening was run by this session** rather than a separate checking session,
+  because the Deck was free and the maintainer asked for it. The sentences were confirmed before
+  anything was pinned, as the standing rule requires.
+- **Dungeon maps in the knowledge base** are an idea for wave four, raised by the maintainer. Not
+  scoped, not committed, recorded so it is not lost.
+
+#### What this changes in plan 48
+
+Lane C's brief gains the note path and its forbidden list is unchanged. Its floor is built on the
+meaning score, not on the fused score. The gate stays what section 5 already says: wrong attachments
+go down and right attachments do not.

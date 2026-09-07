@@ -816,3 +816,90 @@ green. **Nothing has left this machine.**
   a person would act on.
 - **The Deck sentences are written out in § 8** and await confirmation before anything is pinned.
 - **Fallout: New Vegas still is not installed on the Deck.**
+
+### The Deck evening — run 2026-09-07, 17:45 to 18:50 EDT
+
+Run from a wave-three session rather than a separate checking session, because the Deck was free
+and the maintainer asked for it. Sentences were written out and **confirmed by the maintainer
+before anything was pinned**, as the rule says. Settings were backed up on the device and off it,
+and restored at the end.
+
+**How the questions were asked.** The batch was pinned as frozen test chips and the chips did drive
+the carousel. But the D-pad would not walk the batch to a chosen entry, so the sentences for R5 were
+put into the Ask field with `scripts/deck_send_ask.py` instead — which types the sentence and does
+**not** press Ask, the same split a chip uses. The Ask press was a separate bridge press every time.
+Nothing was thumb-typed.
+
+**Where the numbers come from.** R2, R3 and R4 were measured by running each question through the
+real search on the device against the library installed in R1. That gives the search half of those
+rows exactly. R5 and R6 were run through the screen, because what they check is the reply.
+
+| Row | Verdict | What was found |
+|---|---|---|
+| **W2-R1** Install the release | **PASS** | 2026.09.06 → **2026.09.07**: 293 notes, 25 games, 156 tips, every one with its meaning index. Both download channels checked first and identical |
+| **W2-R2** The twelve new games | **PASS** (search half) | All twelve attach three notes, every one about the right game. The two questions that never name their game both picked up the running game |
+| **W2-R3** The filled gaps | **PASS** | All eight find the note written for them, every one in the top three, three of them first |
+| **W2-R4** Problems reach the tips | **PARTIAL** | 8 of 8 reach a tip and *"thank you very much"* attaches nothing. But one of the eight gets a tip that does not answer it |
+| **W2-R5** The "not in my notes" line | **FAIL** | The line cannot appear. See below |
+| **W2-R6** The two bug fixes | **FAIL** on the half that ran | The line under the question box still names a game minutes after it is closed. The stray-text half is still owed |
+| **W2-R7** The ring and the corner icons | closed | Measured 2026-09-07 03:03; the maintainer chose to do nothing (D86) |
+| **W2-R8** The five August rows | not run | Optional |
+
+#### R5 — the "not in my notes" line does not work
+
+Measured before the device run, then confirmed on it.
+
+The line shows only when the library covers the running game **and nothing in it matched**. Ten
+Strategy questions were tried against covered games, including *"how do i tame a horse"* in Black
+Mesa, *"where do i buy a house"* in Portal 2, and the nonsense string *"qqqq zzzz wwww"* in Hades.
+**Every single one attached a note.** The line printed on none of them.
+
+On the device, with Hades running and Strategy: *"how do i beat the bone hydra in hades"* attached
+three Hades notes (Weapon choice, Theseus and Asterius, Heat and the Pact of Punishment) and the
+reply confidently explained how to fight a boss that does not exist in the game — *"the Stygian
+Blade is the easiest to swing with… the Shield of Chaos is pure genius"* — with **no line**.
+
+That is the exact harm the line was built to prevent. The cause is the one wave three is already
+fixing for the tips: **nothing in the search can say "none of these fit."** The notes have the same
+hole. The maintainer has agreed to widen wave three's tip lane to cover notes as well.
+
+The remaining three cases of the row were not run: the row passes only if the line appears on the
+first question and nowhere else, and it did not appear on the first.
+
+#### R6 — the panel still names a game after it is closed
+
+Hades was exited through the Steam menu with the panel open. The line under the question box read
+*"Context: active game AppID 1145360"* straight afterwards, still said it 31 seconds later, still
+said it about four minutes later, and **still said it after the Quick Access Menu was closed with
+the chord and reopened**.
+
+That last one matters: reopening is the path commit `3158835` fixed, and its message says the
+ordinary keep-in-sync check corrects itself in about a second and a half. Neither held here. The
+line is `MainTab.tsx:279-294`, rendered live from `ollamaContext`, in the main tab dock — so this is
+the live line, not a record of the finished turn. Three stars.
+
+The other half of the row — the stray line of computer text — is still owed. It needs Deep Rock
+Galactic: Survivor running, Speed and voice on.
+
+#### R4 — one tip is stapled onto the wrong question
+
+*"when I plug it into the television the menus show up in the wrong spot on the screen and are hard
+to read"* comes back with *"Big Picture Mode is default on Deck; Desktop Mode for Konsole and file
+fixes"*, which does not answer it. A ninth example for wave three's tip work.
+
+#### Two things found about the pinned test chips
+
+1. **A pinned batch is not badged.** The chips drove the carousel, but no chip showed the amber
+   **Test** badge. There are two chip label renderers: the ordinary one draws the badge
+   (`MainTabPresetAnimatedChips.tsx:231`), and the decode-animation one draws its own label without
+   it (`MainTabPresetAnimatedChips.tsx:535`). This Deck has the decode animation on, so the badge
+   never renders. The badge exists so it is obvious at a glance that the carousel is not showing
+   what the plugin would have chosen; without it a pinned batch looks like real chips. Two stars.
+2. **Right on a pinned chip did not bring in the next entry.** One press, one state, so this is
+   recorded to reproduce rather than filed as a bug.
+
+#### Still owed after this evening
+
+- R6's stray-computer-text half.
+- The two failures above need fixing: they are handed on rather than fixed here.
+- Fallout: New Vegas is still not installed; R2 asked about it by name, which the row allows.

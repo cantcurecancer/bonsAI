@@ -258,26 +258,62 @@ sense under the new matching.
 
 ### Lane C — the tip search can say "none of these fit"
 
-**Files:** `py_modules/backend/services/knowledge_base_service.py` (the tip path only:
-`_search_compat_patterns`, `_compat_tips_for_topics`, and the fusion step for the troubleshooting domain),
-its tests, and the transparency payload so "routed to tips, none fit" is a distinct signal. **Forbidden:**
-the held-back rows of `tests/fixtures/kb_eval_v2.json` (`split: holdout`, and every `V2-W2-SYM-*` row),
-`docs/planning/47-kb-wave-two-session.md`, the compat router rules, `data/kb/compat_patterns.json`.
+**Widened 2026-09-07 by D87: this lane covers the notes as well as the tips.** The
+"not in my notes" line shipped in wave two cannot fire, for the identical reason a wrong tip gets
+stapled on — the search has no way to say "none of these fit". Measured on the device: ten Strategy
+questions about covered games, gibberish included, every one attached a note. So the floor goes on
+both paths, in one lane, in two commits.
 
-**The cheap check first (rule 10), run by the one running the session before briefing:** over the 35
-tuning troubleshooting rows and the six junk phrases, record the fused score of the right tip and of the
-best wrong tip. If the two ranges overlap completely, an absolute floor cannot work alone and the lane is
-briefed for a relative margin as well, the way the game-card gate already is (see the comments around
-the relevance floor and the pool margin in the service). If a margin cannot separate them either, the
-lane is not launched and the finding is filed.
+**Files:** `py_modules/backend/services/knowledge_base_service.py` — the tip path
+(`_search_compat_patterns`, `_compat_tips_for_topics`, and the fusion step for the troubleshooting
+domain) **and the note path** (`_search_sections` and the strategy branch of the fusion step), its
+tests, and the transparency payload so "routed, nothing fit" is a distinct signal on both paths.
+**Forbidden:** the held-back rows of `tests/fixtures/kb_eval_v2.json` (`split: holdout`, and every
+`V2-W2-SYM-*` row), `docs/planning/47-kb-wave-two-session.md`, the compat router rules,
+`data/kb/compat_patterns.json`, and `kb_not_in_notes_notice.py` (lane F's file — this lane changes
+what feeds it, never the line itself).
 
-1. Today topic-recalled tips have no floor. Give the fused tip list one: an absolute floor and a relative
-   margin against the pool, tuned on the 35 tuning rows only. When the best tip is under it, **attach
-   nothing** and record why.
-2. The transparency block says "no tip fit" distinctly from "not a troubleshooting question", so lane F
-   and the Deck row can read it.
-3. Precision tests from wave two's tip lane must pass unchanged. *"thank you very much"* attaches nothing.
-4. Report the tuning-row table: right tip attached, wrong tip attached, nothing attached, before and after.
+**The cheap check (rule 10) was run 2026-09-07 before this brief, and it changed it.**
+Evidence: `runs/plan48-laneC-cheap-check.json` and `runs/plan48-laneC-cheap-check-signals.json`.
+
+- **Do not put the floor on the fused score.** On this corpus that number takes essentially two
+  values — about 0.0328 when the router did not match the question's topic, about 0.0377 when it did.
+  Right tips and wrong tips both appear at both. A floor there separates "the router matched" from
+  "it did not" and nothing else.
+- **Put it on the meaning score**, which is continuous. Across the 35 tuning rows the best right tip
+  scores 0.5649 to 0.8367, the best wrong tip 0.5447 to 0.8152, and the junk phrases 0.4821 to 0.5044.
+  A floor just above the junk phrases, at 0.5044, **keeps 34 of 34 right tips**. The same floor on the
+  keyword score would lose 8 of them.
+- **Claim only what the floor does.** It can say "none of these fit" for a question the sheet has no
+  business answering. It cannot pick the right tip out of a genuinely on-topic set: right beats
+  best-wrong on 20 of 34 rows by meaning and 17 of 34 by keyword. Leave the ranking alone.
+- **One caution.** Only two of the six junk phrases reach the search at all, so the junk end of that
+  table rests on two points. Widen it before trusting it — more phrases that should attach nothing,
+  written by you, not taken from the held-back rows.
+
+1. **Commit one, the tips.** Topic-recalled tips have no floor today. Give the fused tip
+   list one, on the **meaning** score, tuned on the 35 tuning rows only. When the best tip is under it,
+   **attach nothing** and record why. Where the meaning score is unavailable (no embed model, Speed
+   mode, a corpus with no vectors) the floor stands down rather than guessing — say so in the report.
+2. **Commit two, the notes.** The same shape on the strategy path: when the best note is under the
+   floor, attach nothing. Tune on the strategy tuning rows only. This one is riskier than the tips
+   because attaching a roughly-right note is often still useful, so the gate is stricter: **no drop at
+   all** in right-note-attached on the tuning rows. If you cannot get "wrong down" without "right
+   down", stop, keep commit one, and report the numbers.
+3. The transparency block says "routed, nothing fit" distinctly from "not a question for this corpus",
+   on **both** paths, so lane F and the Deck rows can read it.
+4. Precision tests from wave two's tip lane must pass unchanged. *"thank you very much"* attaches
+   nothing.
+5. Report two tables, one per path: right attached, wrong attached, nothing attached, before and after.
+   Include the four sentences below, which must all end with nothing attached once the floor is in —
+   they are what the device run caught, and they are not from any held-back row:
+
+   ```
+   how do i tame a horse                     (Black Mesa running)
+   where do i buy a house                    (Portal 2 running)
+   qqqq zzzz wwww                            (Hades running)
+   how do i beat the bone hydra in hades      (Hades running)
+   ```
 
 ### Lane D — the answer-first variant
 
@@ -298,9 +334,31 @@ lane is not launched and the finding is filed.
 words only), `knowledge_base_service.py` only if the search-words entry point needs an extra argument,
 tests. **Not** the prompt text, the frontend, or Speed mode.
 
-**The cheap check first (rule 10), run by the one running the session:** confirm on the landed tip that a
-typed *"what about the second phase?"* after a boss question reaches the search with nothing from the
-previous turn. The code says so; the check is a log line.
+**The cheap check (rule 10) was run 2026-09-07 and it half-changed this brief.**
+
+The structural half holds: the search is handed the question, the game, the resolved title, the
+domain and the mode, and **nothing whatsoever from the previous turn** — there is no argument that
+could carry one.
+
+The behavioural half is not what the plan assumed. A bare follow-up already lands on something
+sensible, because a type word like *phase* pulls that game's cards of that type into the pool:
+
+| Asked, with the game running | What attaches today |
+|---|---|
+| how do i beat megara in hades | **Megara**, Theseus and Asterius, Heat and the Pact of Punishment |
+| what about her second phase | **Megara**, Mirror of Night, Weapon aspects |
+| how do i beat the glyphid dreadnought | **Glyphid Dreadnought**, Dreadnought Twins, Exploder |
+| what about its second phase | Dreadnought Twins, Praetorian, **Glyphid Dreadnought** |
+
+So in Hades — which has few boss notes — the follow-up already finds Megara first, by luck rather
+than by memory. In Deep Rock Galactic: Survivor, which has several, the follow-up puts the **wrong**
+boss first and the right one third.
+
+**What this means for the lane.** The before-state is not "nothing sensible attaches". It is "the
+right note attaches when the game has few of that kind, and loses to a sibling when it has several."
+So do not claim the memory makes follow-ups work — claim it makes them **reliable**, and prove it on
+the game where today's behaviour is wrong. The Hades pair is a weak test and must not be the only
+one; the Deep Rock pair is the real one.
 
 1. Remember, per plugin process, the last Strategy or Expert question's named thing: the named entity the
    consent detection already finds, or failing that the top attached note's name. Store the game with it.
@@ -310,8 +368,12 @@ previous turn. The code says so; the check is a log line.
    model is shown or the person sees.
 3. Cleared when the game changes, when the library is off, or after a troubleshooting question. A
    troubleshooting question never stores or uses it. Speed never uses it.
-4. Tests: the boss-then-second-phase case attaches the boss's note; a fresh named question is untouched;
-   a game change clears it; Speed is untouched.
+4. Tests, all four: the boss-then-second-phase case attaches the boss's note **first** — use the
+   Deep Rock Galactic: Survivor pair from the table above, where today the wrong boss wins, not the
+   Hades pair, which already passes without any memory; a fresh named question is untouched; a game
+   change clears it; Speed is untouched.
+5. Report the same table as the cheap check, before and after, so the gain is visible as a change in
+   which note comes first rather than as a claim.
 
 ### Lane F — the "no tip for this" line
 
@@ -437,4 +499,55 @@ black mesa how do i get across the electrified water
 
 ## 11. Progress log
 
-*(Empty until "go". Wave −1's log goes in plan 47 § 11, where the rows live.)*
+### Wave −1 — wave two's Deck evening, done 2026-09-07
+
+Run by this session rather than a separate checking session, because the Deck was free and the
+maintainer asked for it. **The log lives in plan 47 section 11**, where the rows are. In short: R1,
+R2 and R3 pass, R4 partly passes, **R5 and R6 fail**, R7 was already closed.
+
+The R5 failure changed this wave. It is written up as **D87** and lane C now covers the notes as
+well as the tips.
+
+### Wave 0 — done 2026-09-07
+
+**Tip when the wave started: `44d8b8f`** on `experimental`, tree clean apart from untracked evidence.
+
+**All five gates green before anything was touched:** typecheck, 1,123 frontend tests, the Python
+suite, a clean build, and the focus check at its baseline of 74.
+
+**Both models present** on the build machine: `nomic-embed-text` and `gemma4:e2b-it-qat`. The Deck
+runs its own Ollama at 127.0.0.1 with four models.
+
+**The Black Mesa note is corrected** (`a72ecef`). The old note said the current arcs on a cycle with a
+spark as a warning and told the player to move while the water is dark. The maintainer checked the
+game: the current is constant, and stepping in deals continuous damage until you get out or die. The
+new note says to treat the flooded floor like lava and cross on desks, cabinets, shelves, floating
+crates or overhead pipes; or cut the power at a red wall switch, breaker or lever, usually just
+outside the flooded area or at its far end, which makes the water safe for good; and to push loose
+wooden crates in as stepping stones where a gap is too wide. The note keeps its name, so the one
+search row that names it (`V2-T1-BMS-05`) still works.
+
+**The lane helper is generalised.** There is one `kb-lane` now and it takes its plan file from the
+task text. The wave-two copy is gone.
+
+**The starting measurements, taken with today's checks on a freshly built library** — these are the
+last numbers under the old checks and are labelled so.
+
+| | Reading |
+|---|---|
+| Answers, 61 questions, three runs each | facts kept 73.1% · never contradicts its note 100% · spoiler line never misfired 100% · spoiler line appeared when due 77.8% · branch menu when due 97.1% · a note attached whenever one was due 100% · **65.6% of questions clean on all three runs** · about 1,866 tokens of prompt · no question overflowed the window · 4.7 minutes |
+| Search, on the questions nobody tuned against, top three | meaning-only 88.5% · keyword 78.8% · blended-then-reranked 82.1% · **blended 84.0%** — the intervals overlap, so this set still cannot tell the four apart |
+
+The "never contradicts its note — 100%" figure is the one lane A exists to fix. It is recorded here
+so the clean break in wave 3 has a before.
+
+**Both cheap checks (rule 10) were run before briefing, and both changed a brief.** They are written
+into the lane C and lane E briefs in section 6, and the numbers are in D87. In short:
+
+- **Lane C:** the floor cannot go on the fused score, which takes only two values on this corpus. It
+  goes on the meaning score, where a floor just above the junk phrases keeps 34 of 34 right tips.
+- **Lane E:** a bare follow-up already lands on the right note when a game has few bosses, and on the
+  wrong one when it has several. The lane's claim is reliability, not capability, and its test has to
+  be the Deep Rock pair rather than the Hades pair.
+
+Evidence: `runs/plan48-laneC-cheap-check.json`, `runs/plan48-laneC-cheap-check-signals.json`.
