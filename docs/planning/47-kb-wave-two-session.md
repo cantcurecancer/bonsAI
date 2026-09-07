@@ -608,5 +608,55 @@ to § 11: for each row, pass or fail, the reading, the file. Plain language firs
 
 ## 11. Progress log
 
-*(Filled in as the wave runs: tip hash, baselines, landings with hashes, the measurements, the release, and
-the Deck session's own log underneath.)*
+### Wave 0 — done 2026-09-07
+
+**Tip hash `f0ea489`**, not the `92718d1` written in section 1. That hash was true when the plan was
+drafted; the plan's own commit went on top of it. Every lane was briefed against `f0ea489`.
+
+**All five gates green on the tip** before anything was touched: typecheck, 1,118 frontend tests, the
+Python suite, the build, and the focus-pattern check (74 known, baseline 74).
+
+**Both models present** on the build machine: `nomic-embed-text` and `gemma4:e2b-it-qat`.
+
+**Corpus built and checked.** Version `2026.09.07`, 266 notes, 124 tips, every one with its meaning
+index. `publish_corpus.py --check` passed. A copy went into all five round-one worktrees.
+
+**Both baselines taken and committed** (`4ea364f`), on 266 notes, before any of this wave's changes:
+
+| Baseline | Reading |
+|---|---|
+| Answers | Facts right 70.8% · never contradicts its note 100% · a note attached whenever one was due 100% · the safety line fired when due 77.8% and never misfired at 98.2% · 55.7% of questions clean on all three runs · about 1,850 words of prompt · no question overflowed the model's window |
+| Search, on the questions nobody tuned against | Right note first: meaning-only 54.8%, words-only 48.1%, blended 51.9%, blended-then-reranked 48.9%. **The ranges overlap, so this set cannot tell the four apart.** That is a limit of the test, not a tie |
+
+### Three facts in the plan that were wrong, and what was done
+
+1. **Three game numbers pointed at the wrong games.** Section 6 gave Paper Mario as 24, Melee as 23
+   and Pikmin 2 as 25. In `data/kb/strategy_seed.json` they are 23, 25 and 24. All three numbers are
+   real, so notes written to the plan's numbers would have been filed under the wrong game and every
+   test would still have passed. **Corrected in the lane briefs before launch.** Paper Mario's top-up
+   from 6 notes is real; the note counts in section 1 were all correct.
+2. **The two "missing" roadmap entries already exist.** Section 1 said the stale game name was written
+   up in the status report only and the ring bug lived only in an untracked file. The plan's own commit
+   `f0ea489` filed both, marked D85. No work was needed.
+3. **Two lane briefs asked for something the blindness rule forbids.** Lane C was told to read the
+   session plan, which quotes the exact tip wording and routing behaviour it must not see — the plan
+   file was added to its forbidden list. Lane D was told to measure seventeen questions in a fixture it
+   is forbidden to open; that measurement moved to the one running the session, which section 7 already
+   says owns the canonical runs. Lane D's step 4 was removed from its brief.
+
+### The ring bug — blocked on a measurement, not started
+
+Reproduced from the evidence: three stops partly hidden, one at 67% behind Retry and two at 89% behind
+Copy, exactly as filed. The 89% readings are accounted for in the test row already — one of nine sample
+points sits in the corner where the icon is meant to be.
+
+The 67% one needs a rectangle nobody has: the walk file records the percentage but not the size of the
+stop it measured, and the reply layout report describes the controls but not the focus stops themselves.
+The in-IDE preview can produce it — a short question seeded, then the layout read — but **the preview
+panel has to be opened from the IDE and cannot be started from here.** Not attempted on the device: the
+Deck belongs to the checking session in wave 5.
+
+**Section 8's row W2-R7 needs its pass line changed either way.** It reads "none reads below 100% behind
+the Copy or Retry icon", which the accepted 89% can never meet — the icons sit inside their bubbles
+because that is what was asked for. The row should ask instead that no word of text is covered and no
+stop reads worse than the corner the icon occupies.
