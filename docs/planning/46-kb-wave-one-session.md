@@ -715,7 +715,16 @@ to § 11 of this file: for each row, pass or fail, the reading, the file. Plain 
 - **A before-reading for the notes-thrown-away bug, taken on the maintainer's own settings** (voice on, thinking
   medium): all three Strategy questions went over the 4,096-token window, by 703, 780 and 712 tokens. All three
   Speed questions stayed inside. After the prompt slimming lands, the same run must warn on zero.
-- Answer test before / after / after-late / voice: before is the pre-wave baseline above; after / after-late / voice
-  not run yet.
-- Release: version, bytes, both channels read back: —
-- QA session log: —
+- Answer test before / after / after-late / voice: before is the pre-wave baseline above. **After** — comparing the
+  same 37 questions before and after the prompt fix landed (a single early run looked alarming on its own, so this is
+  the reading across three runs together): facts kept from the note 92.9% to 91.9%, spoiler warning placed correctly
+  93.3% to 97.1%, branch menu shown 100% to 98.2%, prompt length 6,930 characters down to 5,682; no question lost the
+  start of its prompt across all 183 samples. Evidence `runs/plan46-R4-prompt-fix-on-device.json`. After-late, voice: —
+- Release: version `2026.09.06`, 266 notes across 25 games, 124 troubleshooting tips, 1.27 MB, shipped to both
+  channels and read back over the wire, matching the built file byte for byte.
+- QA session log: **confirmed on the Deck 2026-09-06**, character voice on, thinking at medium, Hades running — asked
+  about Megara, a boss with a note, and the answer named her dash patterns, punishing her while she recovers, and
+  using boons for burst damage: real note content, not general memory. The log showed the reply budget trimmed from
+  2112 to 1800 tokens so the prompt fit, and the old silent-drop warning was gone. The row's three answer-test
+  sentences and a screenshot question were not run — only this mechanism check was. Evidence
+  `runs/plan46-R4-prompt-fix-on-device.json`.
