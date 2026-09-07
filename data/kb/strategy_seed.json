@@ -3502,6 +3502,27 @@
       "source_license": "CC-BY-SA-3.0",
       "source_version": null,
       "crawled_at": "2026-09-07"
+    },
+    {
+      "section_id": 275,
+      "game_id": 19,
+      "section_type": "mechanic",
+      "name": "Foot chases through construction sites",
+      "card": "Niko's sprint has a stamina meter that drains fast and recovers slowly, so trying to win a chase by simply outrunning the target on a flat street usually fails. The better approach is cutting distance on stairs, ramps and scaffolding, where the target has to slow down for the same jumps and ladders you do. GTA IV's physics treat most ledges and rails as something to vault or climb rather than clip through, so tap the action button at a waist-high obstacle to hop it instead of running into it, and take stairs over a ladder when you can, since ladders are slower to mount. A fleeing target on foot tends to cut toward the nearest vehicle or a way down to street level, so cutting off the exits rather than chasing in a straight line closes the gap faster. If the mission lets you draw a weapon, a couple of shots to slow the target down beats catching up on foot entirely.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": null
+    },
+    {
+      "section_id": 276,
+      "game_id": 19,
+      "section_type": "mechanic",
+      "name": "Getting across Liberty City fast",
+      "card": "Once taxi rides unlock after Bull in a China Shop, hailing one from the street lets you skip the drive entirely: pick a destination on the in-car terminal and choose the trip-skip option, and the game cuts straight to arriving, at double the fare. The same terminal has a \"hurry\" option if you would rather watch the drive and get there sooner, with the driver ignoring traffic laws along the way. If you would rather not wait for a cab to show up at all, the subway threads most of the map and boarding one at a station is quick and cheap, though it only stops where the lines run. Once Niko's friendship with Roman passes 60% after that same mission, calling him for a car service sends a free cab to your marker instead of needing to hail one on the street.",
+      "source_url": "https://gta.fandom.com/wiki/Taxi_Rides",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-07"
     }
   ],
   "genre_patterns": [
