@@ -24,6 +24,10 @@ from backend.services.destructive_advice_guard import (
     check_destructive_advice,
 )
 from backend.services.input_sanitizer_service import apply_input_sanitizer_lane
+from backend.services.kb_not_in_notes_notice import (
+    append_not_in_notes_notice,
+    should_show_not_in_notes_notice,
+)
 from backend.services.ollama_prompts import (
     build_reply_followup_context_block,
     extract_strategy_asked_entity,
@@ -535,6 +539,20 @@ async def run_game_ai_request(
                 response_text = append_destructive_advice_notice(
                     response_text, destructive_advice_check
                 )
+
+        # Attribution note: only on an explicit Strategy/Expert ask where the notes cover this
+        # game (kb_coverage_status == "sections") but nothing matched the question this turn
+        # (kb_attached is False). Appended after the safety notice above so a reply that trips
+        # both shows the safety warning first, the attribution line last.
+        if ollama_result.get("success"):
+            response_text = append_not_in_notes_notice(
+                response_text,
+                should_show_not_in_notes_notice(
+                    ask_mode=ask_mode,
+                    kb_attached=bool(kb_transparency.get("kb_attached")),
+                    kb_coverage_status=str(kb_coverage_transparency.get("kb_coverage_status") or ""),
+                ),
+            )
 
         err_tail = ""
         if not ollama_result.get("success"):

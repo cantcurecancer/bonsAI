@@ -163,6 +163,8 @@
     "tests/test_input_sanitizer_service.py",
     "tests/test_intent_pack_service.py",
     "tests/test_intent_pack_store_lock.py",
+    "tests/test_kb_not_in_notes_notice.py",
+    "tests/test_kb_not_in_notes_wiring.py",
     "tests/test_knowledge_base_schema.py",
     "tests/test_knowledge_base_service.py",
     "tests/test_local_ollama_loopback.py",
