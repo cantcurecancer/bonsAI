@@ -3523,6 +3523,28 @@
       "source_license": "CC-BY-SA-3.0",
       "source_version": null,
       "crawled_at": "2026-09-07"
+    },
+    {
+      "section_id": 277,
+      "game_id": 20,
+      "section_type": "mechanic",
+      "name": "Choosing early armor by Damage Threshold, not by looks",
+      "card": "New Vegas grades armor by Damage Threshold (DT), a flat amount subtracted from every hit, rather than the percentage-based system other Fallout games use, so a lighter suit with real DT can outlast a bulkier one that has none. Leather armor is the standout early pick: DT 6, only fifteen pounds, and on sale from Chet at the Goodsprings general store before you have even left the tutorial area, which already blunts most hits from raiders, geckos and gunslingers to a fraction of their listed damage. Check an item's DT and weight in the Pip-Boy rather than judging by how heavy or armoured it looks — several early \"upgrades\" carry less DT than leather for a lot more weight. Faction armors like NCR trooper or Great Khan gear are worth grabbing once you can get them, but they are a later upgrade, not a reason to skip leather now.",
+      "source_url": "https://fallout.fandom.com/wiki/Leather_armor_(Fallout:_New_Vegas)",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-07"
+    },
+    {
+      "section_id": 278,
+      "game_id": 20,
+      "section_type": "area",
+      "name": "Crossing the crater radiation pools",
+      "card": "Nine of the atomic warheads fired at Las Vegas during the war missed their target and left radioactive craters scattered across the Mojave, and the pools of water sitting at the bottom of them are the dangerous part: readings up to twenty rads a second in places, high enough to rack up crippling radiation sickness in well under a minute. Check the Geiger counter on the Pip-Boy before committing to a route through one — the rocky rim usually has a dry path around, even if it means climbing rather than walking straight across. RadAway and Rad-X handle the exposure if you do end up wading through, but Rad-X only helps if you take it before you are in the water, not after. The loot at the bottom of a few of these craters is rarely worth crossing for without one of those first.",
+      "source_url": "https://fallout.fandom.com/wiki/Cottonwood_crater",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-07"
     }
   ],
   "genre_patterns": [
