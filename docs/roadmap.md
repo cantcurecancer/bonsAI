@@ -410,18 +410,29 @@ the twelve new games is thin at the bottom, and that was known before shipping (
 
 **Pick up here, in order.**
 
-1. The bug-fixing session running today owns the knowledge-base code files. Let it land the two bugs it holds before
-   touching them.
-2. The new titles have their cards (plan 40 § 7). What they still need is blind test questions, written in a session that
-   has not read the cards, then one corpus release. Only Fallout: New Vegas is not installed on the Deck. The sweep, the
-   prompt diet and the eval tooling need no Deck.
-3. Then work **Next** from the top: the prompt diet, the "not in my notes" line, symptom-only troubleshooting, the eval
-   tooling and the weight sweep, spoiler tiers, follow-ups remembering, and one corpus release that carries everything
-   needing a rebuild.
+*(Rewritten 2026-09-06 after wave one. The three steps that were here are all done: the blind questions were written
+and matched, the release went out, and the prompt slimming, the search tooling and the weight sweep all landed or were
+decided.)*
+
+1. **Fill the thin games.** This is the biggest thing a person would notice. Of 72 questions a player might plainly ask
+   about the twelve games added on 2026-09-06, only 43 have a note that answers them. Mario Kart 64 has four notes and
+   Doom 64 five. Someone asking about those will often get nothing. Writing notes, not code.
+2. **Rewrite the troubleshooting tips so they use the words people type.** The entry under Next explains why: searching
+   by meaning was built, measured and held back because it cannot connect *"the game drops me back to the library"* to
+   tips written in other words. The tips are the problem, not the search.
+3. **Then work Next from the top:** the "not in my notes" line, answer-first tested both ways, spoiler tiers, and
+   follow-ups remembering — plus one corpus release carrying whatever needs a rebuild.
+
+**Owed on the Deck:** one row (**KB-TRANCHE-01**) — a question per new game on the device. Fallout: New Vegas still is
+not installed. Everything else from wave one is verified.
 
 ### Calls waiting on you
 
-None open. **Decided 2026-09-05:** "starting out" cards get their own kind (D65); answer-first is tested both ways before
+None open. **Decided 2026-09-06:** the symptom-only search is held and rewriting the tips is the real job (D81);
+leaning the search toward meaning is held until every note is guaranteed to have its meaning index built, and two
+other objections would still need answering if it is ever taken (D82); the twelve new games ship with their coverage
+gap known and accepted (D83); about a second to search on the Deck is fine and the one-second target is retired
+(D84). **Decided 2026-09-05:** "starting out" cards get their own kind (D65); answer-first is tested both ways before
 a decision (D66, the test entry under Next); structured cards stay prose (D67); the blend-weight sweep runs now and the
 weights change if it agrees (D68); a first tranche of new titles comes from your own Steam library (D69, the read waits
 for the Deck to be free). **Decided 2026-09-06:** ship the twelve-game release now and treat the thin coverage as later
