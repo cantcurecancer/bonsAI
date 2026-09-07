@@ -623,8 +623,8 @@ class EvalArmsTests(unittest.TestCase):
     def test_ensure_seed_db_rebuilds_when_a_watched_input_is_newer_than_the_copy(self):
         """A copy older than the notes file triggers a rebuild.
 
-        subprocess.run is faked, so this never runs the real builder -- only the rebuild
-        decision is under test.
+        subprocess.run and the Ollama reachability check are both faked, so this never runs
+        the real builder or touches a network -- only the rebuild decision is under test.
         """
         mod = self.mod
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -644,15 +644,55 @@ class EvalArmsTests(unittest.TestCase):
                 calls.append(cmd)
                 db_path.write_text("rebuilt", encoding="utf-8")
 
-            with mock.patch.object(mod.subprocess, "run", fake_run):
+            with mock.patch.object(
+                mod.subprocess, "run", fake_run
+            ), mock.patch.object(mod, "_ollama_reachable", lambda base, **kw: True):
                 captured = io.StringIO()
                 with contextlib.redirect_stderr(captured):
-                    result = mod._ensure_seed_db(out_dir, stale_check_paths=[notes_path])
+                    result = mod._ensure_seed_db(
+                        out_dir,
+                        ollama_base="http://example.invalid",
+                        stale_check_paths=[notes_path],
+                    )
 
             self.assertEqual(result, db_path)
             self.assertEqual(len(calls), 1)
             self.assertEqual(db_path.read_text(encoding="utf-8"), "rebuilt")
             self.assertIn("rebuilding", captured.getvalue())
+
+    def test_ensure_seed_db_refuses_a_stale_rebuild_when_ollama_is_unreachable(self):
+        """Rule: never fall back to measuring the old copy just because Ollama is down."""
+        mod = self.mod
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            out_dir = Path(tmp_dir) / "out"
+            out_dir.mkdir()
+            db_path = out_dir / "corpus.db"
+            db_path.write_text("old copy", encoding="utf-8")
+            os.utime(db_path, (1000, 1000))
+
+            notes_path = Path(tmp_dir) / "strategy_seed.json"
+            notes_path.write_text("{}", encoding="utf-8")
+            os.utime(notes_path, (2000, 2000))  # newer than the copy
+
+            calls = []
+
+            def fake_run(cmd, *, check, cwd):
+                calls.append(cmd)
+
+            with mock.patch.object(
+                mod.subprocess, "run", fake_run
+            ), mock.patch.object(mod, "_ollama_reachable", lambda base, **kw: False):
+                with self.assertRaises(mod.StaleCorpusUnrebuildableError) as ctx:
+                    mod._ensure_seed_db(
+                        out_dir,
+                        ollama_base="http://example.invalid",
+                        stale_check_paths=[notes_path],
+                    )
+
+            self.assertIn("out of date", str(ctx.exception))
+            self.assertIn("not reachable", str(ctx.exception))
+            self.assertEqual(calls, [])  # never ran the builder against the stale copy
+            self.assertEqual(db_path.read_text(encoding="utf-8"), "old copy")  # untouched
 
     def test_ensure_seed_db_reuses_the_copy_when_every_input_is_older(self):
         """A copy newer than all three watched inputs is reused, not rebuilt."""

@@ -283,9 +283,31 @@ def _corpus_is_stale(db_mtime: float, input_mtimes: list[float]) -> bool:
     return any(t > db_mtime for t in input_mtimes)
 
 
+class StaleCorpusUnrebuildableError(Exception):
+    """The eval's saved copy of the library is out of date and Ollama cannot be reached to
+    rebuild it. Raised instead of quietly measuring the old copy."""
+
+
+def _ollama_reachable(ollama_base: str, *, timeout_s: float = 5.0) -> bool:
+    """``GET {base}/api/tags`` and report whether Ollama answered at all.
+
+    Used only to decide whether an out-of-date corpus copy can be safely rebuilt here -- never
+    to pick a model or change what gets embedded.
+    """
+    url = f"{ollama_base.rstrip('/')}/api/tags"
+    try:
+        req = urllib.request.Request(url, method="GET")
+        with urllib.request.urlopen(req, timeout=timeout_s) as resp:
+            resp.read()
+        return True
+    except Exception:
+        return False
+
+
 def _ensure_seed_db(
     out_dir: Path,
     *,
+    ollama_base: str = DEFAULT_OLLAMA,
     force_rebuild: bool = False,
     stale_check_paths: list[Path] | None = None,
 ) -> Path:
@@ -302,6 +324,14 @@ def _ensure_seed_db(
             "rebuilding it before this run searches anything",
             file=sys.stderr,
         )
+        # A stale copy needs a real rebuild, which needs the embedding model. Refuse rather
+        # than measure the old copy, and never fall back to a keyword-only rebuild -- a search
+        # number taken on a copy nobody meant to measure is worse than no number at all.
+        if not _ollama_reachable(ollama_base):
+            raise StaleCorpusUnrebuildableError(
+                "the eval's saved copy of the library is out of date and the embedding model "
+                "is not reachable, so this run cannot be trusted -- start Ollama and try again"
+            )
     out_dir.mkdir(parents=True, exist_ok=True)
     if force_rebuild or stale:
         for name in ("corpus.db", "corpus.db.zlib", "corpus-manifest.json", "ATTRIBUTIONS.md"):
@@ -1641,7 +1671,7 @@ def run_bakeoff(
     arms_only: bool = False,
     force_rebuild: bool = False,
 ) -> dict[str, Any]:
-    db_path = _ensure_seed_db(out_dir, force_rebuild=force_rebuild)
+    db_path = _ensure_seed_db(out_dir, ollama_base=ollama_base, force_rebuild=force_rebuild)
     conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
     conn.row_factory = sqlite3.Row
 
@@ -1876,7 +1906,9 @@ def main() -> int:
 
     if args.sweep_weights is not None or args.confirm_holdout is not None or args.tie_break:
         try:
-            db_path = _ensure_seed_db(args.out, force_rebuild=args.force_rebuild)
+            db_path = _ensure_seed_db(
+                args.out, ollama_base=args.ollama, force_rebuild=args.force_rebuild
+            )
             conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
             conn.row_factory = sqlite3.Row
             docs = _load_corpus_docs(conn)
@@ -1913,6 +1945,9 @@ def main() -> int:
         except EmbedError as exc:
             print(f"embed error: {exc}", file=sys.stderr)
             return 1
+        except StaleCorpusUnrebuildableError as exc:
+            print(str(exc), file=sys.stderr)
+            return 1
         except subprocess.CalledProcessError as exc:
             print(f"build_rag_db failed: {exc}", file=sys.stderr)
             return 1
@@ -1928,6 +1963,9 @@ def main() -> int:
         )
     except EmbedError as exc:
         print(f"embed error: {exc}", file=sys.stderr)
+        return 1
+    except StaleCorpusUnrebuildableError as exc:
+        print(str(exc), file=sys.stderr)
         return 1
     except subprocess.CalledProcessError as exc:
         print(f"build_rag_db failed: {exc}", file=sys.stderr)
