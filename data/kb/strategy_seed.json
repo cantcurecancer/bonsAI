@@ -3466,7 +3466,7 @@
       "game_id": 14,
       "section_type": "mechanic",
       "name": "Crossing the electrified waste pools",
-      "card": "One stretch of the waste-treatment area has you wading through pools of toxic runoff with live wiring hanging into the water. The current is not constant; it arcs on a cycle, with a spark and a crackling sound just before it charges. Watch for that cue and move while the water is dark, not while it is lit up. Standing in a charged pool does heavy damage fast and can be a one-hit kill at low health, so top off before you start rather than trying to push through mid-arc. Where a catwalk, pipe or stack of crates skirts the edge, take the dry route even if it looks like the slower path — the current covers the whole pool, not just the middle.",
+      "card": "The waste-treatment area has stretches of standing water with live wiring dropped into it, and the current is constant — there is no safe moment and no warning cycle to wait for. Stepping in deals continuous shock damage until you get out or die, so treat the flooded floor like lava rather than something to time. Cross on anything above the water: desks, cabinets, shelves, floating crates and overhead pipes all work, and the route is usually built into the room once you look up. Better still, cut the power — a red wall switch, breaker or lever, usually just outside the flooded area or at its far end, makes the water safe for good. Where a gap is too wide to jump, push or carry loose wooden crates into the water and use them as stepping stones.",
       "source_url": "",
       "source_license": "bonsAI-maintainer",
       "source_version": null
