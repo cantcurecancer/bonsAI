@@ -3481,6 +3481,27 @@
       "source_license": "CC-BY-SA-3.0",
       "source_version": null,
       "crawled_at": "2026-09-07"
+    },
+    {
+      "section_id": 273,
+      "game_id": 18,
+      "section_type": "mechanic",
+      "name": "Choosing a vehicle upgrade at Los Santos Customs",
+      "card": "Los Santos Customs sells five performance categories per vehicle: engine, brakes, transmission, turbo and armour, plus cosmetic changes that do not affect handling. For a car you actually drive around rather than race, armour and brakes are the upgrades that pay off first: armour buys a few more hits before an explosion totals the car, and better brakes matter more than raw top speed on the city's tight corners. Turbo is worth adding once the engine is already maxed, since it sharpens acceleration out of every corner rather than raising top speed alone; engine level four is the expensive one and the biggest single jump in speed, so it is the upgrade to save for rather than buy first if funds are short. Whichever you pick, storing the car in an owned garage is what keeps the upgrades between sessions.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": null
+    },
+    {
+      "section_id": 274,
+      "game_id": 18,
+      "section_type": "area",
+      "name": "Getting into Fort Zancudo without a wanted level",
+      "card": "The military base sits under its own airspace rule: fly a plane or helicopter over it at high altitude and ground control has nothing to warn you about, so no wanted level. Drop low or hover and one of the two ground checkpoints radios a warning before opening fire, and going in by road or over the perimeter fence gets you spotted within moments once you are inside, pulling every soldier and vehicle on site down on you at once, wanted level and all. If you only need eyes on what is inside — the jets, the vehicles, the layout — a high pass over the runway is the safe way to look without waking anyone up; landing or setting foot on the ground is what turns it into a fight.",
+      "source_url": "https://gta.fandom.com/wiki/Fort_Zancudo",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-07"
     }
   ],
   "genre_patterns": [
