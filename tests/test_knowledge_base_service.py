@@ -19,6 +19,7 @@ from backend.services.knowledge_base_service import (
     _trust_tier_for_row,
     EmbeddingDimensionMismatch,
     KnowledgeCard,
+    _best_meaning_score,
     close_connection,
     kb_coverage_to_transparency,
     resolve_title_from_question,
@@ -39,6 +40,7 @@ from backend.services.knowledge_base_service import (
     _load_section_vectors,
     _search_compat_patterns,
     COMPAT_TOPIC_RECALL_K,
+    STRATEGY_MEANING_FLOOR,
     _vector_recall_sections,
     VECTOR_RECALL_FLOOR,
     VECTOR_RECALL_MARGIN_MIN_POOL,
@@ -1182,6 +1184,99 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
     self.assertNotIn("Praetorian", result.text_block)
     self.assertNotIn("Nitra", result.text_block)
 
+  def test_strategy_meaning_floor_sits_inside_the_calibrated_safe_zone(self):
+    """Regression pin for the calibration written into STRATEGY_MEANING_FLOOR's comment: it
+    must stay inside the measured safe zone -- above the strongest wrong-attached tuning row
+    (0.5183) and below the weakest right-attached one (0.5277) -- or the zero-regression
+    guarantee documented there no longer holds."""
+    self.assertGreater(STRATEGY_MEANING_FLOOR, 0.5183)
+    self.assertLess(STRATEGY_MEANING_FLOOR, 0.5277)
+
+  def test_strategy_meaning_floor_blocks_a_below_floor_pool_end_to_end(self):
+    """D87: a real keyword hit is still dropped when nothing in the game's whole vectored note
+    set clears the meaning floor -- "attach nothing" beats attaching the only card that shares
+    a word with the question, the notes-side twin of the tips test above.
+
+    Every DRG Survivor section is mocked to the same low cosine (0.3, well under
+    STRATEGY_MEANING_FLOOR), so the pool-margin gate inside _vector_recall_sections also finds
+    nothing stands out -- the keyword hit on "Dreadnought" is the only reason anything would
+    attach without this floor.
+    """
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    conn = _get_connection(str(SEED_DB))
+    ids = [
+      int(r[0])
+      for r in conn.execute("SELECT section_id FROM sections WHERE game_id = 2")
+    ]
+    with mock.patch(
+      "backend.services.knowledge_base_service.nomic_embed_available",
+      return_value=True,
+    ), mock.patch(
+      "backend.services.knowledge_base_service.corpus_has_usable_section_vectors",
+      return_value=True,
+    ), mock.patch(
+      "backend.services.knowledge_base_service.embed_texts",
+      return_value=[[1.0, 0.0] + [0.0] * 766],
+    ), mock.patch(
+      "backend.services.knowledge_base_service._load_section_vectors",
+      return_value={sid: [0.3, 0.0] + [0.0] * 766 for sid in ids},
+    ):
+      result = retrieve_knowledge_context(
+        settings,
+        ask_mode="strategy",
+        question="Glyphid Dreadnought weak point",
+        app_id="2321470",
+        app_name="Deep Rock Galactic: Survivor",
+        domain="strategy",
+        pc_ip="127.0.0.1:11434",
+      )
+    self.assertFalse(result.attached)
+    self.assertEqual(result.text_block, "")
+    self.assertTrue(result.notes.startswith("routed_nothing_fit"))
+
+  def test_strategy_meaning_floor_leaves_a_confident_pool_alone(self):
+    """The floor reads the pool's best score: one card clearing it keeps the whole game's
+    vector pool from being blanked out, even when every sibling card scores low."""
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    conn = _get_connection(str(SEED_DB))
+    ids = [
+      int(r[0])
+      for r in conn.execute("SELECT section_id FROM sections WHERE game_id = 2")
+    ]
+    vectors = {sid: [0.3, 0.0] + [0.0] * 766 for sid in ids}
+    vectors[3] = [0.9, 0.0] + [0.0] * 766  # Glyphid Dreadnought -- clearly above the floor
+    with mock.patch(
+      "backend.services.knowledge_base_service.nomic_embed_available",
+      return_value=True,
+    ), mock.patch(
+      "backend.services.knowledge_base_service.corpus_has_usable_section_vectors",
+      return_value=True,
+    ), mock.patch(
+      "backend.services.knowledge_base_service.embed_texts",
+      return_value=[[1.0, 0.0] + [0.0] * 766],
+    ), mock.patch(
+      "backend.services.knowledge_base_service._load_section_vectors",
+      return_value=vectors,
+    ):
+      result = retrieve_knowledge_context(
+        settings,
+        ask_mode="strategy",
+        question="Glyphid Dreadnought weak point",
+        app_id="2321470",
+        app_name="Deep Rock Galactic: Survivor",
+        domain="strategy",
+        pc_ip="127.0.0.1:11434",
+      )
+    self.assertTrue(result.attached)
+    self.assertEqual(result.retrieval_method, "hybrid")
+    self.assertIn("Dreadnought", result.text_block)
+
   def test_rrf_lets_a_recall_card_compete_without_unseating_the_top_keyword_hit(self):
     keyword = [
       KnowledgeCard(1, 1, "G", "boss", "Keyword first", "c", "", "", None, None, "fallback"),
@@ -1435,6 +1530,130 @@ class KnowledgeBaseServiceTests(unittest.TestCase):
       )
     self.assertTrue(result.attached)
     self.assertEqual(result.retrieval_method, "keyword_embed_unavailable")
+
+  def test_best_meaning_score_reads_the_max_across_the_pool(self):
+    """The D87 floor reads the strongest match in the whole pool, not any one card's rank."""
+    vectors = {1: [1.0, 0.0], 2: [0.0, 1.0], 3: [0.6, 0.8]}
+    self.assertAlmostEqual(_best_meaning_score(vectors, [1.0, 0.0]), 1.0)
+    self.assertIsNone(_best_meaning_score({}, [1.0, 0.0]))
+
+  def test_compat_meaning_floor_blocks_a_below_floor_pool_end_to_end(self):
+    """D87: a keyword/topic pool whose best meaning score never clears the floor attaches
+    nothing at all -- not the weakest tip in the pool, and not the compat fallback either.
+
+    Real keyword pool ("why is my game crashing proton issue" has five real tips on the seed
+    corpus, per test_compat_hybrid_reranks_when_nomic_available); every mocked vector is
+    orthogonal to the query, so the best meaning score in the pool is 0.0, well under
+    COMPAT_MEANING_FLOOR.
+    """
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    with mock.patch(
+      "backend.services.knowledge_base_service.nomic_embed_available",
+      return_value=True,
+    ), mock.patch(
+      "backend.services.knowledge_base_service.corpus_has_usable_compat_vectors",
+      return_value=True,
+    ), mock.patch(
+      "backend.services.knowledge_base_service.embed_texts",
+      return_value=[[1.0, 0.0] + [0.0] * 766],
+    ), mock.patch(
+      "backend.services.knowledge_base_service._load_compat_vectors",
+      return_value={1: [0.0, 1.0] + [0.0] * 766, 2: [0.0, 1.0] + [0.0] * 766},
+    ):
+      result = retrieve_knowledge_context(
+        settings,
+        ask_mode="expert",
+        question="why is my game crashing proton issue",
+        app_id="",
+        app_name="",
+        domain="compat",
+        pc_ip="127.0.0.1:11434",
+      )
+    self.assertFalse(result.attached)
+    self.assertEqual(result.text_block, "")
+    self.assertTrue(result.notes.startswith("routed_nothing_fit"))
+
+  def test_compat_meaning_floor_leaves_a_confident_pool_alone(self):
+    """The floor reads the pool's best score, so one strong card keeps the whole pool attached
+    even when other candidates in it score near zero."""
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    with mock.patch(
+      "backend.services.knowledge_base_service.nomic_embed_available",
+      return_value=True,
+    ), mock.patch(
+      "backend.services.knowledge_base_service.corpus_has_usable_compat_vectors",
+      return_value=True,
+    ), mock.patch(
+      "backend.services.knowledge_base_service.embed_texts",
+      return_value=[[1.0, 0.0] + [0.0] * 766],
+    ), mock.patch(
+      "backend.services.knowledge_base_service._load_compat_vectors",
+      return_value={1: [1.0, 0.0] + [0.0] * 766, 2: [0.0, 1.0] + [0.0] * 766},
+    ):
+      result = retrieve_knowledge_context(
+        settings,
+        ask_mode="expert",
+        question="why is my game crashing proton issue",
+        app_id="",
+        app_name="",
+        domain="compat",
+        pc_ip="127.0.0.1:11434",
+      )
+    self.assertTrue(result.attached)
+    self.assertEqual(result.retrieval_method, "hybrid")
+
+  def test_thank_you_very_much_attaches_nothing(self):
+    """Precision test carried over from wave two's tip lane -- must keep passing unchanged.
+
+    No topic matches, no keyword hit, so this never reaches the meaning floor at all; it is
+    pinned here so a future change to either gate cannot quietly start attaching something.
+    """
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    result = retrieve_knowledge_context(
+      settings,
+      ask_mode="speed",
+      question="thank you very much",
+      app_id="",
+      app_name="",
+      domain="compat",
+      pc_ip="",
+    )
+    self.assertFalse(result.attached)
+    self.assertEqual(result.text_block, "")
+
+  def test_compat_meaning_floor_stands_down_without_an_embed_model(self):
+    """No embed model means no meaning score to floor -- keyword attachment is unaffected."""
+    settings = {
+      "use_local_knowledge_base": True,
+      "rag_corpus_path": str(SEED_DB.parent),
+    }
+    with mock.patch(
+      "backend.services.knowledge_base_service.nomic_embed_available",
+      return_value=False,
+    ), mock.patch(
+      "backend.services.knowledge_base_service.corpus_has_usable_compat_vectors",
+      return_value=True,
+    ):
+      result = retrieve_knowledge_context(
+        settings,
+        ask_mode="expert",
+        question="why is my game crashing proton issue",
+        app_id="",
+        app_name="",
+        domain="compat",
+        pc_ip="127.0.0.1:11434",
+      )
+    self.assertTrue(result.attached)
+    self.assertEqual(result.retrieval_method, "keyword")
 
   def test_game_knowledge_is_not_gated_on_ask_mode(self):
     """D17. The same question about the same running game, in each mode.
