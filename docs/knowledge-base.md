@@ -528,6 +528,53 @@ top-3 **95.9% → 100.0%**, top-1 unchanged, **zero** regressions. Full measurem
 [audit/rag-vector-recall-floor-2026-08-18.md](audit/rag-vector-recall-floor-2026-08-18.md).
 On-Deck QA owed: **KB-RECALL-01**.
 
+## Time budget for a game question (2026-09-07)
+
+Nobody had ever written down how long a game question is allowed to take. So when it got slower,
+it only got noticed because one QA row happened to have a number written next to it to compare
+against. This section writes two numbers down, with a game running: how long it takes to search
+the notes, and how long until the first word of an answer appears — so the next slowdown fails a
+check instead of being caught by luck. `scripts/probe_deck_kb_retrieval.py` prints pass or
+over-budget against both.
+
+**Searching the notes.** In Strategy or Expert mode, where the meaning search runs, this has been
+measured twice on the Deck, both times with Deep Rock Galactic: Survivor running and the same
+three questions: 1078.87, 1094.34 and 1090.17 milliseconds one evening
+(`docs/planning/34-feature-verification-round.md`, backed by
+`runs/round34-drg-q1-open-show-details.json`, `runs/round34-drg-q2-open-show-details.json` and
+`runs/round34-drg-q3-to-details.json`), then 1103.03, 1230.22 and 1193.75 milliseconds the next
+(`runs/plan46-R2-strategy-half.json`). A person feels this as roughly a one-second beat before an
+answer starts, not a stall. **The budget is 1.0 second.** That is what the second reading's own
+row already asked for in writing ("the row wants the second and third at or under 1.0 s"), and
+every reading above is at or over that line — on purpose: an earlier reading on this same Deck,
+back on 2026-08-18, had it at 793–900 milliseconds ("Vector recall pass" above), so the cost has
+already crept up once, and a check that only ever passed by luck should not keep passing by luck.
+In Speed mode the notes should not be searched by meaning at all, so the budget there is zero —
+any measured time is over budget, because it means the plain word search let the slower meaning
+search run when it should not have (the same evening's reading caught this happening on two of
+three Speed questions, at 1140.40 and 943.70 milliseconds).
+
+**A one-off warm-up does not explain the slow readings away.** On the maintainer's PC, the first
+search after a quiet spell is slow and every one after it is fast: 1.47 seconds, then 0.05 seconds.
+Neither Deck reading looks like that. In the first, all three questions came back within 16
+milliseconds of each other, the third no faster than the first. In the second, the third question
+(1.19 s) was no faster than the first (1.10 s), and the second question (1.23 s) was the slowest
+of the three. Two separate readings, on two different evenings, both without a fast later
+question, is enough to say the Deck pays this cost on every search — the budget is written for
+that, not for a warm-up that only shows up on a different machine.
+
+**Time to the first word of an answer.** This figure is not pinned down the way the search time
+is. The only whole-reply reading with a game running is 69 seconds, which tripped the app's own
+"this is running slow" warning (`runs/plan46-R2-strategy-half.json`) — but that reading was taken
+while a since-fixed bug was feeding the model far more text than it needed (the same run recorded
+all three Strategy questions overflowing the model's window by 700-plus tokens), so it overstates
+how long a question takes today and is not a fair number to build a budget on. Rather than guess,
+the budget borrows a number that already exists in the app for a related purpose — the 60-second
+"this is running slow" warning it already shows a person — as a stand-in. It is written down here
+as a stand-in and nothing more: a real Deck reading of "how long from pressing Ask to the first
+word landing on screen, with a game running" is still owed, and the probe's `--reply-ms` prints
+its verdict once someone times one by hand.
+
 ## Related docs
 
 - [archive/research/rag-sources-research.md](archive/research/rag-sources-research.md) — source research (superseded for runtime by this doc)

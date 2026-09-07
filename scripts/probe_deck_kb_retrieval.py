@@ -43,6 +43,66 @@ from backend.services import knowledge_base_service as kb  # noqa: E402
 # Card headers rendered by `_card_lines`: "[Game / type: Name] (trust: tier)".
 CARD_HEADER_RE = re.compile(r"^\[.*\(trust: [^)]+\)\s*$", re.M)
 
+# --- Time budget for a game question, with a game running -----------------------------------
+#
+# See docs/knowledge-base.md, "Time budget for a game question", for the on-device readings
+# behind these numbers and why a one-off warm-up does not explain them away.
+#
+# Strategy and Expert both run the meaning search; the budget is 1.0 s — what the wave-two Deck
+# evening's own row already expected ("at or under 1.0 s on the second and third questions").
+# Speed must not run the meaning search at all, so any measured time there is over budget.
+SEARCH_BUDGET_MS = {
+    "speed": 0.0,
+    "strategy": 1000.0,
+    "expert": 1000.0,
+}
+
+# `embed_ms` is 0.0, never None, when the meaning search did not run (knowledge_base_service.py,
+# the `embed_ms = 0.0` initialiser before the `nomic_ready and (...)` gate).
+_NO_SEARCH_RAN = 0.0
+
+# No clean on-device reading of just "time to the first word" exists yet — the one full-reply
+# reading in evidence (69 s, runs/plan46-R2-strategy-half.json) was taken during a prompt-overflow
+# bug since fixed, so it is not a fair number to hold today's answers to. This budget borrows the
+# app's own existing slow-reply warning as a stand-in (`DEFAULT_LATENCY_WARNING_SECONDS` in
+# src/data/bonsaiSettingsSchema.ts) until a real first-word reading replaces it.
+FIRST_WORD_BUDGET_MS = 60_000.0
+
+
+def search_time_verdict(embed_ms: float, mode: str) -> str:
+    """Classify a measured meaning-search time against the budget for `mode`. Pure: takes the
+    number the retrieval result already reports (`res.timing_ms["embed_ms"]`), returns a verdict
+    string, touches nothing else."""
+    mode_key = (mode or "").strip().lower()
+    if mode_key == "speed":
+        if embed_ms is None or embed_ms <= _NO_SEARCH_RAN:
+            return "PASS - no meaning search ran, as Speed requires"
+        return (
+            "OVER BUDGET - meaning search ran in Speed mode (%.0f ms); Speed should not run it "
+            "at all" % embed_ms
+        )
+    budget = SEARCH_BUDGET_MS.get(mode_key, SEARCH_BUDGET_MS["strategy"])
+    if embed_ms is None or embed_ms <= _NO_SEARCH_RAN:
+        return "PASS - no meaning search ran"
+    if embed_ms <= budget:
+        return "PASS - %.0f ms (budget %.0f ms)" % (embed_ms, budget)
+    return "OVER BUDGET - %.0f ms (budget %.0f ms)" % (embed_ms, budget)
+
+
+def first_word_verdict(reply_ms):
+    """Classify a measured time from pressing Ask to the first word landing on screen. Pure, same
+    shape as `search_time_verdict`. This probe does not itself ask the chat model (see the module
+    docstring), so `reply_ms` is supplied by hand — see `--reply-ms` — by someone timing a real
+    Ask on the device."""
+    if reply_ms is None:
+        return "not measured"
+    if reply_ms <= FIRST_WORD_BUDGET_MS:
+        return "PASS - %.1f s (budget %.0f s)" % (reply_ms / 1000.0, FIRST_WORD_BUDGET_MS / 1000.0)
+    return "OVER BUDGET - %.1f s (budget %.0f s)" % (
+        reply_ms / 1000.0,
+        FIRST_WORD_BUDGET_MS / 1000.0,
+    )
+
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description=__doc__)
@@ -58,6 +118,14 @@ def parse_args() -> argparse.Namespace:
     )
     p.add_argument("--modes", default="speed,strategy,expert")
     p.add_argument("--pool", action="store_true", help="also dump the FTS candidate pool")
+    p.add_argument(
+        "--reply-ms",
+        type=float,
+        default=None,
+        help="Milliseconds from pressing Ask to the first word landing on screen, timed by hand "
+             "on the device (this probe does not itself ask the chat model). Prints the time "
+             "budget's verdict for that reading; omit to skip the check.",
+    )
     return p.parse_args()
 
 
@@ -162,6 +230,11 @@ def main() -> int:
         print("            method=%s trust=%s notes=%s sources=%d%s"
               % (res.retrieval_method, res.trust_tier, res.notes or "-", len(res.sources),
                  "  [budget-truncated]" if "omitted to fit budget" in (res.text_block or "") else ""))
+        embed_ms = (res.timing_ms or {}).get("embed_ms")
+        print("            search time: %s" % search_time_verdict(embed_ms, mode))
+
+    print()
+    print("first word : %s" % first_word_verdict(args.reply_ms))
     return 0
 
 
