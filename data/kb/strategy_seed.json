@@ -3438,6 +3438,146 @@
       "source_license": "CC-BY-SA-4.0",
       "source_version": null,
       "crawled_at": "2026-09-05"
+    },
+    {
+      "section_id": 269,
+      "game_id": 14,
+      "section_type": "mechanic",
+      "name": "The opening tram ride and where it leads",
+      "card": "Black Mesa opens with a long tram ride that needs no input beyond looking around; it carries you from the surface entrance through checkpoints and cargo bays into the underground facility, and doubles as an unskippable loading screen for the level ahead. Step off at the platform, badge through the checkpoint, and follow the corridor signs to the locker room, where you change into the orange HEV suit before the day's work — the path there is linear, so a door that will not open yet is one you have not reached the switch for. Anomalous Materials, the lab down the following hall, is where the real gameplay opens up: once things go wrong there, the crowbar on the floor nearby is the first weapon in the game, and from then on every locked vent or wooden crate is worth swinging at before hunting for another way around.",
+      "source_url": "https://combineoverwiki.net/wiki/Black_Mesa_Transit_System",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-07"
+    },
+    {
+      "section_id": 270,
+      "game_id": 14,
+      "section_type": "mechanic",
+      "name": "Recharging the HEV suit",
+      "card": "The suit's own charge, shown on the HUD next to health, does not come back on its own; you top it up at a wall-mounted suit charger, an orange unit with a black charging cord and the HEV logo, kept separate from the white health chargers with the red cross. Walk up and hold use; a mechanical arm extends and feeds power in until you back away or the charger runs dry. Each charger holds a limited reserve that does not refill once spent, so treat the first one in an area as insurance for what is ahead rather than something to top off out of habit, and look for a charger before a big fight rather than after taking damage in it. When a charger's screen goes dark, it is done for good.",
+      "source_url": "https://combineoverwiki.net/wiki/Chargers",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-07"
+    },
+    {
+      "section_id": 271,
+      "game_id": 14,
+      "section_type": "mechanic",
+      "name": "Crossing the electrified waste pools",
+      "card": "One stretch of the waste-treatment area has you wading through pools of toxic runoff with live wiring hanging into the water. The current is not constant; it arcs on a cycle, with a spark and a crackling sound just before it charges. Watch for that cue and move while the water is dark, not while it is lit up. Standing in a charged pool does heavy damage fast and can be a one-hit kill at low health, so top off before you start rather than trying to push through mid-arc. Where a catwalk, pipe or stack of crates skirts the edge, take the dry route even if it looks like the slower path — the current covers the whole pool, not just the middle.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": null
+    },
+    {
+      "section_id": 272,
+      "game_id": 15,
+      "section_type": "area",
+      "name": "Leaving the Forgotten Crossroads",
+      "card": "The tutorial descent leaves you in the Forgotten Crossroads, the caved-in area right under Dirtmouth, and the easy next step is west: breaking through toward Greenpath opens the first of Hallownest's main regions and gives you the early platforming and enemies that put the Mothwing Cloak dash to use once you pick it up there. The Crossroads also connect east to Crystal Peak's lower entrance and south toward the Fungal Wastes and a tram line to the City of Tears, but those areas expect more health and a spare charm slot or two, so treat them as later stops rather than the first move. Nothing here is one-way for long: a bench near each entrance lets you rest, and fast travel opens up once a stag station nearby is found, so exploring a dead end costs time rather than progress.",
+      "source_url": "https://hollowknight.wiki/w/Forgotten_Crossroads",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-07"
+    },
+    {
+      "section_id": 273,
+      "game_id": 18,
+      "section_type": "mechanic",
+      "name": "Choosing a vehicle upgrade at Los Santos Customs",
+      "card": "Los Santos Customs sells five performance categories per vehicle: engine, brakes, transmission, turbo and armour, plus cosmetic changes that do not affect handling. For a car you actually drive around rather than race, armour and brakes are the upgrades that pay off first: armour buys a few more hits before an explosion totals the car, and better brakes matter more than raw top speed on the city's tight corners. Turbo is worth adding once the engine is already maxed, since it sharpens acceleration out of every corner rather than raising top speed alone; engine level four is the expensive one and the biggest single jump in speed, so it is the upgrade to save for rather than buy first if funds are short. Whichever you pick, storing the car in an owned garage is what keeps the upgrades between sessions.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": null
+    },
+    {
+      "section_id": 274,
+      "game_id": 18,
+      "section_type": "area",
+      "name": "Getting into Fort Zancudo without a wanted level",
+      "card": "The military base sits under its own airspace rule: fly a plane or helicopter over it at high altitude and ground control has nothing to warn you about, so no wanted level. Drop low or hover and one of the two ground checkpoints radios a warning before opening fire, and going in by road or over the perimeter fence gets you spotted within moments once you are inside, pulling every soldier and vehicle on site down on you at once, wanted level and all. If you only need eyes on what is inside — the jets, the vehicles, the layout — a high pass over the runway is the safe way to look without waking anyone up; landing or setting foot on the ground is what turns it into a fight.",
+      "source_url": "https://gta.fandom.com/wiki/Fort_Zancudo",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-07"
+    },
+    {
+      "section_id": 275,
+      "game_id": 19,
+      "section_type": "mechanic",
+      "name": "Foot chases through construction sites",
+      "card": "Niko's sprint has a stamina meter that drains fast and recovers slowly, so trying to win a chase by simply outrunning the target on a flat street usually fails. The better approach is cutting distance on stairs, ramps and scaffolding, where the target has to slow down for the same jumps and ladders you do. GTA IV's physics treat most ledges and rails as something to vault or climb rather than clip through, so tap the action button at a waist-high obstacle to hop it instead of running into it, and take stairs over a ladder when you can, since ladders are slower to mount. A fleeing target on foot tends to cut toward the nearest vehicle or a way down to street level, so cutting off the exits rather than chasing in a straight line closes the gap faster. If the mission lets you draw a weapon, a couple of shots to slow the target down beats catching up on foot entirely.",
+      "source_url": "",
+      "source_license": "bonsAI-maintainer",
+      "source_version": null
+    },
+    {
+      "section_id": 276,
+      "game_id": 19,
+      "section_type": "mechanic",
+      "name": "Getting across Liberty City fast",
+      "card": "Once taxi rides unlock after Bull in a China Shop, hailing one from the street lets you skip the drive entirely: pick a destination on the in-car terminal and choose the trip-skip option, and the game cuts straight to arriving, at double the fare. The same terminal has a \"hurry\" option if you would rather watch the drive and get there sooner, with the driver ignoring traffic laws along the way. If you would rather not wait for a cab to show up at all, the subway threads most of the map and boarding one at a station is quick and cheap, though it only stops where the lines run. Once Niko's friendship with Roman passes 60% after that same mission, calling him for a car service sends a free cab to your marker instead of needing to hail one on the street.",
+      "source_url": "https://gta.fandom.com/wiki/Taxi_Rides",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-07"
+    },
+    {
+      "section_id": 277,
+      "game_id": 20,
+      "section_type": "mechanic",
+      "name": "Choosing early armor by Damage Threshold, not by looks",
+      "card": "New Vegas grades armor by Damage Threshold (DT), a flat amount subtracted from every hit, rather than the percentage-based system other Fallout games use, so a lighter suit with real DT can outlast a bulkier one that has none. Leather armor is the standout early pick: DT 6, only fifteen pounds, and on sale from Chet at the Goodsprings general store before you have even left the tutorial area, which already blunts most hits from raiders, geckos and gunslingers to a fraction of their listed damage. Check an item's DT and weight in the Pip-Boy rather than judging by how heavy or armoured it looks — several early \"upgrades\" carry less DT than leather for a lot more weight. Faction armors like NCR trooper or Great Khan gear are worth grabbing once you can get them, but they are a later upgrade, not a reason to skip leather now.",
+      "source_url": "https://fallout.fandom.com/wiki/Leather_armor_(Fallout:_New_Vegas)",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-07"
+    },
+    {
+      "section_id": 278,
+      "game_id": 20,
+      "section_type": "area",
+      "name": "Crossing the crater radiation pools",
+      "card": "Nine of the atomic warheads fired at Las Vegas during the war missed their target and left radioactive craters scattered across the Mojave, and the pools of water sitting at the bottom of them are the dangerous part: readings up to twenty rads a second in places, high enough to rack up crippling radiation sickness in well under a minute. Check the Geiger counter on the Pip-Boy before committing to a route through one — the rocky rim usually has a dry path around, even if it means climbing rather than walking straight across. RadAway and Rad-X handle the exposure if you do end up wading through, but Rad-X only helps if you take it before you are in the water, not after. The loot at the bottom of a few of these craters is rarely worth crossing for without one of those first.",
+      "source_url": "https://fallout.fandom.com/wiki/Cottonwood_crater",
+      "source_license": "CC-BY-SA-3.0",
+      "source_version": null,
+      "crawled_at": "2026-09-07"
+    },
+    {
+      "section_id": 279,
+      "game_id": 23,
+      "section_type": "boss",
+      "name": "The final battle: hands, patterns and the charge tell",
+      "card": "The two hands in the final fight are separate targets with only five HP and seven attack each, so killing one is easy, but it comes back on the following turn — treat them as removable nuisances between the main attacks rather than as kills that stick. Watch for the move that raises attack and defence by three, and for the flash that warns of a bigger charged strike a turn ahead of it landing: guard or superguard the turn it actually lands rather than the turn it charges. The breath attack can poison, confuse or strip badges rather than deal raw damage, so a status-cure item is worth carrying into this fight even if you have not needed one in a while. Being dragged under the stage for a turn is more a tempo loss than a real threat — keep attacking rather than trying to save whoever got grabbed.",
+      "source_url": "https://www.mariowiki.com/Shadow_Queen",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-07"
+    },
+    {
+      "section_id": 280,
+      "game_id": 23,
+      "section_type": "mechanic",
+      "name": "Guarding and superguarding, frame by frame",
+      "card": "A regular guard needs the button pressed within about an eighth of a second before a hit lands; get it right and you shave one point of damage off, more with each Damage Dodge badge equipped, and shrug off almost every status effect the attack would have caused. Superguard is the harder version, a much tighter window that blocks the hit completely and hits the attacker back for landing it at all, so it is worth drilling on a weak, predictable enemy before relying on it in a fight that matters. Neither version helps against an item an enemy uses on you, and if an attack targets both Mario and his partner, only the first hit needs a real read: whichever guard you did, or did not do, carries over to the second hit automatically. A few late-game attacks bypass guarding entirely with a lock-out effect that no amount of timing gets around.",
+      "source_url": "https://www.mariowiki.com/Guard",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-07"
+    },
+    {
+      "section_id": 281,
+      "game_id": 23,
+      "section_type": "item",
+      "name": "Boots and Hammer: the upgrade chain",
+      "card": "Mario's boots and hammer each upgrade twice, and each step is a straight damage jump rather than a new gimmick: a jump attack goes from one damage with the starting Boots to three with the Ultra Boots, and a hammer swing goes from two damage to four with the Super Hammer and six with the Ultra Hammer, all before any attack-boosting badges. Each upgrade also unlocks a field move — the Ultra Boots add a Spring Jump that grabs onto pipes and bars out of normal jumping range, letting you back into areas that looked finished the first time through. The Ultra Hammer can also open a battle with a free first-strike hit at no FP cost, worth using on anything you would rather not spend a turn fighting normally. A later tier always replaces the one before it, so there is no reason to hold onto an earlier hammer or pair of boots once the upgrade is in hand.",
+      "source_url": "https://www.mariowiki.com/Ultra_Hammer",
+      "source_license": "CC-BY-SA-4.0",
+      "source_version": null,
+      "crawled_at": "2026-09-07"
     }
   ],
   "genre_patterns": [
