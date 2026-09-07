@@ -110,6 +110,27 @@ def validate_build(build_dir: Path) -> list[str]:
     if not int(manifest.get("embedding_compat_count") or 0):
         errors.append("embedding_compat_count is 0 — no compat tips have vectors.")
 
+    # --- Every note must have a vector, not just some (build_rag_db.py's own guarantee, so
+    # this only fires on a manifest built with --allow-missing-embeddings, or an older manifest
+    # someone hand-edited). Older manifests without the total fields are not judged here — they
+    # predate this check and are caught by the two zero-count checks above if truly empty.
+    section_total = manifest.get("embedding_section_total_count")
+    section_indexed = int(manifest.get("embedding_section_count") or 0)
+    if isinstance(section_total, int) and section_indexed < section_total:
+        errors.append(
+            f"embedding_section_count ({section_indexed}) is short of "
+            f"embedding_section_total_count ({section_total}) — "
+            f"{section_total - section_indexed} strategy section(s) have no meaning-search vector."
+        )
+    compat_total = manifest.get("embedding_compat_total_count")
+    compat_indexed = int(manifest.get("embedding_compat_count") or 0)
+    if isinstance(compat_total, int) and compat_indexed < compat_total:
+        errors.append(
+            f"embedding_compat_count ({compat_indexed}) is short of "
+            f"embedding_compat_total_count ({compat_total}) — "
+            f"{compat_total - compat_indexed} compat tip(s) have no meaning-search vector."
+        )
+
     # --- D20 license allowlist + version requirement, read from the built DB directly ---
     conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
     try:

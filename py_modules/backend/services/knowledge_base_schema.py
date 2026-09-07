@@ -432,6 +432,56 @@ def corpus_has_usable_compat_vectors(
     return _vector_table_has_rows(conn, "compat_pattern_vectors")
 
 
+def _table_row_count(conn: Any, table: str, *, where: Optional[str] = None) -> int:
+    """Row count for the "fully indexed" checks only — not the hot Ask path, so a COUNT(*) is
+    fine here where ``_vector_table_has_rows`` above deliberately avoids one."""
+    sql = f"SELECT COUNT(*) FROM {table}"
+    if where:
+        sql += f" WHERE {where}"
+    try:
+        row = conn.execute(sql).fetchone()
+    except Exception:
+        return 0
+    return int(row[0]) if row else 0
+
+
+def corpus_section_vectors_fully_indexed(
+    conn: Any, manifest: Optional[dict[str, Any]] = None
+) -> bool:
+    """True only when *every* strategy section has a baked vector, not just some.
+
+    This is a stricter question than ``corpus_has_usable_section_vectors``, which only ever
+    asks "any?". That check must stay exactly as lenient as it is today — an older library
+    already installed on someone's Deck must not lose meaning search the moment they update the
+    plugin. This function exists so a future ranking change has an honest "complete or not"
+    answer to lean on; nothing reads it yet.
+    """
+    if isinstance(manifest, dict) and manifest.get("embeddings_populated") is False:
+        return False
+    total = _manifest_vector_count(manifest, "embedding_section_total_count")
+    indexed = _manifest_vector_count(manifest, "embedding_section_count")
+    if total is None or indexed is None:
+        total = _table_row_count(conn, "sections")
+        indexed = _table_row_count(conn, "section_vectors", where="embedding IS NOT NULL")
+    return total > 0 and indexed >= total
+
+
+def corpus_compat_vectors_fully_indexed(
+    conn: Any, manifest: Optional[dict[str, Any]] = None
+) -> bool:
+    """True only when *every* compat tip has a baked vector, not just some. See
+    ``corpus_section_vectors_fully_indexed`` for why this exists alongside, not instead of,
+    ``corpus_has_usable_compat_vectors``."""
+    if isinstance(manifest, dict) and manifest.get("embeddings_populated") is False:
+        return False
+    total = _manifest_vector_count(manifest, "embedding_compat_total_count")
+    indexed = _manifest_vector_count(manifest, "embedding_compat_count")
+    if total is None or indexed is None:
+        total = _table_row_count(conn, "compat_patterns")
+        indexed = _table_row_count(conn, "compat_pattern_vectors", where="embedding IS NOT NULL")
+    return total > 0 and indexed >= total
+
+
 def _base_model_tag(model: str) -> str:
     """Strip an Ollama ``:tag`` suffix so ``nomic-embed-text:latest`` == ``nomic-embed-text``."""
     return str(model or "").strip().lower().split(":", 1)[0]

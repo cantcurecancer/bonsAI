@@ -1002,6 +1002,143 @@ def _print_confirm_holdout(result: dict[str, Any]) -> None:
         )
 
 
+# --- tie-break variant: even by default, meaning leans higher only where keyword found
+# nothing --------------------------------------------------------------------------------
+
+# The narrower follow-up recommended when the meaning-leaning weight change was reverted
+# (docs/planning/47, Lane F): leaning the *whole* blend toward meaning buried a brand-new note
+# with no baked vector yet, because a real keyword hit with no vector already pays a one-rank
+# penalty in _fuse_cards_by_rrf, and a heavier vector weight makes that penalty bite harder.
+# Tilting only when the keyword pass returned nothing at all removes that risk outright -- there
+# is no keyword hit to bury when there is not one. Measured only: nothing here ships, and
+# knowledge_base_service.py is never edited -- only its module constants are swapped for the
+# duration of one query, the same way the weight sweep above does it.
+TIE_BREAK_EVEN_WEIGHTS = (1.0, 1.0)
+TIE_BREAK_NO_MATCH_WEIGHTS = (1.0, 2.0)
+
+
+def _tie_break_weights(
+    keyword_cards: list[KnowledgeCard],
+    *,
+    no_match_weights: tuple[float, float] = TIE_BREAK_NO_MATCH_WEIGHTS,
+    even_weights: tuple[float, float] = TIE_BREAK_EVEN_WEIGHTS,
+) -> tuple[float, float]:
+    """Even by default; leans toward meaning only when the keyword pass found no card at all.
+
+    A pure decision with no DB or Ollama call, split out from ``_run_tie_break_arm`` so the
+    rule itself -- and not the plumbing around it -- is what a test pins.
+    """
+    return even_weights if keyword_cards else no_match_weights
+
+
+def _run_tie_break_arm(
+    conn: sqlite3.Connection,
+    cases: list[QueryCase],
+    query_vectors: dict[str, list[float]],
+    vectors_by_id: DomainVectors,
+    *,
+    no_match_weights: tuple[float, float] = TIE_BREAK_NO_MATCH_WEIGHTS,
+    even_weights: tuple[float, float] = TIE_BREAK_EVEN_WEIGHTS,
+) -> list[QueryResult]:
+    """Even blend by default; leans toward meaning only for a case whose keyword pass found no
+    card at all (nothing cleared the relevance floor in ``_search_sections`` /
+    ``_search_compat_patterns``). Restores the module constants afterward no matter what.
+    """
+    old_fts, old_vec = kb_service.RRF_W_FTS, kb_service.RRF_W_VEC
+    try:
+        results: list[QueryResult] = []
+        for case in cases:
+            top_k = _eval_top_k(case.ask_mode)
+            q_vec = query_vectors[case.case_id]
+            expanded = _expand_query(case.query, "")
+            if case.domain == "compat":
+                keyword_cards = _search_compat_patterns(
+                    conn, query=expanded, top_k=HYBRID_FTS_SHORTLIST_K
+                )
+            else:
+                game_id, _ = _resolve_game_id(
+                    conn, app_id=case.app_id, app_name="", shortcut_name=case.shortcut
+                )
+                keyword_cards = (
+                    _search_sections(conn, game_id=game_id, query=expanded, top_k=HYBRID_FTS_SHORTLIST_K)
+                    if game_id is not None
+                    else []
+                )
+            kb_service.RRF_W_FTS, kb_service.RRF_W_VEC = _tie_break_weights(
+                keyword_cards, no_match_weights=no_match_weights, even_weights=even_weights
+            )
+            cards = _hybrid_retrieve(
+                conn,
+                case,
+                query_vector=q_vec,
+                vectors_by_id=vectors_by_id,
+                fts_k=HYBRID_FTS_SHORTLIST_K,
+                top_k=top_k,
+                with_recall=True,
+            )
+            hit_at_1, hit_at_3 = _score_cards(cards, case, top_k)
+            results.append(
+                QueryResult(
+                    case_id=case.case_id,
+                    hit_at_1=hit_at_1,
+                    hit_at_3=hit_at_3,
+                    fts_empty=not cards,
+                    embed_ms=0.0,
+                    top_names=[c.name for c in cards[:3]],
+                )
+            )
+        return results
+    finally:
+        kb_service.RRF_W_FTS, kb_service.RRF_W_VEC = old_fts, old_vec
+
+
+def _named_row(label: str, results: list[QueryResult]) -> dict[str, Any]:
+    scores = _arm_scores("rrf", results)
+    return {
+        "label": label,
+        "n": scores.n,
+        "top1_pct": scores.top1_pct,
+        "top3_pct": scores.top3_pct,
+        "top1_ci": list(scores.top1_ci),
+        "top3_ci": list(scores.top3_ci),
+    }
+
+
+def _run_tie_break_comparison(
+    conn: sqlite3.Connection,
+    ollama_base: str,
+    model: str,
+    vectors_by_id: DomainVectors,
+    cases: list[QueryCase],
+    split: Split,
+) -> dict[str, Any]:
+    """Tie-break vs today's even 1:1 split, over one split's labeled rows only."""
+    split_cases = [c for c in cases if c.split == split and _case_is_labeled(c)]
+    query_vectors = _embed_query_vectors(ollama_base, model, split_cases)
+    tie_break = _run_tie_break_arm(conn, split_cases, query_vectors, vectors_by_id)
+    even = _run_shipping_arm_at_weights(
+        conn, split_cases, query_vectors, vectors_by_id, TIE_BREAK_EVEN_WEIGHTS
+    )
+    return {
+        "split": split,
+        "tie_break": _named_row("tie-break", tie_break),
+        "even": _named_row("even 1:1", even),
+    }
+
+
+def _print_tie_break_comparison(result: dict[str, Any]) -> None:
+    print("", file=sys.stderr)
+    print(f"Tie-break vs even, {result['split']} rows:", file=sys.stderr)
+    for row in (result["tie_break"], result["even"]):
+        top1_ci = f"[{row['top1_ci'][0]}, {row['top1_ci'][1]}]"
+        top3_ci = f"[{row['top3_ci'][0]}, {row['top3_ci'][1]}]"
+        print(
+            f"{row['label']:<10} n={row['n']} right card first {row['top1_pct']}% {top1_ci} "
+            f"in top 3 {row['top3_pct']}% {top3_ci}",
+            file=sys.stderr,
+        )
+
+
 def _slice_results(
     results: dict[str, list[QueryResult]], cases: list[QueryCase], keep: Any
 ) -> dict[str, list[QueryResult]]:
@@ -1684,9 +1821,19 @@ def main() -> int:
             "prints the two side by side and exits. Nothing else runs."
         ),
     )
+    parser.add_argument(
+        "--tie-break",
+        action="store_true",
+        help=(
+            "Measure the tie-break variant (even blend, leaning toward meaning only where "
+            "keyword found nothing) against today's even split, once on tuning rows and once "
+            "on holdout rows. Prints both tables and exits. Never edits "
+            "knowledge_base_service.py or ships anything."
+        ),
+    )
     args = parser.parse_args()
 
-    if args.sweep_weights is not None or args.confirm_holdout is not None:
+    if args.sweep_weights is not None or args.confirm_holdout is not None or args.tie_break:
         try:
             db_path = _ensure_seed_db(args.out, force_rebuild=args.force_rebuild)
             conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
@@ -1695,6 +1842,15 @@ def main() -> int:
             cases = _load_fixture(FIXTURES / "kb_eval_v2.json", "kb_eval_v2")
             print(f"Embedding corpus for {BASELINE_MODEL}...", file=sys.stderr)
             vectors_by_id = _build_vectors(args.ollama, BASELINE_MODEL, docs, "prompted")
+
+            if args.tie_break:
+                for split in ("tune", "holdout"):
+                    result = _run_tie_break_comparison(
+                        conn, args.ollama, BASELINE_MODEL, vectors_by_id, cases, split
+                    )
+                    _print_tie_break_comparison(result)
+                conn.close()
+                return 0
 
             if args.confirm_holdout is not None:
                 pair = _parse_weight_pairs(args.confirm_holdout)[0]
