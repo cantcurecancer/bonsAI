@@ -24,6 +24,7 @@ from backend.services.game_ai_request import run_game_ai_request
 from backend.services.knowledge_base_service import KbCoverageSummary, KnowledgeRetrievalResult
 
 _NOT_IN_NOTES_TEXT = "Not in my notes — this answer is from the model's own knowledge."
+_NO_TIP_TEXT = "No tip for this — this answer is from the model's own knowledge."
 
 
 class _FakePlugin:
@@ -173,6 +174,156 @@ class NotInNotesWiringTests(unittest.TestCase):
         result = _run(plugin, ask_mode="strategy")
 
         self.assertNotIn(_NOT_IN_NOTES_TEXT, result.get("response", ""))
+
+
+class NoTipForThisWiringTests(unittest.TestCase):
+    """Tests that run_game_ai_request appends the "no tip for this" line to the reply the user
+    (and transparency) sees. See tests/test_kb_not_in_notes_notice.py for the module's own unit
+    tests of the decision function this wires up.
+    """
+
+    # Routed to the tip sheet, nothing attached -- the case the line exists for. Speed mode on
+    # purpose: unlike the sibling line, this one has no Ask-mode gate.
+    @patch(
+        "backend.services.game_ai_request.should_retrieve_knowledge",
+        return_value=(True, "compat"),
+    )
+    @patch(
+        "backend.services.game_ai_request.retrieve_knowledge_context",
+        return_value=KnowledgeRetrievalResult(attached=False, notes="no_hit (keyword)"),
+    )
+    def test_routed_to_tips_with_nothing_attached_appends_the_line(self, _retrieve, _should_kb):
+        plugin = _FakePlugin(_base_settings())
+        plugin._ollama_result = {
+            "success": True,
+            "response": "Try restarting Steam and checking your network connection.",
+            "model": "test-model",
+        }
+
+        result = _run(plugin, ask_mode="speed", question="my controller stopped working")
+
+        self.assertIn(_NO_TIP_TEXT, result.get("response", ""))
+        self.assertEqual(len(plugin.persisted_snapshots), 1)
+        self.assertIn(_NO_TIP_TEXT, plugin.persisted_snapshots[0].get("final_response", ""))
+
+    # Same routing, but a tip actually attached -- no line.
+    @patch(
+        "backend.services.game_ai_request.should_retrieve_knowledge",
+        return_value=(True, "compat"),
+    )
+    @patch(
+        "backend.services.game_ai_request.retrieve_knowledge_context",
+        return_value=KnowledgeRetrievalResult(
+            attached=True,
+            text_block="Tip: re-pair the controller from Bluetooth settings.",
+            trust_tier="wiki",
+            sources=[{"title": "Tip"}],
+        ),
+    )
+    def test_a_tip_that_attached_shows_no_line(self, _retrieve, _should_kb):
+        plugin = _FakePlugin(_base_settings())
+        plugin._ollama_result = {
+            "success": True,
+            "response": "Re-pair the controller from Bluetooth settings.",
+            "model": "test-model",
+        }
+
+        result = _run(plugin, ask_mode="speed", question="my controller stopped working")
+
+        self.assertNotIn(_NO_TIP_TEXT, result.get("response", ""))
+
+    # Routed to the notes instead of the tips -- this turn's search never looked at the tip
+    # sheet, so the line must not appear even with nothing attached.
+    @patch(
+        "backend.services.game_ai_request.should_retrieve_knowledge",
+        return_value=(True, "strategy"),
+    )
+    @patch(
+        "backend.services.game_ai_request.retrieve_knowledge_context",
+        return_value=KnowledgeRetrievalResult(attached=False, unavailable_reason="no_match"),
+    )
+    def test_routed_to_notes_shows_no_line(self, _retrieve, _should_kb):
+        plugin = _FakePlugin(_base_settings())
+        plugin._ollama_result = {
+            "success": True,
+            "response": "Focus down the adds first, then burst the boss.",
+            "model": "test-model",
+        }
+
+        result = _run(plugin, ask_mode="strategy")
+
+        self.assertNotIn(_NO_TIP_TEXT, result.get("response", ""))
+
+    # Missing corpus: retrieve_knowledge_context's real early return for this, "corpus_missing".
+    @patch(
+        "backend.services.game_ai_request.should_retrieve_knowledge",
+        return_value=(True, "compat"),
+    )
+    @patch(
+        "backend.services.game_ai_request.retrieve_knowledge_context",
+        return_value=KnowledgeRetrievalResult(attached=False, unavailable_reason="corpus_missing"),
+    )
+    def test_missing_corpus_shows_no_line(self, _retrieve, _should_kb):
+        plugin = _FakePlugin(_base_settings())
+        plugin._ollama_result = {
+            "success": True,
+            "response": "Some reply text.",
+            "model": "test-model",
+        }
+
+        result = _run(plugin, ask_mode="speed", question="my controller stopped working")
+
+        self.assertNotIn(_NO_TIP_TEXT, result.get("response", ""))
+
+    # Library off: should_retrieve_knowledge's real behaviour (no patch needed) skips retrieval
+    # outright, so kb_domain never becomes "compat" and the line cannot fire.
+    def test_library_off_shows_no_line(self):
+        settings = _base_settings()
+        settings["use_local_knowledge_base"] = False
+        plugin = _FakePlugin(settings)
+        plugin._ollama_result = {
+            "success": True,
+            "response": "Some reply text.",
+            "model": "test-model",
+        }
+
+        result = _run(plugin, ask_mode="speed", question="my controller stopped working")
+
+        self.assertNotIn(_NO_TIP_TEXT, result.get("response", ""))
+
+
+class TheTwoNoticesNeverBothAppearWiringTests(unittest.TestCase):
+    """The one collision the module-level tests can only prove is possible in isolation: an
+    Expert or Strategy ask about a game the notes cover, where *this* question was routed to
+    the tip sheet instead and nothing there matched either. Both decision functions would read
+    True; run_game_ai_request must show only the tip-sheet line.
+    """
+
+    @patch(
+        "backend.services.game_ai_request.summarize_kb_coverage",
+        return_value=KbCoverageSummary(status="sections", section_count=4),
+    )
+    @patch(
+        "backend.services.game_ai_request.should_retrieve_knowledge",
+        return_value=(True, "compat"),
+    )
+    @patch(
+        "backend.services.game_ai_request.retrieve_knowledge_context",
+        return_value=KnowledgeRetrievalResult(attached=False, notes="no_hit (keyword)"),
+    )
+    def test_no_tip_for_this_wins_over_not_in_my_notes(self, _retrieve, _should_kb, _coverage):
+        plugin = _FakePlugin(_base_settings())
+        plugin._ollama_result = {
+            "success": True,
+            "response": "Restart the game and check your network settings.",
+            "model": "test-model",
+        }
+
+        result = _run(plugin, ask_mode="expert", question="the game keeps crashing to desktop")
+
+        response = result.get("response", "")
+        self.assertIn(_NO_TIP_TEXT, response)
+        self.assertNotIn(_NOT_IN_NOTES_TEXT, response)
 
 
 if __name__ == "__main__":
