@@ -246,17 +246,30 @@ class CompatTopicRouterTests(unittest.TestCase):
         """The number D16 was decided on, pinned so a rule edit cannot quietly undo it.
 
         Holdout compat intents were not read while the rules were written — they are the
-        blind check. Three cases are known misses and are named here rather than patched
-        for, all the same shape: a symptom described without naming any troubleshooting
-        term. V2-C-04 sits in tune; V2-BLIND-H19 and V2-BLIND-H55 (both written blind
-        under D37 — H19 in the first batch, H55 in the second) sit in holdout — rewording
-        either until it routes would tune it against the router and undo the blindness it
-        exists to provide, so the misses are recorded instead.
+        blind check. The misses are named here rather than patched for, all the same
+        shape: a symptom described without naming any troubleshooting term. V2-C-04 sits
+        in tune; V2-BLIND-H19 and V2-BLIND-H55 (both written blind under D37 — H19 in the
+        first batch, H55 in the second) sit in holdout — rewording any of them until it
+        routes would tune it against the router and undo the blindness it exists to
+        provide, so the misses are recorded instead.
 
-        Two of the four blind compat rows miss, which is the finding rather than the
-        noise: the router reaches a question that names a troubleshooting term and not
-        one that only describes the symptom. That is the D16 gate working as specified
-        and is a real reach limit, filed on the roadmap rather than patched here.
+        The router reaches a question that names a troubleshooting term and not one that
+        only describes the symptom. That is the D16 gate working as specified and is a
+        real reach limit, filed on the roadmap rather than patched here.
+
+        **The V2-W2-SYM rows are the wave-two blind batch (D85).** Twenty-four sentences
+        for twelve everyday problems, written by someone who had not read the tips or
+        these rules. Sixteen of the twenty-four miss. Measured either side of the wave-two
+        routing and tip work: 6 of 24 reached before it, 8 of 24 after — so widening the
+        rules with plainly-worded terms bought two rows, and the shape of the rules is
+        what limits the rest. The two that were bought are V2-W2-SYM-08 (stutter) and
+        V2-W2-SYM-15 (a torn picture).
+
+        The clearest single case is V2-BLIND-H55, *"the game drops me back to the library
+        a few minutes in"*. That is the exact crash symptom the wave-two tips were
+        rewritten to describe, and the question still does not route, because the rule
+        wants the word "crash" and the person did not say it. **Do not fix that by adding
+        this sentence as a term** — it is a blind row and tuning against it spends it.
         """
         data = json.loads(
             (REPO_ROOT / "tests" / "fixtures" / "kb_eval_v2.json").read_text(encoding="utf-8")
@@ -268,7 +281,31 @@ class CompatTopicRouterTests(unittest.TestCase):
         missed_holdout = [
             q["id"] for q in holdout if not question_targets_compat_corpus(q["query"])
         ]
-        self.assertEqual(missed_holdout, ["V2-BLIND-H19", "V2-BLIND-H55"])
+        self.assertEqual(
+            missed_holdout,
+            [
+                "V2-BLIND-H19",
+                "V2-BLIND-H55",
+                # The wave-two blind batch. Sixteen of its twenty-four rows miss; the eight
+                # that reach are SYM-08, -11, -13, -15, -17, -18, -21 and -24.
+                "V2-W2-SYM-01",
+                "V2-W2-SYM-02",
+                "V2-W2-SYM-03",
+                "V2-W2-SYM-04",
+                "V2-W2-SYM-05",
+                "V2-W2-SYM-06",
+                "V2-W2-SYM-07",
+                "V2-W2-SYM-09",
+                "V2-W2-SYM-10",
+                "V2-W2-SYM-12",
+                "V2-W2-SYM-14",
+                "V2-W2-SYM-16",
+                "V2-W2-SYM-19",
+                "V2-W2-SYM-20",
+                "V2-W2-SYM-22",
+                "V2-W2-SYM-23",
+            ],
+        )
 
         missed_tune = [
             q["id"]
