@@ -118,11 +118,12 @@ hook gives a gentle heads-up when a session starts work outside this.
   **Half of this moved on 2026-09-05:** Up from the feedback buttons now lands on the reply's last section rather than skipping
   to the bubble (measured, CHAT-REPLY-ENTRY-01). What is still open is the archived-header half — Up from the first archived
   header runs to the tab bar without the chat slot row ever taking the ring.
-- ★★ `[reply]` **An answer can end with a block of raw computer text where a power tip should be** — **OPEN, seen on the
-  Deck 2026-09-06.** In Speed mode with Deep Rock Galactic: Survivor running and the character voice on, a reply ended
-  with the literal line `{"tdp_watts": 5, "gpu_clock_mhz": 1200}` sitting in the words a person reads. The plugin's own
-  log shows it recognised this as a power suggestion, so it understood it correctly — it was just never removed from the
-  text shown on screen. Needs someone to trace where that block should be stripped before the reply reaches the screen.
+- ★★ `[reply]` **An answer can end with a block of raw computer text where a power tip should be** — **FIXED
+  2026-09-07, VERIFY on the Deck (W2-R6).** In Speed mode with Deep Rock Galactic: Survivor running and the character
+  voice on, a reply ended with the literal line `{"tdp_watts": 5, "gpu_clock_mhz": 1200}` sitting in the words a person
+  reads. The plugin reads that line to work out a power suggestion and never took it out of the text on screen. It is
+  now removed the moment it is read — but only when it is loose in the reply, so a code example someone actually asked
+  for is left alone, and the power suggestion still reaches the caller. Seven tests. (D85)
 - ★★ `[reply]` **Token streaming reveals text in bursts while a game is running** — **ACCEPTED 2026-09-04 (D58 #4).** Measured 2026-08-28 with
   a game running: tokens arrive in bursts, and during a burst the overlay drops to 47 fps; between bursts it is a flat 60. Delivery
   is bursty, painting is not slow. The game's own frame rate is unmeasured. Accepted as a nice-to-have; reopen only if the game's own frame rate is measured
@@ -492,13 +493,13 @@ is fine, the one-second target is retired (D84). Anything new goes here, one lin
   those five came back by word search, not by meaning. **What is missing is not a wider gate — it is a way to say "none
   of these tips fit."** Until there is one, opening the gate makes things worse.
   [Detail](roadmap-details.md#a-troubleshooting-question-that-only-describes-the-symptom-reaches-no-tips).
-- ★★ `[KB]` **The panel keeps naming a game after you have closed it** — **OPEN, seen on the Deck 2026-09-06, filed
-  2026-09-07.** After exiting a game the line under the question box still named it. A question that names its own game
-  still works; one that does not may pick up the wrong game's notes. Not yet proven to have caused a wrong answer. The
-  cause is in the code's own comment: the running game is worked out once when the panel mounts and only corrected when
-  an ask's status poll runs, so closing a game with no question in flight never updates it
-  ([useBonsaiAskOrchestration.ts:102-125](../src/hooks/useBonsaiAskOrchestration.ts), line at
-  [MainTab.tsx:282](../src/components/MainTab.tsx)). Was written up in the status report only until now. (D85)
+- ★★ `[KB]` **The panel keeps naming a game after you have closed it** — **FIXED 2026-09-07, VERIFY on the Deck
+  (W2-R6).** After exiting a game the line under the question box still named it, so a question that does not name its
+  own game could pick up the wrong game's notes. **The cause written into this entry yesterday was wrong**, which is
+  worth keeping: the ordinary keep-in-sync check does correct itself, in about a second and a half. The real hole was
+  **reopening the panel** — after a popup, or leaving the plugin and coming back — which restored whatever game name had
+  been remembered and never checked whether that game was still running. It now checks what is actually running at that
+  moment. Five tests. A plain data change; nothing to do with focus or layout. (D85)
 - ★★★ `[KB]` **Searching the notes by meaning costs about a second, every time, on the Deck** — **ACCEPTED
   2026-09-06.** Repeated on the Deck: 1.10, 1.23 and 1.19 seconds across three questions in a row, the same band as
   the first time this was measured. The maintainer looked at the number and said that is fine — about a second before
