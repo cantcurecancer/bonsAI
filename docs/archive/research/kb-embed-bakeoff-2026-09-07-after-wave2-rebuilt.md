@@ -12,9 +12,9 @@ No model sweep in this run (`--arms-only`); `nomic-embed-text` stands unchalleng
 
 ## Key findings
 
-- Keyword-only baseline: **49.2%** top-1 / **66.0%** top-3.
+- Keyword-only baseline: **56.5%** top-1 / **79.9%** top-3.
 - Best hybrid prompted top-3: not measured in this run (`--arms-only`).
-- Holdout arm verdict: No separation on holdout top-3: vector-only 54.8% [46.7, 63.0] vs keyword 48.1% [40.0, 56.3] vs RRF-rerank-only 48.9% [40.0, 57.0] vs RRF 51.9% [43.7, 60.0] — intervals overlap, so these fixtures (n=135) cannot tell the arms apart. Not a tie; an unresolved question. (Arms judged: keyword, vector-only, RRF-rerank-only, RRF.)
+- Holdout arm verdict: No separation on holdout top-3: vector-only 88.5% [83.3, 93.6] vs keyword 78.8% [72.4, 85.3] vs RRF-rerank-only 82.1% [76.3, 87.8] vs RRF 84.0% [78.2, 89.7] — intervals overlap, so these fixtures (n=156) cannot tell the arms apart. Not a tie; an unresolved question. (Arms judged: keyword, vector-only, RRF-rerank-only, RRF.)
 - Re-run: `python scripts/eval_kb_embed_models.py --write-report`
 
 ## English aggregate (kb_eval_v2, labeled rows)
@@ -40,21 +40,21 @@ Baseline model `nomic-embed-text`, prompted, **same corpus for every arm** (R4).
 
 | Arm | top-1 | top-1 CI | top-3 | top-3 CI |
 |-----|-------|----------|-------|----------|
-| keyword | 61.9% | [54.8, 69.0] | 80.4% | [74.4, 86.3] |
-| vector_only | 69.0% | [61.9, 75.6] | 88.7% | [83.9, 93.5] |
-| rrf_rerank_only | 63.7% | [56.5, 70.8] | 82.7% | [76.8, 88.1] |
-| rrf | 65.5% | [58.3, 72.6] | 88.7% | [83.9, 93.5] |
+| keyword | 61.3% | [53.6, 68.5] | 81.0% | [75.0, 86.3] |
+| vector_only | 67.9% | [61.3, 75.0] | 87.5% | [82.7, 92.3] |
+| rrf_rerank_only | 63.7% | [56.5, 70.8] | 82.1% | [76.2, 87.5] |
+| rrf | 65.5% | [58.3, 72.6] | 88.1% | [82.7, 92.9] |
 
-### holdout (n=135)
+### holdout (n=156)
 
 | Arm | top-1 | top-1 CI | top-3 | top-3 CI |
 |-----|-------|----------|-------|----------|
-| keyword | 33.3% | [25.2, 41.5] | 48.1% | [40.0, 56.3] |
-| vector_only | 43.0% | [34.8, 51.1] | 54.8% | [46.7, 63.0] |
-| rrf_rerank_only | 34.1% | [25.9, 41.5] | 48.9% | [40.0, 57.0] |
-| rrf | 37.0% | [28.9, 45.2] | 51.9% | [43.7, 60.0] |
+| keyword | 51.3% | [43.6, 58.3] | 78.8% | [72.4, 85.3] |
+| vector_only | 69.9% | [62.8, 76.9] | 88.5% | [83.3, 93.6] |
+| rrf_rerank_only | 54.5% | [46.8, 61.5] | 82.1% | [76.3, 87.8] |
+| rrf | 58.3% | [50.6, 65.4] | 84.0% | [78.2, 89.7] |
 
-**Holdout verdict:** No separation on holdout top-3: vector-only 54.8% [46.7, 63.0] vs keyword 48.1% [40.0, 56.3] vs RRF-rerank-only 48.9% [40.0, 57.0] vs RRF 51.9% [43.7, 60.0] — intervals overlap, so these fixtures (n=135) cannot tell the arms apart. Not a tie; an unresolved question. (Arms judged: keyword, vector-only, RRF-rerank-only, RRF.)
+**Holdout verdict:** No separation on holdout top-3: vector-only 88.5% [83.3, 93.6] vs keyword 78.8% [72.4, 85.3] vs RRF-rerank-only 82.1% [76.3, 87.8] vs RRF 84.0% [78.2, 89.7] — intervals overlap, so these fixtures (n=156) cannot tell the arms apart. Not a tie; an unresolved question. (Arms judged: keyword, vector-only, RRF-rerank-only, RRF.)
 
 ### Recall — labeled cases keyword search cannot answer
 
@@ -74,28 +74,28 @@ A fixture's `domain` is what we want retrieval to do. `should_retrieve_knowledge
 
 | Domain | Cases | Gate-reachable | Unreachable |
 |--------|-------|----------------|-------------|
-| compat | 52 | 49 | 3 |
+| compat | 76 | 57 | 19 |
 | strategy | 361 | 361 | 0 |
 
 ### Compat scored twice
 
 | Slice | Arm | top-3 | top-3 CI | n |
 |-------|-----|-------|----------|---|
-| overall | keyword | 65.4% | [51.9, 76.9] | 52 |
-| overall | vector_only | 71.2% | [57.7, 82.7] | 52 |
-| overall | rrf_rerank_only | 71.2% | [59.6, 82.7] | 52 |
-| overall | rrf | 71.2% | [59.6, 82.7] | 52 |
-| gate-reachable only | keyword | 69.4% | [57.1, 81.6] | 49 |
-| gate-reachable only | vector_only | 73.5% | [61.2, 85.7] | 49 |
-| gate-reachable only | rrf_rerank_only | 73.5% | [61.2, 85.7] | 49 |
-| gate-reachable only | rrf | 73.5% | [61.2, 85.7] | 49 |
+| overall | keyword | 48.7% | [36.8, 59.2] | 76 |
+| overall | vector_only | 52.6% | [42.1, 63.2] | 76 |
+| overall | rrf_rerank_only | 51.3% | [39.5, 61.8] | 76 |
+| overall | rrf | 51.3% | [39.5, 61.8] | 76 |
+| gate-reachable only | keyword | 63.2% | [50.9, 75.4] | 57 |
+| gate-reachable only | vector_only | 66.7% | [54.4, 78.9] | 57 |
+| gate-reachable only | rrf_rerank_only | 66.7% | [54.4, 78.9] | 57 |
+| gate-reachable only | rrf | 66.7% | [54.4, 78.9] | 57 |
 
 
 ## Keyword-only baseline
 
-- Top-1: **49.2%**
-- Top-3: **66.0%**
-- FTS empty: **1.0%**
+- Top-1: **56.5%**
+- Top-3: **79.9%**
+- FTS empty: **0.9%**
 
 ## Spanish probe (informational — does not pick winner)
 
