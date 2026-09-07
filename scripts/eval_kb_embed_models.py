@@ -257,12 +257,83 @@ def _load_fixture(path: Path, suite: str) -> list[QueryCase]:
     return out
 
 
-def _ensure_seed_db(out_dir: Path, *, force_rebuild: bool = False) -> Path:
+# The three inputs that decide whether the eval's saved copy of the library is still current:
+# the two data files the corpus is built from, and the builder itself (a script change can
+# change what a rebuild would produce even with the same data files).
+CORPUS_STALE_CHECK_RELPATHS = (
+    Path("data") / "kb" / "strategy_seed.json",
+    Path("data") / "kb" / "compat_patterns.json",
+    Path("scripts") / "build_rag_db.py",
+)
+
+
+def _default_stale_check_paths() -> list[Path]:
+    return [REPO_ROOT / rel for rel in CORPUS_STALE_CHECK_RELPATHS]
+
+
+def _corpus_is_stale(db_mtime: float, input_mtimes: list[float]) -> bool:
+    """True when any input is newer than the corpus copy the eval would otherwise reuse.
+
+    Pure: takes modification times, not paths, so the rebuild rule is pinned by a test without
+    touching a filesystem or Ollama. ``_ensure_seed_db`` is the only caller that stats real
+    files -- the notes (``strategy_seed.json``, ``compat_patterns.json``) and the builder itself
+    (``build_rag_db.py``). A copy that predates any of the three is void: this project spent
+    weeks quoting search numbers from a copy of the library that had gone stale unnoticed.
+    """
+    return any(t > db_mtime for t in input_mtimes)
+
+
+class StaleCorpusUnrebuildableError(Exception):
+    """The eval's saved copy of the library is out of date and Ollama cannot be reached to
+    rebuild it. Raised instead of quietly measuring the old copy."""
+
+
+def _ollama_reachable(ollama_base: str, *, timeout_s: float = 5.0) -> bool:
+    """``GET {base}/api/tags`` and report whether Ollama answered at all.
+
+    Used only to decide whether an out-of-date corpus copy can be safely rebuilt here -- never
+    to pick a model or change what gets embedded.
+    """
+    url = f"{ollama_base.rstrip('/')}/api/tags"
+    try:
+        req = urllib.request.Request(url, method="GET")
+        with urllib.request.urlopen(req, timeout=timeout_s) as resp:
+            resp.read()
+        return True
+    except Exception:
+        return False
+
+
+def _ensure_seed_db(
+    out_dir: Path,
+    *,
+    ollama_base: str = DEFAULT_OLLAMA,
+    force_rebuild: bool = False,
+    stale_check_paths: list[Path] | None = None,
+) -> Path:
     db_path = out_dir / "corpus.db"
+    stale = False
     if db_path.is_file() and not force_rebuild:
-        return db_path
+        paths = _default_stale_check_paths() if stale_check_paths is None else stale_check_paths
+        input_mtimes = [p.stat().st_mtime for p in paths if p.is_file()]
+        stale = _corpus_is_stale(db_path.stat().st_mtime, input_mtimes)
+        if not stale:
+            return db_path
+        print(
+            "the eval's saved copy of the library is older than the notes or the builder -- "
+            "rebuilding it before this run searches anything",
+            file=sys.stderr,
+        )
+        # A stale copy needs a real rebuild, which needs the embedding model. Refuse rather
+        # than measure the old copy, and never fall back to a keyword-only rebuild -- a search
+        # number taken on a copy nobody meant to measure is worse than no number at all.
+        if not _ollama_reachable(ollama_base):
+            raise StaleCorpusUnrebuildableError(
+                "the eval's saved copy of the library is out of date and the embedding model "
+                "is not reachable, so this run cannot be trusted -- start Ollama and try again"
+            )
     out_dir.mkdir(parents=True, exist_ok=True)
-    if force_rebuild:
+    if force_rebuild or stale:
         for name in ("corpus.db", "corpus.db.zlib", "corpus-manifest.json", "ATTRIBUTIONS.md"):
             path = out_dir / name
             if path.is_file():
@@ -279,6 +350,23 @@ def _ensure_seed_db(out_dir: Path, *, force_rebuild: bool = False) -> Path:
         cwd=str(REPO_ROOT),
     )
     return db_path
+
+
+def _read_corpus_manifest(out_dir: Path) -> dict[str, Any]:
+    """Read the manifest written alongside the corpus this run actually searched.
+
+    Both report writers (markdown and JSON) stamp their header with these three values, so a
+    stale or thin copy shows on the page instead of hiding behind a plain filename.
+    """
+    manifest_path = out_dir / "corpus-manifest.json"
+    if not manifest_path.is_file():
+        return {"version": "unknown", "note_count": 0, "tip_count": 0}
+    data = json.loads(manifest_path.read_text(encoding="utf-8"))
+    return {
+        "version": str(data.get("version") or "unknown"),
+        "note_count": int(data.get("embedding_section_total_count") or 0),
+        "tip_count": int(data.get("embedding_compat_total_count") or 0),
+    }
 
 
 def _load_corpus_docs(conn: sqlite3.Connection) -> list[CorpusDoc]:
@@ -1395,6 +1483,8 @@ def _write_report(
         f"Date: {payload['date']}",
         f"Ollama: `{payload['ollama_base']}`",
         f"Corpus: `{payload['corpus_db']}`",
+        f"Corpus version: {payload['corpus_version']} · notes searched: "
+        f"{payload['corpus_note_count']} · tips searched: {payload['corpus_tip_count']}",
         "",
         "## Recommendation",
         "",
@@ -1600,7 +1690,7 @@ def run_bakeoff(
     arms_only: bool = False,
     force_rebuild: bool = False,
 ) -> dict[str, Any]:
-    db_path = _ensure_seed_db(out_dir, force_rebuild=force_rebuild)
+    db_path = _ensure_seed_db(out_dir, ollama_base=ollama_base, force_rebuild=force_rebuild)
     conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
     conn.row_factory = sqlite3.Row
 
@@ -1748,10 +1838,14 @@ def run_bakeoff(
         REPO_ROOT / "docs" / "archive" / "research" / f"kb-embed-bakeoff-{today}{suffix}.json"
     )
 
+    corpus_manifest = _read_corpus_manifest(out_dir)
     payload: dict[str, Any] = {
         "date": today,
         "ollama_base": ollama_base,
         "corpus_db": str(db_path),
+        "corpus_version": corpus_manifest["version"],
+        "corpus_note_count": corpus_manifest["note_count"],
+        "corpus_tip_count": corpus_manifest["tip_count"],
         "models": models,
         "keyword_baseline": _scores_to_dict(keyword_scores),
         "english": {"bare": english_bare, "prompted": english_prompted},
@@ -1835,7 +1929,9 @@ def main() -> int:
 
     if args.sweep_weights is not None or args.confirm_holdout is not None or args.tie_break:
         try:
-            db_path = _ensure_seed_db(args.out, force_rebuild=args.force_rebuild)
+            db_path = _ensure_seed_db(
+                args.out, ollama_base=args.ollama, force_rebuild=args.force_rebuild
+            )
             conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
             conn.row_factory = sqlite3.Row
             docs = _load_corpus_docs(conn)
@@ -1872,6 +1968,9 @@ def main() -> int:
         except EmbedError as exc:
             print(f"embed error: {exc}", file=sys.stderr)
             return 1
+        except StaleCorpusUnrebuildableError as exc:
+            print(str(exc), file=sys.stderr)
+            return 1
         except subprocess.CalledProcessError as exc:
             print(f"build_rag_db failed: {exc}", file=sys.stderr)
             return 1
@@ -1887,6 +1986,9 @@ def main() -> int:
         )
     except EmbedError as exc:
         print(f"embed error: {exc}", file=sys.stderr)
+        return 1
+    except StaleCorpusUnrebuildableError as exc:
+        print(str(exc), file=sys.stderr)
         return 1
     except subprocess.CalledProcessError as exc:
         print(f"build_rag_db failed: {exc}", file=sys.stderr)
