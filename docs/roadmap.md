@@ -56,24 +56,6 @@ hook gives a gentle heads-up when a session starts work outside this.
   corner icons, and the earlier run that pressed the question recorded the same landing ("nothing"), so it is not new to
   the corner icons. Runs: `retry-corner-collapse-question`, `press-question-not-retry`.
 
-- ★ `[focus]` **The ring can land on a spot half hidden behind the Copy or Retry icon** — **MEASURED on the
-  Deck 2026-09-07; the fix is a look-and-feel call and is waiting on you.** Walking down a reply, some stops
-  are focused while partly covered by the small icon in their own corner. **No text is ever hidden** — the
-  last line of a question or answer reserves a 22-pixel column for the icon — so what a person actually sees
-  is the highlight outline interrupted where the icon sits.
-  **Measured on the device, so this is arithmetic now rather than guesswork.** A two-line question bubble is
-  56 pixels tall, its highlighted area 43, and the icon is 20 tall sitting 3 above the bubble's bottom edge.
-  Of the nine points the check samples, only the bottom-left corner falls under the icon — **89%**, which the
-  test row already records as expected. **A one-line question bubble is about 30 pixels tall, and then all
-  three points down the left edge fall inside the icon's 20-pixel band — that is the 67%.** The turn is at 47
-  pixels: above it 89%, below it worse.
-  **So the fix is one number, and it costs height.** Giving a question bubble a floor of about 48 pixels
-  makes every question read 89%. A one-line question then grows from about 30 pixels to 48 — **18 more
-  pixels of a 300-pixel-wide column, on every short question**. Making the icon smaller helps but does not
-  reach 89%. **Doing nothing is defensible**: nothing is unreadable, and the icons sit inside their bubbles
-  because that is what was asked for.
-  Evidence `runs/plan47-R7-walk-into-reply.json`, `runs/plan47-R7-back-to-question.json`. (D85)
-
 - ★ `[focus]` **Closing the model try order picker drops the highlight onto the tab rather than the button you opened it from** —
   **OPEN, seen twice 2026-09-06.** After pressing *Done*, the highlight lands on the Ollama tab's outer frame, not back on
   *Set text model try order…*. It is not a dead end — the next press moves normally — but it costs about thirteen presses to get
@@ -447,6 +429,9 @@ wording someone imagined and miss the neighbour.
 
 *(Rewritten 2026-09-07 after wave two landed — [47](planning/47-kb-wave-two-session.md).)*
 
+**Wave three is planned as [48](planning/48-kb-wave-three-session.md) and waits for you to say "go".
+Wave two's own Deck evening runs first, now that the Deck is free.**
+
 1. **Fix the two ways the answer test lies.** Both filed below. One hid a reply that told someone the opposite of its
    own note; the other counts a right answer wrong when it uses different words. Every answer number this project has
    quoted rests on them, so nothing else should be decided from those numbers until this is done. Cheap.
@@ -457,23 +442,23 @@ wording someone imagined and miss the neighbour.
    wrong tip, which is worse than nothing. That is now measured, not guessed; see the held entry below.
 4. **Then Next from the top** — answer-first tested both ways, spoiler tiers, follow-ups remembering.
 
-**Owed on the Deck:** wave two's own evening (rows **W2-R1** to **W2-R7** in
+**Owed on the Deck:** wave two's own evening runs next, before wave three starts (rows **W2-R1** to **W2-R7** in
 [plan 47](planning/47-kb-wave-two-session.md) § 8), plus **KB-TRANCHE-01** from wave one — a question per new game on
 the device. Fallout: New Vegas still is not installed.
 
 ### Calls waiting on you
 
-- **One note says something nobody has checked, and someone would act on it.** Black Mesa, *"Crossing the
-  electrified waste pools"*, written 2026-09-07. It claims the current is **not constant** — that it arcs on
-  a cycle, with a spark and a crackle just before it charges, so you should move while the water is dark and
-  wait while it is lit. **No page says this.** It was written from the writer's own memory of the game, and
-  carries no source, which the credit rules allow. Two other notes written the same way that evening are
-  recommendations rather than facts (which upgrade to buy in GTA V, how to win a chase in GTA IV), so being
-  wrong about them costs a player nothing. This one is different: someone following it walks into charged
-  water on purpose. **Either confirm it from the game, or say the word and it comes out.** It shipped in the
-  2026-09-07 release, so if it goes, that is a point release. (D85)
-
-**Nothing else open.** **Decided 2026-09-07 (D85), planning wave two:** fill the 21 real note gaps and top up the four thinnest
+**Nothing waiting.** **Decided 2026-09-07 (D86):** the Black Mesa water note was wrong — the current is
+constant, not on a cycle — and it is rewritten from the maintainer's own account of the game, shipping in a
+library point release alongside wave three. The rest of the same evening's call: wave two's own Deck evening
+runs before wave three starts; there is no plugin release out of this wave, only the library point release;
+the answer test's scoring moves to word-lists that notice "not" and other negatives, plus a second model's
+opinion added as a read-only extra column; the search test rebuilds its own copy of the library automatically
+instead of trusting an old one; a "No tip for this" line appears when nothing fits a problem question; the
+held meaning search for problem questions gets one more try and is retired for good if it is still wrong;
+the reworked reply order is measured on the PC first, before any change; follow-up questions are remembered
+only on Strategy and Expert asks; no new notes are written this wave; and the ring landing behind the corner
+icons is left as it is. **Decided 2026-09-07 (D85), planning wave two:** fill the 21 real note gaps and top up the four thinnest
 games, keeping the eight deliberate blanks as a control; the "not in my notes" line reads *"Not in my notes — this
 answer is from the model's own knowledge."*; the meaning-index work ships the guarantee and only **measures** the
 tie-break, because guaranteeing the index answers one of D82's three objections and not the other two; and the ring
@@ -549,7 +534,7 @@ is fine, the one-second target is retired (D84). Anything new goes here, one lin
   **The weight decision that is currently on hold was measured with this same test**, so its numbers need
   re-checking before anything is decided on them. Fix: the test must rebuild its copy, or refuse to run when
   the copy is older than the notes file. Both ends of tonight's measurement have been re-run with a forced
-  rebuild.
+  rebuild. Planned as wave three ([48](planning/48-kb-wave-three-session.md)).
 - ★★★ `[KB]` **An answer said the opposite of its own note and the check waved it through** — **OPEN,
   found 2026-09-07 while taking this wave's starting measurements.** Asked what the goal of Pikmin 2 is and
   whether there is still a day limit, the reply said *"there is still a day limit"*. The note it was given
@@ -558,7 +543,8 @@ is fine, the one-second target is retired (D84). Anything new goes here, one lin
   sentences — *"there's a day limit"* and *"you have a limited number of days"* — and the model wrote
   neither. **So the "never contradicts its note" score of 100% is not trustworthy**, and every report that
   has quoted it needs reading with that in mind. Two things to fix and they are separate: the model saying
-  it, and the check missing it. Evidence: the answer test taken today on the tip.
+  it, and the check missing it. Evidence: the answer test taken today on the tip. Planned as wave three
+  ([48](planning/48-kb-wave-three-session.md)).
 - ★★ `[KB]` **The answer test marks a fact missing when the answer said it in different words** — **OPEN,
   found 2026-09-07.** The check looks for a phrase inside the reply, so *"keep the crowd thin"* fails
   against *"thin the crowd"*, *"killing the mother"* fails against *"kill the mother"*, and *"hurting her
@@ -566,7 +552,8 @@ is fine, the one-second target is retired (D84). Anything new goes here, one lin
   counted wrong; one Paper Mario answer was counted wrong twice for facts it plainly stated. **So the
   facts score of 70.8% is lower than the truth**, and the four thin-game failures it shows are not the
   content gap they look like — the facts are in the notes and in the answers. Left alone on purpose while
-  this wave runs, so its before and after are measured the same way; worth fixing straight after.
+  this wave runs, so its before and after are measured the same way; worth fixing straight after. Planned
+  as wave three ([48](planning/48-kb-wave-three-session.md)).
 
 ### Deck check owed
 
@@ -589,9 +576,9 @@ is fine, the one-second target is retired (D84). Anything new goes here, one lin
 
 ### Next
 
-- ★ `[KB]` **Measure answers with the character voice on** — **OPEN, added 2026-09-05.** The Deck answers in a voice; the
-  answer test runs with it off, and five Deck runs lost two facts to the voice. One switch on the test, and the voice
-  presets become measurable the way the prompt is.
+- ★ `[KB]` **Measure answers with the character voice on** — **OPEN, switch already built.** The answer test's voice
+  switch landed 6 September. What's still owed is one run with it turned on, which wave three's main measurement
+  run includes — planned as wave three ([48](planning/48-kb-wave-three-session.md)).
 - ★★ `[KB]` **Prompt diet** — **OPEN, agreed 2026-09-01.** The model reads about nine tokens of rules for every token of
   knowledge. Drop the citation instruction (obeyed once in 89 asks, and the UI cannot show it), send screenshot rules only
   when an image is attached, put the cards next to the question. About a day, measured before and after on the answer test.
@@ -599,7 +586,7 @@ is fine, the one-second target is retired (D84). Anything new goes here, one lin
   a named question with a matching card gets a short orientation and the menu; the other shape gives the card's tactics
   first and the same menu. PC first: an "answer first" variant on the answer test, the named-thing cases twice each way,
   comparing facts kept, menu present and length. Then three pinned sentences on the Deck in both shapes for you to read.
-  Row **KB-ANSWER-03**. Examples and trade-offs in the decisions file. (D66)
+  Row **KB-ANSWER-03**. (D66) — planned as wave three ([48](planning/48-kb-wave-three-session.md)).
 - ★★ `[KB]` **"Not in my notes" line** — **OPEN, agreed 2026-09-01.** When a game question matches no card, one muted line
   built by code says the answer is general knowledge, so a person can tell notes from memory. Only on Strategy and Expert
   asks for a covered game; never when the library is off or the game is uncovered. **Wording settled 2026-09-07:**
@@ -617,7 +604,7 @@ is fine, the one-second target is retired (D84). Anything new goes here, one lin
   silent. Promoted out of Phase 7. One to two days.
 - ★★ `[KB]` **A latency budget for a game question** — **OPEN, added 2026-09-05.** The slowdown above was only caught because
   one QA row happened to record a band. Write down the budget (embed time plus first token with a game running) so the next
-  regression fails a check instead of relying on luck.
+  regression fails a check instead of relying on luck. Planned as wave three ([48](planning/48-kb-wave-three-session.md)).
 - ★★ `[KB]` **A measured context-window experiment** — **OPEN, research, added 2026-09-05, re-measured 2026-09-06.** The
   Deck's model runs with a 4,096-token window and a Strategy question with cards already goes over it (now trimmed
   instead of dropped, see Done). Try 8,192 as a Developer experiment with a game running, recording memory and time to
@@ -625,15 +612,13 @@ is fine, the one-second target is retired (D84). Anything new goes here, one lin
 - ★★★ `[KB]` **A troubleshooting question mostly never reaches the tips** — **OPEN, widened 2026-09-07.** Filed as
   "the tips don't use the words people type", which is true and is the smaller half. Measured 2026-09-07: **nine of ten
   ordinary problem sentences reach nothing at all** — *"my game keeps crashing"*, *"my game won't launch"*, *"black
-  screen when I start the game"*, *"game keeps crashing on my Steam Deck"*. The word "crash" is deliberately classed as
-  too weak to route a question on its own, in every circumstance; that holds while a game is running and does not hold
-  with nothing running. The rules are also written in enthusiast words (*deadzone*, *TDP*, *vsync*), and the sheet holds
-  **two** crash tips, both unusable on a Deck (*"Crash to desktop: check ~/.steam/steam/logs"*). Three fixes in order:
-  stop refusing, teach the rules everyday words, write the tips. Then re-run the held meaning search on the new tips to
-  see whether it still adds anything. (D81, D85)
+  screen when I start the game"*. The word "crash" is deliberately classed as too weak to route a question on its own;
+  that holds with a game running and not with nothing running. Next step: a floor under the tip search so it can say
+  none fit, plus a "no tip for this" line. (D81, D85) Planned as wave three ([48](planning/48-kb-wave-three-session.md)).
 - ★★★ `[KB]` **Follow-ups remember** — **OPEN, agreed 2026-09-01.** *"What about the second phase?"* should answer about the
   boss you were just asking about; today the model gets only the newest message and the follow-up searches nothing. First
   carry the previous turn's named thing into the search (a day); then chat history trimmed to the window (two more). (D47)
+  Step one — carrying the named thing into the search — is planned as wave three ([48](planning/48-kb-wave-three-session.md)).
 - ★★★ `[KB]` **Spoiler coverage as a tiered setting** — **OPEN, tiers confirmed 2026-09-01.** Strict fences bosses, endings
   and chapters; default fences only named story beats and endings; open fences nothing you asked about. Naming a boss still
   unlocks it in every tier. Needs the settings plumbing, a prompt per tier measured on the answer test, a control with a
@@ -683,6 +668,12 @@ is fine, the one-second target is retired (D84). Anything new goes here, one lin
 
 Everything shipped since v0.4.9 (2026-07-08), one line each, newest first. Detail: [CHANGELOG.md](../CHANGELOG.md),
 [archive/roadmap-completed.md](archive/roadmap-completed.md), [archive/roadmap-bugs-fixed.md](archive/roadmap-bugs-fixed.md).
+
+**Accepted, not fixed, 2026-09-07:**
+- ★ `[focus]` **ACCEPTED 2026-09-07 — the ring can land on a spot half hidden behind the Copy or Retry icon** —
+  measured on the Deck: the only fix is a taller question bubble, which costs 18 pixels on every short
+  question. No text is ever hidden either way. The maintainer looked at that trade and chose to leave it as
+  it is. Evidence `runs/plan47-R7-walk-into-reply.json`, `runs/plan47-R7-back-to-question.json`. (D86)
 
 **Verified on the Deck 2026-09-06 (knowledge base, wave one):**
 - ★★★ `[KB]` **A long Strategy question no longer throws away its game notes** — when a question would send more to the
