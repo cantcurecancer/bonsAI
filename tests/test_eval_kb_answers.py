@@ -324,6 +324,48 @@ class EvalKbAnswersHarnessTests(unittest.TestCase):
         reply = "Not only is there a day limit."
         self.assertFalse(self.mod.claim_group_hit(reply, ["there is a day limit"]))
 
+    # --- the two false contradictions the first real run produced, 2026-09-07 -----------------
+    #
+    # Running the 61-question set with the new check gave seven contradiction hits, and four of
+    # them were the check misreading a reply that was giving the right advice. Both replies below
+    # are verbatim from that run. A false contradiction is the expensive kind of mistake here:
+    # "never contradicts its note" is the number this project quotes about whether its answers can
+    # be trusted, so inflating it is as bad as the 100% it replaced.
+
+    def test_claim_group_hit_does_not_join_words_across_a_sentence_break(self):
+        # Verbatim Black Mesa reply. "shooting" is in one sentence and "legs" in the next, and
+        # both sentences say the opposite of the claim -- avoid the shell, the legs hurt YOU.
+        reply = (
+            "You need to target the pale egg sac underneath its body for damage. "
+            "Avoid shooting at the shell. Up close, its front legs can deal significant damage."
+        )
+        self.assertFalse(
+            self.mod.claim_group_hit(
+                reply, ["shoot the legs", "aim for the legs", "target its legs"]
+            )
+        )
+
+    def test_claim_group_hit_reads_too_close_as_a_warning_not_as_advice(self):
+        # Verbatim DOOM Eternal reply. The note says stay at mid-range and the reply says exactly
+        # that; "too close" is the warning, not the advice.
+        reply = (
+            "Focus on staying at mid-range. If you get too close, "
+            "it will draw your super shotgun faster than you can dash."
+        )
+        self.assertFalse(
+            self.mod.claim_group_hit(
+                reply,
+                ["rush him", "get in close", "close the distance", "stand right next to him"],
+            )
+        )
+
+    def test_claim_group_hit_still_catches_the_same_claim_given_as_advice(self):
+        # The other side of the two tests above: without "too", and inside one sentence, this is
+        # the reply genuinely telling someone to do the thing the note warns against.
+        self.assertTrue(
+            self.mod.claim_group_hit("Just rush him down and keep swinging.", ["rush him"])
+        )
+
     def test_claim_group_hit_any_alternative_in_the_group_counts(self):
         self.assertTrue(
             self.mod.claim_group_hit(

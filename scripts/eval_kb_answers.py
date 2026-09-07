@@ -431,16 +431,49 @@ def _has_negation_before(reply_stems: list[str], idx: int) -> bool:
     return any(window[i] == "no" and window[i + 1] == "longer" for i in range(len(window) - 1))
 
 
+# A wrong claim is asserted inside one sentence, so claim matching is done per sentence (see
+# claim_group_hit). Split on sentence-ending punctuation followed by whitespace; a newline alone
+# also ends a sentence, because replies are written in short paragraphs and bullet lines.
+_SENTENCE_SPLIT_RE = re.compile(r"(?<=[.!?])\s+|\n+")
+
+# "too" turns a claim into its opposite the way a negation does: "get in close" is advice, but
+# "if you get TOO close, it will draw your super shotgun" is a warning against exactly that.
+# Measured 2026-09-07: this one word accounted for three of the seven contradiction hits on the
+# 61-question set, all of them on a DOOM Eternal reply that was giving the right advice.
+# Lookback is 1, not NEGATION_LOOKBACK -- "too" only inverts the word it directly qualifies.
+_EXCESS_WORDS = frozenset({"too"})
+
+
+def _has_excess_before(reply_stems: list[str], idx: int) -> bool:
+    """True when "too" sits immediately before position idx, qualifying the matched word."""
+    return idx > 0 and reply_stems[idx - 1] in _EXCESS_WORDS
+
+
 def claim_group_hit(reply: str, alternatives: list[str]) -> bool:
     """True when the wrong claim (any alternative phrasing) is stated in the reply and none of its
     matched words has a negation sitting just before it -- so "there is no day limit" does not trip
-    a claim written as "there is a day limit", but "there is still a day limit" does."""
-    reply_stems = [_stem(t) for t in _tokenize(reply)]
-    for alt in alternatives:
-        match = _find_alt_match(reply_stems, _content_stems(alt))
-        if match is None:
-            continue
-        if not any(_has_negation_before(reply_stems, i) for i in match):
+    a claim written as "there is a day limit", but "there is still a day limit" does.
+
+    Matched **one sentence at a time**, and never across a sentence break. Measured 2026-09-07 on
+    the 61-question set: matching over the whole reply at once produced four false contradictions
+    out of seven hits. One was a Black Mesa reply reading "Avoid shooting at the shell. Up close,
+    its front legs can deal significant damage" -- the claim "shoot the legs" matched "shooting"
+    in one sentence against "legs" in the next, and the reply was in fact saying the opposite of
+    the claim in both. A wrong claim is a thing someone asserts in a sentence, so the sentence is
+    the right unit, and a false contradiction is far more costly here than a missed one: it is the
+    number this project quotes about whether its answers can be trusted.
+
+    Still not caught, deliberately, and covered by a known-miss test: a claim stated across two
+    sentences, and "not only is there a day limit". The judge column is the second opinion on both.
+    """
+    for sentence in _SENTENCE_SPLIT_RE.split(reply):
+        stems = [_stem(t) for t in _tokenize(sentence)]
+        for alt in alternatives:
+            match = _find_alt_match(stems, _content_stems(alt))
+            if match is None:
+                continue
+            if any(_has_negation_before(stems, i) or _has_excess_before(stems, i) for i in match):
+                continue
             return True
     return False
 
