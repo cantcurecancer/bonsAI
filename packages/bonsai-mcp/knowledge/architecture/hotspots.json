@@ -106,13 +106,13 @@
       "role": ""
     },
     {
-      "path": "src/components/MainTabPresetAnimatedChips.test.tsx",
+      "path": "py_modules/backend/services/game_ai_request.py",
       "lines": 635,
       "role": ""
     },
     {
-      "path": "py_modules/backend/services/game_ai_request.py",
-      "lines": 617,
+      "path": "src/components/MainTabPresetAnimatedChips.test.tsx",
+      "lines": 635,
       "role": ""
     },
     {
