@@ -405,7 +405,8 @@ On questions written without seeing the cards, the right card is in the top thre
 half the time; those numbers are from the old thirteen games and have not been re-measured since. The Deck's own model
 keeps the card's facts nine times in ten and no longer hides plain tactics behind a spoiler box. Coverage is still the
 biggest limit for a person, but less so: twenty-five games now, and every other game gets the model's memory plus one
-generic genre card. The new cards are not on the Deck yet; they ship with the next corpus release.
+generic genre card. **The new cards shipped 2026-09-06 in corpus `2026.09.06`, live on both channels.** Coverage on
+the twelve new games is thin at the bottom, and that was known before shipping (D83).
 
 **Pick up here, in order.**
 
@@ -423,7 +424,8 @@ generic genre card. The new cards are not on the Deck yet; they ship with the ne
 None open. **Decided 2026-09-05:** "starting out" cards get their own kind (D65); answer-first is tested both ways before
 a decision (D66, the test entry under Next); structured cards stay prose (D67); the blend-weight sweep runs now and the
 weights change if it agrees (D68); a first tranche of new titles comes from your own Steam library (D69, the read waits
-for the Deck to be free). Anything new goes here, one line each, with what it decides.
+for the Deck to be free). **Decided 2026-09-06:** ship the twelve-game release now and treat the thin coverage as later
+work (D83). Anything new goes here, one line each, with what it decides.
 
 ### Bugs
 
@@ -458,6 +460,13 @@ for the Deck to be free). Anything new goes here, one line each, with what it de
   closed, see Done. What still fails is the clock: the meaning search took 1.10, 1.23 and 1.19 seconds on that run, every
   question, not just the first, where the row wants the second and third at or under one second. Row **KB-RECALL-01**
   stays owed for the timing only; **KB-RECALL-02** verified at the desk.
+- ★★★★ `[KB]` **A first tranche of new titles from your Steam library** — **VERIFY, released 2026-09-06.** Twelve games
+  now have notes: Black Mesa, Hollow Knight, GTA V, GTA IV, DOOM Eternal, Doom 64, Super Mario 64, Mario Kart 64, Paper
+  Mario TTYD, Super Smash Bros. Melee, Fallout: New Vegas, Pikmin 2. Corpus `2026.09.06` shipped to both channels and
+  both were read back over the wire and matched byte for byte: 266 notes across 25 games, 124 troubleshooting tips,
+  1.27 MB. **The coverage is thin at the bottom, and that was known before shipping:** of 72 questions a player might
+  plainly ask about these twelve games, only 43 have a note that answers them; someone asking about Mario Kart 64 or
+  Doom 64 will often get nothing. Owed: the Deck check (**KB-TRANCHE-01**). [Plan](planning/40-new-titles-from-the-library.md). (D69, D83)
 - ★★★ `[KB]` **DRG Survivor glossary terms** — **VERIFY, one touch tap owed.** Shipped 2026-08-28 and walked on device:
   underline, popup, D-pad reachability, B, one-press Up. Rows **DRG-GLOSSARY-01…04**.
   [Detail](archive/roadmap-completed.md#moved-from-the-roadmap-2026-09-02).
@@ -529,11 +538,6 @@ for the Deck to be free). Anything new goes here, one line each, with what it de
   thirteen titles still have no enemy or item cards, so "how do I deal with X" works for two games. Next: 40–60 entity cards
   in tranches with a quality read from you after the first; then chip ranking by meaning. Card authors cannot write blind
   test questions, so content and eval rows go in separate sessions. [Plan](planning/28-phase5-corpus-depth.md).
-- ★★★★ `[KB]` **A first tranche of new titles from your Steam library** — **PARTIAL, cards written 2026-09-06.** All eleven
-  games now have notes: Black Mesa, Hollow Knight, GTA V, GTA IV, DOOM Eternal, Doom 64, Super Mario 64, Mario Kart 64,
-  Paper Mario TTYD, Super Smash Bros. Melee, Fallout: New Vegas, Pikmin 2. 105 cards, every one citing a page, a licence
-  and the day it was read. Owed: blind test questions in a different session, then one corpus release, then the Deck check
-  (**KB-TRANCHE-01**). [Plan](planning/40-new-titles-from-the-library.md). (D69)
 - ★★★★ `[KB]` **KB online / versus strategy content** — **OPEN, discovery locked 2026-08-09.** Multiplayer questions
   (roles, callouts, co-op) get cards; today they get nothing specific. New card kinds and a spoiler table update, Left 4
   Dead 2 first, then Counter-Strike 2, from archive dumps only. Two to three weeks. [Plan](planning/17-kb-online-versus-strategy-content.md).
