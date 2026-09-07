@@ -4315,3 +4315,61 @@ rested on one (D81). Two such checks were run while writing plan 47.
 you back to the library — has been read by everyone who has worked on this, so it is burned as a blind test.
 It is retired as a held-back row, and plan 47 has a separate lane write two dozen fresh symptom sentences,
 blind, before anyone touches the tips.
+
+
+### D86 — LOCKED 2026-09-07 — Knowledge-base wave three: fourteen calls from one discovery round
+
+Raised and answered the same evening while planning [48](../planning/48-kb-wave-three-session.md),
+after wave two landed. Twelve were questions put to the maintainer about scope, what a person sees,
+edge cases and trade-offs; two were calls the roadmap had been holding open.
+
+**The two open calls.**
+
+**Black Mesa's electrified water note is wrong, and it is replaced.** The note said the current arcs on
+a cycle with a spark as a warning, so you move while the water is dark. The maintainer checked the game:
+**the current is constant.** Stepping in deals continuous shock damage until you get out or die. The right
+advice, in the maintainer's words: treat the floor like lava and cross on desks, filing cabinets, shelves,
+floating crates or overhead pipes; or cut the power at a red wall switch, circuit breaker or lever, usually
+just outside the flooded area or at the far end, which makes the water safe for good; and where a gap is
+too wide to jump, push or carry loose wooden crates into the water as stepping stones. The note is
+rewritten from that and ships in a library point release, pushed on a second "go". It stays
+maintainer-written with no page as its source, which the credit rules allow; the difference from before
+is that it has now been checked in the game.
+
+**The ring landing behind the corner icons: do nothing.** Measured on the Deck 2026-09-07: the only fix
+is a floor of about 48 pixels on a question bubble, which costs 18 pixels on every short question. No
+text is ever hidden. Closed as accepted.
+
+**The twelve answers.**
+
+1. **Scope.** The wave is: the two ways the answer test lies; the search test rebuilding its copy; a way
+   for the tip search to say "none of these fit"; a "no tip for this" line; answer-first tested both ways
+   on the PC; follow-ups remembering, step one; a written time budget with a check; the Black Mesa
+   correction. Spoiler tiers stay out — three days and the settings plumbing make it a wave of its own.
+   The prompt diet, the embedding-model pull and the window experiment stay on the roadmap.
+2. **Wave two's Deck evening runs first**, before wave three starts. The Deck is free.
+3. **No plugin release from this wave.** Close, not yet. The corrected note is a library point release.
+4. **Catching a contradiction.** The cheap fix — claim lists with looser, negation-aware matching — is the
+   score. A second model on the PC judges each reply as a report-only column, so whether the judge is
+   worth trusting is learned before it decides anything.
+5. **What happens to the old numbers** was left to the session. The choice: a clean break. Before and after
+   are re-run on the same library with the fixed checks, and every earlier answer number is marked not
+   comparable.
+6. **The search test rebuilds its copy automatically** when the notes are newer, rather than refusing.
+   Forgetting to pass a flag is exactly how the stale copy went unnoticed for weeks.
+7. **When no tip fits, a line says so:** *"No tip for this — this answer is from the model's own
+   knowledge."* Same shape as the "not in my notes" line, any Ask mode, never when the library is off.
+8. **The held meaning search gets one more try** on top of the new floor. If it still attaches a wrong tip
+   it is retired for good, not held again.
+9. **Answer-first:** PC numbers first, then the maintainer decides. The reply shape does not change in this
+   wave.
+10. **Follow-ups remember: Strategy and Expert only.** The second half was left to the session: a
+    troubleshooting question neither stores a subject nor picks one up; the memory carries only between
+    two game questions.
+11. **No new notes this wave.** The eight deliberate blanks stay blank as the control.
+12. **Roles.** A fresh Opus extra-high session runs the plan; Sonnet 5 high lanes; the lane helper is
+    generalised so wave three does not need its own copy.
+
+**One thing found while planning.** The roadmap entry asking for a voice switch on the answer test is
+stale: the switch landed on 6 September. What is owed is a run with it on, which wave three's canonical
+measurement includes.

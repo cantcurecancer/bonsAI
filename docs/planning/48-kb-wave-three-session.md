@@ -1,0 +1,440 @@
+# 48 — Knowledge base, wave three: make the tests tell the truth, let the tip search say "none fit", and two things a player feels
+
+Written 2026-09-07 after wave two landed, from a discovery round with the maintainer the same evening.
+The answers are recorded as **D86**. **Nothing here runs until you say "go"**, with one exception you
+asked for: **wave two's Deck evening runs first, now**, because the Deck is free. Two stops remain after
+"go": the public push of the corrected library, and reading the answer-first numbers before anything
+about the reply shape changes.
+
+Read first: [CLAUDE.md](../../CLAUDE.md); [AGENTS.md](../../AGENTS.md) § 3; the roadmap's
+[Knowledge base and RAG](../roadmap.md#knowledge-base-and-rag); the status report
+[37](37-rag-status-report.md) (fourth pass); wave two [47](47-kb-wave-two-session.md), whose § 11 is
+the record this wave starts from and whose § 8 is the Deck evening that runs before this plan does.
+
+---
+
+## Context — why this wave, and why these things
+
+Wave two filled the library and shipped it. It also found, while measuring itself, that **the two
+instruments this project decides with are both lying**. The answer test passed a reply that told a
+player Pikmin 2 still has a day limit when its own note says the opposite, because the check looks for
+two fixed sentences. The same test marks a right answer wrong when it uses different words. And the
+search test had been quietly measuring a copy of the library from 31 August for weeks, so every search
+figure older than 7 September is void. The roadmap's own instruction is: fix those before deciding
+anything else from their numbers. That is the first job here and the rest of the wave is measured with
+the fixed checks.
+
+The second finding was about troubleshooting. Wave two taught the routing to stop refusing "crash" and
+rewrote the tips, and the tips are much better. But of 24 problem sentences written by someone who had
+not seen the rules, only 8 reach a tip. The held meaning search reaches all 24 and attaches the wrong
+tip to five of them, which is worse than nothing. The cause is now known: a plain word search over 156
+tips nearly always finds *something*, and there is no way for the search to say **"none of these tips
+fit."** That is the second job. The maintainer's call is that when nothing fits, the person is told so
+with a line, the same shape as the "not in my notes" line that shipped in wave two.
+
+Then two things a player feels: an answer-first reply shape, tested on the PC and handed back as a
+decision; and follow-ups that remember what you were just asking about. And one note that was wrong
+in the library comes out and is replaced with what the maintainer checked in the game.
+
+## 1. What is true right now (checked 2026-09-07, evening)
+
+- **Tip `115a7a8` on `experimental`.** Tree clean. The one running the session re-reads the tip at
+  wave 0 and puts the hash in every lane brief.
+- **The library:** 293 notes over 25 games, 156 tips, every one with its meaning index. Release
+  `2026.09.07` is live on both channels. **The Deck still has `2026.09.06`** until wave two's evening
+  installs the new one.
+- **One note in that release is wrong.** Black Mesa, *"Crossing the electrified waste pools"* (note
+  id 271, maintainer-written, no source). It says the current arcs on a cycle with a spark as a warning.
+  **The maintainer checked: the current is constant.** Stepping in deals continuous shock damage until
+  you get out or die. The right advice is: treat the floor like lava and cross on desks, cabinets,
+  shelves, floating crates or overhead pipes; or cut the power at a red wall switch, breaker or lever,
+  usually just outside the flooded area or at the far end, which makes the water safe for good; and
+  where a gap is too wide, push or carry loose wooden crates into the water as stepping stones.
+- **The answer test** (`scripts/eval_kb_answers.py`, fixture `tests/fixtures/kb_answer_eval.json`, 61
+  questions): facts are matched as a phrase inside the normalised reply, any of a group of alternatives;
+  contradictions are matched the same way against a short list of fixed sentences. Both are
+  phrase-shaped and both were caught being wrong on 7 September. It **already has a switch for the
+  character voice** (`--voice`, landed 6 September), so the roadmap entry asking for one is stale; what
+  is owed is a run with it on. It has a prompt-variant hook (`--variant`) that swaps text in the built
+  prompt, which is how the spoiler experiments were run and how answer-first can be.
+- **The search test** (`scripts/eval_kb_embed_models.py`) keeps its copy of the library under its output
+  folder and reuses whatever it finds unless `--force-rebuild` is passed. The fixture
+  (`tests/fixtures/kb_eval_v2.json`) has 437 questions: 221 for tuning, 216 held back. Of the 76
+  troubleshooting questions, 35 are tuning rows and **41 are held back**, including the 24 blind problem
+  sentences written in wave two (`V2-W2-SYM-01` to `-24`).
+- **How tips are found today:** a word search over the tip sheet with a per-tip relevance floor, plus
+  every tip on any topic the router matched, with **no floor at all**; the two lists are fused with the
+  meaning search on top when the embedding model is present. Nothing in that path can return "nothing
+  fits" once the router has matched a topic or a single word overlaps.
+- **The "not in my notes" line** is one small backend module that appends a fixed line to the reply text
+  when the notes cover the game, nothing matched, and the mode is Strategy or Expert. No frontend part.
+  The "no tip fits" line is the same shape.
+- **Follow-ups today:** the search uses the person's own words only. A chip follow-up carries the
+  previous question and answer to the model, but nothing from the previous turn reaches the search, and
+  a typed follow-up (*"what about the second phase?"*) carries nothing at all.
+- **The held symptom search:** branch `lane/kb-symptom-search`, three commits, still merges clean. Held
+  because it attaches wrong tips. It gets one more try on top of the floor and is retired for good if it
+  still does.
+- **The ring behind the corner icons:** measured, and the maintainer chose to do nothing. Closed.
+- **Fallout: New Vegas is still not installed on the Deck.** One wave-two row needs it.
+
+## 2. The pieces, and what a person notices
+
+| # | Stars | Piece | What a person using the plugin notices | Lane |
+|---|---|---|---|---|
+| 1 | ★★★ | **The answer test catches a reply that contradicts its note, and stops marking right answers wrong** | Nothing directly. Every answer number this project quotes becomes trustworthy, and the four "thin game" failures stop looking like a content gap | A |
+| 2 | ★★★★ | **The search test rebuilds its copy of the library when the notes are newer** | Nothing directly. Search numbers stop being void without anyone noticing | B |
+| 3 | ★★★ | **The tip search can say "none of these tips fit"** | A problem sentence that matches no tip stops getting a wrong tip stapled on. The five sentences that got the on-screen keyboard tip for a black screen get nothing, and the line below tells them so | C |
+| 4 | ★★ | **The "no tip for this" line** | *"No tip for this — this answer is from the model's own knowledge."* under a troubleshooting reply that found nothing, so a person can tell a Deck tip from a guess | F |
+| 5 | ★★ | **Answer-first, tested both ways** | Nothing yet. A table comes back to you: facts kept, menu present, length, contradictions, for today's shape against tactics-first. You decide | D, then the one running the session |
+| 6 | ★★★ | **Follow-ups remember, step one** | Ask about a boss, then *"what about the second phase?"* — the reply is about that boss, because the search remembers the name. Strategy and Expert only | E |
+| 7 | ★★ | **A written time budget for a game question, with a check** | Nothing directly. The next slowdown fails a check instead of being caught by luck | G |
+| 8 | ★ | **The Black Mesa water note is corrected** | Someone crossing the waste pools is told to stay out of the water and cut the power, not to time a cycle that does not exist | the one running the session |
+
+Plus **one library point release** carrying the corrected note (and the "no tip" release needs no library
+change — it is plugin code), and **one Deck evening** after landing, written in § 8.
+
+Not in this wave, by the maintainer's call: spoiler tiers (a wave of its own, three days and the settings
+plumbing), the prompt diet, pulling the embedding model during install, the context-window experiment,
+the starting-out kind, the card style pass, and **no new notes** — the eight deliberate blanks stay blank
+as the control.
+
+## 3. The calls, answered 2026-09-07 (written up as D86)
+
+1. **Scope:** the eight pieces above; spoiler tiers and the rest stay on the roadmap.
+2. **Order:** wave two's Deck evening runs **before** wave three starts. The Deck is free.
+3. **Release:** no plugin release out of this wave — close, but not yet. The corrected note is a library
+   point release, pushed on a second "go".
+4. **Catching a contradiction:** the cheap fix is the score (claim lists with looser, negation-aware
+   matching); a second model on the PC judges each reply as a **report-only column** so we learn whether
+   the judge is worth trusting before it decides anything.
+5. **Old numbers:** a clean break. Before and after are re-run on the same library with the fixed
+   checks; every earlier answer number is marked not comparable. (Left to the session; this is the choice.)
+6. **The stale search copy:** rebuild automatically when the notes are newer than the copy.
+7. **When no tip fits:** add a line, the same shape as the "not in my notes" line.
+8. **The held meaning search** gets one try on top of the floor. If it still attaches wrong tips, it is
+   retired for good, not held again.
+9. **Answer-first:** PC numbers first, then the maintainer decides. Nothing about the reply shape changes
+   in this wave.
+10. **Follow-ups remember:** Strategy and Expert only. A troubleshooting question neither stores a subject
+    nor picks one up; the memory only carries between two game questions. (The second half was left to the
+    session; that is the choice.)
+11. **No new notes.**
+12. **Roles:** a fresh Opus extra-high session runs this plan; the lane helper is generalised so wave three
+    does not need its own copy.
+13. **The Black Mesa note is wrong and is replaced** with the maintainer's own description of the game.
+14. **The ring behind the corner icons: do nothing.** Closed.
+
+## 4. Who does what
+
+| Role | Model and effort | Does | Never does |
+|---|---|---|---|
+| The one running the session | Opus, extra-high | Wave 0 prep; the note correction; briefs and launches lanes; lands every commit; runs every canonical measurement; re-tries the held branch; runs the answer-first comparison; builds and checks the point release; briefs the bookkeeper for every roadmap, testing, changelog and status-report row; writes the Deck rows | Writes lane code while a lane is open on the same files; pushes the release without the second "go"; changes the reply shape |
+| Lane A | Sonnet 5, high | The answer test: contradiction check, facts matching, the judge column | Changes any prompt text; touches the search test |
+| Lane B | Sonnet 5, high | The search test rebuilds its copy and stamps every report with what it searched | Touches the live search |
+| Lane C | Sonnet 5, high | The floor under the tip search, tuned on the 35 tuning rows only | **Opens the 41 held-back troubleshooting rows**, the blind sentences, or plan 47 § 8; changes routing rules or the tips |
+| Lane D | Sonnet 5, high | The answer-first prompt variant in the answer test | Changes the live prompt; runs the comparison for the record |
+| Lane E | Sonnet 5, high | Follow-ups remember, step one | Touches prompt text, the frontend, or Speed mode |
+| Lane F | Sonnet 5, high | The "no tip for this" line | Touches the search |
+| Lane G | Sonnet 5, high | The time budget and its check | Touches the Deck |
+| Bookkeeper | Sonnet 5, high | Roadmap, testing, changelog and status-report rows, one commit per landing | Code |
+| QA session | Opus, medium | Runs the § 8 rows on the Deck, records evidence, stops on failure | Diagnoses or fixes; wipes plugin data; runs two rows at once |
+
+**Five lanes at most at once**, so two rounds. Lane C is blind to the held-back rows for the same reason
+wave two's tip lane was: whoever tunes the floor cannot see the sentences that measure it.
+
+## 5. Order of work
+
+### Wave −1 — wave two's Deck evening, now, before "go"
+
+The QA session runs plan 47 § 8 on the device exactly as written there, rows **W2-R1** to **W2-R8**,
+after the maintainer has confirmed the batch sentences and once Fallout: New Vegas is installed (or
+row W2-R2 asks about it by name with nothing running, as the row allows). Evidence under `runs/`, the log
+appended to plan 47 § 11, the rows moved by the bookkeeper. A failed row is handed to an Opus extra-high
+session, not fixed by the QA session. **W2-R7 is a measurement only and now has an answer** — the
+maintainer chose to do nothing — so it is run only if time allows and its reading is filed for the record.
+
+### Wave 0 — the one running the session alone, about an hour
+
+1. Re-read the tip; confirm the tree is clean; run the five gates; confirm the embedding model and the
+   Deck's model are both present on the build machine.
+2. **Correct the Black Mesa note** (id 271) from § 1's wording. One commit. If any answer-test or search-test
+   row was written against the old wording, fix it in the same commit and say so.
+3. **Take the starting measurement with today's checks, on a fresh copy**: the answer test over all 61
+   questions, three runs; the search test with `--force-rebuild`. These are the last numbers under the
+   old checks and are labelled so.
+4. **Generalise the lane helper**: one `kb-lane` helper whose plan file comes from the task text, replacing
+   the plan-46 and plan-47 copies. Commit.
+5. Build one corpus copy for the lanes and copy it into each worktree.
+6. Write the seven briefs from § 6 with the tip hash, and **run the two cheap checks** rule 10 asks for
+   (see § 6, lanes C and E) before briefing those two lanes.
+
+### Wave 1 — round one: five lanes, no Deck
+
+Lanes **A, B, C, D, E** in their own worktrees. Land in this order as they finish: **B first** (so every
+later search number is on a fresh copy), then A, then C, D, E.
+
+### Wave 2 — round two: two lanes, launched as round one lands
+
+**F** starts once E has landed (both touch the reply path). **G** starts any time after B.
+
+### Wave 3 — landing and measuring, the one running the session alone
+
+1. After A lands: **re-run the answer test before and after** — the before is the wave-0 tip with the new
+   checks, the after is the landed tip. This is the clean break; every earlier number is marked not
+   comparable.
+2. After C lands: measure the 41 held-back troubleshooting rows and the junk phrases (§ 7). Then merge the
+   held symptom branch on top in a scratch worktree and measure again. **Retire it if it still attaches
+   a wrong tip.**
+3. After D lands: run the answer-first comparison (§ 7) and write the table for the maintainer.
+4. After each landing: brief the bookkeeper. Roadmap, testing rows, changelog, status report, one commit.
+
+### Wave 4 — the point release, with your second "go"
+
+Build the corrected library, check it, publish to both channels only when the maintainer says so, read
+both back over the wire.
+
+### Wave 5 — the Deck, a separate session, Opus medium
+
+The § 8 rows.
+
+### Milestone gates
+
+| Milestone | Verified when |
+|---|---|
+| A lane has landed | Its commits are on the tip, all five gates green, its report read and its effort level noted |
+| The tests tell the truth | The Pikmin reply from 7 September fails the contradiction check; the four "different words" answers pass the facts check; the search test's report names the corpus version and note count it searched |
+| The floor works | On the held-back rows, wrong tips attached go down and right tips attached do not go down; *"thank you very much"* attaches nothing |
+| Answer-first is measured | The table exists with both shapes on the same questions, and the maintainer has it |
+| Follow-ups remember | *"what about the second phase"* after a boss question attaches that boss's note in the answer test |
+| The release is out | Both channels read back and match |
+
+## 6. Lane briefs
+
+Every brief carries: the tip hash; the worktree path; the ancestry check; the five gates before every
+commit; one change per commit, test first; report at the end with hashes, tests by name, what a person
+sees, and the effort actually run at. Those are in the helper and are not repeated here.
+
+### Lane A — the answer test tells the truth
+
+**Files:** `scripts/eval_kb_answers.py`, `tests/fixtures/kb_answer_eval.json`, a test file for the
+script's matching (create `tests/test_eval_kb_answers.py` if none exists).
+
+1. **Facts matching.** Today a fact group passes when any alternative appears as a phrase in the
+   normalised reply, so *"thin the crowd"* fails against *"keep the crowd thin"*. Replace with: strip
+   filler words, reduce each word to a stem (plural, past, -ing), and pass when every content word of an
+   alternative appears within a short window of the reply in any order. Write the test with the four
+   pairs from the roadmap bug (*keep the crowd thin* / *thin the crowd*; *killing the mother* / *kill the
+   mother*; *hurting her badly* / *hurts her badly*; and the Paper Mario one from the 7 September report)
+   — all four must pass. A wrong answer must still fail: add two negative cases.
+2. **Contradiction check.** Today `must_not_say` is a list of fixed sentences. Replace with claim groups
+   written as the key words of the *wrong* claim, matched the same tolerant way, **and a hit only counts
+   when no negation word sits within three words before it** (*no, not, never, isn't, no longer, without*).
+   The test fixture is the Pikmin reply from the 7 September after-wave-two report: *"there is still a day
+   limit"* must fail, *"there is no day limit"* must pass. Rewrite every existing `must_not_say` row in the
+   fixture into the new shape; keep the old key name readable by the loader for one wave.
+3. **The judge column.** A new `--judge <model>` switch runs a second model through the PC's Ollama over
+   the note and the reply with two yes-or-no questions: does the reply contradict the note; does it state
+   each fact group. **Report-only**: a column in the per-question table and a summary line, never part of
+   any score. Off by default. Say in the report which model you used and how long it added.
+4. Do **not** change any prompt text, any variant, or the voice switch.
+
+**Report back** the before and after of the fixture's own 61 questions is *not* your job — the one
+running the session does that. Report the tests, and any fixture row you found that no longer makes
+sense under the new matching.
+
+### Lane B — the search test rebuilds its copy
+
+**Files:** `scripts/eval_kb_embed_models.py`, `tests/test_eval_kb_arms.py`.
+
+1. Before reusing `corpus.db`, compare its time against `data/kb/strategy_seed.json`,
+   `data/kb/compat_patterns.json` and `scripts/build_rag_db.py`. Older than any of them: rebuild, and say
+   so on the console. `--force-rebuild` stays.
+2. A rebuild needs the embedding model running. If Ollama is not reachable when a rebuild is needed,
+   **refuse with one plain sentence** rather than running on the old copy.
+3. Every report the script writes (markdown and JSON) states the corpus version, note count and tip count
+   of the copy it searched, in the header, so a stale copy is visible on the page.
+4. A test that a copy older than the notes file triggers a rebuild, and one that a fresh copy does not.
+
+### Lane C — the tip search can say "none of these fit"
+
+**Files:** `py_modules/backend/services/knowledge_base_service.py` (the tip path only:
+`_search_compat_patterns`, `_compat_tips_for_topics`, and the fusion step for the troubleshooting domain),
+its tests, and the transparency payload so "routed to tips, none fit" is a distinct signal. **Forbidden:**
+the held-back rows of `tests/fixtures/kb_eval_v2.json` (`split: holdout`, and every `V2-W2-SYM-*` row),
+`docs/planning/47-kb-wave-two-session.md`, the compat router rules, `data/kb/compat_patterns.json`.
+
+**The cheap check first (rule 10), run by the one running the session before briefing:** over the 35
+tuning troubleshooting rows and the six junk phrases, record the fused score of the right tip and of the
+best wrong tip. If the two ranges overlap completely, an absolute floor cannot work alone and the lane is
+briefed for a relative margin as well, the way the game-card gate already is (see the comments around
+the relevance floor and the pool margin in the service). If a margin cannot separate them either, the
+lane is not launched and the finding is filed.
+
+1. Today topic-recalled tips have no floor. Give the fused tip list one: an absolute floor and a relative
+   margin against the pool, tuned on the 35 tuning rows only. When the best tip is under it, **attach
+   nothing** and record why.
+2. The transparency block says "no tip fit" distinctly from "not a troubleshooting question", so lane F
+   and the Deck row can read it.
+3. Precision tests from wave two's tip lane must pass unchanged. *"thank you very much"* attaches nothing.
+4. Report the tuning-row table: right tip attached, wrong tip attached, nothing attached, before and after.
+
+### Lane D — the answer-first variant
+
+**Files:** `scripts/eval_kb_answers.py` (a new entry in the variant table), its test. **Not**
+`ollama_prompts.py`.
+
+1. Add variant `answer_first`: on a Strategy turn with a note attached and a named thing, swap the
+   instruction that produces a short orientation followed by the menu for one that gives the note's
+   tactics first and then the same menu. Find the exact sentence in the built prompt the way the two
+   spoiler variants do; if the sentence is not stable enough to swap, say so and stop.
+2. A test that the variant changes the prompt on a named-thing Strategy turn and leaves a Speed turn
+   untouched.
+3. Do not run the comparison for the record; the one running the session does, after lane A lands.
+
+### Lane E — follow-ups remember, step one
+
+**Files:** a new `py_modules/backend/services/kb_followup_memory.py`, `game_ai_request.py` (the search
+words only), `knowledge_base_service.py` only if the search-words entry point needs an extra argument,
+tests. **Not** the prompt text, the frontend, or Speed mode.
+
+**The cheap check first (rule 10), run by the one running the session:** confirm on the landed tip that a
+typed *"what about the second phase?"* after a boss question reaches the search with nothing from the
+previous turn. The code says so; the check is a log line.
+
+1. Remember, per plugin process, the last Strategy or Expert question's named thing: the named entity the
+   consent detection already finds, or failing that the top attached note's name. Store the game with it.
+2. A new Strategy or Expert question that has **no named thing of its own** and looks like a follow-up
+   (short; begins *what about*, *how about*, *and the*, *and its*; or leans on *it*, *its*, *that*, *him*,
+   *her*, *them*) gets the remembered name added to the **search words only** — never to the question the
+   model is shown or the person sees.
+3. Cleared when the game changes, when the library is off, or after a troubleshooting question. A
+   troubleshooting question never stores or uses it. Speed never uses it.
+4. Tests: the boss-then-second-phase case attaches the boss's note; a fresh named question is untouched;
+   a game change clears it; Speed is untouched.
+
+### Lane F — the "no tip for this" line
+
+**Files:** `py_modules/backend/services/kb_not_in_notes_notice.py`, `game_ai_request.py` (the call site),
+tests. Starts after lane E has landed.
+
+1. When the question was routed to the tip sheet and no tip fit (lane C's distinct signal; until it
+   lands, "domain troubleshooting and nothing attached"), append:
+   *"No tip for this — this answer is from the model's own knowledge."* Same footer shape as the existing
+   line, any Ask mode, never when the library is off or missing.
+2. The two lines never both appear on one reply.
+3. Tests mirror the existing module's.
+
+### Lane G — the time budget
+
+**Files:** `docs/knowledge-base.md` (one short section), `scripts/probe_deck_kb_retrieval.py`, tests.
+
+1. Read the device evidence (`runs/round34-drg-q*.json`, `runs/plan46-R2-strategy-half.json`) and write
+   the budget down in plain language: time to search the notes, and time to the first word of an answer,
+   with a game running. Give the figure and the evidence it comes from.
+2. The Deck probe script prints pass or over-budget against it.
+3. No Deck use: the check runs when the QA session runs it.
+
+## 7. The measurements the one running the session makes
+
+- **Answers, the clean break:** the 61 questions, three runs each, on the wave-0 tip with lane A's checks
+  and on the landed tip. One extra run with `--voice` on, reported as its own column, which closes the
+  stale roadmap entry. The judge column alongside, so its agreement with the fixed checks is known.
+- **Tips, held-back rows:** the 41 held-back troubleshooting rows and the junk phrases, before and after
+  lane C: right tip attached / wrong tip attached / nothing attached. Then the held symptom branch on top,
+  same table. The retire-or-keep decision is written from that table.
+- **Answer-first:** the named-thing Strategy cases, twice each way: facts kept, contradiction, menu
+  present, length in words, time. A short table for the maintainer with a recommendation.
+- **Follow-ups:** three boss-then-follow-up pairs added to the answer fixture by the one running the
+  session (not by lane E), run three times each.
+- **Search, for the record:** the search test on a fresh copy after everything lands, so wave four starts
+  from a true number.
+
+## 8. The Deck evening (the QA session's brief)
+
+Same rules as plan 47 § 8: Opus at medium, exclusive window on the Deck, settings backed up and restored,
+**batches pinned as frozen test chips and never typed**, the batch sentences **confirmed by the maintainer
+before pinning**. The sentences below are drafts; they are finalised after landing and confirmed then.
+
+**Batch W3-A — problems that fit no tip** (with nothing running; from the five that got wrong tips in wave
+two, exact wording to be taken from the fixture after landing):
+
+```
+game wont even open
+screen goes black when i open it
+game keeps quiting to the home screen
+buttons not working right half the time
+cant find my pc on the network
+```
+
+**Batch W3-B — problems that fit a tip** (nothing running; the eight from wave two's batch R4 that reach a
+tip, reused).
+
+**Batch W3-C — follow-ups** (Hades running, Strategy):
+
+```
+how do i beat megara in hades
+what about her second phase
+how do i beat the bone hydra in hades
+what about its second phase
+```
+
+**Batch W3-D — the corrected note** (Black Mesa named, nothing running, Strategy):
+
+```
+black mesa how do i get across the electrified water
+```
+
+| Row | Setup | Do | Pass when | Evidence |
+|---|---|---|---|---|
+| **W3-R1 Install the point release** | Previous library installed | Ollama tab → *Update knowledge base* | The tab shows the new version; a Black Mesa question's Show details names it | `runs/plan48-R1-*.json` |
+| **W3-R2 No tip, and the line says so** | Nothing running. Batch W3-A, Speed | Ask each | No tip attaches; the reply ends with the "No tip for this" line, exactly worded; Show details says no tip fit | `runs/plan48-R2-*.json` |
+| **W3-R3 A tip still attaches when one fits** | Nothing running. Batch W3-B, Speed | Ask each | A tip on the right subject attaches; **no** "No tip for this" line | `runs/plan48-R3-*.json` |
+| **W3-R4 Follow-ups remember** | Hades running, Strategy. Batch W3-C | Ask in order | The second and fourth attach the note of the boss just asked about; the question shown is unchanged; Show details shows the remembered name in the search | `runs/plan48-R4-*.json` |
+| **W3-R5 The corrected note** | Batch W3-D | Ask | The reply says the current is constant, stay out of the water, cross on high ground or cut the power; nothing about a cycle | `runs/plan48-R5-*.json` |
+| **W3-R6 The time budget** | A game running, Strategy | Run the Deck probe script three times | Every reading inside the written budget | `runs/plan48-R6-*.json` |
+
+## 9. Rules for this session
+
+1. Everything the maintainer reads is in plain language. Code detail goes in commit messages, lane reports
+   and the briefs above.
+2. **One lane, one worktree, one concern.** A lane needing a file outside its list says so and stops.
+3. **Lanes never edit the roadmap, the testing docs, the changelog or the status report.** The bookkeeper
+   does, one commit per landing, briefed by the one running the session.
+4. **Blindness is a hard rule.** Lane C's floor is discarded if its report shows it read a held-back row.
+5. **No eval report is committed from a lane.**
+6. **The library pushes only on the second "go".** Nothing about the reply shape changes without the
+   maintainer reading the answer-first table.
+7. **The Deck is not touched until wave 5**, and then by the QA session alone. (Wave −1 is wave two's
+   evening and is the QA session's too.)
+8. Check the effort a lane actually ran at when it reports.
+9. **Keep going once a milestone verifies.** The gate table in § 5 says what that means.
+10. Any lane whose value rests on an unproven assumption gets that assumption tested cheaply before the
+    lane is briefed. Two such checks are named in § 6 (lanes C and E).
+11. **Land B before any search number is quoted.** A number taken on a stale copy is void, and this wave
+    exists partly because nobody noticed for weeks.
+
+## 10. Risks, and what to do about each
+
+- **The new checks move every number at once**, and it will be tempting to read the move as a change in
+  the plugin. It is not. The clean-break run in § 7 is before and after on the *same* tip, and only the
+  after-landing run compares plugin against plugin.
+- **A negation-aware check can be fooled** by *"not only is there a day limit"*. The lane adds that case
+  as a known miss in the test file rather than chasing it; the judge column is the second opinion.
+- **The judge model has its own errors.** That is why it is report-only. If it disagrees with the fixed
+  checks on more than a handful of rows, the rows are read by a person before anyone trusts either.
+- **An absolute floor may not separate right tips from wrong ones.** The cheap check finds out before the
+  lane is briefed. If nothing separates them, the finding is filed and the "no tip" line still ships, it
+  just fires less often.
+- **The floor may cost right tips.** The gate is "wrong attached goes down and right attached does not";
+  a floor that loses a right tip for every wrong one it stops is not taken.
+- **Follow-up memory can attach the wrong note** when someone changes subject without naming it. The
+  follow-up shape test is deliberately narrow; a question that names anything at all uses no memory.
+- **Two lanes touch the reply path** (E and F). F starts only after E lands.
+- **The point release and the Deck evening both need the Deck**, and other chats press its buttons. One
+  driver at a time; ask for the window.
+- **Fallout: New Vegas** may still not be installed for wave −1. The row allows asking by name.
+
+## 11. Progress log
+
+*(Empty until "go". Wave −1's log goes in plan 47 § 11, where the rows live.)*
