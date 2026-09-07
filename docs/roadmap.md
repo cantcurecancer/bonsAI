@@ -466,6 +466,18 @@ is fine, the one-second target is retired (D84). Anything new goes here, one lin
   instead of nothing, which is worse for the person reading it. Matching by meaning does not connect the words a person
   uses to describe a crash to the way the crash tips are written; the real fix is rewriting the tips, filed as its own
   entry below. Held rather than shipped (D52, D81).
+  **Re-measured 2026-09-07 with the tips rewritten and the routing widened, and it stays held.** The held branch does
+  reach further: with nothing running, all 24 of the fresh plainly-worded problem sentences get into the search, against
+  8 without it, and *"thank you very much"* still attaches nothing. **But what comes back is wrong.** *"game wont even
+  open"* and *"screen goes black when i open it"* both attach a tip about the on-screen keyboard; *"game keeps quiting to
+  the home screen"* attaches one about waking from sleep; *"buttons not working right half the time"* attaches one about
+  a PlayStation pad over Bluetooth; *"cant find my pc on the network"* attaches one about hotel Wi-Fi. **That is the same
+  objection that held it in the first place** — a wrong tip is worse than none.
+  **And the cause is now clear, which is the useful part.** The branch's meaning search is written to run *only when
+  nothing else finds anything*, and that almost never happens: a plain word search across 156 tips nearly always finds
+  something by shared words, so it wins first with a poor match and the meaning search never gets a turn. Every one of
+  those five came back by word search, not by meaning. **What is missing is not a wider gate — it is a way to say "none
+  of these tips fit."** Until there is one, opening the gate makes things worse.
   [Detail](roadmap-details.md#a-troubleshooting-question-that-only-describes-the-symptom-reaches-no-tips).
 - ★★ `[KB]` **The panel keeps naming a game after you have closed it** — **OPEN, seen on the Deck 2026-09-06, filed
   2026-09-07.** After exiting a game the line under the question box still named it. A question that names its own game
