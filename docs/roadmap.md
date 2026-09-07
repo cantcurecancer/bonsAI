@@ -442,9 +442,10 @@ Wave two's own Deck evening runs first, now that the Deck is free.**
    wrong tip, which is worse than nothing. That is now measured, not guessed; see the held entry below.
 4. **Then Next from the top** — answer-first tested both ways, spoiler tiers, follow-ups remembering.
 
-**Owed on the Deck:** wave two's own evening runs next, before wave three starts (rows **W2-R1** to **W2-R7** in
-[plan 47](planning/47-kb-wave-two-session.md) § 8), plus **KB-TRANCHE-01** from wave one — a question per new game on
-the device. Fallout: New Vegas still is not installed.
+**Wave two's own evening ran 2026-09-07** (rows **W2-R1** to **W2-R7** in
+[plan 47](planning/47-kb-wave-two-session.md) § 8; full results and bug write-ups above and below). **Still owed:**
+the stray-computer-text half of **W2-R6**, which needs Deep Rock Galactic: Survivor running with Speed and voice on;
+**W2-R8**, the five August rows, is optional and was not run. Fallout: New Vegas still is not installed.
 
 ### Calls waiting on you
 
@@ -498,6 +499,9 @@ is fine, the one-second target is retired (D84). Anything new goes here, one lin
   those five came back by word search, not by meaning. **What is missing is not a wider gate — it is a way to say "none
   of these tips fit."** Until there is one, opening the gate makes things worse.
   [Detail](roadmap-details.md#a-troubleshooting-question-that-only-describes-the-symptom-reaches-no-tips).
+  **One more wrong tip, found on the device 2026-09-07 (R4):** on the routing already shipped, *"when I plug it into
+  the television the menus show up in the wrong spot on the screen and are hard to read"* comes back with a tip about
+  Big Picture Mode versus Desktop Mode, which does not answer it. Evidence `runs/plan47-R4-problems-reach-tips.json`.
 - ★★ `[KB]` **The panel keeps naming a game after you have closed it** — **FIXED 2026-09-07, VERIFY on the Deck
   (W2-R6).** After exiting a game the line under the question box still named it, so a question that does not name its
   own game could pick up the wrong game's notes. **The cause written into this entry yesterday was wrong**, which is
@@ -505,6 +509,8 @@ is fine, the one-second target is retired (D84). Anything new goes here, one lin
   **reopening the panel** — after a popup, or leaving the plugin and coming back — which restored whatever game name had
   been remembered and never checked whether that game was still running. It now checks what is actually running at that
   moment. Five tests. A plain data change; nothing to do with focus or layout. (D85)
+  **Checked on the Deck 2026-09-07 and this fix does not hold** — see the new bug below about the line still naming a
+  closed game.
 - ★★★ `[KB]` **Searching the notes by meaning costs about a second, every time, on the Deck** — **ACCEPTED
   2026-09-06.** Repeated on the Deck: 1.10, 1.23 and 1.19 seconds across three questions in a row, the same band as
   the first time this was measured. The maintainer looked at the number and said that is fine — about a second before
@@ -554,6 +560,24 @@ is fine, the one-second target is retired (D84). Anything new goes here, one lin
   content gap they look like — the facts are in the notes and in the answers. Left alone on purpose while
   this wave runs, so its before and after are measured the same way; worth fixing straight after. Planned
   as wave three ([48](planning/48-kb-wave-three-session.md)).
+- ★★ `[KB]` **A pinned test batch is not badged** — **OPEN, found 2026-09-07.** Chips pinned for testing are
+  supposed to carry an amber Test badge, so it is obvious the carousel is showing a fixed set rather than what
+  the plugin would have picked on its own. With the chip-decode animation switched on, the badge never draws, so
+  a pinned batch looks like ordinary chips. Evidence `runs/plan47-frozen-chip-findings.json`.
+- ★★★ `[KB]` **The line under the question box still names a game after it is closed** — **OPEN, found
+  2026-09-07.** Hades was exited with the panel still open. The line still named it right afterwards, still named
+  it 31 seconds later, still named it about four minutes later, and still named it after the Quick Access Menu
+  was closed and reopened — which matters because reopening is exactly the path the fix above was aimed at, and
+  it did not hold there either. The line is drawn live from what the plugin currently believes is running, not a
+  record of the turn that just finished. Evidence `runs/plan47-R6-bug-fixes.json`.
+- ★★★ `[KB]` **The "not in my notes" line never appears** — **OPEN, found 2026-09-07, fix folded into wave three
+  (D87).** The line was built to tell someone an answer came from the model's own memory rather than their notes,
+  but it only shows when the library covers the game and nothing in it matched — and the note search always
+  finds something to attach, so the line never shows. Ten questions about games the library covers, including
+  "how do i tame a horse" in Black Mesa and a nonsense question in Hades, all attached a note anyway. On the
+  device, asking about a boss that does not exist in Hades got a confident answer about weapons, and no line.
+  Same cause as the tip problem above: nothing in the search can say "none of these fit." Evidence
+  `runs/plan47-R5-not-in-notes.json`, `runs/plan47-probe-notinnotes.json`.
 
 ### Deck check owed
 
@@ -561,13 +585,6 @@ is fine, the one-second target is retired (D84). Anything new goes here, one lin
   format gate, the relevance floor, follow-ups searching the user's words, transparency matching what the model got, and
   the Developer kill-switch. Either one evening with pinned test chips, or close them as superseded by the rows that
   passed this week. Rows **KB-VARIANT-01**, **KB-FLOOR-01**, **KB-FOLLOWUP-01**, **KB-TRANSPARENCY-01**, **KB-KILLSWITCH-01**.
-- ★★★★ `[KB]` **A first tranche of new titles from your Steam library** — **VERIFY, released 2026-09-06.** Twelve games
-  now have notes: Black Mesa, Hollow Knight, GTA V, GTA IV, DOOM Eternal, Doom 64, Super Mario 64, Mario Kart 64, Paper
-  Mario TTYD, Super Smash Bros. Melee, Fallout: New Vegas, Pikmin 2. Corpus `2026.09.06` shipped to both channels and
-  both were read back over the wire and matched byte for byte: 266 notes across 25 games, 124 troubleshooting tips,
-  1.27 MB. **The coverage is thin at the bottom, and that was known before shipping:** of 72 questions a player might
-  plainly ask about these twelve games, only 43 have a note that answers them; someone asking about Mario Kart 64 or
-  Doom 64 will often get nothing. Owed: the Deck check (**KB-TRANCHE-01**). [Plan](planning/40-new-titles-from-the-library.md). (D69, D83)
 - ★★★ `[KB]` **DRG Survivor glossary terms** — **VERIFY, one touch tap owed.** Shipped 2026-08-28 and walked on device:
   underline, popup, D-pad reachability, B, one-press Up. Rows **DRG-GLOSSARY-01…04**.
   [Detail](archive/roadmap-completed.md#moved-from-the-roadmap-2026-09-02).
@@ -640,6 +657,8 @@ is fine, the one-second target is retired (D84). Anything new goes here, one lin
 - ★★★ `[KB]` **KB visual maps** — **OPEN.** Two shapes you named 2026-08-29: a dungeon map, and a boss outline with weak
   points marked. Nothing draws anything in a reply today. A dungeon map has to be authored, which sits behind the source
   policy and a corpus rebuild. Research first. [Detail](roadmap-details.md#kb-visual-maps).
+- `[KB]` **Idea for wave four: dungeon maps** — raised by the maintainer 2026-09-07, no stars and no plan yet. Picks up
+  the dungeon-map half of the visual-maps idea above when the time comes.
 - ★★★★ `[KB]` **RAG Phase 4: extended retrieval** — **PARTIAL.** The chip guarantee and 16 structured cards shipped
   2026-08-19; the split was accepted 2026-08-21 and prose replies were accepted 2026-09-05 (D67). Left: per-game Deck tips (content for seven titles collected, two quirks from
   your own Deck), which need a format bump and a release — see the release entry above. Two to three days. The chip
@@ -674,6 +693,15 @@ Everything shipped since v0.4.9 (2026-07-08), one line each, newest first. Detai
   measured on the Deck: the only fix is a taller question bubble, which costs 18 pixels on every short
   question. No text is ever hidden either way. The maintainer looked at that trade and chose to leave it as
   it is. Evidence `runs/plan47-R7-walk-into-reply.json`, `runs/plan47-R7-back-to-question.json`. (D86)
+
+**Verified on the Deck 2026-09-07 (knowledge base, wave two evening):**
+- ★★★★ `[KB]` **A first tranche of new titles from your Steam library** — checked on the Deck 2026-09-07
+  (**KB-TRANCHE-01**). Each of the twelve games added this month — Black Mesa, Hollow Knight, GTA V, GTA IV, DOOM
+  Eternal, Doom 64, Super Mario 64, Mario Kart 64, Paper Mario TTYD, Super Smash Bros. Melee, Fallout: New Vegas,
+  Pikmin 2 — brought back notes about the right game. The 21 notes written this wave to fill in blank spots, and the
+  filled-out weakest four games, were all found among the top three results, most of them first. Fallout: New Vegas
+  is still not installed on the device, so it was asked about by name only, which the check allows.
+  [Plan](planning/40-new-titles-from-the-library.md). (D69, D83, D85)
 
 **Verified on the Deck 2026-09-06 (knowledge base, wave one):**
 - ★★★ `[KB]` **A long Strategy question no longer throws away its game notes** — when a question would send more to the
