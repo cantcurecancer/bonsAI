@@ -4,9 +4,11 @@ from pathlib import Path
 from unittest import mock
 
 from backend.services.knowledge_base_schema import (
+    corpus_compat_vectors_fully_indexed,
     corpus_has_usable_compat_vectors,
     corpus_has_usable_section_vectors,
     corpus_has_usable_vectors,
+    corpus_section_vectors_fully_indexed,
     default_corpus_dir_internal,
     default_corpus_dir_sd,
     is_allowed_corpus_install_path,
@@ -83,6 +85,96 @@ class KnowledgeBaseSchemaPathTests(unittest.TestCase):
         self.assertTrue(corpus_has_usable_compat_vectors(conn))
         self.assertTrue(corpus_has_usable_vectors(conn))
         self.assertFalse(corpus_has_usable_section_vectors(conn))
+
+
+class CorpusFullyIndexedTests(unittest.TestCase):
+    """corpus_section_vectors_fully_indexed / corpus_compat_vectors_fully_indexed answer a
+    stricter question than corpus_has_usable_*_vectors: not "any?" but "every one?". The two
+    existing "any?" checks must keep answering exactly as before — see
+    test_corpus_has_usable_* below in this file, unchanged by this test class."""
+
+    def _conn_with_sections(self, total: int, indexed: int):
+        import sqlite3
+
+        conn = sqlite3.connect(":memory:")
+        conn.execute("CREATE TABLE sections (section_id INTEGER PRIMARY KEY)")
+        conn.execute("CREATE TABLE section_vectors (section_id INTEGER PRIMARY KEY, embedding BLOB)")
+        conn.execute("CREATE TABLE compat_patterns (pattern_id INTEGER PRIMARY KEY)")
+        conn.execute(
+            "CREATE TABLE compat_pattern_vectors (pattern_id INTEGER PRIMARY KEY, embedding BLOB)"
+        )
+        for i in range(1, total + 1):
+            conn.execute("INSERT INTO sections(section_id) VALUES (?)", (i,))
+        for i in range(1, indexed + 1):
+            conn.execute(
+                "INSERT INTO section_vectors(section_id, embedding) VALUES (?, ?)",
+                (i, pack_embedding_vector([0.1])),
+            )
+        return conn
+
+    # --- manifest-driven answer (the path build_rag_db.py's manifest feeds at runtime) ---
+
+    def test_complete_corpus_is_fully_indexed_by_manifest(self):
+        manifest = {
+            "embeddings_populated": True,
+            "embedding_section_total_count": 2,
+            "embedding_section_count": 2,
+        }
+        conn = self._conn_with_sections(total=0, indexed=0)  # manifest wins; DB is irrelevant
+        self.assertTrue(corpus_section_vectors_fully_indexed(conn, manifest))
+
+    def test_partial_corpus_is_not_fully_indexed_by_manifest(self):
+        manifest = {
+            "embeddings_populated": True,
+            "embedding_section_total_count": 2,
+            "embedding_section_count": 1,
+        }
+        conn = self._conn_with_sections(total=0, indexed=0)
+        self.assertFalse(corpus_section_vectors_fully_indexed(conn, manifest))
+        # The existing, deliberately lenient check must still say yes — a note with some but
+        # not all vectors baked stays searchable today.
+        self.assertTrue(corpus_has_usable_section_vectors(conn, manifest))
+
+    def test_empty_corpus_is_not_fully_indexed_by_manifest(self):
+        manifest = {"embeddings_populated": False}
+        conn = self._conn_with_sections(total=0, indexed=0)
+        self.assertFalse(corpus_section_vectors_fully_indexed(conn, manifest))
+        self.assertFalse(corpus_has_usable_section_vectors(conn, manifest))
+
+    # --- DB fallback (an older manifest with no total-count fields) ---
+
+    def test_complete_corpus_is_fully_indexed_from_the_db(self):
+        conn = self._conn_with_sections(total=2, indexed=2)
+        self.assertTrue(corpus_section_vectors_fully_indexed(conn, manifest=None))
+
+    def test_partial_corpus_is_not_fully_indexed_from_the_db(self):
+        conn = self._conn_with_sections(total=2, indexed=1)
+        self.assertFalse(corpus_section_vectors_fully_indexed(conn, manifest=None))
+        self.assertTrue(corpus_has_usable_section_vectors(conn, manifest=None))
+
+    def test_empty_corpus_is_not_fully_indexed_from_the_db(self):
+        conn = self._conn_with_sections(total=2, indexed=0)
+        self.assertFalse(corpus_section_vectors_fully_indexed(conn, manifest=None))
+        self.assertFalse(corpus_has_usable_section_vectors(conn, manifest=None))
+
+    # --- the compat tip side of the same check ---
+
+    def test_compat_complete_partial_and_empty(self):
+        conn = self._conn_with_sections(total=0, indexed=0)
+        conn.execute("INSERT INTO compat_patterns(pattern_id) VALUES (1), (2)")
+        conn.execute(
+            "INSERT INTO compat_pattern_vectors(pattern_id, embedding) VALUES (1, ?)",
+            (pack_embedding_vector([0.1]),),
+        )
+        # 1 of 2 indexed: not fully indexed, but still usable today.
+        self.assertFalse(corpus_compat_vectors_fully_indexed(conn, manifest=None))
+        self.assertTrue(corpus_has_usable_compat_vectors(conn, manifest=None))
+
+        conn.execute(
+            "INSERT INTO compat_pattern_vectors(pattern_id, embedding) VALUES (2, ?)",
+            (pack_embedding_vector([0.1]),),
+        )
+        self.assertTrue(corpus_compat_vectors_fully_indexed(conn, manifest=None))
 
 
 if __name__ == "__main__":

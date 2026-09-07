@@ -146,6 +146,11 @@
       "role": ""
     },
     {
+      "path": "py_modules/backend/services/knowledge_base_schema.py",
+      "lines": 520,
+      "role": ""
+    },
+    {
       "path": "src/utils/answerBubbleNavigation.test.ts",
       "lines": 512,
       "role": ""
@@ -178,11 +183,6 @@
     {
       "path": "src/utils/buildAnswerBubbleElement.test.tsx",
       "lines": 475,
-      "role": ""
-    },
-    {
-      "path": "py_modules/backend/services/knowledge_base_schema.py",
-      "lines": 470,
       "role": ""
     },
     {
