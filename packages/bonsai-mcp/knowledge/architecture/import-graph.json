@@ -1,7 +1,7 @@
 {
   "note": "Generated. Relative TS/TSX imports under src/ only; external packages and non-TS assets are excluded. Python is not covered.",
   "fileCount": 374,
-  "edgeCount": 918,
+  "edgeCount": 920,
   "cycles": [],
   "orphans": [],
   "unresolved": [
@@ -1022,6 +1022,7 @@
         "src/features/plugin-shell/useCharacterPickerModal.tsx",
         "src/features/plugin-shell/useOllamaConnectionState.ts",
         "src/features/plugin-shell/useOllamaModelsHubModal.tsx",
+        "src/hooks/useBonsaiAskOrchestration.test.ts",
         "src/hooks/useBonsaiAskOrchestration.ts",
         "src/hooks/useBonsaiPluginShell.test.ts",
         "src/hooks/useKidsLock.ts",
@@ -1852,9 +1853,11 @@
     },
     "src/hooks/useBonsaiAskOrchestration.test.ts": {
       "imports": [
+        "src/data/bonsaiSettingsSchema.ts",
         "src/hooks/useBonsaiAskOrchestration.ts",
         "src/test-harness/fakeDeckyRpc.ts",
         "src/test-harness/rpcFixtures.ts",
+        "src/utils/bonsaiSessionSurvival.ts",
         "src/utils/thinkingSummaryText.ts"
       ],
       "importedBy": []
@@ -2886,6 +2889,7 @@
         "src/features/plugin-shell/useOllamaConnectionState.ts",
         "src/features/plugin-shell/useOllamaModelsHubModal.tsx",
         "src/features/plugin-shell/usePluginHelpModal.tsx",
+        "src/hooks/useBonsaiAskOrchestration.test.ts",
         "src/hooks/useBonsaiAskOrchestration.ts",
         "src/hooks/useBonsaiPluginShell.test.ts",
         "src/hooks/useBonsaiPluginShell.ts",

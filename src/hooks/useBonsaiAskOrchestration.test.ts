@@ -19,6 +19,98 @@ import { Router } from "@decky/ui";
 import { getRpcCallLog, resetFakeDeckyRpc, setRpcHandler } from "../test-harness/fakeDeckyRpc";
 import { idleBackgroundStatusFixture } from "../test-harness/rpcFixtures";
 import { THINKING_BLURB_PLACEHOLDER } from "../utils/thinkingSummaryText";
+import type { BonsaiSessionSurvivalSnapshot } from "../utils/bonsaiSessionSurvival";
+import {
+  DEFAULT_CAPABILITIES,
+  DEFAULT_DESKTOP_APP_LOG_LEVEL,
+  DEFAULT_MODEL_POLICY_TIER,
+} from "../data/bonsaiSettingsSchema";
+
+function minimalSurvivalSnapshot(
+  overrides: Partial<BonsaiSessionSurvivalSnapshot> = {},
+): BonsaiSessionSurvivalSnapshot {
+  return {
+    currentTab: "main",
+    unifiedInput: "",
+    selectedIndex: -1,
+    navigationMessage: "",
+    selectedAttachment: null,
+    isScreenshotBrowserOpen: false,
+    mediaError: "",
+    recentScreenshots: [],
+    isLoadingRecentScreenshots: false,
+    pluginHelpDismissed: true,
+    ollamaIp: "127.0.0.1:11434",
+    settingsSnapshot: {
+      latencyWarningSeconds: 45,
+      requestTimeoutSeconds: 120,
+      latencyTimeoutsCustomEnabled: false,
+      unifiedInputPersistenceMode: "persist_all",
+      screenshotAttachmentPreset: "mid",
+      desktopDebugNoteAutoSave: false,
+      desktopAskVerboseLogging: false,
+      desktopAppLogLevel: DEFAULT_DESKTOP_APP_LOG_LEVEL,
+      presetChipFadeAnimationEnabled: true,
+      presetChipAnimation: "fade",
+      presetSingleChip: false,
+      inputSanitizerUserDisabled: false,
+      capabilities: { ...DEFAULT_CAPABILITIES },
+      aiCharacterEnabled: true,
+      aiCharacterRandom: false,
+      aiCharacterPresetId: "coach",
+      aiCharacterCustomText: "",
+      aiCharacterAccentIntensity: "balanced",
+      askMode: "speed",
+      ollamaKeepAlive: "5m",
+      replyVerbosity: "balanced",
+      askThinkEffort: "off",
+      replyLanguage: "follow_system",
+      showDeveloperTab: false,
+      modelPolicyTier: DEFAULT_MODEL_POLICY_TIER,
+      modelPolicyNonFossUnlocked: false,
+      modelAllowHighVramFallbacks: false,
+      ollamaLocalOnDeck: true,
+      strategySpoilerMaskingEnabled: true,
+      strategySpoilerAutoRevealAfterConsent: false,
+      steamWebApiKey: "",
+      showOnscreenDebugHud: false,
+      devForceSessionRagChips: false,
+      devPreloadAskModel: false,
+      devFrozenTestChips: [],
+      tabResumeMode: "resume",
+      namedOllamaHosts: [],
+      voiceSttModel: "tiny.en",
+      uiScaleAutoEnabled: true,
+      uiScaleManualProfile: "handheld",
+      useLocalKnowledgeBase: false,
+      ragHybridRetrievalEnabled: true,
+      ragCorpusPath: "",
+      ragCorpusVersion: "",
+      textModelRoutingOrder: [],
+      visionModelRoutingOrder: [],
+    },
+    ollamaResponse: "",
+    ollamaContext: null,
+    lastExchange: null,
+    askThreadCollapsed: [],
+    askThreadDisplayQuestion: "",
+    expandedTurnKey: "live",
+    suggestedPrompts: [],
+    lastTransparency: null,
+    modelPolicyDisclosure: null,
+    strategyGuideBranches: null,
+    strategyChecklist: null,
+    elapsedSeconds: null,
+    lastApplied: null,
+    shortcutSetupVariant: null,
+    presetCarouselInject: null,
+    showSlowWarning: false,
+    lastRequestId: null,
+    thinkingSummary: null,
+    activeSlotId: null,
+    ...overrides,
+  };
+}
 
 function makeArgs(overrides: Partial<UseBonsaiAskOrchestrationArgs> = {}): UseBonsaiAskOrchestrationArgs {
   return {
@@ -1087,6 +1179,135 @@ describe("ollamaContext on mount (CHIP-ROTATION-01)", () => {
     // game detected" footnote or as no footnote row at all is an existing, separate choice
     // (both already render fine); this bug is specifically about a running game being missed.
     expect(result.current.ollamaContext?.app_context).not.toBe("active");
+  });
+});
+
+/*
+ * The Ask-bar footnote kept naming a game after it was closed. Traced to the panel's session
+ * survival: a snapshot captured while a game was running (e.g. right before the QAM closes)
+ * still names that game, and re-showing the panel used to restore it verbatim even after the
+ * game had since been exited. `trackedRunningAppId`'s own 1.5s poll of the running app already
+ * corrects the footnote on its own once no Ask is in flight (covered below); the fix here makes
+ * a session restore reconcile against the live running game the same way, instead of trusting
+ * a survived snapshot that may already be stale.
+ */
+describe("the game context stays right after a game closes", () => {
+  const originalMainRunningApp = Router.MainRunningApp;
+
+  afterEach(() => {
+    (Router as { MainRunningApp: typeof Router.MainRunningApp }).MainRunningApp =
+      originalMainRunningApp;
+    vi.useRealTimers();
+  });
+
+  it("closing a game clears the line without anyone asking anything", async () => {
+    resetFakeDeckyRpc();
+    setRpcHandler("get_background_game_ai_status", () => new Promise(() => {}));
+    (Router as { MainRunningApp: typeof Router.MainRunningApp }).MainRunningApp = {
+      appid: 220,
+      display_name: "Half-Life 2",
+    } as unknown as typeof Router.MainRunningApp;
+
+    vi.useFakeTimers();
+    const { result } = renderHook(() => useBonsaiAskOrchestration(makeArgs()));
+    expect(result.current.ollamaContext).toEqual({ app_id: "220", app_context: "active" });
+
+    // The game is exited — Steam stops reporting a running app.
+    (Router as { MainRunningApp: typeof Router.MainRunningApp }).MainRunningApp =
+      undefined as unknown as typeof Router.MainRunningApp;
+
+    await act(async () => {
+      vi.advanceTimersByTime(2000);
+    });
+
+    expect(result.current.ollamaContext?.app_context).not.toBe("active");
+  });
+
+  it("launching a game sets the line", async () => {
+    resetFakeDeckyRpc();
+    setRpcHandler("get_background_game_ai_status", () => new Promise(() => {}));
+    (Router as { MainRunningApp: typeof Router.MainRunningApp }).MainRunningApp =
+      undefined as unknown as typeof Router.MainRunningApp;
+
+    vi.useFakeTimers();
+    const { result } = renderHook(() => useBonsaiAskOrchestration(makeArgs()));
+    expect(result.current.ollamaContext?.app_context).not.toBe("active");
+
+    // A game is launched while the panel is already open.
+    (Router as { MainRunningApp: typeof Router.MainRunningApp }).MainRunningApp = {
+      appid: 620,
+      display_name: "Portal 2",
+    } as unknown as typeof Router.MainRunningApp;
+
+    await act(async () => {
+      vi.advanceTimersByTime(2000);
+    });
+
+    expect(result.current.ollamaContext).toEqual({ app_id: "620", app_context: "active" });
+  });
+
+  it("does not resurrect a closed game when the panel is reopened (session restore)", () => {
+    resetFakeDeckyRpc();
+    setRpcHandler("get_background_game_ai_status", () => new Promise(() => {}));
+    // Nothing is running any more by the time the panel comes back.
+    (Router as { MainRunningApp: typeof Router.MainRunningApp }).MainRunningApp =
+      undefined as unknown as typeof Router.MainRunningApp;
+
+    const { result } = renderHook(() => useBonsaiAskOrchestration(makeArgs()));
+
+    act(() => {
+      // The survived snapshot still names the game that was running before the panel closed.
+      result.current.restoreSessionSnapshot(
+        minimalSurvivalSnapshot({ ollamaContext: { app_id: "220", app_context: "active" } }),
+      );
+    });
+
+    expect(result.current.ollamaContext?.app_context).not.toBe("active");
+  });
+
+  it("shows the game that is actually still running, not a stale restored one", () => {
+    resetFakeDeckyRpc();
+    setRpcHandler("get_background_game_ai_status", () => new Promise(() => {}));
+    (Router as { MainRunningApp: typeof Router.MainRunningApp }).MainRunningApp = {
+      appid: 220,
+      display_name: "Half-Life 2",
+    } as unknown as typeof Router.MainRunningApp;
+
+    const { result } = renderHook(() => useBonsaiAskOrchestration(makeArgs()));
+    expect(result.current.ollamaContext).toEqual({ app_id: "220", app_context: "active" });
+
+    act(() => {
+      // A stale snapshot naming a different (no longer running) game.
+      result.current.restoreSessionSnapshot(
+        minimalSurvivalSnapshot({ ollamaContext: { app_id: "999", app_context: "active" } }),
+      );
+    });
+
+    expect(result.current.ollamaContext).toEqual({ app_id: "220", app_context: "active" });
+  });
+
+  it("a question that names its own game is unaffected either way", () => {
+    resetFakeDeckyRpc();
+    setRpcHandler("get_background_game_ai_status", () => new Promise(() => {}));
+    (Router as { MainRunningApp: typeof Router.MainRunningApp }).MainRunningApp = {
+      appid: 220,
+      display_name: "Half-Life 2",
+    } as unknown as typeof Router.MainRunningApp;
+
+    const { result } = renderHook(() => useBonsaiAskOrchestration(makeArgs()));
+
+    act(() => {
+      // A snapshot captured while asking about the game that is still running.
+      result.current.restoreSessionSnapshot(
+        minimalSurvivalSnapshot({
+          ollamaContext: { app_id: "220", app_context: "active" },
+          lastExchange: { question: "how do I beat Ravenholm", answer: "..." },
+        }),
+      );
+    });
+
+    expect(result.current.ollamaContext).toEqual({ app_id: "220", app_context: "active" });
+    expect(result.current.lastExchange?.question).toBe("how do I beat Ravenholm");
   });
 });
 

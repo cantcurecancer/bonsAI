@@ -17,7 +17,7 @@
     },
     {
       "path": "src/hooks/useBonsaiAskOrchestration.ts",
-      "lines": 1632,
+      "lines": 1640,
       "role": ""
     },
     {
@@ -28,6 +28,11 @@
     {
       "path": "py_modules/backend/services/ollama_prompts.py",
       "lines": 1514,
+      "role": ""
+    },
+    {
+      "path": "src/hooks/useBonsaiAskOrchestration.test.ts",
+      "lines": 1436,
       "role": ""
     },
     {
@@ -48,11 +53,6 @@
     {
       "path": "src/components/MainTabPresetAnimatedChips.tsx",
       "lines": 1233,
-      "role": ""
-    },
-    {
-      "path": "src/hooks/useBonsaiAskOrchestration.test.ts",
-      "lines": 1215,
       "role": ""
     },
     {
@@ -107,7 +107,7 @@
     },
     {
       "path": "py_modules/backend/services/game_ai_request.py",
-      "lines": 635,
+      "lines": 645,
       "role": ""
     },
     {

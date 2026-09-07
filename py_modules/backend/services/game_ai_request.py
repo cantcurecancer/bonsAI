@@ -70,7 +70,11 @@ from backend.services.tdp_service import (
     TDP_MIN_W,
     read_current_tdp_watts,
 )
-from backend.tdp_intent import is_current_tdp_read_intent, parse_tdp_recommendation
+from backend.tdp_intent import (
+    is_current_tdp_read_intent,
+    parse_tdp_recommendation,
+    strip_tdp_recommendation_block,
+)
 
 logger = decky.logger
 
@@ -510,6 +514,12 @@ async def run_game_ai_request(
                 }
             else:
                 logger.info("ask_game_ai: no TDP recommendation found in response")
+
+            # The block above is how the power suggestion is read out of the reply -- it must
+            # run first. This removes that same raw JSON from the text a person actually reads,
+            # since parsing it never removed it (the traced cause of a reply ending in a raw
+            # {"tdp_watts": ...} line). A fenced code sample is left alone.
+            response_text = strip_tdp_recommendation_block(response_text)
 
         # Output-side safety check: run once the full reply is in hand (see
         # destructive_advice_guard.py for why this is finished-reply, not per-token). Runs on

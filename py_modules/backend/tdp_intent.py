@@ -97,3 +97,42 @@ def parse_tdp_recommendation(
     else:
         result["gpu_clock_mhz"] = None
     return result
+
+
+_RAW_TDP_BLOCK_RE = re.compile(r'\{\s*"tdp_watts"\s*:\s*\d+[^}]*\}')
+_FENCE_RE = re.compile(r"```.*?```", re.DOTALL)
+
+
+def strip_tdp_recommendation_block(text: str) -> str:
+    """Remove a bare ``{"tdp_watts": ...}`` block from reply text before it reaches a person.
+
+    ``parse_tdp_recommendation`` reads this block (it is how the power suggestion feature
+    works) but never removes it, so on some replies the model's raw JSON ends up sitting in
+    the words a person reads. This mirrors the same fallback pattern used to *find* the block
+    so stripping matches parsing exactly, except a block sitting inside a fenced code sample
+    (` ``` ... ``` `) is left alone -- that text was asked for on purpose.
+    """
+    if not text or '"tdp_watts"' not in text:
+        return text
+
+    fenced_spans = [m.span() for m in _FENCE_RE.finditer(text)]
+
+    def _in_fenced_span(pos: int) -> bool:
+        return any(start <= pos < end for start, end in fenced_spans)
+
+    changed = False
+
+    def _replace(match: "re.Match[str]") -> str:
+        nonlocal changed
+        if _in_fenced_span(match.start()):
+            return match.group(0)
+        changed = True
+        return ""
+
+    stripped = _RAW_TDP_BLOCK_RE.sub(_replace, text)
+    if not changed:
+        return text
+
+    stripped = re.sub(r"[ \t]+\n", "\n", stripped)
+    stripped = re.sub(r"\n{3,}", "\n\n", stripped)
+    return stripped.strip()
