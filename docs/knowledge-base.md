@@ -67,6 +67,7 @@ python scripts/build_rag_db.py --seed --out ./build/knowledge-base
 - Full crawl + LLM distillation is maintainer-batch work; `--seed` ships a dev/sample DB for QA.
 - **Phase 2 (shipped 2026-07-28):** `build_rag_db.py` populates `section_vectors` when local Ollama has `nomic-embed-text`; manifest `embeddings_populated` + `embedding_section_count`.
 - **Phase 3 (shipped 2026-07-29):** expand `compat_patterns` (~100–150 tips with `topic` + `platforms`); bake compat-pattern vectors; expand strategy sections for the interim 11-title game mix (see § Phase 3). Draft tips/cards on maintainer PC with **`qwen3.6:27b`**; embed with **`nomic-embed-text`** only.
+- **Since the 2026-09-07 release, a build refuses to finish if any note or tip is missing its meaning index** — it used to only print a warning — and the publish check refuses to push a corpus that is short of its full index.
 
 ## Corpus layout on Deck
 
@@ -277,6 +278,7 @@ deepening rather than a separate Phase 5 pass.
 | First public push, 2026-08-14 | `2026.08.14` | `081af237…` | 758507 | Not reproducible from source (see below) |
 | **Point release, 2026-08-16** | **`2026.08.16`** | **`34bff336…`** | **758502** | First reproducible artifact; supersedes the above on both channels |
 | **Point release, 2026-09-06** | **`2026.09.06`** | **`f3d9a608…`** | **1267645** | 266 notes across 25 games, 124 tips. Twelve games added. Both channels read back over the wire and matched. |
+| **Point release, 2026-09-07** | **`2026.09.07`** | **`0b4dae3e…`** | **1460254** | 293 notes across 25 games, 156 tips, schema 3, 1.39 MB to download (2,289,664 bytes uncompressed). Every note and every tip has its meaning index — none missing. Both channels read back over the wire and matched. |
 
 **The table above has gaps.** Two releases that did go out are not listed — `2026.08.22` (133 notes) and
 `2026.09.01`, the one that was on the maintainer's Deck before today. Nobody wrote them down at the time. Do not read
@@ -288,6 +290,13 @@ Mario: The Thousand-Year Door and Super Mario 64 6, Doom 64 5, Mario Kart 64 4. 
 and this was known before shipping:** of 72 questions a player might plainly ask about these twelve games, only 43
 have a note that answers them. Someone asking about Mario Kart 64 or Doom 64 will often get nothing. Nothing already
 installed goes stale, because the format has not changed.
+
+**About the 2026-09-07 release.** Twenty-seven notes filled the 21 real gaps left by that twelve-game tranche and
+topped up the four thinnest games — Mario Kart 64 to nine notes, Doom 64 to eight, Super Mario 64 to eight, Paper
+Mario to nine. Thirty-two troubleshooting tips were rewritten, because the old crash tips told a Deck player to check
+a desktop that game mode does not have. **The build now refuses to finish if a single note or tip is missing its
+meaning index** — it used to only print a warning, and this is the first release built under that guarantee. Nothing
+already installed goes stale; the format is unchanged at schema 3.
 
 **Still open:** the **UI half** of **KB-SMOKE-01** / **KB-DOWNLOAD** — the download path is
 backend-verified on device, the QAM progress row is not. **KB-ATTRIB-02** closed Verified 2026-08-15.

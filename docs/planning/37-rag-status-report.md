@@ -1,4 +1,4 @@
-# 37 — The knowledge base, zoomed out (status report, 2026-09-07, third pass, wave two planned)
+# 37 — The knowledge base, zoomed out (status report, 2026-09-07, fourth pass, wave two landed)
 
 Written from the roadmap, the knowledge-base architecture doc, the answer-quality plan, the locked
 decisions, the last eval reports, the last three session plans and the code. Plain language on
@@ -18,26 +18,21 @@ stars is section 6, because what is in the way is not a job anyone can size.
 
 ## 1. The picture in one paragraph
 
-With one of the thirteen covered games running, a Strategy or Expert question gets the best one to
-five notes from a library of 161 game cards glued onto the instructions the AI reads, and a
-troubleshooting question gets tips from a sheet of 124 Deck tips. On questions written without
-looking at the cards, the search puts the right card in its top three about four times in five and
-first a little over half the time. The small model on the Deck keeps the facts from the cards nine
-times in ten, almost never contradicts them, and since 3 September no longer hides tactics behind a
-spoiler box on games with no story. The search half has been measured to the decimal for a month; the
-answer half has been measured for three days. **The largest limit on quality for a real person has been
-that the library covers too few games**, and every other game gets the model's memory plus one generic
-genre card. That limit halved on 6 September: **twelve** more games were written up, taking the library from
-thirteen games to twenty-five and from 161 cards to 266, and the release went out the same evening. It is
-live on both channels and installed on the maintainer's Deck.
+With one of the twenty-five covered games running, a Strategy or Expert question gets the best one to
+five notes from a library of **293 game notes** glued onto the instructions the AI reads, and a
+troubleshooting question gets tips from a sheet of **156 Deck tips**. On questions written without looking
+at the notes, the search puts the right note in its top three 84 times in a hundred and first a little
+over half the time. The small model on the Deck keeps the facts from the notes about seven times in ten
+and almost never contradicts them — though wave two found that **both of those checks undercount what the
+model actually gets right**, see section 4. Release `2026.09.07` carries the newest notes and the
+rewritten troubleshooting tips and is **live on both places it publishes to**. **It is not yet on the
+maintainer's Deck** — the Deck still runs `2026.09.06`, and updating it and checking it on the device is
+still owed, starting with wave two's own evening.
 
-**Two things that evening turned up are worth reading before anything else in this report.** First, the
-new games are thin: of 72 questions a player might plainly ask about them, only **43 have a note that
-answers them**. Mario Kart 64 has four notes, Doom 64 five. Someone asking about those will often get
-nothing. Second, a bug had been quietly costing every long question its notes — with the character voice
-on and thinking turned up, the model was silently dropping the start of what it was sent, including the
-notes, and answering from memory while the plugin said the notes were used. That is fixed and confirmed
-on the device.
+**Coverage was the thing wave two set out to fix.** Of the 72 questions a player might plainly ask about
+the twelve games added earlier this month, only 43 had a note behind them a month ago. **64 do now** —
+the other eight were written on purpose to have none, and stay blank as a control, so every question that
+was meant to have an answer now has one.
 
 ## 2. What has been built, in order
 
@@ -57,6 +52,12 @@ on the device.
 | 6 Sep | ★★★★ | Eleven more games written up from their wikis — 105 cards, each naming the page it came from, the licence and the day it was read | Nothing yet: the cards exist but are not in a release, so no Deck has them |
 | 6 Sep | ★★★ | 72 blind search questions and 24 answer-test rows for the twelve new games; the search test gained a weight sweep, per-question card detail, and a second right answer | Nothing yet: measurement plumbing only |
 | 6 Sep | ★★★ | Speed mode's remaining meaning-search leak confirmed fixed on the Deck | A Speed question no longer spends about a second on the slower search |
+| 7 Sep | ★★★★ | 27 new notes filling the 21 real gaps in the twelve new games, plus topping up the four thinnest of them | Someone asking about Doom 64, Mario Kart 64, Super Mario 64 or Paper Mario mostly gets a real answer now, where before they mostly got nothing |
+| 7 Sep | ★★★ | 32 troubleshooting tips rewritten, and the routing that refused a plain "crash" question fixed | "My game keeps crashing" now reaches real advice, where before it reached nothing at all |
+| 7 Sep | ★★ | Every note and tip guaranteed to have its meaning index before it can ship | Nothing directly — it stops a half-built library from reaching a Deck quietly |
+| 7 Sep | ★★ | The "not in my notes" line | On a Strategy or Expert question about a covered game where nothing matched, one quiet line under the reply now says the answer is the model's own knowledge, not the notes |
+| 7 Sep | ★★ | Two bug fixes: raw computer text stopped appearing in a reply, and the panel stopped naming a game after you close it | An answer no longer ends with a line of code; the line under the question box catches up within a couple of seconds of exiting a game |
+| 7 Sep | ★★★ | Corpus release `2026.09.07` published (293 notes, 156 tips) | Nothing yet on the Deck — the release is live on both channels but the maintainer's device still runs the 6 September build |
 
 Chip work that touches the knowledge base also shipped in this window: corpus chips no longer vanish
 after 21 seconds, the rotation no longer favours the top three, and the pinned test-chip batches exist
@@ -64,83 +65,85 @@ for QA.
 
 ## 3. The numbers today
 
-*(All of these were taken on 6 September on the full 266-card library, so they compare like with like.
-Older numbers in this report's history were taken on 161 cards and are not comparable.)*
+*(All of these were taken on 7 September on the library that actually ships — 293 notes, 25 games — after
+the search test's own copy was found to be stale and rebuilt by hand. **Every search number dated 6
+September or earlier in this report's history is void**: the test reuses whatever copy of the library it
+finds unless someone passes a rebuild flag by hand, nobody had, and it had quietly been measuring a copy
+from 31 August with 161 notes in it for weeks. That includes this wave's own starting measurement and
+everything wave one reported. Do not act on a search number from before 7 September.)*
 
-**Search — the blend that ships against the alternatives.** These were the starting numbers before the
-twelve new games had their questions matched to notes.
+**Search — before wave two and after, on the library that ships.**
 
-| Question set | Word search | Meaning search alone | What ships (the blend) |
-|---|---|---|---|
-| Written blind (92), in the top three | 70.7% | **80.4%** | 76.1% |
-
-The ranges overlap, so on this set the four methods **cannot be told apart**. That is an open question,
-not a tie.
-
-**Search — the weight sweep, run for the first time.** Nine balances between the word search and the
-meaning search. Only one beat today's even split on both measures at once: counting meaning twice as
-much as words.
-
-| Balance | Right note first | In the top three |
+| Question set | Before | After |
 |---|---|---|
-| Today's even split, tuning questions (168) | 65.5% | 88.7% |
-| Leaning on meaning, tuning questions (168) | **69.6%** | **89.9%** |
-| Today's even split, held-back questions (135) | 37.0% | 51.9% |
-| Leaning on meaning, held-back questions (135) | **43.0%** | **53.3%** |
+| Right note in the top three, on questions nobody tuned against | 80 in 100 | **84 in 100** |
+| The 72 questions about the twelve new games, right note in the top three | 38 | **58** |
 
-It won on both sets independently. **It was still reverted** — it breaks three behaviours chosen on
-purpose, the worst being that a newly added note gets buried until its meaning index is built. Held until
-every note is guaranteed to have its index first.
+All 21 of the newly answered gap questions find their note in the top three; 12 find it first. Two rows
+out of 413 got worse against 24 that got better.
 
-**Read the held-back numbers carefully.** 37% against about 70% in August is the test getting harder, not
-the search getting worse. That set grew from 36 questions to 135 by adding blind questions about the
-twelve new games, which describe things rather than naming them. **That is the new floor.**
-
-**Answers.** The PC runs the Deck's own model over the test questions, three times each, no judge model.
-Comparing the same 37 questions before and after the prompt work:
+**Answers, the Deck's own model, three runs each, no judge model.**
 
 | Check | Before | After |
 |---|---|---|
-| Facts from the note kept | 92.9% | 91.9% |
-| No spoiler box where none was due | 93.3% | **97.1%** |
-| Branch menu when due | 100% | 98.2% |
-| The expected note was attached | 100% | 100% |
-| Length of the instructions sent | 6,930 characters | **5,682** |
+| Clean on all three runs | 55.7 in 100 | **62.3 in 100** |
+| Spoiler line appeared when it was due | 77.8 in 100 | **88.9 in 100** |
+| Facts from the note kept | about seven in ten | the same figure, but it undercounts — see below |
 
-The two small falls are inside this test's own wobble of about two points; the spoiler number is a real
-four-point gain. **Across all 183 samples, not one question lost the start of its prompt** — that count
-used to be 22 of 37.
+**Two of the checks behind these numbers are now known to be wrong, and neither was fixed this wave on
+purpose, so the before and after above are measured the same way.** The "never contradicts its note"
+figure this project has quoted as 100% is not trustworthy: asked whether Pikmin 2 still has a day limit, a
+reply said yes when the note says no, and the check missed it because it only watches for two fixed
+sentences and the model used neither. And the facts-kept score is **lower than the truth**: the check
+looks for a phrase inside the reply, so an answer that says "thin the crowd" fails a check written for
+"keep the crowd thin" even though it is right — several of today's failures were right answers marked
+wrong.
 
-Run over all 61 questions, including the 24 new-game ones, facts kept reads **71.9%**. That is the new
-games being genuinely harder, not a regression, and it is the number to beat next.
+**Troubleshooting.** Of 24 plainly-worded problem sentences written by someone who had not seen the
+rules, **6 reached the tips before this wave and 8 after.** The tips themselves are much deeper now —
+crash went from 2 to 9, sound 1 to 8, picture 1 to 8, performance 2 to 10, controller 6 to 10 — but the
+rules still catch the exact wording someone imagined rather than the idea behind it.
 
-**The Deck, measured 6 September.** Searching by meaning takes **1.10, 1.23 and 1.19 seconds** — on every
-question, not just the first. The maintainer has accepted that as fine and the one-second target is
-retired. A Strategy question with the voice on used to run about 2,690 tokens against a 4,096-token
-window with a 2,112-token reply budget, going over by 703 to 780. After the prompt slimming it is about
-2,296, and when it still would not fit the answer is shortened instead of the notes being lost.
+**The Deck, still true.** Searching by meaning still takes about a second — 1.10, 1.23 and 1.19 seconds
+across three questions in a row, repeatably. The maintainer has accepted that as fine and the one-second
+target stays retired.
 
-**The library.** 266 cards over 25 titles, 124 shared Deck tips. The mix is 128 mechanic, 46 boss, 37
-item, 34 enemy, 19 area, one quest, one dungeon. 96 cards are maintainer-written with no source; 170 come
-from wikis with credit lines, across eight source sites. **Published as `2026.09.06`, 1.27 MB, live on
-both channels and installed on the Deck.**
+**The library.** 293 notes over 25 games, 156 shared Deck tips, **every one of them indexed** — the build
+now refuses to finish if any note or tip is missing its meaning index, where it used to only print a
+warning. 1.39 MB to download. Schema stays at 3, so nothing already installed goes stale.
 
 ## 4. What is open right now
 
 **Bugs.**
 
-- ★★ **Raw computer text can appear in a reply.** New, 6 September. An answer ended with a line of code-like
-  text sitting where words should be. The plugin's own log shows it recognised the block as a power
-  suggestion — it just did not remove it from what the person reads. Nobody has traced it yet.
+- ★★ **Raw computer text could appear in a reply — FIXED 7 September, Deck check owed (row W2-R6).** An
+  answer used to end with a line of code-like text sitting where words should be. The block is now removed
+  the moment it is read, and a code example someone actually asked for is left exactly as it was.
 - ★★ **Unrelated questions still get game cards.** Accepted 27 August; not being worked.
-- ★★ **The panel keeps naming a game after it is closed.** New, 6 September, on the roadmap since 7
-  September. After exiting a game the line under the question box still named it. A question that names its
-  own game still works; one that does not may pick up the wrong game's notes. Not proven to cause a wrong
-  answer yet. The cause is now known: the running game is worked out once when the panel opens and only
-  corrected when a question is in flight.
-- ★ **The ring can land half hidden behind the Copy or Retry icon.** Measured 6 September, filed 7
-  September. Three stops on one reply were focused while only partly visible — one at 67% behind Retry. The
-  89% readings alongside it are expected and already explained; the 67% one is not.
+- ★★ **The panel kept naming a game after it is closed — FIXED 7 September, Deck check owed (row
+  W2-R6).** Exiting a game used to leave the old name under the question box. **The cause first written down
+  was wrong, which is worth keeping:** the ordinary keep-in-sync check does correct itself, in about a second
+  and a half. The real hole was reopening the panel — after a popup, or leaving and coming back — which
+  restored whatever name had been remembered without checking whether that game was still running. It now
+  checks what is actually running at that moment.
+- ★ **The ring can land half hidden behind the Copy or Retry icon — measured on the Deck 7 September.**
+  Three stops on one long reply were focused while only partly visible. **The cause is now understood, and
+  fixing it is a look-and-feel call rather than a plain bug fix:** every question bubble has a minimum height
+  of 48 pixels, and on a short question that floor adds 18 pixels the bubble did not need, which is what
+  pushes the icons over the reply's own stops. Doing nothing is defensible — it is a deliberate floor, not an
+  oversight — so this waits on the maintainer rather than a lane.
+- ★★★ **An answer said the opposite of its own note and the check waved it through — found 7 September.**
+  Asked whether Pikmin 2 still has a day limit, a reply said yes; the note says no. The check that exists to
+  catch exactly this looks for two fixed sentences and the model used neither, so it passed. Every "never
+  contradicts its note" figure this project has quoted needs reading with that in mind.
+- ★★ **The answer test marks a fact missing when the answer said it in different words — found 7
+  September.** The check looks for a phrase inside the reply, so "keep the crowd thin" fails against "thin
+  the crowd" and similar near-misses. Several of today's failures were right answers counted wrong, so the
+  facts-kept score is lower than the truth.
+- ★★★★ **The search test had been measuring a copy of the library from 31 August, missing half the
+  notes — found 7 September.** The test reuses whatever copy it finds unless someone passes a rebuild flag by
+  hand; nobody had, for weeks. Every search number this project has quoted before 7 September is void,
+  including the numbers behind the held weight decision.
 
 **Settled on 6 September, no longer open.**
 
@@ -149,7 +152,9 @@ both channels and installed on the Deck.**
 - **The meaning search being about a fifth slower** — accepted. About a second on every question is the
   measured, accepted cost. The warm-up explanation was proven wrong for the Deck: the third question was
   no faster than the first.
-- **The shipping blend losing to its meaning half** — measured properly at last, and held. See section 3.
+- **The shipping blend losing to its meaning half** — measured, and held. Numbers are in section 5b and the
+  decisions file. **Not yet re-checked against the stale-copy bug below**, which affects the same test — read
+  them with that in mind.
 - **A symptom-only troubleshooting question reaching no tips** — built, measured, held. It does not work:
   matching by meaning cannot connect the words a person uses for a crash to the way the crash tips are
   written. Rewriting the tips is the real job and now has its own roadmap entry. **Widened on 7 September**
@@ -157,6 +162,10 @@ both channels and installed on the Deck.**
 
 **Owed on the Deck.**
 
+- ★★★★ **Wave two's own evening.** Rows **W2-R1** through **W2-R8** in
+  [plan 47](47-kb-wave-two-session.md) § 8 — installing the release, the twelve new games, the filled gaps,
+  the troubleshooting tips, the "not in my notes" line, the two bug fixes, and the ring measurement. Not
+  started.
 - ★★★★ **One question per new game on the device.** The only wave-one row still owed. Fallout: New Vegas
   has to be installed first.
 - ★ Five older checks from the August retrieval rework, never run on the device. Worth one evening with
@@ -166,14 +175,23 @@ both channels and installed on the Deck.**
   so there is no window to press it in.
 - ★★★ Which way a too-long chip label is cut off. Behind the preset-row work.
 
-**Your calls.** Four more were decided on 7 September while wave two was planned (D85): fill the 21 real
+**Your calls.** Four were decided on 7 September while wave two was planned (D85): fill the 21 real
 note gaps and top up the four thinnest games, keeping the eight deliberate blanks as a control; the "not in
 my notes" line reads *"Not in my notes — this answer is from the model's own knowledge."*; the meaning-index
 work ships the guarantee and only measures the tie-break; and the ring bug is fixed by the session running
 the wave rather than a helper. Four were decided on 6 September: the symptom-only search is held and
 rewriting the tips is the real job; leaning the search toward meaning is held until every note is guaranteed
 to have its meaning index built; the twelve new games ship with their coverage gap known and accepted; and
-about a second to search on the Deck is fine. Nothing is waiting on you right now.
+about a second to search on the Deck is fine.
+
+**One call is open.** A note written 7 September, from the writer's own memory with no source, claims that
+the current in Black Mesa's electrified water is not constant — that it arcs on a cycle, with a spark and a
+crackle just before it charges, so a player should move while the water is dark and wait while it is lit.
+No page says this, and it shipped in the 2026-09-07 release. **Either confirm it from the game, or say the
+word and it comes out** — if it comes out, that goes out as its own point release. Full entry under the
+roadmap's "Calls waiting on you." **The ring bug above is also waiting on a call, not a fix:** the
+48-pixel minimum bubble height is deliberate, so leaving it alone is defensible, but it does cost 18 pixels
+on every short question.
 
 ## 5. Next phases: what each buys, and what it costs
 
@@ -185,11 +203,13 @@ behind the claim where there is any.
 
 | Item (with its stars) | What it buys | Evidence | Cost | In the way |
 |---|---|---|---|---|
+| ★★ **Fix the two ways the answer test lies** — roadmap "pick up here" item 1 | Every answer number this project has quoted rests on a check that missed a real contradiction and a check that undercounts facts kept; nothing else should be decided from those numbers until this is done | Both found 7 September while taking this wave's own measurements, see the bugs list above | Cheap | Nothing named yet — not started |
+| ★★★★ **Make the search test rebuild its own copy of the library** — roadmap "pick up here" item 2 | No search number can be trusted for a decision, including the ones the held weight decision rests on, until the test stops silently reusing a stale copy | Found 7 September: the copy was from 31 August with 161 notes, so every question about the twelve new games scored zero regardless of the real library | Cheap | Nothing named yet — not started |
 | ★★ **Prompt diet** — **SHIPPED 6 September** | The small model reads nine tokens of instruction for every token of knowledge; fewer rules means better rule-following and ~340 tokens back in a 4k window. Expect a few points on facts kept and a slightly faster first token | The citation instruction was obeyed once in 89 asks and the UI cannot render it | Done | None. Instructions fell from 6,930 to 5,682 characters; moving the notes next to the question was measured and rejected, because it placed the spoiler warning correctly far less often |
-| ★★ **"Not in my notes" line** when a game question matches nothing | A person can tell an answer from the notes from one out of the model's memory. Does not change the answer; changes trust | Your own May note of a confident, wrong, tidy reply with no notes | 0.5–1 day, plus a focus check if it becomes a stop | Nothing. **Wording settled 7 September:** *"Not in my notes — this answer is from the model's own knowledge."* Planned as wave two |
+| ★★ **"Not in my notes" line** when a game question matches nothing — **SHIPPED 7 September, Deck check owed (row W2-R5)** | A person can tell an answer from the notes from one out of the model's memory. Does not change the answer; changes trust | Your own May note of a confident, wrong, tidy reply with no notes | Done | None. Wording: *"Not in my notes — this answer is from the model's own knowledge."* Confirming it works the same on the Deck is the only thing left |
 | ★★★ **Spoiler tiers setting** — strict / default / open | A strict player stops seeing boss tactics; an open player stops seeing fences at all. Today one rule fits everyone | The tiers are confirmed; the fence fix showed prompt wording moves the misfire rate 24 points | 3 days: settings plumbing (~18 files), a prompt per tier measured on the answer test, a control with a focus entry, Deck QA | Nothing, once the bug session releases the prompt file |
 | ★★★ **Follow-ups remember** | "What about the second phase?" gets an answer about the boss you were just asking about. Today the model receives only the newest message and the follow-up searches nothing | Agreed 1 Sep: carry the previous turn's named thing into the search first; chat history later, trimmed to the window | 1 day for the carry-over; 2 more for history within the budget | The 4k window: a Strategy reply can be 900 tokens |
-| ★★★ **A troubleshooting question mostly never reaches the tips** — **WIDENED 7 September, planned as wave two** | *"My game keeps crashing"* gets crash advice. Today it gets nothing, and there is almost nothing useful to get | Measured 7 September: **nine of ten** ordinary problem sentences reach nothing. "Crash" is deliberately classed as too weak to route a question on its own, in every circumstance. The whole sheet holds **two** crash tips and neither is usable on a Deck | 1–2 days across one lane | Nothing. Three fixes in order: stop refusing, teach the rules everyday words, write the tips. Then re-run the held meaning search on the new tips to settle whether it dies or revives |
+| ★★★ **A troubleshooting question mostly never reaches the tips** — **routing widened and tips rewritten 7 September, still short** | *"My game keeps crashing"* now gets crash advice where before it got nothing. Of 24 fresh problem sentences written blind, 6 reached the tips before this wave and 8 after | Measured 7 September: crash tips went from 2 to 9, controller 6 to 10, and similar gains elsewhere. But the rules still match the exact wording someone imagined rather than the idea behind it | Done for this wave; the rest is unscoped | **What's missing is a way for the search to say "none of these tips fit."** The held meaning-search branch was re-measured on the new tips and stays held: with nothing running it reaches all 24 sentences, but what it attaches is often the wrong tip — the same objection that held it before |
 | ★★ **Eval tooling** — weight sweep on the tuning set, per-case output for the shipping blend, rows that may list a second right answer | Nothing a user sees. It is what unblocks the weights decision and stops every card batch reading as a regression | **Shipped 6 September, and the sweep has now been run** — see section 3. No question uses the second-answer option yet | Done | None |
 | ★★★ **"Starting out" card kind**, then the Cyberpunk / Fallout / Red Dead orientation cards | A new player gets a "how do I get started" chip and a matching answer; today those three cards read as "What should I know about Choosing a build?" | Your gap-sheet asks on 29 Aug | 1–2 days plus a corpus rebuild and release | Your call on the kind |
 | ★★★ **Card style pass** — rewrite the 139 prose cards as labelled short lines | Possibly better fact retention by the 2B model. Facts kept is already 92%, so the ceiling is low; do it only if the answer test says the labelled shape scores better | The six labelled cards kept content accurate 6 of 6 on the Deck, but the labels themselves survived 1 of 6 | 2–3 days of content, a rebuild and a release | Measure first |
@@ -240,10 +260,12 @@ them straight; what remains is coverage, follow-up memory, and the things the te
 
 ## 6. What is blocking, in one list
 
-1. **Coverage, and it is now the top one.** The twelve new games shipped thin: 43 of 72 plain player
-   questions have a note behind them. Eight of the 29 blanks were written on purpose to have none, so the
-   real gap is 21. This is content work, not code, and no tooling is in the way. Planned as wave two
-   ([47](47-kb-wave-two-session.md)), two content lanes, with the four thinnest games topped up as well.
+1. **The two ways the answer test lies, and the search test's stale copy.** No answer number and no search
+   number can be trusted for a decision until both are fixed. One check missed an answer that said the
+   opposite of its own note; another marks a fact missing just because the reply used different words; and
+   the search test had been quietly measuring a copy of the library from 31 August for weeks. Coverage is no
+   longer the top blocker — wave two brought it from 43 of 72 to 64 of 72 — but nothing measured against the
+   library or the model can be signed off on until these three are fixed.
 2. **Fallout: New Vegas is owned but not installed on the Deck**, so its cards cannot be judged in place
    until it is. That is the only thing blocking the last wave-one device row.
 3. **The "no new titles" rule** for Phase 5 is reopened for one tranche only; the catalog stays its own
@@ -301,7 +323,7 @@ carrying the same stars they carry here.
 - [kb-embed-bakeoff-2026-09-06-arms.md](../archive/research/kb-embed-bakeoff-2026-09-06-arms.md) — latest search numbers, on all 266 cards
 - [kb-answer-eval-2026-09-06-before-wave1.md](../archive/research/kb-answer-eval-2026-09-06-before-wave1.md) and [kb-answer-eval-2026-09-06-after-wave1-landed.md](../archive/research/kb-answer-eval-2026-09-06-after-wave1-landed.md) — answer numbers either side of the prompt work
 - [46-kb-wave-one-session.md](46-kb-wave-one-session.md) — the wave that produced everything dated 6 September, with its progress log
-- [47-kb-wave-two-session.md](47-kb-wave-two-session.md) — wave two: the gap list, the troubleshooting path, two bugs, the index guarantee, one release
+- [47-kb-wave-two-session.md](47-kb-wave-two-session.md) — wave two, landed: the 27 gap-filling notes, the troubleshooting path widened, two bugs fixed, the index guarantee shipped, the "not in my notes" line, and the `2026.09.07` release
 - `runs/plan46-*.json` — the device evidence behind the 6 September Deck readings
 - [34-feature-verification-round.md](34-feature-verification-round.md), [35-bugfix-session.md](35-bugfix-session.md), [36-feature-session.md](36-feature-session.md) — this week's Deck findings and who owns which files
 - `data/kb/strategy_seed.json`, `tests/fixtures/kb_eval_v2.json`, `tests/fixtures/kb_answer_eval.json` — counted directly
