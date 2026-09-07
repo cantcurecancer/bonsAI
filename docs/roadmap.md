@@ -425,17 +425,21 @@ None open. **Decided 2026-09-05:** "starting out" cards get their own kind (D65)
 a decision (D66, the test entry under Next); structured cards stay prose (D67); the blend-weight sweep runs now and the
 weights change if it agrees (D68); a first tranche of new titles comes from your own Steam library (D69, the read waits
 for the Deck to be free). **Decided 2026-09-06:** ship the twelve-game release now and treat the thin coverage as later
-work (D83). Anything new goes here, one line each, with what it decides.
+work (D83); hold the symptom-only troubleshooting search and rewrite the tips instead (D81); hold leaning the search
+toward meaning until every note is guaranteed to have its index (D82). Anything new goes here, one line each, with
+what it decides.
 
 ### Bugs
 
 - ★★ `[KB]` **Unrelated questions still get game cards stapled on** — **ACCEPTED 2026-08-27.** With a game running, *"thank
   you very much"* still attaches a card. Raising the keyword floor costs real matches, and the model mostly ignores an
   irrelevant card. [Detail](roadmap-details.md#ordinary-phrases-attach-game-cards).
-- ★★ `[KB]` **A troubleshooting question that only describes the symptom reaches no tips** — **OPEN, decided 2026-09-01,
-  not built.** *"The game drops me back to the library"* never reaches the crash tips because the word *crash* is absent;
-  two of four blind troubleshooting questions miss. Agreed fix: when no topic matched, let the meaning search run over the
-  tip sheet, measured on the 17 blind troubleshooting rows first. About a day. (D52)
+- ★★ `[KB]` **A troubleshooting question that only describes the symptom reaches no tips** — **ACCEPTED, held back
+  2026-09-06.** The fix was built and measured on four plainly-worded questions: one that used to get nothing now
+  reaches the right tips, two already worked, but the crash one still fails — it now attaches a tip about desktop mode
+  instead of nothing, which is worse for the person reading it. Matching by meaning does not connect the words a person
+  uses to describe a crash to the way the crash tips are written; the real fix is rewriting the tips, filed as its own
+  entry below. Held rather than shipped (D52, D81).
   [Detail](roadmap-details.md#a-troubleshooting-question-that-only-describes-the-symptom-reaches-no-tips).
 - ★★★ `[KB]` **The meaning search got about a fifth slower** — **OPEN, found 2026-09-05, still open 2026-09-06.** Three
   Strategy questions took about 1.09 s each to embed against the 0.79–0.90 s band recorded when the feature shipped; a
@@ -443,10 +447,13 @@ work (D83). Anything new goes here, one line each, with what it decides.
   quiet spell pays to wake the search model and the rest are nearly free, measured on the PC at 1.47 s then 0.05 s —
   **does not hold on the Deck**: the third question here was no faster than the first. Cause still unmeasured. Evidence
   `runs/round34-drg-q*.json`, `runs/plan46-R2-strategy-half.json`.
-- ★★★★ `[KB]` **What ships loses to its own meaning half on questions nobody tuned against** — **OPEN, decided 2026-09-05.**
-  On the blind questions the meaning search alone puts the right card first 63% of the time; the shipping blend 54%. Agreed:
-  build the weight sweep, run it on the tuning questions only, confirm once on the blind set if it agrees, then change the
-  weights. Never tune against the blind set. Groundwork done: 51 blind rows in the tuning set. (D68) [Detail](roadmap-details.md#the-shipping-retrieval-arm-loses-to-the-vector-half-alone-on-rows-nobody-tuned-against).
+- ★★★★ `[KB]` **What ships loses to its own meaning half on questions nobody tuned against** — **ACCEPTED, decided
+  2026-09-06.** The weight sweep ran: leaning the search toward meaning gets the right note first about four to six
+  points more often, but it also buries a brand-new note whose meaning index has not been built yet, which the current
+  weights deliberately protect against. **Not lifted until every note is guaranteed to have its index before it can be
+  searched.** Two other objections — a strong exact word match losing to a weaker meaning match, and a locked routing
+  rule no longer holding — are not covered by that rule and still need answering if this is ever revisited. Weights
+  stay even for now. (D68, D82) [Detail](roadmap-details.md#the-shipping-retrieval-arm-loses-to-the-vector-half-alone-on-rows-nobody-tuned-against).
 
 ### Deck check owed
 
@@ -504,8 +511,14 @@ work (D83). Anything new goes here, one line each, with what it decides.
   one QA row happened to record a band. Write down the budget (embed time plus first token with a game running) so the next
   regression fails a check instead of relying on luck.
 - ★★ `[KB]` **A measured context-window experiment** — **OPEN, research, added 2026-09-05, re-measured 2026-09-06.** The
-  Deck's model runs with a 4,096-token window and a Strategy question with cards already goes over it (the bug above). Try 8,192 as a Developer experiment with a game
-  running, recording memory and time to first token, before it becomes a setting. Agreed as "later, its own call". (D46)
+  Deck's model runs with a 4,096-token window and a Strategy question with cards already goes over it (now trimmed
+  instead of dropped, see Done). Try 8,192 as a Developer experiment with a game running, recording memory and time to
+  first token, before it becomes a setting. Agreed as "later, its own call". (D46)
+- ★★ `[KB]` **Troubleshooting tips don't use the words a person actually types** — **OPEN, added 2026-09-06.** Trying to
+  reach the crash tips by searching for meaning instead of exact words did not work: the tips about desktop mode were
+  closer in meaning to *"the game drops me back to the library"* than the actual crash tips were. Matching by meaning
+  cannot bridge that gap on its own; the tips need to be rewritten so they contain the words people actually use to
+  describe a crash. Held back in favour of this instead (D81).
 - ★★★ `[KB]` **Follow-ups remember** — **OPEN, agreed 2026-09-01.** *"What about the second phase?"* should answer about the
   boss you were just asking about; today the model gets only the newest message and the follow-up searches nothing. First
   carry the previous turn's named thing into the search (a day); then chat history trimmed to the window (two more). (D47)

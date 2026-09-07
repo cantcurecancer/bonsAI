@@ -568,6 +568,18 @@ numbers: [CHANGELOG.md](../CHANGELOG.md). On-Deck row **KB-PROMPT-FIT-01** in [t
   blind rows added to `tune`, which had none ([audit/kb-blind-tune-rows-2026-08-29.md](audit/kb-blind-tune-rows-2026-08-29.md)). Run of
   record: [archive/research/kb-embed-bakeoff-2026-08-29-arms.md](archive/research/kb-embed-bakeoff-2026-08-29-arms.md).
 
+**The weight sweep ran, and the change was reverted — 2026-09-06 (D82).** Leaning the search toward meaning (counting
+it twice the word search) wins on both the tuning questions and the held-back ones: right note first 69.6% against
+65.5% on tuning, 43.0% against 37.0% on the held-back set — a consistent direction, though every range overlaps, so
+this is a direction and not a separated result. **Reverted anyway, because it breaks three rules set on purpose:** a
+note whose meaning index has not been built yet gets buried behind one that has; a strong exact word match can be
+pushed aside by a weaker meaning match; and one case of the locked topic-preference decision (D22) stops holding. At
+equal weight a word-first and a meaning-first note tie; halve the word weight and the meaning-first note wins every
+tie, everywhere — that is a design decision, not a measurement one. **The maintainer's rule for lifting it:** not
+until every note is guaranteed to have its meaning index before it can be searched. The other two objections are not
+covered by that rule and still need answering separately if the lean is ever taken. Weights stay even. Full write-up:
+D82 in [audit/maintainer-decisions-locked.md](audit/maintainer-decisions-locked.md).
+
 ## Chip rotation is biased to the top of the candidate list
 
 - ★ **Chip rotation is biased to the top of the candidate list** — noticed 2026-08-29 while trying to make a long label appear. The
@@ -591,6 +603,18 @@ numbers: [CHANGELOG.md](../CHANGELOG.md). On-Deck row **KB-PROMPT-FIT-01** in [t
   (`tests/test_compat_topic_router.py`). Worth noting the shape: a card-derived question about crashes says *crash*, so this hole was
   invisible until questions were written without reading the cards. Detail:
   [audit/kb-blind-holdout-rows-batch2-2026-08-28.md](audit/kb-blind-holdout-rows-batch2-2026-08-28.md) § 5.
+
+**Built, measured, held back — 2026-09-06 (D81).** The agreed fix (let the meaning search run over the tip sheet when
+no topic matched) was built and measured on four plainly-worded questions. One that used to get nothing now reaches
+the controller tips — a real win. Two already worked and are unaffected. The crash question still fails, and is
+arguably worse than before: it now attaches a tip about desktop mode, the wrong subject entirely, where it used to
+attach nothing. **Why:** on the real tip sheet the plain word search almost always returns something, even a weak
+match, so the meaning search rarely gets a turn — and even forced to run anyway, the closest tips to *"drops me back
+to the library"* by meaning are about desktop mode and storage, not crashes. Matching by meaning does not connect how
+a person describes a crash to how the crash tips are written; that is a fact about the tip sheet's wording, not the
+code. Held, not shipped. The branch `lane/kb-symptom-search` is kept. The follow-up work — rewriting the tips to use
+the words people actually type — is its own roadmap entry now. Full write-up: D81 in
+[audit/maintainer-decisions-locked.md](audit/maintainer-decisions-locked.md).
 
 
 ## Unrelated questions still get game cards stapled on (2026-09-02 wording)
