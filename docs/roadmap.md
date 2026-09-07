@@ -490,6 +490,24 @@ is fine, the one-second target is retired (D84). Anything new goes here, one lin
   rule no longer holding — are not covered by that rule and still need answering if this is ever revisited. Weights
   stay even for now. (D68, D82) [Detail](roadmap-details.md#the-shipping-retrieval-arm-loses-to-the-vector-half-alone-on-rows-nobody-tuned-against).
 
+- ★★★ `[KB]` **An answer said the opposite of its own note and the check waved it through** — **OPEN,
+  found 2026-09-07 while taking this wave's starting measurements.** Asked what the goal of Pikmin 2 is and
+  whether there is still a day limit, the reply said *"there is still a day limit"*. The note it was given
+  says there is **no** day limit in this game. A person would plan a whole run around that and be wrong.
+  The check that is supposed to catch exactly this passed the reply, because it looks for two fixed
+  sentences — *"there's a day limit"* and *"you have a limited number of days"* — and the model wrote
+  neither. **So the "never contradicts its note" score of 100% is not trustworthy**, and every report that
+  has quoted it needs reading with that in mind. Two things to fix and they are separate: the model saying
+  it, and the check missing it. Evidence: the answer test taken today on the tip.
+- ★★ `[KB]` **The answer test marks a fact missing when the answer said it in different words** — **OPEN,
+  found 2026-09-07.** The check looks for a phrase inside the reply, so *"keep the crowd thin"* fails
+  against *"thin the crowd"*, *"killing the mother"* fails against *"kill the mother"*, and *"hurting her
+  badly"* fails against *"hurts her badly"*. Four of the questions that failed today were right and were
+  counted wrong; one Paper Mario answer was counted wrong twice for facts it plainly stated. **So the
+  facts score of 70.8% is lower than the truth**, and the four thin-game failures it shows are not the
+  content gap they look like — the facts are in the notes and in the answers. Left alone on purpose while
+  this wave runs, so its before and after are measured the same way; worth fixing straight after.
+
 ### Deck check owed
 
 - ★ `[KB]` **Five checks from the August retrieval rework were never run on the Deck** — **VERIFY, or retire.** The corpus
