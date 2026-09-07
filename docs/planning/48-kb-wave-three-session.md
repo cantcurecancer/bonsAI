@@ -575,3 +575,114 @@ into the lane C and lane E briefs in section 6, and the numbers are in D87. In s
   be the Deep Rock pair rather than the Hades pair.
 
 Evidence: `runs/plan48-laneC-cheap-check.json`, `runs/plan48-laneC-cheap-check-signals.json`.
+
+### Waves 1 and 2 — all seven lanes landed 2026-09-07
+
+Five gates green after every landing. Landed in the order the plan asks: **B first**, then E, A, C,
+then F and G.
+
+| Lane | What landed | Effort it ran at |
+|---|---|---|
+| A | The answer test stops passing contradictions and stops marking right answers wrong; a second model's opinion as a column | Sonnet 5, high |
+| B | The search test rebuilds its own copy and stamps every report with what it searched | Sonnet 5, high |
+| C | Both searches can say "none of these fit" | Sonnet 5, high |
+| D | The answer-first prompt variant, for measuring only | Sonnet 5, high |
+| E | Follow-ups remember what you just asked about | Sonnet 5, high |
+| F | The "No tip for this" line | Sonnet 5, high |
+| G | The time budget, written down, with a check | Sonnet 5, high |
+
+### The clean break — every earlier answer number is void
+
+The 61 questions, three runs each, with the corrected checks, on the wave-0 plugin and on the landed
+one. **Both columns use the same checks**, so the difference is the plugin and nothing else.
+
+| | Wave-0 plugin | Landed |
+|---|---|---|
+| Facts kept | 74.9% | **76.6%** |
+| Never contradicts its note | 94.4% | 94.4% |
+| Spoiler line never misfired | 98.8% | 98.8% |
+| Spoiler line when due | 77.8% | 77.8% |
+| Branch menu when due | 97.1% | **98.6%** |
+| A note attached whenever one was due | 100% | 100% |
+| Clean on all three runs | 60.7% | 60.7% |
+
+**The headline: "never contradicts its note" was reported as 100% and is really 94.4%.** Three
+replies in fifty-four contradict the note they were given. All three are the same question — the
+Pikmin 2 day limit — and it fails on every run. This wave's changes are about neutral on answers,
+which is expected: it changed the search and the tests, not the prompt.
+
+### The contradiction check over-fired on its first real run, and was fixed
+
+The first run reported seven contradictions. Read by hand, **only three were real.** The other four
+were the check misunderstanding replies that were giving the right advice:
+
+- A Black Mesa reply — *"Avoid shooting at the shell. Up close, its front legs can deal significant
+  damage."* The claim watched for was *"shoot the legs"*, and the check joined "shooting" in one
+  sentence to "legs" in the next, when both sentences say the opposite.
+- A DOOM Eternal reply, three runs of it — *"If you get too close, it will draw your super shotgun
+  faster than you can dash."* The claim was *"get in close"*. The word "too" inverts a claim the way
+  "not" does.
+
+Claims are now matched one sentence at a time, and "too" blocks a match like a negation. Both replies
+are tests, along with the reverse case so the check cannot be loosened into uselessness. That moved
+the figure from a false 87.0% to 94.4%, which matches the hand count exactly.
+
+**This is worth remembering.** A check that over-reports contradictions is as bad as the one that
+reported none, because that number is what the project quotes about whether its answers can be
+trusted. A new check's first real run gets read by a person, row by row, before its number is quoted.
+
+### The floor: what it does and does not do
+
+Measured on the rows lane C was blind to, before and after.
+
+| | Before | After |
+|---|---|---|
+| Held-back troubleshooting rows: right tip / wrong tip / nothing | 14 / 1 / 2 | 14 / 1 / 2 |
+| Held-back note rows: right / wrong / nothing | 90 / 24 / 25 | 89 / 24 / 26 |
+| Twelve phrases that should attach nothing | 0 attach | 0 attach |
+| The four device questions with no note on the subject | 4 attach | **4 attach** |
+
+**Read the totals alone and this looks like a net loss, and it very nearly was thrown away on that
+reading.** The row-by-row comparison says the opposite. Six confident non-answers were removed —
+*"githyanki patrol too hard"* was being answered with a note about Sneak Attack, *"hl2 speedrun route
+skips"* with a note about Ravenholm, two more with a generic fallback card — against one right answer
+lost, a Hades build question.
+
+The totals could not show that because **six of those six rows record no correct answer in the test
+set**, so removing a bad attachment from them moves no counter at all. The measurement script now
+prints the row-by-row change and says which rows can never move a counter.
+
+**What the floor does not fix.** The four questions that caused D87 still attach notes. Catching them
+would cost twenty or more correct answers elsewhere, and the lane refused that trade, which was the
+right call under its gate. So the "not in my notes" line fires more often than it did, and still not
+on those four. That limit stays open.
+
+**And lane F's line inherits it.** Lane F tested its trigger against about twenty troubleshooting
+sentences on the real library and it did not fire once before the floor landed — every sentence that
+reached the tip sheet got something attached. The line is wired correctly and now has something to
+fire on, but how often a person actually sees it is unmeasured on the device.
+
+### The search got slower and nobody noticed
+
+Lane G read the device evidence for the time budget and found the same three questions timed three
+times: **793–900 ms in August, 1078–1094 ms one September evening, 1103–1230 ms the next.** About
+thirty per cent slower since August, steadily.
+
+The explanation given at the time — that only the first question after a quiet spell is slow — **does
+not hold on the Deck.** It is true on the build machine (1.47 s, then 0.05 s) but on the device three
+questions in a row came back within 16 ms of each other. The budget is written down at one second and
+the probe prints pass or over-budget; every reading in hand would print red today. That is the check
+working, not a fault in the check.
+
+Time to the first word of an answer has no clean device reading, and the document says so rather than
+inventing one.
+
+### Still owed
+
+- **The Deck evening (§ 8)**, not started. The device went back to the maintainer partway through
+  wave two's evening.
+- **Wave two's R6 half** about the stray line of computer text.
+- **A device reading** of time to the first word of an answer.
+- **Why the search got slower since August.**
+- **The four questions the floor cannot catch.**
+- **The held symptom branch** has not been re-tried on top of the floor.
