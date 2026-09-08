@@ -3919,6 +3919,19 @@ answer and must be read on the device by a fast reader. The calls:
 ★★★ *Trained voices for the bundled characters*, ★★★ *Full-quality reading from a LAN PC* (deliberately not
 built, later the same day) and ★★★★ *A voice for a custom character*.
 
+**Shelved 2026-09-08, later the same evening.** The maintainer shelved calls 7 to 10, the character voices, after
+a conversation about whether imitating Ali G or the Heavy by keywords alone would be fair use. The reason in one
+breath: the feature is technically possible and cheap (memo § 6.2), but fair use is a copyright rule and a voice
+is not a copyrighted work; what protects a voice is each person's right to their own identity, which the newer
+AI-voice laws extend to simulations with no "free use" exception; every one of the 31 bundled characters is a
+named character owned by a studio and voiced by a real actor, and Ali G is a living comedian's own persona; the
+realistic risk is an actor's complaint, a takedown or a store removal, and OmniVoice's own terms forbid
+impersonation. Memo § 6.4 has the summary. **Two gates before unshelving:** a written sweep of the 31 characters
+(studio, actor, living persona, whether a voice could be a type rather than a copy), filed as the two-star
+roadmap item *Which bundled characters copy a real person*, and a legal check by a person qualified to give one.
+Call 11 stays open. *Read answers aloud* and the natural reader voice are not shelved; they have no character in
+them. Roadmap: the three character-voice entries marked shelved with the reason; the sweep added.
+
 ### D75 — OPEN (raised 2026-09-06) — The model speed readout: six calls before anything is built
 
 Raised by [planning/43-model-speed-readout.md](../planning/43-model-speed-readout.md), the fifth of the six

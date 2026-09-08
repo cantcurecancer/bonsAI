@@ -339,6 +339,52 @@ voices made with the model may ship inside a free open-source plugin; they answe
 the answer is no: the maintainer's own recorded clips for characters where one voice with an accent will
 do, and the stock consented voices of § 6.1 for the rest.
 
+### 6.4 Shelved 2026-09-08: possible, but a legal check first
+
+The maintainer shelved the character voices the same evening they were planned. Not because they cannot be
+built: § 6.2 shows they can, and cheaply. Because the conversation that followed showed the legal ground is
+not what it looks like, and that has to be checked before a single clip is made. The summary, so the next
+session does not re-derive it. None of this is legal advice.
+
+- **Fair use is the wrong tool.** It answers "may I use this copyrighted work?" A voice is not a copyrighted
+  work. What protects a voice is each person's right to control the use of their own identity, which in most
+  US states covers a distinctive, widely known voice. The two landmark cases were impersonators, not
+  recordings; the singers won because the point of the imitation was to make people think of them.
+- **"Not for profit" helps less than it feels like it should.** The older state laws mostly target adverts
+  and sales, so a free plugin is in a better place than an advertiser. The newer laws written for AI voices
+  (Tennessee's from 2024 and several since) cover making a simulation of someone's voice available at all,
+  with exceptions for news, comment, criticism and parody, not for "free". Courts read "for your own
+  advantage" broadly; a plugin that gains users because a recognisable voice is in it has an advantage.
+- **Parody is the real defence, and it has a shape.** A comic character with its own material that happens to
+  sound like a young London man uses the imitation as raw material: protected. A picker that says "sounds
+  like Ali G" sells the imitation as the product: not. Same voice, different footing.
+- **Every bundled character has two layers, and Ali G a third.** All 31 characters in the picker are named
+  characters from games or TV. The studio owns the character (copyright; here fair use and parody do apply;
+  text roleplay already sits on this layer, and the prompt already tells the model not to claim to be the
+  official voice actor). The actor owns their voice (no fair use at all; this layer is new with any voice
+  feature). Ali G is a living comedian's own persona, so performer and character are the same person.
+- **What actually happens is not a lawsuit.** A complaint from an actor, a takedown, or the plugin pulled from
+  a store. Game voice actors are, right now, the most organised group fighting AI voice copying. OmniVoice's
+  own terms forbid impersonation regardless of the law.
+- **The keyword route is the safe side of the grey.** OmniVoice's design step takes only fixed choices (gender,
+  age, pitch, whisper, one of ten accents); it cannot be asked for a person. Describe the type, stop when it
+  fits the character, never name the performer, never tune by ear toward them, never lean on their
+  catchphrases, and keep the keyword string next to each clip as the record. A passing resemblance is then
+  nobody's problem.
+
+**What unshelving needs, in order.**
+
+1. **The character sweep** (roadmap, two stars): one line per character naming the studio, the actor, whether
+   the performer is a living person's own persona, and whether a voice could be made as a type rather than a
+   copy. This also tells the text feature where it stands.
+2. **The legal check**: a person qualified to say so reads the sweep and this section and says which
+   characters, if any, may have a voice and under what rule. Until then, no clip is made.
+3. **Call 11**: the OmniVoice team's answer on voices made with a non-commercial model (§ 6.3).
+
+**What is not shelved.** *Read answers aloud*, the plain reader in the Deck's own voice, has no character in
+it and stays open. The natural reader voice (Piper, Kitten or Pocket TTS through the runner) also stays open;
+a stock consented voice reading as the plugin itself touches nobody's identity.
+
 ## 7. Proving it on the Deck
 
 Rows go in the manual test doc when the build lands; the feasibility rows run before the build, when the
@@ -443,6 +489,10 @@ Still open, raised 2026-09-08:
     ask the team in an issue before any clip ships; design the voices meanwhile, since the answer changes
     only whether they ship, not the work.
 
+**Shelved 2026-09-08**, later the same evening. The character voices (calls 7 to 10) are possible but wait on
+a legal check and a character sweep; § 6.4 has the reason and the order. Call 11 stays open. The plain reader
+is unaffected.
+
 ## 10. Sources
 
 - SteamOS 3.7.13 notes, Orca and espeak-ng added: [Steam Deck HQ](https://steamdeckhq.com/news/steamos-3-7-13-released-with-wifi-regressions-fixes-for-steam-deck-oled-and-better-support-for-rog-ally/), [Steam news](https://store.steampowered.com/news/app/1675200/view/529850584204838038)
@@ -493,3 +543,8 @@ Still open, raised 2026-09-08:
   Steam Deck, seconds on a stronger machine*; the LAN speech server is not built; the half-day Deck test of
   the port (row 07) is phase 0 of the custom-voice work. Roadmap: the LAN entry marked deliberately not
   built, the custom-character entry updated. Committed.
+- **2026-09-08, night** — Shelved the character voices. Possible (§ 6.2), but the legal ground is not what it
+  looks like: fair use does not cover a voice, not-for-profit helps less than expected, every bundled
+  character is a named character voiced by a real actor, and Ali G is a living performer's own persona.
+  § 6.4 has the summary and what unshelving needs: a character sweep (new two-star roadmap item), a legal
+  check, and call 11. Roadmap: the three character-voice entries marked shelved; the plain reader unchanged.

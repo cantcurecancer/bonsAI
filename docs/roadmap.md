@@ -32,7 +32,7 @@ section for the knowledge base, each sorted from one star to six.
 6. **Tags:** `[ask]` Ask bar and input · `[chat]` chat slots · `[chips]` preset chips · `[focus]` D-pad and focus ring ·
    `[KB]` knowledge base · `[layout]` Main tab layout and vertical space · `[ollama]` models and routing · `[perms]` permissions ·
    `[platform]` build, deploy, tooling, upstream · `[QA]` testing · `[reply]` the answer itself · `[tabs]` the tab bar ·
-   `[ui]` everything else on screen · `[voice]` voice.
+   `[ui]` everything else on screen · `[voice]` voice · `[shelved]` parked on purpose; the entry says why and what unshelves it.
 
 **Every Main-tab UI change also owes the free-play sweep** (standing row **QA-FREE-PLAY-01** in
 [testing-manual.md](testing-manual.md)): walk the pane like a user and require every focused stop to also be visible.
@@ -194,6 +194,11 @@ replace it with a specific issue when one exists.
   the answer, in every mode, for eight seconds, so a short answer is read without leaving the game; tap still opens the panel.
   Hidden blocks are skipped; if nothing safe is left the toast stays as it is. **Measure first, on two screens with screenshots:**
   the Deck's own screen and a 24-inch 1080p monitor; the popup is expected to be small. [Plan and mockup](planning/38-toast-answer-lines.md).
+- ★★ `[reply]` **Which bundled characters copy a real person** — **OPEN, filed 2026-09-08 (D74); the gate for the shelved character
+  voices.** All 31 characters in the picker are named characters from games or TV, each voiced by a real actor, and one is a living
+  comedian's own persona. A written sweep, one line per character: who owns the character, whose voice it is, and whether a voice for
+  it could be made as a type rather than a copy. Text roleplay sits on the first layer today; any voice would sit on all of them. No
+  code; a document the legal check reads. [Memo](planning/42-read-aloud-feasibility.md).
 - ★★ `[ui]` **Replace the bonsAI tab icon with the redesign's** — **OPEN, and no longer waiting on a drawing.** Flatter,
   more silhouette, because it renders at 14px. **Checked 2026-09-05: the redesign document never actually draws one**, and the
   maintainer has said they do not want to supply one. So whoever builds it proposes a shape and the maintainer approves it by
@@ -234,19 +239,15 @@ replace it with a specific issue when one exists.
 - ★★★ `[ui]` **Adjustable text size in Settings** — **OPEN.** `uiScalePx()` already runs through the stylesheet; the work is exposing it,
   deciding what must not scale (icons, the 300px column), and paying the settings plumbing. [Detail](roadmap-details.md#adjustable-text-size-in-settings).
 - ★★★ `[ui]` **Search density** — **OPEN.** Tighter, more scannable results with highlighted match tokens.
-- ★★★ `[voice]` **Voices for the bundled characters** — **OPEN, after Read answers aloud; reshaped 2026-09-08 (D74).** Each
-  character bonsAI ships with gets a voice invented once on the maintainer's PC with OmniVoice, a new speech model that designs a
-  voice from a few keywords or copies one from a short clip. What ships is a five to ten second clip per character. On the device a
-  small copying model reads every answer in that clip's voice, through the same runner as the natural voice download. Nothing
-  heavy runs on the Deck at answer time. Custom characters are a separate, later entry. Open: whether a clip made by a model whose
-  weights are non-commercial can ship as a plugin voice; the Deck speed of the copying model beside a game.
-  [Memo](planning/42-read-aloud-feasibility.md).
-- ★★★ `[voice]` **Trained voices for the bundled characters** — **OPEN, fallback to the clip route; filed 2026-09-08 (D74).**
-  If the copying model turns out too slow beside a game, each bundled character instead gets a small trained voice file, about
-  60 MB, made once on the maintainer's PC: OmniVoice reads a long script in the invented voice, and a fast Piper voice is trained
-  from that speech on a graphics card, a day or more per character. The Deck downloads a voice on demand and reads with it faster
-  than any other route. Someone has done this and the result sounds like the voice it was trained from. New for the plugin: hosting
-  its own voice files. Same licence question as the clip route. [Memo](planning/42-read-aloud-feasibility.md).
+> - ★★★ `[voice]` `[shelved]` **Voices for the bundled characters** *— **OPEN, shelved 2026-09-08 (D74): possible, but a legal check first.** Each
+>   bundled character would get a voice invented once on the maintainer's PC with OmniVoice, shipped as a five to ten second clip and
+>   read on the device by a small copying model. Shelved because a voice is not covered by fair use, every character here is voiced by a
+>   real actor, and "free" is not a defence under the newer AI-voice laws. Unshelving needs the character sweep, a legal check, and the
+>   open licence call. [Memo](planning/42-read-aloud-feasibility.md).*
+> - ★★★ `[voice]` `[shelved]` **Trained voices for the bundled characters** *— **OPEN, shelved with the clip route 2026-09-08 (D74).** The fallback
+>   if the copying model is too slow beside a game: a small trained voice file per character, about 60 MB, made once on the maintainer's
+>   PC from OmniVoice speech and downloaded on demand; the fastest way to read. Same legal gate as the clip route, plus the plugin
+>   hosting its own voice files for the first time. [Memo](planning/42-read-aloud-feasibility.md).*
 - ★★★ `[voice]` **Full-quality reading from a LAN PC** — **OPEN, deliberately not built 2026-09-08 (D74); reopened only if the
   local port fails its Deck test.** For a person whose Ollama already runs on a PC in the house, that PC could also run OmniVoice as
   a speech server and read every answer in the full character voice, five to forty times faster than real time on its graphics card.
@@ -275,14 +276,11 @@ replace it with a specific issue when one exists.
   configs.
 - ★★★★ `[ui]` **SteamOS Share path** — **OPEN.** Faster path from Share and capture flows into screenshot attach where APIs allow.
 - ★★★★ `[ui]` **SteamOS spin hint card** — **OPEN.** Detect immutable spins and deep-link to troubleshooting.
-- ★★★★ `[voice]` **A voice for a custom character** — **OPEN, a later version of the character voices; calls locked 2026-09-08
-  (D74), the licence question open.** Type a name for your own character, press *Generate voice*, and the device spends a few
-  minutes inventing a voice from the character's description; from then on the small copying model reads that character's answers
-  in it, at no extra cost. The minutes go into a one-time step, not into each answer. It needs OmniVoice on the device: an optional
-  download from Settings of about one gigabyte, built the way the listening engine is built, with a plain warning: *minutes on a
-  Steam Deck, seconds on a stronger machine*. It runs on the device; there is no LAN server. Phase 0 is a half-day Deck test of the
-  program that runs OmniVoice on SteamOS; nothing else starts before it. Open: the same licence question as the bundled voices.
-  [Memo](planning/42-read-aloud-feasibility.md).
+> - ★★★★ `[voice]` `[shelved]` **A voice for a custom character** *— **OPEN, shelved with the bundled voices 2026-09-08 (D74).** Type a name, press
+>   **Generate voice**, wait minutes once while the device invents a voice; from then on the small copying model reads that character in
+>   it. Needs OmniVoice on the device as an optional download of about one gigabyte, with the warning "minutes on a Steam Deck, seconds
+>   on a stronger machine"; no LAN server. Phase 0 is a half-day Deck test of the port. Waits on the same legal gate as the bundled
+>   voices. [Memo](planning/42-read-aloud-feasibility.md).*
 - ★★★★★ `[ollama]` **On-Deck model benchmark** — **OPEN, descoped on 2026-09-06, one call open (D75).** Rank installed models by measured
   speed and completion; offer as try order with confirmation. Its own gate said: if timings do not hold still, descope to a
   one-shot readout. That readout is now its own three-star entry, [plan 43](planning/43-model-speed-readout.md), and its record
