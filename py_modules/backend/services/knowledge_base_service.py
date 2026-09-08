@@ -363,6 +363,23 @@ class KnowledgeRetrievalResult:
     timing_ms: dict[str, float] = field(default_factory=dict)
     unavailable_reason: str = ""
     retrieval_method: RetrievalMethod = "keyword"
+    # How well the winning candidate actually matched, carried out of retrieval so a reader
+    # downstream can tell a confident attachment from a thin one. `attached` alone cannot:
+    # STRATEGY_MEANING_FLOOR is set at the highest value that loses no row which attaches its
+    # right note today, which by construction leaves every thin-but-not-rejected match on the
+    # attached side of the line.
+    #
+    # `best_meaning` is the strongest cosine in the whole candidate pool -- the same number the
+    # meaning floor judges, so "did it attach" and "how good was it" cannot drift apart.
+    # `top_card_keyword_score` is the winning card's own BM25 score, which is 0.0 when the
+    # keyword half never ranked that card and only the meaning half found it.
+    #
+    # **Both are absent, not low, whenever there was nothing to measure**: Speed mode, no embed
+    # model reachable, a corpus baked without vectors, and an empty candidate pool all end here
+    # with `best_meaning` None. A reader that treats None as "weak" would print a warning on
+    # every turn of a Deck with no embed model, which is the opposite of what these are for.
+    best_meaning: Optional[float] = None
+    top_card_keyword_score: float = 0.0
 
 
 def _budget_for_mode(ask_mode: str) -> tuple[int, int]:
@@ -1432,6 +1449,9 @@ def retrieve_knowledge_context(
     # Read downstream to skip the fallback card and to label the no-hit note distinctly from an
     # ordinary "nothing routed at all" -- see COMPAT_MEANING_FLOOR.
     routed_nothing_fit = False
+    # The strongest cosine in the candidate pool for this turn, or None when the meaning half
+    # never ran (see KnowledgeRetrievalResult.best_meaning for why the difference matters).
+    best_meaning: Optional[float] = None
     try:
         conn = _get_connection(db_path)
         t_resolve = time.perf_counter()
@@ -1690,6 +1710,7 @@ def retrieve_knowledge_context(
                 attached=False,
                 notes=f"{no_hit_label} ({resolution})",
                 retrieval_method=retrieval_method,
+                best_meaning=best_meaning,
                 timing_ms={
                     "resolve_ms": resolve_ms,
                     "fts_ms": fts_ms,
@@ -1705,6 +1726,10 @@ def retrieve_knowledge_context(
             sources=sources,
             notes=resolution,
             retrieval_method=retrieval_method,
+            best_meaning=best_meaning,
+            # cards[0] is the winning card after fusion. Empty only on the fallback-card path,
+            # where there is no winning card and so no keyword score to report.
+            top_card_keyword_score=cards[0].bm25_score if cards else 0.0,
             timing_ms={
                 "resolve_ms": resolve_ms,
                 "fts_ms": fts_ms,

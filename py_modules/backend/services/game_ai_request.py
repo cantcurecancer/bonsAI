@@ -26,8 +26,10 @@ from backend.services.destructive_advice_guard import (
 from backend.services import kb_followup_memory
 from backend.services.input_sanitizer_service import apply_input_sanitizer_lane
 from backend.services.kb_not_in_notes_notice import (
+    append_no_close_match_notice,
     append_no_tip_for_this_notice,
     append_not_in_notes_notice,
+    should_show_no_close_match_notice,
     should_show_no_tip_for_this_notice,
     should_show_not_in_notes_notice,
 )
@@ -418,6 +420,8 @@ async def run_game_ai_request(
                 unavailable_reason=kb_result.unavailable_reason,
                 retrieval_method=kb_result.retrieval_method,
                 kb_domain=kb_domain,
+                best_meaning=kb_result.best_meaning,
+                top_card_keyword_score=kb_result.top_card_keyword_score,
             )
 
         read_tdp = is_current_tdp_read_intent(question_for_model)
@@ -615,8 +619,23 @@ async def run_game_ai_request(
                 kb_attached=bool(kb_transparency.get("kb_attached")),
                 kb_coverage_status=str(kb_coverage_transparency.get("kb_coverage_status") or ""),
             ) and not show_no_tip_for_this
+            # The third line (D88). It fires on the case the other two cannot reach: a note
+            # DID come back, and it was a stretch. No tie-break against them is needed or
+            # written -- they require nothing to have attached and this requires something to
+            # have, so the three are mutually exclusive by construction.
+            show_no_close_match = should_show_no_close_match_notice(
+                ask_mode=ask_mode,
+                kb_attached=bool(kb_transparency.get("kb_attached")),
+                kb_coverage_status=str(kb_coverage_transparency.get("kb_coverage_status") or ""),
+                kb_domain=str(kb_transparency.get("kb_domain") or ""),
+                kb_best_meaning=kb_transparency.get("kb_best_meaning"),
+                kb_top_card_keyword_score=float(
+                    kb_transparency.get("kb_top_card_keyword_score") or 0.0
+                ),
+            )
             response_text = append_not_in_notes_notice(response_text, show_not_in_notes)
             response_text = append_no_tip_for_this_notice(response_text, show_no_tip_for_this)
+            response_text = append_no_close_match_notice(response_text, show_no_close_match)
 
         err_tail = ""
         if not ollama_result.get("success"):

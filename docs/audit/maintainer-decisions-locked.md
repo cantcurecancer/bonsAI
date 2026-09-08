@@ -4463,3 +4463,81 @@ end of that table rests on two points. The lane should widen it rather than trus
 Lane C's brief gains the note path and its forbidden list is unchanged. Its floor is built on the
 meaning score, not on the fused score. The gate stays what section 5 already says: wrong attachments
 go down and right attachments do not.
+
+---
+
+### D88 — LOCKED 2026-09-07 — The "not in my notes" line keys off how good the match was, not just whether one attached
+
+**Raised** after the maintainer read the three things still owed at the end of wave three and was
+given four ways to close the last of them.
+
+#### What was wrong
+
+The line exists to tell someone an answer came from the model's own memory rather than from their
+notes. It shows only when **nothing** attached. Something nearly always attaches — ten Strategy
+questions about covered games, gibberish included, every one attached a note — so the line almost
+never shows, and a confident non-answer reads exactly like a grounded one.
+
+#### The four ways out, and why this one
+
+1. **Leave it.** No right answers lost, but the four questions that caused this keep looking
+   grounded.
+2. **Raise the bar a note has to clear.** Catches all four, and throws away twenty or more answers
+   that are right today. Turning a working answer into "not in my notes" is the wrong direction.
+3. **Change what the line keys off** — show it when the best match is *weak*, even though a note
+   attached. Nothing is taken away; the note still reaches the model and the answer still comes.
+   The line just says the match was thin.
+4. **Write the missing notes.** Fixes four questions and leaves the general problem.
+
+**The maintainer took 3**, with 4 kept as wave-four note-writing.
+
+#### What the measurement then said
+
+Measured the same evening by `scripts/measure_kb_thin_match.py`, over all 361 Strategy rows of the
+question set plus the four device sentences, running the real pipeline end to end.
+
+**The obvious version of option 3 does not work.** Warning whenever the closeness score is low
+needs 0.64 or higher to catch all four device sentences, and that also warns on **43 of the 188**
+rows that get their *right* note. Nearly one right answer in four would carry a warning. This is
+the same wall the attach floor already hit: raw closeness cannot separate "really about this" from
+"shares enough words to score high anyway".
+
+**A second signal makes it work.** Ask also whether the *keyword* search ranked the winning note at
+all, or whether only the meaning search found it. A note that no word in the question points at,
+picked purely because a machine judged it vaguely similar, is the thin case.
+
+Requiring both — no keyword support, and a closeness score under 0.65:
+
+| | |
+|---|---|
+| warned on a right note (the cost) | 11 of 188, about one in seventeen |
+| warned on a wrong note | 3 of 35 |
+| warned on a row with no recorded right answer | 12 |
+| the four device sentences | 3 of 4 |
+
+**Read the third row before judging the first.** Twelve of the fifteen catches are on rows the
+question set records no right answer for, so they move no counter at all — "how to save the game"
+answered with a note about girlfriends, "how to have a baby" answered with one about raising a
+skill. That is exactly the harm the line was built for, and it is invisible to any bucket count.
+This is the same blind spot that nearly caused the attach floor to be reverted earlier the same day.
+
+The one miss is *"where do i buy a house"* in Portal 2: the keyword search really did rank a card
+for it, so the second signal correctly says this is not the meaning-only case. Catching it needs a
+different idea, not a different number.
+
+#### Still open on this
+
+**The wording is a draft and needs the maintainer's sign-off before it ships.** The other two lines
+were worded by the maintainer through this same process. The placeholder is *"No close match in my
+notes — this answer leans on the model's own knowledge."* It is deliberately parallel with the
+other two and deliberately not the same sentence, because a note **did** reach the model and
+"not in my notes" would be false.
+
+#### Also settled the same evening
+
+- **The library point release went out** as 2026.09.08, carrying the corrected Black Mesa water
+  note. Checked on the device by asking about the flooded rooms: the reply now says the current is
+  constant, says not to try to time it, and points at the wall switch — the old advice to wait for
+  a gap is gone. Approved by the maintainer before publishing.
+- **Wave two's stray-computer-text row was run and failed.** The fix does not cover the case the
+  bug came from; the cause is written up on the roadmap. Not scoped for a fix this session.

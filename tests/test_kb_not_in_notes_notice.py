@@ -4,9 +4,13 @@ import unittest
 
 from backend.services.kb_not_in_notes_notice import (
     _NOT_IN_NOTES_LINE,
+    _NO_CLOSE_MATCH_LINE,
     _NO_TIP_FOR_THIS_LINE,
+    _THIN_MATCH_MEANING_CEILING,
+    append_no_close_match_notice,
     append_no_tip_for_this_notice,
     append_not_in_notes_notice,
+    should_show_no_close_match_notice,
     should_show_no_tip_for_this_notice,
     should_show_not_in_notes_notice,
 )
@@ -229,6 +233,114 @@ class TheTwoLinesNeverBothAppearTests(unittest.TestCase):
         )
         self.assertTrue(show_not_in_notes)
         self.assertTrue(show_no_tip)
+
+
+def _thin(**overrides):
+    """A turn where a note attached and nothing pointed at it but the meaning search."""
+    base = dict(
+        ask_mode="strategy",
+        kb_attached=True,
+        kb_coverage_status="sections",
+        kb_domain="strategy",
+        kb_best_meaning=0.60,
+        kb_top_card_keyword_score=0.0,
+    )
+    base.update(overrides)
+    return should_show_no_close_match_notice(**base)
+
+
+class NoCloseMatchDecisionTests(unittest.TestCase):
+    """should_show_no_close_match_notice: the two strength signals plus the eligibility gates."""
+
+    def test_thin_match_with_no_keyword_support_shows_the_notice(self):
+        self.assertTrue(_thin())
+
+    def test_a_note_the_keyword_search_ranked_does_not_show_the_notice(self):
+        # The whole point of the second signal: a note some word in the question actually
+        # pointed at is not the thin case, however middling its meaning score.
+        self.assertFalse(_thin(kb_top_card_keyword_score=3.216))
+
+    def test_a_close_meaning_match_does_not_show_the_notice(self):
+        self.assertFalse(_thin(kb_best_meaning=0.72))
+
+    def test_exactly_at_the_ceiling_does_not_show_the_notice(self):
+        # The ceiling is the first score considered good enough, not the last considered thin.
+        self.assertFalse(_thin(kb_best_meaning=_THIN_MATCH_MEANING_CEILING))
+        self.assertTrue(_thin(kb_best_meaning=_THIN_MATCH_MEANING_CEILING - 0.0001))
+
+    def test_an_unmeasured_meaning_score_does_not_show_the_notice(self):
+        # None means the meaning half never ran -- Speed mode, no embed model, a corpus with no
+        # vectors. Reading that as "weak" would print this line on every turn of a Deck with no
+        # embed model, which is the opposite of what it is for.
+        self.assertFalse(_thin(kb_best_meaning=None))
+
+    def test_nothing_attached_does_not_show_the_notice(self):
+        # That turn belongs to "not in my notes", which is the line for it.
+        self.assertFalse(_thin(kb_attached=False))
+
+    def test_speed_mode_does_not_show_the_notice(self):
+        self.assertFalse(_thin(ask_mode="speed"))
+
+    def test_expert_mode_shows_the_notice(self):
+        self.assertTrue(_thin(ask_mode="expert"))
+
+    def test_the_tip_sheet_does_not_show_the_notice(self):
+        # The tips have their own floor at a different value; this line is the notes' line.
+        self.assertFalse(_thin(kb_domain="compat"))
+
+    def test_a_game_the_notes_do_not_cover_does_not_show_the_notice(self):
+        self.assertFalse(_thin(kb_coverage_status="no_sections"))
+        self.assertFalse(_thin(kb_coverage_status="kb_off"))
+
+
+class NoCloseMatchAppendTests(unittest.TestCase):
+    def test_appends_the_exact_line_below_a_rule(self):
+        out = append_no_close_match_notice("Try the left door first.", True)
+        self.assertTrue(out.startswith("Try the left door first."))
+        self.assertTrue(out.endswith("*%s*" % _NO_CLOSE_MATCH_LINE))
+        self.assertIn("\n\n\u2014\n", out)
+
+    def test_leaves_the_reply_alone_when_it_should_not_show(self):
+        self.assertEqual(
+            append_no_close_match_notice("Try the left door first.", False),
+            "Try the left door first.",
+        )
+
+    def test_empty_reply_still_gets_the_line(self):
+        self.assertTrue(append_no_close_match_notice("", True).endswith("*%s*" % _NO_CLOSE_MATCH_LINE))
+
+    def test_the_three_lines_are_different_sentences(self):
+        # Each says a different thing: nothing came from the notes, nothing came from the tips,
+        # and something came from the notes but it was a stretch. Sharing wording would make the
+        # three indistinguishable to the person reading them.
+        self.assertEqual(
+            len({_NOT_IN_NOTES_LINE, _NO_TIP_FOR_THIS_LINE, _NO_CLOSE_MATCH_LINE}), 3
+        )
+
+
+class TheThirdLineCannotCollideWithTheOtherTwoTests(unittest.TestCase):
+    """The other two need nothing to have attached; this one needs something to have.
+
+    That is what makes the three mutually exclusive, and it holds in the functions themselves
+    rather than only at the call site -- unlike the first two, which need game_ai_request.py's
+    guard (see TheTwoLinesNeverBothAppearTests above).
+    """
+
+    def test_no_input_makes_this_line_and_not_in_notes_both_true(self):
+        for attached in (True, False):
+            not_in_notes = should_show_not_in_notes_notice(
+                ask_mode="strategy", kb_attached=attached, kb_coverage_status="sections"
+            )
+            no_close_match = _thin(kb_attached=attached)
+            self.assertFalse(not_in_notes and no_close_match)
+
+    def test_no_input_makes_this_line_and_no_tip_both_true(self):
+        for attached in (True, False):
+            no_tip = should_show_no_tip_for_this_notice(
+                kb_attached=attached, kb_domain="compat"
+            )
+            no_close_match = _thin(kb_attached=attached, kb_domain="compat")
+            self.assertFalse(no_tip and no_close_match)
 
 
 if __name__ == "__main__":

@@ -167,7 +167,17 @@ def build_knowledge_base_transparency(
     unavailable_reason: str = "",
     retrieval_method: str = "keyword",
     kb_domain: str = "",
+    best_meaning: float | None = None,
+    top_card_keyword_score: float = 0.0,
 ) -> dict[str, Any]:
+    """Collect one turn's knowledge-base facts into the dict the rest of the turn reads.
+
+    ``best_meaning`` and ``top_card_keyword_score`` say how well the winning note actually
+    matched, not just whether one attached -- see KnowledgeRetrievalResult for both, and
+    kb_not_in_notes_notice.should_show_no_close_match_notice for the one thing that reads them.
+    ``best_meaning`` is None whenever the meaning half never ran, which is a different fact from
+    a low score and must stay tellable apart from one.
+    """
     return {
         "kb_attached": attached,
         "kb_trust_tier": trust_tier,
@@ -177,6 +187,8 @@ def build_knowledge_base_transparency(
         "kb_unavailable_reason": unavailable_reason or "",
         "kb_retrieval_method": retrieval_method or "keyword",
         "kb_domain": str(kb_domain or ""),
+        "kb_best_meaning": best_meaning,
+        "kb_top_card_keyword_score": float(top_card_keyword_score or 0.0),
     }
 
 

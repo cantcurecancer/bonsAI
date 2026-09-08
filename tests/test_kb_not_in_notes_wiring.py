@@ -25,6 +25,9 @@ from backend.services.knowledge_base_service import KbCoverageSummary, Knowledge
 
 _NOT_IN_NOTES_TEXT = "Not in my notes — this answer is from the model's own knowledge."
 _NO_TIP_TEXT = "No tip for this — this answer is from the model's own knowledge."
+_NO_CLOSE_MATCH_TEXT = (
+    "No close match in my notes — this answer leans on the model's own knowledge."
+)
 
 
 class _FakePlugin:
@@ -324,6 +327,106 @@ class TheTwoNoticesNeverBothAppearWiringTests(unittest.TestCase):
         response = result.get("response", "")
         self.assertIn(_NO_TIP_TEXT, response)
         self.assertNotIn(_NOT_IN_NOTES_TEXT, response)
+
+
+def _attached(*, best_meaning, keyword_score) -> KnowledgeRetrievalResult:
+    return KnowledgeRetrievalResult(
+        attached=True,
+        text_block="Boss note: focus the adds first.",
+        trust_tier="wiki",
+        sources=[{"title": "Wiki"}],
+        best_meaning=best_meaning,
+        top_card_keyword_score=keyword_score,
+    )
+
+
+class NoCloseMatchWiringTests(unittest.TestCase):
+    """The third line, end to end through run_game_ai_request."""
+
+    @patch(
+        "backend.services.game_ai_request.summarize_kb_coverage",
+        return_value=KbCoverageSummary(status="sections", section_count=4),
+    )
+    @patch(
+        "backend.services.game_ai_request.retrieve_knowledge_context",
+        return_value=_attached(best_meaning=0.60, keyword_score=0.0),
+    )
+    def test_a_thin_note_appends_the_notice(self, _retrieve, _coverage):
+        plugin = _FakePlugin(_base_settings())
+        plugin._ollama_result = {
+            "success": True,
+            "response": "Focus down the adds first, then burst the boss.",
+            "model": "test-model",
+        }
+
+        result = _run(plugin, ask_mode="strategy")
+
+        self.assertIn(_NO_CLOSE_MATCH_TEXT, result.get("response", ""))
+        # The other two lines are about a turn where nothing attached; neither belongs here.
+        self.assertNotIn(_NOT_IN_NOTES_TEXT, result.get("response", ""))
+        self.assertNotIn(_NO_TIP_TEXT, result.get("response", ""))
+        # Reaches the snapshot Show details reads, same as the model text does.
+        self.assertEqual(len(plugin.persisted_snapshots), 1)
+        self.assertIn(
+            _NO_CLOSE_MATCH_TEXT, plugin.persisted_snapshots[0].get("final_response", "")
+        )
+
+    @patch(
+        "backend.services.game_ai_request.summarize_kb_coverage",
+        return_value=KbCoverageSummary(status="sections", section_count=4),
+    )
+    @patch(
+        "backend.services.game_ai_request.retrieve_knowledge_context",
+        return_value=_attached(best_meaning=0.78, keyword_score=0.0),
+    )
+    def test_a_close_note_appends_nothing(self, _retrieve, _coverage):
+        plugin = _FakePlugin(_base_settings())
+        plugin._ollama_result = {
+            "success": True,
+            "response": "Focus down the adds first, then burst the boss.",
+            "model": "test-model",
+        }
+
+        self.assertNotIn(_NO_CLOSE_MATCH_TEXT, _run(plugin, ask_mode="strategy").get("response", ""))
+
+    @patch(
+        "backend.services.game_ai_request.summarize_kb_coverage",
+        return_value=KbCoverageSummary(status="sections", section_count=4),
+    )
+    @patch(
+        "backend.services.game_ai_request.retrieve_knowledge_context",
+        return_value=_attached(best_meaning=0.60, keyword_score=4.5),
+    )
+    def test_a_note_the_keyword_search_found_appends_nothing(self, _retrieve, _coverage):
+        plugin = _FakePlugin(_base_settings())
+        plugin._ollama_result = {
+            "success": True,
+            "response": "Focus down the adds first, then burst the boss.",
+            "model": "test-model",
+        }
+
+        self.assertNotIn(_NO_CLOSE_MATCH_TEXT, _run(plugin, ask_mode="strategy").get("response", ""))
+
+    @patch(
+        "backend.services.game_ai_request.summarize_kb_coverage",
+        return_value=KbCoverageSummary(status="sections", section_count=4),
+    )
+    @patch(
+        "backend.services.game_ai_request.retrieve_knowledge_context",
+        return_value=_attached(best_meaning=None, keyword_score=0.0),
+    )
+    def test_a_turn_with_no_meaning_score_appends_nothing(self, _retrieve, _coverage):
+        # The case a Deck with no embed model is in on every single turn. Guarding this here as
+        # well as in the decision function because it is the one that would be noticed by every
+        # user at once if it regressed.
+        plugin = _FakePlugin(_base_settings())
+        plugin._ollama_result = {
+            "success": True,
+            "response": "Focus down the adds first, then burst the boss.",
+            "model": "test-model",
+        }
+
+        self.assertNotIn(_NO_CLOSE_MATCH_TEXT, _run(plugin, ask_mode="strategy").get("response", ""))
 
 
 if __name__ == "__main__":
