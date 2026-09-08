@@ -110,12 +110,21 @@ hook gives a gentle heads-up when a session starts work outside this.
   **Half of this moved on 2026-09-05:** Up from the feedback buttons now lands on the reply's last section rather than skipping
   to the bubble (measured, CHAT-REPLY-ENTRY-01). What is still open is the archived-header half — Up from the first archived
   header runs to the tab bar without the chat slot row ever taking the ring.
-- ★★ `[reply]` **An answer can end with a block of raw computer text where a power tip should be** — **FIXED
-  2026-09-07, VERIFY on the Deck (W2-R6).** In Speed mode with Deep Rock Galactic: Survivor running and the character
-  voice on, a reply ended with the literal line `{"tdp_watts": 5, "gpu_clock_mhz": 1200}` sitting in the words a person
-  reads. The plugin reads that line to work out a power suggestion and never took it out of the text on screen. It is
-  now removed the moment it is read — but only when it is loose in the reply, so a code example someone actually asked
-  for is left alone, and the power suggestion still reaches the caller. Seven tests. (D85)
+- ★★★ `[reply]` **An answer can end with a block of raw computer text where a power tip should be** — **REOPENED
+  2026-09-07 on the Deck (W2-R6). The fix does not cover the case the bug was reported from.** In Speed mode with
+  Deep Rock Galactic: Survivor running and the character voice on, a reply ended with the literal line
+  `{"tdp_watts": 5, "gpu_clock_mhz": 1200}` sitting in the words a person reads. The plugin reads that line to work
+  out a power suggestion and never took it out of the text on screen. A cleanup step was added on 2026-09-07 that
+  removes the line but deliberately leaves alone anything inside a code box, so that a code example someone actually
+  asked for survives. **The cause of the miss: the plugin's own instruction tells the model to put the power block
+  inside a code box.** So the one block the plugin asks for is the exact case the cleanup can never remove. Measured
+  on the device twice in a row, both replies ending in a code box holding nothing but the power line —
+  `{"tdp_watts": 7, "gpu_clock_mhz": null}` and `{"tdp_watts": 13, "gpu_clock_mhz": null}`, read out of the page
+  rather than inferred. The seven tests that shipped with the fix all pass; every one of them tests the shape the
+  plugin does not ask for. **Two ways out:** stop asking for a code box and ask for a plain line, or teach the
+  cleanup to remove a code box whose entire contents are the power block and nothing else — the second is safer,
+  because a real code example is never exactly that one thing. Evidence `runs/plan47-R6-stray-computer-text.json`.
+  (D85)
 - ★★ `[reply]` **Token streaming reveals text in bursts while a game is running** — **ACCEPTED 2026-09-04 (D58 #4).** Measured 2026-08-28 with
   a game running: tokens arrive in bursts, and during a burst the overlay drops to 47 fps; between bursts it is a flat 60. Delivery
   is bursty, painting is not slow. The game's own frame rate is unmeasured. Accepted as a nice-to-have; reopen only if the game's own frame rate is measured
@@ -453,13 +462,29 @@ Wave two's own Deck evening runs first, now that the Deck is free.**
 4. **Then Next from the top** — answer-first tested both ways, spoiler tiers, follow-ups remembering.
 
 **Wave two's own evening ran 2026-09-07** (rows **W2-R1** to **W2-R7** in
-[plan 47](planning/47-kb-wave-two-session.md) § 8; full results and bug write-ups above and below). **Still owed:**
-the stray-computer-text half of **W2-R6**, which needs Deep Rock Galactic: Survivor running with Speed and voice on;
-**W2-R8**, the five August rows, is optional and was not run. Fallout: New Vegas still is not installed.
+[plan 47](planning/47-kb-wave-two-session.md) § 8; full results and bug write-ups above and below). **The last owed
+row, the stray-computer-text half of W2-R6, ran late the same evening and failed** — the fix does not cover the
+case the bug came from, and the cause is written up under Bugs. **W2-R8**, the five August rows, is optional and
+was not run. Fallout: New Vegas still is not installed.
+
+**The library point release went out 2026-09-07 as version 2026.09.08**, carrying the corrected Black Mesa water
+note and nothing else. 293 notes, 156 tips, 25 games, unchanged. Published to both download hosts with the
+maintainer's approval, installed on the Deck from the plugin's own *Update knowledge base* button, and checked by
+asking about the flooded rooms: the reply now says the current is constant, says not to try to time it, and points
+at the wall switch that cuts the power. The old advice to wait for a gap is gone. Evidence
+`runs/plan48-R5-blackmesa-corrected-note.json`.
 
 ### Calls waiting on you
 
-**Nothing waiting.** **Decided 2026-09-07 (D86):** the Black Mesa water note was wrong — the current is
+**One waiting: the wording of the new "no close match" line.** It is built, measured and tested, and the
+placeholder reads *"No close match in my notes — this answer leans on the model's own knowledge."* The other two
+lines of its kind were worded by you, and this one should be too before it reaches anybody. Nothing ships out of
+this wave until then, so there is no rush — the full picture is under Bugs and in D88.
+
+**Decided 2026-09-07 (D88):** the "not in my notes" line keys off how good the match was, not just whether a note
+attached — keep the note, add a sentence, take nothing away. Three of the four questions that started this now say
+so. **Decided 2026-09-07, same evening:** the library point release ships with the corrected Black Mesa note, and
+went out. **Decided 2026-09-07 (D86):** the Black Mesa water note was wrong — the current is
 constant, not on a cycle — and it is rewritten from the maintainer's own account of the game, shipping in a
 library point release alongside wave three. The rest of the same evening's call: wave two's own Deck evening
 runs before wave three starts; there is no plugin release out of this wave, only the library point release;
@@ -537,27 +562,50 @@ is fine, the one-second target is retired (D84). Anything new goes here, one lin
   rule no longer holding — are not covered by that rule and still need answering if this is ever revisited. Weights
   stay even for now. (D68, D82) [Detail](roadmap-details.md#the-shipping-retrieval-arm-loses-to-the-vector-half-alone-on-rows-nobody-tuned-against).
 
+- ★★ `[KB]` **The follow-up menu can name a different game from the one asked about** — **OPEN, found
+  2026-09-07.** Asked *"how do i cross the flooded rooms in black mesa without getting shocked"* with nothing
+  running. The answer was correct and used the Black Mesa note, and the panel's own line confirmed it had
+  resolved the game from the question as black mesa. The menu underneath then asked **"Where are you at in
+  Half-Life 2?"**, offering the train station and Ravenholm — locations from a different game. A person asking
+  about one game is asked to place themselves in another. This chat carried nineteen earlier turns from an
+  unrelated session, which may have contributed; not yet retried in a fresh chat. Evidence
+  `runs/plan48-R5-blackmesa-corrected-note.json`.
 - ★★ `[KB]` **A pinned test batch is not badged** — **OPEN, found 2026-09-07.** Chips pinned for testing are
   supposed to carry an amber Test badge, so it is obvious the carousel is showing a fixed set rather than what
   the plugin would have picked on its own. With the chip-decode animation switched on, the badge never draws, so
   a pinned batch looks like ordinary chips. Evidence `runs/plan47-frozen-chip-findings.json`.
-- ★★★ `[KB]` **The line under the question box still names a game after it is closed** — **OPEN, found
-  2026-09-07.** Hades was exited with the panel still open. The line still named it right afterwards, still named
-  it 31 seconds later, still named it about four minutes later, and still named it after the Quick Access Menu
-  was closed and reopened — which matters because reopening is exactly the path the fix above was aimed at, and
-  it did not hold there either. The line is drawn live from what the plugin currently believes is running, not a
-  record of the turn that just finished. Evidence `runs/plan47-R6-bug-fixes.json`.
-- ★★★ `[KB]` **The "not in my notes" line never appears** — **OPEN, found 2026-09-07, fix folded into wave three
-  (D87).** The line was built to tell someone an answer came from the model's own memory rather than their notes,
-  but it only shows when the library covers the game and nothing in it matched — and the note search always
-  finds something to attach, so the line never shows. Ten questions about games the library covers, including
-  "how do i tame a horse" in Black Mesa and a nonsense question in Hades, all attached a note anyway. On the
-  device, asking about a boss that does not exist in Hades got a confident answer about weapons, and no line.
-  Same cause as the tip problem above: nothing in the search can say "none of these fit." Evidence
-  `runs/plan47-R5-not-in-notes.json`, `runs/plan47-probe-notinnotes.json`.
-  **Better after wave three, but not fixed.** The line fires more often now that both searches have a
-  floor under them. It still cannot fire on the four questions that caused it: asking Black Mesa how to
-  tame a horse still attaches a note about enemies instead of saying nothing fit.
+- ★★★ `[KB]` **The panel only learns which game is running when it starts, and never again** — **OPEN, cause
+  found 2026-09-07.** Two failures, one cause. **It keeps naming a game that has closed:** Hades was exited with
+  the panel open and the line still named it straight afterwards, 31 seconds later, about four minutes later, and
+  after the Quick Access Menu was closed and reopened. **It also never notices a game that starts:** with the panel
+  already open, Deep Rock Galactic: Survivor was launched and the line read *no active game detected* for 48
+  seconds and through a close and reopen of the Quick Access Menu, while Steam's own list of running apps had the
+  game the whole time. Restarting the plugin made the line correct at once, both times and in both directions —
+  which is what says the panel reads this once at start-up and never listens for a change. Reopening the menu is
+  not enough; only a restart is. Evidence `runs/plan47-R6-bug-fixes.json`,
+  `runs/plan47-R6-stray-computer-text.json`.
+- ★★★ `[KB]` **The "not in my notes" line never appears** — **MOSTLY CLOSED 2026-09-07 (D88). A second line was
+  added; the wording needs your approval before it ships.** The line was built to tell someone an answer came from
+  the model's own memory rather than their notes, but it only shows when the library covers the game and nothing in
+  it matched — and the note search always finds something to attach, so the line never shows. Ten questions about
+  games the library covers, including "how do i tame a horse" in Black Mesa and a nonsense question in Hades, all
+  attached a note anyway. On the device, asking about a boss that does not exist in Hades got a confident answer
+  about weapons, and no line. Evidence `runs/plan47-R5-not-in-notes.json`, `runs/plan47-probe-notinnotes.json`.
+  **Wave three put a floor under both searches**, which made the line fire more often but could not reach the four
+  questions that caused it — catching those by raising the floor would have thrown away twenty or more answers that
+  are right today.
+  **So a second line was built instead, on your call: keep the note, and say the match was thin.** It appears when
+  a note reached the model but no word in the question pointed at it — only the meaning search found it — and even
+  then it scored below 0.65. On the whole question set that warns on 11 of 188 right answers, about one in
+  seventeen, against 15 catches, and it catches three of the four questions that started this. **Twelve of those
+  fifteen are on questions the test set records no right answer for**, which is the whole point and is invisible to
+  any count of right and wrong: *"how to save the game"* was being answered with a note about girlfriends,
+  *"how to have a baby"* with one about raising a skill. Nothing is taken away from anyone — the note still reaches
+  the model, the answer still comes, and a sentence is added. The one miss is *"where do i buy a house"* in
+  Portal 2, where the keyword search really did rank a card, so it is not the meaning-only case. Measured by
+  `scripts/measure_kb_thin_match.py`, evidence `runs/plan48-thin-match.json`. **What is owed: the wording.** The
+  placeholder reads *"No close match in my notes — this answer leans on the model's own knowledge."* The other two
+  lines were worded by you; this one needs the same before it goes out.
 - ★★★ `[KB]` **The note search has got about thirty per cent slower since August** — **OPEN, found
   2026-09-07.** The same three questions took 793 to 900 milliseconds in August, 1078 to 1094 one
   September evening, and 1103 to 1230 the next. The explanation given at the time — that only the first
@@ -565,10 +613,14 @@ is fine, the one-second target is retired (D84). Anything new goes here, one lin
   came back within 16 milliseconds of each other, no faster on the third than the first. Nobody knows why
   yet. There is now a written budget of one second and a check that prints over-budget, so it cannot
   creep up again unnoticed.
-- ★★ `[KB]` **Four questions still get notes about the wrong subject** — **OPEN, found 2026-09-07.**
-  Asking Black Mesa how to tame a horse, asking Portal 2 where to buy a house, and asking about a Hades
-  boss that does not exist all still attach a note. The floor added this wave cannot catch these without
-  also throwing away twenty or more correct answers elsewhere in the library, so it was left as it is.
+- ★★ `[KB]` **Four questions still get notes about the wrong subject** — **OPEN, three of the four now say so,
+  found 2026-09-07.** Asking Black Mesa how to tame a horse, asking Portal 2 where to buy a house, and asking about
+  a Hades boss that does not exist all still attach a note. The floor added this wave cannot catch these without
+  also throwing away twenty or more correct answers elsewhere in the library, so it was left as it is. **Three of
+  the four now carry the new "no close match" line** (D88 above), so the answer no longer reads as grounded — but
+  the wrong note is still attached and still shapes the reply. *"Where do i buy a house"* gets no line at all,
+  because a word in it really does point at a card. Fixing the attachment itself, rather than labelling it, is
+  wave-four note-writing work.
 
 ### Deck check owed
 
