@@ -104,6 +104,65 @@ running it, which the listening code already does for its own engine.
 
 Ollama and the LAN PC are not the answer today, and nothing the maintainer waits on changes that.
 
+### 3.1 OmniVoice, checked 2026-09-08
+
+The maintainer asked whether OmniVoice, a new speech model from the same team that makes the runner in
+option B, changes the plan. It was released 2026-03-31. Short answer: not on the Deck, yes on the PC.
+
+**What it is.** One model that speaks over 600 languages, copies a voice from a three-to-ten-second clip,
+or invents one from a few fixed keywords: gender, age, pitch, whisper, and one of ten English accents
+(American, British, Australian, Canadian, Indian, and five non-native ones). Its own docs warn that some
+keyword combinations are ignored. "British" is one bucket: no Scottish, no regional English, no free-text
+description. Quality is its strength; in the paper's own tests it copied voices more closely and misread
+fewer words than a leading paid service.
+
+**Why it does not read on the Deck today.**
+
+- **Built for graphics cards.** The install instructions cover NVIDIA, Apple and Intel Arc chips. On a CPU
+  the authors say it is "rather slow"; in April they said they would look into it, and nothing has shipped
+  since. The Deck's graphics chip is AMD, which the model's fast path does not support.
+- **Size.** About 600 to 800 million parameters depending on what is counted, six to eight times Pocket TTS.
+  It builds a whole sentence in 16 to 32 passes rather than streaming it, so the first sound waits for the
+  whole first sentence.
+- **Speed, measured elsewhere.** The one careful CPU measurement, on a top desktop chip with eight threads
+  and a faithful conversion, took 28 seconds to make 10 seconds of speech with an automatic voice and 67
+  seconds when copying a voice. The Deck has four cores at roughly half the per-core speed, so the guess is
+  two to four minutes for a ten-second sentence, or half that with fewer passes. A second conversion claims
+  twice real time on an unnamed CPU, but the team behind a third conversion says it treats the model as
+  left-to-right, which it is not, so it computes a different model. A community C++ port with a Vulkan build
+  exists, and Vulkan is the one road onto the Deck's graphics chip; nobody has published a number for an AMD
+  chip like the Deck's, and the game owns that chip. Only a Deck test would settle it, and it is a half-day
+  test, not a shell command: build the port in a container the way the listening engine is built, download
+  about one gigabyte, time a 150-word answer on the CPU and on the graphics chip.
+- **Download and memory.** About one gigabyte for the compressed weights plus the audio codec, against
+  about 90 MB for option B. A guess of one and a half to two gigabytes of memory while speaking, shared with
+  the game and the Ollama model.
+- **Licence.** The code is Apache 2.0. The weights are CC-BY-NC, non-commercial, because of the training
+  data. Under the middle path in call 6 that puts it on the looser tiers only, the same place as the
+  non-commercial Piper voices. Its terms also forbid copying a voice without consent, which is the rule anyway.
+- **Not in the runner.** The runner in option B does not run it (its changelog checked to version 1.13.7).
+  Two requests ask the team for a conversion and for a smaller version; neither has an answer from the team.
+  Since the same team makes both, this is the thing to re-check when Phase 2 starts: one line in the
+  runner's changelog would change this section.
+
+**What it changes.**
+
+1. **Phase 1 and the natural reader voice: nothing.** The Deck's own voice, then Piper or Kitten or Pocket
+   TTS through the runner, stay as planned.
+2. **The invented character voice (§ 6, way 2): it is the PC-side tool.** § 6 said the design model "wants a
+   graphics card" and did not name one. OmniVoice fits that role. For a one-time five-second clip a graphics
+   card is not even required; on a PC CPU the wait is a minute or two, once. Its keyword design gives a
+   generic British voice, not a heavy regional one, so for the accent the maintainer described the reliable
+   route is still a five-second recording of their own voice, which Pocket TTS copies on the Deck directly.
+   One new question for call 6: whether a clip made by a non-commercial model can ship inside the plugin as
+   its default voice. The rules on what a model's output inherits are unsettled; settle it before that clip
+   becomes the default.
+3. **Option F, a speech server on the PC, gets much stronger.** On a PC graphics card OmniVoice runs five to
+   forty times faster than real time depending on the card, and ready-made servers exist that speak an
+   OpenAI-style interface. For a person whose Ollama already lives on a LAN PC, that PC could read every
+   answer in the full character voice, designed or copied, at no cost to the Deck. It is still not offline,
+   so it stays a later option, but it is now the best-sounding one.
+
 ## 4. How the sound gets out, and how fast
 
 **Two doors.** The background program can play through the Deck's sound system with the player that
@@ -210,6 +269,76 @@ all. The plain reader can go the same way: design one voice for the plugin itsel
 and every Deck reads in it. Then the stock list above is an optional extra, not the product, and call 6
 shrinks to whether to offer that list at all.
 
+### 6.2 Front-load the voice: the maintainer's idea, 2026-09-08
+
+The maintainer asked why the heavy work cannot be done once, up front, so the Deck only uses the result.
+The answer splits in two, and the split is the whole design.
+
+**A speech model is a reader, not a recording.** A voice is a note handed to the reader. The words are new
+for every answer, so some program on the device reads each sentence fresh at answer time. That reading is
+the slow part. Making the voice is the cheap part. OmniVoice is a superb reader that is far too slow on the
+Deck (§ 3.1), and a voice refined inside it is only the clip and keywords it was given; using it at answer
+time means running it at answer time. So the plan hands the same note to a fast reader. Two exist.
+
+| Route | Work up front | Who does it | Each answer on the device |
+|---|---|---|---|
+| **A clip, read by Pocket TTS** | one clip of five to ten seconds per character | the maintainer on the PC, with OmniVoice | the small copying model reads in it; near real time on four CPU cores elsewhere, unmeasured on the Deck (row 04) |
+| **A trained Piper voice** | OmniVoice reads a long script in the voice, about 1,300 to 1,600 phrases; a Piper voice is fine-tuned from an existing one on a graphics card, five days on an old 8 GB card, likely a day on a modern one | the maintainer on the PC, once per bundled character | the runner reads with a 60 MB voice file; the fastest and smallest route |
+| **OmniVoice itself** | nothing | nobody | minutes per sentence on a Deck |
+
+One person has done the second route: 1,644 phrases generated by another speech program, a Piper voice
+fine-tuned on them, and a result that "sounds similar" to the program that made the speech. They did not
+publish the voice because the copyright of weights trained from a program's output is unclear (§ 6.3).
+
+**The bundled characters: up front, on the PC.** Locked 2026-09-08. Every character the plugin ships with
+gets a voice designed once in OmniVoice on the maintainer's PC: keywords first, a short clip of the
+maintainer's own voice where an accent needs more than the ten fixed ones, refined by ear, kept as a clip.
+The clip route ships first because it costs one clip per character and keeps more of the performance. The
+trained-voice route is the fallback if row 04 shows the copying model cannot keep ahead of playback beside
+a game; it is also the upgrade if it can, for the characters people use most. New for the plugin either
+way: hosting its own voice files. Clips are small enough to ship inside the plugin; trained voices at 60 MB
+each are not, and would be downloaded on demand the way the natural voice is.
+
+**A custom character: a later version.** Locked 2026-09-08. The person types a name and a description,
+presses *Generate voice*, and the device spends minutes, once, inventing a voice; from then on the copying
+model reads that character in it. The minutes are the OmniVoice design step run locally, on the CPU or
+through the graphics chip, with no game running. What it needs on the device: the C++ port of OmniVoice
+(§ 3.1), built the way the listening engine is built, plus about one gigabyte of model files, as an optional
+download from Settings. Training a Piper voice on the device is out: the training guides say a CPU takes
+"days and days", and that is a PC.
+
+**Local with a warning, or LAN only?** The maintainer's thinking: bonsAI runs on any SteamOS machine, so the
+Deck is the floor, not the target; a stronger machine may do in seconds what the Deck does in minutes; a
+download button in Settings with a plain warning ("this is impossibly slow when run locally on a Steam Deck;
+use a LAN PC") might be enough; and if OmniVoice needs the LAN anyway, build it LAN-only and say so in
+Settings rather than a mixed setup. Locked as call 10 later the same day: local, with the warning worded
+*minutes on a Steam Deck, seconds on a stronger machine*; the LAN server is not built; the half-day Deck test
+of the port (row 07) is phase 0 of the custom-voice work.
+
+Two facts shape it. First, the slowness is about *reading live*, not about the *one-time design step*: a
+few minutes once per custom character is a wait a person will accept with a progress bar and a "close your
+game first" line, even on a Deck; reading every answer with OmniVoice is what a Deck cannot do. Second, on
+SteamOS the Python OmniVoice is never the local option: there is no package manager and no NVIDIA driver,
+so the local build is the C++ port with its Vulkan backend, which is also the only road onto an AMD graphics
+chip, Deck or desktop. That port is one person's project, has no releases yet, and has never been timed on
+an AMD chip. Row 07 is that test.
+
+**A LAN speech server** would mean a second program on the person's PC beyond Ollama, with its own install
+(Python, PyTorch, an NVIDIA driver), an address to paste into Settings, and audio crossing the house network
+for every sentence. It works, and it is the best sound available; it is also the most setup asked of anyone
+so far. Not built; locked 2026-09-08. Reopened only if row 07 fails.
+
+### 6.3 The licence question the clips raise
+
+OmniVoice's weights are non-commercial (§ 3.1). A clip or a trained voice made from its output is neither
+the weights nor a copy of them, and whether a licence on weights reaches the model's output is unsettled;
+the Piper blogger above chose not to publish for exactly that reason. The plugin is free and Apache 2.0,
+and a person playing alone is never touched by a non-commercial clause; a person streaming with the plugin
+on screen might be. Open as call 11. The cheapest next step: ask the team directly in an issue whether
+voices made with the model may ship inside a free open-source plugin; they answer issues. The fallback if
+the answer is no: the maintainer's own recorded clips for characters where one voice with an accent will
+do, and the stock consented voices of § 6.1 for the rest.
+
 ## 7. Proving it on the Deck
 
 Rows go in the manual test doc when the build lands; the feasibility rows run before the build, when the
@@ -236,6 +365,18 @@ half an hour; a probe script (§ 8, step 0) runs them in one go.
   with the browser's audio player, close the menu, confirm it keeps playing; and ask the browser for its
   built-in voices (one line). Pass for the first half: heard with the menu closed. The second half is
   information only.
+- **TTS-FEAS-07, OmniVoice on the device, one-time step only.** Build the C++ port in a container the way
+  the listening engine is built; download the compressed model files, about one gigabyte; from keywords,
+  make a ten-second clip on the CPU with eight threads, then again through the graphics chip, with no game
+  running. Record seconds and memory each time. Repeat on a stronger SteamOS machine if one is at hand.
+  Pass: a clip a person would accept waiting for, with a progress bar, on the Deck. The numbers decide the
+  warning's wording and whether the LAN server has to be reopened. Half a day, not half an hour. **Phase 0 of
+  the custom-voice work (step 9); nothing else in it starts first.**
+- **TTS-FEAS-08, a trained voice from generated speech, on the PC.** OmniVoice reads about 1,500 phrases
+  in one bundled character's voice; fine-tune a Piper voice from an existing English one; record the hours
+  and the card; judge by ear against the clip route reading the same answer through the copying model.
+  Pass: the trained voice is recognisably the same character. This decides whether the trained route is
+  the fallback only or the default for the most-used characters.
 
 ## 8. Build steps, when this is picked up
 
@@ -250,13 +391,17 @@ Only after D74 is answered and rows 01 to 03 have passed.
 | 4 | Docs: roadmap, testing rows, changelog. | Sonnet 5 high | 3 |
 | 5 | Phase 2, the natural voice: download the runner and one voice, smoke-test once, write the ready marker; progress shown in Settings the way the listening engine's is. Reuse that code's download, progress and cancel pieces rather than copy them. A Settings row picks the voice. | Sonnet 5 high lane | Phase 1 shipped; row 03 passed |
 | 6 | Phase 2, the character voices: the character-to-voice table (a stock speaker number, or a five-second clip) and passing the choice through; the clip path only if row 04 passed. | Sonnet 5 high lane | 5 |
+| 7 | The bundled clips: design each character's voice on the PC, keep a clip, ship the clips inside the plugin, extend step 6's table to point at them. Nothing runs at build time. | the maintainer designs; Sonnet 5 high lane wires | 6; row 04 passed; call 11 answered |
+| 8 | Trained voices, fallback or upgrade: the PC recipe as a script in the repo, a hosted voice file per character, on-demand download reusing step 5's pieces. | Sonnet 5 high lane; the training runs on the maintainer's PC | 7; row 08 |
+| 9 | Custom character voice, later version: the OmniVoice port as an optional download from Settings (container build, progress, cancel, ready marker, reusing step 5's pieces), the *Generate voice* button with progress and the warning *minutes on a Steam Deck, seconds on a stronger machine*, the clip stored per custom character, tier gating for the non-commercial weights. | Opus xhigh plans; Sonnet 5 high lanes build | phase 0 is row 07; then 7; call 11 |
+| 10 | LAN speech server: **not built**, locked 2026-09-08. Reopened only if row 07 fails; then an address setting, a health check, audio fetched by the background program and played through the session's sound system, said plainly in Settings as LAN-only. | Sonnet 5 high lane | row 07 failed |
 
 **Effort, honestly.** Phase 1, the Deck's own voice only, is two stars: the plumbing exists, the engine
 is there. Phase 2 is three stars: the natural voice download and its Settings state, plus the character
 table; the copied-voice path adds a Deck measurement, not much code. The roadmap's five stars were the
 price of not knowing any of this.
 
-## 9. What the maintainer decided — D74, partly locked 2026-09-05
+## 9. What the maintainer decided — D74, partly locked 2026-09-05 and 2026-09-08
 
 Locked the same day, the maintainer's answers:
 
@@ -279,6 +424,25 @@ Still open:
    the stock list offered as an extra and filtered by the model tier setting (the middle path), *lessac*
    never.
 
+**Locked 2026-09-08**, after the OmniVoice research (§ 3.1, § 6.2):
+
+7. **The bundled characters' voices are made up front on the maintainer's PC** with OmniVoice, and ship as
+   clips; the trained-voice route is the fallback if the copying model is too slow beside a game.
+8. **A custom character's voice is a later version** of the feature.
+9. **An optional OmniVoice download button in Settings is acceptable.** No mixed Deck-and-PC setup.
+10. **The custom voice step runs on the device, with the warning *minutes on a Steam Deck, seconds on a
+    stronger machine*.** Locked later the same day. Through the C++ port, for the one-time design step only,
+    on every SteamOS machine; the plugin shows the measured time after the first run. Live reading with
+    OmniVoice stays off the device; the small copying model reads everywhere. **The LAN speech server is not
+    built**; it is reopened only if the port fails its Deck test. **That half-day test (row 07) is phase 0 of
+    the custom-voice work**; nothing else in it starts first.
+
+Still open, raised 2026-09-08:
+
+11. **Whether voices made with a non-commercial model may ship in the plugin** (§ 6.3). *Recommendation:*
+    ask the team in an issue before any clip ships; design the voices meanwhile, since the answer changes
+    only whether they ship, not the work.
+
 ## 10. Sources
 
 - SteamOS 3.7.13 notes, Orca and espeak-ng added: [Steam Deck HQ](https://steamdeckhq.com/news/steamos-3-7-13-released-with-wifi-regressions-fixes-for-steam-deck-oled-and-better-support-for-rog-ally/), [Steam news](https://store.steampowered.com/news/app/1675200/view/529850584204838038)
@@ -290,6 +454,9 @@ Still open:
 - Kitten TTS, Feb 2026: [NYU Shanghai write-up](https://rits.shanghai.nyu.edu/ai/kittentts-state-of-the-art-voice-synthesis-in-under-25-mb/)
 - Kokoro 82M, Apache 2.0, six times real time on a laptop: [VisionStory review](https://www.visionstory.ai/open-source/kokoro-tts)
 - Plugins that play sound in gaming mode: [Game Theme Music](https://github.com/OMGDuke/SDH-GameThemeMusic) (browser audio player from the plugin's screen code), [Audio Loader](https://github.com/DeckThemes/SDH-AudioLoader)
+- OmniVoice, 2026-03-31: [k2-fsa/OmniVoice](https://github.com/k2-fsa/OmniVoice), Apache 2.0 code; [model card](https://huggingface.co/k2-fsa/OmniVoice), weights CC-BY-NC; [voice design keywords](https://github.com/k2-fsa/OmniVoice/blob/master/docs/voice-design.md); [paper](https://huggingface.co/papers/2604.00688) (0.8B parameters, RTF 0.03 on an H20 graphics card); the authors on CPU speed, 2026-04-03: [discussion 2](https://huggingface.co/k2-fsa/OmniVoice/discussions/2); requests for a [conversion](https://github.com/k2-fsa/OmniVoice/issues/151) and a [smaller model](https://github.com/k2-fsa/OmniVoice/issues/69), unanswered
+- OmniVoice on a CPU: [AFun9/Omnivoice-onnx](https://github.com/AFun9/Omnivoice-onnx) (i9-14900KF, 8 threads, 32 passes: RTF 2.8 automatic voice, 6.7 voice copy; 611 MB weights); [onnx-community/OmniVoice-Onnx](https://huggingface.co/onnx-community/OmniVoice-Onnx) (RTF 0.48, CPU unnamed) and the [phoonnx card](https://huggingface.co/OpenVoiceOS/phoonnx-omnivoice) that says that conversion is causal and so a different model; [omnivoice.cpp](https://github.com/ServeurpersoCom/omnivoice.cpp) (C++, GGML, CPU and Vulkan, MIT) with its [GGUF files](https://huggingface.co/Serveurperso/OmniVoice-GGUF) (656 MB + 289 MB); [OmniVoice-Studio](https://github.com/biosisca/OmniVoice-Studio) ("CPU works, just slower")
+- The runner's changelog to 1.13.7: no OmniVoice; Pocket TTS streaming voice copy on CPU added in 1.12.24; Supertonic 3 in 1.13.2: [CHANGELOG](https://github.com/k2-fsa/sherpa-onnx/blob/master/CHANGELOG.md)
 
 ## 11. Progress log
 
@@ -307,3 +474,22 @@ Still open:
   voice's licence card read: *lessac*, the best-known American voice, is research-only and out on every
   tier; five voices are non-commercial; the British 109-speaker pack and most of the rest are fine.
   § 6.1 has the table. Call 6 reframed: with an invented voice, the stock list is an optional extra.
+- **2026-09-08** — The maintainer asked about OmniVoice, the new 600-language speech model from the runner's
+  own team. Checked and written up as § 3.1: it needs a graphics card the Deck does not have, is ten times
+  the download, non-commercial on the weights, and not in the runner; on the Deck's CPU the best guess is
+  minutes per sentence. It is the right PC-side tool for the invented character voice in § 6, and it makes
+  the PC speech server in option F the best-sounding path for LAN users. Nothing in the plan changes; one
+  new question for call 6 about a clip made by a non-commercial model. Re-check the runner's changelog when
+  Phase 2 starts.
+- **2026-09-08, later** — The maintainer asked why the voice work cannot be done once, up front. Written up
+  as § 6.2: the voice can be front-loaded, the words cannot; two fast readers take a front-loaded voice, a
+  clip through the copying model or a trained Piper voice, and one person has already trained a Piper voice
+  from generated speech. Locked: the bundled characters' voices are made up front on the PC and ship as
+  clips; the custom character's voice is a later version; an OmniVoice download button is acceptable,
+  LAN-only if local cannot work. Open: local with a warning or LAN-only (call 10, decided by new row 07),
+  and the licence of voices made with a non-commercial model (call 11, § 6.3). Roadmap: the character-voice
+  entry reshaped and three entries added, one per approach, with stars.
+- **2026-09-08, evening** — Locked: the custom voice step runs on the device with the warning *minutes on a
+  Steam Deck, seconds on a stronger machine*; the LAN speech server is not built; the half-day Deck test of
+  the port (row 07) is phase 0 of the custom-voice work. Roadmap: the LAN entry marked deliberately not
+  built, the custom-character entry updated. Committed.

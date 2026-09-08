@@ -234,12 +234,26 @@ replace it with a specific issue when one exists.
 - ★★★ `[ui]` **Adjustable text size in Settings** — **OPEN.** `uiScalePx()` already runs through the stylesheet; the work is exposing it,
   deciding what must not scale (icons, the 300px column), and paying the settings plumbing. [Detail](roadmap-details.md#adjustable-text-size-in-settings).
 - ★★★ `[ui]` **Search density** — **OPEN.** Tighter, more scannable results with highlighted match tokens.
-- ★★★ `[voice]` **A voice per character** — **OPEN, after Read answers aloud; two calls open (D74).** A natural voice as a one-time
-  download of about 90 MB, then a voice that fits the selected character: a stock British voice from a 109-speaker pack picked by
-  region, or an invented voice designed once on the PC and copied on the Deck from a five-second clip. The invented voice is
-  the maintainer's pick (D74). Never a copy of a real person's voice without consent. Open: which stock voices, if any, the
-  plugin lists; Piper's best-known American voice is research-only and never ships.
+- ★★★ `[voice]` **Voices for the bundled characters** — **OPEN, after Read answers aloud; reshaped 2026-09-08 (D74).** Each
+  character bonsAI ships with gets a voice invented once on the maintainer's PC with OmniVoice, a new speech model that designs a
+  voice from a few keywords or copies one from a short clip. What ships is a five to ten second clip per character. On the device a
+  small copying model reads every answer in that clip's voice, through the same runner as the natural voice download. Nothing
+  heavy runs on the Deck at answer time. Custom characters are a separate, later entry. Open: whether a clip made by a model whose
+  weights are non-commercial can ship as a plugin voice; the Deck speed of the copying model beside a game.
   [Memo](planning/42-read-aloud-feasibility.md).
+- ★★★ `[voice]` **Trained voices for the bundled characters** — **OPEN, fallback to the clip route; filed 2026-09-08 (D74).**
+  If the copying model turns out too slow beside a game, each bundled character instead gets a small trained voice file, about
+  60 MB, made once on the maintainer's PC: OmniVoice reads a long script in the invented voice, and a fast Piper voice is trained
+  from that speech on a graphics card, a day or more per character. The Deck downloads a voice on demand and reads with it faster
+  than any other route. Someone has done this and the result sounds like the voice it was trained from. New for the plugin: hosting
+  its own voice files. Same licence question as the clip route. [Memo](planning/42-read-aloud-feasibility.md).
+- ★★★ `[voice]` **Full-quality reading from a LAN PC** — **OPEN, deliberately not built 2026-09-08 (D74); reopened only if the
+  local port fails its Deck test.** For a person whose Ollama already runs on a PC in the house, that PC could also run OmniVoice as
+  a speech server and read every answer in the full character voice, five to forty times faster than real time on its graphics card.
+  Not offline, so never the default. Dropped on purpose, said in advance: a speech server is a second program on the person's PC with
+  its own heavy install and an address to paste into Settings, the most setup the plugin has ever asked of anyone, and the one-time
+  voice step it would speed up is a wait of minutes on a Deck and seconds on anything stronger. The entry stays so the reason is on
+  record. [Memo](planning/42-read-aloud-feasibility.md).
 - ★★★ `[ollama]` **How fast is this model on this Deck** — **OPEN, planned 2026-09-06, calls open (D75).** Next to each installed
   model, how fast it answered on this Deck the last time it was used, and a button to time it now with one fixed question. The
   numbers already exist on every answer; the plugin keeps a last-ten record per model with the game that was running, shows a
@@ -261,6 +275,14 @@ replace it with a specific issue when one exists.
   configs.
 - ★★★★ `[ui]` **SteamOS Share path** — **OPEN.** Faster path from Share and capture flows into screenshot attach where APIs allow.
 - ★★★★ `[ui]` **SteamOS spin hint card** — **OPEN.** Detect immutable spins and deep-link to troubleshooting.
+- ★★★★ `[voice]` **A voice for a custom character** — **OPEN, a later version of the character voices; calls locked 2026-09-08
+  (D74), the licence question open.** Type a name for your own character, press *Generate voice*, and the device spends a few
+  minutes inventing a voice from the character's description; from then on the small copying model reads that character's answers
+  in it, at no extra cost. The minutes go into a one-time step, not into each answer. It needs OmniVoice on the device: an optional
+  download from Settings of about one gigabyte, built the way the listening engine is built, with a plain warning: *minutes on a
+  Steam Deck, seconds on a stronger machine*. It runs on the device; there is no LAN server. Phase 0 is a half-day Deck test of the
+  program that runs OmniVoice on SteamOS; nothing else starts before it. Open: the same licence question as the bundled voices.
+  [Memo](planning/42-read-aloud-feasibility.md).
 - ★★★★★ `[ollama]` **On-Deck model benchmark** — **OPEN, descoped on 2026-09-06, one call open (D75).** Rank installed models by measured
   speed and completion; offer as try order with confirmation. Its own gate said: if timings do not hold still, descope to a
   one-shot readout. That readout is now its own three-star entry, [plan 43](planning/43-model-speed-readout.md), and its record

@@ -3879,6 +3879,46 @@ designed voice plus the stock list as an extra, filtered by the model tier setti
 stock voices only for the plain reader, filtered by tier. *Recommended: (b).* Open.
 
 
+**Locked 2026-09-08, after the OmniVoice research (memo § 3.1 and § 6.2).** The maintainer asked why the heavy
+voice work cannot be done once, up front. It can, for the voice; it cannot for the words, which are new every
+answer and must be read on the device by a fast reader. The calls:
+
+7. **The bundled characters' voices are made up front on the maintainer's PC.** OmniVoice designs each one from
+   keywords or a short clip; what ships is a five to ten second clip per character, read on the device by the
+   small copying model through the runner. If that model is too slow beside a game (memo row 04), the fallback
+   is a trained Piper voice per character, made on the PC from OmniVoice-generated speech, about 60 MB each,
+   downloaded on demand.
+8. **A custom character's voice is a later version.** Type a name, press *Generate voice*, wait minutes once;
+   the device runs the OmniVoice design step locally, then the copying model reads in the result.
+9. **An optional OmniVoice download button in Settings is acceptable.** No mixed Deck-and-PC setup.
+
+**Locked later the same day.**
+
+10. **The custom voice step runs on the device, with the warning *minutes on a Steam Deck, seconds on a stronger
+    machine*.** The maintainer's thinking, which the call keeps: bonsAI runs on any SteamOS machine, the Deck is
+    the floor, a stronger machine may take seconds where the Deck takes minutes. What settled the wording: the
+    slowness is about reading every answer live, not about a one-time design step, so a few minutes once, with a
+    progress bar and the game closed, is a wait a person accepts even on a Deck. On SteamOS the local build is
+    the community C++ port with its Vulkan backend, not the Python original, because there is no package manager
+    and no NVIDIA driver; that port is one person's project, unreleased, and never timed on an AMD chip. So:
+    local through the port for the one-time design step on every machine; the measured time shown after the
+    first run; live reading with OmniVoice never on the device; **the LAN speech server is not built**, and is
+    reopened only if the port fails its Deck test. **That half-day test (memo row 07) is phase 0 of the
+    custom-voice work**; nothing else in it starts first.
+
+**Open, raised 2026-09-08.**
+
+11. **May voices made with a non-commercial model ship inside the plugin?** OmniVoice's weights are CC-BY-NC;
+    a clip or a trained voice made from its output is not the weights, and whether the licence reaches output
+    is unsettled. A blogger who trained a Piper voice from another program's speech did not publish it for this
+    reason. *Recommendation:* ask the team in an issue before any clip ships; design the voices meanwhile,
+    since the answer changes only whether they ship. Fallback: the maintainer's own recorded clips where one
+    accented voice will do, and the consented stock voices of memo § 6.1 for the rest.
+
+**Roadmap, 2026-09-08:** the ★★★ character-voice entry reshaped as *Voices for the bundled characters*; added
+★★★ *Trained voices for the bundled characters*, ★★★ *Full-quality reading from a LAN PC* (deliberately not
+built, later the same day) and ★★★★ *A voice for a custom character*.
+
 ### D75 — OPEN (raised 2026-09-06) — The model speed readout: six calls before anything is built
 
 Raised by [planning/43-model-speed-readout.md](../planning/43-model-speed-readout.md), the fifth of the six
