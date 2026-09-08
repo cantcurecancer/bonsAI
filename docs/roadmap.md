@@ -129,6 +129,11 @@ hook gives a gentle heads-up when a session starts work outside this.
   a game running: tokens arrive in bursts, and during a burst the overlay drops to 47 fps; between bursts it is a flat 60. Delivery
   is bursty, painting is not slow. The game's own frame rate is unmeasured. Accepted as a nice-to-have; reopen only if the game's own frame rate is measured
   and suffers. Making streaming the default stays a separate feature call. Row **STREAM-11**. [Detail](roadmap-details.md#token-streaming-reveals-text-in-chunks-while-a-game-is-running).
+- ★★ `[tabs]` **A faded ghost of the tab bar is left drawn over the chip row after touching the screen** — **OPEN,
+  seen again on the Deck 2026-09-07 with a game running.** Touch the panel and the opened tab bar fades away, but a see-through
+  copy of it stays on top of the suggestion chips: pale round tab icons and the plugin's name show through the chip text, with a
+  faint row of dots under them. It does not go away on its own and it makes the chip labels hard to read. Reported before and
+  still there. Evidence: Deck capture `DeckCapture_20260907_234345_game.png`.
 - ★★★ `[focus]` **The panel can get into a state where pressing Down stops half way and the Ask button is out of reach** —
   **OPEN, found 2026-09-05.** After leaving the panel with B and opening it again from the Decky list, Down walked as far as the
   answer and then stopped dead: ten presses, no movement, Left and Right dead too, only Up escaping. The answer's own buttons, the
