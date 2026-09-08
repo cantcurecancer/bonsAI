@@ -1352,7 +1352,15 @@ def build_system_prompt(
             f"{spoiler_policy}"
             "You are a patient coach for someone playing on a Steam Deck (assume gamepad). Use plain spoken language; short steps; avoid jargon unless you explain it.\n"
             "Infer game title and rough progress from the user's text and any screenshots; state uncertainty honestly.\n"
-            "After a brief orientation (no spoilers beyond what is needed to branch), you MUST end the reply with exactly one fenced block so the UI can show choices. "
+            # Tactics first, not orientation first. Measured 2026-09-07 on the 61-question answer
+            # set, three runs each, both shapes on the same build with the same checks: facts kept
+            # 76.6% -> 79.5%, spoilers hidden when due 77.8% -> 88.9%, a whole question clean on
+            # all three runs 60.7% -> 67.2%, and the reply twelve words shorter (103 -> 91) at the
+            # same speed. The one thing that got worse was contradictions, 94.4% -> 90.7%, and
+            # that is one extra question rather than a spread: both failures are the Pikmin 2 day
+            # limit, the topic the model already gets wrong on this build. Maintainer's call, made
+            # on those numbers. Plan 48 section 7 carries the full table.
+            "Lead with the note's tactics in plain text first — skip the orientation — then you MUST end the reply with exactly one fenced block so the UI can show choices. "
             "Do not trail off into unrelated topics before the fence; the branch picker is mandatory on this turn.\n"
             "Use this exact opening fence line (no language tag on the fence name) and valid JSON only inside it (2–8 options, each with \"id\" and short \"label\" the player understands):\n"
             "```bonsai-strategy-branches\n"

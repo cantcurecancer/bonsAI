@@ -517,8 +517,13 @@ class EvalKbAnswersHarnessTests(unittest.TestCase):
         self.assertEqual((summary.judge_facts_agree.hit, summary.judge_facts_agree.of), (1, 2))
 
 
-class EvalKbAnswersAnswerFirstVariantTests(unittest.TestCase):
-    """Plan 48, Lane D: the ``answer_first`` prompt-variant hook. Measures nothing itself -- it
+class EvalKbAnswersOrientationFirstVariantTests(unittest.TestCase):
+    """Plan 48, Lane D: the ``orientation_first`` prompt-variant hook.
+
+    This was ``answer_first`` and ran the other way round. Tactics-first won the measurement on
+    2026-09-07 and the maintainer took it, so it is now what the plugin ships and this variant
+    restores the OLD orientation-first sentence instead -- which is what these tests assert.
+    Measures nothing itself -- it
     only proves the swap fires on the turn shape it is meant for and stays out of the way of every
     other turn shape, the same way the two spoiler-fence variants above it are proven."""
 
@@ -556,18 +561,18 @@ class EvalKbAnswersAnswerFirstVariantTests(unittest.TestCase):
             strategy_spoiler_kb_entity_match=bool(entity),
         )
 
-    def test_swaps_the_orientation_sentence_on_a_strategy_turn_with_a_named_thing_and_a_note(self):
+    def test_restores_the_orientation_sentence_on_a_strategy_turn_with_a_named_thing_and_a_note(self):
         prompt = self._strategy_prompt(entity="the strider", early_context_suffix=self._KB_BLOCK)
         # Sanity: both conditions the variant looks for are actually present in the built prompt.
         self.assertIn("NAMED-ENTITY CONSENT", prompt)
         self.assertIn("Local knowledge base", prompt)
-        self.assertIn(self.mod._ORIENTATION_MENU_SENTENCE, prompt)
+        self.assertIn(self.mod._ANSWER_FIRST_SENTENCE, prompt)
 
-        out = self.mod._variant_answer_first(prompt)
+        out = self.mod._variant_orientation_first(prompt)
 
         self.assertNotEqual(out, prompt)
-        self.assertNotIn(self.mod._ORIENTATION_MENU_SENTENCE, out)
-        self.assertIn(self.mod._ANSWER_FIRST_SENTENCE, out)
+        self.assertNotIn(self.mod._ANSWER_FIRST_SENTENCE, out)
+        self.assertIn(self.mod._ORIENTATION_MENU_SENTENCE, out)
         # The rest of the turn (the menu fence, the spoiler policy line) is untouched.
         self.assertIn("```bonsai-strategy-branches", out)
         self.assertIn("NAMED-ENTITY CONSENT", out)
@@ -584,24 +589,26 @@ class EvalKbAnswersAnswerFirstVariantTests(unittest.TestCase):
             ask_mode="speed",
             early_context_suffix=self._KB_BLOCK,
         )
-        out = self.mod._variant_answer_first(prompt)
+        out = self.mod._variant_orientation_first(prompt)
         self.assertEqual(out, prompt)
 
     def test_leaves_a_strategy_turn_untouched_when_no_note_is_attached(self):
         prompt = self._strategy_prompt(entity="the strider", early_context_suffix="")
-        self.assertIn(self.mod._ORIENTATION_MENU_SENTENCE, prompt)
-        out = self.mod._variant_answer_first(prompt)
+        self.assertIn(self.mod._ANSWER_FIRST_SENTENCE, prompt)
+        out = self.mod._variant_orientation_first(prompt)
         self.assertEqual(out, prompt)
 
     def test_leaves_a_strategy_turn_untouched_when_nothing_was_named(self):
         prompt = self._strategy_prompt(entity="", early_context_suffix=self._KB_BLOCK)
-        self.assertIn(self.mod._ORIENTATION_MENU_SENTENCE, prompt)
-        out = self.mod._variant_answer_first(prompt)
+        self.assertIn(self.mod._ANSWER_FIRST_SENTENCE, prompt)
+        out = self.mod._variant_orientation_first(prompt)
         self.assertEqual(out, prompt)
 
     def test_registered_in_the_variant_table(self):
-        self.assertIn("answer_first", self.mod.VARIANTS)
-        self.assertIs(self.mod.VARIANTS["answer_first"], self.mod._variant_answer_first)
+        self.assertIn("orientation_first", self.mod.VARIANTS)
+        self.assertIs(
+            self.mod.VARIANTS["orientation_first"], self.mod._variant_orientation_first
+        )
 
 
 if __name__ == "__main__":

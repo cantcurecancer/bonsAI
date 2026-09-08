@@ -256,6 +256,8 @@ _KB_BLOCK_HEADER_MARKER = "--- Local knowledge base (bonsAI; offline corpus; may
 # nobody has measured whether giving the note's tactics first, ahead of the same branch menu,
 # reads better than today's brief orientation. This sentence only exists on a first-turn Strategy
 # reply, so finding it already narrows to the right turn shape without a separate ask-mode check.
+# As of 2026-09-07 the SHIPPED sentence is _ANSWER_FIRST_SENTENCE below. The orientation one is
+# the old shape, kept only so it can still be measured.
 _ORIENTATION_MENU_SENTENCE = (
     "After a brief orientation (no spoilers beyond what is needed to branch), you MUST end the "
     "reply with exactly one fenced block so the UI can show choices. "
@@ -266,8 +268,13 @@ _ANSWER_FIRST_SENTENCE = (
 )
 
 
-def _variant_answer_first(prompt: str) -> str:
-    """W6 / D86 experiment: on a Strategy first turn that has both a knowledge-base note attached
+def _variant_orientation_first(prompt: str) -> str:
+    """Put the OLD orientation-first sentence back, so the shape that shipped before 2026-09-07
+    can still be measured against the one that ships now. This ran the other way round until the
+    maintainer took tactics-first on the numbers; the direction is reversed rather than the
+    variant deleted, because a before-and-after nobody can re-run is a number nobody can check.
+
+    Originally: on a Strategy first turn that has both a knowledge-base note attached
     and a named thing the user asked about, swap the short-orientation-then-menu sentence for one
     that gives the note's tactics first, then the same menu. Everything else about the reply
     (the menu fence itself, the spoiler policy, the rest of the turn) is untouched.
@@ -284,14 +291,14 @@ def _variant_answer_first(prompt: str) -> str:
         return prompt
     if not _ENTITY_RE.search(prompt):
         return prompt
-    return prompt.replace(_ORIENTATION_MENU_SENTENCE, _ANSWER_FIRST_SENTENCE, 1)
+    return prompt.replace(_ANSWER_FIRST_SENTENCE, _ORIENTATION_MENU_SENTENCE, 1)
 
 
 VARIANTS: dict[str, PromptVariant] = {
     "baseline": _variant_baseline,
     "drop_fence_placement": _variant_drop_fence_placement,
     "fence_subtractive": _variant_fence_subtractive,
-    "answer_first": _variant_answer_first,
+    "orientation_first": _variant_orientation_first,
 }
 
 
