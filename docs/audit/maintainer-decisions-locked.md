@@ -4525,13 +4525,18 @@ The one miss is *"where do i buy a house"* in Portal 2: the keyword search reall
 for it, so the second signal correctly says this is not the meaning-only case. Catching it needs a
 different idea, not a different number.
 
-#### Still open on this
+#### The wording
 
-**The wording is a draft and needs the maintainer's sign-off before it ships.** The other two lines
-were worded by the maintainer through this same process. The placeholder is *"No close match in my
-notes — this answer leans on the model's own knowledge."* It is deliberately parallel with the
-other two and deliberately not the same sentence, because a note **did** reach the model and
-"not in my notes" would be false.
+**Settled the same evening.** The line reads:
+
+> *"No close match in my notes, this answer leans on the model's own knowledge."*
+
+The draft used a dash between the two halves, to match the two sibling lines. The maintainer asked
+for a comma instead, and that is what ships. The difference from its siblings is deliberate and is
+noted in the code so nobody tidies it back.
+
+The sentence is deliberately not the same as "not in my notes", because a note **did** reach the
+model on these turns and that line would be false.
 
 #### Also settled the same evening
 

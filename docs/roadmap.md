@@ -476,12 +476,7 @@ at the wall switch that cuts the power. The old advice to wait for a gap is gone
 
 ### Calls waiting on you
 
-**One waiting: the wording of the new "no close match" line.** It is built, measured and tested, and the
-placeholder reads *"No close match in my notes — this answer leans on the model's own knowledge."* The other two
-lines of its kind were worded by you, and this one should be too before it reaches anybody. Nothing ships out of
-this wave until then, so there is no rush — the full picture is under Bugs and in D88.
-
-**Decided 2026-09-07 (D88):** the "not in my notes" line keys off how good the match was, not just whether a note
+**Nothing waiting.** **Decided 2026-09-07 (D88):** the "not in my notes" line keys off how good the match was, not just whether a note
 attached — keep the note, add a sentence, take nothing away. Three of the four questions that started this now say
 so. **Decided 2026-09-07, same evening:** the library point release ships with the corrected Black Mesa note, and
 went out. **Decided 2026-09-07 (D86):** the Black Mesa water note was wrong — the current is
@@ -584,8 +579,8 @@ is fine, the one-second target is retired (D84). Anything new goes here, one lin
   which is what says the panel reads this once at start-up and never listens for a change. Reopening the menu is
   not enough; only a restart is. Evidence `runs/plan47-R6-bug-fixes.json`,
   `runs/plan47-R6-stray-computer-text.json`.
-- ★★★ `[KB]` **The "not in my notes" line never appears** — **MOSTLY CLOSED 2026-09-07 (D88). A second line was
-  added; the wording needs your approval before it ships.** The line was built to tell someone an answer came from
+- ★★★ `[KB]` **The "not in my notes" line never appears** — **CLOSED 2026-09-07 (D88). A second line was added, and
+  you chose its wording.** The line was built to tell someone an answer came from
   the model's own memory rather than their notes, but it only shows when the library covers the game and nothing in
   it matched — and the note search always finds something to attach, so the line never shows. Ten questions about
   games the library covers, including "how do i tame a horse" in Black Mesa and a nonsense question in Hades, all
@@ -603,9 +598,8 @@ is fine, the one-second target is retired (D84). Anything new goes here, one lin
   *"how to have a baby"* with one about raising a skill. Nothing is taken away from anyone — the note still reaches
   the model, the answer still comes, and a sentence is added. The one miss is *"where do i buy a house"* in
   Portal 2, where the keyword search really did rank a card, so it is not the meaning-only case. Measured by
-  `scripts/measure_kb_thin_match.py`, evidence `runs/plan48-thin-match.json`. **What is owed: the wording.** The
-  placeholder reads *"No close match in my notes — this answer leans on the model's own knowledge."* The other two
-  lines were worded by you; this one needs the same before it goes out.
+  `scripts/measure_kb_thin_match.py`, evidence `runs/plan48-thin-match.json`. **The wording is settled**, chosen by you on 2026-09-07: *"No close match in my notes, this answer leans on the model's own knowledge."*
+  The comma rather than a dash is deliberate, and is noted in the code so nobody tidies it away.
 - ★★★ `[KB]` **The note search has got about thirty per cent slower since August** — **OPEN, found
   2026-09-07.** The same three questions took 793 to 900 milliseconds in August, 1078 to 1094 one
   September evening, and 1103 to 1230 the next. The explanation given at the time — that only the first

@@ -26,7 +26,7 @@ from backend.services.knowledge_base_service import KbCoverageSummary, Knowledge
 _NOT_IN_NOTES_TEXT = "Not in my notes — this answer is from the model's own knowledge."
 _NO_TIP_TEXT = "No tip for this — this answer is from the model's own knowledge."
 _NO_CLOSE_MATCH_TEXT = (
-    "No close match in my notes — this answer leans on the model's own knowledge."
+    "No close match in my notes, this answer leans on the model's own knowledge."
 )
 
 

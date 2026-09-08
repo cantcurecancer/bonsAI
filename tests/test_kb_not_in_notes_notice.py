@@ -309,6 +309,19 @@ class NoCloseMatchAppendTests(unittest.TestCase):
     def test_empty_reply_still_gets_the_line(self):
         self.assertTrue(append_no_close_match_notice("", True).endswith("*%s*" % _NO_CLOSE_MATCH_LINE))
 
+    def test_the_line_joins_its_two_halves_with_a_comma(self):
+        # The maintainer chose a comma here on 2026-09-07, after a draft that used a dash to
+        # match the two sibling lines. Pinned because it looks like a slip next to its siblings
+        # and would otherwise get tidied back to a dash by anyone reading the three together.
+        self.assertEqual(
+            _NO_CLOSE_MATCH_LINE,
+            "No close match in my notes, this answer leans on the model's own knowledge.",
+        )
+        self.assertNotIn("—", _NO_CLOSE_MATCH_LINE)
+        # The siblings keep their dashes; this is a deliberate difference, not a style drift.
+        self.assertIn("—", _NOT_IN_NOTES_LINE)
+        self.assertIn("—", _NO_TIP_FOR_THIS_LINE)
+
     def test_the_three_lines_are_different_sentences(self):
         # Each says a different thing: nothing came from the notes, nothing came from the tips,
         # and something came from the notes but it was a stretch. Sharing wording would make the

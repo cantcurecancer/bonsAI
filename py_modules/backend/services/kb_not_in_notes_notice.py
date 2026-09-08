@@ -159,10 +159,12 @@ def append_no_tip_for_this_notice(response_text: str, should_show: bool) -> str:
 # maintainer's call on 2026-09-07 was to change what the line keys off instead -- keep the note,
 # and say the match was thin. Nothing is taken away from anybody; a sentence is added.
 #
-# DRAFT WORDING, NOT YET APPROVED. The other two lines were worded by the maintainer. This one
-# is a placeholder written to be parallel with them, and needs the same sign-off before it ships.
+# Wording approved by the maintainer 2026-09-07, through the same process as the two lines above.
+# **The comma is theirs and is deliberate** -- the draft used a dash, to match the siblings, and
+# they asked for a comma instead. Do not "fix" it to a dash or a semicolon on the grounds that the
+# other two use a dash; that difference was chosen.
 _NO_CLOSE_MATCH_LINE = (
-    "No close match in my notes — this answer leans on the model's own knowledge."
+    "No close match in my notes, this answer leans on the model's own knowledge."
 )
 
 _NO_CLOSE_MATCH_NOTICE = f"\n\n—\n*{_NO_CLOSE_MATCH_LINE}*"
