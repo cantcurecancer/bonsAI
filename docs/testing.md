@@ -110,6 +110,16 @@ pnpm run build             # when src/ or build config touched
 
 **Release:** Tier 0–2 + clean-install proof in [testing-manual.md](testing-manual.md) § Tier 4.
 
+**The Deck goes to sleep in the middle of a test run, and it does not fail cleanly.** A run is mostly
+waiting — an answer takes tens of seconds, a game takes a minute to launch — and the device dozes off
+during that. Presses then land on a sleeping machine and are lost, reads come back empty or stale, and
+the session spends its next few steps working out that the Deck went to sleep rather than that the
+thing under test broke. Until the tooling can hold it awake, ask a throwaway question before timing
+anything, and treat an empty read as "check whether it is asleep" before treating it as a finding.
+A pair of tools to turn the sleep timeouts off for a run and put them back afterwards was asked for on
+2026-09-07 and is on the Decky Plugin Studio roadmap under *Hold the Deck awake for a test run, then
+put the setting back*.
+
 ---
 
 ## PR contract (summary)
